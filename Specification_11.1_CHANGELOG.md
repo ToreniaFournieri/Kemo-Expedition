@@ -2,7 +2,7 @@
 ## 11. CHANGELOG
 **Update rule**
 - Entries must be sorted in descending order by Version, then Build.
-- Overall list order must remain Latest → Older. So insert the new entry at the top in the table 
+- **descending order:** Overall list order must remain Latest → Older. So insert the new entry at the top in the table 
 - Insert new entries at the top of the table.
 - Date format: YYYY/MM/DD
 - Language: English
@@ -10,8 +10,8 @@
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
 | 0.6.3 | 45 | 2026/5/3 | Update Party member details runtime character background gender/race mapping (Spec 8.2.2): use `*_Male.png` variants for male Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid while keeping existing female race mappings and no image for unsupported combinations. |
-| 0.6.0 | 44 | 2026/5/3 | Fix Party member details background character image anchor so the figure remains visible at 80% horizontal placement by centering the image on the anchor (`left: 80%` + `translateX(-50%)`) while preserving top alignment and responsive fixed-size behavior per Spec 8.2.2. |
-| 0.6.0 | 43 | 2026/5/3 | Update Party member details background character image horizontal placement to 80% from the left (20% from the right) while keeping top alignment and existing responsive width behavior per Spec 8.2.2. || 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
+| 0.6.3 | 44 | 2026/5/3 | Fix Party member details background character image anchor so the figure remains visible at 80% horizontal placement by centering the image on the anchor (`left: 80%` + `translateX(-50%)`) while preserving top alignment and responsive fixed-size behavior per Spec 8.2.2. |
+| 0.6.3 | 43 | 2026/5/3 | Update Party member details background character image horizontal placement to 80% from the left (20% from the right) while keeping top alignment and existing responsive width behavior per Spec 8.2.2. || 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
 | 0.6.3 | 41 | 2026/5/3 | Fix legacy character import migration to always normalize missing `gender` per Spec 8.2.3 (unique members now resolve from master identity; editable members now get randomized ♂/♀ instead of remaining unset). |
 | 0.6.3 | 40 | 2026/5/3 | Fix PT2-PT6 runtime initial setup gender assignments to match Spec 2.1.4.2 tables, preventing female members from defaulting to male on new/reset saves. |
 | 0.6.3 | 39 | 2026/5/3 | Update Party member details runtime gender image logic (Spec 8.2.2): render race-based character background images only when `gender == Female`; for `Male` or other values, render no image. |
