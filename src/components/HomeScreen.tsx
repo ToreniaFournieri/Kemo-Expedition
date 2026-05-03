@@ -6126,7 +6126,7 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
-              className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
+              className={`pointer-events-none select-none absolute left-[80%] top-0 h-auto object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
               style={{
                 width: 'clamp(130%, calc(480% - 0.7 * 100vw), 200%)',
                 maxWidth: 'none',
