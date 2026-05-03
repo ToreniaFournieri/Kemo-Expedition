@@ -9,6 +9,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 45 | 2026/5/3 | Update Party member details runtime character background gender/race mapping (Spec 8.2.2): use `*_Male.png` variants for male Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid while keeping existing female race mappings and no image for unsupported combinations. |
 | 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
 | 0.6.3 | 41 | 2026/5/3 | Fix legacy character import migration to always normalize missing `gender` per Spec 8.2.3 (unique members now resolve from master identity; editable members now get randomized ♂/♀ instead of remaining unset). |
 | 0.6.3 | 40 | 2026/5/3 | Fix PT2-PT6 runtime initial setup gender assignments to match Spec 2.1.4.2 tables, preventing female members from defaulting to male on new/reset saves. |

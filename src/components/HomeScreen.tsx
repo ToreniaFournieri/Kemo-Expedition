@@ -5531,21 +5531,32 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
   // SpecRef: 8.2.2 | Party member details | Character image (background)
-  const PARTY_MEMBER_IMAGE_BY_RACE_ID: Partial<Record<RaceId, string>> = {
-    lupinian: 'Lupinian.png',
-    vulpinian: 'Vulpinian.png',
-    felidian: 'Felidian.png',
-    caninian: 'Caninian.png',
-    ursan: 'Ursan.png',
-    procyonian: 'Procyonian.png',
-    leporian: 'Leporian.png',
-    cervin: 'Cervin.png',
-    murid: 'Murid.png',
-    orcinian: 'Orcinian.png',
+  const PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID: Partial<Record<Character['gender'], Partial<Record<RaceId, string>>>> = {
+    female: {
+      lupinian: 'Lupinian.png',
+      vulpinian: 'Vulpinian.png',
+      felidian: 'Felidian.png',
+      caninian: 'Caninian.png',
+      ursan: 'Ursan.png',
+      procyonian: 'Procyonian.png',
+      leporian: 'Leporian.png',
+      cervin: 'Cervin.png',
+      murid: 'Murid.png',
+      orcinian: 'Orcinian.png',
+    },
+    male: {
+      lupinian: 'Lupinian_Male.png',
+      vulpinian: 'Vulpinian_Male.png',
+      felidian: 'Felidian_Male.png',
+      caninian: 'Caninian_Male.png',
+      ursan: 'Ursan_Male.png',
+      procyonian: 'Procyonian_Male.png',
+      leporian: 'Leporian_Male.png',
+      cervin: 'Cervin_Male.png',
+      murid: 'Murid_Male.png',
+    },
   };
-  const partyMemberImageFileName = char.gender === 'female'
-    ? PARTY_MEMBER_IMAGE_BY_RACE_ID[char.raceId]
-    : undefined;
+  const partyMemberImageFileName = PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID[char.gender]?.[char.raceId];
   const partyMemberImageSrc = partyMemberImageFileName
     ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
     : null;
