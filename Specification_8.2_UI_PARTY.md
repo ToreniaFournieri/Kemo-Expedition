@@ -44,8 +44,8 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - Responsive sizing:
     - The image width adapts smoothly to the viewport width.
     - If the page width is **500px or wider**, set the image width to **100% of the panel width**.
-    - If the page width is **400px or narrower**, set the image width to **120% of the panel width**.
-    - Between **400px and 500px**, interpolate linearly between **120% → 100%**.
+    - If the page width is **400px or narrower**, set the image width to **130% of the panel width**.
+    - Between **400px and 500px**, interpolate linearly between **130% → 100%**.
   - Apply mask above the image to ensure text readability.
   - The image remains static relative to the panel (does not move with internal content changes).
   - If race == Cervin, use : /public/character/Cervin.png
