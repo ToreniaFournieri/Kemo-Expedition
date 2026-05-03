@@ -10,7 +10,8 @@
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
 | 0.6.3 | 45 | 2026/5/3 | Update Party member details runtime character background gender/race mapping (Spec 8.2.2): use `*_Male.png` variants for male Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid while keeping existing female race mappings and no image for unsupported combinations. |
-| 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
+| 0.6.0 | 44 | 2026/5/3 | Fix Party member details background character image anchor so the figure remains visible at 80% horizontal placement by centering the image on the anchor (`left: 80%` + `translateX(-50%)`) while preserving top alignment and responsive fixed-size behavior per Spec 8.2.2. |
+| 0.6.0 | 43 | 2026/5/3 | Update Party member details background character image horizontal placement to 80% from the left (20% from the right) while keeping top alignment and existing responsive width behavior per Spec 8.2.2. || 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
 | 0.6.3 | 41 | 2026/5/3 | Fix legacy character import migration to always normalize missing `gender` per Spec 8.2.3 (unique members now resolve from master identity; editable members now get randomized ♂/♀ instead of remaining unset). |
 | 0.6.3 | 40 | 2026/5/3 | Fix PT2-PT6 runtime initial setup gender assignments to match Spec 2.1.4.2 tables, preventing female members from defaulting to male on new/reset saves. |
 | 0.6.3 | 39 | 2026/5/3 | Update Party member details runtime gender image logic (Spec 8.2.2): render race-based character background images only when `gender == Female`; for `Male` or other values, render no image. |
@@ -251,7 +252,6 @@
 | 0.6.0 | 458 | 2026/5/1 | Fix runtime Auto Destination Change Logic in 一任 mode to evaluate progression thresholds against the currently selected expedition `x.enemy_level` (not next destination), with matching checks in both `state.rest` completion and AFK emulation flow. |
 | 0.6.0 | 457 | 2026/4/18 | Update runtime selectable lineage master data bonuses to match Spec 2.1 table (add missing secondary `c.*_x1.2` bonuses and defensive multipliers across `sandstorm` to `oath`). |
 | 0.6.0 | 457 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |
-
 | 0.6.0 | 456 | 2026/4/18 | Refine expedition unlock gate wording in Party/Next Goal UI: when required count is 1, display `ボス撃破で…開放` (hide `0/1` progress), while keeping fraction format for other requirements. |
 | 0.6.0 | 455 | 2026/4/18 | Align runtime lineage/party initial setup to Spec 2.1.4.2: add `a.resonance` to `incarnation`, and update PT3/PT5/PT6 members (order, classes, lineages, predispositions, unique placements) to the requested initial conditions. |
 | 0.6.0 | 454 | 2026/4/18 | Align runtime PT4 initial member setup to Spec 2.1.4.2: update classes, lineages, predispositions, order, and unique flags under Goddess of Fertility. |
@@ -287,6 +287,4 @@
 | 0.6.0 | 427 | 2026/4/16 | Align runtime initial setup to Spec 2.1.4.2 (PT data corrections and Unique character immutability rules). |
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 
-| 0.6.0 | 43 | 2026/5/3 | Update Party member details background character image horizontal placement to 80% from the left (20% from the right) while keeping top alignment and existing responsive width behavior per Spec 8.2.2. |
 
-| 0.6.0 | 44 | 2026/5/3 | Fix Party member details background character image anchor so the figure remains visible at 80% horizontal placement by centering the image on the anchor (`left: 80%` + `translateX(-50%)`) while preserving top alignment and responsive fixed-size behavior per Spec 8.2.2. |
