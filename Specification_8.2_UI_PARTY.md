@@ -62,7 +62,15 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
     - If race == Murid, use : /public/character/Murid.png
     - If race == Orcinian, use : /public/character/Orcinian.png
   - If gender == Male,
-    - no image
+    - If race == Lupinian, use : /public/character/Lupinian_Male.png
+    - If race == Vulpinian, use : /public/character/Vulpinian_Male.png
+    - If race == Felidian, use : /public/character/Felidian_Male.png
+    - If race == Caninian, use : /public/character/Caninian_Male.png
+    - If race == Ursan, use : /public/character/Ursan_Male.png
+    - If race == Procyonian, use : /public/character/Procyonian_Male.png
+    - If race == Leporian, use : /public/character/Leporian_Male.png
+    - If race == Cervin, use : /public/character/Cervin_Male.png
+    - If race == Murid, use : /public/character/Murid_Male.png
   - Else: no image
 
 - Status:
