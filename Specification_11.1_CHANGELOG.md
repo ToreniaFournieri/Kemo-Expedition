@@ -1,12 +1,14 @@
 ## 11. CHANGELOG
 **Update rule**
 - Entries must be sorted in descending order by Version, then Build.
-- **Always insert new entries at the top of the table**.
+- **Always insert new entries at the top line in the table**. (Latest > Older entry)
 - Date format: YYYY/MM/DD
 - Language: English
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 36 | 2026/5/3 | Implement Party member details character background image race mapping at runtime (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Orcinian), with non-listed races rendering no image. |
+| 0.6.3 | 35 | 2026/5/3 | Party UI (dark mode): reduce character detail background image opacity so foreground text is easier to read over the image. |
 | 0.6.3 | 34 | 2026/5/3 | Align runtime selectable lineage text labels (Spec 2.1 lineage table) to short form names: `砂塵, 灰都, 焔嶺, 深海, 天穹, 凍森, 桃源, 機骸, 適応, 断章, 風渡, 誓約` while keeping ids/categories/bonuses/selectable flags unchanged. |
 | 0.6.3 | 33 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): in dark mode, stop applying image inversion to character background images. |
 | 0.6.3 | 32 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): viewport-responsive width interpolation 130%@<=400px → 100%@>=500px (linear), preserving top-center non-stretched fixed-size render. |
@@ -275,10 +277,6 @@
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 | 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
-
-| 0.6.3 | 35 | 2026/5/3 | Party UI (dark mode): reduce character detail background image opacity so foreground text is easier to read over the image. |
-| 0.6.3 | 36 | 2026/5/3 | Implement Party member details character background image race mapping at runtime (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Orcinian), with non-listed races rendering no image. |
-
 
 
 - Older version changelog
