@@ -617,6 +617,7 @@ function getCharacterCombatBonusLevels(character: Character): { melee: boolean; 
 
 // SpecRef: 9 | Environment | Save Data Isolation
 function normalizeImportedCharacter(character: Character, fallbackCharacter: Character): Character {
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Migration from Previous Non-Gender Data
   const normalizedMainClassId = CLASSES.some((c) => c.id === character.mainClassId)
     ? character.mainClassId
     : fallbackCharacter.mainClassId;
@@ -634,6 +635,10 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
       ? character.predispositionId
       : fallbackCharacter.predispositionId,
     lineageId: LINEAGES.some((l) => l.id === character.lineageId) ? character.lineageId : fallbackCharacter.lineageId,
+    gender: normalizeCharacterGender((character as Character & { gender?: CharacterGender }).gender, {
+      isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
+      name: typeof character.name === 'string' && character.name.trim().length > 0 ? character.name : fallbackCharacter.name,
+    }),
     autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
   };
 }
