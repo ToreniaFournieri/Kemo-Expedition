@@ -5543,7 +5543,9 @@ function PartyTab({
     murid: 'Murid.png',
     orcinian: 'Orcinian.png',
   };
-  const partyMemberImageFileName = PARTY_MEMBER_IMAGE_BY_RACE_ID[char.raceId];
+  const partyMemberImageFileName = char.gender === 'female'
+    ? PARTY_MEMBER_IMAGE_BY_RACE_ID[char.raceId]
+    : undefined;
   const partyMemberImageSrc = partyMemberImageFileName
     ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
     : null;
