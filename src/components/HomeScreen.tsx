@@ -5513,8 +5513,21 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
   // SpecRef: 8.2.2 | Party member details | Character image (background)
-  const partyMemberImageSrc = race.id === 'cervin'
-    ? `${import.meta.env.BASE_URL}character/Cervin.png`
+  const PARTY_MEMBER_IMAGE_BY_RACE_ID: Partial<Record<RaceId, string>> = {
+    lupinian: 'Lupinian.png',
+    vulpinian: 'Vulpinian.png',
+    felidian: 'Felidian.png',
+    caninian: 'Caninian.png',
+    ursan: 'Ursan.png',
+    procyonian: 'Procyonian.png',
+    leporian: 'Leporian.png',
+    cervin: 'Cervin.png',
+    murid: 'Murid.png',
+    orcinian: 'Orcinian.png',
+  };
+  const partyMemberImageFileName = PARTY_MEMBER_IMAGE_BY_RACE_ID[char.raceId];
+  const partyMemberImageSrc = partyMemberImageFileName
+    ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
     : null;
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
