@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 30 | 2026/5/3 | Adjust Party member details Cervin background visibility: increase image opacity and reduce overlay mask strength so the character image is clearly visible while retaining text readability. |
 | 0.6.3 | 29 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): render Cervin member background image (`/public/character/Cervin.png`) in panel with top-center fixed positioning, preserved aspect ratio, full panel width, and readability mask; non-Cervin races show no background image. |
 | 0.6.3 | 25 | 2026/5/1 | Fix Gods bestiary encounter/defeat counters to increment only during actual 神魔戦 by assigning dedicated god battle stat IDs (no overlap with normal expedition bosses). |
 | 0.6.3 | 23 | 2026/5/1 | Fix Gods Bestiary reveal/stats key mismatch: use each god expedition's boss enemy id for encounter tracking/display so gods like セイラン unlock immediately after 神魔戦 encounters. |
