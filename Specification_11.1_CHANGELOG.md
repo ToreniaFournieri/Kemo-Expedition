@@ -277,6 +277,7 @@
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
 
 | 0.6.3 | 35 | 2026/5/3 | Party UI (dark mode): reduce character detail background image opacity so foreground text is easier to read over the image. |
+| 0.6.3 | 36 | 2026/5/3 | Implement Party member details character background image race mapping at runtime (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Orcinian), with non-listed races rendering no image. |
 
 
 
@@ -304,4 +305,3 @@
 | 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
 | 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
-
