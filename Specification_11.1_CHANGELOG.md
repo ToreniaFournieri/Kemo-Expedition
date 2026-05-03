@@ -2,12 +2,14 @@
 ## 11. CHANGELOG
 **Update rule**
 - Entries must be sorted in descending order by Version, then Build.
-- Overall list order must remain Latest → Older.
+- Overall list order must remain Latest → Older. So insert the new entry at the top in the table 
+- Insert new entries at the top of the table.
 - Date format: YYYY/MM/DD
 - Language: English
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 40 | 2026/5/3 | Fix PT2-PT6 runtime initial setup gender assignments to match Spec 2.1.4.2 tables, preventing female members from defaulting to male on new/reset saves. |
 | 0.6.3 | 39 | 2026/5/3 | Update Party member details runtime gender image logic (Spec 8.2.2): render race-based character background images only when `gender == Female`; for `Male` or other values, render no image. |
 | 0.6.3 | 38 | 2026/5/3 | Add runtime character gender support: editable ♂/♀ toggle (single-select), race-change default naming filtered by PT/race/gender with duplicate avoidance, and legacy gender migration (unique characters use predefined master gender). |
 | 0.6.3 | 37 | 2026/5/3 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 170% at viewport ≤400px, 130% at viewport ≥500px, with linear interpolation between 400–500px while keeping top-center non-stretched fixed-size rendering. |
@@ -197,7 +199,6 @@
 | 0.6.1 | 3 | 2026/4/20 | Align runtime PT1 initial setup to requested party condition: update ロップ/ソウタ initial equipment to `1107`,`1109` and set ライカ sub class to `class.alchemist` while keeping deity `Goddess of Restoration` and unique flags for ケモ/ライカ. |
 | 0.6.1 | 2 | 2026/4/20 | Fix normal character attack damage argument ordering in battle runtime: pass enemy temporary evasion to `calculateCharacterDamage` before runtime offense multiplier, restoring expected melee/ranged/magic normal attack damage instead of unintended near-minimum values. |
 | 0.6.1 | 1 | 2026/4/20 | Update runtime environment policy for `/beta/`: force fixed theme `m.laika` (non-configurable in UI), lock game-mode selection accordingly, and enforce Debug mode OFF in persisted/runtime debug settings. Also bump app version to `v0.6.1` and reset build number to `1`. |
-| 0.6.3 | 40 | 2026/5/3 | Fix PT2-PT6 runtime initial setup gender assignments to match Spec 2.1.4.2 tables, preventing female members from defaulting to male on new/reset saves. |
 | 0.6.0 | 499 | 2026/4/20 | Update GitHub Pages deployment workflow/environment index to replace obsolete `luna` target with `beta` branch and `/beta/` (`βテスト`) route. |
 | 0.6.0 | 498 | 2026/4/20 | Update runtime mode/environment behavior per latest spec: treat `m.kemo`/`m.luna`/`m.laika` as theme-color-only selection (remove Luna/Laika gameplay reward and difficulty effects), update Divine Bureau mode descriptions to theme text, switch environment routing from obsolete `/luna/` to `/beta/` (`βテスト` label), set debug-pane default speed to `Real time`, and set `/dev/`/`/qa/` simulation speed baseline to x20 hyper. |
 | 0.6.0 | 497 | 2026/4/20 | Update runtime Expedition 8 rare-drop enemy master entries to requested Spec 4.2.2 values for listed floors/rooms (1,3,4,5,6): align Japanese enemy names/class pairings and keep provided drop tokens including entries such as `谷門の斥候`, `虚痕の監視長`, `錬金術鬼`, `古祀の巡礼鬼`, `鬼隊長`, `司書長セドリック`, and `聖域のつわもの`. |
@@ -282,29 +283,3 @@
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 | 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
-
-
-- Older version changelog
-
-|Version  | Changes                                                                               |
-|---------|--------------------------------------------------------------------------------------|
-| 0.5.3 | Two tabs mode. Dark mode, Laika mode |
-| 0.5.2 | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
-| 0.5.1 | Ajusts auto equipment logic |
-| 0.5.0 | unlock for deities, religions . auto equipment update |
-| 0.4.1 | Cycle update |
-| 0.4.0 | Jewel update, side quest update (level cap to 49) |
-| 0.3.3 | Gods religion update |
-| 0.3.2 | God battle, unlock ability update |
-| 0.3.1 | Level and experience system update |
-| 0.3.0 | Super rare update (level cap to 39 from 29) |
-| 0.2.9 | Race ability update |
-| 0.2.7 | Enemy scale rebarance update |
-| 0.2.6 | First Strike description text update |
-| 0.2.5 | Alpha test update, barance fix  |
-| 0.2.4 | Party State Machine update, AFK mode.  |
-| 0.2.3 | Accuracy update. Magic is now respect `f.hit_detection`. |
-| 0.2.2| Game balance modified, Enemy status mutipliers update, 2.3.3 Base data structure (enemy) update |
-| 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
-| 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
-| 0.1.4 |                                                                |
