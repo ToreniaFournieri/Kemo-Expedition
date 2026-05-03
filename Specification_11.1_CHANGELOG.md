@@ -7,6 +7,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 37 | 2026/5/3 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 170% at viewport ≤400px, 130% at viewport ≥500px, with linear interpolation between 400–500px while keeping top-center non-stretched fixed-size rendering. |
 | 0.6.3 | 36 | 2026/5/3 | Implement Party member details character background image race mapping at runtime (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Orcinian), with non-listed races rendering no image. |
 | 0.6.3 | 35 | 2026/5/3 | Party UI (dark mode): reduce character detail background image opacity so foreground text is easier to read over the image. |
 | 0.6.3 | 34 | 2026/5/3 | Align runtime selectable lineage text labels (Spec 2.1 lineage table) to short form names: `砂塵, 灰都, 焔嶺, 深海, 天穹, 凍森, 桃源, 機骸, 適応, 断章, 風渡, 誓約` while keeping ids/categories/bonuses/selectable flags unchanged. |
