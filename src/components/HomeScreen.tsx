@@ -6095,7 +6095,7 @@ function PartyTab({
               aria-hidden="true"
               className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-70 invert' : 'opacity-65'}`}
               style={{
-                width: 'clamp(100%, calc(200% - 0.2 * 100vw), 120%)',
+                width: 'clamp(100%, calc(250% - 0.3 * 100vw), 130%)',
                 maxWidth: 'none',
               }}
             />
