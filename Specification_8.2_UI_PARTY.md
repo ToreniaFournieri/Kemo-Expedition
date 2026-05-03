@@ -135,6 +135,17 @@ Left-aligned
     - `Gender`
   - Duplicate name assignment should be avoided whenever possible.
   - A duplicate name may only be assigned if no unused valid candidate remains.
+ 
+  - **Migration from Previous Non-Gender Data**
+    - Applies when loading save data created before `Gender` existed.
+    - If `gender` is missing, assign it during migration.
+    - **Unique Characters**
+      - Do not assign gender randomly.
+      - Set `gender` by referencing the character’s Initial Setting / Master Data.
+      - This preserves predefined lore and prevents mismatch with fixed unique character identity.
+    - **Editable Characters**
+      - If `gender` is missing, assign randomly:
+      - `♂` or `♀`
 
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Display the selected race summary as a single-line header above the selector buttons.
