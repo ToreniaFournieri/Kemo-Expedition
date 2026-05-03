@@ -284,3 +284,4 @@
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 | 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
+| 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
