@@ -7,6 +7,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 32 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): viewport-responsive width interpolation 130%@<=400px → 100%@>=500px (linear), preserving top-center non-stretched fixed-size render. |
 | 0.6.3 | 31 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): top-center, non-stretched, viewport-responsive width interpolation 120%@<=400px → 100%@>=500px. |
 | 0.6.3 | 30 | 2026/5/3 | Adjust Party member details Cervin background visibility: increase image opacity and reduce overlay mask strength so the character image is clearly visible while retaining text readability. |
 | 0.6.3 | 29 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): render Cervin member background image (`/public/character/Cervin.png`) in panel with top-center fixed positioning, preserved aspect ratio, full panel width, and readability mask; non-Cervin races show no background image. |
