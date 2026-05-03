@@ -287,3 +287,5 @@
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 
 | 0.6.0 | 43 | 2026/5/3 | Update Party member details background character image horizontal placement to 80% from the left (20% from the right) while keeping top alignment and existing responsive width behavior per Spec 8.2.2. |
+
+| 0.6.0 | 44 | 2026/5/3 | Fix Party member details background character image anchor so the figure remains visible at 80% horizontal placement by centering the image on the anchor (`left: 80%` + `translateX(-50%)`) while preserving top alignment and responsive fixed-size behavior per Spec 8.2.2. |
