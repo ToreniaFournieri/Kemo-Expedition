@@ -1,14 +1,20 @@
 ## 11. CHANGELOG
+**Update rule**
 - Entries must be sorted in descending order by Version, then Build.
-- Always insert new entries at the top of the table.
+- **Always insert new entries at the top of the table**.
 - Date format: YYYY/MM/DD
 - Language: English
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 31 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): top-center, non-stretched, viewport-responsive width interpolation 120%@<=400px → 100%@>=500px. |
 | 0.6.3 | 30 | 2026/5/3 | Adjust Party member details Cervin background visibility: increase image opacity and reduce overlay mask strength so the character image is clearly visible while retaining text readability. |
 | 0.6.3 | 29 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): render Cervin member background image (`/public/character/Cervin.png`) in panel with top-center fixed positioning, preserved aspect ratio, full panel width, and readability mask; non-Cervin races show no background image. |
+| 0.6.3 | 28 | 2026/5/2 | Fix character edit auto-unequip flow: when aptitude/slot changes force equipment removal, detach equipped jewels and return them to jewel inventory while returning jewel-free equipment to inventory (prevents jewel loss). |
+| 0.6.3 | 27 | 2026/5/2 | Fix expedition log runtime display: show `EXP: +...` (and reward section) whenever accumulated expedition values exist, even during ongoing explore state, so EXP display no longer disappears after clearing rooms. |
+| 0.6.3 | 26 | 2026/5/2 | Refine runtime bonus ability tooltip wording for reflect abilities (`a.*-reflect`) to avoid awkward duplication and display clear split text like `反射N・被弾M` distribution semantics in Japanese. |
 | 0.6.3 | 25 | 2026/5/1 | Fix Gods bestiary encounter/defeat counters to increment only during actual 神魔戦 by assigning dedicated god battle stat IDs (no overlap with normal expedition bosses). |
+| 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
 | 0.6.3 | 23 | 2026/5/1 | Fix Gods Bestiary reveal/stats key mismatch: use each god expedition's boss enemy id for encounter tracking/display so gods like セイラン unlock immediately after 神魔戦 encounters. |
 | 0.6.3 | 21 | 2026/5/1 | Bestiary Gods tab/runtime reveal now depends on god encounter counts: show 神 tab only when at least one god has 遭遇数 > 0, and list only gods with encounters. |
 | 0.6.3 | 19 | 2026/5/1 | Update runtime Bestiary Gods tab behavior (8.6): keep Gods entries limited to challenged gods and hide the 神 tab entirely until at least one god has been challenged. |
@@ -267,13 +273,8 @@
 | 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
 
-| 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
 
-| 0.6.3 | 26 | 2026/5/2 | Refine runtime bonus ability tooltip wording for reflect abilities (`a.*-reflect`) to avoid awkward duplication and display clear split text like `反射N・被弾M` distribution semantics in Japanese. |
 
-| 0.6.3 | 27 | 2026/5/2 | Fix expedition log runtime display: show `EXP: +...` (and reward section) whenever accumulated expedition values exist, even during ongoing explore state, so EXP display no longer disappears after clearing rooms. |
-
-| 0.6.3 | 28 | 2026/5/2 | Fix character edit auto-unequip flow: when aptitude/slot changes force equipment removal, detach equipped jewels and return them to jewel inventory while returning jewel-free equipment to inventory (prevents jewel loss). |
 - Older version changelog
 
 |Version  | Changes                                                                               |
@@ -299,4 +300,3 @@
 | 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
 
-| 0.6.3 | 31 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): top-center, non-stretched, viewport-responsive width interpolation 120%@<=400px → 100%@>=500px. |
