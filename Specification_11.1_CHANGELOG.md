@@ -298,3 +298,5 @@
 | 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
 | 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
+
+| 0.6.3 | 31 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): top-center, non-stretched, viewport-responsive width interpolation 120%@<=400px → 100%@>=500px. |

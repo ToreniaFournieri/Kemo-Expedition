@@ -6093,7 +6093,11 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
-              className={`pointer-events-none select-none absolute left-1/2 top-0 w-full h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-70 invert' : 'opacity-65'}`}
+              className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-70 invert' : 'opacity-65'}`}
+              style={{
+                width: 'clamp(100%, calc(200% - 0.2 * 100vw), 120%)',
+                maxWidth: 'none',
+              }}
             />
             <div
               className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/25' : 'bg-white/30'}`}
