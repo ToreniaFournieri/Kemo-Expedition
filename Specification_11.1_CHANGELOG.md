@@ -1,3 +1,4 @@
+| 0.6.3 | 38 | 2026/5/3 | Add runtime character gender support: editable ♂/♀ toggle (single-select), race-change default naming filtered by PT/race/gender with duplicate avoidance, and legacy gender migration (unique characters use predefined master gender). |
 ## 11. CHANGELOG
 **Update rule**
 - Entries must be sorted in descending order by Version, then Build.

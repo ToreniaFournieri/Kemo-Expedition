@@ -260,9 +260,12 @@ export function getVariantKey(item: { id: number; enhancement: number; superRare
 export type InventoryRecord = Record<string, InventoryVariant>;
 
 // Character Types
+export type CharacterGender = 'male' | 'female';
+
 export interface Character {
   id: number;
   name: string;
+  gender: CharacterGender;
   isUnique?: boolean;
   autoEquipmentMode?: 0 | 1 | 2;
   raceId: RaceId;

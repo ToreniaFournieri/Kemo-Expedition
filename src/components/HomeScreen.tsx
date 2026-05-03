@@ -998,7 +998,8 @@ function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Expedition
   ];
 }
 
-const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, string[]>>> = {
+type GenderedNamePool = { male: string[]; female: string[] };
+const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
   1: {
     caninian: ['タロウ', 'コテツ', 'ハヤテ', 'シロ', 'レオ', 'リク', 'ソラ', 'マル', 'ジン'],
     lupinian: ['ガルム', 'クロウ', 'ハク', 'レイガ', 'ギン', 'ランガ', 'ゼル', 'バルト'],
@@ -1066,6 +1067,21 @@ const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, strin
   },
 };
 
+
+const getGenderedNamePool = (names: string[]): GenderedNamePool => {
+  const pivot = Math.ceil(names.length / 2);
+  return { male: names.slice(0, pivot), female: names.slice(pivot) };
+};
+
+Object.keys(POTENTIAL_DEFAULT_NAMES_BY_PT).forEach((ptKey) => {
+  const races = POTENTIAL_DEFAULT_NAMES_BY_PT[Number(ptKey)]!;
+  Object.keys(races).forEach((raceKey) => {
+    const value = (races as Record<string, unknown>)[raceKey];
+    if (Array.isArray(value)) {
+      (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
+    }
+  });
+});
 
 function parseDiaryThreshold(value: string): DiaryRarityThreshold {
   if (value === 'all' || value === 'none') return value;
@@ -5473,7 +5489,9 @@ function PartyTab({
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Trigger: when race is changed.
   const getDefaultNameForRace = (raceId: RaceId): string => {
-    const ptCandidates = POTENTIAL_DEFAULT_NAMES_BY_PT[party.id]?.[raceId] ?? [];
+    const racePool = POTENTIAL_DEFAULT_NAMES_BY_PT[party.id]?.[raceId];
+    const genderedPool = Array.isArray(racePool) ? getGenderedNamePool(racePool) : racePool;
+    const ptCandidates = genderedPool?.[(pendingEdits?.gender ?? char.gender)] ?? [];
     if (ptCandidates.length === 0) return char.name;
 
     const usedNames = new Set(
@@ -5483,7 +5501,7 @@ function PartyTab({
         .map((character) => character.name)
     );
 
-    const availableCandidates = ptCandidates.filter((candidate) => !usedNames.has(candidate));
+    const availableCandidates = ptCandidates.filter((candidate: string) => !usedNames.has(candidate));
     const candidatePool = availableCandidates.length > 0 ? availableCandidates : ptCandidates;
     return candidatePool[Math.floor(Math.random() * candidatePool.length)];
   };
@@ -6128,6 +6146,20 @@ function PartyTab({
                   固有キャラクター(クラスのみ編集可能)
                 </div>
               )}
+
+              <div className="mt-2 flex gap-1">
+                {(['male', 'female'] as const).map((gender) => (
+                  <button
+                    key={gender}
+                    type="button"
+                    disabled={char.isUnique}
+                    onClick={() => setPendingEdits({ ...pendingEdits, gender })}
+                    className={`px-2 py-1 text-xs border rounded ${((pendingEdits?.gender ?? char.gender) === gender) ? 'bg-sub text-white border-sub' : (char.isUnique ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-gray-600 border-gray-200')}`}
+                  >
+                    {gender === 'male' ? '♂' : '♀'}
+                  </button>
+                ))}
+              </div>
               <input
                 type="text"
                 value={pendingEdits?.name ?? char.name}
