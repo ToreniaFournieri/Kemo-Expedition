@@ -7,6 +7,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 34 | 2026/5/3 | Align runtime selectable lineage text labels (Spec 2.1 lineage table) to short form names: `砂塵, 灰都, 焔嶺, 深海, 天穹, 凍森, 桃源, 機骸, 適応, 断章, 風渡, 誓約` while keeping ids/categories/bonuses/selectable flags unchanged. |
 | 0.6.3 | 33 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): in dark mode, stop applying image inversion to character background images. |
 | 0.6.3 | 32 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): viewport-responsive width interpolation 130%@<=400px → 100%@>=500px (linear), preserving top-center non-stretched fixed-size render. |
 | 0.6.3 | 31 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): top-center, non-stretched, viewport-responsive width interpolation 120%@<=400px → 100%@>=500px. |
