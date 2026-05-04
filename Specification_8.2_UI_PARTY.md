@@ -50,6 +50,10 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - Apply mask above the image to ensure text readability.
   - The image remains static relative to the panel (does not move with internal content changes).
 
+  - If unique_cahracter == ture,
+    - If name == `ライカ`, use : /public/character/Unique_Laika.png
+    - If name == `ルナ`, use : /public/character/Unique_Luna.png
+    - If name == `マーレ`, use : /public/character/Unique_Mare.png
   - If gender == Female,
     - If race == Lupinian, use : /public/character/Lupinian_Female.png
     - If race == Vulpinian, use : /public/character/Vulpinian_Female.png
