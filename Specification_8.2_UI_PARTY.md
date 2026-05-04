@@ -37,16 +37,41 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
 
 - **Character image (background)**
-  - No image (in this version)
-//  - Render the character image as a background image of the panel.
-//  - Position: top-center.
-//  - Do not stretch; preserve original aspect ratio.
-//  - Image size is fixed and does not scale with content.
-//  - The image width matches the panel width.
-//  - Apply mask above the image to ensure text readability.
-//  - The image remains static relative to the panel (does not move with internal content changes).
-//  - If race == Vulpinian, use : /public/character/Vulpinian.png
-//  - Else: no image
+  - Render the character image as a background image of the panel.
+  - Position: top-aligned, horizontally offset to 80% from the left (i.e., 20% from the right).
+  - Do not stretch; preserve original aspect ratio.
+  - Image size is fixed and does not scale with content.
+  - Responsive sizing:
+    - The image width adapts smoothly to the viewport width.
+    - If the page width is **500px or wider**, set the image width to **120% of the panel width**.
+    - If the page width is **400px or narrower**, set the image width to **170% of the panel width**.
+    - Between **400px and 500px**, interpolate linearly between **170% → 120%**.
+  - In dark mode: not invert the image.
+  - Apply mask above the image to ensure text readability.
+  - The image remains static relative to the panel (does not move with internal content changes).
+
+  - If gender == Female,
+    - If race == Lupinian, use : /public/character/Lupinian_Female.png
+    - If race == Vulpinian, use : /public/character/Vulpinian_Female.png
+    - If race == Felidian, use : /public/character/Felidian_Female.png
+    - If race == Caninian, use : /public/character/Caninian_Female.png
+    - If race == Ursan, use : /public/character/Ursan_Female.png
+    - If race == Procyonian, use : /public/character/Procyonian_Female.png
+    - If race == Leporian, use : /public/character/Leporian_Female.png
+    - If race == Cervin, use : /public/character/Cervin_Female.png
+    - If race == Murid, use : /public/character/Murid_Female.png
+    - If race == Orcinian, use : /public/character/Orcinian_Female.png
+  - If gender == Male,
+    - If race == Lupinian, use : /public/character/Lupinian_Male.png
+    - If race == Vulpinian, use : /public/character/Vulpinian_Male.png
+    - If race == Felidian, use : /public/character/Felidian_Male.png
+    - If race == Caninian, use : /public/character/Caninian_Male.png
+    - If race == Ursan, use : /public/character/Ursan_Male.png
+    - If race == Procyonian, use : /public/character/Procyonian_Male.png
+    - If race == Leporian, use : /public/character/Leporian_Male.png
+    - If race == Cervin, use : /public/character/Cervin_Male.png
+    - If race == Murid, use : /public/character/Murid_Male.png
+  - Else: no image
 
 - Status:
 - If character has `c.equip_melee`, displays 
@@ -112,6 +137,28 @@ Left-aligned
 
 - Name [edit]
 - Editable `name` field.
+- Toggle selection: `♂` / `♀` Exactly one must be selected (no null state)
+- **Default Name Assignment**
+  - Trigger: when `Race` is changed.
+  - Select a default name randomly from the Potential Default Name Table.
+  - The candidate pool must match all of the following:
+    - `PT`
+    - `Race`
+    - `Gender`
+  - Duplicate name assignment should be avoided whenever possible.
+  - A duplicate name may only be assigned if no unused valid candidate remains.
+ 
+  - **Migration from Previous Non-Gender Data**
+    - Applies when loading save data created before `Gender` existed.
+    - If `gender` is missing, assign it during migration.
+    - **Unique Characters**
+      - Do not assign gender randomly.
+      - Set `gender` by referencing the character’s Initial Setting / Master Data.
+      - This preserves predefined lore and prevents mismatch with fixed unique character identity.
+    - **Editable Characters**
+      - If `gender` is missing, assign randomly:
+      - `♂` or `♀`
+
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Display the selected race summary as a single-line header above the selector buttons.
   - Category tabs: single-row, no wrap, fit within one viewport width.

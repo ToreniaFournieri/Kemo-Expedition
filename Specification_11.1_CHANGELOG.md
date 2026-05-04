@@ -1,14 +1,44 @@
+
 ## 11. CHANGELOG
+**Update rule**
+- Verion info is @Specification.md title part (ex: # KEMO EXPEDITION v0.6.3 - SPECIFICATION -> 0.6.3)
+- Build info is @build_number.txt
 - Entries must be sorted in descending order by Version, then Build.
-- Always insert new entries at the top of the table.
+- **descending order:** Overall list order must remain Latest → Older. So insert the new entry at the top in the table 
+- Insert new entries at the top of the table.
 - Date format: YYYY/MM/DD
 - Language: English
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 1 | 2026/5/4 | Prepare v0.6.4 release: bump app version to `v0.6.4` and reset build number to `1`. |
+| 0.6.3 | 47 | 2026/5/4 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 120% at viewport ≥500px, 170% at viewport ≤400px, with linear interpolation between 400–500px. |
+| 0.6.3 | 46 | 2026/5/4 | Update runtime Party member details (8.2.2) character background image mapping to use gender-specific female asset filenames (`*_Female.png`) for all listed races while preserving existing male mappings and no-image fallback behavior. |
+| 0.6.3 | 45 | 2026/5/3 | Update Party member details runtime character background gender/race mapping (Spec 8.2.2): use `*_Male.png` variants for male Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid while keeping existing female race mappings and no image for unsupported combinations. |
+| 0.6.3 | 44 | 2026/5/3 | Fix Party member details background character image anchor so the figure remains visible at 80% horizontal placement by centering the image on the anchor (`left: 80%` + `translateX(-50%)`) while preserving top alignment and responsive fixed-size behavior per Spec 8.2.2. |
+| 0.6.3 | 43 | 2026/5/3 | Update Party member details background character image horizontal placement to 80% from the left (20% from the right) while keeping top alignment and existing responsive width behavior per Spec 8.2.2. || 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
+| 0.6.3 | 41 | 2026/5/3 | Fix legacy character import migration to always normalize missing `gender` per Spec 8.2.3 (unique members now resolve from master identity; editable members now get randomized ♂/♀ instead of remaining unset). |
+| 0.6.3 | 40 | 2026/5/3 | Fix PT2-PT6 runtime initial setup gender assignments to match Spec 2.1.4.2 tables, preventing female members from defaulting to male on new/reset saves. |
+| 0.6.3 | 39 | 2026/5/3 | Update Party member details runtime gender image logic (Spec 8.2.2): render race-based character background images only when `gender == Female`; for `Male` or other values, render no image. |
+| 0.6.3 | 38 | 2026/5/3 | Add runtime character gender support: editable ♂/♀ toggle (single-select), race-change default naming filtered by PT/race/gender with duplicate avoidance, and legacy gender migration (unique characters use predefined master gender). |
+| 0.6.3 | 37 | 2026/5/3 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 170% at viewport ≤400px, 130% at viewport ≥500px, with linear interpolation between 400–500px while keeping top-center non-stretched fixed-size rendering. |
+| 0.6.3 | 36 | 2026/5/3 | Implement Party member details character background image race mapping at runtime (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Orcinian), with non-listed races rendering no image. |
+| 0.6.3 | 35 | 2026/5/3 | Party UI (dark mode): reduce character detail background image opacity so foreground text is easier to read over the image. |
+| 0.6.3 | 34 | 2026/5/3 | Align runtime selectable lineage text labels (Spec 2.1 lineage table) to short form names: `砂塵, 灰都, 焔嶺, 深海, 天穹, 凍森, 桃源, 機骸, 適応, 断章, 風渡, 誓約` while keeping ids/categories/bonuses/selectable flags unchanged. |
+| 0.6.3 | 33 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): in dark mode, stop applying image inversion to character background images. |
+| 0.6.3 | 32 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): viewport-responsive width interpolation 130%@<=400px → 100%@>=500px (linear), preserving top-center non-stretched fixed-size render. |
+| 0.6.3 | 31 | 2026/5/3 | Update Party member details runtime character background image sizing (Spec 8.2.2): top-center, non-stretched, viewport-responsive width interpolation 120%@<=400px → 100%@>=500px. |
+| 0.6.3 | 30 | 2026/5/3 | Adjust Party member details Cervin background visibility: increase image opacity and reduce overlay mask strength so the character image is clearly visible while retaining text readability. |
+| 0.6.3 | 29 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): render Cervin member background image (`/public/character/Cervin.png`) in panel with top-center fixed positioning, preserved aspect ratio, full panel width, and readability mask; non-Cervin races show no background image. |
+| 0.6.3 | 28 | 2026/5/2 | Fix character edit auto-unequip flow: when aptitude/slot changes force equipment removal, detach equipped jewels and return them to jewel inventory while returning jewel-free equipment to inventory (prevents jewel loss). |
+| 0.6.3 | 27 | 2026/5/2 | Fix expedition log runtime display: show `EXP: +...` (and reward section) whenever accumulated expedition values exist, even during ongoing explore state, so EXP display no longer disappears after clearing rooms. |
+| 0.6.3 | 26 | 2026/5/2 | Refine runtime bonus ability tooltip wording for reflect abilities (`a.*-reflect`) to avoid awkward duplication and display clear split text like `反射N・被弾M` distribution semantics in Japanese. |
 | 0.6.3 | 25 | 2026/5/1 | Fix Gods bestiary encounter/defeat counters to increment only during actual 神魔戦 by assigning dedicated god battle stat IDs (no overlap with normal expedition bosses). |
+| 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
 | 0.6.3 | 23 | 2026/5/1 | Fix Gods Bestiary reveal/stats key mismatch: use each god expedition's boss enemy id for encounter tracking/display so gods like セイラン unlock immediately after 神魔戦 encounters. |
+| 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
 | 0.6.3 | 21 | 2026/5/1 | Bestiary Gods tab/runtime reveal now depends on god encounter counts: show 神 tab only when at least one god has 遭遇数 > 0, and list only gods with encounters. |
+| 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
 | 0.6.3 | 19 | 2026/5/1 | Update runtime Bestiary Gods tab behavior (8.6): keep Gods entries limited to challenged gods and hide the 神 tab entirely until at least one god has been challenged. |
 | 0.6.3 | 18 | 2026/5/1 | Fix Gods Bestiary unlock visibility to include current-session 神魔戦 logs (`lastExpeditionLog`/pending diary) in challenged-god detection, so a god defeated just now appears immediately in the 神 tab before diary finalization. |
 | 0.6.3 | 17 | 2026/5/1 | Fix Gods Bestiary challenge-name matching for Japanese battle log names (e.g., `ミオラ(神,賢M)`): normalize challenged-god names by removing parenthetical role/class metadata and matching against god display-name head tokens, so newly beaten gods appear immediately. |
@@ -227,7 +257,6 @@
 | 0.6.0 | 458 | 2026/5/1 | Fix runtime Auto Destination Change Logic in 一任 mode to evaluate progression thresholds against the currently selected expedition `x.enemy_level` (not next destination), with matching checks in both `state.rest` completion and AFK emulation flow. |
 | 0.6.0 | 457 | 2026/4/18 | Update runtime selectable lineage master data bonuses to match Spec 2.1 table (add missing secondary `c.*_x1.2` bonuses and defensive multipliers across `sandstorm` to `oath`). |
 | 0.6.0 | 457 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |
-
 | 0.6.0 | 456 | 2026/4/18 | Refine expedition unlock gate wording in Party/Next Goal UI: when required count is 1, display `ボス撃破で…開放` (hide `0/1` progress), while keeping fraction format for other requirements. |
 | 0.6.0 | 455 | 2026/4/18 | Align runtime lineage/party initial setup to Spec 2.1.4.2: add `a.resonance` to `incarnation`, and update PT3/PT5/PT6 members (order, classes, lineages, predispositions, unique placements) to the requested initial conditions. |
 | 0.6.0 | 454 | 2026/4/18 | Align runtime PT4 initial member setup to Spec 2.1.4.2: update classes, lineages, predispositions, order, and unique flags under Goddess of Fertility. |
@@ -262,33 +291,5 @@
 | 0.6.0 | 428 | 2026/4/16 | Enforce Unique character edit-mode immutability UI (disable/grey Name, Race, Lineage, Predisposition; keep Main/Sub Class editable). |
 | 0.6.0 | 427 | 2026/4/16 | Align runtime initial setup to Spec 2.1.4.2 (PT data corrections and Unique character immutability rules). |
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
-| 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
-| 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
-
-| 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
 
 
-- Older version changelog
-
-|Version  | Changes                                                                               |
-|---------|--------------------------------------------------------------------------------------|
-| 0.5.3 | Two tabs mode. Dark mode, Laika mode |
-| 0.5.2 | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
-| 0.5.1 | Ajusts auto equipment logic |
-| 0.5.0 | unlock for deities, religions . auto equipment update |
-| 0.4.1 | Cycle update |
-| 0.4.0 | Jewel update, side quest update (level cap to 49) |
-| 0.3.3 | Gods religion update |
-| 0.3.2 | God battle, unlock ability update |
-| 0.3.1 | Level and experience system update |
-| 0.3.0 | Super rare update (level cap to 39 from 29) |
-| 0.2.9 | Race ability update |
-| 0.2.7 | Enemy scale rebarance update |
-| 0.2.6 | First Strike description text update |
-| 0.2.5 | Alpha test update, barance fix  |
-| 0.2.4 | Party State Machine update, AFK mode.  |
-| 0.2.3 | Accuracy update. Magic is now respect `f.hit_detection`. |
-| 0.2.2| Game balance modified, Enemy status mutipliers update, 2.3.3 Base data structure (enemy) update |
-| 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
-| 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
-| 0.1.4 |                                                                |

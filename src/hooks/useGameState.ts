@@ -6,6 +6,7 @@ import {
   Character,
   Party,
   SleepinessState,
+  CharacterGender,
   RaceId,
   ClassId,
   PredispositionId,
@@ -616,6 +617,7 @@ function getCharacterCombatBonusLevels(character: Character): { melee: boolean; 
 
 // SpecRef: 9 | Environment | Save Data Isolation
 function normalizeImportedCharacter(character: Character, fallbackCharacter: Character): Character {
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Migration from Previous Non-Gender Data
   const normalizedMainClassId = CLASSES.some((c) => c.id === character.mainClassId)
     ? character.mainClassId
     : fallbackCharacter.mainClassId;
@@ -633,6 +635,10 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
       ? character.predispositionId
       : fallbackCharacter.predispositionId,
     lineageId: LINEAGES.some((l) => l.id === character.lineageId) ? character.lineageId : fallbackCharacter.lineageId,
+    gender: normalizeCharacterGender((character as Character & { gender?: CharacterGender }).gender, {
+      isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
+      name: typeof character.name === 'string' && character.name.trim().length > 0 ? character.name : fallbackCharacter.name,
+    }),
     autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
   };
 }
@@ -1280,6 +1286,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     characters: party.characters.map((character) => ({
       ...character,
       autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
+      gender: normalizeCharacterGender((character as Character & { gender?: CharacterGender }).gender, character),
     })),
     currentHp: partyStats.hp,
     pendingProfit: 0,
@@ -1300,6 +1307,18 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
 function normalizeSleepinessState(raw: unknown): SleepinessState {
   if (raw === 1 || raw === 2) return raw;
   return 0;
+}
+
+
+const UNIQUE_CHARACTER_GENDER_BY_NAME: Record<string, CharacterGender> = {
+  'ケモ': 'male', 'ライカ': 'female', 'レナード': 'male', 'オルカ': 'female', 'ノクス': 'male', 'ルナ': 'female',
+  'ミシュカ': 'male', 'プチーツァ': 'male', '葉隠': 'male', '蒼牙破': 'male', 'フィン': 'male', 'マーレ': 'female',
+};
+
+function normalizeCharacterGender(raw: unknown, character?: Pick<Character, 'isUnique' | 'name'>): CharacterGender {
+  if (raw === 'male' || raw === 'female') return raw;
+  if (character?.isUnique) return UNIQUE_CHARACTER_GENDER_BY_NAME[character.name] ?? 'male';
+  return Math.random() < 0.5 ? 'male' : 'female';
 }
 
 function normalizeCharacterAutoEquipmentMode(raw: unknown): 0 | 1 | 2 {
@@ -1328,17 +1347,18 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 // SpecRef: 2.1.4.2 | Initial setup | PT1 Party initial condition.
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: 'ケモ', isUnique: true, equipmentIds: [1101, 1102, 1104, 1105, 1106, 1211] },
-    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'クズノハ', equipmentIds: [1104, 1106] },
-    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1109] },
-    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1107, 1109] },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: 'セルフィン', equipmentIds: [1110, 1112] },
-    { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: 'ライカ', isUnique: true, equipmentIds: [1110, 1112] },
+    { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: 'ケモ', gender: 'male', isUnique: true, equipmentIds: [1101, 1102, 1104, 1105, 1106, 1211] },
+    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'クズノハ', gender: 'female', equipmentIds: [1104, 1106] },
+    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', gender: 'female', equipmentIds: [1107, 1109] },
+    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', gender: 'male', equipmentIds: [1107, 1109] },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: 'セルフィン', gender: 'female', equipmentIds: [1110, 1112] },
+    { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: 'ライカ', gender: 'female', isUnique: true, equipmentIds: [1110, 1112] },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
     id: i + 1,
     name: setup.name,
+    gender: (setup as { gender?: CharacterGender }).gender ?? 'male',
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
     subClassId: setup.sub as ClassId,
@@ -1391,17 +1411,18 @@ function createInitialParty() {
 
 function createSecondParty() {
   const defaultSetup = [
-    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: 'レナード', isUnique: true },
-    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: 'オルカ', isUnique: true },
-    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'カイマ' },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'inquisitive', lineage: 'utopia', name: 'マナエル' },
-    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'レイナ' },
-    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'タウロ' },
+    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: 'レナード', gender: 'male', isUnique: true },
+    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: 'オルカ', gender: 'female', isUnique: true },
+    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'カイマ', gender: 'male' },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'inquisitive', lineage: 'utopia', name: 'マナエル', gender: 'male' },
+    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'レイナ', gender: 'female' },
+    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'タウロ', gender: 'male' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
     id: i + 101,
     name: setup.name,
+    gender: (setup as { gender?: CharacterGender }).gender ?? 'male',
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
     subClassId: setup.sub as ClassId,
@@ -1450,17 +1471,18 @@ function createSecondParty() {
 
 function createThirdParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: 'ハムザ' },
-    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: 'ユースフ' },
-    { race: 'murid', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'phantom_thief', name: 'ノクス', isUnique: true },
-    { race: 'felidian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'crescent_jade', name: 'ルナ', isUnique: true },
-    { race: 'lupinian', main: 'duelist', sub: 'striker', pred: 'perceptive', lineage: 'frozen_forest', name: 'カリーム' },
-    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'inquisitive', lineage: 'adaptation', name: 'ジャリル' },
+    { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: 'ハムザ', gender: 'male' },
+    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: 'ユースフ', gender: 'male' },
+    { race: 'murid', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'phantom_thief', name: 'ノクス', gender: 'male', isUnique: true },
+    { race: 'felidian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'crescent_jade', name: 'ルナ', gender: 'female', isUnique: true },
+    { race: 'lupinian', main: 'duelist', sub: 'striker', pred: 'perceptive', lineage: 'frozen_forest', name: 'カリーム', gender: 'male' },
+    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'inquisitive', lineage: 'adaptation', name: 'ジャリル', gender: 'male' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
     id: i + 201,
     name: setup.name,
+    gender: (setup as { gender?: CharacterGender }).gender ?? 'male',
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
     subClassId: setup.sub as ClassId,
@@ -1509,17 +1531,18 @@ function createThirdParty() {
 
 function createFourthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'lord', sub: 'duelist', pred: 'none', lineage: 'apostate', name: 'ミシュカ', isUnique: true },
-    { race: 'avian', main: 'ninja', sub: 'sword-saint', pred: 'none', lineage: 'flamebound_grove', name: 'プチーツァ', isUnique: true },
-    { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ヴェーラ' },
-    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'イリーナ' },
-    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'introspective', lineage: 'machina', name: 'ドミトリ' },
-    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'ミラ' },
+    { race: 'ursan', main: 'lord', sub: 'duelist', pred: 'none', lineage: 'apostate', name: 'ミシュカ', gender: 'male', isUnique: true },
+    { race: 'avian', main: 'ninja', sub: 'sword-saint', pred: 'none', lineage: 'flamebound_grove', name: 'プチーツァ', gender: 'male', isUnique: true },
+    { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ヴェーラ', gender: 'female' },
+    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'イリーナ', gender: 'female' },
+    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'introspective', lineage: 'machina', name: 'ドミトリ', gender: 'male' },
+    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'ミラ', gender: 'female' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
     id: i + 301,
     name: setup.name,
+    gender: (setup as { gender?: CharacterGender }).gender ?? 'male',
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
     subClassId: setup.sub as ClassId,
@@ -1568,17 +1591,18 @@ function createFourthParty() {
 
 function createFifthParty() {
   const defaultSetup = [
-    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: '葉隠', isUnique: true },
-    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: '蒼牙破', isUnique: true },
-    { race: 'felidian', main: 'wizard', sub: 'ranger', pred: 'precise', lineage: 'abyssal_sea', name: '影髭' },
-    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: '砕歯' },
-    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'amiable', lineage: 'frozen_forest', name: '霜踏' },
-    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: '狐火' },
+    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: '葉隠', gender: 'male', isUnique: true },
+    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: '蒼牙破', gender: 'male', isUnique: true },
+    { race: 'felidian', main: 'wizard', sub: 'ranger', pred: 'precise', lineage: 'abyssal_sea', name: '影髭', gender: 'male' },
+    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: '砕歯', gender: 'male' },
+    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'amiable', lineage: 'frozen_forest', name: '霜踏', gender: 'female' },
+    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: '狐火', gender: 'female' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
     id: i + 401,
     name: setup.name,
+    gender: (setup as { gender?: CharacterGender }).gender ?? 'male',
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
     subClassId: setup.sub as ClassId,
@@ -1628,17 +1652,18 @@ function createFifthParty() {
 // SpecRef: 2.1.4.2 | Initial setup | PT6 Party initial condition.
 function createSixthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'pilgrim', sub: 'samurai', pred: 'stubborn', lineage: 'fragment', name: 'マーカス' },
-    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'resourceful', lineage: 'abyssal_sea', name: 'ランスロット' },
-    { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: 'フィン', isUnique: true },
-    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'パーシヴァル' },
-    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: 'マーレ', isUnique: true },
-    { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'サム' },
+    { race: 'ursan', main: 'pilgrim', sub: 'samurai', pred: 'stubborn', lineage: 'fragment', name: 'マーカス', gender: 'male' },
+    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'resourceful', lineage: 'abyssal_sea', name: 'ランスロット', gender: 'male' },
+    { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: 'フィン', gender: 'male', isUnique: true },
+    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'パーシヴァル', gender: 'male' },
+    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: 'マーレ', gender: 'female', isUnique: true },
+    { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'サム', gender: 'male' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
     id: i + 501,
     name: setup.name,
+    gender: (setup as { gender?: CharacterGender }).gender ?? 'male',
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
     subClassId: setup.sub as ClassId,
@@ -3987,7 +4012,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newInventory = { ...state.global.inventory };
         newJewels = { ...newJewels };
         for (const item of overflowCandidates) {
-          const addResult = addItemToInventory(newInventory, item, newGold);
+          const detachedItem = item.jewel ? { ...item, jewel: null } : item;
+          const addResult = addItemToInventory(newInventory, detachedItem, newGold);
           newInventory = addResult.inventory;
           newGold = addResult.gold;
           if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
@@ -4012,7 +4038,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             || (lostMagicAptitude && MAGIC_CATEGORIES.has(item.category));
           if (!shouldRemove) continue;
 
-          const addResult = addItemToInventory(newInventory, item, newGold);
+          const detachedItem = item.jewel ? { ...item, jewel: null } : item;
+          const addResult = addItemToInventory(newInventory, detachedItem, newGold);
           newInventory = addResult.inventory;
           newGold = addResult.gold;
           if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
@@ -4032,7 +4059,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         parties: updatedParties,
-        global: { ...state.global, gold: newGold, inventory: newInventory },
+        global: { ...state.global, gold: newGold, inventory: newInventory, jewels: newJewels },
       };
     }
 
@@ -4558,6 +4585,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         characters: party.characters.map((character) => ({
           ...character,
           autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
+      gender: normalizeCharacterGender((character as Character & { gender?: CharacterGender }).gender, character),
         })),
       }));
       const normalizedSelectedPartyIndex = Math.min(

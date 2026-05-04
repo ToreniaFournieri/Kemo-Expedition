@@ -332,6 +332,14 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;
 
+  if (abilityId.endsWith('_reflect') && value && value.includes('反射') && value.includes('被弾')) {
+    return entry.description
+      .replace('のNを反射して相手に与える(自身は残りを受ける)', `を${value}に分散する(反射分を相手に与え、自身は被弾分を受ける)`)
+      .replace(/を\s+x/g, 'をx')
+      .replace(/が\s+x/g, 'がx')
+      .replace(/の\s+x/g, 'のx');
+  }
+
   if (timing) {
     description = description
       .replace('指定終了タイミング', `${timing}終了タイミング`)
@@ -990,7 +998,8 @@ function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Expedition
   ];
 }
 
-const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, string[]>>> = {
+type GenderedNamePool = { male: string[]; female: string[] };
+const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
   1: {
     caninian: ['タロウ', 'コテツ', 'ハヤテ', 'シロ', 'レオ', 'リク', 'ソラ', 'マル', 'ジン'],
     lupinian: ['ガルム', 'クロウ', 'ハク', 'レイガ', 'ギン', 'ランガ', 'ゼル', 'バルト'],
@@ -1058,6 +1067,21 @@ const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, strin
   },
 };
 
+
+const getGenderedNamePool = (names: string[]): GenderedNamePool => {
+  const pivot = Math.ceil(names.length / 2);
+  return { male: names.slice(0, pivot), female: names.slice(pivot) };
+};
+
+Object.keys(POTENTIAL_DEFAULT_NAMES_BY_PT).forEach((ptKey) => {
+  const races = POTENTIAL_DEFAULT_NAMES_BY_PT[Number(ptKey)]!;
+  Object.keys(races).forEach((raceKey) => {
+    const value = (races as Record<string, unknown>)[raceKey];
+    if (Array.isArray(value)) {
+      (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
+    }
+  });
+});
 
 function parseDiaryThreshold(value: string): DiaryRarityThreshold {
   if (value === 'all' || value === 'none') return value;
@@ -5465,7 +5489,9 @@ function PartyTab({
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Trigger: when race is changed.
   const getDefaultNameForRace = (raceId: RaceId): string => {
-    const ptCandidates = POTENTIAL_DEFAULT_NAMES_BY_PT[party.id]?.[raceId] ?? [];
+    const racePool = POTENTIAL_DEFAULT_NAMES_BY_PT[party.id]?.[raceId];
+    const genderedPool = Array.isArray(racePool) ? getGenderedNamePool(racePool) : racePool;
+    const ptCandidates = genderedPool?.[(pendingEdits?.gender ?? char.gender)] ?? [];
     if (ptCandidates.length === 0) return char.name;
 
     const usedNames = new Set(
@@ -5475,7 +5501,7 @@ function PartyTab({
         .map((character) => character.name)
     );
 
-    const availableCandidates = ptCandidates.filter((candidate) => !usedNames.has(candidate));
+    const availableCandidates = ptCandidates.filter((candidate: string) => !usedNames.has(candidate));
     const candidatePool = availableCandidates.length > 0 ? availableCandidates : ptCandidates;
     return candidatePool[Math.floor(Math.random() * candidatePool.length)];
   };
@@ -5505,8 +5531,35 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
   // SpecRef: 8.2.2 | Party member details | Character image (background)
-  // No image (in this version)
-  const partyMemberImageSrc = null;
+  const PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID: Partial<Record<Character['gender'], Partial<Record<RaceId, string>>>> = {
+    female: {
+      lupinian: 'Lupinian_Female.png',
+      vulpinian: 'Vulpinian_Female.png',
+      felidian: 'Felidian_Female.png',
+      caninian: 'Caninian_Female.png',
+      ursan: 'Ursan_Female.png',
+      procyonian: 'Procyonian_Female.png',
+      leporian: 'Leporian_Female.png',
+      cervin: 'Cervin_Female.png',
+      murid: 'Murid_Female.png',
+      orcinian: 'Orcinian_Female.png',
+    },
+    male: {
+      lupinian: 'Lupinian_Male.png',
+      vulpinian: 'Vulpinian_Male.png',
+      felidian: 'Felidian_Male.png',
+      caninian: 'Caninian_Male.png',
+      ursan: 'Ursan_Male.png',
+      procyonian: 'Procyonian_Male.png',
+      leporian: 'Leporian_Male.png',
+      cervin: 'Cervin_Male.png',
+      murid: 'Murid_Male.png',
+    },
+  };
+  const partyMemberImageFileName = PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID[char.gender]?.[char.raceId];
+  const partyMemberImageSrc = partyMemberImageFileName
+    ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
+    : null;
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
@@ -6084,10 +6137,14 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
-              className={`pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top ${isDarkModeEnabled ? 'opacity-50 invert' : 'opacity-40'}`}
+              className={`pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
+              style={{
+                width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                maxWidth: 'none',
+              }}
             />
             <div
-              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/20' : 'bg-white/40'}`}
+              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/25' : 'bg-white/30'}`}
               aria-hidden="true"
             />
           </>
@@ -6102,6 +6159,20 @@ function PartyTab({
                   固有キャラクター(クラスのみ編集可能)
                 </div>
               )}
+
+              <div className="mt-2 flex gap-1">
+                {(['male', 'female'] as const).map((gender) => (
+                  <button
+                    key={gender}
+                    type="button"
+                    disabled={char.isUnique}
+                    onClick={() => setPendingEdits({ ...pendingEdits, gender })}
+                    className={`px-2 py-1 text-xs border rounded ${((pendingEdits?.gender ?? char.gender) === gender) ? 'bg-sub text-white border-sub' : (char.isUnique ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-gray-600 border-gray-200')}`}
+                  >
+                    {gender === 'male' ? '♂' : '♀'}
+                  </button>
+                ))}
+              </div>
               <input
                 type="text"
                 value={pendingEdits?.name ?? char.name}
@@ -8206,14 +8277,14 @@ function ExpeditionTab({
             {currentLog && isLogExpanded && (
               <div className="mx-1 border-t border-gray-200 pt-3">
                 <div className="space-y-2">
-                  {cycle.state !== 'explore' && (
+                  {(currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
                     <div className="text-sm text-gray-500">
                       EXP: +{formatNumber(currentLog.totalExperience)}
                       {currentLog.autoSellProfit > 0 && <span> | {formatAutoSellSummary(currentLog.autoSellProfit, currentLog.autoSellMultiplier)}</span>}
                     </div>
                   )}
 
-                  {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
+                  {currentLog.rewards.length > 0 && (
                     <div className="text-sm">
                       <span className="text-gray-500">獲得アイテム: </span>
                       {currentLog.rewards.map((item, i) => {
