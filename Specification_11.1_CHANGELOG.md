@@ -1,7 +1,8 @@
-| 0.6.0 | 496 | 2026/5/4 | Update runtime Party member details (8.2.2) character background image mapping to use gender-specific female asset filenames (`*_Female.png`) for all listed races while preserving existing male mappings and no-image fallback behavior. |
 
 ## 11. CHANGELOG
 **Update rule**
+- Verion info is @Specification.md title part (ex: v0.6.3)
+- Build info it @build_number.txt
 - Entries must be sorted in descending order by Version, then Build.
 - **descending order:** Overall list order must remain Latest → Older. So insert the new entry at the top in the table 
 - Insert new entries at the top of the table.
@@ -10,6 +11,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 46 | 2026/5/4 | Update runtime Party member details (8.2.2) character background image mapping to use gender-specific female asset filenames (`*_Female.png`) for all listed races while preserving existing male mappings and no-image fallback behavior. |
 | 0.6.3 | 45 | 2026/5/3 | Update Party member details runtime character background gender/race mapping (Spec 8.2.2): use `*_Male.png` variants for male Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid while keeping existing female race mappings and no image for unsupported combinations. |
 | 0.6.3 | 44 | 2026/5/3 | Fix Party member details background character image anchor so the figure remains visible at 80% horizontal placement by centering the image on the anchor (`left: 80%` + `translateX(-50%)`) while preserving top alignment and responsive fixed-size behavior per Spec 8.2.2. |
 | 0.6.3 | 43 | 2026/5/3 | Update Party member details background character image horizontal placement to 80% from the left (20% from the right) while keeping top alignment and existing responsive width behavior per Spec 8.2.2. || 0.6.3 | 42 | 2026/5/3 | Update runtime Party member details character background responsive width interpolation (Spec 8.2.2): use 130% at viewport ≥500px, 200% at ≤400px, and linear interpolation between 400–500px. |
