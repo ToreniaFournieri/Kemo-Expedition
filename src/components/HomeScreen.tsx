@@ -5558,7 +5558,15 @@ function PartyTab({
   };
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
-  const partyMemberImageFileName = PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID[previewGender]?.[previewRaceId];
+  const previewName = pendingEdits?.name ?? char.name;
+  const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
+    'ライカ': 'Unique_Laika.png',
+    'ルナ': 'Unique_Luna.png',
+    'マーレ': 'Unique_Mare.png',
+  };
+  const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByName[previewName] : undefined;
+  const partyMemberImageFileName = uniquePartyMemberImageFileName
+    ?? PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID[previewGender]?.[previewRaceId];
   const partyMemberImageSrc = partyMemberImageFileName
     ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
     : null;

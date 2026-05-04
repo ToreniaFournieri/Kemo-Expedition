@@ -296,3 +296,5 @@
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 
 
+
+| 0.6.1 | 5 | 2026/5/4 | Update Party member details (8.2.2) runtime character background image selection: prioritize unique-character name images (`ライカ`/`ルナ`/`マーレ`), otherwise use gender+race mapping, else no image. |
