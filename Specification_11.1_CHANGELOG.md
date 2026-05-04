@@ -1,3 +1,4 @@
+| 0.6.4 | 2 | 2026/5/4 | Improve Character Edit Mode readability over character portrait by making selection panes translucent (`bg-white/75` + subtle blur) so background art remains visible. |
 
 ## 11. CHANGELOG
 **Update rule**
