@@ -1,3 +1,4 @@
+| 0.6.4 | 3 | 2026/5/4 | Character Edit Mode: make selection panes more transparent over character background (`bg-white/60` + subtle blur) and align サブクラス・系譜・性格 pane transparency with 種族 pane. |
 | 0.6.4 | 2 | 2026/5/4 | Improve Character Edit Mode readability over character portrait by making selection panes translucent (`bg-white/75` + subtle blur) so background art remains visible. |
 
 ## 11. CHANGELOG
