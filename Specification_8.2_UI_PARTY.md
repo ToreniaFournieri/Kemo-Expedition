@@ -51,16 +51,16 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - The image remains static relative to the panel (does not move with internal content changes).
 
   - If gender == Female,
-    - If race == Lupinian, use : /public/character/Lupinian.png
-    - If race == Vulpinian, use : /public/character/Vulpinian.png
-    - If race == Felidian, use : /public/character/Felidian.png
-    - If race == Caninian, use : /public/character/Caninian.png
-    - If race == Ursan, use : /public/character/Ursan.png
-    - If race == Procyonian, use : /public/character/Procyonian.png
-    - If race == Leporian, use : /public/character/Leporian.png
-    - If race == Cervin, use : /public/character/Cervin.png
-    - If race == Murid, use : /public/character/Murid.png
-    - If race == Orcinian, use : /public/character/Orcinian.png
+    - If race == Lupinian, use : /public/character/Lupinian_Female.png
+    - If race == Vulpinian, use : /public/character/Vulpinian_Female.png
+    - If race == Felidian, use : /public/character/Felidian_Female.png
+    - If race == Caninian, use : /public/character/Caninian_Female.png
+    - If race == Ursan, use : /public/character/Ursan_Female.png
+    - If race == Procyonian, use : /public/character/Procyonian_Female.png
+    - If race == Leporian, use : /public/character/Leporian_Female.png
+    - If race == Cervin, use : /public/character/Cervin_Female.png
+    - If race == Murid, use : /public/character/Murid_Female.png
+    - If race == Orcinian, use : /public/character/Orcinian_Female.png
   - If gender == Male,
     - If race == Lupinian, use : /public/character/Lupinian_Male.png
     - If race == Vulpinian, use : /public/character/Vulpinian_Male.png
