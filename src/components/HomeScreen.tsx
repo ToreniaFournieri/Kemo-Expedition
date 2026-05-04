@@ -6241,7 +6241,7 @@ function PartyTab({
         {editingCharacter === selectedCharacter && !showEditConfirm ? (
           <div className="space-y-2 text-sm">
             <div>
-              <div className="mt-2 rounded border border-gray-200 bg-white p-2 text-xs">
+              <div className="mt-2 rounded border border-gray-200 bg-white/75 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
                   const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
@@ -6313,7 +6313,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                    <div className="rounded border border-gray-200 bg-white/75 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
