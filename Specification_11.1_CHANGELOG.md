@@ -1,3 +1,4 @@
+| 0.6.0 | 496 | 2026/5/4 | Update runtime Party member details (8.2.2) character background image mapping to use gender-specific female asset filenames (`*_Female.png`) for all listed races while preserving existing male mappings and no-image fallback behavior. |
 
 ## 11. CHANGELOG
 **Update rule**

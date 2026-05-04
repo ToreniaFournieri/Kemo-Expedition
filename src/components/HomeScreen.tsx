@@ -5533,16 +5533,16 @@ function PartyTab({
   // SpecRef: 8.2.2 | Party member details | Character image (background)
   const PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID: Partial<Record<Character['gender'], Partial<Record<RaceId, string>>>> = {
     female: {
-      lupinian: 'Lupinian.png',
-      vulpinian: 'Vulpinian.png',
-      felidian: 'Felidian.png',
-      caninian: 'Caninian.png',
-      ursan: 'Ursan.png',
-      procyonian: 'Procyonian.png',
-      leporian: 'Leporian.png',
-      cervin: 'Cervin.png',
-      murid: 'Murid.png',
-      orcinian: 'Orcinian.png',
+      lupinian: 'Lupinian_Female.png',
+      vulpinian: 'Vulpinian_Female.png',
+      felidian: 'Felidian_Female.png',
+      caninian: 'Caninian_Female.png',
+      ursan: 'Ursan_Female.png',
+      procyonian: 'Procyonian_Female.png',
+      leporian: 'Leporian_Female.png',
+      cervin: 'Cervin_Female.png',
+      murid: 'Murid_Female.png',
+      orcinian: 'Orcinian_Female.png',
     },
     male: {
       lupinian: 'Lupinian_Male.png',
