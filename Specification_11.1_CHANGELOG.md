@@ -1,7 +1,3 @@
-| 0.6.4 | 6 | 2026/5/5 | Update Party member details runtime unique-character image mapping (Spec 8.2.2) to include プチーツァ/蒼牙破/レナード/葉隠/フィン in addition to existing ライカ/ルナ/マーレ mappings. |
-| 0.6.4 | 3 | 2026/5/4 | Character Edit Mode: make selection panes more transparent over character background (`bg-white/60` + subtle blur) and align サブクラス・系譜・性格 pane transparency with 種族 pane. |
-| 0.6.4 | 2 | 2026/5/4 | Improve Character Edit Mode readability over character portrait by making selection panes translucent (`bg-white/75` + subtle blur) so background art remains visible. |
-
 ## 11. CHANGELOG
 **Update rule**
 - Verion info is @Specification.md title part (ex: # KEMO EXPEDITION v0.6.3 - SPECIFICATION -> 0.6.3)
@@ -12,9 +8,12 @@
 - Date format: YYYY/MM/DD
 - Language: English
 
-|Version  | Build | date | Changes                                                                               |
-|---------|------|------|--------------------------------------------------------------------------------------|
+| Version | Build | date | Changes                                                                              |
+|---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 6 | 2026/5/5 | Update Party member details runtime unique-character image mapping (Spec 8.2.2) to include プチーツァ/蒼牙破/レナード/葉隠/フィン in addition to existing ライカ/ルナ/マーレ mappings. |
 | 0.6.4 | 4 | 2026/5/4 | Update Party character edit mode preview so switching gender or race updates the details pane background image immediately before pressing 完了, by using pending edit state for image selection. |
+| 0.6.4 | 3 | 2026/5/4 | Character Edit Mode: make selection panes more transparent over character background (`bg-white/60` + subtle blur) and align サブクラス・系譜・性格 pane transparency with 種族 pane. |
+| 0.6.4 | 2 | 2026/5/4 | Improve Character Edit Mode readability over character portrait by making selection panes translucent (`bg-white/75` + subtle blur) so background art remains visible. |
 | 0.6.4 | 1 | 2026/5/4 | Prepare v0.6.4 release: bump app version to `v0.6.4` and reset build number to `1`. |
 | 0.6.3 | 47 | 2026/5/4 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 120% at viewport ≥500px, 170% at viewport ≤400px, with linear interpolation between 400–500px. |
 | 0.6.3 | 46 | 2026/5/4 | Update runtime Party member details (8.2.2) character background image mapping to use gender-specific female asset filenames (`*_Female.png`) for all listed races while preserving existing male mappings and no-image fallback behavior. |
