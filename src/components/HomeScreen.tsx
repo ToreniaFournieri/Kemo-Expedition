@@ -5563,6 +5563,11 @@ function PartyTab({
     'ライカ': 'Unique_Laika.png',
     'ルナ': 'Unique_Luna.png',
     'マーレ': 'Unique_Mare.png',
+    'プチーツァ': 'Unique_Puchitsa.png',
+    '蒼牙破': 'Unique_Souga-ha.png',
+    'レナード': 'Unique_Leonard.png',
+    '葉隠': 'Unique_Hagakure.png',
+    'フィン': 'Unique_Finn.png',
   };
   const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByName[previewName] : undefined;
   const partyMemberImageFileName = uniquePartyMemberImageFileName
