@@ -54,6 +54,11 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
     - If name == `ライカ`, use : /public/character/Unique_Laika.png
     - If name == `ルナ`, use : /public/character/Unique_Luna.png
     - If name == `マーレ`, use : /public/character/Unique_Mare.png
+    - If name == `プチーツァ`, use : /public/character/Unique_Puchitsa.png
+    - If name == `蒼牙破`, use : /public/character/Unique_Souga-ha.png
+    - If name == `レナード`, use : /public/character/Unique_Leonard.png
+    - If name == `葉隠`, use : /public/character/Unique_Hagakure.png
+    - If name == `フィン`, use : /public/character/Unique_Finn.png 
   - If gender == Female,
     - If race == Lupinian, use : /public/character/Lupinian_Female.png
     - If race == Vulpinian, use : /public/character/Vulpinian_Female.png
