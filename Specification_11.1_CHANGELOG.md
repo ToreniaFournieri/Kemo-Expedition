@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 14 | 2026/05/06 | Improve Expedition battle-log deity background visibility for bright portraits (including Lira) by increasing image opacity and reducing overlay mask strength in expanded room details. |
 | 0.6.4 | 13 | 2026/05/06 | Improve dark mode Expedition battle-log background visibility by increasing enemy portrait opacity and reducing dark overlay strength so enemy art remains clear while keeping log text readable. |
 | 0.6.4 | 12 | 2026/05/06 | Increase Expedition battle log background visibility in expanded room details by raising enemy image opacity and softening the readability mask overlay so the background art is easier to see while preserving text legibility. |
 | 0.6.4 | 11 | 2026/05/06 | Fix Expedition battle log enemy background image path resolution on deployed base URL (`/Kemo-Expedition/dev/`): route `enemy.image_path` through public-asset base URL normalization so Gods portraits (e.g., Seiran) render correctly in expanded log panels. |
