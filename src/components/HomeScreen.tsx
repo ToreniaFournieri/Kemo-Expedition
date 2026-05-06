@@ -4933,6 +4933,7 @@ export function HomeScreen({
           onSetExpandedRooms={setDiaryExpandedRooms}
           isSettingsExpanded={diarySettingsExpanded}
           onSetIsSettingsExpanded={setDiarySettingsExpanded}
+          isDarkModeEnabled={isDarkModeEnabled}
         />
       );
     }
@@ -8463,7 +8464,7 @@ function ExpeditionTab({
                                       maxWidth: 'none',
                                     }}
                                   />
-                                  <div className="pointer-events-none absolute inset-0 bg-white/35 dark:hidden" aria-hidden="true" />
+                                  {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
                                 </>
                               )}
                               <div className="relative z-10">
@@ -9505,6 +9506,7 @@ function DiaryTab({
   onSetExpandedRooms,
   isSettingsExpanded,
   onSetIsSettingsExpanded,
+  isDarkModeEnabled,
 }: {
   parties: Party[];
   onOpenDiaryLog: (logId: string) => void;
@@ -9515,6 +9517,7 @@ function DiaryTab({
   onSetExpandedRooms: Dispatch<SetStateAction<Record<string, boolean>>>;
   isSettingsExpanded: boolean;
   onSetIsSettingsExpanded: Dispatch<SetStateAction<boolean>>;
+  isDarkModeEnabled: boolean;
 }) {
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -9994,7 +9997,7 @@ function DiaryTab({
                                     maxWidth: 'none',
                                   }}
                                 />
-                                <div className="pointer-events-none absolute inset-0 bg-white/35 dark:hidden" aria-hidden="true" />
+                                {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
                               </>
                             )}
                             <div className="relative z-10">
