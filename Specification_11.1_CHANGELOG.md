@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 7 | 2026/05/06 | Update AFK → Online runtime transition (Spec 5.1.1) to transfer latest AFK-emulated state deterministically, with State Correction Rule forcing `state.rest` when current HP is below MaxHP at transition. |
 | 0.6.4 | 6 | 2026/5/5 | Update Party member details runtime unique-character image mapping (Spec 8.2.2) to include プチーツァ/蒼牙破/レナード/葉隠/フィン in addition to existing ライカ/ルナ/マーレ mappings. |
 | 0.6.4 | 4 | 2026/5/4 | Update Party character edit mode preview so switching gender or race updates the details pane background image immediately before pressing 完了, by using pending edit state for image selection. |
 | 0.6.4 | 3 | 2026/5/4 | Character Edit Mode: make selection panes more transparent over character background (`bg-white/60` + subtle blur) and align サブクラス・系譜・性格 pane transparency with 種族 pane. |
