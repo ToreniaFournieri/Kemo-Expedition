@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 9 | 2026/05/06 | Fix Gods Bestiary runtime image rendering path resolution for deployed base URL: normalize `/public/...`/root-relative image paths to `import.meta.env.BASE_URL` assets so god background portraits display correctly on `/dev/` environment. |
 | 0.6.4 | 8 | 2026/05/06 | Update runtime Bestiary Gods entries to support `enemy.image_path` background rendering with fixed non-stretched image, viewport-responsive width interpolation (170%@<=400px → 120%@>=500px), readability mask overlay, and static panel-relative positioning; also align Gods master data image paths for all 12 gods. |
 | 0.6.4 | 7 | 2026/05/06 | Update AFK → Online runtime transition (Spec 5.1.1) to transfer latest AFK-emulated state deterministically, with State Correction Rule forcing `state.rest` when current HP is below MaxHP at transition. |
 | 0.6.4 | 6 | 2026/5/5 | Update Party member details runtime unique-character image mapping (Spec 8.2.2) to include プチーツァ/蒼牙破/レナード/葉隠/フィン in addition to existing ライカ/ルナ/マーレ mappings. |
