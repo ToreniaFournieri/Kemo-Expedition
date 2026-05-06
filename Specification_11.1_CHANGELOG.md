@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 19 | 2026/05/06 | Remove the Gods Bestiary detail-panel readability mask overlay when a god image exists, so enemy portraits remain clear in dark mode and light mode. |
 | 0.6.4 | 18 | 2026/05/06 | Update Party member details runtime character background resolution (Spec 8.2.2): add unique image mapping for オルカ, use `/public/character/{PT}_{RACE}_{GENDER}.png` naming first, and add runtime fallback to `/public/character/{RACE}_{GENDER}.png` when PT-specific image is missing. |
 | 0.6.4 | 17 | 2026/05/06 | Add Debug pane OFF/ON toggles for Display all Bestiary, Display all Compendium, and Display all Glossary; when enabled, each view ignores unlock/reveal conditions and shows all entries. |
 | 0.6.4 | 16 | 2026/05/06 | Improve normal-mode Expedition battle-pane background clarity by reducing the white readability overlay opacity and increasing background image opacity so battle log artwork appears less foggy while preserving dark-mode visuals. |
