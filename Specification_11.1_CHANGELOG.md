@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 16 | 2026/05/06 | Improve normal-mode Expedition battle-pane background clarity by reducing the white readability overlay opacity and increasing background image opacity so battle log artwork appears less foggy while preserving dark-mode visuals. |
 | 0.6.4 | 15 | 2026/05/06 | Fix dark-mode battle log detail image overlay behavior by switching readability-mask visibility from Tailwind `dark:` classes to runtime dark-mode state checks, ensuring image-present panels hide the gray filter correctly in both Expedition and Diary tabs. |
 | 0.6.4 | 14 | 2026/05/06 | Update dark-mode battle log detail panes (Expedition and Diary) to match status-pane style when an enemy background image exists: remove dark gray filter overlay and keep panel background transparent so artwork stays clear behind text; keep existing appearance unchanged when no image is available. |
 | 0.6.4 | 13 | 2026/05/06 | Improve dark mode Expedition battle-log background visibility by increasing enemy portrait opacity and reducing dark overlay strength so enemy art remains clear while keeping log text readable. |
