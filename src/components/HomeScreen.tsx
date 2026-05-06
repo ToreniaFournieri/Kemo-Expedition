@@ -4933,6 +4933,7 @@ export function HomeScreen({
           onSetExpandedRooms={setDiaryExpandedRooms}
           isSettingsExpanded={diarySettingsExpanded}
           onSetIsSettingsExpanded={setDiarySettingsExpanded}
+          isDarkModeEnabled={isDarkModeEnabled}
         />
       );
     }
@@ -8450,20 +8451,20 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className="relative isolate overflow-hidden border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
                               {entry.enemySnapshot?.image_path && (
                                 <>
                                   <img
                                     src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                     alt=""
                                     aria-hidden="true"
-                                    className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-50' : 'opacity-35'}`}
+                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                     style={{
                                       width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
                                       maxWidth: 'none',
                                     }}
                                   />
-                                  <div className="pointer-events-none absolute inset-0 bg-white/35 dark:bg-slate-950/15" aria-hidden="true" />
+                                  {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
                                 </>
                               )}
                               <div className="relative z-10">
@@ -9505,6 +9506,7 @@ function DiaryTab({
   onSetExpandedRooms,
   isSettingsExpanded,
   onSetIsSettingsExpanded,
+  isDarkModeEnabled,
 }: {
   parties: Party[];
   onOpenDiaryLog: (logId: string) => void;
@@ -9515,6 +9517,7 @@ function DiaryTab({
   onSetExpandedRooms: Dispatch<SetStateAction<Record<string, boolean>>>;
   isSettingsExpanded: boolean;
   onSetIsSettingsExpanded: Dispatch<SetStateAction<boolean>>;
+  isDarkModeEnabled: boolean;
 }) {
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -9981,20 +9984,20 @@ function DiaryTab({
                           )}
                         </button>
                         {isRoomExpanded && entry.details && (
-                          <div className="relative isolate overflow-hidden border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
                             {entry.enemySnapshot?.image_path && (
                               <>
                                 <img
                                   src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                   alt=""
                                   aria-hidden="true"
-                                  className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-50' : 'opacity-35'}`}
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                   style={{
                                     width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
                                     maxWidth: 'none',
                                   }}
                                 />
-                                <div className="pointer-events-none absolute inset-0 bg-white/35 dark:bg-slate-950/15" aria-hidden="true" />
+                                {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
                               </>
                             )}
                             <div className="relative z-10">
