@@ -3779,7 +3779,10 @@ export function HomeScreen({
           const needsRest = party.currentHp < partyStats.hp;
           const fallbackState: PartyCycleState = autoRepeatEnabled ? 'move' : (needsRest ? 'rest' : 'idle');
           const snapshot = runtimeSnapshots[partyIndex];
-          const nextState: PartyCycleState = snapshot?.state ?? fallbackState;
+          const transferredState: PartyCycleState = snapshot?.state ?? fallbackState;
+          // SpecRef: 5.1.1 | Party State Machine | State Correction Rule
+          // AFK → Online transition must preserve latest runtime state, except force `state.rest` when HP is below MaxHP.
+          const nextState: PartyCycleState = needsRest ? 'rest' : transferredState;
           const fallbackDurationMs =
             nextState === 'move'
               ? getPartyTravelDurationMs(party, 'move')
