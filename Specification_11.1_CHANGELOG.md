@@ -1,4 +1,3 @@
-
 ## 11. CHANGELOG
 **Update rule**
 - Verion info is @Specification.md title part (ex: # KEMO EXPEDITION v0.6.3 - SPECIFICATION -> 0.6.3)
@@ -9,8 +8,24 @@
 - Date format: YYYY/MM/DD
 - Language: English
 
-|Version  | Build | date | Changes                                                                               |
-|---------|------|------|--------------------------------------------------------------------------------------|
+| Version | Build | date | Changes                                                                              |
+|---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 18 | 2026/05/06 | Update Party member details runtime character background resolution (Spec 8.2.2): add unique image mapping for オルカ, use `/public/character/{PT}_{RACE}_{GENDER}.png` naming first, and add runtime fallback to `/public/character/{RACE}_{GENDER}.png` when PT-specific image is missing. |
+| 0.6.4 | 17 | 2026/05/06 | Add Debug pane OFF/ON toggles for Display all Bestiary, Display all Compendium, and Display all Glossary; when enabled, each view ignores unlock/reveal conditions and shows all entries. |
+| 0.6.4 | 16 | 2026/05/06 | Improve normal-mode Expedition battle-pane background clarity by reducing the white readability overlay opacity and increasing background image opacity so battle log artwork appears less foggy while preserving dark-mode visuals. |
+| 0.6.4 | 15 | 2026/05/06 | Fix dark-mode battle log detail image overlay behavior by switching readability-mask visibility from Tailwind `dark:` classes to runtime dark-mode state checks, ensuring image-present panels hide the gray filter correctly in both Expedition and Diary tabs. |
+| 0.6.4 | 14 | 2026/05/06 | Update dark-mode battle log detail panes (Expedition and Diary) to match status-pane style when an enemy background image exists: remove dark gray filter overlay and keep panel background transparent so artwork stays clear behind text; keep existing appearance unchanged when no image is available. |
+| 0.6.4 | 13 | 2026/05/06 | Improve dark mode Expedition battle-log background visibility by increasing enemy portrait opacity and reducing dark overlay strength so enemy art remains clear while keeping log text readable. |
+| 0.6.4 | 12 | 2026/05/06 | Increase Expedition battle log background visibility in expanded room details by raising enemy image opacity and softening the readability mask overlay so the background art is easier to see while preserving text legibility. |
+| 0.6.4 | 11 | 2026/05/06 | Fix Expedition battle log enemy background image path resolution on deployed base URL (`/Kemo-Expedition/dev/`): route `enemy.image_path` through public-asset base URL normalization so Gods portraits (e.g., Seiran) render correctly in expanded log panels. |
+| 0.6.4 | 10 | 2026/05/06 | Update Expedition battle log pane enemy background rendering: when `enemy.image_path` exists, render the enemy image as a static panel background with preserved aspect ratio, fixed non-stretched size, viewport-responsive width interpolation (170%@<=400px → 120%@>=500px, linear between), dark mode non-inverted image behavior, and readability mask overlay above the image. |
+| 0.6.4 | 9 | 2026/05/06 | Fix Gods Bestiary runtime image rendering path resolution for deployed base URL: normalize `/public/...`/root-relative image paths to `import.meta.env.BASE_URL` assets so god background portraits display correctly on `/dev/` environment. |
+| 0.6.4 | 8 | 2026/05/06 | Update runtime Bestiary Gods entries to support `enemy.image_path` background rendering with fixed non-stretched image, viewport-responsive width interpolation (170%@<=400px → 120%@>=500px), readability mask overlay, and static panel-relative positioning; also align Gods master data image paths for all 12 gods. |
+| 0.6.4 | 7 | 2026/05/06 | Update AFK → Online runtime transition (Spec 5.1.1) to transfer latest AFK-emulated state deterministically, with State Correction Rule forcing `state.rest` when current HP is below MaxHP at transition. |
+| 0.6.4 | 6 | 2026/5/5 | Update Party member details runtime unique-character image mapping (Spec 8.2.2) to include プチーツァ/蒼牙破/レナード/葉隠/フィン in addition to existing ライカ/ルナ/マーレ mappings. |
+| 0.6.4 | 4 | 2026/5/4 | Update Party character edit mode preview so switching gender or race updates the details pane background image immediately before pressing 完了, by using pending edit state for image selection. |
+| 0.6.4 | 3 | 2026/5/4 | Character Edit Mode: make selection panes more transparent over character background (`bg-white/60` + subtle blur) and align サブクラス・系譜・性格 pane transparency with 種族 pane. |
+| 0.6.4 | 2 | 2026/5/4 | Improve Character Edit Mode readability over character portrait by making selection panes translucent (`bg-white/75` + subtle blur) so background art remains visible. |
 | 0.6.4 | 1 | 2026/5/4 | Prepare v0.6.4 release: bump app version to `v0.6.4` and reset build number to `1`. |
 | 0.6.3 | 47 | 2026/5/4 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 120% at viewport ≥500px, 170% at viewport ≤400px, with linear interpolation between 400–500px. |
 | 0.6.3 | 46 | 2026/5/4 | Update runtime Party member details (8.2.2) character background image mapping to use gender-specific female asset filenames (`*_Female.png`) for all listed races while preserving existing male mappings and no-image fallback behavior. |
@@ -293,3 +308,5 @@
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 
 
+
+| 0.6.1 | 5 | 2026/5/4 | Update Party member details (8.2.2) runtime character background image selection: prioritize unique-character name images (`ライカ`/`ルナ`/`マーレ`), otherwise use gender+race mapping, else no image. |

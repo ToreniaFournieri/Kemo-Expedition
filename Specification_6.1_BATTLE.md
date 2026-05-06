@@ -886,3 +886,18 @@ left-alinged                                           right-aligned
   - *State:`s.sold` Auto-Sell:* If a dropped item matches a rule with state:`s.sold`, it is sold immediately (not added to inventory, gain Gold)
   - *State:`s.owned` Existing Items:* If the item is already in the inventory, increment the item count
   - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`s.owned`
+ 
+**Enemy image**
+- If enemy.image_path exists, enable background image rendering
+- Render the enemy image as a background image of the panel.
+- Do not stretch; preserve original aspect ratio.
+- Image size is fixed and does not scale with content.
+- Responsive sizing:
+  - The image width adapts smoothly to the viewport width.
+  - If the page width is 500px or wider, set the image width to 120% of the panel width.
+  - If the page width is 400px or narrower, set the image width to 170% of the panel width.
+  - Between 400px and 500px, interpolate linearly between 170% → 120%.
+- In dark mode: not invert the image.
+- Apply mask above the image to ensure text readability.
+- The image remains static relative to the panel (does not move with internal content changes).
+

@@ -60,6 +60,12 @@ import {
   isLootGateUnlocked,
 } from '../game/lootGate';
 
+function resolvePublicAssetPath(path?: string): string | null {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
+}
+
 interface HomeScreenProps {
   state: GameState;
   notifications: GameNotification[];
@@ -3779,7 +3785,10 @@ export function HomeScreen({
           const needsRest = party.currentHp < partyStats.hp;
           const fallbackState: PartyCycleState = autoRepeatEnabled ? 'move' : (needsRest ? 'rest' : 'idle');
           const snapshot = runtimeSnapshots[partyIndex];
-          const nextState: PartyCycleState = snapshot?.state ?? fallbackState;
+          const transferredState: PartyCycleState = snapshot?.state ?? fallbackState;
+          // SpecRef: 5.1.1 | Party State Machine | State Correction Rule
+          // AFK → Online transition must preserve latest runtime state, except force `state.rest` when HP is below MaxHP.
+          const nextState: PartyCycleState = needsRest ? 'rest' : transferredState;
           const fallbackDurationMs =
             nextState === 'move'
               ? getPartyTravelDurationMs(party, 'move')
@@ -4924,6 +4933,7 @@ export function HomeScreen({
           onSetExpandedRooms={setDiaryExpandedRooms}
           isSettingsExpanded={diarySettingsExpanded}
           onSetIsSettingsExpanded={setDiarySettingsExpanded}
+          isDarkModeEnabled={isDarkModeEnabled}
         />
       );
     }
@@ -5531,35 +5541,56 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
   // SpecRef: 8.2.2 | Party member details | Character image (background)
-  const PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID: Partial<Record<Character['gender'], Partial<Record<RaceId, string>>>> = {
-    female: {
-      lupinian: 'Lupinian_Female.png',
-      vulpinian: 'Vulpinian_Female.png',
-      felidian: 'Felidian_Female.png',
-      caninian: 'Caninian_Female.png',
-      ursan: 'Ursan_Female.png',
-      procyonian: 'Procyonian_Female.png',
-      leporian: 'Leporian_Female.png',
-      cervin: 'Cervin_Female.png',
-      murid: 'Murid_Female.png',
-      orcinian: 'Orcinian_Female.png',
-    },
-    male: {
-      lupinian: 'Lupinian_Male.png',
-      vulpinian: 'Vulpinian_Male.png',
-      felidian: 'Felidian_Male.png',
-      caninian: 'Caninian_Male.png',
-      ursan: 'Ursan_Male.png',
-      procyonian: 'Procyonian_Male.png',
-      leporian: 'Leporian_Male.png',
-      cervin: 'Cervin_Male.png',
-      murid: 'Murid_Male.png',
-    },
+  const previewGender = pendingEdits?.gender ?? char.gender;
+  const previewRaceId = pendingEdits?.raceId ?? char.raceId;
+  const previewName = pendingEdits?.name ?? char.name;
+  const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
+    'ライカ': 'Unique_Laika.png',
+    'ルナ': 'Unique_Luna.png',
+    'マーレ': 'Unique_Mare.png',
+    'プチーツァ': 'Unique_Puchitsa.png',
+    '蒼牙破': 'Unique_Souga-ha.png',
+    'レナード': 'Unique_Leonard.png',
+    '葉隠': 'Unique_Hagakure.png',
+    'フィン': 'Unique_Finn.png',
+    'オルカ': 'Unique_Orca.png',
   };
-  const partyMemberImageFileName = PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID[char.gender]?.[char.raceId];
-  const partyMemberImageSrc = partyMemberImageFileName
-    ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
-    : null;
+  const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
+    lupinian: 'Lupinian',
+    vulpinian: 'Vulpinian',
+    felidian: 'Felidian',
+    caninian: 'Caninian',
+    ursan: 'Ursan',
+    procyonian: 'Procyonian',
+    leporian: 'Leporian',
+    cervin: 'Cervin',
+    murid: 'Murid',
+  };
+  const genderLabelByGender: Partial<Record<Character['gender'], string>> = {
+    male: 'Male',
+    female: 'Female',
+  };
+  const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByName[previewName] : undefined;
+  const raceLabel = raceLabelByRaceId[previewRaceId];
+  const genderLabel = genderLabelByGender[previewGender];
+  const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
+    ? `${party.id}_${raceLabel}_${genderLabel}.png`
+    : undefined;
+  const raceGenderFallbackImageFileName = raceLabel && genderLabel
+    ? `${raceLabel}_${genderLabel}.png`
+    : undefined;
+  const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
+      ? `${import.meta.env.BASE_URL}character/${uniquePartyMemberImageFileName}`
+      : ptRaceGenderImageFileName
+        ? `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`
+        : raceGenderFallbackImageFileName
+          ? `${import.meta.env.BASE_URL}character/${raceGenderFallbackImageFileName}`
+          : null;
+    setPartyMemberImageSrc(nextPartyMemberImageSrc);
+  }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
@@ -6137,6 +6168,19 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
+              onError={() => {
+                if (!ptRaceGenderImageFileName || !raceGenderFallbackImageFileName) {
+                  setPartyMemberImageSrc(null);
+                  return;
+                }
+
+                const fallbackSrc = `${import.meta.env.BASE_URL}character/${raceGenderFallbackImageFileName}`;
+                if (partyMemberImageSrc === fallbackSrc) {
+                  setPartyMemberImageSrc(null);
+                  return;
+                }
+                setPartyMemberImageSrc(fallbackSrc);
+              }}
               className={`pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
               style={{
                 width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
@@ -6241,7 +6285,7 @@ function PartyTab({
         {editingCharacter === selectedCharacter && !showEditConfirm ? (
           <div className="space-y-2 text-sm">
             <div>
-              <div className="mt-2 rounded border border-gray-200 bg-white p-2 text-xs">
+              <div className="mt-2 rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
                   const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
@@ -6313,7 +6357,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                    <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
@@ -6389,7 +6433,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                    <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.length === 0
@@ -6453,7 +6497,7 @@ function PartyTab({
               })()}
             </div>
             <div>
-              <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+              <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
                   const selectedLineage = LINEAGES.find((l) => l.id === selectedLineageId) ?? LINEAGES[0];
@@ -6502,7 +6546,7 @@ function PartyTab({
               </div>
             </div>
             <div>
-              <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+              <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
                   const selectedPredisposition = PREDISPOSITIONS.find((p) => p.id === selectedPredispositionId) ?? PREDISPOSITIONS[0];
@@ -8007,7 +8051,7 @@ function ExpeditionTab({
             backgroundColor: isDarkModeEnabled ? 'rgb(15 23 42 / 0.40)' : undefined,
             backgroundImage: isDarkModeEnabled
               ? 'linear-gradient(rgb(2 6 23 / 0.36), rgb(2 6 23 / 0.36))'
-              : 'linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.86))',
+              : 'linear-gradient(rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.72))',
             backgroundSize: '100% 100%',
             backgroundPosition: 'top left',
             backgroundRepeat: 'no-repeat',
@@ -8021,7 +8065,7 @@ function ExpeditionTab({
             backgroundPosition: 'center top',
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'scroll',
-            opacity: isDarkModeEnabled ? 0.34 : 0.22,
+            opacity: isDarkModeEnabled ? 0.34 : 0.34,
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
@@ -8426,7 +8470,23 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                              {entry.enemySnapshot?.image_path && (
+                                <>
+                                  <img
+                                    src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                    style={{
+                                      width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                      maxWidth: 'none',
+                                    }}
+                                  />
+                                  {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
+                                </>
+                              )}
+                              <div className="relative z-10">
                               <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
@@ -8581,6 +8641,7 @@ function ExpeditionTab({
                                   </div>
                                 );
                               })}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -9464,6 +9525,7 @@ function DiaryTab({
   onSetExpandedRooms,
   isSettingsExpanded,
   onSetIsSettingsExpanded,
+  isDarkModeEnabled,
 }: {
   parties: Party[];
   onOpenDiaryLog: (logId: string) => void;
@@ -9474,6 +9536,7 @@ function DiaryTab({
   onSetExpandedRooms: Dispatch<SetStateAction<Record<string, boolean>>>;
   isSettingsExpanded: boolean;
   onSetIsSettingsExpanded: Dispatch<SetStateAction<boolean>>;
+  isDarkModeEnabled: boolean;
 }) {
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -9940,7 +10003,23 @@ function DiaryTab({
                           )}
                         </button>
                         {isRoomExpanded && entry.details && (
-                          <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                            {entry.enemySnapshot?.image_path && (
+                              <>
+                                <img
+                                  src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                  style={{
+                                    width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                    maxWidth: 'none',
+                                  }}
+                                />
+                                {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
+                              </>
+                            )}
+                            <div className="relative z-10">
                             <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
@@ -10102,6 +10181,7 @@ function DiaryTab({
                                 </div>
                               );
                             })}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -10576,7 +10656,7 @@ function SettingTab({
 
   const compendiumItems = ITEMS
     .filter(item =>
-      (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id) &&
+      (debugSettings.displayAllCompendium || (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id)) &&
       item.category === compendiumCategory &&
       matchesRarityFilter(item.id, compendiumRarityFilter)
     )
@@ -10663,7 +10743,7 @@ function SettingTab({
   const unlockedBestiaryDungeonIds = new Set(
     DUNGEONS
       .filter((dungeon) => dungeon.id !== 99)
-      .filter((dungeon) => gameState.parties.some((party) => (
+      .filter((dungeon) => debugSettings.displayAllBestiary || gameState.parties.some((party) => (
         party.selectedDungeonId >= dungeon.id
         || isLootGateUnlocked(party, getEntryGateKey(dungeon.id))
       )))
@@ -10687,6 +10767,7 @@ function SettingTab({
   const revealedGodBestiaryNames = new Set(
     GOD_ENEMY_PROFILES
       .filter((god) => {
+        if (debugSettings.displayAllBestiary) return true;
         const runtimeEnemy = buildGodRuntimeEnemy(god);
         if (!runtimeEnemy) return false;
         const battleStats = gameState.global.enemyBattleStats?.[getGodBestiaryStatEnemyId(god, runtimeEnemy)] ?? { defeats: 0, encounters: 0 };
@@ -11247,7 +11328,7 @@ function SettingTab({
                           // SpecRef: 1.0.3 | Glossary Reveal Rule | ability visibility
                           ? BONUS_ABILITY_GLOSSARY_ENTRIES
                             .filter((entry) => entry.subcategory === bonusAbilityGlossarySubcategory)
-                            .filter((entry) => revealedGlossaryAbilityIds.has(entry.abilityId))
+                            .filter((entry) => debugSettings.displayAllGlossary || revealedGlossaryAbilityIds.has(entry.abilityId))
                             .map((entry, index) => {
                               const entryKey = `${section.id}-${entry.abilityId}-${index}`;
                               const displayLabel = getBonusAbilityGlossaryDisplayLabel(entry.abilityId);
@@ -11267,7 +11348,7 @@ function SettingTab({
                           : section.entries.map((entry, index) => {
                             // SpecRef: 1.0.3 | Glossary Reveal Rule | terrain visibility
                             const isTerrainGlossarySection = section.heading === '1.1.10 t. terrain effects';
-                            if (isTerrainGlossarySection && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
+                            if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
                               return null;
                             }
                             const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
@@ -11497,6 +11578,7 @@ function SettingTab({
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
             const godRuntimeEnemy = getGodRuntimeEnemy(god);
             const godClassShortName = CLASS_SHORT_NAMES[god.enemyClass];
+            const godImageSrc = resolvePublicAssetPath(godRuntimeEnemy?.image_path ?? god.image_path);
             return (
               <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white shadow-sm shadow-slate-900/10">
                 <button
@@ -11507,7 +11589,24 @@ function SettingTab({
                   <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
                 </button>
                 {godExpanded && (
-                  <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                  <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                    {godImageSrc && (
+                      <>
+                        {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑) */}
+                        <img
+                          src={godImageSrc}
+                          alt=""
+                          aria-hidden="true"
+                          className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
+                          style={{
+                            width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                            maxWidth: 'none',
+                          }}
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-white/35 dark:bg-slate-950/35" aria-hidden="true" />
+                      </>
+                    )}
+                    <div className="relative z-10 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>ID: {getGodBestiaryStatEnemyId(god, godRuntimeEnemy)}</div>
                       <div></div>
@@ -11596,6 +11695,7 @@ function SettingTab({
                       const battleStats = getBestiaryEnemyBattleStats(getGodBestiaryStatEnemyId(god, godRuntimeEnemy));
                       return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
                     })()}
+                    </div>
                   </div>
                 )}
               </div>
@@ -12050,6 +12150,9 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAllBestiary: !debugSettings.displayAllBestiary })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Bestiary: {debugSettings.displayAllBestiary ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAllCompendium: !debugSettings.displayAllCompendium })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Compendium: {debugSettings.displayAllCompendium ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAllGlossary: !debugSettings.displayAllGlossary })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Glossary: {debugSettings.displayAllGlossary ? 'ON' : 'OFF'}</button>
         </div>}
       </div>}
 

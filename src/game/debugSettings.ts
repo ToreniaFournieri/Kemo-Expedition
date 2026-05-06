@@ -14,6 +14,9 @@ export interface DebugSettings {
   displayFlavorCondition: boolean;
   displayAfkDuration: boolean;
   colosseumEnabled: boolean;
+  displayAllBestiary: boolean;
+  displayAllCompendium: boolean;
+  displayAllGlossary: boolean;
 }
 
 // SpecRef: 9 | Environment | Save Data Isolation
@@ -29,6 +32,9 @@ const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   displayFlavorCondition: false,
   displayAfkDuration: false,
   colosseumEnabled: false,
+  displayAllBestiary: false,
+  displayAllCompendium: false,
+  displayAllGlossary: false,
 };
 
 const BETA_LOCKED_DEBUG_SETTINGS: DebugSettings = {
@@ -63,6 +69,10 @@ function normalizeDebugSettings(raw: unknown): DebugSettings {
     displayFlavorCondition: parsed.displayFlavorCondition === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
     colosseumEnabled: parsed.colosseumEnabled === true,
+    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane (デバッグ)
+    displayAllBestiary: parsed.displayAllBestiary === true,
+    displayAllCompendium: parsed.displayAllCompendium === true,
+    displayAllGlossary: parsed.displayAllGlossary === true,
   });
 }
 
