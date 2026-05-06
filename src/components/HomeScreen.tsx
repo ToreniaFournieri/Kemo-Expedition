@@ -8457,13 +8457,13 @@ function ExpeditionTab({
                                     src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                     alt=""
                                     aria-hidden="true"
-                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-65"
+                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-55"
                                     style={{
                                       width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
                                       maxWidth: 'none',
                                     }}
                                   />
-                                  <div className="pointer-events-none absolute inset-0 bg-white/30 dark:bg-slate-950/30" aria-hidden="true" />
+                                  <div className="pointer-events-none absolute inset-0 bg-white/40 dark:bg-slate-950/40" aria-hidden="true" />
                                 </>
                               )}
                               <div className="relative z-10">
@@ -9988,13 +9988,13 @@ function DiaryTab({
                                   src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                   alt=""
                                   aria-hidden="true"
-                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-45"
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-55"
                                   style={{
                                     width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
                                     maxWidth: 'none',
                                   }}
                                 />
-                                <div className="pointer-events-none absolute inset-0 bg-white/45 dark:bg-slate-950/45" aria-hidden="true" />
+                                <div className="pointer-events-none absolute inset-0 bg-white/40 dark:bg-slate-950/40" aria-hidden="true" />
                               </>
                             )}
                             <div className="relative z-10">
