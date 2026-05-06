@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 18 | 2026/05/06 | Update Party member details runtime character background resolution (Spec 8.2.2): add unique image mapping for オルカ, use `/public/character/{PT}_{RACE}_{GENDER}.png` naming first, and add runtime fallback to `/public/character/{RACE}_{GENDER}.png` when PT-specific image is missing. |
 | 0.6.4 | 17 | 2026/05/06 | Add Debug pane OFF/ON toggles for Display all Bestiary, Display all Compendium, and Display all Glossary; when enabled, each view ignores unlock/reveal conditions and shows all entries. |
 | 0.6.4 | 16 | 2026/05/06 | Improve normal-mode Expedition battle-pane background clarity by reducing the white readability overlay opacity and increasing background image opacity so battle log artwork appears less foggy while preserving dark-mode visuals. |
 | 0.6.4 | 15 | 2026/05/06 | Fix dark-mode battle log detail image overlay behavior by switching readability-mask visibility from Tailwind `dark:` classes to runtime dark-mode state checks, ensuring image-present panels hide the gray filter correctly in both Expedition and Diary tabs. |

@@ -5541,31 +5541,6 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
   // SpecRef: 8.2.2 | Party member details | Character image (background)
-  const PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID: Partial<Record<Character['gender'], Partial<Record<RaceId, string>>>> = {
-    female: {
-      lupinian: 'Lupinian_Female.png',
-      vulpinian: 'Vulpinian_Female.png',
-      felidian: 'Felidian_Female.png',
-      caninian: 'Caninian_Female.png',
-      ursan: 'Ursan_Female.png',
-      procyonian: 'Procyonian_Female.png',
-      leporian: 'Leporian_Female.png',
-      cervin: 'Cervin_Female.png',
-      murid: 'Murid_Female.png',
-      orcinian: 'Orcinian_Female.png',
-    },
-    male: {
-      lupinian: 'Lupinian_Male.png',
-      vulpinian: 'Vulpinian_Male.png',
-      felidian: 'Felidian_Male.png',
-      caninian: 'Caninian_Male.png',
-      ursan: 'Ursan_Male.png',
-      procyonian: 'Procyonian_Male.png',
-      leporian: 'Leporian_Male.png',
-      cervin: 'Cervin_Male.png',
-      murid: 'Murid_Male.png',
-    },
-  };
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
   const previewName = pendingEdits?.name ?? char.name;
@@ -5578,13 +5553,44 @@ function PartyTab({
     'レナード': 'Unique_Leonard.png',
     '葉隠': 'Unique_Hagakure.png',
     'フィン': 'Unique_Finn.png',
+    'オルカ': 'Unique_Orca.png',
+  };
+  const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
+    lupinian: 'Lupinian',
+    vulpinian: 'Vulpinian',
+    felidian: 'Felidian',
+    caninian: 'Caninian',
+    ursan: 'Ursan',
+    procyonian: 'Procyonian',
+    leporian: 'Leporian',
+    cervin: 'Cervin',
+    murid: 'Murid',
+  };
+  const genderLabelByGender: Partial<Record<Character['gender'], string>> = {
+    male: 'Male',
+    female: 'Female',
   };
   const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByName[previewName] : undefined;
-  const partyMemberImageFileName = uniquePartyMemberImageFileName
-    ?? PARTY_MEMBER_IMAGE_BY_GENDER_AND_RACE_ID[previewGender]?.[previewRaceId];
-  const partyMemberImageSrc = partyMemberImageFileName
-    ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
-    : null;
+  const raceLabel = raceLabelByRaceId[previewRaceId];
+  const genderLabel = genderLabelByGender[previewGender];
+  const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
+    ? `${party.id}_${raceLabel}_${genderLabel}.png`
+    : undefined;
+  const raceGenderFallbackImageFileName = raceLabel && genderLabel
+    ? `${raceLabel}_${genderLabel}.png`
+    : undefined;
+  const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
+      ? `${import.meta.env.BASE_URL}character/${uniquePartyMemberImageFileName}`
+      : ptRaceGenderImageFileName
+        ? `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`
+        : raceGenderFallbackImageFileName
+          ? `${import.meta.env.BASE_URL}character/${raceGenderFallbackImageFileName}`
+          : null;
+    setPartyMemberImageSrc(nextPartyMemberImageSrc);
+  }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
@@ -6162,6 +6168,19 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
+              onError={() => {
+                if (!ptRaceGenderImageFileName || !raceGenderFallbackImageFileName) {
+                  setPartyMemberImageSrc(null);
+                  return;
+                }
+
+                const fallbackSrc = `${import.meta.env.BASE_URL}character/${raceGenderFallbackImageFileName}`;
+                if (partyMemberImageSrc === fallbackSrc) {
+                  setPartyMemberImageSrc(null);
+                  return;
+                }
+                setPartyMemberImageSrc(fallbackSrc);
+              }}
               className={`pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
               style={{
                 width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
