@@ -10637,7 +10637,7 @@ function SettingTab({
 
   const compendiumItems = ITEMS
     .filter(item =>
-      (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id) &&
+      (debugSettings.displayAllCompendium || (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id)) &&
       item.category === compendiumCategory &&
       matchesRarityFilter(item.id, compendiumRarityFilter)
     )
@@ -10724,7 +10724,7 @@ function SettingTab({
   const unlockedBestiaryDungeonIds = new Set(
     DUNGEONS
       .filter((dungeon) => dungeon.id !== 99)
-      .filter((dungeon) => gameState.parties.some((party) => (
+      .filter((dungeon) => debugSettings.displayAllBestiary || gameState.parties.some((party) => (
         party.selectedDungeonId >= dungeon.id
         || isLootGateUnlocked(party, getEntryGateKey(dungeon.id))
       )))
@@ -10748,6 +10748,7 @@ function SettingTab({
   const revealedGodBestiaryNames = new Set(
     GOD_ENEMY_PROFILES
       .filter((god) => {
+        if (debugSettings.displayAllBestiary) return true;
         const runtimeEnemy = buildGodRuntimeEnemy(god);
         if (!runtimeEnemy) return false;
         const battleStats = gameState.global.enemyBattleStats?.[getGodBestiaryStatEnemyId(god, runtimeEnemy)] ?? { defeats: 0, encounters: 0 };
@@ -11308,7 +11309,7 @@ function SettingTab({
                           // SpecRef: 1.0.3 | Glossary Reveal Rule | ability visibility
                           ? BONUS_ABILITY_GLOSSARY_ENTRIES
                             .filter((entry) => entry.subcategory === bonusAbilityGlossarySubcategory)
-                            .filter((entry) => revealedGlossaryAbilityIds.has(entry.abilityId))
+                            .filter((entry) => debugSettings.displayAllGlossary || revealedGlossaryAbilityIds.has(entry.abilityId))
                             .map((entry, index) => {
                               const entryKey = `${section.id}-${entry.abilityId}-${index}`;
                               const displayLabel = getBonusAbilityGlossaryDisplayLabel(entry.abilityId);
@@ -11328,7 +11329,7 @@ function SettingTab({
                           : section.entries.map((entry, index) => {
                             // SpecRef: 1.0.3 | Glossary Reveal Rule | terrain visibility
                             const isTerrainGlossarySection = section.heading === '1.1.10 t. terrain effects';
-                            if (isTerrainGlossarySection && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
+                            if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
                               return null;
                             }
                             const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
@@ -12130,6 +12131,9 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAllBestiary: !debugSettings.displayAllBestiary })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Bestiary: {debugSettings.displayAllBestiary ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAllCompendium: !debugSettings.displayAllCompendium })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Compendium: {debugSettings.displayAllCompendium ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAllGlossary: !debugSettings.displayAllGlossary })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Glossary: {debugSettings.displayAllGlossary ? 'ON' : 'OFF'}</button>
         </div>}
       </div>}
 
