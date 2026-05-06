@@ -108,5 +108,6 @@ export function buildGodRuntimeEnemy(
     enemyType: 'Jinma',
     abilities: resolvedProfileAbilities,
     bonuses: resolvedProfileBonuses,
+    image_path: profile.image_path,
   };
 }

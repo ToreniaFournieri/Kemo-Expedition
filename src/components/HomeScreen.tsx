@@ -10971,6 +10971,12 @@ function SettingTab({
   const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
     buildGodRuntimeEnemy(god);
 
+  const resolvePublicAssetPath = (path?: string): string | null => {
+    if (!path) return null;
+    if (/^https?:\/\//.test(path)) return path;
+    return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
+  };
+
   const getGodDropCandidates = (godName: string): string => {
     const drops = GOD_MYTHIC_DROPS
       .filter((drop) => drop.dropBy === godName)
@@ -11515,6 +11521,7 @@ function SettingTab({
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
             const godRuntimeEnemy = getGodRuntimeEnemy(god);
             const godClassShortName = CLASS_SHORT_NAMES[god.enemyClass];
+            const godImageSrc = resolvePublicAssetPath(godRuntimeEnemy?.image_path ?? god.image_path);
             return (
               <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white shadow-sm shadow-slate-900/10">
                 <button
@@ -11525,7 +11532,24 @@ function SettingTab({
                   <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
                 </button>
                 {godExpanded && (
-                  <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                  <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                    {godImageSrc && (
+                      <>
+                        {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑) */}
+                        <img
+                          src={godImageSrc}
+                          alt=""
+                          aria-hidden="true"
+                          className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
+                          style={{
+                            width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                            maxWidth: 'none',
+                          }}
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-white/35 dark:bg-slate-950/35" aria-hidden="true" />
+                      </>
+                    )}
+                    <div className="relative z-10 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>ID: {getGodBestiaryStatEnemyId(god, godRuntimeEnemy)}</div>
                       <div></div>
@@ -11614,6 +11638,7 @@ function SettingTab({
                       const battleStats = getBestiaryEnemyBattleStats(getGodBestiaryStatEnemyId(god, godRuntimeEnemy));
                       return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
                     })()}
+                    </div>
                   </div>
                 )}
               </div>
