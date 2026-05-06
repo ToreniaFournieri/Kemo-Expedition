@@ -8457,13 +8457,13 @@ function ExpeditionTab({
                                     src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                     alt=""
                                     aria-hidden="true"
-                                    className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-60' : 'opacity-45'}`}
+                                    className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-50' : 'opacity-35'}`}
                                     style={{
                                       width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
                                       maxWidth: 'none',
                                     }}
                                   />
-                                  <div className="pointer-events-none absolute inset-0 bg-white/28 dark:bg-slate-950/8" aria-hidden="true" />
+                                  <div className="pointer-events-none absolute inset-0 bg-white/35 dark:bg-slate-950/15" aria-hidden="true" />
                                 </>
                               )}
                               <div className="relative z-10">
@@ -9988,13 +9988,13 @@ function DiaryTab({
                                   src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                   alt=""
                                   aria-hidden="true"
-                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-45"
+                                  className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-50' : 'opacity-35'}`}
                                   style={{
                                     width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
                                     maxWidth: 'none',
                                   }}
                                 />
-                                <div className="pointer-events-none absolute inset-0 bg-white/28 dark:bg-slate-950/8" aria-hidden="true" />
+                                <div className="pointer-events-none absolute inset-0 bg-white/35 dark:bg-slate-950/15" aria-hidden="true" />
                               </>
                             )}
                             <div className="relative z-10">
