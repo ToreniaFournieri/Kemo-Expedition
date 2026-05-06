@@ -137,6 +137,9 @@
 - **State Transfer:**
   - Upon completion of AFK emulation, transfer the **latest runtime state** to Online mode without loss or recalculation.
   - The transition must be **deterministic and precise**.
+- State Correction Rule:
+  - If HP < MaxHP at the moment of transition, override the current state and set: `state.rest`
+  - Otherwise, retain the transferred state without modification.
 - **Step Continuity Rule:**
   - If AFK emulation ends mid-`Step`, resume from the exact same `Step` progress in Online mode.
   - Example:
