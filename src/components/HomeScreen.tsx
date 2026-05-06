@@ -60,6 +60,12 @@ import {
   isLootGateUnlocked,
 } from '../game/lootGate';
 
+function resolvePublicAssetPath(path?: string): string | null {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
+}
+
 interface HomeScreenProps {
   state: GameState;
   notifications: GameNotification[];
@@ -8444,7 +8450,23 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                            <div className="relative isolate overflow-hidden border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                              {entry.enemySnapshot?.image_path && (
+                                <>
+                                  <img
+                                    src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-45"
+                                    style={{
+                                      width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                      maxWidth: 'none',
+                                    }}
+                                  />
+                                  <div className="pointer-events-none absolute inset-0 bg-white/45 dark:bg-slate-950/45" aria-hidden="true" />
+                                </>
+                              )}
+                              <div className="relative z-10">
                               <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
@@ -8599,6 +8621,7 @@ function ExpeditionTab({
                                   </div>
                                 );
                               })}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -9958,7 +9981,23 @@ function DiaryTab({
                           )}
                         </button>
                         {isRoomExpanded && entry.details && (
-                          <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                          <div className="relative isolate overflow-hidden border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
+                            {entry.enemySnapshot?.image_path && (
+                              <>
+                                <img
+                                  src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-45"
+                                  style={{
+                                    width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                    maxWidth: 'none',
+                                  }}
+                                />
+                                <div className="pointer-events-none absolute inset-0 bg-white/45 dark:bg-slate-950/45" aria-hidden="true" />
+                              </>
+                            )}
+                            <div className="relative z-10">
                             <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
@@ -10120,6 +10159,7 @@ function DiaryTab({
                                 </div>
                               );
                             })}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -10970,12 +11010,6 @@ function SettingTab({
 
   const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
     buildGodRuntimeEnemy(god);
-
-  const resolvePublicAssetPath = (path?: string): string | null => {
-    if (!path) return null;
-    if (/^https?:\/\//.test(path)) return path;
-    return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
-  };
 
   const getGodDropCandidates = (godName: string): string => {
     const drops = GOD_MYTHIC_DROPS
