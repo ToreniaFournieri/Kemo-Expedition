@@ -501,6 +501,7 @@ export interface EnemyDef {
   masterDropTokens?: string[];
   isGodEnemy?: boolean;
   godDropItemCategories?: [ItemCategory, ItemCategory];
+  image_path?: string;
 }
 
 // Room Types
