@@ -60,6 +60,12 @@ import {
   isLootGateUnlocked,
 } from '../game/lootGate';
 
+function resolvePublicAssetPath(path?: string): string | null {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
+}
+
 interface HomeScreenProps {
   state: GameState;
   notifications: GameNotification[];
@@ -8448,7 +8454,7 @@ function ExpeditionTab({
                               {entry.enemySnapshot?.image_path && (
                                 <>
                                   <img
-                                    src={entry.enemySnapshot.image_path}
+                                    src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                     alt=""
                                     aria-hidden="true"
                                     className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-45"
@@ -9979,7 +9985,7 @@ function DiaryTab({
                             {entry.enemySnapshot?.image_path && (
                               <>
                                 <img
-                                  src={entry.enemySnapshot.image_path}
+                                  src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
                                   alt=""
                                   aria-hidden="true"
                                   className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-45"
@@ -11004,12 +11010,6 @@ function SettingTab({
 
   const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
     buildGodRuntimeEnemy(god);
-
-  const resolvePublicAssetPath = (path?: string): string | null => {
-    if (!path) return null;
-    if (/^https?:\/\//.test(path)) return path;
-    return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
-  };
 
   const getGodDropCandidates = (godName: string): string => {
     const drops = GOD_MYTHIC_DROPS
