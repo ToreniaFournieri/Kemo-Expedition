@@ -159,7 +159,7 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
     - Respect `m.luna` mode.
 
 **Enemy Image**
-- If enemy image is exist, set the image as a background image.
+- If enemy.image_path exists, enable background image rendering
 - Render the enemy image as a background image of the panel.
 - Do not stretch; preserve original aspect ratio.
 - Image size is fixed and does not scale with content.
