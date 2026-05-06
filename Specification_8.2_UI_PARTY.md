@@ -59,27 +59,18 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
     - If name == `レナード`, use : /public/character/Unique_Leonard.png
     - If name == `葉隠`, use : /public/character/Unique_Hagakure.png
     - If name == `フィン`, use : /public/character/Unique_Finn.png 
-  - If gender == Female,
-    - If race == Lupinian, use : /public/character/Lupinian_Female.png
-    - If race == Vulpinian, use : /public/character/Vulpinian_Female.png
-    - If race == Felidian, use : /public/character/Felidian_Female.png
-    - If race == Caninian, use : /public/character/Caninian_Female.png
-    - If race == Ursan, use : /public/character/Ursan_Female.png
-    - If race == Procyonian, use : /public/character/Procyonian_Female.png
-    - If race == Leporian, use : /public/character/Leporian_Female.png
-    - If race == Cervin, use : /public/character/Cervin_Female.png
-    - If race == Murid, use : /public/character/Murid_Female.png
-    - If race == Orcinian, use : /public/character/Orcinian_Female.png
-  - If gender == Male,
-    - If race == Lupinian, use : /public/character/Lupinian_Male.png
-    - If race == Vulpinian, use : /public/character/Vulpinian_Male.png
-    - If race == Felidian, use : /public/character/Felidian_Male.png
-    - If race == Caninian, use : /public/character/Caninian_Male.png
-    - If race == Ursan, use : /public/character/Ursan_Male.png
-    - If race == Procyonian, use : /public/character/Procyonian_Male.png
-    - If race == Leporian, use : /public/character/Leporian_Male.png
-    - If race == Cervin, use : /public/character/Cervin_Male.png
-    - If race == Murid, use : /public/character/Murid_Male.png
+    - If name == `オルカ`, use : /public/character/Unique_Orca.png 
+
+  - **File name logic**
+  - `/public/character/{PT}_{RACE}_{GENDER}.png`
+    - `PT`: 1,2,3,4,5,6
+    - `RACE`: Lupinian, Vulpinian, Felidian, Caninian, Ursan, Procyonian, Leporian, Cervin, Murid
+    - `GENDER`: Male, Female
+    - Example: PT2, Vulpinian Male character -> `/public/character/2_Vulpinian_Male.png`
+  - Fallback Resolution:
+    - If the primary path does not exist, Fallback to race-gender default: `/public/character/{RACE}_{GENDER}.png`
+    - Example (Fallback)
+      - If /public/character/2_Vulpinian_Male.png is missing → Use /public/character/Vulpinian_Male.png
   - Else: no image
 
 - Status:
