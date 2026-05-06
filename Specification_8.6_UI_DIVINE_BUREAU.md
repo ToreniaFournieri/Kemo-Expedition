@@ -158,6 +158,20 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
     - If enemy has no attack values, not show the corresponding values.
     - Respect `m.luna` mode.
 
+**Enemy Image**
+- If enemy image is exist, set the image as a background image.
+- Render the enemy image as a background image of the panel.
+- Do not stretch; preserve original aspect ratio.
+- Image size is fixed and does not scale with content.
+- Responsive sizing:
+  - The image width adapts smoothly to the viewport width.
+  - If the page width is 500px or wider, set the image width to 120% of the panel width.
+  - If the page width is 400px or narrower, set the image width to 170% of the panel width.
+  - Between 400px and 500px, interpolate linearly between 170% → 120%.
+- In dark mode: not invert the image.
+- Apply mask above the image to ensure text readability.
+- The image remains static relative to the panel (does not move with internal content changes).
+
 
 - 撃破数 (Defeats):
   - Total number of enemies successfully defeated by all parties.
