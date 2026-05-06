@@ -11603,7 +11603,6 @@ function SettingTab({
                             maxWidth: 'none',
                           }}
                         />
-                        <div className="pointer-events-none absolute inset-0 bg-white/35 dark:bg-slate-950/35" aria-hidden="true" />
                       </>
                     )}
                     <div className="relative z-10 space-y-1">
