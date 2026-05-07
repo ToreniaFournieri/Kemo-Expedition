@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 21 | 2026/05/07 | Fix Divine Bureau Bestiary ability list display to de-duplicate same-id abilities by showing only the highest level entry when multiple levels coexist. |
 | 0.6.4 | 20 | 2026/05/07 | Update Party member details runtime unique-character background image mapping (Spec 8.2.2) to include ノクス -> `/public/character/Unique_Nox.png`. |
 | 0.6.4 | 19 | 2026/05/06 | Remove the Gods Bestiary detail-panel readability mask overlay when a god image exists, so enemy portraits remain clear in dark mode and light mode. |
 | 0.6.4 | 18 | 2026/05/06 | Update Party member details runtime character background resolution (Spec 8.2.2): add unique image mapping for オルカ, use `/public/character/{PT}_{RACE}_{GENDER}.png` naming first, and add runtime fallback to `/public/character/{RACE}_{GENDER}.png` when PT-specific image is missing. |

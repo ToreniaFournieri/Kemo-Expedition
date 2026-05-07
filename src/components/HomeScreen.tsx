@@ -11065,15 +11065,21 @@ function SettingTab({
   };
 
   const parseAbilityTokens = (abilities: Array<{ id: string; level: number }>) => {
+    // SpecRef: 4.1.2 | Enemy | x.ability
     if (abilities.length === 0) {
       return [{ key: 'none', label: 'なし', abilityId: '', level: 0, isMissing: true }];
     }
 
-    return abilities.map((ability, index) => ({
-      key: `${ability.id}-${ability.level}-${index}`,
-      label: `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`,
-      abilityId: ability.id,
-      level: ability.level,
+    const highestAbilityLevelById = new Map<string, number>();
+    abilities.forEach((ability) => {
+      highestAbilityLevelById.set(ability.id, Math.max(highestAbilityLevelById.get(ability.id) ?? 0, ability.level));
+    });
+
+    return Array.from(highestAbilityLevelById.entries()).map(([abilityId, level], index) => ({
+      key: `${abilityId}-${level}-${index}`,
+      label: `${ABILITY_NAMES[abilityId] ?? abilityId}${level}`,
+      abilityId,
+      level,
       isMissing: false,
     }));
   };
