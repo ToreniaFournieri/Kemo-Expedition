@@ -5547,6 +5547,7 @@ function PartyTab({
   const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
     'ライカ': 'Unique_Laika.png',
     'ルナ': 'Unique_Luna.png',
+    'ノクス': 'Unique_Nox.png',
     'マーレ': 'Unique_Mare.png',
     'プチーツァ': 'Unique_Puchitsa.png',
     '蒼牙破': 'Unique_Souga-ha.png',
