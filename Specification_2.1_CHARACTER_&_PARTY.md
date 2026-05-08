@@ -47,23 +47,22 @@
 | Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
 | Avianv     | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
 
-| races | Japanese name | category | concept | availability |
-|------|----------------|----------|--------|--------------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y |
-| Felidian | フェリディアン | 肉食 | 😺Cat | Y |
-| Mustelid | マステリド | 肉食 | 🦡Ferret | N |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y |
-| Ursan | ウルサン | 雑食 | 🐻Bear | Y |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y |
-| Suinian | スイニアン | 雑食 | 🐗Boar | N |
-| Leporian | レポリアン | 草食 | 🐰Rabbit | Y |
-| Cervin | セルヴィン | 草食 | 🦌Deer | Y |
-| Murid | ミュリッド | 草食 | 🐭Mouse | Y |
-| Caprion | カプリオン | 草食 | 🐐Goat | N |
-| Kemoria | ケモリア | 雑食 | origin | N |
-| Orcinian | オルシニアン | 肉食 | orca | N |
-| Avian | アヴィアン | 雑食 | 🐓bird | N |
+| races | Japanese name | category | concept | availability | PT1:Prairie Courier| PT2:Ocean | PT3:Desert | PT4: Pyrepeak | PT5: Steam punk | PT6: |
+|------|----------------|----------|--------|--------------|------|------|------|------|------|------|
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y | - | - | - | - | Arctic wolf | - |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y | - | - | - | - | snow fox | - |
+| Felidian | フェリディアン | 肉食 | 😺Cat | Y | - | - | - | - | MIkeneko | - |
+| Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y | - | - | - | - | Border collie | - |
+| Ursan | ウルサン | 雑食 | 🐻Bear | Y | - | - | - | - | Panda | - |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y | - | - | - | Red panda | Tanuki | - |
+| Leporian | レポリアン | 草食 | 🐰Rabbit | Y | - | - | - | - | Dwarf Hotot | - |
+| Cervin | セルヴィン | 草食 | 🦌Deer | Y | - | - | - | - | Reindeer | - |
+| Murid | ミュリッド | 草食 | 🐭Mouse | Y | - | - | - | - | - | - |
+| Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
+| Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
+| Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
+| Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
 
 **classes:**
 
