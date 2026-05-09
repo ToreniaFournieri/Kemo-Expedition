@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 24 | 2026/05/09 | Update Party tab member list display (Spec 8.2.1): render each member tile with character portrait background (PT/race/gender with unique fallback support), keep class line, and show Predisposition/Lineage order in shorthand. |
 | 0.6.4 | 23 | 2026/05/09 | Update Party member details runtime unique-character background image mapping (Spec 8.2.2) to include ケモ -> `/public/character/Unique_Kemo.png`. |
 | 0.6.4 | 22 | 2026/05/09 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 120% at viewport ≥500px, 150% at viewport ≤400px, with linear interpolation between 400–500px. |
 | 0.6.4 | 21 | 2026/05/07 | Fix Divine Bureau Bestiary ability list display to de-duplicate same-id abilities by showing only the highest level entry when multiple levels coexist. |
