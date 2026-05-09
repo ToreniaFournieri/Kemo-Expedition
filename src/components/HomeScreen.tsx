@@ -6088,7 +6088,7 @@ function PartyTab({
       )}
 
       {/* Character selector */}
-      <div className="liquid-glass-segmented mb-4 flex gap-2 overflow-x-auto rounded-2xl p-2 pb-2">
+      <div className="liquid-glass-segmented mb-4 grid grid-cols-6 gap-1 rounded-2xl p-1.5">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
           const mc = CLASSES.find(cl => cl.id === c.mainClassId)!;
@@ -6153,23 +6153,27 @@ function PartyTab({
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`${IOS_GLASS_BUTTON_CLASS} flex-shrink-0 p-2 transition-colors ${
+              className={`${IOS_GLASS_BUTTON_CLASS} min-w-0 p-1 transition-colors ${
                 i === selectedCharacter ? 'liquid-glass-tab-active border-sub' : 'border-white/55 hover:bg-white/65'
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative mb-1 h-12 w-12 overflow-hidden rounded-md bg-slate-200/60">
+              <div className="relative h-20 overflow-hidden rounded-md bg-slate-200/60">
                 {previewImageSrc ? (
-                  <img src={previewImageSrc} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+                  <img
+                    src={previewImageSrc}
+                    alt=""
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-1/2 top-0 h-full w-auto max-w-none -translate-x-1/2 object-contain"
+                    style={{ width: '120%' }}
+                  />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-8 w-8" /></div>
+                  <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
                 )}
-              </div>
-              <div className="text-xs text-gray-400 text-center leading-tight">
-                {mcShort}({isMaster ? '師' : scShort})
-              </div>
-              <div className="text-xs text-gray-400 text-center leading-tight">
-                {predispositionShort}/{lineageShort}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
+                  <div>{mcShort}({isMaster ? '師' : scShort})</div>
+                  <div>{predispositionShort}/{lineageShort}</div>
+                </div>
               </div>
             </button>
           );

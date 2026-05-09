@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 25 | 2026/05/09 | Update Party tab member list runtime layout (Spec 8.2.1): switch to a fixed 6-column one-screen grid, render each member panel with character illustration background at 120% width, and overlay Main/Sub class plus Predisposition/Lineage text at the image bottom. |
 | 0.6.4 | 24 | 2026/05/09 | Update Party tab member list display (Spec 8.2.1): render each member tile with character portrait background (PT/race/gender with unique fallback support), keep class line, and show Predisposition/Lineage order in shorthand. |
 | 0.6.4 | 23 | 2026/05/09 | Update Party member details runtime unique-character background image mapping (Spec 8.2.2) to include ケモ -> `/public/character/Unique_Kemo.png`. |
 | 0.6.4 | 22 | 2026/05/09 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 120% at viewport ≥500px, 150% at viewport ≤400px, with linear interpolation between 400–500px. |
