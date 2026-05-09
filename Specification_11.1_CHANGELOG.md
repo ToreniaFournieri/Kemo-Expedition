@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 31 | 2026/05/09 | Update Party tab member-list panes (Spec 8.2.1): set each party member panel height to 180px. |
 | 0.6.4 | 30 | 2026/05/09 | Update Party tab member-list portraits (Spec 8.2.1): allow character images to overflow pane borders and layer member images left-to-right so left-side tiles render above right-side tiles when overlapping. |
 | 0.6.4 | 29 | 2026/05/09 | Update Party tab member-list portraits (Spec 8.2.1): zoom character tile background images to 200% panel width with centered alignment for clearer face visibility. |
 | 0.6.4 | 28 | 2026/05/09 | Update Party tab member-list portraits (Spec 8.2.1): center-align tile background images and keep runtime width at 150% for the six member panes. |
