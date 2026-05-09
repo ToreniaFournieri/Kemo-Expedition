@@ -6163,7 +6163,7 @@ function PartyTab({
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-[110%] w-[200%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat"
+                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-[110%] w-[240%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat"
                     style={{ backgroundImage: `url(${previewImageSrc})` }}
                   />
                 )}
