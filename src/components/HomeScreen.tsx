@@ -6088,7 +6088,7 @@ function PartyTab({
       )}
 
       {/* Character selector */}
-      <div className="liquid-glass-segmented mb-4 grid grid-cols-6 gap-1 rounded-2xl p-1.5">
+      <div className="liquid-glass-segmented mb-4 grid grid-cols-6 justify-items-center gap-1 rounded-2xl p-1.5">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
           const mc = CLASSES.find(cl => cl.id === c.mainClassId)!;
@@ -6154,12 +6154,12 @@ function PartyTab({
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`${IOS_GLASS_BUTTON_CLASS} relative overflow-visible min-w-0 p-0 transition-colors ${
+              className={`${IOS_GLASS_BUTTON_CLASS} relative w-[50px] overflow-visible min-w-0 p-0 transition-colors ${
                 i === selectedCharacter ? 'liquid-glass-tab-active border-sub' : 'border-white/55 hover:bg-white/65'
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative h-[180px] overflow-visible rounded-md bg-slate-200/60">
+              <div className="relative h-[120px] w-[50px] overflow-visible rounded-md bg-slate-200/60">
                 <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
                   {!previewImageSrc && (
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
