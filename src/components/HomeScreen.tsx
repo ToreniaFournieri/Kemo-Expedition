@@ -6166,7 +6166,7 @@ function PartyTab({
                     aria-hidden="true"
                     className="pointer-events-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top"
                     style={{
-                      width: '150%',
+                      width: '200%',
                       maxWidth: 'none',
                     }}
                   />
