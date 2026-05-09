@@ -8085,7 +8085,7 @@ function ExpeditionTab({
         const expeditionPaneImageLayerStyle = expeditionPaneBackgroundImage
           ? {
             backgroundImage: `url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% auto',
+            backgroundSize: '200% auto',
             backgroundPosition: 'center top',
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'scroll',

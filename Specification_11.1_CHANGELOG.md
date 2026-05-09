@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 29 | 2026/05/09 | Update Expedition tab party member list pane backgrounds (Spec 8.3): set pane background image width to 200% of panel width with centered alignment. |
 | 0.6.4 | 28 | 2026/05/09 | Update Party tab member-list portraits (Spec 8.2.1): center-align tile background images and keep runtime width at 150% for the six member panes. |
 | 0.6.4 | 27 | 2026/05/09 | Update Party tab member-list runtime portrait rendering (Spec 8.2.1): set character background image width to 150% of each member panel width. |
 | 0.6.4 | 26 | 2026/05/09 | Update Party tab member tiles (Spec 8.2.1) to remove inner image margins by making the portrait fill each tile edge-to-edge and switching to cover rendering. |
