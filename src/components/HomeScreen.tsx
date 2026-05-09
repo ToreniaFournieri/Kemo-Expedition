@@ -6184,7 +6184,7 @@ function PartyTab({
               }}
               className={`pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
               style={{
-                width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                 maxWidth: 'none',
               }}
             />
@@ -8480,7 +8480,7 @@ function ExpeditionTab({
                                     aria-hidden="true"
                                     className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                     style={{
-                                      width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                      width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                       maxWidth: 'none',
                                     }}
                                   />
@@ -10013,7 +10013,7 @@ function DiaryTab({
                                   aria-hidden="true"
                                   className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                   style={{
-                                    width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                    width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                     maxWidth: 'none',
                                   }}
                                 />
@@ -11606,7 +11606,7 @@ function SettingTab({
                           aria-hidden="true"
                           className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
                           style={{
-                            width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                            width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                             maxWidth: 'none',
                           }}
                         />
