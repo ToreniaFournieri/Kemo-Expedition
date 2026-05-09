@@ -6112,6 +6112,7 @@ function PartyTab({
               key={c.id}
               type="button"
               draggable
+              style={{ zIndex: party.characters.length - i }}
               onDragStart={(event) => {
                 setDraggingCharacterIndex(i);
                 event.dataTransfer.effectAllowed = 'move';
@@ -6153,30 +6154,33 @@ function PartyTab({
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`${IOS_GLASS_BUTTON_CLASS} min-w-0 p-0 transition-colors ${
+              className={`${IOS_GLASS_BUTTON_CLASS} relative overflow-visible min-w-0 p-0 transition-colors ${
                 i === selectedCharacter ? 'liquid-glass-tab-active border-sub' : 'border-white/55 hover:bg-white/65'
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative h-20 overflow-hidden rounded-md bg-slate-200/60">
-                {previewImageSrc ? (
+              <div className="relative h-20 overflow-visible rounded-md bg-slate-200/60">
+                <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
+                  {!previewImageSrc && (
+                    <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
+                  )}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
+                    <div>{mcShort}({isMaster ? '師' : scShort})</div>
+                    <div>{predispositionShort}/{lineageShort}</div>
+                  </div>
+                </div>
+                {previewImageSrc && (
                   <img
                     src={previewImageSrc}
                     alt=""
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top"
+                    className="pointer-events-none absolute left-1/2 top-0 z-0 h-auto -translate-x-1/2 object-contain object-top"
                     style={{
                       width: '200%',
                       maxWidth: 'none',
                     }}
                   />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
                 )}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
-                  <div>{mcShort}({isMaster ? '師' : scShort})</div>
-                  <div>{predispositionShort}/{lineageShort}</div>
-                </div>
               </div>
             </button>
           );
