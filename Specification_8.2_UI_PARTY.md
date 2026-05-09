@@ -29,15 +29,15 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
     - Target reference width: iPhone 12 Pro, 390px
     - Use a 6-column layout, one panel per party member
     - Each panel should be narrow enough that all 6 members are visible at once without horizontal scrolling
+    - Panel height should match the displayed image height.
   - Background image width: 200% of the panel width, center aligned.
 
   - Show the Main Class, Subclass, and Predisposition/Lineage overlaid at the bottom area of the background image
 
 ```
-line1: background image only
-line2: background image only
-line3: 戦(剣)   ← text over background image
-line4: 桃/腕  ← text over background image
+image part: background image only
+line1: 戦(剣)   ← text over background image
+line2: 桃/腕  ← text over background image
 ```
 
 - Current status, abilities, bonuses
