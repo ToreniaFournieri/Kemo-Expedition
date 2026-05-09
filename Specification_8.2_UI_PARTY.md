@@ -51,6 +51,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - The image remains static relative to the panel (does not move with internal content changes).
 
   - If unique_cahracter == ture,
+    - If name == `ケモ`, use : /public/character/Unique_Kemo.png
     - If name == `ライカ`, use : /public/character/Unique_Laika.png
     - If name == `ルナ`, use : /public/character/Unique_Luna.png
     - If name == `ノクス`, use : /public/character/Unique_Nox.png
