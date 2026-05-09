@@ -24,13 +24,15 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 ```
  
 - List of party members
-  - For each character:
-  - Background: character image
-  - main Class (Sub calass), Predisposition/Lineage
+  - Display the character illustration as the panel background image
+  - Background image width: 120% of the panel width
+  - Show the Main Class, Subclass, and Predisposition/Lineage overlaid at the bottom area of the background image
+
 ```
-🐶
-戦(剣)
-桃/腕
+line1: background image only
+line2: background image only
+line3: 戦(剣)   ← text over background image
+line4: 桃/腕  ← text over background image
 ```
 
 - Current status, abilities, bonuses
