@@ -33,7 +33,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - Background image width: 220% of the panel width
   - Anchor the background image to the bottom-center of the panel.
 
-  - Show the Main Class, Subclass, and Predisposition/Lineage overlaid at the bottom area of the background image
+  - Show the Main Class, Subclass, and Lineage/Predisposition
 
 ```
 image part: background image only
