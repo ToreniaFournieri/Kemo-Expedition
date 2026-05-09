@@ -25,6 +25,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
  
 - List of party members
   - Display the character illustration as the panel background image
+    - Anchor the background image to the bottom-center of the panel.
     - Panel weidth: 50px
     - Panel height: 120px
     - Use a 6-column layout, one panel per party member
