@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 39 | 2026/05/09 | Fix Party tab deity header layering (Spec 8.2.1): keep deity name/effect text above overlapping member character images. |
 | 0.6.4 | 38 | 2026/05/09 | Update Party tab member-list character panes (Spec 8.2.1): remove the gray mask/background fill behind character illustrations. |
 | 0.6.4 | 37 | 2026/05/09 | Update Party tab member-list portrait scaling (Spec 8.2.1): set character illustration background width to 220% of each panel width (from 240%) while keeping existing height behavior. |
 | 0.6.4 | 36 | 2026/05/09 | Update Party tab member-list portrait scaling (Spec 8.2.1): set character illustration background height to 240% (matching width 240%) so images overflow beyond panel bounds both horizontally and vertically. |
