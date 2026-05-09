@@ -6173,7 +6173,7 @@ function PartyTab({
                   )}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
                     <div>{mcShort}({isMaster ? '師' : scShort})</div>
-                    <div>{predispositionShort}/{lineageShort}</div>
+                    <div>{lineageShort}/{predispositionShort}</div>
                   </div>
                 </div>
               </div>
