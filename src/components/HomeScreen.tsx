@@ -6153,7 +6153,7 @@ function PartyTab({
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`${IOS_GLASS_BUTTON_CLASS} min-w-0 p-1 transition-colors ${
+              className={`${IOS_GLASS_BUTTON_CLASS} min-w-0 p-0 transition-colors ${
                 i === selectedCharacter ? 'liquid-glass-tab-active border-sub' : 'border-white/55 hover:bg-white/65'
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
@@ -6164,8 +6164,7 @@ function PartyTab({
                     src={previewImageSrc}
                     alt=""
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-1/2 top-0 h-full w-auto max-w-none -translate-x-1/2 object-contain"
-                    style={{ width: '120%' }}
+                    className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
