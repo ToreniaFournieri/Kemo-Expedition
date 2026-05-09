@@ -6159,7 +6159,7 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md bg-slate-200/60">
+              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md">
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
