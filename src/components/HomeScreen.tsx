@@ -6159,16 +6159,7 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div
-                className="relative h-[110px] w-[50px] overflow-visible rounded-md bg-slate-200/60"
-                style={previewImageSrc ? {
-                  // SpecRef: 8.2.1 | List of party members | Display the character illustration as the panel background image
-                  backgroundImage: `url("${previewImageSrc}")`,
-                  backgroundSize: '200% auto',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center bottom',
-                } : undefined}
-              >
+              <div className="relative h-[120px] w-[50px] overflow-visible rounded-md bg-slate-200/60">
                 <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
                   {!previewImageSrc && (
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
@@ -6178,6 +6169,18 @@ function PartyTab({
                     <div>{predispositionShort}/{lineageShort}</div>
                   </div>
                 </div>
+                {previewImageSrc && (
+                  <img
+                    src={previewImageSrc}
+                    alt=""
+                    aria-hidden="true"
+                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-auto -translate-x-1/2 object-contain object-bottom"
+                    style={{
+                      width: '200%',
+                      maxWidth: 'none',
+                    }}
+                  />
+                )}
               </div>
             </button>
           );
