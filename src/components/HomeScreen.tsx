@@ -6159,7 +6159,14 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative h-[120px] w-[50px] overflow-visible rounded-md bg-slate-200/60">
+              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md bg-slate-200/60">
+                {previewImageSrc && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-[110%] w-[200%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat"
+                    style={{ backgroundImage: `url(${previewImageSrc})` }}
+                  />
+                )}
                 <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
                   {!previewImageSrc && (
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
@@ -6169,18 +6176,6 @@ function PartyTab({
                     <div>{predispositionShort}/{lineageShort}</div>
                   </div>
                 </div>
-                {previewImageSrc && (
-                  <img
-                    src={previewImageSrc}
-                    alt=""
-                    aria-hidden="true"
-                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-auto -translate-x-1/2 object-contain object-bottom"
-                    style={{
-                      width: '200%',
-                      maxWidth: 'none',
-                    }}
-                  />
-                )}
               </div>
             </button>
           );

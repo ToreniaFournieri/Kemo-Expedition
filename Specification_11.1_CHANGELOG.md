@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 34 | 2026/05/09 | Update Party tab member-list panels (Spec 8.2.1): render character illustrations as panel background images with fixed panel size 50px × 110px while preserving intentional portrait overflow without cropping. |
 | 0.6.4 | 33 | 2026/05/09 | Update Party tab member-list portrait anchoring (Spec 8.2.1): align each member panel background image to bottom-center. |
 | 0.6.4 | 32 | 2026/05/09 | Update Party tab member-list panes (Spec 8.2.1): set each party member panel width to 50px and height to 120px. |
 | 0.6.4 | 31 | 2026/05/09 | Update Party tab member-list panes (Spec 8.2.1): set each party member panel height to 180px. |
