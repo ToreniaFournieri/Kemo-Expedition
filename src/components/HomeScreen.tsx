@@ -6159,7 +6159,7 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative h-20 overflow-visible rounded-md bg-slate-200/60">
+              <div className="relative h-[180px] overflow-visible rounded-md bg-slate-200/60">
                 <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
                   {!previewImageSrc && (
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
