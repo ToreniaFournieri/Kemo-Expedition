@@ -6164,7 +6164,11 @@ function PartyTab({
                     src={previewImageSrc}
                     alt=""
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                    className="pointer-events-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top"
+                    style={{
+                      width: '150%',
+                      maxWidth: 'none',
+                    }}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>

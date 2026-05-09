@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 27 | 2026/05/09 | Update Party tab member-list runtime portrait rendering (Spec 8.2.1): set character background image width to 150% of each member panel width. |
 | 0.6.4 | 26 | 2026/05/09 | Update Party tab member tiles (Spec 8.2.1) to remove inner image margins by making the portrait fill each tile edge-to-edge and switching to cover rendering. |
 | 0.6.4 | 25 | 2026/05/09 | Update Party tab member list runtime layout (Spec 8.2.1): switch to a fixed 6-column one-screen grid, render each member panel with character illustration background at 120% width, and overlay Main/Sub class plus Predisposition/Lineage text at the image bottom. |
 | 0.6.4 | 24 | 2026/05/09 | Update Party tab member list display (Spec 8.2.1): render each member tile with character portrait background (PT/race/gender with unique fallback support), keep class line, and show Predisposition/Lineage order in shorthand. |
