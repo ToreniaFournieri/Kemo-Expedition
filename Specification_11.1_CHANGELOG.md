@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 37 | 2026/05/09 | Update Party tab member-list portrait scaling (Spec 8.2.1): set character illustration background width to 220% of each panel width (from 240%) while keeping existing height behavior. |
 | 0.6.4 | 36 | 2026/05/09 | Update Party tab member-list portrait scaling (Spec 8.2.1): set character illustration background height to 240% (matching width 240%) so images overflow beyond panel bounds both horizontally and vertically. |
 | 0.6.4 | 35 | 2026/05/09 | Update Party tab member-list panels (Spec 8.2.1): set character illustration background width to 240% of each panel width. |
 | 0.6.4 | 34 | 2026/05/09 | Update Party tab member-list panels (Spec 8.2.1): render character illustrations as panel background images with fixed panel size 50px × 110px while preserving intentional portrait overflow without cropping. |
