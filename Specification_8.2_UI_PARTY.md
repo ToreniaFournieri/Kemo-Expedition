@@ -24,7 +24,9 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 ```
  
 - List of party members
-    	For each character: Icon, main Class (Sub calass).
+  - For each character:
+  - Background: character image
+  - main Class (Sub calass), Predisposition/Lineage
 ```
 🐶
 戦(剣)
