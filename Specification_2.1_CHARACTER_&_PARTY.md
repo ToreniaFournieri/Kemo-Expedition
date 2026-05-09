@@ -64,6 +64,13 @@
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
 | Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
 
+- Prompt to generate images
+
+```
+Simple kemono anime eyes, thick feminine upper eyelid, large rounded pupil with a big white oval highlight positioned at the exact center of the pupil, eye size unchanged, minimal eye detail.
+No human like hair, flat color, no outlines. 
+```
+
 **classes:**
 
 | key | Japanese | short name | main/sub bonuses | main bonus | master bonus |
