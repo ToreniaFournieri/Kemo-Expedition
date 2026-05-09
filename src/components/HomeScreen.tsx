@@ -6098,6 +6098,15 @@ function PartyTab({
           const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
           const predispositionShort = PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
           const lineageShort = LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
+          const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByName[c.name] : undefined;
+          const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
+            ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
+            : undefined;
+          const previewImageSrc = uniquePreviewImageFileName
+            ? `${import.meta.env.BASE_URL}character/${uniquePreviewImageFileName}`
+            : previewPtRaceGenderImageFileName
+              ? `${import.meta.env.BASE_URL}character/${previewPtRaceGenderImageFileName}`
+              : null;
           return (
             <button
               key={c.id}
@@ -6149,12 +6158,18 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="flex justify-center"><RaceIcon race={r} className="h-8 w-8" /></div>
-              <div className="text-xs text-gray-400 text-center">
+              <div className="relative mb-1 h-12 w-12 overflow-hidden rounded-md bg-slate-200/60">
+                {previewImageSrc ? (
+                  <img src={previewImageSrc} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-8 w-8" /></div>
+                )}
+              </div>
+              <div className="text-xs text-gray-400 text-center leading-tight">
                 {mcShort}({isMaster ? '師' : scShort})
               </div>
-              <div className="text-xs text-gray-400 text-center">
-                {lineageShort}/{predispositionShort}
+              <div className="text-xs text-gray-400 text-center leading-tight">
+                {predispositionShort}/{lineageShort}
               </div>
             </button>
           );
