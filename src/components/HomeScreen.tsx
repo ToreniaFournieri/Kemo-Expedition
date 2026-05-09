@@ -6174,7 +6174,7 @@ function PartyTab({
                     src={previewImageSrc}
                     alt=""
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-1/2 top-0 z-0 h-auto -translate-x-1/2 object-contain object-top"
+                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-auto -translate-x-1/2 object-contain object-bottom"
                     style={{
                       width: '200%',
                       maxWidth: 'none',
