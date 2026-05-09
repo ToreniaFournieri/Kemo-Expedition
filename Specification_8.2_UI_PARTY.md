@@ -25,13 +25,13 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
  
 - List of party members
   - Display the character illustration as the panel background image
-    - Anchor the background image to the bottom-center of the panel.
     - Panel weidth: 50px
     - Panel height: 120px
     - Use a 6-column layout, one panel per party member
     - Each panel should be narrow enough that all 6 members are visible at once without horizontal scrolling
 
-  - Background image width: 200% of the panel width, center aligned.
+  - Background image width: 200% of the panel width
+  - Anchor the background image to the bottom-center of the panel.
 
   - Show the Main Class, Subclass, and Predisposition/Lineage overlaid at the bottom area of the background image
 
