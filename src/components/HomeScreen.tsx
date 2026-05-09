@@ -5545,6 +5545,7 @@ function PartyTab({
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
   const previewName = pendingEdits?.name ?? char.name;
   const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
+    'ケモ': 'Unique_Kemo.png',
     'ライカ': 'Unique_Laika.png',
     'ルナ': 'Unique_Luna.png',
     'ノクス': 'Unique_Nox.png',
