@@ -6001,7 +6001,7 @@ function PartyTab({
         </div>
       )}
 
-      <div className="mb-3 text-sm flex items-start justify-between gap-2">
+      <div className="relative z-20 mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-gray-600">
             HP {formatNumber(Math.floor(partyStats.hp))}, レベル {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
