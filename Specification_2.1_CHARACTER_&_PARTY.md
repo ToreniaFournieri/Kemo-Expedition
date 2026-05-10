@@ -49,16 +49,16 @@
 
 | races | Japanese name | category | concept | availability | PT1:Prairie Courier| PT2:Ocean | PT3:Desert | PT4: Pyrepeak | PT5: Steam punk | PT6: |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y | - | - | - | - | Arctic wolf | - |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y | - | - | - | - | snow fox | - |
-| Felidian | フェリディアン | 肉食 | 😺Cat | Y | - | - | - | - | MIkeneko | - |
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y | - | - | - | - | Arctic wolf | Manded Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y | - | - | - | - | snow fox | Fennec Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat | Y | - | - | - | - | MIkeneko | Maine Coon |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y | - | - | - | - | Border collie | - |
-| Ursan | ウルサン | 雑食 | 🐻Bear | Y | - | - | - | - | Panda | - |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y | - | - | - | Red panda | Tanuki | - |
-| Leporian | レポリアン | 草食 | 🐰Rabbit | Y | - | - | - | - | Dwarf Hotot | - |
-| Cervin | セルヴィン | 草食 | 🦌Deer | Y | - | - | - | - | Reindeer | - |
-| Murid | ミュリッド | 草食 | 🐭Mouse | Y | - | - | - | - | - | - |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y | - | - | - | - | Border collie | Siberian Husky |
+| Ursan | ウルサン | 雑食 | 🐻Bear | Y | - | - | - | - | Panda | Tukinowaguma |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y | - | - | - | Red panda | Tanuki | Pristinailurus |
+| Leporian | レポリアン | 草食 | 🐰Rabbit | Y | - | - | - | - | Dwarf Hotot | Holland Lop |
+| Cervin | セルヴィン | 草食 | 🦌Deer | Y | - | - | - | - | Reindeer | White-tailed Deer + Reindeer |
+| Murid | ミュリッド | 草食 | 🐭Mouse | Y | - | - | - | - | - | Dormouse |
 | Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
