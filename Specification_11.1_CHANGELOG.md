@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.4 | 41 | 2026/05/10 | Fix Party member details runtime unique-character image filename for マーレ (Spec 8.2.2): use `/public/character/Unique_Merle.png` for name-based unique mapping. |
 | 0.6.4 | 40 | 2026/05/09 | Update Party tab member-list text order (Spec 8.2.1): show Lineage/Predisposition under Main/Sub class in each member panel. |
 | 0.6.4 | 39 | 2026/05/09 | Fix Party tab deity header layering (Spec 8.2.1): keep deity name/effect text above overlapping member character images. |
 | 0.6.4 | 38 | 2026/05/09 | Update Party tab member-list character panes (Spec 8.2.1): remove the gray mask/background fill behind character illustrations. |

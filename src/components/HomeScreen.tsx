@@ -5549,7 +5549,7 @@ function PartyTab({
     'ライカ': 'Unique_Laika.png',
     'ルナ': 'Unique_Luna.png',
     'ノクス': 'Unique_Nox.png',
-    'マーレ': 'Unique_Mare.png',
+    'マーレ': 'Unique_Merle.png',
     'プチーツァ': 'Unique_Puchitsa.png',
     '蒼牙破': 'Unique_Souga-ha.png',
     'レナード': 'Unique_Leonard.png',
