@@ -652,22 +652,22 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "astral_flare",
         "label": "アストラルフレア",
-        "description": "style: area_burst / element: e.none\n無属性範囲魔法攻撃(ヒット数は1固定)"
+        "description": "style: area_burst / element: e.none\n無属性範囲魔法攻撃"
       },
       {
         "key": "pyroclasm",
         "label": "パイロクラスム",
-        "description": "style: area_burst / element: e.fire\n火属性範囲魔法攻撃(ヒット数は1固定)"
+        "description": "style: area_burst / element: e.fire\n火属性範囲魔法攻撃"
       },
       {
         "key": "glacial_burst",
         "label": "グレイシャルバースト",
-        "description": "style: area_burst / element: e.ice\n氷属性範囲魔法攻撃(ヒット数は1固定)"
+        "description": "style: area_burst / element: e.ice\n氷属性範囲魔法攻撃"
       },
       {
         "key": "tempest_nova",
         "label": "テンペストノヴァ",
-        "description": "style: area_burst / element: e.thunder\n雷属性範囲魔法攻撃(ヒット数は1固定)"
+        "description": "style: area_burst / element: e.thunder\n雷属性範囲魔法攻撃"
       },
       {
         "key": "gravity_well",
