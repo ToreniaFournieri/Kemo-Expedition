@@ -173,6 +173,7 @@ Left-aligned
 
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Display the selected race summary as a single-line header above the selector buttons.
+  - If another member in the same party already has the same race, same gender, and `unique_character == false`, that race option cannot be selected for the current member.
   - Category tabs: single-row, no wrap, fit within one viewport width.
   - Race selection buttons are icon-only (no race name text on each button).
 ```
