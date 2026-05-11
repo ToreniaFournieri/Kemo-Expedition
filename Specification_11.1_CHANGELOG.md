@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.5 | 1 | 2026/05/11 | Prepare v0.6.5 release: bump app version to `v0.6.5` and reset build number to `1`. |
 | 0.6.4 | 42 | 2026/05/11 | Update Divine Bureau glossary spell descriptions: remove “(ヒット数は1固定)” from area-burst magic entries (無/火/氷/雷) to match current behavior. |
 | 0.6.4 | 41 | 2026/05/10 | Fix Party member details runtime unique-character image filename for マーレ (Spec 8.2.2): use `/public/character/Unique_Merle.png` for name-based unique mapping. |
 | 0.6.4 | 40 | 2026/05/09 | Update Party tab member-list text order (Spec 8.2.1): show Lineage/Predisposition under Main/Sub class in each member panel. |
