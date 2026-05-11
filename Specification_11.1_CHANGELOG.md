@@ -10,6 +10,32 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.5 | 3 | 2026/05/11 | Update Party Character Edit Mode race selector runtime (Spec 8.2.3): show selected race summary header above icon-only race buttons and disable race options when another same-party non-unique member already has the same race and gender. |
+| 0.6.5 | 2 | 2026/05/11 | Update AFK simulation runtime to respect per-state/per-terrain explore duration multipliers by using party-specific cycle durations in chunk processing instead of one fixed global cycle duration. |
+| 0.6.5 | 1 | 2026/05/11 | Prepare v0.6.5 release: bump app version to `v0.6.5` and reset build number to `1`. |
+| 0.6.4 | 42 | 2026/05/11 | Update Divine Bureau glossary spell descriptions: remove “(ヒット数は1固定)” from area-burst magic entries (無/火/氷/雷) to match current behavior. |
+| 0.6.4 | 41 | 2026/05/10 | Fix Party member details runtime unique-character image filename for マーレ (Spec 8.2.2): use `/public/character/Unique_Merle.png` for name-based unique mapping. |
+| 0.6.4 | 40 | 2026/05/09 | Update Party tab member-list text order (Spec 8.2.1): show Lineage/Predisposition under Main/Sub class in each member panel. |
+| 0.6.4 | 39 | 2026/05/09 | Fix Party tab deity header layering (Spec 8.2.1): keep deity name/effect text above overlapping member character images. |
+| 0.6.4 | 38 | 2026/05/09 | Update Party tab member-list character panes (Spec 8.2.1): remove the gray mask/background fill behind character illustrations. |
+| 0.6.4 | 37 | 2026/05/09 | Update Party tab member-list portrait scaling (Spec 8.2.1): set character illustration background width to 220% of each panel width (from 240%) while keeping existing height behavior. |
+| 0.6.4 | 36 | 2026/05/09 | Update Party tab member-list portrait scaling (Spec 8.2.1): set character illustration background height to 240% (matching width 240%) so images overflow beyond panel bounds both horizontally and vertically. |
+| 0.6.4 | 35 | 2026/05/09 | Update Party tab member-list panels (Spec 8.2.1): set character illustration background width to 240% of each panel width. |
+| 0.6.4 | 34 | 2026/05/09 | Update Party tab member-list panels (Spec 8.2.1): render character illustrations as panel background images with fixed panel size 50px × 110px while preserving intentional portrait overflow without cropping. |
+| 0.6.4 | 33 | 2026/05/09 | Update Party tab member-list portrait anchoring (Spec 8.2.1): align each member panel background image to bottom-center. |
+| 0.6.4 | 32 | 2026/05/09 | Update Party tab member-list panes (Spec 8.2.1): set each party member panel width to 50px and height to 120px. |
+| 0.6.4 | 31 | 2026/05/09 | Update Party tab member-list panes (Spec 8.2.1): set each party member panel height to 180px. |
+| 0.6.4 | 30 | 2026/05/09 | Update Party tab member-list portraits (Spec 8.2.1): allow character images to overflow pane borders and layer member images left-to-right so left-side tiles render above right-side tiles when overlapping. |
+| 0.6.4 | 29 | 2026/05/09 | Update Party tab member-list portraits (Spec 8.2.1): zoom character tile background images to 200% panel width with centered alignment for clearer face visibility. |
+| 0.6.4 | 28 | 2026/05/09 | Update Party tab member-list portraits (Spec 8.2.1): center-align tile background images and keep runtime width at 150% for the six member panes. |
+| 0.6.4 | 27 | 2026/05/09 | Update Party tab member-list runtime portrait rendering (Spec 8.2.1): set character background image width to 150% of each member panel width. |
+| 0.6.4 | 26 | 2026/05/09 | Update Party tab member tiles (Spec 8.2.1) to remove inner image margins by making the portrait fill each tile edge-to-edge and switching to cover rendering. |
+| 0.6.4 | 25 | 2026/05/09 | Update Party tab member list runtime layout (Spec 8.2.1): switch to a fixed 6-column one-screen grid, render each member panel with character illustration background at 120% width, and overlay Main/Sub class plus Predisposition/Lineage text at the image bottom. |
+| 0.6.4 | 24 | 2026/05/09 | Update Party tab member list display (Spec 8.2.1): render each member tile with character portrait background (PT/race/gender with unique fallback support), keep class line, and show Predisposition/Lineage order in shorthand. |
+| 0.6.4 | 23 | 2026/05/09 | Update Party member details runtime unique-character background image mapping (Spec 8.2.2) to include ケモ -> `/public/character/Unique_Kemo.png`. |
+| 0.6.4 | 22 | 2026/05/09 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 120% at viewport ≥500px, 150% at viewport ≤400px, with linear interpolation between 400–500px. |
+| 0.6.4 | 21 | 2026/05/07 | Fix Divine Bureau Bestiary ability list display to de-duplicate same-id abilities by showing only the highest level entry when multiple levels coexist. |
+| 0.6.4 | 20 | 2026/05/07 | Update Party member details runtime unique-character background image mapping (Spec 8.2.2) to include ノクス -> `/public/character/Unique_Nox.png`. |
 | 0.6.4 | 19 | 2026/05/06 | Remove the Gods Bestiary detail-panel readability mask overlay when a god image exists, so enemy portraits remain clear in dark mode and light mode. |
 | 0.6.4 | 18 | 2026/05/06 | Update Party member details runtime character background resolution (Spec 8.2.2): add unique image mapping for オルカ, use `/public/character/{PT}_{RACE}_{GENDER}.png` naming first, and add runtime fallback to `/public/character/{RACE}_{GENDER}.png` when PT-specific image is missing. |
 | 0.6.4 | 17 | 2026/05/06 | Add Debug pane OFF/ON toggles for Display all Bestiary, Display all Compendium, and Display all Glossary; when enabled, each view ignores unlock/reveal conditions and shows all entries. |

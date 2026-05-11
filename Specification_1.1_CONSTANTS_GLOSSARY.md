@@ -416,7 +416,6 @@
 | `pyroclasm` | `arc-magic` | `e.fire`  | パイロクラスム | 火属性大魔法 |
 | `glacial-burst` | `arc-magic` | `e.ice`  | グレイシャルバースト | 氷属性大魔法 |
 | `tempest-nova` | `arc-magic` | `e.thunder` | テンペストノヴァ | 雷属性大魔法 |
-| `tempest-nova` | `arc-magic` | `e.thunder` | テンペストノヴァ | 雷属性大魔法 |
 | `gravity-well` | `percentage-damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
 
 #### 1.1.9 q. side quest

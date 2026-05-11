@@ -24,11 +24,21 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 ```
  
 - List of party members
-    	For each character: Icon, main Class (Sub calass).
+  - Display the character illustration as the panel background image
+    - Panel weidth: 50px
+    - Panel height: 110px
+    - Use a 6-column layout, one panel per party member
+    - Each panel should be narrow enough that all 6 members are visible at once without horizontal scrolling
+
+  - Background image width: 220% of the panel width
+  - Anchor the background image to the bottom-center of the panel.
+
+  - Show the Main Class, Subclass, and Lineage/Predisposition
+
 ```
-🐶
-戦(剣)
-桃/腕
+image part: background image only
+line1: 戦(剣)   ← text over background image
+line2: 桃/腕  ← text over background image
 ```
 
 - Current status, abilities, bonuses
@@ -44,16 +54,18 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - Responsive sizing:
     - The image width adapts smoothly to the viewport width.
     - If the page width is **500px or wider**, set the image width to **120% of the panel width**.
-    - If the page width is **400px or narrower**, set the image width to **170% of the panel width**.
-    - Between **400px and 500px**, interpolate linearly between **170% → 120%**.
+    - If the page width is **400px or narrower**, set the image width to **150% of the panel width**.
+    - Between **400px and 500px**, interpolate linearly between **150% → 120%**.
   - In dark mode: not invert the image.
   - Apply mask above the image to ensure text readability.
   - The image remains static relative to the panel (does not move with internal content changes).
 
   - If unique_cahracter == ture,
+    - If name == `ケモ`, use : /public/character/Unique_Kemo.png
     - If name == `ライカ`, use : /public/character/Unique_Laika.png
     - If name == `ルナ`, use : /public/character/Unique_Luna.png
-    - If name == `マーレ`, use : /public/character/Unique_Mare.png
+    - If name == `ノクス`, use : /public/character/Unique_Nox.png
+    - If name == `マーレ`, use : /public/character/Unique_Merle.png
     - If name == `プチーツァ`, use : /public/character/Unique_Puchitsa.png
     - If name == `蒼牙破`, use : /public/character/Unique_Souga-ha.png
     - If name == `レナード`, use : /public/character/Unique_Leonard.png
@@ -161,6 +173,7 @@ Left-aligned
 
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Display the selected race summary as a single-line header above the selector buttons.
+  - If another member in the same party already has the same race, same gender, and `unique_character == false`, that race option cannot be selected for the current member.
   - Category tabs: single-row, no wrap, fit within one viewport width.
   - Race selection buttons are icon-only (no race name text on each button).
 ```

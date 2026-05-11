@@ -47,23 +47,29 @@
 | Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
 | Avianv     | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
 
-| races | Japanese name | category | concept | availability |
-|------|----------------|----------|--------|--------------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y |
-| Felidian | フェリディアン | 肉食 | 😺Cat | Y |
-| Mustelid | マステリド | 肉食 | 🦡Ferret | N |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y |
-| Ursan | ウルサン | 雑食 | 🐻Bear | Y |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y |
-| Suinian | スイニアン | 雑食 | 🐗Boar | N |
-| Leporian | レポリアン | 草食 | 🐰Rabbit | Y |
-| Cervin | セルヴィン | 草食 | 🦌Deer | Y |
-| Murid | ミュリッド | 草食 | 🐭Mouse | Y |
-| Caprion | カプリオン | 草食 | 🐐Goat | N |
-| Kemoria | ケモリア | 雑食 | origin | N |
-| Orcinian | オルシニアン | 肉食 | orca | N |
-| Avian | アヴィアン | 雑食 | 🐓bird | N |
+| races | Japanese name | category | concept | availability | PT1:Prairie Courier| PT2:Tropical seaside expedition traveler | PT3:Desert | PT4: Pyrepeak | PT5: Steam punk | PT6:Lerporian Moon Palace, Maid/Moon Steward |
+|------|----------------|----------|--------|--------------|------|------|------|------|------|------|
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | - | - | Arctic wolf | Manded Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, red and white | - | - | snow fox | Fennec Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | - | - | MIkeneko | Maine Coon |
+| Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | - | - | Border collie | Siberian Husky |
+| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | - | - | Panda | Tukinowaguma |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, a little timid | Y | - | blue and white, aqua stripe pattern | - | Red panda | Tanuki | Pristinailurus |
+| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | - | - | Dwarf Hotot | Holland Lop |
+| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | - | - | Reindeer | White-tailed Deer + Reindeer |
+| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink | - | - | - | Dormouse |
+| Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
+| Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
+| Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
+| Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
+
+- Prompt to generate images
+
+```
+Simple kemono anime eyes, thick feminine upper eyelid, large rounded pupil with a big white oval highlight positioned at the exact center of the pupil, eye size unchanged, minimal eye detail.
+No human like hair, flat color, no outlines. 
+```
 
 **classes:**
 

@@ -5545,9 +5545,11 @@ function PartyTab({
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
   const previewName = pendingEdits?.name ?? char.name;
   const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
+    'ケモ': 'Unique_Kemo.png',
     'ライカ': 'Unique_Laika.png',
     'ルナ': 'Unique_Luna.png',
-    'マーレ': 'Unique_Mare.png',
+    'ノクス': 'Unique_Nox.png',
+    'マーレ': 'Unique_Merle.png',
     'プチーツァ': 'Unique_Puchitsa.png',
     '蒼牙破': 'Unique_Souga-ha.png',
     'レナード': 'Unique_Leonard.png',
@@ -5999,7 +6001,7 @@ function PartyTab({
         </div>
       )}
 
-      <div className="mb-3 text-sm flex items-start justify-between gap-2">
+      <div className="relative z-20 mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-gray-600">
             HP {formatNumber(Math.floor(partyStats.hp))}, レベル {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
@@ -6086,7 +6088,7 @@ function PartyTab({
       )}
 
       {/* Character selector */}
-      <div className="liquid-glass-segmented mb-4 flex gap-2 overflow-x-auto rounded-2xl p-2 pb-2">
+      <div className="liquid-glass-segmented mb-4 grid grid-cols-6 justify-items-center gap-1 rounded-2xl p-1.5">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
           const mc = CLASSES.find(cl => cl.id === c.mainClassId)!;
@@ -6096,11 +6098,21 @@ function PartyTab({
           const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
           const predispositionShort = PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
           const lineageShort = LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
+          const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByName[c.name] : undefined;
+          const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
+            ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
+            : undefined;
+          const previewImageSrc = uniquePreviewImageFileName
+            ? `${import.meta.env.BASE_URL}character/${uniquePreviewImageFileName}`
+            : previewPtRaceGenderImageFileName
+              ? `${import.meta.env.BASE_URL}character/${previewPtRaceGenderImageFileName}`
+              : null;
           return (
             <button
               key={c.id}
               type="button"
               draggable
+              style={{ zIndex: party.characters.length - i }}
               onDragStart={(event) => {
                 setDraggingCharacterIndex(i);
                 event.dataTransfer.effectAllowed = 'move';
@@ -6142,17 +6154,28 @@ function PartyTab({
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`${IOS_GLASS_BUTTON_CLASS} flex-shrink-0 p-2 transition-colors ${
+              className={`${IOS_GLASS_BUTTON_CLASS} relative w-[50px] overflow-visible min-w-0 p-0 transition-colors ${
                 i === selectedCharacter ? 'liquid-glass-tab-active border-sub' : 'border-white/55 hover:bg-white/65'
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="flex justify-center"><RaceIcon race={r} className="h-8 w-8" /></div>
-              <div className="text-xs text-gray-400 text-center">
-                {mcShort}({isMaster ? '師' : scShort})
-              </div>
-              <div className="text-xs text-gray-400 text-center">
-                {lineageShort}/{predispositionShort}
+              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md">
+                {previewImageSrc && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-[240%] w-[220%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat"
+                    style={{ backgroundImage: `url(${previewImageSrc})` }}
+                  />
+                )}
+                <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
+                  {!previewImageSrc && (
+                    <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
+                  )}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
+                    <div>{mcShort}({isMaster ? '師' : scShort})</div>
+                    <div>{lineageShort}/{predispositionShort}</div>
+                  </div>
+                </div>
               </div>
             </button>
           );
@@ -6183,7 +6206,7 @@ function PartyTab({
               }}
               className={`pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
               style={{
-                width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                 maxWidth: 'none',
               }}
             />
@@ -6293,18 +6316,31 @@ function PartyTab({
                     .map((bonus, index) => buildInlineBonusEntry('race-bonus', selectedRace.id, bonus, index))
                     .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
+                  const selectedGender = pendingEdits?.gender ?? char.gender;
+                  const isRaceOptionBlockedByDuplicate = (raceId: Race['id']) =>
+                    party.characters.some((member, memberIndex) =>
+                      memberIndex !== selectedCharacter
+                      && member.raceId === raceId
+                      && member.gender === selectedGender
+                      && member.isUnique !== true
+                    );
+
                   const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
+                    const isBlockedByDuplicate = isRaceOptionBlockedByDuplicate(race.id);
+                    const isDisabled = char.isUnique || isBlockedByDuplicate;
+
                     return (
                       <button
                         key={`race-image-${race.id}`}
                         type="button"
                         aria-label={race.name}
-                        disabled={char.isUnique}
+                        title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                        disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
                         className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
-                            : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                            : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex items-center justify-center">
@@ -8479,7 +8515,7 @@ function ExpeditionTab({
                                     aria-hidden="true"
                                     className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                     style={{
-                                      width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                      width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                       maxWidth: 'none',
                                     }}
                                   />
@@ -10012,7 +10048,7 @@ function DiaryTab({
                                   aria-hidden="true"
                                   className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                   style={{
-                                    width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                                    width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                     maxWidth: 'none',
                                   }}
                                 />
@@ -11064,15 +11100,21 @@ function SettingTab({
   };
 
   const parseAbilityTokens = (abilities: Array<{ id: string; level: number }>) => {
+    // SpecRef: 4.1.2 | Enemy | x.ability
     if (abilities.length === 0) {
       return [{ key: 'none', label: 'なし', abilityId: '', level: 0, isMissing: true }];
     }
 
-    return abilities.map((ability, index) => ({
-      key: `${ability.id}-${ability.level}-${index}`,
-      label: `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`,
-      abilityId: ability.id,
-      level: ability.level,
+    const highestAbilityLevelById = new Map<string, number>();
+    abilities.forEach((ability) => {
+      highestAbilityLevelById.set(ability.id, Math.max(highestAbilityLevelById.get(ability.id) ?? 0, ability.level));
+    });
+
+    return Array.from(highestAbilityLevelById.entries()).map(([abilityId, level], index) => ({
+      key: `${abilityId}-${level}-${index}`,
+      label: `${ABILITY_NAMES[abilityId] ?? abilityId}${level}`,
+      abilityId,
+      level,
       isMissing: false,
     }));
   };
@@ -11599,7 +11641,7 @@ function SettingTab({
                           aria-hidden="true"
                           className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
                           style={{
-                            width: 'clamp(120%, calc(370% - 0.5 * 100vw), 170%)',
+                            width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                             maxWidth: 'none',
                           }}
                         />
