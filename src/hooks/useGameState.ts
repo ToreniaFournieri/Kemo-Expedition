@@ -63,7 +63,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { DEITY_OPTIONS, getDeityKey, getDeityRank, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityKey, getDeityRank, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -2000,6 +2000,46 @@ function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, si
   }
 }
 
+
+function getExploreTerrainDurationMultiplierForAfk(party: Party): number {
+  // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
+  const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
+  if (!dungeon) return 1;
+
+  const getFloorTerrainRoomMultiplier = (terrainEffect?: string): number => {
+    if (terrainEffect === 'terrain.chill') return 2;
+    if (terrainEffect === 'terrain.looping-path') return 2;
+    return 1;
+  };
+
+  const floorByNumber = new Map(dungeon.floors.map((floor) => [floor.floorNumber, floor]));
+  const loggedRooms = party.lastExpeditionLog?.dungeonId === dungeon.id
+    ? party.lastExpeditionLog.entries
+    : [];
+
+  if (loggedRooms.length > 0) {
+    const weightedRoomMultiplierTotal = loggedRooms.reduce((total, room) => {
+      const floor = typeof room.floor === 'number' ? floorByNumber.get(room.floor) : undefined;
+      return total + getFloorTerrainRoomMultiplier(floor?.terrainEffect);
+    }, 0);
+    return weightedRoomMultiplierTotal / loggedRooms.length;
+  }
+
+  const fullDungeonRoomMultiplierTotal = dungeon.floors.reduce((total, floor) => (
+    total + (4 * getFloorTerrainRoomMultiplier(floor.terrainEffect))
+  ), 0);
+  const fullDungeonRoomCount = dungeon.floors.length * 4;
+  return fullDungeonRoomCount > 0 ? (fullDungeonRoomMultiplierTotal / fullDungeonRoomCount) : 1;
+}
+
+function getApproxAfkCycleDurationMs(party: Party, cycleDurationScale: number): number {
+  const safeScale = Math.max(0.001, cycleDurationScale);
+  const baseCycleDurationMs = BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * safeScale;
+  const deityGold = party.deityGold ?? 0;
+  const exploreDeityDurationMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, 'explore');
+  const exploreTerrainDurationMultiplier = getExploreTerrainDurationMultiplierForAfk(party);
+  return Math.max(1, Math.ceil(baseCycleDurationMs * exploreDeityDurationMultiplier * exploreTerrainDurationMultiplier));
+}
 function getApproxAfkTimeQuestProgressPerCycle(
   party: Party,
   approxCycleDurationMs: number,
@@ -4366,9 +4406,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (cappedElapsedMs < 1000) return state;
 
       const resolvedCycleDurationScale = Math.max(0.001, action.cycleDurationScale ?? getCycleDurationScale());
-      // SpecRef: 5.1 | PROGRESS | Cycle
-      const approxCycleDurationMs = Math.max(1, Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * resolvedCycleDurationScale));
-      const runCount = Math.max(0, Math.floor(cappedElapsedMs / approxCycleDurationMs));
+      const cycleDurationByParty = state.parties.map((party) => getApproxAfkCycleDurationMs(party, resolvedCycleDurationScale));
+      const runCountByParty = cycleDurationByParty.map((durationMs) => Math.max(0, Math.floor(cappedElapsedMs / durationMs)));
+      const runCount = runCountByParty.reduce((maxRuns, count) => Math.max(maxRuns, count), 0);
       if (runCount <= 0) return state;
 
       let workingState = state;
@@ -4377,8 +4417,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const partyTimestampStepMs = 1_000;
 
       for (let runIndex = 0; runIndex < runCount; runIndex++) {
-        const cycleCompletedAt = simulationStartAt + ((runIndex + 1) * approxCycleDurationMs);
         for (let partyIndex = 0; partyIndex < workingState.parties.length; partyIndex++) {
+          const partyCycleDurationMs = cycleDurationByParty[partyIndex] ?? 1;
+          if (runIndex >= (runCountByParty[partyIndex] ?? 0)) continue;
+          const cycleCompletedAt = simulationStartAt + ((runIndex + 1) * partyCycleDurationMs);
           const simulatedAt = Math.min(
             simulationEndAt,
             cycleCompletedAt + (partyIndex * partyTimestampStepMs)
@@ -4425,7 +4467,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (activeParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(activeParty.sideQuest.type)) {
             const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(
               activeParty,
-              approxCycleDurationMs,
+              partyCycleDurationMs,
               resolvedCycleDurationScale,
             );
             if (approximateProgress > 0) {
