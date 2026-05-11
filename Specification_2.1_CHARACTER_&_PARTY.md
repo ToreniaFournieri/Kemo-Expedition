@@ -49,16 +49,16 @@
 
 | races | Japanese name | category | concept | availability | PT1:Prairie Courier| PT2:Tropical seaside expedition traveler | PT3:Desert | PT4: Pyrepeak | PT5: Steam punk | PT6:Lerporian Moon Palace, Maid/Moon Steward |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y | - | blue and white, aqua splash pattern | - | - | Arctic wolf | Manded Wolf |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y | - | Rüppell’s Fox, red and white | - | - | snow fox | Fennec Fox |
-| Felidian | フェリディアン | 肉食 | 😺Cat | Y | - | Siamese cat | - | - | MIkeneko | Maine Coon |
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | - | - | Arctic wolf | Manded Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, red and white | - | - | snow fox | Fennec Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | - | - | MIkeneko | Maine Coon |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y | - | Carolina Dog | - | - | Border collie | Siberian Husky |
-| Ursan | ウルサン | 雑食 | 🐻Bear | Y | - | Sun Bear | - | - | Panda | Tukinowaguma |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y | - | blue and white, aqua stripe pattern | - | Red panda | Tanuki | Pristinailurus |
-| Leporian | レポリアン | 草食 | 🐰Rabbit | Y | - | Cinnamon Rabbit | - | - | Dwarf Hotot | Holland Lop |
-| Cervin | セルヴィン | 草食 | 🦌Deer | Y | - | Axis Deer | - | - | Reindeer | White-tailed Deer + Reindeer |
-| Murid | ミュリッド | 草食 | 🐭Mouse | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink | - | - | - | Dormouse |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | - | - | Border collie | Siberian Husky |
+| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | - | - | Panda | Tukinowaguma |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, a little timid | Y | - | blue and white, aqua stripe pattern | - | Red panda | Tanuki | Pristinailurus |
+| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | - | - | Dwarf Hotot | Holland Lop |
+| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | - | - | Reindeer | White-tailed Deer + Reindeer |
+| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink | - | - | - | Dormouse |
 | Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
