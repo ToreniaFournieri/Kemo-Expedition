@@ -6316,18 +6316,31 @@ function PartyTab({
                     .map((bonus, index) => buildInlineBonusEntry('race-bonus', selectedRace.id, bonus, index))
                     .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
+                  const selectedGender = pendingEdits?.gender ?? char.gender;
+                  const isRaceOptionBlockedByDuplicate = (raceId: Race['id']) =>
+                    party.characters.some((member, memberIndex) =>
+                      memberIndex !== selectedCharacter
+                      && member.raceId === raceId
+                      && member.gender === selectedGender
+                      && member.isUnique !== true
+                    );
+
                   const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
+                    const isBlockedByDuplicate = isRaceOptionBlockedByDuplicate(race.id);
+                    const isDisabled = char.isUnique || isBlockedByDuplicate;
+
                     return (
                       <button
                         key={`race-image-${race.id}`}
                         type="button"
                         aria-label={race.name}
-                        disabled={char.isUnique}
+                        title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                        disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
                         className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
-                            : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                            : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex items-center justify-center">

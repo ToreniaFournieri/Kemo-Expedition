@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.6.5 | 3 | 2026/05/11 | Update Party Character Edit Mode race selector runtime (Spec 8.2.3): show selected race summary header above icon-only race buttons and disable race options when another same-party non-unique member already has the same race and gender. |
 | 0.6.5 | 2 | 2026/05/11 | Update AFK simulation runtime to respect per-state/per-terrain explore duration multipliers by using party-specific cycle durations in chunk processing instead of one fixed global cycle duration. |
 | 0.6.5 | 1 | 2026/05/11 | Prepare v0.6.5 release: bump app version to `v0.6.5` and reset build number to `1`. |
 | 0.6.4 | 42 | 2026/05/11 | Update Divine Bureau glossary spell descriptions: remove “(ヒット数は1固定)” from area-burst magic entries (無/火/氷/雷) to match current behavior. |
