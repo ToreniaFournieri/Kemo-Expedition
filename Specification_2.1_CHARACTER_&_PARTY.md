@@ -53,7 +53,7 @@
 | Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, red and white | Corsac Fox | - | snow fox | Fennec Fox |
 | Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | Sand Cat | - | MIkeneko | Maine Coon |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | - | - | Border collie | Siberian Husky |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | Saluki | - | Border collie | Siberian Husky |
 | Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | Sloth Bear | - | Panda | Tukinowaguma |
 | Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, A little timid | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes | Red panda | Tanuki | Pristinailurus |
 | Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | Desert Cottontail | - | Dwarf Hotot | Holland Lop |
