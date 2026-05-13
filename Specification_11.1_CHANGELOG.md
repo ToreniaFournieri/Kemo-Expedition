@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 2 | 2026/05/13 | Update Party Character Edit Mode runtime (Spec 8.2.3): move gender toggle to the name row (between name and edit controls), keep single-select ♂/♀ behavior, and disable gender options that would violate same-party non-unique race/gender constraints. |
 | 0.7.0 | 1 | 2026/05/11 | Prepare v0.7.0 release: bump app version to `v0.7.0` and reset build number to `1`. |
 | 0.6.5 | 3 | 2026/05/11 | Update Party Character Edit Mode race selector runtime (Spec 8.2.3): show selected race summary header above icon-only race buttons and disable race options when another same-party non-unique member already has the same race and gender. |
 | 0.6.5 | 2 | 2026/05/11 | Update AFK simulation runtime to respect per-state/per-terrain explore duration multipliers by using party-specific cycle durations in chunk processing instead of one fixed global cycle duration. |
