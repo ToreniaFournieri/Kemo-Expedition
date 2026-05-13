@@ -114,7 +114,7 @@ line2: 桃/腕  ← text over background image
     - "ボーナス: 遠距離装備, 矢x1.4, 弓x1.1, 剣x1.2, 鎧x1.8"
 
 ```
-レオン                      [編集]
+レオン               ♂ ♀ [編集]
 🐶 ケイナイアン / 戦士(師範) / 頑強 / 不動の家
 [体力:13] [力:10] [知性:10] [精神:10]
 —————
@@ -150,6 +150,7 @@ Left-aligned
 - Name [edit]
 - Editable `name` field.
 - Toggle selection: `♂` / `♀` Exactly one must be selected (no null state)
+  - If another member in the same party already has the same race, different gender, and `unique_character == false`, that gender option cannot be selected for the current member.
 - **Default Name Assignment**
   - Trigger: when `Race` is changed.
   - Select a default name randomly from the Potential Default Name Table.
