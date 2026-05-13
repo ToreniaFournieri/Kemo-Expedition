@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 5 | 2026/05/13 | Improve Party tab dark-mode edit-button readability (Spec 8.2.2/8.2.3): increase contrast between enabled and disabled controls for deity/character edit action buttons and ♂/♀ gender toggle options. |
 | 0.7.0 | 4 | 2026/05/13 | Fix Party Character Edit Mode gender-toggle duplicate guard (Spec 8.2.3): disable/gray out ♂/♀ option when same-party non-unique member already has the same race and same gender. |
 | 0.7.0 | 3 | 2026/05/13 | Update Party member details runtime header (Spec 8.2.2): hide ♂/♀ gender badges in Status pane view mode and keep gender selection visible only while editing. |
 | 0.7.0 | 2 | 2026/05/13 | Update Party Character Edit Mode runtime (Spec 8.2.3): move gender toggle to the name row (between name and edit controls), keep single-select ♂/♀ behavior, and disable gender options that would violate same-party non-unique race/gender constraints. |
