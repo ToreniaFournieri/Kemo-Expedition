@@ -6249,7 +6249,7 @@ function PartyTab({
                     party.characters.some((member, memberIndex) =>
                       memberIndex !== selectedCharacter
                       && member.raceId === selectedRaceId
-                      && member.gender !== gender
+                      && member.gender === gender
                       && member.isUnique !== true
                     );
 
@@ -6264,7 +6264,7 @@ function PartyTab({
                             key={gender}
                             type="button"
                             disabled={isDisabled}
-                            title={isBlockedByDuplicate ? '同一PT内で同種族・異性(非固有)が既に存在します' : undefined}
+                            title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
                             onClick={() => setPendingEdits({ ...pendingEdits, gender })}
                             className={`px-2 py-1 text-xs border rounded ${
                               ((pendingEdits?.gender ?? char.gender) === gender)
