@@ -6024,7 +6024,7 @@ function PartyTab({
                   onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
+                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 完了
               </button>
@@ -6033,7 +6033,7 @@ function PartyTab({
                   setPendingDeityName(party.deity.name);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded whitespace-nowrap"
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
               >
                 取消
               </button>
@@ -6267,9 +6267,15 @@ function PartyTab({
                             title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
                             onClick={() => setPendingEdits({ ...pendingEdits, gender })}
                             className={`px-2 py-1 text-xs border rounded ${
-                              ((pendingEdits?.gender ?? char.gender) === gender)
+                              (pendingEdits?.gender ?? char.gender) === gender
                                 ? 'bg-sub text-white border-sub'
-                                : (isDisabled ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-gray-600 border-gray-200')
+                                : isDisabled
+                                  ? (isDarkModeEnabled
+                                    ? 'bg-slate-700/80 text-slate-500 border-slate-600'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200')
+                                  : (isDarkModeEnabled
+                                    ? 'bg-slate-800/75 text-slate-200 border-slate-500'
+                                    : 'bg-white text-gray-600 border-gray-200')
                             }`}
                           >
                             {gender === 'male' ? '♂' : '♀'}
@@ -6290,7 +6296,7 @@ function PartyTab({
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={showEditConfirm ? saveCharacterEditWithEquipmentReset : completeCharacterEdit}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
+                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {showEditConfirm ? '保存する' : '完了'}
               </button>
@@ -6303,7 +6309,7 @@ function PartyTab({
                   setPendingEdits(null);
                   setEditingCharacter(null);
                 }}
-                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded whitespace-nowrap"
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
               >
                 {showEditConfirm ? '戻る' : '取消'}
               </button>
