@@ -68,8 +68,7 @@
 - Prompt to generate images
 
 ```
-Simple kemono anime eyes, thick feminine upper eyelid, large rounded pupil with a big white oval highlight positioned at the exact center of the pupil, eye size unchanged, minimal eye detail.
-No human like hair, flat color, no outlines. 
+Let’s think a character image prompt that is; Race: Felidian | 😺Cat | Sand Cat, agile Gender: female Cloth theme: lightweight desert adventurer outfit with exposed midriff, layered scarves and travel wraps Background is white and only the character, using for in-game image. Young, very small bust, walking energetically and dynamically from right to left, looking at camera Simple kemono anime eyes with oversized rounded pupils, thick black feminine upper eyelids, a large centered white oval catchlight inside each pupil, minimal iris rendering, mascot-like expression, flat-color eye style No human-like hair, flat color, no outlines
 ```
 
 **classes:**
