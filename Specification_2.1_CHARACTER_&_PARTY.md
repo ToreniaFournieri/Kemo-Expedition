@@ -64,6 +64,19 @@
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
 | Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
 
+- PT4
+
+| races | concept | breed |
+|------|----------------|----------|
+| Lupinian | 🐺Wolf | Black Wolf, ember-red markings, vigilant pathfinder |
+| Vulpinian | 🦊Fox | Cross Fox,     smoky rust orange, Forest Relic Thief, sly grin |
+| Felidian | 😺Cat | Bombay Cat, lapis lazuli highlights, Lava cliff runner |
+| Caninian | 🐶Dog | German Shepherd, dark ash brown + red utility gear, dependable protector |
+| Ursan | 🐻Bear | Black Bear, glowing furnace-orange accents, fortress defender |
+| Procyonian |🦝Tanuki | Red Panda, reluctant but resourceful |
+| Leporian | 🐰Rabbit | rabbit, verdigris fur with glowing red inner ears, energetic lava messenger |
+| Cervin |🦌Deer | yellow-green deer, calm sacred dignity |
+| Murid | 🐭 Mouse | Volcano mouse, soot gray + tiny ember accents, Lava tunnel explorer, excited expression |
 
 - Prompt to generate images
 
