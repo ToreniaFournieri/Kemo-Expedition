@@ -6372,15 +6372,21 @@ function PartyTab({
                         title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
                         disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
-                        className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
+                        className={`relative min-w-0 flex-1 px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
-                            : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                            : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400 dark:bg-red-900/20 dark:text-red-200 dark:border-red-400/60 dark:ring-1 dark:ring-red-500/40 dark:opacity-95' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex items-center justify-center">
                           <RaceIcon race={race} className="h-5 w-5 shrink-0" />
                         </span>
+                        {isDisabled && (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-x-[15%] top-1/2 h-px -translate-y-1/2 bg-red-400/80 dark:bg-red-300/90"
+                          />
+                        )}
                       </button>
                     );
                   };
