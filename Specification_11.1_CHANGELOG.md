@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 7 | 2026/05/13 | Update Party Character Edit Mode selection rendering (Spec 8.2.3): when duplicate constraints block gender/race options, hide the ♂/♀ text and race icon image while keeping button slots visible. |
 | 0.7.0 | 6 | 2026/05/13 | Update Party member details runtime unique-character image mapping (Spec 8.2.2): add ミシュカ -> `/public/character/Unique_Mishka.png`. |
 | 0.7.0 | 5 | 2026/05/13 | Improve Party tab dark-mode edit-button readability (Spec 8.2.2/8.2.3): increase contrast between enabled and disabled controls for deity/character edit action buttons and ♂/♀ gender toggle options. |
 | 0.7.0 | 4 | 2026/05/13 | Fix Party Character Edit Mode gender-toggle duplicate guard (Spec 8.2.3): disable/gray out ♂/♀ option when same-party non-unique member already has the same race and same gender. |
