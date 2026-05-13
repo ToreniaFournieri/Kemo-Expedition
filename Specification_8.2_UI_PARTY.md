@@ -67,6 +67,7 @@ line2: 桃/腕  ← text over background image
     - If name == `ノクス`, use : /public/character/Unique_Nox.png
     - If name == `マーレ`, use : /public/character/Unique_Merle.png
     - If name == `プチーツァ`, use : /public/character/Unique_Puchitsa.png
+    - If name == `ミシュカ`, use : /public/character/Unique_Mishka.png
     - If name == `蒼牙破`, use : /public/character/Unique_Souga-ha.png
     - If name == `レナード`, use : /public/character/Unique_Leonard.png
     - If name == `葉隠`, use : /public/character/Unique_Hagakure.png
