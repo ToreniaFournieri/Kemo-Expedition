@@ -5556,6 +5556,7 @@ function PartyTab({
     '葉隠': 'Unique_Hagakure.png',
     'フィン': 'Unique_Finn.png',
     'オルカ': 'Unique_Orca.png',
+    'ミシュカ': 'Unique_Mishka.png',
   };
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
