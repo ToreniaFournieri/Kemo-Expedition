@@ -47,18 +47,18 @@
 | Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
 | Avianv     | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
 
-| races | Japanese name | category | concept | availability | PT1:Prairie Courier, green | PT2:Tropical seaside expedition traveler, aqua | PT3:Desert adventurer outfit, yellow | PT4: Pyrepeak, red and black | PT5: Steam punk, brown | PT6:Lerporian Moon Palace, Maid/Moon Steward, indigo |
+| races | Japanese name | category | concept | availability | PT1:Prairie Courier, green | PT2:Tropical seaside expedition traveler, aqua | PT3:Desert adventurer outfit | PT4: Pyrepeak, red and black | PT5: Steam punk, brown | PT6:Lerporian Moon Palace, Maid/Moon Steward, indigo |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | Arabian Wolf, sandy beige and pale ash | - | Arctic wolf | Manded Wolf |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, red and white | Corsac Fox | - | snow fox | Fennec Fox |
-| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | Sand Cat | - | MIkeneko | Maine Coon |
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | Arabian Wolf, Full moon sand silver, indigo | - | Arctic wolf | Manded Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, Burnt crimson | Corsac Fox, | - | snow fox | Fennec Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | Sand Cat, crystalline | - | MIkeneko | Maine Coon |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | Saluki | - | Border collie | Siberian Husky |
-| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | Sloth Bear | - | Panda | Tukinowaguma |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, A little timid | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes | Red panda | Tanuki | Pristinailurus |
-| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | Desert Cottontail | - | Dwarf Hotot | Holland Lop |
-| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | Dorcas Gazelle | - | Reindeer | White-tailed Deer + Reindeer |
-| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | Saluki, Palm Oasis Green, Lapis Turquoise | - | Border collie | Siberian Husky |
+| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | Sloth Bear, yellow | - | Panda | Tukinowaguma |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, A little timid | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes, brown | Red panda | Tanuki | Pristinailurus |
+| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | Desert Cottontail, deep green | - | Dwarf Hotot | Holland Lop |
+| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
+| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
 | Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
