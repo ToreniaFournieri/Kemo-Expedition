@@ -6284,16 +6284,6 @@ function PartyTab({
           ) : (
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <span className="text-lg font-bold truncate">{char.name}</span>
-              <div className="flex gap-1">
-                {(['male', 'female'] as const).map((gender) => (
-                  <span
-                    key={gender}
-                    className={`px-2 py-1 text-xs border rounded ${char.gender === gender ? 'bg-sub text-white border-sub' : 'bg-white text-gray-400 border-gray-200'}`}
-                  >
-                    {gender === 'male' ? '♂' : '♀'}
-                  </span>
-                ))}
-              </div>
             </div>
           )}
           {editingCharacter === selectedCharacter ? (
