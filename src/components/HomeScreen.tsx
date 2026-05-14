@@ -5556,6 +5556,7 @@ function PartyTab({
     '葉隠': 'Unique_Hagakure.png',
     'フィン': 'Unique_Finn.png',
     'オルカ': 'Unique_Orca.png',
+    'ミシュカ': 'Unique_Mishka.png',
   };
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
@@ -6024,7 +6025,7 @@ function PartyTab({
                   onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
+                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 完了
               </button>
@@ -6033,7 +6034,7 @@ function PartyTab({
                   setPendingDeityName(party.deity.name);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded whitespace-nowrap"
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
               >
                 取消
               </button>
@@ -6217,7 +6218,7 @@ function PartyTab({
           </>
         )}
         <div className="relative z-10">
-        <div className="flex justify-between items-center mb-2 gap-2">
+        <div className="flex justify-between items-start mb-2 gap-2">
           {editingCharacter === selectedCharacter ? (
             <div className="flex-1 min-w-0 space-y-1">
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
@@ -6227,42 +6228,76 @@ function PartyTab({
                 </div>
               )}
 
-              <div className="mt-2 flex gap-1">
-                {(['male', 'female'] as const).map((gender) => (
-                  <button
-                    key={gender}
-                    type="button"
-                    disabled={char.isUnique}
-                    onClick={() => setPendingEdits({ ...pendingEdits, gender })}
-                    className={`px-2 py-1 text-xs border rounded ${((pendingEdits?.gender ?? char.gender) === gender) ? 'bg-sub text-white border-sub' : (char.isUnique ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-gray-600 border-gray-200')}`}
-                  >
-                    {gender === 'male' ? '♂' : '♀'}
-                  </button>
-                ))}
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={pendingEdits?.name ?? char.name}
+                  onChange={(e) => {
+                    if (char.isUnique) return;
+                    setPendingEdits({ ...pendingEdits, name: e.target.value });
+                  }}
+                  disabled={char.isUnique}
+                  className={`text-lg font-bold border-b focus:outline-none min-w-0 flex-1 ${
+                    char.isUnique
+                      ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                      : 'bg-transparent border-sub'
+                  }`}
+                />
+                {(() => {
+                  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Toggle selection: ♂ / ♀
+                  const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
+                  const isGenderOptionBlockedByDuplicate = (gender: Character['gender']) =>
+                    party.characters.some((member, memberIndex) =>
+                      memberIndex !== selectedCharacter
+                      && member.raceId === selectedRaceId
+                      && member.gender === gender
+                      && member.isUnique !== true
+                    );
+
+                  return (
+                    <div className="flex gap-1">
+                      {(['male', 'female'] as const).map((gender) => {
+                        const isBlockedByDuplicate = isGenderOptionBlockedByDuplicate(gender);
+                        const isDisabled = char.isUnique || isBlockedByDuplicate;
+
+                        return (
+                          <button
+                            key={gender}
+                            type="button"
+                            disabled={isDisabled}
+                            title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                            onClick={() => setPendingEdits({ ...pendingEdits, gender })}
+                            className={`px-2 py-1 text-xs border rounded ${
+                              (pendingEdits?.gender ?? char.gender) === gender
+                                ? 'bg-sub text-white border-sub'
+                                : isDisabled
+                                  ? (isDarkModeEnabled
+                                    ? 'bg-slate-700/80 text-slate-500 border-slate-600'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200')
+                                  : (isDarkModeEnabled
+                                    ? 'bg-slate-800/75 text-slate-200 border-slate-500'
+                                    : 'bg-white text-gray-600 border-gray-200')
+                            }`}
+                          >
+                            {!isBlockedByDuplicate ? (gender === 'male' ? '♂' : '♀') : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
-              <input
-                type="text"
-                value={pendingEdits?.name ?? char.name}
-                onChange={(e) => {
-                  if (char.isUnique) return;
-                  setPendingEdits({ ...pendingEdits, name: e.target.value });
-                }}
-                disabled={char.isUnique}
-                className={`text-lg font-bold border-b focus:outline-none w-full ${
-                  char.isUnique
-                    ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
-                    : 'bg-transparent border-sub'
-                }`}
-              />
             </div>
           ) : (
-            <span className="text-lg font-bold">{char.name}</span>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className="text-lg font-bold truncate">{char.name}</span>
+            </div>
           )}
           {editingCharacter === selectedCharacter ? (
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={showEditConfirm ? saveCharacterEditWithEquipmentReset : completeCharacterEdit}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
+                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {showEditConfirm ? '保存する' : '完了'}
               </button>
@@ -6275,7 +6310,7 @@ function PartyTab({
                   setPendingEdits(null);
                   setEditingCharacter(null);
                 }}
-                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded whitespace-nowrap"
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
               >
                 {showEditConfirm ? '戻る' : '取消'}
               </button>
@@ -6344,7 +6379,7 @@ function PartyTab({
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex items-center justify-center">
-                          <RaceIcon race={race} className="h-5 w-5 shrink-0" />
+                          {!isBlockedByDuplicate ? <RaceIcon race={race} className="h-5 w-5 shrink-0" /> : null}
                         </span>
                       </button>
                     );

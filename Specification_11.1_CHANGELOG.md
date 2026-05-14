@@ -10,6 +10,12 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 7 | 2026/05/13 | Update Party Character Edit Mode selection rendering (Spec 8.2.3): when duplicate constraints block gender/race options, hide the ♂/♀ text and race icon image while keeping button slots visible. |
+| 0.7.0 | 6 | 2026/05/13 | Update Party member details runtime unique-character image mapping (Spec 8.2.2): add ミシュカ -> `/public/character/Unique_Mishka.png`. |
+| 0.7.0 | 5 | 2026/05/13 | Improve Party tab dark-mode edit-button readability (Spec 8.2.2/8.2.3): increase contrast between enabled and disabled controls for deity/character edit action buttons and ♂/♀ gender toggle options. |
+| 0.7.0 | 4 | 2026/05/13 | Fix Party Character Edit Mode gender-toggle duplicate guard (Spec 8.2.3): disable/gray out ♂/♀ option when same-party non-unique member already has the same race and same gender. |
+| 0.7.0 | 3 | 2026/05/13 | Update Party member details runtime header (Spec 8.2.2): hide ♂/♀ gender badges in Status pane view mode and keep gender selection visible only while editing. |
+| 0.7.0 | 2 | 2026/05/13 | Update Party Character Edit Mode runtime (Spec 8.2.3): move gender toggle to the name row (between name and edit controls), keep single-select ♂/♀ behavior, and disable gender options that would violate same-party non-unique race/gender constraints. |
 | 0.7.0 | 1 | 2026/05/11 | Prepare v0.7.0 release: bump app version to `v0.7.0` and reset build number to `1`. |
 | 0.6.5 | 3 | 2026/05/11 | Update Party Character Edit Mode race selector runtime (Spec 8.2.3): show selected race summary header above icon-only race buttons and disable race options when another same-party non-unique member already has the same race and gender. |
 | 0.6.5 | 2 | 2026/05/11 | Update AFK simulation runtime to respect per-state/per-terrain explore duration multipliers by using party-specific cycle durations in chunk processing instead of one fixed global cycle duration. |

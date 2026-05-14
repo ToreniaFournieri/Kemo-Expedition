@@ -47,28 +47,41 @@
 | Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
 | Avianv     | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
 
-| races | Japanese name | category | concept | availability | PT1:Prairie Courier| PT2:Tropical seaside expedition traveler | PT3:Desert | PT4: Pyrepeak | PT5: Steam punk | PT6:Lerporian Moon Palace, Maid/Moon Steward |
+| races | Japanese name | category | concept | availability | PT1:Prairie Courier, green | PT2:Tropical seaside expedition traveler, aqua | PT3:Desert adventurer outfit | PT4: Pyrepeak, red and black | PT5: Steam punk, brown | PT6:Lerporian Moon Palace, Maid/Moon Steward, indigo |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | - | - | Arctic wolf | Manded Wolf |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, red and white | - | - | snow fox | Fennec Fox |
-| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | - | - | MIkeneko | Maine Coon |
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | Arabian Wolf, Full moon sand silver, indigo | - | Arctic wolf | Manded Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, Burnt crimson | Corsac Fox, | - | snow fox | Fennec Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | Sand Cat, crystalline | - | MIkeneko | Maine Coon |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | - | - | Border collie | Siberian Husky |
-| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | - | - | Panda | Tukinowaguma |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, a little timid | Y | - | blue and white, aqua stripe pattern | - | Red panda | Tanuki | Pristinailurus |
-| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | - | - | Dwarf Hotot | Holland Lop |
-| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | - | - | Reindeer | White-tailed Deer + Reindeer |
-| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink | - | - | - | Dormouse |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | Saluki, Palm Oasis Green, Lapis Turquoise | - | Border collie | Siberian Husky |
+| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | Sloth Bear, yellow | - | Panda | Tukinowaguma |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, A little timid | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes, brown | Red panda | Tanuki | Pristinailurus |
+| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | Desert Cottontail, deep green | - | Dwarf Hotot | Holland Lop |
+| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
+| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
 | Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
 | Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
 
+- PT4
+
+| races | concept | breed |
+|------|----------------|----------|
+| Lupinian | 🐺Wolf | Black Wolf, ember-red markings, vigilant pathfinder |
+| Vulpinian | 🦊Fox | Cross Fox,     smoky rust orange, Forest Relic Thief, sly grin |
+| Felidian | 😺Cat | Bombay Cat, lapis lazuli highlights, Lava cliff runner |
+| Caninian | 🐶Dog | German Shepherd, dark ash brown + red utility gear, dependable protector |
+| Ursan | 🐻Bear | Black Bear, glowing furnace-orange accents, fortress defender |
+| Procyonian |🦝Tanuki | Red Panda, reluctant but resourceful |
+| Leporian | 🐰Rabbit | rabbit, verdigris fur with glowing red inner ears, energetic lava messenger |
+| Cervin |🦌Deer | yellow-green deer, calm sacred dignity |
+| Murid | 🐭 Mouse | Volcano mouse, soot gray + tiny ember accents, Lava tunnel explorer, excited expression |
+
 - Prompt to generate images
 
 ```
-Simple kemono anime eyes, thick feminine upper eyelid, large rounded pupil with a big white oval highlight positioned at the exact center of the pupil, eye size unchanged, minimal eye detail.
-No human like hair, flat color, no outlines. 
+Let’s think a character image prompt that is; Race: Felidian | 😺Cat | Sand Cat, agile Gender: female Cloth theme: lightweight desert adventurer outfit with exposed midriff, layered scarves and travel wraps Background is white and only the character, using for in-game image. Young, very small bust, walking energetically and dynamically from right to left, looking at camera Simple kemono anime eyes with oversized rounded pupils, thick black feminine upper eyelids, a large centered white oval catchlight inside each pupil, minimal iris rendering, mascot-like expression, flat-color eye style No human-like hair, flat color, no outlines
 ```
 
 **classes:**
