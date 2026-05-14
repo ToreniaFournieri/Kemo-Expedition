@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 9 | 2026/05/14 | Fix Party Character Edit Mode selector layout (Spec 8.2.3): keep gender and race button slot sizes stable when duplicate constraints hide symbol/icon content, preventing collapsed boxes in disabled state. |
 | 0.7.0 | 8 | 2026/05/14 | Update Party Character Edit Mode unique-character rendering (Spec 8.2.3): in Gender and Race selectors, show only the currently selected ♂/♀ text or race icon while keeping alternative button slots visible without icon/text. |
 | 0.7.0 | 7 | 2026/05/13 | Update Party Character Edit Mode selection rendering (Spec 8.2.3): when duplicate constraints block gender/race options, hide the ♂/♀ text and race icon image while keeping button slots visible. |
 | 0.7.0 | 6 | 2026/05/13 | Update Party member details runtime unique-character image mapping (Spec 8.2.2): add ミシュカ -> `/public/character/Unique_Mishka.png`. |
