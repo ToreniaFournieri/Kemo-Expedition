@@ -6279,7 +6279,7 @@ function PartyTab({
                                     : 'bg-white text-gray-600 border-gray-200')
                             }`}
                           >
-                            {!isDisabled ? (gender === 'male' ? '♂' : '♀') : null}
+                            {!isBlockedByDuplicate ? (gender === 'male' ? '♂' : '♀') : null}
                           </button>
                         );
                       })}
@@ -6379,7 +6379,7 @@ function PartyTab({
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex items-center justify-center">
-                          {!isDisabled ? <RaceIcon race={race} className="h-5 w-5 shrink-0" /> : null}
+                          {!isBlockedByDuplicate ? <RaceIcon race={race} className="h-5 w-5 shrink-0" /> : null}
                         </span>
                       </button>
                     );
