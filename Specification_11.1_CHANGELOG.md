@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 11 | 2026/05/14 | Fix Party status pane offense summary (Spec 8.2.2): include 重撃 penetration conversion in displayed `貫通:+N%` so heavy-strike users show the expected penetration bonus. |
 | 0.7.0 | 10 | 2026/05/14 | Update Party Character Edit Mode selector alignment (Spec 8.2.3): center race icons horizontally inside race buttons and center ♂/♀ glyphs vertically inside gender toggle buttons. |
 | 0.7.0 | 9 | 2026/05/14 | Fix Party Character Edit Mode selector layout (Spec 8.2.3): keep gender and race button slot sizes stable when duplicate constraints hide symbol/icon content, preventing collapsed boxes in disabled state. |
 | 0.7.0 | 8 | 2026/05/14 | Update Party Character Edit Mode unique-character rendering (Spec 8.2.3): in Gender and Race selectors, show only the currently selected ♂/♀ text or race icon while keeping alternative button slots visible without icon/text. |

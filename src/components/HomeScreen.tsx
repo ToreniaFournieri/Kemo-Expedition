@@ -6851,7 +6851,14 @@ function PartyTab({
                     ],
                   });
                 }
-                const penetrationPercent = Math.round(stats.penetMultiplier * 100);
+                const heavyStrikePenetAbility = stats.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
+                const heavyStrikePenetPerNoA = heavyStrikePenetAbility
+                  ? (heavyStrikePenetAbility.level >= 2 ? 0.015 : 0.01)
+                  : 0;
+                const heavyStrikePenetBonus = heavyStrikePenetAbility
+                  ? (Math.max(stats.rangedNoA, stats.magicalNoA, stats.meleeNoA) * heavyStrikePenetPerNoA)
+                  : 0;
+                const penetrationPercent = Math.round((stats.penetMultiplier + heavyStrikePenetBonus) * 100);
                 if (penetrationPercent !== 0) {
                   offenseLines.push({
                     key: 'penetration',
