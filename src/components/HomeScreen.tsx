@@ -6270,7 +6270,7 @@ function PartyTab({
                             disabled={isDisabled}
                             title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
                             onClick={() => setPendingEdits({ ...pendingEdits, gender })}
-                            className={`px-2 py-1 text-xs border rounded ${
+                            className={`flex items-center justify-center px-2 py-1 text-xs border rounded ${
                               (pendingEdits?.gender ?? char.gender) === gender
                                 ? 'bg-sub text-white border-sub'
                                 : isDisabled
@@ -6282,7 +6282,7 @@ function PartyTab({
                                     : 'bg-white text-gray-600 border-gray-200')
                             }`}
                           >
-                            <span className="inline-flex w-3 justify-center">
+                            <span className="inline-flex h-full w-3 items-center justify-center leading-none">
                               {shouldShowGenderSymbol ? (gender === 'male' ? '♂' : '♀') : null}
                             </span>
                           </button>
@@ -6380,7 +6380,7 @@ function PartyTab({
                         title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
                         disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
-                        className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
+                        className={`min-w-0 flex flex-1 items-center justify-center px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
                             : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
