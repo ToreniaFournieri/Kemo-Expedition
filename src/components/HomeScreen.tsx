@@ -6259,6 +6259,9 @@ function PartyTab({
                       {(['male', 'female'] as const).map((gender) => {
                         const isBlockedByDuplicate = isGenderOptionBlockedByDuplicate(gender);
                         const isDisabled = char.isUnique || isBlockedByDuplicate;
+                        const shouldShowGenderSymbol = char.isUnique
+                          ? (pendingEdits?.gender ?? char.gender) === gender
+                          : !isBlockedByDuplicate;
 
                         return (
                           <button
@@ -6279,7 +6282,7 @@ function PartyTab({
                                     : 'bg-white text-gray-600 border-gray-200')
                             }`}
                           >
-                            {!isBlockedByDuplicate ? (gender === 'male' ? '♂' : '♀') : null}
+                            {shouldShowGenderSymbol ? (gender === 'male' ? '♂' : '♀') : null}
                           </button>
                         );
                       })}
@@ -6363,6 +6366,9 @@ function PartyTab({
                   const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
                     const isBlockedByDuplicate = isRaceOptionBlockedByDuplicate(race.id);
                     const isDisabled = char.isUnique || isBlockedByDuplicate;
+                    const shouldShowRaceIcon = char.isUnique
+                      ? isSelectedRace
+                      : !isBlockedByDuplicate;
 
                     return (
                       <button
@@ -6379,7 +6385,7 @@ function PartyTab({
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex items-center justify-center">
-                          {!isBlockedByDuplicate ? <RaceIcon race={race} className="h-5 w-5 shrink-0" /> : null}
+                          {shouldShowRaceIcon ? <RaceIcon race={race} className="h-5 w-5 shrink-0" /> : null}
                         </span>
                       </button>
                     );
