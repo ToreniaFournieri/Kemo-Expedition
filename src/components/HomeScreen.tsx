@@ -6270,7 +6270,7 @@ function PartyTab({
                             disabled={isDisabled}
                             title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
                             onClick={() => setPendingEdits({ ...pendingEdits, gender })}
-                            className={`px-2 py-1 text-xs border rounded ${
+                            className={`flex items-center justify-center px-2 py-1 text-xs border rounded ${
                               (pendingEdits?.gender ?? char.gender) === gender
                                 ? 'bg-sub text-white border-sub'
                                 : isDisabled
@@ -6282,7 +6282,9 @@ function PartyTab({
                                     : 'bg-white text-gray-600 border-gray-200')
                             }`}
                           >
-                            {shouldShowGenderSymbol ? (gender === 'male' ? '♂' : '♀') : null}
+                            <span className="inline-flex h-full w-3 items-center justify-center leading-none">
+                              {shouldShowGenderSymbol ? (gender === 'male' ? '♂' : '♀') : null}
+                            </span>
                           </button>
                         );
                       })}
@@ -6378,13 +6380,13 @@ function PartyTab({
                         title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
                         disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
-                        className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
+                        className={`min-w-0 flex flex-1 items-center justify-center px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
                             : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
-                        <span className="flex items-center justify-center">
+                        <span className="flex h-5 w-5 items-center justify-center">
                           {shouldShowRaceIcon ? <RaceIcon race={race} className="h-5 w-5 shrink-0" /> : null}
                         </span>
                       </button>
@@ -6849,7 +6851,14 @@ function PartyTab({
                     ],
                   });
                 }
-                const penetrationPercent = Math.round(stats.penetMultiplier * 100);
+                const heavyStrikePenetAbility = stats.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
+                const heavyStrikePenetPerNoA = heavyStrikePenetAbility
+                  ? (heavyStrikePenetAbility.level >= 2 ? 0.015 : 0.01)
+                  : 0;
+                const heavyStrikePenetBonus = heavyStrikePenetAbility
+                  ? (Math.max(stats.rangedNoA, stats.magicalNoA, stats.meleeNoA) * heavyStrikePenetPerNoA)
+                  : 0;
+                const penetrationPercent = Math.round((stats.penetMultiplier + heavyStrikePenetBonus) * 100);
                 if (penetrationPercent !== 0) {
                   offenseLines.push({
                     key: 'penetration',
