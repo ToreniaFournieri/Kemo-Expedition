@@ -2840,10 +2840,19 @@ export function HomeScreen({
     });
   }, []);
   const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(null);
+  const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
 
   useEffect(() => {
     if (timeSpeedBonusUntilMs === null) return;
-    if (Date.now() < timeSpeedBonusUntilMs) return;
+    const timer = window.setInterval(() => {
+      setTimeSpeedNowMs(Date.now());
+    }, 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [timeSpeedBonusUntilMs]);
+
+  useEffect(() => {
+    if (timeSpeedBonusUntilMs === null) return;
+    if (timeSpeedNowMs < timeSpeedBonusUntilMs) return;
     setTimeSpeedBonusUntilMs(null);
     setDebugSettings((prev) => {
       if (prev.timeSpeed !== 'x1_2') return prev;
@@ -2851,7 +2860,16 @@ export function HomeScreen({
       saveDebugSettings(next);
       return next;
     });
-  }, [timeSpeedBonusUntilMs]);
+  }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
+
+  const speedOfTimeLabel = useMemo(() => {
+    const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
+    if (!isBonusSpeed) return 'x1.0';
+    const remainingHours = timeSpeedBonusUntilMs === null
+      ? 0
+      : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
+    return `x1.2(${formatNumber(remainingHours)}h)`;
+  }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const runAutoEquipment = useCallback((
     targetPartyIndexes?: number[],
@@ -5024,7 +5042,7 @@ export function HomeScreen({
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
               >
-                Speed of Time: ▷ {debugSettings.timeSpeed === 'x1_2' ? 'x1.2' : 'x1.0'}
+                ▷ {speedOfTimeLabel}
               </button>
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (
