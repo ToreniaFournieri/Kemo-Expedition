@@ -139,8 +139,7 @@
     - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
     - Dialog options: YES / NO
   - If the player selects YES: 
-    - Generate:
-    - the current party status data and the latest expedition log for each party member,
+    - Generate **format of progress data** and send to:
       - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
@@ -171,4 +170,44 @@
 
 -IF 自動周回 is OFF, display "静止中" in the header (right-aligned: 200G 静止中) with Sub color
  and tap "静止中", then 自動周回 is ON.
+
+
+
+**Format of progress data**
+
+- PT table ( latest outcome and room )
+  - `PT`: PT number ( PT1, PT2 ....)
+  - `Level`: level. ( 40 )
+  - `HP`: Party.`d.HP` ( 20,543 )
+  - `Exp`: Experience remaining: (23%)
+  - `ID`: Expedition ID (1,2,.)
+  - `Outcome`: The latest outcome ( Clear )
+  - `Room`: the deepest room of the latest expedition
+
+- Status table
+  - `PT`: PT number (PT1, PT2 ....)
+  - `列`: Row. (1,2, ...6)
+  - `名前`: Character name (オルカ)
+  - `性`: Gender. (♂ -> 男/ ♀ -> 女)
+  - `主`: Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
+  - `副`: Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
+  - `譜`: Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
+  - `格`: Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
+  - `物防御`: `d.physical_defense`
+  - `物防倍`: `f.defense_amplifier` LONG and CLOSE
+  - `魔防御`: `d.magical_defense`
+  - `魔防倍`: `f.defense_amplifier` MID
+  - `回避`:  `evasion`
+  - `遠攻撃`: `d.ranged_attack`
+  - `遠攻倍`: `f.offense_amplifier` LONG
+  - `遠回数`: `d.ranged_NoA`
+  - `魔攻撃`: `d.magical_attack`
+  - `魔攻倍`: `f.offense_amplifier` MID
+  - `魔回数`: `d.magical_NoA`
+  - `近攻撃`: `d.melee_attack`
+  - `近攻倍`: `f.offense_amplifier` CLOSE
+  - `近回数`: `d.melee_NoA`
+　- `属性攻`: `f.elemental_offense_attribute`
+  - `属性防`: `f.elemental_resistance_attribute`
+  - `貫通`: `f.penet_multiplier`
 
