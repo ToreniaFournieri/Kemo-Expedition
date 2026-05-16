@@ -137,7 +137,9 @@
     - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
     - Dialog options: YES / NO
   - If the player selects YES: 
-    - Generate the current save data and send it to the Discord server using the BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+    - Generate the current save data and send it to the Discord server using the
+      - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+      - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
       - Set Speed of Time to x1.2.
       - The boost effect lasts for 24 hours.
