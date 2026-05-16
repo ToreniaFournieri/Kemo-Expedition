@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 18 | 2026/05/16 | Implement Speed of Time report reward flow: keep confirmation YES/NO, send current compressed save data to Discord via `BETA_DISCORD_WEBHOOK_URL`, apply x1.2 for 24h only on successful webhook response, show failure alert without boost on error, and reset to x1.0 when duration expires. |
 | 0.7.0 | 17 | 2026/05/16 | Fix Speed of Time header runtime label: reflect current Debug pane speed settings (`x5`, `x20`, `x100`) instead of always showing `x1.0`, while preserving x1.2 bonus display with remaining hours (`x1.2(23h)`). |
 | 0.7.0 | 16 | 2026/05/16 | Update Speed of Time runtime display and flow: remove the `Speed of Time:` prefix in the header button, show remaining boost duration in hours as `▷ x1.2(23h)` style, keep YES/NO confirmation text for reporting, apply x1.2 speed for 1 day on YES without actual server reporting, and automatically reset to x1.0 when remaining duration reaches 0h. |
 | 0.7.0 | 15 | 2026/05/16 | Implement Speed of Time runtime controls: add header Speed of Time button with confirmation dialog that applies temporary x1.2 speed for 1 day (no server reporting in this version), and extend Debug pane speed options to Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra while keeping default Real time and Clairvoyance default OFF. |

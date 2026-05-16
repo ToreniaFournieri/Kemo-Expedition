@@ -1104,6 +1104,9 @@ function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
 }
 
 const numberFormatter = new Intl.NumberFormat('ja-JP');
+const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
+const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
+const BETA_DISCORD_WEBHOOK_URL = import.meta.env.BETA_DISCORD_WEBHOOK_URL;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
@@ -2871,8 +2874,36 @@ export function HomeScreen({
     const remainingHours = timeSpeedBonusUntilMs === null
       ? 0
       : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
-    return `x1.2(${formatNumber(remainingHours)}h)`;
+    return `${SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL}(${formatNumber(remainingHours)}h)`;
   }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
+
+  const reportProgressForSpeedOfTime = useCallback(async () => {
+    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
+    if (!BETA_DISCORD_WEBHOOK_URL) {
+      throw new Error('BETA_DISCORD_WEBHOOK_URL is not configured.');
+    }
+    const serialized = encodePersistedState(JSON.stringify(serializeGameState(state)));
+    const payload = {
+      content: 'KEMO EXPEDITION progress report',
+      username: 'KEMO EXPEDITION BETA',
+      embeds: [{
+        title: 'Speed of Time Progress Report',
+        timestamp: new Date().toISOString(),
+        fields: [
+          { name: 'Version', value: APP_VERSION, inline: true },
+          { name: 'Environment', value: getEnvironmentId(), inline: true },
+          { name: 'SaveDataCompressed', value: `\n\`\`\`\n${serialized}\n\`\`\`\n` },
+        ],
+      }],
+    };
+
+    const response = await fetch(BETA_DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
+  }, [state]);
 
   const runAutoEquipment = useCallback((
     targetPartyIndexes?: number[],
@@ -5035,13 +5066,20 @@ export function HomeScreen({
               {envDisplayLabel && <span className="text-xs font-normal text-gray-500">{envDisplayLabel}</span>}
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane(デバッグ)
                   const confirmed = window.confirm('現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）');
                   if (!confirmed) return;
-                  const bonusUntilMs = Date.now() + (24 * 60 * 60 * 1000);
-                  setTimeSpeedBonusUntilMs(bonusUntilMs);
-                  updateDebugSettings({ timeSpeed: 'x1_2' });
+                  try {
+                    await reportProgressForSpeedOfTime();
+                    const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
+                    setTimeSpeedBonusUntilMs(bonusUntilMs);
+                    updateDebugSettings({ timeSpeed: 'x1_2' });
+                    actions.addNotification('進捗報告に成功しました。1日間、ゲーム進行速度が1.2倍になります。', 'normal', 'stat', true);
+                  } catch (error) {
+                    console.error('Failed to report progress for Speed of Time:', error);
+                    window.alert('進捗報告に失敗したため、速度ボーナスは適用されませんでした。');
+                  }
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
               >
