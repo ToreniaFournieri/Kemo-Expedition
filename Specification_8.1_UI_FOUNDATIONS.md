@@ -136,8 +136,15 @@
   - Show the following confirmation dialog:
     - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
     - Dialog options: YES / NO
-  - If the player selects YES: Set Speed of Time to x1.2. The boost effect lasts for 1 day.
-    - In this version, no actual data is sent to the server.
+  - If the player selects YES: 
+    - Generate the current save data and send it to the Discord server using the BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+    - If the webhook request succeeds:
+      - Set Speed of Time to x1.2.
+      - The boost effect lasts for 24 hours.
+    - If the webhook request fails:
+      - Do not apply the boost effect.
+      - Keep Speed of Time at its current value.
+      - Show an error message to the player.
   - When the remaining duration reaches 0h: Reset Speed of Time to x1.0.
 
 ```
