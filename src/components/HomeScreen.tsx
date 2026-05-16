@@ -2989,7 +2989,7 @@ export function HomeScreen({
         username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
       });
     } else {
-      const chunks: string[][] = [];
+      const chunks: string[][][] = [];
       let currentChunk: string[][] = [];
       for (const row of statusRows) {
         const nextChunk = [...currentChunk, row];
