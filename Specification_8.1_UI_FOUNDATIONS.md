@@ -130,10 +130,18 @@
   return "";  };
   - Use this specification's version
 
+- Speed of Time: ▷ x1.0
+  - Displays the current game speed multiplier.
+- When the player presses the Speed of Time button:
+  - Show the following confirmation dialog:
+    - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
+    - Dialog options: YES / NO
+  - If the player selects YES: Set Speed of Time to x1.2. The boost effect lasts for 1 day.
+    - In this version, no actual data is sent to the server.
 
 ```
 (Left-aligned)             (Right-aligned)
-冒ケモ🐾　v0.6.0(23) (αテスト)        200G
+冒ケモ🐾　v0.6.0(23) (αテスト)    ▷ x1.0  200G
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
