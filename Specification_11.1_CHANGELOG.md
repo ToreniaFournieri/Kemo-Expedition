@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 14 | 2026/05/16 | Implement runtime Party State Machine `state.pray` transition (Spec 5.1.1): after pray completion, parties now return to `state.rest` when current HP is below MaxHP; only fully healed parties proceed to `state.idle`/`state.move`. |
 | 0.7.0 | 13 | 2026/05/16 | Update wide-mode split-view threshold (Spec 8.1 Navigation tabs): enable two-tab layout at viewport width >= 700px (was 800px) while keeping one-tab panel width at 500px and Expedition always visible alongside the selected secondary tab. |
 | 0.7.0 | 12 | 2026/05/16 | Update wide-mode split-view threshold (Spec 8.1 Navigation tabs): enable two-tab layout at viewport width >= 800px (was 1024px) while keeping one-tab panel width at 500px and Expedition always visible alongside the selected secondary tab. |
 | 0.7.0 | 11 | 2026/05/14 | Fix Party status pane offense summary (Spec 8.2.2): include 重撃 penetration conversion in displayed `貫通:+N%` so heavy-strike users show the expected penetration bonus. |
