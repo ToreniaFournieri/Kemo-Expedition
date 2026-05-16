@@ -125,8 +125,8 @@
 
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
-  if (p.includes("/dev/")) return "開発環境";
-  if (p.includes("/qa/")) return "αテスト";
+  if (p.includes("/dev/")) return "D";
+  if (p.includes("/beta/")) return "β";
   return "";  };
   - Use this specification's version
 
@@ -149,7 +149,7 @@
 
 ```
 (Left-aligned)             (Right-aligned)
-冒ケモ🐾　v0.6.0(23) (αテスト)    ▷ x1.0(23h)  200G
+冒ケモ🐾　v0.6.0(23) (β)    ▷ x1.0(23h)  200G
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
