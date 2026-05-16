@@ -2897,11 +2897,16 @@ export function HomeScreen({
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
-    const toMarkdownTable = (headers: string[], rows: string[][]): string => {
-      const headerLine = `| ${headers.join(' | ')} |`;
-      const separatorLine = `| ${headers.map(() => '---').join(' | ')} |`;
-      const bodyLines = rows.map((row) => `| ${row.join(' | ')} |`);
-      return [headerLine, separatorLine, ...bodyLines].join('\n');
+    const toMonospaceTable = (headers: string[], rows: string[][]): string => {
+      const safeRows = [headers, ...rows];
+      const columnWidths = headers.map((_, columnIndex) => (
+        safeRows.reduce((maxWidth, row) => Math.max(maxWidth, (row[columnIndex] ?? '').length), 0)
+      ));
+      const padRow = (row: string[]) => row
+        .map((cell, columnIndex) => (cell ?? '').padEnd(columnWidths[columnIndex], ' '))
+        .join('  ');
+      const lines = [padRow(headers), ...rows.map((row) => padRow(row))];
+      return `\`\`\`\n${lines.join('\n')}\n\`\`\``;
     };
     const ptRows = state.parties.map((party, index) => {
       const latestLog = party.lastExpeditionLog;
@@ -2977,11 +2982,11 @@ export function HomeScreen({
     });
 
     await postWebhook({
-      content: `PT table (latest outcome and room)\n${toMarkdownTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
+      content: `PT table (latest outcome and room)\n${toMonospaceTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
     const statusHeaders = ['PT', '列', '名前', '性', '主', '副', '譜', '格', '物防御', '物防倍', '魔防御', '魔防倍', '回避', '遠攻撃', '遠攻倍', '遠回数', '魔攻撃', '魔攻倍', '魔回数', '近攻撃', '近攻倍', '近回数', '属性攻', '属性防', '貫通'];
-    const statusTableFull = toMarkdownTable(statusHeaders, statusRows);
+    const statusTableFull = toMonospaceTable(statusHeaders, statusRows);
     const statusContentLimit = 1800;
     if (`Status table\n${statusTableFull}`.length <= statusContentLimit) {
       await postWebhook({
@@ -2993,7 +2998,7 @@ export function HomeScreen({
       let currentChunk: string[][] = [];
       for (const row of statusRows) {
         const nextChunk = [...currentChunk, row];
-        const nextContent = `Status table\n${toMarkdownTable(statusHeaders, nextChunk)}`;
+        const nextContent = `Status table\n${toMonospaceTable(statusHeaders, nextChunk)}`;
         if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
           chunks.push(currentChunk);
           currentChunk = [row];
@@ -3005,7 +3010,7 @@ export function HomeScreen({
 
       for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
         await postWebhook({
-          content: `Status table (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMarkdownTable(statusHeaders, chunks[chunkIndex])}`,
+          content: `Status table (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMonospaceTable(statusHeaders, chunks[chunkIndex])}`,
           username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
         });
       }

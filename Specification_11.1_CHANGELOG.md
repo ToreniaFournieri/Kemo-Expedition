@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.0 | 27 | 2026/05/16 | Update Speed of Time runtime progress data format (Spec 8.1.2): send PT and Status report sections as monospace-aligned code-block tables instead of markdown tables. |
 | 0.7.0 | 26 | 2026/05/16 | Fix Speed of Time status-report table chunk typing in HomeScreen runtime: correct chunk row array types for markdown rendering so TypeScript build passes without assignment errors. |
 | 0.7.0 | 25 | 2026/05/16 | Fix Speed of Time Discord status reporting (Spec 8.1.2 Header): split oversized Status table payload into multiple webhook-safe table chunks with part numbering, while preserving the same columns and data format. |
 |---------|-------|------|--------------------------------------------------------------------------------------|
