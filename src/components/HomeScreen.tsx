@@ -2897,7 +2897,18 @@ export function HomeScreen({
       return false;
     }
     const serialized = encodePersistedState(JSON.stringify(serializeGameState(state)));
-    const payload = {
+    const postWebhook = async (payload: Record<string, unknown>) => {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
+    };
+    const maxChunkSize = 1500;
+    const serializedChunks = serialized.match(new RegExp(`.{1,${maxChunkSize}}`, 'g')) ?? [''];
+
+    await postWebhook({
       content: 'KEMO EXPEDITION progress report',
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
       embeds: [{
@@ -2906,17 +2917,18 @@ export function HomeScreen({
         fields: [
           { name: 'Version', value: APP_VERSION, inline: true },
           { name: 'Environment', value: getEnvironmentId(), inline: true },
-          { name: 'SaveDataCompressed', value: `\n\`\`\`\n${serialized}\n\`\`\`\n` },
+          { name: 'SaveDataChunks', value: `${formatNumber(serializedChunks.length)} chunk(s)`, inline: true },
         ],
       }],
-    };
-
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
     });
-    if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
+
+    for (let i = 0; i < serializedChunks.length; i += 1) {
+      const chunk = serializedChunks[i];
+      await postWebhook({
+        content: `SaveDataCompressed chunk ${formatNumber(i + 1)}/${formatNumber(serializedChunks.length)}\n\`\`\`\n${chunk}\n\`\`\``,
+        username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+      });
+    }
     return true;
   }, [state]);
 
