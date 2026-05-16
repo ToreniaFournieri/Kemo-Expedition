@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 23 | 2026/05/16 | Simplify Speed of Time progress reporting payload: stop sending compressed save chunks, and instead post current party status plus latest expedition log summaries for each party member to environment-specific Discord webhooks. |
 | 0.7.0 | 22 | 2026/05/16 | Fix Speed of Time progress reporting Discord 400 errors by splitting compressed save data into webhook-safe chunk messages, while posting version/environment metadata in a separate summary message. |
 | 0.7.0 | 21 | 2026/05/16 | Fix Speed of Time webhook configuration for Pages builds: switch client env keys to Vite-exposed `VITE_DEV_DISCORD_WEBHOOK_URL`/`VITE_BETA_DISCORD_WEBHOOK_URL`, wire GitHub Actions build job to pass secrets as those vars, and attach build job to `github-pages` environment so environment secrets are available at build time. |
 | 0.7.0 | 20 | 2026/05/16 | Fix Speed of Time progress-report runtime: when the required Discord webhook env (`DEV_DISCORD_WEBHOOK_URL` or `BETA_DISCORD_WEBHOOK_URL`) is missing, skip sending gracefully without throwing, show a clear user alert, and keep the x1.2 bonus blocked unless reporting succeeds. |

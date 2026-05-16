@@ -2896,7 +2896,26 @@ export function HomeScreen({
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
-    const serialized = encodePersistedState(JSON.stringify(serializeGameState(state)));
+    const formatPartyStatusSummary = (party: Party): string => {
+      const expeditionStats = [
+        `Clear ${formatNumber(party.expeditionStats.Clear)}`,
+        `TurnedBack ${formatNumber(party.expeditionStats.Turned_Back)}`,
+        `DrawRetreat ${formatNumber(party.expeditionStats.Draw_Retreat)}`,
+        `WoundedRetreat ${formatNumber(party.expeditionStats.Wounded_Retreat)}`,
+        `Defeat ${formatNumber(party.expeditionStats.Defeat)}`,
+      ].join(' / ');
+      return `[${party.name}] Lv${formatNumber(party.level)} HP ${formatNumber(Math.max(0, Math.floor(party.currentHp)))} Gold ${formatNumber(party.deityGold)}G | ${expeditionStats}`;
+    };
+    const formatLatestExpeditionLogForMember = (party: Party, member: Character): string => {
+      const latestLog = party.lastExpeditionLog;
+      if (!latestLog) return `${party.name}/${member.name}: latest log = none`;
+      return `${party.name}/${member.name}: ${latestLog.dungeonName} ${latestLog.finalOutcome} Rooms ${formatNumber(latestLog.completedRooms)}`;
+    };
+    const partyStatusSummary = state.parties.map(formatPartyStatusSummary).join('\n');
+    const latestExpeditionLogsByMember = state.parties
+      .flatMap((party) => party.characters.map((member) => formatLatestExpeditionLogForMember(party, member)))
+      .join('\n');
+
     const postWebhook = async (payload: Record<string, unknown>) => {
       const response = await fetch(webhookUrl, {
         method: 'POST',
@@ -2905,8 +2924,6 @@ export function HomeScreen({
       });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
     };
-    const maxChunkSize = 1500;
-    const serializedChunks = serialized.match(new RegExp(`.{1,${maxChunkSize}}`, 'g')) ?? [''];
 
     await postWebhook({
       content: 'KEMO EXPEDITION progress report',
@@ -2917,18 +2934,18 @@ export function HomeScreen({
         fields: [
           { name: 'Version', value: APP_VERSION, inline: true },
           { name: 'Environment', value: getEnvironmentId(), inline: true },
-          { name: 'SaveDataChunks', value: `${formatNumber(serializedChunks.length)} chunk(s)`, inline: true },
         ],
       }],
     });
 
-    for (let i = 0; i < serializedChunks.length; i += 1) {
-      const chunk = serializedChunks[i];
-      await postWebhook({
-        content: `SaveDataCompressed chunk ${formatNumber(i + 1)}/${formatNumber(serializedChunks.length)}\n\`\`\`\n${chunk}\n\`\`\``,
-        username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-      });
-    }
+    await postWebhook({
+      content: `Party Status\n\`\`\`\n${partyStatusSummary}\n\`\`\``,
+      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+    });
+    await postWebhook({
+      content: `Latest Expedition Log (Per Member)\n\`\`\`\n${latestExpeditionLogsByMember}\n\`\`\``,
+      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+    });
     return true;
   }, [state]);
 
