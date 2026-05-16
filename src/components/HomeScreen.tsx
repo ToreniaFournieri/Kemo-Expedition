@@ -4239,11 +4239,20 @@ export function HomeScreen({
                   }
                 }
               }
-              updated.state = autoRepeatEnabled ? 'move' : 'idle';
-              updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
-              if (updated.state === 'move') {
-                updated.sortieSourceState = undefined;
-                updated.sortieEmbezzlementGold = undefined;
+              // SpecRef: 5.1.1 | Party State Machine | state.pray
+              const shouldReturnToRest = party.currentHp < partyRuntimeStats.hp;
+              if (shouldReturnToRest) {
+                updated.state = 'rest';
+                updated.durationMs = getStateDurationMs(party, 'rest');
+                updated.wasLowHpAtRestStart = false;
+                updated.restInitialTotalSteps = getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp);
+              } else {
+                updated.state = autoRepeatEnabled ? 'move' : 'idle';
+                updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
+                if (updated.state === 'move') {
+                  updated.sortieSourceState = undefined;
+                  updated.sortieEmbezzlementGold = undefined;
+                }
               }
             } else if (updated.state === 'idle') {
               updated.durationMs = 1000;
