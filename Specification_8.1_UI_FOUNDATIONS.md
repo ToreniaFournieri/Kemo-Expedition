@@ -130,7 +130,7 @@
   return "";  };
   - Use this specification's version
 
-- Speed of Time: ▷ x1.0
+- Speed of Time: `▷ x1.0`
   - Displays the current game speed multiplier.
 - When the player presses the Speed of Time button:
   - Show the following confirmation dialog:
