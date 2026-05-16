@@ -2878,6 +2878,11 @@ export function HomeScreen({
     return `${SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL}(${formatNumber(remainingHours)}h)`;
   }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
+  const speedOfTimeSymbol = useMemo(() => {
+    if (debugSettings.timeSpeed === 'realtime') return '▷';
+    return '▶';
+  }, [debugSettings.timeSpeed]);
+
   const reportProgressForSpeedOfTime = useCallback(async () => {
     // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
     const environmentId = getEnvironmentId();
@@ -5091,7 +5096,7 @@ export function HomeScreen({
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
               >
-                ▷ {speedOfTimeLabel}
+                {speedOfTimeSymbol} {speedOfTimeLabel}
               </button>
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (
