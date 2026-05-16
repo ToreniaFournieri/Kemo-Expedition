@@ -30,7 +30,7 @@
 | `state.slump` | | sound_sleep or nap_sleep or pray  | |
 | sleep/ `state.sound_sleep`, `state.nap_sleep` | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | sound sleep:outfit, nap_sleep:pray |
 | `state.outfit` | equipping items. skip if no sound_sleep | pray |
-| `state.pray` | at home. Party members donate money to their deity. | idle or move |
+| `state.pray` | at home. Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
 | `state.idle` | at home. only when 自動周回 = OFF (idle state) | - |
 | `state.move` | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
 | `state.explore` | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
