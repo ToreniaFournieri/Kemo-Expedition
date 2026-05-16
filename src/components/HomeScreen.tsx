@@ -2863,6 +2863,9 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeLabel = useMemo(() => {
+    if (debugSettings.timeSpeed === 'x20') return 'x20';
+    if (debugSettings.timeSpeed === 'x100') return 'x100';
+    if (debugSettings.timeSpeed === 'x5') return 'x5';
     const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
     if (!isBonusSpeed) return 'x1.0';
     const remainingHours = timeSpeedBonusUntilMs === null
