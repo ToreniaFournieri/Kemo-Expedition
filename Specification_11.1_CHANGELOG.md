@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 21 | 2026/05/16 | Fix Speed of Time webhook configuration for Pages builds: switch client env keys to Vite-exposed `VITE_DEV_DISCORD_WEBHOOK_URL`/`VITE_BETA_DISCORD_WEBHOOK_URL`, wire GitHub Actions build job to pass secrets as those vars, and attach build job to `github-pages` environment so environment secrets are available at build time. |
+| 0.7.0 | 20 | 2026/05/16 | Fix Speed of Time progress-report runtime: when the required Discord webhook env (`DEV_DISCORD_WEBHOOK_URL` or `BETA_DISCORD_WEBHOOK_URL`) is missing, skip sending gracefully without throwing, show a clear user alert, and keep the x1.2 bonus blocked unless reporting succeeds. |
 | 0.7.0 | 20 | 2026/05/16 | Update Speed of Time runtime header symbol rule: display `▷` at x1.0 and `▶` when speed is x1.2 or higher, while keeping the multiplier and remaining boost-hour label format. |
 | 0.7.0 | 19 | 2026/05/16 | Update runtime header/version and Speed of Time reporting flow: shorten environment label to `D`/`β` in the version line, route progress-report webhooks by URL subpath using `DEV_DISCORD_WEBHOOK_URL` for `/dev/` and `BETA_DISCORD_WEBHOOK_URL` for `/beta/`, and keep the x1.2-for-24h reward only on successful webhook response. |
 | 0.7.0 | 18 | 2026/05/16 | Implement Speed of Time report reward flow: keep confirmation YES/NO, send current compressed save data to Discord via `BETA_DISCORD_WEBHOOK_URL`, apply x1.2 for 24h only on successful webhook response, show failure alert without boost on error, and reset to x1.0 when duration expires. |

@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   build:
+    environment: github-pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,6 +34,9 @@ jobs:
           cache: 'npm'
 
       - name: Build all environment artifacts
+        env:
+          VITE_DEV_DISCORD_WEBHOOK_URL: ${{ secrets.DEV_DISCORD_WEBHOOK_URL }}
+          VITE_BETA_DISCORD_WEBHOOK_URL: ${{ secrets.BETA_DISCORD_WEBHOOK_URL }}
         run: |
           set -euo pipefail
 
