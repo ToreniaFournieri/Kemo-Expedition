@@ -2839,6 +2839,19 @@ export function HomeScreen({
       return next;
     });
   }, []);
+  const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (timeSpeedBonusUntilMs === null) return;
+    if (Date.now() < timeSpeedBonusUntilMs) return;
+    setTimeSpeedBonusUntilMs(null);
+    setDebugSettings((prev) => {
+      if (prev.timeSpeed !== 'x1_2') return prev;
+      const next = { ...prev, timeSpeed: 'realtime' as const };
+      saveDebugSettings(next);
+      return next;
+    });
+  }, [timeSpeedBonusUntilMs]);
 
   const runAutoEquipment = useCallback((
     targetPartyIndexes?: number[],
@@ -4999,6 +5012,20 @@ export function HomeScreen({
             </div>
             <div className="flex items-center gap-2 pr-3 text-right text-sm font-medium leading-none">
               {envDisplayLabel && <span className="text-xs font-normal text-gray-500">{envDisplayLabel}</span>}
+              <button
+                type="button"
+                onClick={() => {
+                  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane(デバッグ)
+                  const confirmed = window.confirm('現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）');
+                  if (!confirmed) return;
+                  const bonusUntilMs = Date.now() + (24 * 60 * 60 * 1000);
+                  setTimeSpeedBonusUntilMs(bonusUntilMs);
+                  updateDebugSettings({ timeSpeed: 'x1_2' });
+                }}
+                className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
+              >
+                Speed of Time: ▷ {debugSettings.timeSpeed === 'x1_2' ? 'x1.2' : 'x1.0'}
+              </button>
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (
                 <button
@@ -12237,6 +12264,7 @@ function SettingTab({
             <div className="text-xs text-gray-500 mb-1">Speed of time</div>
             <div className="flex gap-2">
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'realtime' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'realtime' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>Real time</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x1_2' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x1_2' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x1.2 bonus</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x5' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x5' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x5 boost</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x20' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x20' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x20 hyper</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x100' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x100' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x100 Ultra</button>

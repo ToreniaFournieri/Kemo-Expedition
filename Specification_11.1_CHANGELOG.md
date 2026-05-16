@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 15 | 2026/05/16 | Implement Speed of Time runtime controls: add header Speed of Time button with confirmation dialog that applies temporary x1.2 speed for 1 day (no server reporting in this version), and extend Debug pane speed options to Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra while keeping default Real time and Clairvoyance default OFF. |
 | 0.7.0 | 14 | 2026/05/16 | Implement runtime Party State Machine `state.pray` transition (Spec 5.1.1): after pray completion, parties now return to `state.rest` when current HP is below MaxHP; only fully healed parties proceed to `state.idle`/`state.move`. |
 | 0.7.0 | 13 | 2026/05/16 | Update wide-mode split-view threshold (Spec 8.1 Navigation tabs): enable two-tab layout at viewport width >= 700px (was 800px) while keeping one-tab panel width at 500px and Expedition always visible alongside the selected secondary tab. |
 | 0.7.0 | 12 | 2026/05/16 | Update wide-mode split-view threshold (Spec 8.1 Navigation tabs): enable two-tab layout at viewport width >= 800px (was 1024px) while keeping one-tab panel width at 500px and Expedition always visible alongside the selected secondary tab. |
