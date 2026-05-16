@@ -175,6 +175,8 @@
 
 **Format of progress data**
 
+- Use a code block with monospace alignment
+
 - PT table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
   - `Level`: level. ( 40 )
