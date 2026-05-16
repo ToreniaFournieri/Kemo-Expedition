@@ -2980,10 +2980,36 @@ export function HomeScreen({
       content: `PT table (latest outcome and room)\n${toMarkdownTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
-    await postWebhook({
-      content: `Status table\n${toMarkdownTable(['PT', '列', '名前', '性', '主', '副', '譜', '格', '物防御', '物防倍', '魔防御', '魔防倍', '回避', '遠攻撃', '遠攻倍', '遠回数', '魔攻撃', '魔攻倍', '魔回数', '近攻撃', '近攻倍', '近回数', '属性攻', '属性防', '貫通'], statusRows)}`,
-      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-    });
+    const statusHeaders = ['PT', '列', '名前', '性', '主', '副', '譜', '格', '物防御', '物防倍', '魔防御', '魔防倍', '回避', '遠攻撃', '遠攻倍', '遠回数', '魔攻撃', '魔攻倍', '魔回数', '近攻撃', '近攻倍', '近回数', '属性攻', '属性防', '貫通'];
+    const statusTableFull = toMarkdownTable(statusHeaders, statusRows);
+    const statusContentLimit = 1800;
+    if (`Status table\n${statusTableFull}`.length <= statusContentLimit) {
+      await postWebhook({
+        content: `Status table\n${statusTableFull}`,
+        username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+      });
+    } else {
+      const chunks: string[][] = [];
+      let currentChunk: string[][] = [];
+      for (const row of statusRows) {
+        const nextChunk = [...currentChunk, row];
+        const nextContent = `Status table\n${toMarkdownTable(statusHeaders, nextChunk)}`;
+        if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
+          chunks.push(currentChunk);
+          currentChunk = [row];
+        } else {
+          currentChunk = nextChunk;
+        }
+      }
+      if (currentChunk.length > 0) chunks.push(currentChunk);
+
+      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+        await postWebhook({
+          content: `Status table (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMarkdownTable(statusHeaders, chunks[chunkIndex])}`,
+          username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+        });
+      }
+    }
     return true;
   }, [state]);
 
