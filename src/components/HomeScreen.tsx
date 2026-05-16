@@ -2885,6 +2885,7 @@ export function HomeScreen({
 
   const reportProgressForSpeedOfTime = useCallback(async () => {
     // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
+    // SpecRef: 8.1.2 | Header | Format of progress data
     const environmentId = getEnvironmentId();
     const webhookUrl = environmentId === 'dev'
       ? DEV_DISCORD_WEBHOOK_URL
@@ -2896,25 +2897,62 @@ export function HomeScreen({
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
-    const formatPartyStatusSummary = (party: Party): string => {
-      const expeditionStats = [
-        `Clear ${formatNumber(party.expeditionStats.Clear)}`,
-        `TurnedBack ${formatNumber(party.expeditionStats.Turned_Back)}`,
-        `DrawRetreat ${formatNumber(party.expeditionStats.Draw_Retreat)}`,
-        `WoundedRetreat ${formatNumber(party.expeditionStats.Wounded_Retreat)}`,
-        `Defeat ${formatNumber(party.expeditionStats.Defeat)}`,
-      ].join(' / ');
-      return `[${party.name}] Lv${formatNumber(party.level)} HP ${formatNumber(Math.max(0, Math.floor(party.currentHp)))} Gold ${formatNumber(party.deityGold)}G | ${expeditionStats}`;
+    const toMarkdownTable = (headers: string[], rows: string[][]): string => {
+      const headerLine = `| ${headers.join(' | ')} |`;
+      const separatorLine = `| ${headers.map(() => '---').join(' | ')} |`;
+      const bodyLines = rows.map((row) => `| ${row.join(' | ')} |`);
+      return [headerLine, separatorLine, ...bodyLines].join('\n');
     };
-    const formatLatestExpeditionLogForMember = (party: Party, member: Character): string => {
+    const ptRows = state.parties.map((party, index) => {
       const latestLog = party.lastExpeditionLog;
-      if (!latestLog) return `${party.name}/${member.name}: latest log = none`;
-      return `${party.name}/${member.name}: ${latestLog.dungeonName} ${latestLog.finalOutcome} Rooms ${formatNumber(latestLog.completedRooms)}`;
-    };
-    const partyStatusSummary = state.parties.map(formatPartyStatusSummary).join('\n');
-    const latestExpeditionLogsByMember = state.parties
-      .flatMap((party) => party.characters.map((member) => formatLatestExpeditionLogForMember(party, member)))
-      .join('\n');
+      const xpToNextLevel = getXpToNextLevel(party.level);
+      const remainingXp = Math.max(0, xpToNextLevel - party.experience);
+      const expRemainingPercent = Math.min(100, Math.max(0, Math.round((remainingXp / Math.max(1, xpToNextLevel)) * 100)));
+      return [
+        `PT${formatNumber(index + 1)}`,
+        formatNumber(party.level),
+        formatNumber(Math.max(0, Math.floor(party.currentHp))),
+        `${formatNumber(expRemainingPercent)}%`,
+        formatNumber(party.id),
+        latestLog?.finalOutcome ?? '-',
+        latestLog ? formatNumber(latestLog.completedRooms) : '-',
+      ];
+    });
+    const statusRows = state.parties.flatMap((party, partyIndex) =>
+      party.characters.map((member, rowIndex) => {
+        const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
+        const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
+        const computed = computeCharacterStats(member, party.level, rowIndex + 1);
+        const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+        return [
+          `PT${formatNumber(partyIndex + 1)}`,
+          formatNumber(rowIndex + 1),
+          member.name,
+          member.gender === 'male' ? '男' : '女',
+          mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-',
+          subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-',
+          LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId,
+          PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId,
+          formatNumber(computed.physicalDefense),
+          formatPercent(computed.physicalDefenseAmplifier),
+          formatNumber(computed.magicalDefense),
+          formatPercent(computed.magicalDefenseAmplifier),
+          formatPercent(computed.evasionBonus),
+          formatNumber(computed.rangedAttack),
+          formatPercent(computed.physicalOffenseMultiplier),
+          formatNumber(computed.rangedNoA),
+          formatNumber(computed.magicalAttack),
+          formatPercent(computed.magicalOffenseMultiplier),
+          formatNumber(computed.magicalNoA),
+          formatNumber(computed.meleeAttack),
+          formatPercent(computed.physicalOffenseMultiplier),
+          formatNumber(computed.meleeNoA),
+          computed.elementalOffense === 'none' ? '-' : computed.elementalOffense,
+          `炎${formatPercent(computed.elementalDefenseMultipliers.fire)}/雷${formatPercent(computed.elementalDefenseMultipliers.thunder)}/氷${formatPercent(computed.elementalDefenseMultipliers.ice)}`,
+          formatPercent(computed.penetMultiplier),
+        ];
+      })
+    );
 
     const postWebhook = async (payload: Record<string, unknown>) => {
       const response = await fetch(webhookUrl, {
@@ -2939,11 +2977,11 @@ export function HomeScreen({
     });
 
     await postWebhook({
-      content: `Party Status\n\`\`\`\n${partyStatusSummary}\n\`\`\``,
+      content: `PT table (latest outcome and room)\n${toMarkdownTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
     await postWebhook({
-      content: `Latest Expedition Log (Per Member)\n\`\`\`\n${latestExpeditionLogsByMember}\n\`\`\``,
+      content: `Status table\n${toMarkdownTable(['PT', '列', '名前', '性', '主', '副', '譜', '格', '物防御', '物防倍', '魔防御', '魔防倍', '回避', '遠攻撃', '遠攻倍', '遠回数', '魔攻撃', '魔攻倍', '魔回数', '近攻撃', '近攻倍', '近回数', '属性攻', '属性防', '貫通'], statusRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
     return true;
