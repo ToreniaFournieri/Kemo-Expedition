@@ -206,7 +206,7 @@ const renderElementalResistanceInline = (
 
 type PartyCycleState = 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
-const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 800;
+const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 700;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
