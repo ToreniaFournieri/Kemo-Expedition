@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 17 | 2026/05/16 | Fix Speed of Time header runtime label: reflect current Debug pane speed settings (`x5`, `x20`, `x100`) instead of always showing `x1.0`, while preserving x1.2 bonus display with remaining hours (`x1.2(23h)`). |
 | 0.7.0 | 16 | 2026/05/16 | Update Speed of Time runtime display and flow: remove the `Speed of Time:` prefix in the header button, show remaining boost duration in hours as `▷ x1.2(23h)` style, keep YES/NO confirmation text for reporting, apply x1.2 speed for 1 day on YES without actual server reporting, and automatically reset to x1.0 when remaining duration reaches 0h. |
 | 0.7.0 | 15 | 2026/05/16 | Implement Speed of Time runtime controls: add header Speed of Time button with confirmation dialog that applies temporary x1.2 speed for 1 day (no server reporting in this version), and extend Debug pane speed options to Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra while keeping default Real time and Clairvoyance default OFF. |
 | 0.7.0 | 14 | 2026/05/16 | Implement runtime Party State Machine `state.pray` transition (Spec 5.1.1): after pray completion, parties now return to `state.rest` when current HP is below MaxHP; only fully healed parties proceed to `state.idle`/`state.move`. |
