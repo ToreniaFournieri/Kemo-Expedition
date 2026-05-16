@@ -195,14 +195,11 @@
   - `副`: Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
   - `譜`: Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
   - `格`: Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
-  - `物防御`: `d.physical_defense`
-  - `物防倍`: `f.defense_amplifier` LONG and CLOSE
-  - `魔防御`: `d.magical_defense`
-  - `魔防倍`: `f.defense_amplifier` MID
+  - `物防御`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203(87%) )
+  - `魔防御`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100(54%) )
   - `回避`:  `evasion`
-  - `遠攻撃`: `d.ranged_attack`
-  - `遠攻倍`: `f.offense_amplifier` LONG
-  - `遠回数`: `d.ranged_NoA`
+  - `攻撃`:
+    - 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000(145%)-3回 )
   - `魔攻撃`: `d.magical_attack`
   - `魔攻倍`: `f.offense_amplifier` MID
   - `魔回数`: `d.magical_NoA`
