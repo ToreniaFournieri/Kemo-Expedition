@@ -1106,8 +1106,8 @@ function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
 const numberFormatter = new Intl.NumberFormat('ja-JP');
 const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
 const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
-const DEV_DISCORD_WEBHOOK_URL = import.meta.env.DEV_DISCORD_WEBHOOK_URL;
-const BETA_DISCORD_WEBHOOK_URL = import.meta.env.BETA_DISCORD_WEBHOOK_URL;
+const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
+const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
@@ -2887,8 +2887,9 @@ export function HomeScreen({
         ? BETA_DISCORD_WEBHOOK_URL
         : null;
     if (!webhookUrl) {
-      const requiredEnvName = environmentId === 'dev' ? 'DEV_DISCORD_WEBHOOK_URL' : 'BETA_DISCORD_WEBHOOK_URL';
-      throw new Error(`${requiredEnvName} is not configured.`);
+      const requiredEnvName = environmentId === 'dev' ? 'VITE_DEV_DISCORD_WEBHOOK_URL' : 'VITE_BETA_DISCORD_WEBHOOK_URL';
+      console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
+      return false;
     }
     const serialized = encodePersistedState(JSON.stringify(serializeGameState(state)));
     const payload = {
@@ -2911,6 +2912,7 @@ export function HomeScreen({
       body: JSON.stringify(payload),
     });
     if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
+    return true;
   }, [state]);
 
   const runAutoEquipment = useCallback((
@@ -5079,7 +5081,11 @@ export function HomeScreen({
                   const confirmed = window.confirm('現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）');
                   if (!confirmed) return;
                   try {
-                    await reportProgressForSpeedOfTime();
+                    const isReported = await reportProgressForSpeedOfTime();
+                    if (!isReported) {
+                      window.alert('進捗報告先が未設定のため、速度ボーナスは適用されませんでした。');
+                      return;
+                    }
                     const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
                     setTimeSpeedBonusUntilMs(bonusUntilMs);
                     updateDebugSettings({ timeSpeed: 'x1_2' });
