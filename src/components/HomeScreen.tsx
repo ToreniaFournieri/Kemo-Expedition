@@ -1106,6 +1106,7 @@ function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
 const numberFormatter = new Intl.NumberFormat('ja-JP');
 const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
 const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
+const DEV_DISCORD_WEBHOOK_URL = import.meta.env.DEV_DISCORD_WEBHOOK_URL;
 const BETA_DISCORD_WEBHOOK_URL = import.meta.env.BETA_DISCORD_WEBHOOK_URL;
 
 function formatNumber(value: number): string {
@@ -2879,13 +2880,20 @@ export function HomeScreen({
 
   const reportProgressForSpeedOfTime = useCallback(async () => {
     // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
-    if (!BETA_DISCORD_WEBHOOK_URL) {
-      throw new Error('BETA_DISCORD_WEBHOOK_URL is not configured.');
+    const environmentId = getEnvironmentId();
+    const webhookUrl = environmentId === 'dev'
+      ? DEV_DISCORD_WEBHOOK_URL
+      : environmentId === 'beta'
+        ? BETA_DISCORD_WEBHOOK_URL
+        : null;
+    if (!webhookUrl) {
+      const requiredEnvName = environmentId === 'dev' ? 'DEV_DISCORD_WEBHOOK_URL' : 'BETA_DISCORD_WEBHOOK_URL';
+      throw new Error(`${requiredEnvName} is not configured.`);
     }
     const serialized = encodePersistedState(JSON.stringify(serializeGameState(state)));
     const payload = {
       content: 'KEMO EXPEDITION progress report',
-      username: 'KEMO EXPEDITION BETA',
+      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
       embeds: [{
         title: 'Speed of Time Progress Report',
         timestamp: new Date().toISOString(),
@@ -2897,7 +2905,7 @@ export function HomeScreen({
       }],
     };
 
-    const response = await fetch(BETA_DISCORD_WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -4899,8 +4907,9 @@ export function HomeScreen({
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = `${APP_VERSION}(${state.buildNumber})`;
-  const envDisplayLabel = envLabel ? `(${envLabel})` : null;
+  const versionLabel = envLabel
+    ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
+    : `${APP_VERSION}(${state.buildNumber})`;
   const gameTitle = '冒ケモ🐾';
 
   useEffect(() => {
@@ -5063,7 +5072,6 @@ export function HomeScreen({
               </h1>
             </div>
             <div className="flex items-center gap-2 pr-3 text-right text-sm font-medium leading-none">
-              {envDisplayLabel && <span className="text-xs font-normal text-gray-500">{envDisplayLabel}</span>}
               <button
                 type="button"
                 onClick={async () => {

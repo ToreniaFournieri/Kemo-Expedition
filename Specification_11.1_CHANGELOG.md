@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |---------|-------|------|--------------------------------------------------------------------------------------|
+| 0.7.0 | 19 | 2026/05/16 | Update runtime header/version and Speed of Time reporting flow: shorten environment label to `D`/`β` in the version line, route progress-report webhooks by URL subpath using `DEV_DISCORD_WEBHOOK_URL` for `/dev/` and `BETA_DISCORD_WEBHOOK_URL` for `/beta/`, and keep the x1.2-for-24h reward only on successful webhook response. |
 | 0.7.0 | 18 | 2026/05/16 | Implement Speed of Time report reward flow: keep confirmation YES/NO, send current compressed save data to Discord via `BETA_DISCORD_WEBHOOK_URL`, apply x1.2 for 24h only on successful webhook response, show failure alert without boost on error, and reset to x1.0 when duration expires. |
 | 0.7.0 | 17 | 2026/05/16 | Fix Speed of Time header runtime label: reflect current Debug pane speed settings (`x5`, `x20`, `x100`) instead of always showing `x1.0`, while preserving x1.2 bonus display with remaining hours (`x1.2(23h)`). |
 | 0.7.0 | 16 | 2026/05/16 | Update Speed of Time runtime display and flow: remove the `Speed of Time:` prefix in the header button, show remaining boost duration in hours as `▷ x1.2(23h)` style, keep YES/NO confirmation text for reporting, apply x1.2 speed for 1 day on YES without actual server reporting, and automatically reset to x1.0 when remaining duration reaches 0h. |

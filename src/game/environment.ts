@@ -17,8 +17,8 @@ export function getEnvironmentId(): EnvironmentId {
 // SpecRef: 9 | Environment | getEnvLabel
 export function getEnvLabel(): string {
   const env = getEnvironmentId();
-  if (env === 'dev') return '開発環境';
-  if (env === 'beta') return 'βテスト';
+  if (env === 'dev') return 'D';
+  if (env === 'beta') return 'β';
   return '';
 }
 
