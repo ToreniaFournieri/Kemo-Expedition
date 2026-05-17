@@ -201,8 +201,15 @@
   - `Room`: the deepest room of the latest expedition
 
 - **Attached File**
-  - Attach an HTML file containing the detailed status table.
-  - The HTML file should use a readable table layout optimized for desktop and mobile viewing.
+  - (1) Status table. 
+    - Attach an HTML file containing the detailed status table.
+		  - The HTML file should use a readable table layout optimized for desktop and mobile viewing.
+  - (2) Latest Battle Log HTML file.
+    - Select the target party using the following priority order:
+    1. Highest level
+    2. Highest experience points
+    3. Smallest PT number (PT1 → PT6) when tied
+
 
 - Status table
   - `PT-列`: PT number and row, bold (1-1, 1-2...)
