@@ -10723,6 +10723,7 @@ function SettingTab({
   });
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
+  const [feedbackLatestBattleLogSelection, setFeedbackLatestBattleLogSelection] = useState<'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None'>('PT1');
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
   const feedbackFileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -10745,6 +10746,47 @@ function SettingTab({
     const minute = parts.find((p) => p.type === 'minute')?.value ?? '00';
     const timezone = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'UTC';
     return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
+  };
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  const escapeFeedbackHtml = (value: string): string => (
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+  );
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
+    const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
+    const party = gameState.parties[partyIndex];
+    const latestLog = party?.lastExpeditionLog;
+    if (!party || !latestLog) return null;
+    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
+      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+        const detailLine = `${detail.action}${detail.note ? ` (${detail.note})` : ''}`;
+        return `<li>${escapeFeedbackHtml(detailLine)}</li>`;
+      }).join('');
+      return `
+        <section>
+          <h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3>
+          <p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p>
+          <ul>${detailItems || '<li>(No detail)</li>'}</ul>
+        </section>
+      `;
+    }).join('\n');
+    const html = `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head>
+<body>
+<h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1>
+<p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p>
+<p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>
+${entriesHtml || '<p>No entries.</p>'}
+</body></html>`;
+    return new File([html], `latest-battle-log-${partyLabel}.html`, { type: 'text/html' });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
@@ -10783,13 +10825,20 @@ function SettingTab({
           `**OS version:** ${osVersion}`,
           `**Resolution:** ${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`,
           `**Name:** ${feedbackName.trim() || '-'}`,
-          `**Feedback text:** ${feedbackText.trim()}`
+          `**Feedback text:** ${feedbackText.trim()}`,
+          `**Latest Battle Log selection:** ${feedbackLatestBattleLogSelection}`
         ].join('\n'),
         username: `KEMO EXPEDITION ${currentEnv.toUpperCase()} FEEDBACK`,
       };
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
       feedbackFiles.forEach((file, index) => formData.append(`files[${index}]`, file, file.name));
+      if (feedbackLatestBattleLogSelection !== 'None') {
+        const latestBattleLogFile = buildLatestBattleLogHtml(feedbackLatestBattleLogSelection);
+        if (latestBattleLogFile) {
+          formData.append(`files[${feedbackFiles.length}]`, latestBattleLogFile, latestBattleLogFile.name);
+        }
+      }
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
       onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
@@ -12652,6 +12701,18 @@ function SettingTab({
         {divineBureauPanelExpanded.feedback && <div className="space-y-3 mt-3">
           <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder="名前" />
           <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder="フィードバック本文" />
+          <div>
+            <label className="text-sm font-medium">Latest Battle Log</label>
+            <select value={feedbackLatestBattleLogSelection} onChange={(e) => setFeedbackLatestBattleLogSelection(e.target.value as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None')} className="w-full rounded border border-gray-300 bg-white px-3 py-2 mt-1">
+              <option value="PT1">PT1</option>
+              <option value="PT2">PT2</option>
+              <option value="PT3">PT3</option>
+              <option value="PT4">PT4</option>
+              <option value="PT5">PT5</option>
+              <option value="PT6">PT6</option>
+              <option value="None">None</option>
+            </select>
+          </div>
           <div>
             <input
               ref={feedbackFileInputRef}
