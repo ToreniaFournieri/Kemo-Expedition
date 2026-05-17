@@ -2935,9 +2935,9 @@ export function HomeScreen({
       return [
         `PT${formatNumber(index + 1)}`,
         formatNumber(party.level),
-        formatNumber(Math.max(0, Math.floor(party.currentHp))),
+        formatNumber(Math.max(0, Math.floor(computePartyStats(party).partyStats.hp))),
         `${formatNumber(expRemainingPercent)}%`,
-        formatNumber(party.id),
+        latestLog?.dungeonId != null ? formatNumber(latestLog.dungeonId) : '-',
         latestLog?.finalOutcome ?? '-',
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
       ];
