@@ -2961,13 +2961,14 @@ export function HomeScreen({
     const ptRows = state.parties.map((party, index) => {
       const latestLog = party.lastExpeditionLog;
       const xpToNextLevel = getXpToNextLevel(party.level);
-      const remainingXp = Math.max(0, xpToNextLevel - party.experience);
-      const expRemainingPercent = Math.min(100, Math.max(0, Math.round((remainingXp / Math.max(1, xpToNextLevel)) * 100)));
+      const expProgressPercent = xpToNextLevel > 0
+        ? Math.min(100, Math.max(0, Math.round((party.experience / xpToNextLevel) * 100)))
+        : 100;
       return [
         `PT${formatNumber(index + 1)}`,
         formatNumber(party.level),
         formatNumber(Math.max(0, Math.floor(computePartyStats(party).partyStats.hp))),
-        `${formatNumber(expRemainingPercent)}%`,
+        `${formatNumber(expProgressPercent)}%`,
         latestLog?.dungeonId != null ? formatNumber(latestLog.dungeonId) : '-',
         latestLog?.finalOutcome ?? '-',
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
