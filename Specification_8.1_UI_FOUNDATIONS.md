@@ -223,4 +223,5 @@
   - `属防`: `f.elemental_resistance_attribute`
     - fire/ice/thunder/ (120%/65%/40%)
   - `貫通`: `f.penet_multiplier`
+  - `アビリティ`: abilities the member has. Japanese text and its level ( 壁1, 指揮1, 浪費1 )
 
