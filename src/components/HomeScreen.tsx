@@ -2997,17 +2997,44 @@ export function HomeScreen({
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
     };
 
+    const now = new Date();
+    const timestamp = `${now.getUTCFullYear()}/${formatNumber(now.getUTCDate())}/${formatNumber(now.getUTCMonth() + 1)} ${formatNumber(now.getUTCHours())}:${formatNumber(now.getUTCMinutes())}`;
+    const nav = typeof navigator === 'undefined' ? null : navigator;
+    const userAgent = nav?.userAgent ?? 'unknown';
+    const navWithUaData = nav as Navigator & { userAgentData?: { brands?: Array<{ brand: string; version: string }> } };
+    const browserName = nav
+      ? (navWithUaData.userAgentData?.brands?.map((brand: { brand: string }) => brand.brand).join(' / ')
+      || (userAgent.match(/(Firefox|Edg|OPR|Chrome|Safari)\/[\d.]+/)?.[0] ?? 'unknown'))
+      : 'unknown';
+    const browserVersion = nav
+      ? (userAgent.match(/(?:Firefox|Edg|OPR|Chrome|Version)\/([\d.]+)/)?.[1] ?? 'unknown')
+      : 'unknown';
+    const osVersion = nav?.platform ?? 'unknown';
+    const resolution = `${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`;
+    const reportCounterKey = createEnvironmentStorageKey('speedOfTimeReportCount');
+    const reportCount = Number.parseInt(localStorage.getItem(reportCounterKey) ?? '0', 10);
+    const nextReportCount = Number.isFinite(reportCount) ? reportCount + 1 : 1;
+    localStorage.setItem(reportCounterKey, String(nextReportCount));
+    const progressReportCount = formatNumber(nextReportCount);
+    // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
+    const reportHeaderRows = [
+      ['Version', APP_VERSION],
+      ['Build', formatNumber(state.buildNumber)],
+      ['Environment', getEnvironmentId()],
+      ['Timestamp', timestamp],
+      ['User ID', '-'],
+      ['browser', `${browserName}, ${browserVersion}`],
+      ['OS version', osVersion],
+      ['Resolution', resolution],
+      ['Total number of sending report', progressReportCount],
+    ];
+    const maxHeaderKeyWidth = reportHeaderRows.reduce((max, row) => Math.max(max, row[0].length), 0);
+    const headerLines = reportHeaderRows
+      .map(([key, value]) => `${key.padEnd(maxHeaderKeyWidth, ' ')}, ${value}`)
+      .join('\n');
     await postWebhook({
-      content: 'KEMO EXPEDITION progress report',
+      content: `Speed of Time Progress Report\n\`\`\`\n${headerLines}\n\`\`\``,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-      embeds: [{
-        title: 'Speed of Time Progress Report',
-        timestamp: new Date().toISOString(),
-        fields: [
-          { name: 'Version', value: APP_VERSION, inline: true },
-          { name: 'Environment', value: getEnvironmentId(), inline: true },
-        ],
-      }],
     });
 
     await postWebhook({

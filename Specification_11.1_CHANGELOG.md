@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.0 | 33 | 2026/05/17 | Update Speed of Time runtime progress report header payload format (Spec 8.1.2): send metadata as a comma-aligned code block with Version/Build/Environment/Timestamp/User ID/browser+version/OS version/Resolution/Total number of sending report. |
 | 0.7.0 | 32 | 2026/05/17 | Fix Speed of Time runtime persistence and report formatting: persist `x1.2` boost remaining hours across page refresh, and remove padded multi-space cells from progress status report rows (compact comma-separated format). |
 | 0.7.0 | 31 | 2026/05/17 | Update `a.first-aid` text across runtime tooltip/glossary helper text to match Spec 1.1 wording (`各エリート戦後...`) and correct glossary phase from `CLOSE` to `END`. |
 | 0.7.0 | 30 | 2026/05/17 | Adjust Speed of Time PT/Status monospace table rendering to comma-aligned columns (use comma separators with compact spacing) per Spec 8.1.2 format guidance. |
