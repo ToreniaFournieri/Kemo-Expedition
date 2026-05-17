@@ -180,7 +180,7 @@
   - Version: (ex. v0.7.0)
   - Build: (ex. 20)
   - Environment: (ex. dev )
-  - Timestamp: YYYY/DD/MM HH:MM
+  - Timestamp: YYYY/DD/MM HH:MM (Timezone)
   - User ID
   - browser, version:
   - OS version: (ex. iOS 26.4.2)
@@ -220,5 +220,6 @@
     - thunder: ⚡
     - fire: 🔥
   - `属防`: `f.elemental_resistance_attribute`
+    - fire/ice/thunder/ (120%/65%/40%)
   - `貫通`: `f.penet_multiplier`
 
