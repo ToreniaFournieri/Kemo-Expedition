@@ -206,8 +206,8 @@
 
 - Status table
   - `PT-列`: PT number and row, bold (1-1, 1-2...)
-  - `名前`: Character name, bold (オルカ)
-  - `ビルド`: bold ( 🐶男剣剣砂好 )
+  - `名前, ビルド`: (オルカ, 🐶女剣剣砂好 )
+    - Character name, 
     - Race icon. (🐶, 🦊 etc..)
 	- Gender. (♂ -> 男/ ♀ -> 女)
     - Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
@@ -217,14 +217,14 @@
   - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203. 87% )
   - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100. 54% )
   - `回避`:  `evasion` display x1000, no percentage.   ( +10 )
-  - `攻撃`:
+  - `攻撃`: 
     - If `d.ranged_attack` > 0 and `f.offense_amplifier` LONG > 0, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000. 145%, 3回 )
     - If `d.magical_attack` > 0 and `f.offense_amplifier` MID > 0, 魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000. 145%, 12回 )
     - If `d.melee_attack` > 0 and `f.offense_amplifier` CLOSE > 0, 近`d.melee_attack`(`f.offense_amplifier` CLOSE)-`d.ranged_NoA`回 ( 近2,000. 175%, 3回 )
-　- `属攻`: `f.elemental_offense_attribute`(its value)  ( 🔥(+20%) )
-    - ice: ❄
-    - thunder: ⚡
-    - fire: 🔥
+    - `f.elemental_offense_attribute`(its value)  ( 🔥(+20%) )
+      - ice: ❄
+      - thunder: ⚡
+      - fire: 🔥
   - `属防`: `f.elemental_resistance_attribute`
     - fire/ice/thunder/ (120%, 65%, 40%)
   - `貫通`: `f.penet_multiplier`
