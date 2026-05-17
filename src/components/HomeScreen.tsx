@@ -2986,6 +2986,20 @@ export function HomeScreen({
         ];
       })
     );
+    const buildStatusTableHtmlFileLocal = (rows: string[][], fileName: string): File => {
+      const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避', '攻撃', '属防', '貫通', 'アビリティ'];
+      const htmlEscape = (value: string) => value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+      const htmlRows = rows
+        .map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${htmlEscape(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`)
+        .join('');
+      const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Status Table</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>Status table</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${htmlEscape(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+      return new File([html], fileName, { type: 'text/html' });
+    };
 
     const postWebhookWithFile = async (content: string, file: File, filename: string, username: string) => {
       const formData = new FormData();
@@ -3071,20 +3085,9 @@ export function HomeScreen({
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避', '攻撃', '属防', '貫通', 'アビリティ'];
     const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`;
-    const htmlEscape = (value: string) => value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-    const htmlRows = statusRows
-      .map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${htmlEscape(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`)
-      .join('');
-    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Status Table</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>Status table</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${htmlEscape(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
-    const htmlFile = new File([html], htmlFileName, { type: 'text/html' });
+    const htmlFile = buildStatusTableHtmlFileLocal(statusRows, htmlFileName);
     await postWebhookWithFile(reportMessage, htmlFile, htmlFileName, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
     return true;
   }, [state]);
@@ -10739,6 +10742,21 @@ function SettingTab({
       .replace(/'/g, '&#39;')
   );
 
+  // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  function buildStatusTableHtmlFile(
+    rows: string[][],
+    fileName: string,
+    title = 'Status table',
+  ): File {
+    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避', '攻撃', '属防', '貫通', 'アビリティ'];
+    const htmlRows = rows
+      .map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`)
+      .join('');
+    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    return new File([html], fileName, { type: 'text/html' });
+  }
+
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
@@ -10834,6 +10852,36 @@ ${entriesHtml || '<p>No entries.</p>'}
         if (latestBattleLogFile) {
           formData.append(`files[${feedbackFiles.length}]`, latestBattleLogFile, latestBattleLogFile.name);
         }
+        const partyIndex = Number(feedbackLatestBattleLogSelection.replace('PT', '')) - 1;
+        const party = gameState.parties[partyIndex];
+        const partyStatusRows = party == null ? [] : party.characters.map((member, rowIndex) => {
+          const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
+          const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
+          const computed = computeCharacterStats(member, party.level, rowIndex + 1);
+          const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+          const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
+          const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
+          const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
+          const attackParts: string[] = [];
+          if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
+          if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
+          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
+          const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+          const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+          const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
+          const race = RACES.find((entry) => entry.id === member.raceId);
+          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+          const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
+          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**(${member.name}, ${build})**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
+        });
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+        const statusTableFile = buildStatusTableHtmlFile(
+          partyStatusRows,
+          `status-table-${feedbackLatestBattleLogSelection}-${timestamp}.html`,
+          `Status table (${feedbackLatestBattleLogSelection})`,
+        );
+        formData.append(`files[${feedbackFiles.length + (latestBattleLogFile ? 1 : 0)}]`, statusTableFile, statusTableFile.name);
       }
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
