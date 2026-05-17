@@ -192,7 +192,7 @@
 - PT table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
   - `Level`: level. ( 40 )
-  - `HP`: Party.`d.HP` ( 20,543 )
+  - `HP`: max Party.`d.HP` ( 20,543 )
   - `Exp`: Experience remaining: (23%)
   - `ID`: `x.exp_id` (1,2,.)
   - `Outcome`: The latest outcome ( Clear )
