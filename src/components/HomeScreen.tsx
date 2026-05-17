@@ -3009,13 +3009,34 @@ export function HomeScreen({
     const browserVersion = nav
       ? (userAgent.match(/(?:Firefox|Edg|OPR|Chrome|Version)\/([\d.]+)/)?.[1] ?? 'unknown')
       : 'unknown';
-    const osVersion = nav?.platform ?? 'unknown';
+    const platform = nav?.platform ?? '';
+    const detectOsVersion = (ua: string): string => {
+      const ios = ua.match(/(?:CPU (?:iPhone )?OS|iPhone OS) ([\d_]+)/i)?.[1];
+      if (ios) return `iOS ${ios.replace(/_/g, '.')}`;
+      const android = ua.match(/Android ([\d.]+)/i)?.[1];
+      if (android) return `Android ${android}`;
+      const windows = ua.match(/Windows NT ([\d.]+)/i)?.[1];
+      if (windows) return `Windows NT ${windows}`;
+      const mac = ua.match(/Mac OS X ([\d_]+)/i)?.[1];
+      if (mac) return `macOS ${mac.replace(/_/g, '.')}`;
+      return platform || 'unknown';
+    };
+    const osVersion = detectOsVersion(userAgent);
     const resolution = `${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`;
     const reportCounterKey = createEnvironmentStorageKey('speedOfTimeReportCount');
     const reportCount = Number.parseInt(localStorage.getItem(reportCounterKey) ?? '0', 10);
     const nextReportCount = Number.isFinite(reportCount) ? reportCount + 1 : 1;
     localStorage.setItem(reportCounterKey, String(nextReportCount));
     const progressReportCount = formatNumber(nextReportCount);
+    const lastReportAtKey = createEnvironmentStorageKey('speedOfTimeLastReportAt');
+    const previousReportAt = Number.parseInt(localStorage.getItem(lastReportAtKey) ?? '', 10);
+    const lastReportHours = Number.isFinite(previousReportAt)
+      ? Math.max(0, (Date.now() - previousReportAt) / (1000 * 60 * 60))
+      : null;
+    const lastReportTime = lastReportHours == null
+      ? '-'
+      : `${formatNumber(Math.floor(lastReportHours))} Hours ago`;
+    localStorage.setItem(lastReportAtKey, String(Date.now()));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
     const reportHeaderRows = [
       ['Version', APP_VERSION],
@@ -3023,17 +3044,18 @@ export function HomeScreen({
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
       ['User ID', '-'],
-      ['browser', `${browserName}, ${browserVersion}`],
+      ['browser, version', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
       ['Total number of sending report', progressReportCount],
+      ['The last report time', lastReportTime],
     ];
     const maxHeaderKeyWidth = reportHeaderRows.reduce((max, row) => Math.max(max, row[0].length), 0);
     const headerLines = reportHeaderRows
       .map(([key, value]) => `${key.padEnd(maxHeaderKeyWidth, ' ')}, ${value}`)
       .join('\n');
     await postWebhook({
-      content: `Speed of Time Progress Report\n\`\`\`\n${headerLines}\n\`\`\``,
+      content: `Progress Report\n\`\`\`\n${headerLines}\n\`\`\``,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
 
