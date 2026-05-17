@@ -2909,6 +2909,36 @@ export function HomeScreen({
     return '▶';
   }, [debugSettings.timeSpeed]);
 
+  const escapeFeedbackHtml = (value: string): string => (
+    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+  );
+  function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
+    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
+    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    return new File([html], fileName, { type: 'text/html' });
+  }
+  const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
+    const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
+    const party = state.parties[partyIndex];
+    const latestLog = party?.lastExpeditionLog;
+    if (!party || !latestLog) return null;
+    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
+      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
+        const noteDisplay = detail.note ? `(${detail.note})` : '';
+        return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
+      }).join('');
+      return `<section><h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3><p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
+    }).join('\n');
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
+  };
+
   const reportProgressForSpeedOfTime = useCallback(async () => {
     // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
     // SpecRef: 8.1.2 | Header | Format of progress data
@@ -2985,25 +3015,12 @@ export function HomeScreen({
         ];
       })
     );
-    const buildStatusTableHtmlFileLocal = (rows: string[][], fileName: string): File => {
-      const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
-      const htmlEscape = (value: string) => value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-      const htmlRows = rows
-        .map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${htmlEscape(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`)
-        .join('');
-      const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Status Table</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>Status table</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${htmlEscape(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
-      return new File([html], fileName, { type: 'text/html' });
-    };
-
-    const postWebhookWithFile = async (content: string, file: File, filename: string, username: string) => {
+    const postWebhookWithFiles = async (content: string, files: File[], username: string) => {
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify({ content, username }));
-      formData.append('files[0]', file, filename);
+      files.forEach((file, index) => {
+        formData.append(`files[${index}]`, file, file.name);
+      });
       const response = await fetch(webhookUrl, {
         method: 'POST',
         body: formData,
@@ -3086,8 +3103,18 @@ export function HomeScreen({
       .join('\n');
     const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
-    const htmlFile = buildStatusTableHtmlFileLocal(statusRows, htmlFileName);
-    await postWebhookWithFile(reportMessage, htmlFile, htmlFileName, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
+    const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
+    const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
+      if (selectedIndex < 0) return partyIndex;
+      const selectedParty = state.parties[selectedIndex];
+      if (party.level !== selectedParty.level) return party.level > selectedParty.level ? partyIndex : selectedIndex;
+      if (party.experience !== selectedParty.experience) return party.experience > selectedParty.experience ? partyIndex : selectedIndex;
+      return partyIndex < selectedIndex ? partyIndex : selectedIndex;
+    }, -1);
+    const reportTargetPartyLabel = reportTargetPartyIndex >= 0 ? `PT${reportTargetPartyIndex + 1}` as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' : null;
+    const latestBattleLogFile = reportTargetPartyLabel ? buildLatestBattleLogHtml(reportTargetPartyLabel) : null;
+    const reportFiles = [htmlFile, ...(latestBattleLogFile ? [latestBattleLogFile] : [])];
+    await postWebhookWithFiles(reportMessage, reportFiles, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
     return true;
   }, [state]);
 
@@ -10731,75 +10758,21 @@ function SettingTab({
     return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
   };
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const escapeFeedbackHtml = (value: string): string => (
-    value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
+    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   );
-
-  // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
-  function buildStatusTableHtmlFile(
-    rows: string[][],
-    fileName: string,
-    title = 'Status table',
-  ): File {
+  function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
     const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
-    const htmlRows = rows
-      .map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`)
-      .join('');
+    const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
     const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     return new File([html], fileName, { type: 'text/html' });
   }
-
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
     const party = gameState.parties[partyIndex];
     const latestLog = party?.lastExpeditionLog;
     if (!party || !latestLog) return null;
-    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
-      const detailItems = entry.details.map((detail: BattleLogEntry) => {
-        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = {
-          fire: '🔥',
-          ice: '❄',
-          thunder: '⚡',
-        };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0
-          ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)`
-          : '';
-        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage)
-          ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})`
-          : '';
-        const noteDisplay = detail.note ? `(${detail.note})` : '';
-        const suffix = [hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ');
-        const detailLine = `${detail.action}${suffix ? ` ${suffix}` : ''}`;
-        return `<li>${escapeFeedbackHtml(detailLine)}</li>`;
-      }).join('');
-      return `
-        <section>
-          <h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3>
-          <p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p>
-          <ul>${detailItems || '<li>(No detail)</li>'}</ul>
-        </section>
-      `;
-    }).join('\n');
-    const html = `<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head>
-<body>
-<h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1>
-<p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p>
-<p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>
-${entriesHtml || '<p>No entries.</p>'}
-</body></html>`;
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
+    return new File(['<!doctype html><html><body></body></html>'], `latest-battle-log-${partyLabel}.html`, { type: 'text/html' });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
