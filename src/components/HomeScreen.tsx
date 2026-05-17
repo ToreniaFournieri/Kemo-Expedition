@@ -2969,6 +2969,7 @@ export function HomeScreen({
         const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}/${formatPercent(computed.elementalDefenseMultipliers.ice)}/${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
         const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
         return [
           `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
           `**${member.name}**`,
@@ -2980,15 +2981,18 @@ export function HomeScreen({
           elementalOffense,
           elementalDefense,
           formatPercent(computed.penetMultiplier),
+          abilityText,
         ];
       })
     );
 
-    const postWebhook = async (payload: Record<string, unknown>) => {
+    const postWebhookWithFile = async (content: string, file: File, filename: string, username: string) => {
+      const formData = new FormData();
+      formData.append('payload_json', JSON.stringify({ content, username }));
+      formData.append('files[0]', file, filename);
       const response = await fetch(webhookUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
     };
@@ -3066,45 +3070,21 @@ export function HomeScreen({
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    await postWebhook({
-      content: `**Progress Report**\n${headerLines}`,
-      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-    });
-
-    await postWebhook({
-      content: `**PT table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
-      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-    });
-    const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
-    const statusTableFull = toSpaceSeparatedRows(statusHeaders, statusRows);
-    const statusContentLimit = 1800;
-    if (`**Status table**\n${statusTableFull}`.length <= statusContentLimit) {
-      await postWebhook({
-        content: `**Status table**\n${statusTableFull}`,
-        username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-      });
-    } else {
-      const chunks: string[][][] = [];
-      let currentChunk: string[][] = [];
-      for (const row of statusRows) {
-        const nextChunk = [...currentChunk, row];
-        const nextContent = `**Status table**\n${toSpaceSeparatedRows(statusHeaders, nextChunk)}`;
-        if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
-          chunks.push(currentChunk);
-          currentChunk = [row];
-        } else {
-          currentChunk = nextChunk;
-        }
-      }
-      if (currentChunk.length > 0) chunks.push(currentChunk);
-
-      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
-        await postWebhook({
-          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toSpaceSeparatedRows(statusHeaders, chunks[chunkIndex])}`,
-          username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-        });
-      }
-    }
+    const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通', 'アビリティ'];
+    const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`;
+    const htmlEscape = (value: string) => value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const htmlRows = statusRows
+      .map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 2 ? ' style="font-weight:700;"' : ''}>${htmlEscape(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`)
+      .join('');
+    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Status Table</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>Status table</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${htmlEscape(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
+    const htmlFile = new File([html], htmlFileName, { type: 'text/html' });
+    await postWebhookWithFile(reportMessage, htmlFile, htmlFileName, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
     return true;
   }, [state]);
 
