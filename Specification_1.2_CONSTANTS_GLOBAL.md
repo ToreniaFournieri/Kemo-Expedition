@@ -5,7 +5,7 @@
 **Global structure**
   - gold 
   - Inventory 
-  - Player ID (UUID)
+  - User ID (UUID)
 
 **Deity  structure**
   - name
