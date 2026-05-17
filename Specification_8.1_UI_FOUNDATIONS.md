@@ -180,7 +180,7 @@
   - Version: (ex. v0.7.0)
   - Build: (ex. 20)
   - Environment: (ex. dev )
-  - Timestamp: YYYY/DD/MM HH:MM (Timezone)
+  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
   - User ID
   - browser, version:
   - OS version: (ex. iOS 26.4.2)
