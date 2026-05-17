@@ -172,10 +172,8 @@
  and tap "静止中", then 自動周回 is ON.
 
 
-
 **Format of progress data**
-
-- Use a code block with monospace alignment
+- Use a code block with comma alignment
 
 - PT table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
@@ -190,11 +188,12 @@
   - `PT`: PT number (PT1, PT2 ....)
   - `列`: Row. (1,2, ...6)
   - `名前`: Character name (オルカ)
-  - `性`: Gender. (♂ -> 男/ ♀ -> 女)
-  - `主`: Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
-  - `副`: Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
-  - `譜`: Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
-  - `格`: Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
+  - `ビルド`: ( 男剣剣砂好 )
+    - Gender. (♂ -> 男/ ♀ -> 女)
+    - Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
+    - Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
+    - Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
+    - Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
   - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203(87%) )
   - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100(54%) )
   - `回避`:  `evasion`
