@@ -10766,11 +10766,16 @@ function SettingTab({
     if (!party || !latestLog) return null;
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
+        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = {
+          fire: '🔥',
+          ice: '❄',
+          thunder: '⚡',
+        };
         const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0
           ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)`
           : '';
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage)
-          ? `(${formatNumber(detail.damage)})`
+          ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})`
           : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         const suffix = [hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ');
@@ -10794,7 +10799,9 @@ function SettingTab({
 <p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>
 ${entriesHtml || '<p>No entries.</p>'}
 </body></html>`;
-    return new File([html], `latest-battle-log-${partyLabel}.html`, { type: 'text/html' });
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
