@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 17 | 2026/05/17 | Update progress-data attachments (Spec 8.1.2): share the same Status Table HTML generator used by Feedback, and attach a Latest Battle Log HTML file selected by priority (highest level → highest experience → smallest PT number on ties). |
 | 0.7.1 | 16 | 2026/05/17 | Fix Speed of Time/Feedback status table attack count export (Spec 8.1.2): use `computed.meleeNoA` for `近` attack rows instead of mistakenly reusing `computed.rangedNoA`, so melee hit-counts (e.g., ケモ 15回, サイカ 27回) match runtime character cards. |
 | 0.7.1 | 15 | 2026/05/17 | Update Status table format (Spec 8.1.2): remove parentheses from `名前, ビルド` values and merge `回避`/`貫通` into a single `回避,貫通` column rendered as `+N, M%` in both Speed of Time and Feedback status-table HTML exports. |
 | 0.7.1 | 14 | 2026/05/17 | Update Divine Bureau Feedback runtime payload attachments (Spec 8.6): keep latest battle log HTML export and additionally attach the selected party Status Table HTML (`@Specification_8.1_UI_FOUNDATIONS.md`) with shared table layout generation flow. |
