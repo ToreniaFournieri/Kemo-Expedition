@@ -1107,6 +1107,7 @@ function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
 const numberFormatter = new Intl.NumberFormat('ja-JP');
 const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
 const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
+const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
 
@@ -2844,8 +2845,31 @@ export function HomeScreen({
       return next;
     });
   }, []);
-  const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(null);
+  const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(() => {
+    try {
+      const raw = localStorage.getItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = Number(raw);
+      if (!Number.isFinite(parsed)) return null;
+      return parsed > Date.now() ? parsed : null;
+    } catch (error) {
+      console.error('Failed to load Speed of Time bonus duration:', error);
+      return null;
+    }
+  });
   const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    try {
+      if (timeSpeedBonusUntilMs === null) {
+        localStorage.removeItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY);
+      } else {
+        localStorage.setItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY, String(timeSpeedBonusUntilMs));
+      }
+    } catch (error) {
+      console.error('Failed to persist Speed of Time bonus duration:', error);
+    }
+  }, [timeSpeedBonusUntilMs]);
 
   useEffect(() => {
     if (timeSpeedBonusUntilMs === null) return;
@@ -2903,10 +2927,11 @@ export function HomeScreen({
       const columnWidths = headers.map((_, columnIndex) => (
         safeRows.reduce((maxWidth, row) => Math.max(maxWidth, (row[columnIndex] ?? '').length), 0)
       ));
-      const padRow = (row: string[]) => row
-        .map((cell, columnIndex) => (cell ?? '').padEnd(columnWidths[columnIndex], ' '))
+      const normalizeCell = (cell: string, columnIndex: number) => (cell ?? '').padEnd(columnWidths[columnIndex], ' ').trim();
+      const compactRow = (row: string[]) => row
+        .map((cell, columnIndex) => normalizeCell(cell, columnIndex))
         .join(', ');
-      const lines = [padRow(headers), ...rows.map((row) => padRow(row))];
+      const lines = [compactRow(headers), ...rows.map((row) => compactRow(row))];
       return `\`\`\`\n${lines.join('\n')}\n\`\`\``;
     };
     const ptRows = state.parties.map((party, index) => {
