@@ -2904,7 +2904,7 @@ export function HomeScreen({
       ));
       const padRow = (row: string[]) => row
         .map((cell, columnIndex) => (cell ?? '').padEnd(columnWidths[columnIndex], ' '))
-        .join('  ');
+        .join(', ');
       const lines = [padRow(headers), ...rows.map((row) => padRow(row))];
       return `\`\`\`\n${lines.join('\n')}\n\`\`\``;
     };
