@@ -173,9 +173,9 @@
 
 
 **Format of progress data**
-- Use a code block with comma alignment
+- Readable format for discord channel post
 
-- Header: Speed of Time Progress Report
+- Header:  Progress Report
   - Version: (ex. v0.7.0)
   - Build: (ex. 20)
   - Environment: (ex. dev )
@@ -185,6 +185,7 @@
   - OS version:
   - Resolution: (ex. 390 px, 844 px)
   - Total number of sending report: (ex. 12)
+  - The last report time: (ex. X Hours ago) 
 
 - PT table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
