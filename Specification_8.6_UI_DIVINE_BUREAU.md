@@ -285,6 +285,8 @@ HP: 312                 タイプ: 神魔
       - Feedback text
       - Attached files
       - Selected Latest Battle Log HTML file (PT1–PT6)
+      - HTML file containing the Status Table of the selected party defined in @Specification_8.1_UI_FOUNDATIONS.md
+
 
 **バックアップ・リセット**
   - 5.1 Backup (Export)
