@@ -277,15 +277,15 @@ HP: 312                 タイプ: 神魔
 	  - Build: (ex. 20)
 	  - Environment: (ex. dev )
 	  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
-	  - User ID
 	  - browser, version:
 	  - OS version: (ex. iOS 26.4.2)
 	  - Resolution: (ex. 390 px, 844 px)
+	  - User ID
       - Name
       - Feedback text
-      - Attached files
-      - Selected Latest Battle Log HTML file (PT1–PT6)
-      - HTML file containing the Status Table of the selected party defined in @Specification_8.1_UI_FOUNDATIONS.md
+      - Two attached files:
+        - File 1: Selected Latest Battle Log HTML file (PT1–PT6)
+        - File 2: A HTML file containing the Status Table of the selected party defined in @Specification_8.1_UI_FOUNDATIONS.md
 
 
 **バックアップ・リセット**
