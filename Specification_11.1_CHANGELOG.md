@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 3 | 2026/05/17 | Fix Divine Bureau feedback webhook fallback (Spec 8.6): when `VITE_FEEDBACK_DISCORD_WEBHOOK_URL` is missing, route feedback submission to the environment webhook (`VITE_DEV_DISCORD_WEBHOOK_URL` or `VITE_BETA_DISCORD_WEBHOOK_URL`) and show a generic missing-destination alert only when all feedback webhook envs are unset. |
 | 0.7.1 | 2 | 2026/05/17 | Implement Divine Bureau Feedback pane (Spec 8.6): add collapsible feedback UI before Backup/Reset with persisted Name, feedback text input, up to 4 image attachments, and Discord webhook submission payload including version/build/environment/timestamp/user/browser/OS/resolution plus feedback body and attached files. |
 | 0.7.1 | 1 | 2026/05/17 | Prepare v0.7.1 release and update Speed of Time progress report header format (Spec 8.1.2): reset build number to `1`, change header key to `browser, version`, and format timestamp as `YYYY/MM/DD HH:MM (Timezone)`. |
 | 0.7.0 | 42 | 2026/05/17 | Update Speed of Time runtime status elemental resistance formatting (Spec 8.1.2): `属防` now outputs percent-only triplet in fire/ice/thunder order (`94%/100%/97%`) without text labels. |

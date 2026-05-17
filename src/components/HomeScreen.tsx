@@ -1112,6 +1112,12 @@ const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
 const FEEDBACK_DISCORD_WEBHOOK_URL = import.meta.env.VITE_FEEDBACK_DISCORD_WEBHOOK_URL;
 
+function getFeedbackWebhookUrl(): string | undefined {
+  if (FEEDBACK_DISCORD_WEBHOOK_URL) return FEEDBACK_DISCORD_WEBHOOK_URL;
+  const environmentId = getEnvironmentId();
+  return environmentId === 'dev' ? DEV_DISCORD_WEBHOOK_URL : BETA_DISCORD_WEBHOOK_URL;
+}
+
 function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
 }
@@ -10747,7 +10753,8 @@ function SettingTab({
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const handleSendFeedback = async () => {
-    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert('VITE_FEEDBACK_DISCORD_WEBHOOK_URL が未設定です。'); return; }
+    const feedbackWebhookUrl = getFeedbackWebhookUrl();
+    if (!feedbackWebhookUrl) { window.alert('フィードバック送信先が未設定です。'); return; }
     if (!feedbackText.trim()) { window.alert('フィードバック本文を入力してください。'); return; }
     setIsSendingFeedback(true);
     try {
@@ -10779,7 +10786,7 @@ function SettingTab({
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
       feedbackFiles.forEach((file, index) => formData.append(`files[${index}]`, file, file.name));
-      const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
+      const response = await fetch(feedbackWebhookUrl, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
       onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
       setFeedbackText('');
