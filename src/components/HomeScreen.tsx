@@ -1110,6 +1110,7 @@ const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
 const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
+const FEEDBACK_DISCORD_WEBHOOK_URL = import.meta.env.VITE_FEEDBACK_DISCORD_WEBHOOK_URL;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
@@ -3055,6 +3056,7 @@ export function HomeScreen({
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
       ['User ID', state.global.userId],
+      ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
       ['browser, version', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
@@ -10643,7 +10645,7 @@ function SettingTab({
   partyCount: number;
   onPartyUnlock: () => void;
 }) {
-  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting' | 'debug';
+  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
   const CLAIRVOYANCE_PARTY_STORAGE_KEY = 'kemo-expedition.divine-bureau.clairvoyance-party-expanded';
@@ -10658,6 +10660,7 @@ function SettingTab({
     itemCompendium: false,
     bestiary: false,
     superRare: false,
+    feedback: false,
     gameSetting: false,
     debug: true,
   };
@@ -10675,6 +10678,7 @@ function SettingTab({
         itemCompendium: parsed.itemCompendium === true,
         bestiary: parsed.bestiary === true,
         superRare: parsed.superRare === true,
+        feedback: parsed.feedback === true,
         gameSetting: parsed.gameSetting === true,
         debug: parsed.debug === true,
       };
@@ -10706,6 +10710,100 @@ function SettingTab({
       console.error('Failed to load glossary expanded entries:', error);
     }
     return {};
+  };
+
+
+  const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('divineBureauFeedbackName');
+  const [feedbackName, setFeedbackName] = useState(() => {
+    try {
+      return localStorage.getItem(FEEDBACK_NAME_STORAGE_KEY) ?? '';
+    } catch {
+      return '';
+    }
+  });
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const feedbackFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FEEDBACK_NAME_STORAGE_KEY, feedbackName);
+    } catch (error) {
+      console.error('Failed to persist feedback name:', error);
+    }
+  }, [feedbackName, FEEDBACK_NAME_STORAGE_KEY]);
+
+  const formatFeedbackTimestamp = (): string => {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false, timeZoneName:'short' });
+    const parts = formatter.formatToParts(now);
+    const year = parts.find((p) => p.type === 'year')?.value ?? '0000';
+    const month = parts.find((p) => p.type === 'month')?.value ?? '00';
+    const day = parts.find((p) => p.type === 'day')?.value ?? '00';
+    const hour = parts.find((p) => p.type === 'hour')?.value ?? '00';
+    const minute = parts.find((p) => p.type === 'minute')?.value ?? '00';
+    const timezone = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'UTC';
+    return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
+  };
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  const handleFeedbackFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    if (selectedFiles.length > 4) {
+      window.alert('添付画像は最大4枚までです。先頭4枚のみ送信されます。');
+    }
+    setFeedbackFiles(selectedFiles.slice(0, 4));
+  };
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  const handleSendFeedback = async () => {
+    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert('VITE_FEEDBACK_DISCORD_WEBHOOK_URL が未設定です。'); return; }
+    if (!feedbackText.trim()) { window.alert('フィードバック本文を入力してください。'); return; }
+    setIsSendingFeedback(true);
+    try {
+      const nav = typeof navigator === 'undefined' ? null : navigator;
+      const userAgent = nav?.userAgent ?? 'unknown';
+      const browser = userAgent.match(/(Firefox|Edg|OPR|Chrome|Safari)\/[\d.]+/)?.[0] ?? 'unknown';
+      const browserVersion = userAgent.match(/(?:Firefox|Edg|OPR|Chrome|Version)\/([\d.]+)/)?.[1] ?? 'unknown';
+      const osVersion = userAgent.match(/Android ([\d.]+)/i)?.[0]
+        ?? userAgent.match(/(?:CPU (?:iPhone )?OS|iPhone OS) ([\d_]+)/i)?.[0]?.replace(/_/g, '.')
+        ?? userAgent.match(/Windows NT ([\d.]+)/i)?.[0]
+        ?? userAgent.match(/Mac OS X ([\d_]+)/i)?.[0]?.replace(/_/g, '.')
+        ?? 'unknown';
+      const payload = {
+        content: [
+          '**Feedback**',
+          `**Version:** ${APP_VERSION}`,
+          `**Build:** ${formatNumber(gameState.buildNumber)}`,
+          `**Environment:** ${getEnvironmentId()}`,
+          `**Timestamp:** ${formatFeedbackTimestamp()}`,
+          `**User ID:** ${gameState.global.userId}`,
+          `**browser, version:** ${browser}, ${browserVersion}`,
+          `**OS version:** ${osVersion}`,
+          `**Resolution:** ${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`,
+          `**Name:** ${feedbackName.trim() || '-'}`,
+          `**Feedback text:** ${feedbackText.trim()}`
+        ].join('\n'),
+        username: `KEMO EXPEDITION ${currentEnv.toUpperCase()} FEEDBACK`,
+      };
+      const formData = new FormData();
+      formData.append('payload_json', JSON.stringify(payload));
+      feedbackFiles.forEach((file, index) => formData.append(`files[${index}]`, file, file.name));
+      const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
+      if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
+      onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
+      setFeedbackText('');
+      setFeedbackFiles([]);
+      if (feedbackFileInputRef.current) {
+        feedbackFileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error(error);
+      window.alert('フィードバック送信に失敗しました。');
+    } finally {
+      setIsSendingFeedback(false);
+    }
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -12547,6 +12645,27 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAllGlossary: !debugSettings.displayAllGlossary })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Glossary: {debugSettings.displayAllGlossary ? 'ON' : 'OFF'}</button>
         </div>}
       </div>}
+
+
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+        {renderDivineBureauPanelHeader('feedback', 'フィードバック')}
+        {divineBureauPanelExpanded.feedback && <div className="space-y-3 mt-3">
+          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder="名前" />
+          <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder="フィードバック本文" />
+          <div>
+            <input
+              ref={feedbackFileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFeedbackFileChange}
+              className="w-full text-sm"
+            />
+            <div className="mt-1 text-xs text-gray-500">添付画像: {formatNumber(feedbackFiles.length)}/4</div>
+          </div>
+          <button onClick={handleSendFeedback} disabled={isSendingFeedback} className="w-full py-2 bg-sub text-white rounded font-medium disabled:opacity-60">{isSendingFeedback ? '送信中…' : '送信'}</button>
+        </div>}
+      </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('gameSetting', 'バックアップ・リセット')}

@@ -9,6 +9,10 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 5 | 2026/05/17 | Update Speed of Time runtime progress report header format (Spec 8.1.2): add `Name` row sourced from Divine Bureau Feedback name input, using entered value or `-` when empty. |
+| 0.7.1 | 4 | 2026/05/17 | Fix Divine Bureau Feedback form attachment behavior (Spec 8.6): clear the file input after successful submission so attached images are fully reset with the form, and alert users when selecting more than 4 images while limiting uploads to the first 4 files. |
+| 0.7.1 | 3 | 2026/05/17 | Fix deploy workflow environment injection for Divine Bureau Feedback webhook: expose `VITE_FEEDBACK_DISCORD_WEBHOOK_URL` from GitHub secret `FEEDBACK_DISCORD_WEBHOOK_URL` so feedback submission no longer fails with missing env alert. |
+| 0.7.1 | 2 | 2026/05/17 | Implement Divine Bureau Feedback pane (Spec 8.6): add collapsible feedback UI before Backup/Reset with persisted Name, feedback text input, up to 4 image attachments, and Discord webhook submission payload including version/build/environment/timestamp/user/browser/OS/resolution plus feedback body and attached files. |
 | 0.7.1 | 1 | 2026/05/17 | Prepare v0.7.1 release and update Speed of Time progress report header format (Spec 8.1.2): reset build number to `1`, change header key to `browser, version`, and format timestamp as `YYYY/MM/DD HH:MM (Timezone)`. |
 | 0.7.0 | 42 | 2026/05/17 | Update Speed of Time runtime status elemental resistance formatting (Spec 8.1.2): `属防` now outputs percent-only triplet in fire/ice/thunder order (`94%/100%/97%`) without text labels. |
 | 0.7.0 | 41 | 2026/05/17 | Adjust Speed of Time runtime status elemental formatting (Spec 8.1.2): keep emoji for `属攻` (`🔥`/`❄`/`⚡`) while keeping `属防` as text-only `fire/.. ice/.. thunder/..` without emoji. |

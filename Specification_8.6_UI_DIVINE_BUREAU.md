@@ -262,6 +262,25 @@ HP: 312                 タイプ: 神魔
     - `m.luna` "黄色を基調としたテーマです"
     - `m.laika` "緑を基調としたテーマです"
 
+**フィードバック**
+  - Send feedback to the development team.
+  - Name field (persist the previously entered value)
+  - Text input form (Feedback text)
+  - File attachments (up to 4 images)
+  - Send button
+    - `FEEDBACK_DISCORD_WEBHOOK_URL` defined in this repository.
+    - Content:
+      - Version: (ex. v0.7.0)
+	  - Build: (ex. 20)
+	  - Environment: (ex. dev )
+	  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
+	  - User ID
+	  - browser, version:
+	  - OS version: (ex. iOS 26.4.2)
+	  - Resolution: (ex. 390 px, 844 px)
+      - Name
+      - Feedback text
+      - Attached files
 
 **バックアップ・リセット**
   - 5.1 Backup (Export)
