@@ -2922,17 +2922,11 @@ export function HomeScreen({
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
-    const toMonospaceTable = (headers: string[], rows: string[][]): string => {
-      const safeRows = [headers, ...rows];
-      const columnWidths = headers.map((_, columnIndex) => (
-        safeRows.reduce((maxWidth, row) => Math.max(maxWidth, (row[columnIndex] ?? '').length), 0)
-      ));
-      const normalizeCell = (cell: string, columnIndex: number) => (cell ?? '').padEnd(columnWidths[columnIndex], ' ').trim();
-      const compactRow = (row: string[]) => row
-        .map((cell, columnIndex) => normalizeCell(cell, columnIndex))
-        .join(', ');
-      const lines = [compactRow(headers), ...rows.map((row) => compactRow(row))];
-      return `\`\`\`\n${lines.join('\n')}\n\`\`\``;
+    const toMarkdownTable = (headers: string[], rows: string[][]): string => {
+      const headerLine = `| ${headers.join(' | ')} |`;
+      const dividerLine = `| ${headers.map(() => '---').join(' | ')} |`;
+      const rowLines = rows.map((row) => `| ${row.join(' | ')} |`);
+      return [headerLine, dividerLine, ...rowLines].join('\n');
     };
     const ptRows = state.parties.map((party, index) => {
       const latestLog = party.lastExpeditionLog;
@@ -2955,6 +2949,7 @@ export function HomeScreen({
         const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
         const computed = computeCharacterStats(member, party.level, rowIndex + 1);
         const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+        const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
         const defensePhysical = `${formatNumber(computed.physicalDefense)}(${formatPercent(computed.physicalDefenseAmplifier)})`;
         const defenseMagical = `${formatNumber(computed.magicalDefense)}(${formatPercent(computed.magicalDefenseAmplifier)})`;
         const attackParts: string[] = [];
@@ -2965,7 +2960,7 @@ export function HomeScreen({
           attackParts.push(`魔${formatNumber(computed.magicalAttack)}(${formatPercent(computed.magicalOffenseMultiplier)})-${formatNumber(computed.magicalNoA)}回`);
         }
         if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
-          attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.meleeNoA)}回`);
+          attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
         }
         const elementalOffense = computed.elementalOffense === 'none'
           ? '-'
@@ -2974,12 +2969,12 @@ export function HomeScreen({
         const race = RACES.find((entry) => entry.id === member.raceId);
         const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         return [
-          `PT${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}`,
-          member.name,
-          build,
+          `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
+          `**${member.name}**`,
+          `**${build}**`,
           defensePhysical,
           defenseMagical,
-          formatPercent(computed.evasionBonus),
+          formatSignedScaledBy1000(computed.evasionBonus),
           attackParts.length > 0 ? attackParts.join('/') : '-',
           elementalOffense,
           elementalDefense,
@@ -3059,11 +3054,11 @@ export function HomeScreen({
     });
 
     await postWebhook({
-      content: `**PT table (latest outcome and room)**\n${toMonospaceTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
+      content: `**PT table (latest outcome and room)**\n${toMarkdownTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
     const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
-    const statusTableFull = toMonospaceTable(statusHeaders, statusRows);
+    const statusTableFull = toMarkdownTable(statusHeaders, statusRows);
     const statusContentLimit = 1800;
     if (`**Status table**\n${statusTableFull}`.length <= statusContentLimit) {
       await postWebhook({
@@ -3075,7 +3070,7 @@ export function HomeScreen({
       let currentChunk: string[][] = [];
       for (const row of statusRows) {
         const nextChunk = [...currentChunk, row];
-        const nextContent = `**Status table**\n${toMonospaceTable(statusHeaders, nextChunk)}`;
+        const nextContent = `**Status table**\n${toMarkdownTable(statusHeaders, nextChunk)}`;
         if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
           chunks.push(currentChunk);
           currentChunk = [row];
@@ -3087,7 +3082,7 @@ export function HomeScreen({
 
       for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
         await postWebhook({
-          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMonospaceTable(statusHeaders, chunks[chunkIndex])}`,
+          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMarkdownTable(statusHeaders, chunks[chunkIndex])}`,
           username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
         });
       }
