@@ -227,9 +227,9 @@
     - `evasion` display x1000, no percentage.   ( +10 )
     - `f.penet_multiplier` ( 8%)
   - `攻撃`: 
-    - If `d.ranged_attack` > 0 and `f.offense_amplifier` LONG > 0, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000. 145%, 3回 )
-    - If `d.magical_attack` > 0 and `f.offense_amplifier` MID > 0, 魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000. 145%, 12回 )
-    - If `d.melee_attack` > 0 and `f.offense_amplifier` CLOSE > 0, 近`d.melee_attack`(`f.offense_amplifier` CLOSE)-`d.ranged_NoA`回 ( 近2,000. 175%, 3回 )
+    - If character has `c.equip_ranged`, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000. 145%, 3回 )
+    - If character has `c.equip_magic`,  魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000. 145%, 12回 )
+    - If character has `c.equip_melee`,  近`d.melee_attack`(`f.offense_amplifier` CLOSE)-`d.ranged_NoA`回 ( 近2,000. 175%, 3回 )
     - `f.elemental_offense_attribute`(its value)  ( 🔥(+20%) )
       - ice: ❄
       - thunder: ⚡
