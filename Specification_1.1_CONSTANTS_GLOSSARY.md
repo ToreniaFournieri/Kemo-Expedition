@@ -230,7 +230,7 @@
 | `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: CLOSE2・1/10, Lv2: CLOSE2・3/10, Lv3: CLOSE2・5/10, Lv4: CLOSE2・7/10, Lv5: CLOSE2・100% | CLOSE | 2 |
 | `a.free` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: CLOSE1, Lv2: CLOSE2, Lv3: CLOSE3, Lv4: MID1, Lv5: MID2 | CLOSE / MID | 1-3 / 1-2 |
 | `a.auriferous` | 含金 | 自身が受けた攻撃回数の累計が10回に達するごとに、ドロップ抽選チケット数を+1する | - | END | 5 |
-| `a.first-aid` | 応急措置 | 戦闘終了後に、自身のHP増加基礎値とアイテムHP増加値のN%を回復する | Lv1: 2%, Lv2: 3%, Lv3: 4%, Lv4: 5%, Lv5: 6%  | END | 4 |
+| `a.first-aid` | 応急措置 | 各エリート戦後に、自身のHP増加基礎値とアイテムHP増加値のN%を回復する | Lv1: 2%, Lv2: 3%, Lv3: 4%, Lv4: 5%, Lv5: 6%  | END | 4 |
 
 
 #### 1.1.2 b. bonus
