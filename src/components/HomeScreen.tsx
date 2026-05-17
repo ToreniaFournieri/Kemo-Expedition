@@ -2961,11 +2961,10 @@ export function HomeScreen({
         if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
           attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
         }
-        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const elementalOffense = computed.elementalOffense === 'none'
           ? '-'
-          : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-        const elementalDefense = `🔥${formatPercent(computed.elementalDefenseMultipliers.fire)} ⚡${formatPercent(computed.elementalDefenseMultipliers.thunder)} ❄${formatPercent(computed.elementalDefenseMultipliers.ice)}`;
+          : `${computed.elementalOffense}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+        const elementalDefense = `fire/${formatPercent(computed.elementalDefenseMultipliers.fire)} ice/${formatPercent(computed.elementalDefenseMultipliers.ice)} thunder/${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
         const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         return [
