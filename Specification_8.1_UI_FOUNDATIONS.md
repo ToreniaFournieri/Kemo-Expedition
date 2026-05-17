@@ -216,7 +216,9 @@
     - Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
   - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203. 87% )
   - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100. 54% )
-  - `回避`:  `evasion` display x1000, no percentage.   ( +10 )
+  - `回避,貫通`: ( +10, 8%)
+    - `evasion` display x1000, no percentage.   ( +10 )
+    - `f.penet_multiplier` ( 8%)
   - `攻撃`: 
     - If `d.ranged_attack` > 0 and `f.offense_amplifier` LONG > 0, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000. 145%, 3回 )
     - If `d.magical_attack` > 0 and `f.offense_amplifier` MID > 0, 魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000. 145%, 12回 )
@@ -227,6 +229,5 @@
       - fire: 🔥
   - `属防`: `f.elemental_resistance_attribute`
     - fire/ice/thunder/ (120%, 65%, 40%)
-  - `貫通`: `f.penet_multiplier`
   - `アビリティ`: Display all abilities owned by the member using Japanese short names and levels ( 壁1, 指揮1, 浪費1 )
 
