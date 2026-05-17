@@ -2950,23 +2950,23 @@ export function HomeScreen({
         const computed = computeCharacterStats(member, party.level, rowIndex + 1);
         const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
         const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
-        const defensePhysical = `${formatNumber(computed.physicalDefense)}(${formatPercent(computed.physicalDefenseAmplifier)})`;
-        const defenseMagical = `${formatNumber(computed.magicalDefense)}(${formatPercent(computed.magicalDefenseAmplifier)})`;
+        const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
+        const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
         const attackParts: string[] = [];
         if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) {
-          attackParts.push(`遠${formatNumber(computed.rangedAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
+          attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
         }
         if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) {
-          attackParts.push(`魔${formatNumber(computed.magicalAttack)}(${formatPercent(computed.magicalOffenseMultiplier)})-${formatNumber(computed.magicalNoA)}回`);
+          attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
         }
         if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
-          attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
+          attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
         }
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const elementalOffense = computed.elementalOffense === 'none'
           ? '-'
           : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-        const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}/${formatPercent(computed.elementalDefenseMultipliers.ice)}/${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
+        const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
         const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
