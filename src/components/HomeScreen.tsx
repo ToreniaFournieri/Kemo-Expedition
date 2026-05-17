@@ -2945,15 +2945,12 @@ export function HomeScreen({
           ? '-'
           : `${computed.elementalOffense}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
         const elementalDefense = `炎${formatPercent(computed.elementalDefenseMultipliers.fire)}/雷${formatPercent(computed.elementalDefenseMultipliers.thunder)}/氷${formatPercent(computed.elementalDefenseMultipliers.ice)}`;
+        const build = `${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         return [
           `PT${formatNumber(partyIndex + 1)}`,
           formatNumber(rowIndex + 1),
           member.name,
-          member.gender === 'male' ? '男' : '女',
-          mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-',
-          subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-',
-          LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId,
-          PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId,
+          build,
           defensePhysical,
           defenseMagical,
           formatPercent(computed.evasionBonus),
@@ -2991,7 +2988,7 @@ export function HomeScreen({
       content: `PT table (latest outcome and room)\n${toMonospaceTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
-    const statusHeaders = ['PT', '列', '名前', '性', '主', '副', '譜', '格', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
+    const statusHeaders = ['PT', '列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
     const statusTableFull = toMonospaceTable(statusHeaders, statusRows);
     const statusContentLimit = 1800;
     if (`Status table\n${statusTableFull}`.length <= statusContentLimit) {

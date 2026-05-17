@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.0 | 29 | 2026/05/17 | Update Speed of Time runtime status report format (Spec 8.1.2): merge gender/class/lineage/predisposition into single `ビルド` column (`男剣剣砂好` style) and keep PT/Status reports as monospace aligned code-block tables. |
 | 0.7.0 | 28 | 2026/05/16 | Update Speed of Time runtime status report table format: align columns with requested compact schema (`物防`/`魔防` merged with amplifier, single `攻撃` summary, and `属攻` value display) while keeping monospace code-block output. |
 | 0.7.0 | 27 | 2026/05/16 | Update Speed of Time runtime progress data format (Spec 8.1.2): send PT and Status report sections as monospace-aligned code-block tables instead of markdown tables. |
 | 0.7.0 | 26 | 2026/05/16 | Fix Speed of Time status-report table chunk typing in HomeScreen runtime: correct chunk row array types for markdown rendering so TypeScript build passes without assignment errors. |
