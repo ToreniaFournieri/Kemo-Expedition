@@ -176,6 +176,8 @@
 - Readable format for discord channel post.
   - Bold text for title.
 
+- **Post content:**
+  - Send the header and PT summary table in a single Discord message.
 - Header:  Progress Report
   - Version: (ex. v0.7.0)
   - Build: (ex. 20)
@@ -189,8 +191,7 @@
   - Total number of sending report: (ex. 12)
   - The last report time: (ex. X Hours ago) 
 
-
-- PT table ( latest outcome and room )
+- PT Summary Table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
   - `Level`: level. ( 40 )
   - `HP`: max Party.`d.HP` ( 20,543 )
@@ -198,6 +199,10 @@
   - `ID`: `x.exp_id` (1,2,.)
   - `Outcome`: The latest outcome ( Clear )
   - `Room`: the deepest room of the latest expedition
+
+- **Attached File**
+  - Attach an HTML file containing the detailed status table.
+  - The HTML file should use a readable table layout optimized for desktop and mobile viewing.
 
 - Status table
   - `PT-列`: PT number and row, bold (1-1, 1-2...)
@@ -223,5 +228,5 @@
   - `属防`: `f.elemental_resistance_attribute`
     - fire/ice/thunder/ (120%/65%/40%)
   - `貫通`: `f.penet_multiplier`
-  - `アビリティ`: abilities the member has. Japanese text and its level ( 壁1, 指揮1, 浪費1 )
+  - `アビリティ`: Display all abilities owned by the member using Japanese short names and levels ( 壁1, 指揮1, 浪費1 )
 
