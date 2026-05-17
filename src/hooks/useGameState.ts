@@ -4671,7 +4671,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY': {
       const normalizedPartyId = normalizeJewelAutoEquipPriorityPartyId(action.partyId, state.parties.length);
-      if ((state.global.jewelAutoEquipPriorityPartyId ?? 1) === normalizedPartyId) return state;
+      if (state.global.jewelAutoEquipPriorityPartyId === normalizedPartyId) return state;
       return {
         ...state,
         global: {

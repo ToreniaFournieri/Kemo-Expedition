@@ -3545,7 +3545,7 @@ export function HomeScreen({
     state.parties.forEach((party, partyIndex) => {
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
-      const isJewelPriorityParty = (state.global.jewelAutoEquipPriorityPartyId ?? 1) === party.id;
+      const isJewelPriorityParty = state.global.jewelAutoEquipPriorityPartyId === party.id;
 
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
@@ -5189,7 +5189,7 @@ export function HomeScreen({
         <BaseTab
           inventory={state.global.inventory}
           jewels={state.global.jewels}
-          jewelAutoEquipPriorityPartyId={state.global.jewelAutoEquipPriorityPartyId ?? 1}
+          jewelAutoEquipPriorityPartyId={state.global.jewelAutoEquipPriorityPartyId ?? null}
           parties={state.parties}
           gold={state.global.gold}
           shopPurchases={state.global.shopPurchases}
