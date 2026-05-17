@@ -182,7 +182,7 @@
   - Timestamp: YYYY/DD/MM HH:MM
   - User ID
   - browser, version:
-  - OS version:
+  - OS version: (ex. iOS 26.4.2)
   - Resolution: (ex. 390 px, 844 px)
   - Total number of sending report: (ex. 12)
   - The last report time: (ex. X Hours ago) 
