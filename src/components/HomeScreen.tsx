@@ -3056,6 +3056,7 @@ export function HomeScreen({
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
       ['User ID', state.global.userId],
+      ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
       ['browser, version', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
