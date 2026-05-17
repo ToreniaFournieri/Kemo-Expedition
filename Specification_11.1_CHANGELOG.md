@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.0 | 42 | 2026/05/17 | Update Speed of Time runtime status elemental resistance formatting (Spec 8.1.2): `属防` now outputs percent-only triplet in fire/ice/thunder order (`94%/100%/97%`) without text labels. |
 | 0.7.0 | 41 | 2026/05/17 | Adjust Speed of Time runtime status elemental formatting (Spec 8.1.2): keep emoji for `属攻` (`🔥`/`❄`/`⚡`) while keeping `属防` as text-only `fire/.. ice/.. thunder/..` without emoji. |
 | 0.7.0 | 40 | 2026/05/17 | Update Speed of Time runtime status table elemental formatting (Spec 8.1.2): remove emoji icons from `属攻`/`属防`, render offense as text attribute (`fire/ice/thunder`) and render `属防` in `fire/.. ice/.. thunder/..` order from `f.elemental_resistance_attribute`. |
 | 0.7.0 | 39 | 2026/05/17 | Implement global `User ID (UUID)` persistence (Spec 1.2) and wire it into Speed of Time progress report header (Spec 8.1.2): generate UUID when missing, save it in global data, keep it across load/import/reset flows, and post the persisted value in `User ID`. |
