@@ -266,7 +266,7 @@ HP: 312                 タイプ: 神魔
   - Send feedback to the development team.
   - Name field (persist the previously entered value)
   - Text input form (Feedback text)
-  - Latest Battle Log selection:
+  - Latest Battle Log selection (最終戦闘ログ選択):
     - PT1, PT2, PT3, PT4, PT5, PT6, None
     - Default selection: PT1
 - File attachments (up to 4 images)
