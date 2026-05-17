@@ -10766,7 +10766,15 @@ function SettingTab({
     if (!party || !latestLog) return null;
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
-        const detailLine = `${detail.action}${detail.note ? ` (${detail.note})` : ''}`;
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0
+          ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)`
+          : '';
+        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage)
+          ? `(${formatNumber(detail.damage)})`
+          : '';
+        const noteDisplay = detail.note ? `(${detail.note})` : '';
+        const suffix = [hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ');
+        const detailLine = `${detail.action}${suffix ? ` ${suffix}` : ''}`;
         return `<li>${escapeFeedbackHtml(detailLine)}</li>`;
       }).join('');
       return `
