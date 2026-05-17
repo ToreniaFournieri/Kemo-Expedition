@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 15 | 2026/05/17 | Update Status table format (Spec 8.1.2): remove parentheses from `名前, ビルド` values and merge `回避`/`貫通` into a single `回避,貫通` column rendered as `+N, M%` in both Speed of Time and Feedback status-table HTML exports. |
 | 0.7.1 | 14 | 2026/05/17 | Update Divine Bureau Feedback runtime payload attachments (Spec 8.6): keep latest battle log HTML export and additionally attach the selected party Status Table HTML (`@Specification_8.1_UI_FOUNDATIONS.md`) with shared table layout generation flow. |
 | 0.7.1 | 13 | 2026/05/17 | Update Speed of Time runtime status HTML table member identity format (Spec 8.1.2): merge `名前` and `ビルド` into one `名前, ビルド` column rendered as `(name, race+gender+class/class/lineage/predisposition)` (e.g., `(オルカ, 🐶女剣剣砂好)`). |
 | 0.7.1 | 12 | 2026/05/17 | Update Speed of Time runtime status HTML attachment format (Spec 8.1.2): attach a responsive desktop/mobile status table file with `攻撃` including elemental offense emoji/value, remove standalone `属攻` column, and keep requested PT/build/defense/evasion/penetration/ability display schema. |
