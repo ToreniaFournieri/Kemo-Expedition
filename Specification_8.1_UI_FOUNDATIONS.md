@@ -173,7 +173,8 @@
 
 
 **Format of progress data**
-- Readable format for discord channel post
+- Readable format for discord channel post.
+  - Bold text for title.
 
 - Header:  Progress Report
   - Version: (ex. v0.7.0)
@@ -187,6 +188,7 @@
   - Total number of sending report: (ex. 12)
   - The last report time: (ex. X Hours ago) 
 
+
 - PT table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
   - `Level`: level. ( 40 )
@@ -197,11 +199,11 @@
   - `Room`: the deepest room of the latest expedition
 
 - Status table
-  - `PT`: PT number (PT1, PT2 ....)
-  - `列`: Row. (1,2, ...6)
+  - `PT-列`: PT number and row (1-1, 1-2...)
   - `名前`: Character name (オルカ)
-  - `ビルド`: ( 男剣剣砂好 )
-    - Gender. (♂ -> 男/ ♀ -> 女)
+  - `ビルド`: ( 🐶男剣剣砂好 )
+    - Race icon. (🐶, 🦊 etc..)
+	- Gender. (♂ -> 男/ ♀ -> 女)
     - Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
     - Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
     - Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
