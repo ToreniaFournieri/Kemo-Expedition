@@ -2922,11 +2922,10 @@ export function HomeScreen({
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
-    const toMarkdownTable = (headers: string[], rows: string[][]): string => {
-      const headerLine = `| ${headers.join(' | ')} |`;
-      const dividerLine = `| ${headers.map(() => '---').join(' | ')} |`;
-      const rowLines = rows.map((row) => `| ${row.join(' | ')} |`);
-      return [headerLine, dividerLine, ...rowLines].join('\n');
+    const toSpaceSeparatedRows = (headers: string[], rows: string[][]): string => {
+      const headerLine = headers.join(' ');
+      const rowLines = rows.map((row) => row.join(' '));
+      return [headerLine, ...rowLines].join('\n');
     };
     const ptRows = state.parties.map((party, index) => {
       const latestLog = party.lastExpeditionLog;
@@ -2962,10 +2961,11 @@ export function HomeScreen({
         if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
           attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
         }
+        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const elementalOffense = computed.elementalOffense === 'none'
           ? '-'
-          : `${computed.elementalOffense}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-        const elementalDefense = `炎${formatPercent(computed.elementalDefenseMultipliers.fire)}/雷${formatPercent(computed.elementalDefenseMultipliers.thunder)}/氷${formatPercent(computed.elementalDefenseMultipliers.ice)}`;
+          : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+        const elementalDefense = `🔥${formatPercent(computed.elementalDefenseMultipliers.fire)} ⚡${formatPercent(computed.elementalDefenseMultipliers.thunder)} ❄${formatPercent(computed.elementalDefenseMultipliers.ice)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
         const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         return [
@@ -3054,11 +3054,11 @@ export function HomeScreen({
     });
 
     await postWebhook({
-      content: `**PT table (latest outcome and room)**\n${toMarkdownTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
+      content: `**PT table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
     const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
-    const statusTableFull = toMarkdownTable(statusHeaders, statusRows);
+    const statusTableFull = toSpaceSeparatedRows(statusHeaders, statusRows);
     const statusContentLimit = 1800;
     if (`**Status table**\n${statusTableFull}`.length <= statusContentLimit) {
       await postWebhook({
@@ -3070,7 +3070,7 @@ export function HomeScreen({
       let currentChunk: string[][] = [];
       for (const row of statusRows) {
         const nextChunk = [...currentChunk, row];
-        const nextContent = `**Status table**\n${toMarkdownTable(statusHeaders, nextChunk)}`;
+        const nextContent = `**Status table**\n${toSpaceSeparatedRows(statusHeaders, nextChunk)}`;
         if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
           chunks.push(currentChunk);
           currentChunk = [row];
@@ -3082,7 +3082,7 @@ export function HomeScreen({
 
       for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
         await postWebhook({
-          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMarkdownTable(statusHeaders, chunks[chunkIndex])}`,
+          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toSpaceSeparatedRows(statusHeaders, chunks[chunkIndex])}`,
           username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
         });
       }
