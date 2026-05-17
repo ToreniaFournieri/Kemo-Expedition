@@ -175,6 +175,17 @@
 **Format of progress data**
 - Use a code block with comma alignment
 
+- Header: Speed of Time Progress Report
+  - Version: (ex. v0.7.0)
+  - Build: (ex. 20)
+  - Environment: (ex. dev )
+  - Timestamp: YYYY/DD/MM HH:MM
+  - User ID
+  - browser, version:
+  - OS version:
+  - Resolution: (ex. 390 px, 844 px)
+  - Total number of sending report: (ex. 12)
+
 - PT table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
   - `Level`: level. ( 40 )
