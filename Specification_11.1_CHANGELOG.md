@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.0 | 39 | 2026/05/17 | Implement global `User ID (UUID)` persistence (Spec 1.2) and wire it into Speed of Time progress report header (Spec 8.1.2): generate UUID when missing, save it in global data, keep it across load/import/reset flows, and post the persisted value in `User ID`. |
 | 0.7.0 | 38 | 2026/05/17 | Update Speed of Time runtime PT progress table format (Spec 8.1.2): `HP` now reports max party `d.HP`, `ID` now reports latest expedition `x.exp_id` (`lastExpeditionLog.dungeonId`), while keeping Outcome and deepest Room from latest expedition log. |
 | 0.7.0 | 37 | 2026/05/17 | Update Speed of Time runtime progress report formatting (Spec 8.1.2): use Discord-friendly space-separated rows (no Markdown pipe tables) and render status elemental offense/resistance attributes with emojis (`🔥`,`⚡`,`❄`) while keeping penetration as percentage from `f.penet_multiplier`. |
 | 0.7.0 | 36 | 2026/05/17 | Update Speed of Time runtime status table output format (Spec 8.1.2): switch PT/Status report payload tables from code-block monospace to Markdown tables, apply bold formatting to `PT-列`/`名前`/`ビルド`, render `回避` as x1000 signed value without `%`, and align attack/melee hit-count rendering to the requested schema. |

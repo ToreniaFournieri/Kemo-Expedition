@@ -426,6 +426,7 @@ export interface Deity {
 interface GlobalState {
   gold: number;
   inventory: InventoryRecord;
+  userId: string;
   deityDonations: Record<string, number>;
   unlockedDeities: string[];
   challengedGodNames: string[];

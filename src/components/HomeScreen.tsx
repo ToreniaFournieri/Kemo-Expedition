@@ -3038,7 +3038,7 @@ export function HomeScreen({
       ['Build', formatNumber(state.buildNumber)],
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
-      ['User ID', '-'],
+      ['User ID', state.global.userId],
       ['Browser', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
