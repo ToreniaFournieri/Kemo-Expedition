@@ -1,6 +1,6 @@
 import { createEnvironmentStorageKey, getEnvironmentId } from './environment';
 
-type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100';
+type DebugTimeSpeed = 'realtime' | 'x1_2' | 'x5' | 'x20' | 'x100';
 type DebugGodsBattleCondition = 'normal' | 'simple1';
 type DebugGodStrength = 'normal' | 'debug';
 
@@ -60,7 +60,7 @@ function normalizeDebugSettings(raw: unknown): DebugSettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> & { displayMotivation?: boolean } : {};
   return enforceEnvironmentDebugPolicy({
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
-    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'realtime',
+    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x1_2' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'realtime',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
     jewelShopOpen: parsed.jewelShopOpen === true,
@@ -99,6 +99,7 @@ export function saveDebugSettings(settings: DebugSettings): void {
 export function getTimeSpeedScale(settings: DebugSettings): number {
   // SpecRef: 5.1 | PROGRESS | Debug Scaling
   if (settings.timeSpeed === 'realtime') return 1;
+  if (settings.timeSpeed === 'x1_2') return 1 / 1.2;
   if (settings.timeSpeed === 'x20') return 0.05;
   if (settings.timeSpeed === 'x100') return 0.01;
   return 0.2;

@@ -206,7 +206,7 @@ const renderElementalResistanceInline = (
 
 type PartyCycleState = 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
-const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
+const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 700;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
@@ -255,18 +255,19 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   reactivate: '復帰中',
 };
 
-const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE', string> = {
+const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
   LONG: '遠距離',
   MID: '魔法',
   CLOSE: '近接',
+  END: '終了',
 };
 
 function formatBonusAbilityPhaseDisplay(value: string): string {
-  return value.replace(/LONG|MID|CLOSE/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE']);
+  return value.replace(/LONG|MID|CLOSE|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE' | 'END']);
 }
 
 function isBonusAbilityTimingToken(token: string): boolean {
-  return /^(?:LONG|MID|CLOSE)\d(?:\/(?:LONG|MID|CLOSE)\d)*$/.test(token);
+  return /^(?:LONG|MID|CLOSE|END)\d(?:\/(?:LONG|MID|CLOSE|END)\d)*$/.test(token);
 }
 
 function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
@@ -277,7 +278,7 @@ function parseBonusAbilityLevelScale(levelScale: string): { timing: string | nul
 
   const separatorIndex = scaleContent.indexOf('・');
   if (separatorIndex < 0) {
-    const isTimingOnly = /^(LONG|MID|CLOSE)\d/.test(scaleContent);
+    const isTimingOnly = /^(LONG|MID|CLOSE|END)\d/.test(scaleContent);
     return {
       timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
       value: isTimingOnly ? null : scaleContent,
@@ -1104,6 +1105,11 @@ function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
 }
 
 const numberFormatter = new Intl.NumberFormat('ja-JP');
+const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
+const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
+const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
+const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
+const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
@@ -2839,6 +2845,266 @@ export function HomeScreen({
       return next;
     });
   }, []);
+  const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(() => {
+    try {
+      const raw = localStorage.getItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = Number(raw);
+      if (!Number.isFinite(parsed)) return null;
+      return parsed > Date.now() ? parsed : null;
+    } catch (error) {
+      console.error('Failed to load Speed of Time bonus duration:', error);
+      return null;
+    }
+  });
+  const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    try {
+      if (timeSpeedBonusUntilMs === null) {
+        localStorage.removeItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY);
+      } else {
+        localStorage.setItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY, String(timeSpeedBonusUntilMs));
+      }
+    } catch (error) {
+      console.error('Failed to persist Speed of Time bonus duration:', error);
+    }
+  }, [timeSpeedBonusUntilMs]);
+
+  useEffect(() => {
+    if (timeSpeedBonusUntilMs === null) return;
+    const timer = window.setInterval(() => {
+      setTimeSpeedNowMs(Date.now());
+    }, 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [timeSpeedBonusUntilMs]);
+
+  useEffect(() => {
+    if (timeSpeedBonusUntilMs === null) return;
+    if (timeSpeedNowMs < timeSpeedBonusUntilMs) return;
+    setTimeSpeedBonusUntilMs(null);
+    setDebugSettings((prev) => {
+      if (prev.timeSpeed !== 'x1_2') return prev;
+      const next = { ...prev, timeSpeed: 'realtime' as const };
+      saveDebugSettings(next);
+      return next;
+    });
+  }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
+
+  const speedOfTimeLabel = useMemo(() => {
+    if (debugSettings.timeSpeed === 'x20') return 'x20';
+    if (debugSettings.timeSpeed === 'x100') return 'x100';
+    if (debugSettings.timeSpeed === 'x5') return 'x5';
+    const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
+    if (!isBonusSpeed) return 'x1.0';
+    const remainingHours = timeSpeedBonusUntilMs === null
+      ? 0
+      : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
+    return `${SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL}(${formatNumber(remainingHours)}h)`;
+  }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
+
+  const speedOfTimeSymbol = useMemo(() => {
+    if (debugSettings.timeSpeed === 'realtime') return '▷';
+    return '▶';
+  }, [debugSettings.timeSpeed]);
+
+  const reportProgressForSpeedOfTime = useCallback(async () => {
+    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
+    // SpecRef: 8.1.2 | Header | Format of progress data
+    const environmentId = getEnvironmentId();
+    const webhookUrl = environmentId === 'dev'
+      ? DEV_DISCORD_WEBHOOK_URL
+      : environmentId === 'beta'
+        ? BETA_DISCORD_WEBHOOK_URL
+        : null;
+    if (!webhookUrl) {
+      const requiredEnvName = environmentId === 'dev' ? 'VITE_DEV_DISCORD_WEBHOOK_URL' : 'VITE_BETA_DISCORD_WEBHOOK_URL';
+      console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
+      return false;
+    }
+    const toSpaceSeparatedRows = (headers: string[], rows: string[][]): string => {
+      const headerLine = headers.join(' ');
+      const rowLines = rows.map((row) => row.join(' '));
+      return [headerLine, ...rowLines].join('\n');
+    };
+    const ptRows = state.parties.map((party, index) => {
+      const latestLog = party.lastExpeditionLog;
+      const xpToNextLevel = getXpToNextLevel(party.level);
+      const remainingXp = Math.max(0, xpToNextLevel - party.experience);
+      const expRemainingPercent = Math.min(100, Math.max(0, Math.round((remainingXp / Math.max(1, xpToNextLevel)) * 100)));
+      return [
+        `PT${formatNumber(index + 1)}`,
+        formatNumber(party.level),
+        formatNumber(Math.max(0, Math.floor(computePartyStats(party).partyStats.hp))),
+        `${formatNumber(expRemainingPercent)}%`,
+        latestLog?.dungeonId != null ? formatNumber(latestLog.dungeonId) : '-',
+        latestLog?.finalOutcome ?? '-',
+        latestLog ? formatNumber(latestLog.completedRooms) : '-',
+      ];
+    });
+    const statusRows = state.parties.flatMap((party, partyIndex) =>
+      party.characters.map((member, rowIndex) => {
+        const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
+        const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
+        const computed = computeCharacterStats(member, party.level, rowIndex + 1);
+        const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+        const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
+        const defensePhysical = `${formatNumber(computed.physicalDefense)}(${formatPercent(computed.physicalDefenseAmplifier)})`;
+        const defenseMagical = `${formatNumber(computed.magicalDefense)}(${formatPercent(computed.magicalDefenseAmplifier)})`;
+        const attackParts: string[] = [];
+        if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) {
+          attackParts.push(`遠${formatNumber(computed.rangedAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
+        }
+        if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) {
+          attackParts.push(`魔${formatNumber(computed.magicalAttack)}(${formatPercent(computed.magicalOffenseMultiplier)})-${formatNumber(computed.magicalNoA)}回`);
+        }
+        if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
+          attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
+        }
+        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+        const elementalOffense = computed.elementalOffense === 'none'
+          ? '-'
+          : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+        const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}/${formatPercent(computed.elementalDefenseMultipliers.ice)}/${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
+        const race = RACES.find((entry) => entry.id === member.raceId);
+        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        return [
+          `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
+          `**${member.name}**`,
+          `**${build}**`,
+          defensePhysical,
+          defenseMagical,
+          formatSignedScaledBy1000(computed.evasionBonus),
+          attackParts.length > 0 ? attackParts.join('/') : '-',
+          elementalOffense,
+          elementalDefense,
+          formatPercent(computed.penetMultiplier),
+        ];
+      })
+    );
+
+    const postWebhook = async (payload: Record<string, unknown>) => {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
+    };
+
+    const now = new Date();
+    const timestampFormatter = new Intl.DateTimeFormat('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZoneName: 'short',
+    });
+    const timestampParts = timestampFormatter.formatToParts(now);
+    const year = timestampParts.find((part) => part.type === 'year')?.value ?? '0000';
+    const month = timestampParts.find((part) => part.type === 'month')?.value ?? '00';
+    const day = timestampParts.find((part) => part.type === 'day')?.value ?? '00';
+    const hour = timestampParts.find((part) => part.type === 'hour')?.value ?? '00';
+    const minute = timestampParts.find((part) => part.type === 'minute')?.value ?? '00';
+    const timezone = timestampParts.find((part) => part.type === 'timeZoneName')?.value ?? 'UTC';
+    const timestamp = `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
+    const nav = typeof navigator === 'undefined' ? null : navigator;
+    const userAgent = nav?.userAgent ?? 'unknown';
+    const navWithUaData = nav as Navigator & { userAgentData?: { brands?: Array<{ brand: string; version: string }> } };
+    const browserName = nav
+      ? (navWithUaData.userAgentData?.brands?.map((brand: { brand: string }) => brand.brand).join(' / ')
+      || (userAgent.match(/(Firefox|Edg|OPR|Chrome|Safari)\/[\d.]+/)?.[0] ?? 'unknown'))
+      : 'unknown';
+    const browserVersion = nav
+      ? (userAgent.match(/(?:Firefox|Edg|OPR|Chrome|Version)\/([\d.]+)/)?.[1] ?? 'unknown')
+      : 'unknown';
+    const platform = nav?.platform ?? '';
+    const detectOsVersion = (ua: string): string => {
+      const ios = ua.match(/(?:CPU (?:iPhone )?OS|iPhone OS) ([\d_]+)/i)?.[1];
+      if (ios) return `iOS ${ios.replace(/_/g, '.')}`;
+      const android = ua.match(/Android ([\d.]+)/i)?.[1];
+      if (android) return `Android ${android}`;
+      const windows = ua.match(/Windows NT ([\d.]+)/i)?.[1];
+      if (windows) return `Windows NT ${windows}`;
+      const mac = ua.match(/Mac OS X ([\d_]+)/i)?.[1];
+      if (mac) return `macOS ${mac.replace(/_/g, '.')}`;
+      return platform || 'unknown';
+    };
+    const osVersion = detectOsVersion(userAgent);
+    const resolution = `${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`;
+    const reportCounterKey = createEnvironmentStorageKey('speedOfTimeReportCount');
+    const reportCount = Number.parseInt(localStorage.getItem(reportCounterKey) ?? '0', 10);
+    const nextReportCount = Number.isFinite(reportCount) ? reportCount + 1 : 1;
+    localStorage.setItem(reportCounterKey, String(nextReportCount));
+    const progressReportCount = formatNumber(nextReportCount);
+    const lastReportAtKey = createEnvironmentStorageKey('speedOfTimeLastReportAt');
+    const previousReportAt = Number.parseInt(localStorage.getItem(lastReportAtKey) ?? '', 10);
+    const lastReportHours = Number.isFinite(previousReportAt)
+      ? Math.max(0, (Date.now() - previousReportAt) / (1000 * 60 * 60))
+      : null;
+    const lastReportTime = lastReportHours == null
+      ? '-'
+      : `${formatNumber(Math.floor(lastReportHours))} Hours ago`;
+    localStorage.setItem(lastReportAtKey, String(Date.now()));
+    // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
+    const reportHeaderRows = [
+      ['Version', APP_VERSION],
+      ['Build', formatNumber(state.buildNumber)],
+      ['Environment', getEnvironmentId()],
+      ['Timestamp', timestamp],
+      ['User ID', state.global.userId],
+      ['browser, version', `${browserName}, ${browserVersion}`],
+      ['OS version', osVersion],
+      ['Resolution', resolution],
+      ['Total number of sending report', progressReportCount],
+      ['The last report time', lastReportTime],
+    ];
+    const headerLines = reportHeaderRows
+      .map(([key, value]) => `**${key}:** ${value}`)
+      .join('\n');
+    await postWebhook({
+      content: `**Progress Report**\n${headerLines}`,
+      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+    });
+
+    await postWebhook({
+      content: `**PT table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
+      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+    });
+    const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
+    const statusTableFull = toSpaceSeparatedRows(statusHeaders, statusRows);
+    const statusContentLimit = 1800;
+    if (`**Status table**\n${statusTableFull}`.length <= statusContentLimit) {
+      await postWebhook({
+        content: `**Status table**\n${statusTableFull}`,
+        username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+      });
+    } else {
+      const chunks: string[][][] = [];
+      let currentChunk: string[][] = [];
+      for (const row of statusRows) {
+        const nextChunk = [...currentChunk, row];
+        const nextContent = `**Status table**\n${toSpaceSeparatedRows(statusHeaders, nextChunk)}`;
+        if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
+          chunks.push(currentChunk);
+          currentChunk = [row];
+        } else {
+          currentChunk = nextChunk;
+        }
+      }
+      if (currentChunk.length > 0) chunks.push(currentChunk);
+
+      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+        await postWebhook({
+          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toSpaceSeparatedRows(statusHeaders, chunks[chunkIndex])}`,
+          username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
+        });
+      }
+    }
+    return true;
+  }, [state]);
 
   const runAutoEquipment = useCallback((
     targetPartyIndexes?: number[],
@@ -4239,11 +4505,20 @@ export function HomeScreen({
                   }
                 }
               }
-              updated.state = autoRepeatEnabled ? 'move' : 'idle';
-              updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
-              if (updated.state === 'move') {
-                updated.sortieSourceState = undefined;
-                updated.sortieEmbezzlementGold = undefined;
+              // SpecRef: 5.1.1 | Party State Machine | state.pray
+              const shouldReturnToRest = party.currentHp < partyRuntimeStats.hp;
+              if (shouldReturnToRest) {
+                updated.state = 'rest';
+                updated.durationMs = getStateDurationMs(party, 'rest');
+                updated.wasLowHpAtRestStart = false;
+                updated.restInitialTotalSteps = getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp);
+              } else {
+                updated.state = autoRepeatEnabled ? 'move' : 'idle';
+                updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
+                if (updated.state === 'move') {
+                  updated.sortieSourceState = undefined;
+                  updated.sortieEmbezzlementGold = undefined;
+                }
               }
             } else if (updated.state === 'idle') {
               updated.durationMs = 1000;
@@ -4825,8 +5100,9 @@ export function HomeScreen({
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = `${APP_VERSION}(${state.buildNumber})`;
-  const envDisplayLabel = envLabel ? `(${envLabel})` : null;
+  const versionLabel = envLabel
+    ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
+    : `${APP_VERSION}(${state.buildNumber})`;
   const gameTitle = '冒ケモ🐾';
 
   useEffect(() => {
@@ -4989,7 +5265,31 @@ export function HomeScreen({
               </h1>
             </div>
             <div className="flex items-center gap-2 pr-3 text-right text-sm font-medium leading-none">
-              {envDisplayLabel && <span className="text-xs font-normal text-gray-500">{envDisplayLabel}</span>}
+              <button
+                type="button"
+                onClick={async () => {
+                  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane(デバッグ)
+                  const confirmed = window.confirm('現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）');
+                  if (!confirmed) return;
+                  try {
+                    const isReported = await reportProgressForSpeedOfTime();
+                    if (!isReported) {
+                      window.alert('進捗報告先が未設定のため、速度ボーナスは適用されませんでした。');
+                      return;
+                    }
+                    const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
+                    setTimeSpeedBonusUntilMs(bonusUntilMs);
+                    updateDebugSettings({ timeSpeed: 'x1_2' });
+                    actions.addNotification('進捗報告に成功しました。1日間、ゲーム進行速度が1.2倍になります。', 'normal', 'stat', true);
+                  } catch (error) {
+                    console.error('Failed to report progress for Speed of Time:', error);
+                    window.alert('進捗報告に失敗したため、速度ボーナスは適用されませんでした。');
+                  }
+                }}
+                className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
+              >
+                {speedOfTimeSymbol} {speedOfTimeLabel}
+              </button>
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (
                 <button
@@ -12228,6 +12528,7 @@ function SettingTab({
             <div className="text-xs text-gray-500 mb-1">Speed of time</div>
             <div className="flex gap-2">
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'realtime' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'realtime' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>Real time</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x1_2' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x1_2' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x1.2 bonus</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x5' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x5' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x5 boost</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x20' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x20' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x20 hyper</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x100' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x100' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x100 Ultra</button>

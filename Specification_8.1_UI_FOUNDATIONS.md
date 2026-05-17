@@ -125,15 +125,35 @@
 
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
-  if (p.includes("/dev/")) return "開発環境";
-  if (p.includes("/qa/")) return "αテスト";
+  if (p.includes("/dev/")) return "D";
+  if (p.includes("/beta/")) return "β";
   return "";  };
   - Use this specification's version
 
+- Speed of Time: `▷ x1.0(23h)`
+  - Displays the current game speed multiplier and the remaining boost duration in hours.
+    - x1.0 -> `▷`
+    - x1.2 or higher -> `▶`
+- When the player presses the Speed of Time button:
+  - Show the following confirmation dialog:
+    - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
+    - Dialog options: YES / NO
+  - If the player selects YES: 
+    - Generate **format of progress data** and send to:
+      - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+      - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+    - If the webhook request succeeds:
+      - Set Speed of Time to x1.2. and the text is `▶x1.2`
+      - The boost effect lasts for 24 hours.
+    - If the webhook request fails:
+      - Do not apply the boost effect.
+      - Keep Speed of Time at its current value.
+      - Show an error message to the player.
+  - When the remaining duration reaches 0h: Reset Speed of Time to `▷ x1.0`
 
 ```
 (Left-aligned)             (Right-aligned)
-冒ケモ🐾　v0.6.0(23) (αテスト)        200G
+冒ケモ🐾　v0.6.0(23) (β)    ▷ x1.0(23h)  200G
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
@@ -144,10 +164,62 @@
 
 - If wide mode (two tabs) is on, it displays Expedition (always visible) and other tabs player selects.
   - One tabs width: ~ 500 width.
-  - Threshold: 1024 width, then two tabs mode.
+  - Threshold: 700 width, then two tabs mode.
 
 - Header is always visible; tabs never cause full page reload.
 
 -IF 自動周回 is OFF, display "静止中" in the header (right-aligned: 200G 静止中) with Sub color
  and tap "静止中", then 自動周回 is ON.
+
+
+**Format of progress data**
+- Readable format for discord channel post.
+  - Bold text for title.
+
+- Header:  Progress Report
+  - Version: (ex. v0.7.0)
+  - Build: (ex. 20)
+  - Environment: (ex. dev )
+  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
+  - User ID
+  - browser, version:
+  - OS version: (ex. iOS 26.4.2)
+  - Resolution: (ex. 390 px, 844 px)
+  - Total number of sending report: (ex. 12)
+  - The last report time: (ex. X Hours ago) 
+
+
+- PT table ( latest outcome and room )
+  - `PT`: PT number ( PT1, PT2 ....)
+  - `Level`: level. ( 40 )
+  - `HP`: max Party.`d.HP` ( 20,543 )
+  - `Exp`: Experience remaining: (23%)
+  - `ID`: `x.exp_id` (1,2,.)
+  - `Outcome`: The latest outcome ( Clear )
+  - `Room`: the deepest room of the latest expedition
+
+- Status table
+  - `PT-列`: PT number and row, bold (1-1, 1-2...)
+  - `名前`: Character name, bold (オルカ)
+  - `ビルド`: bold ( 🐶男剣剣砂好 )
+    - Race icon. (🐶, 🦊 etc..)
+	- Gender. (♂ -> 男/ ♀ -> 女)
+    - Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
+    - Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
+    - Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
+    - Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
+  - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203(87%) )
+  - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100(54%) )
+  - `回避`:  `evasion` display x1000, no percentage.   ( +10 )
+  - `攻撃`:
+    - If `d.ranged_attack` > 0 and `f.offense_amplifier` LONG > 0, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000(145%)-3回 )
+    - If `d.magical_attack` > 0 and `f.offense_amplifier` MID > 0, 魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000(145%)-12回 )
+    - If `d.melee_attack` > 0 and `f.offense_amplifier` CLOSE > 0, 近`d.melee_attack`(`f.offense_amplifier` CLOSE)-`d.ranged_NoA`回 ( 近2,000(175%)-3回 )
+　- `属攻`: `f.elemental_offense_attribute`(its value)  ( 🔥(+20%) )
+    - ice: ❄
+    - thunder: ⚡
+    - fire: 🔥
+  - `属防`: `f.elemental_resistance_attribute`
+    - fire/ice/thunder/ (120%/65%/40%)
+  - `貫通`: `f.penet_multiplier`
 

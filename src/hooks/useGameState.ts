@@ -118,6 +118,14 @@ const DEBUG_CYCLE_DURATION_SCALE = 0.05;
 const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 const BASE_STEP_DURATION_MS = 15_000;
+
+function generateUserId(): string {
+  // SpecRef: 1.2 | CONSTANTS_GLOBAL | User ID (UUID)
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `uuid-${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
+}
 const APPROX_CYCLE_STEP_COUNT = 30;
 const SAVE_LOAD_WARNING_MESSAGE = 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください';
 const VALID_GLOSSARY_ABILITY_IDS = new Set(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
@@ -999,6 +1007,7 @@ function loadSavedState(): LoadSavedStateResult {
           parsed.global = {
             gold: firstParty?.gold ?? 200,
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
+            userId: generateUserId(),
             deityDonations: {},
             unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
             challengedGodNames: [],
@@ -1016,6 +1025,9 @@ function loadSavedState(): LoadSavedStateResult {
         }
         if (Array.isArray(parsed.global.inventory)) {
           parsed.global.inventory = migrateOldInventory(parsed.global.inventory);
+        }
+        if (typeof parsed.global.userId !== 'string' || parsed.global.userId.trim().length === 0) {
+          parsed.global.userId = generateUserId();
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
         parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
@@ -1734,6 +1746,7 @@ function createInitialState(): InitialStateResult {
     global: {
       gold: 200,
       inventory: createStarterInventory(),
+      userId: generateUserId(),
       jewels: createStarterJewelInventory(),
       jewelAutoEquipPriorityPartyId: 1,
       deityDonations: {},
@@ -4561,6 +4574,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         global: {
           gold: 200,
           inventory: createStarterInventory(),
+          userId: generateUserId(),
           jewels: createStarterJewelInventory(),
           jewelAutoEquipPriorityPartyId: 1,
           deityDonations: {},
@@ -4639,6 +4653,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...hydrated,
         global: {
           ...hydrated.global,
+          userId: typeof hydrated.global.userId === 'string' && hydrated.global.userId.trim().length > 0
+            ? hydrated.global.userId
+            : generateUserId(),
           unlockedDeities: unlockedDeities,
           jewelAutoEquipPriorityPartyId: normalizeJewelAutoEquipPriorityPartyId(
             hydrated.global.jewelAutoEquipPriorityPartyId,
