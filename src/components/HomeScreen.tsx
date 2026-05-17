@@ -2929,6 +2929,22 @@ export function HomeScreen({
         const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
         const computed = computeCharacterStats(member, party.level, rowIndex + 1);
         const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+        const defensePhysical = `${formatNumber(computed.physicalDefense)}(${formatPercent(computed.physicalDefenseAmplifier)})`;
+        const defenseMagical = `${formatNumber(computed.magicalDefense)}(${formatPercent(computed.magicalDefenseAmplifier)})`;
+        const attackParts: string[] = [];
+        if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) {
+          attackParts.push(`遠${formatNumber(computed.rangedAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
+        }
+        if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) {
+          attackParts.push(`魔${formatNumber(computed.magicalAttack)}(${formatPercent(computed.magicalOffenseMultiplier)})-${formatNumber(computed.magicalNoA)}回`);
+        }
+        if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
+          attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.meleeNoA)}回`);
+        }
+        const elementalOffense = computed.elementalOffense === 'none'
+          ? '-'
+          : `${computed.elementalOffense}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+        const elementalDefense = `炎${formatPercent(computed.elementalDefenseMultipliers.fire)}/雷${formatPercent(computed.elementalDefenseMultipliers.thunder)}/氷${formatPercent(computed.elementalDefenseMultipliers.ice)}`;
         return [
           `PT${formatNumber(partyIndex + 1)}`,
           formatNumber(rowIndex + 1),
@@ -2938,22 +2954,12 @@ export function HomeScreen({
           subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-',
           LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId,
           PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId,
-          formatNumber(computed.physicalDefense),
-          formatPercent(computed.physicalDefenseAmplifier),
-          formatNumber(computed.magicalDefense),
-          formatPercent(computed.magicalDefenseAmplifier),
+          defensePhysical,
+          defenseMagical,
           formatPercent(computed.evasionBonus),
-          formatNumber(computed.rangedAttack),
-          formatPercent(computed.physicalOffenseMultiplier),
-          formatNumber(computed.rangedNoA),
-          formatNumber(computed.magicalAttack),
-          formatPercent(computed.magicalOffenseMultiplier),
-          formatNumber(computed.magicalNoA),
-          formatNumber(computed.meleeAttack),
-          formatPercent(computed.physicalOffenseMultiplier),
-          formatNumber(computed.meleeNoA),
-          computed.elementalOffense === 'none' ? '-' : computed.elementalOffense,
-          `炎${formatPercent(computed.elementalDefenseMultipliers.fire)}/雷${formatPercent(computed.elementalDefenseMultipliers.thunder)}/氷${formatPercent(computed.elementalDefenseMultipliers.ice)}`,
+          attackParts.length > 0 ? attackParts.join('/') : '-',
+          elementalOffense,
+          elementalDefense,
           formatPercent(computed.penetMultiplier),
         ];
       })
@@ -2985,7 +2991,7 @@ export function HomeScreen({
       content: `PT table (latest outcome and room)\n${toMonospaceTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
-    const statusHeaders = ['PT', '列', '名前', '性', '主', '副', '譜', '格', '物防御', '物防倍', '魔防御', '魔防倍', '回避', '遠攻撃', '遠攻倍', '遠回数', '魔攻撃', '魔攻倍', '魔回数', '近攻撃', '近攻倍', '近回数', '属性攻', '属性防', '貫通'];
+    const statusHeaders = ['PT', '列', '名前', '性', '主', '副', '譜', '格', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
     const statusTableFull = toMonospaceTable(statusHeaders, statusRows);
     const statusContentLimit = 1800;
     if (`Status table\n${statusTableFull}`.length <= statusContentLimit) {
