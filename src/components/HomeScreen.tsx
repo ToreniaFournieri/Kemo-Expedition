@@ -10723,6 +10723,7 @@ function SettingTab({
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const feedbackFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     try {
@@ -10743,6 +10744,15 @@ function SettingTab({
     const minute = parts.find((p) => p.type === 'minute')?.value ?? '00';
     const timezone = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'UTC';
     return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
+  };
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  const handleFeedbackFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    if (selectedFiles.length > 4) {
+      window.alert('添付画像は最大4枚までです。先頭4枚のみ送信されます。');
+    }
+    setFeedbackFiles(selectedFiles.slice(0, 4));
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
@@ -10784,6 +10794,9 @@ function SettingTab({
       onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
       setFeedbackText('');
       setFeedbackFiles([]);
+      if (feedbackFileInputRef.current) {
+        feedbackFileInputRef.current.value = '';
+      }
     } catch (error) {
       console.error(error);
       window.alert('フィードバック送信に失敗しました。');
@@ -12640,10 +12653,11 @@ function SettingTab({
           <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder="フィードバック本文" />
           <div>
             <input
+              ref={feedbackFileInputRef}
               type="file"
               accept="image/*"
               multiple
-              onChange={(e) => setFeedbackFiles(Array.from(e.target.files ?? []).slice(0, 4))}
+              onChange={handleFeedbackFileChange}
               className="w-full text-sm"
             />
             <div className="mt-1 text-xs text-gray-500">添付画像: {formatNumber(feedbackFiles.length)}/4</div>
