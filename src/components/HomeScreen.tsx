@@ -2973,21 +2973,20 @@ export function HomeScreen({
         const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
         return [
           `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
-          `**(${member.name}, ${build})**`,
+          `**${member.name}, ${build}**`,
           defensePhysical,
           defenseMagical,
-          formatSignedScaledBy1000(computed.evasionBonus),
+          `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`,
           attackParts.length > 0
             ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim()
             : elementalOffense,
           elementalDefense,
-          formatPercent(computed.penetMultiplier),
           abilityText,
         ];
       })
     );
     const buildStatusTableHtmlFileLocal = (rows: string[][], fileName: string): File => {
-      const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避', '攻撃', '属防', '貫通', 'アビリティ'];
+      const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
       const htmlEscape = (value: string) => value
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -10749,7 +10748,7 @@ function SettingTab({
     fileName: string,
     title = 'Status table',
   ): File {
-    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避', '攻撃', '属防', '貫通', 'アビリティ'];
+    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
     const htmlRows = rows
       .map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`)
       .join('');
@@ -10872,7 +10871,7 @@ ${entriesHtml || '<p>No entries.</p>'}
           const race = RACES.find((entry) => entry.id === member.raceId);
           const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
           const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
-          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**(${member.name}, ${build})**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
+          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
         });
         const now = new Date();
         const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
