@@ -199,9 +199,9 @@
   - `Room`: the deepest room of the latest expedition
 
 - Status table
-  - `PT-列`: PT number and row (1-1, 1-2...)
-  - `名前`: Character name (オルカ)
-  - `ビルド`: ( 🐶男剣剣砂好 )
+  - `PT-列`: PT number and row, bold (1-1, 1-2...)
+  - `名前`: Character name, bold (オルカ)
+  - `ビルド`: bold ( 🐶男剣剣砂好 )
     - Race icon. (🐶, 🦊 etc..)
 	- Gender. (♂ -> 男/ ♀ -> 女)
     - Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
@@ -210,7 +210,7 @@
     - Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
   - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203(87%) )
   - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100(54%) )
-  - `回避`:  `evasion`
+  - `回避`:  `evasion` display x1000, no percentage.   ( +10 )
   - `攻撃`:
     - If `d.ranged_attack` > 0 and `f.offense_amplifier` LONG > 0, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000(145%)-3回 )
     - If `d.magical_attack` > 0 and `f.offense_amplifier` MID > 0, 魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000(145%)-12回 )
