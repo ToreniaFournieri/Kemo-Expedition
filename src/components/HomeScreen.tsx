@@ -12714,10 +12714,11 @@ ${entriesHtml || '<p>No entries.</p>'}
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('feedback', 'フィードバック')}
         {divineBureauPanelExpanded.feedback && <div className="space-y-3 mt-3">
+          <div className="text-sm text-gray-600">開発チームにフィードバックを送信します。</div>
           <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder="名前" />
           <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder="フィードバック本文" />
           <div>
-            <label className="text-sm font-medium">Latest Battle Log</label>
+            <label className="text-sm font-medium">最終戦闘ログ選択</label>
             <select value={feedbackLatestBattleLogSelection} onChange={(e) => setFeedbackLatestBattleLogSelection(e.target.value as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None')} className="w-full rounded border border-gray-300 bg-white px-3 py-2 mt-1">
               <option value="PT1">PT1</option>
               <option value="PT2">PT2</option>
