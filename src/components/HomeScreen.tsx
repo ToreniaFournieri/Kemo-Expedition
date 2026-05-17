@@ -255,18 +255,19 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   reactivate: '復帰中',
 };
 
-const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE', string> = {
+const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
   LONG: '遠距離',
   MID: '魔法',
   CLOSE: '近接',
+  END: '終了',
 };
 
 function formatBonusAbilityPhaseDisplay(value: string): string {
-  return value.replace(/LONG|MID|CLOSE/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE']);
+  return value.replace(/LONG|MID|CLOSE|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE' | 'END']);
 }
 
 function isBonusAbilityTimingToken(token: string): boolean {
-  return /^(?:LONG|MID|CLOSE)\d(?:\/(?:LONG|MID|CLOSE)\d)*$/.test(token);
+  return /^(?:LONG|MID|CLOSE|END)\d(?:\/(?:LONG|MID|CLOSE|END)\d)*$/.test(token);
 }
 
 function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
@@ -277,7 +278,7 @@ function parseBonusAbilityLevelScale(levelScale: string): { timing: string | nul
 
   const separatorIndex = scaleContent.indexOf('・');
   if (separatorIndex < 0) {
-    const isTimingOnly = /^(LONG|MID|CLOSE)\d/.test(scaleContent);
+    const isTimingOnly = /^(LONG|MID|CLOSE|END)\d/.test(scaleContent);
     return {
       timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
       value: isTimingOnly ? null : scaleContent,

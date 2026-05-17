@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.0 | 31 | 2026/05/17 | Update `a.first-aid` text across runtime tooltip/glossary helper text to match Spec 1.1 wording (`各エリート戦後...`) and correct glossary phase from `CLOSE` to `END`. |
 | 0.7.0 | 30 | 2026/05/17 | Adjust Speed of Time PT/Status monospace table rendering to comma-aligned columns (use comma separators with compact spacing) per Spec 8.1.2 format guidance. |
 | 0.7.0 | 29 | 2026/05/17 | Update Speed of Time runtime status report format (Spec 8.1.2): merge gender/class/lineage/predisposition into single `ビルド` column (`男剣剣砂好` style) and keep PT/Status reports as monospace aligned code-block tables. |
 | 0.7.0 | 28 | 2026/05/16 | Update Speed of Time runtime status report table format: align columns with requested compact schema (`物防`/`魔防` merged with amplifier, single `攻撃` summary, and `属攻` value display) while keeping monospace code-block output. |
