@@ -2971,10 +2971,10 @@ export function HomeScreen({
           ? '-'
           : `${computed.elementalOffense}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
         const elementalDefense = `炎${formatPercent(computed.elementalDefenseMultipliers.fire)}/雷${formatPercent(computed.elementalDefenseMultipliers.thunder)}/氷${formatPercent(computed.elementalDefenseMultipliers.ice)}`;
-        const build = `${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        const race = RACES.find((entry) => entry.id === member.raceId);
+        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         return [
-          `PT${formatNumber(partyIndex + 1)}`,
-          formatNumber(rowIndex + 1),
+          `PT${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}`,
           member.name,
           build,
           defensePhysical,
@@ -3044,31 +3044,30 @@ export function HomeScreen({
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
       ['User ID', '-'],
-      ['browser, version', `${browserName}, ${browserVersion}`],
+      ['Browser', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
       ['Total number of sending report', progressReportCount],
       ['The last report time', lastReportTime],
     ];
-    const maxHeaderKeyWidth = reportHeaderRows.reduce((max, row) => Math.max(max, row[0].length), 0);
     const headerLines = reportHeaderRows
-      .map(([key, value]) => `${key.padEnd(maxHeaderKeyWidth, ' ')}, ${value}`)
+      .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
     await postWebhook({
-      content: `Progress Report\n\`\`\`\n${headerLines}\n\`\`\``,
+      content: `**Progress Report**\n${headerLines}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
 
     await postWebhook({
-      content: `PT table (latest outcome and room)\n${toMonospaceTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
+      content: `**PT table (latest outcome and room)**\n${toMonospaceTable(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
       username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
     });
-    const statusHeaders = ['PT', '列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
+    const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
     const statusTableFull = toMonospaceTable(statusHeaders, statusRows);
     const statusContentLimit = 1800;
-    if (`Status table\n${statusTableFull}`.length <= statusContentLimit) {
+    if (`**Status table**\n${statusTableFull}`.length <= statusContentLimit) {
       await postWebhook({
-        content: `Status table\n${statusTableFull}`,
+        content: `**Status table**\n${statusTableFull}`,
         username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
       });
     } else {
@@ -3076,7 +3075,7 @@ export function HomeScreen({
       let currentChunk: string[][] = [];
       for (const row of statusRows) {
         const nextChunk = [...currentChunk, row];
-        const nextContent = `Status table\n${toMonospaceTable(statusHeaders, nextChunk)}`;
+        const nextContent = `**Status table**\n${toMonospaceTable(statusHeaders, nextChunk)}`;
         if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
           chunks.push(currentChunk);
           currentChunk = [row];
@@ -3088,7 +3087,7 @@ export function HomeScreen({
 
       for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
         await postWebhook({
-          content: `Status table (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMonospaceTable(statusHeaders, chunks[chunkIndex])}`,
+          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toMonospaceTable(statusHeaders, chunks[chunkIndex])}`,
           username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
         });
       }

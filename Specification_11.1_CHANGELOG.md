@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.0 | 35 | 2026/05/17 | Update Speed of Time runtime progress report format (Spec 8.1.2): switch header metadata to Discord-readable bold `**Key:** value` lines with bold section title, merge status PT/row into `PT-列` (`PT1-1`) and add race emoji to `ビルド` (`🐶男剣剣砂好`). |
 | 0.7.0 | 34 | 2026/05/17 | Update Speed of Time runtime progress report header (Spec 8.1.2): use `Progress Report` code-block format with comma-aligned keys, add `The last report time` row, and change OS version logic to parse OS name/version from user agent. |
 | 0.7.0 | 33 | 2026/05/17 | Update Speed of Time runtime progress report header payload format (Spec 8.1.2): send metadata as a comma-aligned code block with Version/Build/Environment/Timestamp/User ID/browser+version/OS version/Resolution/Total number of sending report. |
 | 0.7.0 | 32 | 2026/05/17 | Fix Speed of Time runtime persistence and report formatting: persist `x1.2` boost remaining hours across page refresh, and remove padded multi-space cells from progress status report rows (compact comma-separated format). |
