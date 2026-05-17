@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 10 | 2026/05/17 | Update Speed of Time runtime progress report format (Spec 8.1.2): send header + PT summary in one Discord message and attach a mobile/desktop-friendly HTML status table file including アビリティ column rendered as Japanese short names with levels. |
 | 0.7.1 | 9 | 2026/05/17 | Update Divine Bureau Feedback latest battle log HTML attachment (Spec 8.6): export elemental damage attribute as emoji text (e.g., `❄`) instead of icon images and append `YYYYMMDDHHMM` timestamp to latest-battle-log filename. |
 | 0.7.1 | 9 | 2026/05/17 | Update Divine Bureau Feedback runtime wording (Spec 8.6): rename `Latest Battle Log` label to `最終戦闘ログ選択` and add guidance text clarifying feedback is sent to the development team, while keeping name persistence, feedback text input, and PT1 default latest battle log selection flow. |
 | 0.7.1 | 8 | 2026/05/17 | Fix Divine Bureau Feedback latest battle log HTML export detail rendering (Spec 8.6): include attack hit-count `(x/y回)` and damage value `(N)` suffixes in each action line so entries like `(5/14回)` and `(13,855)` are preserved in exported files. |
