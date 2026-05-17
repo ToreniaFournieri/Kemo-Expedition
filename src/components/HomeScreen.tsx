@@ -2993,7 +2993,23 @@ export function HomeScreen({
     };
 
     const now = new Date();
-    const timestamp = `${now.getUTCFullYear()}/${formatNumber(now.getUTCDate())}/${formatNumber(now.getUTCMonth() + 1)} ${formatNumber(now.getUTCHours())}:${formatNumber(now.getUTCMinutes())}`;
+    const timestampFormatter = new Intl.DateTimeFormat('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZoneName: 'short',
+    });
+    const timestampParts = timestampFormatter.formatToParts(now);
+    const year = timestampParts.find((part) => part.type === 'year')?.value ?? '0000';
+    const month = timestampParts.find((part) => part.type === 'month')?.value ?? '00';
+    const day = timestampParts.find((part) => part.type === 'day')?.value ?? '00';
+    const hour = timestampParts.find((part) => part.type === 'hour')?.value ?? '00';
+    const minute = timestampParts.find((part) => part.type === 'minute')?.value ?? '00';
+    const timezone = timestampParts.find((part) => part.type === 'timeZoneName')?.value ?? 'UTC';
+    const timestamp = `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
     const nav = typeof navigator === 'undefined' ? null : navigator;
     const userAgent = nav?.userAgent ?? 'unknown';
     const navWithUaData = nav as Navigator & { userAgentData?: { brands?: Array<{ brand: string; version: string }> } };
@@ -3039,7 +3055,7 @@ export function HomeScreen({
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
       ['User ID', state.global.userId],
-      ['Browser', `${browserName}, ${browserVersion}`],
+      ['browser, version', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
       ['Total number of sending report', progressReportCount],

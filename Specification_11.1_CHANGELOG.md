@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 1 | 2026/05/17 | Prepare v0.7.1 release and update Speed of Time progress report header format (Spec 8.1.2): reset build number to `1`, change header key to `browser, version`, and format timestamp as `YYYY/MM/DD HH:MM (Timezone)`. |
 | 0.7.0 | 42 | 2026/05/17 | Update Speed of Time runtime status elemental resistance formatting (Spec 8.1.2): `属防` now outputs percent-only triplet in fire/ice/thunder order (`94%/100%/97%`) without text labels. |
 | 0.7.0 | 41 | 2026/05/17 | Adjust Speed of Time runtime status elemental formatting (Spec 8.1.2): keep emoji for `属攻` (`🔥`/`❄`/`⚡`) while keeping `属防` as text-only `fire/.. ice/.. thunder/..` without emoji. |
 | 0.7.0 | 40 | 2026/05/17 | Update Speed of Time runtime status table elemental formatting (Spec 8.1.2): remove emoji icons from `属攻`/`属防`, render offense as text attribute (`fire/ice/thunder`) and render `属防` in `fire/.. ice/.. thunder/..` order from `f.elemental_resistance_attribute`. |
