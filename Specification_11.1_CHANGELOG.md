@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 12 | 2026/05/17 | Update Speed of Time runtime status HTML attachment format (Spec 8.1.2): attach a responsive desktop/mobile status table file with `攻撃` including elemental offense emoji/value, remove standalone `属攻` column, and keep requested PT/build/defense/evasion/penetration/ability display schema. |
 | 0.7.1 | 11 | 2026/05/17 | Fix Speed of Time runtime status table value formatting (Spec 8.1.2): update `物防`/`魔防` to `N. P%`, `攻撃` to `属性N. P%, X回`, and `属防` to comma-separated percentages (`fire, ice, thunder`). |
 | 0.7.1 | 10 | 2026/05/17 | Update Speed of Time runtime progress report format (Spec 8.1.2): send header + PT summary in one Discord message and attach a mobile/desktop-friendly HTML status table file including アビリティ column rendered as Japanese short names with levels. |
 | 0.7.1 | 9 | 2026/05/17 | Update Divine Bureau Feedback latest battle log HTML attachment (Spec 8.6): export elemental damage attribute as emoji text (e.g., `❄`) instead of icon images and append `YYYYMMDDHHMM` timestamp to latest-battle-log filename. |

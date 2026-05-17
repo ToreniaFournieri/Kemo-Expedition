@@ -2943,6 +2943,7 @@ export function HomeScreen({
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
       ];
     });
+    // SpecRef: 8.1.2 | Header | Format of progress data
     const statusRows = state.parties.flatMap((party, partyIndex) =>
       party.characters.map((member, rowIndex) => {
         const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
@@ -2977,8 +2978,9 @@ export function HomeScreen({
           defensePhysical,
           defenseMagical,
           formatSignedScaledBy1000(computed.evasionBonus),
-          attackParts.length > 0 ? attackParts.join('/') : '-',
-          elementalOffense,
+          attackParts.length > 0
+            ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim()
+            : elementalOffense,
           elementalDefense,
           formatPercent(computed.penetMultiplier),
           abilityText,
@@ -3070,7 +3072,7 @@ export function HomeScreen({
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通', 'アビリティ'];
+    const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属防', '貫通', 'アビリティ'];
     const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`;
     const htmlEscape = (value: string) => value
       .replace(/&/g, '&amp;')
