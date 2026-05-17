@@ -37,17 +37,17 @@ const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   displayAllGlossary: false,
 };
 
-const BETA_LOCKED_DEBUG_SETTINGS: DebugSettings = {
-  ...DEFAULT_DEBUG_SETTINGS,
-  timeSpeed: 'realtime',
-  godsBattleCondition: 'normal',
-  godStrength: 'normal',
-};
-
 function enforceEnvironmentDebugPolicy(settings: DebugSettings): DebugSettings {
   // SpecRef: 9 | Environment | /beta/ Debug mode OFF
   if (getEnvironmentId() === 'beta') {
-    return BETA_LOCKED_DEBUG_SETTINGS;
+    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
+    const betaTimeSpeed: DebugTimeSpeed = settings.timeSpeed === 'x1_2' ? 'x1_2' : 'realtime';
+    return {
+      ...DEFAULT_DEBUG_SETTINGS,
+      timeSpeed: betaTimeSpeed,
+      godsBattleCondition: 'normal',
+      godStrength: 'normal',
+    };
   }
   return settings;
 }
