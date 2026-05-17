@@ -182,6 +182,7 @@
   - Environment: (ex. dev )
   - Timestamp: YYYY/MM/DD HH:MM (Timezone)
   - User ID
+  - Name
   - browser, version:
   - OS version: (ex. iOS 26.4.2)
   - Resolution: (ex. 390 px, 844 px)
