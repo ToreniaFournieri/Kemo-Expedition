@@ -194,7 +194,7 @@
   - `Level`: level. ( 40 )
   - `HP`: Party.`d.HP` ( 20,543 )
   - `Exp`: Experience remaining: (23%)
-  - `ID`: Expedition ID (1,2,.)
+  - `ID`: `x.exp_id` (1,2,.)
   - `Outcome`: The latest outcome ( Clear )
   - `Room`: the deepest room of the latest expedition
 
