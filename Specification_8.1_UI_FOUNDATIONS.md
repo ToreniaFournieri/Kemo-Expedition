@@ -206,7 +206,7 @@
 
 - Status table
   - `PT-列`: PT number and row, bold (1-1, 1-2...)
-  - `名前, ビルド`: (オルカ, 🐶女剣剣砂好 )
+  - `名前, ビルド`: オルカ, 🐶女剣剣砂好
     - Character name, 
     - Race icon. (🐶, 🦊 etc..)
 	- Gender. (♂ -> 男/ ♀ -> 女)
