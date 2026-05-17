@@ -2961,7 +2961,7 @@ export function HomeScreen({
           attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
         }
         if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
-          attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
+          attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.meleeNoA)}回`);
         }
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const elementalOffense = computed.elementalOffense === 'none'
@@ -10864,7 +10864,7 @@ ${entriesHtml || '<p>No entries.</p>'}
           const attackParts: string[] = [];
           if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
           if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
-          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
+          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.meleeNoA)}回`);
           const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
           const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
           const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
