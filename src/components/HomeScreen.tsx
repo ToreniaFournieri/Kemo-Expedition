@@ -2965,7 +2965,7 @@ export function HomeScreen({
         const elementalOffense = computed.elementalOffense === 'none'
           ? '-'
           : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-        const elementalDefense = `🔥${formatPercent(computed.elementalDefenseMultipliers.fire)} ⚡${formatPercent(computed.elementalDefenseMultipliers.thunder)} ❄${formatPercent(computed.elementalDefenseMultipliers.ice)}`;
+        const elementalDefense = `fire/${formatPercent(computed.elementalDefenseMultipliers.fire)} ice/${formatPercent(computed.elementalDefenseMultipliers.ice)} thunder/${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
         const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         return [
