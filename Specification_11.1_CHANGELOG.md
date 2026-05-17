@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 2 | 2026/05/17 | Improve Speed of Time OS version detection (Spec 8.1.2): prefer `navigator.userAgentData.getHighEntropyValues('platform', 'platformVersion')` when available, then fall back to user-agent parsing to reduce mismatches like iOS reporting older compatibility versions in embedded webviews. |
 | 0.7.1 | 1 | 2026/05/17 | Prepare v0.7.1 release and update Speed of Time progress report header format (Spec 8.1.2): reset build number to `1`, change header key to `browser, version`, and format timestamp as `YYYY/MM/DD HH:MM (Timezone)`. |
 | 0.7.0 | 42 | 2026/05/17 | Update Speed of Time runtime status elemental resistance formatting (Spec 8.1.2): `属防` now outputs percent-only triplet in fire/ice/thunder order (`94%/100%/97%`) without text labels. |
 | 0.7.0 | 41 | 2026/05/17 | Adjust Speed of Time runtime status elemental formatting (Spec 8.1.2): keep emoji for `属攻` (`🔥`/`❄`/`⚡`) while keeping `属防` as text-only `fire/.. ice/.. thunder/..` without emoji. |

@@ -3021,7 +3021,17 @@ export function HomeScreen({
       ? (userAgent.match(/(?:Firefox|Edg|OPR|Chrome|Version)\/([\d.]+)/)?.[1] ?? 'unknown')
       : 'unknown';
     const platform = nav?.platform ?? '';
-    const detectOsVersion = (ua: string): string => {
+    const detectOsVersion = async (ua: string): Promise<string> => {
+      const navWithHighEntropy = nav as Navigator & {
+        userAgentData?: { getHighEntropyValues?: (hints: string[]) => Promise<{ platform?: string; platformVersion?: string }> };
+      };
+      const highEntropyValues = await navWithHighEntropy.userAgentData?.getHighEntropyValues?.(['platform', 'platformVersion']);
+      const highEntropyPlatform = highEntropyValues?.platform;
+      const highEntropyPlatformVersion = highEntropyValues?.platformVersion;
+      if (highEntropyPlatform && highEntropyPlatformVersion) {
+        const normalizedVersion = highEntropyPlatformVersion.replace(/\./g, '.').replace(/\.0+$/g, '');
+        return `${highEntropyPlatform} ${normalizedVersion}`;
+      }
       const ios = ua.match(/(?:CPU (?:iPhone )?OS|iPhone OS) ([\d_]+)/i)?.[1];
       if (ios) return `iOS ${ios.replace(/_/g, '.')}`;
       const android = ua.match(/Android ([\d.]+)/i)?.[1];
@@ -3032,7 +3042,7 @@ export function HomeScreen({
       if (mac) return `macOS ${mac.replace(/_/g, '.')}`;
       return platform || 'unknown';
     };
-    const osVersion = detectOsVersion(userAgent);
+    const osVersion = await detectOsVersion(userAgent);
     const resolution = `${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`;
     const reportCounterKey = createEnvironmentStorageKey('speedOfTimeReportCount');
     const reportCount = Number.parseInt(localStorage.getItem(reportCounterKey) ?? '0', 10);
