@@ -176,6 +176,8 @@
 - Readable format for discord channel post.
   - Bold text for title.
 
+- **Post content:**
+  - Send the header and PT summary table in a single Discord message.
 - Header:  Progress Report
   - Version: (ex. v0.7.0)
   - Build: (ex. 20)
@@ -189,8 +191,7 @@
   - Total number of sending report: (ex. 12)
   - The last report time: (ex. X Hours ago) 
 
-
-- PT table ( latest outcome and room )
+- PT Summary Table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
   - `Level`: level. ( 40 )
   - `HP`: max Party.`d.HP` ( 20,543 )
@@ -199,28 +200,41 @@
   - `Outcome`: The latest outcome ( Clear )
   - `Room`: the deepest room of the latest expedition
 
+- **Attached File**
+  - (1) Status table. 
+    - Attach an HTML file containing the detailed status table.
+		  - The HTML file should use a readable table layout optimized for desktop and mobile viewing.
+  - (2) Latest Battle Log HTML file.
+    - Select the target party using the following priority order:
+    1. Highest level
+    2. Highest experience points
+    3. Smallest PT number (PT1 → PT6) when tied
+
+
 - Status table
   - `PT-列`: PT number and row, bold (1-1, 1-2...)
-  - `名前`: Character name, bold (オルカ)
-  - `ビルド`: bold ( 🐶男剣剣砂好 )
+  - `名前, ビルド`: オルカ, 🐶女剣剣砂好
+    - Character name, 
     - Race icon. (🐶, 🦊 etc..)
 	- Gender. (♂ -> 男/ ♀ -> 女)
     - Main Class. Display `short name` of Class ( `class.duelist` -> `剣`)
     - Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
     - Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
     - Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
-  - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203(87%) )
-  - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100(54%) )
-  - `回避`:  `evasion` display x1000, no percentage.   ( +10 )
-  - `攻撃`:
-    - If `d.ranged_attack` > 0 and `f.offense_amplifier` LONG > 0, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000(145%)-3回 )
-    - If `d.magical_attack` > 0 and `f.offense_amplifier` MID > 0, 魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000(145%)-12回 )
-    - If `d.melee_attack` > 0 and `f.offense_amplifier` CLOSE > 0, 近`d.melee_attack`(`f.offense_amplifier` CLOSE)-`d.ranged_NoA`回 ( 近2,000(175%)-3回 )
-　- `属攻`: `f.elemental_offense_attribute`(its value)  ( 🔥(+20%) )
-    - ice: ❄
-    - thunder: ⚡
-    - fire: 🔥
+  - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203. 87% )
+  - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100. 54% )
+  - `回避,貫通`: ( +10, 8%)
+    - `evasion` display x1000, no percentage.   ( +10 )
+    - `f.penet_multiplier` ( 8%)
+  - `攻撃`: 
+    - If character has `c.equip_ranged`, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000. 145%, 3回 )
+    - If character has `c.equip_magic`,  魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000. 145%, 12回 )
+    - If character has `c.equip_melee`,  近`d.melee_attack`(`f.offense_amplifier` CLOSE)-`d.ranged_NoA`回 ( 近2,000. 175%, 3回 )
+    - `f.elemental_offense_attribute`(its value)  ( 🔥(+20%) )
+      - ice: ❄
+      - thunder: ⚡
+      - fire: 🔥
   - `属防`: `f.elemental_resistance_attribute`
-    - fire/ice/thunder/ (120%/65%/40%)
-  - `貫通`: `f.penet_multiplier`
+    - fire/ice/thunder/ (120%, 65%, 40%)
+  - `アビリティ`: Display all abilities owned by the member using Japanese short names and levels ( 壁1, 指揮1, 浪費1 )
 

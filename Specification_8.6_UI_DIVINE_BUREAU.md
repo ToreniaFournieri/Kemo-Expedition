@@ -266,7 +266,10 @@ HP: 312                 タイプ: 神魔
   - Send feedback to the development team.
   - Name field (persist the previously entered value)
   - Text input form (Feedback text)
-  - File attachments (up to 4 images)
+  - Latest Battle Log selection (最終戦闘ログ選択):
+    - PT1, PT2, PT3, PT4, PT5, PT6, None
+    - Default selection: PT1
+- File attachments (up to 4 images)
   - Send button
     - `FEEDBACK_DISCORD_WEBHOOK_URL` defined in this repository.
     - Content:
@@ -274,13 +277,17 @@ HP: 312                 タイプ: 神魔
 	  - Build: (ex. 20)
 	  - Environment: (ex. dev )
 	  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
-	  - User ID
 	  - browser, version:
 	  - OS version: (ex. iOS 26.4.2)
 	  - Resolution: (ex. 390 px, 844 px)
+	  - User ID
       - Name
       - Feedback text
-      - Attached files
+      - Two attached files:
+        - File 1: Selected Latest Battle Log HTML file (PT1–PT6)
+        - File 2: A HTML file containing the Status Table of the selected party defined in @Specification_8.1_UI_FOUNDATIONS.md
+          - note: this process should be shared with it and do not dupliciate the code.
+
 
 **バックアップ・リセット**
   - 5.1 Backup (Export)

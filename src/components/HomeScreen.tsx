@@ -2909,6 +2909,36 @@ export function HomeScreen({
     return '▶';
   }, [debugSettings.timeSpeed]);
 
+  const escapeFeedbackHtml = (value: string): string => (
+    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+  );
+  function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
+    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
+    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    return new File([html], fileName, { type: 'text/html' });
+  }
+  const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
+    const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
+    const party = state.parties[partyIndex];
+    const latestLog = party?.lastExpeditionLog;
+    if (!party || !latestLog) return null;
+    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
+      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
+        const noteDisplay = detail.note ? `(${detail.note})` : '';
+        return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
+      }).join('');
+      return `<section><h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3><p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
+    }).join('\n');
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
+  };
+
   const reportProgressForSpeedOfTime = useCallback(async () => {
     // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
     // SpecRef: 8.1.2 | Header | Format of progress data
@@ -2943,6 +2973,7 @@ export function HomeScreen({
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
       ];
     });
+    // SpecRef: 8.1.2 | Header | Format of progress data
     const statusRows = state.parties.flatMap((party, partyIndex) =>
       party.characters.map((member, rowIndex) => {
         const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
@@ -2950,45 +2981,50 @@ export function HomeScreen({
         const computed = computeCharacterStats(member, party.level, rowIndex + 1);
         const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
         const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
-        const defensePhysical = `${formatNumber(computed.physicalDefense)}(${formatPercent(computed.physicalDefenseAmplifier)})`;
-        const defenseMagical = `${formatNumber(computed.magicalDefense)}(${formatPercent(computed.magicalDefenseAmplifier)})`;
+        const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
+        const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
         const attackParts: string[] = [];
-        if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) {
-          attackParts.push(`遠${formatNumber(computed.rangedAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
+        const combatBonuses = getCharacterCombatBonusLevels(member);
+        if (combatBonuses.ranged) {
+          attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
         }
-        if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) {
-          attackParts.push(`魔${formatNumber(computed.magicalAttack)}(${formatPercent(computed.magicalOffenseMultiplier)})-${formatNumber(computed.magicalNoA)}回`);
+        if (combatBonuses.magic) {
+          attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
         }
-        if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) {
-          attackParts.push(`近${formatNumber(computed.meleeAttack)}(${formatPercent(computed.physicalOffenseMultiplier)})-${formatNumber(computed.rangedNoA)}回`);
+        if (combatBonuses.melee) {
+          attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.meleeNoA)}回`);
         }
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const elementalOffense = computed.elementalOffense === 'none'
           ? '-'
           : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-        const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}/${formatPercent(computed.elementalDefenseMultipliers.ice)}/${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
+        const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
         const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
         return [
           `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
-          `**${member.name}**`,
-          `**${build}**`,
+          `**${member.name}, ${build}**`,
           defensePhysical,
           defenseMagical,
-          formatSignedScaledBy1000(computed.evasionBonus),
-          attackParts.length > 0 ? attackParts.join('/') : '-',
-          elementalOffense,
+          `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`,
+          attackParts.length > 0
+            ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim()
+            : elementalOffense,
           elementalDefense,
-          formatPercent(computed.penetMultiplier),
+          abilityText,
         ];
       })
     );
-
-    const postWebhook = async (payload: Record<string, unknown>) => {
+    const postWebhookWithFiles = async (content: string, files: File[], username: string) => {
+      const formData = new FormData();
+      formData.append('payload_json', JSON.stringify({ content, username }));
+      files.forEach((file, index) => {
+        formData.append(`files[${index}]`, file, file.name);
+      });
       const response = await fetch(webhookUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
     };
@@ -3066,45 +3102,20 @@ export function HomeScreen({
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    await postWebhook({
-      content: `**Progress Report**\n${headerLines}`,
-      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-    });
-
-    await postWebhook({
-      content: `**PT table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`,
-      username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-    });
-    const statusHeaders = ['PT-列', '名前', 'ビルド', '物防', '魔防', '回避', '攻撃', '属攻', '属防', '貫通'];
-    const statusTableFull = toSpaceSeparatedRows(statusHeaders, statusRows);
-    const statusContentLimit = 1800;
-    if (`**Status table**\n${statusTableFull}`.length <= statusContentLimit) {
-      await postWebhook({
-        content: `**Status table**\n${statusTableFull}`,
-        username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-      });
-    } else {
-      const chunks: string[][][] = [];
-      let currentChunk: string[][] = [];
-      for (const row of statusRows) {
-        const nextChunk = [...currentChunk, row];
-        const nextContent = `**Status table**\n${toSpaceSeparatedRows(statusHeaders, nextChunk)}`;
-        if (nextContent.length > statusContentLimit && currentChunk.length > 0) {
-          chunks.push(currentChunk);
-          currentChunk = [row];
-        } else {
-          currentChunk = nextChunk;
-        }
-      }
-      if (currentChunk.length > 0) chunks.push(currentChunk);
-
-      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
-        await postWebhook({
-          content: `**Status table** (${formatNumber(chunkIndex + 1)}/${formatNumber(chunks.length)})\n${toSpaceSeparatedRows(statusHeaders, chunks[chunkIndex])}`,
-          username: `KEMO EXPEDITION ${environmentId.toUpperCase()}`,
-        });
-      }
-    }
+    const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`;
+    const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
+    const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
+    const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
+      if (selectedIndex < 0) return partyIndex;
+      const selectedParty = state.parties[selectedIndex];
+      if (party.level !== selectedParty.level) return party.level > selectedParty.level ? partyIndex : selectedIndex;
+      if (party.experience !== selectedParty.experience) return party.experience > selectedParty.experience ? partyIndex : selectedIndex;
+      return partyIndex < selectedIndex ? partyIndex : selectedIndex;
+    }, -1);
+    const reportTargetPartyLabel = reportTargetPartyIndex >= 0 ? `PT${reportTargetPartyIndex + 1}` as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' : null;
+    const latestBattleLogFile = reportTargetPartyLabel ? buildLatestBattleLogHtml(reportTargetPartyLabel) : null;
+    const reportFiles = [htmlFile, ...(latestBattleLogFile ? [latestBattleLogFile] : [])];
+    await postWebhookWithFiles(reportMessage, reportFiles, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
     return true;
   }, [state]);
 
@@ -10723,6 +10734,7 @@ function SettingTab({
   });
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
+  const [feedbackLatestBattleLogSelection, setFeedbackLatestBattleLogSelection] = useState<'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None'>('PT1');
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
   const feedbackFileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -10745,6 +10757,23 @@ function SettingTab({
     const minute = parts.find((p) => p.type === 'minute')?.value ?? '00';
     const timezone = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'UTC';
     return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
+  };
+
+  const escapeFeedbackHtml = (value: string): string => (
+    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+  );
+  function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
+    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
+    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    return new File([html], fileName, { type: 'text/html' });
+  }
+  const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
+    const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
+    const party = gameState.parties[partyIndex];
+    const latestLog = party?.lastExpeditionLog;
+    if (!party || !latestLog) return null;
+    return new File(['<!doctype html><html><body></body></html>'], `latest-battle-log-${partyLabel}.html`, { type: 'text/html' });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
@@ -10783,13 +10812,50 @@ function SettingTab({
           `**OS version:** ${osVersion}`,
           `**Resolution:** ${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`,
           `**Name:** ${feedbackName.trim() || '-'}`,
-          `**Feedback text:** ${feedbackText.trim()}`
+          `**Feedback text:** ${feedbackText.trim()}`,
+          `**Latest Battle Log selection:** ${feedbackLatestBattleLogSelection}`
         ].join('\n'),
         username: `KEMO EXPEDITION ${currentEnv.toUpperCase()} FEEDBACK`,
       };
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
       feedbackFiles.forEach((file, index) => formData.append(`files[${index}]`, file, file.name));
+      if (feedbackLatestBattleLogSelection !== 'None') {
+        const latestBattleLogFile = buildLatestBattleLogHtml(feedbackLatestBattleLogSelection);
+        if (latestBattleLogFile) {
+          formData.append(`files[${feedbackFiles.length}]`, latestBattleLogFile, latestBattleLogFile.name);
+        }
+        const partyIndex = Number(feedbackLatestBattleLogSelection.replace('PT', '')) - 1;
+        const party = gameState.parties[partyIndex];
+        const partyStatusRows = party == null ? [] : party.characters.map((member, rowIndex) => {
+          const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
+          const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
+          const computed = computeCharacterStats(member, party.level, rowIndex + 1);
+          const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+          const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
+          const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
+          const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
+          const attackParts: string[] = [];
+          if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
+          if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
+          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.meleeNoA)}回`);
+          const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+          const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+          const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
+          const race = RACES.find((entry) => entry.id === member.raceId);
+          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+          const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
+          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
+        });
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+        const statusTableFile = buildStatusTableHtmlFile(
+          partyStatusRows,
+          `status-table-${feedbackLatestBattleLogSelection}-${timestamp}.html`,
+          `Status table (${feedbackLatestBattleLogSelection})`,
+        );
+        formData.append(`files[${feedbackFiles.length + (latestBattleLogFile ? 1 : 0)}]`, statusTableFile, statusTableFile.name);
+      }
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
       onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
@@ -12650,8 +12716,21 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('feedback', 'フィードバック')}
         {divineBureauPanelExpanded.feedback && <div className="space-y-3 mt-3">
+          <div className="text-sm text-gray-600">開発チームにフィードバックを送信します。</div>
           <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder="名前" />
           <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder="フィードバック本文" />
+          <div>
+            <label className="text-sm font-medium">最終戦闘ログ選択</label>
+            <select value={feedbackLatestBattleLogSelection} onChange={(e) => setFeedbackLatestBattleLogSelection(e.target.value as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None')} className="w-full rounded border border-gray-300 bg-white px-3 py-2 mt-1">
+              <option value="PT1">PT1</option>
+              <option value="PT2">PT2</option>
+              <option value="PT3">PT3</option>
+              <option value="PT4">PT4</option>
+              <option value="PT5">PT5</option>
+              <option value="PT6">PT6</option>
+              <option value="None">None</option>
+            </select>
+          </div>
           <div>
             <input
               ref={feedbackFileInputRef}
