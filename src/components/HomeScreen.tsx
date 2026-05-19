@@ -11325,7 +11325,41 @@ function SettingTab({
       setCharacterRosterGenderFilter(visibleRosterGenders[0]);
     }
   }, [characterRosterGenderFilter, visibleRosterGenders]);
-  const selectedRosterGenderLabel = characterRosterGenderFilter === 'male' ? '♂' : characterRosterGenderFilter === 'female' ? '♀' : 'U';
+  const [activeRosterStatusBubble, setActiveRosterStatusBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    maxWidth: number;
+  } | null>(null);
+
+  const handleRosterStatusBubbleToggle = (
+    bubbleKey: string,
+    bubbleText: string,
+    targetElement: HTMLElement,
+  ) => {
+    if (activeRosterStatusBubble?.key === bubbleKey) {
+      setActiveRosterStatusBubble(null);
+      return;
+    }
+
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleMaxWidth,
+    );
+
+    setActiveRosterStatusBubble({
+      key: bubbleKey,
+      text: bubbleText,
+      top: triggerRect.bottom + 8,
+      left,
+      maxWidth: bubbleMaxWidth,
+    });
+  };
+
   const revealedGlossaryAbilityIds = useMemo(
     () => new Set(gameState.global.revealedGlossaryAbilityIds ?? []),
     [gameState.global.revealedGlossaryAbilityIds],
@@ -11804,7 +11838,7 @@ function SettingTab({
           </div>
         </div>
       )}
-      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
@@ -12218,6 +12252,21 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('characterRoster', '味方キャラクター図鑑')}
         {divineBureauPanelExpanded.characterRoster && <>
+          {activeRosterStatusBubble ? (
+            <div
+              className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+              style={{
+                top: activeRosterStatusBubble.top,
+                left: activeRosterStatusBubble.left,
+                width: 'max-content',
+                maxWidth: activeRosterStatusBubble.maxWidth,
+              }}
+            >
+              <div className="text-xs text-gray-700 leading-snug break-words">
+                {activeRosterStatusBubble.text}
+              </div>
+            </div>
+          ) : null}
           {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Character Roster (味方キャラクター図鑑) */}
           <div className="flex gap-1 mt-3 mb-2 overflow-x-auto pb-1">
             {CHARACTER_ROSTER_RACES.filter((race) => visibleRosterRaceIds.includes(race.id)).map((race) => (
@@ -12256,15 +12305,40 @@ function SettingTab({
               } : undefined}
             >
               <div className="rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
-              <div className="mt-1 rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">性別: {selectedRosterGenderLabel}</div>
               <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">種族ステータス</div>
-                <div title="初期から利用できる種族アビリティです。">
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  title="初期から利用できる種族アビリティです。"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRosterStatusBubbleToggle(
+                      'roster-default-ability',
+                      '初期から利用できる種族アビリティです。',
+                      event.currentTarget,
+                    );
+                  }}
+                >
                   初期アビリティ: {selectedRosterRace?.defaultAbility?.name ?? '-'}
-                </div>
-                <div title="アンロック条件達成後に開放される種族アビリティです。">
+                </button>
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  title="アンロック条件達成後に開放される種族アビリティです。"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRosterStatusBubbleToggle(
+                      'roster-unlock-ability',
+                      'アンロック条件達成後に開放される種族アビリティです。',
+                      event.currentTarget,
+                    );
+                  }}
+                >
                   アンロックアビリティ: {selectedRosterRace?.unlockAbility?.name ?? '-'}
-                </div>
+                </button>
               </div>
             </div>
           )}
