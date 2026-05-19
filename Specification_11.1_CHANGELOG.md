@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 19 | 2026/05/19 | Update Divine Bureau Character Roster image rendering (Spec 8.6): switch the ally character image to an absolutely positioned layer with overflow-visible pane so artwork can extend beyond pane boundaries dynamically while preserving overlay status readability. |
 | 0.7.2 | 18 | 2026/05/19 | Refine Divine Bureau Character Roster readability (Spec 8.6): reduce the white text background mask opacity in 味方キャラクター図鑑 from 45% to 25% so the character image is more clearly visible behind overlay text. |
 | 0.7.2 | 17 | 2026/05/19 | Refine Divine Bureau Character Roster readability (Spec 8.6): increase transparency of the white text background mask in 味方キャラクター図鑑 so the character image is more clearly visible behind text overlays. |
 | 0.7.2 | 16 | 2026/05/19 | Refine Divine Bureau Character Roster image pane height (Spec 8.6): reduce unnecessary top blank space above the character image by switching the status block to bottom alignment and lowering panel minimum height for a narrower image pane. |
