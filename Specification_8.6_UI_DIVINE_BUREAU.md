@@ -131,6 +131,16 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 - Item Reveal Rule:
   - An item entry is unlocked when the player first encounters an enemy capable of dropping that item.
   - The reveal is triggered at the moment the enemy becomes visible to the player (e.g., during exploration or battle), regardless of whether the item is actually obtained.
+ 
+**Character Roster (味方キャラクター図鑑)**
+- Displays a list of all allied characters.
+- Selection Tabs:
+  - Race Icon: 🐺 Lupinian, 🦊 Vulpinian, 😺 Felidian, 🐶 Caninian, 🐻 Ursan, 🦝 Procyonian, 🐰 Leporian, 🦌 Cervin, 🐭 Murid
+  - Party: PT1, PT2, PT3, PT4, PT5, PT6
+- Gender: ♂, ♀, U
+  - U: Unique character (displayed only if a unique character exists)
+- The Character Image updates immediately when the selected character changes.
+- Display the race status summary at the bottom area of the character image.
 
 **Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
