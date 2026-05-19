@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 1 | 2026/05/19 | Prepare v0.7.2 release: bump app version to `v0.7.2` and reset build number to `1`. |
 | 0.7.1 | 22 | 2026/05/19 | Update deity defense amplifier runtime calculation (Spec 2.1.1.2): apply `c.deity-physical-defense_x2/3` and `c.deity-magical-defense_x2/3` as independent multiplicative defense amplifier modifiers instead of additive `c.physical_defense+v` / `c.magical_defense+v` treatment, including battle and status display calculations. |
 | 0.7.1 | 21 | 2026/05/19 | Fix Felis’s Junk Shop duplicate-item stock handling (Spec 8.4.1): track purchases per lineup slot so buying one copy of a repeated base item no longer marks the other matching slot as sold out. |
 | 0.7.1 | 20 | 2026/05/17 | Fix Speed of Time PT summary Exp percentage mismatch (Spec 8.1.2): report progress-to-next-level (`current XP / required XP`) instead of remaining XP percentage, so PT summary matches in-game party display (e.g., PT1 90%). |
