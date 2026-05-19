@@ -99,7 +99,7 @@ interface HomeScreenProps {
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
-    buyShopItem: (itemId: number) => void;
+    buyShopItem: (itemId: number, stockItemKey: string) => void;
     buyDebugStoreItem: (itemId: number) => void;
     refreshShopLineup: () => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
@@ -4791,9 +4791,10 @@ export function HomeScreen({
 
     for (const [stockKey, currentPurchases] of Object.entries(state.global.shopPurchases)) {
       const previousPurchases = new Set(prevShopPurchasesRef.current[stockKey] ?? []);
-      for (const itemId of currentPurchases) {
-        if (!previousPurchases.has(itemId)) {
-          newlyPurchasedItemIds.push(itemId);
+      for (const stockItemKey of currentPurchases) {
+        if (!previousPurchases.has(stockItemKey)) {
+          const itemId = Number(stockItemKey.split('-')[0]);
+          if (Number.isFinite(itemId)) newlyPurchasedItemIds.push(itemId);
         }
       }
     }
@@ -9089,14 +9090,14 @@ function BaseTab({
   jewelAutoEquipPriorityPartyId: number | null;
   parties: Party[];
   gold: number;
-  shopPurchases: Record<string, number[]>;
+  shopPurchases: Record<string, string[]>;
   debugStorePurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
-  onBuyShopItem: (itemId: number) => void;
+  onBuyShopItem: (itemId: number, stockItemKey: string) => void;
   onBuyDebugStoreItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
@@ -9170,6 +9171,7 @@ function BaseTab({
   );
 }
 
+// SpecRef: 8.4.1 | Shop (お店) | Lineup
 function ShopTab({
   gold,
   parties,
@@ -9182,11 +9184,11 @@ function ShopTab({
 }: {
   gold: number;
   parties: Party[];
-  shopPurchases: Record<string, number[]>;
+  shopPurchases: Record<string, string[]>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
-  onBuyShopItem: (itemId: number) => void;
+  onBuyShopItem: (itemId: number, stockItemKey: string) => void;
   onRefreshShopLineup: () => void;
 }) {
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
@@ -9211,7 +9213,7 @@ function ShopTab({
   const lineupSeed = getShopLineupSeed(now, refreshCount);
   const stockKey = getShopStockKey(now, refreshCount);
   const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
-  const soldOutItemIds = shopPurchases[stockKey] ?? [];
+  const soldOutItemKeys = shopPurchases[stockKey] ?? [];
 
   if (!mustelidRace) {
     return <div className="text-sm text-gray-600">お店の準備中です。</div>;
@@ -9263,7 +9265,8 @@ function ShopTab({
 
     const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
     const price = getShopItemPrice(baseItemId);
-    const isSoldOut = soldOutItemIds.includes(baseItemId);
+    const stockItemKey = `${baseItemId}-${index}`;
+    const isSoldOut = soldOutItemKeys.includes(stockItemKey);
     const canBuy = !isSoldOut && gold >= price;
     const rarity = getItemRarityById(baseItemId);
     const rarityClass = isSoldOut
@@ -9277,7 +9280,8 @@ function ShopTab({
             : 'text-gray-900 font-normal';
 
     return {
-      key: `${baseItemId}-${index}`,
+      key: stockItemKey,
+      stockItemKey,
       itemId: baseItemId,
       item,
       price,
@@ -9336,7 +9340,7 @@ function ShopTab({
                 </div>
               </div>
               <button
-                onClick={() => onBuyShopItem(entry.itemId)}
+                onClick={() => onBuyShopItem(entry.itemId, entry.stockItemKey)}
                 disabled={!entry.canBuy}
                 className={`shrink-0 min-w-[3.25rem] whitespace-nowrap rounded px-3 py-1 text-xs font-medium ${
                   entry.isSoldOut

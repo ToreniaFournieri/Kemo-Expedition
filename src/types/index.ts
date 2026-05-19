@@ -433,7 +433,7 @@ interface GlobalState {
   revealedItemCompendiumItemIds: number[];
   revealedGlossaryAbilityIds: string[];
   revealedGlossaryTerrainKeys: TerrainEffectKey[];
-  shopPurchases: Record<string, number[]>;
+  shopPurchases: Record<string, string[]>;
   jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
