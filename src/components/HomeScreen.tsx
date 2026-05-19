@@ -11293,24 +11293,9 @@ function SettingTab({
     return availableRosterImageFiles.has(partySpecificFile) || availableRosterImageFiles.has(fallbackFile);
   }, [CHARACTER_ROSTER_RACES, availableRosterImageFiles]);
 
-  const rosterBonusMultiplierLabelByType: Partial<Record<BonusType, string>> = {
-    sword_multiplier: '剣',
-    katana_multiplier: '刀',
-    archery_multiplier: '弓',
-    armor_multiplier: '鎧',
-    gauntlet_multiplier: '手',
-    wand_multiplier: '杖',
-    robe_multiplier: '衣',
-    shield_multiplier: '盾',
-    bolt_multiplier: 'ボ',
-    grimoire_multiplier: '書',
-    catalyst_multiplier: '媒',
-    arrow_multiplier: '矢',
-  };
-  const rosterBonusStatusSummary = (selectedRosterRace?.bonuses ?? [])
-    .filter((bonus) => bonus.type in rosterBonusMultiplierLabelByType)
-    .map((bonus) => `${rosterBonusMultiplierLabelByType[bonus.type] ?? bonus.type}x${bonus.value.toFixed(1)}`)
-    .join(', ');
+  const rosterBonusStatusEntries = (selectedRosterRace?.bonuses ?? [])
+    .map((bonus, index) => buildInlineBonusEntry('roster-race-bonus', selectedRosterRace?.id ?? 'none', bonus, index))
+    .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
   const hasRosterUniqueCharacter = useCallback((partyId: number, raceId: RaceId): boolean => {
     const party = gameState.parties.find((entry) => entry.id === partyId);
@@ -12294,10 +12279,10 @@ function SettingTab({
                 <button
                   key={race.id}
                   onClick={() => setCharacterRosterRaceId(race.id)}
-                  className={`shrink-0 min-h-14 min-w-14 px-2 py-1 text-sm rounded pane-button-shadow ${characterRosterRaceId === race.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                  className={`shrink-0 min-w-0 px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterRaceId === race.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
                   title={race.raceName}
                 >
-                  <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-5 w-5" />
+                  <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-4 w-4" />
                 </button>
               ))}
             </div>
@@ -12342,8 +12327,17 @@ function SettingTab({
                     <span className="base-stat-chip">精神:{selectedRosterRace?.stats.mind ?? '-'}</span>
                   </span>
                 </button>
-                <button type="button" className="w-full text-left" title="種族の装備適性倍率です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-bonus-status', '種族の装備適性倍率です。', event.currentTarget); }}>
-                  ボーナスステータス: {rosterBonusStatusSummary || '-'}
+                <button type="button" className="w-full text-left" title="種族ボーナス情報です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-bonus-status', '種族ボーナス情報です。', event.currentTarget); }}>
+                  <span className="inline-flex flex-wrap gap-1">
+                    <span className="font-medium">ボーナスステータス:</span>
+                    {rosterBonusStatusEntries.length > 0 ? (
+                      rosterBonusStatusEntries.map((entry) => (
+                        <span key={entry.key} className="base-stat-chip">{entry.label}</span>
+                      ))
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </span>
                 </button>
                 <button
                   type="button"
