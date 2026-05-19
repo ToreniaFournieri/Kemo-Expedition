@@ -133,13 +133,14 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
   - The reveal is triggered at the moment the enemy becomes visible to the player (e.g., during exploration or battle), regardless of whether the item is actually obtained.
  
 **Character Roster (味方キャラクター図鑑)**
-- Displays a list of all allied characters.
+- Displays a list of all possible character combinations.
 - Selection Tabs:
-  - Race Icon: 🐺 Lupinian, 🦊 Vulpinian, 😺 Felidian, 🐶 Caninian, 🐻 Ursan, 🦝 Procyonian, 🐰 Leporian, 🦌 Cervin, 🐭 Murid
+  - Race Icon: 🐺 Lupinian, 🦊 Vulpinian, 😺 Felidian, 🐶 Caninian, 🐻 Ursan, 🦝 Procyonian, 🐰 Leporian, 🦌 Cervin, 🐭 Murid, 🐾Kemoria, 🐋Orcinian, 🐓Avian
   - Party: PT1, PT2, PT3, PT4, PT5, PT6
+    - Only unlocked parties are visible.
 - Gender: ♂, ♀, U
   - U: Unique character (displayed only if a unique character exists)
-- The Character Image updates immediately when the selected character changes.
+- The character image is displayed in the background and updates immediately when the selected character changes.
 - Display the race status summary at the bottom area of the character image.
 
 **Bestiary (敵キャラクター図鑑)**
