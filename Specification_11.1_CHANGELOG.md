@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 12 | 2026/05/19 | Refine Divine Bureau Character Roster status layout (Spec 8.6): align base status chips to Party status-pane grid, rename ボーナスステータス to ボーナス, and render bonus entries as plain comma-separated text without square chips. |
 | 0.7.2 | 11 | 2026/05/19 | Fix Divine Bureau Character Roster status summary (Spec 8.6): align floating-bubble texts with Party status-pane style (show concrete base/bonus/ability details) and exclude ability-type entries from ボーナスステータス so abilities appear only in 初期アビリティ/アンロックアビリティ. |
 | 0.7.2 | 10 | 2026/05/19 | Refine Divine Bureau Character Roster (Spec 8.6): shrink race tab button footprint to match character edit selector scale and expand Bonus status display to show all race bonus entries as chip-style labels with existing tooltip bubble support. |
 | 0.7.2 | 9 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): reduce race-tab icon size by half and add bottom status summary fields for base stats, equipment bonus multipliers, default ability, and unlock ability with floating tooltip bubbles. |
