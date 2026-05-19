@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 3 | 2026/05/19 | Refine Divine Bureau Character Roster UI (Spec 8.6): use race icon assets for race tabs, remove individual-name list, gray out U selector when no unique character exists, and render race/gender/status text as overlays on the character background image panel. |
+| 0.7.2 | 2 | 2026/05/19 | Implement Divine Bureau Character Roster pane (Spec 8.6): add collapsible allied-character compendium before Bestiary with race/party/gender tabs, unique (U) gender visibility rule, immediate character-image update on selection, and race status summary display at the bottom of the image panel. |
 | 0.7.2 | 1 | 2026/05/19 | Prepare v0.7.2 release: bump app version to `v0.7.2` and reset build number to `1`. |
 | 0.7.1 | 22 | 2026/05/19 | Update deity defense amplifier runtime calculation (Spec 2.1.1.2): apply `c.deity-physical-defense_x2/3` and `c.deity-magical-defense_x2/3` as independent multiplicative defense amplifier modifiers instead of additive `c.physical_defense+v` / `c.magical_defense+v` treatment, including battle and status display calculations. |
 | 0.7.1 | 21 | 2026/05/19 | Fix Felis’s Junk Shop duplicate-item stock handling (Spec 8.4.1): track purchases per lineup slot so buying one copy of a repeated base item no longer marks the other matching slot as sold out. |
