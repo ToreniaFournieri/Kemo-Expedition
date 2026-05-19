@@ -138,7 +138,7 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
   - Race Icon: 🐺 Lupinian, 🦊 Vulpinian, 😺 Felidian, 🐶 Caninian, 🐻 Ursan, 🦝 Procyonian, 🐰 Leporian, 🦌 Cervin, 🐭 Murid, 🐾Kemoria, 🐋Orcinian, 🐓Avian
   - Party: PT1, PT2, PT3, PT4, PT5, PT6
     - Only unlocked parties are visible.
-- Gender: ♂, ♀, U
+- Gender: 男, 女, U
   - U: Unique character (displayed only if a unique character exists)
 - The character image is displayed in the background and updates immediately when the selected character changes.
 - Display the race status summary at the bottom area of the character image.
