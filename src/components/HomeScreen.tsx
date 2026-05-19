@@ -12311,17 +12311,17 @@ function SettingTab({
           </div>
           {activeRosterCharacter && (
             <div
-              className="rounded border border-gray-200 bg-white p-2"
+              className="rounded border border-gray-200 bg-white p-2 flex flex-col"
               style={selectedRosterImageSrc ? {
                 backgroundImage: `url('${selectedRosterImageSrc}')`,
                 backgroundPosition: 'center',
                 backgroundSize: '130% auto',
                 backgroundRepeat: 'no-repeat',
-                minHeight: '540px',
+                minHeight: '500px',
               } : undefined}
             >
               <div className="rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
-              <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1 space-y-1">
+              <div className="mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">種族ステータス</div>
                 <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', `体力:${selectedRosterRace?.stats.vitality ?? '-'}  力:${selectedRosterRace?.stats.strength ?? '-'}  知性:${selectedRosterRace?.stats.intelligence ?? '-'}  精神:${selectedRosterRace?.stats.mind ?? '-'}`, event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
