@@ -316,7 +316,7 @@ export interface ComputedCharacterStats {
   deityDefenseAmplifierBonus: {
     physical: number;
     magical: number;
-  }; // additive bonus applied to character.f.defense_amplifier
+  }; // multiplicative modifier applied to character.f.defense_amplifier
   hasAntagonism: boolean;
 }
 
@@ -433,7 +433,7 @@ interface GlobalState {
   revealedItemCompendiumItemIds: number[];
   revealedGlossaryAbilityIds: string[];
   revealedGlossaryTerrainKeys: TerrainEffectKey[];
-  shopPurchases: Record<string, number[]>;
+  shopPurchases: Record<string, string[]>;
   jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;

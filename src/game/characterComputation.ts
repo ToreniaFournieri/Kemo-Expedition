@@ -966,8 +966,8 @@ export function computeCharacterStats(
     offenseCBonusNames: Array.from(collection.offenseCBonusNames),
     deityOffenseAmplifierBonus: 0,
     deityDefenseAmplifierBonus: {
-      physical: 0,
-      magical: 0,
+      physical: 1,
+      magical: 1,
     },
     hasAntagonism: collection.antagonism,
   };

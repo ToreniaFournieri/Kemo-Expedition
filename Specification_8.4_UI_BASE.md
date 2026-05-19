@@ -35,6 +35,7 @@
 
 **Lineup**
 - **Lineup:** 5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
+- Each lineup slot is treated as an individual stock entry; if the same base item appears in multiple slots, buying one slot must not sell out the other slot.
 
 | Intimacy | Lineup |
 |---|---|

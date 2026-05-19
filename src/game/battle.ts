@@ -588,19 +588,19 @@ function calculateSingleEnemyAttackDamage(
       attack = enemy.rangedAttack;
       amplifier = enemy.rangedAttackAmplifier;
       defense = targetCharStats.physicalDefense;
-      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.physical);
+      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier * targetCharStats.deityDefenseAmplifierBonus.physical);
       break;
     case 'mid':
       attack = enemy.magicalAttack;
       amplifier = enemy.magicalAttackAmplifier;
       defense = targetCharStats.magicalDefense;
-      defenseAmplifier = Math.max(0.01, targetCharStats.magicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.magical);
+      defenseAmplifier = Math.max(0.01, targetCharStats.magicalDefenseAmplifier * targetCharStats.deityDefenseAmplifierBonus.magical);
       break;
     case 'close':
       attack = enemy.meleeAttack;
       amplifier = enemy.meleeAttackAmplifier;
       defense = targetCharStats.physicalDefense;
-      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.physical);
+      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier * targetCharStats.deityDefenseAmplifierBonus.physical);
       break;
   }
 
@@ -838,17 +838,17 @@ function calculateCharacterFriendlyFireDamage(
     attack = attacker.rangedAttack;
     noA = attacker.rangedNoA;
     defense = target.physicalDefense;
-    defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical);
+    defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier * target.deityDefenseAmplifierBonus.physical);
   } else if (phase === 'mid') {
     attack = attacker.magicalAttack;
     noA = attacker.magicalNoA;
     defense = target.magicalDefense;
-    defenseAmplifier = Math.max(0.01, target.magicalDefenseAmplifier + target.deityDefenseAmplifierBonus.magical);
+    defenseAmplifier = Math.max(0.01, target.magicalDefenseAmplifier * target.deityDefenseAmplifierBonus.magical);
   } else {
     attack = attacker.meleeAttack;
     noA = attacker.meleeNoA;
     defense = target.physicalDefense;
-    defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical);
+    defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier * target.deityDefenseAmplifierBonus.physical);
   }
 
   noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect, attacker.abilities));
@@ -4312,7 +4312,7 @@ export function executeBattle(
           ? party.characters.find((char) => char.id === target.characterId)?.name ?? '味方'
           : '味方';
         const targetDefenseAmplifier = target
-          ? Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical)
+          ? Math.max(0.01, target.physicalDefenseAmplifier * target.deityDefenseAmplifierBonus.physical)
           : 1.0;
         const damage = target
           ? calculateSelfDestructDamage(

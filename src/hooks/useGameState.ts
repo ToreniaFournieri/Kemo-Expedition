@@ -1044,9 +1044,11 @@ function loadSavedState(): LoadSavedStateResult {
         parsed.global.revealedGlossaryAbilityIds = normalizeRevealedGlossaryAbilityIds(parsed.global.revealedGlossaryAbilityIds);
         parsed.global.revealedGlossaryTerrainKeys = normalizeRevealedGlossaryTerrainKeys(parsed.global.revealedGlossaryTerrainKeys);
         parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
-          ? Object.entries(parsed.global.shopPurchases as Record<string, unknown>).reduce<Record<string, number[]>>((acc, [hourKey, itemIds]) => {
+          ? Object.entries(parsed.global.shopPurchases as Record<string, unknown>).reduce<Record<string, string[]>>((acc, [hourKey, itemIds]) => {
               if (!Array.isArray(itemIds)) return acc;
-              const normalized = itemIds.filter((itemId): itemId is number => typeof itemId === 'number');
+              const normalized = itemIds
+                .filter((itemId): itemId is string | number => typeof itemId === 'string' || typeof itemId === 'number')
+                .map((itemId) => String(itemId));
               if (normalized.length > 0) {
                 acc[hourKey] = normalized;
               }
@@ -1812,7 +1814,7 @@ type GameAction =
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
-  | { type: 'BUY_SHOP_ITEM'; itemId: number }
+  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
@@ -4205,6 +4207,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'BUY_SHOP_ITEM': {
+      // SpecRef: 8.4.1 | Shop (お店) | Lineup
+      // SpecRef: 8.4.1 | Shop (お店) | Mystery enhancement (same as item drop logic)
       const now = new Date();
       const globalState = applyShopIntimacyDecay(state.global, now);
       const baseItem = getItemById(action.itemId);
@@ -4217,8 +4221,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const hourKey = getShopHourKey(now);
       const refreshCount = globalState.shopRefreshCounts[hourKey] ?? 0;
       const stockKey = getShopStockKey(now, refreshCount);
-      const soldOutItemIds = globalState.shopPurchases[stockKey] ?? [];
-      if (soldOutItemIds.includes(action.itemId)) return state;
+      const soldOutItemKeys = globalState.shopPurchases[stockKey] ?? [];
+      if (soldOutItemKeys.includes(action.stockItemKey)) return state;
 
       const guaranteedEnhancementResult = drawGuaranteedEnhancement(partyBags);
       const enhancement = guaranteedEnhancementResult.enhancement;
@@ -4256,7 +4260,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopIntimacy: Math.min(99, globalState.shopIntimacy + 1),
           shopPurchases: {
             ...globalState.shopPurchases,
-            [stockKey]: [...soldOutItemIds, action.itemId],
+            [stockKey]: [...soldOutItemKeys, action.stockItemKey],
           },
         },
       };
@@ -4671,7 +4675,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY': {
       const normalizedPartyId = normalizeJewelAutoEquipPriorityPartyId(action.partyId, state.parties.length);
-      if ((state.global.jewelAutoEquipPriorityPartyId ?? 1) === normalizedPartyId) return state;
+      if (state.global.jewelAutoEquipPriorityPartyId === normalizedPartyId) return state;
       return {
         ...state,
         global: {
@@ -5027,8 +5031,8 @@ export function useGameState() {
       dispatch({ type: 'SELL_ALL_OWNED' });
     }, []),
 
-    buyShopItem: useCallback((itemId: number) => {
-      dispatch({ type: 'BUY_SHOP_ITEM', itemId });
+    buyShopItem: useCallback((itemId: number, stockItemKey: string) => {
+      dispatch({ type: 'BUY_SHOP_ITEM', itemId, stockItemKey });
     }, []),
 
     buyDebugStoreItem: useCallback((itemId: number) => {
