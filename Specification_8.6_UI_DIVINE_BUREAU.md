@@ -142,8 +142,8 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
   - U: Unique character (displayed only if a unique character exists)
 - The character image is displayed in the background and updates immediately when the selected character changes.
 - Display the race status summary at the bottom area of the character image.
-  - Base status: 体力:11 力:12 知性:8 精神:7 (Same design as party status pane's base status)
-  - Bonus status: ex. 鎧x1.2, 衣x1.4, 盾x1.1, 弓x1.2, 杖x1.2
+  - Base status: 体力:11 力:12 知性:8 精神:7 (Same design as party status pane's base part)
+  - Bonus status: ex. 装備+1, 鎧x1.2, 衣x1.4, 盾x1.1, 弓x1.2, 杖x1.2, 氷防x0.67 (Same style as party status pane's bonus part)
   - 初期アビリティ: defaultAbility
   - アンロックアビリティ: unlockAbility
   - Show floating bubble text tooltips for these status fields.
