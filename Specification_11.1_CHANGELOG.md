@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 10 | 2026/05/19 | Refine Divine Bureau Character Roster (Spec 8.6): shrink race tab button footprint to match character edit selector scale and expand Bonus status display to show all race bonus entries as chip-style labels with existing tooltip bubble support. |
 | 0.7.2 | 9 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): reduce race-tab icon size by half and add bottom status summary fields for base stats, equipment bonus multipliers, default ability, and unlock ability with floating tooltip bubbles. |
 | 0.7.2 | 8 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): enlarge race-tab icons and switch race-tab row to non-shrinking horizontally scrollable layout so icon buttons keep fixed size on narrow screens. |
 | 0.7.2 | 7 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): increase race-tab icon size for better visibility and expand the character image display horizontally to 130%. |
