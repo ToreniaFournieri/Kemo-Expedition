@@ -6192,12 +6192,12 @@ function PartyTab({
     });
   };
 
-  const handleInlineDetailHelpToggle = (
+  function handleInlineDetailHelpToggle(
     key: string,
     title: string,
     description: string,
     event: MouseEvent<HTMLButtonElement>,
-  ) => {
+  ) {
     event.stopPropagation();
     const triggerRect = event.currentTarget.getBoundingClientRect();
     const viewportPadding = 12;
@@ -6220,7 +6220,7 @@ function PartyTab({
       });
       return { key, title, description };
     });
-  };
+  }
 
   const renderInlineBonusEntries = (entries: { key: string; label: string; description: string | null }[]) => {
     if (entries.length === 0) {
@@ -12328,21 +12328,27 @@ function SettingTab({
                     <span className="base-stat-chip">精神:{selectedRosterRace?.stats.mind ?? '-'}</span>
                   </span>
                 </button>
-                <button type="button" className="w-full text-left" title="種族ボーナス情報です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-bonus-status', rosterBonusStatusEntries.length > 0 ? `ボーナス: ${rosterBonusStatusEntries.map((entry) => entry.label).join(', ')}` : 'ボーナス: -', event.currentTarget); }}>
-                  <span className="text-xs text-gray-900 mt-1 leading-5">
-                    <span className="break-words leading-5 font-medium">ボーナス: </span>
-                    {rosterBonusStatusEntries.length > 0 ? (
-                      rosterBonusStatusEntries.map((entry, index) => (
-                        <span key={entry.key}>
-                          {index > 0 && <span>, </span>}
+                <div className="text-xs text-gray-900 mt-1 leading-5">
+                  <span className="break-words leading-5 font-medium">ボーナス: </span>
+                  {rosterBonusStatusEntries.length > 0 ? (
+                    rosterBonusStatusEntries.map((entry, index) => (
+                      <span key={entry.key}>
+                        {index > 0 && <span>, </span>}
+                        <button
+                          type="button"
+                          onPointerDown={(event) => event.stopPropagation()}
+                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? 'このボーナスの説明は未設定です。'}`, event.currentTarget); }}
+                          className="text-left hover:underline"
+                          title="タップで詳細を表示"
+                        >
                           {entry.label}
-                        </span>
-                      ))
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </span>
-                </button>
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span>-</span>
+                  )}
+                </div>
                 <button
                   type="button"
                   className="w-full text-left"
