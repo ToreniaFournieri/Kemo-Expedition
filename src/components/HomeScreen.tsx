@@ -11284,7 +11284,47 @@ function SettingTab({
     })()
     : null;
   const selectedRosterImageSrc = selectedRosterImageFile ? `${import.meta.env.BASE_URL}character/${selectedRosterImageFile}` : null;
-  const showUniqueRosterGender = gameState.parties.some((party) => party.characters.some((character) => character.isUnique));
+  const hasRosterGenderImage = useCallback((partyId: number, raceId: RaceId, gender: 'male' | 'female'): boolean => {
+    const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === raceId);
+    if (!raceMeta) return false;
+    const genderLabel = gender === 'male' ? 'Male' : 'Female';
+    const partySpecificFile = `${partyId}_${raceMeta.raceName}_${genderLabel}.png`;
+    const fallbackFile = `${raceMeta.raceName}_${genderLabel}.png`;
+    return availableRosterImageFiles.has(partySpecificFile) || availableRosterImageFiles.has(fallbackFile);
+  }, [CHARACTER_ROSTER_RACES, availableRosterImageFiles]);
+  const hasRosterUniqueCharacter = useCallback((partyId: number, raceId: RaceId): boolean => {
+    const party = gameState.parties.find((entry) => entry.id === partyId);
+    return (party?.characters ?? []).some((character) => character.raceId === raceId && character.isUnique);
+  }, [gameState.parties]);
+  const visibleRosterRaceIds = useMemo(() => (
+    CHARACTER_ROSTER_RACES
+      .filter((race) => gameState.parties.some((party) =>
+        hasRosterGenderImage(party.id, race.id, 'male')
+        || hasRosterGenderImage(party.id, race.id, 'female')
+        || hasRosterUniqueCharacter(party.id, race.id),
+      ))
+      .map((race) => race.id)
+  ), [CHARACTER_ROSTER_RACES, gameState.parties, hasRosterGenderImage, hasRosterUniqueCharacter]);
+  const visibleRosterGenders = useMemo(() => {
+    const partyId = selectedRosterParty?.id ?? 1;
+    const genders: Array<'male' | 'female' | 'unique'> = [];
+    if (hasRosterGenderImage(partyId, characterRosterRaceId, 'male')) genders.push('male');
+    if (hasRosterGenderImage(partyId, characterRosterRaceId, 'female')) genders.push('female');
+    if (hasRosterUniqueCharacter(partyId, characterRosterRaceId)) genders.push('unique');
+    return genders;
+  }, [characterRosterRaceId, hasRosterGenderImage, hasRosterUniqueCharacter, selectedRosterParty?.id]);
+  useEffect(() => {
+    if (visibleRosterRaceIds.length === 0) return;
+    if (!visibleRosterRaceIds.includes(characterRosterRaceId)) {
+      setCharacterRosterRaceId(visibleRosterRaceIds[0]);
+    }
+  }, [characterRosterRaceId, visibleRosterRaceIds]);
+  useEffect(() => {
+    if (visibleRosterGenders.length === 0) return;
+    if (!visibleRosterGenders.includes(characterRosterGenderFilter)) {
+      setCharacterRosterGenderFilter(visibleRosterGenders[0]);
+    }
+  }, [characterRosterGenderFilter, visibleRosterGenders]);
   const selectedRosterGenderLabel = characterRosterGenderFilter === 'male' ? '♂' : characterRosterGenderFilter === 'female' ? '♀' : 'U';
   const revealedGlossaryAbilityIds = useMemo(
     () => new Set(gameState.global.revealedGlossaryAbilityIds ?? []),
@@ -12180,13 +12220,12 @@ function SettingTab({
         {divineBureauPanelExpanded.characterRoster && <>
           {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Character Roster (味方キャラクター図鑑) */}
           <div className="flex gap-1 mt-3 mb-2 overflow-x-auto pb-1">
-            {CHARACTER_ROSTER_RACES.map((race) => (
+            {CHARACTER_ROSTER_RACES.filter((race) => visibleRosterRaceIds.includes(race.id)).map((race) => (
               <button key={race.id} onClick={() => setCharacterRosterRaceId(race.id)} className={`px-2 py-1 text-sm rounded pane-button-shadow ${characterRosterRaceId === race.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`} title={race.raceName}>
                 <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-6 w-6" />
               </button>
             ))}
           </div>
-          <div className="mb-1 text-[11px] text-gray-500">Only unlocked parties are visible.</div>
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
             {gameState.parties.map((party) => (
               <button key={party.id} onClick={() => setCharacterRosterPartyId(party.id)} className={`px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterPartyId === party.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
@@ -12195,13 +12234,15 @@ function SettingTab({
             ))}
           </div>
           <div className="flex gap-1 mb-3">
-            <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♂</button>
-            <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♀</button>
-            <button
-              onClick={() => showUniqueRosterGender && setCharacterRosterGenderFilter('unique')}
-              disabled={!showUniqueRosterGender}
-              className={`px-2 py-1 text-xs rounded ${!showUniqueRosterGender ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}
-            >U</button>
+            {visibleRosterGenders.includes('male') && (
+              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♂</button>
+            )}
+            {visibleRosterGenders.includes('female') && (
+              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♀</button>
+            )}
+            {visibleRosterGenders.includes('unique') && (
+              <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>
+            )}
           </div>
           {activeRosterCharacter && (
             <div
@@ -12216,8 +12257,14 @@ function SettingTab({
             >
               <div className="rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
               <div className="mt-1 rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">性別: {selectedRosterGenderLabel}</div>
-              <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1">
-                種族ステータス: {selectedRosterRace ? formatBonuses(getRaceBonusesForSelection(selectedRosterRace)) : '-'}
+              <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1 space-y-1">
+                <div className="font-semibold">種族ステータス</div>
+                <div title="初期から利用できる種族アビリティです。">
+                  初期アビリティ: {selectedRosterRace?.defaultAbility?.name ?? '-'}
+                </div>
+                <div title="アンロック条件達成後に開放される種族アビリティです。">
+                  アンロックアビリティ: {selectedRosterRace?.unlockAbility?.name ?? '-'}
+                </div>
               </div>
             </div>
           )}
