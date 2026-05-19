@@ -11827,6 +11827,9 @@ function SettingTab({
           setActiveAbilityHelp(null);
           setAbilityHelpPosition(null);
         }
+        if (activeRosterStatusBubble) {
+          setActiveRosterStatusBubble(null);
+        }
       }}
     >
       {activeAbilityHelp && abilityHelpPosition && (
