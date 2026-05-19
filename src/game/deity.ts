@@ -205,14 +205,14 @@ export function applyDeityCharacterModifiers(
           ...stats,
           deityDefenseAmplifierBonus: {
             physical: stats.deityDefenseAmplifierBonus.physical,
-            magical: stats.deityDefenseAmplifierBonus.magical - (1 - 2 / 3),
+            magical: stats.deityDefenseAmplifierBonus.magical * (2 / 3),
           },
         };
       case 'God of Fortification':
         return {
           ...stats,
           deityDefenseAmplifierBonus: {
-            physical: stats.deityDefenseAmplifierBonus.physical - (1 - 2 / 3),
+            physical: stats.deityDefenseAmplifierBonus.physical * (2 / 3),
             magical: stats.deityDefenseAmplifierBonus.magical,
           },
           elementalDefenseMultipliers: {
@@ -241,7 +241,7 @@ export function applyDeityCharacterModifiers(
           evasionBonus: stats.evasionBonus + (0.015 + 0.001 * effectiveTier),
           deityDefenseAmplifierBonus: {
             physical: stats.deityDefenseAmplifierBonus.physical,
-            magical: stats.deityDefenseAmplifierBonus.magical + 0.1,
+            magical: stats.deityDefenseAmplifierBonus.magical * 1.1,
           },
         };
       case 'God of Resonance':
@@ -249,7 +249,7 @@ export function applyDeityCharacterModifiers(
           ...stats,
           deityDefenseAmplifierBonus: {
             physical: stats.deityDefenseAmplifierBonus.physical,
-            magical: stats.deityDefenseAmplifierBonus.magical + 0.1,
+            magical: stats.deityDefenseAmplifierBonus.magical * 1.1,
           },
         };
       case 'Goddess of Mirage':
@@ -257,7 +257,7 @@ export function applyDeityCharacterModifiers(
           ...stats,
           deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (1.2 + 0.01 * effectiveTier) - 1,
           deityDefenseAmplifierBonus: {
-            physical: stats.deityDefenseAmplifierBonus.physical + 0.1,
+            physical: stats.deityDefenseAmplifierBonus.physical * 1.1,
             magical: stats.deityDefenseAmplifierBonus.magical,
           },
         };
