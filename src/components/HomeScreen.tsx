@@ -12321,7 +12321,7 @@ function SettingTab({
               <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">種族ステータス</div>
                 <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', `体力:${selectedRosterRace?.stats.vitality ?? '-'}  力:${selectedRosterRace?.stats.strength ?? '-'}  知性:${selectedRosterRace?.stats.intelligence ?? '-'}  精神:${selectedRosterRace?.stats.mind ?? '-'}`, event.currentTarget); }}>
-                  <span className="inline-flex flex-wrap gap-1">
+                  <span className="grid grid-cols-4 gap-1">
                     <span className="base-stat-chip">体力:{selectedRosterRace?.stats.vitality ?? '-'}</span>
                     <span className="base-stat-chip">力:{selectedRosterRace?.stats.strength ?? '-'}</span>
                     <span className="base-stat-chip">知性:{selectedRosterRace?.stats.intelligence ?? '-'}</span>
@@ -12329,11 +12329,14 @@ function SettingTab({
                   </span>
                 </button>
                 <button type="button" className="w-full text-left" title="種族ボーナス情報です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-bonus-status', rosterBonusStatusEntries.length > 0 ? `ボーナス: ${rosterBonusStatusEntries.map((entry) => entry.label).join(', ')}` : 'ボーナス: -', event.currentTarget); }}>
-                  <span className="inline-flex flex-wrap gap-1">
-                    <span className="font-medium">ボーナスステータス:</span>
+                  <span className="text-xs text-gray-900 mt-1 leading-5">
+                    <span className="break-words leading-5 font-medium">ボーナス: </span>
                     {rosterBonusStatusEntries.length > 0 ? (
-                      rosterBonusStatusEntries.map((entry) => (
-                        <span key={entry.key} className="base-stat-chip">{entry.label}</span>
+                      rosterBonusStatusEntries.map((entry, index) => (
+                        <span key={entry.key}>
+                          {index > 0 && <span>, </span>}
+                          {entry.label}
+                        </span>
                       ))
                     ) : (
                       <span>-</span>
