@@ -142,6 +142,10 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
   - U: Unique character (displayed only if a unique character exists)
 - The character image is displayed in the background and updates immediately when the selected character changes.
 - Display the race status summary at the bottom area of the character image.
+  - 初期アビリティ: defaultAbility
+  - アンロックアビリティ: unlockAbility
+  - Show floating bubble text tooltips for these status fields.
+
 
 **Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
