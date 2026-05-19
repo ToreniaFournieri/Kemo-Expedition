@@ -7947,7 +7947,8 @@ function PartyTab({
               </div>
             </div>
             {/* Category group tabs */}
-            <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
+            <div className="mb-1 text-[11px] text-gray-500">Only unlocked parties are visible.</div>
+          <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
               {availableCategoryGroups.map(group => (
                 <div key={group.id} className="flex flex-col">
                   <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
@@ -11229,10 +11230,22 @@ function SettingTab({
     { id: 'leporian', raceName: 'Leporian' },
     { id: 'cervin', raceName: 'Cervin' },
     { id: 'murid', raceName: 'Murid' },
+    { id: 'kemoria', raceName: 'Kemoria' },
+    { id: 'orcinian', raceName: 'Orcinian' },
+    { id: 'avian', raceName: 'Avian' },
   ];
   const [characterRosterRaceId, setCharacterRosterRaceId] = useState<RaceId>('lupinian');
   const [characterRosterPartyId, setCharacterRosterPartyId] = useState<number>(1);
   const [characterRosterGenderFilter, setCharacterRosterGenderFilter] = useState<'male' | 'female' | 'unique'>('male');
+
+  const rosterCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
+  const availableRosterImageFiles = useMemo(() => {
+    return new Set(
+      Object.keys(rosterCharacterImageModules)
+        .map((modulePath) => modulePath.split('/').pop())
+        .filter((fileName): fileName is string => typeof fileName === 'string' && fileName.length > 0),
+    );
+  }, [rosterCharacterImageModules]);
   const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
     const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
       'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
@@ -11246,15 +11259,29 @@ function SettingTab({
     return `${partyId}_${raceMeta.raceName}_${genderLabel}.png`;
   };
   const selectedRosterParty = gameState.parties.find((party) => party.id === characterRosterPartyId) ?? gameState.parties[0];
-  const rosterCharacters = (selectedRosterParty?.characters ?? [])
-    .filter((character) => character.raceId === characterRosterRaceId)
-    .filter((character) => (
-      characterRosterGenderFilter === 'unique' ? character.isUnique : character.gender === characterRosterGenderFilter && !character.isUnique
-    ));
-  const activeRosterCharacter = rosterCharacters[0] ?? null;
   const selectedRosterRace = RACES.find((race) => race.id === characterRosterRaceId);
+  const activeRosterCharacter = characterRosterGenderFilter === 'unique'
+    ? (selectedRosterParty?.characters ?? []).find((character) => character.raceId === characterRosterRaceId && character.isUnique) ?? null
+    : {
+      raceId: characterRosterRaceId,
+      gender: characterRosterGenderFilter,
+      isUnique: false,
+      name: '',
+    } as Character;
   const selectedRosterImageFile = activeRosterCharacter
-    ? getCharacterRosterImageFileName(activeRosterCharacter, selectedRosterParty?.id ?? 1)
+    ? ((): string | null => {
+      const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === characterRosterRaceId);
+      if (characterRosterGenderFilter === 'unique') {
+        return getCharacterRosterImageFileName(activeRosterCharacter, selectedRosterParty?.id ?? 1);
+      }
+      if (!raceMeta) return null;
+      const genderLabel = characterRosterGenderFilter === 'male' ? 'Male' : 'Female';
+      const partySpecificFile = `${selectedRosterParty?.id ?? 1}_${raceMeta.raceName}_${genderLabel}.png`;
+      const fallbackFile = `${raceMeta.raceName}_${genderLabel}.png`;
+      if (availableRosterImageFiles.has(partySpecificFile)) return partySpecificFile;
+      if (availableRosterImageFiles.has(fallbackFile)) return fallbackFile;
+      return null;
+    })()
     : null;
   const selectedRosterImageSrc = selectedRosterImageFile ? `${import.meta.env.BASE_URL}character/${selectedRosterImageFile}` : null;
   const showUniqueRosterGender = gameState.parties.some((party) => party.characters.some((character) => character.isUnique));
@@ -12159,6 +12186,7 @@ function SettingTab({
               </button>
             ))}
           </div>
+          <div className="mb-1 text-[11px] text-gray-500">Only unlocked parties are visible.</div>
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
             {gameState.parties.map((party) => (
               <button key={party.id} onClick={() => setCharacterRosterPartyId(party.id)} className={`px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterPartyId === party.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
@@ -12179,7 +12207,7 @@ function SettingTab({
             <div
               className="rounded border border-gray-200 bg-white p-2"
               style={selectedRosterImageSrc ? {
-                backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.78), rgba(255,255,255,0.88)), url('${selectedRosterImageSrc}')`,
+                backgroundImage: `url('${selectedRosterImageSrc}')`,
                 backgroundPosition: 'center',
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
@@ -12194,6 +12222,7 @@ function SettingTab({
             </div>
           )}
           {!activeRosterCharacter && <div className="text-xs text-gray-500">該当キャラクターなし</div>}
+          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">画像データなし</div>}
         </>}
       </div>
 
