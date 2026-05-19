@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 9 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): reduce race-tab icon size by half and add bottom status summary fields for base stats, equipment bonus multipliers, default ability, and unlock ability with floating tooltip bubbles. |
 | 0.7.2 | 8 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): enlarge race-tab icons and switch race-tab row to non-shrinking horizontally scrollable layout so icon buttons keep fixed size on narrow screens. |
 | 0.7.2 | 7 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): increase race-tab icon size for better visibility and expand the character image display horizontally to 130%. |
 | 0.7.2 | 6 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): remove the `性別:` summary line from the character image panel and implement tap/click floating-bubble tooltips for the default/unlock ability status fields. |
