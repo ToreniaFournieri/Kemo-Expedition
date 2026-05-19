@@ -11294,6 +11294,7 @@ function SettingTab({
   }, [CHARACTER_ROSTER_RACES, availableRosterImageFiles]);
 
   const rosterBonusStatusEntries = (selectedRosterRace?.bonuses ?? [])
+    .filter((bonus) => bonus.type !== 'ability')
     .map((bonus, index) => buildInlineBonusEntry('roster-race-bonus', selectedRosterRace?.id ?? 'none', bonus, index))
     .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
@@ -12319,7 +12320,7 @@ function SettingTab({
               <div className="rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
               <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">種族ステータス</div>
-                <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', '種族の基礎値です。', event.currentTarget); }}>
+                <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', `体力:${selectedRosterRace?.stats.vitality ?? '-'}  力:${selectedRosterRace?.stats.strength ?? '-'}  知性:${selectedRosterRace?.stats.intelligence ?? '-'}  精神:${selectedRosterRace?.stats.mind ?? '-'}`, event.currentTarget); }}>
                   <span className="inline-flex flex-wrap gap-1">
                     <span className="base-stat-chip">体力:{selectedRosterRace?.stats.vitality ?? '-'}</span>
                     <span className="base-stat-chip">力:{selectedRosterRace?.stats.strength ?? '-'}</span>
@@ -12327,7 +12328,7 @@ function SettingTab({
                     <span className="base-stat-chip">精神:{selectedRosterRace?.stats.mind ?? '-'}</span>
                   </span>
                 </button>
-                <button type="button" className="w-full text-left" title="種族ボーナス情報です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-bonus-status', '種族ボーナス情報です。', event.currentTarget); }}>
+                <button type="button" className="w-full text-left" title="種族ボーナス情報です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-bonus-status', rosterBonusStatusEntries.length > 0 ? `ボーナス: ${rosterBonusStatusEntries.map((entry) => entry.label).join(', ')}` : 'ボーナス: -', event.currentTarget); }}>
                   <span className="inline-flex flex-wrap gap-1">
                     <span className="font-medium">ボーナスステータス:</span>
                     {rosterBonusStatusEntries.length > 0 ? (
@@ -12348,7 +12349,7 @@ function SettingTab({
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-default-ability',
-                      '初期から利用できる種族アビリティです。',
+                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : '初期アビリティ: -',
                       event.currentTarget,
                     );
                   }}
@@ -12364,7 +12365,7 @@ function SettingTab({
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-unlock-ability',
-                      'アンロック条件達成後に開放される種族アビリティです。',
+                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : 'アンロックアビリティ: -',
                       event.currentTarget,
                     );
                   }}
