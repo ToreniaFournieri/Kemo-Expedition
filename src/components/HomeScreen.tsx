@@ -12300,13 +12300,13 @@ function SettingTab({
           </div>
           <div className="flex gap-1 mb-3">
             {visibleRosterGenders.includes('male') && (
-              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♂</button>
+              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`flex h-10 min-w-[3rem] items-center justify-center px-2 py-1 text-sm leading-none rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♂</button>
             )}
             {visibleRosterGenders.includes('female') && (
-              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♀</button>
+              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`flex h-10 min-w-[3rem] items-center justify-center px-2 py-1 text-sm leading-none rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♀</button>
             )}
             {visibleRosterGenders.includes('unique') && (
-              <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>
+              <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`flex h-10 min-w-[3rem] items-center justify-center px-2 py-1 text-sm leading-none rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>
             )}
           </div>
           {activeRosterCharacter && (
