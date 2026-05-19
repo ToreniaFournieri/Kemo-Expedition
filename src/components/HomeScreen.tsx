@@ -6598,7 +6598,7 @@ function PartyTab({
                             }`}
                           >
                             <span className="inline-flex h-full w-3 items-center justify-center leading-none">
-                              {shouldShowGenderSymbol ? (gender === 'male' ? '♂' : '♀') : null}
+                              {shouldShowGenderSymbol ? (gender === 'male' ? '男' : '女') : null}
                             </span>
                           </button>
                         );
@@ -12300,10 +12300,10 @@ function SettingTab({
           </div>
           <div className="flex gap-1 mb-3">
             {visibleRosterGenders.includes('male') && (
-              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♂</button>
+              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>男</button>
             )}
             {visibleRosterGenders.includes('female') && (
-              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♀</button>
+              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>女</button>
             )}
             {visibleRosterGenders.includes('unique') && (
               <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>
