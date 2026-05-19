@@ -11292,6 +11292,26 @@ function SettingTab({
     const fallbackFile = `${raceMeta.raceName}_${genderLabel}.png`;
     return availableRosterImageFiles.has(partySpecificFile) || availableRosterImageFiles.has(fallbackFile);
   }, [CHARACTER_ROSTER_RACES, availableRosterImageFiles]);
+
+  const rosterBonusMultiplierLabelByType: Partial<Record<BonusType, string>> = {
+    sword_multiplier: '剣',
+    katana_multiplier: '刀',
+    archery_multiplier: '弓',
+    armor_multiplier: '鎧',
+    gauntlet_multiplier: '手',
+    wand_multiplier: '杖',
+    robe_multiplier: '衣',
+    shield_multiplier: '盾',
+    bolt_multiplier: 'ボ',
+    grimoire_multiplier: '書',
+    catalyst_multiplier: '媒',
+    arrow_multiplier: '矢',
+  };
+  const rosterBonusStatusSummary = (selectedRosterRace?.bonuses ?? [])
+    .filter((bonus) => bonus.type in rosterBonusMultiplierLabelByType)
+    .map((bonus) => `${rosterBonusMultiplierLabelByType[bonus.type] ?? bonus.type}x${bonus.value.toFixed(1)}`)
+    .join(', ');
+
   const hasRosterUniqueCharacter = useCallback((partyId: number, raceId: RaceId): boolean => {
     const party = gameState.parties.find((entry) => entry.id === partyId);
     return (party?.characters ?? []).some((character) => character.raceId === raceId && character.isUnique);
@@ -12277,7 +12297,7 @@ function SettingTab({
                   className={`shrink-0 min-h-14 min-w-14 px-2 py-1 text-sm rounded pane-button-shadow ${characterRosterRaceId === race.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
                   title={race.raceName}
                 >
-                  <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-10 w-10" />
+                  <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-5 w-5" />
                 </button>
               ))}
             </div>
@@ -12314,6 +12334,17 @@ function SettingTab({
               <div className="rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
               <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">種族ステータス</div>
+                <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', '種族の基礎値です。', event.currentTarget); }}>
+                  <span className="inline-flex flex-wrap gap-1">
+                    <span className="base-stat-chip">体力:{selectedRosterRace?.stats.vitality ?? '-'}</span>
+                    <span className="base-stat-chip">力:{selectedRosterRace?.stats.strength ?? '-'}</span>
+                    <span className="base-stat-chip">知性:{selectedRosterRace?.stats.intelligence ?? '-'}</span>
+                    <span className="base-stat-chip">精神:{selectedRosterRace?.stats.mind ?? '-'}</span>
+                  </span>
+                </button>
+                <button type="button" className="w-full text-left" title="種族の装備適性倍率です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-bonus-status', '種族の装備適性倍率です。', event.currentTarget); }}>
+                  ボーナスステータス: {rosterBonusStatusSummary || '-'}
+                </button>
                 <button
                   type="button"
                   className="w-full text-left"
