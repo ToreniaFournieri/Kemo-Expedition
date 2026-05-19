@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 5 | 2026/05/19 | Update Divine Bureau Character Roster runtime (Spec 8.6): hide the unlocked-party guidance text, hide race/gender tabs when no valid combinations exist for current unlocks and image data, auto-select first available gender (including `U` when it is the only valid choice), and replace bottom status text with default/unlock ability summary plus tooltip hints. |
 | 0.7.2 | 4 | 2026/05/19 | Update Divine Bureau Character Roster (Spec 8.6): add Kemoria/Orcinian/Avian race tabs, show only unlocked PT tabs with guidance text, source roster display from all possible race+party+gender combinations (not current party members) to avoid empty combinations, and remove white fog overlay from character background image for clearer visibility. |
 | 0.7.2 | 3 | 2026/05/19 | Refine Divine Bureau Character Roster UI (Spec 8.6): use race icon assets for race tabs, remove individual-name list, gray out U selector when no unique character exists, and render race/gender/status text as overlays on the character background image panel. |
 | 0.7.2 | 2 | 2026/05/19 | Implement Divine Bureau Character Roster pane (Spec 8.6): add collapsible allied-character compendium before Bestiary with race/party/gender tabs, unique (U) gender visibility rule, immediate character-image update on selection, and race status summary display at the bottom of the image panel. |
