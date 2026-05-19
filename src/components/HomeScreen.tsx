@@ -12271,7 +12271,7 @@ function SettingTab({
           <div className="flex gap-1 mt-3 mb-2 overflow-x-auto pb-1">
             {CHARACTER_ROSTER_RACES.filter((race) => visibleRosterRaceIds.includes(race.id)).map((race) => (
               <button key={race.id} onClick={() => setCharacterRosterRaceId(race.id)} className={`px-2 py-1 text-sm rounded pane-button-shadow ${characterRosterRaceId === race.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`} title={race.raceName}>
-                <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-6 w-6" />
+                <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-8 w-8" />
               </button>
             ))}
           </div>
@@ -12299,7 +12299,7 @@ function SettingTab({
               style={selectedRosterImageSrc ? {
                 backgroundImage: `url('${selectedRosterImageSrc}')`,
                 backgroundPosition: 'center',
-                backgroundSize: 'contain',
+                backgroundSize: '130% auto',
                 backgroundRepeat: 'no-repeat',
                 minHeight: '540px',
               } : undefined}
