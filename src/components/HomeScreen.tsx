@@ -5476,8 +5476,8 @@ function PartyTab({
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([id, level]) => `${id}:${level}`)
     .join('|');
-  const selectedPhysicalDefenseResist = Math.max(0.01, selectedStats.physicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.physical);
-  const selectedMagicalDefenseResist = Math.max(0.01, selectedStats.magicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.magical);
+  const selectedPhysicalDefenseResist = Math.max(0.01, selectedStats.physicalDefenseAmplifier * selectedStats.deityDefenseAmplifierBonus.physical);
+  const selectedMagicalDefenseResist = Math.max(0.01, selectedStats.magicalDefenseAmplifier * selectedStats.deityDefenseAmplifierBonus.magical);
   const selectedMeleeAttackAmp = ((selectedIaigiriLevel > 0
     ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
     : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
@@ -7187,8 +7187,8 @@ function PartyTab({
                 }
 
                 // Defense lines
-                const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.physical);
-                const defenseAmpMagical = Math.max(0.01, stats.magicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.magical);
+                const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.physical);
+                const defenseAmpMagical = Math.max(0.01, stats.magicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.magical);
                 const elementIcon: UiIconKey | null = stats.elementalOffense === 'fire' ? 'fire' :
                   stats.elementalOffense === 'thunder' ? 'thunder' :
                   stats.elementalOffense === 'ice' ? 'ice' : null;
