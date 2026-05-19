@@ -11219,21 +11219,20 @@ function SettingTab({
     )
     .slice()
     .sort((a, b) => b.id - a.id);
-  const CHARACTER_ROSTER_RACES: Array<{ id: RaceId; label: string; emoji: string; raceName: string }> = [
-    { id: 'lupinian', label: '🐺', emoji: '🐺', raceName: 'Lupinian' },
-    { id: 'vulpinian', label: '🦊', emoji: '🦊', raceName: 'Vulpinian' },
-    { id: 'felidian', label: '😺', emoji: '😺', raceName: 'Felidian' },
-    { id: 'caninian', label: '🐶', emoji: '🐶', raceName: 'Caninian' },
-    { id: 'ursan', label: '🐻', emoji: '🐻', raceName: 'Ursan' },
-    { id: 'procyonian', label: '🦝', emoji: '🦝', raceName: 'Procyonian' },
-    { id: 'leporian', label: '🐰', emoji: '🐰', raceName: 'Leporian' },
-    { id: 'cervin', label: '🦌', emoji: '🦌', raceName: 'Cervin' },
-    { id: 'murid', label: '🐭', emoji: '🐭', raceName: 'Murid' },
+  const CHARACTER_ROSTER_RACES: Array<{ id: RaceId; raceName: string }> = [
+    { id: 'lupinian', raceName: 'Lupinian' },
+    { id: 'vulpinian', raceName: 'Vulpinian' },
+    { id: 'felidian', raceName: 'Felidian' },
+    { id: 'caninian', raceName: 'Caninian' },
+    { id: 'ursan', raceName: 'Ursan' },
+    { id: 'procyonian', raceName: 'Procyonian' },
+    { id: 'leporian', raceName: 'Leporian' },
+    { id: 'cervin', raceName: 'Cervin' },
+    { id: 'murid', raceName: 'Murid' },
   ];
   const [characterRosterRaceId, setCharacterRosterRaceId] = useState<RaceId>('lupinian');
   const [characterRosterPartyId, setCharacterRosterPartyId] = useState<number>(1);
   const [characterRosterGenderFilter, setCharacterRosterGenderFilter] = useState<'male' | 'female' | 'unique'>('male');
-  const [characterRosterSelectedCharacterId, setCharacterRosterSelectedCharacterId] = useState<number | null>(null);
   const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
     const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
       'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
@@ -11252,14 +11251,14 @@ function SettingTab({
     .filter((character) => (
       characterRosterGenderFilter === 'unique' ? character.isUnique : character.gender === characterRosterGenderFilter && !character.isUnique
     ));
-  const selectedRosterCharacter = rosterCharacters[0] ?? null;
-  const activeRosterCharacter = rosterCharacters.find((character) => character.id === characterRosterSelectedCharacterId) ?? selectedRosterCharacter;
+  const activeRosterCharacter = rosterCharacters[0] ?? null;
   const selectedRosterRace = RACES.find((race) => race.id === characterRosterRaceId);
   const selectedRosterImageFile = activeRosterCharacter
     ? getCharacterRosterImageFileName(activeRosterCharacter, selectedRosterParty?.id ?? 1)
     : null;
   const selectedRosterImageSrc = selectedRosterImageFile ? `${import.meta.env.BASE_URL}character/${selectedRosterImageFile}` : null;
   const showUniqueRosterGender = gameState.parties.some((party) => party.characters.some((character) => character.isUnique));
+  const selectedRosterGenderLabel = characterRosterGenderFilter === 'male' ? '♂' : characterRosterGenderFilter === 'female' ? '♀' : 'U';
   const revealedGlossaryAbilityIds = useMemo(
     () => new Set(gameState.global.revealedGlossaryAbilityIds ?? []),
     [gameState.global.revealedGlossaryAbilityIds],
@@ -12156,7 +12155,7 @@ function SettingTab({
           <div className="flex gap-1 mt-3 mb-2 overflow-x-auto pb-1">
             {CHARACTER_ROSTER_RACES.map((race) => (
               <button key={race.id} onClick={() => setCharacterRosterRaceId(race.id)} className={`px-2 py-1 text-sm rounded pane-button-shadow ${characterRosterRaceId === race.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`} title={race.raceName}>
-                {race.label}
+                <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-6 w-6" />
               </button>
             ))}
           </div>
@@ -12170,26 +12169,31 @@ function SettingTab({
           <div className="flex gap-1 mb-3">
             <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♂</button>
             <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>♀</button>
-            {showUniqueRosterGender && <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>}
-          </div>
-          <div className="space-y-2 max-h-32 overflow-y-auto pr-1 mb-3">
-            {rosterCharacters.map((character) => (
-              <button key={character.id} onClick={() => setCharacterRosterSelectedCharacterId(character.id)} className={`w-full px-2 py-1 rounded border text-sm text-left ${activeRosterCharacter?.id === character.id ? 'bg-sub/10 border-sub' : 'bg-white border-gray-200'}`}>
-                {character.name}
-              </button>
-            ))}
-            {rosterCharacters.length === 0 && <div className="text-xs text-gray-500">該当キャラクターなし</div>}
+            <button
+              onClick={() => showUniqueRosterGender && setCharacterRosterGenderFilter('unique')}
+              disabled={!showUniqueRosterGender}
+              className={`px-2 py-1 text-xs rounded ${!showUniqueRosterGender ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}
+            >U</button>
           </div>
           {activeRosterCharacter && (
-            <div className="rounded border border-gray-200 bg-white p-2">
-              {selectedRosterImageSrc && <img src={selectedRosterImageSrc} alt={activeRosterCharacter.name} className="mx-auto w-full max-w-xs rounded border border-gray-100 bg-gray-50" />}
-              <div className="mt-2 text-xs text-gray-700">名前: {activeRosterCharacter.name}</div>
-              <div className="mt-1 text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
-              <div className="mt-2 border-t border-gray-100 pt-2 text-xs text-gray-700">
+            <div
+              className="rounded border border-gray-200 bg-white p-2"
+              style={selectedRosterImageSrc ? {
+                backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.78), rgba(255,255,255,0.88)), url('${selectedRosterImageSrc}')`,
+                backgroundPosition: 'center',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                minHeight: '540px',
+              } : undefined}
+            >
+              <div className="rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
+              <div className="mt-1 rounded bg-white/70 px-2 py-1 inline-block text-xs text-gray-700">性別: {selectedRosterGenderLabel}</div>
+              <div className="mt-[420px] border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/70 rounded px-2 py-1">
                 種族ステータス: {selectedRosterRace ? formatBonuses(getRaceBonusesForSelection(selectedRosterRace)) : '-'}
               </div>
             </div>
           )}
+          {!activeRosterCharacter && <div className="text-xs text-gray-500">該当キャラクターなし</div>}
         </>}
       </div>
 
