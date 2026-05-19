@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 | 0.7.1 | 22 | 2026/05/19 | Update deity defense amplifier runtime calculation (Spec 2.1.1.2): apply `c.deity-physical-defense_x2/3` and `c.deity-magical-defense_x2/3` as independent multiplicative defense amplifier modifiers instead of additive `c.physical_defense+v` / `c.magical_defense+v` treatment, including battle and status display calculations. |
+|-|-|-|-|
 | 0.7.1 | 21 | 2026/05/19 | Fix Felis’s Junk Shop duplicate-item stock handling (Spec 8.4.1): track purchases per lineup slot so buying one copy of a repeated base item no longer marks the other matching slot as sold out. |
 | 0.7.1 | 20 | 2026/05/17 | Fix Speed of Time PT summary Exp percentage mismatch (Spec 8.1.2): report progress-to-next-level (`current XP / required XP`) instead of remaining XP percentage, so PT summary matches in-game party display (e.g., PT1 90%). |
 | 0.7.1 | 19 | 2026/05/17 | Fix AUTO Jewel Equipment selection behavior (Spec 7.1.3): allow selecting `手動` correctly by preserving `jewelAutoEquipPriorityPartyId=null` in Base tab state, and stop treating null as PT1 in auto-jewel runtime checks. |
@@ -50,7 +51,6 @@
 | 0.7.0 | 27 | 2026/05/16 | Update Speed of Time runtime progress data format (Spec 8.1.2): send PT and Status report sections as monospace-aligned code-block tables instead of markdown tables. |
 | 0.7.0 | 26 | 2026/05/16 | Fix Speed of Time status-report table chunk typing in HomeScreen runtime: correct chunk row array types for markdown rendering so TypeScript build passes without assignment errors. |
 | 0.7.0 | 25 | 2026/05/16 | Fix Speed of Time Discord status reporting (Spec 8.1.2 Header): split oversized Status table payload into multiple webhook-safe table chunks with part numbering, while preserving the same columns and data format. |
-|---------|-------|------|--------------------------------------------------------------------------------------|
 | 0.7.0 | 24 | 2026/05/16 | Update Speed of Time runtime progress reporting format (Spec 8.1.2 Header): replace free-form party/member summaries with two structured tables (PT table and Status table) including specified columns and Japanese labels, latest expedition outcome/room, class/lineage/predisposition short names, and computed combat stats. |
 | 0.7.0 | 23 | 2026/05/16 | Simplify Speed of Time progress reporting payload: stop sending compressed save chunks, and instead post current party status plus latest expedition log summaries for each party member to environment-specific Discord webhooks. |
 | 0.7.0 | 22 | 2026/05/16 | Fix Speed of Time progress reporting Discord 400 errors by splitting compressed save data into webhook-safe chunk messages, while posting version/environment metadata in a separate summary message. |
