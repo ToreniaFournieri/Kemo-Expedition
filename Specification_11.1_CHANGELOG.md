@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 14 | 2026/05/19 | Fix Divine Bureau Character Roster floating bubbles (Spec 8.6): close the tooltip bubble when tapping elsewhere in the Divine Bureau screen, matching other floating-bubble interactions. |
 | 0.7.2 | 13 | 2026/05/19 | Fix Divine Bureau Character Roster bonus detail interaction (Spec 8.6): switch ボーナス row to the same per-entry tap-to-explain behavior as status panes, reusing shared inline detail tooltip logic so each bonus label opens its own description bubble. |
 | 0.7.2 | 12 | 2026/05/19 | Refine Divine Bureau Character Roster status layout (Spec 8.6): align base status chips to Party status-pane grid, rename ボーナスステータス to ボーナス, and render bonus entries as plain comma-separated text without square chips. |
 | 0.7.2 | 11 | 2026/05/19 | Fix Divine Bureau Character Roster status summary (Spec 8.6): align floating-bubble texts with Party status-pane style (show concrete base/bonus/ability details) and exclude ability-type entries from ボーナスステータス so abilities appear only in 初期アビリティ/アンロックアビリティ. |
