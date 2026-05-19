@@ -9,6 +9,7 @@
 - Language: English
 
 | Version | Build | date | Changes                                                                              |
+| 0.7.1 | 21 | 2026/05/19 | Fix Felis’s Junk Shop duplicate-item stock handling (Spec 8.4.1): track purchases per lineup slot so buying one copy of a repeated base item no longer marks the other matching slot as sold out. |
 | 0.7.1 | 20 | 2026/05/17 | Fix Speed of Time PT summary Exp percentage mismatch (Spec 8.1.2): report progress-to-next-level (`current XP / required XP`) instead of remaining XP percentage, so PT summary matches in-game party display (e.g., PT1 90%). |
 | 0.7.1 | 19 | 2026/05/17 | Fix AUTO Jewel Equipment selection behavior (Spec 7.1.3): allow selecting `手動` correctly by preserving `jewelAutoEquipPriorityPartyId=null` in Base tab state, and stop treating null as PT1 in auto-jewel runtime checks. |
 | 0.7.1 | 18 | 2026/05/17 | Update runtime Status table attack display (Spec 8.1.2): show 遠/魔/近 rows based on character equip availability (`c.equip_ranged`/`c.equip_magic`/`c.equip_melee`) instead of current attack values, so attack-type visibility follows equipment permission logic. |
