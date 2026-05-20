@@ -204,6 +204,15 @@ body.app-dark {
   border-color: rgb(100 116 139);
 }
 
+
+.theme-dark input.ios-glass-slider {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.theme-dark input.ios-glass-slider:focus {
+  outline-color: transparent;
+}
 .theme-dark select option,
 .theme-dark select optgroup {
   background-color: rgb(15 23 42);
