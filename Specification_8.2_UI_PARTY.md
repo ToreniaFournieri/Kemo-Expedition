@@ -17,6 +17,8 @@
 - Apply a white fog overlay at 30% opacity over the background image.
 - Preserve the original image aspect ratio without stretching or distortion.
 - The bottom area of the background image must gradually fade out using a vertical transparency gradient.
+- Anchor the background image to the bottom of the Party Pane.
+- The image bottom edge should visually connect to the adjacent Status Pane without vertical gap.
 
 #### 8.2.1 Displays
 - Up to 6 parties can exist.
