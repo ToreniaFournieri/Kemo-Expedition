@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 20 | 2026/05/20 | Refine Party Character Edit mode readability (Spec 8.2): reduce foggy pane overlay opacity from 60% to 5% and make edit action buttons 20% transparent to improve visibility of background character art. |
 | 0.7.2 | 19 | 2026/05/19 | Update Divine Bureau Character Roster image rendering (Spec 8.6): switch the ally character image to an absolutely positioned layer with overflow-visible pane so artwork can extend beyond pane boundaries dynamically while preserving overlay status readability. |
 | 0.7.2 | 18 | 2026/05/19 | Refine Divine Bureau Character Roster readability (Spec 8.6): reduce the white text background mask opacity in 味方キャラクター図鑑 from 45% to 25% so the character image is more clearly visible behind overlay text. |
 | 0.7.2 | 17 | 2026/05/19 | Refine Divine Bureau Character Roster readability (Spec 8.6): increase transparency of the white text background mask in 味方キャラクター図鑑 so the character image is more clearly visible behind text overlays. |
