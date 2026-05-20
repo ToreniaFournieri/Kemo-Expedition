@@ -5457,6 +5457,7 @@ function PartyTab({
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
+  const [isPartyPaneBackgroundAvailable, setIsPartyPaneBackgroundAvailable] = useState(false);
   const selectedChar = party.characters[selectedCharacter];
   const equippedItems = selectedChar.equipment.filter((item): item is Item => item != null);
   const unlockedRaceAbilities = getUnlockedRaceAbilitiesFromBonuses(equippedItems.flatMap((item) => item.bonuses ?? []));
@@ -5529,6 +5530,24 @@ function PartyTab({
   const prevSelectedCharRef = useRef(selectedCharacter);
   const prevSelectedPartyRef = useRef(selectedPartyIndex);
   const touchDraggingCharacterIndexRef = useRef<number | null>(null);
+  const partyPaneBackgroundImageFileName = useMemo(() => {
+    const partyNumber = selectedPartyIndex + 1;
+    if (partyNumber < 1 || partyNumber > 6) return null;
+    // SpecRef: 8.2 | UI_PARTY | Party Pane background image
+    return `background/PT${partyNumber}.png`;
+  }, [selectedPartyIndex]);
+
+  useEffect(() => {
+    if (!partyPaneBackgroundImageFileName) {
+      setIsPartyPaneBackgroundAvailable(false);
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => setIsPartyPaneBackgroundAvailable(true);
+    image.onerror = () => setIsPartyPaneBackgroundAvailable(false);
+    image.src = `${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName}`;
+  }, [partyPaneBackgroundImageFileName]);
 
   const getReorderedIndex = useCallback((currentIndex: number, fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return currentIndex;
@@ -6256,6 +6275,14 @@ function PartyTab({
 
   return (
     <div
+      className="rounded-xl"
+      style={isPartyPaneBackgroundAvailable && partyPaneBackgroundImageFileName ? {
+        // SpecRef: 8.2 | UI_PARTY | Party Pane background image
+        backgroundImage: `url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
+        backgroundPosition: 'center top',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+      } : undefined}
       onPointerDown={() => {
         if (showBaseStatHelp) {
           setShowBaseStatHelp(false);
