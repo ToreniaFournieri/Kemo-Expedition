@@ -6340,7 +6340,7 @@ function PartyTab({
                   onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 完了
               </button>
@@ -6349,7 +6349,7 @@ function PartyTab({
                   setPendingDeityName(party.deity.name);
                   setEditingDeity(false);
                 }}
-                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
                 取消
               </button>
@@ -6617,7 +6617,7 @@ function PartyTab({
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={showEditConfirm ? saveCharacterEditWithEquipmentReset : completeCharacterEdit}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {showEditConfirm ? '保存する' : '完了'}
               </button>
@@ -6630,7 +6630,7 @@ function PartyTab({
                   setPendingEdits(null);
                   setEditingCharacter(null);
                 }}
-                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
                 {showEditConfirm ? '戻る' : '取消'}
               </button>
@@ -6663,7 +6663,7 @@ function PartyTab({
         {editingCharacter === selectedCharacter && !showEditConfirm ? (
           <div className="space-y-2 text-sm">
             <div>
-              <div className="mt-2 rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+              <div className="mt-2 rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
                   const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
@@ -6751,7 +6751,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+                    <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
@@ -6827,7 +6827,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+                    <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.length === 0
@@ -6891,7 +6891,7 @@ function PartyTab({
               })()}
             </div>
             <div>
-              <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+              <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
                   const selectedLineage = LINEAGES.find((l) => l.id === selectedLineageId) ?? LINEAGES[0];
@@ -6940,7 +6940,7 @@ function PartyTab({
               </div>
             </div>
             <div>
-              <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+              <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
                   const selectedPredisposition = PREDISPOSITIONS.find((p) => p.id === selectedPredispositionId) ?? PREDISPOSITIONS[0];
