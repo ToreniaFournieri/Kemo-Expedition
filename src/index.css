@@ -478,13 +478,6 @@ body {
 }
 
 
-.theme-dark .party-character-pane.bg-pane {
-  background-color: rgb(15 23 42 / 0.42);
-  backdrop-filter: blur(1.5px);
-  -webkit-backdrop-filter: blur(1.5px);
-}
-
-
 .theme-dark .expedition-party-pane.border-gray-200\/80 {
   border-color: rgb(100 116 139 / 0.72);
 }
