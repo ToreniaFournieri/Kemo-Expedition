@@ -6520,7 +6520,7 @@ function PartyTab({
               data-party-character-index={i}
             >
               {/* SpecRef: 8.2 | UI_PARTY | List of party members pane */}
-              <div className="relative h-[110px] w-[50px] overflow-visible rounded-xl bg-white/40">
+              <div className="party-member-pane-bg relative h-[110px] w-[50px] overflow-visible rounded-xl bg-white/40">
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
