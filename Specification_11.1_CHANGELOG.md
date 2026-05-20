@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 37 | 2026/05/20 | Update Party tab runtime Party Pane background image zoom (Spec 8.2): render Party main pane background at 120% (`auto 120%`) while keeping bottom anchoring and white fog overlay. |
 | 0.7.2 | 36 | 2026/05/20 | Update Party tab runtime Party Pane background rendering (Spec 8.2): set Party main pane background image zoom to 110% (`auto 110%`), increase white fog overlay to 65% opacity, and remove the bottom vertical fade-out transparency gradient. |
 | 0.7.2 | 35 | 2026/05/20 | Refine Party tab selected pane transparency (Spec 8.2): remove segmented-button base glass tint so selected state is not masked, and set selected pane fill to 40% opacity for clearer background visibility. |
 | 0.7.2 | 34 | 2026/05/20 | Refine Party tab selected pane visibility (Spec 8.2): reduce selected-pane transparency by setting active pane background to 40% transparent (60% opacity) in both light and dark themes. |

@@ -6321,7 +6321,7 @@ function PartyTab({
                 backgroundImage: `url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
                 backgroundPosition: 'center bottom',
                 backgroundRepeat: 'no-repeat',
-                backgroundSize: 'auto 110%',
+                backgroundSize: 'auto 120%',
               }}
             />
             <div
