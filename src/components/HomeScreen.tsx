@@ -6318,18 +6318,18 @@ function PartyTab({
               // SpecRef: 8.2 | UI_PARTY | Party Pane background image
               className="pointer-events-none absolute inset-0 z-0"
               style={{
-                backgroundImage: `linear-gradient(${isDarkModeEnabled ? 'rgb(2 6 23 / 0.34), rgb(2 6 23 / 0.34)' : 'rgb(255 255 255 / 0), rgb(255 255 255 / 0)'}), url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
+                backgroundImage: `linear-gradient(${isDarkModeEnabled ? 'rgb(2 6 23 / 0), rgb(2 6 23 / 0)' : 'rgb(255 255 255 / 0), rgb(255 255 255 / 0)'}), url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
                 backgroundPosition: 'center bottom',
                 backgroundRepeat: 'no-repeat',
                 backgroundSize: 'auto 120%',
-                opacity: isDarkModeEnabled ? 0.68 : 0.9,
+                opacity: isDarkModeEnabled ? 0.9 : 0.9,
               }}
             />
             <div
               // SpecRef: 8.2 | UI_PARTY | Party Pane background image
               className="pointer-events-none absolute inset-0 z-0"
               style={{
-                backgroundColor: isDarkModeEnabled ? 'rgba(15, 23, 42, 0.40)' : 'rgba(255, 255, 255, 0.56)',
+                backgroundColor: isDarkModeEnabled ? 'rgba(15, 23, 42, 0)' : 'rgba(255, 255, 255, 0.56)',
               }}
             />
           </>
@@ -6574,7 +6574,7 @@ function PartyTab({
               }}
             />
             <div
-              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/25' : 'bg-white/30'}`}
+              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-transparent' : 'bg-white/30'}`}
               aria-hidden="true"
             />
           </>
