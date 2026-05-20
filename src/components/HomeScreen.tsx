@@ -12368,8 +12368,7 @@ function SettingTab({
                 <img
                   src={selectedRosterImageSrc}
                   alt={activeRosterCharacter.name}
-                  className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 max-w-none h-auto"
-                  style={{ width: 'min(130%, 510px)' }}
+                  className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] max-w-none h-auto"
                 />
               ) : null}
               <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>

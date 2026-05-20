@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.7.3 | 2 | 2026/05/20 | Refine Divine Bureau ally roster image scaling (Spec 8.6): cap character illustration width to `min(130%, 510px)` so 500px layouts keep the intentional overflow style without covering controls. |
 | 0.7.3 | 1 | 2026/05/20 | Prepare v0.7.3 release: bump app version to `v0.7.3` and reset build number to `1`. |
 | 0.7.2 | 43 | 2026/05/20 | Refine Party tab dark-mode character pane tint (Spec 8.2): change pane override color from bright white tint to subtler slate tint `rgb(30 41 59 / 0.20)` to keep artwork visible without whitening. |
 | 0.7.2 | 42 | 2026/05/20 | Fix Party tab dark-mode character pane translucency (Spec 8.2): exempt party member pane tiles from the global dark `bg-white/*` override so `bg-white/40` remains translucent and background images stay visible. |
