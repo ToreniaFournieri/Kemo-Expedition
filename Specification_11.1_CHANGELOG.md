@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 42 | 2026/05/20 | Refine Expedition tab party-pane background visibility (Spec 8.3): remove the forced low background-image opacity by setting expedition image layer opacity to full in both light and dark modes. |
 | 0.7.2 | 41 | 2026/05/20 | Refine Expedition tab dark-mode party pane readability (Spec 8.3): remove the inner content-wrapper dark fill class (`bg-slate-900/18`) so dark mode no longer adds this extra veil over the background image. |
 | 0.7.2 | 40 | 2026/05/20 | Refine Expedition tab dark-mode party pane background overlay (Spec 8.3): remove the explicit dark linear-gradient tint layer from `expeditionPaneBackgroundStyle.backgroundImage` so pane translucency better reveals the background image. |
 | 0.7.2 | 39 | 2026/05/20 | Refine Party tab Party main pane background filter style (Spec 8.2): reduce fogginess by replacing heavy white fog with expedition-style dark-mode filtering, lower image opacity, and apply a subtler light-mode overlay for clearer artwork visibility. |
