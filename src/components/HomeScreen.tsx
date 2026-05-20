@@ -6519,7 +6519,7 @@ function PartyTab({
               data-party-character-index={i}
             >
               {/* SpecRef: 8.2 | UI_PARTY | List of party members pane */}
-              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md bg-white/40">
+              <div className="relative h-[110px] w-[50px] overflow-visible rounded-xl bg-white/40">
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
@@ -6527,7 +6527,7 @@ function PartyTab({
                     style={{ backgroundImage: `url(${previewImageSrc})` }}
                   />
                 )}
-                <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
+                <div className="absolute inset-0 z-10 overflow-hidden rounded-xl">
                   {!previewImageSrc && (
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
                   )}
