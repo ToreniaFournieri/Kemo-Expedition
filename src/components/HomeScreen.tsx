@@ -8499,7 +8499,7 @@ function ExpeditionTab({
           ? {
             backgroundColor: isDarkModeEnabled ? 'rgb(15 23 42 / 0.40)' : undefined,
             backgroundImage: isDarkModeEnabled
-              ? 'linear-gradient(rgb(2 6 23 / 0.36), rgb(2 6 23 / 0.36))'
+              ? undefined
               : 'linear-gradient(rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.72))',
             backgroundSize: '100% 100%',
             backgroundPosition: 'top left',
