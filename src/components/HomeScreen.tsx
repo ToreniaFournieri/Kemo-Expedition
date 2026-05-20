@@ -8462,12 +8462,9 @@ function ExpeditionTab({
           : undefined;
         const expeditionPaneImageLayerStyle = expeditionPaneBackgroundImage
           ? {
-            backgroundImage: `url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% auto',
-            backgroundPosition: 'center top',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'scroll',
             opacity: isDarkModeEnabled ? 0.34 : 0.34,
+            maskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
@@ -8481,8 +8478,14 @@ function ExpeditionTab({
             }`}
             style={expeditionPaneBackgroundStyle}
           >
-            {expeditionPaneImageLayerStyle ? (
-              <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
+            {expeditionPaneImageLayerStyle && expeditionPaneBackgroundImage ? (
+              <img
+                aria-hidden
+                alt=""
+                src={`${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}`}
+                className="pointer-events-none absolute top-0 left-0 w-full h-auto"
+                style={expeditionPaneImageLayerStyle}
+              />
             ) : null}
             <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
             {/* SpecRef: 8.3 | UI_EXPEDITION | Outer Ring (`###` area) */}
