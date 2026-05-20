@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 33 | 2026/05/20 | Update Party tab runtime UI_PARTY visuals (Spec 8.2): make Party main pane background image fill pane height with preserved aspect ratio (`auto 100%`) anchored to bottom, increase white fog overlay to 45% opacity, and apply 40% transparent member-panel background layer behind party character illustrations. |
 | 0.7.2 | 32 | 2026/05/20 | Implement Party main pane background scope for Party tab (Spec 8.2): move PT background/fog/fade rendering to the dedicated Party main pane area (PT selection + party-member list section) so the image is visible in that upper pane instead of only appearing far below in the tab. |
 | 0.7.2 | 31 | 2026/05/20 | Refine Party tab runtime Party Pane background behavior (Spec 8.2): anchor the PT background image to the pane bottom (`background-position: center bottom`) so the lower edge connects visually toward the adjacent Status Pane while keeping 120% width rendering, aspect-ratio preservation, white fog overlay, and bottom fade. |
 | 0.7.2 | 30 | 2026/05/20 | Update Party tab runtime pane background rendering (Spec 8.2): render Party Pane background image at `120%` width with preserved aspect ratio and add a 30% white fog overlay while keeping the bottom fade-out gradient. |
