@@ -131,6 +131,23 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 - Item Reveal Rule:
   - An item entry is unlocked when the player first encounters an enemy capable of dropping that item.
   - The reveal is triggered at the moment the enemy becomes visible to the player (e.g., during exploration or battle), regardless of whether the item is actually obtained.
+ 
+**Character Roster (味方キャラクター図鑑)**
+- Displays a list of all possible character combinations.
+- Selection Tabs:
+  - Race Icon: 🐺 Lupinian, 🦊 Vulpinian, 😺 Felidian, 🐶 Caninian, 🐻 Ursan, 🦝 Procyonian, 🐰 Leporian, 🦌 Cervin, 🐭 Murid, 🐾Kemoria, 🐋Orcinian, 🐓Avian
+  - Party: PT1, PT2, PT3, PT4, PT5, PT6
+    - Only unlocked parties are visible.
+- Gender: 男, 女, U
+  - U: Unique character (displayed only if a unique character exists)
+- The character image is displayed in the background and updates immediately when the selected character changes.
+- Display the race status summary at the bottom area of the character image.
+  - Base status: 体力:11 力:12 知性:8 精神:7 (Same design as party status pane's base part)
+  - Bonus (ボーナス): ex. 装備+1, 鎧x1.2, 衣x1.4, 盾x1.1, 弓x1.2, 杖x1.2, 氷防x0.67 (Same style as party status pane's bonus part)
+  - 初期アビリティ: defaultAbility
+  - アンロックアビリティ: unlockAbility
+  - Show floating bubble text tooltips for these status fields.
+
 
 **Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.

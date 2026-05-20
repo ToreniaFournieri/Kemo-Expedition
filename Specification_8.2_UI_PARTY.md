@@ -3,12 +3,31 @@
 ### 8.2 UI_PARTY
 - Party tab
 
+- **Party main Pane background image**
+- Party main pane consist of `PT selection pane` and `List of party members pane`. (not including `Status pane` )
+- Display the background image according to the selected Party ID
+  - If PT1, use : /public/background/PT1.png
+  - If PT2, use : /public/background/PT2.png
+  - If PT3, use : /public/background/PT3.png
+  - If PT4, use : /public/background/PT4.png
+  - If PT5, use : /public/background/PT5.png
+  - If PT6, use : /public/background/PT6.png
+  - If the corresponding image file does not exist, render no background image.
+- The background image must fill the Party Pane vertically from top to bottom.
+- Render the background image at 120% zoom.
+- Apply a white fog overlay at 65% opacity over the background image.
+- Preserve the original image aspect ratio without stretching or distortion.
+- Anchor the background image to the bottom of the Party Pane.
+- The image bottom edge should visually connect to the adjacent Status Pane without vertical gap.
+
 #### 8.2.1 Displays
 - Up to 6 parties can exist.
 - Locked parties are not displayed.
 - All unlocked parties are displayed normally and can be selected.
 - If only one Party is unlocked, the Party List is hidden.
 - The Party List becomes visible only when two or more parties are unlocked.
+
+**PT selection pane**
 
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
@@ -22,7 +41,8 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 
 再生の神 (Level: 29, Experience 123450/ 123456)    
 ```
- 
+
+**List of party members pane**
 - List of party members
   - Display the character illustration as the panel background image
     - Panel weidth: 50px
@@ -32,7 +52,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 
   - Background image width: 220% of the panel width
   - Anchor the background image to the bottom-center of the panel.
-
+  - Panel Background: Apply 40% transparency to the member panel background layer behind the character illustration.
   - Show the Main Class, Subclass, and Lineage/Predisposition
 
 ```
@@ -86,7 +106,7 @@ line2: 桃/腕  ← text over background image
       - If /public/character/2_Vulpinian_Male.png is missing → Use /public/character/Vulpinian_Male.png
   - Else: no image
 
-- Status:
+**Status pane**
 - If character has `c.equip_melee`, displays 
 近接攻撃:98 x 4回(x1.00)
 - if character has  `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
@@ -150,9 +170,9 @@ Left-aligned
 
 - Name [edit]
 - Editable `name` field.
-- Toggle selection: `♂` / `♀` Exactly one must be selected (no null state)
-  - If another member in the same party already has the same race, different gender, and `unique_character == false`, that gender option cannot be selected for the current member. (not display text ♂ or ♀ if cannot be selected, just bottun)
-  - If selected character `unique_character == true`, (not display text ♂ or ♀ if cannot be selected, just bottun)
+- Toggle selection: `男` / `女` Exactly one must be selected (no null state)
+  - If another member in the same party already has the same race, different gender, and `unique_character == false`, that gender option cannot be selected for the current member. (not display text 男 or 女 if cannot be selected, just bottun)
+  - If selected character `unique_character == true`, (not display text 男 or 女 if cannot be selected, just bottun)
 - **Default Name Assignment**
   - Trigger: when `Race` is changed.
   - Select a default name randomly from the Potential Default Name Table.

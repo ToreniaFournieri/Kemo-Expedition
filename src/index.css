@@ -120,6 +120,11 @@ body.app-dark {
   background-color: rgb(30 41 59 / 0.92);
 }
 
+
+.theme-dark .party-member-pane-bg {
+  background-color: rgb(30 41 59 / 0.20);
+}
+
 .theme-dark .notification-toast-item {
   border: 1px solid rgb(71 85 105);
   box-shadow: 0 8px 24px rgb(2 6 23 / 0.45);
@@ -204,6 +209,15 @@ body.app-dark {
   border-color: rgb(100 116 139);
 }
 
+
+.theme-dark input.ios-glass-slider {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.theme-dark input.ios-glass-slider:focus {
+  outline-color: transparent;
+}
 .theme-dark select option,
 .theme-dark select optgroup {
   background-color: rgb(15 23 42);
@@ -565,9 +579,16 @@ body {
   box-shadow: none;
 }
 
+.liquid-glass-segmented .ios-glass-button {
+  background-color: transparent;
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .liquid-glass-tab-active {
   border-color: rgb(var(--color-sub) / 0.45) !important;
-  background-color: rgb(var(--color-sub) / 0.14) !important;
+  background-color: rgb(var(--color-sub) / 0.4) !important;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.56),
     0 1px 3px rgb(15 23 42 / 0.2),
@@ -576,7 +597,7 @@ body {
 
 .theme-dark .liquid-glass-tab-active {
   border-color: rgb(var(--color-sub) / 0.42) !important;
-  background-color: rgb(var(--color-sub) / 0.12) !important;
+  background-color: rgb(var(--color-sub) / 0.4) !important;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.2),
     0 1px 3px rgb(2 6 23 / 0.55),

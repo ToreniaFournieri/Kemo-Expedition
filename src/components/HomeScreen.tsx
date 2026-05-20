@@ -5457,6 +5457,7 @@ function PartyTab({
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
+  const [isPartyPaneBackgroundAvailable, setIsPartyPaneBackgroundAvailable] = useState(false);
   const selectedChar = party.characters[selectedCharacter];
   const equippedItems = selectedChar.equipment.filter((item): item is Item => item != null);
   const unlockedRaceAbilities = getUnlockedRaceAbilitiesFromBonuses(equippedItems.flatMap((item) => item.bonuses ?? []));
@@ -5529,6 +5530,24 @@ function PartyTab({
   const prevSelectedCharRef = useRef(selectedCharacter);
   const prevSelectedPartyRef = useRef(selectedPartyIndex);
   const touchDraggingCharacterIndexRef = useRef<number | null>(null);
+  const partyPaneBackgroundImageFileName = useMemo(() => {
+    const partyNumber = selectedPartyIndex + 1;
+    if (partyNumber < 1 || partyNumber > 6) return null;
+    // SpecRef: 8.2 | UI_PARTY | Party Pane background image
+    return `background/PT${partyNumber}.png`;
+  }, [selectedPartyIndex]);
+
+  useEffect(() => {
+    if (!partyPaneBackgroundImageFileName) {
+      setIsPartyPaneBackgroundAvailable(false);
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => setIsPartyPaneBackgroundAvailable(true);
+    image.onerror = () => setIsPartyPaneBackgroundAvailable(false);
+    image.src = `${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName}`;
+  }, [partyPaneBackgroundImageFileName]);
 
   const getReorderedIndex = useCallback((currentIndex: number, fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return currentIndex;
@@ -6192,12 +6211,12 @@ function PartyTab({
     });
   };
 
-  const handleInlineDetailHelpToggle = (
+  function handleInlineDetailHelpToggle(
     key: string,
     title: string,
     description: string,
     event: MouseEvent<HTMLButtonElement>,
-  ) => {
+  ) {
     event.stopPropagation();
     const triggerRect = event.currentTarget.getBoundingClientRect();
     const viewportPadding = 12;
@@ -6220,7 +6239,7 @@ function PartyTab({
       });
       return { key, title, description };
     });
-  };
+  }
 
   const renderInlineBonusEntries = (entries: { key: string; label: string; description: string | null }[]) => {
     if (entries.length === 0) {
@@ -6256,6 +6275,7 @@ function PartyTab({
 
   return (
     <div
+      className="relative overflow-hidden rounded-xl"
       onPointerDown={() => {
         if (showBaseStatHelp) {
           setShowBaseStatHelp(false);
@@ -6291,6 +6311,30 @@ function PartyTab({
           </div>
         </div>
       )}
+      <div className="relative mb-4 overflow-hidden rounded-2xl p-2">
+        {isPartyPaneBackgroundAvailable && partyPaneBackgroundImageFileName && (
+          <>
+            <div
+              // SpecRef: 8.2 | UI_PARTY | Party Pane background image
+              className="pointer-events-none absolute inset-0 z-0"
+              style={{
+                backgroundImage: `linear-gradient(${isDarkModeEnabled ? 'rgb(2 6 23 / 0.34), rgb(2 6 23 / 0.34)' : 'rgb(255 255 255 / 0), rgb(255 255 255 / 0)'}), url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
+                backgroundPosition: 'center bottom',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'auto 120%',
+                opacity: isDarkModeEnabled ? 0.68 : 0.9,
+              }}
+            />
+            <div
+              // SpecRef: 8.2 | UI_PARTY | Party Pane background image
+              className="pointer-events-none absolute inset-0 z-0"
+              style={{
+                backgroundColor: isDarkModeEnabled ? 'rgba(15, 23, 42, 0.40)' : 'rgba(255, 255, 255, 0.56)',
+              }}
+            />
+          </>
+        )}
+        <div className="relative z-20">
       {parties.length >= 2 && (
         // SpecRef: 8.2.1 | Displays | Party List
         <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
@@ -6340,7 +6384,7 @@ function PartyTab({
                   onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 完了
               </button>
@@ -6349,7 +6393,7 @@ function PartyTab({
                   setPendingDeityName(party.deity.name);
                   setEditingDeity(false);
                 }}
-                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
                 取消
               </button>
@@ -6404,7 +6448,7 @@ function PartyTab({
       )}
 
       {/* Character selector */}
-      <div className="liquid-glass-segmented mb-4 grid grid-cols-6 justify-items-center gap-1 rounded-2xl p-1.5">
+      <div className="liquid-glass-segmented mb-0 grid grid-cols-6 justify-items-center gap-1 rounded-2xl p-1.5">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
           const mc = CLASSES.find(cl => cl.id === c.mainClassId)!;
@@ -6475,7 +6519,8 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md">
+              {/* SpecRef: 8.2 | UI_PARTY | List of party members pane */}
+              <div className="party-member-pane-bg relative h-[110px] w-[50px] overflow-visible rounded-xl bg-white/40">
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
@@ -6483,7 +6528,7 @@ function PartyTab({
                     style={{ backgroundImage: `url(${previewImageSrc})` }}
                   />
                 )}
-                <div className="absolute inset-0 z-10 overflow-hidden rounded-md">
+                <div className="absolute inset-0 z-10 overflow-hidden rounded-xl">
                   {!previewImageSrc && (
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
                   )}
@@ -6496,6 +6541,8 @@ function PartyTab({
             </button>
           );
         })}
+      </div>
+      </div>
       </div>
 
       {/* Character details */}
@@ -6598,7 +6645,7 @@ function PartyTab({
                             }`}
                           >
                             <span className="inline-flex h-full w-3 items-center justify-center leading-none">
-                              {shouldShowGenderSymbol ? (gender === 'male' ? '♂' : '♀') : null}
+                              {shouldShowGenderSymbol ? (gender === 'male' ? '男' : '女') : null}
                             </span>
                           </button>
                         );
@@ -6617,7 +6664,7 @@ function PartyTab({
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={showEditConfirm ? saveCharacterEditWithEquipmentReset : completeCharacterEdit}
-                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {showEditConfirm ? '保存する' : '完了'}
               </button>
@@ -6630,7 +6677,7 @@ function PartyTab({
                   setPendingEdits(null);
                   setEditingCharacter(null);
                 }}
-                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700 border border-slate-500' : 'text-gray-600 bg-gray-200'}`}
+                className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
                 {showEditConfirm ? '戻る' : '取消'}
               </button>
@@ -6663,7 +6710,7 @@ function PartyTab({
         {editingCharacter === selectedCharacter && !showEditConfirm ? (
           <div className="space-y-2 text-sm">
             <div>
-              <div className="mt-2 rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+              <div className="mt-2 rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
                   const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
@@ -6698,7 +6745,7 @@ function PartyTab({
                         className={`min-w-0 flex flex-1 items-center justify-center px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
-                            : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                            : `border-gray-200 ${isDisabled ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex h-5 w-5 items-center justify-center">
@@ -6751,7 +6798,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+                    <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
@@ -6796,7 +6843,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                        : 'bg-white/20 text-gray-700 border-gray-200 hover:bg-white/30'
                                     }`}
                                   >
                                     {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
@@ -6827,7 +6874,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+                    <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.length === 0
@@ -6874,7 +6921,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                        : 'bg-white/20 text-gray-700 border-gray-200 hover:bg-white/30'
                                     }`}
                                   >
                                     {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
@@ -6891,7 +6938,7 @@ function PartyTab({
               })()}
             </div>
             <div>
-              <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+              <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
                   const selectedLineage = LINEAGES.find((l) => l.id === selectedLineageId) ?? LINEAGES[0];
@@ -6923,7 +6970,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                                        : `border-gray-200 ${char.isUnique ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
                                     {lineageData.shortName ?? LINEAGE_SHORT_NAMES[lineageId] ?? lineageData.name}
@@ -6940,7 +6987,7 @@ function PartyTab({
               </div>
             </div>
             <div>
-              <div className="rounded border border-gray-200 bg-white/60 backdrop-blur-[1px] p-2 text-xs">
+              <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
                   const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
                   const selectedPredisposition = PREDISPOSITIONS.find((p) => p.id === selectedPredispositionId) ?? PREDISPOSITIONS[0];
@@ -6973,7 +7020,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                                        : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
                                     {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
@@ -7947,7 +7994,8 @@ function PartyTab({
               </div>
             </div>
             {/* Category group tabs */}
-            <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
+            <div className="mb-1 text-[11px] text-gray-500">Only unlocked parties are visible.</div>
+          <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
               {availableCategoryGroups.map(group => (
                 <div key={group.id} className="flex flex-col">
                   <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
@@ -8451,7 +8499,7 @@ function ExpeditionTab({
           ? {
             backgroundColor: isDarkModeEnabled ? 'rgb(15 23 42 / 0.40)' : undefined,
             backgroundImage: isDarkModeEnabled
-              ? 'linear-gradient(rgb(2 6 23 / 0.36), rgb(2 6 23 / 0.36))'
+              ? undefined
               : 'linear-gradient(rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.72))',
             backgroundSize: '100% 100%',
             backgroundPosition: 'top left',
@@ -8461,12 +8509,9 @@ function ExpeditionTab({
           : undefined;
         const expeditionPaneImageLayerStyle = expeditionPaneBackgroundImage
           ? {
-            backgroundImage: `url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% auto',
-            backgroundPosition: 'center top',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'scroll',
             opacity: isDarkModeEnabled ? 0.34 : 0.34,
+            maskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
@@ -8480,10 +8525,16 @@ function ExpeditionTab({
             }`}
             style={expeditionPaneBackgroundStyle}
           >
-            {expeditionPaneImageLayerStyle ? (
-              <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
+            {expeditionPaneImageLayerStyle && expeditionPaneBackgroundImage ? (
+              <img
+                aria-hidden
+                alt=""
+                src={`${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}`}
+                className="pointer-events-none absolute top-0 left-0 w-full h-auto"
+                style={expeditionPaneImageLayerStyle}
+              />
             ) : null}
-            <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
+            <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? '' : 'bg-white/74'}`}>
             {/* SpecRef: 8.3 | UI_EXPEDITION | Outer Ring (`###` area) */}
             {/* SpecRef: 8.3 | UI_EXPEDITION | Inner Ring (`###` area) */}
             <button
@@ -10661,7 +10712,7 @@ function SettingTab({
   partyCount: number;
   onPartyUnlock: () => void;
 }) {
-  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
+  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
   const CLAIRVOYANCE_PARTY_STORAGE_KEY = 'kemo-expedition.divine-bureau.clairvoyance-party-expanded';
@@ -10674,6 +10725,7 @@ function SettingTab({
     clairvoyance: false,
     glossary: false,
     itemCompendium: false,
+    characterRoster: false,
     bestiary: false,
     superRare: false,
     feedback: false,
@@ -10692,6 +10744,7 @@ function SettingTab({
         clairvoyance: parsed.clairvoyance === true,
         glossary: parsed.glossary === true,
         itemCompendium: parsed.itemCompendium === true,
+        characterRoster: parsed.characterRoster === true,
         bestiary: parsed.bestiary === true,
         superRare: parsed.superRare === true,
         feedback: parsed.feedback === true,
@@ -11217,6 +11270,152 @@ function SettingTab({
     )
     .slice()
     .sort((a, b) => b.id - a.id);
+  const CHARACTER_ROSTER_RACES: Array<{ id: RaceId; raceName: string }> = [
+    { id: 'lupinian', raceName: 'Lupinian' },
+    { id: 'vulpinian', raceName: 'Vulpinian' },
+    { id: 'felidian', raceName: 'Felidian' },
+    { id: 'caninian', raceName: 'Caninian' },
+    { id: 'ursan', raceName: 'Ursan' },
+    { id: 'procyonian', raceName: 'Procyonian' },
+    { id: 'leporian', raceName: 'Leporian' },
+    { id: 'cervin', raceName: 'Cervin' },
+    { id: 'murid', raceName: 'Murid' },
+    { id: 'kemoria', raceName: 'Kemoria' },
+    { id: 'orcinian', raceName: 'Orcinian' },
+    { id: 'avian', raceName: 'Avian' },
+  ];
+  const [characterRosterRaceId, setCharacterRosterRaceId] = useState<RaceId>('lupinian');
+  const [characterRosterPartyId, setCharacterRosterPartyId] = useState<number>(1);
+  const [characterRosterGenderFilter, setCharacterRosterGenderFilter] = useState<'male' | 'female' | 'unique'>('male');
+
+  const rosterCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
+  const availableRosterImageFiles = useMemo(() => {
+    return new Set(
+      Object.keys(rosterCharacterImageModules)
+        .map((modulePath) => modulePath.split('/').pop())
+        .filter((fileName): fileName is string => typeof fileName === 'string' && fileName.length > 0),
+    );
+  }, [rosterCharacterImageModules]);
+  const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
+    const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
+      'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
+      'マーレ': 'Unique_Merle.png', 'プチーツァ': 'Unique_Puchitsa.png', '蒼牙破': 'Unique_Souga-ha.png', 'レナード': 'Unique_Leonard.png',
+      '葉隠': 'Unique_Hagakure.png', 'フィン': 'Unique_Finn.png', 'オルカ': 'Unique_Orca.png', 'ミシュカ': 'Unique_Mishka.png',
+    };
+    if (character.isUnique) return uniquePartyMemberImageByName[character.name] ?? null;
+    const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === character.raceId);
+    const genderLabel = character.gender === 'male' ? 'Male' : character.gender === 'female' ? 'Female' : null;
+    if (!raceMeta || !genderLabel) return null;
+    return `${partyId}_${raceMeta.raceName}_${genderLabel}.png`;
+  };
+  const selectedRosterParty = gameState.parties.find((party) => party.id === characterRosterPartyId) ?? gameState.parties[0];
+  const selectedRosterRace = RACES.find((race) => race.id === characterRosterRaceId);
+  const activeRosterCharacter = characterRosterGenderFilter === 'unique'
+    ? (selectedRosterParty?.characters ?? []).find((character) => character.raceId === characterRosterRaceId && character.isUnique) ?? null
+    : {
+      raceId: characterRosterRaceId,
+      gender: characterRosterGenderFilter,
+      isUnique: false,
+      name: '',
+    } as Character;
+  const selectedRosterImageFile = activeRosterCharacter
+    ? ((): string | null => {
+      const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === characterRosterRaceId);
+      if (characterRosterGenderFilter === 'unique') {
+        return getCharacterRosterImageFileName(activeRosterCharacter, selectedRosterParty?.id ?? 1);
+      }
+      if (!raceMeta) return null;
+      const genderLabel = characterRosterGenderFilter === 'male' ? 'Male' : 'Female';
+      const partySpecificFile = `${selectedRosterParty?.id ?? 1}_${raceMeta.raceName}_${genderLabel}.png`;
+      const fallbackFile = `${raceMeta.raceName}_${genderLabel}.png`;
+      if (availableRosterImageFiles.has(partySpecificFile)) return partySpecificFile;
+      if (availableRosterImageFiles.has(fallbackFile)) return fallbackFile;
+      return null;
+    })()
+    : null;
+  const selectedRosterImageSrc = selectedRosterImageFile ? `${import.meta.env.BASE_URL}character/${selectedRosterImageFile}` : null;
+  const hasRosterGenderImage = useCallback((partyId: number, raceId: RaceId, gender: 'male' | 'female'): boolean => {
+    const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === raceId);
+    if (!raceMeta) return false;
+    const genderLabel = gender === 'male' ? 'Male' : 'Female';
+    const partySpecificFile = `${partyId}_${raceMeta.raceName}_${genderLabel}.png`;
+    const fallbackFile = `${raceMeta.raceName}_${genderLabel}.png`;
+    return availableRosterImageFiles.has(partySpecificFile) || availableRosterImageFiles.has(fallbackFile);
+  }, [CHARACTER_ROSTER_RACES, availableRosterImageFiles]);
+
+  const rosterBonusStatusEntries = (selectedRosterRace?.bonuses ?? [])
+    .filter((bonus) => bonus.type !== 'ability')
+    .map((bonus, index) => buildInlineBonusEntry('roster-race-bonus', selectedRosterRace?.id ?? 'none', bonus, index))
+    .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+
+  const hasRosterUniqueCharacter = useCallback((partyId: number, raceId: RaceId): boolean => {
+    const party = gameState.parties.find((entry) => entry.id === partyId);
+    return (party?.characters ?? []).some((character) => character.raceId === raceId && character.isUnique);
+  }, [gameState.parties]);
+  const visibleRosterRaceIds = useMemo(() => (
+    CHARACTER_ROSTER_RACES
+      .filter((race) => gameState.parties.some((party) =>
+        hasRosterGenderImage(party.id, race.id, 'male')
+        || hasRosterGenderImage(party.id, race.id, 'female')
+        || hasRosterUniqueCharacter(party.id, race.id),
+      ))
+      .map((race) => race.id)
+  ), [CHARACTER_ROSTER_RACES, gameState.parties, hasRosterGenderImage, hasRosterUniqueCharacter]);
+  const visibleRosterGenders = useMemo(() => {
+    const partyId = selectedRosterParty?.id ?? 1;
+    const genders: Array<'male' | 'female' | 'unique'> = [];
+    if (hasRosterGenderImage(partyId, characterRosterRaceId, 'male')) genders.push('male');
+    if (hasRosterGenderImage(partyId, characterRosterRaceId, 'female')) genders.push('female');
+    if (hasRosterUniqueCharacter(partyId, characterRosterRaceId)) genders.push('unique');
+    return genders;
+  }, [characterRosterRaceId, hasRosterGenderImage, hasRosterUniqueCharacter, selectedRosterParty?.id]);
+  useEffect(() => {
+    if (visibleRosterRaceIds.length === 0) return;
+    if (!visibleRosterRaceIds.includes(characterRosterRaceId)) {
+      setCharacterRosterRaceId(visibleRosterRaceIds[0]);
+    }
+  }, [characterRosterRaceId, visibleRosterRaceIds]);
+  useEffect(() => {
+    if (visibleRosterGenders.length === 0) return;
+    if (!visibleRosterGenders.includes(characterRosterGenderFilter)) {
+      setCharacterRosterGenderFilter(visibleRosterGenders[0]);
+    }
+  }, [characterRosterGenderFilter, visibleRosterGenders]);
+  const [activeRosterStatusBubble, setActiveRosterStatusBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    maxWidth: number;
+  } | null>(null);
+
+  const handleRosterStatusBubbleToggle = (
+    bubbleKey: string,
+    bubbleText: string,
+    targetElement: HTMLElement,
+  ) => {
+    if (activeRosterStatusBubble?.key === bubbleKey) {
+      setActiveRosterStatusBubble(null);
+      return;
+    }
+
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleMaxWidth,
+    );
+
+    setActiveRosterStatusBubble({
+      key: bubbleKey,
+      text: bubbleText,
+      top: triggerRect.bottom + 8,
+      left,
+      maxWidth: bubbleMaxWidth,
+    });
+  };
+
   const revealedGlossaryAbilityIds = useMemo(
     () => new Set(gameState.global.revealedGlossaryAbilityIds ?? []),
     [gameState.global.revealedGlossaryAbilityIds],
@@ -11678,6 +11877,9 @@ function SettingTab({
           setActiveAbilityHelp(null);
           setAbilityHelpPosition(null);
         }
+        if (activeRosterStatusBubble) {
+          setActiveRosterStatusBubble(null);
+        }
       }}
     >
       {activeAbilityHelp && abilityHelpPosition && (
@@ -11695,7 +11897,7 @@ function SettingTab({
           </div>
         </div>
       )}
-      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
@@ -12103,6 +12305,141 @@ function SettingTab({
             );
           })}
         </div>
+        </>}
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+        {renderDivineBureauPanelHeader('characterRoster', '味方キャラクター図鑑')}
+        {divineBureauPanelExpanded.characterRoster && <>
+          {activeRosterStatusBubble ? (
+            <div
+              className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+              style={{
+                top: activeRosterStatusBubble.top,
+                left: activeRosterStatusBubble.left,
+                width: 'max-content',
+                maxWidth: activeRosterStatusBubble.maxWidth,
+              }}
+            >
+              <div className="text-xs text-gray-700 leading-snug break-words">
+                {activeRosterStatusBubble.text}
+              </div>
+            </div>
+          ) : null}
+          {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Character Roster (味方キャラクター図鑑) */}
+          <div className="mt-3 mb-2 overflow-x-auto pb-1">
+            <div className="flex w-max min-w-full flex-nowrap gap-2">
+              {CHARACTER_ROSTER_RACES.filter((race) => visibleRosterRaceIds.includes(race.id)).map((race) => (
+                <button
+                  key={race.id}
+                  onClick={() => setCharacterRosterRaceId(race.id)}
+                  className={`shrink-0 min-w-0 px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterRaceId === race.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                  title={race.raceName}
+                >
+                  <RaceIcon race={RACES.find((r) => r.id === race.id) ?? RACES[0]} className="h-4 w-4" />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
+            {gameState.parties.map((party) => (
+              <button key={party.id} onClick={() => setCharacterRosterPartyId(party.id)} className={`px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterPartyId === party.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
+                PT{party.id}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 mb-3">
+            {visibleRosterGenders.includes('male') && (
+              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>男</button>
+            )}
+            {visibleRosterGenders.includes('female') && (
+              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>女</button>
+            )}
+            {visibleRosterGenders.includes('unique') && (
+              <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>
+            )}
+          </div>
+          {activeRosterCharacter && (
+            <div
+              className="relative overflow-visible rounded border border-gray-200 bg-white p-2 flex flex-col"
+              style={{ minHeight: '500px' }}
+            >
+              {selectedRosterImageSrc ? (
+                <img
+                  src={selectedRosterImageSrc}
+                  alt={activeRosterCharacter.name}
+                  className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] max-w-none h-auto"
+                />
+              ) : null}
+              <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
+              <div className="relative z-10 mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/25 rounded px-2 py-1 space-y-1">
+                <div className="font-semibold">種族ステータス</div>
+                <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', `体力:${selectedRosterRace?.stats.vitality ?? '-'}  力:${selectedRosterRace?.stats.strength ?? '-'}  知性:${selectedRosterRace?.stats.intelligence ?? '-'}  精神:${selectedRosterRace?.stats.mind ?? '-'}`, event.currentTarget); }}>
+                  <span className="grid grid-cols-4 gap-1">
+                    <span className="base-stat-chip">体力:{selectedRosterRace?.stats.vitality ?? '-'}</span>
+                    <span className="base-stat-chip">力:{selectedRosterRace?.stats.strength ?? '-'}</span>
+                    <span className="base-stat-chip">知性:{selectedRosterRace?.stats.intelligence ?? '-'}</span>
+                    <span className="base-stat-chip">精神:{selectedRosterRace?.stats.mind ?? '-'}</span>
+                  </span>
+                </button>
+                <div className="text-xs text-gray-900 mt-1 leading-5">
+                  <span className="break-words leading-5 font-medium">ボーナス: </span>
+                  {rosterBonusStatusEntries.length > 0 ? (
+                    rosterBonusStatusEntries.map((entry, index) => (
+                      <span key={entry.key}>
+                        {index > 0 && <span>, </span>}
+                        <button
+                          type="button"
+                          onPointerDown={(event) => event.stopPropagation()}
+                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? 'このボーナスの説明は未設定です。'}`, event.currentTarget); }}
+                          className="text-left hover:underline"
+                          title="タップで詳細を表示"
+                        >
+                          {entry.label}
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span>-</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  title="初期から利用できる種族アビリティです。"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRosterStatusBubbleToggle(
+                      'roster-default-ability',
+                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : '初期アビリティ: -',
+                      event.currentTarget,
+                    );
+                  }}
+                >
+                  初期アビリティ: {selectedRosterRace?.defaultAbility?.name ?? '-'}
+                </button>
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  title="アンロック条件達成後に開放される種族アビリティです。"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRosterStatusBubbleToggle(
+                      'roster-unlock-ability',
+                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : 'アンロックアビリティ: -',
+                      event.currentTarget,
+                    );
+                  }}
+                >
+                  アンロックアビリティ: {selectedRosterRace?.unlockAbility?.name ?? '-'}
+                </button>
+              </div>
+            </div>
+          )}
+          {!activeRosterCharacter && <div className="text-xs text-gray-500">該当キャラクターなし</div>}
+          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">画像データなし</div>}
         </>}
       </div>
 
