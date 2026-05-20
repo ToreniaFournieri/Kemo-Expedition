@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 28 | 2026/05/20 | Implement Party tab runtime pane background image by selected Party ID (Spec 8.2): map PT1–PT6 to `/public/background/PT1.png`…`PT6.png`, render only when the image file exists, and show no background when missing. |
 | 0.7.2 | 27 | 2026/05/20 | Fix Expedition tab dark-mode difficulty slider background (Spec 8.3): force `input.ios-glass-slider` background/border/focus outline to transparent in dark theme so no opaque black rectangle appears behind the bar. |
 | 0.7.2 | 26 | 2026/05/20 | Refine Expedition tab background fade behavior (Spec 8.3): render dungeon background as an absolute `<img>` layer and apply fade mask to the image itself so only the image bottom fades regardless of pane height. |
 | 0.7.2 | 25 | 2026/05/20 | Refine Expedition tab background fade (Spec 8.3): replace the bottom mask with an explicit bottom white/dark gradient overlay on top of each dungeon image so the fade is clearly visible across long pane heights. |
