@@ -53,7 +53,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 
   - Background image width: 220% of the panel width
   - Anchor the background image to the bottom-center of the panel.
-
+  - Panel Background: Apply 40% transparency to the member panel background layer behind the character illustration.
   - Show the Main Class, Subclass, and Lineage/Predisposition
 
 ```
