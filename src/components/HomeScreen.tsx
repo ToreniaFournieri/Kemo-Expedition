@@ -8468,6 +8468,8 @@ function ExpeditionTab({
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'scroll',
             opacity: isDarkModeEnabled ? 0.34 : 0.34,
+            maskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
