@@ -8462,12 +8462,14 @@ function ExpeditionTab({
           : undefined;
         const expeditionPaneImageLayerStyle = expeditionPaneBackgroundImage
           ? {
-            backgroundImage: `url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% auto',
-            backgroundPosition: 'center top',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'scroll',
-            opacity: isDarkModeEnabled ? 0.34 : 0.34,
+            backgroundImage: isDarkModeEnabled
+              ? `linear-gradient(to bottom, rgb(15 23 42 / 0) 0%, rgb(15 23 42 / 0.08) 55%, rgb(15 23 42 / 0.42) 78%, rgb(15 23 42 / 0.86) 100%), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`
+              : `linear-gradient(to bottom, rgb(255 255 255 / 0) 0%, rgb(255 255 255 / 0.12) 55%, rgb(255 255 255 / 0.52) 78%, rgb(255 255 255 / 0.92) 100%), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
+            backgroundSize: '100% 100%, 100% auto',
+            backgroundPosition: 'top left, center top',
+            backgroundRepeat: 'no-repeat, no-repeat',
+            backgroundAttachment: 'scroll, scroll',
+            opacity: isDarkModeEnabled ? 0.36 : 0.36,
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
