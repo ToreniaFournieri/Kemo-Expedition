@@ -6337,7 +6337,7 @@ function PartyTab({
         <div className="relative z-20">
       {parties.length >= 2 && (
         // SpecRef: 8.2.1 | Displays | Party List
-        <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
+        <div className="liquid-glass-segmented party-pt-segmented mb-4 flex gap-1 rounded-2xl p-1">
           {parties.map((partyEntry, partyIndex) => {
             const isSelected = partyIndex === selectedPartyIndex;
             return (

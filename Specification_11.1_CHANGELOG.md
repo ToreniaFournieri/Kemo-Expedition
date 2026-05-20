@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 3 | 2026/05/20 | Refine Party tab PT selector pane visibility (Spec 8.2): make PT1–PT6 selection panes 10% more opaque in both light and dark themes, including selected state fill. |
 | 0.7.3 | 2 | 2026/05/20 | Refine Divine Bureau Character Roster image scaling at wider mobile widths (Spec 8.6): cap roster character image max width to 507px (390px pane baseline × 130%) so 500px layouts no longer hide controls while preserving intentional overflow. |
 | 0.7.3 | 1 | 2026/05/20 | Prepare v0.7.3 release: bump app version to `v0.7.3` and reset build number to `1`. |
 | 0.7.2 | 43 | 2026/05/20 | Refine Party tab dark-mode character pane tint (Spec 8.2): change pane override color from bright white tint to subtler slate tint `rgb(30 41 59 / 0.20)` to keep artwork visible without whitening. |
