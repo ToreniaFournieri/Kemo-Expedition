@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 30 | 2026/05/20 | Update Party tab runtime pane background rendering (Spec 8.2): render Party Pane background image at `120%` width with preserved aspect ratio and add a 30% white fog overlay while keeping the bottom fade-out gradient. |
 | 0.7.2 | 29 | 2026/05/20 | Update Party tab runtime pane background rendering (Spec 8.2): force background image to fit full Party Pane width with preserved aspect ratio (`100% auto`) and apply a vertical bottom transparency fade so the image gradually fades out toward the pane bottom. |
 | 0.7.2 | 28 | 2026/05/20 | Implement Party tab runtime pane background image by selected Party ID (Spec 8.2): map PT1–PT6 to `/public/background/PT1.png`…`PT6.png`, render only when the image file exists, and show no background when missing. |
 | 0.7.2 | 27 | 2026/05/20 | Fix Expedition tab dark-mode difficulty slider background (Spec 8.3): force `input.ios-glass-slider` background/border/focus outline to transparent in dark theme so no opaque black rectangle appears behind the bar. |
