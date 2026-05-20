@@ -6574,7 +6574,7 @@ function PartyTab({
               }}
             />
             <div
-              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/25' : 'bg-white/30'}`}
+              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/5' : 'bg-white/30'}`}
               aria-hidden="true"
             />
           </>
