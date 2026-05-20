@@ -3,6 +3,16 @@
 ### 8.2 UI_PARTY
 - Party tab
 
+- **Party Pane background image**
+- Display the background image according to the selected Party ID
+  - If PT1, use : /public/background/PT1.png
+  - If PT2, use : /public/background/PT2.png
+  - If PT3, use : /public/background/PT3.png
+  - If PT4, use : /public/background/PT4.png
+  - If PT5, use : /public/background/PT5.png
+  - If PT6, use : /public/background/PT6.png
+  - If the corresponding image file does not exist, render no background image.
+
 #### 8.2.1 Displays
 - Up to 6 parties can exist.
 - Locked parties are not displayed.
