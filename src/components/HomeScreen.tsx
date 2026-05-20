@@ -6302,7 +6302,7 @@ function PartyTab({
             className="pointer-events-none absolute inset-0 z-0"
             style={{
               backgroundImage: `url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
-              backgroundPosition: 'center top',
+              backgroundPosition: 'center bottom',
               backgroundRepeat: 'no-repeat',
               backgroundSize: '120% auto',
               maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
