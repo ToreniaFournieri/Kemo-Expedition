@@ -6321,18 +6321,14 @@ function PartyTab({
                 backgroundImage: `url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
                 backgroundPosition: 'center bottom',
                 backgroundRepeat: 'no-repeat',
-                backgroundSize: 'auto 100%',
-                maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
+                backgroundSize: 'auto 110%',
               }}
             />
             <div
               // SpecRef: 8.2 | UI_PARTY | Party Pane background image
               className="pointer-events-none absolute inset-0 z-0"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.45)',
-                maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
+                backgroundColor: 'rgba(255, 255, 255, 0.65)',
               }}
             />
           </>
