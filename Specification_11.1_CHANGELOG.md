@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 24 | 2026/05/20 | Refine Expedition tab party pane background rendering (Spec 8.3): apply a bottom fade-out mask to dungeon background images so the lower area transitions naturally into the pane overlay. |
 | 0.7.2 | 23 | 2026/05/20 | Refine Party Character Edit mode selector readability (Spec 8.2.3): further increase unselected selector button opacity/contrast to `bg-white/20` with darker label text so short labels remain legible over bright character artwork. |
 | 0.7.2 | 22 | 2026/05/20 | Refine Party Character Edit mode selector readability (Spec 8.2.3): increase unselected Race/Main Class/Sub Class/Lineage/Predisposition button opacity by applying a subtle white tint (`bg-white/10`) so shorthand buttons like `狩`/`砂`/`内` appear less transparent. |
 | 0.7.2 | 21 | 2026/05/20 | Refine Party Character Edit mode button transparency (Spec 8.2.3): switch unselected Race/Main Class/Sub Class/Lineage/Predisposition selector buttons to transparent backgrounds so character artwork remains visible behind the edit controls. |
