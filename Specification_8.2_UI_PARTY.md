@@ -3,7 +3,8 @@
 ### 8.2 UI_PARTY
 - Party tab
 
-- **Party Pane background image**
+- **Party main Pane background image**
+- Party main pane consist of `PT selection pane` and `List of party members pane`. (not including `Status pane` )
 - Display the background image according to the selected Party ID
   - If PT1, use : /public/background/PT1.png
   - If PT2, use : /public/background/PT2.png
@@ -27,6 +28,8 @@
 - If only one Party is unlocked, the Party List is hidden.
 - The Party List becomes visible only when two or more parties are unlocked.
 
+**PT selection pane**
+
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
 ```
@@ -39,7 +42,8 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 
 再生の神 (Level: 29, Experience 123450/ 123456)    
 ```
- 
+
+**List of party members pane**
 - List of party members
   - Display the character illustration as the panel background image
     - Panel weidth: 50px
@@ -103,7 +107,7 @@ line2: 桃/腕  ← text over background image
       - If /public/character/2_Vulpinian_Male.png is missing → Use /public/character/Vulpinian_Male.png
   - Else: no image
 
-- Status:
+**Status pane**
 - If character has `c.equip_melee`, displays 
 近接攻撃:98 x 4回(x1.00)
 - if character has  `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
