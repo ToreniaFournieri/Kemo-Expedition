@@ -8462,14 +8462,9 @@ function ExpeditionTab({
           : undefined;
         const expeditionPaneImageLayerStyle = expeditionPaneBackgroundImage
           ? {
-            backgroundImage: isDarkModeEnabled
-              ? `linear-gradient(to bottom, rgb(15 23 42 / 0) 0%, rgb(15 23 42 / 0.08) 55%, rgb(15 23 42 / 0.42) 78%, rgb(15 23 42 / 0.86) 100%), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`
-              : `linear-gradient(to bottom, rgb(255 255 255 / 0) 0%, rgb(255 255 255 / 0.12) 55%, rgb(255 255 255 / 0.52) 78%, rgb(255 255 255 / 0.92) 100%), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% 100%, 100% auto',
-            backgroundPosition: 'top left, center top',
-            backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundAttachment: 'scroll, scroll',
-            opacity: isDarkModeEnabled ? 0.36 : 0.36,
+            opacity: isDarkModeEnabled ? 0.34 : 0.34,
+            maskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 72%, rgb(0 0 0 / 0) 100%)',
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
@@ -8483,8 +8478,14 @@ function ExpeditionTab({
             }`}
             style={expeditionPaneBackgroundStyle}
           >
-            {expeditionPaneImageLayerStyle ? (
-              <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
+            {expeditionPaneImageLayerStyle && expeditionPaneBackgroundImage ? (
+              <img
+                aria-hidden
+                alt=""
+                src={`${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}`}
+                className="pointer-events-none absolute top-0 left-0 w-full h-auto"
+                style={expeditionPaneImageLayerStyle}
+              />
             ) : null}
             <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
             {/* SpecRef: 8.3 | UI_EXPEDITION | Outer Ring (`###` area) */}
