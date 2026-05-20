@@ -111,6 +111,29 @@ Cloth:   silk chiffon
 | 🦌 Cervin | White-tailed Deer + Reindeer | Star Choir Herald | Constellation Priest | Clear Sky Blue | Snow White | Lapis Lazuli | Elegant upward-reaching pose |
 | 🐭 Murid | Dormouse | Dream Observatory Apprentice | Sleepy Astrologer | Cocoa Ash | Pale Linen | Moonlight Amber | Holding tiny floating lantern while drifting |
 
+- prompt (indivisual)
+
+```
+Let’s make a character image
+
+# PT6 — Leporian Moon Palace
+
+| Race | Breed and fur color | Palace Archetype | Cloth Main Color A | Cloth Main Color B | Accent Color C | Pose Direction |
+|---|---|---|---|---|---|---|
+| 🐻 Ursan | Tsukinowaguma | Moon Forge Guardian | Palace Bastion Knight | Ash Titanium | Warm Stone | Ember Gold | Heavy protective stance with cape drifting |
+
+Cloth:   silk chiffon
+Gender: female
+
+Young, very small bust, Diagonal composition, right to left, looking at camera, with exposed midriff.
+
+Simple kemono anime eyes with oversized rounded pupils, thick black feminine upper eyelids, a large centered white oval catchlight inside each pupil, minimal iris rendering, mascot-like expression, flat-color eye style
+
+Background is white and only the character. 
+keeping the entire character comfortably inside the frame
+No human-like hair, flat color, no outlines
+```
+
 #### 2.2.1 Potential default name for player side characters
 
 - Trigger: when race is changed.
