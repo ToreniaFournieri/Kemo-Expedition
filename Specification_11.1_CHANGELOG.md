@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.7.2 | 40 | 2026/05/20 | Refine Party tab dark-mode pane transparency (Spec 8.2): remove dark-only overlay filters from the Party main pane background and character detail pane so background scenery remains clearly visible in dark mode while preserving the light-mode readability mask. |
 | 0.7.2 | 39 | 2026/05/20 | Refine Party tab Party main pane background filter style (Spec 8.2): reduce fogginess by replacing heavy white fog with expedition-style dark-mode filtering, lower image opacity, and apply a subtler light-mode overlay for clearer artwork visibility. |
 | 0.7.2 | 38 | 2026/05/20 | Fix Party tab character list pane corner alignment (Spec 8.2): unify inner fog/background layer corner radius with the white glass border by changing member tile radii from `rounded-md` to `rounded-xl`. |
 | 0.7.2 | 37 | 2026/05/20 | Update Party tab runtime Party Pane background image zoom (Spec 8.2): render Party main pane background at 120% (`auto 120%`) while keeping bottom anchoring and white fog overlay. |
