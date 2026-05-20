@@ -8534,7 +8534,7 @@ function ExpeditionTab({
                 style={expeditionPaneImageLayerStyle}
               />
             ) : null}
-            <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
+            <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? '' : 'bg-white/74'}`}>
             {/* SpecRef: 8.3 | UI_EXPEDITION | Outer Ring (`###` area) */}
             {/* SpecRef: 8.3 | UI_EXPEDITION | Inner Ring (`###` area) */}
             <button

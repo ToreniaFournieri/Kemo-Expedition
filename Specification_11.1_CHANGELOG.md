@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 41 | 2026/05/20 | Refine Expedition tab dark-mode party pane readability (Spec 8.3): remove the inner content-wrapper dark fill class (`bg-slate-900/18`) so dark mode no longer adds this extra veil over the background image. |
 | 0.7.2 | 40 | 2026/05/20 | Refine Expedition tab dark-mode party pane background overlay (Spec 8.3): remove the explicit dark linear-gradient tint layer from `expeditionPaneBackgroundStyle.backgroundImage` so pane translucency better reveals the background image. |
 | 0.7.2 | 39 | 2026/05/20 | Refine Party tab Party main pane background filter style (Spec 8.2): reduce fogginess by replacing heavy white fog with expedition-style dark-mode filtering, lower image opacity, and apply a subtler light-mode overlay for clearer artwork visibility. |
 | 0.7.2 | 38 | 2026/05/20 | Fix Party tab character list pane corner alignment (Spec 8.2): unify inner fog/background layer corner radius with the white glass border by changing member tile radii from `rounded-md` to `rounded-xl`. |
