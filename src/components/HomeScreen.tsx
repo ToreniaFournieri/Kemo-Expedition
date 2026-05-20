@@ -8499,7 +8499,7 @@ function ExpeditionTab({
           ? {
             backgroundColor: isDarkModeEnabled ? 'rgb(15 23 42 / 0.40)' : undefined,
             backgroundImage: isDarkModeEnabled
-              ? 'linear-gradient(rgb(2 6 23 / 0.36), rgb(2 6 23 / 0.36))'
+              ? undefined
               : 'linear-gradient(rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.72))',
             backgroundSize: '100% 100%',
             backgroundPosition: 'top left',
@@ -8534,7 +8534,7 @@ function ExpeditionTab({
                 style={expeditionPaneImageLayerStyle}
               />
             ) : null}
-            <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
+            <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? '' : 'bg-white/74'}`}>
             {/* SpecRef: 8.3 | UI_EXPEDITION | Outer Ring (`###` area) */}
             {/* SpecRef: 8.3 | UI_EXPEDITION | Inner Ring (`###` area) */}
             <button
