@@ -6698,7 +6698,7 @@ function PartyTab({
                         className={`min-w-0 flex flex-1 items-center justify-center px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
-                            : `border-gray-200 ${isDisabled ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                            : `border-gray-200 ${isDisabled ? 'bg-transparent text-gray-400' : 'bg-transparent text-gray-600 hover:bg-white/20'}`
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex h-5 w-5 items-center justify-center">
@@ -6796,7 +6796,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                        : 'bg-transparent text-gray-600 border-gray-200 hover:bg-white/20'
                                     }`}
                                   >
                                     {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
@@ -6874,7 +6874,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                        : 'bg-transparent text-gray-600 border-gray-200 hover:bg-white/20'
                                     }`}
                                   >
                                     {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
@@ -6923,7 +6923,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                                        : `border-gray-200 ${char.isUnique ? 'bg-transparent text-gray-400' : 'bg-transparent text-gray-600 hover:bg-white/20'}`
                                     }`}
                                   >
                                     {lineageData.shortName ?? LINEAGE_SHORT_NAMES[lineageId] ?? lineageData.name}
@@ -6973,7 +6973,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                                        : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-transparent text-gray-600 hover:bg-white/20'}`
                                     }`}
                                   >
                                     {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
