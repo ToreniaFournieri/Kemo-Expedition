@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 43 | 2026/05/20 | Refine Party tab dark-mode character pane tint (Spec 8.2): change pane override color from bright white tint to subtler slate tint `rgb(30 41 59 / 0.20)` to keep artwork visible without whitening. |
+| 0.7.2 | 42 | 2026/05/20 | Fix Party tab dark-mode character pane translucency (Spec 8.2): exempt party member pane tiles from the global dark `bg-white/*` override so `bg-white/40` remains translucent and background images stay visible. |
 | 0.7.2 | 41 | 2026/05/20 | Refine Expedition tab dark-mode party pane readability (Spec 8.3): remove the inner content-wrapper dark fill class (`bg-slate-900/18`) so dark mode no longer adds this extra veil over the background image. |
 | 0.7.2 | 40 | 2026/05/20 | Refine Expedition tab dark-mode party pane background overlay (Spec 8.3): remove the explicit dark linear-gradient tint layer from `expeditionPaneBackgroundStyle.backgroundImage` so pane translucency better reveals the background image. |
 | 0.7.2 | 39 | 2026/05/20 | Refine Party tab Party main pane background filter style (Spec 8.2): reduce fogginess by replacing heavy white fog with expedition-style dark-mode filtering, lower image opacity, and apply a subtler light-mode overlay for clearer artwork visibility. |

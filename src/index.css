@@ -120,6 +120,11 @@ body.app-dark {
   background-color: rgb(30 41 59 / 0.92);
 }
 
+
+.theme-dark .party-member-pane-bg {
+  background-color: rgb(30 41 59 / 0.20);
+}
+
 .theme-dark .notification-toast-item {
   border: 1px solid rgb(71 85 105);
   box-shadow: 0 8px 24px rgb(2 6 23 / 0.45);
