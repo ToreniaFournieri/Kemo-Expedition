@@ -94,6 +94,22 @@
 | Murid | 🐭 Mouse | Long-Haired Fancy Mouse |
 
 
+**PT6 — Leporian Moon Palace**
+
+Fantasy Rococo Moon Kingdom
+Cloth:   silk chiffon
+
+| Race | Breed | Palace Archetype | Role Theme | Main Color A | Main Color B | Accent Color C | Pose Direction |
+|---|---|---|---|---|---|---|---|
+| 🐺 Lupinian | Maned Wolf | Lunar Pathfinder | Moon Route Cartographer | Burnt Crimson | Pale Titanium | Electric Aqua | Cloak sweeping backward while pointing toward stars |
+| 🦊 Vulpinian | Fennec Fox | Court Illusionist | Mirage Ballroom Mage | Velvet Lavender | Silver Pearl | Rose Aurora | One hand hiding smile behind folding fan |
+| 😺 Felidian | Maine Coon | Royal Archivist | Astral Library Keeper | Midnight Navy | Dust Silver | Sapphire Blue | Sitting sideways with floating tome |
+| 🐶 Caninian | Siberian Husky | Aurora Navigator | Ice Route Observatory Officer | Muted Cyan Gray | Powder White | Ice Pink | Confident forward-point gesture |
+| 🐻 Ursan | Tsukinowaguma | Moon Forge Guardian | Palace Bastion Knight | Ash Titanium | Warm Stone | Ember Gold | Heavy protective stance with cape drifting |
+| 🦝 Procyonian | Tanuki (No Stripe Tail) | Hidden Garden Envoy | Moon Garden Diplomat | Moss Jade | Soft Cream | Spirit Amber | Gentle greeting gesture with flowing sleeves |
+| 🐰 Leporian | Holland Lop | Lunar Ceremony Retainer | Moon Ceremony Attendant | Pearl White | Lunar Yellow | Pink Quartz, Pale Gold | Floating curtsy with drooping ears emphasized |
+| 🦌 Cervin | White-tailed Deer + Reindeer | Star Choir Herald | Constellation Priest | Clear Sky Blue | Snow White | Lapis Lazuli | Elegant upward-reaching pose |
+| 🐭 Murid | Dormouse | Dream Observatory Apprentice | Sleepy Astrologer | Cocoa Ash | Pale Linen | Moonlight Amber | Holding tiny floating lantern while drifting |
 
 #### 2.2.1 Potential default name for player side characters
 
