@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.2 | 23 | 2026/05/20 | Refine Party Character Edit mode selector readability (Spec 8.2.3): further increase unselected selector button opacity/contrast to `bg-white/20` with darker label text so short labels remain legible over bright character artwork. |
+| 0.7.2 | 22 | 2026/05/20 | Refine Party Character Edit mode selector readability (Spec 8.2.3): increase unselected Race/Main Class/Sub Class/Lineage/Predisposition button opacity by applying a subtle white tint (`bg-white/10`) so shorthand buttons like `狩`/`砂`/`内` appear less transparent. |
 | 0.7.2 | 21 | 2026/05/20 | Refine Party Character Edit mode button transparency (Spec 8.2.3): switch unselected Race/Main Class/Sub Class/Lineage/Predisposition selector buttons to transparent backgrounds so character artwork remains visible behind the edit controls. |
 | 0.7.2 | 20 | 2026/05/20 | Refine Party Character Edit mode readability (Spec 8.2): reduce foggy pane overlay opacity from 60% to 5% and make edit action buttons 20% transparent to improve visibility of background character art. |
 | 0.7.2 | 19 | 2026/05/19 | Update Divine Bureau Character Roster image rendering (Spec 8.6): switch the ally character image to an absolutely positioned layer with overflow-visible pane so artwork can extend beyond pane boundaries dynamically while preserving overlay status readability. |
