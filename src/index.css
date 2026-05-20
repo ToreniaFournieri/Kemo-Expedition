@@ -125,10 +125,6 @@ body.app-dark {
   box-shadow: 0 8px 24px rgb(2 6 23 / 0.45);
 }
 
-.theme-dark .bg-pane {
-  background-color: rgb(17 24 39);
-}
-
 .theme-dark .bg-gray-50 {
   background-color: rgb(15 23 42);
 }
