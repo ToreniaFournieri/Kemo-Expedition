@@ -13,9 +13,9 @@
   - If PT5, use : /public/background/PT5.png
   - If PT6, use : /public/background/PT6.png
   - If the corresponding image file does not exist, render no background image.
-- The background image must be rendered at 120% of the Party Pane width.
+- The background image must fill the Party Pane vertically from top to bottom.
 - Preserve the original image aspect ratio without stretching or distortion.
-- Apply a white fog overlay at 30% opacity over the background image.
+- Apply a white fog overlay at 45% opacity over the background image.
 - Preserve the original image aspect ratio without stretching or distortion.
 - The bottom area of the background image must gradually fade out using a vertical transparency gradient.
 - Anchor the background image to the bottom of the Party Pane.
