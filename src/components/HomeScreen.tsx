@@ -6321,7 +6321,7 @@ function PartyTab({
                 backgroundImage: `url(${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName})`,
                 backgroundPosition: 'center bottom',
                 backgroundRepeat: 'no-repeat',
-                backgroundSize: '120% auto',
+                backgroundSize: 'auto 100%',
                 maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
                 WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
               }}
@@ -6330,7 +6330,7 @@ function PartyTab({
               // SpecRef: 8.2 | UI_PARTY | Party Pane background image
               className="pointer-events-none absolute inset-0 z-0"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                backgroundColor: 'rgba(255, 255, 255, 0.45)',
                 maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
                 WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 0) 100%)',
               }}
@@ -6522,7 +6522,8 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md">
+              {/* SpecRef: 8.2 | UI_PARTY | List of party members pane */}
+              <div className="relative h-[110px] w-[50px] overflow-visible rounded-md bg-white/40">
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
