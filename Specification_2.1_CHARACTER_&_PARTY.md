@@ -64,26 +64,6 @@
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
 | Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
 
-- PT4
-
-| races | concept | breed |
-|------|----------------|----------|
-| Lupinian | 🐺Wolf | Black Wolf, ember-red markings, vigilant pathfinder |
-| Vulpinian | 🦊Fox | Cross Fox,     smoky rust orange, Forest Relic Thief, sly grin |
-| Felidian | 😺Cat | Bombay Cat, lapis lazuli highlights, Lava cliff runner |
-| Caninian | 🐶Dog | German Shepherd, dark ash brown + red utility gear, dependable protector |
-| Ursan | 🐻Bear | Black Bear, glowing furnace-orange accents, fortress defender |
-| Procyonian |🦝Tanuki | Red Panda, reluctant but resourceful |
-| Leporian | 🐰Rabbit | rabbit, verdigris fur with glowing red inner ears, energetic lava messenger |
-| Cervin |🦌Deer | yellow-green deer, calm sacred dignity |
-| Murid | 🐭 Mouse | Volcano mouse, soot gray + tiny ember accents, Lava tunnel explorer, excited expression |
-
-- Prompt to generate images
-
-```
-Let’s think a character image prompt that is; Race: Felidian | 😺Cat | Sand Cat, agile Gender: female Cloth theme: lightweight desert adventurer outfit with exposed midriff, layered scarves and travel wraps Background is white and only the character, using for in-game image. Young, very small bust, walking energetically and dynamically from right to left, looking at camera Simple kemono anime eyes with oversized rounded pupils, thick black feminine upper eyelids, a large centered white oval catchlight inside each pupil, minimal iris rendering, mascot-like expression, flat-color eye style No human-like hair, flat color, no outlines
-```
-
 **classes:**
 
 | key | Japanese | short name | main/sub bonuses | main bonus | master bonus |
