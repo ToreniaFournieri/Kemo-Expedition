@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 13 | 2026/05/22 | Refine Expedition tab battle-log enemy art layering (Spec 8.3): allow enemy portrait to overflow the expanded room card and anchor it upward so the image visually starts from the top room header pane (room title/enemy-name area). |
 | 0.7.3 | 12 | 2026/05/22 | Fix Divine Bureau feedback latest battle log attachment export (Spec 8.6): generate full latest-battle-log HTML content with expedition entries/details instead of sending an empty placeholder document for selected parties (e.g., PT6). |
 | 0.7.3 | 11 | 2026/05/22 | Refine Divine Bureau Bestiary enemy image style (Spec 8.6): render non-God enemy portraits as a side background layer like the deity pane, removing the framed inline image card. |
 | 0.7.3 | 10 | 2026/05/22 | Update Divine Bureau Bestiary enemy image behavior (Spec 8.6): show enemy portrait in enemy details when `/enemy/E_<Enemy_ID>.png` exists, and align Gods bestiary image paths to the standard `E_<Enemy_ID>.png` naming used by Expedition enemy images. |

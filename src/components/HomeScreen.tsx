@@ -8840,7 +8840,7 @@ function ExpeditionTab({
                       const isRoomExpanded = canExpandRoom && (isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex));
 
                       return (
-                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
+                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-visible shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
                         <button
                           onClick={() => {
                             if (!canExpandRoom) return;
@@ -8928,7 +8928,7 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                            <div className={`relative isolate overflow-visible border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
                               {getEnemyLogBackgroundImagePath(entry.enemySnapshot) && (
                                 <>
                                   <img
@@ -8936,7 +8936,7 @@ function ExpeditionTab({
                                     onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                     alt=""
                                     aria-hidden="true"
-                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                    className="pointer-events-none select-none absolute left-1/2 -top-14 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                     style={{
                                       width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                       maxWidth: 'none',
