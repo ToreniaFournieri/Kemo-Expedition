@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 6 | 2026/05/22 | Update battle log enemy background runtime (Spec 6.1.7): when `enemy.image_path` exists, load background images from `public/enemy/E_<Enemy_ID>.png`, and hide rendering when the corresponding PNG file is missing. |
 | 0.7.3 | 5 | 2026/05/22 | Fix Gods Bestiary ID display to use defined `enemy_ID` values (e.g., Seiran now shows `ID: 1`) and keep legacy God encounter/defeat stats visible by aggregating previous runtime IDs. |
 | 0.7.3 | 4 | 2026/05/22 | Add explicit Gods `enemy_ID` master data mapping and align all Gods profiles with the defined `Enemy_ID` values for expedition runtime data. |
 | 0.7.3 | 3 | 2026/05/20 | Refine Party tab PT selector pane visibility (Spec 8.2): make PT1–PT6 selection panes 10% more opaque in both light and dark themes, including selected state fill. |

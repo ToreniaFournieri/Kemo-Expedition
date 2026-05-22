@@ -631,6 +631,12 @@ function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDef | nul
   return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
 }
 
+function getEnemyLogBackgroundImagePath(enemy?: EnemyDef): string | null {
+  // SpecRef: 6.1.7 | Logs | Enemy image
+  if (!enemy?.image_path || typeof enemy.id !== 'number') return null;
+  return resolvePublicAssetPath(`/enemy/E_${enemy.id}.png`);
+}
+
 function getEnemyClassSummary(enemy: EnemyDef): string {
   const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
   if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
@@ -8922,11 +8928,12 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
-                              {entry.enemySnapshot?.image_path && (
+                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                              {getEnemyLogBackgroundImagePath(entry.enemySnapshot) && (
                                 <>
                                   <img
-                                    src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                    src={getEnemyLogBackgroundImagePath(entry.enemySnapshot) ?? ''}
+                                    onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                     alt=""
                                     aria-hidden="true"
                                     className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
@@ -10458,11 +10465,12 @@ function DiaryTab({
                           )}
                         </button>
                         {isRoomExpanded && entry.details && (
-                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
-                            {entry.enemySnapshot?.image_path && (
+                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                            {getEnemyLogBackgroundImagePath(entry.enemySnapshot) && (
                               <>
                                 <img
-                                  src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                  src={getEnemyLogBackgroundImagePath(entry.enemySnapshot) ?? ''}
+                                    onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                   alt=""
                                   aria-hidden="true"
                                   className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
