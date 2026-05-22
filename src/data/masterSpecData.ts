@@ -7,7 +7,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
   1: [
     [1,'1-2',1,'normal','Beast','ranger','i.arrowU,i.archeryU,i.arrowC,i.boltC,i.archeryC','平原のけもの'],
     [1,'1-2',1,'normal','Beast','striker','i.boltU,i.arrowU,i.arrowC,i.boltC,i.archeryC','平原のちいさな獣'],
-    [1,'1-2',1,'normal','Beast','wizard','i.wandU,i.robeU,i.wandC,i.grimoireC,i.catalystC','草むらの狩り獣'],
+    [1,'1-2',1,'normal','Beast','wizard','i.wandU,i.robeU,i.wandC,i.grimoireC,i.catalystC','草むらのまじない士'],
     [1,'3',2,'normal','Beast','guardian','i.armorU,i.gauntletU,i.armorC,i.robeC,i.shieldC','小爪のけもの'],
     [1,'3',2,'normal','Beast','lord','i.shieldU,i.katanaU,i.armorC,i.robeC,i.shieldC','群れのけもの'],
     [1,'4',4,'elite','Beast','duelist','i.swordEA,i.armorEA,i.swordC,i.katanaC,i.gauntletC','群れのリーダー獣'],
