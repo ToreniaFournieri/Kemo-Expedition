@@ -10841,7 +10841,20 @@ function SettingTab({
     const party = gameState.parties[partyIndex];
     const latestLog = party?.lastExpeditionLog;
     if (!party || !latestLog) return null;
-    return new File(['<!doctype html><html><body></body></html>'], `latest-battle-log-${partyLabel}.html`, { type: 'text/html' });
+    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
+      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
+        const noteDisplay = detail.note ? `(${detail.note})` : '';
+        return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
+      }).join('');
+      return `<section><h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3><p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
+    }).join('\n');
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
