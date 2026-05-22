@@ -397,7 +397,7 @@ export type ExpeditionDepthLimit =
 export interface DiaryLog {
   id: string;
   expeditionLog: ExpeditionLog;
-  triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>;
+  triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>;
   sideQuestDetail?: string;
   sideQuestLabel?: string;
   unlockHeadline?: string;
@@ -415,6 +415,7 @@ export interface DiarySettings {
   mythicThreshold: DiaryRarityThreshold;
   rareThreshold: DiaryRarityThreshold;
   sideQuestThreshold: DiarySideQuestThreshold;
+  notifyGodsBattle: boolean;
   notifyDefeat: boolean;
 }
 

@@ -10053,10 +10053,11 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>) => {
+  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
     if (triggers.includes('unlock')) return '解放の記録';
     if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
+    if (triggers.includes('godsBattle')) return '神魔戦の記録';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
     if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
     if (triggers.includes('bossRare')) return 'ボスレア獲得の記録';
@@ -10067,7 +10068,7 @@ function DiaryTab({
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>,
+    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>,
     rewards: Item[],
     sideQuestLabel?: string,
     unlockHeadline?: string
@@ -10192,6 +10193,17 @@ function DiaryTab({
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
                         <option key={`bo-${option.value}`} value={option.value}>{option.label}</option>
                       ))}
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-2">
+                    <span>神魔戦通知</span>
+                    <select
+                      value={settings.notifyGodsBattle ? 'あり' : 'なし'}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'あり' })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      <option value="あり">あり</option>
+                      <option value="なし">なし</option>
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
