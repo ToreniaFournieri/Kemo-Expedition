@@ -10066,10 +10066,12 @@ function DiaryTab({
   };
 
 
-  const getGodsBattleOutcomeLabel = (finalOutcome: ExpeditionLog['finalOutcome']) => {
-    if (finalOutcome === 'Defeat') return '敗北';
-    if (finalOutcome === 'Clear') return '撃破';
-    return finalOutcome;
+  const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLog) => {
+    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
+    if (!hasGodsBattleEntry) return '未到達';
+    if (expeditionLog.finalOutcome === 'Clear') return '勝利';
+    if (expeditionLog.finalOutcome === 'Defeat') return '敗北';
+    return '引分';
   };
 
   const getDiaryHeadline = (
@@ -10086,7 +10088,7 @@ function DiaryTab({
         .find((entry) => entry.enemyName.includes('(神魔戦)'))
         ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
         .trim();
-      const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog.finalOutcome);
+      const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog);
       if (godsBattleEnemyName) {
         return `[${partyName}] ${godsBattleEnemyName} ${godsBattleOutcome}`;
       }
