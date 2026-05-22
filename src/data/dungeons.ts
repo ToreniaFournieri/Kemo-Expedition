@@ -143,13 +143,12 @@ function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[
   };
 
   rows.forEach((row) => {
-    const [enemyIdFromMaster, floorNumber, roomCode, , type] = row;
-    const fallbackEnemyId = type === 'normal'
+    const [floorNumber, roomCode, , type] = row;
+    const enemyId = type === 'normal'
       ? poolId * 1000 + (++normalCount)
       : type === 'elite'
         ? poolId * 1000 + 50 + (++eliteCount)
         : poolId * 100 + 1;
-    const enemyId = typeof enemyIdFromMaster === 'number' ? enemyIdFromMaster : fallbackEnemyId;
     const roomNumbers = roomCode === '1-2' ? [1, 2] : [Number(roomCode)];
     roomNumbers.forEach((roomNumber) => append(floorNumber, roomNumber, enemyId));
   });
