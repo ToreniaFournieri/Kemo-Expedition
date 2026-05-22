@@ -889,8 +889,7 @@ left-alinged                                           right-aligned
  
 **Enemy image**
 - If enemy.image_path exists, enable background image rendering
-  - If the enemy is a god, identify and load the image using the god’s name.
-  - Otherwise, load the image from `public/enemy/E_<Enemy_ID>.png`. (Ex. enemy ID is 1051, then use `public/enemy/E_1051.png` )
+  - load the image from `public/enemy/E_<Enemy_ID>.png`. (Ex. enemy ID is 1051, then use `public/enemy/E_1051.png` )
   - If the corresponding .png file does not exist, do not render an image.
 - Render the enemy image as a background image of the panel.
 - Do not stretch; preserve original aspect ratio.
