@@ -131,9 +131,6 @@ type RoomIdKey = `${number}-${number}`;
 function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[]> {
   const lookup: Record<RoomIdKey, number[]> = {};
   const rows = MASTER_EXPEDITION_ENEMIES_PACKED[poolId] ?? [];
-  let normalCount = 0;
-  let eliteCount = 0;
-
   const append = (floorNumber: number, roomNumber: number, enemyId: number): void => {
     const key: RoomIdKey = `${floorNumber}-${roomNumber}`;
     if (!lookup[key]) {
@@ -142,13 +139,10 @@ function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[
     lookup[key].push(enemyId);
   };
 
-  rows.forEach((row) => {
-    const [floorNumber, roomCode, , type] = row;
-    const enemyId = type === 'normal'
-      ? poolId * 1000 + (++normalCount)
-      : type === 'elite'
-        ? poolId * 1000 + 50 + (++eliteCount)
-        : poolId * 100 + 1;
+  rows.forEach((row, rowIndex) => {
+    const [floorNumber, roomCode] = row;
+    // SpecRef: 4.2.2 | Enemy | Enemy_ID
+    const enemyId = 100 + (poolId - 1) * 36 + rowIndex;
     const roomNumbers = roomCode === '1-2' ? [1, 2] : [Number(roomCode)];
     roomNumbers.forEach((roomNumber) => append(floorNumber, roomNumber, enemyId));
   });
@@ -201,9 +195,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 1,
     name: 'ケイナイアン平原',
     enemyPoolIds: [1],
-    bossId: 101,
+    bossId: 135,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[0],
-    floors: createFloors(1, 101),
+    floors: createFloors(1, 135),
   },
 
   // Tier 2: ルピニアンの亜寒帯 (Lupinian Taiga)
@@ -213,9 +207,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 7,
     name: 'ルピニアンの亜寒帯',
     enemyPoolIds: [2],
-    bossId: 201,
+    bossId: 171,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[1],
-    floors: createFloors(2, 201),
+    floors: createFloors(2, 171),
   },
 
   // Tier 3: ヴァルンの海洋 (Vulpinian Ocean)
@@ -225,9 +219,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 14,
     name: 'ヴァルンの海洋',
     enemyPoolIds: [3],
-    bossId: 301,
+    bossId: 207,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[2],
-    floors: createFloors(3, 301),
+    floors: createFloors(3, 207),
   },
 
   // Tier 4: フェリディ砂漠 (Felidian Desert)
@@ -237,9 +231,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 21,
     name: 'フェリディ砂漠',
     enemyPoolIds: [4],
-    bossId: 401,
+    bossId: 243,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[3],
-    floors: createFloors(4, 401),
+    floors: createFloors(4, 243),
   },
 
   // Tier 5: ウルサンの炎嶺 (Ursan Pyrepeak)
@@ -249,9 +243,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 28,
     name: 'ウルサンの炎嶺',
     enemyPoolIds: [5],
-    bossId: 501,
+    bossId: 279,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[4],
-    floors: createFloors(5, 501),
+    floors: createFloors(5, 279),
   },
 
   // Tier 6: プロキオン巣穴 (Procyonian Burrow)
@@ -261,9 +255,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 35,
     name: 'プロキオン巣穴',
     enemyPoolIds: [6],
-    bossId: 601,
+    bossId: 315,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[5],
-    floors: createFloors(6, 601),
+    floors: createFloors(6, 315),
   },
 
   // Tier 7: レポリアンの月宮 (Leporian Moon Palace)
@@ -273,9 +267,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 42,
     name: 'レポリアンの月宮',
     enemyPoolIds: [7],
-    bossId: 701,
+    bossId: 351,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[6],
-    floors: createFloors(7, 701),
+    floors: createFloors(7, 351),
   },
 
   // Tier 8: セルヴィンの谷 (Cervin Vale)
@@ -285,9 +279,9 @@ export const DUNGEONS: Dungeon[] = [
     expLevel: 49,
     name: 'セルヴィンの谷',
     enemyPoolIds: [8],
-    bossId: 801,
+    bossId: 387,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[7],
-    floors: createFloors(8, 801),
+    floors: createFloors(8, 387),
   },
 
   {
