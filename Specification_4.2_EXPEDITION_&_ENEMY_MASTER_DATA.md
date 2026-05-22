@@ -327,3 +327,45 @@
 | 8 | 6 | 3 | 55 | Normal | `Ghost` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 聖域の弓霊 |
 | 8 | 6 | 3 | 55 | Normal | `Ghost` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 聖域の太刀霊 |
 | 8 | 6 | 4 | 59 | BOSS | `Cervin` | class.ninja.wizard | `i.archery`BD, `i.bolt`BD, `i.wand`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | セルヴァ・レム | `a.shock`1, `a.magic-seal`1 |
+
+
+- Gods prompt
+
+| `x.exp_id` | `x.enemy_level` | Name | Title | Display Name | Class | Race Concept | Divine Philosophy | Visual Concept | Main Color | Sub Color | Accent Color | Sub Accent Color | Pose Direction |
+|---|---:|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 18 | Seiran | Goddess of Restoration | セイラン 再生の女神 | Pilgrim | Caninian, white Golden retriever | “Everything broken deserves another journey.” | Pilgrim healer deity with flowing prayer cloth and floating water vessels | Mist Blue | Warm Ivory | Pale Aqua | Sunlight Gold | Walking forward with one hand extended toward the wounded |
+| 2 | 25 | Garv | God of Attrition | ガーヴ 消耗の神 | Samurai | Lupinian | “Victory belongs to the one who remains.” | Scarred wolf warlord with damaged armor and broken katana | Iron Black | Dark Ash Red | Bone White | Rust Gold | Exhausted forward-leaning stance refusing to kneel |
+| 3 | 32 | Kyōen | God of Cunning | キョウエン 狡猾の神 | class.striker | Vulpinian, Fox, with cunning smile  | “Truth is merely the most successful deception.” | Elegant foxfire strategist with masks and layered robes | Vermillion | Cream White | Indigo | Foxfire Cyan | Sideways posture while staring directly at the viewer |
+| 4 | 39 | Miora | Goddess of Fertility | ミオラ 豊穣の女神 | Sage | Felidian, Tiger | “All life desires to multiply.” | Moon-eyed fertility goddess surrounded by flowers and fruits | Pearl White | Leaf Green | Rose Pink | Sunlight Gold | Open-armed welcoming posture |
+| 5 | 46 | Dolvar | God of Fortification | ドルヴァ 防備の神 | class.guardian | Ursan, bear, a dignified expression | “A wall is compassion made stone.” | Fortress-like bear guardian with tower shield and chained armor | Granite Gray | Dark Bronze | Ember Orange | Ash Ivory | Immovable defensive stance with planted shield |
+| 6 | 53 | Tanue | Goddess of Mirage | タヌエ 幻影の女神 | Duelist | Procyonian, tanuki with no stripe tail but tanuki pattern | “What you see is only what survived observation.” | Illusionary tanuki priestess with mirrors and smoke-like tails | Indigo Violet | Pearl White | Moon Gold | Mist Cyan | Twisting dance-like posture with unclear silhouette |
+| 7 | 60 | Lira | Goddess of Precision | リラ 精密の女神 | Ranger | Leporian, white hare, droopy ears | “Perfection is mercy.” | Divine rabbit huntress with luminous targeting lines and crescent bow | Golden Wheat | Cream White | Amber Gold | Royal Purple | Perfectly aligned bow-drawing stance, looking at the target |
+| 8 | 61 | Forne | God of Fate | フォルネ 運命の神 | Lord | Cervin, deer, no antler  | “All roads were already walked.” | Antlered celestial lord controlling threads of destiny | Midnight Blue | Pale Ivory | Starlight Silver | Celestial Cyan | Upright posture holding threads of fate |
+| 9 | 62 | Skuva | God of Dusk | スクヴァ 黄昏の神 | Ninja | Murid , mouse | “Every civilization eventually becomes evening.” | Cloaked dusk deity carrying a fading lantern | Dust Gray | Twilight Purple | Faded Amber | Smoky Teal | Half-hidden profile pose |
+| 10 | 63 | Rondel | God of Resonance | ロンデル 共鳴の神 | Wizard | Mustelid | “The universe remembers through vibration.” | Arcane conductor with crystal rings and harmonic magic circles | Moss Green | Moon White | Neon Mint | Dark Pine | Hands spread outward conducting invisible waves |
+| 11 | 70 | Noctyra | God of Oblivion | ノクティラ 忘却されし神 | Samurai | Human | “To be forgotten is the final death.” | Destroyed samurai deity with erased face and eclipsed halo | Void Black | Dead Crimson | Faded Silver | Abyss Blue | Motionless downward-facing stance |
+| 12 | 71 | Eris | Goddess of Discord | エリス 不和の神 | Pilgrim | Chihuahua, with a jealous expression, self-hug | “Conflict reveals true nature.” | Elegant chaos goddess with fractured halo and asymmetrical garments | Crimson | Black | White | Toxic Magenta | Open-arm invitation posture welcoming catastrophe |
+
+
+- prompt example:
+
+```
+Let’s make a character image
+
+Deity 
+
+| `x.exp_id` | `x.enemy_level` | Name | Title | Display Name | Class | Race Concept | Divine Philosophy | Visual Concept | Main Color | Sub Color | Accent Color | Sub Accent Color | Pose Direction |
+|---|---:|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11 | 70 | Noctyra | God of Oblivion | ノクティラ 忘却されし神 | Samurai | Human | “To be forgotten is the final death.” | Destroyed samurai deity with erased face and eclipsed halo | Void Black | Dead Crimson | Faded Silver | Abyss Blue | Motionless downward-facing stance |
+
+Halo as accent color 
+Young, very small bust, Diagonal composition, with exposed midriff.
+
+Simple kemono anime eyes with oversized rounded pupils, thick black feminine upper eyelids,  a large centered white oval catchlight inside each pupil, minimal iris rendering, mascot-like expression, flat-color eye style
+
+Background is white and only the character. 
+keeping the entire character comfortably inside the frame
+No human-like hair, flat color, no outlines
+
+
+```
