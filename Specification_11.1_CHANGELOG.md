@@ -12,6 +12,7 @@
 |-|-|-|-|
 | 0.7.3 | 13 | 2026/05/22 | Refine Expedition expanded room enemy image rendering (Spec 8.3): render the enemy portrait background on both the top summary pane and the lower 戦闘ログ pane when expanded. |
 | 0.7.3 | 12 | 2026/05/22 | Refine Expedition battle log enemy background anchoring (Spec 8.3): when a room is expanded, start the enemy image from the room header area (enemy name pane) instead of only from the 戦闘ログ section. |
+| 0.7.3 | 12 | 2026/05/22 | Fix Divine Bureau feedback latest battle log attachment generation (Spec 8.6): export selected PT latest expedition battle log content as detailed HTML (with timestamped filename) instead of an empty placeholder document. |
 | 0.7.3 | 11 | 2026/05/22 | Refine Divine Bureau Bestiary enemy image style (Spec 8.6): render non-God enemy portraits as a side background layer like the deity pane, removing the framed inline image card. |
 | 0.7.3 | 10 | 2026/05/22 | Update Divine Bureau Bestiary enemy image behavior (Spec 8.6): show enemy portrait in enemy details when `/enemy/E_<Enemy_ID>.png` exists, and align Gods bestiary image paths to the standard `E_<Enemy_ID>.png` naming used by Expedition enemy images. |
 | 0.7.3 | 9 | 2026/05/22 | Fix battle log Enemy image rendering (Spec 6.1.7): resolve `/enemy/E_<Enemy_ID>.png` by enemy ID even when `enemy.image_path` is undefined, restoring missing images such as Enemy ID 135 and other master-data enemies. |
