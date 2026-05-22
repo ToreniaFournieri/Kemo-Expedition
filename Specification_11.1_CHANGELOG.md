@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 12 | 2026/05/22 | Fix Divine Bureau feedback latest battle log attachment export (Spec 8.6): generate full latest-battle-log HTML content with expedition entries/details instead of sending an empty placeholder document for selected parties (e.g., PT6). |
 | 0.7.3 | 11 | 2026/05/22 | Refine Divine Bureau Bestiary enemy image style (Spec 8.6): render non-God enemy portraits as a side background layer like the deity pane, removing the framed inline image card. |
 | 0.7.3 | 10 | 2026/05/22 | Update Divine Bureau Bestiary enemy image behavior (Spec 8.6): show enemy portrait in enemy details when `/enemy/E_<Enemy_ID>.png` exists, and align Gods bestiary image paths to the standard `E_<Enemy_ID>.png` naming used by Expedition enemy images. |
 | 0.7.3 | 9 | 2026/05/22 | Fix battle log Enemy image rendering (Spec 6.1.7): resolve `/enemy/E_<Enemy_ID>.png` by enemy ID even when `enemy.image_path` is undefined, restoring missing images such as Enemy ID 135 and other master-data enemies. |
