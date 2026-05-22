@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 17 | 2026/05/22 | Refine UI_DIARY 神魔戦通知 outcome labels (Spec 8.5): map line-1 outcome to 勝利/敗北/引分/未到達 based on gods-battle encounter and expedition result while keeping location+date on line 2. |
+| 0.7.3 | 16 | 2026/05/22 | Update UI_DIARY gods-battle runtime headline/detail format (Spec 8.5): render 神魔戦通知 title as `[PT] 神名 結果` (e.g., 敗北/撃破) and keep line-2 gray text as expedition location + date. |
 | 0.7.3 | 15 | 2026/05/22 | Rename runtime enemy display name for Enemy_ID 102 (Spec 4.2.2) from `草むらの狩り獣` to `草むらのまじない士` to align with the master-data table. |
 | 0.7.3 | 14 | 2026/05/22 | Implement UI_DIARY gods-battle notification toggle and runtime logging behavior (Spec 8.5): add 神魔戦通知 (あり/なし, default あり) to diary settings and record gods-battle diary entries only when the toggle is enabled. |
 | 0.7.3 | 13 | 2026/05/22 | Refine Expedition tab battle-log enemy art layering (Spec 8.3): allow enemy portrait to overflow the expanded room card and anchor it upward so the image visually starts from the top room header pane (room title/enemy-name area). |
