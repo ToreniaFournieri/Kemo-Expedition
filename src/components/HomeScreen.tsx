@@ -8947,6 +8947,19 @@ function ExpeditionTab({
                           </button>
                           {isRoomExpanded && entry.details && (
                             <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${enemyLogBackgroundImagePath ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                              {enemyLogBackgroundImagePath && (
+                                <img
+                                  src={enemyLogBackgroundImagePath}
+                                  onError={(event) => { event.currentTarget.style.display = 'none'; }}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                  style={{
+                                    width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
+                                    maxWidth: 'none',
+                                  }}
+                                />
+                              )}
                               <div className="relative z-10">
                               <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
