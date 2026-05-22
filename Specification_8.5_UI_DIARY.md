@@ -41,7 +41,9 @@ line 2 gray text:     02/12 21:28
 
 - `神魔戦通知`
  - line 1: PTname, Name of gods, outcome
+   - outcome: Victory/Defeat/Draw/No Visit -> 勝利/敗北/引分/未到達
  - line 2 gray text: Expedition location　Date
+   
 ```
 line 1: [PT1] セイラン 再生の女神 敗北          ▼
 line 2 gray text: ケイナイアン平原     02/12 21:28
