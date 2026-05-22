@@ -150,46 +150,46 @@
 | 208 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂夜の牙影 |
 | 209 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月砂の迅牙 |
 | 210 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 砂丘の妖士 |
-| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 乾砂の裂爪 |
-| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 影群の頭目 |
-| 4 | 1 | 4 | 24 | Elite | `Shadowfang` | class.pilgrim.guardian | `i.robe`EA, `i.grimoire`EA, `i.armor`EA, `i.armor`C, `i.robe`C, `i.shield`C | 夜襲の祈影 |
-| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂潜り |
-| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月詠の黒牙 |
-| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 砂識の武牙 |
-| 4 | 2 | 3 | 23 | Normal | `Felidian` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 砂猫の剣士 |
-| 4 | 2 | 3 | 23 | Normal | `Felidian` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 巡砂の猫民 |
-| 4 | 2 | 4 | 25 | Elite | `Shadowfang` | class.samurai.striker | `i.katana`EA, `i.shield`EA, `i.bolt`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | 黒牙の侍 |
-| 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 巨術士 |
-| 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 砂碑の護兵 |
-| 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 乾岩の破砕兵 |
-| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 影牙の刃兵 |
-| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 砂塵の妖牙 |
-| 4 | 3 | 4 | 26 | Elite | `Titan` | class.lord.wizard | `i.shield`EC, `i.katana`EC, `i.wand`EC, `i.armor`C, `i.robe`C, `i.shield`C | 巨躯の破城兵 |
-| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 砂猫のあらくれもの |
-| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | あらくれ兄貴猫 |
-| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 夜砂のぐれ猫 |
-| 4 | 4 | 3 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.robe`BD, `i.sword`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 黄昏の野盗猫 |
-| 4 | 4 | 3 | 27 | Elite | `Felidian` | class.striker.sage | `i.grimoire`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂嵐の強盗猫 |
-| 4 | 4 | 4 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.archery`EB, `i.bolt`EB, `i.sword`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 忍猫ネロ |
-| 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂岩の忍巨 |
-| 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 断崖の刃巨 |
-| 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 岩窟の古老巨 |
-| 4 | 5 | 3 | 26 | Normal | `Felidian` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 猫刃の決闘士 |
-| 4 | 5 | 3 | 26 | Normal | `Felidian` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 流砂の術忍猫 |
-| 4 | 5 | 4 | 28 | Elite | `Felidian` | class.sage.alchemist | `i.grimoire`EB, `i.catalyst`EB, `i.catalyst`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 秘儀の砂猫 |
-| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 豊穣の門番 |
-| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 豊穣の祈祷師 |
-| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 豊穣の護衛 |
-| 4 | 6 | 3 | 27 | Normal | `Felidian` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 豊穣の親衛射手 |
-| 4 | 6 | 3 | 27 | Normal | `Felidian` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 豊穣の親衛隊 |
-| 4 | 6 | 4 | 31 | BOSS | `Felidian` | class.striker.ranger | `i.bolt`BD, `i.arrow`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | シルウェストリス | `c.fire-defense-multiplier_x4/5` |
-| 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 火灰の狩獣 |
-| 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 熱霧の迅獣 |
-| 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 火口原の呪獣 |
-| 5 | 1 | 3 | 29 | Normal | `Beast` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 炎峰の爪獣 |
-| 5 | 1 | 3 | 29 | Normal | `Beast` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 灰毛の群核 |
-| 5 | 1 | 4 | 31 | Elite | `Beast` | class.ninja.sword-saint | `i.archery`EA, `i.bolt`EA, `i.gauntlet`EA, `i.arrow`C, `i.bolt`C, `i.archery`C | 炎嶺の忍刃頭 |
-| 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 灰走りの獣影 |
+| 211 | 4 | 1 | 3 | 22 | Normal | `Shadowfang` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 乾砂の裂爪 |
+| 212 | 4 | 1 | 3 | 22 | Normal | `Shadowfang` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 影群の頭目 |
+| 213 | 4 | 1 | 4 | 24 | Elite | `Shadowfang` | class.pilgrim.guardian | `i.robe`EA, `i.grimoire`EA, `i.armor`EA, `i.armor`C, `i.robe`C, `i.shield`C | 夜襲の祈影 |
+| 214 | 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂潜り |
+| 215 | 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月詠の黒牙 |
+| 216 | 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 砂識の武牙 |
+| 217 | 4 | 2 | 3 | 23 | Normal | `Felidian` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 砂猫の剣士 |
+| 218 | 4 | 2 | 3 | 23 | Normal | `Felidian` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 巡砂の猫民 |
+| 219 | 4 | 2 | 4 | 25 | Elite | `Shadowfang` | class.samurai.striker | `i.katana`EA, `i.shield`EA, `i.bolt`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | 黒牙の侍 |
+| 220 | 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 巨術士 |
+| 221 | 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 砂碑の護兵 |
+| 222 | 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 乾岩の破砕兵 |
+| 223 | 4 | 3 | 3 | 24 | Normal | `Shadowfang` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 影牙の刃兵 |
+| 224 | 4 | 3 | 3 | 24 | Normal | `Shadowfang` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 砂塵の妖牙 |
+| 225 | 4 | 3 | 4 | 26 | Elite | `Titan` | class.lord.wizard | `i.shield`EC, `i.katana`EC, `i.wand`EC, `i.armor`C, `i.robe`C, `i.shield`C | 巨躯の破城兵 |
+| 226 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 砂猫のあらくれもの |
+| 227 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | あらくれ兄貴猫 |
+| 228 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 夜砂のぐれ猫 |
+| 229 | 4 | 4 | 3 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.robe`BD, `i.sword`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 黄昏の野盗猫 |
+| 230 | 4 | 4 | 3 | 27 | Elite | `Felidian` | class.striker.sage | `i.grimoire`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂嵐の強盗猫 |
+| 231 | 4 | 4 | 4 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.archery`EB, `i.bolt`EB, `i.sword`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 忍猫ネロ |
+| 232 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂岩の忍巨 |
+| 233 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 断崖の刃巨 |
+| 234 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 岩窟の古老巨 |
+| 235 | 4 | 5 | 3 | 26 | Normal | `Felidian` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 猫刃の決闘士 |
+| 236 | 4 | 5 | 3 | 26 | Normal | `Felidian` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 流砂の術忍猫 |
+| 237 | 4 | 5 | 4 | 28 | Elite | `Felidian` | class.sage.alchemist | `i.grimoire`EB, `i.catalyst`EB, `i.catalyst`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 秘儀の砂猫 |
+| 238 | 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 豊穣の門番 |
+| 239 | 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 豊穣の祈祷師 |
+| 240 | 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 豊穣の護衛 |
+| 240 | 4 | 6 | 3 | 27 | Normal | `Felidian` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 豊穣の親衛射手 |
+| 240 | 4 | 6 | 3 | 27 | Normal | `Felidian` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 豊穣の親衛隊 |
+| 240 | 4 | 6 | 4 | 31 | BOSS | `Felidian` | class.striker.ranger | `i.bolt`BD, `i.arrow`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | シルウェストリス | `c.fire-defense-multiplier_x4/5` |
+| 240 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 火灰の狩獣 |
+| 240 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 熱霧の迅獣 |
+| 240 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 火口原の呪獣 |
+| 240 | 5 | 1 | 3 | 29 | Normal | `Beast` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 炎峰の爪獣 |
+| 240 | 5 | 1 | 3 | 29 | Normal | `Beast` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 灰毛の群核 |
+| 240 | 5 | 1 | 4 | 31 | Elite | `Beast` | class.ninja.sword-saint | `i.archery`EA, `i.bolt`EA, `i.gauntlet`EA, `i.arrow`C, `i.bolt`C, `i.archery`C | 炎嶺の忍刃頭 |
+| 240 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 灰走りの獣影 |
 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 焔智の獣兵 |
 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 焼土の古獣 |
 | 5 | 2 | 3 | 30 | Normal | `Dragon` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 溶鱗の竜 |
