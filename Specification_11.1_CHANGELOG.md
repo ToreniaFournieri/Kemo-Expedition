@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 9 | 2026/05/22 | Fix battle log Enemy image rendering (Spec 6.1.7): resolve `/enemy/E_<Enemy_ID>.png` by enemy ID even when `enemy.image_path` is undefined, restoring missing images such as Enemy ID 135 and other master-data enemies. |
 | 0.7.3 | 8 | 2026/05/22 | Fix runtime Enemy_ID integration regression (Spec 4.2.2): align generated `ENEMIES` IDs to the master-table `Enemy_ID` sequence (100–387) so Bestiary lookup and expedition room spawns resolve correctly, preventing boss misplacement in early rooms. |
 | 0.7.3 | 7 | 2026/05/22 | Implement runtime Enemy_ID mapping for expedition enemies (Spec 4.2.2): room enemy selection now uses the explicit master-table `Enemy_ID` sequence (100–387), and dungeon boss IDs are aligned to spec boss rows (135/171/207/243/279/315/351/387). |
 | 0.7.3 | 6 | 2026/05/22 | Update battle log enemy background runtime (Spec 6.1.7): when `enemy.image_path` exists, load background images from `public/enemy/E_<Enemy_ID>.png`, and hide rendering when the corresponding PNG file is missing. |
