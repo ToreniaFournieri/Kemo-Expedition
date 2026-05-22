@@ -12501,7 +12501,7 @@ function SettingTab({
                   onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [godBestiaryId]: !godExpanded }))}
                   className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                 >
-                  <span>{renderEnemyNameWithMutedClass(godClassShortName ? `${god.displayName}(${godClassShortName})` : god.displayName)}</span>
+                  <span>{renderEnemyNameWithMutedClass(godClassShortName ? `${god.displayName}(${godClassShortName})` : god.displayName)} <span className="text-xs text-gray-500">[ID:{formatNumber(getGodBestiaryDisplayEnemyId(god))}]</span></span>
                   <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
                 </button>
                 {godExpanded && (
@@ -12712,7 +12712,7 @@ function SettingTab({
                       onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
-                      <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(displayEnemy))}</span>
+                      <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(displayEnemy))} <span className="text-xs text-gray-500">[ID:{formatNumber(displayEnemy.id)}]</span></span>
                       <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                     </button>
                     {enemyExpanded && (

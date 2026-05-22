@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 7 | 2026/05/22 | Implement Enemy_ID runtime integration (Spec 4.2.2 / 8.6): support explicit `Enemy_ID` from master data in dungeon/enemy generation with fallback to legacy IDs, and display Enemy ID in Bestiary header rows and enemy floating bubble text. |
 | 0.7.3 | 6 | 2026/05/22 | Update battle log enemy background runtime (Spec 6.1.7): when `enemy.image_path` exists, load background images from `public/enemy/E_<Enemy_ID>.png`, and hide rendering when the corresponding PNG file is missing. |
 | 0.7.3 | 5 | 2026/05/22 | Fix Gods Bestiary ID display to use defined `enemy_ID` values (e.g., Seiran now shows `ID: 1`) and keep legacy God encounter/defeat stats visible by aggregating previous runtime IDs. |
 | 0.7.3 | 4 | 2026/05/22 | Add explicit Gods `enemy_ID` master data mapping and align all Gods profiles with the defined `Enemy_ID` values for expedition runtime data. |
