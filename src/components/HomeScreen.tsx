@@ -8839,8 +8839,26 @@ function ExpeditionTab({
                       const canExpandRoom = !!entry.details && entry.details.length > 0;
                       const isRoomExpanded = canExpandRoom && (isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex));
 
+                      const enemyLogBackgroundImagePath = getEnemyLogBackgroundImagePath(entry.enemySnapshot);
+
                       return (
-                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
+                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="relative bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
+                        {isRoomExpanded && enemyLogBackgroundImagePath && (
+                          <>
+                            <img
+                              src={enemyLogBackgroundImagePath}
+                              onError={(event) => { event.currentTarget.style.display = 'none'; }}
+                              alt=""
+                              aria-hidden="true"
+                              className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                              style={{
+                                width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
+                                maxWidth: 'none',
+                              }}
+                            />
+                            {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
+                          </>
+                        )}
                         <button
                           onClick={() => {
                             if (!canExpandRoom) return;
@@ -8928,22 +8946,19 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
-                              {getEnemyLogBackgroundImagePath(entry.enemySnapshot) && (
-                                <>
-                                  <img
-                                    src={getEnemyLogBackgroundImagePath(entry.enemySnapshot) ?? ''}
-                                    onError={(event) => { event.currentTarget.style.display = 'none'; }}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
-                                    style={{
-                                      width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
-                                      maxWidth: 'none',
-                                    }}
-                                  />
-                                  {!isDarkModeEnabled && <div className="pointer-events-none absolute inset-0 bg-white/35" aria-hidden="true" />}
-                                </>
+                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${enemyLogBackgroundImagePath ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                              {enemyLogBackgroundImagePath && (
+                                <img
+                                  src={enemyLogBackgroundImagePath}
+                                  onError={(event) => { event.currentTarget.style.display = 'none'; }}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                  style={{
+                                    width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
+                                    maxWidth: 'none',
+                                  }}
+                                />
                               )}
                               <div className="relative z-10">
                               <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
