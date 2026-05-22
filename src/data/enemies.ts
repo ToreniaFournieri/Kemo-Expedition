@@ -498,77 +498,34 @@ function generateEnemies(): EnemyDef[] {
   for (let tier = 1; tier <= 8; tier++) {
     const rows = MASTER_EXPEDITION_ENEMIES_PACKED[tier] ?? [];
 
-    const normalRows = rows.filter((row) => row[3] === 'normal');
-    const eliteRows = rows.filter((row) => row[3] === 'elite');
-    const bossRows = rows.filter((row) => row[3] === 'boss');
-
-    normalRows.forEach((row, index) => {
-      const id = tier * 1000 + index + 1;
+    rows.forEach((row, rowIndex) => {
+      // SpecRef: 4.2.2 | Enemy | Enemy_ID
+      const id = 100 + (tier - 1) * 36 + rowIndex;
+      const spawnType = row[3];
       const enemy = createEnemyFromTemplate(
         id,
         { name: row[7], hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
         tier,
-        'normal',
-        tier,
+        spawnType,
+        spawnType === 'boss' ? 0 : tier,
         row[5],
         row[8] ?? 'none',
         row[4],
         row[0],
-        [],
+        spawnType === 'boss' ? (MASTER_BOSS_BONUS_ABILITIES[tier] ?? []) : [],
         row[2],
       );
       const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.masterDropTokens = assignCommonDropTokensByClass(masterDropTokens, row[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
-      enemies.push(enemy);
-    });
-
-    eliteRows.forEach((row, index) => {
-      const id = tier * 1000 + 50 + index + 1;
-      const enemy = createEnemyFromTemplate(
-        id,
-        { name: row[7], hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
-        tier,
-        'elite',
-        tier,
-        row[5],
-        row[8] ?? 'none',
-        row[4],
-        row[0],
-        [],
-        row[2],
-      );
-      const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
-      enemy.masterDropTokens = assignCommonDropTokensByClass(masterDropTokens, row[5]);
-      enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
-      enemies.push(enemy);
-    });
-
-    const boss = bossRows[0];
-    if (boss) {
-      const bossId = tier * 100 + 1;
-      const enemy = createEnemyFromTemplate(
-        bossId,
-        { name: boss[7], hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
-        tier,
-        'boss',
-        0,
-        boss[5],
-        boss[8] ?? 'none',
-        boss[4],
-        boss[0],
-        MASTER_BOSS_BONUS_ABILITIES[tier] ?? [],
-        boss[2],
-      );
-      const bossDropTokens = boss[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
-      enemy.masterDropTokens = assignCommonDropTokensByClass(bossDropTokens, boss[5]);
-      enemy.dropItemId = getDropItemIdFromMaster(tier, boss[6].split(','));
-      const bossBonusModifiers = MASTER_BOSS_BONUS_MODIFIERS[tier] ?? [];
-      if (bossBonusModifiers.length > 0) {
-        enemy.bonuses = [...(enemy.bonuses ?? []), ...bossBonusModifiers];
+      if (spawnType === 'boss') {
+        const bossBonusModifiers = MASTER_BOSS_BONUS_MODIFIERS[tier] ?? [];
+        if (bossBonusModifiers.length > 0) {
+          enemy.bonuses = [...(enemy.bonuses ?? []), ...bossBonusModifiers];
+        }
       }
       enemies.push(enemy);
-    }
+    });
   }
 
   return enemies;
@@ -586,6 +543,7 @@ export const getBossEnemy = (id: number): EnemyDef | undefined =>
   ENEMIES.find(e => e.id === id && e.type === 'boss');
 
 function getTierFromEnemy(enemyId: number): number {
+  if (enemyId >= 100 && enemyId <= 387) return Math.floor((enemyId - 100) / 36) + 1;
   if (enemyId >= 1000) return Math.floor(enemyId / 1000);
   return Math.floor(enemyId / 100);
 }
