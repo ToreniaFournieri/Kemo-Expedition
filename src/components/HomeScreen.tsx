@@ -60,6 +60,19 @@ import {
   isLootGateUnlocked,
 } from '../game/lootGate';
 
+
+const ENEMY_IMAGE_MODULES = import.meta.glob('/public/enemy/*.png', { eager: true });
+const ENEMY_IMAGE_KEYS = new Set(Object.keys(ENEMY_IMAGE_MODULES));
+
+function getBattleLogEnemyImagePath(enemy?: EnemyDef): string | null {
+  if (!enemy?.image_path) return null;
+  const godNameFromImagePath = enemy.image_path.match(/Gods_([^./]+)\.png$/)?.[1];
+  const candidatePath = godNameFromImagePath
+    ? `/enemy/Gods_${godNameFromImagePath}.png`
+    : `/enemy/E_${enemy.id}.png`;
+  return ENEMY_IMAGE_KEYS.has(`/public${candidatePath}`) ? candidatePath : null;
+}
+
 function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
   if (/^https?:\/\//.test(path)) return path;
@@ -8922,11 +8935,11 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
-                              {entry.enemySnapshot?.image_path && (
+                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getBattleLogEnemyImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                              {getBattleLogEnemyImagePath(entry.enemySnapshot) && (
                                 <>
                                   <img
-                                    src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                    src={resolvePublicAssetPath(getBattleLogEnemyImagePath(entry.enemySnapshot) ?? undefined) ?? ''}
                                     alt=""
                                     aria-hidden="true"
                                     className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
@@ -10458,11 +10471,11 @@ function DiaryTab({
                           )}
                         </button>
                         {isRoomExpanded && entry.details && (
-                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
-                            {entry.enemySnapshot?.image_path && (
+                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getBattleLogEnemyImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                            {getBattleLogEnemyImagePath(entry.enemySnapshot) && (
                               <>
                                 <img
-                                  src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                  src={resolvePublicAssetPath(getBattleLogEnemyImagePath(entry.enemySnapshot) ?? undefined) ?? ''}
                                   alt=""
                                   aria-hidden="true"
                                   className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 5 | 2026/05/22 | Implement runtime enemy image rendering logic for battle logs (Spec 6.1.7): when `enemy.image_path` exists, load gods by god-name image (`/enemy/Gods_<Name>.png`) and non-gods by enemy ID image (`/enemy/E_<Enemy_ID>.png`), and render only when the corresponding PNG exists. |
 | 0.7.3 | 4 | 2026/05/22 | Update Party tab runtime Party main pane background overlay opacity (Spec 8.2): increase white fog overlay from 65% to 75% over the background image. |
 | 0.7.3 | 3 | 2026/05/20 | Refine Party tab PT selector pane visibility (Spec 8.2): make PT1–PT6 selection panes 10% more opaque in both light and dark themes, including selected state fill. |
 | 0.7.3 | 2 | 2026/05/20 | Refine Divine Bureau Character Roster image scaling at wider mobile widths (Spec 8.6): cap roster character image max width to 507px (390px pane baseline × 130%) so 500px layouts no longer hide controls while preserving intentional overflow. |
