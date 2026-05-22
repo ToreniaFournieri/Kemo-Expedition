@@ -1733,8 +1733,9 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   return [dParts.join(' '), bParts.join(' '), eText, mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
-function getJewelSlotStatusText(_item: Item, jewelKey: JewelKey, rank: number, _categoryMultiplier: number = 1, _hpScaleMultiplier: number = 1): string {
+function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
   const jewel = JEWEL_DEFS[jewelKey];
+  const multiplier = getItemDisplayMultiplier(item, categoryMultiplier);
   const cValue = getJewelCBonusValue(jewelKey, rank);
   const cText = (() => {
     if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
@@ -1747,13 +1748,13 @@ function getJewelSlotStatusText(_item: Item, jewelKey: JewelKey, rank: number, _
   })();
   const dText = jewel.dBaseBonuses.map((bonus) => {
     const value = getJewelDRankValue(bonus.base, rank);
-    const scaledValue = value;
+    const scaledValue = Math.round(value * multiplier);
     if (bonus.stat === 'meleeAttack') return `近攻+${scaledValue}`;
     if (bonus.stat === 'rangedAttack') return `遠攻+${scaledValue}`;
     if (bonus.stat === 'magicalAttack') return `魔攻+${scaledValue}`;
     if (bonus.stat === 'physicalDefense') return `物防+${scaledValue}`;
     if (bonus.stat === 'magicalDefense') return `魔防+${scaledValue}`;
-    return `HP+${value}`;
+    return `HP+${Math.round(value * multiplier * hpScaleMultiplier)}`;
   }).join(' ');
   return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
@@ -9856,8 +9857,10 @@ function InventoryTab({
                     <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
-                  <span className="text-xs leading-tight text-gray-400 truncate">| {getJewelSlotStatusText(entry.item, entry.jewelKey, entry.rank, 1, 1)}</span>
                   <span className="text-xs text-gray-500 shrink-0">PT{entry.partyIndex + 1}:{entry.characterName}</span>
+                </div>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getJewelSlotStatusText(entry.item, entry.jewelKey, entry.rank, entry.categoryMultiplier, entry.hpScaleMultiplier)}
                 </div>
               </div>
             );
@@ -9873,12 +9876,11 @@ function InventoryTab({
                   className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`text-sm truncate ${getItemNameFontWeightClass(item)}`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${getItemNameFontWeightClass(item)}`}>
                         {getItemDisplayName(item)}
                       </span>
-                      <span className="text-xs text-gray-500 shrink-0">x{formatNumber(count)}</span>
-                      <span className="text-xs leading-tight text-gray-400 truncate">| {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item))}</span>
+                      <span className="text-xs text-gray-500">x{formatNumber(count)}</span>
                     </div>
                     <button
                       onClick={() => {
@@ -9897,6 +9899,9 @@ function InventoryTab({
                       全売却 {formatNumber(sellPrice)}G
                     </button>
                   </div>
+                  <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                    {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item))}
+                  </div>
                 </div>
               );
             }
@@ -9913,10 +9918,12 @@ function InventoryTab({
                     <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
-                  <span className="text-xs leading-tight text-gray-400 truncate">| {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}</span>
                   <span className="text-xs text-gray-500 shrink-0">
                     PT{entry.equipped.partyIndex + 1}:{entry.equipped.characterName}
                   </span>
+                </div>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier))}
                 </div>
               </div>
             );
