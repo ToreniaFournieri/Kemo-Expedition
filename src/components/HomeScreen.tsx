@@ -12717,16 +12717,23 @@ function SettingTab({
                       <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                     </button>
                     {enemyExpanded && (
-                      <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
-                        {bestiaryEnemyImagePath && <img
-                          src={bestiaryEnemyImagePath}
-                          alt={formatEnemyDefName(displayEnemy)}
-                          className="w-full max-h-44 object-contain rounded border border-gray-100 bg-white/70 mb-2"
-                          onError={(event) => {
-                            event.currentTarget.style.display = 'none';
-                          }}
-                        />}
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                        {bestiaryEnemyImagePath && (
+                          <img
+                            src={bestiaryEnemyImagePath}
+                            alt=""
+                            aria-hidden="true"
+                            className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
+                            style={{
+                              width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
+                              maxWidth: 'none',
+                            }}
+                            onError={(event) => {
+                              event.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>ID: {displayEnemy.id}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
