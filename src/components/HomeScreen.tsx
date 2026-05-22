@@ -12706,6 +12706,7 @@ function SettingTab({
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const physicalDefenseAmplifierPercent = displayEnemy.physicalDefenseAmplifier * 100;
                 const magicalDefenseAmplifierPercent = displayEnemy.magicalDefenseAmplifier * 100;
+                const bestiaryEnemyImagePath = resolvePublicAssetPath(`/enemy/E_${displayEnemy.id}.png`);
                 return (
                   <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
                     <button
@@ -12717,6 +12718,14 @@ function SettingTab({
                     </button>
                     {enemyExpanded && (
                       <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                        {bestiaryEnemyImagePath && <img
+                          src={bestiaryEnemyImagePath}
+                          alt={formatEnemyDefName(displayEnemy)}
+                          className="w-full max-h-44 object-contain rounded border border-gray-100 bg-white/70 mb-2"
+                          onError={(event) => {
+                            event.currentTarget.style.display = 'none';
+                          }}
+                        />}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>ID: {displayEnemy.id}</div>
                           <div></div>
