@@ -439,6 +439,7 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   mythicThreshold: 'all',
   rareThreshold: 5,
   sideQuestThreshold: 'all',
+  notifyGodsBattle: true,
   notifyDefeat: true,
 };
 
@@ -3443,6 +3444,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const diaryTriggers: DiaryLog['triggers'] = [];
       if (finalOutcome === 'Defeat' && diarySettings.notifyDefeat) diaryTriggers.push('defeat');
+      // SpecRef: 8.5 | UI_DIARY | Setting.
+      if (isGodsBattle && diarySettings.notifyGodsBattle) diaryTriggers.push('godsBattle');
 
       if (hasSuperRareMatch) {
         diaryTriggers.push('superRare');
