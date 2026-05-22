@@ -633,7 +633,7 @@ function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDef | nul
 
 function getEnemyLogBackgroundImagePath(enemy?: EnemyDef): string | null {
   // SpecRef: 6.1.7 | Logs | Enemy image
-  if (!enemy?.image_path || typeof enemy.id !== 'number') return null;
+  if (typeof enemy?.id !== 'number') return null;
   return resolvePublicAssetPath(`/enemy/E_${enemy.id}.png`);
 }
 
