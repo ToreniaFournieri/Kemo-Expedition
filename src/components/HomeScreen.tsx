@@ -10066,13 +10066,34 @@ function DiaryTab({
   };
 
 
+  const getGodsBattleOutcomeLabel = (finalOutcome: ExpeditionLog['finalOutcome']) => {
+    if (finalOutcome === 'Defeat') return '敗北';
+    if (finalOutcome === 'Clear') return '撃破';
+    return finalOutcome;
+  };
+
   const getDiaryHeadline = (
     partyName: string,
     triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>,
     rewards: Item[],
+    expeditionLog: ExpeditionLog,
     sideQuestLabel?: string,
     unlockHeadline?: string
   ) => {
+    // SpecRef: 8.5 | UI_DIARY | 神魔戦通知
+    if (triggers.includes('godsBattle')) {
+      const godsBattleEnemyName = expeditionLog.entries
+        .find((entry) => entry.enemyName.includes('(神魔戦)'))
+        ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
+        .trim();
+      const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog.finalOutcome);
+      if (godsBattleEnemyName) {
+        return `[${partyName}] ${godsBattleEnemyName} ${godsBattleOutcome}`;
+      }
+      return `[${partyName}] 神魔戦 ${godsBattleOutcome}`;
+    }
+
+
     if (triggers.includes('unlock')) {
       return unlockHeadline
         ? `[${partyName}] ${unlockHeadline}`
@@ -10305,7 +10326,7 @@ function DiaryTab({
             >
               <span className="flex items-start justify-between gap-2">
                 <span className={`pr-2 ${diaryLog.isRead ? 'font-normal text-gray-500' : 'font-medium text-gray-900'}`}>
-                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards, diaryLog.sideQuestLabel, diaryLog.unlockHeadline)}
+                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards, log, diaryLog.sideQuestLabel, diaryLog.unlockHeadline)}
                 </span>
                 {!isSideQuestLog && <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>}
               </span>
