@@ -2600,24 +2600,32 @@ export function executeBattle(
     };
   }
 
-  const enemyActorAbilitiesSuppressed = isActorAbilitySuppressedBySilenceField(environment.terrainEffect, enemy.abilities);
-  const oblivionOwners = characterStats
-    .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
-    .filter((stats) => getAbilityLevel(stats, 'oblivion') >= 1)
-    .map((stats) => ({
-      name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
-      stats,
-    }));
-  const enemyHasOblivion = !enemyActorAbilitiesSuppressed && getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
+  const isEnemyActorAbilitiesSuppressed = (): boolean => (
+    isActorAbilitySuppressedBySilenceField(environment.terrainEffect, enemy.abilities)
+  );
 
-  const mimicOwners = characterStats
-    .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
-    .filter((stats) => getAbilityLevel(stats, 'mimic') >= 1)
-    .map((stats) => ({
-      name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
-      stats,
-    }));
-  const enemyHasMimic = !enemyActorAbilitiesSuppressed && getEnemyAbilityLevel(enemy, 'mimic') >= 1;
+  const getOblivionOwners = (): Array<{ name: string; stats: ComputedCharacterStats }> => (
+    characterStats
+      .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
+      .filter((stats) => getAbilityLevel(stats, 'oblivion') >= 1)
+      .map((stats) => ({
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        stats,
+      }))
+  );
+
+  const getMimicOwners = (): Array<{ name: string; stats: ComputedCharacterStats }> => (
+    characterStats
+      .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
+      .filter((stats) => getAbilityLevel(stats, 'mimic') >= 1)
+      .map((stats) => ({
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        stats,
+      }))
+  );
+
+  const enemyHasOblivion = (): boolean => !isEnemyActorAbilitiesSuppressed() && getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
+  const enemyHasMimic = (): boolean => !isEnemyActorAbilitiesSuppressed() && getEnemyAbilityLevel(enemy, 'mimic') >= 1;
 
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
   const consumedResurrectCharacterIds = new Set<number>();
@@ -2628,7 +2636,7 @@ export function executeBattle(
   let consumedPartyIllusion = false;
   let consumedEnemyShock = false;
   const consumedCharacterShockIds = new Set<number>();
-  const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
+  let activeMagicSealQueue: string[] = [];
   let pendingEnemyHowlEffects: PendingHowlEffect[] = [];
   let pendingPartyHowlEffects: PendingHowlEffect[] = [];
   let enemyTemporaryEvasionBonus = 0;
@@ -3692,11 +3700,11 @@ export function executeBattle(
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
     && environment.terrainEffect !== 'terrain.gehenna';
 
-  const partyHasFrostbite = characterStats.some((cs) => (
+  const partyHasFrostbite = (): boolean => characterStats.some((cs) => (
     !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, cs.abilities)
     && hasAbility(cs.abilities, 'frostbite')
   ));
-  const enemyHasFrostbite = !enemyActorAbilitiesSuppressed && hasAbility(enemy.abilities, 'frostbite');
+  const enemyHasFrostbite = (): boolean => !isEnemyActorAbilitiesSuppressed() && hasAbility(enemy.abilities, 'frostbite');
 
   const pushFrostbiteLog = (ownerName: string): void => {
     log.push({
@@ -3714,7 +3722,7 @@ export function executeBattle(
         abilities: characterStats.find((cs) => cs.characterId === c.id)?.abilities ?? [],
       }))
       .filter((owner) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, owner.abilities)),
-    ...(!enemyActorAbilitiesSuppressed ? [{ name: enemy.name, abilities: enemy.abilities }] : []),
+    ...(isEnemyActorAbilitiesSuppressed() ? [] : [{ name: enemy.name, abilities: enemy.abilities }]),
   ];
   const startPhaseEffects: Array<{ abilityId: AbilityId; actionName: string; effectLabel: string; multipliersByLevel: Record<number, number> }> = [
     { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
@@ -3725,7 +3733,7 @@ export function executeBattle(
 
   const resolveStartPhaseTriggerTiming = (timing: number): void => {
     if (timing === 9) {
-      if (enemyHasOblivion && characterStats.length > 0) {
+      if (enemyHasOblivion() && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
         const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
@@ -3760,7 +3768,7 @@ export function executeBattle(
         }
       }
 
-      for (const owner of oblivionOwners.sort((a, b) => a.stats.row - b.stats.row)) {
+      for (const owner of getOblivionOwners().sort((a, b) => a.stats.row - b.stats.row)) {
         const enemyHasUnforgettable = getEnemyAbilityLevel(enemy, 'unforgettable') >= 1;
         if (enemyHasUnforgettable) {
           log.push({
@@ -3794,7 +3802,7 @@ export function executeBattle(
     }
 
     if (timing === 8) {
-      if (enemyHasMimic && characterStats.length > 0) {
+      if (enemyHasMimic() && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
         const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
@@ -3814,7 +3822,7 @@ export function executeBattle(
         }
       }
 
-      for (const owner of mimicOwners.sort((a, b) => a.stats.row - b.stats.row)) {
+      for (const owner of getMimicOwners().sort((a, b) => a.stats.row - b.stats.row)) {
         const enemyValidAbilities = enemy.abilities.filter(
           (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
         );
@@ -3840,11 +3848,13 @@ export function executeBattle(
     }
 
     if (timing === 3) {
+      activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
+
       for (const ownerName of activeMagicSealQueue) {
         log.push(getMagicSealStartLog(ownerName));
       }
 
-      if (partyHasFrostbite) {
+      if (partyHasFrostbite()) {
         const frostbiteOwner = party.characters.find(c => {
           const stats = characterStats.find(candidate => candidate.characterId === c.id);
           return stats ? hasAbility(stats.abilities, 'frostbite') : false;
@@ -3852,7 +3862,7 @@ export function executeBattle(
         pushFrostbiteLog(frostbiteOwner?.name ?? '味方');
       }
 
-      if (enemyHasFrostbite) {
+      if (enemyHasFrostbite()) {
         pushFrostbiteLog(enemy.name);
       }
 
@@ -3890,7 +3900,7 @@ export function executeBattle(
         actorType: 'enemy',
         slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
         boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
-        frostbitePenalty: partyHasFrostbite && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
+        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
         actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
         actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
         actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
@@ -3906,7 +3916,7 @@ export function executeBattle(
           fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
           slowPenalty: getHighestAbilityLevel(cs.abilities, 'slow'),
           boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
-          frostbitePenalty: enemyHasFrostbite && !hasAbility(cs.abilities, 'coldproof') ? 1 : 0,
+          frostbitePenalty: enemyHasFrostbite() && !hasAbility(cs.abilities, 'coldproof') ? 1 : 0,
           actorHasTrueSight: hasAbility(cs.abilities, 'true_sight'),
           actorHasEquationBreaker: hasAbility(cs.abilities, 'equation_breaker'),
           actorHasWindRider: hasAbility(cs.abilities, 'wind_rider'),
