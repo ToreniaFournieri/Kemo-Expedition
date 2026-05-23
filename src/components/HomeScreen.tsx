@@ -9854,7 +9854,7 @@ function InventoryTab({
               <div key={entry.key} className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    {entry.characterImageSrc && <img src={entry.characterImageSrc} alt="" className="h-4 w-4 shrink-0 rounded object-cover" />}
+                    {entry.characterImageSrc && <img src={entry.characterImageSrc} alt="" className="h-10 w-10 shrink-0 rounded object-cover self-start" />}
                     <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
@@ -9914,7 +9914,7 @@ function InventoryTab({
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    {entry.equipped.characterImageSrc && <img src={entry.equipped.characterImageSrc} alt="" className="h-4 w-4 shrink-0 rounded object-cover" />}
+                    {entry.equipped.characterImageSrc && <img src={entry.equipped.characterImageSrc} alt="" className="h-10 w-10 shrink-0 rounded object-cover self-start" />}
                     <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
