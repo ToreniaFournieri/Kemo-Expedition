@@ -9902,7 +9902,7 @@ function InventoryTab({
                         }}
                         className="relative shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
                       >
-                        <img src={entry.characterImageSrc} alt="" className="pointer-events-none absolute bottom-0 left-1/2 h-14 w-14 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
+                        <img src={entry.characterImageSrc} alt="" className="pointer-events-none absolute bottom-[-4px] left-1/2 h-14 w-14 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
                       </button>
                     )}
                     <div className="min-w-0">
@@ -9983,7 +9983,7 @@ function InventoryTab({
                         }}
                         className="relative shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
                       >
-                        <img src={entry.equipped.characterImageSrc} alt="" className="pointer-events-none absolute bottom-0 left-1/2 h-16 w-16 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
+                        <img src={entry.equipped.characterImageSrc} alt="" className="pointer-events-none absolute bottom-[-4px] left-1/2 h-16 w-16 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
                       </button>
                     )}
                     <div className="min-w-0">
