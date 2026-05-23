@@ -2885,7 +2885,17 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs]);
 
   useEffect(() => {
-    if (timeSpeedBonusUntilMs === null) return;
+    // SpecRef: 8.1.2 | Header | Speed of Time
+    // Keep x1.2 active only while a valid bonus duration exists.
+    if (timeSpeedBonusUntilMs === null) {
+      setDebugSettings((prev) => {
+        if (prev.timeSpeed !== 'x1_2') return prev;
+        const next = { ...prev, timeSpeed: 'realtime' as const };
+        saveDebugSettings(next);
+        return next;
+      });
+      return;
+    }
     if (timeSpeedNowMs < timeSpeedBonusUntilMs) return;
     setTimeSpeedBonusUntilMs(null);
     setDebugSettings((prev) => {
