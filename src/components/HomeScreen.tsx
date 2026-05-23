@@ -9900,9 +9900,9 @@ function InventoryTab({
                             event.currentTarget,
                           );
                         }}
-                        className="shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
+                        className="relative shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
                       >
-                        <img src={entry.characterImageSrc} alt="" className="pointer-events-none -ml-1.5 -mt-1.5 h-14 w-14 max-w-none rounded object-contain" />
+                        <img src={entry.characterImageSrc} alt="" className="pointer-events-none absolute bottom-0 left-1/2 h-14 w-14 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
                       </button>
                     )}
                     <div className="min-w-0">
@@ -9981,9 +9981,9 @@ function InventoryTab({
                             event.currentTarget,
                           );
                         }}
-                        className="shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
+                        className="relative shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
                       >
-                        <img src={entry.equipped.characterImageSrc} alt="" className="pointer-events-none -ml-2 -mt-2 h-16 w-16 max-w-none rounded object-contain" />
+                        <img src={entry.equipped.characterImageSrc} alt="" className="pointer-events-none absolute bottom-0 left-1/2 h-16 w-16 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
                       </button>
                     )}
                     <div className="min-w-0">

@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 30 | 2026/05/23 | Refine Base tab Inventory equipped-owner portraits (Spec 8.4.2): pin owner portrait bottoms to the icon frame using absolute bottom-center positioning so enlarged art overflows only upward (top side) while keeping feet/base aligned. |
+| 0.7.3 | 29 | 2026/05/23 | Refine Base tab Inventory equipped-owner portraits (Spec 8.4.2): anchor owner character images to bottom-center (`object-bottom`) in equipped item/jewel rows so portraits align consistently from the feet/base line. |
 | 0.7.3 | 28 | 2026/05/23 | Refine Base tab Inventory equipped-owner portraits (Spec 8.4.2): enlarge and offset owner images with overflow-visible wrappers so character art visibly extends beyond each item/jewel frame border. |
 | 0.7.3 | 27 | 2026/05/23 | Refine Base tab Inventory character artwork framing (Spec 8.4.2): allow the selected character image panel to overflow so portrait art can extend beyond the frame boundary. |
 | 0.7.3 | 26 | 2026/05/23 | Refine Base tab Inventory equipped-owner portrait size (Spec 8.4.2): increase the character image in equipped inventory rows to 120% (40px → 48px) while keeping the item column width unchanged. |
