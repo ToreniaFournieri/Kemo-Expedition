@@ -106,7 +106,8 @@
   - Do not apply character-specific equipment multipliers or passive bonuses (e.g. 剣 x1.4) to the displayed values.
     - ex. `s.owned`: 名工のロングソード x3 | 近攻+19     [全売却 39G]
     - ex. `equipped`: [Character image] 名工のロングソード x1 | 近攻+19    PT1:name
-    - ex. `equipped jewel` [Character image] 魔導の結晶 (装備先:伝説の幻導の青銅杖) | [魔1][魔攻撃+22%] 魔攻+25 HP+14 x1    PT3:ハヤテ
+    - ex. `equipped jewel` [Character image] 魔導の結晶 (装備先:伝説の幻導の青銅杖) | [魔1][魔攻撃+22%] 魔攻+25 HP+14 x1
+      - `[Character image]` floating bubble text:  PTx:name  (ex. "PT3:ハヤテ")
 
   - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
     - Super rare item sell block: when player is going to sell super rare item, it is not allowed: "超レア称号がついたアイテムは売却出来ません"
