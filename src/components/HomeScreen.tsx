@@ -6550,7 +6550,7 @@ function PartyTab({
       </div>
 
       {/* Character details */}
-      <div className="relative overflow-hidden bg-pane rounded-lg border border-gray-200 p-4 mb-4 shadow-md shadow-slate-900/15">
+      <div className="relative overflow-visible bg-pane rounded-lg border border-gray-200 p-4 mb-4 shadow-md shadow-slate-900/15">
         {partyMemberImageSrc && (
           <>
             {/* SpecRef: 8.2.2 | Party member details | Display character image */}
