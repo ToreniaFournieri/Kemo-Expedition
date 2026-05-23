@@ -10158,6 +10158,13 @@ function DiaryTab({
     return '引分';
   };
 
+
+  const normalizeLegacyGodsDiaryName = (rawName: string): string => {
+    const trimmed = rawName.trim();
+    if (trimmed === 'ガーヴ(神,侍M)') return 'ガーヴ 消耗の神';
+    return trimmed;
+  };
+
   const getDiaryHeadline = (
     partyName: string,
     triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>,
@@ -10172,9 +10179,12 @@ function DiaryTab({
         .find((entry) => entry.enemyName.includes('(神魔戦)'))
         ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
         .trim();
+      const normalizedGodsBattleEnemyName = godsBattleEnemyName
+        ? normalizeLegacyGodsDiaryName(godsBattleEnemyName)
+        : null;
       const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog);
-      if (godsBattleEnemyName) {
-        return `[${partyName}] ${godsBattleEnemyName} ${godsBattleOutcome}`;
+      if (normalizedGodsBattleEnemyName) {
+        return `[${partyName}] ${normalizedGodsBattleEnemyName} ${godsBattleOutcome}`;
       }
       return `[${partyName}] 神魔戦 ${godsBattleOutcome}`;
     }
