@@ -11673,7 +11673,10 @@ function SettingTab({
   const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): { defeats: number; encounters: number } => {
     const enemyBattleStats = gameState.global.enemyBattleStats ?? {};
     const legacyRuntimeId = runtimeEnemy?.isGodEnemy ? runtimeEnemy.id : null;
-    const candidateIds = [god.enemyId, legacyRuntimeId].filter((id): id is number => typeof id === 'number');
+    // Keep compatibility with both legacy ID schemes and current dedicated Gods-battle stats IDs.
+    const dedicatedGodBattleStatsId = 900000 + god.tier;
+    const candidateIds = [god.enemyId, legacyRuntimeId, dedicatedGodBattleStatsId]
+      .filter((id): id is number => typeof id === 'number');
     return candidateIds.reduce((acc, enemyId) => {
       const stat = enemyBattleStats[enemyId] ?? { defeats: 0, encounters: 0 };
       return {
