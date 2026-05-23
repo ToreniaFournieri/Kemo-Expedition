@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 25 | 2026/05/23 | Fix UI_DIARY gods-battle headline display-name normalization (Spec 8.5, 4.1): legacy God name `ガーヴ(神,侍M)` now renders as `ガーヴ 消耗の神` in Diary line-1 notifications. |
 | 0.7.3 | 24 | 2026/05/23 | Refine Base tab Inventory 結晶 equipped list (Spec 8.4.2): remove inline owner text label (`PTn:キャラクター名`) from equipped jewel rows since owner portrait + floating bubble already provide owner identification. |
 | 0.7.3 | 23 | 2026/05/23 | Fix Base tab Inventory owner floating bubble dismissal (Spec 8.4.2): tapping elsewhere or the bubble itself now closes the bubble, matching other floating-bubble behavior while preserving tap on owner portraits to open/toggle details. |
 | 0.7.3 | 22 | 2026/05/23 | Refine Base tab Inventory equipped-item rows (Spec 8.4.2): remove inline equipped-owner text label (`PTn:キャラクター名`) because owner portrait + tap bubble now provide the same info. |
