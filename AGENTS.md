@@ -6,6 +6,7 @@
 3. If a user instruction conflicts with `@Specification.md`, do not continue the task.
 4. Clearly explain the conflict to the user and ask for clarification or resolution.
 5. After completing any change, increment the value in `build_number.txt` by 1.
+  - Exception: when the version nunber changed, the build number is set to be 1. 
 6. Update `@Specification_11.1_CHANGELOG.md` accordingly.
   - Update rule
     - Verion info is @Specification.md title part (ex: # KEMO EXPEDITION v0.6.3 - SPECIFICATION -> 0.6.3)

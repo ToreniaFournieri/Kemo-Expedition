@@ -631,6 +631,12 @@ function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDef | nul
   return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
 }
 
+function getEnemyLogBackgroundImagePath(enemy?: EnemyDef): string | null {
+  // SpecRef: 6.1.7 | Logs | Enemy image
+  if (typeof enemy?.id !== 'number') return null;
+  return resolvePublicAssetPath(`/enemy/E_${enemy.id}.png`);
+}
+
 function getEnemyClassSummary(enemy: EnemyDef): string {
   const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
   if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
@@ -1727,9 +1733,8 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   return [dParts.join(' '), bParts.join(' '), eText, mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
-function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
+function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
   const jewel = JEWEL_DEFS[jewelKey];
-  const multiplier = getItemDisplayMultiplier(item, categoryMultiplier);
   const cValue = getJewelCBonusValue(jewelKey, rank);
   const cText = (() => {
     if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
@@ -1742,13 +1747,12 @@ function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, ca
   })();
   const dText = jewel.dBaseBonuses.map((bonus) => {
     const value = getJewelDRankValue(bonus.base, rank);
-    const scaledValue = Math.round(value * multiplier);
-    if (bonus.stat === 'meleeAttack') return `近攻+${scaledValue}`;
-    if (bonus.stat === 'rangedAttack') return `遠攻+${scaledValue}`;
-    if (bonus.stat === 'magicalAttack') return `魔攻+${scaledValue}`;
-    if (bonus.stat === 'physicalDefense') return `物防+${scaledValue}`;
-    if (bonus.stat === 'magicalDefense') return `魔防+${scaledValue}`;
-    return `HP+${Math.round(value * multiplier * hpScaleMultiplier)}`;
+    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
+    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
+    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
+    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
+    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
+    return `HP+${value}`;
   }).join(' ');
   return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
@@ -6337,7 +6341,7 @@ function PartyTab({
         <div className="relative z-20">
       {parties.length >= 2 && (
         // SpecRef: 8.2.1 | Displays | Party List
-        <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
+        <div className="liquid-glass-segmented party-pt-segmented mb-4 flex gap-1 rounded-2xl p-1">
           {parties.map((partyEntry, partyIndex) => {
             const isSelected = partyIndex === selectedPartyIndex;
             return (
@@ -6546,7 +6550,7 @@ function PartyTab({
       </div>
 
       {/* Character details */}
-      <div className="relative overflow-hidden bg-pane rounded-lg border border-gray-200 p-4 mb-4 shadow-md shadow-slate-900/15">
+      <div className="relative overflow-visible bg-pane rounded-lg border border-gray-200 p-4 mb-4 shadow-md shadow-slate-900/15">
         {partyMemberImageSrc && (
           <>
             {/* SpecRef: 8.2.2 | Party member details | Display character image */}
@@ -7813,13 +7817,7 @@ function PartyTab({
                     ))}
                     {item.jewel && (
                       <div className="pt-1 text-gray-600">
-                        {getJewelSlotStatusText(
-                          item,
-                          item.jewel.key,
-                          item.jewel.rank,
-                          getCharacterCategoryMultiplier(char, item.category),
-                          hpDisplayMultiplier
-                        )}
+                        {getJewelSlotStatusText(item.jewel.key, item.jewel.rank)}
                       </div>
                     )}
                   </div>
@@ -8834,7 +8832,7 @@ function ExpeditionTab({
                       const isRoomExpanded = canExpandRoom && (isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex));
 
                       return (
-                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
+                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-visible shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
                         <button
                           onClick={() => {
                             if (!canExpandRoom) return;
@@ -8922,14 +8920,15 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
-                              {entry.enemySnapshot?.image_path && (
+                            <div className={`relative isolate overflow-visible border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                              {getEnemyLogBackgroundImagePath(entry.enemySnapshot) && (
                                 <>
                                   <img
-                                    src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                    src={getEnemyLogBackgroundImagePath(entry.enemySnapshot) ?? ''}
+                                    onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                     alt=""
                                     aria-hidden="true"
-                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                    className="pointer-events-none select-none absolute left-1/2 -top-14 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
                                     style={{
                                       width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                       maxWidth: 'none',
@@ -9557,7 +9556,36 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
 }) {
+  const UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME: Record<string, string> = {
+    'ケモ': 'Unique_Kemo.png',
+    'ライカ': 'Unique_Laika.png',
+    'ルナ': 'Unique_Luna.png',
+    'ノクス': 'Unique_Nox.png',
+    'マーレ': 'Unique_Merle.png',
+    'プチーツァ': 'Unique_Puchitsa.png',
+    '蒼牙破': 'Unique_Souga-ha.png',
+    'レナード': 'Unique_Leonard.png',
+    '葉隠': 'Unique_Hagakure.png',
+    'フィン': 'Unique_Finn.png',
+    'オルカ': 'Unique_Orca.png',
+    'ミシュカ': 'Unique_Mishka.png',
+  };
+  const getInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
+    const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME[character.name] : undefined;
+    if (uniqueFileName) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+    const race = RACES.find((entry) => entry.id === character.raceId);
+    if (!race) return null;
+    const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
+    return `${import.meta.env.BASE_URL}character/${partyId}_${race.englishName}_${genderLabel}.png`;
+  };
   const [showSold, setShowSold] = useState(false);
+  const [activeInventoryOwnerBubble, setActiveInventoryOwnerBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
   const hasEquippedJewels = parties.some((party) =>
     party.characters.some((character) => character.equipment.some((item) => !!item?.jewel))
@@ -9606,11 +9634,7 @@ function InventoryTab({
           slotIndex,
           characterName: character.name,
           raceId: character.raceId,
-          categoryMultiplier: getCharacterCategoryMultiplier(character, item.category),
-          hpScaleMultiplier: (() => {
-            const characterStats = computeCharacterStats(character, party.level);
-            return ((characterStats.baseStats.vitality + characterStats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(character);
-          })(),
+          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
         }];
       })
     )
@@ -9671,16 +9695,9 @@ function InventoryTab({
   const equippedJewels = parties.flatMap((party, partyIndex) =>
     party.characters.flatMap((character) => {
       const characterStats = computeCharacterStats(character, party.level);
-      const categoryMultiplierCache = new Map<ItemCategory, number>();
-      const hpScaleMultiplier = ((characterStats.baseStats.vitality + characterStats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(character);
 
       return character.equipment.slice(0, characterStats.maxEquipSlots).flatMap((item, slotIndex) => {
         if (!item?.jewel) return [];
-
-        const categoryMultiplier = categoryMultiplierCache.get(item.category) ?? getCharacterCategoryMultiplier(character, item.category);
-        if (!categoryMultiplierCache.has(item.category)) {
-          categoryMultiplierCache.set(item.category, categoryMultiplier);
-        }
 
         return [{
           key: `equipped-jewel-${party.id}-${character.id}-${slotIndex}-${item.id}-${item.enhancement}-${item.superRare}-${item.jewel.key}-${item.jewel.rank}`,
@@ -9690,8 +9707,7 @@ function InventoryTab({
           raceId: character.raceId,
           jewelKey: item.jewel.key,
           rank: item.jewel.rank,
-          categoryMultiplier,
-          hpScaleMultiplier,
+          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
         }];
       });
     })
@@ -9726,9 +9742,35 @@ function InventoryTab({
     [parties],
   );
   const selectedJewelPriorityValue = jewelAutoEquipPriorityPartyId == null ? 'manual' : `${jewelAutoEquipPriorityPartyId}`;
+  const handleInventoryOwnerBubbleToggle = (key: string, text: string, targetElement: HTMLElement) => {
+    if (activeInventoryOwnerBubble?.key === key) {
+      setActiveInventoryOwnerBubble(null);
+      return;
+    }
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleWidth = Math.min(220, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleWidth,
+    );
+    setActiveInventoryOwnerBubble({
+      key,
+      text,
+      top: triggerRect.bottom + 8,
+      left,
+      width: bubbleWidth,
+    });
+  };
 
   return (
-    <div>
+    <div
+      onPointerDown={() => {
+        if (activeInventoryOwnerBubble) {
+          setActiveInventoryOwnerBubble(null);
+        }
+      }}
+    >
       <div className="flex justify-between items-center mb-2 gap-2">
         <div className="text-sm text-gray-500">
           {isJewelCategory
@@ -9841,19 +9883,39 @@ function InventoryTab({
               );
             }
 
-            const race = RACES.find((raceEntry) => raceEntry.id === entry.raceId);
             return (
               <div key={entry.key} className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
-                    <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
-                    <span className="text-xs text-gray-500 shrink-0">x1</span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 min-w-0 flex-1">
+                    {entry.characterImageSrc && (
+                      <button
+                        type="button"
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                        onClick={(event) => {
+                          handleInventoryOwnerBubbleToggle(
+                            `equipped-jewel-${entry.key}`,
+                            `PT${entry.partyIndex + 1}:${entry.characterName}`,
+                            event.currentTarget,
+                          );
+                        }}
+                        className="relative shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
+                      >
+                        <img src={entry.characterImageSrc} alt="" className="pointer-events-none absolute bottom-[-4px] left-1/2 h-14 w-14 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
+                      </button>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
+                        <span className="text-xs text-gray-500 shrink-0">x1</span>
+                      </div>
+                      <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
+                        {getJewelSlotStatusText(entry.jewelKey, entry.rank)}
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500 shrink-0">PT{entry.partyIndex + 1}:{entry.characterName}</span>
-                </div>
-                <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getJewelSlotStatusText(entry.item, entry.jewelKey, entry.rank, entry.categoryMultiplier, entry.hpScaleMultiplier)}
+                  
                 </div>
               </div>
             );
@@ -9899,24 +9961,41 @@ function InventoryTab({
               );
             }
 
-            const race = RACES.find((raceEntry) => raceEntry.id === entry.equipped.raceId);
             return (
               <div
                 key={entry.key}
                 className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
-                    <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
-                    <span className="text-xs text-gray-500 shrink-0">x1</span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 min-w-0 flex-1">
+                    {entry.equipped.characterImageSrc && (
+                      <button
+                        type="button"
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                        onClick={(event) => {
+                          handleInventoryOwnerBubbleToggle(
+                            `equipped-item-${entry.key}`,
+                            `PT${entry.equipped.partyIndex + 1}:${entry.equipped.characterName}`,
+                            event.currentTarget,
+                          );
+                        }}
+                        className="relative shrink-0 h-10 w-10 overflow-visible rounded focus:outline-none"
+                      >
+                        <img src={entry.equipped.characterImageSrc} alt="" className="pointer-events-none absolute bottom-[-4px] left-1/2 h-16 w-16 max-w-none -translate-x-1/2 rounded object-contain object-bottom" />
+                      </button>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
+                        <span className="text-xs text-gray-500 shrink-0">x1</span>
+                      </div>
+                      <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
+                        {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500 shrink-0">
-                    PT{entry.equipped.partyIndex + 1}:{entry.equipped.characterName}
-                  </span>
-                </div>
-                <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier))}
                 </div>
               </div>
             );
@@ -9962,6 +10041,18 @@ function InventoryTab({
               )}
             </div>
           )}
+        </div>
+      )}
+      {activeInventoryOwnerBubble && (
+        <div
+          className="fixed z-50 rounded border border-gray-200 bg-white/95 px-2 py-1 text-xs text-gray-700 shadow-lg backdrop-blur-[1px]"
+          style={{
+            top: `${activeInventoryOwnerBubble.top}px`,
+            left: `${activeInventoryOwnerBubble.left}px`,
+            width: `${activeInventoryOwnerBubble.width}px`,
+          }}
+        >
+          {activeInventoryOwnerBubble.text}
         </div>
       )}
     </div>
@@ -10046,10 +10137,11 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>) => {
+  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
     if (triggers.includes('unlock')) return '解放の記録';
     if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
+    if (triggers.includes('godsBattle')) return '神魔戦の記録';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
     if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
     if (triggers.includes('bossRare')) return 'ボスレア獲得の記録';
@@ -10058,13 +10150,46 @@ function DiaryTab({
   };
 
 
+  const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLog) => {
+    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
+    if (!hasGodsBattleEntry) return '未到達';
+    if (expeditionLog.finalOutcome === 'Clear') return '勝利';
+    if (expeditionLog.finalOutcome === 'Defeat') return '敗北';
+    return '引分';
+  };
+
+
+  const normalizeLegacyGodsDiaryName = (rawName: string): string => {
+    const trimmed = rawName.trim();
+    if (trimmed === 'ガーヴ(神,侍M)') return 'ガーヴ 消耗の神';
+    return trimmed;
+  };
+
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>,
+    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>,
     rewards: Item[],
+    expeditionLog: ExpeditionLog,
     sideQuestLabel?: string,
     unlockHeadline?: string
   ) => {
+    // SpecRef: 8.5 | UI_DIARY | 神魔戦通知
+    if (triggers.includes('godsBattle')) {
+      const godsBattleEnemyName = expeditionLog.entries
+        .find((entry) => entry.enemyName.includes('(神魔戦)'))
+        ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
+        .trim();
+      const normalizedGodsBattleEnemyName = godsBattleEnemyName
+        ? normalizeLegacyGodsDiaryName(godsBattleEnemyName)
+        : null;
+      const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog);
+      if (normalizedGodsBattleEnemyName) {
+        return `[${partyName}] ${normalizedGodsBattleEnemyName} ${godsBattleOutcome}`;
+      }
+      return `[${partyName}] 神魔戦 ${godsBattleOutcome}`;
+    }
+
+
     if (triggers.includes('unlock')) {
       return unlockHeadline
         ? `[${partyName}] ${unlockHeadline}`
@@ -10188,6 +10313,17 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
+                    <span>神魔戦通知</span>
+                    <select
+                      value={settings.notifyGodsBattle ? 'あり' : 'なし'}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'あり' })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      <option value="あり">あり</option>
+                      <option value="なし">なし</option>
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-2">
                     <span>神魔レア通知</span>
                     <select
                       value={settings.mythicThreshold}
@@ -10286,7 +10422,7 @@ function DiaryTab({
             >
               <span className="flex items-start justify-between gap-2">
                 <span className={`pr-2 ${diaryLog.isRead ? 'font-normal text-gray-500' : 'font-medium text-gray-900'}`}>
-                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards, diaryLog.sideQuestLabel, diaryLog.unlockHeadline)}
+                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards, log, diaryLog.sideQuestLabel, diaryLog.unlockHeadline)}
                 </span>
                 {!isSideQuestLog && <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>}
               </span>
@@ -10458,11 +10594,12 @@ function DiaryTab({
                           )}
                         </button>
                         {isRoomExpanded && entry.details && (
-                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${entry.enemySnapshot?.image_path ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
-                            {entry.enemySnapshot?.image_path && (
+                          <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                            {getEnemyLogBackgroundImagePath(entry.enemySnapshot) && (
                               <>
                                 <img
-                                  src={resolvePublicAssetPath(entry.enemySnapshot.image_path) ?? entry.enemySnapshot.image_path}
+                                  src={getEnemyLogBackgroundImagePath(entry.enemySnapshot) ?? ''}
+                                    onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                   alt=""
                                   aria-hidden="true"
                                   className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
@@ -10831,7 +10968,20 @@ function SettingTab({
     const party = gameState.parties[partyIndex];
     const latestLog = party?.lastExpeditionLog;
     if (!party || !latestLog) return null;
-    return new File(['<!doctype html><html><body></body></html>'], `latest-battle-log-${partyLabel}.html`, { type: 'text/html' });
+    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
+      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
+        const noteDisplay = detail.note ? `(${detail.note})` : '';
+        return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
+      }).join('');
+      return `<section><h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3><p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
+    }).join('\n');
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
@@ -11511,9 +11661,19 @@ function SettingTab({
     return (head ?? withoutRoleSuffix).trim();
   };
 
-  const getGodBestiaryStatEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): number => {
-    if (runtimeEnemy?.isGodEnemy) return runtimeEnemy.id;
-    return 900000 + god.expId;
+  const getGodBestiaryDisplayEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number]): number => god.enemyId;
+
+  const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): { defeats: number; encounters: number } => {
+    const enemyBattleStats = gameState.global.enemyBattleStats ?? {};
+    const legacyRuntimeId = runtimeEnemy?.isGodEnemy ? runtimeEnemy.id : null;
+    const candidateIds = [god.enemyId, legacyRuntimeId].filter((id): id is number => typeof id === 'number');
+    return candidateIds.reduce((acc, enemyId) => {
+      const stat = enemyBattleStats[enemyId] ?? { defeats: 0, encounters: 0 };
+      return {
+        defeats: acc.defeats + stat.defeats,
+        encounters: acc.encounters + stat.encounters,
+      };
+    }, { defeats: 0, encounters: 0 });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
@@ -11524,7 +11684,7 @@ function SettingTab({
         if (debugSettings.displayAllBestiary) return true;
         const runtimeEnemy = buildGodRuntimeEnemy(god);
         if (!runtimeEnemy) return false;
-        const battleStats = gameState.global.enemyBattleStats?.[getGodBestiaryStatEnemyId(god, runtimeEnemy)] ?? { defeats: 0, encounters: 0 };
+        const battleStats = getGodBestiaryBattleStats(god, runtimeEnemy);
         return battleStats.encounters > 0;
       })
       .flatMap((god) => [god.name, normalizeBestiaryGodName(god.displayName)])
@@ -12368,7 +12528,7 @@ function SettingTab({
                 <img
                   src={selectedRosterImageSrc}
                   alt={activeRosterCharacter.name}
-                  className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] max-w-none h-auto"
+                  className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] max-w-[507px] h-auto"
                 />
               ) : null}
               <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
@@ -12505,7 +12665,7 @@ function SettingTab({
                     )}
                     <div className="relative z-10 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>ID: {getGodBestiaryStatEnemyId(god, godRuntimeEnemy)}</div>
+                      <div>ID: {getGodBestiaryDisplayEnemyId(god)}</div>
                       <div></div>
                       <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
                       <div>レベル: {formatNumber(god.level)}</div>
@@ -12589,7 +12749,7 @@ function SettingTab({
                     <div>待機探索地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                     {(() => {
-                      const battleStats = getBestiaryEnemyBattleStats(getGodBestiaryStatEnemyId(god, godRuntimeEnemy));
+                      const battleStats = getGodBestiaryBattleStats(god, godRuntimeEnemy);
                       return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
                     })()}
                     </div>
@@ -12688,6 +12848,7 @@ function SettingTab({
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const physicalDefenseAmplifierPercent = displayEnemy.physicalDefenseAmplifier * 100;
                 const magicalDefenseAmplifierPercent = displayEnemy.magicalDefenseAmplifier * 100;
+                const bestiaryEnemyImagePath = resolvePublicAssetPath(`/enemy/E_${displayEnemy.id}.png`);
                 return (
                   <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
                     <button
@@ -12698,8 +12859,23 @@ function SettingTab({
                       <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                     </button>
                     {enemyExpanded && (
-                      <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                        {bestiaryEnemyImagePath && (
+                          <img
+                            src={bestiaryEnemyImagePath}
+                            alt=""
+                            aria-hidden="true"
+                            className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
+                            style={{
+                              width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
+                              maxWidth: 'none',
+                            }}
+                            onError={(event) => {
+                              event.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>ID: {displayEnemy.id}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>

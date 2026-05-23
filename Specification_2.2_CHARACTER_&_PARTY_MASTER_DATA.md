@@ -13,6 +13,126 @@
 | PT5 | Chinese naming for pet name |
 | PT6 | Portland naming for pet name |
 
+- prompt
+
+**PT1 — Plain Explorers**
+- Walking-themed expedition party  
+- Party color: green
+
+| Race | Breed and fur color | Palace Archetype | Role Theme | Main Color A | Main Color B | Accent Color C | Pose Direction |
+|---|---|---|---|---|---|---|---|
+| 🐺 Lupinian | Gray wolf, cool gray fur | Trail Captain | Plain Pathfinder | Clover Green | Marigold Orange | Petal Peach | Walking forward with map case |
+| 🦊 Vulpinian | Red fox, russet fur | Route Trickster | Grassland Scout | Fern Green | Cream White | Copper Orange | Light walking step, sly smile |
+| 😺 Felidian | Tabby cat, brown striped fur | The young lady in a dress | guest | Pearl White | - | aqua blue | elegant gait |
+| 🐶 Caninian | Golden retriever, golden fur | Loyal Guide | Sunny Trail Walker | orange red | Cream Linen | Travel Brass | Cheerful forward walk |
+| 🐻 Ursan | Brown bear, deep brown fur | Pack Guardian | Heavy Gear Carrier | Deep Expedition Blue | Dusty Ivory | white | Steady powerful walk |
+| 🦝 Procyonian | Tanuki, brown fur, no stripe tail | Roadside Merchant | Forage Collector | Sage Green | Clay Beige | Persimmon Orange | Modest walking pose |
+| 🐰 Leporian | Holland Lop, soft white and tan fur | Meadow Pilgrim | Herb Gatherer | Mint Green | Pearl White | red | Small quick walking step |
+| 🦌 Cervin | White-tailed deer, tan fur | Plain Warden | Horizon Watcher | Pale Horizon Cyan | Warm Stone Beige |  Deep Indigo | Elegant long-stride walk |
+| 🐭 Murid | Field mouse, warm gray fur | Camp Cook | Seed Finder | Strawberry Cream | Toasted Oat | Clover Green | Tiny energetic walk |
+| Kemoria | Black Tan Shiba Inu  | traveler | - | Royal Mail Blue | Envelope Cream | Stamp Red | Curious, looking back |
+
+**PT2 — Tropical Land-Side**
+- Tropical ocean expedition party
+- Theme color: aqua / coral / sunlight reflections
+
+| Race | Breed and fur color | Palace Archetype | Cloth Main Color A | Cloth Main Color B | Accent Color C | Pose Direction |
+|---|---|---|---|---|---|---|
+| 🐺 Lupinian | fantasy taste Light Blue and white wolf, splash fur pattern, aqua eyes | Streamlined swimmer gear | green | Pearl White | lemon yellow | Wind-cutting forward stride |
+| 🦊 Vulpinian | Rüppell’s Fox, sandy cream fur with burnt crimson markings | Bright coral sporty wear, playful asymmetry | Burnt Crimson | Coral Beige | Lagoon Aqua | Playful turning step |
+| 😺 Felidian | Siamese cat, cream fur with deep brown points | Elegant resort-like wraps, sleek swimwear | Deep Lagoon Blue | Coconut Cream | Gold Sunlight | Elegant cloth-adjusting stance |
+| 🐶 Caninian | Carolina Dog, sandy golden fur | Shore Runner | purple | Sandy Ivory | Mango Yellow | Coastal rescue scout pose |
+| 🐻 Ursan | Sun Bear, dark brown fur with golden chest mark | Cargo explorer gear, thick rope accessories | Deep Ocean Blue | Wet Stone Gray | Sun Gold | Relaxed heavy pack carrier |
+| 🦝 Procyonian | Blue-and-white tanuki with soft white markings, no stripe tail | Waterproof scavenger pockets, grin deviously | Harbor Navy | Pure White | Maritime rogue  | Sneaky side-glance scavenger pose |
+| 🐰 Leporian | Cinnamon Rabbit, warm cinnamon fur | Energetic island traveler, draped waist cloth | Papaya Orange | Palm Leaf Green | Mango Yellow | Breezy hopping cross-step |
+| 🦌 Cervin | Axis Deer, warm tan fur with pale spots | Tropical ceremonial voyager aesthetic | Horizon Cyan | Sand Beige | Reef Indigo | Ceremonial horizon-looking stance |
+| 🐭 Murid | Harvest Mouse, warm brown and white fur pattern| Tiny Reef Explorer | Crystal Aqua | Pearl Sand | Starfish Orange | Tiny quick barefoot bounce |
+| 🐋 Orcinian | Orca, black-and-white ocean pattern | Deep Sea Vanguard, energetic | Arctic Teal | Glacier White | Aurora Lime | High-speed breach leap |
+
+**PT3 Desert adventurer outfit**
+- yellow, Burnt Crimson
+
+| races | concept | breed |
+|------|----------------|----------|
+| Lupinian | 🐺Wolf | Arabian Wolf, sandy beige and pale ash |
+| Vulpinian | 🦊Fox | Corsac Fox |
+| Felidian | 😺Cat | Sand Cat |
+| Caninian | 🐶Dog | Saluki |
+| Ursan | 🐻Bear | Sloth Bear, |
+| Procyonian |🦝Tanuki | Ring-tailed Coati, dusty cream with dark dune stripes |
+| Leporian | 🐰Rabbit | Desert Cottontail |
+| Cervin |🦌Deer | Dorcas Gazelle |
+| Murid | 🐭Mouse | Jerboa, warm dune-brown fur with pale sandstone speckles |
+
+
+**PT4**
+
+| races | concept | breed |
+|------|----------------|----------|
+| Lupinian | 🐺Wolf | Black Wolf, ember-red markings, vigilant pathfinder |
+| Vulpinian | 🦊Fox | Cross Fox,     smoky rust orange, Forest Relic Thief, sly grin |
+| Felidian | 😺Cat | Bombay Cat, lapis lazuli highlights, Lava cliff runner |
+| Caninian | 🐶Dog | German Shepherd, dark ash brown + red utility gear, dependable protector |
+| Ursan | 🐻Bear | Black Bear, glowing furnace-orange accents, fortress defender |
+| Procyonian |🦝Tanuki | Red Panda, reluctant but resourceful |
+| Leporian | 🐰Rabbit | rabbit, verdigris fur with glowing red inner ears, energetic lava messenger |
+| Cervin |🦌Deer | yellow-green deer, calm sacred dignity |
+| Murid | 🐭 Mouse | Volcano mouse, soot gray + tiny ember accents, Lava tunnel explorer, excited expression |
+
+**PT5 Interstellar traveller**
+
+| races | concept | breed |
+|------|----------------|----------|
+| Lupinian | 🐺Wolf | Arctic wolf |
+| Vulpinian | 🦊Fox | snow fox |
+| Felidian | 😺Cat | MIkeneko |
+| Caninian | 🐶Dog | Border collie |
+| Ursan | 🐻Bear | Panda |
+| Procyonian |🦝Tanuki | Tanuki |
+| Leporian | 🐰Rabbit | Dwarf Hotot |
+| Cervin |🦌Deer | Reindeer |
+| Murid | 🐭 Mouse | Long-Haired Fancy Mouse |
+
+
+**PT6 — Leporian Moon Palace**
+
+Fantasy Rococo Moon Kingdom
+Cloth:   silk chiffon
+
+| Race | Breed | Palace Archetype | Role Theme | Main Color A | Main Color B | Accent Color C | Pose Direction |
+|---|---|---|---|---|---|---|---|
+| 🐺 Lupinian | Maned Wolf | Lunar Pathfinder | Moon Route Cartographer | Burnt Crimson | Pale Titanium | Electric Aqua | Cloak sweeping backward while pointing toward stars |
+| 🦊 Vulpinian | Fennec Fox | Court Illusionist | Mirage Ballroom Mage | Velvet Lavender | Silver Pearl | Rose Aurora | One hand hiding smile behind folding fan |
+| 😺 Felidian | Maine Coon | Royal Archivist | Astral Library Keeper | Midnight Navy | Dust Silver | Sapphire Blue | Sitting sideways with floating tome |
+| 🐶 Caninian | Siberian Husky | Aurora Navigator | Ice Route Observatory Officer | Muted Cyan Gray | Powder White | Ice Pink | Confident forward-point gesture |
+| 🐻 Ursan | Tsukinowaguma | Moon Forge Guardian | Palace Bastion Knight | Ash Titanium | Warm Stone | Ember Gold | Heavy protective stance with cape drifting |
+| 🦝 Procyonian | Tanuki (No Stripe Tail) | Hidden Garden Envoy | Moon Garden Diplomat | Moss Jade | Soft Cream | Spirit Amber | Gentle greeting gesture with flowing sleeves |
+| 🐰 Leporian | Holland Lop | Lunar Ceremony Retainer | Moon Ceremony Attendant | Pearl White | Lunar Yellow | Pink Quartz, Pale Gold | Floating curtsy with drooping ears emphasized |
+| 🦌 Cervin | White-tailed Deer + Reindeer | Star Choir Herald | Constellation Priest | Clear Sky Blue | Snow White | Lapis Lazuli | Elegant upward-reaching pose |
+| 🐭 Murid | Dormouse | Dream Observatory Apprentice | Sleepy Astrologer | Cocoa Ash | Pale Linen | Moonlight Amber | Holding tiny floating lantern while drifting |
+
+- prompt (indivisual)
+
+```
+Let’s make a character image
+
+# PT6 — Leporian Moon Palace
+
+| Race | Breed and fur color | Palace Archetype | Cloth Main Color A | Cloth Main Color B | Accent Color C | Pose Direction |
+|---|---|---|---|---|---|---|
+| 🐻 Ursan | Tsukinowaguma | Moon Forge Guardian | Palace Bastion Knight | Ash Titanium | Warm Stone | Ember Gold | Heavy protective stance with cape drifting |
+
+Cloth:   silk chiffon
+Gender: female
+
+Young, very small bust, Diagonal composition, right to left, looking at camera, with exposed midriff.
+
+Simple kemono anime eyes with oversized rounded pupils, thick black feminine upper eyelids, a large centered white oval catchlight inside each pupil, minimal iris rendering, mascot-like expression, flat-color eye style
+
+Background is white and only the character. 
+keeping the entire character comfortably inside the frame
+No human-like hair, flat color, no outlines
+```
 
 #### 2.2.1 Potential default name for player side characters
 
