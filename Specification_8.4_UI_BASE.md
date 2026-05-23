@@ -101,9 +101,9 @@
 	   2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
 	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher
        4. Equiped item (From PT1 row1, PT1 row2, ... , PT2 row6)
-  - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line
-    - Equipment status values (e.g. 近攻+19) display the item's base status only.
-    - Do not apply character-specific equipment multipliers or passive bonuses (e.g. 剣 x1.4) to the displayed values.
+  - Item Row: The name and count are left-aligned, while the sell all button is right-aligned. 
+  - Equipment status values (e.g. 近攻+19) display the item's base status only.
+  - Do not apply character-specific equipment multipliers or passive bonuses (e.g. 剣 x1.4) to the displayed values.
     - ex. `s.owned`: 名工のロングソード x3 | 近攻+19     [全売却 39G]
     - ex. `equipped`: [Character image] 名工のロングソード x1 | 近攻+19    PT1:name
     - ex. `equipped jewel` [Character image] 魔導の結晶 (装備先:伝説の幻導の青銅杖) | [魔1][魔攻撃+22%] 魔攻+25 HP+14 x1    PT3:ハヤテ
