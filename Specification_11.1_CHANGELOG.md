@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 28 | 2026/05/23 | Refine Base tab Inventory equipped-owner portraits (Spec 8.4.2): enlarge and offset owner images with overflow-visible wrappers so character art visibly extends beyond each item/jewel frame border. |
 | 0.7.3 | 27 | 2026/05/23 | Refine Base tab Inventory character artwork framing (Spec 8.4.2): allow the selected character image panel to overflow so portrait art can extend beyond the frame boundary. |
 | 0.7.3 | 26 | 2026/05/23 | Refine Base tab Inventory equipped-owner portrait size (Spec 8.4.2): increase the character image in equipped inventory rows to 120% (40px → 48px) while keeping the item column width unchanged. |
 | 0.7.3 | 25 | 2026/05/23 | Fix UI_DIARY gods-battle headline display-name normalization (Spec 8.5, 4.1): legacy God name `ガーヴ(神,侍M)` now renders as `ガーヴ 消耗の神` in Diary line-1 notifications. |
