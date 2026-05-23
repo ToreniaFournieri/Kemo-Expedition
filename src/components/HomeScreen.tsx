@@ -9983,7 +9983,7 @@ function InventoryTab({
                         }}
                         className="shrink-0 rounded focus:outline-none"
                       >
-                        <img src={entry.equipped.characterImageSrc} alt="" className="h-10 w-10 rounded object-cover" />
+                        <img src={entry.equipped.characterImageSrc} alt="" className="h-12 w-12 rounded object-cover" />
                       </button>
                     )}
                     <div className="min-w-0">
