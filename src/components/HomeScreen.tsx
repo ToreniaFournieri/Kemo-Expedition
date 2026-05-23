@@ -9984,9 +9984,6 @@ function InventoryTab({
                       </div>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-500 shrink-0 pt-0.5">
-                    PT{entry.equipped.partyIndex + 1}:{entry.equipped.characterName}
-                  </span>
                 </div>
               </div>
             );
