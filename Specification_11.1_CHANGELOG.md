@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 5 | 2026/05/23 | Fix START ability order state checks in battle runtime (Spec 6.1.1.1): resolve `a.oblivion`/`a.mimic` owners and frostbite-source effects from current ability state at trigger timing, so abilities removed earlier in START no longer activate or apply initiative penalties later in the same battle. |
 | 0.7.4 | 4 | 2026/05/23 | Fix START timing ability interaction in battle runtime (Spec 6.1.1.1): rebuild active `a.magic-seal` queue at timing 3 after earlier timing-9 `a.oblivion` resolution so abilities erased by Oblivion no longer trigger Magic Seal later in the same battle. |
 | 0.7.4 | 3 | 2026/05/23 | Fix Speed of Time bonus expiry fallback (Spec 8.1.2): when no valid bonus duration exists (including after reload with expired data), automatically revert runtime speed from `x1.2` to `x1.0` so the header no longer remains at `x1.2(0h)`. |
 | 0.7.4 | 2 | 2026/05/23 | Fix Party tab status pane character artwork overflow (Spec 8.2.2): clip the background portrait to the status pane bounds so it no longer spills into lower sections while leaving other tabs and character-image behaviors unchanged. |
