@@ -105,7 +105,7 @@
   - Equipment status values (e.g. 近攻+19) display the item's base status only.
   - Do not apply character-specific equipment multipliers or passive bonuses (e.g. 剣 x1.4) to the displayed values.
     - ex. `s.owned`: 名工のロングソード x3 | 近攻+19     [全売却 39G]
-    - ex. `equipped`: [Character image] 名工のロングソード x1 | 近攻+19    PT1:name
+    - ex. `equipped`: [Character image] 名工のロングソード x1 | 近攻+19
     - ex. `equipped jewel` [Character image] 魔導の結晶 (装備先:伝説の幻導の青銅杖) | [魔1][魔攻撃+22%] 魔攻+25 HP+14 x1
       - `[Character image]` floating bubble text:  PTx:name  (ex. "PT3:ハヤテ")
 
