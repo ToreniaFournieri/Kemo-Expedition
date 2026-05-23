@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 18 | 2026/05/23 | Update Inventory runtime display (Spec 8.4.2): equipped item/jewel status values now show base values only (no character-specific multipliers/passive effects), and equipped owner icon now uses the same character image as the item owner. |
 | 0.7.3 | 17 | 2026/05/22 | Refine UI_DIARY 神魔戦通知 outcome labels (Spec 8.5): map line-1 outcome to 勝利/敗北/引分/未到達 based on gods-battle encounter and expedition result while keeping location+date on line 2. |
 | 0.7.3 | 16 | 2026/05/22 | Update UI_DIARY gods-battle runtime headline/detail format (Spec 8.5): render 神魔戦通知 title as `[PT] 神名 結果` (e.g., 敗北/撃破) and keep line-2 gray text as expedition location + date. |
 | 0.7.3 | 15 | 2026/05/22 | Rename runtime enemy display name for Enemy_ID 102 (Spec 4.2.2) from `草むらの狩り獣` to `草むらのまじない士` to align with the master-data table. |
