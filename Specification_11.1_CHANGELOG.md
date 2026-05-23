@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 21 | 2026/05/23 | Refine Base tab Inventory pane equipped-owner portrait spacing and interaction (Spec 8.4.2): reduce gap next to character image without changing image size, and add tap/click floating bubble showing owner label format `PTn:キャラクター名`. |
 | 0.7.3 | 20 | 2026/05/23 | Refine Base tab Inventory equipped-entry layout (Spec 8.4.2): keep owner portrait at two-line height and render the second status line alongside the image (under the item name) instead of below the whole row. |
 | 0.7.3 | 19 | 2026/05/23 | Refine Base tab Inventory pane equipped-owner thumbnail display (Spec 8.4.2): enlarge equipped item/jewel character portraits to approximately two-line height for improved readability while preserving current owner mapping. |
 | 0.7.3 | 18 | 2026/05/23 | Update Inventory runtime display (Spec 8.4.2): equipped item/jewel status values now show base values only (no character-specific multipliers/passive effects), and equipped owner icon now uses the same character image as the item owner. |

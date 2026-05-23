@@ -9579,6 +9579,13 @@ function InventoryTab({
     return `${import.meta.env.BASE_URL}character/${partyId}_${race.englishName}_${genderLabel}.png`;
   };
   const [showSold, setShowSold] = useState(false);
+  const [activeInventoryOwnerBubble, setActiveInventoryOwnerBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
   const hasEquippedJewels = parties.some((party) =>
     party.characters.some((character) => character.equipment.some((item) => !!item?.jewel))
@@ -9735,6 +9742,26 @@ function InventoryTab({
     [parties],
   );
   const selectedJewelPriorityValue = jewelAutoEquipPriorityPartyId == null ? 'manual' : `${jewelAutoEquipPriorityPartyId}`;
+  const handleInventoryOwnerBubbleToggle = (key: string, text: string, targetElement: HTMLElement) => {
+    if (activeInventoryOwnerBubble?.key === key) {
+      setActiveInventoryOwnerBubble(null);
+      return;
+    }
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleWidth = Math.min(220, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleWidth,
+    );
+    setActiveInventoryOwnerBubble({
+      key,
+      text,
+      top: triggerRect.bottom + 8,
+      left,
+      width: bubbleWidth,
+    });
+  };
 
   return (
     <div>
@@ -9854,7 +9881,21 @@ function InventoryTab({
               <div key={entry.key} className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2 min-w-0 flex-1">
-                    {entry.characterImageSrc && <img src={entry.characterImageSrc} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />}
+                    {entry.characterImageSrc && (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          handleInventoryOwnerBubbleToggle(
+                            `equipped-jewel-${entry.key}`,
+                            `PT${entry.partyIndex + 1}:${entry.characterName}`,
+                            event.currentTarget,
+                          );
+                        }}
+                        className="shrink-0 rounded focus:outline-none"
+                      >
+                        <img src={entry.characterImageSrc} alt="" className="h-10 w-10 rounded object-cover" />
+                      </button>
+                    )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
@@ -9918,7 +9959,21 @@ function InventoryTab({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2 min-w-0 flex-1">
-                    {entry.equipped.characterImageSrc && <img src={entry.equipped.characterImageSrc} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />}
+                    {entry.equipped.characterImageSrc && (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          handleInventoryOwnerBubbleToggle(
+                            `equipped-item-${entry.key}`,
+                            `PT${entry.equipped.partyIndex + 1}:${entry.equipped.characterName}`,
+                            event.currentTarget,
+                          );
+                        }}
+                        className="shrink-0 rounded focus:outline-none"
+                      >
+                        <img src={entry.equipped.characterImageSrc} alt="" className="h-10 w-10 rounded object-cover" />
+                      </button>
+                    )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
@@ -9977,6 +10032,18 @@ function InventoryTab({
               )}
             </div>
           )}
+        </div>
+      )}
+      {activeInventoryOwnerBubble && (
+        <div
+          className="fixed z-50 rounded border border-gray-200 bg-white/95 px-2 py-1 text-xs text-gray-700 shadow-lg backdrop-blur-[1px]"
+          style={{
+            top: `${activeInventoryOwnerBubble.top}px`,
+            left: `${activeInventoryOwnerBubble.left}px`,
+            width: `${activeInventoryOwnerBubble.width}px`,
+          }}
+        >
+          {activeInventoryOwnerBubble.text}
         </div>
       )}
     </div>
