@@ -9764,7 +9764,13 @@ function InventoryTab({
   };
 
   return (
-    <div>
+    <div
+      onPointerDown={() => {
+        if (activeInventoryOwnerBubble) {
+          setActiveInventoryOwnerBubble(null);
+        }
+      }}
+    >
       <div className="flex justify-between items-center mb-2 gap-2">
         <div className="text-sm text-gray-500">
           {isJewelCategory
@@ -9884,6 +9890,9 @@ function InventoryTab({
                     {entry.characterImageSrc && (
                       <button
                         type="button"
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                        }}
                         onClick={(event) => {
                           handleInventoryOwnerBubbleToggle(
                             `equipped-jewel-${entry.key}`,
@@ -9962,6 +9971,9 @@ function InventoryTab({
                     {entry.equipped.characterImageSrc && (
                       <button
                         type="button"
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                        }}
                         onClick={(event) => {
                           handleInventoryOwnerBubbleToggle(
                             `equipped-item-${entry.key}`,
