@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 2 | 2026/05/23 | Fix Party tab status pane character artwork overflow (Spec 8.2.2): clip the background portrait to the status pane bounds so it no longer spills into lower sections while leaving other tabs and character-image behaviors unchanged. |
 | 0.7.4 | 32 | 2026/05/23 | Prepare v0.7.4 runtime update: bump app version to `v0.7.4` and advance runtime build number for this change set. |
 | 0.7.3 | 31 | 2026/05/23 | Refine Base tab Inventory equipped-owner portrait anchoring (Spec 8.4.2): keep bottom-center anchoring and lower the portrait by 4px so character feet sit closer to the inventory card bottom edge. |
 | 0.7.3 | 30 | 2026/05/23 | Refine Base tab Inventory equipped-owner portraits (Spec 8.4.2): pin owner portrait bottoms to the icon frame using absolute bottom-center positioning so enlarged art overflows only upward (top side) while keeping feet/base aligned. |

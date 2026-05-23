@@ -6552,7 +6552,7 @@ function PartyTab({
       {/* Character details */}
       <div className="relative overflow-visible bg-pane rounded-lg border border-gray-200 p-4 mb-4 shadow-md shadow-slate-900/15">
         {partyMemberImageSrc && (
-          <>
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg" aria-hidden="true">
             {/* SpecRef: 8.2.2 | Party member details | Display character image */}
             <img
               src={partyMemberImageSrc}
@@ -6577,11 +6577,8 @@ function PartyTab({
                 maxWidth: 'none',
               }}
             />
-            <div
-              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/25' : 'bg-white/30'}`}
-              aria-hidden="true"
-            />
-          </>
+            <div className={`absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/25' : 'bg-white/30'}`} />
+          </div>
         )}
         <div className="relative z-10">
         <div className="flex justify-between items-start mb-2 gap-2">
