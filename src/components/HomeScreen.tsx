@@ -1733,9 +1733,8 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   return [dParts.join(' '), bParts.join(' '), eText, mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
-function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
+function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
   const jewel = JEWEL_DEFS[jewelKey];
-  const multiplier = getItemDisplayMultiplier(item, categoryMultiplier);
   const cValue = getJewelCBonusValue(jewelKey, rank);
   const cText = (() => {
     if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
@@ -1748,13 +1747,12 @@ function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, ca
   })();
   const dText = jewel.dBaseBonuses.map((bonus) => {
     const value = getJewelDRankValue(bonus.base, rank);
-    const scaledValue = Math.round(value * multiplier);
-    if (bonus.stat === 'meleeAttack') return `近攻+${scaledValue}`;
-    if (bonus.stat === 'rangedAttack') return `遠攻+${scaledValue}`;
-    if (bonus.stat === 'magicalAttack') return `魔攻+${scaledValue}`;
-    if (bonus.stat === 'physicalDefense') return `物防+${scaledValue}`;
-    if (bonus.stat === 'magicalDefense') return `魔防+${scaledValue}`;
-    return `HP+${Math.round(value * multiplier * hpScaleMultiplier)}`;
+    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
+    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
+    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
+    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
+    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
+    return `HP+${value}`;
   }).join(' ');
   return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
@@ -7819,13 +7817,7 @@ function PartyTab({
                     ))}
                     {item.jewel && (
                       <div className="pt-1 text-gray-600">
-                        {getJewelSlotStatusText(
-                          item,
-                          item.jewel.key,
-                          item.jewel.rank,
-                          getCharacterCategoryMultiplier(char, item.category),
-                          hpDisplayMultiplier
-                        )}
+                        {getJewelSlotStatusText(item.jewel.key, item.jewel.rank)}
                       </div>
                     )}
                   </div>
@@ -9564,6 +9556,28 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
 }) {
+  const UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME: Record<string, string> = {
+    'ケモ': 'Unique_Kemo.png',
+    'ライカ': 'Unique_Laika.png',
+    'ルナ': 'Unique_Luna.png',
+    'ノクス': 'Unique_Nox.png',
+    'マーレ': 'Unique_Merle.png',
+    'プチーツァ': 'Unique_Puchitsa.png',
+    '蒼牙破': 'Unique_Souga-ha.png',
+    'レナード': 'Unique_Leonard.png',
+    '葉隠': 'Unique_Hagakure.png',
+    'フィン': 'Unique_Finn.png',
+    'オルカ': 'Unique_Orca.png',
+    'ミシュカ': 'Unique_Mishka.png',
+  };
+  const getInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
+    const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME[character.name] : undefined;
+    if (uniqueFileName) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+    const race = RACES.find((entry) => entry.id === character.raceId);
+    if (!race) return null;
+    const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
+    return `${import.meta.env.BASE_URL}character/${partyId}_${race.englishName}_${genderLabel}.png`;
+  };
   const [showSold, setShowSold] = useState(false);
   const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
   const hasEquippedJewels = parties.some((party) =>
@@ -9613,11 +9627,7 @@ function InventoryTab({
           slotIndex,
           characterName: character.name,
           raceId: character.raceId,
-          categoryMultiplier: getCharacterCategoryMultiplier(character, item.category),
-          hpScaleMultiplier: (() => {
-            const characterStats = computeCharacterStats(character, party.level);
-            return ((characterStats.baseStats.vitality + characterStats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(character);
-          })(),
+          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
         }];
       })
     )
@@ -9678,16 +9688,9 @@ function InventoryTab({
   const equippedJewels = parties.flatMap((party, partyIndex) =>
     party.characters.flatMap((character) => {
       const characterStats = computeCharacterStats(character, party.level);
-      const categoryMultiplierCache = new Map<ItemCategory, number>();
-      const hpScaleMultiplier = ((characterStats.baseStats.vitality + characterStats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(character);
 
       return character.equipment.slice(0, characterStats.maxEquipSlots).flatMap((item, slotIndex) => {
         if (!item?.jewel) return [];
-
-        const categoryMultiplier = categoryMultiplierCache.get(item.category) ?? getCharacterCategoryMultiplier(character, item.category);
-        if (!categoryMultiplierCache.has(item.category)) {
-          categoryMultiplierCache.set(item.category, categoryMultiplier);
-        }
 
         return [{
           key: `equipped-jewel-${party.id}-${character.id}-${slotIndex}-${item.id}-${item.enhancement}-${item.superRare}-${item.jewel.key}-${item.jewel.rank}`,
@@ -9697,8 +9700,7 @@ function InventoryTab({
           raceId: character.raceId,
           jewelKey: item.jewel.key,
           rank: item.jewel.rank,
-          categoryMultiplier,
-          hpScaleMultiplier,
+          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
         }];
       });
     })
@@ -9848,19 +9850,18 @@ function InventoryTab({
               );
             }
 
-            const race = RACES.find((raceEntry) => raceEntry.id === entry.raceId);
             return (
               <div key={entry.key} className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
+                    {entry.characterImageSrc && <img src={entry.characterImageSrc} alt="" className="h-4 w-4 shrink-0 rounded object-cover" />}
                     <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
                   <span className="text-xs text-gray-500 shrink-0">PT{entry.partyIndex + 1}:{entry.characterName}</span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getJewelSlotStatusText(entry.item, entry.jewelKey, entry.rank, entry.categoryMultiplier, entry.hpScaleMultiplier)}
+                  {getJewelSlotStatusText(entry.jewelKey, entry.rank)}
                 </div>
               </div>
             );
@@ -9906,7 +9907,6 @@ function InventoryTab({
               );
             }
 
-            const race = RACES.find((raceEntry) => raceEntry.id === entry.equipped.raceId);
             return (
               <div
                 key={entry.key}
@@ -9914,7 +9914,7 @@ function InventoryTab({
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
+                    {entry.equipped.characterImageSrc && <img src={entry.equipped.characterImageSrc} alt="" className="h-4 w-4 shrink-0 rounded object-cover" />}
                     <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
@@ -9923,7 +9923,7 @@ function InventoryTab({
                   </span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier))}
+                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
                 </div>
               </div>
             );
