@@ -2628,7 +2628,7 @@ export function executeBattle(
   let consumedPartyIllusion = false;
   let consumedEnemyShock = false;
   const consumedCharacterShockIds = new Set<number>();
-  const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
+  let activeMagicSealQueue: string[] = [];
   let pendingEnemyHowlEffects: PendingHowlEffect[] = [];
   let pendingPartyHowlEffects: PendingHowlEffect[] = [];
   let enemyTemporaryEvasionBonus = 0;
@@ -3840,6 +3840,8 @@ export function executeBattle(
     }
 
     if (timing === 3) {
+      activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
+
       for (const ownerName of activeMagicSealQueue) {
         log.push(getMagicSealStartLog(ownerName));
       }
