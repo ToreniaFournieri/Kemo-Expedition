@@ -9852,16 +9852,20 @@ function InventoryTab({
 
             return (
               <div key={entry.key} className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {entry.characterImageSrc && <img src={entry.characterImageSrc} alt="" className="h-4 w-4 shrink-0 rounded object-cover" />}
-                    <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
-                    <span className="text-xs text-gray-500 shrink-0">x1</span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 min-w-0 flex-1">
+                    {entry.characterImageSrc && <img src={entry.characterImageSrc} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
+                        <span className="text-xs text-gray-500 shrink-0">x1</span>
+                      </div>
+                      <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
+                        {getJewelSlotStatusText(entry.jewelKey, entry.rank)}
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500 shrink-0">PT{entry.partyIndex + 1}:{entry.characterName}</span>
-                </div>
-                <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getJewelSlotStatusText(entry.jewelKey, entry.rank)}
+                  <span className="text-xs text-gray-500 shrink-0 pt-0.5">PT{entry.partyIndex + 1}:{entry.characterName}</span>
                 </div>
               </div>
             );
@@ -9912,18 +9916,22 @@ function InventoryTab({
                 key={entry.key}
                 className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {entry.equipped.characterImageSrc && <img src={entry.equipped.characterImageSrc} alt="" className="h-4 w-4 shrink-0 rounded object-cover" />}
-                    <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
-                    <span className="text-xs text-gray-500 shrink-0">x1</span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 min-w-0 flex-1">
+                    {entry.equipped.characterImageSrc && <img src={entry.equipped.characterImageSrc} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
+                        <span className="text-xs text-gray-500 shrink-0">x1</span>
+                      </div>
+                      <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
+                        {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500 shrink-0">
+                  <span className="text-xs text-gray-500 shrink-0 pt-0.5">
                     PT{entry.equipped.partyIndex + 1}:{entry.equipped.characterName}
                   </span>
-                </div>
-                <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
                 </div>
               </div>
             );

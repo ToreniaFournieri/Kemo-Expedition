@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.3 | 20 | 2026/05/23 | Refine Base tab Inventory equipped-entry layout (Spec 8.4.2): keep owner portrait at two-line height and render the second status line alongside the image (under the item name) instead of below the whole row. |
+| 0.7.3 | 19 | 2026/05/23 | Refine Base tab Inventory pane equipped-owner thumbnail display (Spec 8.4.2): enlarge equipped item/jewel character portraits to approximately two-line height for improved readability while preserving current owner mapping. |
 | 0.7.3 | 18 | 2026/05/23 | Update Inventory runtime display (Spec 8.4.2): equipped item/jewel status values now show base values only (no character-specific multipliers/passive effects), and equipped owner icon now uses the same character image as the item owner. |
 | 0.7.3 | 17 | 2026/05/22 | Refine UI_DIARY 神魔戦通知 outcome labels (Spec 8.5): map line-1 outcome to 勝利/敗北/引分/未到達 based on gods-battle encounter and expedition result while keeping location+date on line 2. |
 | 0.7.3 | 16 | 2026/05/22 | Update UI_DIARY gods-battle runtime headline/detail format (Spec 8.5): render 神魔戦通知 title as `[PT] 神名 結果` (e.g., 敗北/撃破) and keep line-2 gray text as expedition location + date. |
