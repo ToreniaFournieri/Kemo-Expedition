@@ -679,7 +679,7 @@ function EnemyBestiaryBubble({
 
   return (
     <div
-      className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+      className="floating-bubble-pane fixed z-20 rounded-lg p-3"
       style={{
         top: bubble.top,
         left: bubble.left,
@@ -6311,7 +6311,7 @@ function PartyTab({
     >
       {activeInlineDetailHelp && inlineDetailHelpPosition && (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
           style={{
             top: inlineDetailHelpPosition.top,
             left: inlineDetailHelpPosition.left,
@@ -7721,7 +7721,7 @@ function PartyTab({
         </div>
         {showAutoEquipmentHelp && autoEquipmentHelpPosition && (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-3 text-xs text-gray-700 space-y-1"
           style={{
             top: autoEquipmentHelpPosition.top,
             left: autoEquipmentHelpPosition.left,
@@ -8241,7 +8241,7 @@ function ExpeditionTab({
     >
       {activeProgressBubble ? (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-2"
           style={{
             top: activeProgressBubble.top,
             left: activeProgressBubble.left,
@@ -8257,7 +8257,7 @@ function ExpeditionTab({
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
       {activeRingStatusBubble ? (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-2"
           style={{
             top: activeRingStatusBubble.top,
             left: activeRingStatusBubble.left,
@@ -12043,7 +12043,7 @@ function SettingTab({
     >
       {activeAbilityHelp && abilityHelpPosition && (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
           style={{
             top: abilityHelpPosition.top,
             left: abilityHelpPosition.left,
@@ -12472,7 +12472,7 @@ function SettingTab({
         {divineBureauPanelExpanded.characterRoster && <>
           {activeRosterStatusBubble ? (
             <div
-              className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+              className="floating-bubble-pane fixed z-20 rounded-lg p-2"
               style={{
                 top: activeRosterStatusBubble.top,
                 left: activeRosterStatusBubble.left,
