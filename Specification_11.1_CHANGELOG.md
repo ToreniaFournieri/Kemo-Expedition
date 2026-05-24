@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 7 | 2026/05/24 | Refine Party tab Character Edit pane dark-mode inner panel styling (Spec 8.2.3): reduce inner card fill opacity and remove blur so background artwork is more visible through each edit sub-pane. |
 | 0.7.4 | 6 | 2026/05/24 | Fix Divine Bureau Bestiary Gods reveal/stats keying (Spec 8.6, 4.1.2): stop using legacy `900000 + dungeonId` god battle stat IDs and track/display 神魔 encounters only by canonical God `enemy_ID` values, so encountered gods are revealed correctly in 敵キャラクター図鑑. |
 | 0.7.4 | 5 | 2026/05/23 | Fix START ability order state checks in battle runtime (Spec 6.1.1.1): resolve `a.oblivion`/`a.mimic` owners and frostbite-source effects from current ability state at trigger timing, so abilities removed earlier in START no longer activate or apply initiative penalties later in the same battle. |
 | 0.7.4 | 4 | 2026/05/23 | Fix START timing ability interaction in battle runtime (Spec 6.1.1.1): rebuild active `a.magic-seal` queue at timing 3 after earlier timing-9 `a.oblivion` resolution so abilities erased by Oblivion no longer trigger Magic Seal later in the same battle. |
