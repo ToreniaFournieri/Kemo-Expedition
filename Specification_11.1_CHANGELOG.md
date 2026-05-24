@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 11 | 2026/05/24 | Refine floating bubble text pane clarity (Spec 8.2/8.4/8.6): reduce `floating-bubble-pane` backdrop blur from 10px to 7px so tooltip text panes look less blurry while keeping the glass effect. |
 | 0.7.4 | 10 | 2026/05/24 | Refine Party tab status floating-bubble panes transparency (Spec 8.2.2): switch base-stat and status help tooltips to shared `floating-bubble-pane` glass style so these panes match other transparent floating bubbles. |
 | 0.7.4 | 9 | 2026/05/24 | Refine floating-bubble transparency consistency (Spec 8.4.2): switch Inventory equipped-owner tooltip to shared `floating-bubble-pane` glass style so all floating bubbles use the same transparent format and preserve background visibility. |
 | 0.7.4 | 8 | 2026/05/24 | Refine floating bubble text pane visuals (Spec 8.3/8.4/8.6): apply glass-style floating bubbles with 25% transparency and backdrop blur across help/status tooltip panes for a consistent transparent UI. |
