@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 16 | 2026/05/24 | Fix iOS safe-area/browser chrome tint switching regression (Spec 8.1.2): add default `theme-color` + `viewport-fit=cover` meta tags in HTML and ensure runtime always creates/updates `meta[name="theme-color"]`, so dark/light toggle immediately updates top notch/status-bar tint. |
 | 0.7.4 | 15 | 2026/05/24 | Fix safe-area dark tint synchronization after transparent header update (Spec 8.1.2): align dark app background with header glass tone and update `meta[name="theme-color"]` dynamically by dark/light + game mode so notch/safe area color switches correctly when changing mode. |
 | 0.7.4 | 14 | 2026/05/24 | Refine header main tab separators (Spec 8.1): set top navigation tab borders to transparent so the vertical white divider lines between 探索/パーティ/拠点/日誌/神聖局 are removed in the header pane. |
 | 0.7.4 | 13 | 2026/05/24 | Refine header navigation tab strip transparency (Spec 8.1): remove light-mode white glass fill and active blue tint from top tabs so the tabs area is fully transparent in normal mode. |

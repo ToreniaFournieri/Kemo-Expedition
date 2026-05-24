@@ -2803,8 +2803,12 @@ export function HomeScreen({
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (!themeColorMeta) return;
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (!themeColorMeta) {
+      themeColorMeta = document.createElement('meta');
+      themeColorMeta.setAttribute('name', 'theme-color');
+      document.head.appendChild(themeColorMeta);
+    }
 
     const lightTint = gameMode === 'm.luna' ? '#f6efe2' : gameMode === 'm.laika' ? '#e6efe7' : '#f3f4f6';
     const darkTint = gameMode === 'm.luna' ? '#2f2620' : gameMode === 'm.laika' ? '#17281f' : '#1f2937';
