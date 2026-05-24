@@ -7063,7 +7063,7 @@ function PartyTab({
               </button>
               {showBaseStatHelp && (
                 <div
-                  className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-2"
+                  className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-2"
                   style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
@@ -7318,7 +7318,7 @@ function PartyTab({
                           )}
                           {offense.text && activeStatusHelpKey === offense.key && (
                             <div
-                              className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                              className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
                               style={activeStatusHelpPosition ?? undefined}
                               onPointerDown={(event) => event.stopPropagation()}
                             >
@@ -7346,7 +7346,7 @@ function PartyTab({
                               </button>
                               {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
                                 <div
-                                  className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                                  className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
                                   style={activeStatusHelpPosition ?? undefined}
                                   onPointerDown={(event) => event.stopPropagation()}
                                 >
