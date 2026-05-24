@@ -11670,17 +11670,9 @@ function SettingTab({
 
   const getGodBestiaryDisplayEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number]): number => god.enemyId;
 
-  const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): { defeats: number; encounters: number } => {
+  const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number]): { defeats: number; encounters: number } => {
     const enemyBattleStats = gameState.global.enemyBattleStats ?? {};
-    const legacyRuntimeId = runtimeEnemy?.isGodEnemy ? runtimeEnemy.id : null;
-    const candidateIds = [god.enemyId, legacyRuntimeId].filter((id): id is number => typeof id === 'number');
-    return candidateIds.reduce((acc, enemyId) => {
-      const stat = enemyBattleStats[enemyId] ?? { defeats: 0, encounters: 0 };
-      return {
-        defeats: acc.defeats + stat.defeats,
-        encounters: acc.encounters + stat.encounters,
-      };
-    }, { defeats: 0, encounters: 0 });
+    return enemyBattleStats[god.enemyId] ?? { defeats: 0, encounters: 0 };
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
@@ -11691,7 +11683,7 @@ function SettingTab({
         if (debugSettings.displayAllBestiary) return true;
         const runtimeEnemy = buildGodRuntimeEnemy(god);
         if (!runtimeEnemy) return false;
-        const battleStats = getGodBestiaryBattleStats(god, runtimeEnemy);
+        const battleStats = getGodBestiaryBattleStats(god);
         return battleStats.encounters > 0;
       })
       .flatMap((god) => [god.name, normalizeBestiaryGodName(god.displayName)])
@@ -12756,7 +12748,7 @@ function SettingTab({
                     <div>待機探索地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                     {(() => {
-                      const battleStats = getGodBestiaryBattleStats(god, godRuntimeEnemy);
+                      const battleStats = getGodBestiaryBattleStats(god);
                       return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
                     })()}
                     </div>

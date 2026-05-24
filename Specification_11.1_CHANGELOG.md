@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 6 | 2026/05/24 | Fix Divine Bureau Bestiary Gods reveal/stats keying (Spec 8.6, 4.1.2): stop using legacy `900000 + dungeonId` god battle stat IDs and track/display 神魔 encounters only by canonical God `enemy_ID` values, so encountered gods are revealed correctly in 敵キャラクター図鑑. |
 | 0.7.4 | 5 | 2026/05/23 | Fix START ability order state checks in battle runtime (Spec 6.1.1.1): resolve `a.oblivion`/`a.mimic` owners and frostbite-source effects from current ability state at trigger timing, so abilities removed earlier in START no longer activate or apply initiative penalties later in the same battle. |
 | 0.7.4 | 4 | 2026/05/23 | Fix START timing ability interaction in battle runtime (Spec 6.1.1.1): rebuild active `a.magic-seal` queue at timing 3 after earlier timing-9 `a.oblivion` resolution so abilities erased by Oblivion no longer trigger Magic Seal later in the same battle. |
 | 0.7.4 | 3 | 2026/05/23 | Fix Speed of Time bonus expiry fallback (Spec 8.1.2): when no valid bonus duration exists (including after reload with expired data), automatically revert runtime speed from `x1.2` to `x1.0` so the header no longer remains at `x1.2(0h)`. |
