@@ -2803,28 +2803,21 @@ export function HomeScreen({
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (!themeColorMeta) {
-      themeColorMeta = document.createElement('meta');
-      themeColorMeta.setAttribute('name', 'theme-color');
-      document.head.appendChild(themeColorMeta);
-    }
-
     const lightTint = gameMode === 'm.luna' ? '#f6efe2' : gameMode === 'm.laika' ? '#e6efe7' : '#f3f4f6';
     const darkTint = gameMode === 'm.luna' ? '#2f2620' : gameMode === 'm.laika' ? '#17281f' : '#1f2937';
     const resolvedTint = isDarkModeEnabled ? darkTint : lightTint;
-    themeColorMeta.setAttribute('content', resolvedTint);
 
-    let appleStatusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (!appleStatusBarMeta) {
-      appleStatusBarMeta = document.createElement('meta');
-      appleStatusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-      document.head.appendChild(appleStatusBarMeta);
+    // iOS Safari sometimes ignores in-place content updates.
+    // Replacing the node restores immediate, no-refresh tint switching.
+    const existingMeta = document.querySelector('meta[name="theme-color"]');
+    const nextMeta = document.createElement('meta');
+    nextMeta.setAttribute('name', 'theme-color');
+    nextMeta.setAttribute('content', resolvedTint);
+    if (existingMeta?.parentNode) {
+      existingMeta.parentNode.replaceChild(nextMeta, existingMeta);
+    } else {
+      document.head.appendChild(nextMeta);
     }
-    appleStatusBarMeta.setAttribute('content', isDarkModeEnabled ? 'black-translucent' : 'default');
-
-    document.documentElement.style.backgroundColor = resolvedTint;
-    document.body.style.backgroundColor = resolvedTint;
   }, [gameMode, isDarkModeEnabled]);
 
   useEffect(() => {

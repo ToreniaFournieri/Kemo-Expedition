@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 18 | 2026/05/24 | Fix dark/light safe-area tint regression without refresh (Spec 8.1.2): simplify runtime handling by replacing the `theme-color` meta node on each mode/theme change (instead of in-place mutation) so iOS Safari applies top chrome color immediately. |
 | 0.7.4 | 17 | 2026/05/24 | Fix iOS status-bar safe-area color not updating in Safari (Spec 8.1.2): add Apple status-bar meta tags, update `apple-mobile-web-app-status-bar-style` with dark-mode state, and apply resolved theme tint directly to `html`/`body` inline backgrounds to ensure top inset area tracks mode/theme changes. |
 | 0.7.4 | 16 | 2026/05/24 | Fix iOS safe-area/browser chrome tint switching regression (Spec 8.1.2): add default `theme-color` + `viewport-fit=cover` meta tags in HTML and ensure runtime always creates/updates `meta[name="theme-color"]`, so dark/light toggle immediately updates top notch/status-bar tint. |
 | 0.7.4 | 15 | 2026/05/24 | Fix safe-area dark tint synchronization after transparent header update (Spec 8.1.2): align dark app background with header glass tone and update `meta[name="theme-color"]` dynamically by dark/light + game mode so notch/safe area color switches correctly when changing mode. |
