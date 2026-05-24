@@ -5279,8 +5279,8 @@ export function HomeScreen({
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30">
-        <div className="absolute inset-0 bg-white" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
+        <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div className="pl-3">
               {/* SpecRef: 8.1.2 | Header | Game title label */}
