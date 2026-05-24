@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 8 | 2026/05/24 | Unify floating bubble text panes to transparent glass style (Spec 8 UI): replace opaque white bubble surfaces with a shared glass component so Inventory/Expedition/Bestiary/Roster/status bubbles match the character image popup visual treatment. |
 | 0.7.4 | 7 | 2026/05/24 | Refine Party Character Edit dark-mode translucency (Spec 8.2.3): reduce global dark `bg-white/*` override opacity from `0.92` to `0.25` so internal edit panes (種族/メインクラス/サブクラス/系譜/性格) reveal more background artwork. |
 | 0.7.4 | 6 | 2026/05/24 | Fix Divine Bureau Bestiary Gods reveal/stats keying (Spec 8.6, 4.1.2): stop using legacy `900000 + dungeonId` god battle stat IDs and track/display 神魔 encounters only by canonical God `enemy_ID` values, so encountered gods are revealed correctly in 敵キャラクター図鑑. |
 | 0.7.4 | 5 | 2026/05/23 | Fix START ability order state checks in battle runtime (Spec 6.1.1.1): resolve `a.oblivion`/`a.mimic` owners and frostbite-source effects from current ability state at trigger timing, so abilities removed earlier in START no longer activate or apply initiative penalties later in the same battle. |
