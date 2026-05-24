@@ -117,7 +117,7 @@ body.app-dark {
 }
 
 .theme-dark [class*='bg-white/'] {
-  background-color: rgb(30 41 59 / 0.92);
+  background-color: rgb(30 41 59 / 0.25);
 }
 
 
