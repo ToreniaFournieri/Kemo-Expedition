@@ -484,7 +484,7 @@ function getRestInitialTotalSteps(currentHp: number, maxHp: number): number {
   return Math.max(1, Math.ceil(missingHp / healPerStep));
 }
 
-const HEADER_HEIGHT_CLASS = 'pt-[118px]';
+const HEADER_HEIGHT_CLASS = 'pt-[calc(118px+env(safe-area-inset-top))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -5278,9 +5278,9 @@ export function HomeScreen({
   return (
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-30">
-        <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
+      <div className={`fixed top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)] backdrop-blur-[4px] ${isDarkModeEnabled ? 'bg-slate-900/70' : 'bg-white/25'}`}>
+        <div className={`absolute inset-0 backdrop-blur-[4px] ${isDarkModeEnabled ? 'bg-slate-900/70' : 'bg-white/25'}`} aria-hidden="true" />
+        <div className={`relative mx-auto w-full max-w-[500px] px-3 py-2.5 backdrop-blur-[4px] ${isDarkModeEnabled ? 'bg-slate-900/70' : 'bg-white/25'}`}>
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div className="pl-3">
               {/* SpecRef: 8.1.2 | Header | Game title label */}
