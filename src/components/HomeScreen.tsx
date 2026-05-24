@@ -5279,8 +5279,8 @@ export function HomeScreen({
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30">
-        <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
+        <div className="mx-auto w-full max-w-[500px]" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+          <div className="px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div className="pl-3">
               {/* SpecRef: 8.1.2 | Header | Game title label */}
@@ -5356,6 +5356,7 @@ export function HomeScreen({
             ))}
           </div>
         </div>
+      </div>
       </div>
 
       {/* Tab Content */}
@@ -10000,10 +10001,11 @@ function InventoryTab({
                       </div>
                       <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
                         {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
               </div>
             );
           })}
