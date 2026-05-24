@@ -391,7 +391,7 @@ body {
 }
 
 .ios-glass-top-tab {
-  border: 0;
+  border-color: rgb(255 255 255 / 0.22);
   background-color: transparent;
   background-image: none;
   backdrop-filter: none;
