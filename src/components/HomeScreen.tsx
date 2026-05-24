@@ -2812,7 +2812,19 @@ export function HomeScreen({
 
     const lightTint = gameMode === 'm.luna' ? '#f6efe2' : gameMode === 'm.laika' ? '#e6efe7' : '#f3f4f6';
     const darkTint = gameMode === 'm.luna' ? '#2f2620' : gameMode === 'm.laika' ? '#17281f' : '#1f2937';
-    themeColorMeta.setAttribute('content', isDarkModeEnabled ? darkTint : lightTint);
+    const resolvedTint = isDarkModeEnabled ? darkTint : lightTint;
+    themeColorMeta.setAttribute('content', resolvedTint);
+
+    let appleStatusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!appleStatusBarMeta) {
+      appleStatusBarMeta = document.createElement('meta');
+      appleStatusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+      document.head.appendChild(appleStatusBarMeta);
+    }
+    appleStatusBarMeta.setAttribute('content', isDarkModeEnabled ? 'black-translucent' : 'default');
+
+    document.documentElement.style.backgroundColor = resolvedTint;
+    document.body.style.backgroundColor = resolvedTint;
   }, [gameMode, isDarkModeEnabled]);
 
   useEffect(() => {
