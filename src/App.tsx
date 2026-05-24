@@ -88,15 +88,6 @@ export default function App() {
     document.body.classList.toggle('app-dark', isDarkModeEnabled);
     document.documentElement.classList.toggle('app-dark', isDarkModeEnabled);
 
-    const themeColor = isDarkModeEnabled ? '#020617' : '#ffffff';
-    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (!themeColorMeta) {
-      themeColorMeta = document.createElement('meta');
-      themeColorMeta.setAttribute('name', 'theme-color');
-      document.head.appendChild(themeColorMeta);
-    }
-    themeColorMeta.setAttribute('content', themeColor);
-
     return () => {
       document.body.classList.remove('app-dark');
       document.documentElement.classList.remove('app-dark');

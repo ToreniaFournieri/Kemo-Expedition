@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.7.4 | 15 | 2026/05/24 | Fix theme switch safe-area color sync (Spec 8.1): update runtime `meta[name="theme-color"]` on dark/light mode changes so the iOS top safe area color dynamically matches the current mode. |
 | 0.7.4 | 14 | 2026/05/24 | Refine header main tab separators (Spec 8.1): set top navigation tab borders to transparent so the vertical white divider lines between 探索/パーティ/拠点/日誌/神聖局 are removed in the header pane. |
 | 0.7.4 | 13 | 2026/05/24 | Refine header navigation tab strip transparency (Spec 8.1): remove light-mode white glass fill and active blue tint from top tabs so the tabs area is fully transparent in normal mode. |
 | 0.7.4 | 12 | 2026/05/24 | Refine fixed header pane to glass style (Spec 8.1.2): apply 4px backdrop blur and 25% white opacity so the top header is transparent instead of opaque. |
