@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 9 | 2026/05/24 | Refine floating-bubble transparency consistency (Spec 8.4.2): switch Inventory equipped-owner tooltip to shared `floating-bubble-pane` glass style so all floating bubbles use the same transparent format and preserve background visibility. |
 | 0.7.4 | 8 | 2026/05/24 | Refine floating bubble text pane visuals (Spec 8.3/8.4/8.6): apply glass-style floating bubbles with 25% transparency and backdrop blur across help/status tooltip panes for a consistent transparent UI. |
 | 0.7.4 | 7 | 2026/05/24 | Refine Party Character Edit dark-mode translucency (Spec 8.2.3): reduce global dark `bg-white/*` override opacity from `0.92` to `0.25` so internal edit panes (種族/メインクラス/サブクラス/系譜/性格) reveal more background artwork. |
 | 0.7.4 | 6 | 2026/05/24 | Fix Divine Bureau Bestiary Gods reveal/stats keying (Spec 8.6, 4.1.2): stop using legacy `900000 + dungeonId` god battle stat IDs and track/display 神魔 encounters only by canonical God `enemy_ID` values, so encountered gods are revealed correctly in 敵キャラクター図鑑. |

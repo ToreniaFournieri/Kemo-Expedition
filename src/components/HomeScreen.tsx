@@ -10052,7 +10052,7 @@ function InventoryTab({
       )}
       {activeInventoryOwnerBubble && (
         <div
-          className="fixed z-50 rounded border border-gray-200 bg-white/95 px-2 py-1 text-xs text-gray-700 shadow-lg backdrop-blur-[1px]"
+          className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
           style={{
             top: `${activeInventoryOwnerBubble.top}px`,
             left: `${activeInventoryOwnerBubble.left}px`,
