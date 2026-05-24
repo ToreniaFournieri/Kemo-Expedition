@@ -5342,7 +5342,7 @@ export function HomeScreen({
                 }}
                 className={`${IOS_GLASS_TOP_TAB_CLASS} flex-1 py-2 text-sm font-medium relative transition-colors ${
                   ((isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id))
-                    ? 'text-sub border-b-2 border-sub bg-blue-50/70'
+                    ? 'text-sub border-b-2 border-sub'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
