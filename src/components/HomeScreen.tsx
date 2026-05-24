@@ -10001,10 +10001,11 @@ function InventoryTab({
                       </div>
                       <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
                         {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
               </div>
             );
           })}

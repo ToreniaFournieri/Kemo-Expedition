@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.7.4 | 15 | 2026/05/24 | Fix Base tab Inventory equipped-item JSX structure (Spec 8.4.2): correct mis-nested closing tags in equipped item rows so TypeScript compilation succeeds during `tsc -b`/Vite production build. |
 | 0.7.4 | 14 | 2026/05/24 | Refine fixed header safe-area transparency (Spec 8.1.2): keep the iOS status-bar inset (`env(safe-area-inset-top)`) transparent and apply the glass background only to the header pane content so the top area no longer appears as an opaque layer. |
 | 0.7.4 | 13 | 2026/05/24 | Refine header navigation tab strip transparency (Spec 8.1): remove light-mode white glass fill and active blue tint from top tabs so the tabs area is fully transparent in normal mode. |
 | 0.7.4 | 12 | 2026/05/24 | Refine fixed header pane to glass style (Spec 8.1.2): apply 4px backdrop blur and 25% white opacity so the top header is transparent instead of opaque. |
