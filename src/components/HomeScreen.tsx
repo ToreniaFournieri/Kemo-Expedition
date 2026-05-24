@@ -2801,6 +2801,26 @@ export function HomeScreen({
   }, [isDarkModeEnabled]);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const lightTint = gameMode === 'm.luna' ? '#f6efe2' : gameMode === 'm.laika' ? '#e6efe7' : '#f3f4f6';
+    const darkTint = gameMode === 'm.luna' ? '#2f2620' : gameMode === 'm.laika' ? '#17281f' : '#1f2937';
+    const resolvedTint = isDarkModeEnabled ? darkTint : lightTint;
+
+    // iOS Safari sometimes ignores in-place content updates.
+    // Replacing the node restores immediate, no-refresh tint switching.
+    const existingMeta = document.querySelector('meta[name="theme-color"]');
+    const nextMeta = document.createElement('meta');
+    nextMeta.setAttribute('name', 'theme-color');
+    nextMeta.setAttribute('content', resolvedTint);
+    if (existingMeta?.parentNode) {
+      existingMeta.parentNode.replaceChild(nextMeta, existingMeta);
+    } else {
+      document.head.appendChild(nextMeta);
+    }
+  }, [gameMode, isDarkModeEnabled]);
+
+  useEffect(() => {
     latestPartiesRef.current = state.parties;
   }, [state.parties]);
 
