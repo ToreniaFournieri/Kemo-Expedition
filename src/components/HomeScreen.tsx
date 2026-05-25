@@ -9597,13 +9597,31 @@ function InventoryTab({
     'オルカ': 'Unique_Orca.png',
     'ミシュカ': 'Unique_Mishka.png',
   };
+  const inventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
+  const inventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
   const getInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
     const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME[character.name] : undefined;
-    if (uniqueFileName) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+    if (uniqueFileName) {
+      const chibiFileName = `C_${uniqueFileName}`;
+      if (inventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) {
+        return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
+      }
+      if (inventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) {
+        return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+      }
+      return null;
+    }
     const race = RACES.find((entry) => entry.id === character.raceId);
     if (!race) return null;
     const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
-    return `${import.meta.env.BASE_URL}character/${partyId}_${race.englishName}_${genderLabel}.png`;
+    const ptRaceGenderImageFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
+    if (inventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) {
+      return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
+    }
+    if (inventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) {
+      return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
+    }
+    return null;
   };
   const [showSold, setShowSold] = useState(false);
   const [activeInventoryOwnerBubble, setActiveInventoryOwnerBubble] = useState<{
