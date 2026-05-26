@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.4 | 20 | 2026/05/26 | Update Party tab equipment inventory pane (Spec 8.2.4): remove the helper text `Only unlocked parties are visible.` and show equipped-owner chibi portraits (with existing race-icon fallback) instead of race icons, aligned with Base Inventory behavior. |
 | 0.7.4 | 19 | 2026/05/25 | Implement Inventory character image runtime source selection (Spec 8.4.2): prioritize `/public/chibi/` portraits for unique and PT/race/gender formats, fallback to `/public/character/`, and display no image when neither asset exists. |
 | 0.7.4 | 18 | 2026/05/24 | Fix dark/light safe-area tint regression without refresh (Spec 8.1.2): simplify runtime handling by replacing the `theme-color` meta node on each mode/theme change (instead of in-place mutation) so iOS Safari applies top chrome color immediately. |
 | 0.7.4 | 17 | 2026/05/24 | Fix iOS status-bar safe-area color not updating in Safari (Spec 8.1.2): add Apple status-bar meta tags, update `apple-mobile-web-app-status-bar-style` with dark-mode state, and apply resolved theme tint directly to `html`/`body` inline backgrounds to ensure top inset area tracks mode/theme changes. |
