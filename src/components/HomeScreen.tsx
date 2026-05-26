@@ -10242,10 +10242,17 @@ function DiaryTab({
   };
 
 
-  const normalizeLegacyGodsDiaryName = (rawName: string): string => {
-    const trimmed = rawName.trim();
-    if (trimmed === 'ガーヴ(神,侍M)') return 'ガーヴ 消耗の神';
-    return trimmed;
+  const getGodsBattleDiaryDisplayName = (rawName: string): string => {
+    const withoutBattleSuffix = rawName.replace(/\s*\(神魔戦\)\s*$/u, '').trim();
+    const withoutLegacySuffix = withoutBattleSuffix.replace(/\([^()]*神[^()]*\)$/u, '').trim();
+    const matchedGodProfile = GOD_ENEMY_PROFILES.find((profile) => {
+      const profileHead = profile.displayName.split(' ')[0]?.trim() ?? '';
+      return profile.displayName === withoutBattleSuffix
+        || profileHead === withoutBattleSuffix
+        || profileHead === withoutLegacySuffix;
+    });
+    if (matchedGodProfile) return matchedGodProfile.displayName;
+    return withoutLegacySuffix || withoutBattleSuffix;
   };
 
   const getDiaryHeadline = (
@@ -10263,7 +10270,7 @@ function DiaryTab({
         ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
         .trim();
       const normalizedGodsBattleEnemyName = godsBattleEnemyName
-        ? normalizeLegacyGodsDiaryName(godsBattleEnemyName)
+        ? getGodsBattleDiaryDisplayName(godsBattleEnemyName)
         : null;
       const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog);
       if (normalizedGodsBattleEnemyName) {
