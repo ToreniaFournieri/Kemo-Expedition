@@ -40,7 +40,8 @@ line 2 gray text:     02/12 21:28
 ```
 
 - `神魔戦通知`
- - line 1: PTname, Name of gods, outcome
+ - line 1: PTname, Display name of gods, outcome
+   - `Display name of gods` : `Display name` Gods (神魔) in 4.1.2 Enemy. Example (`ミオラ 豊穣の女神`   not `ミオラ(神,賢M)`) 
    - outcome: Victory/Defeat/Draw/No Visit -> 勝利/敗北/引分/未到達
  - line 2 gray text: Expedition location　Date
    
