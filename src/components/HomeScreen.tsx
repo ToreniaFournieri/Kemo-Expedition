@@ -679,7 +679,7 @@ function EnemyBestiaryBubble({
 
   return (
     <div
-      className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+      className="floating-bubble-pane fixed z-20 rounded-lg p-3"
       style={{
         top: bubble.top,
         left: bubble.left,
@@ -2801,6 +2801,26 @@ export function HomeScreen({
   }, [isDarkModeEnabled]);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const lightTint = gameMode === 'm.luna' ? '#f6efe2' : gameMode === 'm.laika' ? '#e6efe7' : '#f3f4f6';
+    const darkTint = gameMode === 'm.luna' ? '#2f2620' : gameMode === 'm.laika' ? '#17281f' : '#1f2937';
+    const resolvedTint = isDarkModeEnabled ? darkTint : lightTint;
+
+    // iOS Safari sometimes ignores in-place content updates.
+    // Replacing the node restores immediate, no-refresh tint switching.
+    const existingMeta = document.querySelector('meta[name="theme-color"]');
+    const nextMeta = document.createElement('meta');
+    nextMeta.setAttribute('name', 'theme-color');
+    nextMeta.setAttribute('content', resolvedTint);
+    if (existingMeta?.parentNode) {
+      existingMeta.parentNode.replaceChild(nextMeta, existingMeta);
+    } else {
+      document.head.appendChild(nextMeta);
+    }
+  }, [gameMode, isDarkModeEnabled]);
+
+  useEffect(() => {
     latestPartiesRef.current = state.parties;
   }, [state.parties]);
 
@@ -2885,7 +2905,17 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs]);
 
   useEffect(() => {
-    if (timeSpeedBonusUntilMs === null) return;
+    // SpecRef: 8.1.2 | Header | Speed of Time
+    // Keep x1.2 active only while a valid bonus duration exists.
+    if (timeSpeedBonusUntilMs === null) {
+      setDebugSettings((prev) => {
+        if (prev.timeSpeed !== 'x1_2') return prev;
+        const next = { ...prev, timeSpeed: 'realtime' as const };
+        saveDebugSettings(next);
+        return next;
+      });
+      return;
+    }
     if (timeSpeedNowMs < timeSpeedBonusUntilMs) return;
     setTimeSpeedBonusUntilMs(null);
     setDebugSettings((prev) => {
@@ -5269,8 +5299,8 @@ export function HomeScreen({
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30">
-        <div className="absolute inset-0 bg-white" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
+        <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div className="pl-3">
               {/* SpecRef: 8.1.2 | Header | Game title label */}
@@ -5332,7 +5362,7 @@ export function HomeScreen({
                 }}
                 className={`${IOS_GLASS_TOP_TAB_CLASS} flex-1 py-2 text-sm font-medium relative transition-colors ${
                   ((isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id))
-                    ? 'text-sub border-b-2 border-sub bg-blue-50/70'
+                    ? 'text-sub border-b-2 border-sub'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -5921,6 +5951,26 @@ function PartyTab({
     ? `${raceLabel}_${genderLabel}.png`
     : undefined;
   const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
+  const partyInventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
+  const partyInventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
+
+  const getPartyInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
+    const uniqueFileName = character.isUnique ? uniquePartyMemberImageByName[character.name] : undefined;
+    if (uniqueFileName) {
+      const chibiFileName = `C_${uniqueFileName}`;
+      if (partyInventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
+      if (partyInventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+      return null;
+    }
+
+    const characterRace = RACES.find((entry) => entry.id === character.raceId);
+    if (!characterRace) return null;
+    const characterGenderLabel = character.gender === 'male' ? 'Male' : 'Female';
+    const ptRaceGenderImageFileName = `${partyId}_${characterRace.englishName}_${characterGenderLabel}.png`;
+    if (partyInventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
+    if (partyInventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
+    return null;
+  };
 
   useEffect(() => {
     const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
@@ -6301,7 +6351,7 @@ function PartyTab({
     >
       {activeInlineDetailHelp && inlineDetailHelpPosition && (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
           style={{
             top: inlineDetailHelpPosition.top,
             left: inlineDetailHelpPosition.left,
@@ -7053,7 +7103,7 @@ function PartyTab({
               </button>
               {showBaseStatHelp && (
                 <div
-                  className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-2"
+                  className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-2"
                   style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
@@ -7308,7 +7358,7 @@ function PartyTab({
                           )}
                           {offense.text && activeStatusHelpKey === offense.key && (
                             <div
-                              className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                              className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
                               style={activeStatusHelpPosition ?? undefined}
                               onPointerDown={(event) => event.stopPropagation()}
                             >
@@ -7336,7 +7386,7 @@ function PartyTab({
                               </button>
                               {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
                                 <div
-                                  className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                                  className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
                                   style={activeStatusHelpPosition ?? undefined}
                                   onPointerDown={(event) => event.stopPropagation()}
                                 >
@@ -7711,7 +7761,7 @@ function PartyTab({
         </div>
         {showAutoEquipmentHelp && autoEquipmentHelpPosition && (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-3 text-xs text-gray-700 space-y-1"
           style={{
             top: autoEquipmentHelpPosition.top,
             left: autoEquipmentHelpPosition.left,
@@ -7989,7 +8039,6 @@ function PartyTab({
               </div>
             </div>
             {/* Category group tabs */}
-            <div className="mb-1 text-[11px] text-gray-500">Only unlocked parties are visible.</div>
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
               {availableCategoryGroups.map(group => (
                 <div key={group.id} className="flex flex-col">
@@ -8028,13 +8077,32 @@ function PartyTab({
                         : 'border-gray-200 opacity-50 cursor-not-allowed'
                   }`}
                 >
-                  <div className="flex justify-between items-center">
-                    <span>
-                      {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
-                      <span className={getItemNameFontWeightClass(displayItem.item)}>{getItemDisplayName(displayItem.item)}</span>
-                      {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}</span>
-                    </span>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                      {displayItem.isEquipped && (() => {
+                        const equippedOwnerImageSrc = getPartyInventoryCharacterImageSrc(char, party.id);
+                        return equippedOwnerImageSrc
+                          ? (
+                            <div className="relative shrink-0 h-10 w-10 overflow-visible rounded">
+                              <img
+                                src={equippedOwnerImageSrc}
+                                alt={`${char.name} portrait`}
+                                className="pointer-events-none absolute bottom-[-4px] left-1/2 h-16 w-16 max-w-none -translate-x-1/2 rounded object-contain object-bottom"
+                              />
+                            </div>
+                          )
+                          : <RaceIcon race={race} className="h-4 w-4 mt-0.5 shrink-0" />;
+                      })()}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`truncate ${getItemNameFontWeightClass(displayItem.item)}`}>{getItemDisplayName(displayItem.item)}</span>
+                          {!displayItem.isEquipped && <span className="text-xs text-gray-500 shrink-0">x{displayItem.count}</span>}
+                        </div>
+                        <div className="text-xs leading-tight text-gray-400 truncate">
+                          {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </button>
               ))}
@@ -8231,7 +8299,7 @@ function ExpeditionTab({
     >
       {activeProgressBubble ? (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-2"
           style={{
             top: activeProgressBubble.top,
             left: activeProgressBubble.left,
@@ -8247,7 +8315,7 @@ function ExpeditionTab({
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
       {activeRingStatusBubble ? (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-2"
           style={{
             top: activeRingStatusBubble.top,
             left: activeRingStatusBubble.left,
@@ -9567,13 +9635,31 @@ function InventoryTab({
     'オルカ': 'Unique_Orca.png',
     'ミシュカ': 'Unique_Mishka.png',
   };
+  const inventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
+  const inventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
   const getInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
     const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME[character.name] : undefined;
-    if (uniqueFileName) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+    if (uniqueFileName) {
+      const chibiFileName = `C_${uniqueFileName}`;
+      if (inventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) {
+        return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
+      }
+      if (inventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) {
+        return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+      }
+      return null;
+    }
     const race = RACES.find((entry) => entry.id === character.raceId);
     if (!race) return null;
     const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
-    return `${import.meta.env.BASE_URL}character/${partyId}_${race.englishName}_${genderLabel}.png`;
+    const ptRaceGenderImageFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
+    if (inventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) {
+      return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
+    }
+    if (inventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) {
+      return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
+    }
+    return null;
   };
   const [showSold, setShowSold] = useState(false);
   const [activeInventoryOwnerBubble, setActiveInventoryOwnerBubble] = useState<{
@@ -10042,7 +10128,7 @@ function InventoryTab({
       )}
       {activeInventoryOwnerBubble && (
         <div
-          className="fixed z-50 rounded border border-gray-200 bg-white/95 px-2 py-1 text-xs text-gray-700 shadow-lg backdrop-blur-[1px]"
+          className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
           style={{
             top: `${activeInventoryOwnerBubble.top}px`,
             left: `${activeInventoryOwnerBubble.left}px`,
@@ -10156,10 +10242,17 @@ function DiaryTab({
   };
 
 
-  const normalizeLegacyGodsDiaryName = (rawName: string): string => {
-    const trimmed = rawName.trim();
-    if (trimmed === 'ガーヴ(神,侍M)') return 'ガーヴ 消耗の神';
-    return trimmed;
+  const getGodsBattleDiaryDisplayName = (rawName: string): string => {
+    const withoutBattleSuffix = rawName.replace(/\s*\(神魔戦\)\s*$/u, '').trim();
+    const withoutLegacySuffix = withoutBattleSuffix.replace(/\([^()]*神[^()]*\)$/u, '').trim();
+    const matchedGodProfile = GOD_ENEMY_PROFILES.find((profile) => {
+      const profileHead = profile.displayName.split(' ')[0]?.trim() ?? '';
+      return profile.displayName === withoutBattleSuffix
+        || profileHead === withoutBattleSuffix
+        || profileHead === withoutLegacySuffix;
+    });
+    if (matchedGodProfile) return matchedGodProfile.displayName;
+    return withoutLegacySuffix || withoutBattleSuffix;
   };
 
   const getDiaryHeadline = (
@@ -10177,7 +10270,7 @@ function DiaryTab({
         ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
         .trim();
       const normalizedGodsBattleEnemyName = godsBattleEnemyName
-        ? normalizeLegacyGodsDiaryName(godsBattleEnemyName)
+        ? getGodsBattleDiaryDisplayName(godsBattleEnemyName)
         : null;
       const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog);
       if (normalizedGodsBattleEnemyName) {
@@ -11660,17 +11753,9 @@ function SettingTab({
 
   const getGodBestiaryDisplayEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number]): number => god.enemyId;
 
-  const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): { defeats: number; encounters: number } => {
+  const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number]): { defeats: number; encounters: number } => {
     const enemyBattleStats = gameState.global.enemyBattleStats ?? {};
-    const legacyRuntimeId = runtimeEnemy?.isGodEnemy ? runtimeEnemy.id : null;
-    const candidateIds = [god.enemyId, legacyRuntimeId].filter((id): id is number => typeof id === 'number');
-    return candidateIds.reduce((acc, enemyId) => {
-      const stat = enemyBattleStats[enemyId] ?? { defeats: 0, encounters: 0 };
-      return {
-        defeats: acc.defeats + stat.defeats,
-        encounters: acc.encounters + stat.encounters,
-      };
-    }, { defeats: 0, encounters: 0 });
+    return enemyBattleStats[god.enemyId] ?? { defeats: 0, encounters: 0 };
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
@@ -11681,7 +11766,7 @@ function SettingTab({
         if (debugSettings.displayAllBestiary) return true;
         const runtimeEnemy = buildGodRuntimeEnemy(god);
         if (!runtimeEnemy) return false;
-        const battleStats = getGodBestiaryBattleStats(god, runtimeEnemy);
+        const battleStats = getGodBestiaryBattleStats(god);
         return battleStats.encounters > 0;
       })
       .flatMap((god) => [god.name, normalizeBestiaryGodName(god.displayName)])
@@ -12041,7 +12126,7 @@ function SettingTab({
     >
       {activeAbilityHelp && abilityHelpPosition && (
         <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
           style={{
             top: abilityHelpPosition.top,
             left: abilityHelpPosition.left,
@@ -12470,7 +12555,7 @@ function SettingTab({
         {divineBureauPanelExpanded.characterRoster && <>
           {activeRosterStatusBubble ? (
             <div
-              className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+              className="floating-bubble-pane fixed z-20 rounded-lg p-2"
               style={{
                 top: activeRosterStatusBubble.top,
                 left: activeRosterStatusBubble.left,
@@ -12746,7 +12831,7 @@ function SettingTab({
                     <div>待機探索地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                     {(() => {
-                      const battleStats = getGodBestiaryBattleStats(god, godRuntimeEnemy);
+                      const battleStats = getGodBestiaryBattleStats(god);
                       return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
                     })()}
                     </div>
