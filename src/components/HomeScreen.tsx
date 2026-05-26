@@ -5951,6 +5951,26 @@ function PartyTab({
     ? `${raceLabel}_${genderLabel}.png`
     : undefined;
   const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
+  const partyInventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
+  const partyInventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
+
+  const getPartyInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
+    const uniqueFileName = character.isUnique ? uniquePartyMemberImageByName[character.name] : undefined;
+    if (uniqueFileName) {
+      const chibiFileName = `C_${uniqueFileName}`;
+      if (partyInventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
+      if (partyInventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+      return null;
+    }
+
+    const characterRace = RACES.find((entry) => entry.id === character.raceId);
+    if (!characterRace) return null;
+    const characterGenderLabel = character.gender === 'male' ? 'Male' : 'Female';
+    const ptRaceGenderImageFileName = `${partyId}_${characterRace.englishName}_${characterGenderLabel}.png`;
+    if (partyInventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
+    if (partyInventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
+    return null;
+  };
 
   useEffect(() => {
     const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
@@ -8019,7 +8039,6 @@ function PartyTab({
               </div>
             </div>
             {/* Category group tabs */}
-            <div className="mb-1 text-[11px] text-gray-500">Only unlocked parties are visible.</div>
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
               {availableCategoryGroups.map(group => (
                 <div key={group.id} className="flex flex-col">
@@ -8060,7 +8079,18 @@ function PartyTab({
                 >
                   <div className="flex justify-between items-center">
                     <span>
-                      {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
+                      {displayItem.isEquipped && (() => {
+                        const equippedOwnerImageSrc = getPartyInventoryCharacterImageSrc(char, party.id);
+                        return equippedOwnerImageSrc
+                          ? (
+                            <img
+                              src={equippedOwnerImageSrc}
+                              alt={`${char.name} portrait`}
+                              className="h-5 w-5 inline-block mr-1 rounded-sm align-text-bottom object-contain"
+                            />
+                            )
+                          : <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />;
+                      })()}
                       <span className={getItemNameFontWeightClass(displayItem.item)}>{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
                       <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}</span>
