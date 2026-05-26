@@ -8077,24 +8077,32 @@ function PartyTab({
                         : 'border-gray-200 opacity-50 cursor-not-allowed'
                   }`}
                 >
-                  <div className="flex justify-between items-center">
-                    <span>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
                       {displayItem.isEquipped && (() => {
                         const equippedOwnerImageSrc = getPartyInventoryCharacterImageSrc(char, party.id);
                         return equippedOwnerImageSrc
                           ? (
-                            <img
-                              src={equippedOwnerImageSrc}
-                              alt={`${char.name} portrait`}
-                              className="h-5 w-5 inline-block mr-1 rounded-sm align-text-bottom object-contain"
-                            />
-                            )
-                          : <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />;
+                            <div className="relative shrink-0 h-10 w-10 overflow-visible rounded">
+                              <img
+                                src={equippedOwnerImageSrc}
+                                alt={`${char.name} portrait`}
+                                className="pointer-events-none absolute bottom-[-4px] left-1/2 h-16 w-16 max-w-none -translate-x-1/2 rounded object-contain object-bottom"
+                              />
+                            </div>
+                          )
+                          : <RaceIcon race={race} className="h-4 w-4 mt-0.5 shrink-0" />;
                       })()}
-                      <span className={getItemNameFontWeightClass(displayItem.item)}>{getItemDisplayName(displayItem.item)}</span>
-                      {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}</span>
-                    </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`truncate ${getItemNameFontWeightClass(displayItem.item)}`}>{getItemDisplayName(displayItem.item)}</span>
+                          {!displayItem.isEquipped && <span className="text-xs text-gray-500 shrink-0">x{displayItem.count}</span>}
+                        </div>
+                        <div className="text-xs leading-tight text-gray-400 truncate">
+                          {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </button>
               ))}
