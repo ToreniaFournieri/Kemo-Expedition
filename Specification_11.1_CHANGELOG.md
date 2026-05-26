@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 1 | 2026/05/26 | Prepare v0.7.5 runtime update: bump app version to `v0.7.5` and reset build number to `1`. |
 | 0.7.4 | 22 | 2026/05/26 | Update UI_DIARY gods-battle headline runtime display-name resolution (Spec 8.5, 4.1.2): line-1 神魔戦通知 now uses canonical Gods `displayName` (e.g., `ミオラ 豊穣の女神`) by mapping legacy battle-log names like `ミオラ(神,賢M)`/short forms to the Enemy master display name table. |
 | 0.7.4 | 21 | 2026/05/26 | Refine Party tab equipment inventory owner chibi display (Spec 8.2.4): match Base Inventory equipped-entry behavior by using the same enlarged bottom-anchored chibi portrait alignment and sizing for equipped items, with race-icon fallback unchanged when no portrait exists. |
 | 0.7.4 | 20 | 2026/05/26 | Update Party tab equipment inventory pane (Spec 8.2.4): remove the helper text `Only unlocked parties are visible.` and show equipped-owner chibi portraits (with existing race-icon fallback) instead of race icons, aligned with Base Inventory behavior. |
