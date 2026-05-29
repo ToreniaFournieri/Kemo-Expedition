@@ -65,6 +65,8 @@ line2: 桃/腕  ← text over background image
 
 #### 8.2.2 Party member details
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
+- When the player attempts to swap the order of party members, display the following confirmation dialog:
+  - `選択したパーティメンバーの順番を入れ替えますか？`
 
 - **Character image (background)**
   - Render the character image as a background image of the panel.
