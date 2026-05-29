@@ -394,10 +394,13 @@ export type ExpeditionDepthLimit =
   | 'beforeBoss'
   | 'all';
 
+export type DiaryTrigger = 'defeat' | 'draw' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
+export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'none';
+
 export interface DiaryLog {
   id: string;
   expeditionLog: ExpeditionLog;
-  triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>;
+  triggers: DiaryTrigger[];
   sideQuestDetail?: string;
   sideQuestLabel?: string;
   unlockHeadline?: string;
@@ -416,7 +419,8 @@ export interface DiarySettings {
   rareThreshold: DiaryRarityThreshold;
   sideQuestThreshold: DiarySideQuestThreshold;
   notifyGodsBattle: boolean;
-  notifyDefeat: boolean;
+  defeatNotificationMode: DiaryDefeatNotificationMode;
+  notifyDefeat?: boolean;
 }
 
 export interface Deity {

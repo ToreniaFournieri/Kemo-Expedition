@@ -279,7 +279,7 @@ export function getDeityStateDurationMultiplier(name: string, totalDonatedGold =
   if (state === 'sell' && deityKey === 'God of Dusk') return 2;
   if (state === 'feast' && deityKey === 'Goddess of Fertility') return 2;
   if (state === 'pray' && deityKey === 'God of Fate') return 2;
-  if (state === 'explore' && deityKey === 'Goddess of Precision') return 2;
+  if (state === 'explore' && deityKey === 'Goddess of Precision') return 1.2;
   return 1;
 }
 
