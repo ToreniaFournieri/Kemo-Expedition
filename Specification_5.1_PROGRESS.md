@@ -58,7 +58,7 @@
 | `state.return` | 帰還中 | (5 + `x.exp_tier`) `Step` | Continuous |
 | `state.reactivate` | 復帰中 | - | - |
 
-**Duration modifilier**
+**Duration modifier**
 - `state.explore`:
   - If `Goddess of Precision`: `Step` *= 1.2 round up
   - If floor is `terrain.chill`: `Step` *= 2.0 round up
