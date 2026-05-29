@@ -5571,6 +5571,7 @@ function PartyTab({
   const prevSelectedCharRef = useRef(selectedCharacter);
   const prevSelectedPartyRef = useRef(selectedPartyIndex);
   const touchDraggingCharacterIndexRef = useRef<number | null>(null);
+  const touchReorderConfirmedRef = useRef(false);
   const partyPaneBackgroundImageFileName = useMemo(() => {
     const partyNumber = selectedPartyIndex + 1;
     if (partyNumber < 1 || partyNumber > 6) return null;
@@ -5609,6 +5610,19 @@ function PartyTab({
     });
     setSelectingSlot(null);
   }, [getReorderedIndex, onReorderPartyCharacter, setEditingCharacter, setSelectedCharacter]);
+
+  const confirmPartyCharacterReorder = useCallback(() => {
+    // SpecRef: 8.2.2 | Party member details | Party member order swap confirmation
+    return window.confirm('選択したパーティメンバーの順番を入れ替えますか？');
+  }, []);
+
+  const reorderCharacterWithConfirmation = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return false;
+    if (!confirmPartyCharacterReorder()) return false;
+
+    reorderCharacter(fromIndex, toIndex);
+    return true;
+  }, [confirmPartyCharacterReorder, reorderCharacter]);
 
   // Watch for stat changes after equipment - send individual notification per stat change
   useEffect(() => {
@@ -6546,7 +6560,7 @@ function PartyTab({
               onDrop={(event) => {
                 event.preventDefault();
                 const sourceIndex = Number(event.dataTransfer.getData('text/plain'));
-                reorderCharacter(Number.isNaN(sourceIndex) ? i : sourceIndex, i);
+                reorderCharacterWithConfirmation(Number.isNaN(sourceIndex) ? i : sourceIndex, i);
                 setDraggingCharacterIndex(null);
               }}
               onDragEnd={() => {
@@ -6554,6 +6568,7 @@ function PartyTab({
               }}
               onTouchStart={() => {
                 touchDraggingCharacterIndexRef.current = i;
+                touchReorderConfirmedRef.current = false;
                 setDraggingCharacterIndex(i);
               }}
               onTouchMove={(event) => {
@@ -6566,12 +6581,22 @@ function PartyTab({
                 const fromIndex = touchDraggingCharacterIndexRef.current;
                 if (fromIndex === null || Number.isNaN(toIndex) || fromIndex === toIndex) return;
 
+                if (!touchReorderConfirmedRef.current) {
+                  if (!confirmPartyCharacterReorder()) {
+                    touchDraggingCharacterIndexRef.current = null;
+                    setDraggingCharacterIndex(null);
+                    return;
+                  }
+                  touchReorderConfirmedRef.current = true;
+                }
+
                 reorderCharacter(fromIndex, toIndex);
                 touchDraggingCharacterIndexRef.current = toIndex;
                 setDraggingCharacterIndex(toIndex);
               }}
               onTouchEnd={() => {
                 touchDraggingCharacterIndexRef.current = null;
+                touchReorderConfirmedRef.current = false;
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 3 | 2026/05/29 | Implement Party member details reorder confirmation (Spec 8.2.2): when swapping party member order by drag/drop or touch reordering, show the confirmation dialog `選択したパーティメンバーの順番を入れ替えますか？` before applying the reorder. |
 | 0.7.5 | 2 | 2026/05/29 | Implement runtime updates for Goddess of Precision exploration duration and UI_DIARY defeat notifications (Spec 2.1.3, 5.1.1, 8.5): change Precision explore duration multiplier from `2.0` to `1.2`, add 敗北通知 modes `敗北のみ`/`敗北と引分`/`なし` with default `敗北のみ`, and log draw-retreat diary entries only when the new draw-inclusive mode is selected. |
 | 0.7.5 | 1 | 2026/05/26 | Prepare v0.7.5 runtime update: bump app version to `v0.7.5` and reset build number to `1`. |
 | 0.7.4 | 22 | 2026/05/26 | Update UI_DIARY gods-battle headline runtime display-name resolution (Spec 8.5, 4.1.2): line-1 神魔戦通知 now uses canonical Gods `displayName` (e.g., `ミオラ 豊穣の女神`) by mapping legacy battle-log names like `ミオラ(神,賢M)`/short forms to the Enemy master display name table. |
