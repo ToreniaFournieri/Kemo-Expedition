@@ -145,7 +145,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'Goddess of Precision': {
       const accuracyBonus = 0.015 + 0.001 * effectiveTier;
-      return `全員の命中+${(accuracyBonus * 1000).toFixed(0)}、回避-5。探索時間2倍`;
+      return `全員の命中+${(accuracyBonus * 1000).toFixed(0)}、回避-5。探索時間1.2倍`;
     }
     case 'God of Fate': {
       return '未来改変。祈り時間2倍。';
