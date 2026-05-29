@@ -60,7 +60,7 @@
 
 **Durration modifilier**
 - `state.explore`:
-  - If `Goddess of Precision`: `Step` *= 2.0 round up
+  - If `Goddess of Precision`: `Step` *= 1.2 round up
   - If floor is `terrain.chill`: `Step` *= 2.0 round up
   - If floor is `terrain.looping-path`' `Step` *= 2.0 round up
 - `state.move` and `state.return`
