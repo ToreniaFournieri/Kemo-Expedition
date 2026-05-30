@@ -4605,6 +4605,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopRefreshCounts: {},
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
+          enemyBattleStats: {},
         },
         parties: [createInitialParty()],
         selectedPartyIndex: 0,

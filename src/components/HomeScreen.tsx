@@ -10979,10 +10979,11 @@ function SettingTab({
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
-  const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
-  const CLAIRVOYANCE_PARTY_STORAGE_KEY = 'kemo-expedition.divine-bureau.clairvoyance-party-expanded';
-  const GLOSSARY_TAB_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-tab';
-  const GLOSSARY_EXPANDED_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-expanded-entries';
+  // SpecRef: 9 | Environment | Save Data Isolation
+  const DIVINE_BUREAU_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.panel-expanded');
+  const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.clairvoyance-party-expanded');
+  const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-tab');
+  const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-expanded-entries');
   const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     modeSelect: false,
