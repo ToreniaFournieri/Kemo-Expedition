@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiaryDefeatNotificationMode, DiarySettings, DiaryLog, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -981,6 +981,13 @@ const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold
   { value: 6, label: '6紫晶以上' },
   { value: 7, label: '7金晶以上' },
   { value: 8, label: '8王晶のみ' },
+  { value: 'none', label: 'なし' },
+];
+
+
+const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; label: string }> = [
+  { value: 'defeatOnly', label: '敗北のみ' },
+  { value: 'defeatAndDraw', label: '敗北と引分' },
   { value: 'none', label: 'なし' },
 ];
 
@@ -5564,6 +5571,7 @@ function PartyTab({
   const prevSelectedCharRef = useRef(selectedCharacter);
   const prevSelectedPartyRef = useRef(selectedPartyIndex);
   const touchDraggingCharacterIndexRef = useRef<number | null>(null);
+  const touchReorderConfirmedRef = useRef(false);
   const partyPaneBackgroundImageFileName = useMemo(() => {
     const partyNumber = selectedPartyIndex + 1;
     if (partyNumber < 1 || partyNumber > 6) return null;
@@ -5602,6 +5610,19 @@ function PartyTab({
     });
     setSelectingSlot(null);
   }, [getReorderedIndex, onReorderPartyCharacter, setEditingCharacter, setSelectedCharacter]);
+
+  const confirmPartyCharacterReorder = useCallback(() => {
+    // SpecRef: 8.2.2 | Party member details | Party member order swap confirmation
+    return window.confirm('選択したパーティメンバーの順番を入れ替えますか？');
+  }, []);
+
+  const reorderCharacterWithConfirmation = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return false;
+    if (!confirmPartyCharacterReorder()) return false;
+
+    reorderCharacter(fromIndex, toIndex);
+    return true;
+  }, [confirmPartyCharacterReorder, reorderCharacter]);
 
   // Watch for stat changes after equipment - send individual notification per stat change
   useEffect(() => {
@@ -6539,7 +6560,7 @@ function PartyTab({
               onDrop={(event) => {
                 event.preventDefault();
                 const sourceIndex = Number(event.dataTransfer.getData('text/plain'));
-                reorderCharacter(Number.isNaN(sourceIndex) ? i : sourceIndex, i);
+                reorderCharacterWithConfirmation(Number.isNaN(sourceIndex) ? i : sourceIndex, i);
                 setDraggingCharacterIndex(null);
               }}
               onDragEnd={() => {
@@ -6547,6 +6568,7 @@ function PartyTab({
               }}
               onTouchStart={() => {
                 touchDraggingCharacterIndexRef.current = i;
+                touchReorderConfirmedRef.current = false;
                 setDraggingCharacterIndex(i);
               }}
               onTouchMove={(event) => {
@@ -6559,12 +6581,22 @@ function PartyTab({
                 const fromIndex = touchDraggingCharacterIndexRef.current;
                 if (fromIndex === null || Number.isNaN(toIndex) || fromIndex === toIndex) return;
 
+                if (!touchReorderConfirmedRef.current) {
+                  if (!confirmPartyCharacterReorder()) {
+                    touchDraggingCharacterIndexRef.current = null;
+                    setDraggingCharacterIndex(null);
+                    return;
+                  }
+                  touchReorderConfirmedRef.current = true;
+                }
+
                 reorderCharacter(fromIndex, toIndex);
                 touchDraggingCharacterIndexRef.current = toIndex;
                 setDraggingCharacterIndex(toIndex);
               }}
               onTouchEnd={() => {
                 touchDraggingCharacterIndexRef.current = null;
+                touchReorderConfirmedRef.current = false;
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
@@ -10220,8 +10252,9 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>) => {
+  const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
+    if (triggers.includes('draw') && triggers.length === 1) return '引分の記録';
     if (triggers.includes('unlock')) return '解放の記録';
     if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
     if (triggers.includes('godsBattle')) return '神魔戦の記録';
@@ -10257,7 +10290,7 @@ function DiaryTab({
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock'>,
+    triggers: DiaryLog['triggers'],
     rewards: Item[],
     expeditionLog: ExpeditionLog,
     sideQuestLabel?: string,
@@ -10294,6 +10327,10 @@ function DiaryTab({
 
     if (triggers.includes('defeat') && triggers.length === 1) {
       return `[${partyName}] 敗北の記録`;
+    }
+
+    if (triggers.includes('draw') && triggers.length === 1) {
+      return `[${partyName}] 引分の記録`;
     }
 
     if (triggers.includes('superRare') || triggers.includes('mythicRare') || triggers.includes('bossRare')) {
@@ -10428,12 +10465,13 @@ function DiaryTab({
                   <label className="flex items-center justify-between gap-2">
                     <span>敗北通知</span>
                     <select
-                      value={settings.notifyDefeat ? 'あり' : 'なし'}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyDefeat: event.target.value === 'あり' })}
+                      value={settings.defeatNotificationMode}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { defeatNotificationMode: event.target.value as DiaryDefeatNotificationMode })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
-                      <option value="あり">あり</option>
-                      <option value="なし">なし</option>
+                      {DIARY_DEFEAT_NOTIFICATION_OPTIONS.map((option) => (
+                        <option key={`df-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
                     </select>
                   </label>
                   {/* SpecRef: 8.5 | UI_DIARY | Setting. */}
@@ -10941,10 +10979,11 @@ function SettingTab({
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
-  const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
-  const CLAIRVOYANCE_PARTY_STORAGE_KEY = 'kemo-expedition.divine-bureau.clairvoyance-party-expanded';
-  const GLOSSARY_TAB_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-tab';
-  const GLOSSARY_EXPANDED_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-expanded-entries';
+  // SpecRef: 9 | Environment | Save Data Isolation
+  const DIVINE_BUREAU_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.panel-expanded');
+  const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.clairvoyance-party-expanded');
+  const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-tab');
+  const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-expanded-entries');
   const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     modeSelect: false,

@@ -580,7 +580,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "Goddess of Precision",
         "label": "精密の女神",
-        "description": "効果:全員の命中+15+α、回避-5。探索時間2倍。\n失敗の先には成功がある。"
+        "description": "効果:全員の命中+15+α、回避-5。探索時間1.2倍。\n失敗の先には成功がある。"
       },
       {
         "key": "God of Fate",

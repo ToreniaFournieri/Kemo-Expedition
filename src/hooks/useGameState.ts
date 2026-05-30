@@ -14,6 +14,7 @@ import {
   ExpeditionLog,
   DiaryLog,
   DiarySettings,
+  DiaryDefeatNotificationMode,
   ExpeditionLogEntry,
   BattleLogEntry,
   InventoryRecord,
@@ -440,7 +441,7 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   rareThreshold: 5,
   sideQuestThreshold: 'all',
   notifyGodsBattle: true,
-  notifyDefeat: true,
+  defeatNotificationMode: 'defeatOnly',
 };
 
 const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
@@ -652,11 +653,22 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
   };
 }
 
+function normalizeDiaryDefeatNotificationMode(
+  value: unknown,
+  legacyNotifyDefeat: unknown,
+): DiaryDefeatNotificationMode {
+  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'none') return value;
+  if (legacyNotifyDefeat === false) return 'none';
+  return 'defeatOnly';
+}
+
 // SpecRef: 8.5 | UI_DIARY | Setting.
 function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined): DiarySettings {
+  const raw = value as (Partial<DiarySettings> & { notifyDefeat?: unknown }) | undefined;
   return {
     ...DEFAULT_DIARY_SETTINGS,
     ...(value ?? {}),
+    defeatNotificationMode: normalizeDiaryDefeatNotificationMode(raw?.defeatNotificationMode, raw?.notifyDefeat),
   };
 }
 
@@ -3438,8 +3450,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const hasMythicMatch = finalRewards.some((item) => getItemRarityCode(item) === 'mythicRare' && matchesDiaryThreshold(item, diarySettings.mythicThreshold));
       const hasRareMatch = finalRewards.some((item) => getItemRarityCode(item) === 'eliteRare' && matchesDiaryThreshold(item, diarySettings.rareThreshold));
 
+      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
       const diaryTriggers: DiaryLog['triggers'] = [];
-      if (finalOutcome === 'Defeat' && diarySettings.notifyDefeat) diaryTriggers.push('defeat');
+      // SpecRef: 8.5 | UI_DIARY | Setting.
+      if (finalOutcome === 'Defeat' && diarySettings.defeatNotificationMode !== 'none') diaryTriggers.push('defeat');
+      if (finalOutcome === 'Retreat' && endedWithDrawRetreat && diarySettings.defeatNotificationMode === 'defeatAndDraw') diaryTriggers.push('draw');
       // SpecRef: 8.5 | UI_DIARY | Setting.
       if (isGodsBattle && diarySettings.notifyGodsBattle) diaryTriggers.push('godsBattle');
 
@@ -3464,7 +3479,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         : null;
 
       const updatedParties = [...state.parties];
-      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
       updatedParties[action.partyIndex] = {
         ...currentParty,
         bags,
@@ -4591,6 +4605,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopRefreshCounts: {},
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
+          enemyBattleStats: {},
         },
         parties: [createInitialParty()],
         selectedPartyIndex: 0,
