@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 8 | 2026/06/02 | Crop enlarged active-expedition battle-log enemy artwork (Spec 6.1.7): clip the fixed-size image to the expanded battle-log detail panel and anchor it at the panel top so artwork outside the selected log area is not visible, matching diary battle logs. |
 | 0.7.5 | 7 | 2026/06/02 | Refine collapsed battle-log enemy chibi placement (Spec 6.1.7): shift the shared active-expedition and diary room-pane chibi background inward from the far-right edge to the center-right area so it does not crowd the outcome label and expand control. |
 | 0.7.5 | 6 | 2026/06/02 | Implement collapsed battle-log enemy chibi backgrounds (Spec 6.1.7): display `/public/chibi/C_E_{enemy_ID}.png` on the right side of active-expedition and diary room panes, hide missing assets, and preserve the separate expanded-detail `/public/enemy/E_{enemy_ID}.png` artwork. |
 | 0.7.5 | 5 | 2026/05/30 | Fix save-data persistence consistency (Spec 9): namespace Divine Bureau panel, Clairvoyance party expansion, glossary tab, and glossary expanded-entry records per environment so `/dev/` and `/beta/` never share persisted UI state; also initialize the reset-game enemy battle statistics record consistently with a fresh save. |
