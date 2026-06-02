@@ -659,6 +659,19 @@ function renderEnemyLogChibiBackground(entry: ExpeditionLogEntry): JSX.Element |
   );
 }
 
+function renderCollapsedBestiaryEnemyImage(enemyId: number): JSX.Element {
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Image (Collapsed State)
+  return (
+    <img
+      src={resolvePublicAssetPath(`/chibi/C_E_${enemyId}.png`) ?? undefined}
+      onError={(event) => { event.currentTarget.style.display = 'none'; }}
+      alt=""
+      aria-hidden="true"
+      className="h-8 w-8 select-none object-contain"
+    />
+  );
+}
+
 function getEnemyClassSummary(enemy: EnemyDef): string {
   const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
   if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
@@ -12789,7 +12802,10 @@ function SettingTab({
                   className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                 >
                   <span>{renderEnemyNameWithMutedClass(godClassShortName ? `${god.displayName}(${godClassShortName})` : god.displayName)}</span>
-                  <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                    {!godExpanded && renderCollapsedBestiaryEnemyImage(getGodBestiaryDisplayEnemyId(god))}
+                    <span>{godExpanded ? '▲' : '▼'}</span>
+                  </span>
                 </button>
                 {godExpanded && (
                   <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
@@ -12921,7 +12937,11 @@ function SettingTab({
                 <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
                 <div className="mt-2 border border-gray-100 rounded">
                   <button onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [colosseumEnemy.id]: !enemyExpanded }))} className="w-full text-left px-2 py-1 text-sm flex justify-between items-center">
-                    <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(colosseumEnemy))}</span><span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                    <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(colosseumEnemy))}</span>
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      {!enemyExpanded && renderCollapsedBestiaryEnemyImage(colosseumEnemy.id)}
+                      <span>{enemyExpanded ? '▲' : '▼'}</span>
+                    </span>
                   </button>
                   {enemyExpanded && <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -13001,7 +13021,10 @@ function SettingTab({
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
                       <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(displayEnemy))}</span>
-                      <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                        {!enemyExpanded && renderCollapsedBestiaryEnemyImage(displayEnemy.id)}
+                        <span>{enemyExpanded ? '▲' : '▼'}</span>
+                      </span>
                     </button>
                     {enemyExpanded && (
                       <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
