@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 6 | 2026/06/02 | Implement collapsed battle-log enemy chibi backgrounds (Spec 6.1.7): display `/public/chibi/C_E_{enemy_ID}.png` on the right side of active-expedition and diary room panes, hide missing assets, and preserve the separate expanded-detail `/public/enemy/E_{enemy_ID}.png` artwork. |
 | 0.7.5 | 5 | 2026/05/30 | Fix save-data persistence consistency (Spec 9): namespace Divine Bureau panel, Clairvoyance party expansion, glossary tab, and glossary expanded-entry records per environment so `/dev/` and `/beta/` never share persisted UI state; also initialize the reset-game enemy battle statistics record consistently with a fresh save. |
 | 0.7.5 | 4 | 2026/05/29 | Fix Goddess of Precision visual text (Spec 1.1, 2.1.3): display the exploration duration multiplier as `探索時間1.2倍` in runtime deity summaries and glossary data, matching the existing internal `1.2` explore duration multiplier. |
 | 0.7.5 | 3 | 2026/05/29 | Implement Party member details reorder confirmation (Spec 8.2.2): when swapping party member order by drag/drop or touch reordering, show the confirmation dialog `選択したパーティメンバーの順番を入れ替えますか？` before applying the reorder. |

@@ -637,6 +637,28 @@ function getEnemyLogBackgroundImagePath(enemy?: EnemyDef): string | null {
   return resolvePublicAssetPath(`/enemy/E_${enemy.id}.png`);
 }
 
+function getEnemyLogChibiImagePath(entry: ExpeditionLogEntry): string | null {
+  // SpecRef: 6.1.7 | Logs | Background image
+  const enemyId = entry.enemySnapshot?.id ?? entry.enemyId;
+  if (typeof enemyId !== 'number') return null;
+  return resolvePublicAssetPath(`/chibi/C_E_${enemyId}.png`);
+}
+
+function renderEnemyLogChibiBackground(entry: ExpeditionLogEntry): JSX.Element | null {
+  const imagePath = getEnemyLogChibiImagePath(entry);
+  if (!imagePath) return null;
+
+  return (
+    <img
+      src={imagePath}
+      onError={(event) => { event.currentTarget.style.display = 'none'; }}
+      alt=""
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-y-0 right-0 h-full w-auto max-w-[42%] select-none object-contain object-right opacity-60"
+    />
+  );
+}
+
 function getEnemyClassSummary(enemy: EnemyDef): string {
   const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
   if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
@@ -8938,9 +8960,10 @@ function ExpeditionTab({
                               : { partyIndex, roomIndex: originalIndex, latestRoomToken }
                             );
                           }}
-                          className={`w-full text-left p-2 text-xs ${canExpandRoom ? '' : 'cursor-default'}`}
+                          className={`relative isolate w-full overflow-hidden rounded text-left p-2 text-xs ${canExpandRoom ? '' : 'cursor-default'}`}
                         >
-                            <div className="flex justify-between items-center">
+                            {!isRoomExpanded && renderEnemyLogChibiBackground(entry)}
+                            <div className="relative z-10 flex justify-between items-center">
                               <span className="font-medium">
                                 {roomLabel}:{' '}
                                 <span
@@ -8992,13 +9015,13 @@ function ExpeditionTab({
                               </span>
                             </div>
                             {(entry.gateInfo || entry.reward) && (
-                              <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                              <div className="relative z-10 text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                                 {entry.gateInfo && <span className="text-accent">{entry.gateInfo}</span>}
                                 {renderEntryReward(entry)}
                               </div>
                             )}
                             {!entry.gateInfo && (
-                              <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
+                              <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
                                   <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
@@ -10638,9 +10661,10 @@ function DiaryTab({
                       <div key={roomKey} className="bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
                         <button
                           onClick={() => onSetExpandedRooms((prev) => ({ ...prev, [roomKey]: !isRoomExpanded }))}
-                          className="w-full text-left p-2 text-xs"
+                          className="relative isolate w-full overflow-hidden rounded text-left p-2 text-xs"
                         >
-                          <div className="flex justify-between items-center">
+                          {!isRoomExpanded && renderEnemyLogChibiBackground(entry)}
+                          <div className="relative z-10 flex justify-between items-center">
                             <span>
                               <span className="font-medium">
                                 {roomLabel}:{' '}
@@ -10697,13 +10721,13 @@ function DiaryTab({
                             </span>
                           </div>
                           {(entry.gateInfo || entry.reward) && (
-                            <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                            <div className="relative z-10 text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                               {entry.gateInfo && <span className="text-accent">{entry.gateInfo}</span>}
                               {renderEntryReward(entry)}
                             </div>
                           )}
                           {!entry.gateInfo && (
-                            <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
+                            <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                               <div>
                                 <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
