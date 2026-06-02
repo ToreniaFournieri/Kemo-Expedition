@@ -810,6 +810,12 @@ note: If mainClass == subClass: (race, mainClass+M) : example: (合,侍M)
 獲得:伝説の火打ち石の触媒
 (Column 1) 自HP 273 /1,000 [Party HP bar here: Rermaining HP(Blue)/healed HP (Green)  /Taken damage(Dark orange) / max_HP]
 (Column 2) 敵HP 20 /320 [Enemy HP bar here: Rermaining HP(Blue) / max_HP]
+
+- Background image:
+  - Display on the right side of the pane.
+  - Load the image from: `/public/chibi/C_E_{enemy_ID}.png`
+  - If the image file does not exist, do not display any image.
+
 ```
 
 - `f.battle_logs`
