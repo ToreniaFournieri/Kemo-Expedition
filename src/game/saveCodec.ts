@@ -1,5 +1,6 @@
 import { getItemById } from '../data/items';
-import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, RandomBag, WeightedBagEntry } from '../types';
+import { getInstantExpeditionChargeState } from './instantExpedition';
+import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, Party, RandomBag, WeightedBagEntry } from '../types';
 
 type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel' | 'isLocked'>;
 type CompactBagEntry = [number, number];
@@ -103,6 +104,17 @@ function hydrateBagCollection<T extends object>(bags: T): T {
   return hydrated;
 }
 
+// SpecRef: 5.1.4 | Save and load | Data persistence
+// SpecRef: 8.3 | UI_EXPEDITION | Charge
+function normalizePartyInstantExpeditionCharge<T extends Pick<Party, 'instantExpeditionStock' | 'instantExpeditionChargeStartedAt'>>(party: T): T & { instantExpeditionStock: number; instantExpeditionChargeStartedAt: number | null } {
+  const instantChargeState = getInstantExpeditionChargeState(party);
+  return {
+    ...party,
+    instantExpeditionStock: instantChargeState.stock,
+    instantExpeditionChargeStartedAt: instantChargeState.chargeStartedAt,
+  };
+}
+
 function migrateObsoleteClassId(classId: string): ClassId {
   if (classId === 'fighter') return 'guardian';
   if (classId === 'rogue') return 'ninja';
@@ -127,16 +139,18 @@ export function serializeGameState(state: GameState): GameState {
       inventory: compactInventory,
     },
     parties: state.parties.map((party) => {
-      const partyBags = party.bags ?? state.bags;
-      return ({
-      ...party,
-      bags: compactBagCollection(partyBags),
-      sleepinessOfPartyBag: compactBagEntries(party.sleepinessOfPartyBag) as RandomBag,
-      characters: party.characters.map((character) => ({
-        ...character,
-        equipment: character.equipment.map((item) => (item ? (toItemReference(item) as Item) : null)),
-      })),
-    })}),
+      const normalizedParty = normalizePartyInstantExpeditionCharge(party);
+      const partyBags = normalizedParty.bags ?? state.bags;
+      return {
+        ...normalizedParty,
+        bags: compactBagCollection(partyBags),
+        sleepinessOfPartyBag: compactBagEntries(party.sleepinessOfPartyBag) as RandomBag,
+        characters: party.characters.map((character) => ({
+          ...character,
+          equipment: character.equipment.map((item) => (item ? (toItemReference(item) as Item) : null)),
+        })),
+      };
+    }),
   };
 }
 
@@ -159,17 +173,19 @@ export function hydrateGameState(state: GameState): GameState {
       inventory: hydratedInventory,
     },
     parties: state.parties.map((party) => {
-      const partyBags = party.bags ?? state.bags;
-      return ({
-      ...party,
-      bags: hydrateBagCollection(partyBags),
-      sleepinessOfPartyBag: hydrateBagEntries(party.sleepinessOfPartyBag),
-      characters: party.characters.map((character) => ({
-        ...character,
-        mainClassId: migrateObsoleteClassId(character.mainClassId as string),
-        subClassId: migrateObsoleteClassId(character.subClassId as string),
-        equipment: character.equipment.map((item) => (item ? hydrateItem(item) : null)),
-      })),
-    })}),
+      const normalizedParty = normalizePartyInstantExpeditionCharge(party);
+      const partyBags = normalizedParty.bags ?? state.bags;
+      return {
+        ...normalizedParty,
+        bags: hydrateBagCollection(partyBags),
+        sleepinessOfPartyBag: hydrateBagEntries(party.sleepinessOfPartyBag),
+        characters: party.characters.map((character) => ({
+          ...character,
+          mainClassId: migrateObsoleteClassId(character.mainClassId as string),
+          subClassId: migrateObsoleteClassId(character.subClassId as string),
+          equipment: character.equipment.map((item) => (item ? hydrateItem(item) : null)),
+        })),
+      };
+    }),
   };
 }
