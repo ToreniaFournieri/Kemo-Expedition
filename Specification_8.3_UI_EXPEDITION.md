@@ -149,7 +149,7 @@ HP 2350 / 4680
 ( ####### ) PT1 ケイナイアンの廃都   踏破 ▼
 ( ##   ## ) 
 ( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
-移動中: flavor text (background: state progress bar)
+移動中 (background: state progress bar)
 (Sub progress bar)
 
 一任 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
@@ -181,6 +181,8 @@ PT2...
 
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
   - List of available dungeons with Loot-Gate conditions
+
+  - **OBSOLATED: REMOVE THIS FROM THE RUNTIME PROGRAM**
 	- **Flavor text**
 	  - The system selects flavor text from `Specification_5.2_PROGRESS_FLAVOR_TEXT.md`.
 	  - The **speaker name** of the flavor text is resolved to the party member who satisfies the triggering condition (race, main class, or ability holder).
