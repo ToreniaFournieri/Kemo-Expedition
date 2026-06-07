@@ -813,6 +813,7 @@ note: If mainClass == subClass: (race, mainClass+M) : example: (合,侍M)
 
 - Background image:
   - Display on the right side of the pane.
+  - Continue displaying the chibi image when the battle-log pane is expanded/open.
   - Load the image from: `/public/chibi/C_E_{enemy_ID}.png`
   - If the image file does not exist, do not display any image.
 
