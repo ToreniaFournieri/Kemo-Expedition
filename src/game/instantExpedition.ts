@@ -18,6 +18,14 @@ export interface InstantExpeditionChargeState {
   nextChargeDurationMs: number | null;
 }
 
+export interface InstantExpeditionChargeDisplay {
+  cells: string;
+  timerText: string;
+  label: string;
+}
+
+const instantExpeditionMinuteFormatter = new Intl.NumberFormat('ja-JP');
+
 function normalizeStock(raw: unknown): number {
   return Math.max(0, Math.min(INSTANT_EXPEDITION_MAX_STOCK, Math.floor(typeof raw === 'number' && Number.isFinite(raw) ? raw : INSTANT_EXPEDITION_MAX_STOCK)));
 }
@@ -95,15 +103,22 @@ export function consumeInstantExpeditionStock<T extends Pick<Party, 'instantExpe
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
-export function formatInstantExpeditionCharge(chargeState: InstantExpeditionChargeState): string {
+export function formatInstantExpeditionChargeDisplay(chargeState: InstantExpeditionChargeState): InstantExpeditionChargeDisplay {
   const cells = Array.from({ length: INSTANT_EXPEDITION_MAX_STOCK }, (_, index) => (
     index < chargeState.stock ? '▰' : '▱'
   )).join('');
+  const timerText = chargeState.stock >= INSTANT_EXPEDITION_MAX_STOCK
+    ? 'MAX'
+    : instantExpeditionMinuteFormatter.format(Math.max(0, Math.ceil(chargeState.remainingMs / (60 * 1000))));
 
-  if (chargeState.stock >= INSTANT_EXPEDITION_MAX_STOCK) return `${cells}MAX`;
+  return {
+    cells,
+    timerText,
+    label: `${cells}${timerText}`,
+  };
+}
 
-  const remainingTotalSeconds = Math.max(0, Math.ceil(chargeState.remainingMs / 1000));
-  const hours = Math.floor(remainingTotalSeconds / 3600);
-  const minutes = Math.floor((remainingTotalSeconds % 3600) / 60);
-  return `${cells}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+// SpecRef: 8.3 | UI_EXPEDITION | Charge
+export function formatInstantExpeditionCharge(chargeState: InstantExpeditionChargeState): string {
+  return formatInstantExpeditionChargeDisplay(chargeState).label;
 }

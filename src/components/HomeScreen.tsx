@@ -45,7 +45,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
-import { formatInstantExpeditionCharge, getInstantExpeditionChargeState } from '../game/instantExpedition';
+import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -8417,7 +8417,8 @@ function ExpeditionTab({
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
         const instantChargeState = getInstantExpeditionChargeState(party, emulatedNowMs);
-        const instantChargeLabel = formatInstantExpeditionCharge(instantChargeState);
+        const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
+        const instantChargeLabel = instantChargeDisplay.label;
         const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
         const isColosseumSelected = selectedDungeon?.id === 99;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
@@ -8587,7 +8588,7 @@ function ExpeditionTab({
                       title="Instant Expedition Charge"
                       aria-label={`Instant Expedition Charge ${instantChargeLabel}`}
                     >
-                      {instantChargeLabel}
+                      <span>{instantChargeDisplay.cells}</span><i>{instantChargeDisplay.timerText}</i>
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
