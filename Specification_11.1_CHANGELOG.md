@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 11 | 2026/06/07 | Refine Expedition party-state progress bar height (Spec 8.3): reduce the main state progress bar to a single-line height and keep labels such as `祈り中` on one truncated line. |
 | 0.7.5 | 10 | 2026/06/07 | Remove obsolete UI Expedition runtime flavor text (Spec 8.3): stop appending generated flavor text to expedition party-state labels, remove the flavor-condition debug toggle, and delete the runtime flavor text selector/data modules. |
 | 0.7.5 | 9 | 2026/06/02 | Implement collapsed Divine Bureau Bestiary enemy chibi images (Spec 8.6): show `/public/chibi/C_E_{enemy_ID}.png` on the right side of collapsed enemy title rows for expedition, Gods, and Colosseum entries, and hide missing image assets. |
 | 0.7.5 | 8 | 2026/06/02 | Crop enlarged active-expedition battle-log enemy artwork (Spec 6.1.7): clip the fixed-size image to the expanded battle-log detail panel and anchor it at the panel top so artwork outside the selected log area is not visible, matching diary battle logs. |
