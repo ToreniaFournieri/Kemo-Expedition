@@ -46,8 +46,8 @@
 |-------|-------|-------|-------|
 | `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
-| `state.feast` | 宴会中 | 3 + max(0, floor( + `condition` / 50)) `Step`  | Continuous |
-| `state.slump` | 不貞腐れ中 | 1 + max(0, floor( - `condition` / 20)) `Step` | Continuous |
+| `state.feast` | 宴会中 | 5  `Step`  | Continuous |
+| `state.slump` | 不貞腐れ中 | 5 `Step` | Continuous |
 | `state.sound_sleep` | 熟睡中 | 8 `Step` | Continuous |
 | `state.nap_sleep` | 仮眠中 | 2 `Step` | Continuous |
 | `state.outfit` | 身支度中 | 4 `Step` | Continuous |
