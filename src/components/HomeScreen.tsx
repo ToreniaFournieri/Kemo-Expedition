@@ -8922,7 +8922,7 @@ function ExpeditionTab({
                           }}
                           className={`relative isolate w-full overflow-hidden rounded text-left p-2 text-xs ${canExpandRoom ? '' : 'cursor-default'}`}
                         >
-                            {!isRoomExpanded && renderEnemyLogChibiBackground(entry)}
+                            {renderEnemyLogChibiBackground(entry)}
                             <div className="relative z-10 flex justify-between items-center">
                               <span className="font-medium">
                                 {roomLabel}:{' '}
@@ -10623,7 +10623,7 @@ function DiaryTab({
                           onClick={() => onSetExpandedRooms((prev) => ({ ...prev, [roomKey]: !isRoomExpanded }))}
                           className="relative isolate w-full overflow-hidden rounded text-left p-2 text-xs"
                         >
-                          {!isRoomExpanded && renderEnemyLogChibiBackground(entry)}
+                          {renderEnemyLogChibiBackground(entry)}
                           <div className="relative z-10 flex justify-between items-center">
                             <span>
                               <span className="font-medium">
