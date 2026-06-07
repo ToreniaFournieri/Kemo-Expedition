@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 19 | 2026/06/07 | Simplify AFK Progress reactivation handling (Spec 5.1.1/7.1.2): AFK catch-up now uses completed expedition-cycle chunks only and resumes Online from a clean rest/move/idle state instead of preserving partial AFK state or step continuity. |
 | 0.7.5 | 18 | 2026/06/07 | Apply the Goddess of Restoration duration modifier to runtime `state.sound_sleep` timing (Spec 5.1.1), making sound sleep duration use the deity state-duration multiplier. |
 | 0.7.5 | 17 | 2026/06/07 | Implement simplified Progress runtime state machine (Spec 5.1.1): replace feast/slump/nap/outfit cycle branches with `state.free_action`, route sell/no-sell through free action, move directly after no sleep or sound sleep, and run auto-equipment at the end of sound sleep. |
 | 0.7.5 | 16 | 2026/06/07 | Refine battle-log enemy chibi readability (Spec 6.1.7): reduce the shared active-expedition and diary room-pane enemy chibi opacity so HP text remains more visible over the image. |

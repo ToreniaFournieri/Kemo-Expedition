@@ -119,23 +119,16 @@
 - Limit: maximum 1,800 minutes (30 hours) per catch-up simulation in the current version; elapsed time beyond this cap is ignored for that tick.
 
 **AFK → Online Transition Handling**
-- **State Transfer:**
-  - Upon completion of AFK emulation, transfer the **latest runtime state** to Online mode without loss or recalculation.
-  - The transition must be **deterministic and precise**.
-- State Correction Rule:
-  - If HP < MaxHP at the moment of transition, override the current state and set: `state.rest`
-  - Otherwise, retain the transferred state without modification.
-- **Step Continuity Rule:**
-  - If AFK emulation ends mid-`Step`, resume from the exact same `Step` progress in Online mode.
-  - Example:
-    - AFK ends at `state.return`, `Step` progress = **3/7**  
-      → Resume at `state.return`, **3/7 `Step`**.
-- **Sub-step Progress Handling:**
-  - Ignore intra-`Step` (sub-progress) timing.
-  - Preserve only the discrete `Step` progress ratio.
-
+- **Simplified AFK emulation:**
+  - During `state.reactivate`, AFK progress is processed as completed expedition-cycle chunks only.
+  - Do not preserve an in-progress state from the moment the player went AFK.
+  - Do not preserve mid-`Step` or partial-state progress when returning Online.
+- **Online resume state:**
+  - If HP < MaxHP at the moment AFK recovery completes, set the party to `state.rest` from the start of that state.
+  - Otherwise, if 自動周回 = ON, set the party to `state.move` from the start of that state.
+  - Otherwise, set the party to `state.idle`.
 - **Refresh Handling**
-  - On page refresh, AFK emulation must automatically continue and resume from the latest saved state.
+  - On page refresh, AFK emulation must automatically continue and resume from the latest saved pending AFK backlog.
   - The main progress of `state.reactivate` is reset on refresh.
   - After refresh, the `state.reactivate` progress bar starts again from 0 and resumes counting from the beginning.
 
