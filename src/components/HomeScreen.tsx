@@ -653,7 +653,7 @@ function renderEnemyLogChibiBackground(entry: ExpeditionLogEntry): JSX.Element |
       onError={(event) => { event.currentTarget.style.display = 'none'; }}
       alt=""
       aria-hidden="true"
-      className="pointer-events-none absolute inset-y-0 right-[16.666667%] h-full w-auto max-w-[42%] select-none object-contain object-right opacity-60"
+      className="pointer-events-none absolute inset-y-0 right-[16.666667%] h-full w-auto max-w-[42%] select-none object-contain object-right opacity-30"
     />
   );
 }
