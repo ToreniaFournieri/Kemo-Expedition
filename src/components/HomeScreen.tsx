@@ -42,7 +42,6 @@ import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRank
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { getRuntimeFlavorText, type FlavorCycleState } from '../game/flavorText';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
@@ -590,7 +589,7 @@ function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Ret
   return '撤退';
 }
 
-function getReturnFlavorOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
+function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
   if (!log) return undefined;
   if (log.finalOutcome === 'Defeat') return 'Defeat';
   if (log.finalOutcome === 'Escape') return 'Turned_Back';
@@ -1531,7 +1530,7 @@ function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycleState)
   const latestStats = party.expeditionStats;
   if (cycleState !== 'explore') return latestStats;
 
-  const returnOutcome = getReturnFlavorOutcome(party.lastExpeditionLog);
+  const returnOutcome = getReturnedExpeditionOutcome(party.lastExpeditionLog);
   if (!returnOutcome) return latestStats;
 
   return {
@@ -8185,7 +8184,6 @@ function PartyTab({
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Expedition
-// SpecRef: 8.3 | UI_EXPEDITION | Flavor text
 // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
 function ExpeditionTab({
   state,
@@ -8431,7 +8429,7 @@ function ExpeditionTab({
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
-        const { partyStats, characterStats } = computePartyStats(party);
+        const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
@@ -8535,54 +8533,8 @@ function ExpeditionTab({
             const percentText = `${Math.round(normalizedProgressPercent)}%`;
             return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
           }
-          const stateLabel = getPartyCycleStateLabel(cycle.state);
-          if (cycle.state === 'reactivate') return stateLabel;
-          const leader = party.characters[0];
-          if (!leader) return stateLabel;
-          // SpecRef: 5.2 | PROGRESS_FLAVOR_TEXT | Flavor text cycle update
-          const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
-          const continuousFlavorStep = Math.floor(cycleElapsedMs / scaledStepDurationMs);
-          const flavorStepOffset = cycle.state === 'explore'
-            ? displayedEntries.length
-            : cycle.state === 'sell'
-            ? sellProgressState?.completedSteps ?? 0
-            : continuousFlavorStep;
-          const flavorSeed = cycle.stateStartedAt + partyIndex * 131 + flavorStepOffset;
-          const currentDisplayedEntry = displayedEntries.length > 0
-            ? displayedEntries[displayedEntries.length - 1]
-            : null;
-          const flavorText = getRuntimeFlavorText({
-            state: cycle.state as FlavorCycleState,
-            hpRatio: Math.max(0, Math.min(1, displayedHp / Math.max(1, partyStats.hp))),
-            returnOutcome: cycle.state === 'return' ? getReturnFlavorOutcome(currentLog) : undefined,
-            expeditionId: cycle.state === 'explore' ? currentLog?.dungeonId : undefined,
-            floor: cycle.state === 'explore' ? currentDisplayedEntry?.floor : undefined,
-            mainClassId: leader.mainClassId,
-            raceId: leader.raceId,
-            partyMainClassIds: party.characters.map((member) => member.mainClassId),
-            partyRaceIds: party.characters.map((member) => member.raceId),
-            partyAbilityIds: partyStats.abilities.map((ability) => ability.id),
-            partyMembers: party.characters.map((member) => {
-              const memberStats = characterStats.find((stats) => stats.characterId === member.id);
-              return {
-                name: member.name,
-                mainClassId: member.mainClassId,
-                raceId: member.raceId,
-                abilityIds: memberStats?.abilities.map((ability) => ability.id) ?? [],
-              };
-            }),
-            partyReligionName: party.deity.name,
-            leaderName: leader.name,
-            seed: flavorSeed,
-            sellingItemName: sellProgressState?.activeItem?.itemName,
-            autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
-            sortieSourceState: cycle.sortieSourceState,
-            embezzlementGold: cycle.sortieEmbezzlementGold,
-            debug: {
-              displayCondition: getDebugSettings().displayFlavorCondition,
-            },
-          });
-          return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
+          // SpecRef: 8.3 | UI_EXPEDITION | OBSOLETED: REMOVE THIS FROM THE RUNTIME PROGRAM
+          return getPartyCycleStateLabel(cycle.state);
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         const isColosseumSelected = selectedDungeon?.id === 99;
@@ -13389,7 +13341,6 @@ function SettingTab({
           <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Ashen Route Vault open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayCondition: !debugSettings.displayCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display condition: {debugSettings.displayCondition ? 'ON' : 'OFF'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAllBestiary: !debugSettings.displayAllBestiary })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Bestiary: {debugSettings.displayAllBestiary ? 'ON' : 'OFF'}</button>
