@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 17 | 2026/06/07 | Implement simplified Progress runtime state machine (Spec 5.1.1): replace feast/slump/nap/outfit cycle branches with `state.free_action`, route sell/no-sell through free action, move directly after no sleep or sound sleep, and run auto-equipment at the end of sound sleep. |
 | 0.7.5 | 16 | 2026/06/07 | Refine battle-log enemy chibi readability (Spec 6.1.7): reduce the shared active-expedition and diary room-pane enemy chibi opacity so HP text remains more visible over the image. |
 | 0.7.5 | 15 | 2026/06/07 | Refine battle-log enemy chibi placement (Spec 6.1.7): position the shared active-expedition and diary room-pane chibi image at one-sixth from the right side instead of one-quarter. |
 | 0.7.5 | 14 | 2026/06/07 | Refine battle reflect log wording (Spec 6.1): enemy non-magical reflected attacks now start directly with the targeted character name, using `<character>に攻撃したが、<type>攻撃は反射された！`. |
