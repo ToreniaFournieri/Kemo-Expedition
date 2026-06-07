@@ -648,13 +648,19 @@ function renderEnemyLogChibiBackground(entry: ExpeditionLogEntry): JSX.Element |
   if (!imagePath) return null;
 
   return (
-    <img
-      src={imagePath}
-      onError={(event) => { event.currentTarget.style.display = 'none'; }}
-      alt=""
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-y-0 right-[16.666667%] h-full w-auto max-w-[42%] select-none object-contain object-right opacity-60"
-    />
+    <span aria-hidden="true" className="pointer-events-none absolute inset-0">
+      <img
+        src={imagePath}
+        onError={(event) => { event.currentTarget.parentElement?.style.setProperty('display', 'none'); }}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-y-0 right-[16.666667%] h-full w-auto max-w-[42%] select-none object-contain object-right opacity-35 blur-[1px] grayscale-[15%] saturate-75 brightness-125 contrast-75"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 right-0 w-[55%] bg-gradient-to-l from-white/70 via-white/55 to-white/0"
+      />
+    </span>
   );
 }
 

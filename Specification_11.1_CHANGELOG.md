@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 16 | 2026/06/07 | Refine battle-log enemy chibi readability (Spec 6.1.7): make active-expedition and diary room-pane enemy chibi backgrounds foggier with lower opacity, slight blur/desaturation, and a white gradient filter so HP text remains readable. |
 | 0.7.5 | 15 | 2026/06/07 | Refine battle-log enemy chibi placement (Spec 6.1.7): position the shared active-expedition and diary room-pane chibi image at one-sixth from the right side instead of one-quarter. |
 | 0.7.5 | 14 | 2026/06/07 | Refine battle reflect log wording (Spec 6.1): enemy non-magical reflected attacks now start directly with the targeted character name, using `<character>に攻撃したが、<type>攻撃は反射された！`. |
 | 0.7.5 | 13 | 2026/06/07 | Fix battle reflect log wording (Spec 6.1): enemy non-magical reflected attacks now identify the targeted character and use the format `敵が<character>に攻撃したが、<type>攻撃は反射された！` instead of implying the enemy itself performed the reflected attack. |
