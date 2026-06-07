@@ -142,12 +142,11 @@ HP 2350 / 4680
 	- Display the remaining Instant Expedition stock as a battery-style indicator.
 	- Each filled cell represents 1 available Instant Expedition stock.
 	- Maximum stock is 6.
-	- Display the charging cell with ▣ when the next stock is currently accumulating.
-	- Display empty cells with □.
+	- Display empty cells with ▱.
 	- Display the remaining time until the next stock is charged immediately after the battery.
-		- Example: [■■■■▣□]04:21
-		- If fully charged, display [■■■■■■]MAX.
-		- If no stock is available, display [▣□□□□□]04:21.
+		- Example: ▰▰▱▱▱▱04:21
+		- If fully charged, display ▰▰▰▰▰▰MAX.
+		- If no stock is available, display ▱▱▱▱▱▱04:21.
 	- Pressing `出撃` or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
       - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed.
       - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` → `state.rest`
@@ -172,7 +171,7 @@ HP 2350 / 4680
   - Display `▼` at the end of the row for expandable party details.
 
 ```
-( ####### ) PT1 ケイナイアンの廃都 [■■■■▣□]04:21  踏破 ▼
+( ####### ) PT1 ケイナイアンの廃都 ▰▰▰▰▱▱04:21  踏破 ▼
 ( ##   ## ) 
 ( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
 移動中 (background: state progress bar)
