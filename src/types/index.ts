@@ -336,6 +336,8 @@ export interface Party {
   expeditionDepthLimit: ExpeditionDepthLimit;
   expeditionDifficultyOffset: number;
   expeditionDifficultyOffsetByDungeon: Record<number, number>;
+  instantExpeditionStock?: number;
+  instantExpeditionChargeStartedAt?: number | null;
   currentHp: number;
   pendingProfit: number;
   expeditionRewardsPending: boolean;
