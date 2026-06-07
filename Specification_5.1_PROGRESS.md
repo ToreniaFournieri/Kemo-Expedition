@@ -29,6 +29,7 @@
 | `state.free_action` | at home, | Check `t.sleepiness_of_party_bag`. If it is sound_sleep, `state.sound_sleep`, otherwise `state.move`. | `Goddess of Fertility` |
 | `state.sound_sleep` | at home. At the end of this state, equipping items. | `state.move` |
 | `state.idle` | at home. only when 自動周回 = OFF (idle state) | - |
+| `state.pray` | Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
 | `state.move` | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
 | `state.explore` | in dungeon. | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
 | `state.return` | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3  round up, `a.peddler`2: 3/5 round up) | rest | 
@@ -45,6 +46,7 @@
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
 | `state.free_action` | 自由行動中 | 15 `Step`  | Continuous |
 | `state.sound_sleep` | 熟睡中 | 8 `Step` | Continuous |
+| `state.pray` | 祈り中 | 2 `Step` | Continuous |
 | `state.idle` | 待機中 | - | - |
 | `state.move` | 移動中 | (1 + `x.exp_tier` ) `Step` | Continuous |
 | `state.explore` | 探索中 | 1 `Step` per room (24 rooms in total)| Step-based |
