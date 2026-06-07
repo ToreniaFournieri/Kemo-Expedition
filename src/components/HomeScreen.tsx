@@ -203,7 +203,7 @@ const renderElementalResistanceInline = (
 );
 
 
-type PartyCycleState = 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
+type PartyCycleState = 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 700;
 const TAB_PANEL_WIDTH_PX = 500;
@@ -241,11 +241,8 @@ const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, strin
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   rest: '休息中',
   sell: '売却中',
-  feast: '宴会中',
-  slump: '不貞腐れ中',
+  free_action: '自由行動中',
   sound_sleep: '熟睡中',
-  nap_sleep: '仮眠中',
-  outfit: '身支度中',
   pray: '祈り中',
   idle: '待機中',
   move: '移動中',
@@ -374,11 +371,12 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
   sell: 'sell',
-  feast: 'feast',
-  slump: 'slump',
+  feast: 'free_action',
+  slump: 'free_action',
+  free_action: 'free_action',
   sound_sleep: 'sound_sleep',
-  nap_sleep: 'nap_sleep',
-  outfit: 'outfit',
+  nap_sleep: 'move',
+  outfit: 'move',
   sleep: 'sound_sleep',
   pray: 'pray',
   idle: 'idle',
@@ -388,12 +386,13 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   reactivate: 'reactivate',
   '休息中': 'rest',
   '売却中': 'sell',
-  '宴会中': 'feast',
-  '不貞腐れ中': 'slump',
+  '宴会中': 'free_action',
+  '不貞腐れ中': 'free_action',
+  '自由行動中': 'free_action',
   '睡眠中': 'sound_sleep',
   '熟睡中': 'sound_sleep',
-  '仮眠中': 'nap_sleep',
-  '身支度中': 'outfit',
+  '仮眠中': 'move',
+  '身支度中': 'move',
   '祈り中': 'pray',
   '待機中': 'idle',
   '移動中': 'move',
@@ -416,11 +415,9 @@ interface PartyCycleRuntime {
   stateStartedAt: number;
   durationMs: number;
   restInitialTotalSteps?: number;
-  sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
+  sortieSourceState?: 'rest' | 'free_action' | 'sleep' | 'return';
   sortieEmbezzlementGold?: number;
   isCurrentExpeditionGodsBattle?: boolean;
-  skipFeastThisCycle?: boolean;
-  skipSleepThisCycle?: boolean;
   wasLowHpAtRestStart?: boolean;
 }
 
@@ -432,16 +429,6 @@ interface AfkRuntimeSnapshot {
 
 function rollPercentInclusive(min: number, max: number): number {
   return min + Math.random() * (max - min + Number.EPSILON);
-}
-
-// SpecRef: 5.1.1 | Party State Machine | state.feast
-function getFeastSpendingRangeByCondition(condition: number): { min: number; max: number } {
-  if (condition <= -50) return { min: 3, max: 6 };
-  if (condition <= 50) return { min: 5, max: 10 };
-  if (condition <= 150) return { min: 10, max: 20 };
-  if (condition <= 250) return { min: 20, max: 40 };
-  if (condition <= 350) return { min: 28, max: 56 };
-  return { min: 34, max: 68 };
 }
 
 const PARTY_CYCLE_TICK_MS = 100;
@@ -4034,7 +4021,7 @@ export function HomeScreen({
               : undefined,
             sortieSourceState:
               runtime.sortieSourceState === 'rest'
-              || runtime.sortieSourceState === 'feast'
+              || runtime.sortieSourceState === 'free_action'
               || runtime.sortieSourceState === 'sleep'
               || runtime.sortieSourceState === 'return'
                 ? runtime.sortieSourceState
@@ -4044,8 +4031,6 @@ export function HomeScreen({
               ? Math.max(0, Math.floor(runtime.sortieEmbezzlementGold))
               : undefined,
             isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
-            skipFeastThisCycle: runtime.skipFeastThisCycle === true,
-            skipSleepThisCycle: runtime.skipSleepThisCycle === true,
             wasLowHpAtRestStart: runtime.wasLowHpAtRestStart === true,
           };
         });
@@ -4157,7 +4142,7 @@ export function HomeScreen({
                   )
                   : nextState === 'idle' || nextState === 'reactivate'
                     ? 1000
-                    : getStateDurationMs(party, nextState as 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray');
+                    : getStateDurationMs(party, nextState as 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray');
           const totalSteps = Math.max(1, snapshot?.totalSteps ?? getStateStepCountFromRuntime(nextState, {
             state: nextState,
             stateStartedAt: now,
@@ -4176,8 +4161,6 @@ export function HomeScreen({
             stateStartedAt: now - (continuedCompletedSteps * stateStepDurationMs),
             durationMs: fallbackDurationMs,
             isCurrentExpeditionGodsBattle: false,
-            skipFeastThisCycle: false,
-            skipSleepThisCycle: false,
             wasLowHpAtRestStart: false,
           };
         });
@@ -4460,26 +4443,12 @@ export function HomeScreen({
             if (hasTrophy || hasAutoSellItem) {
               updated.state = 'sell';
               updated.durationMs = getStateDurationMs(party, 'sell');
-              updated.restInitialTotalSteps = undefined;
             } else {
-              const shouldMoveToSlump = true;
-              const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              if (shouldMoveToSlump) {
-                // SpecRef: 5.1.1 | Party State Machine | state.slump
-                updated.state = 'slump';
-                updated.durationMs = getStateDurationMs(party, 'slump');
-              } else {
-                updated.state = 'feast';
-                updated.durationMs = getStateDurationMs(party, 'feast');
-              }
-              updated.restInitialTotalSteps = undefined;
-              if (shouldMoveToSlump) {
-                updated.skipFeastThisCycle = false;
-              }
-              if (shouldSkipSleep) {
-                updated.skipSleepThisCycle = false;
-              }
+              // SpecRef: 5.1.1 | Party State Machine | state.free_action
+              updated.state = 'free_action';
+              updated.durationMs = getStateDurationMs(party, 'free_action');
             }
+            updated.restInitialTotalSteps = undefined;
             updated.stateStartedAt = simulationNow;
           }
         }
@@ -4490,39 +4459,13 @@ export function HomeScreen({
           updated.stateStartedAt += updated.durationMs;
           stateElapsedMs -= updated.durationMs;
 
-            if (updated.state === 'sell') {
+          if (updated.state === 'sell') {
               // SpecRef: 5.1.1 | Party State Machine | state.sell
-              const shouldMoveToSlump = cyclePendingProfit <= 0
-                || updated.wasLowHpAtRestStart === true
-                || party.condition <= 50
-                || updated.skipFeastThisCycle === true;
-              if (shouldMoveToSlump) {
-                updated.state = 'slump';
-                updated.durationMs = getStateDurationMs(party, 'slump');
-              } else {
-                updated.state = 'feast';
-                updated.durationMs = getStateDurationMs(party, 'feast');
-              }
-              if (shouldMoveToSlump) {
-                updated.skipFeastThisCycle = false;
-              }
-            } else if (updated.state === 'slump') {
-              const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
-              const sleepDurationMs = getStateDurationMs(party, sleepState);
-              if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
-                updated.state = 'pray';
-                updated.durationMs = getStateDurationMs(party, 'pray');
-              } else {
-                updated.state = sleepState;
-                updated.durationMs = sleepDurationMs;
-              }
-              if (shouldSkipSleep) {
-                updated.skipSleepThisCycle = false;
-              }
-            } else if (updated.state === 'feast') {
-              const feastSpendRange = getFeastSpendingRangeByCondition(party.condition);
-              const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(feastSpendRange.min, feastSpendRange.max)) / 100);
+              updated.state = 'free_action';
+              updated.durationMs = getStateDurationMs(party, 'free_action');
+            } else if (updated.state === 'free_action') {
+              // SpecRef: 5.1.1 | Party State Machine | state.free_action
+              const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(20, 40)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
               const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
               const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
@@ -4539,32 +4482,19 @@ export function HomeScreen({
               actions.spendPendingProfit(partyIndex, spend);
               if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend, simulationNow);
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
-              const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
-              const sleepDurationMs = getStateDurationMs(party, sleepState);
-              if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
-                updated.state = 'pray';
-                updated.durationMs = getStateDurationMs(party, 'pray');
+              if (party.currentSleepiness === 2) {
+                updated.state = 'sound_sleep';
+                updated.durationMs = getStateDurationMs(party, 'sound_sleep');
               } else {
-                updated.state = sleepState;
-                updated.durationMs = sleepDurationMs;
+                updated.state = autoRepeatEnabled ? 'move' : 'idle';
+                updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
               }
-              if (shouldSkipSleep) {
-                updated.skipSleepThisCycle = false;
-              }
-            } else if (updated.state === 'sound_sleep' || updated.state === 'nap_sleep') {
+            } else if (updated.state === 'sound_sleep') {
+              // SpecRef: 5.1.1 | Party State Machine | state.sound_sleep
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, 1, simulationNow);
-              if (updated.state === 'sound_sleep') {
-                updated.state = 'outfit';
-                updated.durationMs = getStateDurationMs(party, 'outfit');
-              } else {
-                updated.state = 'pray';
-                updated.durationMs = getStateDurationMs(party, 'pray');
-              }
-            } else if (updated.state === 'outfit') {
-              updated.state = 'pray';
-              updated.durationMs = getStateDurationMs(party, 'pray');
               autoEquipmentPartyIndexes.add(partyIndex);
+              updated.state = autoRepeatEnabled ? 'move' : 'idle';
+              updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
             } else if (updated.state === 'pray') {
               const isNoFaith = isNoFaithDeity(party.deity.name);
               const donationRate = rollPercentInclusive(10, 33);
@@ -4640,16 +4570,11 @@ export function HomeScreen({
               if (!party.sideQuest && !hasActiveNonGodBattleLootGateCondition(party)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId, simulationNow);
               }
-              const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
-              if (!shouldSkipSleepForLowHp) {
-                actions.rollPartySleepiness(partyIndex);
-              }
+              actions.rollPartySleepiness(partyIndex);
               updated.state = 'rest';
               updated.durationMs = getStateDurationMs(party, 'rest');
               updated.restInitialTotalSteps = getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp);
               updated.isCurrentExpeditionGodsBattle = false;
-              updated.skipFeastThisCycle = hpRatioAtRestStart < 0.3;
-              updated.skipSleepThisCycle = shouldSkipSleepForLowHp;
               updated.wasLowHpAtRestStart = hpRatioAtRestStart < 0.3;
             }
 
@@ -4953,7 +4878,7 @@ export function HomeScreen({
     partyIndex: number,
     nextState: PartyCycleState,
     durationMs: number,
-    sortieContext?: { sourceState?: 'rest' | 'feast' | 'sleep' | 'return'; embezzlementGold?: number; isCurrentExpeditionGodsBattle?: boolean },
+    sortieContext?: { sourceState?: 'rest' | 'free_action' | 'sleep' | 'return'; embezzlementGold?: number; isCurrentExpeditionGodsBattle?: boolean },
   ) => {
     setPartyCycles((prev) => ({
       ...prev,
@@ -5032,7 +4957,7 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number => {
+  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' | 'explore'): number => {
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
     const deityMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
     if (cycleState !== 'explore') return deityMultiplier;
@@ -5041,24 +4966,18 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1 | PROGRESS | Step
-  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
+  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray'): number => {
     const durationScale = getTimeSpeedScale(debugSettings);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseStepCount = cycleState === 'rest'
       ? 1
       : cycleState === 'sell'
         ? autoSellCount
-        : cycleState === 'feast'
-          ? 3 + Math.max(0, Math.floor(party.condition / 50))
-          : cycleState === 'slump'
-            ? 1 + Math.max(0, Math.floor(-party.condition / 20))
+        : cycleState === 'free_action'
+          ? 15
           : cycleState === 'sound_sleep'
             ? 8
-            : cycleState === 'nap_sleep'
-              ? 2
-              : cycleState === 'outfit'
-                ? 4
-              : 2;
+            : 2;
     return Math.max(100, Math.ceil(baseStepCount * BASE_STEP_DURATION_MS * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
   };
 
@@ -5147,9 +5066,9 @@ export function HomeScreen({
       'move',
       getPartyTravelDurationMs(party, 'move'),
       {
-        sourceState: cycle?.state === 'rest' || cycle?.state === 'feast' || cycle?.state === 'return'
+        sourceState: cycle?.state === 'rest' || cycle?.state === 'free_action' || cycle?.state === 'return'
           ? cycle.state
-          : cycle?.state === 'sound_sleep' || cycle?.state === 'nap_sleep'
+          : cycle?.state === 'sound_sleep'
             ? 'sleep'
             : undefined,
         embezzlementGold: stolenProfit,
