@@ -8577,11 +8577,17 @@ function ExpeditionTab({
                   </svg>
                 </button>
                 <span className="min-w-0 flex-1 space-y-0 text-left">
-                  <span className="flex items-start justify-between gap-1.5 text-sm">
+                  <span className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-1.5 text-sm">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
                       {headlineFloorName}
-                      <span className="ml-1 font-mono text-[12px] whitespace-nowrap" title="Instant Expedition Charge" aria-label={`Instant Expedition Charge ${instantChargeLabel}`}>{instantChargeLabel}</span>
+                    </span>
+                    <span
+                      className={`justify-self-end text-right font-mono text-[12px] leading-5 whitespace-nowrap ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}
+                      title="Instant Expedition Charge"
+                      aria-label={`Instant Expedition Charge ${instantChargeLabel}`}
+                    >
+                      {instantChargeLabel}
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>

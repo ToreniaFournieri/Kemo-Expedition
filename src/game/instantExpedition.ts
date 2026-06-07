@@ -96,15 +96,14 @@ export function consumeInstantExpeditionStock<T extends Pick<Party, 'instantExpe
 
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
 export function formatInstantExpeditionCharge(chargeState: InstantExpeditionChargeState): string {
-  if (chargeState.stock >= INSTANT_EXPEDITION_MAX_STOCK) return '[■■■■■■]MAX';
+  const cells = Array.from({ length: INSTANT_EXPEDITION_MAX_STOCK }, (_, index) => (
+    index < chargeState.stock ? '▰' : '▱'
+  )).join('');
 
-  const cells = Array.from({ length: INSTANT_EXPEDITION_MAX_STOCK }, (_, index) => {
-    if (index < chargeState.stock) return '■';
-    if (index === chargeState.stock) return '▣';
-    return '□';
-  }).join('');
+  if (chargeState.stock >= INSTANT_EXPEDITION_MAX_STOCK) return `${cells}MAX`;
+
   const remainingTotalSeconds = Math.max(0, Math.ceil(chargeState.remainingMs / 1000));
   const hours = Math.floor(remainingTotalSeconds / 3600);
   const minutes = Math.floor((remainingTotalSeconds % 3600) / 60);
-  return `[${cells}]${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  return `${cells}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }

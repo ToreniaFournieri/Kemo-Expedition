@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 25 | 2026/06/07 | Update Expedition Instant Charge runtime display (Spec 8.3): render the 6-cell battery with ▰ filled cells, ▱ empty cells, no brackets, countdown/MAX text immediately after the cells, and right-align the charge indicator in the party headline. |
 | 0.7.5 | 24 | 2026/06/07 | Refine battle log enemy image readability (Spec 6.1): reduce the expanded enemy background image opacity in both light and dark themes so battle log text remains more visible over the artwork. |
 | 0.7.5 | 23 | 2026/06/07 | Allow charged instant sortie during active exploration: the Expedition button now remains available when stock exists, finalizes the in-progress exploration first, then consumes one charge for the immediate additional expedition cycle. |
 | 0.7.5 | 22 | 2026/06/07 | Harden save/load coverage for Instant Expedition Charge data: canonical save serialization and hydration now normalize and persist each party's charge stock and charge start timestamp, including import/export and legacy missing-field paths. |
