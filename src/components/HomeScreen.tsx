@@ -430,6 +430,10 @@ const PARTY_CYCLE_TICK_MS = 100;
 const BASE_STEP_DURATION_MS = 15000;
 const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+const REST_HEAL_MAX_HP_RATIO = 0.08;
+const FREE_ACTION_STEP_COUNT = 30;
+const SOUND_SLEEP_STEP_COUNT = 16;
+const PRAY_STEP_COUNT = 4;
 const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
 const APPROX_CYCLE_STEP_COUNT = 30;
 const CHUNK_CYCLE_COUNT = 12;
@@ -453,8 +457,16 @@ function getRestInitialTotalSteps(currentHp: number, maxHp: number): number {
   const normalizedCurrentHp = Math.max(0, Math.floor(currentHp));
   const missingHp = Math.max(0, normalizedMaxHp - normalizedCurrentHp);
   if (missingHp <= 0) return 1;
-  const healPerStep = Math.max(1500, Math.ceil(normalizedMaxHp * 0.15));
+  const healPerStep = Math.max(1500, Math.ceil(normalizedMaxHp * REST_HEAL_MAX_HP_RATIO));
   return Math.max(1, Math.ceil(missingHp / healPerStep));
+}
+
+// SpecRef: 5.1.1 | Party State Machine | state.sell
+function getAutoSellStepCount(party: Party): number {
+  const autoSellItemCount = party.lastExpeditionLog?.autoSellItems?.length
+    || party.lastExpeditionLog?.autoSellCount
+    || 1;
+  return Math.max(1, autoSellItemCount);
 }
 
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
@@ -4327,7 +4339,7 @@ export function HomeScreen({
           const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
           const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
           // SpecRef: 5.1.1 | Party State Machine | state.rest
-          const healPerTick = Math.max(1500, Math.ceil(partyRuntimeStats.hp * 0.15));
+          const healPerTick = Math.max(1500, Math.ceil(partyRuntimeStats.hp * REST_HEAL_MAX_HP_RATIO));
           const projectedHp = Math.min(
             partyRuntimeStats.hp,
             party.currentHp + (restTickCount > 0 ? healPerTick * restTickCount : 0),
@@ -4910,16 +4922,15 @@ export function HomeScreen({
   // SpecRef: 5.1 | PROGRESS | Step
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray'): number => {
     const durationScale = getTimeSpeedScale(debugSettings);
-    const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseStepCount = cycleState === 'rest'
       ? 1
       : cycleState === 'sell'
-        ? autoSellCount
+        ? getAutoSellStepCount(party)
         : cycleState === 'free_action'
-          ? 15
+          ? FREE_ACTION_STEP_COUNT
           : cycleState === 'sound_sleep'
-            ? 8
-            : 2;
+            ? SOUND_SLEEP_STEP_COUNT
+            : PRAY_STEP_COUNT;
     return Math.max(100, Math.ceil(baseStepCount * BASE_STEP_DURATION_MS * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
   };
 
@@ -8332,7 +8343,7 @@ function ExpeditionTab({
         const sellProgressState = (() => {
           if (cycle.state !== 'sell') return null;
           const autoSellItems = party.lastExpeditionLog?.autoSellItems ?? [];
-          const sellStepCount = Math.max(1, autoSellItems.length || party.lastExpeditionLog?.autoSellCount || 1);
+          const sellStepCount = getAutoSellStepCount(party);
           const rawSellProgress = Math.min(1, cycleElapsedMs / Math.max(1, cycle.durationMs));
           const completedSteps = Math.min(sellStepCount, Math.floor(rawSellProgress * sellStepCount));
           const activeStep = Math.max(0, Math.min(sellStepCount - 1, completedSteps));
@@ -8354,7 +8365,7 @@ function ExpeditionTab({
           }
           if (cycle.state === 'rest') {
             const totalSteps = Math.max(1, cycle.restInitialTotalSteps ?? 1);
-            const healPerStep = Math.max(1500, Math.ceil(partyStats.hp * 0.15));
+            const healPerStep = Math.max(1500, Math.ceil(partyStats.hp * REST_HEAL_MAX_HP_RATIO));
             const missingHp = Math.max(0, partyStats.hp - party.currentHp);
             const remainingSteps = missingHp <= 0 ? 0 : Math.ceil(missingHp / healPerStep);
             const completedSteps = Math.max(0, Math.min(totalSteps, totalSteps - remainingSteps));
@@ -8377,7 +8388,7 @@ function ExpeditionTab({
           const totalStepCount = cycle.state === 'rest'
             ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
             : cycle.state === 'sell'
-            ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
+            ? getAutoSellStepCount(party)
             : Math.max(1, currentLog?.entries.length ?? 1);
           const stepDurationMs = cycle.state === 'rest'
             ? Math.max(1, cycle.durationMs)
