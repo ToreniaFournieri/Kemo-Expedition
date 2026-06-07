@@ -138,6 +138,30 @@ HP 2350 / 4680
   - Display the latest reached floor name of the current expedition.
   - Use the Japanese floor name defined in **Expedition Floor Concepts**.
   - Example: `ケイナイアンの廃都`
+- **Charge**
+	- Display the remaining Instant Expedition stock as a battery-style indicator.
+	- Each filled cell represents 1 available Instant Expedition stock.
+	- Maximum stock is 6.
+	- Display the charging cell with ▣ when the next stock is currently accumulating.
+	- Display empty cells with □.
+	- Display the remaining time until the next stock is charged immediately after the battery.
+		- Example: [■■■■▣□]04:21
+		- If fully charged, display [■■■■■■]MAX.
+		- If no stock is available, display [▣□□□□□]04:21.
+	- Pressing `出撃` or `神馬戦` button consumes 1 stock and immediately processes one full cycle:
+	  - Rest → Expedition → Rest Complete
+	- If a God-Demon Battle is available, the instant expedition is processed as a God-Demon Battle.
+
+| Stock Level | Time Required for This Charge | 
+| ----------- | ----------------------------: |
+| 1st         |                        15 min |
+| 2nd         |                        15 min |
+| 3rd         |                        30 min |
+| 4th         |                          1 hr |
+| 5th         |                          2 hr |
+| 6th         |                          4 hr |
+
+
 - **Outcome**
   - Display the latest expedition result such as `踏破`, `撤退`, `敗北`, etc.
 - **Update Timing**
@@ -146,7 +170,7 @@ HP 2350 / 4680
   - Display `▼` at the end of the row for expandable party details.
 
 ```
-( ####### ) PT1 ケイナイアンの廃都   踏破 ▼
+( ####### ) PT1 ケイナイアンの廃都 [■■■■▣□]04:21  踏破 ▼
 ( ##   ## ) 
 ( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
 移動中 (background: state progress bar)
