@@ -1,6 +1,7 @@
 ## 5. PROGRESS
 
 ### 5.2 PROGRESS_FLAVOR_TEXT
+**OBSOLETED**
 
 - Priority logic
 
