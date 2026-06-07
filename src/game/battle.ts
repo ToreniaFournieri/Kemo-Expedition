@@ -4885,7 +4885,7 @@ export function executeBattle(
                 actor: 'enemy',
                 action: phase === 'mid'
                   ? `${enemy.name} が${attackName}を唱えたが反射された！ (${reflectedAttemptText})`
-                  : `${enemy.name} の${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
+                  : `${targetName}に攻撃したが、${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
                 damage: appliedDamage,
                 reflectedDamage,
                 reflectedSourceDamage,
