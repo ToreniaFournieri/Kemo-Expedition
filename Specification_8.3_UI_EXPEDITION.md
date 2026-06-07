@@ -98,7 +98,7 @@ HP 2350 / 4680
   - State: Disabled (grayed out) when the action is not available.
   - Disable conditions:
     - Party HP = 0
-    - Party is in `state.explore`
+    - Party is in `state.explore` and 0 Charges.
     - "神魔戦" button is pressed and party is going to engage gods battle. 
 
 **Progress Visual Update**
@@ -148,9 +148,11 @@ HP 2350 / 4680
 		- Example: [■■■■▣□]04:21
 		- If fully charged, display [■■■■■■]MAX.
 		- If no stock is available, display [▣□□□□□]04:21.
-	- Pressing `出撃` or `神馬戦` button consumes 1 stock and immediately processes one full cycle:
-	  - Rest → Expedition → Rest Complete
-	- If a God-Demon Battle is available, the instant expedition is processed as a God-Demon Battle.
+	- Pressing `出撃` or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
+      - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed.
+      - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` → `state.rest`
+      - The process ends after the final `state.rest` is completed.
+	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
 
 | Stock Level | Time Required for This Charge | 
 | ----------- | ----------------------------: |
