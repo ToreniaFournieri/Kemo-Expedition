@@ -64,6 +64,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
+import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityKey, getDeityRank, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
@@ -1152,6 +1153,12 @@ function loadSavedState(): LoadSavedStateResult {
           party.expeditionDestinationMode = normalizeExpeditionDestinationMode(party.expeditionDestinationMode);
           party.expeditionDifficultyOffset = normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset);
           party.expeditionDifficultyOffsetByDungeon = normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon);
+          const instantChargeState = getInstantExpeditionChargeState({
+            instantExpeditionStock: party.instantExpeditionStock,
+            instantExpeditionChargeStartedAt: party.instantExpeditionChargeStartedAt,
+          });
+          party.instantExpeditionStock = instantChargeState.stock;
+          party.instantExpeditionChargeStartedAt = instantChargeState.chargeStartedAt;
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
           if (!party.pendingUnlockState || typeof party.pendingUnlockState !== 'object') {
@@ -1323,6 +1330,8 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionDestinationMode: normalizeExpeditionDestinationMode(party.expeditionDestinationMode),
     expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset),
     expeditionDifficultyOffsetByDungeon: normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon),
+    instantExpeditionStock: INSTANT_EXPEDITION_MAX_STOCK,
+    instantExpeditionChargeStartedAt: null,
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
@@ -1810,6 +1819,7 @@ type GameAction =
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
+  | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -2923,6 +2933,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         deityGold: state.global.deityDonations[normalizedDeityName] ?? 0,
       };
 
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
+    case 'CONSUME_INSTANT_EXPEDITION_STOCK': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+      const now = action.now ?? Date.now();
+      const nextParty = consumeInstantExpeditionStock(currentParty, now);
+      if (nextParty.instantExpeditionStock === currentParty.instantExpeditionStock
+        && nextParty.instantExpeditionChargeStartedAt === currentParty.instantExpeditionChargeStartedAt) {
+        return state;
+      }
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = nextParty;
       return {
         ...state,
         parties: updatedParties,
@@ -4975,6 +5002,10 @@ export function useGameState() {
 
     runExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt?: number) => {
       dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
+    }, []),
+
+    consumeInstantExpeditionStock: useCallback((partyIndex: number, now?: number) => {
+      dispatch({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now });
     }, []),
 
     finalizeDiaryLog: useCallback((partyIndex: number) => {

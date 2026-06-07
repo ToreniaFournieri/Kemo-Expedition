@@ -45,6 +45,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { formatInstantExpeditionCharge, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -80,6 +81,7 @@ interface HomeScreenProps {
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
     runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
+    consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
@@ -4983,6 +4985,8 @@ export function HomeScreen({
     const party = state.parties[partyIndex];
     if (!party) return;
     const { partyStats } = computePartyStats(party);
+    const now = Date.now();
+    const instantChargeState = getInstantExpeditionChargeState(party, now);
 
     if (party.currentHp <= 0 || partyStats.hp <= 0) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
@@ -4999,35 +5003,38 @@ export function HomeScreen({
       actions.addNotification(`${party.name} は既に神魔戦へ向けて移動中だ`);
       return;
     }
+    // SpecRef: 8.3 | UI_EXPEDITION | Charge
+    if (instantChargeState.stock <= 0) {
+      actions.addNotification(`${party.name} の即時出撃チャージが不足している`);
+      return;
+    }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
     if (stolenProfit > 0) {
-      actions.addNotification(`${party.name}は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして出撃した`);
+      actions.addNotification(`${party.name}は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして即時出撃した`);
     } else {
-      actions.addNotification(`${party.name}は神の緊急動員に憤りながらも出撃した`);
+      actions.addNotification(`${party.name}は即時出撃した`);
     }
 
     if (cycle) {
       notifyExpeditionRewardsIfNeeded(party, partyIndex);
     }
 
-    pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle;
+    if (triggerGodsBattle && party.sideQuest) {
+      actions.cancelSideQuest(partyIndex);
+      actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+    }
+
+    pendingGodsBattleByPartyRef.current[partyIndex] = false;
+    actions.consumeInstantExpeditionStock(partyIndex, now);
     actions.clearPendingProfit(partyIndex);
-    transitionTo(
-      partyIndex,
-      'move',
-      getPartyTravelDurationMs(party, 'move'),
-      {
-        sourceState: cycle?.state === 'rest' || cycle?.state === 'free_action' || cycle?.state === 'return'
-          ? cycle.state
-          : cycle?.state === 'sound_sleep'
-            ? 'sleep'
-            : undefined,
-        embezzlementGold: stolenProfit,
-        isCurrentExpeditionGodsBattle: triggerGodsBattle,
-      },
-    );
+    actions.healPartyHp(partyIndex, partyStats.hp);
+    actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
+    actions.finalizeDiaryLog(partyIndex);
+    actions.rollPartySleepiness(partyIndex);
+    actions.healPartyHp(partyIndex, partyStats.hp);
+    transitionTo(partyIndex, 'idle', 1000, { isCurrentExpeditionGodsBattle: false });
   };
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
@@ -8409,11 +8416,16 @@ function ExpeditionTab({
           return getPartyCycleStateLabel(cycle.state);
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
+        // SpecRef: 8.3 | UI_EXPEDITION | Charge
+        const instantChargeState = getInstantExpeditionChargeState(party, emulatedNowMs);
+        const instantChargeLabel = formatInstantExpeditionCharge(instantChargeState);
+        const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
         const isColosseumSelected = selectedDungeon?.id === 99;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
         const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
         const isSortieDisabled = cycle.state === 'explore'
           || isPendingGodsBattleMove
+          || isInstantExpeditionStockEmpty
           || ((!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0);
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
@@ -8571,6 +8583,7 @@ function ExpeditionTab({
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
                       {headlineFloorName}
+                      <span className="ml-1 font-mono text-[12px] whitespace-nowrap" title="Instant Expedition Charge" aria-label={`Instant Expedition Charge ${instantChargeLabel}`}>{instantChargeLabel}</span>
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
