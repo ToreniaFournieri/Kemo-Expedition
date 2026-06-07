@@ -140,6 +140,7 @@ HP 2350 / 4680
   - Example: `ケイナイアンの廃都`
 - **Charge**
 	- Display the remaining Instant Expedition stock as a battery-style indicator.
+    - Right aligned
 	- Each filled cell represents 1 available Instant Expedition stock.
 	- Maximum stock is 6.
 	- Display empty cells with ▱.
