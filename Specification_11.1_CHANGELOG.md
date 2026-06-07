@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 14 | 2026/06/07 | Refine battle reflect log wording (Spec 6.1): enemy non-magical reflected attacks now start directly with the targeted character name, using `<character>に攻撃したが、<type>攻撃は反射された！`. |
+| 0.7.5 | 13 | 2026/06/07 | Fix battle reflect log wording (Spec 6.1): enemy non-magical reflected attacks now identify the targeted character and use the format `敵が<character>に攻撃したが、<type>攻撃は反射された！` instead of implying the enemy itself performed the reflected attack. |
 | 0.7.5 | 12 | 2026/06/07 | Keep Expedition battle-log enemy chibi images visible while a room pane is expanded/open (Spec 6.1): the `/public/chibi/C_E_{enemy_ID}.png` overlay now remains on the room header instead of disappearing when battle details are shown. |
 | 0.7.5 | 11 | 2026/06/07 | Refine Expedition party-state progress bar height (Spec 8.3): reduce the main state progress bar to a single-line height and keep labels such as `祈り中` on one truncated line. |
 | 0.7.5 | 10 | 2026/06/07 | Remove obsolete UI Expedition runtime flavor text (Spec 8.3): stop appending generated flavor text to expedition party-state labels, remove the flavor-condition debug toggle, and delete the runtime flavor text selector/data modules. |
