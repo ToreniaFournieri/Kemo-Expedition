@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 24 | 2026/06/07 | Refine battle log enemy image readability (Spec 6.1): reduce the expanded enemy background image opacity in both light and dark themes so battle log text remains more visible over the artwork. |
 | 0.7.5 | 23 | 2026/06/07 | Allow charged instant sortie during active exploration: the Expedition button now remains available when stock exists, finalizes the in-progress exploration first, then consumes one charge for the immediate additional expedition cycle. |
 | 0.7.5 | 22 | 2026/06/07 | Harden save/load coverage for Instant Expedition Charge data: canonical save serialization and hydration now normalize and persist each party's charge stock and charge start timestamp, including import/export and legacy missing-field paths. |
 | 0.7.5 | 21 | 2026/06/07 | Implement Instant Expedition Charge runtime behavior (Spec 8.3): add persistent 6-stock charge regeneration, render the battery-style charge indicator with countdown/MAX text in the Expedition headline, and make 出撃/神魔戦 consume one stock to resolve an immediate expedition cycle. |

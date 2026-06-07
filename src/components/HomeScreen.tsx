@@ -8891,7 +8891,7 @@ function ExpeditionTab({
                                     onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                     alt=""
                                     aria-hidden="true"
-                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-20 dark:opacity-25"
                                     style={{
                                       width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                       maxWidth: 'none',
@@ -10597,7 +10597,7 @@ function DiaryTab({
                                     onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                   alt=""
                                   aria-hidden="true"
-                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-20 dark:opacity-25"
                                   style={{
                                     width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                     maxWidth: 'none',
