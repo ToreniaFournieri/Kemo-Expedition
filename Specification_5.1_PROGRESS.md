@@ -26,8 +26,8 @@
 |-------|-------|----------|---------|
 | `state.rest`  | - | sell or feast | `God of Fortification` |
 | `state.sell` | Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | `state.free_action` | `God of Dusk` |
-| `state.free_action` | - | Check `t.sleepiness_of_party_bag`. If it is sound_sleep, `state.sound_sleep`, otherwise `state.move`. | `Goddess of Fertility` |
-| `state.sound_sleep` | At the end of this state, equipping items. | `state.move` | `Goddess of Restoration` |
+| `state.free_action` | - | Check `t.sleepiness_of_party_bag`. If it is sound_sleep, `state.sound_sleep`, otherwise `state.pray`. | `Goddess of Fertility` |
+| `state.sound_sleep` | At the end of this state, equipping items. | `state.pray` | `Goddess of Restoration` |
 | `state.idle` | Only when 自動周回 = OFF (idle state) | - |
 | `state.pray` | Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
 | `state.move` | If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
