@@ -928,7 +928,7 @@ function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): R
   });
 }
 
-function buildAfkSummaryNotification(stats: {
+type AfkSummaryStats = {
   Clear: number;
   Turned_Back: number;
   Draw_Retreat: number;
@@ -936,7 +936,37 @@ function buildAfkSummaryNotification(stats: {
   Defeat: number;
   donatedGold: number;
   savedGold: number;
-}): string | null {
+};
+
+function isAfkSummaryStats(value: unknown): value is AfkSummaryStats {
+  if (!value || typeof value !== 'object') return false;
+  const stats = value as Partial<Record<keyof AfkSummaryStats, unknown>>;
+  return (
+    typeof stats.Clear === 'number'
+    && typeof stats.Turned_Back === 'number'
+    && typeof stats.Draw_Retreat === 'number'
+    && typeof stats.Wounded_Retreat === 'number'
+    && typeof stats.Defeat === 'number'
+    && typeof stats.donatedGold === 'number'
+    && typeof stats.savedGold === 'number'
+  );
+}
+
+function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null {
+  if (!isAfkSummaryStats(value)) return null;
+  return {
+    Clear: Math.max(0, Math.floor(value.Clear)),
+    Turned_Back: Math.max(0, Math.floor(value.Turned_Back)),
+    Draw_Retreat: Math.max(0, Math.floor(value.Draw_Retreat)),
+    Wounded_Retreat: Math.max(0, Math.floor(value.Wounded_Retreat)),
+    Defeat: Math.max(0, Math.floor(value.Defeat)),
+    donatedGold: Math.max(0, Math.floor(value.donatedGold)),
+    savedGold: Math.max(0, Math.floor(value.savedGold)),
+  };
+}
+
+// SpecRef: 5.1.1 | Party State Machine | Notification
+function buildAfkSummaryNotification(stats: AfkSummaryStats): string | null {
   const summaryParts: string[] = [];
   if (stats.Clear > 0) summaryParts.push(`踏破${formatNumber(stats.Clear)}回`);
   if (stats.Turned_Back > 0) summaryParts.push(`帰還${formatNumber(stats.Turned_Back)}回`);
@@ -3922,7 +3952,7 @@ export function HomeScreen({
     }
   }, [actions, safeSelectedPartyIndex, state.parties.length, state.selectedPartyIndex]);
 
-  const afkSummaryBaselineRef = useRef<Array<{ Clear: number; Turned_Back: number; Draw_Retreat: number; Wounded_Retreat: number; Defeat: number; donatedGold: number; savedGold: number }> | null>(null);
+  const afkSummaryBaselineRef = useRef<AfkSummaryStats[] | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
@@ -3982,6 +4012,8 @@ export function HomeScreen({
         afkRecoveryTotalMs?: number;
         afkRecoveryCompletedMs?: number;
         afkSimulationAnchor?: number | null;
+        afkSummaryBaseline?: unknown;
+        shouldShowAfkSummary?: boolean;
       };
 
       const checkpointAt = typeof parsed.checkpointAt === 'number' ? parsed.checkpointAt : Date.now();
@@ -4001,6 +4033,13 @@ export function HomeScreen({
         afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
           ? parsed.afkSimulationAnchor
           : Date.now();
+        const restoredSummaryBaseline = Array.isArray(parsed.afkSummaryBaseline)
+          ? parsed.afkSummaryBaseline.map(normalizeAfkSummaryStats)
+          : [];
+        afkSummaryBaselineRef.current = restoredSummaryBaseline.some((stats): stats is AfkSummaryStats => stats !== null)
+          ? latestPartiesRef.current.map((party, index) => restoredSummaryBaseline[index] ?? { ...party.expeditionStats })
+          : latestPartiesRef.current.map((party) => ({ ...party.expeditionStats }));
+        shouldShowAfkSummaryRef.current = parsed.shouldShowAfkSummary !== false;
         shouldRebuildPartyCyclesAfterAfkRef.current = true;
       }
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
@@ -4168,9 +4207,11 @@ export function HomeScreen({
 
   useEffect(() => {
     // SpecRef: 8.1.1 | Notification Logic & Display | notification while AFK mode
-    if (!suppressNotificationsForAfkEmulation) return;
+    // Only clear notifications while AFK catch-up is actively running; once pending AFK reaches 0,
+    // the Spec 5.1 summary notification must be allowed to remain visible.
+    if (pendingAfkMs <= 0) return;
     onDismissAllNotifications();
-  }, [onDismissAllNotifications, suppressNotificationsForAfkEmulation]);
+  }, [onDismissAllNotifications, pendingAfkMs]);
 
   // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
   // On refresh, `state.reactivate` progress is re-based to 0/x using the restored pending AFK backlog.
@@ -4208,6 +4249,8 @@ export function HomeScreen({
           afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
           afkRecoveryCompletedMs: Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMsRef.current),
           afkSimulationAnchor: afkSimulationAnchorRef.current,
+          afkSummaryBaseline: afkSummaryBaselineRef.current,
+          shouldShowAfkSummary: shouldShowAfkSummaryRef.current,
         })
       );
     } catch (error) {
