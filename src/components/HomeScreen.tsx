@@ -432,7 +432,8 @@ const PARTY_CYCLE_TICK_MS = 100;
 const BASE_STEP_DURATION_MS = 15000;
 const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
-const REST_HEAL_MAX_HP_RATIO = 0.08;
+const REST_HEAL_MIN_HP = 400;
+const REST_HEAL_MAX_HP_RATIO = 0.06;
 const FREE_ACTION_STEP_COUNT = 30;
 const SOUND_SLEEP_STEP_COUNT = 16;
 const PRAY_STEP_COUNT = 4;
@@ -459,7 +460,7 @@ function getRestInitialTotalSteps(currentHp: number, maxHp: number): number {
   const normalizedCurrentHp = Math.max(0, Math.floor(currentHp));
   const missingHp = Math.max(0, normalizedMaxHp - normalizedCurrentHp);
   if (missingHp <= 0) return 1;
-  const healPerStep = Math.max(1500, Math.ceil(normalizedMaxHp * REST_HEAL_MAX_HP_RATIO));
+  const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(normalizedMaxHp * REST_HEAL_MAX_HP_RATIO));
   return Math.max(1, Math.ceil(missingHp / healPerStep));
 }
 
@@ -4384,7 +4385,7 @@ export function HomeScreen({
           const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
           const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
           // SpecRef: 5.1.1 | Party State Machine | state.rest
-          const healPerTick = Math.max(1500, Math.ceil(partyRuntimeStats.hp * REST_HEAL_MAX_HP_RATIO));
+          const healPerTick = Math.max(REST_HEAL_MIN_HP, Math.ceil(partyRuntimeStats.hp * REST_HEAL_MAX_HP_RATIO));
           const projectedHp = Math.min(
             partyRuntimeStats.hp,
             party.currentHp + (restTickCount > 0 ? healPerTick * restTickCount : 0),
@@ -8414,7 +8415,7 @@ function ExpeditionTab({
           }
           if (cycle.state === 'rest') {
             const totalSteps = Math.max(1, cycle.restInitialTotalSteps ?? 1);
-            const healPerStep = Math.max(1500, Math.ceil(partyStats.hp * REST_HEAL_MAX_HP_RATIO));
+            const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(partyStats.hp * REST_HEAL_MAX_HP_RATIO));
             const missingHp = Math.max(0, partyStats.hp - party.currentHp);
             const remainingSteps = missingHp <= 0 ? 0 : Math.ceil(missingHp / healPerStep);
             const completedSteps = Math.max(0, Math.min(totalSteps, totalSteps - remainingSteps));
