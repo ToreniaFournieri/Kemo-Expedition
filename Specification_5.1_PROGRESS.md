@@ -122,7 +122,7 @@
 - **Simplified AFK emulation:**
   - During `state.reactivate`, AFK progress is processed as completed expedition-cycle chunks only.
   - Do not preserve an in-progress state from the moment the player went AFK.
-  - Do not preserve mid-`Step` or partial-state progress when returning Online.
+  - Only the last expedition-cycle of AFK mode preserve mid-`Step` or partial-state progress. 
 - **Online resume state:**
   - If HP < MaxHP at the moment AFK recovery completes, set the party to `state.rest` from the start of that state.
   - Otherwise, if 自動周回 = ON, set the party to `state.move` from the start of that state.
