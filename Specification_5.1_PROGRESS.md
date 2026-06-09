@@ -42,7 +42,7 @@
 
 | State | Japanese label | Duration | Progress bar behavior |
 |-------|-------|-------|-------|
-| `state.rest` | 休息中 | heal max(1500, +8% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
+| `state.rest` | 休息中 | heal max(400, +6% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
 | `state.free_action` | 自由行動中 | 30 `Step`  | Continuous |
 | `state.sound_sleep` | 熟睡中 | 16 `Step` | Continuous |
