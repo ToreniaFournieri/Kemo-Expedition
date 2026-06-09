@@ -4155,37 +4155,114 @@ export function HomeScreen({
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const now = Date.now();
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      setPartyCycles(() => {
-        const next: Record<number, PartyCycleRuntime> = {};
-        latestPartiesRef.current.forEach((party, partyIndex) => {
-          const { partyStats } = computePartyStats(party);
-          const needsRest = party.currentHp < partyStats.hp;
-          // SpecRef: 5.1.1 | Party State Machine | AFK → Online Transition Handling
-          // AFK catch-up is simplified to completed expedition-cycle chunks; after recovery,
-          // resume from the start of a clean online state instead of preserving partial AFK state.
-          const nextState: PartyCycleState = needsRest ? 'rest' : (autoRepeatEnabled ? 'move' : 'idle');
-          const durationMs = nextState === 'move'
-            ? getPartyTravelDurationMs(party, 'move')
-            : nextState === 'rest'
-              ? getStateDurationMs(party, 'rest')
-              : 1000;
-          next[partyIndex] = {
-            state: nextState,
+      const recoveredAfkMs = Math.max(0, afkRecoveryTotalMsRef.current);
+      const partialCycleSideEffects: Array<{ partyIndex: number; shouldFinalizeDiary: boolean; simulatedAt: number }> = [];
+      const nextCycles: Record<number, PartyCycleRuntime> = {};
+
+      latestPartiesRef.current.forEach((party, partyIndex) => {
+        const { partyStats } = computePartyStats(party);
+        const needsRest = party.currentHp < partyStats.hp;
+        // SpecRef: 5.1.1 | Party State Machine | AFK → Online Transition Handling
+        // Completed AFK expedition cycles are processed by the reducer; only the final
+        // incomplete expedition cycle is restored as partial online progress. The state
+        // that was active when AFK began is intentionally not preserved.
+        if (needsRest) {
+          nextCycles[partyIndex] = {
+            state: 'rest',
             stateStartedAt: now,
-            durationMs,
+            durationMs: getStateDurationMs(party, 'rest'),
+            restInitialTotalSteps: getRestInitialTotalSteps(party.currentHp, partyStats.hp),
             isCurrentExpeditionGodsBattle: false,
             wasLowHpAtRestStart: false,
           };
+          return;
+        }
+
+        if (!autoRepeatEnabled) {
+          nextCycles[partyIndex] = {
+            state: 'idle',
+            stateStartedAt: now,
+            durationMs: 1000,
+            isCurrentExpeditionGodsBattle: false,
+            wasLowHpAtRestStart: false,
+          };
+          return;
+        }
+
+        const durationScale = getTimeSpeedScale(debugSettings);
+        const exploreDurationMultiplier = getPartyStateDurationMultiplier(party, 'explore');
+        const approximateCycleDurationMs = Math.max(
+          1,
+          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * durationScale * exploreDurationMultiplier),
+        );
+        const partialAfkMs = recoveredAfkMs % approximateCycleDurationMs;
+        const moveDurationMs = getPartyTravelDurationMs(party, 'move');
+        const exploreDurationMs = getExplorationDurationMs(undefined, exploreDurationMultiplier, durationScale);
+        const returnDurationMs = getPartyTravelDurationMs(party, 'return');
+        const onlineCycleDurationMs = Math.max(1, moveDurationMs + exploreDurationMs + returnDurationMs);
+        const partialOnlineMs = Math.min(
+          onlineCycleDurationMs - 1,
+          Math.max(0, Math.floor((partialAfkMs / approximateCycleDurationMs) * onlineCycleDurationMs)),
+        );
+
+        if (partialOnlineMs < moveDurationMs) {
+          nextCycles[partyIndex] = {
+            state: 'move',
+            stateStartedAt: now - partialOnlineMs,
+            durationMs: moveDurationMs,
+            isCurrentExpeditionGodsBattle: false,
+            wasLowHpAtRestStart: false,
+          };
+          return;
+        }
+
+        const exploreElapsedMs = partialOnlineMs - moveDurationMs;
+        const shouldTriggerGodsBattle = shouldAutoTriggerGodsBattle(party);
+        const expeditionStartedAt = now - exploreElapsedMs;
+        partialCycleSideEffects.push({
+          partyIndex,
+          shouldFinalizeDiary: exploreElapsedMs >= exploreDurationMs,
+          simulatedAt: expeditionStartedAt,
         });
-        return next;
+
+        if (exploreElapsedMs < exploreDurationMs) {
+          nextCycles[partyIndex] = {
+            state: 'explore',
+            stateStartedAt: now - exploreElapsedMs,
+            durationMs: exploreDurationMs,
+            isCurrentExpeditionGodsBattle: shouldTriggerGodsBattle,
+            wasLowHpAtRestStart: false,
+          };
+          return;
+        }
+
+        const returnElapsedMs = Math.min(returnDurationMs - 1, exploreElapsedMs - exploreDurationMs);
+        nextCycles[partyIndex] = {
+          state: 'return',
+          stateStartedAt: now - returnElapsedMs,
+          durationMs: returnDurationMs,
+          isCurrentExpeditionGodsBattle: false,
+          wasLowHpAtRestStart: false,
+        };
       });
+
+      partialCycleSideEffects.forEach(({ partyIndex, shouldFinalizeDiary, simulatedAt }) => {
+        const party = latestPartiesRef.current[partyIndex];
+        const triggerGodsBattle = party ? shouldAutoTriggerGodsBattle(party) : false;
+        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt);
+        if (shouldFinalizeDiary) {
+          actions.finalizeDiaryLog(partyIndex);
+        }
+      });
+
+      setPartyCycles(nextCycles);
       shouldRebuildPartyCyclesAfterAfkRef.current = false;
     }
 
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
-  }, [pendingAfkMs]);
+  }, [actions, debugSettings, pendingAfkMs]);
 
   useEffect(() => {
     const previousPendingAfkMs = previousPendingAfkMsRef.current;
