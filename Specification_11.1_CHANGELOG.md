@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 30 | 2026/06/09 | Update runtime party state transitions (Spec 5.1.1): route free action without sound sleep and completed sound sleep into pray before move/idle decisions. |
 | 0.7.5 | 29 | 2026/06/09 | Update AFK recovery runtime (Spec 5.1): process reactivation as completed expedition-cycle chunks, discard the state active when AFK began, and restore only the final incomplete expedition cycle as partial online move/explore/return progress. |
 | 0.7.5 | 28 | 2026/06/09 | Update runtime rest behavior (Spec 5.1): heal max(400, 6% MaxHP) per Step until full, while keeping the main rest progress bar step-based against the initial total Steps at state start. |
 | 0.7.5 | 27 | 2026/06/09 | Restore AFK completion summary notifications (Spec 5.1): persist AFK summary baselines through refresh so the final 踏破/帰還/引分/撤退/敗北 plus donation/savings notification is shown after reactivation catch-up completes. |
