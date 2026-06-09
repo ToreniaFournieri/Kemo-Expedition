@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 28 | 2026/06/09 | Update runtime rest behavior (Spec 5.1): heal max(400, 6% MaxHP) per Step until full, while keeping the main rest progress bar step-based against the initial total Steps at state start. |
 | 0.7.5 | 27 | 2026/06/09 | Restore AFK completion summary notifications (Spec 5.1): persist AFK summary baselines through refresh so the final 踏破/帰還/引分/撤退/敗北 plus donation/savings notification is shown after reactivation catch-up completes. |
 | 0.7.5 | 26 | 2026/06/07 | Update Expedition Instant Charge runtime display (Spec 8.3): show the next-stock countdown as an italic minute value immediately after the 6-cell battery indicator, while preserving MAX text for full charge. |
 | 0.7.5 | 25 | 2026/06/07 | Update Expedition Instant Charge runtime display (Spec 8.3): render the 6-cell battery with ▰ filled cells, ▱ empty cells, no brackets, countdown/MAX text immediately after the cells, and right-align the charge indicator in the party headline. |
