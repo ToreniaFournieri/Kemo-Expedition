@@ -4563,15 +4563,15 @@ export function HomeScreen({
                 updated.state = 'sound_sleep';
                 updated.durationMs = getStateDurationMs(party, 'sound_sleep');
               } else {
-                updated.state = autoRepeatEnabled ? 'move' : 'idle';
-                updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
+                updated.state = 'pray';
+                updated.durationMs = getStateDurationMs(party, 'pray');
               }
             } else if (updated.state === 'sound_sleep') {
               // SpecRef: 5.1.1 | Party State Machine | state.sound_sleep
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, 1, simulationNow);
               autoEquipmentPartyIndexes.add(partyIndex);
-              updated.state = autoRepeatEnabled ? 'move' : 'idle';
-              updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
+              updated.state = 'pray';
+              updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === 'pray') {
               const isNoFaith = isNoFaithDeity(party.deity.name);
               const donationRate = rollPercentInclusive(10, 33);
