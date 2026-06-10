@@ -2346,6 +2346,59 @@ function getPrayerDepositMultiplier(party: Party): number {
   return Math.max(0, 1 - embezzlementRate);
 }
 
+function rollPercentInclusive(min: number, max: number): number {
+  const lower = Math.ceil(Math.min(min, max));
+  const upper = Math.floor(Math.max(min, max));
+  return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+}
+
+type PrayerProfitResult = {
+  donation: number;
+  deposit: number;
+  embezzled: number;
+};
+
+function calculatePrayerProfit(party: Party, pendingProfit: number): PrayerProfitResult {
+  // SpecRef: 5.1.1 | Party State Machine | state.pray
+  const cyclePendingProfit = Math.max(0, Math.floor(pendingProfit));
+  const isNoFaith = isNoFaithDeity(party.deity.name);
+  const donationRate = rollPercentInclusive(10, 33);
+  const baseDonation = Math.floor((cyclePendingProfit * donationRate) / 100);
+  const titheLevel = getPartyAbilityLevel(party, 'tithe');
+  const titheBonusRate = isNoFaith ? 0 : (titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0);
+  const titheBonus = Math.floor(cyclePendingProfit * titheBonusRate);
+  const donation = isNoFaith ? 0 : Math.min(cyclePendingProfit, baseDonation + titheBonus);
+  const rawDeposit = Math.max(0, cyclePendingProfit - donation);
+  const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
+  const embezzled = Math.max(0, rawDeposit - deposit);
+
+  return { donation, deposit, embezzled };
+}
+
+function processAfkPrayerProfit(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+  // SpecRef: 5.1.1 | Party State Machine | state.pray
+  const party = state.parties[partyIndex];
+  if (!party) return state;
+
+  const pendingProfit = Math.max(0, Math.floor(party.pendingProfit ?? 0));
+  if (pendingProfit <= 0) return state;
+
+  const { donation, deposit, embezzled } = calculatePrayerProfit(party, pendingProfit);
+  let nextState = gameReducer(state, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+
+  if (party.sideQuest?.type === 'q.donation' && donation > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
+  }
+  if (party.sideQuest?.type === 'q.savings' && deposit > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: deposit, simulatedAt });
+  }
+  if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled, simulatedAt });
+  }
+
+  return nextState;
+}
+
 function getUnlockActorName(party: Party): string | undefined {
   const { characterStats } = computePartyStats(party);
   let bestLevel = 0;
@@ -4538,6 +4591,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
 
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
+          workingState = processAfkPrayerProfit(workingState, partyIndex, simulatedAt);
 
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty) {
