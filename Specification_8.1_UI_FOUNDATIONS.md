@@ -179,10 +179,10 @@
 - **Post content:**
   - Send the header and PT summary table in a single Discord message.
 - Header:  Progress Report
-  - User ID
   - Name
   - Total number of sending report: (ex. 12)
   - The last report time: (ex. X Hours ago)
+  - User ID
   - Version: (ex. v0.7.0)
   - Build: (ex. 20)
   - Environment: (ex. dev )
