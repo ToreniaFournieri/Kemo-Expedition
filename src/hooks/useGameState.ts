@@ -64,6 +64,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
+import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityKey, getDeityRank, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
@@ -1152,6 +1153,12 @@ function loadSavedState(): LoadSavedStateResult {
           party.expeditionDestinationMode = normalizeExpeditionDestinationMode(party.expeditionDestinationMode);
           party.expeditionDifficultyOffset = normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset);
           party.expeditionDifficultyOffsetByDungeon = normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon);
+          const instantChargeState = getInstantExpeditionChargeState({
+            instantExpeditionStock: party.instantExpeditionStock,
+            instantExpeditionChargeStartedAt: party.instantExpeditionChargeStartedAt,
+          });
+          party.instantExpeditionStock = instantChargeState.stock;
+          party.instantExpeditionChargeStartedAt = instantChargeState.chargeStartedAt;
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
           if (!party.pendingUnlockState || typeof party.pendingUnlockState !== 'object') {
@@ -1323,6 +1330,8 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionDestinationMode: normalizeExpeditionDestinationMode(party.expeditionDestinationMode),
     expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset),
     expeditionDifficultyOffsetByDungeon: normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon),
+    instantExpeditionStock: INSTANT_EXPEDITION_MAX_STOCK,
+    instantExpeditionChargeStartedAt: null,
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
@@ -1810,6 +1819,7 @@ type GameAction =
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
+  | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -2334,6 +2344,59 @@ function getPrayerDepositMultiplier(party: Party): number {
 
   // Embezzlement at pray end: God of Cunning +50%, Momentum (party has at least one) +10%.
   return Math.max(0, 1 - embezzlementRate);
+}
+
+function rollPercentInclusive(min: number, max: number): number {
+  const lower = Math.ceil(Math.min(min, max));
+  const upper = Math.floor(Math.max(min, max));
+  return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+}
+
+type PrayerProfitResult = {
+  donation: number;
+  deposit: number;
+  embezzled: number;
+};
+
+function calculatePrayerProfit(party: Party, pendingProfit: number): PrayerProfitResult {
+  // SpecRef: 5.1.1 | Party State Machine | state.pray
+  const cyclePendingProfit = Math.max(0, Math.floor(pendingProfit));
+  const isNoFaith = isNoFaithDeity(party.deity.name);
+  const donationRate = rollPercentInclusive(10, 33);
+  const baseDonation = Math.floor((cyclePendingProfit * donationRate) / 100);
+  const titheLevel = getPartyAbilityLevel(party, 'tithe');
+  const titheBonusRate = isNoFaith ? 0 : (titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0);
+  const titheBonus = Math.floor(cyclePendingProfit * titheBonusRate);
+  const donation = isNoFaith ? 0 : Math.min(cyclePendingProfit, baseDonation + titheBonus);
+  const rawDeposit = Math.max(0, cyclePendingProfit - donation);
+  const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
+  const embezzled = Math.max(0, rawDeposit - deposit);
+
+  return { donation, deposit, embezzled };
+}
+
+function processAfkPrayerProfit(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+  // SpecRef: 5.1.1 | Party State Machine | state.pray
+  const party = state.parties[partyIndex];
+  if (!party) return state;
+
+  const pendingProfit = Math.max(0, Math.floor(party.pendingProfit ?? 0));
+  if (pendingProfit <= 0) return state;
+
+  const { donation, deposit, embezzled } = calculatePrayerProfit(party, pendingProfit);
+  let nextState = gameReducer(state, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+
+  if (party.sideQuest?.type === 'q.donation' && donation > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
+  }
+  if (party.sideQuest?.type === 'q.savings' && deposit > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: deposit, simulatedAt });
+  }
+  if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled, simulatedAt });
+  }
+
+  return nextState;
 }
 
 function getUnlockActorName(party: Party): string | undefined {
@@ -2923,6 +2986,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         deityGold: state.global.deityDonations[normalizedDeityName] ?? 0,
       };
 
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
+    case 'CONSUME_INSTANT_EXPEDITION_STOCK': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+      const now = action.now ?? Date.now();
+      const nextParty = consumeInstantExpeditionStock(currentParty, now);
+      if (nextParty.instantExpeditionStock === currentParty.instantExpeditionStock
+        && nextParty.instantExpeditionChargeStartedAt === currentParty.instantExpeditionChargeStartedAt) {
+        return state;
+      }
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = nextParty;
       return {
         ...state,
         parties: updatedParties,
@@ -4511,6 +4591,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
 
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
+          workingState = processAfkPrayerProfit(workingState, partyIndex, simulatedAt);
 
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty) {
@@ -4975,6 +5056,10 @@ export function useGameState() {
 
     runExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt?: number) => {
       dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
+    }, []),
+
+    consumeInstantExpeditionStock: useCallback((partyIndex: number, now?: number) => {
+      dispatch({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now });
     }, []),
 
     finalizeDiaryLog: useCallback((partyIndex: number) => {

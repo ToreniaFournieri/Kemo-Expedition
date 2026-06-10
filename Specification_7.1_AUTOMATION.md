@@ -329,14 +329,16 @@
 - Engage `God Battle` and `condition` -= 200.
 
 - AFK (during `state.reactivate`)
-  - Process AFK progression at the end of each chunk:
+  - Process AFK progression as completed expedition-cycle chunks only.
+  - At the end of each chunk:
   - 1. Update `condition`:
     - Recalculate `condition` once at the end of the chunk.
     - Clamp the result within its minimum and maximum limits.
   - 2. Check God Battle trigger:
     - Resolve the `God Battle` engagement check after the condition update.
     - If triggered, engage `God Battle` and apply the corresponding `condition` reduction.
-    - This simplified handling applies only during AFK chunk processing.
+  - When all pending AFK chunks finish, return Online using the simplified AFK → Online transition in Spec 5.1.1.
+  - This simplified handling applies only during AFK chunk processing.
 
 
 #### 7.1.3 AUTO Jewel Equipment

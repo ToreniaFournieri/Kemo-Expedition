@@ -175,7 +175,13 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
     - If enemy has no attack values, not show the corresponding values.
     - Respect `m.luna` mode.
 
-**Enemy Image**
+**Enemy Image (Collapsed State)**
+- Display a small enemy image on the right side of the pane when the section is collapsed.
+- Position the image on the same line as the title.
+- Load the image from: `/public/chibi/C_E_{enemy_ID}.png`
+- If the image file does not exist, do not display an image.
+
+**Enemy Image Big (Expanded State)**
 - If enemy.image_path exists, enable background image rendering
 - Render the enemy image as a background image of the panel.
 - Do not stretch; preserve original aspect ratio.

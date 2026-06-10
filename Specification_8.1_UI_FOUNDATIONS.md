@@ -179,17 +179,18 @@
 - **Post content:**
   - Send the header and PT summary table in a single Discord message.
 - Header:  Progress Report
+  - Name
+  - Total number of sending report: (ex. 12)
+  - The last report time: (ex. X Hours ago)
+  - User ID
   - Version: (ex. v0.7.0)
   - Build: (ex. 20)
   - Environment: (ex. dev )
   - Timestamp: YYYY/MM/DD HH:MM (Timezone)
-  - User ID
-  - Name
   - browser, version:
   - OS version: (ex. iOS 26.4.2)
   - Resolution: (ex. 390 px, 844 px)
-  - Total number of sending report: (ex. 12)
-  - The last report time: (ex. X Hours ago) 
+ 
 
 - PT Summary Table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)

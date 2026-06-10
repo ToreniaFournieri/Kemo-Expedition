@@ -13,6 +13,7 @@
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
+  - A full Cycle always **ends at the end of `state.rest`**.
 - **`Chunk`**: A higher-level processing unit used for bulk progression. 
   - **1 Chunk = 12 Cycles**.
 
@@ -24,17 +25,15 @@
 
 | State | Logic | Move to | Durration modifilier |
 |-------|-------|----------|---------|
-| `state.rest`  | at home | sell or feast | `God of Fortification` |
-| `state.sell` | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | If (`current_profit = 0`), or (if the party's total HP was below 30% of Max HP at the beginning of `state.rest`) or (`condition` <= 50), move to `state.slump`. Otherwise, move to `state.feast`. | `God of Dusk` |
-| `state.feast` | at home, | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
-| `state.slump` | | sound_sleep or nap_sleep or pray  | |
-| sleep/ `state.sound_sleep`, `state.nap_sleep` | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | sound sleep:outfit, nap_sleep:pray |
-| `state.outfit` | equipping items. skip if no sound_sleep | pray |
-| `state.pray` | at home. Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
-| `state.idle` | at home. only when 自動周回 = OFF (idle state) | - |
-| `state.move` | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
-| `state.explore` | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
-| `state.return` | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3  round up, `a.peddler`2: 3/5 round up) | rest | 
+| `state.rest`  | - | sell or feast | `God of Fortification` |
+| `state.sell` | Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | `state.free_action` | `God of Dusk` |
+| `state.free_action` | - | Check `t.sleepiness_of_party_bag`. If it is sound_sleep, `state.sound_sleep`, otherwise `state.pray`. | `Goddess of Fertility` |
+| `state.sound_sleep` | At the end of this state, equipping items. | `state.pray` | `Goddess of Restoration` |
+| `state.idle` | Only when 自動周回 = OFF (idle state) | - |
+| `state.pray` | Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
+| `state.move` | If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
+| `state.explore` | - | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
+| `state.return` | If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3  round up, `a.peddler`2: 3/5 round up) | rest | 
 | `state.reactivate` | Reactivating from AFK mode | - | - |
 
 - **`Step Progress` behavior by state:**
@@ -44,14 +43,11 @@
 
 | State | Japanese label | Duration | Progress bar behavior |
 |-------|-------|-------|-------|
-| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
+| `state.rest` | 休息中 | heal max(400, +6% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
-| `state.feast` | 宴会中 | 3 + max(0, floor( + `condition` / 50)) `Step`  | Continuous |
-| `state.slump` | 不貞腐れ中 | 1 + max(0, floor( - `condition` / 20)) `Step` | Continuous |
-| `state.sound_sleep` | 熟睡中 | 8 `Step` | Continuous |
-| `state.nap_sleep` | 仮眠中 | 2 `Step` | Continuous |
-| `state.outfit` | 身支度中 | 4 `Step` | Continuous |
-| `state.pray` | 祈り中 | 2 `Step` | Continuous |
+| `state.free_action` | 自由行動中 | 30 `Step`  | Continuous |
+| `state.sound_sleep` | 熟睡中 | 16 `Step` | Continuous |
+| `state.pray` | 祈り中 | 4 `Step` | Continuous |
 | `state.idle` | 待機中 | - | - |
 | `state.move` | 移動中 | (1 + `x.exp_tier` ) `Step` | Continuous |
 | `state.explore` | 探索中 | 1 `Step` per room (24 rooms in total)| Step-based |
@@ -76,18 +72,8 @@
   - `current_profit` = 0
 - At the end of `state.sell`:
   - `current_profit` = Sum of (Auto-sell items)
-- At the end of `state.feast`:
-  - `current_profit` -= spending feast ( spend N% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
-
-| `condition` | N:percentage of spending|
-|--:|--|
-| -400 ~ -50 | 3% ~ 6% |
-| -50 ~ 50 | 5% ~ 10% |
-| 51 ~ 150 | 10% ~ 20% |
-| 151 ~ 250 | 20% ~ 40% |
-| 251 ~ 350 | 28% ~ 56% |
-| 351 ~ 400 | 34% ~ 68% |
-
+- At the end of `state.free_action`:
+  - `current_profit` -= spending feast ( spend 20% ~ 40% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
 
   - Notification :
     - Without Squander: PT1は25Gお金を使った
@@ -109,17 +95,17 @@
           - Without embezzlement: PT1は神の緊急動員に憤りながらも出撃した
           - With embezzlement: PT1は神の緊急動員に憤り、49Gを持ち逃げして出撃した
 
-- Player taps 出撃
-  - If party is in return / idle / rest / sell / feast / sound_sleep / nap_sleep / pray state:
-  - Immediately set state to `state.move`
-  - If they not gain items (not finished `state.sell`), immediately gain items and show notifications.
-  - Do not refill HP; dungeon starts with current HP. No squander, donation, nor remaining profits to the global wallet. The profit vanishes (The party menders would definitely not be happy with this players emergency sortie.)
-  - If party is already in `state.explore`: ignore tap
+- Player taps 出撃 / 神魔戦
+  - If the button is available for sortie, consume 1 Instant Expedition Charge stock.
+  - Immediately process one full Cycle and finish at the end of `state.rest`.
+  - If they have not gained items (not finished `state.sell`), immediately gain items and show notifications before the new Cycle is processed.
+  - Remaining current profit is treated as emergency embezzlement and vanishes from party profit. No squander, donation, nor remaining profits are moved to the global wallet for the interrupted Cycle.
   - If party Hp is 0 (just after defeated): ignore tap and show notification log:"random party.character は疲弊しており出撃を拒否した"
 
 - **Transition rules**
-  - 自動周回ON: 休息中→宴会中(if possible)→睡眠中→祈り中→待機中→移動中→探索中→帰還中→休息中
-  - 自動周回OFF: 移動中→探索中→帰還中→休息中 → 宴会中(条件付き) → 睡眠中 → 祈り中 → 待機中 (stop here)
+  - 自動周回ON: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.move`→`state.explore`→`state.return`→`state.rest`
+  - 自動周回OFF: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.idle`
+  - Immediate 出撃 / 神魔戦: consume 1 stock, process `state.move`→`state.explore`→`state.return`→`state.rest` immediately, and leave the runtime at the completed rest endpoint.
 
 
 **Time-Based Progress Handling (Online + AFK)**
@@ -134,23 +120,16 @@
 - Limit: maximum 1,800 minutes (30 hours) per catch-up simulation in the current version; elapsed time beyond this cap is ignored for that tick.
 
 **AFK → Online Transition Handling**
-- **State Transfer:**
-  - Upon completion of AFK emulation, transfer the **latest runtime state** to Online mode without loss or recalculation.
-  - The transition must be **deterministic and precise**.
-- State Correction Rule:
-  - If HP < MaxHP at the moment of transition, override the current state and set: `state.rest`
-  - Otherwise, retain the transferred state without modification.
-- **Step Continuity Rule:**
-  - If AFK emulation ends mid-`Step`, resume from the exact same `Step` progress in Online mode.
-  - Example:
-    - AFK ends at `state.return`, `Step` progress = **3/7**  
-      → Resume at `state.return`, **3/7 `Step`**.
-- **Sub-step Progress Handling:**
-  - Ignore intra-`Step` (sub-progress) timing.
-  - Preserve only the discrete `Step` progress ratio.
-
+- **Simplified AFK emulation:**
+  - During `state.reactivate`, AFK progress is processed as completed expedition-cycle chunks only.
+  - Do not preserve an in-progress state from the moment the player went AFK.
+  - Only the last expedition-cycle of AFK mode preserve mid-`Step` or partial-state progress. 
+- **Online resume state:**
+  - If HP < MaxHP at the moment AFK recovery completes, set the party to `state.rest` from the start of that state.
+  - Otherwise, if 自動周回 = ON, set the party to `state.move` from the start of that state.
+  - Otherwise, set the party to `state.idle`.
 - **Refresh Handling**
-  - On page refresh, AFK emulation must automatically continue and resume from the latest saved state.
+  - On page refresh, AFK emulation must automatically continue and resume from the latest saved pending AFK backlog.
   - The main progress of `state.reactivate` is reset on refresh.
   - After refresh, the `state.reactivate` progress bar starts again from 0 and resumes counting from the beginning.
 

@@ -97,8 +97,8 @@ HP 2350 / 4680
 - **"出撃" / "神魔戦" Buttons:**
   - State: Disabled (grayed out) when the action is not available.
   - Disable conditions:
-    - Party HP = 0
-    - Party is in `state.explore`
+    - (Party HP = 0) and (0 Charges).
+    - Party is in `state.explore` and 0 Charges.
     - "神魔戦" button is pressed and party is going to engage gods battle. 
 
 **Progress Visual Update**
@@ -138,6 +138,32 @@ HP 2350 / 4680
   - Display the latest reached floor name of the current expedition.
   - Use the Japanese floor name defined in **Expedition Floor Concepts**.
   - Example: `ケイナイアンの廃都`
+- **Charge**
+	- Display the remaining Instant Expedition stock as a battery-style indicator.
+    - Right aligned
+	- Each filled cell represents 1 available Instant Expedition stock.
+	- Maximum stock is 6.
+	- Display empty cells with ▱.
+    - Immediately after the battery indicator, display the remaining time until the next stock is generated. The value (or MAX text) is always shown in minutes and rendered in _italic_ text.
+		- Example: ▰▰▰▰▱▱102.
+		- If fully charged, display ▰▰▰▰▰▰MAX.
+		- If no stock is available, display ▱▱▱▱▱▱12.
+	- Pressing `出撃` or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
+      - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed. (note: always end at the end of `state.rest` )
+      - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` → `state.rest`
+      - The process ends after the final `state.rest` is completed.
+	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
+
+| Stock Level | Time Required for This Charge | 
+| ----------- | ----------: |
+| 1st         |  8 min |
+| 2nd         | 16 min |
+| 3rd         | 30 min |
+| 4th         | 60 min |
+| 5th         |120 min |
+| 6th         |240 min |
+
+
 - **Outcome**
   - Display the latest expedition result such as `踏破`, `撤退`, `敗北`, etc.
 - **Update Timing**
@@ -146,10 +172,10 @@ HP 2350 / 4680
   - Display `▼` at the end of the row for expandable party details.
 
 ```
-( ####### ) PT1 ケイナイアンの廃都   踏破 ▼
+( ####### ) PT1 ケイナイアンの廃都 ▰▰▰▰▱▱112  踏破 ▼
 ( ##   ## ) 
 ( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
-移動中: flavor text (background: state progress bar)
+移動中 (background: state progress bar)
 (Sub progress bar)
 
 一任 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
@@ -181,6 +207,8 @@ PT2...
 
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
   - List of available dungeons with Loot-Gate conditions
+
+  - **OBSOLETED: REMOVE THIS FROM THE RUNTIME PROGRAM**
 	- **Flavor text**
 	  - The system selects flavor text from `Specification_5.2_PROGRESS_FLAVOR_TEXT.md`.
 	  - The **speaker name** of the flavor text is resolved to the party member who satisfies the triggering condition (race, main class, or ability holder).
@@ -229,7 +257,7 @@ HP: 16,035
   - Loot Gate Condition: Collect X Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
-    - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
+    - When the condition is met, adding「神魔戦」(Gods Battle) next to 「出撃」 button. (神魔戦, 出撃 button order) 
     - The player must manually press the 「神魔戦」 button to start the special battle.
     - Gods Battle cannot be triggered during Auto-Run (自動周回).
   - Battle Rules:

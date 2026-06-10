@@ -269,15 +269,15 @@ export function applyDeityCharacterModifiers(
 
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
 // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number {
+export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
   void totalDonatedGold;
   if (!deityKey) return 1;
 
-  if ((state === 'sound_sleep' || state === 'nap_sleep') && deityKey === 'Goddess of Restoration') return 2;
   if (state === 'rest' && deityKey === 'God of Fortification') return 2;
   if (state === 'sell' && deityKey === 'God of Dusk') return 2;
-  if (state === 'feast' && deityKey === 'Goddess of Fertility') return 2;
+  if (state === 'free_action' && deityKey === 'Goddess of Fertility') return 2;
+  if (state === 'sound_sleep' && deityKey === 'Goddess of Restoration') return 2;
   if (state === 'pray' && deityKey === 'God of Fate') return 2;
   if (state === 'explore' && deityKey === 'Goddess of Precision') return 1.2;
   return 1;

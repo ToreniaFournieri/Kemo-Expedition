@@ -42,10 +42,10 @@ import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRank
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { getRuntimeFlavorText, type FlavorCycleState } from '../game/flavorText';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -81,6 +81,7 @@ interface HomeScreenProps {
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
     runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
+    consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
@@ -204,7 +205,7 @@ const renderElementalResistanceInline = (
 );
 
 
-type PartyCycleState = 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
+type PartyCycleState = 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 700;
 const TAB_PANEL_WIDTH_PX = 500;
@@ -242,11 +243,8 @@ const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, strin
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   rest: '休息中',
   sell: '売却中',
-  feast: '宴会中',
-  slump: '不貞腐れ中',
+  free_action: '自由行動中',
   sound_sleep: '熟睡中',
-  nap_sleep: '仮眠中',
-  outfit: '身支度中',
   pray: '祈り中',
   idle: '待機中',
   move: '移動中',
@@ -375,11 +373,12 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
   sell: 'sell',
-  feast: 'feast',
-  slump: 'slump',
+  feast: 'free_action',
+  slump: 'free_action',
+  free_action: 'free_action',
   sound_sleep: 'sound_sleep',
-  nap_sleep: 'nap_sleep',
-  outfit: 'outfit',
+  nap_sleep: 'move',
+  outfit: 'move',
   sleep: 'sound_sleep',
   pray: 'pray',
   idle: 'idle',
@@ -389,12 +388,13 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   reactivate: 'reactivate',
   '休息中': 'rest',
   '売却中': 'sell',
-  '宴会中': 'feast',
-  '不貞腐れ中': 'slump',
+  '宴会中': 'free_action',
+  '不貞腐れ中': 'free_action',
+  '自由行動中': 'free_action',
   '睡眠中': 'sound_sleep',
   '熟睡中': 'sound_sleep',
-  '仮眠中': 'nap_sleep',
-  '身支度中': 'outfit',
+  '仮眠中': 'move',
+  '身支度中': 'move',
   '祈り中': 'pray',
   '待機中': 'idle',
   '移動中': 'move',
@@ -417,38 +417,26 @@ interface PartyCycleRuntime {
   stateStartedAt: number;
   durationMs: number;
   restInitialTotalSteps?: number;
-  sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
+  sortieSourceState?: 'rest' | 'free_action' | 'sleep' | 'return';
   sortieEmbezzlementGold?: number;
   isCurrentExpeditionGodsBattle?: boolean;
-  skipFeastThisCycle?: boolean;
-  skipSleepThisCycle?: boolean;
   wasLowHpAtRestStart?: boolean;
 }
 
-interface AfkRuntimeSnapshot {
-  state: PartyCycleState;
-  completedSteps: number;
-  totalSteps: number;
-}
 
 function rollPercentInclusive(min: number, max: number): number {
   return min + Math.random() * (max - min + Number.EPSILON);
-}
-
-// SpecRef: 5.1.1 | Party State Machine | state.feast
-function getFeastSpendingRangeByCondition(condition: number): { min: number; max: number } {
-  if (condition <= -50) return { min: 3, max: 6 };
-  if (condition <= 50) return { min: 5, max: 10 };
-  if (condition <= 150) return { min: 10, max: 20 };
-  if (condition <= 250) return { min: 20, max: 40 };
-  if (condition <= 350) return { min: 28, max: 56 };
-  return { min: 34, max: 68 };
 }
 
 const PARTY_CYCLE_TICK_MS = 100;
 const BASE_STEP_DURATION_MS = 15000;
 const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+const REST_HEAL_MIN_HP = 400;
+const REST_HEAL_MAX_HP_RATIO = 0.06;
+const FREE_ACTION_STEP_COUNT = 30;
+const SOUND_SLEEP_STEP_COUNT = 16;
+const PRAY_STEP_COUNT = 4;
 const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
 const APPROX_CYCLE_STEP_COUNT = 30;
 const CHUNK_CYCLE_COUNT = 12;
@@ -457,14 +445,6 @@ const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
 const REDUCER_CATCHUP_THRESHOLD_MS = 15000;
 
-// SpecRef: 5.1.1 | Party State Machine | AFK → Online Transition Handling
-function getStateStepCountFromRuntime(state: PartyCycleState, runtime: PartyCycleRuntime, party: Party): number {
-  if (state === 'rest') return Math.max(1, runtime.restInitialTotalSteps ?? 1);
-  if (state === 'sell') return Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
-  if (state === 'explore') return Math.max(1, party.lastExpeditionLog?.entries.length ?? EXPLORING_PROGRESS_TOTAL_STEPS);
-  const nominalStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS);
-  return Math.max(1, Math.round(runtime.durationMs / nominalStepDurationMs));
-}
 
 function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedSeconds: number; remainderMs: number } {
   const totalMs = Math.max(0, carriedMs + elapsedMs);
@@ -480,8 +460,16 @@ function getRestInitialTotalSteps(currentHp: number, maxHp: number): number {
   const normalizedCurrentHp = Math.max(0, Math.floor(currentHp));
   const missingHp = Math.max(0, normalizedMaxHp - normalizedCurrentHp);
   if (missingHp <= 0) return 1;
-  const healPerStep = Math.max(1500, Math.ceil(normalizedMaxHp * 0.15));
+  const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(normalizedMaxHp * REST_HEAL_MAX_HP_RATIO));
   return Math.max(1, Math.ceil(missingHp / healPerStep));
+}
+
+// SpecRef: 5.1.1 | Party State Machine | state.sell
+function getAutoSellStepCount(party: Party): number {
+  const autoSellItemCount = party.lastExpeditionLog?.autoSellItems?.length
+    || party.lastExpeditionLog?.autoSellCount
+    || 1;
+  return Math.max(1, autoSellItemCount);
 }
 
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
@@ -590,7 +578,7 @@ function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Ret
   return '撤退';
 }
 
-function getReturnFlavorOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
+function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
   if (!log) return undefined;
   if (log.finalOutcome === 'Defeat') return 'Defeat';
   if (log.finalOutcome === 'Escape') return 'Turned_Back';
@@ -635,6 +623,41 @@ function getEnemyLogBackgroundImagePath(enemy?: EnemyDef): string | null {
   // SpecRef: 6.1.7 | Logs | Enemy image
   if (typeof enemy?.id !== 'number') return null;
   return resolvePublicAssetPath(`/enemy/E_${enemy.id}.png`);
+}
+
+function getEnemyLogChibiImagePath(entry: ExpeditionLogEntry): string | null {
+  // SpecRef: 6.1.7 | Logs | Background image
+  const enemyId = entry.enemySnapshot?.id ?? entry.enemyId;
+  if (typeof enemyId !== 'number') return null;
+  return resolvePublicAssetPath(`/chibi/C_E_${enemyId}.png`);
+}
+
+function renderEnemyLogChibiBackground(entry: ExpeditionLogEntry): JSX.Element | null {
+  const imagePath = getEnemyLogChibiImagePath(entry);
+  if (!imagePath) return null;
+
+  return (
+    <img
+      src={imagePath}
+      onError={(event) => { event.currentTarget.style.display = 'none'; }}
+      alt=""
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-y-0 right-[16.666667%] h-full w-auto max-w-[42%] select-none object-contain object-right opacity-30"
+    />
+  );
+}
+
+function renderCollapsedBestiaryEnemyImage(enemyId: number): JSX.Element {
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Image (Collapsed State)
+  return (
+    <img
+      src={resolvePublicAssetPath(`/chibi/C_E_${enemyId}.png`) ?? undefined}
+      onError={(event) => { event.currentTarget.style.display = 'none'; }}
+      alt=""
+      aria-hidden="true"
+      className="h-8 w-8 select-none object-contain"
+    />
+  );
 }
 
 function getEnemyClassSummary(enemy: EnemyDef): string {
@@ -906,7 +929,7 @@ function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): R
   });
 }
 
-function buildAfkSummaryNotification(stats: {
+type AfkSummaryStats = {
   Clear: number;
   Turned_Back: number;
   Draw_Retreat: number;
@@ -914,7 +937,37 @@ function buildAfkSummaryNotification(stats: {
   Defeat: number;
   donatedGold: number;
   savedGold: number;
-}): string | null {
+};
+
+function isAfkSummaryStats(value: unknown): value is AfkSummaryStats {
+  if (!value || typeof value !== 'object') return false;
+  const stats = value as Partial<Record<keyof AfkSummaryStats, unknown>>;
+  return (
+    typeof stats.Clear === 'number'
+    && typeof stats.Turned_Back === 'number'
+    && typeof stats.Draw_Retreat === 'number'
+    && typeof stats.Wounded_Retreat === 'number'
+    && typeof stats.Defeat === 'number'
+    && typeof stats.donatedGold === 'number'
+    && typeof stats.savedGold === 'number'
+  );
+}
+
+function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null {
+  if (!isAfkSummaryStats(value)) return null;
+  return {
+    Clear: Math.max(0, Math.floor(value.Clear)),
+    Turned_Back: Math.max(0, Math.floor(value.Turned_Back)),
+    Draw_Retreat: Math.max(0, Math.floor(value.Draw_Retreat)),
+    Wounded_Retreat: Math.max(0, Math.floor(value.Wounded_Retreat)),
+    Defeat: Math.max(0, Math.floor(value.Defeat)),
+    donatedGold: Math.max(0, Math.floor(value.donatedGold)),
+    savedGold: Math.max(0, Math.floor(value.savedGold)),
+  };
+}
+
+// SpecRef: 5.1.1 | Party State Machine | Notification
+function buildAfkSummaryNotification(stats: AfkSummaryStats): string | null {
   const summaryParts: string[] = [];
   if (stats.Clear > 0) summaryParts.push(`踏破${formatNumber(stats.Clear)}回`);
   if (stats.Turned_Back > 0) summaryParts.push(`帰還${formatNumber(stats.Turned_Back)}回`);
@@ -1496,7 +1549,7 @@ function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycleState)
   const latestStats = party.expeditionStats;
   if (cycleState !== 'explore') return latestStats;
 
-  const returnOutcome = getReturnFlavorOutcome(party.lastExpeditionLog);
+  const returnOutcome = getReturnedExpeditionOutcome(party.lastExpeditionLog);
   if (!returnOutcome) return latestStats;
 
   return {
@@ -2769,7 +2822,6 @@ export function HomeScreen({
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
-  const afkRuntimeSnapshotRef = useRef<Record<number, AfkRuntimeSnapshot>>({});
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -3129,17 +3181,17 @@ export function HomeScreen({
     localStorage.setItem(lastReportAtKey, String(Date.now()));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
     const reportHeaderRows = [
+      ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
+      ['Total number of sending report', progressReportCount],
+      ['The last report time', lastReportTime],
+      ['User ID', state.global.userId],
       ['Version', APP_VERSION],
       ['Build', formatNumber(state.buildNumber)],
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
-      ['User ID', state.global.userId],
-      ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
       ['browser, version', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
-      ['Total number of sending report', progressReportCount],
-      ['The last report time', lastReportTime],
     ];
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
@@ -3901,7 +3953,7 @@ export function HomeScreen({
     }
   }, [actions, safeSelectedPartyIndex, state.parties.length, state.selectedPartyIndex]);
 
-  const afkSummaryBaselineRef = useRef<Array<{ Clear: number; Turned_Back: number; Draw_Retreat: number; Wounded_Retreat: number; Defeat: number; donatedGold: number; savedGold: number }> | null>(null);
+  const afkSummaryBaselineRef = useRef<AfkSummaryStats[] | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
@@ -3961,6 +4013,8 @@ export function HomeScreen({
         afkRecoveryTotalMs?: number;
         afkRecoveryCompletedMs?: number;
         afkSimulationAnchor?: number | null;
+        afkSummaryBaseline?: unknown;
+        shouldShowAfkSummary?: boolean;
       };
 
       const checkpointAt = typeof parsed.checkpointAt === 'number' ? parsed.checkpointAt : Date.now();
@@ -3980,6 +4034,13 @@ export function HomeScreen({
         afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
           ? parsed.afkSimulationAnchor
           : Date.now();
+        const restoredSummaryBaseline = Array.isArray(parsed.afkSummaryBaseline)
+          ? parsed.afkSummaryBaseline.map(normalizeAfkSummaryStats)
+          : [];
+        afkSummaryBaselineRef.current = restoredSummaryBaseline.some((stats): stats is AfkSummaryStats => stats !== null)
+          ? latestPartiesRef.current.map((party, index) => restoredSummaryBaseline[index] ?? { ...party.expeditionStats })
+          : latestPartiesRef.current.map((party) => ({ ...party.expeditionStats }));
+        shouldShowAfkSummaryRef.current = parsed.shouldShowAfkSummary !== false;
         shouldRebuildPartyCyclesAfterAfkRef.current = true;
       }
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
@@ -4000,7 +4061,7 @@ export function HomeScreen({
               : undefined,
             sortieSourceState:
               runtime.sortieSourceState === 'rest'
-              || runtime.sortieSourceState === 'feast'
+              || runtime.sortieSourceState === 'free_action'
               || runtime.sortieSourceState === 'sleep'
               || runtime.sortieSourceState === 'return'
                 ? runtime.sortieSourceState
@@ -4010,8 +4071,6 @@ export function HomeScreen({
               ? Math.max(0, Math.floor(runtime.sortieEmbezzlementGold))
               : undefined,
             isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
-            skipFeastThisCycle: runtime.skipFeastThisCycle === true,
-            skipSleepThisCycle: runtime.skipSleepThisCycle === true,
             wasLowHpAtRestStart: runtime.wasLowHpAtRestStart === true,
           };
         });
@@ -4096,67 +4155,114 @@ export function HomeScreen({
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const now = Date.now();
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      const approxCycleDurationMs = Math.max(1, Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * getTimeSpeedScale(debugSettings)));
-      const remainderMs = afkRecoveryTotalMsRef.current % approxCycleDurationMs;
-      const runtimeSnapshots = afkRuntimeSnapshotRef.current;
-      setPartyCycles(() => {
-        const next: Record<number, PartyCycleRuntime> = {};
-        latestPartiesRef.current.forEach((party, partyIndex) => {
-          const { partyStats } = computePartyStats(party);
-          const needsRest = party.currentHp < partyStats.hp;
-          const fallbackState: PartyCycleState = autoRepeatEnabled ? 'move' : (needsRest ? 'rest' : 'idle');
-          const snapshot = runtimeSnapshots[partyIndex];
-          const transferredState: PartyCycleState = snapshot?.state ?? fallbackState;
-          // SpecRef: 5.1.1 | Party State Machine | State Correction Rule
-          // AFK → Online transition must preserve latest runtime state, except force `state.rest` when HP is below MaxHP.
-          const nextState: PartyCycleState = needsRest ? 'rest' : transferredState;
-          const fallbackDurationMs =
-            nextState === 'move'
-              ? getPartyTravelDurationMs(party, 'move')
-              : nextState === 'return'
-                ? getPartyTravelDurationMs(party, 'return')
-                : nextState === 'explore'
-                  ? getExplorationDurationMs(
-                    party.lastExpeditionLog?.entries.length,
-                    getPartyStateDurationMultiplier(party, 'explore'),
-                    getTimeSpeedScale(debugSettings),
-                  )
-                  : nextState === 'idle' || nextState === 'reactivate'
-                    ? 1000
-                    : getStateDurationMs(party, nextState as 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray');
-          const totalSteps = Math.max(1, snapshot?.totalSteps ?? getStateStepCountFromRuntime(nextState, {
-            state: nextState,
+      const recoveredAfkMs = Math.max(0, afkRecoveryTotalMsRef.current);
+      const partialCycleSideEffects: Array<{ partyIndex: number; shouldFinalizeDiary: boolean; simulatedAt: number }> = [];
+      const nextCycles: Record<number, PartyCycleRuntime> = {};
+
+      latestPartiesRef.current.forEach((party, partyIndex) => {
+        const { partyStats } = computePartyStats(party);
+        const needsRest = party.currentHp < partyStats.hp;
+        // SpecRef: 5.1.1 | Party State Machine | AFK → Online Transition Handling
+        // Completed AFK expedition cycles are processed by the reducer; only the final
+        // incomplete expedition cycle is restored as partial online progress. The state
+        // that was active when AFK began is intentionally not preserved.
+        if (needsRest) {
+          nextCycles[partyIndex] = {
+            state: 'rest',
             stateStartedAt: now,
-            durationMs: fallbackDurationMs,
-          }, party));
-          const completedSteps = Math.min(totalSteps, Math.max(0, snapshot?.completedSteps ?? 0));
-          const continuedCompletedSteps = Math.min(
-            totalSteps,
-            completedSteps + Math.floor((remainderMs / Math.max(1, approxCycleDurationMs)) * totalSteps),
-          );
-          const stateStepDurationMs = Math.max(1, Math.floor(fallbackDurationMs / totalSteps));
-          next[partyIndex] = {
-            state: nextState,
-            // SpecRef: 5.1.1 | Party State Machine | Step Continuity Rule
-            // Keep AFK-completed discrete Step count and resume online from the same Step progress ratio.
-            stateStartedAt: now - (continuedCompletedSteps * stateStepDurationMs),
-            durationMs: fallbackDurationMs,
+            durationMs: getStateDurationMs(party, 'rest'),
+            restInitialTotalSteps: getRestInitialTotalSteps(party.currentHp, partyStats.hp),
             isCurrentExpeditionGodsBattle: false,
-            skipFeastThisCycle: false,
-            skipSleepThisCycle: false,
             wasLowHpAtRestStart: false,
           };
+          return;
+        }
+
+        if (!autoRepeatEnabled) {
+          nextCycles[partyIndex] = {
+            state: 'idle',
+            stateStartedAt: now,
+            durationMs: 1000,
+            isCurrentExpeditionGodsBattle: false,
+            wasLowHpAtRestStart: false,
+          };
+          return;
+        }
+
+        const durationScale = getTimeSpeedScale(debugSettings);
+        const exploreDurationMultiplier = getPartyStateDurationMultiplier(party, 'explore');
+        const approximateCycleDurationMs = Math.max(
+          1,
+          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * durationScale * exploreDurationMultiplier),
+        );
+        const partialAfkMs = recoveredAfkMs % approximateCycleDurationMs;
+        const moveDurationMs = getPartyTravelDurationMs(party, 'move');
+        const exploreDurationMs = getExplorationDurationMs(undefined, exploreDurationMultiplier, durationScale);
+        const returnDurationMs = getPartyTravelDurationMs(party, 'return');
+        const onlineCycleDurationMs = Math.max(1, moveDurationMs + exploreDurationMs + returnDurationMs);
+        const partialOnlineMs = Math.min(
+          onlineCycleDurationMs - 1,
+          Math.max(0, Math.floor((partialAfkMs / approximateCycleDurationMs) * onlineCycleDurationMs)),
+        );
+
+        if (partialOnlineMs < moveDurationMs) {
+          nextCycles[partyIndex] = {
+            state: 'move',
+            stateStartedAt: now - partialOnlineMs,
+            durationMs: moveDurationMs,
+            isCurrentExpeditionGodsBattle: false,
+            wasLowHpAtRestStart: false,
+          };
+          return;
+        }
+
+        const exploreElapsedMs = partialOnlineMs - moveDurationMs;
+        const shouldTriggerGodsBattle = shouldAutoTriggerGodsBattle(party);
+        const expeditionStartedAt = now - exploreElapsedMs;
+        partialCycleSideEffects.push({
+          partyIndex,
+          shouldFinalizeDiary: exploreElapsedMs >= exploreDurationMs,
+          simulatedAt: expeditionStartedAt,
         });
-        return next;
+
+        if (exploreElapsedMs < exploreDurationMs) {
+          nextCycles[partyIndex] = {
+            state: 'explore',
+            stateStartedAt: now - exploreElapsedMs,
+            durationMs: exploreDurationMs,
+            isCurrentExpeditionGodsBattle: shouldTriggerGodsBattle,
+            wasLowHpAtRestStart: false,
+          };
+          return;
+        }
+
+        const returnElapsedMs = Math.min(returnDurationMs - 1, exploreElapsedMs - exploreDurationMs);
+        nextCycles[partyIndex] = {
+          state: 'return',
+          stateStartedAt: now - returnElapsedMs,
+          durationMs: returnDurationMs,
+          isCurrentExpeditionGodsBattle: false,
+          wasLowHpAtRestStart: false,
+        };
       });
+
+      partialCycleSideEffects.forEach(({ partyIndex, shouldFinalizeDiary, simulatedAt }) => {
+        const party = latestPartiesRef.current[partyIndex];
+        const triggerGodsBattle = party ? shouldAutoTriggerGodsBattle(party) : false;
+        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt);
+        if (shouldFinalizeDiary) {
+          actions.finalizeDiaryLog(partyIndex);
+        }
+      });
+
+      setPartyCycles(nextCycles);
       shouldRebuildPartyCyclesAfterAfkRef.current = false;
-      afkRuntimeSnapshotRef.current = {};
     }
 
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
-  }, [pendingAfkMs]);
+  }, [actions, debugSettings, pendingAfkMs]);
 
   useEffect(() => {
     const previousPendingAfkMs = previousPendingAfkMsRef.current;
@@ -4179,9 +4285,11 @@ export function HomeScreen({
 
   useEffect(() => {
     // SpecRef: 8.1.1 | Notification Logic & Display | notification while AFK mode
-    if (!suppressNotificationsForAfkEmulation) return;
+    // Only clear notifications while AFK catch-up is actively running; once pending AFK reaches 0,
+    // the Spec 5.1 summary notification must be allowed to remain visible.
+    if (pendingAfkMs <= 0) return;
     onDismissAllNotifications();
-  }, [onDismissAllNotifications, suppressNotificationsForAfkEmulation]);
+  }, [onDismissAllNotifications, pendingAfkMs]);
 
   // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
   // On refresh, `state.reactivate` progress is re-based to 0/x using the restored pending AFK backlog.
@@ -4219,6 +4327,8 @@ export function HomeScreen({
           afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
           afkRecoveryCompletedMs: Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMsRef.current),
           afkSimulationAnchor: afkSimulationAnchorRef.current,
+          afkSummaryBaseline: afkSummaryBaselineRef.current,
+          shouldShowAfkSummary: shouldShowAfkSummaryRef.current,
         })
       );
     } catch (error) {
@@ -4252,22 +4362,6 @@ export function HomeScreen({
       if (pendingAfkMsRef.current <= 0) {
         afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = true;
-        const runtimeSnapshots: Record<number, AfkRuntimeSnapshot> = {};
-        const snapshotNow = now;
-        parties.forEach((party, partyIndex) => {
-          const runtime = partyCyclesRef.current[partyIndex];
-          if (!runtime) return;
-          const elapsedRuntimeMs = Math.max(0, snapshotNow - runtime.stateStartedAt);
-          const totalSteps = getStateStepCountFromRuntime(runtime.state, runtime, party);
-          const stepDurationMs = Math.max(1, runtime.durationMs / totalSteps);
-          const completedSteps = Math.min(totalSteps, Math.floor(elapsedRuntimeMs / stepDurationMs));
-          runtimeSnapshots[partyIndex] = {
-            state: runtime.state,
-            completedSteps,
-            totalSteps,
-          };
-        });
-        afkRuntimeSnapshotRef.current = runtimeSnapshots;
       }
       afkSimulationAnchorRef.current = now;
       const nextPendingAfkMs = Math.min(AFK_MAX_ELAPSED_MS, pendingAfkMsRef.current + elapsedMs);
@@ -4368,7 +4462,7 @@ export function HomeScreen({
           const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
           const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
           // SpecRef: 5.1.1 | Party State Machine | state.rest
-          const healPerTick = Math.max(1500, Math.ceil(partyRuntimeStats.hp * 0.15));
+          const healPerTick = Math.max(REST_HEAL_MIN_HP, Math.ceil(partyRuntimeStats.hp * REST_HEAL_MAX_HP_RATIO));
           const projectedHp = Math.min(
             partyRuntimeStats.hp,
             party.currentHp + (restTickCount > 0 ? healPerTick * restTickCount : 0),
@@ -4377,7 +4471,9 @@ export function HomeScreen({
             actions.healPartyHp(partyIndex, healPerTick * restTickCount);
             updated.stateStartedAt += restTickCount * restTickDurationMs;
           }
-          if (projectedHp >= partyRuntimeStats.hp) {
+          const hasCompletedRestStep = restTickCount > 0;
+          const startedRestAtFullHp = party.currentHp >= partyRuntimeStats.hp;
+          if (projectedHp >= partyRuntimeStats.hp && (!startedRestAtFullHp || hasCompletedRestStep)) {
             // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
             if (party.expeditionDestinationMode === 'auto') {
               const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
@@ -4426,26 +4522,12 @@ export function HomeScreen({
             if (hasTrophy || hasAutoSellItem) {
               updated.state = 'sell';
               updated.durationMs = getStateDurationMs(party, 'sell');
-              updated.restInitialTotalSteps = undefined;
             } else {
-              const shouldMoveToSlump = true;
-              const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              if (shouldMoveToSlump) {
-                // SpecRef: 5.1.1 | Party State Machine | state.slump
-                updated.state = 'slump';
-                updated.durationMs = getStateDurationMs(party, 'slump');
-              } else {
-                updated.state = 'feast';
-                updated.durationMs = getStateDurationMs(party, 'feast');
-              }
-              updated.restInitialTotalSteps = undefined;
-              if (shouldMoveToSlump) {
-                updated.skipFeastThisCycle = false;
-              }
-              if (shouldSkipSleep) {
-                updated.skipSleepThisCycle = false;
-              }
+              // SpecRef: 5.1.1 | Party State Machine | state.free_action
+              updated.state = 'free_action';
+              updated.durationMs = getStateDurationMs(party, 'free_action');
             }
+            updated.restInitialTotalSteps = undefined;
             updated.stateStartedAt = simulationNow;
           }
         }
@@ -4456,39 +4538,13 @@ export function HomeScreen({
           updated.stateStartedAt += updated.durationMs;
           stateElapsedMs -= updated.durationMs;
 
-            if (updated.state === 'sell') {
+          if (updated.state === 'sell') {
               // SpecRef: 5.1.1 | Party State Machine | state.sell
-              const shouldMoveToSlump = cyclePendingProfit <= 0
-                || updated.wasLowHpAtRestStart === true
-                || party.condition <= 50
-                || updated.skipFeastThisCycle === true;
-              if (shouldMoveToSlump) {
-                updated.state = 'slump';
-                updated.durationMs = getStateDurationMs(party, 'slump');
-              } else {
-                updated.state = 'feast';
-                updated.durationMs = getStateDurationMs(party, 'feast');
-              }
-              if (shouldMoveToSlump) {
-                updated.skipFeastThisCycle = false;
-              }
-            } else if (updated.state === 'slump') {
-              const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
-              const sleepDurationMs = getStateDurationMs(party, sleepState);
-              if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
-                updated.state = 'pray';
-                updated.durationMs = getStateDurationMs(party, 'pray');
-              } else {
-                updated.state = sleepState;
-                updated.durationMs = sleepDurationMs;
-              }
-              if (shouldSkipSleep) {
-                updated.skipSleepThisCycle = false;
-              }
-            } else if (updated.state === 'feast') {
-              const feastSpendRange = getFeastSpendingRangeByCondition(party.condition);
-              const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(feastSpendRange.min, feastSpendRange.max)) / 100);
+              updated.state = 'free_action';
+              updated.durationMs = getStateDurationMs(party, 'free_action');
+            } else if (updated.state === 'free_action') {
+              // SpecRef: 5.1.1 | Party State Machine | state.free_action
+              const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(20, 40)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
               const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
               const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
@@ -4505,32 +4561,19 @@ export function HomeScreen({
               actions.spendPendingProfit(partyIndex, spend);
               if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend, simulationNow);
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
-              const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
-              const sleepDurationMs = getStateDurationMs(party, sleepState);
-              if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
+              if (party.currentSleepiness === 2) {
+                updated.state = 'sound_sleep';
+                updated.durationMs = getStateDurationMs(party, 'sound_sleep');
+              } else {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
-              } else {
-                updated.state = sleepState;
-                updated.durationMs = sleepDurationMs;
               }
-              if (shouldSkipSleep) {
-                updated.skipSleepThisCycle = false;
-              }
-            } else if (updated.state === 'sound_sleep' || updated.state === 'nap_sleep') {
+            } else if (updated.state === 'sound_sleep') {
+              // SpecRef: 5.1.1 | Party State Machine | state.sound_sleep
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, 1, simulationNow);
-              if (updated.state === 'sound_sleep') {
-                updated.state = 'outfit';
-                updated.durationMs = getStateDurationMs(party, 'outfit');
-              } else {
-                updated.state = 'pray';
-                updated.durationMs = getStateDurationMs(party, 'pray');
-              }
-            } else if (updated.state === 'outfit') {
+              autoEquipmentPartyIndexes.add(partyIndex);
               updated.state = 'pray';
               updated.durationMs = getStateDurationMs(party, 'pray');
-              autoEquipmentPartyIndexes.add(partyIndex);
             } else if (updated.state === 'pray') {
               const isNoFaith = isNoFaithDeity(party.deity.name);
               const donationRate = rollPercentInclusive(10, 33);
@@ -4606,16 +4649,11 @@ export function HomeScreen({
               if (!party.sideQuest && !hasActiveNonGodBattleLootGateCondition(party)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId, simulationNow);
               }
-              const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
-              if (!shouldSkipSleepForLowHp) {
-                actions.rollPartySleepiness(partyIndex);
-              }
+              actions.rollPartySleepiness(partyIndex);
               updated.state = 'rest';
               updated.durationMs = getStateDurationMs(party, 'rest');
               updated.restInitialTotalSteps = getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp);
               updated.isCurrentExpeditionGodsBattle = false;
-              updated.skipFeastThisCycle = hpRatioAtRestStart < 0.3;
-              updated.skipSleepThisCycle = shouldSkipSleepForLowHp;
               updated.wasLowHpAtRestStart = hpRatioAtRestStart < 0.3;
             }
 
@@ -4915,27 +4953,6 @@ export function HomeScreen({
     setActiveTab(nextTab);
   };
 
-  const transitionTo = (
-    partyIndex: number,
-    nextState: PartyCycleState,
-    durationMs: number,
-    sortieContext?: { sourceState?: 'rest' | 'feast' | 'sleep' | 'return'; embezzlementGold?: number; isCurrentExpeditionGodsBattle?: boolean },
-  ) => {
-    setPartyCycles((prev) => ({
-      ...prev,
-      [partyIndex]: {
-        state: nextState,
-        stateStartedAt: Date.now(),
-        durationMs,
-        sortieSourceState: sortieContext?.sourceState,
-        sortieEmbezzlementGold: sortieContext
-          ? Math.max(0, Math.floor(sortieContext.embezzlementGold ?? 0))
-          : undefined,
-        isCurrentExpeditionGodsBattle: sortieContext?.isCurrentExpeditionGodsBattle === true,
-      },
-    }));
-  };
-
   const getPartyAbilityOwnerName = (party: Party, abilityId: string): string | null => {
     const { characterStats } = computePartyStats(party);
     const owner = party.characters.find((character) =>
@@ -4998,7 +5015,7 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number => {
+  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' | 'explore'): number => {
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
     const deityMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
     if (cycleState !== 'explore') return deityMultiplier;
@@ -5007,24 +5024,17 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1 | PROGRESS | Step
-  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
+  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray'): number => {
     const durationScale = getTimeSpeedScale(debugSettings);
-    const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseStepCount = cycleState === 'rest'
       ? 1
       : cycleState === 'sell'
-        ? autoSellCount
-        : cycleState === 'feast'
-          ? 3 + Math.max(0, Math.floor(party.condition / 50))
-          : cycleState === 'slump'
-            ? 1 + Math.max(0, Math.floor(-party.condition / 20))
+        ? getAutoSellStepCount(party)
+        : cycleState === 'free_action'
+          ? FREE_ACTION_STEP_COUNT
           : cycleState === 'sound_sleep'
-            ? 8
-            : cycleState === 'nap_sleep'
-              ? 2
-              : cycleState === 'outfit'
-                ? 4
-              : 2;
+            ? SOUND_SLEEP_STEP_COUNT
+            : PRAY_STEP_COUNT;
     return Math.max(100, Math.ceil(baseStepCount * BASE_STEP_DURATION_MS * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
   };
 
@@ -5077,6 +5087,8 @@ export function HomeScreen({
     const party = state.parties[partyIndex];
     if (!party) return;
     const { partyStats } = computePartyStats(party);
+    const now = Date.now();
+    const instantChargeState = getInstantExpeditionChargeState(party, now);
 
     if (party.currentHp <= 0 || partyStats.hp <= 0) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
@@ -5084,44 +5096,59 @@ export function HomeScreen({
       return;
     }
 
-    if (cycle?.state === 'explore') {
-      actions.addNotification(`${party.name} は探索中であり、その要請には従えない`);
-      return;
-    }
     // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
     if (triggerGodsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) {
       actions.addNotification(`${party.name} は既に神魔戦へ向けて移動中だ`);
+      return;
+    }
+    // SpecRef: 8.3 | UI_EXPEDITION | Charge
+    if (instantChargeState.stock <= 0) {
+      actions.addNotification(`${party.name} の即時出撃チャージが不足している`);
       return;
     }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
     if (stolenProfit > 0) {
-      actions.addNotification(`${party.name}は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして出撃した`);
+      actions.addNotification(`${party.name}は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして即時出撃した`);
     } else {
-      actions.addNotification(`${party.name}は神の緊急動員に憤りながらも出撃した`);
+      actions.addNotification(`${party.name}は即時出撃した`);
     }
 
     if (cycle) {
       notifyExpeditionRewardsIfNeeded(party, partyIndex);
     }
 
-    pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle;
+    if (triggerGodsBattle && party.sideQuest) {
+      actions.cancelSideQuest(partyIndex);
+      actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+    }
+
+    pendingGodsBattleByPartyRef.current[partyIndex] = false;
+    actions.consumeInstantExpeditionStock(partyIndex, now);
+    if (cycle?.state === 'explore') {
+      actions.finalizeDiaryLog(partyIndex);
+    }
     actions.clearPendingProfit(partyIndex);
-    transitionTo(
-      partyIndex,
-      'move',
-      getPartyTravelDurationMs(party, 'move'),
-      {
-        sourceState: cycle?.state === 'rest' || cycle?.state === 'feast' || cycle?.state === 'return'
-          ? cycle.state
-          : cycle?.state === 'sound_sleep' || cycle?.state === 'nap_sleep'
-            ? 'sleep'
-            : undefined,
-        embezzlementGold: stolenProfit,
-        isCurrentExpeditionGodsBattle: triggerGodsBattle,
+    actions.healPartyHp(partyIndex, partyStats.hp);
+    actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
+    actions.finalizeDiaryLog(partyIndex);
+    actions.rollPartySleepiness(partyIndex);
+    actions.healPartyHp(partyIndex, partyStats.hp);
+    // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
+    // Manual 出撃/神魔戦 resolves the expedition and its return/rest tail immediately,
+    // leaving the runtime at the completed rest endpoint instead of the old idle shortcut.
+    const finalRestDurationMs = getStateDurationMs(party, 'rest');
+    setPartyCycles((prev) => ({
+      ...prev,
+      [partyIndex]: {
+        state: 'rest',
+        stateStartedAt: now - finalRestDurationMs,
+        durationMs: finalRestDurationMs,
+        restInitialTotalSteps: 1,
+        isCurrentExpeditionGodsBattle: false,
       },
-    );
+    }));
   };
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
@@ -8150,7 +8177,6 @@ function PartyTab({
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Expedition
-// SpecRef: 8.3 | UI_EXPEDITION | Flavor text
 // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
 function ExpeditionTab({
   state,
@@ -8396,7 +8422,7 @@ function ExpeditionTab({
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
-        const { partyStats, characterStats } = computePartyStats(party);
+        const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
@@ -8438,7 +8464,7 @@ function ExpeditionTab({
         const sellProgressState = (() => {
           if (cycle.state !== 'sell') return null;
           const autoSellItems = party.lastExpeditionLog?.autoSellItems ?? [];
-          const sellStepCount = Math.max(1, autoSellItems.length || party.lastExpeditionLog?.autoSellCount || 1);
+          const sellStepCount = getAutoSellStepCount(party);
           const rawSellProgress = Math.min(1, cycleElapsedMs / Math.max(1, cycle.durationMs));
           const completedSteps = Math.min(sellStepCount, Math.floor(rawSellProgress * sellStepCount));
           const activeStep = Math.max(0, Math.min(sellStepCount - 1, completedSteps));
@@ -8460,7 +8486,7 @@ function ExpeditionTab({
           }
           if (cycle.state === 'rest') {
             const totalSteps = Math.max(1, cycle.restInitialTotalSteps ?? 1);
-            const healPerStep = Math.max(1500, Math.ceil(partyStats.hp * 0.15));
+            const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(partyStats.hp * REST_HEAL_MAX_HP_RATIO));
             const missingHp = Math.max(0, partyStats.hp - party.currentHp);
             const remainingSteps = missingHp <= 0 ? 0 : Math.ceil(missingHp / healPerStep);
             const completedSteps = Math.max(0, Math.min(totalSteps, totalSteps - remainingSteps));
@@ -8483,7 +8509,7 @@ function ExpeditionTab({
           const totalStepCount = cycle.state === 'rest'
             ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
             : cycle.state === 'sell'
-            ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
+            ? getAutoSellStepCount(party)
             : Math.max(1, currentLog?.entries.length ?? 1);
           const stepDurationMs = cycle.state === 'rest'
             ? Math.max(1, cycle.durationMs)
@@ -8500,65 +8526,29 @@ function ExpeditionTab({
             const percentText = `${Math.round(normalizedProgressPercent)}%`;
             return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
           }
-          const stateLabel = getPartyCycleStateLabel(cycle.state);
-          if (cycle.state === 'reactivate') return stateLabel;
-          const leader = party.characters[0];
-          if (!leader) return stateLabel;
-          // SpecRef: 5.2 | PROGRESS_FLAVOR_TEXT | Flavor text cycle update
-          const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
-          const continuousFlavorStep = Math.floor(cycleElapsedMs / scaledStepDurationMs);
-          const flavorStepOffset = cycle.state === 'explore'
-            ? displayedEntries.length
-            : cycle.state === 'sell'
-            ? sellProgressState?.completedSteps ?? 0
-            : continuousFlavorStep;
-          const flavorSeed = cycle.stateStartedAt + partyIndex * 131 + flavorStepOffset;
-          const currentDisplayedEntry = displayedEntries.length > 0
-            ? displayedEntries[displayedEntries.length - 1]
-            : null;
-          const flavorText = getRuntimeFlavorText({
-            state: cycle.state as FlavorCycleState,
-            hpRatio: Math.max(0, Math.min(1, displayedHp / Math.max(1, partyStats.hp))),
-            returnOutcome: cycle.state === 'return' ? getReturnFlavorOutcome(currentLog) : undefined,
-            expeditionId: cycle.state === 'explore' ? currentLog?.dungeonId : undefined,
-            floor: cycle.state === 'explore' ? currentDisplayedEntry?.floor : undefined,
-            mainClassId: leader.mainClassId,
-            raceId: leader.raceId,
-            partyMainClassIds: party.characters.map((member) => member.mainClassId),
-            partyRaceIds: party.characters.map((member) => member.raceId),
-            partyAbilityIds: partyStats.abilities.map((ability) => ability.id),
-            partyMembers: party.characters.map((member) => {
-              const memberStats = characterStats.find((stats) => stats.characterId === member.id);
-              return {
-                name: member.name,
-                mainClassId: member.mainClassId,
-                raceId: member.raceId,
-                abilityIds: memberStats?.abilities.map((ability) => ability.id) ?? [],
-              };
-            }),
-            partyReligionName: party.deity.name,
-            leaderName: leader.name,
-            seed: flavorSeed,
-            sellingItemName: sellProgressState?.activeItem?.itemName,
-            autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
-            sortieSourceState: cycle.sortieSourceState,
-            embezzlementGold: cycle.sortieEmbezzlementGold,
-            debug: {
-              displayCondition: getDebugSettings().displayFlavorCondition,
-            },
-          });
-          return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
+          // SpecRef: 8.3 | UI_EXPEDITION | OBSOLETED: REMOVE THIS FROM THE RUNTIME PROGRAM
+          return getPartyCycleStateLabel(cycle.state);
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
+        // SpecRef: 8.3 | UI_EXPEDITION | Charge
+        const instantChargeState = getInstantExpeditionChargeState(party, emulatedNowMs);
+        const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
+        const instantChargeLabel = instantChargeDisplay.label;
+        const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
         const isColosseumSelected = selectedDungeon?.id === 99;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
         const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
-        const isSortieDisabled = cycle.state === 'explore'
-          || isPendingGodsBattleMove
-          || ((!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0);
+        const isPartyHpDepletedForSortie = hpForSortieCheck <= 0 || partyStats.hp <= 0;
+        const isSortieDisabled = (!!selectedDungeonGate?.locked && !isColosseumSelected)
+          || (isPartyHpDepletedForSortie && isInstantExpeditionStockEmpty)
+          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty);
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
+        const isGodsBattleButtonDisabled = isSortieDisabled || isPendingGodsBattleMove;
+        const expeditionControlGridClass = canTriggerGodsBattle
+          ? 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto_auto] items-center gap-2 text-sm text-gray-700'
+          : 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700';
         // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
         // SpecRef: 8.3 | UI_EXPEDITION | Party Pane Visual State
         const isGodsBattleInProgress = (
@@ -8708,10 +8698,17 @@ function ExpeditionTab({
                   </svg>
                 </button>
                 <span className="min-w-0 flex-1 space-y-0 text-left">
-                  <span className="flex items-start justify-between gap-1.5 text-sm">
+                  <span className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-1.5 text-sm">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
                       {headlineFloorName}
+                    </span>
+                    <span
+                      className={`justify-self-end text-right font-mono text-[12px] leading-5 whitespace-nowrap ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}
+                      title="Instant Expedition Charge"
+                      aria-label={`Instant Expedition Charge ${instantChargeLabel}`}
+                    >
+                      <span>{instantChargeDisplay.cells}</span><i>{instantChargeDisplay.timerText}</i>
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
@@ -8759,18 +8756,13 @@ function ExpeditionTab({
                   </span>
                 </span>
               </span>
-              <span className={`mt-0.5 block relative h-9 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
+              <span className={`mt-0.5 block relative h-5 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                   style={{ width: `${visualProgressPercent}%` }}
                 />
                 <span className={`relative z-10 flex h-full items-center justify-center px-1.5 text-center leading-tight ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
-                  <span className="w-full overflow-hidden break-words text-pretty leading-tight"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}>
+                  <span className="w-full truncate leading-tight">
                     {progressLabel}
                   </span>
                 </span>
@@ -8790,7 +8782,7 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">
-                <div className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
+                <div className={expeditionControlGridClass}>
                   <button
                     type="button"
                     onClick={() => onToggleExpeditionDestinationMode(
@@ -8822,12 +8814,21 @@ function ExpeditionTab({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
+                  {canTriggerGodsBattle && (
+                    <button
+                      onClick={() => onTriggerSortie(partyIndex, true)}
+                      disabled={isGodsBattleButtonDisabled}
+                      className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isGodsBattleButtonDisabled ? '' : 'liquid-glass-sortie-button--accent'}`}
+                    >
+                      神魔戦
+                    </button>
+                  )}
                   <button
-                    onClick={() => onTriggerSortie(partyIndex, canTriggerGodsBattle)}
+                    onClick={() => onTriggerSortie(partyIndex, false)}
                     disabled={isSortieDisabled}
-                    className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : canTriggerGodsBattle ? 'liquid-glass-sortie-button--accent' : 'liquid-glass-sortie-button--sub'}`}
+                    className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : 'liquid-glass-sortie-button--sub'}`}
                   >
-                    {canTriggerGodsBattle ? '神魔戦' : '出撃'}
+                    出撃
                   </button>
                 </div>
                 {isDifficultyOffsetUnlocked && (
@@ -8938,9 +8939,10 @@ function ExpeditionTab({
                               : { partyIndex, roomIndex: originalIndex, latestRoomToken }
                             );
                           }}
-                          className={`w-full text-left p-2 text-xs ${canExpandRoom ? '' : 'cursor-default'}`}
+                          className={`relative isolate w-full overflow-hidden rounded text-left p-2 text-xs ${canExpandRoom ? '' : 'cursor-default'}`}
                         >
-                            <div className="flex justify-between items-center">
+                            {renderEnemyLogChibiBackground(entry)}
+                            <div className="relative z-10 flex justify-between items-center">
                               <span className="font-medium">
                                 {roomLabel}:{' '}
                                 <span
@@ -8992,13 +8994,13 @@ function ExpeditionTab({
                               </span>
                             </div>
                             {(entry.gateInfo || entry.reward) && (
-                              <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                              <div className="relative z-10 text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                                 {entry.gateInfo && <span className="text-accent">{entry.gateInfo}</span>}
                                 {renderEntryReward(entry)}
                               </div>
                             )}
                             {!entry.gateInfo && (
-                              <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
+                              <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
                                   <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
@@ -9017,7 +9019,7 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className={`relative isolate overflow-visible border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
+                            <div className={`relative isolate overflow-hidden border-t border-gray-100 p-2 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)] ${getEnemyLogBackgroundImagePath(entry.enemySnapshot) ? 'bg-gray-50 dark:bg-transparent' : 'bg-gray-50'}`}>
                               {getEnemyLogBackgroundImagePath(entry.enemySnapshot) && (
                                 <>
                                   <img
@@ -9025,7 +9027,7 @@ function ExpeditionTab({
                                     onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                     alt=""
                                     aria-hidden="true"
-                                    className="pointer-events-none select-none absolute left-1/2 -top-14 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                    className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-20 dark:opacity-25"
                                     style={{
                                       width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                       maxWidth: 'none',
@@ -10638,9 +10640,10 @@ function DiaryTab({
                       <div key={roomKey} className="bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
                         <button
                           onClick={() => onSetExpandedRooms((prev) => ({ ...prev, [roomKey]: !isRoomExpanded }))}
-                          className="w-full text-left p-2 text-xs"
+                          className="relative isolate w-full overflow-hidden rounded text-left p-2 text-xs"
                         >
-                          <div className="flex justify-between items-center">
+                          {renderEnemyLogChibiBackground(entry)}
+                          <div className="relative z-10 flex justify-between items-center">
                             <span>
                               <span className="font-medium">
                                 {roomLabel}:{' '}
@@ -10697,13 +10700,13 @@ function DiaryTab({
                             </span>
                           </div>
                           {(entry.gateInfo || entry.reward) && (
-                            <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                            <div className="relative z-10 text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                               {entry.gateInfo && <span className="text-accent">{entry.gateInfo}</span>}
                               {renderEntryReward(entry)}
                             </div>
                           )}
                           {!entry.gateInfo && (
-                            <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
+                            <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                               <div>
                                 <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
@@ -10730,7 +10733,7 @@ function DiaryTab({
                                     onError={(event) => { event.currentTarget.style.display = 'none'; }}
                                   alt=""
                                   aria-hidden="true"
-                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-35 dark:opacity-50"
+                                  className="pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top opacity-20 dark:opacity-25"
                                   style={{
                                     width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                                     maxWidth: 'none',
@@ -12765,7 +12768,10 @@ function SettingTab({
                   className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                 >
                   <span>{renderEnemyNameWithMutedClass(godClassShortName ? `${god.displayName}(${godClassShortName})` : god.displayName)}</span>
-                  <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                    {!godExpanded && renderCollapsedBestiaryEnemyImage(getGodBestiaryDisplayEnemyId(god))}
+                    <span>{godExpanded ? '▲' : '▼'}</span>
+                  </span>
                 </button>
                 {godExpanded && (
                   <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
@@ -12897,7 +12903,11 @@ function SettingTab({
                 <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
                 <div className="mt-2 border border-gray-100 rounded">
                   <button onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [colosseumEnemy.id]: !enemyExpanded }))} className="w-full text-left px-2 py-1 text-sm flex justify-between items-center">
-                    <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(colosseumEnemy))}</span><span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                    <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(colosseumEnemy))}</span>
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      {!enemyExpanded && renderCollapsedBestiaryEnemyImage(colosseumEnemy.id)}
+                      <span>{enemyExpanded ? '▲' : '▼'}</span>
+                    </span>
                   </button>
                   {enemyExpanded && <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -12977,7 +12987,10 @@ function SettingTab({
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
                       <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(displayEnemy))}</span>
-                      <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                        {!enemyExpanded && renderCollapsedBestiaryEnemyImage(displayEnemy.id)}
+                        <span>{enemyExpanded ? '▲' : '▼'}</span>
+                      </span>
                     </button>
                     {enemyExpanded && (
                       <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
@@ -13342,7 +13355,6 @@ function SettingTab({
           <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Ashen Route Vault open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayCondition: !debugSettings.displayCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display condition: {debugSettings.displayCondition ? 'ON' : 'OFF'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAllBestiary: !debugSettings.displayAllBestiary })} className="w-full rounded border bg-white px-3 py-2 text-left">Display all Bestiary: {debugSettings.displayAllBestiary ? 'ON' : 'OFF'}</button>

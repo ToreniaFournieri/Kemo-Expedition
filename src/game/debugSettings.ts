@@ -11,7 +11,6 @@ export interface DebugSettings {
   godStrength: DebugGodStrength;
   jewelShopOpen: boolean;
   displayCondition: boolean;
-  displayFlavorCondition: boolean;
   displayAfkDuration: boolean;
   colosseumEnabled: boolean;
   displayAllBestiary: boolean;
@@ -29,7 +28,6 @@ const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   godStrength: 'normal',
   jewelShopOpen: false,
   displayCondition: false,
-  displayFlavorCondition: false,
   displayAfkDuration: false,
   colosseumEnabled: false,
   displayAllBestiary: false,
@@ -66,7 +64,6 @@ function normalizeDebugSettings(raw: unknown): DebugSettings {
     jewelShopOpen: parsed.jewelShopOpen === true,
     // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `condition` OFF/ON
     displayCondition: parsed.displayCondition === true || parsed.displayMotivation === true,
-    displayFlavorCondition: parsed.displayFlavorCondition === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
     colosseumEnabled: parsed.colosseumEnabled === true,
     // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane (デバッグ)
