@@ -8814,13 +8814,6 @@ function ExpeditionTab({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <button
-                    onClick={() => onTriggerSortie(partyIndex, false)}
-                    disabled={isSortieDisabled}
-                    className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : 'liquid-glass-sortie-button--sub'}`}
-                  >
-                    出撃
-                  </button>
                   {canTriggerGodsBattle && (
                     <button
                       onClick={() => onTriggerSortie(partyIndex, true)}
@@ -8830,6 +8823,13 @@ function ExpeditionTab({
                       神魔戦
                     </button>
                   )}
+                  <button
+                    onClick={() => onTriggerSortie(partyIndex, false)}
+                    disabled={isSortieDisabled}
+                    className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : 'liquid-glass-sortie-button--sub'}`}
+                  >
+                    出撃
+                  </button>
                 </div>
                 {isDifficultyOffsetUnlocked && (
                   <div className="text-xs text-gray-600 space-y-1">
