@@ -3,12 +3,12 @@ import type { Party } from '../types';
 export const INSTANT_EXPEDITION_MAX_STOCK = 6;
 
 const INSTANT_EXPEDITION_CHARGE_DURATIONS_MS = [
-  4 * 60 * 1000,
   8 * 60 * 1000,
   16 * 60 * 1000,
-  32 * 60 * 1000,
-  64 * 60 * 1000,
-  128 * 60 * 1000,
+  30 * 60 * 1000,
+  60 * 60 * 1000,
+  120 * 60 * 1000,
+  240 * 60 * 1000,
 ] as const;
 
 export interface InstantExpeditionChargeState {

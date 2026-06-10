@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 39 | 2026/06/10 | Update Instant Expedition Charge runtime timing (Spec 8.3): align stock recharge durations with the specification table (8, 16, 30, 60, 120, and 240 minutes). |
 | 0.7.5 | 38 | 2026/06/10 | Fix Instant Expedition Charge consumption timing (Spec 8.3): consuming a stock now clamps the carried countdown to the new stock level duration so partially charged time cannot immediately recreate the consumed stock. |
 | 0.7.5 | 37 | 2026/06/10 | Update Expedition tab runtime Gods Battle button order (Spec 8.3): when the Gods Battle condition is met, render the separate 神魔戦 control before the normal 出撃 button while keeping both actions visible. |
 | 0.7.5 | 36 | 2026/06/10 | Update Expedition tab runtime Gods Battle controls (Spec 8.3): keep the normal 出撃 button visible and add a separate 神魔戦 button next to it when the Gods Battle loot-gate condition is met. |
