@@ -95,10 +95,19 @@ export function consumeInstantExpeditionStock<T extends Pick<Party, 'instantExpe
   };
 
   const nextStock = chargeState.stock - 1;
+  const nextChargeDurationMs = getChargeDurationMs(nextStock);
+  let nextChargeStartedAt: number | null = null;
+  if (nextChargeDurationMs !== null) {
+    const nextRemainingMs = chargeState.nextChargeDurationMs === null
+      ? nextChargeDurationMs
+      : Math.min(chargeState.remainingMs, nextChargeDurationMs);
+    nextChargeStartedAt = now - Math.max(0, nextChargeDurationMs - nextRemainingMs);
+  }
+
   return {
     ...party,
     instantExpeditionStock: nextStock,
-    instantExpeditionChargeStartedAt: nextStock >= INSTANT_EXPEDITION_MAX_STOCK ? null : (chargeState.chargeStartedAt ?? now),
+    instantExpeditionChargeStartedAt: nextChargeStartedAt,
   };
 }
 
