@@ -97,7 +97,7 @@ HP 2350 / 4680
 - **"出撃" / "神魔戦" Buttons:**
   - State: Disabled (grayed out) when the action is not available.
   - Disable conditions:
-    - Party HP = 0
+    - (Party HP = 0) and (0 Charges).
     - Party is in `state.explore` and 0 Charges.
     - "神魔戦" button is pressed and party is going to engage gods battle. 
 
