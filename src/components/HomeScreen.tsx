@@ -4471,7 +4471,9 @@ export function HomeScreen({
             actions.healPartyHp(partyIndex, healPerTick * restTickCount);
             updated.stateStartedAt += restTickCount * restTickDurationMs;
           }
-          if (projectedHp >= partyRuntimeStats.hp) {
+          const hasCompletedRestStep = restTickCount > 0;
+          const startedRestAtFullHp = party.currentHp >= partyRuntimeStats.hp;
+          if (projectedHp >= partyRuntimeStats.hp && (!startedRestAtFullHp || hasCompletedRestStep)) {
             // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
             if (party.expeditionDestinationMode === 'auto') {
               const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
@@ -4951,27 +4953,6 @@ export function HomeScreen({
     setActiveTab(nextTab);
   };
 
-  const transitionTo = (
-    partyIndex: number,
-    nextState: PartyCycleState,
-    durationMs: number,
-    sortieContext?: { sourceState?: 'rest' | 'free_action' | 'sleep' | 'return'; embezzlementGold?: number; isCurrentExpeditionGodsBattle?: boolean },
-  ) => {
-    setPartyCycles((prev) => ({
-      ...prev,
-      [partyIndex]: {
-        state: nextState,
-        stateStartedAt: Date.now(),
-        durationMs,
-        sortieSourceState: sortieContext?.sourceState,
-        sortieEmbezzlementGold: sortieContext
-          ? Math.max(0, Math.floor(sortieContext.embezzlementGold ?? 0))
-          : undefined,
-        isCurrentExpeditionGodsBattle: sortieContext?.isCurrentExpeditionGodsBattle === true,
-      },
-    }));
-  };
-
   const getPartyAbilityOwnerName = (party: Party, abilityId: string): string | null => {
     const { characterStats } = computePartyStats(party);
     const owner = party.characters.find((character) =>
@@ -5154,7 +5135,20 @@ export function HomeScreen({
     actions.finalizeDiaryLog(partyIndex);
     actions.rollPartySleepiness(partyIndex);
     actions.healPartyHp(partyIndex, partyStats.hp);
-    transitionTo(partyIndex, 'idle', 1000, { isCurrentExpeditionGodsBattle: false });
+    // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
+    // Manual 出撃/神魔戦 resolves the expedition and its return/rest tail immediately,
+    // leaving the runtime at the completed rest endpoint instead of the old idle shortcut.
+    const finalRestDurationMs = getStateDurationMs(party, 'rest');
+    setPartyCycles((prev) => ({
+      ...prev,
+      [partyIndex]: {
+        state: 'rest',
+        stateStartedAt: now - finalRestDurationMs,
+        durationMs: finalRestDurationMs,
+        restInitialTotalSteps: 1,
+        isCurrentExpeditionGodsBattle: false,
+      },
+    }));
   };
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
