@@ -8544,9 +8544,11 @@ function ExpeditionTab({
         const isColosseumSelected = selectedDungeon?.id === 99;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
         const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
+        const isPartyHpDepletedForSortie = hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const isSortieDisabled = isPendingGodsBattleMove
-          || isInstantExpeditionStockEmpty
-          || ((!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0);
+          || (!!selectedDungeonGate?.locked && !isColosseumSelected)
+          || (isPartyHpDepletedForSortie && isInstantExpeditionStockEmpty)
+          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty);
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
