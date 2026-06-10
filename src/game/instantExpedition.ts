@@ -3,7 +3,7 @@ import type { Party } from '../types';
 export const INSTANT_EXPEDITION_MAX_STOCK = 6;
 
 const INSTANT_EXPEDITION_CHARGE_DURATIONS_MS = [
-  15 * 60 * 1000,
+  8 * 60 * 1000,
   15 * 60 * 1000,
   30 * 60 * 1000,
   60 * 60 * 1000,
