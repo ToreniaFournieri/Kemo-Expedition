@@ -257,7 +257,7 @@ HP: 16,035
   - Loot Gate Condition: Collect X Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
-    - When the condition is met, adding「神魔戦」(Gods Battle) next to 「出撃」 button. 
+    - When the condition is met, adding「神魔戦」(Gods Battle) next to 「出撃」 button. (神魔戦, 出撃 button order) 
     - The player must manually press the 「神魔戦」 button to start the special battle.
     - Gods Battle cannot be triggered during Auto-Run (自動周回).
   - Battle Rules:
