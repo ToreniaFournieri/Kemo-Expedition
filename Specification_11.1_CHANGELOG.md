@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 38 | 2026/06/10 | Fix Instant Expedition Charge consumption timing (Spec 8.3): consuming a stock now clamps the carried countdown to the new stock level duration so partially charged time cannot immediately recreate the consumed stock. |
 | 0.7.5 | 37 | 2026/06/10 | Update Expedition tab runtime Gods Battle button order (Spec 8.3): when the Gods Battle condition is met, render the separate 神魔戦 control before the normal 出撃 button while keeping both actions visible. |
 | 0.7.5 | 36 | 2026/06/10 | Update Expedition tab runtime Gods Battle controls (Spec 8.3): keep the normal 出撃 button visible and add a separate 神魔戦 button next to it when the Gods Battle loot-gate condition is met. |
 | 0.7.5 | 35 | 2026/06/10 | Update instant sortie runtime cycle handling (Spec 5.1.1): manual 出撃/神魔戦 now consumes one stock, resolves the expedition as a full cycle, and returns the party runtime to the rest endpoint while preserving rest-step completion timing. |
