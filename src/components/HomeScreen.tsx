@@ -8539,13 +8539,16 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
         const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
         const isPartyHpDepletedForSortie = hpForSortieCheck <= 0 || partyStats.hp <= 0;
-        const isSortieDisabled = isPendingGodsBattleMove
-          || (!!selectedDungeonGate?.locked && !isColosseumSelected)
+        const isSortieDisabled = (!!selectedDungeonGate?.locked && !isColosseumSelected)
           || (isPartyHpDepletedForSortie && isInstantExpeditionStockEmpty)
           || (cycle.state === 'explore' && isInstantExpeditionStockEmpty);
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
+        const isGodsBattleButtonDisabled = isSortieDisabled || isPendingGodsBattleMove;
+        const expeditionControlGridClass = canTriggerGodsBattle
+          ? 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto_auto] items-center gap-2 text-sm text-gray-700'
+          : 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700';
         // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
         // SpecRef: 8.3 | UI_EXPEDITION | Party Pane Visual State
         const isGodsBattleInProgress = (
@@ -8779,7 +8782,7 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">
-                <div className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
+                <div className={expeditionControlGridClass}>
                   <button
                     type="button"
                     onClick={() => onToggleExpeditionDestinationMode(
@@ -8812,12 +8815,21 @@ function ExpeditionTab({
                     ))}
                   </select>
                   <button
-                    onClick={() => onTriggerSortie(partyIndex, canTriggerGodsBattle)}
+                    onClick={() => onTriggerSortie(partyIndex, false)}
                     disabled={isSortieDisabled}
-                    className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : canTriggerGodsBattle ? 'liquid-glass-sortie-button--accent' : 'liquid-glass-sortie-button--sub'}`}
+                    className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : 'liquid-glass-sortie-button--sub'}`}
                   >
-                    {canTriggerGodsBattle ? '神魔戦' : '出撃'}
+                    出撃
                   </button>
+                  {canTriggerGodsBattle && (
+                    <button
+                      onClick={() => onTriggerSortie(partyIndex, true)}
+                      disabled={isGodsBattleButtonDisabled}
+                      className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isGodsBattleButtonDisabled ? '' : 'liquid-glass-sortie-button--accent'}`}
+                    >
+                      神魔戦
+                    </button>
+                  )}
                 </div>
                 {isDifficultyOffsetUnlocked && (
                   <div className="text-xs text-gray-600 space-y-1">
