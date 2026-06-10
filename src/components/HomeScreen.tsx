@@ -3181,17 +3181,17 @@ export function HomeScreen({
     localStorage.setItem(lastReportAtKey, String(Date.now()));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
     const reportHeaderRows = [
+      ['User ID', state.global.userId],
+      ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
+      ['Total number of sending report', progressReportCount],
+      ['The last report time', lastReportTime],
       ['Version', APP_VERSION],
       ['Build', formatNumber(state.buildNumber)],
       ['Environment', getEnvironmentId()],
       ['Timestamp', timestamp],
-      ['User ID', state.global.userId],
-      ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
       ['browser, version', `${browserName}, ${browserVersion}`],
       ['OS version', osVersion],
       ['Resolution', resolution],
-      ['Total number of sending report', progressReportCount],
-      ['The last report time', lastReportTime],
     ];
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
