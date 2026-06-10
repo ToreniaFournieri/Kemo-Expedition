@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 32 | 2026/06/10 | Update runtime 出撃/神魔戦 button disable conditions (Spec 8.3): disable only when party HP is depleted with 0 instant expedition charges, while preserving explore-state no-charge, locked destination, and pending Gods Battle safeguards. |
 | 0.7.5 | 31 | 2026/06/10 | Implement AFK pray-state profit handling (Spec 5.1): completed AFK expedition chunks now process donations, savings, and embezzlement from pending auto-sell profit and advance related side quests. |
 | 0.7.5 | 30 | 2026/06/09 | Update runtime party state transitions (Spec 5.1.1): route free action without sound sleep and completed sound sleep into pray before move/idle decisions. |
 | 0.7.5 | 29 | 2026/06/09 | Update AFK recovery runtime (Spec 5.1): process reactivation as completed expedition-cycle chunks, discard the state active when AFK began, and restore only the final incomplete expedition cycle as partial online move/explore/return progress. |
