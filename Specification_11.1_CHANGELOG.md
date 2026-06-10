@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 41 | 2026/06/10 | Update Speed of Time runtime progress report header order (Spec 8.1): match the current readable Discord progress data sequence with Name, report count, last report time, and User ID before version/build metadata. |
 | 0.7.5 | 40 | 2026/06/10 | Update Speed of Time runtime progress report header order (Spec 8.1): match the readable Discord progress data sequence with User ID/Name/report counts before version, build, environment, timestamp, browser, OS, and resolution. |
 | 0.7.5 | 39 | 2026/06/10 | Update Instant Expedition Charge runtime timing (Spec 8.3): align stock recharge durations with the specification table (8, 16, 30, 60, 120, and 240 minutes). |
 | 0.7.5 | 38 | 2026/06/10 | Fix Instant Expedition Charge consumption timing (Spec 8.3): consuming a stock now clamps the carried countdown to the new stock level duration so partially charged time cannot immediately recreate the consumed stock. |
