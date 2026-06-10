@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 35 | 2026/06/10 | Update instant sortie runtime cycle handling (Spec 5.1.1): manual 出撃/神魔戦 now consumes one stock, resolves the expedition as a full cycle, and returns the party runtime to the rest endpoint while preserving rest-step completion timing. |
 | 0.7.5 | 34 | 2026/06/10 | Update Instant Expedition Charge runtime timing (Spec 8.3): align all six stock recharge durations with the specification table (4, 8, 16, 32, 64, and 128 minutes). |
 | 0.7.5 | 33 | 2026/06/10 | Update Instant Expedition Charge runtime timing (Spec 8.3): align the 1st stock recharge duration with the specification table by changing it to 8 minutes. |
 | 0.7.5 | 32 | 2026/06/10 | Update runtime 出撃/神魔戦 button disable conditions (Spec 8.3): disable only when party HP is depleted with 0 instant expedition charges, while preserving explore-state no-charge, locked destination, and pending Gods Battle safeguards. |

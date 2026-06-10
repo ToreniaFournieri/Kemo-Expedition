@@ -13,6 +13,7 @@
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
+  - A full Cycle always **ends at the end of `state.rest`**.
 - **`Chunk`**: A higher-level processing unit used for bulk progression. 
   - **1 Chunk = 12 Cycles**.
 
@@ -94,17 +95,17 @@
           - Without embezzlement: PT1は神の緊急動員に憤りながらも出撃した
           - With embezzlement: PT1は神の緊急動員に憤り、49Gを持ち逃げして出撃した
 
-- Player taps 出撃
-  - If party is in return / idle / rest / sell / feast / sound_sleep / nap_sleep / pray state:
-  - Immediately set state to `state.move`
-  - If they not gain items (not finished `state.sell`), immediately gain items and show notifications.
-  - Do not refill HP; dungeon starts with current HP. No squander, donation, nor remaining profits to the global wallet. The profit vanishes (The party menders would definitely not be happy with this players emergency sortie.)
-  - If party is already in `state.explore`: ignore tap
+- Player taps 出撃 / 神魔戦
+  - If the button is available for sortie, consume 1 Instant Expedition Charge stock.
+  - Immediately process one full Cycle and finish at the end of `state.rest`.
+  - If they have not gained items (not finished `state.sell`), immediately gain items and show notifications before the new Cycle is processed.
+  - Remaining current profit is treated as emergency embezzlement and vanishes from party profit. No squander, donation, nor remaining profits are moved to the global wallet for the interrupted Cycle.
   - If party Hp is 0 (just after defeated): ignore tap and show notification log:"random party.character は疲弊しており出撃を拒否した"
 
 - **Transition rules**
-  - 自動周回ON: `state.rest`→`state.free_action`→`state.sound_sleep` (optical)→`state.move`→`state.explore`→`state.return`→`state.rest`
-  - 自動周回OFF: `state.rest`→`state.free_action`→`state.sound_sleep (optical)`→`state.idle`
+  - 自動周回ON: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.move`→`state.explore`→`state.return`→`state.rest`
+  - 自動周回OFF: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.idle`
+  - Immediate 出撃 / 神魔戦: consume 1 stock, process `state.move`→`state.explore`→`state.return`→`state.rest` immediately, and leave the runtime at the completed rest endpoint.
 
 
 **Time-Based Progress Handling (Online + AFK)**
