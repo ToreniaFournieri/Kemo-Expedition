@@ -156,7 +156,7 @@ HP 2350 / 4680
 
 | Stock Level | Time Required for This Charge | 
 | ----------- | ----------------------------: |
-| 1st         |                        15 min |
+| 1st         |                        8 min |
 | 2nd         |                        15 min |
 | 3rd         |                        30 min |
 | 4th         |                        60 min |
