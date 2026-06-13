@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 44 | 2026/06/13 | Fix Speed of Time progress report counters (Spec 8.1): keep the report count and last successful report timestamp unchanged until the Discord webhook succeeds, so failed attempts no longer shorten the displayed “The last report time” interval or consume a report number. |
 | 0.7.5 | 43 | 2026/06/13 | Fix immediate sortie reward notifications (Spec 5.1): show item-drop toast notifications for rewards gained by 出撃/神魔戦 charge runs immediately instead of waiting for the normal sell-cycle transition, while preserving previous pending reward notifications before starting the new cycle. |
 | 0.7.5 | 42 | 2026/06/13 | Update reward bag runtime defaults (Spec 1.2): set common reward tickets to 40 no-item / 10 win, uncommon/elite rare/boss rare to 49 no-item / 1 win, mythic rare to 24 no-item / 1 win, and derive Divine Bureau reward totals from runtime bag defaults. |
 | 0.7.5 | 41 | 2026/06/10 | Update Speed of Time runtime progress report header order (Spec 8.1): match the current readable Discord progress data sequence with Name, report count, last report time, and User ID before version/build metadata. |
