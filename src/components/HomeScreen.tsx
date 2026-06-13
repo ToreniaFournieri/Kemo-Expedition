@@ -798,7 +798,11 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
   const enemySrc = getEnemyBattleLogChibiSrc(entry);
   if (enemySrc) {
     const enemyName = entry.enemyName.replace(/\(神魔戦\)/g, '').trim();
+    const enemyBaseName = enemyName.replace(/\([^()]+\)$/u, '').trim();
     if (enemyName) markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
+    if (enemyBaseName && enemyBaseName !== enemyName) {
+      markers.push({ label: enemyBaseName, src: enemySrc, alt: `${enemyBaseName} chibi`, priority: 0 });
+    }
     if (/^敵/.test(action)) markers.push({ label: '敵', src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
   }
 
