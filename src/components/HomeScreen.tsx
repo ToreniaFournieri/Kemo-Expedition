@@ -3124,7 +3124,8 @@ export function HomeScreen({
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
     };
 
-    const now = new Date();
+    const reportCreatedAtMs = Date.now();
+    const now = new Date(reportCreatedAtMs);
     const timestampFormatter = new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
       month: '2-digit',
@@ -3169,17 +3170,15 @@ export function HomeScreen({
     const reportCounterKey = createEnvironmentStorageKey('speedOfTimeReportCount');
     const reportCount = Number.parseInt(localStorage.getItem(reportCounterKey) ?? '0', 10);
     const nextReportCount = Number.isFinite(reportCount) ? reportCount + 1 : 1;
-    localStorage.setItem(reportCounterKey, String(nextReportCount));
     const progressReportCount = formatNumber(nextReportCount);
     const lastReportAtKey = createEnvironmentStorageKey('speedOfTimeLastReportAt');
     const previousReportAt = Number.parseInt(localStorage.getItem(lastReportAtKey) ?? '', 10);
     const lastReportHours = Number.isFinite(previousReportAt)
-      ? Math.max(0, (Date.now() - previousReportAt) / (1000 * 60 * 60))
+      ? Math.max(0, (reportCreatedAtMs - previousReportAt) / (1000 * 60 * 60))
       : null;
     const lastReportTime = lastReportHours == null
       ? '-'
       : `${formatNumber(Math.floor(lastReportHours))} Hours ago`;
-    localStorage.setItem(lastReportAtKey, String(Date.now()));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
     const reportHeaderRows = [
       ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
@@ -3211,6 +3210,8 @@ export function HomeScreen({
     const latestBattleLogFile = reportTargetPartyLabel ? buildLatestBattleLogHtml(reportTargetPartyLabel) : null;
     const reportFiles = [htmlFile, ...(latestBattleLogFile ? [latestBattleLogFile] : [])];
     await postWebhookWithFiles(reportMessage, reportFiles, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
+    localStorage.setItem(reportCounterKey, String(nextReportCount));
+    localStorage.setItem(lastReportAtKey, String(reportCreatedAtMs));
     return true;
   }, [state]);
 
