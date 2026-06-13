@@ -903,7 +903,7 @@ left-alinged                                           right-aligned
 - The chibi image should be rendered inline with the text.
 - The image height should match the current font size of the log text.
 - Preserve the image's aspect ratio when scaling.
-
+- If the specified image file does not exist, omit the image and display only the text.
 
 **Enemy image**
 - If enemy.image_path exists, enable background image rendering
