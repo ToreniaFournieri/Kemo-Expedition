@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 48 | 2026/06/13 | Enlarge inline battle-log chibi portraits beside matched character and enemy names while preserving the text line height by reserving a one-em inline slot and allowing the portrait to visually overflow within it. |
 | 0.7.5 | 47 | 2026/06/13 | Fix battle-log enemy chibi matching for class-suffixed enemy names (Spec 6.1.7): inline log text now also matches the base enemy name without trailing class metadata, so entries such as `聖域のつわもの` display the enemy chibi image. |
 | 0.7.5 | 46 | 2026/06/13 | Update battle-log chibi image resolution for unique party members: matched unique character names now use `/public/chibi/C_Unique_{English_name}.png` while non-unique party members keep race/gender chibi paths and enemies keep `C_E_{enemy_ID}.png`. |
 | 0.7.5 | 45 | 2026/06/13 | Implement inline battle-log chibi images (Spec 6.1.7): active expedition and diary battle log text now inserts party member and enemy chibi portraits immediately beside matched names or enemy-prefixed entries, scaled to the log font size with preserved aspect ratio. |
