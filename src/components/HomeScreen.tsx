@@ -778,6 +778,21 @@ function getEnemyBattleLogChibiSrc(entry: ExpeditionLogEntry): string | null {
   return typeof enemyId === 'number' ? `${import.meta.env.BASE_URL}chibi/C_E_${enemyId}.png` : null;
 }
 
+function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): string[] {
+  const names = [
+    entry.enemyName,
+    entry.enemySnapshot ? formatEnemyDefName(entry.enemySnapshot) : '',
+  ];
+
+  return Array.from(new Set(names.flatMap((name) => {
+    const normalizedName = name.replace(/\(神魔戦\)/g, '').trim();
+    if (!normalizedName) return [];
+
+    const withoutTrailingMetadata = normalizedName.replace(/(?:\s*\([^()]+\))+\s*$/u, '').trim();
+    return [normalizedName, withoutTrailingMetadata].filter(Boolean);
+  })));
+}
+
 function BattleLogInlineChibi({ src, alt }: { src: string; alt: string }) {
   return (
     <span className="relative mx-0.5 inline-block h-[1em] w-[1.35em] align-[-0.125em]">
@@ -799,12 +814,9 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
   const markers: Array<{ label: string; src: string; alt: string; priority: number }> = [];
   const enemySrc = getEnemyBattleLogChibiSrc(entry);
   if (enemySrc) {
-    const enemyName = entry.enemyName.replace(/\(神魔戦\)/g, '').trim();
-    const enemyBaseName = enemyName.replace(/\([^()]+\)$/u, '').trim();
-    if (enemyName) markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
-    if (enemyBaseName && enemyBaseName !== enemyName) {
-      markers.push({ label: enemyBaseName, src: enemySrc, alt: `${enemyBaseName} chibi`, priority: 0 });
-    }
+    getBattleLogEnemyNameCandidates(entry).forEach((enemyName) => {
+      markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
+    });
     if (/^敵/.test(action)) markers.push({ label: '敵', src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
   }
 
