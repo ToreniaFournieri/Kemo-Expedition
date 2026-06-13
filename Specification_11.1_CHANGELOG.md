@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 42 | 2026/06/13 | Update reward bag runtime defaults (Spec 1.2): set common reward tickets to 40 no-item / 10 win, uncommon/elite rare/boss rare to 49 no-item / 1 win, mythic rare to 24 no-item / 1 win, and derive Divine Bureau reward totals from runtime bag defaults. |
 | 0.7.5 | 41 | 2026/06/10 | Update Speed of Time runtime progress report header order (Spec 8.1): match the current readable Discord progress data sequence with Name, report count, last report time, and User ID before version/build metadata. |
 | 0.7.5 | 40 | 2026/06/10 | Update Speed of Time runtime progress report header order (Spec 8.1): match the readable Discord progress data sequence with User ID/Name/report counts before version, build, environment, timestamp, browser, OS, and resolution. |
 | 0.7.5 | 39 | 2026/06/10 | Update Instant Expedition Charge runtime timing (Spec 8.3): align stock recharge durations with the specification table (8, 16, 30, 60, 120, and 240 minutes). |
