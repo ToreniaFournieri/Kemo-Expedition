@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 49 | 2026/06/13 | Update runtime header title and Speed of Time display (Spec 8.1.2): remove the paw emoji from the game title, keep the emphasized rotated 「冒」 styling, and hide `x1.0`/`x1.2` multiplier text so boosted time displays as `▶︎ (23h)` while realtime remains `▷`. |
 | 0.7.5 | 48 | 2026/06/13 | Enlarge inline battle-log chibi portraits beside matched character and enemy names while preserving the text line height by reserving a one-em inline slot and allowing the portrait to visually overflow within it. |
 | 0.7.5 | 47 | 2026/06/13 | Fix battle-log enemy chibi matching for class-suffixed enemy names (Spec 6.1.7): inline log text now also matches the base enemy name without trailing class metadata, so entries such as `聖域のつわもの` display the enemy chibi image. |
 | 0.7.5 | 46 | 2026/06/13 | Update battle-log chibi image resolution for unique party members: matched unique character names now use `/public/chibi/C_Unique_{English_name}.png` while non-unique party members keep race/gender chibi paths and enemies keep `C_E_{enemy_ID}.png`. |
