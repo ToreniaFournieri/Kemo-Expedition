@@ -63,35 +63,35 @@
 
 | ID | title | tickets |
 |-----|---------|------|
-| 0 | no item | 90 |
+| 0 | no item | 40 |
 | 1 | win | 10 |  
 
 - `t.uncommon_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
-| 0 | no item | 99 |
+| 0 | no item | 49 |
 | 1 | win | 1 |
 
 - `t.elite_rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
-| 0 | no item | 99 |
+| 0 | no item | 49 |
 | 1 | win | 1 |
 
 - `t.boss_rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
-| 0 | no item | 99 |
+| 0 | no item | 49 |
 | 1 | win | 1 |
 
 - `t.mythic_rare_reward_bag_default` table
 
 | ID | title | tickets |
 |-----|---------|------|
-| 0 | no item | 49 |
+| 0 | no item | 24 |
 | 1 | win | 1 |
 
 **enhancement title**
