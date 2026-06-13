@@ -780,15 +780,17 @@ function getEnemyBattleLogChibiSrc(entry: ExpeditionLogEntry): string | null {
 
 function BattleLogInlineChibi({ src, alt }: { src: string; alt: string }) {
   return (
-    <img
-      src={src}
-      alt={alt}
-      className="mx-0.5 inline-block h-[1em] w-auto align-[-0.125em]"
-      loading="lazy"
-      onError={(event) => {
-        event.currentTarget.style.display = 'none';
-      }}
-    />
+    <span className="relative mx-0.5 inline-block h-[1em] w-[1.35em] align-[-0.125em]">
+      <img
+        src={src}
+        alt={alt}
+        className="absolute left-0 top-1/2 h-[1.35em] w-auto max-w-none -translate-y-1/2"
+        loading="lazy"
+        onError={(event) => {
+          event.currentTarget.style.display = 'none';
+        }}
+      />
+    </span>
   );
 }
 
