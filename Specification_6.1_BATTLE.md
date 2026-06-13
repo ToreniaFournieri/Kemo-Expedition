@@ -896,6 +896,9 @@ left-alinged                                           right-aligned
 
 **Chibi images for each character name**
 - When a log entry contains a character name or an enemy name (including entries prefixed with 敵), display a chibi image immediately beside the name.
+  - For unique party member: Load the image from: `/public/chibi/C_Unique_{English_name}.png`
+    - For `{English_name}`, refer to `@Specification_8.2_UI_PARTY.md` → `8.2.2 Party member details`.
+    - Example: C_Unique_Finn.png
   - For party member: Load the image from: `/public/chibi/C_{party_ID}_{race}_{gender}.png`
     - Example: C_1_Felidian_Female.png
   - For enemy: Load the image from: `/public/chibi/C_E_{enemy_ID}.png`
