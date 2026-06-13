@@ -115,13 +115,11 @@
   - width: ~ 500 width.
 - Displays:
   - (Game title) + version + (build number) + (env)
-  - Game title label: "冒ケモ🐾", 
+  - Game title label: "冒ケモ", 
 		  - The character 「冒」 is emphasized:   
       - Scale: Larger than surrounding text
       - Rotation: −22.5° (counterclockwise)
-    - The character 「🐾」is emphasized:   
-      - Scale: Larger than surrounding text
-						- Rotation: 0° 
+
 
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
