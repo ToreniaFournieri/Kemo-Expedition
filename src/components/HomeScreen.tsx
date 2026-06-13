@@ -37,7 +37,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
-import { createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
+import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
@@ -11486,9 +11486,9 @@ function SettingTab({
     bestiaryListRef.current?.scrollTo({ top: bestiaryScrollTop, behavior: 'auto' });
   }, [bestiaryScrollTop]);
 
-  const commonRewardTotal = 100;
+  const commonRewardTotal = getBagTicketTotal(createCommonRewardBag());
   const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const uniqueRewardTotal = 100;
+  const uniqueRewardTotal = getBagTicketTotal(createUncommonRewardBag());
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const mythicRewardTotal = getBagTicketTotal(createMythicRareRewardBag());
 

@@ -10,7 +10,7 @@ function createBagFromEntries(entries: WeightedBagEntry[]): RandomBag {
 }
 
 const COMMON_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 90 },
+  { id: 0, tickets: 40 },
   { id: 1, tickets: 10 },
 ];
 
@@ -20,22 +20,22 @@ const COMMON_ENHANCEMENT_BAG_DEFAULT: WeightedBagEntry[] = ENHANCEMENT_TITLES.ma
 }));
 
 const UNCOMMON_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 99 },
+  { id: 0, tickets: 49 },
   { id: 1, tickets: 1 },
 ];
 
 const ELITE_RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 99 },
+  { id: 0, tickets: 49 },
   { id: 1, tickets: 1 },
 ];
 
 const BOSS_RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 99 },
+  { id: 0, tickets: 49 },
   { id: 1, tickets: 1 },
 ];
 
 const MYTHIC_RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 49 },
+  { id: 0, tickets: 24 },
   { id: 1, tickets: 1 },
 ];
 
