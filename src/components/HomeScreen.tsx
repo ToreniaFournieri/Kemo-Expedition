@@ -746,7 +746,27 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+const UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME: Partial<Record<string, string>> = {
+  'ケモ': 'C_Unique_Kemo.png',
+  'ライカ': 'C_Unique_Laika.png',
+  'ルナ': 'C_Unique_Luna.png',
+  'ノクス': 'C_Unique_Nox.png',
+  'マーレ': 'C_Unique_Merle.png',
+  'プチーツァ': 'C_Unique_Puchitsa.png',
+  'ミシュカ': 'C_Unique_Mishka.png',
+  '蒼牙破': 'C_Unique_Souga-ha.png',
+  'レナード': 'C_Unique_Leonard.png',
+  '葉隠': 'C_Unique_Hagakure.png',
+  'フィン': 'C_Unique_Finn.png',
+  'オルカ': 'C_Unique_Orca.png',
+};
+
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
+  if (character.isUnique) {
+    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME[character.name];
+    return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/${uniqueFileName}` : null;
+  }
+
   const race = RACES.find((candidate) => candidate.id === character.raceId);
   if (!race) return null;
   const gender = character.gender === 'female' ? 'Female' : 'Male';
