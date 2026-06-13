@@ -740,6 +740,77 @@ function EnemyBestiaryBubble({
   );
 }
 
+
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
+  const race = RACES.find((candidate) => candidate.id === character.raceId);
+  if (!race) return null;
+  const gender = character.gender === 'female' ? 'Female' : 'Male';
+  return `${import.meta.env.BASE_URL}chibi/C_${party.id}_${race.englishName}_${gender}.png`;
+}
+
+function getEnemyBattleLogChibiSrc(entry: ExpeditionLogEntry): string | null {
+  const enemyId = entry.enemyId ?? entry.enemySnapshot?.id;
+  return typeof enemyId === 'number' ? `${import.meta.env.BASE_URL}chibi/C_E_${enemyId}.png` : null;
+}
+
+function BattleLogInlineChibi({ src, alt }: { src: string; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="mx-0.5 inline-block h-[1em] w-auto align-[-0.125em]"
+      loading="lazy"
+      onError={(event) => {
+        event.currentTarget.style.display = 'none';
+      }}
+    />
+  );
+}
+
+// SpecRef: 6.1.7 | Logs | Chibi images for each character name
+function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry: ExpeditionLogEntry): ReactNode {
+  const markers: Array<{ label: string; src: string; alt: string; priority: number }> = [];
+  const enemySrc = getEnemyBattleLogChibiSrc(entry);
+  if (enemySrc) {
+    const enemyName = entry.enemyName.replace(/\(神魔戦\)/g, '').trim();
+    if (enemyName) markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
+    if (/^敵/.test(action)) markers.push({ label: '敵', src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
+  }
+
+  party.characters.forEach((character: Character) => {
+    const src = getCharacterBattleLogChibiSrc(party, character);
+    if (src && character.name.trim()) {
+      markers.push({ label: character.name, src, alt: `${character.name} chibi`, priority: 1 });
+    }
+  });
+
+  const uniqueMarkers = markers
+    .filter((marker, index, list) => list.findIndex((candidate) => candidate.label === marker.label && candidate.src === marker.src) === index)
+    .sort((a, b) => b.label.length - a.label.length || a.priority - b.priority);
+  if (uniqueMarkers.length === 0) return renderActionWithMutedTrailingParenthetical(action);
+
+  const pattern = new RegExp(`(${uniqueMarkers.map((marker) => escapeRegExp(marker.label)).join('|')})`, 'g');
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(action)) !== null) {
+    if (match.index > lastIndex) nodes.push(action.slice(lastIndex, match.index));
+    const label = match[0];
+    const marker = uniqueMarkers.find((candidate) => candidate.label === label);
+    nodes.push(label);
+    if (marker) nodes.push(<BattleLogInlineChibi key={`chibi-${match.index}-${label}`} src={marker.src} alt={marker.alt} />);
+    lastIndex = match.index + label.length;
+  }
+  if (lastIndex < action.length) nodes.push(action.slice(lastIndex));
+
+  return <>{nodes}</>;
+}
+
 function renderActionWithMutedTrailingParenthetical(action: string) {
   if (!action.endsWith(')')) return action;
 
@@ -9142,7 +9213,7 @@ function ExpeditionTab({
                                 const actionDisplay = trailingEffects.length > 0 && !allMissed
                                   ? actionText.replace(/\([^()]+\)$/, '')
                                   : actionText;
-                                const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
+                                const actionDisplayNode = renderBattleLogTextWithInlineChibis(actionDisplay, party, entry);
                                 const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                                 const isReflectDamageLog = !!log.reflectedDamage && log.reflectedDamage > 0;
                                 const isAbsorbDamageLog = !!log.absorbedDamage && log.absorbedDamage > 0;
@@ -10537,6 +10608,7 @@ function DiaryTab({
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');
         const isExpanded = isSideQuestLog ? false : !!expandedLogs[diaryLog.id];
         const log = diaryLog.expeditionLog;
+        const diaryParty = parties.find((candidate) => candidate.name === diaryLog.partyName) ?? parties[0];
         const specialRewards = log.rewards.filter((item) => {
           const rarity = getItemRarityById(item.id);
           return rarity === 'bossRare' || rarity === 'mythicRare' || item.superRare > 0;
@@ -10855,7 +10927,7 @@ function DiaryTab({
                               const actionDisplay = trailingEffects.length > 0 && !allMissed
                                 ? actionText.replace(/\([^()]+\)$/, '')
                                 : actionText;
-                              const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
+                              const actionDisplayNode = renderBattleLogTextWithInlineChibis(actionDisplay, diaryParty, entry);
                               const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                               const isReflectDamageLog = !!battleLog.reflectedDamage && battleLog.reflectedDamage > 0;
                               const isAbsorbDamageLog = !!battleLog.absorbedDamage && battleLog.absorbedDamage > 0;
