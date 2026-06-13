@@ -128,7 +128,7 @@
   return "";  };
   - Use this specification's version
 
-- Speed of Time: `▷ x1.0(23h)`
+- Speed of Time: `▷ (23h)`
   - Displays the current game speed multiplier and the remaining boost duration in hours.
     - x1.0 -> `▷`
     - x1.2 or higher -> `▶`
@@ -141,17 +141,17 @@
       - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
-      - Set Speed of Time to x1.2. and the text is `▶x1.2`
+      - Set Speed of Time to x1.2. and the text is `▶`
       - The boost effect lasts for 24 hours.
     - If the webhook request fails:
       - Do not apply the boost effect.
       - Keep Speed of Time at its current value.
       - Show an error message to the player.
-  - When the remaining duration reaches 0h: Reset Speed of Time to `▷ x1.0`
+  - When the remaining duration reaches 0h: Reset Speed of Time to `▷`
 
 ```
 (Left-aligned)             (Right-aligned)
-冒ケモ🐾　v0.6.0(23) (β)    ▷ x1.0(23h)  200G
+冒ケモ🐾　v0.6.0(23) (β)    ▷(23h)  200G
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
