@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 46 | 2026/06/13 | Update battle-log chibi image resolution for unique party members: matched unique character names now use `/public/chibi/C_Unique_{English_name}.png` while non-unique party members keep race/gender chibi paths and enemies keep `C_E_{enemy_ID}.png`. |
 | 0.7.5 | 45 | 2026/06/13 | Implement inline battle-log chibi images (Spec 6.1.7): active expedition and diary battle log text now inserts party member and enemy chibi portraits immediately beside matched names or enemy-prefixed entries, scaled to the log font size with preserved aspect ratio. |
 | 0.7.5 | 44 | 2026/06/13 | Fix Speed of Time progress report counters (Spec 8.1): keep the report count and last successful report timestamp unchanged until the Discord webhook succeeds, so failed attempts no longer shorten the displayed “The last report time” interval or consume a report number. |
 | 0.7.5 | 43 | 2026/06/13 | Fix immediate sortie reward notifications (Spec 5.1): show item-drop toast notifications for rewards gained by 出撃/神魔戦 charge runs immediately instead of waiting for the normal sell-cycle transition, while preserving previous pending reward notifications before starting the new cycle. |
