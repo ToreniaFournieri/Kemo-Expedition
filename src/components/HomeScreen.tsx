@@ -1269,7 +1269,6 @@ function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
 
 const numberFormatter = new Intl.NumberFormat('ja-JP');
 const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
-const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
 const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
@@ -3087,18 +3086,14 @@ export function HomeScreen({
     if (debugSettings.timeSpeed === 'x20') return 'x20';
     if (debugSettings.timeSpeed === 'x100') return 'x100';
     if (debugSettings.timeSpeed === 'x5') return 'x5';
-    const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
-    if (!isBonusSpeed) return 'x1.0';
+    if (debugSettings.timeSpeed !== 'x1_2') return '';
     const remainingHours = timeSpeedBonusUntilMs === null
       ? 0
       : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
-    return `${SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL}(${formatNumber(remainingHours)}h)`;
+    return `(${formatNumber(remainingHours)}h)`;
   }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
-  const speedOfTimeSymbol = useMemo(() => {
-    if (debugSettings.timeSpeed === 'realtime') return '▷';
-    return '▶';
-  }, [debugSettings.timeSpeed]);
+  const speedOfTimeText = speedOfTimeLabel ? `▷ ${speedOfTimeLabel}` : '▷';
 
   const escapeFeedbackHtml = (value: string): string => (
     value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -5290,7 +5285,7 @@ export function HomeScreen({
   const versionLabel = envLabel
     ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
     : `${APP_VERSION}(${state.buildNumber})`;
-  const gameTitle = '冒ケモ🐾';
+  const gameTitle = '冒ケモ';
 
   useEffect(() => {
     document.title = gameTitle;
@@ -5446,7 +5441,6 @@ export function HomeScreen({
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
                   <span>ケモ</span>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(0deg) scale(1.0)' }}>🐾</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
@@ -5475,7 +5469,7 @@ export function HomeScreen({
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
               >
-                {speedOfTimeSymbol} {speedOfTimeLabel}
+                {speedOfTimeText}
               </button>
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (

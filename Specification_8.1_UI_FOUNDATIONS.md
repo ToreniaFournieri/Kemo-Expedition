@@ -129,9 +129,9 @@
   - Use this specification's version
 
 - Speed of Time: `▷ (23h)`
-  - Displays the current game speed multiplier and the remaining boost duration in hours.
+  - Displays the remaining boost duration in hours without the x1.0/x1.2 multiplier text.
     - x1.0 -> `▷`
-    - x1.2 or higher -> `▶`
+    - x1.2 bonus -> `▷ (23h)`
 - When the player presses the Speed of Time button:
   - Show the following confirmation dialog:
     - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
@@ -141,7 +141,7 @@
       - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
-      - Set Speed of Time to x1.2. and the text is `▶`
+      - Set Speed of Time to x1.2. and the text is `▷ (23h)`
       - The boost effect lasts for 24 hours.
     - If the webhook request fails:
       - Do not apply the boost effect.
@@ -151,7 +151,7 @@
 
 ```
 (Left-aligned)             (Right-aligned)
-冒ケモ🐾　v0.6.0(23) (β)    ▷(23h)  200G
+冒ケモ　v0.6.0(23) (β)    ▷ (23h)  200G
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
