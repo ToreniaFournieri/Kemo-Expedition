@@ -2805,6 +2805,7 @@ export function HomeScreen({
   const prevShopPurchasesRef = useRef(state.global.shopPurchases);
   const prevInventoryRef = useRef(state.global.inventory);
   const notifiedRewardLogRef = useRef<Array<Party['lastExpeditionLog'] | null>>(state.parties.map(() => null));
+  const instantSortieRewardNotificationPendingRef = useRef<boolean[]>(state.parties.map(() => false));
   const prevPartyCycleStateRef = useRef<Array<PartyCycleState | null>>(state.parties.map(() => null));
   const prevSideQuestRef = useRef(state.parties.map((party) => party.sideQuest));
   const hasHydratedAfkRef = useRef(false);
@@ -4791,7 +4792,10 @@ export function HomeScreen({
       const cycle = partyCycles[index];
       const cycleState = cycle?.state ?? null;
       const sellingFinished = cycleState !== 'sell';
-      const canAnnounceGains = cycleState !== 'explore' && cycleState !== 'return' && cycleState !== 'rest' && cycleState !== 'sell';
+      // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
+      const isInstantSortieRewardNotificationPending = instantSortieRewardNotificationPendingRef.current[index] === true;
+      const canAnnounceGains = isInstantSortieRewardNotificationPending
+        || (cycleState !== 'explore' && cycleState !== 'return' && cycleState !== 'rest' && cycleState !== 'sell');
       const hasRewardsToNotify = (currentLog?.rewards.length ?? 0) > 0;
       const isAlreadyNotified = notifiedRewardLogRef.current[index] === currentLog;
       const justFinishedSelling = prevPartyCycleStateRef.current[index] === 'sell' && cycleState !== 'sell';
@@ -4815,10 +4819,12 @@ export function HomeScreen({
           );
         }
         notifiedRewardLogRef.current[index] = currentLog;
+        instantSortieRewardNotificationPendingRef.current[index] = false;
       }
 
       if (hasNewLog && !hasRewardsToNotify) {
         notifiedRewardLogRef.current[index] = currentLog;
+        instantSortieRewardNotificationPendingRef.current[index] = false;
       }
     });
 
@@ -5115,9 +5121,7 @@ export function HomeScreen({
       actions.addNotification(`${party.name}は即時出撃した`);
     }
 
-    if (cycle) {
-      notifyExpeditionRewardsIfNeeded(party, partyIndex);
-    }
+    notifyExpeditionRewardsIfNeeded(party, partyIndex);
 
     if (triggerGodsBattle && party.sideQuest) {
       actions.cancelSideQuest(partyIndex);
@@ -5131,6 +5135,8 @@ export function HomeScreen({
     }
     actions.clearPendingProfit(partyIndex);
     actions.healPartyHp(partyIndex, partyStats.hp);
+    // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
+    instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
     actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
     actions.finalizeDiaryLog(partyIndex);
     actions.rollPartySleepiness(partyIndex);
