@@ -840,8 +840,8 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
     if (match.index > lastIndex) nodes.push(action.slice(lastIndex, match.index));
     const label = match[0];
     const marker = uniqueMarkers.find((candidate) => candidate.label === label);
-    nodes.push(label);
     if (marker) nodes.push(<BattleLogInlineChibi key={`chibi-${match.index}-${label}`} src={marker.src} alt={marker.alt} />);
+    nodes.push(label);
     lastIndex = match.index + label.length;
   }
   if (lastIndex < action.length) nodes.push(action.slice(lastIndex));
