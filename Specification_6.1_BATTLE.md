@@ -895,7 +895,7 @@ left-alinged                                           right-aligned
   - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`s.owned`
 
 **Chibi images for each character name**
-- When a log entry contains a character name or an enemy name (including entries prefixed with 敵), display a chibi image immediately beside the name.
+- When a log entry contains a character name or an enemy name (including entries prefixed with 敵), display a chibi image immediately before the name.
   - For unique party member: Load the image from: `/public/chibi/C_Unique_{English_name}.png`
     - For `{English_name}`, refer to `@Specification_8.2_UI_PARTY.md` → `8.2.2 Party member details`.
     - Example: C_Unique_Finn.png
