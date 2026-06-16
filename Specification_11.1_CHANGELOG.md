@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 53 | 2026/06/16 | Update runtime expedition enemy selection (Spec 4.2): rooms sharing a master-data room range now draw from the matching candidate entries without reusing an already selected enemy within that range. |
 | 0.7.5 | 52 | 2026/06/16 | Configure the runtime HTML metadata for the Home Screen icon (Spec 8.1.3): use the existing `/public/app_icon.png` asset as the PNG favicon and Apple Touch Icon so iPhone Home Screen installs use the application icon. |
 | 0.7.5 | 51 | 2026/06/14 | Refine inline battle-log chibi placement (Spec 6.1.7): render matched party member and enemy chibi portraits before the corresponding character or enemy name instead of after it. |
 | 0.7.5 | 50 | 2026/06/13 | Fix inline battle-log enemy chibi placement for elite/class-suffixed enemy names (Spec 6.1.7): enemy-name matching now derives display, formatted, and metadata-stripped names so selected base-name mentions such as `虚爪の古衛兵` render the enemy chibi beside the selected text. |
