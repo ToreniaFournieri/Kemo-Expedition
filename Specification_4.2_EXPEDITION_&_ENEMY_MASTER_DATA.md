@@ -36,6 +36,11 @@
 
 
 - Rare items drop, Enemy
+  - For rooms that specify a range (e.g., 1-2), enemies are selected from all entries matching the current expedition, floor, and room range.
+  - Each room within the range must contain a different enemy.
+  - Once an enemy has been selected for a room, it cannot be selected again for another room in the same range.
+
+
 
 | `Enemy_ID` | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) | additional abilities or bonus |
 |---|---|---:|---|---:|---|---|---|---|---|---|
