@@ -4512,21 +4512,21 @@ export function HomeScreen({
 
       parties.forEach((party, partyIndex) => {
         const { partyStats: partyRuntimeStats } = computePartyStats(party);
+        const needsRestBeforeCycleStart = party.currentHp < partyRuntimeStats.hp;
+        const initialCycleState: PartyCycleState = needsRestBeforeCycleStart
+          ? 'rest'
+          : autoRepeatEnabled
+            ? 'move'
+            : 'idle';
         const runtime = next[partyIndex] ?? {
-          state: (
-            autoRepeatEnabled
-              ? 'move'
-              : party.currentHp < partyRuntimeStats.hp
-                ? 'rest'
-                : 'idle'
-          ) as PartyCycleState,
+          state: initialCycleState,
           stateStartedAt: simulationNow,
-          durationMs: autoRepeatEnabled
-            ? getPartyTravelDurationMs(party, 'move')
-            : party.currentHp < partyRuntimeStats.hp
-              ? getStateDurationMs(party, 'rest')
+          durationMs: initialCycleState === 'rest'
+            ? getStateDurationMs(party, 'rest')
+            : initialCycleState === 'move'
+              ? getPartyTravelDurationMs(party, 'move')
               : 1000,
-          restInitialTotalSteps: party.currentHp < partyRuntimeStats.hp
+          restInitialTotalSteps: needsRestBeforeCycleStart
             ? getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp)
             : undefined,
         };
