@@ -237,3 +237,8 @@
     - fire/ice/thunder/ (120%, 65%, 40%)
   - `アビリティ`: Display all abilities owned by the member using Japanese short names and levels ( 壁1, 指揮1, 浪費1 )
 
+#### 8.1.3 Icon 
+- Use `/public/app_icon.png` as the Home Screen icon when the web application is added to the iPhone Home Screen.
+- Configure the icon as the Apple Touch Icon in the HTML metadata.
+- The icon should be a square image with no transparency and sufficient padding to remain recognizable at small sizes.
+
