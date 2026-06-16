@@ -85,16 +85,17 @@ export function checkLootGateRequirement(params: {
   floorNumber: number;
   roomInFloor: number;
   roomType: GateRoomType;
+  tier: number;
   party: Pick<Party, 'lootGateProgress' | 'lootGateStatus' | 'defeatedBossExpeditions'>;
 }): LootGateCheckResult {
-  const { dungeonId, floorNumber, roomInFloor, roomType, party } = params;
+  const { dungeonId, floorNumber, roomInFloor, roomType, tier, party } = params;
   if (dungeonId === 99) return { blocked: false };
 
   // Entering gate (1,1): previous expedition boss clear requirement. First expedition is exempt.
-  if (floorNumber === 1 && roomInFloor === 1 && dungeonId > 1) {
-    const prevDungeonId = dungeonId - 1;
+  if (floorNumber === 1 && roomInFloor === 1 && tier > 1) {
+    const prevTier = tier - 1;
     const required = ENTRY_GATE_REQUIRED;
-    const collected = party.defeatedBossExpeditions?.[prevDungeonId] ? 1 : 0;
+    const collected = party.defeatedBossExpeditions?.[prevTier] ? 1 : 0;
     const gateUnlocked = isLootGateUnlocked(party, getEntryGateKey(dungeonId)) || collected >= required;
     if (!gateUnlocked) {
       return {
@@ -111,9 +112,8 @@ export function checkLootGateRequirement(params: {
   if (roomInFloor !== 4) return { blocked: false };
 
   if (roomType === 'battle_Elite') {
-    const required = ELITE_GATE_REQUIREMENTS[floorNumber];
-    if (required === undefined) return { blocked: false };
-    const collected = getLootCollectionCount(party, dungeonId, 'uncommon');
+    const required = ELITE_GATE_REQUIREMENTS[floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
     const gateUnlocked = isLootGateUnlocked(party, getEliteGateKey(dungeonId, floorNumber)) || collected >= required;
     if (!gateUnlocked) {
       return {
@@ -127,7 +127,7 @@ export function checkLootGateRequirement(params: {
 
   if (roomType === 'battle_Boss') {
     const required = BOSS_GATE_REQUIRED;
-    const collected = getLootCollectionCount(party, dungeonId, 'eliteRare');
+    const collected = getLootCollectionCount(party, tier, 'eliteRare');
     const gateUnlocked = isLootGateUnlocked(party, getBossGateKey(dungeonId)) || collected >= required;
     if (!gateUnlocked) {
       return {
