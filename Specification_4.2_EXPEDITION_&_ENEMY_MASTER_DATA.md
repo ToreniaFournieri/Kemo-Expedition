@@ -44,19 +44,19 @@
 
 | `Enemy_ID` | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) | additional abilities or bonus |
 |---|---|---:|---|---:|---|---|---|---|---|---|
-| 100 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 平原のけもの |
-| 101 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 平原のちいさな獣 |
-| 102 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 草むらのまじない士 |
-| 103 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`C, `i.robe`C, `i.shield`C | 小爪のけもの |
-| 104 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.lord | `i.shield`U, `i.katana`U, `i.armor`C, `i.robe`C, `i.shield`C | 群れのけもの |
-| 105 | 1 | 1 | 4 | 4 | Elite | `Beast` | class.duelist | `i.sword`EA, `i.armor`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | 群れのリーダー獣 |
-| 106 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.ninja | `i.archery`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 草かげのけもの |
-| 107 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.sage | `i.grimoire`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ものしり獣 |
-| 108 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 仁けもの |
-| 109 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.duelist | `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | かぎ爪の小翼 |
-| 110 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.pilgrim | `i.robe`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 旅する小翼 |
-| 111 | 1 | 2 | 4 | 5 | Elite | `Beast` | class.samurai | `i.katana`EA, `i.shield`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | 大きめのけもの |
-| 112 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.alchemist | `i.catalyst`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | むれ虫 |
+| 100 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | たんぽぽめ |
+| 101 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | いしぽん |
+| 102 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | もす |
+| 103 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`C, `i.robe`C, `i.shield`C | くろーびっと |
+| 104 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.lord | `i.shield`U, `i.katana`U, `i.armor`C, `i.robe`C, `i.shield`C | くるくる |
+| 105 | 1 | 1 | 4 | 4 | Elite | `Beast` | class.duelist | `i.sword`EA, `i.armor`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | わおーん |
+| 106 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.ninja | `i.archery`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | りんりん |
+| 107 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.sage | `i.grimoire`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | こんた |
+| 108 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | きっつん |
+| 109 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.duelist | `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | シーガル |
+| 110 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.pilgrim | `i.robe`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | スパロゥ |
+| 111 | 1 | 2 | 4 | 5 | Elite | `Beast` | class.samurai | `i.katana`EA, `i.shield`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | シンディパウ |
+| 112 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.alchemist | `i.catalyst`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 鳳蝶 |
 | 113 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 羽虫 |
 | 114 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.sword-saint | `i.gauntlet`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 甲虫ファイター |
 | 115 | 1 | 3 | 3 | 4 | Normal | `Beast` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 刃持ちのけもの |
