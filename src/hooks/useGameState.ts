@@ -2125,16 +2125,16 @@ function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
 
+  const tier = currentDungeon.enemyPoolIds[0];
   for (const floor of currentDungeon.floors) {
     if (floor.floorNumber >= 6) continue;
-    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber];
-    if (required === undefined) continue;
-    const collected = getLootCollectionCount(party, currentDungeon.id, 'uncommon');
+    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
     const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
     if (!unlocked) return true;
   }
 
-  const eliteRareCollected = getLootCollectionCount(party, currentDungeon.id, 'eliteRare');
+  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
   const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
   if (!bossUnlocked) return true;
 
@@ -3066,12 +3066,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const roomDef = floor.rooms[roomIndex];
             roomCounter++;
 
+            const tier = dungeon.enemyPoolIds[0]; // dungeon tier
             // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gate `x.floor`,`x.room`
             const gateCheck = checkLootGateRequirement({
               dungeonId: dungeon.id,
               floorNumber: floor.floorNumber,
               roomInFloor: roomIndex + 1,
               roomType: roomDef.type,
+              tier,
               party: currentParty,
             });
             if (gateCheck.blocked) {

@@ -1535,6 +1535,7 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   const currentDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return [];
 
+  const tier = currentDungeon.enemyPoolIds[0];
   const items: ProgressItemDisplay[] = [];
   const pushUniqueProgressItem = (item: ProgressItemDisplay) => {
     if (items.some((existingItem) => existingItem.compactText === item.compactText)) return;
@@ -1544,9 +1545,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   for (const floor of currentDungeon.floors) {
     const hasEliteGate = floor.floorNumber < 6;
     if (!hasEliteGate) continue;
-    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber];
-    if (required === undefined) continue;
-    const collected = getLootCollectionCount(party, currentDungeon.id, 'uncommon');
+    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
     const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
     if (!unlocked) {
       const safeRequired = Math.max(1, required);
@@ -1676,16 +1676,16 @@ function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
 
+  const tier = currentDungeon.enemyPoolIds[0];
   for (const floor of currentDungeon.floors) {
     if (floor.floorNumber >= 6) continue;
-    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber];
-    if (required === undefined) continue;
-    const collected = getLootCollectionCount(party, currentDungeon.id, 'uncommon');
+    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
     const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
     if (!unlocked) return true;
   }
 
-  const eliteRareCollected = getLootCollectionCount(party, currentDungeon.id, 'eliteRare');
+  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
   const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
   if (!bossUnlocked) return true;
 
