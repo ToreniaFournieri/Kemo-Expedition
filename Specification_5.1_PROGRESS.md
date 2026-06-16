@@ -230,11 +230,11 @@ PT3: 貯金額: 10G
 | title | Gate `x.floor`,`x.room` | condition | text example |
 |----|----|----|----|
 | Entering | 1,1 | defeat the boss from previous expedition ( `x.expedition` -1 ), except for the first expedition. | ボス撃破 でヴァルンの樹林帯 開放 |
-| 1st Elite gate | 1,4 | correct 3 uncommon items from this `x.expedition` | アンコモンアイテム 0/2で 1F-4解放 |
-| 2nd Elite gate | 2,4 | correct 9 uncommon items from this `x.expedition`  | アンコモンアイテム 0/6で 2F-4解放 |
-| 3rd Elite gate | 3,4 | correct 18 uncommon items from this x.expedition` | アンコモンアイテム 0/12で 3F-4解放 | |
-| 4th Elite gate | 4,4 | correct 30 uncommon items from this `x.expedition`  | アンコモンアイテム 0/20で 4F-4解放 | |
-| 5th Elite gate | 5,4 | correct 45 uncommon items from this `x.expedition`  | アンコモンアイテム 0/30で 5F-4解放 | |
+| 1st Elite gate | 1,4 | correct 2 uncommon items from this `x.expedition` | アンコモンアイテム 0/2で 1F-4解放 |
+| 2nd Elite gate | 2,4 | correct 6 uncommon items from this `x.expedition`  | アンコモンアイテム 0/6で 2F-4解放 |
+| 3rd Elite gate | 3,4 | correct 12 uncommon items from this x.expedition` | アンコモンアイテム 0/12で 3F-4解放 | |
+| 4th Elite gate | 4,4 | correct 20 uncommon items from this `x.expedition`  | アンコモンアイテム 0/20で 4F-4解放 | |
+| 5th Elite gate | 5,4 | correct 30 uncommon items from this `x.expedition`  | アンコモンアイテム 0/30で 5F-4解放 | |
 | Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` | エリートレアアイテム 0/3で ボス戦解放 | |
 | Gods battle gate | - | Collect at least 3 Boss Rare items from dungeons, and defeat the dungeon boss at least once (lifetime, party-wide)) | If party has defeated the dungeon boss:"ボスレアアイテム 1/3 で神魔キョウエン戦", Else: "ボスを撃破せよ"|
 | Side quest gate | - | it depends on side quest `q.` condition | |
