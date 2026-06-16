@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 52 | 2026/06/16 | Configure the runtime HTML metadata for the Home Screen icon (Spec 8.1.3): use the existing `/public/app_icon.png` asset as the PNG favicon and Apple Touch Icon so iPhone Home Screen installs use the application icon. |
 | 0.7.5 | 51 | 2026/06/14 | Refine inline battle-log chibi placement (Spec 6.1.7): render matched party member and enemy chibi portraits before the corresponding character or enemy name instead of after it. |
 | 0.7.5 | 50 | 2026/06/13 | Fix inline battle-log enemy chibi placement for elite/class-suffixed enemy names (Spec 6.1.7): enemy-name matching now derives display, formatted, and metadata-stripped names so selected base-name mentions such as `虚爪の古衛兵` render the enemy chibi beside the selected text. |
 | 0.7.5 | 49 | 2026/06/13 | Update runtime header title and Speed of Time display (Spec 8.1.2): remove the paw emoji from the game title, keep the emphasized rotated 「冒」 styling, and hide `x1.0`/`x1.2` multiplier text so boosted time displays as `▶︎ (23h)` while realtime remains `▷`. |
