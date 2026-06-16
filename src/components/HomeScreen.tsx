@@ -5246,16 +5246,15 @@ export function HomeScreen({
     actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
     actions.finalizeDiaryLog(partyIndex);
     actions.rollPartySleepiness(partyIndex);
-    actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
-    // Manual 出撃/神魔戦 resolves the expedition and its return/rest tail immediately,
-    // leaving the runtime at the completed rest endpoint instead of the old idle shortcut.
+    // Manual 出撃/神魔戦 resolves the expedition and its return tail immediately,
+    // leaving the runtime at the beginning of rest so normal rest healing still occurs.
     const finalRestDurationMs = getStateDurationMs(party, 'rest');
     setPartyCycles((prev) => ({
       ...prev,
       [partyIndex]: {
         state: 'rest',
-        stateStartedAt: now - finalRestDurationMs,
+        stateStartedAt: now,
         durationMs: finalRestDurationMs,
         restInitialTotalSteps: 1,
         isCurrentExpeditionGodsBattle: false,

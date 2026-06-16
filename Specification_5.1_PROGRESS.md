@@ -97,7 +97,7 @@
 
 - Player taps 出撃 / 神魔戦
   - If the button is available for sortie, consume 1 Instant Expedition Charge stock.
-  - Immediately process one full Cycle and finish at the end of `state.rest`.
+  - Immediately process one full Cycle and finish at the beginning of `state.rest`.
   - If they have not gained items (not finished `state.sell`), immediately gain items and show notifications before the new Cycle is processed.
   - Remaining current profit is treated as emergency embezzlement and vanishes from party profit. No squander, donation, nor remaining profits are moved to the global wallet for the interrupted Cycle.
   - If party Hp is 0 (just after defeated): ignore tap and show notification log:"random party.character は疲弊しており出撃を拒否した"
@@ -105,7 +105,7 @@
 - **Transition rules**
   - 自動周回ON: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.move`→`state.explore`→`state.return`→`state.rest`
   - 自動周回OFF: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.idle`
-  - Immediate 出撃 / 神魔戦: consume 1 stock, process `state.move`→`state.explore`→`state.return`→`state.rest` immediately, and leave the runtime at the completed rest endpoint.
+  - Immediate 出撃 / 神魔戦: consume 1 stock, process `state.move`→`state.explore`→`state.return` immediately, and leave the runtime at the beginning of `state.rest`.
 
 
 **Time-Based Progress Handling (Online + AFK)**
