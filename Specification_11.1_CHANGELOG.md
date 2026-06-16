@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 57 | 2026/06/16 | Ease runtime Loot-Gate elite progression requirements (Spec 5.1.3.1): lower floor 1-5 uncommon item thresholds to 2, 6, 12, 20, and 30, and align the Expedition UI example text with the new first elite gate threshold. |
 | 0.7.5 | 56 | 2026/06/16 | Fix runtime party-cycle initialization (Spec 5.1.1): when a party is below full HP, initialize the cycle in `state.rest` before considering auto-repeat `state.move`, preventing wounded parties from departing after pray or refresh gaps. |
 | 0.7.5 | 55 | 2026/06/16 | Update immediate sortie runtime cycle endpoint (Spec 5.1): pressing 出撃/神魔戦 now leaves the party at the beginning of `state.rest` so normal rest healing proceeds after the instant expedition. |
 | 0.7.5 | 54 | 2026/06/16 | Update runtime expedition enemy names for `x.exp_id = 1` (Spec 4.2): align the packed enemy master data names with the revised Expedition & Enemy master data table. |

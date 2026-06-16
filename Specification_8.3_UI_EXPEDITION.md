@@ -83,7 +83,7 @@ HP 2350 / 4680
 
 
 - **Sub progress bar:**
-  - Visibility:
+| Normal Loot-gate condition | 🗃️0/2 1F-4解放 | アンコモンアイテム 0/2で 1F-4解放 |
     - Displayed only when `state` is `Step-based`. (example: `state.rest`, `state.sell`, or `state.explore`)
     - For all other states, render an empty placeholder to preserve layout height.
   - Represents elapsed time within the current `Step`.
