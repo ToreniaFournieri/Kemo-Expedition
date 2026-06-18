@@ -108,6 +108,7 @@
     - ex. `equipped`: [Character image] 名工のロングソード x1 | 近攻+19
     - ex. `equipped jewel` [Character image] 魔導の結晶 (装備先:伝説の幻導の青銅杖) | [魔1][魔攻撃+22%] 魔攻+25 HP+14 x1
       - `[Character image]` floating bubble text:  PTx:name  (ex. "PT3:ハヤテ")
+    - Ability text in item status details (e.g. `加速Lv1`) is tappable and shows its ability detail as floating bubble text.
 
   - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
     - Super rare item sell block: when player is going to sell super rare item, it is not allowed: "超レア称号がついたアイテムは売却出来ません"
