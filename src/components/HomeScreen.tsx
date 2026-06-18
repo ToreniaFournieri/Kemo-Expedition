@@ -1739,6 +1739,34 @@ function getItemDisplayMultiplier(item: Item, categoryMultiplier: number = 1): n
   return enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier * selfCategoryMultiplier;
 }
 
+function getItemInventoryDetailText(item: Item): string {
+  return `[${CATEGORY_NAMES[item.category]}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
+}
+
+type RewardItemBubble = {
+  key: string;
+  text: string;
+  top: number;
+  left: number;
+  maxWidth: number;
+};
+
+function getRewardItemBubblePosition(targetElement: HTMLElement): Omit<RewardItemBubble, 'key' | 'text'> {
+  const triggerRect = targetElement.getBoundingClientRect();
+  const viewportPadding = 12;
+  const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+  const left = Math.min(
+    Math.max(triggerRect.left, viewportPadding),
+    window.innerWidth - viewportPadding - bubbleMaxWidth,
+  );
+
+  return {
+    top: triggerRect.bottom + 8,
+    left,
+    maxWidth: bubbleMaxWidth,
+  };
+}
+
 function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultiplier: number = 1): string {
   const multiplier = getItemDisplayMultiplier(item, categoryMultiplier);
   const baseMultiplier = item.baseMultiplier ?? 1;
@@ -8337,6 +8365,7 @@ function ExpeditionTab({
     left: number;
     width: number;
   } | null>(null);
+  const [activeRewardItemBubble, setActiveRewardItemBubble] = useState<RewardItemBubble | null>(null);
   const [activeProgressBubble, setActiveProgressBubble] = useState<{
     key: string;
     text: string;
@@ -8450,6 +8479,20 @@ function ExpeditionTab({
     });
   };
 
+  const handleRewardItemBubbleToggle = (bubbleKey: string, item: Item, targetElement: HTMLElement) => {
+    if (activeRewardItemBubble?.key === bubbleKey) {
+      setActiveRewardItemBubble(null);
+      return;
+    }
+
+    // SpecRef: 8.3 | UI_EXPEDITION | f.battle_logs
+    setActiveRewardItemBubble({
+      key: bubbleKey,
+      text: getItemInventoryDetailText(item),
+      ...getRewardItemBubblePosition(targetElement),
+    });
+  };
+
   return (
     <div
       className="space-y-1.5"
@@ -8463,8 +8506,25 @@ function ExpeditionTab({
         if (activeRingStatusBubble) {
           setActiveRingStatusBubble(null);
         }
+        if (activeRewardItemBubble) {
+          setActiveRewardItemBubble(null);
+        }
       }}
     >
+      {activeRewardItemBubble ? (
+        <div
+          className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+          style={{
+            top: activeRewardItemBubble.top,
+            left: activeRewardItemBubble.left,
+            width: 'max-content',
+            maxWidth: activeRewardItemBubble.maxWidth,
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+        </div>
+      ) : null}
       {activeProgressBubble ? (
         <div
           className="floating-bubble-pane fixed z-20 rounded-lg p-2"
@@ -8997,7 +9057,14 @@ function ExpeditionTab({
                         return (
                           <Fragment key={i}>
                             {i > 0 && ', '}
-                            <span className={`${rarityClass} ${fontWeightClass}`}>{getItemDisplayName(item)}</span>
+                            <button
+                              type="button"
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => handleRewardItemBubbleToggle(`expedition-reward-${partyIndex}-${i}-${item.id}-${item.enhancement}-${item.superRare}`, item, event.currentTarget)}
+                              className={`${rarityClass} ${fontWeightClass} align-baseline hover:underline`}
+                            >
+                              {getItemDisplayName(item)}
+                            </button>
                           </Fragment>
                         );
                       })}
@@ -10319,6 +10386,21 @@ function DiaryTab({
     left: number;
     width: number;
   } | null>(null);
+  const [activeRewardItemBubble, setActiveRewardItemBubble] = useState<RewardItemBubble | null>(null);
+
+  const handleRewardItemBubbleToggle = (bubbleKey: string, item: Item, targetElement: HTMLElement) => {
+    if (activeRewardItemBubble?.key === bubbleKey) {
+      setActiveRewardItemBubble(null);
+      return;
+    }
+
+    // SpecRef: 8.5 | UI_DIARY | Diary log
+    setActiveRewardItemBubble({
+      key: bubbleKey,
+      text: getItemInventoryDetailText(item),
+      ...getRewardItemBubblePosition(targetElement),
+    });
+  };
 
   const handleEnemyBestiaryBubbleToggle = (
     bubbleKey: string,
@@ -10616,9 +10698,21 @@ function DiaryTab({
           if (activeEnemyBestiaryBubble) {
             setActiveEnemyBestiaryBubble(null);
           }
+          if (activeRewardItemBubble) {
+            setActiveRewardItemBubble(null);
+          }
         }}
       >
         {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
+        {activeRewardItemBubble && (
+          <div
+            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+            style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+          </div>
+        )}
         {renderDiarySettings()}
         <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">記録された日誌はありません</div>
       </div>
@@ -10632,9 +10726,21 @@ function DiaryTab({
         if (activeEnemyBestiaryBubble) {
           setActiveEnemyBestiaryBubble(null);
         }
+        if (activeRewardItemBubble) {
+          setActiveRewardItemBubble(null);
+        }
       }}
     >
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
+      {activeRewardItemBubble && (
+        <div
+          className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+          style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+        </div>
+      )}
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');
@@ -10711,7 +10817,14 @@ function DiaryTab({
                       return (
                         <Fragment key={i}>
                           {i > 0 && ', '}
-                          <span className={`${rarityClass} ${fontWeightClass}`}>{getItemDisplayName(item)}</span>
+                          <button
+                            type="button"
+                            onPointerDown={(event) => event.stopPropagation()}
+                            onClick={(event) => handleRewardItemBubbleToggle(`diary-reward-${diaryLog.id}-${i}-${item.id}-${item.enhancement}-${item.superRare}`, item, event.currentTarget)}
+                            className={`${rarityClass} ${fontWeightClass} align-baseline hover:underline`}
+                          >
+                            {getItemDisplayName(item)}
+                          </button>
                         </Fragment>
                       );
                     })}
