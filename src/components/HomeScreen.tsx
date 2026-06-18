@@ -9880,6 +9880,13 @@ function InventoryTab({
     left: number;
     width: number;
   } | null>(null);
+  const [activeInventoryAbilityBubble, setActiveInventoryAbilityBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
   const hasEquippedJewels = parties.some((party) =>
     party.characters.some((character) => character.equipment.some((item) => !!item?.jewel))
@@ -10036,24 +10043,90 @@ function InventoryTab({
     [parties],
   );
   const selectedJewelPriorityValue = jewelAutoEquipPriorityPartyId == null ? 'manual' : `${jewelAutoEquipPriorityPartyId}`;
+  const getInventoryBubblePosition = (targetElement: HTMLElement, maxWidth: number = 220) => {
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleWidth = Math.min(maxWidth, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleWidth,
+    );
+    return { top: triggerRect.bottom + 8, left, width: bubbleWidth };
+  };
+
   const handleInventoryOwnerBubbleToggle = (key: string, text: string, targetElement: HTMLElement) => {
     if (activeInventoryOwnerBubble?.key === key) {
       setActiveInventoryOwnerBubble(null);
       return;
     }
-    const triggerRect = targetElement.getBoundingClientRect();
-    const viewportPadding = 12;
-    const bubbleWidth = Math.min(220, window.innerWidth - viewportPadding * 2);
-    const left = Math.min(
-      Math.max(triggerRect.left, viewportPadding),
-      window.innerWidth - viewportPadding - bubbleWidth,
-    );
+    setActiveInventoryAbilityBubble(null);
     setActiveInventoryOwnerBubble({
       key,
       text,
-      top: triggerRect.bottom + 8,
-      left,
-      width: bubbleWidth,
+      ...getInventoryBubblePosition(targetElement),
+    });
+  };
+
+  const handleInventoryAbilityBubbleToggle = (key: string, text: string, targetElement: HTMLElement) => {
+    if (activeInventoryAbilityBubble?.key === key) {
+      setActiveInventoryAbilityBubble(null);
+      return;
+    }
+    setActiveInventoryOwnerBubble(null);
+    setActiveInventoryAbilityBubble({
+      key,
+      text,
+      ...getInventoryBubblePosition(targetElement, 320),
+    });
+  };
+
+  const renderInventoryItemStats = (item: Item, bubbleKeyPrefix: string): ReactNode => {
+    const statsText = getItemStats(item);
+    const abilityBonuses = (item.bonuses ?? [])
+      .flatMap((bonus) => {
+        if (bonus.type === 'ability' && bonus.abilityId) {
+          const level = bonus.abilityLevel || 1;
+          const label = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${level}`;
+          const description = getAbilityDescription(bonus.abilityId as AbilityId, level);
+          return [{ label, detail: `${label}：${description}` }];
+        }
+        if (bonus.type === 'ability_upgrade' && bonus.abilityId) {
+          const label = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}強化+${bonus.value}`;
+          const description = getAbilityDescription(bonus.abilityId as AbilityId, Math.max(1, bonus.value));
+          return [{ label, detail: `${label}：${description}` }];
+        }
+        return [];
+      })
+      .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.label === entry.label) === index);
+
+    if (abilityBonuses.length === 0) return renderTextWithRaceIcons(statsText);
+
+    const abilityByLabel = new Map(abilityBonuses.map((entry) => [entry.label, entry.detail]));
+    const pattern = abilityBonuses
+      .map((entry) => entry.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    if (!pattern) return renderTextWithRaceIcons(statsText);
+
+    const parts = statsText.split(new RegExp(`(${pattern})`, 'g'));
+    return parts.map((part, index) => {
+      const detail = abilityByLabel.get(part);
+      if (!detail) return <Fragment key={`${bubbleKeyPrefix}-stat-${index}`}>{renderTextWithRaceIcons(part)}</Fragment>;
+      return (
+        <button
+          key={`${bubbleKeyPrefix}-ability-${index}`}
+          type="button"
+          onPointerDown={(event) => {
+            event.stopPropagation();
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleInventoryAbilityBubbleToggle(`${bubbleKeyPrefix}-${part}-${index}`, detail, event.currentTarget);
+          }}
+          className="inline rounded px-0.5 text-sub underline decoration-dotted underline-offset-2 focus:outline-none focus:ring-1 focus:ring-sub"
+        >
+          {part}
+        </button>
+      );
     });
   };
 
@@ -10062,6 +10135,9 @@ function InventoryTab({
       onPointerDown={() => {
         if (activeInventoryOwnerBubble) {
           setActiveInventoryOwnerBubble(null);
+        }
+        if (activeInventoryAbilityBubble) {
+          setActiveInventoryAbilityBubble(null);
         }
       }}
     >
@@ -10249,7 +10325,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item))}
+                    {getRarityShortLabel(item.id, item.name)} {renderInventoryItemStats(item, entry.key)}
                   </div>
                 </div>
               );
@@ -10286,7 +10362,7 @@ function InventoryTab({
                         <span className="text-xs text-gray-500 shrink-0">x1</span>
                       </div>
                       <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
-                        {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
+                        {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderInventoryItemStats(entry.equipped.item, entry.key)}
                       </div>
                     </div>
                   </div>
@@ -10326,7 +10402,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(variant.item.id, variant.item.name)} {renderTextWithRaceIcons(getItemStats(variant.item))}
+                    {getRarityShortLabel(variant.item.id, variant.item.name)} {renderInventoryItemStats(variant.item, key)}
                   </div>
                 </div>
               ))}
@@ -10335,6 +10411,18 @@ function InventoryTab({
               )}
             </div>
           )}
+        </div>
+      )}
+      {activeInventoryAbilityBubble && (
+        <div
+          className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
+          style={{
+            top: `${activeInventoryAbilityBubble.top}px`,
+            left: `${activeInventoryAbilityBubble.left}px`,
+            width: `${activeInventoryAbilityBubble.width}px`,
+          }}
+        >
+          {activeInventoryAbilityBubble.text}
         </div>
       )}
       {activeInventoryOwnerBubble && (
