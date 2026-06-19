@@ -210,6 +210,7 @@ type PartyCycleState = 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' 
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 700;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
+const MAIN_TAB_ORDER: readonly Tab[] = ['expedition', 'party', 'base', 'diary', 'setting'];
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
@@ -2902,6 +2903,7 @@ export function HomeScreen({
 }: HomeScreenProps) {
   const prefersDocumentScroll = isIOSMobileSafari();
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
+  const [tabTransitionDirection, setTabTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [activeWideModeSecondaryTab, setActiveWideModeSecondaryTab] = useState<WideModeSecondaryTab>(WIDE_MODE_DEFAULT_SECONDARY_TAB);
   const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('shop');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
@@ -2929,6 +2931,8 @@ export function HomeScreen({
   const tabContentRef = useRef<HTMLDivElement | null>(null);
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
+  const primaryNavPointerStartRef = useRef<{ x: number; y: number; tab: Tab } | null>(null);
+  const primaryNavSwipeHandledRef = useRef(false);
 
   const safeSelectedPartyIndex = useMemo(() => {
     if (state.parties.length === 0) return 0;
@@ -5090,6 +5094,10 @@ export function HomeScreen({
       : tabContentRef.current?.scrollTop ?? 0;
     tabScrollPositionsRef.current[activeTab] = currentScrollTop;
 
+    if (nextTab === activeTab) return;
+    const currentTabIndex = MAIN_TAB_ORDER.indexOf(activeTab);
+    const nextTabIndex = MAIN_TAB_ORDER.indexOf(nextTab);
+    setTabTransitionDirection(nextTabIndex > currentTabIndex ? 'forward' : 'backward');
     setActiveTab(nextTab);
   };
 
@@ -5308,13 +5316,26 @@ export function HomeScreen({
     actions.markItemsSeen();
   }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'expedition', label: '探索' },
-    { id: 'party', label: 'パーティ' },
-    { id: 'base', label: '拠点' },
-    { id: 'diary', label: '日誌' },
-    { id: 'setting', label: '神聖局' },
-  ];
+  const tabs: { id: Tab; label: string }[] = MAIN_TAB_ORDER.map((id) => ({
+    id,
+    label: id === 'expedition' ? '探索' : id === 'party' ? 'パーティ' : id === 'base' ? '拠点' : id === 'diary' ? '日誌' : '神聖局',
+  }));
+
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
+  const completePrimaryNavSwipe = (clientX: number, clientY: number) => {
+    const swipeStart = primaryNavPointerStartRef.current;
+    primaryNavPointerStartRef.current = null;
+    if (!swipeStart || isPartyExpeditionSplitViewEnabled) return;
+    const deltaX = clientX - swipeStart.x;
+    const deltaY = clientY - swipeStart.y;
+    if (Math.abs(deltaX) < 36 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+    primaryNavSwipeHandledRef.current = true;
+    const currentIndex = MAIN_TAB_ORDER.indexOf(swipeStart.tab);
+    if (currentIndex < 0) return;
+    const nextIndex = deltaX < 0 ? currentIndex + 1 : currentIndex - 1;
+    const nextTab = MAIN_TAB_ORDER[nextIndex];
+    if (nextTab) switchTab(nextTab);
+  };
 
   const unreadDiaryCount = state.parties.reduce((count, party) => (
     count + party.diaryLogs.filter((log) => !log.isRead).length
@@ -5528,7 +5549,13 @@ export function HomeScreen({
       </div>
 
       {/* Bottom Tabs */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2" aria-label="Main navigation">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2"
+        aria-label="Main navigation"
+        onPointerDown={(event) => { primaryNavSwipeHandledRef.current = false; primaryNavPointerStartRef.current = { x: event.clientX, y: event.clientY, tab: activeTab }; }}
+        onPointerUp={(event) => completePrimaryNavSwipe(event.clientX, event.clientY)}
+        onPointerCancel={() => { primaryNavPointerStartRef.current = null; }}
+      >
         <div className="mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-transparent bg-white/12 p-1.5 shadow-[0_8px_20px_rgb(15_23_42/0.12)] backdrop-blur-sm">
           {tabs.map(tab => {
             const isActive = (isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id);
@@ -5537,6 +5564,10 @@ export function HomeScreen({
                 key={tab.id}
                 type="button"
                 onClick={() => {
+                  if (primaryNavSwipeHandledRef.current) {
+                    primaryNavSwipeHandledRef.current = false;
+                    return;
+                  }
                   switchTab(tab.id);
                 }}
                 className={`${IOS_GLASS_TOP_TAB_CLASS} min-h-[44px] flex-1 px-1 py-2 text-xs font-semibold relative transition-colors ${
@@ -5595,8 +5626,10 @@ export function HomeScreen({
             </div>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-[500px]">
-            {renderTabContent(activeTab)}
+          <div className="mx-auto w-full max-w-[500px] overflow-x-hidden">
+            <div key={activeTab} className={`main-tab-transition main-tab-transition-${tabTransitionDirection}`}>
+              {renderTabContent(activeTab)}
+            </div>
           </div>
         )}
       </div>
