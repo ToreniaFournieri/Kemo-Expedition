@@ -75,7 +75,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'shock', label: '感電', description: '最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる', levelScale: [], subcategory: 'reactive' },
   { abilityId: 're_attack', label: '連撃', description: '攻撃時に追加攻撃を行う(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x0.7', 'Lv3: x1.0'], subcategory: 'reactive' },
   { abilityId: 'corrode', label: '腐食', description: '通常近接攻撃が3回以上命中した相手の攻撃倍率をxN倍にする', levelScale: ['Lv1: x6/7', 'Lv2: x5/7', 'Lv3: x4/7', 'Lv4: x3/7', 'Lv5: x2/7'], subcategory: 'reactive' },
-  { abilityId: 'life_drain', label: '吸血', description: '通常近接攻撃で与えたダメージのNを回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'reactive' },
+  { abilityId: 'life_drain', label: '吸血', description: '通常近接攻撃で与えたダメージのNを回復する', levelScale: ['Lv1: 1/1000', 'Lv2: 3/1000', 'Lv3: 10/1000', 'Lv4: 30/1000', 'Lv5: 100/1000', 'Lv6: 300/1000', 'Lv7: 1000/1000'], subcategory: 'reactive' },
   { abilityId: 'death_touch', label: '接死', description: '通常近接攻撃の命中回数×Nの確率で即死させる', levelScale: ['Lv1: 2/256', 'Lv2: 3/256', 'Lv3: 4/256', 'Lv4: 5/256', 'Lv5: 6/256'], subcategory: 'reactive' },
   { abilityId: 'burn', label: '火傷', description: '近接攻撃を受けた際に、相手に命中回数x 最大HPのN%の火属性ダメージを与え返す', levelScale: ['Lv1: 0.5%', 'Lv2: 0.9%', 'Lv3: 1.2%', 'Lv4: 1.4%', 'Lv5: 1.5%'], subcategory: 'reactive' },
   { abilityId: 'bind', label: '拘束', description: '近接攻撃の命中回数×Nの確率で行動不能にする', levelScale: ['Lv1: 2/64', 'Lv2: 3/64', 'Lv3: 4/64', 'Lv4: 5/64', 'Lv5: 6/64'], subcategory: 'reactive' },

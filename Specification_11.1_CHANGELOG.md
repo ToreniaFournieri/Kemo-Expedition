@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 5 | 2026/06/19 | Update runtime life-drain ability scaling (Spec 1.1/6.1): use the specified Lv1-Lv7 recovery ratios from 1/1000 through 1000/1000 and align runtime ability help text with the specification. |
 | 0.7.6 | 4 | 2026/06/19 | Fix floating bubble positioning for runtime tooltip panes (Spec 8.1): render reward item, inventory ability/owner, and enemy bestiary bubbles through a document-level portal so fixed viewport coordinates stay aligned beside tapped text even inside transformed or scrollable app panes. |
 | 0.7.6 | 3 | 2026/06/19 | Keep the runtime header and bottom primary navigation tabs fixed during page scrolling on iOS Safari by using the app content scroll container instead of document scrolling (Spec 8.1). |
 | 0.7.6 | 2 | 2026/06/19 | Implement Expedition 1 additional enemy abilities in runtime data (Spec 4.2.2): apply the specified per-Enemy_ID bonus abilities for enemies 105, 111, 114, 116, 121, 122, 123, 129, and 135. |
