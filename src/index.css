@@ -329,7 +329,6 @@ body {
 
 
 .floating-bubble-pane {
-  color: rgb(31 41 55);
   border: 1px solid rgb(255 255 255 / 0.45);
   background-color: rgb(255 255 255 / 0.25);
   background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.1));
@@ -341,7 +340,6 @@ body {
 }
 
 .theme-dark .floating-bubble-pane {
-  color: rgb(226 232 240);
   border-color: rgb(148 163 184 / 0.45);
   background-color: rgb(30 41 59 / 0.25);
   background-image: linear-gradient(to bottom, rgb(148 163 184 / 0.26), rgb(15 23 42 / 0.2));
@@ -349,11 +347,6 @@ body {
     inset 0 1px 0 rgb(226 232 240 / 0.22),
     0 12px 24px rgb(2 6 23 / 0.45);
 }
-
-.theme-dark .floating-bubble-pane :is(.text-gray-500, .text-gray-600, .text-gray-700, .text-gray-800, .text-gray-900) {
-  color: inherit;
-}
-
 .ios-glass-button {
   border: 1px solid var(--glass-border);
   background-color: var(--glass-tint);
