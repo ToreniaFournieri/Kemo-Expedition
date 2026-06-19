@@ -74,6 +74,14 @@ If `a.*` with phase = START:
   - Exception: If the opponent has `a.unforgettable`, do not disable any ability.
     - Log: `log.unforgettable` + "(忘却無効)"
 
+- actor.`a.fading_memory`
+  - Randomly select 1 opponent, ally, or himself.
+  - Randomly select 1 valid ability from that target.
+  - The selected ability is disabled for the rest of the battle.
+  - Exception: If the opponent has `a.unforgettable`, do not disable any ability.
+    - Log: `log.unforgettable` + "(忘却無効)"
+
+
 - actor.`a.mimic`
   - Randomly select 1 opponent.
   - Randomly select 1 valid ability from that opponent (excluding `a.mimic` and `a.oblivion`).
