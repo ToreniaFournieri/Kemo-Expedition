@@ -389,7 +389,7 @@
 | 8 | E | `Voidspawn` | `i.armor`EA | 虚痕の鎧 |
 | 8 | E | `Voidspawn` | `i.catalyst`EA | 虚痕の触媒 |
 | 8 | E | `Voidspawn` | `i.gauntlet`EA | 虚痕の手甲 |
-| 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.oblivion`, `r.ice_x3.0, `r.ice_x2.0`, `r.thunder_x2.0` |
+| 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.fading_memory`, `r.ice_x1.5, `r.ice_x1.25`, `r.thunder_x1.25` |
 | 8 | E | `Voidspawn` | `i.robe`EA | 虚痕の法衣 |
 | 8 | E | `Ghost` | `i.bolt`EB | 冥霊のボルト |
 | 8 | E | `Ghost` | `i.katana`EB | 冥霊の太刀 |
