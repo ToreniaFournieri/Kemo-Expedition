@@ -73,7 +73,7 @@
 | 126 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ホタル |
 | 127 | 1 | 5 | 3 | 6 | Normal | `Aerial` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | コーム |
 | 128 | 1 | 5 | 3 | 6 | Normal | `Aerial` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セキレ |
-| 129 | 1 | 5 | 4 | 8 | Elite | `Aerial` | class.alchemist.wizard | `i.catalyst`EB, `i.wand`EB, `i.robe`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | トリコ | `a.null-death-touch`1 |
+| 129 | 1 | 5 | 4 | 8 | Elite | `Aerial` | class.alchemist.wizard | `i.catalyst`EB, `i.wand`EB, `i.robe`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | トリコ | `a.null-death-touch`1, `a.re-attack`1 |
 | 130 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | みずうさぎ |
 | 131 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | もすらむ |
 | 132 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | あなこ |
