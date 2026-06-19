@@ -70,9 +70,9 @@
 
 #### 8.1.1 Notification Logic & Display
 **Visual & Overlay (Toast)**
-- Position: bottom and left side
+- Position: left side, anchored above the fixed bottom primary navigation tab bar so notifications never cover the tabs.
 - Layout:
-  	- Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
+  	- Flex-col-reverse (Newest notifications appear closest to the tab bar, pushing older ones up).
   	- Dynamic Width: The box size must shrink or grow to fit the length of the text precisely (with padding).
 - Text and color:
     - [C] [U] for Black color, [R] for Blue color, [M] for Dark Orange. White translucent background, no border color.

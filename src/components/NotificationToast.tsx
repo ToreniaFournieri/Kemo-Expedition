@@ -9,7 +9,7 @@ interface NotificationToastProps {
 
 export function NotificationToast({ notifications, onDismiss, onDismissAll }: NotificationToastProps) {
   return (
-    <div className="fixed bottom-4 left-4 flex flex-col-reverse gap-1 z-50">
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 flex flex-col-reverse gap-1 z-50">
       {notifications.map((notification) => (
         <NotificationItem
           key={notification.id}
