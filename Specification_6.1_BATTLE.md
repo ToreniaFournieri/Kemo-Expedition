@@ -84,7 +84,7 @@ If `a.*` with phase = START:
 
 - actor.`a.mimic`
   - Randomly select 1 opponent.
-  - Randomly select 1 valid ability from that opponent (excluding `a.mimic` and `a.oblivion`).
+  - Randomly select 1 valid ability from that opponent (excluding `a.mimic`, `a.oblivion`, and `a.fading_memory`).
   - Actor gains the selected ability for the rest of the battle.
 
 - actor.`a.magic-seal`
