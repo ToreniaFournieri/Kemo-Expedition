@@ -478,13 +478,25 @@ function assignCommonDropTokensByClass(dropTokens: string[], enemyClass: EnemyCl
 
 const MASTER_BOSS_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   // SpecRef: 4.2.2 | Enemy | Rare items drop
-  1: [{ id: 'ice_absorb', level: 1 }],
   2: [{ id: 'deflection', level: 2 }],
   3: [{ id: 'melee_confusion', level: 1 }],
   5: [{ id: 'fire_reflect', level: 1 }],
   6: [{ id: 'soul_reap', level: 3 }],
   7: [{ id: 'melee_reflect', level: 2 }],
   8: [{ id: 'shock', level: 1 }, { id: 'magic_seal', level: 1 }],
+};
+
+const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
+  // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+  105: [{ id: 'howl', level: 1 }],
+  111: [{ id: 'null_burn', level: 1 }, { id: 'burn', level: 1 }],
+  114: [{ id: 'bind', level: 1 }],
+  116: [{ id: 'null_burn', level: 1 }],
+  121: [{ id: 'execution', level: 1 }],
+  122: [{ id: 'deflection', level: 1 }],
+  123: [{ id: 'wind_rider', level: 1 }],
+  129: [{ id: 'null_death_touch', level: 1 }],
+  135: [{ id: 'ice_absorb', level: 1 }, { id: 'true_sight', level: 1 }],
 };
 
 const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
@@ -512,7 +524,10 @@ function generateEnemies(): EnemyDef[] {
         row[8] ?? 'none',
         row[4],
         row[0],
-        spawnType === 'boss' ? (MASTER_BOSS_BONUS_ABILITIES[tier] ?? []) : [],
+        mergeEnemyAbilities(
+          spawnType === 'boss' ? (MASTER_BOSS_BONUS_ABILITIES[tier] ?? []) : [],
+          MASTER_ENEMY_BONUS_ABILITIES[id] ?? [],
+        ),
         row[2],
       );
       const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
