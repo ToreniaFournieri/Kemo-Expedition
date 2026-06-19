@@ -6846,6 +6846,13 @@ function PartyTab({
       <div className="relative overflow-visible bg-pane rounded-lg border border-gray-200 p-4 mb-4 shadow-md shadow-slate-900/15">
         {partyMemberImageSrc && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg" aria-hidden="true">
+            {isDarkModeEnabled && (
+              <div
+                // SpecRef: 8.2.2 | Party member details | Display character image
+                className="absolute inset-0 bg-slate-500/20"
+                aria-hidden="true"
+              />
+            )}
             {/* SpecRef: 8.2.2 | Party member details | Display character image */}
             <img
               src={partyMemberImageSrc}
