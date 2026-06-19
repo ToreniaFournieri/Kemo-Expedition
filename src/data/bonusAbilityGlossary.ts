@@ -8,7 +8,7 @@ type BonusAbilityGlossaryEntry = {
   description: string;
   levelScale: string[];
   subcategory: BonusAbilityGlossarySubcategoryId;
-  phase?: 'LONG' | 'MID' | 'CLOSE' | 'END';
+  phase?: 'START' | 'LONG' | 'MID' | 'CLOSE' | 'END';
   priority?: number;
 };
 
@@ -89,6 +89,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'covering_fire', label: '援護射撃', description: '味方の近接攻撃が1ヒット時に遠距離攻撃で追撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0'], subcategory: 'reactive' },
 
   { abilityId: 'oblivion', label: '忘却', description: '無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'fading_memory', label: '薄れる記憶', description: '敵味方問わず無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する', levelScale: [], subcategory: 'timed', phase: 'START', priority: 8 },
   { abilityId: 'mimic', label: '模倣', description: '相手のアビリティ1つを無作為に指定し、その効果を発動する', levelScale: [], subcategory: 'timed' },
   { abilityId: 'defender', label: '守護者', description: '自身より後列の味方への物理ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
   { abilityId: 'command', label: '指揮', description: '自身より後列の味方が与える物理ダメージをxN倍にする', levelScale: ['Lv1: x1.4', 'Lv2: x1.5', 'Lv3: x1.6'], subcategory: 'timed' },

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 6 | 2026/06/19 | Implement runtime Fading Memory ability and Voidspawn tier-8 elite grimoire bonus (Spec 1.1/3.2/6.1): add `a.fading_memory` as a START priority-8 ability that disables one random living combatant ability across both sides unless the target has Unforgettable. |
 | 0.7.6 | 5 | 2026/06/19 | Update runtime life-drain ability scaling (Spec 1.1/6.1): use the specified Lv1-Lv7 recovery ratios from 1/1000 through 1000/1000 and align runtime ability help text with the specification. |
 | 0.7.6 | 4 | 2026/06/19 | Fix floating bubble positioning for runtime tooltip panes (Spec 8.1): render reward item, inventory ability/owner, and enemy bestiary bubbles through a document-level portal so fixed viewport coordinates stay aligned beside tapped text even inside transformed or scrollable app panes. |
 | 0.7.6 | 3 | 2026/06/19 | Keep the runtime header and bottom primary navigation tabs fixed during page scrolling on iOS Safari by using the app content scroll container instead of document scrolling (Spec 8.1). |

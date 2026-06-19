@@ -2384,6 +2384,7 @@ function pickRandomTerrainFlavorText(
 }
 
 // SpecRef: 6.1.1.1 | START phase | actor.a.oblivion
+// SpecRef: 6.1.1.1 | START phase | actor.a.fading_memory
 // SpecRef: 6.1.1.1 | START phase | actor.a.mimic
 // SpecRef: 6.1.1.1 | START phase | floor.terrain.*
 // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
@@ -2632,7 +2633,18 @@ export function executeBattle(
       }))
   );
 
+  const getFadingMemoryOwners = (): Array<{ name: string; stats: ComputedCharacterStats }> => (
+    characterStats
+      .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
+      .filter((stats) => getAbilityLevel(stats, 'fading_memory') >= 1)
+      .map((stats) => ({
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        stats,
+      }))
+  );
+
   const enemyHasOblivion = (): boolean => !isEnemyActorAbilitiesSuppressed() && getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
+  const enemyHasFadingMemory = (): boolean => !isEnemyActorAbilitiesSuppressed() && getEnemyAbilityLevel(enemy, 'fading_memory') >= 1;
   const enemyHasMimic = (): boolean => !isEnemyActorAbilitiesSuppressed() && getEnemyAbilityLevel(enemy, 'mimic') >= 1;
 
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
@@ -3739,6 +3751,59 @@ export function executeBattle(
     { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS },
   ];
 
+  type FadingMemoryTarget =
+    | { kind: 'enemy'; name: string; abilities: AbilityLike[] }
+    | { kind: 'character'; name: string; stats: ComputedCharacterStats; abilities: AbilityLike[] };
+
+  const resolveFadingMemory = (ownerName: string): void => {
+    const targets: FadingMemoryTarget[] = [
+      { kind: 'enemy', name: enemy.name, abilities: enemy.abilities },
+      ...characterStats.map((stats) => ({
+        kind: 'character' as const,
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        stats,
+        abilities: stats.abilities,
+      })),
+    ];
+
+    const target = targets[Math.floor(Math.random() * targets.length)];
+    if (!target) return;
+
+    const targetHasUnforgettable = target.kind === 'enemy'
+      ? getEnemyAbilityLevel(enemy, 'unforgettable') >= 1
+      : getAbilityLevel(target.stats, 'unforgettable') >= 1;
+    if (targetHasUnforgettable) {
+      log.push({
+        phase: 'start',
+        actor: 'effect',
+        characterId: target.kind === 'character' ? target.stats.characterId : undefined,
+        action: buildUnforgettableAction(ownerName, target.name),
+        note: '(忘却無効)',
+        noteTone: 'muted',
+      });
+      return;
+    }
+
+    const validAbilities = target.abilities.filter((ability) => ability.level > 0);
+    if (validAbilities.length === 0) return;
+
+    const selectedAbility = validAbilities[Math.floor(Math.random() * validAbilities.length)];
+    const selectedAbilityIndex = target.abilities.findIndex(
+      (ability) => ability.id === selectedAbility.id && ability.level === selectedAbility.level,
+    );
+
+    if (selectedAbilityIndex >= 0) {
+      target.abilities.splice(selectedAbilityIndex, 1);
+    }
+
+    log.push({
+      phase: 'start',
+      actor: 'effect',
+      characterId: target.kind === 'character' ? target.stats.characterId : undefined,
+      action: `${ownerName} の薄れる記憶が ${target.name} の ${formatAbilityLabel(selectedAbility)} を忘却の彼方に消し去った！`,
+    });
+  };
+
   const resolveStartPhaseTriggerTiming = (timing: number): void => {
     if (timing === 9) {
       if (enemyHasOblivion() && characterStats.length > 0) {
@@ -3810,12 +3875,20 @@ export function executeBattle(
     }
 
     if (timing === 8) {
+      if (enemyHasFadingMemory()) {
+        resolveFadingMemory(enemy.name);
+      }
+
+      for (const owner of getFadingMemoryOwners().sort((a, b) => a.stats.row - b.stats.row)) {
+        resolveFadingMemory(owner.name);
+      }
+
       if (enemyHasMimic() && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
         const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
         const targetValidAbilities = target.abilities.filter(
-          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
+          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion' && ability.id !== 'fading_memory',
         );
 
         if (targetValidAbilities.length > 0) {
@@ -3832,7 +3905,7 @@ export function executeBattle(
 
       for (const owner of getMimicOwners().sort((a, b) => a.stats.row - b.stats.row)) {
         const enemyValidAbilities = enemy.abilities.filter(
-          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
+          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion' && ability.id !== 'fading_memory',
         );
         if (enemyValidAbilities.length === 0) continue;
 
