@@ -9381,13 +9381,13 @@ function ExpeditionTab({
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, 'text-gray-500')}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : isAbsorbDamageLog
                                       ? (
                                         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                          ({renderUiIcon(iconKey, 'text-gray-500')}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
+                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
                                         </span>
                                       )
                                       : (
@@ -11237,13 +11237,13 @@ function DiaryTab({
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                      ({renderUiIcon(iconKey, 'text-gray-500')}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
+                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
                                     </span>
                                   )
                                   : isAbsorbDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, 'text-gray-500')}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : (
