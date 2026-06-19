@@ -391,49 +391,51 @@ body {
 }
 
 .ios-glass-top-tab {
-  border-color: rgb(255 255 255 / 0.54);
-  background-color: rgb(255 255 255 / 0.22);
-  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.38), rgb(255 255 255 / 0.12));
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border-color: transparent;
+  background-color: rgb(255 255 255 / 0.10);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04));
+  backdrop-filter: blur(4px) saturate(120%);
+  -webkit-backdrop-filter: blur(4px) saturate(120%);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.62),
-    0 4px 14px rgb(15 23 42 / 0.10);
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 2px 8px rgb(15 23 42 / 0.08);
 }
 
 .ios-glass-top-tab:hover,
 .ios-glass-top-tab:active {
-  background-color: rgb(255 255 255 / 0.34);
+  background-color: rgb(255 255 255 / 0.18);
 }
 
 .ios-glass-top-tab[aria-current="page"] {
-  background-color: rgb(var(--color-sub) / 0.16);
+  border-color: transparent;
+  background-color: rgb(var(--color-sub) / 0.14);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.78),
-    0 6px 18px rgb(var(--color-sub) / 0.18);
+    inset 0 1px 0 rgb(255 255 255 / 0.34),
+    0 3px 10px rgb(var(--color-sub) / 0.12);
 }
 
 .theme-dark .ios-glass-top-tab {
-  border-color: rgb(148 163 184 / 0.34);
-  background-color: rgb(15 23 42 / 0.30);
-  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.04));
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border-color: transparent;
+  background-color: rgb(15 23 42 / 0.18);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02));
+  backdrop-filter: blur(4px) saturate(120%);
+  -webkit-backdrop-filter: blur(4px) saturate(120%);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.14),
-    0 6px 18px rgb(2 6 23 / 0.44);
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 3px 10px rgb(2 6 23 / 0.28);
 }
 
 .theme-dark .ios-glass-top-tab:hover,
 .theme-dark .ios-glass-top-tab:active {
-  background-color: rgb(30 41 59 / 0.42);
+  background-color: rgb(30 41 59 / 0.26);
 }
 
 .theme-dark .ios-glass-top-tab[aria-current="page"] {
-  background-color: rgb(var(--color-sub) / 0.24);
+  border-color: transparent;
+  background-color: rgb(var(--color-sub) / 0.18);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.18),
-    0 6px 18px rgb(var(--color-sub) / 0.20);
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 3px 10px rgb(var(--color-sub) / 0.14);
 }
 
 .theme-dark .liquid-glass-segmented .ios-glass-button {
