@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 11 | 2026/06/19 | Delay touch reorder confirmation in the Party tab until the player finishes dragging a party member, so the swap confirmation appears after movement ends instead of during the touch move gesture. |
 | 0.7.6 | 10 | 2026/06/19 | Apply themed battle-log icon filters to reflected and absorbed damage displays (Spec 6.1): elemental icons in reflection/absorption result lines now use the same target-colored filter as normal damage log lines. |
 | 0.7.6 | 9 | 2026/06/19 | Add a dark-mode-only gray backing layer behind the Party status pane character image (Spec 8.2.2), improving character artwork visibility against the dark status card. |
 | 0.7.6 | 8 | 2026/06/19 | Update runtime Colosseum sortie exception (Spec 8.3): selecting `x.exp_id = 0`/Colosseum now keeps 出撃 available regardless of HP, exploration, or charge state and does not consume Instant Expedition Charge. |
