@@ -664,7 +664,16 @@ function getEnemyClassSummary(enemy: EnemyDef): string {
 
 function FloatingBubblePortal({ children }: { children: ReactNode }) {
   if (typeof document === 'undefined') return null;
-  return createPortal(children, document.body);
+  const portalThemeClass = document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark')
+    ? 'theme-dark'
+    : '';
+
+  return createPortal(
+    <div className={portalThemeClass}>
+      {children}
+    </div>,
+    document.body,
+  );
 }
 
 function EnemyBestiaryBubble({
