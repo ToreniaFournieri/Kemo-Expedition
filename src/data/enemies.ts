@@ -495,7 +495,7 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   121: [{ id: 'execution', level: 1 }],
   122: [{ id: 'deflection', level: 1 }],
   123: [{ id: 'wind_rider', level: 1 }],
-  129: [{ id: 'null_death_touch', level: 1 }],
+  129: [{ id: 'null_death_touch', level: 1 }, { id: 're_attack', level: 1 }],
   135: [{ id: 'ice_absorb', level: 1 }, { id: 'true_sight', level: 1 }],
 };
 
