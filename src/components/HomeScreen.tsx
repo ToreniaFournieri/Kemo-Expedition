@@ -5239,7 +5239,9 @@ export function HomeScreen({
     const now = Date.now();
     const instantChargeState = getInstantExpeditionChargeState(party, now);
 
-    if (party.currentHp <= 0 || partyStats.hp <= 0) {
+    const isColosseumSortie = party.selectedDungeonId === 99;
+
+    if (!isColosseumSortie && (party.currentHp <= 0 || partyStats.hp <= 0)) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
       actions.addNotification(`${refusingCharacter} は疲弊しており出撃を拒否した`);
       return;
@@ -5251,7 +5253,7 @@ export function HomeScreen({
       return;
     }
     // SpecRef: 8.3 | UI_EXPEDITION | Charge
-    if (instantChargeState.stock <= 0) {
+    if (!isColosseumSortie && instantChargeState.stock <= 0) {
       actions.addNotification(`${party.name} の即時出撃チャージが不足している`);
       return;
     }
@@ -5272,7 +5274,9 @@ export function HomeScreen({
     }
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
-    actions.consumeInstantExpeditionStock(partyIndex, now);
+    if (!isColosseumSortie) {
+      actions.consumeInstantExpeditionStock(partyIndex, now);
+    }
     if (cycle?.state === 'explore') {
       actions.finalizeDiaryLog(partyIndex);
     }
@@ -8753,9 +8757,11 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
         const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
         const isPartyHpDepletedForSortie = hpForSortieCheck <= 0 || partyStats.hp <= 0;
-        const isSortieDisabled = (!!selectedDungeonGate?.locked && !isColosseumSelected)
+        const isSortieDisabled = !isColosseumSelected && (
+          !!selectedDungeonGate?.locked
           || (isPartyHpDepletedForSortie && isInstantExpeditionStockEmpty)
-          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty);
+          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty)
+        );
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
