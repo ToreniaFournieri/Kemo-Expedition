@@ -49,37 +49,37 @@
 | 102 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | もす |
 | 103 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`C, `i.robe`C, `i.shield`C | くろーびっと |
 | 104 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.lord | `i.shield`U, `i.katana`U, `i.armor`C, `i.robe`C, `i.shield`C | くるくる |
-| 105 | 1 | 1 | 4 | 4 | Elite | `Beast` | class.duelist | `i.sword`EA, `i.armor`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | わおーん |
+| 105 | 1 | 1 | 4 | 4 | Elite | `Beast` | class.duelist | `i.sword`EA, `i.armor`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | わおーん | `a.howl`1 |
 | 106 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.ninja | `i.archery`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | りんりん |
 | 107 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.sage | `i.grimoire`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | こんた |
 | 108 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | きっつん |
 | 109 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.duelist | `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | シーガル |
 | 110 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.pilgrim | `i.robe`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | スパロゥ |
-| 111 | 1 | 2 | 4 | 5 | Elite | `Beast` | class.samurai | `i.katana`EA, `i.shield`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | シンディパウ |
+| 111 | 1 | 2 | 4 | 5 | Elite | `Beast` | class.samurai | `i.katana`EA, `i.shield`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | シンディパウ | `a.null-burn`1, `a.burn`1 |
 | 112 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.alchemist | `i.catalyst`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 鳳蝶 |
 | 113 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | レディバグ |
-| 114 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.sword-saint | `i.gauntlet`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 花鎌娘 |
+| 114 | 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | class.sword-saint | `i.gauntlet`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 花鎌娘 | `a.bind`1 |
 | 115 | 1 | 3 | 3 | 4 | Normal | `Beast` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ふわっと |
-| 116 | 1 | 3 | 3 | 4 | Normal | `Beast` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ひのこ |
+| 116 | 1 | 3 | 3 | 4 | Normal | `Beast` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ひのこ | `a.null-burn`1 |
 | 117 | 1 | 3 | 4 | 6 | Elite | `Insect_Swarm` | class.ranger.striker | `i.arrow`EC, `i.archery`EC, `i.bolt`EC, `i.arrow`C, `i.bolt`C, `i.archery`C | ビーズ |
 | 118 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | メロウル |
 | 119 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ぱんころう |
 | 120 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | かわせみ |
-| 121 | 1 | 4 | 3 | 7 | Elite | `Caninian` | class.duelist.lord | `i.shield`BD, `i.robe`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | サクラ |
-| 122 | 1 | 4 | 3 | 7 | Elite | `Caninian` | class.lord.striker | `i.katana`BD, `i.gauntlet`BD, `i.armor`C, `i.robe`C, `i.shield`C | エメラ |
-| 123 | 1 | 4 | 4 | 7 | Elite | `Aerial` | class.sage.lord | `i.grimoire`EB, `i.catalyst`EB, `i.shield`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ファルコ |
+| 121 | 1 | 4 | 3 | 7 | Elite | `Caninian` | class.duelist.lord | `i.shield`BD, `i.robe`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | サクラ | `a.execution`1 |
+| 122 | 1 | 4 | 3 | 7 | Elite | `Caninian` | class.lord.striker | `i.katana`BD, `i.gauntlet`BD, `i.armor`C, `i.robe`C, `i.shield`C | エメラ | `a.deflection`1 |
+| 123 | 1 | 4 | 4 | 7 | Elite | `Aerial` | class.sage.lord | `i.grimoire`EB, `i.catalyst`EB, `i.shield`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ファルコ | `a.wind-rider`1 |
 | 124 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ハルビー |
 | 125 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ドラコフライ |
 | 126 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ホタル |
 | 127 | 1 | 5 | 3 | 6 | Normal | `Aerial` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | コーム |
 | 128 | 1 | 5 | 3 | 6 | Normal | `Aerial` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セキレ |
-| 129 | 1 | 5 | 4 | 8 | Elite | `Aerial` | class.alchemist.wizard | `i.catalyst`EB, `i.wand`EB, `i.robe`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | トリコ |
+| 129 | 1 | 5 | 4 | 8 | Elite | `Aerial` | class.alchemist.wizard | `i.catalyst`EB, `i.wand`EB, `i.robe`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | トリコ | `a.null-death-touch`1 |
 | 130 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | みずうさぎ |
 | 131 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | もすらむ |
 | 132 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | あなこ |
 | 133 | 1 | 6 | 3 | 7 | Normal | `Aerial` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ペネトレーター |
 | 134 | 1 | 6 | 3 | 7 | Normal | `Aerial` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヨキジ |
-| 135 | 1 | 6 | 4 | 11 | BOSS | `Caninian` | class.guardian | `i.armor`BD, `i.gauntlet`BD, `i.shield`BD, `i.armor`C, `i.robe`C, `i.shield`C | ヴェルグ  | `a.ice-absorb`1 |
+| 135 | 1 | 6 | 4 | 11 | BOSS | `Caninian` | class.guardian | `i.armor`BD, `i.gauntlet`BD, `i.shield`BD, `i.armor`C, `i.robe`C, `i.shield`C | ヴェルグ  | `a.ice-absorb`1, `a.true-sight`1 |
 | 136 | 2 | 1 | 1 | 1-2 | 7 | Normal | `Frost` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 霜牙獣 |
 | 137 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 凍晶の霊 |
 | 138 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 雪原の氷獣 |
