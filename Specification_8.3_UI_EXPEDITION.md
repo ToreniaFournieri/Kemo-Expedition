@@ -99,7 +99,11 @@ HP 2350 / 4680
   - Disable conditions:
     - (Party HP = 0) and (0 Charges).
     - Party is in `state.explore` and 0 Charges.
-    - "神魔戦" button is pressed and party is going to engage gods battle. 
+    - "神魔戦" button is pressed and party is going to engage gods battle.
+  - Exception:
+    - If x.exp_id = 0 (Colosseum):
+    - No Instant Expedition Charge is consumed.
+    - Departure is always allowed, regardless of the above conditions.
 
 **Progress Visual Update**
 - Display compact progress summaries in the party pane without changing the pane height.
