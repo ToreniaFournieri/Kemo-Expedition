@@ -392,8 +392,8 @@ body {
 
 .ios-glass-top-tab {
   border-color: transparent;
-  background-color: rgb(255 255 255 / 0.10);
-  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04));
+  background-color: rgb(255 255 255 / 0.38);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.64), rgb(255 255 255 / 0.22));
   backdrop-filter: blur(4px) saturate(120%);
   -webkit-backdrop-filter: blur(4px) saturate(120%);
   box-shadow:
@@ -403,12 +403,12 @@ body {
 
 .ios-glass-top-tab:hover,
 .ios-glass-top-tab:active {
-  background-color: rgb(255 255 255 / 0.18);
+  background-color: rgb(255 255 255 / 0.48);
 }
 
 .ios-glass-top-tab[aria-current="page"] {
   border-color: transparent;
-  background-color: rgb(var(--color-sub) / 0.14);
+  background-color: rgb(var(--color-sub) / 0.32);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.34),
     0 3px 10px rgb(var(--color-sub) / 0.12);
@@ -416,8 +416,8 @@ body {
 
 .theme-dark .ios-glass-top-tab {
   border-color: transparent;
-  background-color: rgb(15 23 42 / 0.18);
-  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02));
+  background-color: rgb(15 23 42 / 0.48);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.04));
   backdrop-filter: blur(4px) saturate(120%);
   -webkit-backdrop-filter: blur(4px) saturate(120%);
   box-shadow:
@@ -427,12 +427,12 @@ body {
 
 .theme-dark .ios-glass-top-tab:hover,
 .theme-dark .ios-glass-top-tab:active {
-  background-color: rgb(30 41 59 / 0.26);
+  background-color: rgb(30 41 59 / 0.62);
 }
 
 .theme-dark .ios-glass-top-tab[aria-current="page"] {
   border-color: transparent;
-  background-color: rgb(var(--color-sub) / 0.18);
+  background-color: rgb(var(--color-sub) / 0.36);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.12),
     0 3px 10px rgb(var(--color-sub) / 0.14);

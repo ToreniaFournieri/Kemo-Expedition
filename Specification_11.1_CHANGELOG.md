@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 63 | 2026/06/19 | Increase fixed bottom primary navigation tab button opacity (Spec 8.1): make each individual tab surface less transparent while preserving the transparent glass group pane behind the tabs. |
 | 0.7.5 | 62 | 2026/06/19 | Refine fixed bottom primary navigation glass tabs (Spec 8.1): remove visible tab/container border lines, reduce transparency fill, and lower backdrop blur for clearer background visibility. |
 | 0.7.5 | 61 | 2026/06/19 | Move primary navigation tabs to a fixed bottom iOS-style glass tab bar (Spec 8.1): keep header compact, preserve safe-area spacing, and highlight the active tab with translucent glass styling. |
 | 0.7.5 | 60 | 2026/06/18 | Fix catalyst category display text (Spec 3.1): show catalyst items as `触媒` instead of `霊媒` in runtime item detail bubbles. |
