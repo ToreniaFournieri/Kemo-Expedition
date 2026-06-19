@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 4 | 2026/06/19 | Fix floating bubble positioning for runtime tooltip panes (Spec 8.1): render reward item, inventory ability/owner, and enemy bestiary bubbles through a document-level portal so fixed viewport coordinates stay aligned beside tapped text even inside transformed or scrollable app panes. |
 | 0.7.6 | 3 | 2026/06/19 | Keep the runtime header and bottom primary navigation tabs fixed during page scrolling on iOS Safari by using the app content scroll container instead of document scrolling (Spec 8.1). |
 | 0.7.6 | 2 | 2026/06/19 | Implement Expedition 1 additional enemy abilities in runtime data (Spec 4.2.2): apply the specified per-Enemy_ID bonus abilities for enemies 105, 111, 114, 116, 121, 122, 123, 129, and 135. |
 | 0.7.6 | 1 | 2026/06/19 | Prepare v0.7.6 runtime update: bump app version to `v0.7.6` and reset build number to `1`. |

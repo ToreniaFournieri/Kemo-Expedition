@@ -1,4 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiaryDefeatNotificationMode, DiarySettings, DiaryLog, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
@@ -660,6 +661,12 @@ function getEnemyClassSummary(enemy: EnemyDef): string {
   return `${mainClass}/${subClass}`;
 }
 
+
+function FloatingBubblePortal({ children }: { children: ReactNode }) {
+  if (typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+}
+
 function EnemyBestiaryBubble({
   bubble,
 }: {
@@ -693,15 +700,16 @@ function EnemyBestiaryBubble({
   const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || 'なし';
 
   return (
-    <div
-      className="floating-bubble-pane fixed z-20 rounded-lg p-3"
-      style={{
+    <FloatingBubblePortal>
+      <div
+        className="floating-bubble-pane fixed z-20 rounded-lg p-3"
+        style={{
         top: bubble.top,
         left: bubble.left,
         width: bubble.width,
-      }}
-    >
-      <div className="text-xs space-y-1 text-gray-700">
+        }}
+      >
+        <div className="text-xs space-y-1 text-gray-700">
         <div className="text-sm font-semibold text-gray-800">
           {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
@@ -727,8 +735,9 @@ function EnemyBestiaryBubble({
         })()}
         <div>アビリティ: {abilityText}</div>
         <div className="text-gray-600">ドロップ候補: {dropText}</div>
+        </div>
       </div>
-    </div>
+    </FloatingBubblePortal>
   );
 }
 
@@ -8544,18 +8553,20 @@ function ExpeditionTab({
       }}
     >
       {activeRewardItemBubble ? (
-        <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
-          style={{
-            top: activeRewardItemBubble.top,
-            left: activeRewardItemBubble.left,
-            width: 'max-content',
-            maxWidth: activeRewardItemBubble.maxWidth,
-          }}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          {renderTextWithRaceIcons(activeRewardItemBubble.text)}
-        </div>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+            style={{
+              top: activeRewardItemBubble.top,
+              left: activeRewardItemBubble.left,
+              width: 'max-content',
+              maxWidth: activeRewardItemBubble.maxWidth,
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+          </div>
+        </FloatingBubblePortal>
       ) : null}
       {activeProgressBubble ? (
         <div
@@ -10446,28 +10457,32 @@ function InventoryTab({
         </div>
       )}
       {activeInventoryAbilityBubble && (
-        <div
-          className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
-          style={{
-            top: `${activeInventoryAbilityBubble.top}px`,
-            left: `${activeInventoryAbilityBubble.left}px`,
-            width: `${activeInventoryAbilityBubble.width}px`,
-          }}
-        >
-          {activeInventoryAbilityBubble.text}
-        </div>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
+            style={{
+              top: `${activeInventoryAbilityBubble.top}px`,
+              left: `${activeInventoryAbilityBubble.left}px`,
+              width: `${activeInventoryAbilityBubble.width}px`,
+            }}
+          >
+            {activeInventoryAbilityBubble.text}
+          </div>
+        </FloatingBubblePortal>
       )}
       {activeInventoryOwnerBubble && (
-        <div
-          className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
-          style={{
-            top: `${activeInventoryOwnerBubble.top}px`,
-            left: `${activeInventoryOwnerBubble.left}px`,
-            width: `${activeInventoryOwnerBubble.width}px`,
-          }}
-        >
-          {activeInventoryOwnerBubble.text}
-        </div>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
+            style={{
+              top: `${activeInventoryOwnerBubble.top}px`,
+              left: `${activeInventoryOwnerBubble.left}px`,
+              width: `${activeInventoryOwnerBubble.width}px`,
+            }}
+          >
+            {activeInventoryOwnerBubble.text}
+          </div>
+        </FloatingBubblePortal>
       )}
     </div>
   );
@@ -10825,13 +10840,15 @@ function DiaryTab({
       >
         {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
         {activeRewardItemBubble && (
-          <div
-            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
-            style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
-            onPointerDown={(event) => event.stopPropagation()}
-          >
-            {renderTextWithRaceIcons(activeRewardItemBubble.text)}
-          </div>
+          <FloatingBubblePortal>
+            <div
+              className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+              style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+            </div>
+          </FloatingBubblePortal>
         )}
         {renderDiarySettings()}
         <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">記録された日誌はありません</div>
@@ -10853,13 +10870,15 @@ function DiaryTab({
     >
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
       {activeRewardItemBubble && (
-        <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
-          style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          {renderTextWithRaceIcons(activeRewardItemBubble.text)}
-        </div>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+            style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+          </div>
+        </FloatingBubblePortal>
       )}
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
