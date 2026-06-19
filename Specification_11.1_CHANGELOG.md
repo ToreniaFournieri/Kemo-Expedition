@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 60 | 2026/06/18 | Fix catalyst category display text (Spec 3.1): show catalyst items as `触媒` instead of `霊媒` in runtime item detail bubbles. |
 | 0.7.5 | 59 | 2026/06/18 | Add Base Inventory ability detail bubbles (Spec 8.4.2): tapping ability text such as `加速Lv1` in item status rows now shows the ability description as floating bubble text. |
 | 0.7.5 | 58 | 2026/06/18 | Add battle-log reward item detail bubbles (Spec 8.3/8.5): tapping items in 獲得アイテム now shows inventory-style detail text with the item category shown first. |
 | 0.7.5 | 57 | 2026/06/16 | Ease runtime Loot-Gate elite progression requirements (Spec 5.1.3.1): lower floor 1-5 uncommon item thresholds to 2, 6, 12, 20, and 30, and align the Expedition UI example text with the new first elite gate threshold. |

@@ -2673,7 +2673,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   shield: '盾',
   bolt: 'ボルト',
   grimoire: '魔道書',
-  catalyst: '霊媒',
+  catalyst: '触媒',
   arrow: '矢',
 };
 
