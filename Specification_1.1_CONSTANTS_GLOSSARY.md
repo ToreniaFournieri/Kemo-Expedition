@@ -187,6 +187,7 @@
 | ability_id | label | description | level_scale | phase | priority |
 |----|----|----|----|----|----|
 | `a.oblivion` | 忘却 | 無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する | - | START | 9 |
+| `a.fading_memory` | 薄れる記憶 | 敵味方問わず無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する | - | START | 8 |
 | `a.mimic` | 模倣 | 相手のアビリティ1つを無作為に指定し、その効果を発動する | - | START | 8 |
 | `a.defender` | 守護者 | 自身より後列の味方への物理ダメージをxN倍にする | Lv1: x2/3, Lv2: x3/5, Lv3: x1/2 | START | 7 |
 | `a.command` | 指揮 | 自身より後列の味方が与える物理ダメージをxN倍にする | Lv1: x1.4, Lv2: x1.5, Lv3: x1.6 | START | 7 |
