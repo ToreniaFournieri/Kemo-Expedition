@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 12 | 2026/06/19 | Fix dark-mode floating bubble text colors (Spec 8.1): make shared floating-bubble panes and nested gray utility text inherit the dark theme foreground so inventory, diary, and status tooltip text matches the Party status bubble style. |
 | 0.7.6 | 11 | 2026/06/19 | Delay touch reorder confirmation in the Party tab until the player finishes dragging a party member, so the swap confirmation appears after movement ends instead of during the touch move gesture. |
 | 0.7.6 | 10 | 2026/06/19 | Apply themed battle-log icon filters to reflected and absorbed damage displays (Spec 6.1): elemental icons in reflection/absorption result lines now use the same target-colored filter as normal damage log lines. |
 | 0.7.6 | 9 | 2026/06/19 | Add a dark-mode-only gray backing layer behind the Party status pane character image (Spec 8.2.2), improving character artwork visibility against the dark status card. |
