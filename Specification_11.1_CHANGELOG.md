@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.5 | 64 | 2026/06/19 | Add dynamic primary tab view transitions (Spec 8.1): tapping or horizontally swiping the bottom tab bar now slides the selected main view in from the adjacent side, reinforcing that the panes are continuously connected. |
 | 0.7.5 | 63 | 2026/06/19 | Increase fixed bottom primary navigation tab button opacity (Spec 8.1): make each individual tab surface less transparent while preserving the transparent glass group pane behind the tabs. |
 | 0.7.5 | 62 | 2026/06/19 | Refine fixed bottom primary navigation glass tabs (Spec 8.1): remove visible tab/container border lines, reduce transparency fill, and lower backdrop blur for clearer background visibility. |
 | 0.7.5 | 61 | 2026/06/19 | Move primary navigation tabs to a fixed bottom iOS-style glass tab bar (Spec 8.1): keep header compact, preserve safe-area spacing, and highlight the active tab with translucent glass styling. |

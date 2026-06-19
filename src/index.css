@@ -672,3 +672,47 @@ body {
 .theme-dark .party-pt-segmented .liquid-glass-tab-active {
   background-color: rgb(var(--color-sub) / 0.5) !important;
 }
+
+/* SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered */
+.main-tab-transition {
+  will-change: transform, opacity;
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.main-tab-transition-forward {
+  animation-name: main-tab-slide-in-from-right;
+}
+
+.main-tab-transition-backward {
+  animation-name: main-tab-slide-in-from-left;
+}
+
+@keyframes main-tab-slide-in-from-right {
+  from {
+    transform: translateX(18%);
+    opacity: 0.72;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes main-tab-slide-in-from-left {
+  from {
+    transform: translateX(-18%);
+    opacity: 0.72;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-tab-transition {
+    animation: none;
+  }
+}
