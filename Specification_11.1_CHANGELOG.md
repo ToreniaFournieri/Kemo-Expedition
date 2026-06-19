@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 1 | 2026/06/19 | Prepare v0.7.6 runtime update: bump app version to `v0.7.6` and reset build number to `1`. |
 | 0.7.5 | 65 | 2026/06/19 | Reposition notification toast stack above the fixed bottom primary navigation tab bar (Spec 8.1): item and status popups now start from the top side of the tab bar instead of overlapping and hiding navigation tabs. |
 | 0.7.5 | 64 | 2026/06/19 | Add dynamic primary tab view transitions (Spec 8.1): tapping or horizontally swiping the bottom tab bar now slides the selected main view in from the adjacent side, reinforcing that the panes are continuously connected. |
 | 0.7.5 | 63 | 2026/06/19 | Increase fixed bottom primary navigation tab button opacity (Spec 8.1): make each individual tab surface less transparent while preserving the transparent glass group pane behind the tabs. |
