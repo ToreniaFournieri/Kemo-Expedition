@@ -97,7 +97,7 @@
 
 - Player taps 出撃 / 神魔戦
   - If the button is available for sortie, consume 1 Instant Expedition Charge stock.
-  - Immediately process one full Cycle and finish at the end of `state.rest`.
+  - Immediately process one full Cycle and finish at the beginning of `state.rest`.
   - If they have not gained items (not finished `state.sell`), immediately gain items and show notifications before the new Cycle is processed.
   - Remaining current profit is treated as emergency embezzlement and vanishes from party profit. No squander, donation, nor remaining profits are moved to the global wallet for the interrupted Cycle.
   - If party Hp is 0 (just after defeated): ignore tap and show notification log:"random party.character は疲弊しており出撃を拒否した"
@@ -105,7 +105,7 @@
 - **Transition rules**
   - 自動周回ON: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.move`→`state.explore`→`state.return`→`state.rest`
   - 自動周回OFF: `state.rest`→`state.free_action`→`state.sound_sleep` (optional)→`state.pray`→`state.idle`
-  - Immediate 出撃 / 神魔戦: consume 1 stock, process `state.move`→`state.explore`→`state.return`→`state.rest` immediately, and leave the runtime at the completed rest endpoint.
+  - Immediate 出撃 / 神魔戦: consume 1 stock, process `state.move`→`state.explore`→`state.return` immediately, and leave the runtime at the beginning of `state.rest`.
 
 
 **Time-Based Progress Handling (Online + AFK)**
@@ -230,11 +230,11 @@ PT3: 貯金額: 10G
 | title | Gate `x.floor`,`x.room` | condition | text example |
 |----|----|----|----|
 | Entering | 1,1 | defeat the boss from previous expedition ( `x.expedition` -1 ), except for the first expedition. | ボス撃破 でヴァルンの樹林帯 開放 |
-| 1st Elite gate | 1,4 | correct 3 uncommon items from this `x.expedition` | アンコモンアイテム 0/3で 1F-4解放 |
-| 2nd Elite gate | 2,4 | correct 9 uncommon items from this `x.expedition`  | アンコモンアイテム 0/9で 2F-4解放 |
-| 3rd Elite gate | 3,4 | correct 18 uncommon items from this x.expedition` | アンコモンアイテム 0/18で 3F-4解放 | |
-| 4th Elite gate | 4,4 | correct 30 uncommon items from this `x.expedition`  | アンコモンアイテム 0/30で 4F-4解放 | |
-| 5th Elite gate | 5,4 | correct 45 uncommon items from this `x.expedition`  | アンコモンアイテム 0/45で 5F-4解放 | |
+| 1st Elite gate | 1,4 | correct 2 uncommon items from this `x.expedition` | アンコモンアイテム 0/2で 1F-4解放 |
+| 2nd Elite gate | 2,4 | correct 6 uncommon items from this `x.expedition`  | アンコモンアイテム 0/6で 2F-4解放 |
+| 3rd Elite gate | 3,4 | correct 12 uncommon items from this x.expedition` | アンコモンアイテム 0/12で 3F-4解放 | |
+| 4th Elite gate | 4,4 | correct 20 uncommon items from this `x.expedition`  | アンコモンアイテム 0/20で 4F-4解放 | |
+| 5th Elite gate | 5,4 | correct 30 uncommon items from this `x.expedition`  | アンコモンアイテム 0/30で 5F-4解放 | |
 | Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` | エリートレアアイテム 0/3で ボス戦解放 | |
 | Gods battle gate | - | Collect at least 3 Boss Rare items from dungeons, and defeat the dungeon boss at least once (lifetime, party-wide)) | If party has defeated the dungeon boss:"ボスレアアイテム 1/3 で神魔キョウエン戦", Else: "ボスを撃破せよ"|
 | Side quest gate | - | it depends on side quest `q.` condition | |

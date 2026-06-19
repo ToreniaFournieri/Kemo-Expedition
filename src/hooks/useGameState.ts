@@ -1864,6 +1864,7 @@ function selectEnemyForRoom(
   floorNumber?: number,
   roomIndex?: number,
   roomEnemyIds: number[] = [],
+  usedEnemyIdsInRange: ReadonlySet<number> = new Set(),
 ): EnemyDef | null {
   if (poolId === 99 || bossId === 9901) {
     return buildColosseumEnemy(getColosseumEnemySettings());
@@ -1874,13 +1875,16 @@ function selectEnemyForRoom(
   }
 
   if (roomEnemyIds.length > 0) {
+    // SpecRef: 4.2 | EXPEDITION_&_ENEMY_MASTER_DATA | Room range enemy uniqueness
     const explicitEnemies = roomEnemyIds
       .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
       .filter((enemy): enemy is EnemyDef => enemy !== undefined)
       .sort((a, b) => a.id - b.id);
-    if (explicitEnemies.length > 0) {
-      const randomIndex = Math.floor(Math.random() * explicitEnemies.length);
-      return explicitEnemies[randomIndex] ?? explicitEnemies[0] ?? null;
+    const availableEnemies = explicitEnemies.filter((enemy) => !usedEnemyIdsInRange.has(enemy.id));
+    const selectableEnemies = availableEnemies.length > 0 ? availableEnemies : explicitEnemies;
+    if (selectableEnemies.length > 0) {
+      const randomIndex = Math.floor(Math.random() * selectableEnemies.length);
+      return selectableEnemies[randomIndex] ?? selectableEnemies[0] ?? null;
     }
   }
 
@@ -3054,6 +3058,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         for (const floor of dungeon.floors) {
           if (expeditionEnded) break;
 
+          const selectedEnemyIdsByRoomRange = new Map<string, Set<number>>();
+
           for (let roomIndex = 0; roomIndex < floor.rooms.length; roomIndex++) {
             if (expeditionEnded) break;
 
@@ -3105,8 +3111,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
 
             // Select enemy for this room
-            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? []);
+            // SpecRef: 4.2 | EXPEDITION_&_ENEMY_MASTER_DATA | Room range enemy uniqueness
+            const explicitRoomEnemyIds = roomDef.enemyIds ?? [];
+            const roomRangeKey = explicitRoomEnemyIds.length > 1
+              ? `${floor.floorNumber}:${explicitRoomEnemyIds.slice().sort((a, b) => a - b).join(',')}`
+              : null;
+            const usedEnemyIdsInRange = roomRangeKey
+              ? (selectedEnemyIdsByRoomRange.get(roomRangeKey) ?? new Set<number>())
+              : new Set<number>();
+            const baseEnemy = selectEnemyForRoom(
+              roomDef.type,
+              roomDef.poolId,
+              roomDef.bossId,
+              floor.floorNumber,
+              roomIndex,
+              explicitRoomEnemyIds,
+              usedEnemyIdsInRange,
+            );
             if (!baseEnemy) continue;
+            if (roomRangeKey) {
+              const nextUsedEnemyIds = selectedEnemyIdsByRoomRange.get(roomRangeKey) ?? new Set<number>();
+              nextUsedEnemyIds.add(baseEnemy.id);
+              selectedEnemyIdsByRoomRange.set(roomRangeKey, nextUsedEnemyIds);
+            }
 
             const roomMultiplier = getRoomMultiplier(
               dungeon.expLevel,

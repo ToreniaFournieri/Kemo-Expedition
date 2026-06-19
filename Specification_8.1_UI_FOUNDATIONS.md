@@ -70,9 +70,9 @@
 
 #### 8.1.1 Notification Logic & Display
 **Visual & Overlay (Toast)**
-- Position: bottom and left side
+- Position: left side, anchored above the fixed bottom primary navigation tab bar so notifications never cover the tabs.
 - Layout:
-  	- Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
+  	- Flex-col-reverse (Newest notifications appear closest to the tab bar, pushing older ones up).
   	- Dynamic Width: The box size must shrink or grow to fit the length of the text precisely (with padding).
 - Text and color:
     - [C] [U] for Black color, [R] for Blue color, [M] for Dark Orange. White translucent background, no border color.
@@ -115,13 +115,11 @@
   - width: ~ 500 width.
 - Displays:
   - (Game title) + version + (build number) + (env)
-  - Game title label: "冒ケモ🐾", 
+  - Game title label: "冒ケモ", 
 		  - The character 「冒」 is emphasized:   
       - Scale: Larger than surrounding text
       - Rotation: −22.5° (counterclockwise)
-    - The character 「🐾」is emphasized:   
-      - Scale: Larger than surrounding text
-						- Rotation: 0° 
+
 
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
@@ -130,10 +128,10 @@
   return "";  };
   - Use this specification's version
 
-- Speed of Time: `▷ x1.0(23h)`
-  - Displays the current game speed multiplier and the remaining boost duration in hours.
+- Speed of Time: `▶︎ (23h)`
+  - Displays the current game speed state symbol and the remaining boost duration in hours without the `x1.0` or `x1.2` multiplier text.
     - x1.0 -> `▷`
-    - x1.2 or higher -> `▶`
+    - x1.2 or higher -> `▶︎`
 - When the player presses the Speed of Time button:
   - Show the following confirmation dialog:
     - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
@@ -143,17 +141,17 @@
       - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
-      - Set Speed of Time to x1.2. and the text is `▶x1.2`
+      - Set Speed of Time to x1.2. and the text is `▶︎`
       - The boost effect lasts for 24 hours.
     - If the webhook request fails:
       - Do not apply the boost effect.
       - Keep Speed of Time at its current value.
       - Show an error message to the player.
-  - When the remaining duration reaches 0h: Reset Speed of Time to `▷ x1.0`
+  - When the remaining duration reaches 0h: Reset Speed of Time to `▷`
 
 ```
 (Left-aligned)             (Right-aligned)
-冒ケモ🐾　v0.6.0(23) (β)    ▷ x1.0(23h)  200G
+冒ケモ　v0.6.0(23) (β)    ▶︎ (23h)  200G
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
@@ -238,4 +236,9 @@
   - `属防`: `f.elemental_resistance_attribute`
     - fire/ice/thunder/ (120%, 65%, 40%)
   - `アビリティ`: Display all abilities owned by the member using Japanese short names and levels ( 壁1, 指揮1, 浪費1 )
+
+#### 8.1.3 Icon 
+- Use `/public/app_icon.png` as the Home Screen icon when the web application is added to the iPhone Home Screen.
+- Configure the icon as the Apple Touch Icon in the HTML metadata.
+- The icon should be a square image with no transparency and sufficient padding to remain recognizable at small sizes.
 

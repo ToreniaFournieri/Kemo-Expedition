@@ -616,12 +616,12 @@ export interface RandomBag {
 }
 
 export interface GameBags {
-  commonRewardBag: RandomBag;      // For normal rooms (90 no item, 10 win)
+  commonRewardBag: RandomBag;      // For normal rooms (40 no item, 10 win)
   commonEnhancementBag: RandomBag; // For normal rooms enhancement
-  uncommonRewardBag: RandomBag;    // For uncommon rewards (99 no item, 1 win)
-  eliteRareRewardBag: RandomBag;        // For elite rare rewards (99 no item, 1 win)
-  bossRareRewardBag: RandomBag;      // For boss rare rewards (99 no item, 1 win)
-  mythicRareRewardBag: RandomBag;    // For mythic rare rewards (49 no item, 1 win)
+  uncommonRewardBag: RandomBag;    // For uncommon rewards (49 no item, 1 win)
+  eliteRareRewardBag: RandomBag;        // For elite rare rewards (49 no item, 1 win)
+  bossRareRewardBag: RandomBag;      // For boss rare rewards (49 no item, 1 win)
+  mythicRareRewardBag: RandomBag;    // For mythic rare rewards (24 no item, 1 win)
   enhancementBag: RandomBag;       // For unique rewards enhancement
   superRareBag: RandomBag; // For non-reward systems that still consume shared super rare titles (e.g., shop)
   commonSuperRareBag: RandomBag; // For common reward super rare rolls

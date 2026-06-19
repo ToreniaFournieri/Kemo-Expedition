@@ -893,7 +893,21 @@ left-alinged                                           right-aligned
   - *State:`s.sold` Auto-Sell:* If a dropped item matches a rule with state:`s.sold`, it is sold immediately (not added to inventory, gain Gold)
   - *State:`s.owned` Existing Items:* If the item is already in the inventory, increment the item count
   - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`s.owned`
- 
+
+**Chibi images for each character name**
+- When a log entry contains a character name or an enemy name (including entries prefixed with 敵), display a chibi image immediately before the name.
+  - For unique party member: Load the image from: `/public/chibi/C_Unique_{English_name}.png`
+    - For `{English_name}`, refer to `@Specification_8.2_UI_PARTY.md` → `8.2.2 Party member details`.
+    - Example: C_Unique_Finn.png
+  - For party member: Load the image from: `/public/chibi/C_{party_ID}_{race}_{gender}.png`
+    - Example: C_1_Felidian_Female.png
+  - For enemy: Load the image from: `/public/chibi/C_E_{enemy_ID}.png`
+
+- The chibi image should be rendered inline with the text.
+- The image height should match the current font size of the log text.
+- Preserve the image's aspect ratio when scaling.
+- If the specified image file does not exist, omit the image and display only the text.
+
 **Enemy image**
 - If enemy.image_path exists, enable background image rendering
   - load the image from `public/enemy/E_<Enemy_ID>.png`. (Ex. enemy ID is 1051, then use `public/enemy/E_1051.png` )

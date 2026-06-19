@@ -14,11 +14,11 @@ type LootGateCheckResult =
     };
 
 export const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
-  1: 3,
-  2: 9,
-  3: 18,
-  4: 30,
-  5: 45,
+  1: 2,
+  2: 6,
+  3: 12,
+  4: 20,
+  5: 30,
 };
 
 export const ENTRY_GATE_REQUIRED = 1;

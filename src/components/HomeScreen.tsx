@@ -1,4 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiaryDefeatNotificationMode, DiarySettings, DiaryLog, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
@@ -37,7 +38,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
-import { createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
+import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
@@ -210,6 +211,7 @@ type PartyCycleState = 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' 
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 700;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
+const MAIN_TAB_ORDER: readonly Tab[] = ['expedition', 'party', 'base', 'diary', 'setting'];
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
@@ -218,7 +220,7 @@ const IOS_GLASS_TAB_CLASS =
   'ios-glass-button rounded-xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation tabs
 const IOS_GLASS_TOP_TAB_CLASS =
-  'ios-glass-button ios-glass-top-tab rounded-none';
+  'ios-glass-button ios-glass-top-tab rounded-2xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_SLIDER_CLASS =
   'ios-glass-slider';
@@ -472,7 +474,7 @@ function getAutoSellStepCount(party: Party): number {
   return Math.max(1, autoSellItemCount);
 }
 
-const HEADER_HEIGHT_CLASS = 'pt-[118px]';
+const HEADER_HEIGHT_CLASS = 'pt-[74px] pb-[calc(88px+env(safe-area-inset-bottom))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -485,15 +487,6 @@ const APP_VERSION = `v${__APP_VERSION__}`;
 
 function getExpeditionTierDurationFactor(expTier: number): number {
   return Math.max(0, expTier);
-}
-
-function isIOSMobileSafari(): boolean {
-  if (typeof navigator === 'undefined') return false;
-
-  const userAgent = navigator.userAgent;
-  const isIOSDevice = /iP(hone|ad|od)/.test(userAgent);
-  const isWebKitSafari = /WebKit/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser/.test(userAgent);
-  return isIOSDevice && isWebKitSafari;
 }
 
 function normalizeBattleLogNote(note?: string): string | undefined {
@@ -668,6 +661,12 @@ function getEnemyClassSummary(enemy: EnemyDef): string {
   return `${mainClass}/${subClass}`;
 }
 
+
+function FloatingBubblePortal({ children }: { children: ReactNode }) {
+  if (typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+}
+
 function EnemyBestiaryBubble({
   bubble,
 }: {
@@ -701,15 +700,16 @@ function EnemyBestiaryBubble({
   const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || 'なし';
 
   return (
-    <div
-      className="floating-bubble-pane fixed z-20 rounded-lg p-3"
-      style={{
+    <FloatingBubblePortal>
+      <div
+        className="floating-bubble-pane fixed z-20 rounded-lg p-3"
+        style={{
         top: bubble.top,
         left: bubble.left,
         width: bubble.width,
-      }}
-    >
-      <div className="text-xs space-y-1 text-gray-700">
+        }}
+      >
+        <div className="text-xs space-y-1 text-gray-700">
         <div className="text-sm font-semibold text-gray-800">
           {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
@@ -735,9 +735,119 @@ function EnemyBestiaryBubble({
         })()}
         <div>アビリティ: {abilityText}</div>
         <div className="text-gray-600">ドロップ候補: {dropText}</div>
+        </div>
       </div>
-    </div>
+    </FloatingBubblePortal>
   );
+}
+
+
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME: Partial<Record<string, string>> = {
+  'ケモ': 'C_Unique_Kemo.png',
+  'ライカ': 'C_Unique_Laika.png',
+  'ルナ': 'C_Unique_Luna.png',
+  'ノクス': 'C_Unique_Nox.png',
+  'マーレ': 'C_Unique_Merle.png',
+  'プチーツァ': 'C_Unique_Puchitsa.png',
+  'ミシュカ': 'C_Unique_Mishka.png',
+  '蒼牙破': 'C_Unique_Souga-ha.png',
+  'レナード': 'C_Unique_Leonard.png',
+  '葉隠': 'C_Unique_Hagakure.png',
+  'フィン': 'C_Unique_Finn.png',
+  'オルカ': 'C_Unique_Orca.png',
+};
+
+function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
+  if (character.isUnique) {
+    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME[character.name];
+    return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/${uniqueFileName}` : null;
+  }
+
+  const race = RACES.find((candidate) => candidate.id === character.raceId);
+  if (!race) return null;
+  const gender = character.gender === 'female' ? 'Female' : 'Male';
+  return `${import.meta.env.BASE_URL}chibi/C_${party.id}_${race.englishName}_${gender}.png`;
+}
+
+function getEnemyBattleLogChibiSrc(entry: ExpeditionLogEntry): string | null {
+  const enemyId = entry.enemyId ?? entry.enemySnapshot?.id;
+  return typeof enemyId === 'number' ? `${import.meta.env.BASE_URL}chibi/C_E_${enemyId}.png` : null;
+}
+
+function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): string[] {
+  const names = [
+    entry.enemyName,
+    entry.enemySnapshot ? formatEnemyDefName(entry.enemySnapshot) : '',
+  ];
+
+  return Array.from(new Set(names.flatMap((name) => {
+    const normalizedName = name.replace(/\(神魔戦\)/g, '').trim();
+    if (!normalizedName) return [];
+
+    const withoutTrailingMetadata = normalizedName.replace(/(?:\s*\([^()]+\))+\s*$/u, '').trim();
+    return [normalizedName, withoutTrailingMetadata].filter(Boolean);
+  })));
+}
+
+function BattleLogInlineChibi({ src, alt }: { src: string; alt: string }) {
+  return (
+    <span className="relative mx-0.5 inline-block h-[1em] w-[1.35em] align-[-0.125em]">
+      <img
+        src={src}
+        alt={alt}
+        className="absolute left-0 top-1/2 h-[1.35em] w-auto max-w-none -translate-y-1/2"
+        loading="lazy"
+        onError={(event) => {
+          event.currentTarget.style.display = 'none';
+        }}
+      />
+    </span>
+  );
+}
+
+// SpecRef: 6.1.7 | Logs | Chibi images for each character name
+function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry: ExpeditionLogEntry): ReactNode {
+  const markers: Array<{ label: string; src: string; alt: string; priority: number }> = [];
+  const enemySrc = getEnemyBattleLogChibiSrc(entry);
+  if (enemySrc) {
+    getBattleLogEnemyNameCandidates(entry).forEach((enemyName) => {
+      markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
+    });
+    if (/^敵/.test(action)) markers.push({ label: '敵', src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
+  }
+
+  party.characters.forEach((character: Character) => {
+    const src = getCharacterBattleLogChibiSrc(party, character);
+    if (src && character.name.trim()) {
+      markers.push({ label: character.name, src, alt: `${character.name} chibi`, priority: 1 });
+    }
+  });
+
+  const uniqueMarkers = markers
+    .filter((marker, index, list) => list.findIndex((candidate) => candidate.label === marker.label && candidate.src === marker.src) === index)
+    .sort((a, b) => b.label.length - a.label.length || a.priority - b.priority);
+  if (uniqueMarkers.length === 0) return renderActionWithMutedTrailingParenthetical(action);
+
+  const pattern = new RegExp(`(${uniqueMarkers.map((marker) => escapeRegExp(marker.label)).join('|')})`, 'g');
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(action)) !== null) {
+    if (match.index > lastIndex) nodes.push(action.slice(lastIndex, match.index));
+    const label = match[0];
+    const marker = uniqueMarkers.find((candidate) => candidate.label === label);
+    if (marker) nodes.push(<BattleLogInlineChibi key={`chibi-${match.index}-${label}`} src={marker.src} alt={marker.alt} />);
+    nodes.push(label);
+    lastIndex = match.index + label.length;
+  }
+  if (lastIndex < action.length) nodes.push(action.slice(lastIndex));
+
+  return <>{nodes}</>;
 }
 
 function renderActionWithMutedTrailingParenthetical(action: string) {
@@ -1172,7 +1282,6 @@ function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
 
 const numberFormatter = new Intl.NumberFormat('ja-JP');
 const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
-const SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL = 'x1.2';
 const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
@@ -1629,6 +1738,34 @@ function getItemDisplayMultiplier(item: Item, categoryMultiplier: number = 1): n
     : 1;
   const baseMultiplier = item.baseMultiplier ?? 1;
   return enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier * selfCategoryMultiplier;
+}
+
+function getItemInventoryDetailText(item: Item): string {
+  return `[${CATEGORY_NAMES[item.category]}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
+}
+
+type RewardItemBubble = {
+  key: string;
+  text: string;
+  top: number;
+  left: number;
+  maxWidth: number;
+};
+
+function getRewardItemBubblePosition(targetElement: HTMLElement): Omit<RewardItemBubble, 'key' | 'text'> {
+  const triggerRect = targetElement.getBoundingClientRect();
+  const viewportPadding = 12;
+  const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+  const left = Math.min(
+    Math.max(triggerRect.left, viewportPadding),
+    window.innerWidth - viewportPadding - bubbleMaxWidth,
+  );
+
+  return {
+    top: triggerRect.bottom + 8,
+    left,
+    maxWidth: bubbleMaxWidth,
+  };
 }
 
 function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultiplier: number = 1): string {
@@ -2537,7 +2674,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   shield: '盾',
   bolt: 'ボルト',
   grimoire: '魔道書',
-  catalyst: '霊媒',
+  catalyst: '触媒',
   arrow: '矢',
 };
 
@@ -2764,8 +2901,9 @@ export function HomeScreen({
   onDismissNotification,
   onDismissAllNotifications,
 }: HomeScreenProps) {
-  const prefersDocumentScroll = isIOSMobileSafari();
+  const prefersDocumentScroll = false;
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
+  const [tabTransitionDirection, setTabTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [activeWideModeSecondaryTab, setActiveWideModeSecondaryTab] = useState<WideModeSecondaryTab>(WIDE_MODE_DEFAULT_SECONDARY_TAB);
   const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('shop');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
@@ -2793,6 +2931,8 @@ export function HomeScreen({
   const tabContentRef = useRef<HTMLDivElement | null>(null);
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
+  const primaryNavPointerStartRef = useRef<{ x: number; y: number; tab: Tab } | null>(null);
+  const primaryNavSwipeHandledRef = useRef(false);
 
   const safeSelectedPartyIndex = useMemo(() => {
     if (state.parties.length === 0) return 0;
@@ -2805,6 +2945,7 @@ export function HomeScreen({
   const prevShopPurchasesRef = useRef(state.global.shopPurchases);
   const prevInventoryRef = useRef(state.global.inventory);
   const notifiedRewardLogRef = useRef<Array<Party['lastExpeditionLog'] | null>>(state.parties.map(() => null));
+  const instantSortieRewardNotificationPendingRef = useRef<boolean[]>(state.parties.map(() => false));
   const prevPartyCycleStateRef = useRef<Array<PartyCycleState | null>>(state.parties.map(() => null));
   const prevSideQuestRef = useRef(state.parties.map((party) => party.sideQuest));
   const hasHydratedAfkRef = useRef(false);
@@ -2986,20 +3127,17 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeLabel = useMemo(() => {
-    if (debugSettings.timeSpeed === 'x20') return 'x20';
-    if (debugSettings.timeSpeed === 'x100') return 'x100';
-    if (debugSettings.timeSpeed === 'x5') return 'x5';
     const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
-    if (!isBonusSpeed) return 'x1.0';
+    if (!isBonusSpeed) return '';
     const remainingHours = timeSpeedBonusUntilMs === null
       ? 0
       : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
-    return `${SPEED_OF_TIME_BONUS_MULTIPLIER_LABEL}(${formatNumber(remainingHours)}h)`;
+    return `(${formatNumber(remainingHours)}h)`;
   }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeSymbol = useMemo(() => {
     if (debugSettings.timeSpeed === 'realtime') return '▷';
-    return '▶';
+    return '▶︎';
   }, [debugSettings.timeSpeed]);
 
   const escapeFeedbackHtml = (value: string): string => (
@@ -3123,7 +3261,8 @@ export function HomeScreen({
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
     };
 
-    const now = new Date();
+    const reportCreatedAtMs = Date.now();
+    const now = new Date(reportCreatedAtMs);
     const timestampFormatter = new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
       month: '2-digit',
@@ -3168,17 +3307,15 @@ export function HomeScreen({
     const reportCounterKey = createEnvironmentStorageKey('speedOfTimeReportCount');
     const reportCount = Number.parseInt(localStorage.getItem(reportCounterKey) ?? '0', 10);
     const nextReportCount = Number.isFinite(reportCount) ? reportCount + 1 : 1;
-    localStorage.setItem(reportCounterKey, String(nextReportCount));
     const progressReportCount = formatNumber(nextReportCount);
     const lastReportAtKey = createEnvironmentStorageKey('speedOfTimeLastReportAt');
     const previousReportAt = Number.parseInt(localStorage.getItem(lastReportAtKey) ?? '', 10);
     const lastReportHours = Number.isFinite(previousReportAt)
-      ? Math.max(0, (Date.now() - previousReportAt) / (1000 * 60 * 60))
+      ? Math.max(0, (reportCreatedAtMs - previousReportAt) / (1000 * 60 * 60))
       : null;
     const lastReportTime = lastReportHours == null
       ? '-'
       : `${formatNumber(Math.floor(lastReportHours))} Hours ago`;
-    localStorage.setItem(lastReportAtKey, String(Date.now()));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
     const reportHeaderRows = [
       ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
@@ -3210,6 +3347,8 @@ export function HomeScreen({
     const latestBattleLogFile = reportTargetPartyLabel ? buildLatestBattleLogHtml(reportTargetPartyLabel) : null;
     const reportFiles = [htmlFile, ...(latestBattleLogFile ? [latestBattleLogFile] : [])];
     await postWebhookWithFiles(reportMessage, reportFiles, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
+    localStorage.setItem(reportCounterKey, String(nextReportCount));
+    localStorage.setItem(lastReportAtKey, String(reportCreatedAtMs));
     return true;
   }, [state]);
 
@@ -4405,21 +4544,21 @@ export function HomeScreen({
 
       parties.forEach((party, partyIndex) => {
         const { partyStats: partyRuntimeStats } = computePartyStats(party);
+        const needsRestBeforeCycleStart = party.currentHp < partyRuntimeStats.hp;
+        const initialCycleState: PartyCycleState = needsRestBeforeCycleStart
+          ? 'rest'
+          : autoRepeatEnabled
+            ? 'move'
+            : 'idle';
         const runtime = next[partyIndex] ?? {
-          state: (
-            autoRepeatEnabled
-              ? 'move'
-              : party.currentHp < partyRuntimeStats.hp
-                ? 'rest'
-                : 'idle'
-          ) as PartyCycleState,
+          state: initialCycleState,
           stateStartedAt: simulationNow,
-          durationMs: autoRepeatEnabled
-            ? getPartyTravelDurationMs(party, 'move')
-            : party.currentHp < partyRuntimeStats.hp
-              ? getStateDurationMs(party, 'rest')
+          durationMs: initialCycleState === 'rest'
+            ? getStateDurationMs(party, 'rest')
+            : initialCycleState === 'move'
+              ? getPartyTravelDurationMs(party, 'move')
               : 1000,
-          restInitialTotalSteps: party.currentHp < partyRuntimeStats.hp
+          restInitialTotalSteps: needsRestBeforeCycleStart
             ? getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp)
             : undefined,
         };
@@ -4791,7 +4930,10 @@ export function HomeScreen({
       const cycle = partyCycles[index];
       const cycleState = cycle?.state ?? null;
       const sellingFinished = cycleState !== 'sell';
-      const canAnnounceGains = cycleState !== 'explore' && cycleState !== 'return' && cycleState !== 'rest' && cycleState !== 'sell';
+      // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
+      const isInstantSortieRewardNotificationPending = instantSortieRewardNotificationPendingRef.current[index] === true;
+      const canAnnounceGains = isInstantSortieRewardNotificationPending
+        || (cycleState !== 'explore' && cycleState !== 'return' && cycleState !== 'rest' && cycleState !== 'sell');
       const hasRewardsToNotify = (currentLog?.rewards.length ?? 0) > 0;
       const isAlreadyNotified = notifiedRewardLogRef.current[index] === currentLog;
       const justFinishedSelling = prevPartyCycleStateRef.current[index] === 'sell' && cycleState !== 'sell';
@@ -4815,10 +4957,12 @@ export function HomeScreen({
           );
         }
         notifiedRewardLogRef.current[index] = currentLog;
+        instantSortieRewardNotificationPendingRef.current[index] = false;
       }
 
       if (hasNewLog && !hasRewardsToNotify) {
         notifiedRewardLogRef.current[index] = currentLog;
+        instantSortieRewardNotificationPendingRef.current[index] = false;
       }
     });
 
@@ -4950,6 +5094,10 @@ export function HomeScreen({
       : tabContentRef.current?.scrollTop ?? 0;
     tabScrollPositionsRef.current[activeTab] = currentScrollTop;
 
+    if (nextTab === activeTab) return;
+    const currentTabIndex = MAIN_TAB_ORDER.indexOf(activeTab);
+    const nextTabIndex = MAIN_TAB_ORDER.indexOf(nextTab);
+    setTabTransitionDirection(nextTabIndex > currentTabIndex ? 'forward' : 'backward');
     setActiveTab(nextTab);
   };
 
@@ -5115,9 +5263,7 @@ export function HomeScreen({
       actions.addNotification(`${party.name}は即時出撃した`);
     }
 
-    if (cycle) {
-      notifyExpeditionRewardsIfNeeded(party, partyIndex);
-    }
+    notifyExpeditionRewardsIfNeeded(party, partyIndex);
 
     if (triggerGodsBattle && party.sideQuest) {
       actions.cancelSideQuest(partyIndex);
@@ -5131,19 +5277,20 @@ export function HomeScreen({
     }
     actions.clearPendingProfit(partyIndex);
     actions.healPartyHp(partyIndex, partyStats.hp);
+    // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
+    instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
     actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
     actions.finalizeDiaryLog(partyIndex);
     actions.rollPartySleepiness(partyIndex);
-    actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
-    // Manual 出撃/神魔戦 resolves the expedition and its return/rest tail immediately,
-    // leaving the runtime at the completed rest endpoint instead of the old idle shortcut.
+    // Manual 出撃/神魔戦 resolves the expedition and its return tail immediately,
+    // leaving the runtime at the beginning of rest so normal rest healing still occurs.
     const finalRestDurationMs = getStateDurationMs(party, 'rest');
     setPartyCycles((prev) => ({
       ...prev,
       [partyIndex]: {
         state: 'rest',
-        stateStartedAt: now - finalRestDurationMs,
+        stateStartedAt: now,
         durationMs: finalRestDurationMs,
         restInitialTotalSteps: 1,
         isCurrentExpeditionGodsBattle: false,
@@ -5169,13 +5316,26 @@ export function HomeScreen({
     actions.markItemsSeen();
   }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'expedition', label: '探索' },
-    { id: 'party', label: 'パーティ' },
-    { id: 'base', label: '拠点' },
-    { id: 'diary', label: '日誌' },
-    { id: 'setting', label: '神聖局' },
-  ];
+  const tabs: { id: Tab; label: string }[] = MAIN_TAB_ORDER.map((id) => ({
+    id,
+    label: id === 'expedition' ? '探索' : id === 'party' ? 'パーティ' : id === 'base' ? '拠点' : id === 'diary' ? '日誌' : '神聖局',
+  }));
+
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
+  const completePrimaryNavSwipe = (clientX: number, clientY: number) => {
+    const swipeStart = primaryNavPointerStartRef.current;
+    primaryNavPointerStartRef.current = null;
+    if (!swipeStart || isPartyExpeditionSplitViewEnabled) return;
+    const deltaX = clientX - swipeStart.x;
+    const deltaY = clientY - swipeStart.y;
+    if (Math.abs(deltaX) < 36 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+    primaryNavSwipeHandledRef.current = true;
+    const currentIndex = MAIN_TAB_ORDER.indexOf(swipeStart.tab);
+    if (currentIndex < 0) return;
+    const nextIndex = deltaX < 0 ? currentIndex + 1 : currentIndex - 1;
+    const nextTab = MAIN_TAB_ORDER[nextIndex];
+    if (nextTab) switchTab(nextTab);
+  };
 
   const unreadDiaryCount = state.parties.reduce((count, party) => (
     count + party.diaryLogs.filter((log) => !log.isRead).length
@@ -5186,7 +5346,7 @@ export function HomeScreen({
   const versionLabel = envLabel
     ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
     : `${APP_VERSION}(${state.buildNumber})`;
-  const gameTitle = '冒ケモ🐾';
+  const gameTitle = '冒ケモ';
 
   useEffect(() => {
     document.title = gameTitle;
@@ -5342,7 +5502,6 @@ export function HomeScreen({
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
                   <span>ケモ</span>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(0deg) scale(1.0)' }}>🐾</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
@@ -5371,7 +5530,7 @@ export function HomeScreen({
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
               >
-                {speedOfTimeSymbol} {speedOfTimeLabel}
+                {speedOfTimeLabel ? `${speedOfTimeSymbol} ${speedOfTimeLabel}` : speedOfTimeSymbol}
               </button>
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (
@@ -5386,31 +5545,49 @@ export function HomeScreen({
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="relative z-40 flex mt-0.5 -mb-3">
-            {tabs.map(tab => (
+        </div>
+      </div>
+
+      {/* Bottom Tabs */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2"
+        aria-label="Main navigation"
+        onPointerDown={(event) => { primaryNavSwipeHandledRef.current = false; primaryNavPointerStartRef.current = { x: event.clientX, y: event.clientY, tab: activeTab }; }}
+        onPointerUp={(event) => completePrimaryNavSwipe(event.clientX, event.clientY)}
+        onPointerCancel={() => { primaryNavPointerStartRef.current = null; }}
+      >
+        <div className="mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-transparent bg-white/12 p-1.5 shadow-[0_8px_20px_rgb(15_23_42/0.12)] backdrop-blur-sm">
+          {tabs.map(tab => {
+            const isActive = (isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id);
+            return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => {
+                  if (primaryNavSwipeHandledRef.current) {
+                    primaryNavSwipeHandledRef.current = false;
+                    return;
+                  }
                   switchTab(tab.id);
                 }}
-                className={`${IOS_GLASS_TOP_TAB_CLASS} flex-1 py-2 text-sm font-medium relative transition-colors ${
-                  ((isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id))
-                    ? 'text-sub border-b-2 border-sub'
+                className={`${IOS_GLASS_TOP_TAB_CLASS} min-h-[44px] flex-1 px-1 py-2 text-xs font-semibold relative transition-colors ${
+                  isActive
+                    ? 'text-sub'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
+                aria-current={isActive ? 'page' : undefined}
               >
-                {tab.label}
+                <span className="relative z-10">{tab.label}</span>
                 {tab.id === 'diary' && hasUnreadDiary && (
-                  <span className="absolute -top-0.5 right-1 z-50 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
+                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
                     {unreadDiaryBadgeLabel}
                   </span>
                 )}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </div>
+      </nav>
 
       {/* Tab Content */}
       <div
@@ -5449,8 +5626,10 @@ export function HomeScreen({
             </div>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-[500px]">
-            {renderTabContent(activeTab)}
+          <div className="mx-auto w-full max-w-[500px] overflow-x-hidden">
+            <div key={activeTab} className={`main-tab-transition main-tab-transition-${tabTransitionDirection}`}>
+              {renderTabContent(activeTab)}
+            </div>
           </div>
         )}
       </div>
@@ -8227,6 +8406,7 @@ function ExpeditionTab({
     left: number;
     width: number;
   } | null>(null);
+  const [activeRewardItemBubble, setActiveRewardItemBubble] = useState<RewardItemBubble | null>(null);
   const [activeProgressBubble, setActiveProgressBubble] = useState<{
     key: string;
     text: string;
@@ -8340,6 +8520,20 @@ function ExpeditionTab({
     });
   };
 
+  const handleRewardItemBubbleToggle = (bubbleKey: string, item: Item, targetElement: HTMLElement) => {
+    if (activeRewardItemBubble?.key === bubbleKey) {
+      setActiveRewardItemBubble(null);
+      return;
+    }
+
+    // SpecRef: 8.3 | UI_EXPEDITION | f.battle_logs
+    setActiveRewardItemBubble({
+      key: bubbleKey,
+      text: getItemInventoryDetailText(item),
+      ...getRewardItemBubblePosition(targetElement),
+    });
+  };
+
   return (
     <div
       className="space-y-1.5"
@@ -8353,8 +8547,27 @@ function ExpeditionTab({
         if (activeRingStatusBubble) {
           setActiveRingStatusBubble(null);
         }
+        if (activeRewardItemBubble) {
+          setActiveRewardItemBubble(null);
+        }
       }}
     >
+      {activeRewardItemBubble ? (
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+            style={{
+              top: activeRewardItemBubble.top,
+              left: activeRewardItemBubble.left,
+              width: 'max-content',
+              maxWidth: activeRewardItemBubble.maxWidth,
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+          </div>
+        </FloatingBubblePortal>
+      ) : null}
       {activeProgressBubble ? (
         <div
           className="floating-bubble-pane fixed z-20 rounded-lg p-2"
@@ -8887,7 +9100,14 @@ function ExpeditionTab({
                         return (
                           <Fragment key={i}>
                             {i > 0 && ', '}
-                            <span className={`${rarityClass} ${fontWeightClass}`}>{getItemDisplayName(item)}</span>
+                            <button
+                              type="button"
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => handleRewardItemBubbleToggle(`expedition-reward-${partyIndex}-${i}-${item.id}-${item.enhancement}-${item.superRare}`, item, event.currentTarget)}
+                              className={`${rarityClass} ${fontWeightClass} align-baseline hover:underline`}
+                            >
+                              {getItemDisplayName(item)}
+                            </button>
                           </Fragment>
                         );
                       })}
@@ -9135,7 +9355,7 @@ function ExpeditionTab({
                                 const actionDisplay = trailingEffects.length > 0 && !allMissed
                                   ? actionText.replace(/\([^()]+\)$/, '')
                                   : actionText;
-                                const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
+                                const actionDisplayNode = renderBattleLogTextWithInlineChibis(actionDisplay, party, entry);
                                 const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                                 const isReflectDamageLog = !!log.reflectedDamage && log.reflectedDamage > 0;
                                 const isAbsorbDamageLog = !!log.absorbedDamage && log.absorbedDamage > 0;
@@ -9703,6 +9923,13 @@ function InventoryTab({
     left: number;
     width: number;
   } | null>(null);
+  const [activeInventoryAbilityBubble, setActiveInventoryAbilityBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
   const hasEquippedJewels = parties.some((party) =>
     party.characters.some((character) => character.equipment.some((item) => !!item?.jewel))
@@ -9859,24 +10086,90 @@ function InventoryTab({
     [parties],
   );
   const selectedJewelPriorityValue = jewelAutoEquipPriorityPartyId == null ? 'manual' : `${jewelAutoEquipPriorityPartyId}`;
+  const getInventoryBubblePosition = (targetElement: HTMLElement, maxWidth: number = 220) => {
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleWidth = Math.min(maxWidth, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleWidth,
+    );
+    return { top: triggerRect.bottom + 8, left, width: bubbleWidth };
+  };
+
   const handleInventoryOwnerBubbleToggle = (key: string, text: string, targetElement: HTMLElement) => {
     if (activeInventoryOwnerBubble?.key === key) {
       setActiveInventoryOwnerBubble(null);
       return;
     }
-    const triggerRect = targetElement.getBoundingClientRect();
-    const viewportPadding = 12;
-    const bubbleWidth = Math.min(220, window.innerWidth - viewportPadding * 2);
-    const left = Math.min(
-      Math.max(triggerRect.left, viewportPadding),
-      window.innerWidth - viewportPadding - bubbleWidth,
-    );
+    setActiveInventoryAbilityBubble(null);
     setActiveInventoryOwnerBubble({
       key,
       text,
-      top: triggerRect.bottom + 8,
-      left,
-      width: bubbleWidth,
+      ...getInventoryBubblePosition(targetElement),
+    });
+  };
+
+  const handleInventoryAbilityBubbleToggle = (key: string, text: string, targetElement: HTMLElement) => {
+    if (activeInventoryAbilityBubble?.key === key) {
+      setActiveInventoryAbilityBubble(null);
+      return;
+    }
+    setActiveInventoryOwnerBubble(null);
+    setActiveInventoryAbilityBubble({
+      key,
+      text,
+      ...getInventoryBubblePosition(targetElement, 320),
+    });
+  };
+
+  const renderInventoryItemStats = (item: Item, bubbleKeyPrefix: string): ReactNode => {
+    const statsText = getItemStats(item);
+    const abilityBonuses = (item.bonuses ?? [])
+      .flatMap((bonus) => {
+        if (bonus.type === 'ability' && bonus.abilityId) {
+          const level = bonus.abilityLevel || 1;
+          const label = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${level}`;
+          const description = getAbilityDescription(bonus.abilityId as AbilityId, level);
+          return [{ label, detail: `${label}：${description}` }];
+        }
+        if (bonus.type === 'ability_upgrade' && bonus.abilityId) {
+          const label = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}強化+${bonus.value}`;
+          const description = getAbilityDescription(bonus.abilityId as AbilityId, Math.max(1, bonus.value));
+          return [{ label, detail: `${label}：${description}` }];
+        }
+        return [];
+      })
+      .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.label === entry.label) === index);
+
+    if (abilityBonuses.length === 0) return renderTextWithRaceIcons(statsText);
+
+    const abilityByLabel = new Map(abilityBonuses.map((entry) => [entry.label, entry.detail]));
+    const pattern = abilityBonuses
+      .map((entry) => entry.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    if (!pattern) return renderTextWithRaceIcons(statsText);
+
+    const parts = statsText.split(new RegExp(`(${pattern})`, 'g'));
+    return parts.map((part, index) => {
+      const detail = abilityByLabel.get(part);
+      if (!detail) return <Fragment key={`${bubbleKeyPrefix}-stat-${index}`}>{renderTextWithRaceIcons(part)}</Fragment>;
+      return (
+        <button
+          key={`${bubbleKeyPrefix}-ability-${index}`}
+          type="button"
+          onPointerDown={(event) => {
+            event.stopPropagation();
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleInventoryAbilityBubbleToggle(`${bubbleKeyPrefix}-${part}-${index}`, detail, event.currentTarget);
+          }}
+          className="inline rounded px-0.5 text-sub underline decoration-dotted underline-offset-2 focus:outline-none focus:ring-1 focus:ring-sub"
+        >
+          {part}
+        </button>
+      );
     });
   };
 
@@ -9885,6 +10178,9 @@ function InventoryTab({
       onPointerDown={() => {
         if (activeInventoryOwnerBubble) {
           setActiveInventoryOwnerBubble(null);
+        }
+        if (activeInventoryAbilityBubble) {
+          setActiveInventoryAbilityBubble(null);
         }
       }}
     >
@@ -10072,7 +10368,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item))}
+                    {getRarityShortLabel(item.id, item.name)} {renderInventoryItemStats(item, entry.key)}
                   </div>
                 </div>
               );
@@ -10109,7 +10405,7 @@ function InventoryTab({
                         <span className="text-xs text-gray-500 shrink-0">x1</span>
                       </div>
                       <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
-                        {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item))}
+                        {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderInventoryItemStats(entry.equipped.item, entry.key)}
                       </div>
                     </div>
                   </div>
@@ -10149,7 +10445,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(variant.item.id, variant.item.name)} {renderTextWithRaceIcons(getItemStats(variant.item))}
+                    {getRarityShortLabel(variant.item.id, variant.item.name)} {renderInventoryItemStats(variant.item, key)}
                   </div>
                 </div>
               ))}
@@ -10160,17 +10456,33 @@ function InventoryTab({
           )}
         </div>
       )}
+      {activeInventoryAbilityBubble && (
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
+            style={{
+              top: `${activeInventoryAbilityBubble.top}px`,
+              left: `${activeInventoryAbilityBubble.left}px`,
+              width: `${activeInventoryAbilityBubble.width}px`,
+            }}
+          >
+            {activeInventoryAbilityBubble.text}
+          </div>
+        </FloatingBubblePortal>
+      )}
       {activeInventoryOwnerBubble && (
-        <div
-          className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
-          style={{
-            top: `${activeInventoryOwnerBubble.top}px`,
-            left: `${activeInventoryOwnerBubble.left}px`,
-            width: `${activeInventoryOwnerBubble.width}px`,
-          }}
-        >
-          {activeInventoryOwnerBubble.text}
-        </div>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg px-2 py-1 text-xs text-gray-700"
+            style={{
+              top: `${activeInventoryOwnerBubble.top}px`,
+              left: `${activeInventoryOwnerBubble.left}px`,
+              width: `${activeInventoryOwnerBubble.width}px`,
+            }}
+          >
+            {activeInventoryOwnerBubble.text}
+          </div>
+        </FloatingBubblePortal>
       )}
     </div>
   );
@@ -10209,6 +10521,21 @@ function DiaryTab({
     left: number;
     width: number;
   } | null>(null);
+  const [activeRewardItemBubble, setActiveRewardItemBubble] = useState<RewardItemBubble | null>(null);
+
+  const handleRewardItemBubbleToggle = (bubbleKey: string, item: Item, targetElement: HTMLElement) => {
+    if (activeRewardItemBubble?.key === bubbleKey) {
+      setActiveRewardItemBubble(null);
+      return;
+    }
+
+    // SpecRef: 8.5 | UI_DIARY | Diary log
+    setActiveRewardItemBubble({
+      key: bubbleKey,
+      text: getItemInventoryDetailText(item),
+      ...getRewardItemBubblePosition(targetElement),
+    });
+  };
 
   const handleEnemyBestiaryBubbleToggle = (
     bubbleKey: string,
@@ -10506,9 +10833,23 @@ function DiaryTab({
           if (activeEnemyBestiaryBubble) {
             setActiveEnemyBestiaryBubble(null);
           }
+          if (activeRewardItemBubble) {
+            setActiveRewardItemBubble(null);
+          }
         }}
       >
         {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
+        {activeRewardItemBubble && (
+          <FloatingBubblePortal>
+            <div
+              className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+              style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+            </div>
+          </FloatingBubblePortal>
+        )}
         {renderDiarySettings()}
         <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">記録された日誌はありません</div>
       </div>
@@ -10522,14 +10863,29 @@ function DiaryTab({
         if (activeEnemyBestiaryBubble) {
           setActiveEnemyBestiaryBubble(null);
         }
+        if (activeRewardItemBubble) {
+          setActiveRewardItemBubble(null);
+        }
       }}
     >
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
+      {activeRewardItemBubble && (
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+            style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+          </div>
+        </FloatingBubblePortal>
+      )}
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');
         const isExpanded = isSideQuestLog ? false : !!expandedLogs[diaryLog.id];
         const log = diaryLog.expeditionLog;
+        const diaryParty = parties.find((candidate) => candidate.name === diaryLog.partyName) ?? parties[0];
         const specialRewards = log.rewards.filter((item) => {
           const rarity = getItemRarityById(item.id);
           return rarity === 'bossRare' || rarity === 'mythicRare' || item.superRare > 0;
@@ -10600,7 +10956,14 @@ function DiaryTab({
                       return (
                         <Fragment key={i}>
                           {i > 0 && ', '}
-                          <span className={`${rarityClass} ${fontWeightClass}`}>{getItemDisplayName(item)}</span>
+                          <button
+                            type="button"
+                            onPointerDown={(event) => event.stopPropagation()}
+                            onClick={(event) => handleRewardItemBubbleToggle(`diary-reward-${diaryLog.id}-${i}-${item.id}-${item.enhancement}-${item.superRare}`, item, event.currentTarget)}
+                            className={`${rarityClass} ${fontWeightClass} align-baseline hover:underline`}
+                          >
+                            {getItemDisplayName(item)}
+                          </button>
                         </Fragment>
                       );
                     })}
@@ -10848,7 +11211,7 @@ function DiaryTab({
                               const actionDisplay = trailingEffects.length > 0 && !allMissed
                                 ? actionText.replace(/\([^()]+\)$/, '')
                                 : actionText;
-                              const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
+                              const actionDisplayNode = renderBattleLogTextWithInlineChibis(actionDisplay, diaryParty, entry);
                               const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                               const isReflectDamageLog = !!battleLog.reflectedDamage && battleLog.reflectedDamage > 0;
                               const isAbsorbDamageLog = !!battleLog.absorbedDamage && battleLog.absorbedDamage > 0;
@@ -11486,9 +11849,9 @@ function SettingTab({
     bestiaryListRef.current?.scrollTo({ top: bestiaryScrollTop, behavior: 'auto' });
   }, [bestiaryScrollTop]);
 
-  const commonRewardTotal = 100;
+  const commonRewardTotal = getBagTicketTotal(createCommonRewardBag());
   const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const uniqueRewardTotal = 100;
+  const uniqueRewardTotal = getBagTicketTotal(createUncommonRewardBag());
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const mythicRewardTotal = getBagTicketTotal(createMythicRareRewardBag());
 

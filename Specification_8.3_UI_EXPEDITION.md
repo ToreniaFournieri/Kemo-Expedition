@@ -83,7 +83,7 @@ HP 2350 / 4680
 
 
 - **Sub progress bar:**
-  - Visibility:
+| Normal Loot-gate condition | 🗃️0/2 1F-4解放 | アンコモンアイテム 0/2で 1F-4解放 |
     - Displayed only when `state` is `Step-based`. (example: `state.rest`, `state.sell`, or `state.explore`)
     - For all other states, render an empty placeholder to preserve layout height.
   - Represents elapsed time within the current `Step`.
@@ -149,9 +149,9 @@ HP 2350 / 4680
 		- If fully charged, display ▰▰▰▰▰▰MAX.
 		- If no stock is available, display ▱▱▱▱▱▱12.
 	- Pressing `出撃` or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
-      - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed. (note: always end at the end of `state.rest` )
-      - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` → `state.rest`
-      - The process ends after the final `state.rest` is completed.
+      - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed. (note: always end at the beginning of `state.rest` )
+      - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
+      - The process ends after the final `state.return` is completed.
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
 
 | Stock Level | Time Required for This Charge | 
