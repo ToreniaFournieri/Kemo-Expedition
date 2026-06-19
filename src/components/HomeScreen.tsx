@@ -6847,6 +6847,7 @@ function PartyTab({
         {partyMemberImageSrc && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg" aria-hidden="true">
             {/* SpecRef: 8.2.2 | Party member details | Display character image */}
+            <div className="absolute inset-0 bg-slate-800/70" />
             <img
               src={partyMemberImageSrc}
               alt=""
