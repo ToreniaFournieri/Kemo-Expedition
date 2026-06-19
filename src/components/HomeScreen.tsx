@@ -488,15 +488,6 @@ function getExpeditionTierDurationFactor(expTier: number): number {
   return Math.max(0, expTier);
 }
 
-function isIOSMobileSafari(): boolean {
-  if (typeof navigator === 'undefined') return false;
-
-  const userAgent = navigator.userAgent;
-  const isIOSDevice = /iP(hone|ad|od)/.test(userAgent);
-  const isWebKitSafari = /WebKit/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser/.test(userAgent);
-  return isIOSDevice && isWebKitSafari;
-}
-
 function normalizeBattleLogNote(note?: string): string | undefined {
   if (!note) return note;
   return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
@@ -2901,7 +2892,7 @@ export function HomeScreen({
   onDismissNotification,
   onDismissAllNotifications,
 }: HomeScreenProps) {
-  const prefersDocumentScroll = isIOSMobileSafari();
+  const prefersDocumentScroll = false;
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [tabTransitionDirection, setTabTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [activeWideModeSecondaryTab, setActiveWideModeSecondaryTab] = useState<WideModeSecondaryTab>(WIDE_MODE_DEFAULT_SECONDARY_TAB);
