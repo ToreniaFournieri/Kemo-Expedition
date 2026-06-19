@@ -5782,7 +5782,7 @@ function PartyTab({
   const prevSelectedCharRef = useRef(selectedCharacter);
   const prevSelectedPartyRef = useRef(selectedPartyIndex);
   const touchDraggingCharacterIndexRef = useRef<number | null>(null);
-  const touchReorderConfirmedRef = useRef(false);
+  const touchReorderTargetIndexRef = useRef<number | null>(null);
   const partyPaneBackgroundImageFileName = useMemo(() => {
     const partyNumber = selectedPartyIndex + 1;
     if (partyNumber < 1 || partyNumber > 6) return null;
@@ -6779,7 +6779,7 @@ function PartyTab({
               }}
               onTouchStart={() => {
                 touchDraggingCharacterIndexRef.current = i;
-                touchReorderConfirmedRef.current = false;
+                touchReorderTargetIndexRef.current = null;
                 setDraggingCharacterIndex(i);
               }}
               onTouchMove={(event) => {
@@ -6792,23 +6792,18 @@ function PartyTab({
                 const fromIndex = touchDraggingCharacterIndexRef.current;
                 if (fromIndex === null || Number.isNaN(toIndex) || fromIndex === toIndex) return;
 
-                if (!touchReorderConfirmedRef.current) {
-                  if (!confirmPartyCharacterReorder()) {
-                    touchDraggingCharacterIndexRef.current = null;
-                    setDraggingCharacterIndex(null);
-                    return;
-                  }
-                  touchReorderConfirmedRef.current = true;
-                }
-
-                reorderCharacter(fromIndex, toIndex);
-                touchDraggingCharacterIndexRef.current = toIndex;
+                touchReorderTargetIndexRef.current = toIndex;
                 setDraggingCharacterIndex(toIndex);
               }}
               onTouchEnd={() => {
+                const fromIndex = touchDraggingCharacterIndexRef.current;
+                const toIndex = touchReorderTargetIndexRef.current;
                 touchDraggingCharacterIndexRef.current = null;
-                touchReorderConfirmedRef.current = false;
+                touchReorderTargetIndexRef.current = null;
                 setDraggingCharacterIndex(null);
+
+                if (fromIndex === null || toIndex === null || fromIndex === toIndex) return;
+                reorderCharacterWithConfirmation(fromIndex, toIndex);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
               className={`${IOS_GLASS_BUTTON_CLASS} relative w-[50px] overflow-visible min-w-0 p-0 transition-colors ${
