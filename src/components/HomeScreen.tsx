@@ -5529,7 +5529,7 @@ export function HomeScreen({
 
       {/* Bottom Tabs */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2" aria-label="Main navigation">
-        <div className="mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-white/55 bg-white/30 p-1.5 shadow-[0_12px_32px_rgb(15_23_42/0.20)] backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-transparent bg-white/12 p-1.5 shadow-[0_8px_20px_rgb(15_23_42/0.12)] backdrop-blur-sm">
           {tabs.map(tab => {
             const isActive = (isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id);
             return (
