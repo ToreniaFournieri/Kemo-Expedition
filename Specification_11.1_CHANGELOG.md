@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.7.6 | 9 | 2026/06/19 | Add a dark gray backing layer behind the Party status pane character image (Spec 8.2.2) so transparent character artwork areas are visually subdued beneath status text. |
 | 0.7.6 | 8 | 2026/06/19 | Update runtime Colosseum sortie exception (Spec 8.3): selecting `x.exp_id = 0`/Colosseum now keeps 出撃 available regardless of HP, exploration, or charge state and does not consume Instant Expedition Charge. |
 | 0.7.6 | 7 | 2026/06/19 | Update runtime Expedition 1 enemy 129 bonus abilities (Spec 4.2.2): add `a.re-attack` Lv1 to トリコ alongside `a.null-death-touch` Lv1. |
 | 0.7.6 | 6 | 2026/06/19 | Implement runtime Fading Memory ability and Voidspawn tier-8 elite grimoire bonus (Spec 1.1/3.2/6.1): add `a.fading_memory` as a START priority-8 ability that disables one random living combatant ability across both sides unless the target has Unforgettable. |

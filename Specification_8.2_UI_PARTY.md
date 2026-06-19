@@ -79,7 +79,6 @@ line2: 桃/腕  ← text over background image
     - If the page width is **400px or narrower**, set the image width to **150% of the panel width**.
     - Between **400px and 500px**, interpolate linearly between **150% → 120%**.
   - In dark mode: not invert the image.
-  - Add a dark gray layer behind the character image in the status pane so transparent artwork areas remain subdued and readable.
   - Apply mask above the image to ensure text readability.
   - The image remains static relative to the panel (does not move with internal content changes).
 
