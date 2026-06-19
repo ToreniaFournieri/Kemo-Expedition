@@ -243,11 +243,13 @@ const CORRODE_MULTIPLIERS: Record<number, number> = {
 };
 
 const LIFE_DRAIN_MULTIPLIERS: Record<number, number> = {
-  1: 1 / 10,
-  2: 3 / 10,
-  3: 5 / 10,
-  4: 7 / 10,
-  5: 1.0,
+  1: 1 / 1000,
+  2: 3 / 1000,
+  3: 10 / 1000,
+  4: 30 / 1000,
+  5: 100 / 1000,
+  6: 300 / 1000,
+  7: 1.0,
 };
 
 const AMBUSH_MULTIPLIERS: Record<number, number> = {
@@ -1725,7 +1727,21 @@ function getCorrodeMultiplier(level: number): number {
 }
 
 function getLifeDrainMultiplier(level: number): number {
-  return LIFE_DRAIN_MULTIPLIERS[Math.min(5, Math.max(1, level))] ?? 0;
+  return LIFE_DRAIN_MULTIPLIERS[Math.min(7, Math.max(1, level))] ?? 0;
+}
+
+function formatLifeDrainMultiplierLabel(level: number): string {
+  const clampedLevel = Math.min(7, Math.max(1, level));
+  const numeratorByLevel: Record<number, number> = {
+    1: 1,
+    2: 3,
+    3: 10,
+    4: 30,
+    5: 100,
+    6: 300,
+    7: 1000,
+  };
+  return `${numeratorByLevel[clampedLevel] ?? 0}/1000`;
 }
 
 function getDeathTouchChance(level: number, hits: number): number {
@@ -1747,14 +1763,6 @@ function getBindChance(level: number, hits: number): number {
 
 function getBurnPercent(level: number): number {
   return BURN_PERCENTS[Math.min(5, Math.max(1, level))] ?? 0;
-}
-
-function formatFractionPercentLabel(value: number): string {
-  const percentage = value * 100;
-  if (Number.isInteger(percentage)) {
-    return `${percentage}%`;
-  }
-  return `${percentage.toFixed(1).replace(/\.0$/, '')}%`;
 }
 
 function formatMultiplierAsFraction(multiplier: number): string {
@@ -3055,7 +3063,7 @@ export function executeBattle(
           : buildLifeDrainAction(actorName, enemy.name),
         note: targetNullLifeDrain
           ? '(吸血無効)'
-          : `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
+          : `(吸血: 与ダメージの${formatLifeDrainMultiplierLabel(lifeDrainLevel)}回復: ✚${healAmount})`,
         noteTone: 'muted',
       });
     }
@@ -3204,7 +3212,7 @@ export function executeBattle(
           : buildLifeDrainAction(enemy.name, targetName),
         note: targetNullLifeDrain
           ? '(吸血無効)'
-          : `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
+          : `(吸血: 与ダメージの${formatLifeDrainMultiplierLabel(enemyLifeDrainLevel)}回復: ✚${healAmount})`,
         noteTone: 'muted',
       });
     }
