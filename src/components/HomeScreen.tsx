@@ -218,7 +218,7 @@ const IOS_GLASS_TAB_CLASS =
   'ios-glass-button rounded-xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation tabs
 const IOS_GLASS_TOP_TAB_CLASS =
-  'ios-glass-button ios-glass-top-tab rounded-none';
+  'ios-glass-button ios-glass-top-tab rounded-2xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_SLIDER_CLASS =
   'ios-glass-slider';
@@ -472,7 +472,7 @@ function getAutoSellStepCount(party: Party): number {
   return Math.max(1, autoSellItemCount);
 }
 
-const HEADER_HEIGHT_CLASS = 'pt-[118px]';
+const HEADER_HEIGHT_CLASS = 'pt-[74px] pb-[calc(88px+env(safe-area-inset-bottom))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -5524,31 +5524,39 @@ export function HomeScreen({
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="relative z-40 flex mt-0.5 -mb-3">
-            {tabs.map(tab => (
+        </div>
+      </div>
+
+      {/* Bottom Tabs */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2" aria-label="Main navigation">
+        <div className="mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-white/55 bg-white/30 p-1.5 shadow-[0_12px_32px_rgb(15_23_42/0.20)] backdrop-blur-xl">
+          {tabs.map(tab => {
+            const isActive = (isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id);
+            return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => {
                   switchTab(tab.id);
                 }}
-                className={`${IOS_GLASS_TOP_TAB_CLASS} flex-1 py-2 text-sm font-medium relative transition-colors ${
-                  ((isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id))
-                    ? 'text-sub border-b-2 border-sub'
+                className={`${IOS_GLASS_TOP_TAB_CLASS} min-h-[44px] flex-1 px-1 py-2 text-xs font-semibold relative transition-colors ${
+                  isActive
+                    ? 'text-sub'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
+                aria-current={isActive ? 'page' : undefined}
               >
-                {tab.label}
+                <span className="relative z-10">{tab.label}</span>
                 {tab.id === 'diary' && hasUnreadDiary && (
-                  <span className="absolute -top-0.5 right-1 z-50 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
+                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
                     {unreadDiaryBadgeLabel}
                   </span>
                 )}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </div>
+      </nav>
 
       {/* Tab Content */}
       <div

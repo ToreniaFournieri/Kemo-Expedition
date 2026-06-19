@@ -391,29 +391,49 @@ body {
 }
 
 .ios-glass-top-tab {
-  border-color: transparent;
-  background-color: transparent;
-  background-image: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
+  border-color: rgb(255 255 255 / 0.54);
+  background-color: rgb(255 255 255 / 0.22);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.38), rgb(255 255 255 / 0.12));
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.62),
+    0 4px 14px rgb(15 23 42 / 0.10);
+}
+
+.ios-glass-top-tab:hover,
+.ios-glass-top-tab:active {
+  background-color: rgb(255 255 255 / 0.34);
+}
+
+.ios-glass-top-tab[aria-current="page"] {
+  background-color: rgb(var(--color-sub) / 0.16);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.78),
+    0 6px 18px rgb(var(--color-sub) / 0.18);
 }
 
 .theme-dark .ios-glass-top-tab {
-  border-color: transparent;
-  background-color: transparent;
-  background-image: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
+  border-color: rgb(148 163 184 / 0.34);
+  background-color: rgb(15 23 42 / 0.30);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.04));
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 6px 18px rgb(2 6 23 / 0.44);
 }
 
 .theme-dark .ios-glass-top-tab:hover,
 .theme-dark .ios-glass-top-tab:active {
-  background-color: transparent;
-  background-image: none;
-  box-shadow: none;
-  transform: none;
+  background-color: rgb(30 41 59 / 0.42);
+}
+
+.theme-dark .ios-glass-top-tab[aria-current="page"] {
+  background-color: rgb(var(--color-sub) / 0.24);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 6px 18px rgb(var(--color-sub) / 0.20);
 }
 
 .theme-dark .liquid-glass-segmented .ios-glass-button {
