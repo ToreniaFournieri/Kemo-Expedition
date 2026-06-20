@@ -9956,6 +9956,12 @@ function InventoryTab({
   const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>(() => (hasFirstJewel ? 'jewel' : 'armor'));
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
   const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
+  const [sellStackConfirmation, setSellStackConfirmation] = useState<{
+    variantKey: string;
+    itemName: string;
+    count: number;
+    sellPrice: number;
+  } | null>(null);
   const categoryGroups = hasFirstJewel ? INVENTORY_CATEGORY_GROUPS : CATEGORY_GROUPS;
   const isJewelCategory = selectedCategory === 'jewel';
 
@@ -10191,6 +10197,13 @@ function InventoryTab({
     });
   };
 
+  // SpecRef: 8.4.2 | Inventory(所持品) | Sell all button(全売却)
+  const confirmSellStack = () => {
+    if (!sellStackConfirmation) return;
+    onSellStack(sellStackConfirmation.variantKey);
+    setSellStackConfirmation(null);
+  };
+
   return (
     <div
       onPointerDown={() => {
@@ -10374,11 +10387,12 @@ function InventoryTab({
                           window.alert('超レア称号がついたアイテムは売却出来ません');
                           return;
                         }
-                        const shouldSell = window.confirm(
-                          `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？`
-                        );
-                        if (!shouldSell) return;
-                        onSellStack(entry.key);
+                        setSellStackConfirmation({
+                          variantKey: entry.key,
+                          itemName: getItemDisplayName(item),
+                          count,
+                          sellPrice,
+                        });
                       }}
                       className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                     >
@@ -10472,6 +10486,44 @@ function InventoryTab({
               )}
             </div>
           )}
+        </div>
+      )}
+      {sellStackConfirmation && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 px-5 py-8"
+          role="presentation"
+          onPointerDown={() => setSellStackConfirmation(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sell-stack-confirm-title"
+            className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-5 text-gray-900 shadow-2xl"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <div id="sell-stack-confirm-title" className="text-base font-medium leading-relaxed">
+              「{sellStackConfirmation.itemName} x{formatNumber(sellStackConfirmation.count)}」を全売却します。
+            </div>
+            <div className="mt-2 text-sm leading-relaxed text-gray-600">
+              {formatNumber(sellStackConfirmation.sellPrice)}Gを獲得します。よろしいですか？
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setSellStackConfirmation(null)}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-sub hover:bg-blue-50"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={confirmSellStack}
+                className="rounded-full bg-sub px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600"
+              >
+                OK
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {activeInventoryAbilityBubble && (

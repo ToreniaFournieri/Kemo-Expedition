@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 13 | 2026/06/20 | Replace the Base Inventory sell-all browser-native confirmation with an in-app themed confirmation dialog (Spec 8.4.2), so dark mode renders the warning popup with the application dark visual style while preserving the sell/cancel flow. |
 | 0.7.6 | 12 | 2026/06/19 | Apply the active dark theme class to document-level floating bubble portals (Spec 8.1), so inventory, diary reward item, and enemy bestiary bubbles inherit the same dark-mode text colors as the Party status pane bubbles without changing index.css. |
 | 0.7.6 | 11 | 2026/06/19 | Delay touch reorder confirmation in the Party tab until the player finishes dragging a party member, so the swap confirmation appears after movement ends instead of during the touch move gesture. |
 | 0.7.6 | 10 | 2026/06/19 | Apply themed battle-log icon filters to reflected and absorbed damage displays (Spec 6.1): elemental icons in reflection/absorption result lines now use the same target-colored filter as normal damage log lines. |
