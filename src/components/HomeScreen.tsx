@@ -10489,42 +10489,44 @@ function InventoryTab({
         </div>
       )}
       {sellStackConfirmation && (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 px-5 py-8"
-          role="presentation"
-          onPointerDown={() => setSellStackConfirmation(null)}
-        >
+        <FloatingBubblePortal>
           <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="sell-stack-confirm-title"
-            className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-5 text-gray-900 shadow-2xl"
-            onPointerDown={(event) => event.stopPropagation()}
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 px-5 py-8"
+            role="presentation"
+            onPointerDown={() => setSellStackConfirmation(null)}
           >
-            <div id="sell-stack-confirm-title" className="text-base font-medium leading-relaxed">
-              「{sellStackConfirmation.itemName} x{formatNumber(sellStackConfirmation.count)}」を全売却します。
-            </div>
-            <div className="mt-2 text-sm leading-relaxed text-gray-600">
-              {formatNumber(sellStackConfirmation.sellPrice)}Gを獲得します。よろしいですか？
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setSellStackConfirmation(null)}
-                className="rounded-full px-4 py-2 text-sm font-semibold text-sub hover:bg-blue-50"
-              >
-                キャンセル
-              </button>
-              <button
-                type="button"
-                onClick={confirmSellStack}
-                className="rounded-full bg-sub px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600"
-              >
-                OK
-              </button>
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="sell-stack-confirm-title"
+              className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-5 text-gray-900 shadow-2xl"
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <div id="sell-stack-confirm-title" className="text-base font-medium leading-relaxed">
+                「{sellStackConfirmation.itemName} x{formatNumber(sellStackConfirmation.count)}」を全売却します。
+              </div>
+              <div className="mt-2 text-sm leading-relaxed text-gray-600">
+                {formatNumber(sellStackConfirmation.sellPrice)}Gを獲得します。よろしいですか？
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSellStackConfirmation(null)}
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-sub hover:bg-blue-50"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmSellStack}
+                  className="rounded-full bg-sub px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600"
+                >
+                  OK
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </FloatingBubblePortal>
       )}
       {activeInventoryAbilityBubble && (
         <FloatingBubblePortal>
