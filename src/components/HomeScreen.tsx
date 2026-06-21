@@ -12602,19 +12602,22 @@ function SettingTab({
       }}
     >
       {activeAbilityHelp && abilityHelpPosition && (
-        <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
-          style={{
-            top: abilityHelpPosition.top,
-            left: abilityHelpPosition.left,
-            width: abilityHelpPosition.width,
-          }}
-        >
-          <div className="text-xs text-gray-700">
-            <span className="font-semibold text-gray-800">{activeAbilityHelp.title}</span>
-            <span>：{activeAbilityHelp.description}</span>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg p-3"
+            style={{
+              top: abilityHelpPosition.top,
+              left: abilityHelpPosition.left,
+              width: abilityHelpPosition.width,
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <div className="text-xs text-gray-700">
+              <span className="font-semibold text-gray-800">{activeAbilityHelp.title}</span>
+              <span>：{activeAbilityHelp.description}</span>
+            </div>
           </div>
-        </div>
+        </FloatingBubblePortal>
       )}
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
