@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 18 | 2026/06/21 | Render the Divine Bureau enemy bestiary ability help bubble through the document-level floating bubble portal (Spec 8.6), so it layers above the expanded enemy art and app chrome consistently on mobile. |
 | 0.7.6 | 17 | 2026/06/21 | Update runtime Expedition 2 boss Rosaria data (Spec 4.2.2): change Enemy_ID 171 subclass to `class.sword-saint` and include the specified Deflection Lv2 bonus ability. |
 | 0.7.6 | 16 | 2026/06/21 | Refine Divine Bureau enemy bestiary ability help bubble positioning (Spec 8.6): place ability explanations beside the tapped ability token with viewport-aware fallback instead of below the row. |
 | 0.7.6 | 15 | 2026/06/21 | Update runtime Expedition 2 enemy master data (Spec 4.2.2): align Enemy_ID 136-171 names and apply the specified bonus abilities and physical-defense modifiers. |
