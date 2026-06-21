@@ -12567,18 +12567,9 @@ function SettingTab({
     const triggerRect = event.currentTarget.getBoundingClientRect();
     const viewportPadding = 12;
     const tooltipWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
-    const rightSideLeft = triggerRect.right + 8;
-    const leftSideLeft = triggerRect.left - tooltipWidth - 8;
-    const hasRightSideSpace = rightSideLeft + tooltipWidth <= window.innerWidth - viewportPadding;
-    const left = hasRightSideSpace
-      ? rightSideLeft
-      : Math.min(
-        Math.max(leftSideLeft, viewportPadding),
-        window.innerWidth - viewportPadding - tooltipWidth,
-      );
-    const top = Math.min(
-      Math.max(triggerRect.top, viewportPadding),
-      Math.max(viewportPadding, window.innerHeight - viewportPadding - 80),
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - tooltipWidth,
     );
 
     setActiveAbilityHelp((current) => {
@@ -12588,7 +12579,7 @@ function SettingTab({
       }
 
       setAbilityHelpPosition({
-        top,
+        top: triggerRect.bottom + 8,
         left,
         width: tooltipWidth,
       });
