@@ -97,19 +97,19 @@
 | 150 | 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.sword-saint | `i.gauntlet`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ルメモス |
 | 151 | 2 | 3 | 3 | 10 | Normal | `Frost` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 霜刃豹 |
 | 152 | 2 | 3 | 3 | 10 | Normal | `Frost` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | スノウフラッフィ |
-| 153 | 2 | 3 | 4 | 12 | Elite | `Plant_Fungal` | class.striker.pilgrim | `i.bolt`EC, `i.arrow`EC, `i.robe`EC, `i.arrow`C, `i.bolt`C, `i.archery`C | アマニバン |
-| 154 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 岩殻の守体 |
-| 155 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 結晶脈の突撃体 |
-| 156 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 谷壁の賢刀体 |
-| 157 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 菌殻の突進株 |
-| 158 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 菌冠の寄生樹 |
-| 159 | 2 | 4 | 4 | 13 | Elite | `Golem` | class.sword-saint.alchemist | `i.gauntlet`EB, `i.sword`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | 玄岩の連撃体 |
-| 160 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 胞子影の這い株 |
-| 161 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 菌刃のつる株 |
-| 162 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 苔衣の胞子塊 |
-| 163 | 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 忍狼 |
-| 164 | 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD, `i.robe`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 妖狼 |
-| 165 | 2 | 5 | 4 | 14 | Elite | `Golem` | class.wizard.sage | `i.wand`EB, `i.robe`EB, `i.grimoire`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 核晶の導師体 |
+| 153 | 2 | 3 | 4 | 12 | Elite | `Plant_Fungal` | class.striker.pilgrim | `i.bolt`EC, `i.arrow`EC, `i.robe`EC, `i.arrow`C, `i.bolt`C, `i.archery`C | アマニバン | `a.boost`2 |
+| 154 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | ウールワード |
+| 155 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | パッチパウ |
+| 156 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | メールホップ |
+| 157 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | パールスポア |
+| 158 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ウールミ |
+| 159 | 2 | 4 | 4 | 13 | Elite | `Golem` | class.sword-saint.alchemist | `i.gauntlet`EB, `i.sword`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | スティッチリング | `a.ranged-reflect`1 |
+| 160 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | パフキャップ |
+| 161 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | タリア |
+| 162 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | インクキャップ |
+| 163 | 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | ポルセラ |`c.physical-defense-multiplier_x0.4`|
+| 164 | 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD, `i.robe`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ポルセル | `c.physical-defense-multiplier_x0.6`, `a.covering-fire`1 |
+| 165 | 2 | 5 | 4 | 14 | Elite | `Golem` | class.wizard.sage | `i.wand`EB, `i.robe`EB, `i.grimoire`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | カップマウス | `a.slow`1,  |
 | 166 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 氷冠の群核 |
 | 167 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 寒天の呪獣 |
 | 168 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 凍原の巨爪獣 |
