@@ -497,11 +497,26 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   123: [{ id: 'wind_rider', level: 1 }],
   129: [{ id: 'null_death_touch', level: 1 }, { id: 're_attack', level: 1 }],
   135: [{ id: 'ice_absorb', level: 1 }, { id: 'true_sight', level: 1 }],
+  141: [{ id: 'ice_protect_breaker', level: 1 }],
+  142: [{ id: 'howl', level: 3 }],
+  144: [{ id: 'predator_sense', level: 1 }],
+  153: [{ id: 'boost', level: 2 }],
+  159: [{ id: 'ranged_reflect', level: 1 }],
+  164: [{ id: 'covering_fire', level: 1 }],
+  165: [{ id: 'slow', level: 1 }],
+  171: [{ id: 'life_drain', level: 6 }, { id: 'null_life_drain', level: 1 }],
 };
 
 const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   // SpecRef: 4.2.2 | Enemy | Rare items drop
   4: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }],
+};
+
+const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
+  // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+  147: [{ type: 'physical_defense_multiplier_xV', value: 1 / 2 }],
+  163: [{ type: 'physical_defense_multiplier_xV', value: 2 / 5 }],
+  164: [{ type: 'physical_defense_multiplier_xV', value: 3 / 5 }],
 };
 
 function generateEnemies(): EnemyDef[] {
@@ -533,6 +548,10 @@ function generateEnemies(): EnemyDef[] {
       const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.masterDropTokens = assignCommonDropTokensByClass(masterDropTokens, row[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
+      const enemyBonusModifiers = MASTER_ENEMY_BONUS_MODIFIERS[id] ?? [];
+      if (enemyBonusModifiers.length > 0) {
+        enemy.bonuses = [...(enemy.bonuses ?? []), ...enemyBonusModifiers];
+      }
       if (spawnType === 'boss') {
         const bossBonusModifiers = MASTER_BOSS_BONUS_MODIFIERS[tier] ?? [];
         if (bossBonusModifiers.length > 0) {
