@@ -505,6 +505,11 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   164: [{ id: 'covering_fire', level: 1 }],
   165: [{ id: 'slow', level: 1 }],
   171: [{ id: 'deflection', level: 2 }, { id: 'life_drain', level: 6 }, { id: 'null_life_drain', level: 1 }],
+  177: [{ id: 'null_shock', level: 1 }],
+  183: [{ id: 'unforgettable', level: 1 }],
+  189: [{ id: 're_attack', level: 1 }],
+  195: [{ id: 'resurrect', level: 1 }],
+  201: [{ id: 'overwatch', level: 1 }],
 };
 
 const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
