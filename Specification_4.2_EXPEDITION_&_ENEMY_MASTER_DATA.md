@@ -127,7 +127,7 @@
 | 180 | 3 | 2 | 1-2 | 15 | Normal | `Fruit` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ぱらーしゃ |
 | 181 | 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 粘核の剣闘体 |
 | 182 | 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 巡礼ゼリー |
-| 183 | 3 | 2 | 4 | 18 | Elite | `Fruit` | class.lord.samurai | `i.shield`EA, `i.katana`EA, `i.katana`EA, `i.armor`C, `i.robe`C, `i.shield`C | 潮騎の重殻 |
+| 183 | 3 | 2 | 4 | 18 | Elite | `Fruit` | class.lord.samurai | `i.shield`EA, `i.katana`EA, `i.katana`EA, `i.armor`C, `i.robe`C, `i.shield`C | りっぴー |
 | 184 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 泡霊の群核 |
 | 185 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 潮鳴きの霊術体 |
 | 186 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 霊波の前衛 |
