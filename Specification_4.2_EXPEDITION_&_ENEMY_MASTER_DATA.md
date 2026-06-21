@@ -134,23 +134,23 @@
 | 187 | 3 | 3 | 3 | 17 | Normal | `Fruit` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ぴたっぴ |
 | 188 | 3 | 3 | 3 | 17 | Normal | `Fruit` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | からっぴ |
 | 189 | 3 | 3 | 4 | 19 | Elite | `Spirit` | class.wizard.ninja | `i.wand`EC, `i.robe`EC, `i.archery`EC, `i.wand`C, `i.grimoire`C, `i.catalyst`C | レイニャン |
-| 190 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 粘波の斥候 |
-| 191 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 粘潮の突撃核 |
-| 192 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 飛沫の射出体 |
+| 190 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | スミ |
+| 191 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ルミネ |
+| 192 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ヴァルディ |
 | 193 | 3 | 4 | 3 | 18 | Normal | `Spirit` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 霊潮の突撃体 |
 | 194 | 3 | 4 | 3 | 18 | Normal | `Spirit` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 潮守の灯霊 |
-| 195 | 3 | 4 | 4 | 20 | Elite | `Slime_Colony` | class.ninja.guardian | `i.archery`EB, `i.bolt`EB, `i.armor`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 粘群の影忍 |
+| 195 | 3 | 4 | 4 | 20 | Elite | `Slime_Colony` | class.ninja.guardian | `i.archery`EB, `i.bolt`EB, `i.armor`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | サルナ |
 | 196 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ミズキ |
 | 197 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 波祓いの侍霊 |
 | 198 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 潮文の語り霊 |
 | 199 | 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 狐牙の護剣士 |
 | 200 | 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 狐尾の魔術師 |
-| 201 | 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | class.striker.sword-saint | `i.bolt`EB, `i.arrow`EB, `i.gauntlet`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 飛沫群の狙撃核 |
+| 201 | 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | class.striker.sword-saint | `i.bolt`EB, `i.arrow`EB, `i.gauntlet`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | ネリア |
 | 202 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | なぴ |
 | 203 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | みき |
 | 204 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | たまる |
-| 205 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 泡群の射手 |
-| 206 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海蝕の刃兵 |
+| 205 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | イリア |
+| 206 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヴェスペラ |
 | 207 | 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | class.wizard.sage | `i.wand`BD, `i.robe`BD, `i.grimoire`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | アズラーイール | `a.melee-confusion`1 |
 | 208 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂夜の牙影 |
 | 209 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月砂の迅牙 |
