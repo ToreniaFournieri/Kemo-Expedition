@@ -132,14 +132,14 @@
 | 3 | U | none | `i.arrow`U | 波羽矢 |
 | 3 | U | none | `i.bolt`U | 潮先ボルト |
 | 3 | U | none | `i.archery`U | 海曲の弓 |
-| 3 | E | `Marine` | `i.grimoire`EA | 潮海の秘本 |
-| 3 | E | `Marine` | `i.katana`EA | 潮海の太刀 |
-| 3 | E | `Marine` | `i.wand`EA | 潮海の杖 |
-| 3 | E | `Marine` | `i.catalyst`EA | 深潮核の触媒 |
-| 3 | E | `Marine` | `i.robe`EA | 潮王の外套 |
-| 3 | E | `Marine` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
-| 3 | E | `Marine` | `i.sword`EA | 小刀 | `a.null-bind` |
-| 3 | E | `Marine` | `i.armor`EA | 鮫肌の鎧 | `a.execution-null` |
+| 3 | E | `Fruit` | `i.grimoire`EA | 潮海の秘本 |
+| 3 | E | `Fruit` | `i.katana`EA | 潮海の太刀 |
+| 3 | E | `Fruit` | `i.wand`EA | 潮海の杖 |
+| 3 | E | `Fruit` | `i.catalyst`EA | 深潮核の触媒 |
+| 3 | E | `Fruit` | `i.robe`EA | 潮王の外套 |
+| 3 | E | `Fruit` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
+| 3 | E | `Fruit` | `i.sword`EA | 小刀 | `a.null-bind` |
+| 3 | E | `Fruit` | `i.armor`EA | 鮫肌の鎧 | `a.execution-null` |
 | 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
 | 3 | E | `Spirit` | `i.grimoire`EC | 誘いの書 |
 | 3 | E | `Spirit` | `i.gauntlet`EC | 霊波の手甲 |
