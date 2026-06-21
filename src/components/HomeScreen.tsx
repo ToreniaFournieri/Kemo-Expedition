@@ -685,6 +685,7 @@ function EnemyBestiaryBubble({
     top: number;
     left: number;
     width: number;
+    placement?: FloatingBubblePlacement;
   };
 }) {
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
@@ -711,11 +712,12 @@ function EnemyBestiaryBubble({
   return (
     <FloatingBubblePortal>
       <div
-        className="floating-bubble-pane fixed z-20 rounded-lg p-3"
+        className="floating-bubble-pane fixed z-50 rounded-lg p-3"
         style={{
         top: bubble.top,
         left: bubble.left,
         width: bubble.width,
+        transform: getFloatingBubbleTransform(bubble.placement ?? 'below'),
         }}
       >
         <div className="text-xs space-y-1 text-gray-700">
@@ -1753,28 +1755,45 @@ function getItemInventoryDetailText(item: Item): string {
   return `[${CATEGORY_NAMES[item.category]}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
 }
 
-type RewardItemBubble = {
-  key: string;
-  text: string;
+type FloatingBubblePlacement = 'above' | 'below';
+
+type FloatingBubblePosition = {
   top: number;
   left: number;
   maxWidth: number;
+  placement: FloatingBubblePlacement;
 };
 
-function getRewardItemBubblePosition(targetElement: HTMLElement): Omit<RewardItemBubble, 'key' | 'text'> {
+type RewardItemBubble = {
+  key: string;
+  text: string;
+} & FloatingBubblePosition;
+
+function getFloatingBubblePosition(targetElement: HTMLElement, maxWidth: number = 360): FloatingBubblePosition {
   const triggerRect = targetElement.getBoundingClientRect();
   const viewportPadding = 12;
-  const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+  const bottomNavReserve = 104;
+  const bubbleMaxWidth = Math.min(maxWidth, window.innerWidth - viewportPadding * 2);
   const left = Math.min(
     Math.max(triggerRect.left, viewportPadding),
     window.innerWidth - viewportPadding - bubbleMaxWidth,
   );
+  const shouldOpenAbove = triggerRect.bottom + 8 > window.innerHeight - bottomNavReserve;
 
   return {
-    top: triggerRect.bottom + 8,
+    top: shouldOpenAbove ? triggerRect.top - 8 : triggerRect.bottom + 8,
     left,
     maxWidth: bubbleMaxWidth,
+    placement: shouldOpenAbove ? 'above' : 'below',
   };
+}
+
+function getFloatingBubbleTransform(placement: FloatingBubblePlacement): string | undefined {
+  return placement === 'above' ? 'translateY(-100%)' : undefined;
+}
+
+function getRewardItemBubblePosition(targetElement: HTMLElement): Omit<RewardItemBubble, 'key' | 'text'> {
+  return getFloatingBubblePosition(targetElement);
 }
 
 function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultiplier: number = 1): string {
@@ -6592,7 +6611,7 @@ function PartyTab({
     >
       {activeInlineDetailHelp && inlineDetailHelpPosition && (
         <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
+          className="floating-bubble-pane fixed z-50 rounded-lg p-3"
           style={{
             top: inlineDetailHelpPosition.top,
             left: inlineDetailHelpPosition.left,
@@ -7357,7 +7376,7 @@ function PartyTab({
               </button>
               {showBaseStatHelp && (
                 <div
-                  className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-2"
+                  className="floating-bubble-pane fixed z-50 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-2"
                   style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
@@ -7612,7 +7631,7 @@ function PartyTab({
                           )}
                           {offense.text && activeStatusHelpKey === offense.key && (
                             <div
-                              className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
+                              className="floating-bubble-pane fixed z-50 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
                               style={activeStatusHelpPosition ?? undefined}
                               onPointerDown={(event) => event.stopPropagation()}
                             >
@@ -7640,7 +7659,7 @@ function PartyTab({
                               </button>
                               {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
                                 <div
-                                  className="floating-bubble-pane fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
+                                  className="floating-bubble-pane fixed z-50 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
                                   style={activeStatusHelpPosition ?? undefined}
                                   onPointerDown={(event) => event.stopPropagation()}
                                 >
@@ -8015,7 +8034,7 @@ function PartyTab({
         </div>
         {showAutoEquipmentHelp && autoEquipmentHelpPosition && (
         <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-3 text-xs text-gray-700 space-y-1"
+          className="floating-bubble-pane fixed z-50 rounded-lg p-3 text-xs text-gray-700 space-y-1"
           style={{
             top: autoEquipmentHelpPosition.top,
             left: autoEquipmentHelpPosition.left,
@@ -8421,6 +8440,7 @@ function ExpeditionTab({
     top: number;
     left: number;
     width: number;
+    placement?: FloatingBubblePlacement;
   } | null>(null);
   const [activeRewardItemBubble, setActiveRewardItemBubble] = useState<RewardItemBubble | null>(null);
   const [activeProgressBubble, setActiveProgressBubble] = useState<{
@@ -8429,6 +8449,7 @@ function ExpeditionTab({
     top: number;
     left: number;
     maxWidth: number;
+    placement: FloatingBubblePlacement;
   } | null>(null);
   const [activeRingStatusBubble, setActiveRingStatusBubble] = useState<{
     key: string;
@@ -8436,6 +8457,7 @@ function ExpeditionTab({
     top: number;
     left: number;
     maxWidth: number;
+    placement: FloatingBubblePlacement;
   } | null>(null);
 
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
@@ -8461,13 +8483,7 @@ function ExpeditionTab({
       return;
     }
 
-    const triggerRect = targetElement.getBoundingClientRect();
-    const viewportPadding = 12;
-    const bubbleWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
-    const left = Math.min(
-      Math.max(triggerRect.left, viewportPadding),
-      window.innerWidth - viewportPadding - bubbleWidth,
-    );
+    const bubblePosition = getFloatingBubblePosition(targetElement);
 
     // SpecRef: 8.3 | UI_EXPEDITION | f.battle_logs
     // Tap enemy’s name part to show floating bubble of its bestiary.
@@ -8475,9 +8491,10 @@ function ExpeditionTab({
       key: bubbleKey,
       enemy,
       enemyLevel,
-      top: triggerRect.bottom + 8,
-      left,
-      width: bubbleWidth,
+      top: bubblePosition.top,
+      left: bubblePosition.left,
+      width: bubblePosition.maxWidth,
+      placement: bubblePosition.placement,
     });
   };
 
@@ -8491,21 +8508,13 @@ function ExpeditionTab({
       return;
     }
 
-    const triggerRect = targetElement.getBoundingClientRect();
-    const viewportPadding = 12;
-    const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
-    const left = Math.min(
-      Math.max(triggerRect.left, viewportPadding),
-      window.innerWidth - viewportPadding - bubbleMaxWidth,
-    );
+    const bubblePosition = getFloatingBubblePosition(targetElement);
 
     // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
     setActiveProgressBubble({
       key: bubbleKey,
       text: bubbleText,
-      top: triggerRect.bottom + 8,
-      left,
-      maxWidth: bubbleMaxWidth,
+      ...bubblePosition,
     });
   };
 
@@ -8519,20 +8528,12 @@ function ExpeditionTab({
       return;
     }
 
-    const triggerRect = targetElement.getBoundingClientRect();
-    const viewportPadding = 12;
-    const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
-    const left = Math.min(
-      Math.max(triggerRect.left, viewportPadding),
-      window.innerWidth - viewportPadding - bubbleMaxWidth,
-    );
+    const bubblePosition = getFloatingBubblePosition(targetElement);
 
     setActiveRingStatusBubble({
       key: bubbleKey,
       text: bubbleText,
-      top: triggerRect.bottom + 8,
-      left,
-      maxWidth: bubbleMaxWidth,
+      ...bubblePosition,
     });
   };
 
@@ -8571,12 +8572,13 @@ function ExpeditionTab({
       {activeRewardItemBubble ? (
         <FloatingBubblePortal>
           <div
-            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
+            className="floating-bubble-pane fixed z-50 rounded-lg p-2 text-xs text-gray-700"
             style={{
               top: activeRewardItemBubble.top,
               left: activeRewardItemBubble.left,
               width: 'max-content',
               maxWidth: activeRewardItemBubble.maxWidth,
+              transform: getFloatingBubbleTransform(activeRewardItemBubble.placement),
             }}
             onPointerDown={(event) => event.stopPropagation()}
           >
@@ -8585,35 +8587,43 @@ function ExpeditionTab({
         </FloatingBubblePortal>
       ) : null}
       {activeProgressBubble ? (
-        <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-2"
-          style={{
-            top: activeProgressBubble.top,
-            left: activeProgressBubble.left,
-            width: 'max-content',
-            maxWidth: activeProgressBubble.maxWidth,
-          }}
-        >
-          <div className="text-xs text-gray-700 leading-snug break-words">
-            {activeProgressBubble.text}
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg p-2"
+            style={{
+              top: activeProgressBubble.top,
+              left: activeProgressBubble.left,
+              width: 'max-content',
+              maxWidth: activeProgressBubble.maxWidth,
+              transform: getFloatingBubbleTransform(activeProgressBubble.placement),
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <div className="text-xs text-gray-700 leading-snug break-words">
+              {activeProgressBubble.text}
+            </div>
           </div>
-        </div>
+        </FloatingBubblePortal>
       ) : null}
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
       {activeRingStatusBubble ? (
-        <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-2"
-          style={{
-            top: activeRingStatusBubble.top,
-            left: activeRingStatusBubble.left,
-            width: 'max-content',
-            maxWidth: activeRingStatusBubble.maxWidth,
-          }}
-        >
-          <div className="whitespace-pre-line text-xs text-gray-700 leading-snug break-words">
-            {activeRingStatusBubble.text}
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg p-2"
+            style={{
+              top: activeRingStatusBubble.top,
+              left: activeRingStatusBubble.left,
+              width: 'max-content',
+              maxWidth: activeRingStatusBubble.maxWidth,
+              transform: getFloatingBubbleTransform(activeRingStatusBubble.placement),
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <div className="whitespace-pre-line text-xs text-gray-700 leading-snug break-words">
+              {activeRingStatusBubble.text}
+            </div>
           </div>
-        </div>
+        </FloatingBubblePortal>
       ) : null}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
@@ -10914,8 +10924,8 @@ function DiaryTab({
         {activeRewardItemBubble && (
           <FloatingBubblePortal>
             <div
-              className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
-              style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+              className="floating-bubble-pane fixed z-50 rounded-lg p-2 text-xs text-gray-700"
+              style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth, transform: getFloatingBubbleTransform(activeRewardItemBubble.placement) }}
               onPointerDown={(event) => event.stopPropagation()}
             >
               {renderTextWithRaceIcons(activeRewardItemBubble.text)}
@@ -10944,8 +10954,8 @@ function DiaryTab({
       {activeRewardItemBubble && (
         <FloatingBubblePortal>
           <div
-            className="floating-bubble-pane fixed z-20 rounded-lg p-2 text-xs text-gray-700"
-            style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth }}
+            className="floating-bubble-pane fixed z-50 rounded-lg p-2 text-xs text-gray-700"
+            style={{ top: activeRewardItemBubble.top, left: activeRewardItemBubble.left, width: 'max-content', maxWidth: activeRewardItemBubble.maxWidth, transform: getFloatingBubbleTransform(activeRewardItemBubble.placement) }}
             onPointerDown={(event) => event.stopPropagation()}
           >
             {renderTextWithRaceIcons(activeRewardItemBubble.text)}
@@ -12603,7 +12613,7 @@ function SettingTab({
     >
       {activeAbilityHelp && abilityHelpPosition && (
         <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
+          className="floating-bubble-pane fixed z-50 rounded-lg p-3"
           style={{
             top: abilityHelpPosition.top,
             left: abilityHelpPosition.left,
@@ -13032,7 +13042,7 @@ function SettingTab({
         {divineBureauPanelExpanded.characterRoster && <>
           {activeRosterStatusBubble ? (
             <div
-              className="floating-bubble-pane fixed z-20 rounded-lg p-2"
+              className="floating-bubble-pane fixed z-50 rounded-lg p-2"
               style={{
                 top: activeRosterStatusBubble.top,
                 left: activeRosterStatusBubble.left,
