@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.7.6 | 16 | 2026/06/21 | Refine Divine Bureau enemy bestiary ability help bubble positioning (Spec 8.6): place ability explanations beside the tapped ability token with viewport-aware fallback instead of below the row. |
 | 0.7.6 | 15 | 2026/06/21 | Update runtime Expedition 2 enemy master data (Spec 4.2.2): align Enemy_ID 136-171 names and apply the specified bonus abilities and physical-defense modifiers. |
 | 0.7.6 | 14 | 2026/06/20 | Render the Base Inventory sell-all confirmation dialog through the document-level portal (Spec 8.4.2), so its gray mask covers the full app globally rather than being constrained by the inventory pane. |
 | 0.7.6 | 13 | 2026/06/20 | Replace the Base Inventory sell-all browser-native confirmation with an in-app themed confirmation dialog (Spec 8.4.2), so dark mode renders the warning popup with the application dark visual style while preserving the sell/cancel flow. |
