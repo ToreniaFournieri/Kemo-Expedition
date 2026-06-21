@@ -12417,7 +12417,7 @@ function SettingTab({
     Insect_Swarm: '昆虫',
     Aerial: '飛行',
     Frost: '氷雪',
-    Marine: '海棲',
+    Fruit: '果物',
     Dragon: '竜',
     Spirit: '精霊',
     Ghost: '怨霊',

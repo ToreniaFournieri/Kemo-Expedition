@@ -8,7 +8,7 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Insect_Swarm: '虫',
   Aerial: '飛',
   Frost: '雪',
-  Marine: '海',
+  Fruit: '果',
   Dragon: '竜',
   Voidspawn: '虚',
   Spirit: '霊',

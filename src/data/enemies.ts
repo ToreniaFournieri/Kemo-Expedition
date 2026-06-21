@@ -131,7 +131,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
       { type: 'ice_defense_multiplier_xV', value: 1 / 5 },
     ],
   },
-  Marine: {
+  Fruit: {
     ability1: [{ id: 'bind', level: 1 }],
     ability30: [{ id: 'execution', level: 1 }],
     bonuses: [{ type: 'thunder_defense_multiplier_xV', value: 1.3 }],
