@@ -116,23 +116,23 @@
 | 169 | 2 | 6 | 3 | 13 | Normal | `Golem` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | リボンバン |
 | 170 | 2 | 6 | 3 | 13 | Normal | `Golem` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | パックベア |
 | 171 | 2 | 6 | 4 | 17 | BOSS | `Lupinian` | class.striker.sword-saint | `i.bolt`BD, `i.arrow`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | ロザリア | `a.deflection`2, `a.life-drain`6, `a.null-life-drain`1 |
-| 172 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 浜辺の漂掠魚 | 
-| 173 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 潮読みの小妖 |
-| 174 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 波打ちの術魚 |
-| 175 | 3 | 1 | 3 | 15 | Normal | `Marine` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 潮刃の海獣 |
-| 176 | 3 | 1 | 3 | 15 | Normal | `Marine` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 浅瀬の群れ長 |
-| 177 | 3 | 1 | 4 | 17 | Elite | `Marine` | class.pilgrim.wizard | `i.robe`EA, `i.grimoire`EA, `i.wand`EA, `i.armor`C, `i.robe`C, `i.shield`C | 潮祈の先導魚 |
-| 178 | 3 | 2 | 1-2 | 15 | Normal | `Marine` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 水面潜み |
-| 179 | 3 | 2 | 1-2 | 15 | Normal | `Marine` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 潮賢兵 |
-| 180 | 3 | 2 | 1-2 | 15 | Normal | `Marine` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海辺の魚侍 |
+| 172 | 3 | 1 | 1-2 | 14 | Normal | `Fruit` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 浜辺の漂掠魚 | 
+| 173 | 3 | 1 | 1-2 | 14 | Normal | `Fruit` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 潮読みの小妖 |
+| 174 | 3 | 1 | 1-2 | 14 | Normal | `Fruit` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 波打ちの術魚 |
+| 175 | 3 | 1 | 3 | 15 | Normal | `Fruit` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 潮刃の海獣 |
+| 176 | 3 | 1 | 3 | 15 | Normal | `Fruit` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 浅瀬の群れ長 |
+| 177 | 3 | 1 | 4 | 17 | Elite | `Fruit` | class.pilgrim.wizard | `i.robe`EA, `i.grimoire`EA, `i.wand`EA, `i.armor`C, `i.robe`C, `i.shield`C | 潮祈の先導魚 |
+| 178 | 3 | 2 | 1-2 | 15 | Normal | `Fruit` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 水面潜み |
+| 179 | 3 | 2 | 1-2 | 15 | Normal | `Fruit` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 潮賢兵 |
+| 180 | 3 | 2 | 1-2 | 15 | Normal | `Fruit` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海辺の魚侍 |
 | 181 | 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 粘核の剣闘体 |
 | 182 | 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 巡礼ゼリー |
-| 183 | 3 | 2 | 4 | 18 | Elite | `Marine` | class.lord.samurai | `i.shield`EA, `i.katana`EA, `i.katana`EA, `i.armor`C, `i.robe`C, `i.shield`C | 潮騎の重殻 |
+| 183 | 3 | 2 | 4 | 18 | Elite | `Fruit` | class.lord.samurai | `i.shield`EA, `i.katana`EA, `i.katana`EA, `i.armor`C, `i.robe`C, `i.shield`C | 潮騎の重殻 |
 | 184 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 泡霊の群核 |
 | 185 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 潮鳴きの霊術体 |
 | 186 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 霊波の前衛 |
-| 187 | 3 | 3 | 3 | 17 | Normal | `Marine` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海路の刃兵 |
-| 188 | 3 | 3 | 3 | 17 | Normal | `Marine` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 白波の導師 |
+| 187 | 3 | 3 | 3 | 17 | Normal | `Fruit` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海路の刃兵 |
+| 188 | 3 | 3 | 3 | 17 | Normal | `Fruit` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 白波の導師 |
 | 189 | 3 | 3 | 4 | 19 | Elite | `Spirit` | class.wizard.ninja | `i.wand`EC, `i.robe`EC, `i.archery`EC, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 潮幻の導師 |
 | 190 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 粘波の斥候 |
 | 191 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 粘潮の突撃核 |
@@ -146,9 +146,9 @@
 | 199 | 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 狐牙の護剣士 |
 | 200 | 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 狐尾の魔術師 |
 | 201 | 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | class.striker.sword-saint | `i.bolt`EB, `i.arrow`EB, `i.gauntlet`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 飛沫群の狙撃核 |
-| 202 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の貫魚 |
-| 203 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 遺浜の霊術体 |
-| 204 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の前衛魚 |
+| 202 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の貫魚 |
+| 203 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 遺浜の霊術体 |
+| 204 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の前衛魚 |
 | 205 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 泡群の射手 |
 | 206 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海蝕の刃兵 |
 | 207 | 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | class.wizard.sage | `i.wand`BD, `i.robe`BD, `i.grimoire`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | アズラーイール | `a.melee-confusion`1 |
