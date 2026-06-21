@@ -12,7 +12,7 @@
 |---|-----|-----|-----|-----|-----|
 | 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | C:primitive |
 | 2 | 2 | 7 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  |
-| 3 | 3 | 14 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:marine, E:enemy_type B:enemy_type |
+| 3 | 3 | 14 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type |
 | 4 | 4 | 21 | フェリディ砂漠(Felidian Desert) | 砂 | C:Bone , U:Desert, E:enemy_type B:enemy_type |
 | 5 | 5 | 28 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type |
 | 6 | 6 | 35 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
@@ -174,7 +174,7 @@
 | Insect_Swarm | 昆虫 | 虫 | `a.swarm`1 | `a.death-touch`1 | `e.thunder+20`, `r.fire_x1.3`, `r.thunder_x2/3` |
 | Aerial | 飛行 | 飛 | `a.flying`1 | `a.free`1 | `c.evasion+0.045`, `c.growth_x0.7`  |
 | Frost | 氷雪 | 雪 | `a.frostbite`1 | `a.ice-reflect`1 | `e.ice+20`, `r.fire_x1.3`, `r.ice_x1/5` |
-| Marine | 海棲 | 海 | `a.bind`1 | `a.execution`1 | `r.thunder_x1.3` |
+| Fruit | 果物 | 果 | `a.bind`1 | `a.execution`1 | `r.thunder_x1.3` |
 | Dragon | 竜 | 竜 | `a.burn`1 | `a.fire-reflect`1 | `e.fire+40`, `r.fire_x1/2`, `r.ice_x1.3`|
 | Spirit | 精霊 | 霊 | `a.soul-reap`1 | `a.mutual-magic-amplify`1 |  `e.ice+20`, `r.fire_x1.5`, `r.ice_x2/3`,`r.thunder_x4/5`, `c.physical-defense-multiplier_x3/5` |
 | Ghost | 怨霊 | 怨 | `a.ranged-confusion`1 | `a.self-destruct`1 |  `c.evasion+0.020`, `c.physical-defense-multiplier_x3/5`, `r.ice_x1.5` |
@@ -294,7 +294,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |-|-|-|-|-|
 | 1 | `Beast` | `Aerial` | `Insect_Swarm` | `Caninian` |
 | 2 | `Frost` | `Golem` | `Plant_Fungal` | `Lupinian` |
-| 3 | `Marine` | `Slime_Colony` | `Spirit` | `Vulpinian` |
+| 3 | `Fruit` | `Slime_Colony` | `Spirit` | `Vulpinian` |
 | 4 | `Shadowfang` | `Felidian` | `Titan` | `Felidian` |
 | 5 | `Beast` | `Dragon` | `Ursan` | `Ursan` |
 | 6 | `Mech` | `Golem` | `Chimera` | `Procyonian` |
