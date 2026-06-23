@@ -5564,7 +5564,7 @@ export function HomeScreen({
 
       {/* Bottom Tabs */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgb(15_23_42/0.04)]"
         aria-label="Main navigation"
         onPointerDown={(event) => { primaryNavSwipeHandledRef.current = false; primaryNavPointerStartRef.current = { x: event.clientX, y: event.clientY, tab: activeTab }; }}
         onPointerUp={(event) => completePrimaryNavSwipe(event.clientX, event.clientY)}
