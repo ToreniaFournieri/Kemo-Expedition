@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 25 | 2026/06/23 | Add Japanese runtime labels for the Orcinian enemy type (Spec 4.1): display シャチ in enemy detail type text and 鯱 in formatted enemy-name short labels. |
+| 0.7.6 | 24 | 2026/06/23 | Implement runtime Orcinian enemy type master data (Spec 4.1): add the シャチ/鯱 enemy type abilities with Execution Lv1 always active and Overwatch Lv1 at enemy type level 30+. |
 | 0.7.6 | 23 | 2026/06/23 | Update runtime Expedition 3 enemy master data (Spec 4.2.2): align Enemy_ID 185, 189, 193, 194, 197, and 198 with the specified Orcinian names, classes, drops, and existing elite bonus ability. |
 | 0.7.6 | 22 | 2026/06/23 | Fix runtime app chrome layering follow-up (Spec 8.1): restore transparent glass header/footer chrome while moving safe-area top/bottom spacing into the scrollable tab content so the main window can continue underneath the fixed layers. |
 | 0.7.6 | 21 | 2026/06/23 | Fix runtime app chrome layering (Spec 8.1): make the fixed header and bottom navigation opaque app-background layers, include the iOS top safe-area in the reserved content offset, and prevent Expedition content from visually bleeding behind the header/footer while scrolling. |
