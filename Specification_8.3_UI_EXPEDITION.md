@@ -159,6 +159,7 @@ HP 2350 / 4680
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
   - **Special boost:** 
     - Each cleared expedition tier increases the maximum charge time that can be accumulated for each stock slot.
+    - If the max charge is 3, display ▰▰▰MAX.
 
 | Stock Level | initial | After clearing expedition 1 | After clearing expedition 2 | After clearing expedition 3 |
 | --- | -----: | -----: | -----: | -----:|
