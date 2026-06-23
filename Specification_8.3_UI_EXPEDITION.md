@@ -157,19 +157,17 @@ HP 2350 / 4680
       - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
       - The process ends after the final `state.return` is completed.
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
-  - **Special boost:** Before any party member has completed Expedition 3, Instant Expedition stock is considered unlimited. Display ∞ instead of the remaining minutes.
-    - Examples:
-    - ▰▰▰▰▰▰∞
-    - Once at least one party member completes Expedition 3 for the first time, the unlimited-charge period ends for the entire party.
+  - **Special boost:** 
+    - Each cleared expedition tier increases the maximum charge time that can be accumulated for each stock slot.
 
-| Stock Level | Time Required for This Charge | 
-| ----------- | ----------: |
-| 1st         |  8 min |
-| 2nd         | 16 min |
-| 3rd         | 30 min |
-| 4th         | 60 min |
-| 5th         |120 min |
-| 6th         |240 min |
+| Stock Level | initial | After clearing expedition 1 | After clearing expedition 2 | After clearing expedition 3 |
+| --- | -----: | -----: | -----: | -----:|
+| 1st |  1 min |  2 min |  4 min |  8 min |
+| 2nd |  2 min |  4 min |  8 min | 16 min |
+| 3rd |  4 min |  8 min | 15 min | 30 min |
+| 4th | (none) | 15 min | 30 min | 60 min |
+| 5th | (none) | (none) | 60 min |120 min |
+| 6th | (none) | (none) | (none) |240 min |
 
 
 - **Outcome**
