@@ -2,13 +2,13 @@ import type { Party } from '../types';
 
 export const INSTANT_EXPEDITION_MAX_STOCK = 6;
 
-const INSTANT_EXPEDITION_CHARGE_DURATIONS_MS = [
-  8 * 60 * 1000,
-  16 * 60 * 1000,
-  30 * 60 * 1000,
-  60 * 60 * 1000,
-  120 * 60 * 1000,
-  240 * 60 * 1000,
+const MINUTE_MS = 60 * 1000;
+
+const INSTANT_EXPEDITION_CHARGE_DURATIONS_BY_CLEAR_TIER_MS = [
+  [1 * MINUTE_MS, 2 * MINUTE_MS, 4 * MINUTE_MS],
+  [2 * MINUTE_MS, 4 * MINUTE_MS, 8 * MINUTE_MS, 15 * MINUTE_MS],
+  [4 * MINUTE_MS, 8 * MINUTE_MS, 15 * MINUTE_MS, 30 * MINUTE_MS, 60 * MINUTE_MS],
+  [8 * MINUTE_MS, 16 * MINUTE_MS, 30 * MINUTE_MS, 60 * MINUTE_MS, 120 * MINUTE_MS, 240 * MINUTE_MS],
 ] as const;
 
 export interface InstantExpeditionChargeState {
@@ -26,28 +26,47 @@ export interface InstantExpeditionChargeDisplay {
 
 const instantExpeditionMinuteFormatter = new Intl.NumberFormat('ja-JP');
 
-function normalizeStock(raw: unknown): number {
-  return Math.max(0, Math.min(INSTANT_EXPEDITION_MAX_STOCK, Math.floor(typeof raw === 'number' && Number.isFinite(raw) ? raw : INSTANT_EXPEDITION_MAX_STOCK)));
+type InstantExpeditionChargeParty = Pick<Party, 'instantExpeditionStock' | 'instantExpeditionChargeStartedAt'>
+  & Partial<Pick<Party, 'defeatedBossExpeditions'>>;
+
+function getClearedExpeditionTier(
+  defeatedBossExpeditions: Pick<Party, 'defeatedBossExpeditions'>['defeatedBossExpeditions'] | undefined,
+): number {
+  if (!defeatedBossExpeditions) return 0;
+  return [1, 2, 3].reduce((tier, expeditionId) => (defeatedBossExpeditions[expeditionId] ? tier + 1 : tier), 0);
 }
 
-function getChargeDurationMs(stock: number): number | null {
-  if (stock >= INSTANT_EXPEDITION_MAX_STOCK) return null;
-  return INSTANT_EXPEDITION_CHARGE_DURATIONS_MS[stock] ?? INSTANT_EXPEDITION_CHARGE_DURATIONS_MS[INSTANT_EXPEDITION_CHARGE_DURATIONS_MS.length - 1];
+function getChargeDurationsMs(
+  defeatedBossExpeditions: Pick<Party, 'defeatedBossExpeditions'>['defeatedBossExpeditions'] | undefined,
+): readonly number[] {
+  const clearedTier = Math.max(0, Math.min(3, getClearedExpeditionTier(defeatedBossExpeditions)));
+  return INSTANT_EXPEDITION_CHARGE_DURATIONS_BY_CLEAR_TIER_MS[clearedTier];
+}
+
+function normalizeStock(raw: unknown, maxStock: number): number {
+  return Math.max(0, Math.min(maxStock, Math.floor(typeof raw === 'number' && Number.isFinite(raw) ? raw : maxStock)));
+}
+
+function getChargeDurationMs(stock: number, chargeDurationsMs: readonly number[]): number | null {
+  if (stock >= chargeDurationsMs.length) return null;
+  return chargeDurationsMs[stock] ?? null;
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
 export function getInstantExpeditionChargeState(
-  party: Pick<Party, 'instantExpeditionStock' | 'instantExpeditionChargeStartedAt'>,
+  party: InstantExpeditionChargeParty,
   now: number = Date.now(),
 ): InstantExpeditionChargeState {
-  let stock = normalizeStock(party.instantExpeditionStock);
+  const chargeDurationsMs = getChargeDurationsMs(party.defeatedBossExpeditions);
+  const maxStock = chargeDurationsMs.length;
+  let stock = normalizeStock(party.instantExpeditionStock, maxStock);
   let chargeStartedAt = typeof party.instantExpeditionChargeStartedAt === 'number' && Number.isFinite(party.instantExpeditionChargeStartedAt)
     ? party.instantExpeditionChargeStartedAt
     : null;
 
-  if (stock >= INSTANT_EXPEDITION_MAX_STOCK) {
+  if (stock >= maxStock) {
     return {
-      stock: INSTANT_EXPEDITION_MAX_STOCK,
+      stock: maxStock,
       chargeStartedAt: null,
       remainingMs: 0,
       nextChargeDurationMs: null,
@@ -59,8 +78,8 @@ export function getInstantExpeditionChargeState(
   }
 
   let elapsedMs = Math.max(0, now - chargeStartedAt);
-  while (stock < INSTANT_EXPEDITION_MAX_STOCK) {
-    const durationMs = getChargeDurationMs(stock) ?? 0;
+  while (stock < maxStock) {
+    const durationMs = getChargeDurationMs(stock, chargeDurationsMs) ?? 0;
     if (elapsedMs < durationMs) {
       return {
         stock,
@@ -75,7 +94,7 @@ export function getInstantExpeditionChargeState(
   }
 
   return {
-    stock: INSTANT_EXPEDITION_MAX_STOCK,
+    stock: maxStock,
     chargeStartedAt: null,
     remainingMs: 0,
     nextChargeDurationMs: null,
@@ -83,7 +102,7 @@ export function getInstantExpeditionChargeState(
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
-export function consumeInstantExpeditionStock<T extends Pick<Party, 'instantExpeditionStock' | 'instantExpeditionChargeStartedAt'>>(
+export function consumeInstantExpeditionStock<T extends InstantExpeditionChargeParty>(
   party: T,
   now: number = Date.now(),
 ): T & { instantExpeditionStock: number; instantExpeditionChargeStartedAt: number | null } {
@@ -95,7 +114,7 @@ export function consumeInstantExpeditionStock<T extends Pick<Party, 'instantExpe
   };
 
   const nextStock = chargeState.stock - 1;
-  const nextChargeDurationMs = getChargeDurationMs(nextStock);
+  const nextChargeDurationMs = getChargeDurationMs(nextStock, getChargeDurationsMs(party.defeatedBossExpeditions));
   let nextChargeStartedAt: number | null = null;
   if (nextChargeDurationMs !== null) {
     const nextRemainingMs = chargeState.nextChargeDurationMs === null
@@ -116,9 +135,9 @@ export function formatInstantExpeditionChargeDisplay(chargeState: InstantExpedit
   const cells = Array.from({ length: INSTANT_EXPEDITION_MAX_STOCK }, (_, index) => (
     index < chargeState.stock ? '▰' : '▱'
   )).join('');
-  const timerText = chargeState.stock >= INSTANT_EXPEDITION_MAX_STOCK
+  const timerText = chargeState.nextChargeDurationMs === null
     ? 'MAX'
-    : instantExpeditionMinuteFormatter.format(Math.max(0, Math.ceil(chargeState.remainingMs / (60 * 1000))));
+    : instantExpeditionMinuteFormatter.format(Math.max(0, Math.ceil(chargeState.remainingMs / MINUTE_MS)));
 
   return {
     cells,
