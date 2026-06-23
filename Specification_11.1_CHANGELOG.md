@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 21 | 2026/06/23 | Fix runtime app chrome layering (Spec 8.1): make the fixed header and bottom navigation opaque app-background layers, include the iOS top safe-area in the reserved content offset, and prevent Expedition content from visually bleeding behind the header/footer while scrolling. |
 | 0.7.6 | 20 | 2026/06/21 | Update runtime Expedition 3 enemy master data (Spec 4.2.2): align Enemy_ID 172-207 names and apply the specified elite bonus abilities while preserving the Expedition 3 boss melee-confusion ability. |
 | 0.7.6 | 19 | 2026/06/21 | Rename the runtime enemy type category `Marine` to `Fruit` (果物/果) while preserving its bind/execution abilities and thunder resistance bonus, and align Expedition 3 enemy/item enemy-type references with Spec 4.1/4.2. |
 | 0.7.6 | 18 | 2026/06/21 | Render the Divine Bureau enemy bestiary ability help bubble through the document-level floating bubble portal (Spec 8.6), so it layers above the expanded enemy art and app chrome consistently on mobile. |
