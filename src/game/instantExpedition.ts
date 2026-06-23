@@ -24,12 +24,6 @@ export interface InstantExpeditionChargeDisplay {
   label: string;
 }
 
-export function isInstantExpeditionUnlimitedBoostActive(
-  parties: readonly Pick<Party, 'defeatedBossExpeditions'>[],
-): boolean {
-  return !parties.some((party) => Boolean(party.defeatedBossExpeditions?.[3]));
-}
-
 const instantExpeditionMinuteFormatter = new Intl.NumberFormat('ja-JP');
 
 function normalizeStock(raw: unknown): number {
@@ -118,21 +112,13 @@ export function consumeInstantExpeditionStock<T extends Pick<Party, 'instantExpe
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
-export function formatInstantExpeditionChargeDisplay(
-  chargeState: InstantExpeditionChargeState,
-  isUnlimitedBoostActive: boolean = false,
-): InstantExpeditionChargeDisplay {
-  const displayStock = isUnlimitedBoostActive
-    ? INSTANT_EXPEDITION_MAX_STOCK
-    : chargeState.stock;
+export function formatInstantExpeditionChargeDisplay(chargeState: InstantExpeditionChargeState): InstantExpeditionChargeDisplay {
   const cells = Array.from({ length: INSTANT_EXPEDITION_MAX_STOCK }, (_, index) => (
-    index < displayStock ? '▰' : '▱'
+    index < chargeState.stock ? '▰' : '▱'
   )).join('');
-  const timerText = isUnlimitedBoostActive
-    ? '∞'
-    : chargeState.stock >= INSTANT_EXPEDITION_MAX_STOCK
-      ? 'MAX'
-      : instantExpeditionMinuteFormatter.format(Math.max(0, Math.ceil(chargeState.remainingMs / (60 * 1000))));
+  const timerText = chargeState.stock >= INSTANT_EXPEDITION_MAX_STOCK
+    ? 'MAX'
+    : instantExpeditionMinuteFormatter.format(Math.max(0, Math.ceil(chargeState.remainingMs / (60 * 1000))));
 
   return {
     cells,
