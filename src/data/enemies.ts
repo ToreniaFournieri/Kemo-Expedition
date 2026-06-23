@@ -225,6 +225,11 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability1: [{ id: 'upgrade_all_abilities', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.3 }],
   },
+  Orcinian: {
+    ability1: [{ id: 'execution', level: 1 }],
+    ability30: [{ id: 'overwatch', level: 1 }],
+    bonuses: [],
+  },
   Kemono: {
     ability1: [],
     bonuses: [],
