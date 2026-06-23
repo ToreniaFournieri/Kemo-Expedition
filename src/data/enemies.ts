@@ -447,7 +447,8 @@ function getDropItemIdFromMaster(tier: number, drops: string[]): number {
     const pool = getItemsByTierAndRarity(tier, parsed.rarity).filter((item) => item.category === parsed.category);
     if (pool.length > 0) {
       const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
-      return (pool[variantIndex] ?? pool[0]).id;
+      const isOutOfRangeOrcinianEliteD = drop.endsWith('ED') && variantIndex >= pool.length;
+      return (isOutOfRangeOrcinianEliteD ? pool[pool.length - 1] : (pool[variantIndex] ?? pool[0])).id;
     }
   }
 
