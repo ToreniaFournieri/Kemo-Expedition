@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.7.6 | 28 | 2026/06/23 | Replace runtime tier 3 elite Spirit item-drop names (Spec 3.2.1): swap the wand, archery, and robe entries to the requested Orcinian item names. |
 | 0.7.6 | 27 | 2026/06/23 | Update runtime boss and Expedition 3 enemy master data (Spec 4.2.2): apply the specified growth bonuses to Enemy_ID 171 and 207, and align Enemy_ID 199, 200, and 207 Japanese names with the master-data table. |
 | 0.7.6 | 26 | 2026/06/23 | Update runtime Expedition 3 enemy master data (Spec 4.2.2): align Enemy_ID 204 with the specified Orcinian type and エヴェリナ name while preserving class, level, room, and drops. |
 | 0.7.6 | 25 | 2026/06/23 | Add Japanese runtime labels for the Orcinian enemy type (Spec 4.1): display シャチ in enemy detail type text and 鯱 in formatted enemy-name short labels. |
