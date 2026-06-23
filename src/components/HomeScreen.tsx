@@ -46,7 +46,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
-import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
+import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState, isInstantExpeditionUnlimitedBoostActive } from '../game/instantExpedition';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -5247,6 +5247,7 @@ export function HomeScreen({
     const { partyStats } = computePartyStats(party);
     const now = Date.now();
     const instantChargeState = getInstantExpeditionChargeState(party, now);
+    const isUnlimitedInstantExpeditionBoostActive = isInstantExpeditionUnlimitedBoostActive(state.parties);
 
     const isColosseumSortie = party.selectedDungeonId === 99;
 
@@ -5262,7 +5263,7 @@ export function HomeScreen({
       return;
     }
     // SpecRef: 8.3 | UI_EXPEDITION | Charge
-    if (!isColosseumSortie && instantChargeState.stock <= 0) {
+    if (!isColosseumSortie && !isUnlimitedInstantExpeditionBoostActive && instantChargeState.stock <= 0) {
       actions.addNotification(`${party.name} の即時出撃チャージが不足している`);
       return;
     }
@@ -5283,7 +5284,7 @@ export function HomeScreen({
     }
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
-    if (!isColosseumSortie) {
+    if (!isColosseumSortie && !isUnlimitedInstantExpeditionBoostActive) {
       actions.consumeInstantExpeditionStock(partyIndex, now);
     }
     if (cycle?.state === 'explore') {
@@ -8761,9 +8762,10 @@ function ExpeditionTab({
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
         const instantChargeState = getInstantExpeditionChargeState(party, emulatedNowMs);
-        const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
+        const isUnlimitedInstantExpeditionBoostActive = isInstantExpeditionUnlimitedBoostActive(state.parties);
+        const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState, isUnlimitedInstantExpeditionBoostActive);
         const instantChargeLabel = instantChargeDisplay.label;
-        const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
+        const isInstantExpeditionStockEmpty = !isUnlimitedInstantExpeditionBoostActive && instantChargeState.stock <= 0;
         const isColosseumSelected = selectedDungeon?.id === 99;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
         const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
