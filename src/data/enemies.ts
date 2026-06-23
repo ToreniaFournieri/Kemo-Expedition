@@ -662,12 +662,13 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     const exactDrops = enemy.masterDropTokens
       .map((token) => parseMasterDropToken(token))
       .filter((parsed): parsed is { category: ItemCategory; rarity: MasterDropRarity; variantIndex?: number } => parsed !== null)
-      .map((parsed) => {
+      .map((parsed, index) => {
         const pool = getItemsByTierAndRarity(enemy.spawnTier || getTierFromEnemy(enemy.id), parsed.rarity)
           .filter((item) => item.category === parsed.category);
         if (pool.length === 0) return undefined;
         const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
-        return pool[variantIndex] ?? pool[0];
+        const isOutOfRangeEliteD = enemy.masterDropTokens?.[index]?.endsWith('ED') && variantIndex >= pool.length;
+        return isOutOfRangeEliteD ? pool[pool.length - 1] : (pool[variantIndex] ?? pool[0]);
       })
       .filter((item): item is ItemDef => item !== undefined);
 

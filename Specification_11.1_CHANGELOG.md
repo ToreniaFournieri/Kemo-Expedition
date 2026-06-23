@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 29 | 2026/06/23 | Fix runtime exact drop-candidate display for Expedition 3 Orcinian ED elite drops (Spec 3.2.1/4.2.2): make Lady Nerissa's ED wand, robe, and archery tokens resolve to シャチの杖, 鮫肌, and 鯨髭の弓. |
 | 0.7.6 | 28 | 2026/06/23 | Replace runtime Expedition 3 elite Orcinian item drops (Spec 3.2.1/4.2.2): update Lady Nerissa drop tokens from EC to ED and swap the old Spirit wand, archery, and robe item names for the requested Orcinian names. |
 | 0.7.6 | 27 | 2026/06/23 | Update runtime boss and Expedition 3 enemy master data (Spec 4.2.2): apply the specified growth bonuses to Enemy_ID 171 and 207, and align Enemy_ID 199, 200, and 207 Japanese names with the master-data table. |
 | 0.7.6 | 26 | 2026/06/23 | Update runtime Expedition 3 enemy master data (Spec 4.2.2): align Enemy_ID 204 with the specified Orcinian type and エヴェリナ name while preserving class, level, room, and drops. |

@@ -395,7 +395,7 @@ const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '3|uncommon|shield': ['波紋の盾'],
   '3|uncommon|sword': ['潮刃の短剣'],
   '3|uncommon|wand': ['潮読の杖'],
-  '3|eliteRare|archery': ['鯨髭の弓', '群粘の弓'],
+  '3|eliteRare|archery': ['群粘の弓', '鯨髭の弓'],
   '3|eliteRare|armor': ['鮫肌の鎧', '粘膜覆'],
   '3|eliteRare|arrow': ['粘波の矢'],
   '3|eliteRare|bolt': ['硫酸刺'],
