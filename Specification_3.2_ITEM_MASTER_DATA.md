@@ -140,12 +140,12 @@
 | 3 | E | `Fruit` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
 | 3 | E | `Fruit` | `i.sword`EA | 小刀 | `a.null-bind` |
 | 3 | E | `Fruit` | `i.armor`EA | 鮫肌の鎧 | `a.execution-null` |
-| 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
+| 3 | E | `Orcinian‎` | `i.wand`EC | シャチの杖 |
 | 3 | E | `Spirit` | `i.grimoire`EC | 誘いの書 |
 | 3 | E | `Spirit` | `i.gauntlet`EC | 霊波の手甲 |
 | 3 | E | `Spirit` | `i.katana`EC | 幽刀 |
-| 3 | E | `Spirit` | `i.archery`EC | 潮霊の弓 |
-| 3 | E | `Spirit` | `i.robe`EC | 潮霊の羽衣 |
+| 3 | E | `Orcinian‎` | `i.archery`EC | 鯨髭の弓 |
+| 3 | E | `Orcinian‎` | `i.robe`EC | 鮫肌 |
 | 3 | E | `Slime_Colony` | `i.arrow`EB | 粘波の矢 |
 | 3 | E | `Slime_Colony` | `i.bolt`EB | 硫酸刺 | `a.corrode` |
 | 3 | E | `Slime_Colony` | `i.archery`EB | 群粘の弓 |
