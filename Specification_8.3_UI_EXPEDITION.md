@@ -160,7 +160,6 @@ HP 2350 / 4680
   - **Special boost:** Before any party member has completed Expedition 3, Instant Expedition stock is considered unlimited. Display ∞ instead of the remaining minutes.
     - Examples:
     - ▰▰▰▰▰▰∞
-    - ▱▱▱▱▱▱∞
     - Once at least one party member completes Expedition 3 for the first time, the unlimited-charge period ends for the entire party.
 
 | Stock Level | Time Required for This Charge | 
