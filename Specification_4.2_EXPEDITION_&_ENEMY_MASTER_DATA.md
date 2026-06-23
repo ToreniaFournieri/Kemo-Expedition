@@ -133,7 +133,7 @@
 | 186 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | シロハ |
 | 187 | 3 | 3 | 3 | 17 | Normal | `Fruit` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ぴたっぴ |
 | 188 | 3 | 3 | 3 | 17 | Normal | `Fruit` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | からっぴ |
-| 189 | 3 | 3 | 4 | 19 | Elite | `Orcinian` | class.wizard.ninja | `i.wand`EC, `i.robe`EC, `i.archery`EC, `i.wand`C, `i.grimoire`C, `i.catalyst`C | レディ・ネリッサ | `a.re-attack`1 |
+| 189 | 3 | 3 | 4 | 19 | Elite | `Orcinian` | class.wizard.ninja | `i.wand`ED, `i.robe`ED, `i.archery`ED, `i.wand`C, `i.grimoire`C, `i.catalyst`C | レディ・ネリッサ | `a.re-attack`1 |
 | 190 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | スミ |
 | 191 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ルミネ |
 | 192 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ヴァルディ |
