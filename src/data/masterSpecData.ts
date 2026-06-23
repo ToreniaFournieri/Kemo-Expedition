@@ -113,7 +113,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [5,'4',21,'elite','Slime_Colony','striker','i.boltEB,i.arrowEB,i.gauntletEB,i.arrowC,i.boltC,i.archeryC','ネリア','sword-saint'],
     [6,'1-2',19,'normal','Fruit','duelist','i.swordU,i.armorU,i.boltU,i.swordC,i.katanaC,i.gauntletC','なぴ','striker'],
     [6,'1-2',19,'normal','Fruit','pilgrim','i.robeU,i.grimoireU,i.grimoireU,i.armorC,i.robeC,i.shieldC','みき','sage'],
-    [6,'1-2',19,'normal','Fruit','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','たまる','striker'],
+    [6,'1-2',19,'normal','Orcinian','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','エヴェリナ','striker'],
     [6,'3',20,'normal','Slime_Colony','ranger','i.arrowU,i.archeryU,i.swordU,i.arrowC,i.boltC,i.archeryC','イリア','duelist'],
     [6,'3',20,'normal','Slime_Colony','samurai','i.katanaU,i.shieldU,i.arrowU,i.swordC,i.katanaC,i.gauntletC','ヴェスペラ','ranger'],
     [6,'4',24,'boss','Vulpinian','wizard','i.wandBD,i.robeBD,i.grimoireBD,i.wandC,i.grimoireC,i.catalystC','アズラーイール','sage'],
