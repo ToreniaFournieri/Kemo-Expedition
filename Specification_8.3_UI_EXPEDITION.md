@@ -157,6 +157,11 @@ HP 2350 / 4680
       - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
       - The process ends after the final `state.return` is completed.
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
+  - **Special boost:** Before any party member has completed Expedition 3, Instant Expedition stock is considered unlimited. Display ∞ instead of the remaining minutes.
+    - Examples:
+    - ▰▰▰▰▰▰∞
+    - ▱▱▱▱▱▱∞
+    - Once at least one party member completes Expedition 3 for the first time, the unlimited-charge period ends for the entire party.
 
 | Stock Level | Time Required for This Charge | 
 | ----------- | ----------: |
