@@ -474,7 +474,7 @@ function getAutoSellStepCount(party: Party): number {
   return Math.max(1, autoSellItemCount);
 }
 
-const HEADER_HEIGHT_CLASS = 'pt-[74px] pb-[calc(88px+env(safe-area-inset-bottom))]';
+const HEADER_HEIGHT_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(88px+env(safe-area-inset-bottom))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -5506,9 +5506,8 @@ export function HomeScreen({
   return (
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-30">
-        <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
+      <div className="fixed top-0 left-0 right-0 z-30 bg-white pt-[env(safe-area-inset-top)] shadow-[0_8px_24px_rgb(15_23_42/0.04)]">
+        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div className="pl-3">
               {/* SpecRef: 8.1.2 | Header | Game title label */}
@@ -5564,7 +5563,7 @@ export function HomeScreen({
 
       {/* Bottom Tabs */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgb(15_23_42/0.04)]"
         aria-label="Main navigation"
         onPointerDown={(event) => { primaryNavSwipeHandledRef.current = false; primaryNavPointerStartRef.current = { x: event.clientX, y: event.clientY, tab: activeTab }; }}
         onPointerUp={(event) => completePrimaryNavSwipe(event.clientX, event.clientY)}
