@@ -186,6 +186,7 @@
 | Titan | 巨人 | 巨 | `a.colossal`1 | `a.mutual-physical-restraint`1 | `c.growth_x1.5` |
 | Voidspawn | 虚無 | 虚 | `a.null-counter`1 | `a.oblivion`1 | `r.fire_x2/3`, `r.ice_x2/3`, `r.thunder_x1.3` |
 | Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1 , race ability1 | none | `c.growth_x1.3` |
+| Orcinian | シャチ | 鯱 | `a.execution`1 | `a.overwatch`1 | |
 | Kemono | ケモノ | ケ | race ability1 | none | |
 
 | Kemono races      | ability1 | ability30　 | c. bonus of enemey     | 
