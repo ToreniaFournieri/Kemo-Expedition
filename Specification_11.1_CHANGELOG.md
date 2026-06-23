@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 27 | 2026/06/23 | Update runtime boss and Expedition 3 enemy master data (Spec 4.2.2): apply the specified growth bonuses to Enemy_ID 171 and 207, and align Enemy_ID 199, 200, and 207 Japanese names with the master-data table. |
 | 0.7.6 | 26 | 2026/06/23 | Update runtime Expedition 3 enemy master data (Spec 4.2.2): align Enemy_ID 204 with the specified Orcinian type and エヴェリナ name while preserving class, level, room, and drops. |
 | 0.7.6 | 25 | 2026/06/23 | Add Japanese runtime labels for the Orcinian enemy type (Spec 4.1): display シャチ in enemy detail type text and 鯱 in formatted enemy-name short labels. |
 | 0.7.6 | 24 | 2026/06/23 | Implement runtime Orcinian enemy type master data (Spec 4.1): add the シャチ/鯱 enemy type abilities with Execution Lv1 always active and Overwatch Lv1 at enemy type level 30+. |
