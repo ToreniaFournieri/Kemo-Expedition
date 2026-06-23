@@ -474,7 +474,7 @@ function getAutoSellStepCount(party: Party): number {
   return Math.max(1, autoSellItemCount);
 }
 
-const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(88px+env(safe-area-inset-bottom))]';
+const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -5564,13 +5564,13 @@ export function HomeScreen({
 
       {/* Bottom Tabs */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgb(15_23_42/0.04)]"
+        className="pointer-events-none fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2"
         aria-label="Main navigation"
         onPointerDown={(event) => { primaryNavSwipeHandledRef.current = false; primaryNavPointerStartRef.current = { x: event.clientX, y: event.clientY, tab: activeTab }; }}
         onPointerUp={(event) => completePrimaryNavSwipe(event.clientX, event.clientY)}
         onPointerCancel={() => { primaryNavPointerStartRef.current = null; }}
       >
-        <div className="mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-transparent bg-white/12 p-1.5 shadow-[0_8px_20px_rgb(15_23_42/0.12)] backdrop-blur-sm">
+        <div className="pointer-events-auto mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-transparent bg-white/10 p-1.5 shadow-[0_8px_20px_rgb(15_23_42/0.10)] backdrop-blur-sm">
           {tabs.map(tab => {
             const isActive = (isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id);
             return (
