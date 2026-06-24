@@ -106,7 +106,9 @@ function hydrateBagCollection<T extends object>(bags: T): T {
 
 // SpecRef: 5.1.4 | Save and load | Data persistence
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
-function normalizePartyInstantExpeditionCharge<T extends Pick<Party, 'instantExpeditionStock' | 'instantExpeditionChargeStartedAt'>>(party: T): T & { instantExpeditionStock: number; instantExpeditionChargeStartedAt: number | null } {
+function normalizePartyInstantExpeditionCharge<
+  T extends Pick<Party, 'instantExpeditionStock' | 'instantExpeditionChargeStartedAt'> & Partial<Pick<Party, 'defeatedBossExpeditions'>>
+>(party: T): T & { instantExpeditionStock: number; instantExpeditionChargeStartedAt: number | null } {
   const instantChargeState = getInstantExpeditionChargeState(party);
   return {
     ...party,

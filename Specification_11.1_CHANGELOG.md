@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 33 | 2026/06/23 | Refine runtime Instant Expedition Charge boost display (Spec 8.3): render only the currently unlocked stock cells so lower boost tiers show compact MAX text such as ▰▰▰MAX instead of padded locked slots. |
+| 0.7.6 | 32 | 2026/06/23 | Implement runtime Instant Expedition Charge special boost (Spec 8.3): derive available stock slots and per-slot charge durations from cleared Expedition 1-3 bosses, using the initial 1/2/4 minute slots and unlocking longer accumulation up to 240 minutes after Expedition 3 is cleared. |
 | 0.7.6 | 31 | 2026/06/23 | Align runtime Orcinian enemy type display with the Enemy Master Specification (Spec 4.1): show the full enemy type name as オルシニアン while preserving the 鯱 short label and Execution/Overwatch abilities. |
 | 0.7.6 | 30 | 2026/06/23 | Fix runtime footer layering (Spec 8.1): make the fixed bottom navigation wrapper transparent/click-through outside the tab group and reduce reserved bottom content padding so scrolled content can visually continue behind the glass footer tabs on mobile. |
 | 0.7.6 | 29 | 2026/06/23 | Fix runtime exact drop-candidate display for Expedition 3 Orcinian ED elite drops (Spec 3.2.1/4.2.2): make Lady Nerissa's ED wand, robe, and archery tokens resolve to シャチの杖, 鮫肌, and 鯨髭の弓. |
