@@ -13,6 +13,7 @@ const INSTANT_EXPEDITION_CHARGE_DURATIONS_BY_CLEAR_TIER_MS = [
 
 export interface InstantExpeditionChargeState {
   stock: number;
+  maxStock: number;
   chargeStartedAt: number | null;
   remainingMs: number;
   nextChargeDurationMs: number | null;
@@ -67,6 +68,7 @@ export function getInstantExpeditionChargeState(
   if (stock >= maxStock) {
     return {
       stock: maxStock,
+      maxStock,
       chargeStartedAt: null,
       remainingMs: 0,
       nextChargeDurationMs: null,
@@ -83,6 +85,7 @@ export function getInstantExpeditionChargeState(
     if (elapsedMs < durationMs) {
       return {
         stock,
+        maxStock,
         chargeStartedAt,
         remainingMs: Math.max(0, durationMs - elapsedMs),
         nextChargeDurationMs: durationMs,
@@ -95,6 +98,7 @@ export function getInstantExpeditionChargeState(
 
   return {
     stock: maxStock,
+    maxStock,
     chargeStartedAt: null,
     remainingMs: 0,
     nextChargeDurationMs: null,
@@ -132,7 +136,11 @@ export function consumeInstantExpeditionStock<T extends InstantExpeditionChargeP
 
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
 export function formatInstantExpeditionChargeDisplay(chargeState: InstantExpeditionChargeState): InstantExpeditionChargeDisplay {
-  const cells = Array.from({ length: INSTANT_EXPEDITION_MAX_STOCK }, (_, index) => (
+  const rawMaxStock = Math.floor(chargeState.maxStock);
+  const maxStock = Number.isFinite(rawMaxStock)
+    ? Math.max(0, Math.min(INSTANT_EXPEDITION_MAX_STOCK, rawMaxStock))
+    : INSTANT_EXPEDITION_MAX_STOCK;
+  const cells = Array.from({ length: maxStock }, (_, index) => (
     index < chargeState.stock ? '▰' : '▱'
   )).join('');
   const timerText = chargeState.nextChargeDurationMs === null
