@@ -157,37 +157,37 @@
 | 210 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | コロッチュ |
 | 211 | 4 | 1 | 3 | 22 | Normal | `Shadowfang` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | フェネップ |
 | 212 | 4 | 1 | 3 | 22 | Normal | `Shadowfang` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | トロポン |
-| 213 | 4 | 1 | 4 | 24 | Elite | `Shadowfang` | class.pilgrim.guardian | `i.robe`EA, `i.grimoire`EA, `i.armor`EA, `i.armor`C, `i.robe`C, `i.shield`C | ワメ |
+| 213 | 4 | 1 | 4 | 24 | Elite | `Shadowfang` | class.pilgrim.guardian | `i.robe`EA, `i.grimoire`EA, `i.armor`EA, `i.armor`C, `i.robe`C, `i.shield`C | ワメ | `c.growth_x1.3` |
 | 214 | 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | マルカ |
 | 215 | 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | タマ |
 | 216 | 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | パフゥーク |
 | 217 | 4 | 2 | 3 | 23 | Normal | `Felidian` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | カラカル |
 | 218 | 4 | 2 | 3 | 23 | Normal | `Felidian` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | ゼファー |
-| 219 | 4 | 2 | 4 | 25 | Elite | `Shadowfang` | class.samurai.striker | `i.katana`EA, `i.shield`EA, `i.bolt`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | タミャ |
+| 219 | 4 | 2 | 4 | 25 | Elite | `Shadowfang` | class.samurai.striker | `i.katana`EA, `i.shield`EA, `i.bolt`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | タミャ | `c.penet+40` |
 | 220 | 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | K9-33 |
 | 221 | 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | K9-07 |
 | 222 | 4 | 3 | 1-2 | 23 | Normal | `Titan` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | K9-15 |
 | 223 | 4 | 3 | 3 | 24 | Normal | `Shadowfang` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ミーケ |
 | 224 | 4 | 3 | 3 | 24 | Normal | `Shadowfang` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | マレプ |
-| 225 | 4 | 3 | 4 | 26 | Elite | `Titan` | class.lord.wizard | `i.shield`EC, `i.katana`EC, `i.wand`EC, `i.armor`C, `i.robe`C, `i.shield`C | K9-01 |
+| 225 | 4 | 3 | 4 | 26 | Elite | `Titan` | class.lord.wizard | `i.shield`EC, `i.katana`EC, `i.wand`EC, `i.armor`C, `i.robe`C, `i.shield`C | K9-01 | `a.re-attack`1 |
 | 226 | 4 | 4 | 1-2 | 24 | Normal | `Murid` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 怪力のロブ |
 | 227 | 4 | 4 | 1-2 | 24 | Normal | `Murid` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 転尻のタンブル |
 | 228 | 4 | 4 | 1-2 | 24 | Normal | `Murid` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 砂足のキリ |
-| 229 | 4 | 4 | 3 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.robe`BD, `i.sword`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 神官ネメア |
-| 230 | 4 | 4 | 3 | 27 | Elite | `Felidian` | class.striker.sage | `i.grimoire`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 審問官ザーラ |
-| 231 | 4 | 4 | 4 | 27 | Elite | `Murid` | class.ninja.duelist | `i.archery`EB, `i.bolt`EB, `i.sword`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 赤牙のリゾ |
+| 229 | 4 | 4 | 3 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.robe`BD, `i.sword`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 神官ネメア | `a.reanimate`1 |
+| 230 | 4 | 4 | 3 | 27 | Elite | `Felidian` | class.striker.sage | `i.grimoire`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 審問官ザーラ | `a.stealth`1 |
+| 231 | 4 | 4 | 4 | 27 | Elite | `Murid` | class.ninja.duelist | `i.archery`EB, `i.bolt`EB, `i.sword`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 赤牙のリゾ | `a.rage`1 |
 | 232 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | K9-21 |
 | 233 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | K9-05 |
 | 234 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | K9-40 |
 | 235 | 4 | 5 | 3 | 26 | Normal | `Felidian` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | カラリナ |
 | 236 | 4 | 5 | 3 | 26 | Normal | `Murid` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 鉤尾のヴェン |
-| 237 | 4 | 5 | 4 | 28 | Elite | `Felidian` | class.sage.alchemist | `i.grimoire`EB, `i.catalyst`EB, `i.catalyst`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ケマ |
+| 237 | 4 | 5 | 4 | 28 | Elite | `Felidian` | class.sage.alchemist | `i.grimoire`EB, `i.catalyst`EB, `i.catalyst`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ケマ | `d.evasion+30` |
 | 238 | 4 | 6 | 1-2 | 26 | Normal | `Felidian` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ペシャ |
 | 239 | 4 | 6 | 1-2 | 26 | Normal | `Felidian` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | ネメア |
 | 240 | 4 | 6 | 1-2 | 26 | Normal | `Felidian` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ラミル |
 | 241 | 4 | 6 | 3 | 27 | Normal | `Murid` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 銀髭のヴァロ |
 | 242 | 4 | 6 | 3 | 27 | Normal | `Murid` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 銭のマーン |
-| 243 | 4 | 6 | 4 | 31 | BOSS | `Felidian` | class.striker.ranger | `i.bolt`BD, `i.arrow`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 大司祭マウラ | `c.fire-defense-multiplier_x4/5` |
+| 243 | 4 | 6 | 4 | 31 | BOSS | `Felidian` | class.striker.ranger | `i.bolt`BD, `i.arrow`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 大司祭マウラ | `c.fire-defense-multiplier_x4/5`, `c.growth_x1.5` |
 | 244 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 火灰の狩獣 |
 | 245 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 熱霧の迅獣 |
 | 246 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 火口原の呪獣 |
