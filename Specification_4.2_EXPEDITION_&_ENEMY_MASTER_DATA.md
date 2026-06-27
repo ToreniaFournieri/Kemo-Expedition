@@ -79,7 +79,7 @@
 | 132 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | あなこ |
 | 133 | 1 | 6 | 3 | 7 | Normal | `Aerial` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ペネトレーター |
 | 134 | 1 | 6 | 3 | 7 | Normal | `Aerial` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヨキジ |
-| 135 | 1 | 6 | 4 | 11 | BOSS | `Caninian` | class.guardian | `i.armor`BD, `i.gauntlet`BD, `i.shield`BD, `i.armor`C, `i.robe`C, `i.shield`C | ヴェルグ  | `a.ice-absorb`1, `a.true-sight`1 |
+| 135 | 1 | 6 | 4 | 11 | BOSS | `Caninian` | class.guardian | `i.armor`BD, `i.gauntlet`BD, `i.shield`BD, `i.armor`C, `i.robe`C, `i.shield`C | ヴェルグ  | `a.ice-absorb`1, `a.true-sight`1, `c.growth_x1.5` |
 | 136 | 2 | 1 | 1 | 1-2 | 7 | Normal | `Frost` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 霜ふくろう |
 | 137 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 凍鹿 |
 | 138 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 氷精 |
@@ -115,7 +115,7 @@
 | 168 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 氷角 |
 | 169 | 2 | 6 | 3 | 13 | Normal | `Golem` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | リボンバン |
 | 170 | 2 | 6 | 3 | 13 | Normal | `Golem` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | パックベア |
-| 171 | 2 | 6 | 4 | 17 | BOSS | `Lupinian` | class.striker.sword-saint | `i.bolt`BD, `i.arrow`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | ロザリア | `a.deflection`2, `a.life-drain`6, `a.null-life-drain`1, `c.growth_x1.3` |
+| 171 | 2 | 6 | 4 | 17 | BOSS | `Lupinian` | class.striker.sword-saint | `i.bolt`BD, `i.arrow`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | ロザリア | `a.deflection`2, `a.life-drain`6, `a.null-life-drain`1, `c.growth_x1.5` |
 | 172 | 3 | 1 | 1-2 | 14 | Normal | `Fruit` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | あぷりん | 
 | 173 | 3 | 1 | 1-2 | 14 | Normal | `Fruit` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ぐぁびー |
 | 174 | 3 | 1 | 1-2 | 14 | Normal | `Fruit` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | みむる |
@@ -151,7 +151,7 @@
 | 204 | 3 | 6 | 1-2 | 19 | Normal | `Orcinian` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | エヴェリナ |
 | 205 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | イリア |
 | 206 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヴェスペラ |
-| 207 | 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | class.wizard.sage | `i.wand`BD, `i.robe`BD, `i.grimoire`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 宰相ゴールドテイル | `a.melee-confusion`1, `c.growth_x1.2` | 
+| 207 | 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | class.wizard.sage | `i.wand`BD, `i.robe`BD, `i.grimoire`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 宰相ゴールドテイル | `a.melee-confusion`1, `c.growth_x1.5` | 
 | 208 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ポムキャット |
 | 209 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | フワテイル |
 | 210 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | コロッチュ |
