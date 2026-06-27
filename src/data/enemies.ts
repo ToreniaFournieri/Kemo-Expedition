@@ -516,17 +516,24 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   189: [{ id: 're_attack', level: 1 }],
   195: [{ id: 'resurrect', level: 1 }],
   201: [{ id: 'overwatch', level: 1 }],
+  225: [{ id: 're_attack', level: 1 }],
+  229: [{ id: 'reanimate', level: 1 }],
+  230: [{ id: 'stealth', level: 1 }],
+  231: [{ id: 'rage', level: 1 }],
 };
 
 const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   // SpecRef: 4.2.2 | Enemy | Rare items drop
-  4: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }],
+  4: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }, { type: 'growth_xV', value: 1.5 }],
 };
 
 const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
   171: [{ type: 'growth_xV', value: 1.3 }],
   207: [{ type: 'growth_xV', value: 1.2 }],
+  213: [{ type: 'growth_xV', value: 1.3 }],
+  219: [{ type: 'penet', value: 0.4 }],
+  237: [{ type: 'evasion', value: 0.03 }],
   147: [{ type: 'physical_defense_multiplier_xV', value: 1 / 2 }],
   163: [{ type: 'physical_defense_multiplier_xV', value: 2 / 5 }],
   164: [{ type: 'physical_defense_multiplier_xV', value: 3 / 5 }],
