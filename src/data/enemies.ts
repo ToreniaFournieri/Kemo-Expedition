@@ -529,8 +529,9 @@ const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
 
 const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
-  171: [{ type: 'growth_xV', value: 1.3 }],
-  207: [{ type: 'growth_xV', value: 1.2 }],
+  135: [{ type: 'growth_xV', value: 1.5 }],
+  171: [{ type: 'growth_xV', value: 1.5 }],
+  207: [{ type: 'growth_xV', value: 1.5 }],
   213: [{ type: 'growth_xV', value: 1.3 }],
   219: [{ type: 'penet', value: 0.4 }],
   237: [{ type: 'evasion', value: 0.03 }],
