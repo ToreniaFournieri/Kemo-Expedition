@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 36 | 2026/06/27 | Update runtime Expedition 4 enemy master data (Spec 4.2.2): align Enemy_ID 208-243 names, enemy types, classes, drops, and specified elite/boss bonus abilities and modifiers with the master-data table. |
 | 0.7.6 | 35 | 2026/06/27 | Update runtime Expedition 5 enemy master data (Spec 4.2.2): change Enemy_ID 256 and 270 enemy types from Ursan to Beast while preserving their classes, drops, and Japanese names. |
 | 0.7.6 | 34 | 2026/06/24 | Fix Instant Expedition Charge save hydration (Spec 8.3): preserve cleared expedition-tier charge slot unlocks when loading saves so parties can continue charging beyond the initial 3-stock cap. |
 | 0.7.6 | 33 | 2026/06/23 | Refine runtime Instant Expedition Charge boost display (Spec 8.3): render only the currently unlocked stock cells so lower boost tiers show compact MAX text such as ▰▰▰MAX instead of padded locked slots. |
