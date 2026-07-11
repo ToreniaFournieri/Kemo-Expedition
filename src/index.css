@@ -218,6 +218,63 @@ body.app-dark {
 .theme-dark input.ios-glass-slider:focus {
   outline-color: transparent;
 }
+
+/* SpecRef: 8.4.1 | Shop (お店) | Dialogue pane theme */
+.shop-dialogue-pane {
+  border: 1px solid rgb(209 213 219 / 0.95);
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 0.94), rgb(255 255 255 / 0.82)),
+    rgb(255 255 255);
+  color: rgb(31 41 55);
+}
+
+.shop-dialogue-pane__background {
+  opacity: 0.22;
+}
+
+.shop-dialogue-pane__title,
+.shop-dialogue-pane__bubble {
+  background-color: rgb(255 255 255 / 0.78);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.08);
+}
+
+.shop-dialogue-pane__portrait {
+  border: 1px solid rgb(255 255 255 / 0.8);
+  background-color: rgb(255 255 255 / 0.72);
+}
+
+.shop-item-card {
+  border: 1px solid rgb(209 213 219 / 0.95);
+  background-color: rgb(255 255 255 / 0.96);
+}
+
+.theme-dark .shop-dialogue-pane {
+  border-color: rgb(51 65 85);
+  background:
+    linear-gradient(90deg, rgb(15 23 42 / 0.82), rgb(15 23 42 / 0.68)),
+    rgb(15 23 42);
+  color: rgb(229 231 235);
+}
+
+.theme-dark .shop-dialogue-pane__background {
+  opacity: 0.35;
+}
+
+.theme-dark .shop-dialogue-pane__title,
+.theme-dark .shop-dialogue-pane__bubble {
+  background-color: rgb(2 6 23 / 0.55);
+  box-shadow: 0 1px 4px rgb(2 6 23 / 0.32);
+}
+
+.theme-dark .shop-dialogue-pane__portrait {
+  border-color: rgb(51 65 85);
+  background-color: rgb(2 6 23 / 0.5);
+}
+
+.theme-dark .shop-item-card {
+  border-color: rgb(51 65 85);
+  background-color: rgb(15 23 42 / 0.92);
+}
 .theme-dark select option,
 .theme-dark select optgroup {
   background-color: rgb(15 23 42);
