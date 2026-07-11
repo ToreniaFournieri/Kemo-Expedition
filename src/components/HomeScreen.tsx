@@ -9578,7 +9578,6 @@ function ShopTab({
   onBuyShopItem: (itemId: number, stockItemKey: string) => void;
   onRefreshShopLineup: () => void;
 }) {
-  const mustelidRace = RACES.find((race) => race.id === 'mustelid');
   const now = new Date();
   const elapsedRefreshes = countElapsedShopRefreshes(shopIntimacyLastDecayAt, now);
   const effectiveIntimacy = Math.max(0, Math.floor(shopIntimacy * (0.9 ** elapsedRefreshes)));
@@ -9602,9 +9601,6 @@ function ShopTab({
   const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
   const soldOutItemKeys = shopPurchases[stockKey] ?? [];
 
-  if (!mustelidRace) {
-    return <div className="text-sm text-gray-600">お店の準備中です。</div>;
-  }
 
   const intimacyDialogue = effectiveIntimacy >= 80
     ? '「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」'
@@ -9680,12 +9676,24 @@ function ShopTab({
 
   return (
     <div className="space-y-4">
-      <div className="rounded border border-gray-200 bg-white p-3">
-        <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
-        <div className="mt-2 flex items-center justify-between gap-3">
+      {/* SpecRef: 8.4.1 | Shop (お店) | Dialogue pane (UI) */}
+      <div
+        className="relative overflow-hidden rounded border border-gray-200 bg-white p-3"
+        style={{
+          backgroundImage: 'linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url(/background/Shop.png)',
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+        }}
+      >
+        <div className="relative z-10 text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
+        <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
-            <RaceIcon race={mustelidRace} className="h-10 w-10 self-center" />
-            <div className="space-y-1">
+            <img
+              src="/background/Felis.png"
+              alt="フェリス"
+              className="h-14 w-14 self-center rounded-full object-cover object-top shadow-sm ring-1 ring-white/70"
+            />
+            <div className="space-y-1 rounded bg-white/55 px-2 py-1 backdrop-blur-[1px]">
               <p className="text-sm text-gray-700">
                 {intimacyDialogue}
               </p>
