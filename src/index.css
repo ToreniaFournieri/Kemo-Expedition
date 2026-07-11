@@ -234,8 +234,12 @@ body.app-dark {
 
 .shop-dialogue-pane__title,
 .shop-dialogue-pane__bubble {
-  background-color: rgb(255 255 255 / 0.94);
-  box-shadow: 0 1px 4px rgb(15 23 42 / 0.12);
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.shop-dialogue-pane__title {
+  text-shadow: 0 1px 2px rgb(255 255 255 / 0.9);
 }
 
 .shop-dialogue-pane__line {
@@ -272,8 +276,14 @@ body.app-dark {
 
 .theme-dark .shop-dialogue-pane__title,
 .theme-dark .shop-dialogue-pane__bubble {
-  background-color: rgb(2 6 23 / 0.62);
-  box-shadow: 0 1px 4px rgb(2 6 23 / 0.32);
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.theme-dark .shop-dialogue-pane__title,
+.theme-dark .shop-dialogue-pane__line,
+.theme-dark .shop-dialogue-pane__countdown {
+  text-shadow: 0 1px 2px rgb(2 6 23 / 0.95);
 }
 
 .theme-dark .shop-dialogue-pane__line {
