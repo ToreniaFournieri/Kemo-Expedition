@@ -9680,16 +9680,26 @@ function ShopTab({
 
   return (
     <div className="space-y-4">
-      <div className="rounded border border-gray-200 bg-white p-3">
-        <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
-        <div className="mt-2 flex items-center justify-between gap-3">
+      <div className="relative isolate overflow-hidden rounded border border-gray-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+        <img
+          src={`${import.meta.env.BASE_URL}background/Shop.png`}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full select-none object-cover opacity-30 dark:opacity-35"
+        />
+        <div className="relative z-10 inline-block rounded bg-white/70 px-2 py-0.5 text-sm font-semibold text-sub dark:bg-slate-950/55">フェリスのガラクタ屋</div>
+        <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
-            <RaceIcon race={mustelidRace} className="h-10 w-10 self-center" />
-            <div className="space-y-1">
-              <p className="text-sm text-gray-700">
+            <img
+              src={`${import.meta.env.BASE_URL}background/Felis.png`}
+              alt="フェリス"
+              className="h-12 w-12 self-center rounded-full border border-white/70 bg-white/60 object-cover shadow-sm dark:border-slate-700 dark:bg-slate-950/50"
+            />
+            <div className="space-y-1 rounded bg-white/70 px-2 py-1 dark:bg-slate-950/55">
+              <p className="text-sm text-gray-700 dark:text-slate-100">
                 {intimacyDialogue}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-slate-300">
                 （商品洗替まであと {countdownText.replace('後', '')}）
               </p>
             </div>
@@ -9701,7 +9711,7 @@ function ShopTab({
               className={`rounded px-3 py-1 text-xs font-semibold ${
                 gold >= refreshPrice
                   ? 'bg-accent text-white hover:bg-accent/90'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500'
               }`}
             >
               <span className="block">有償洗替</span>
