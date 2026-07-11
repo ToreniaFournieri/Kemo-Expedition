@@ -9680,22 +9680,22 @@ function ShopTab({
 
   return (
     <div className="space-y-4">
-      <div className="relative isolate overflow-hidden rounded border border-gray-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+      <div className="shop-dialogue-pane relative isolate overflow-hidden rounded p-3">
         <img
           src={`${import.meta.env.BASE_URL}background/Shop.png`}
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full select-none object-cover opacity-30 dark:opacity-35"
+          className="shop-dialogue-pane__background pointer-events-none absolute inset-0 -z-10 h-full w-full select-none object-cover"
         />
-        <div className="relative z-10 inline-block rounded bg-white/70 px-2 py-0.5 text-sm font-semibold text-sub dark:bg-slate-950/55">フェリスのガラクタ屋</div>
+        <div className="shop-dialogue-pane__title relative z-10 inline-block rounded px-2 py-0.5 text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
         <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
             <img
               src={`${import.meta.env.BASE_URL}background/Felis.png`}
               alt="フェリス"
-              className="h-12 w-12 self-center rounded-full border border-white/70 bg-white/60 object-cover shadow-sm dark:border-slate-700 dark:bg-slate-950/50"
+              className="shop-dialogue-pane__portrait h-12 w-12 self-center rounded-full object-cover shadow-sm"
             />
-            <div className="space-y-1 rounded bg-white/70 px-2 py-1 dark:bg-slate-950/55">
+            <div className="shop-dialogue-pane__bubble space-y-1 rounded px-2 py-1">
               <p className="text-sm text-gray-700 dark:text-slate-100">
                 {intimacyDialogue}
               </p>
@@ -9723,7 +9723,7 @@ function ShopTab({
 
       <div className="space-y-2">
         {shopItems.map((entry) => (
-          <div key={entry.key} className="rounded border border-gray-200 bg-white px-3 py-2">
+          <div key={entry.key} className="shop-item-card rounded px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className={`flex items-center gap-2 text-sm ${entry.rarityClass}`}>
