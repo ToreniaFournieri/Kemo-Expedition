@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 40 | 2026/07/11 | Fix runtime Shop owner dialogue readability in normal mode (Spec 8.4.1): strengthen the dialogue bubble backing and move owner text/countdown colors to theme-specific CSS so Felis’s message remains legible over the shop background image. |
 | 0.7.6 | 39 | 2026/07/11 | Refine runtime Shop pane theming (Spec 8.4.1): move the dialogue pane and item cards to CSS-controlled light/dark styles so normal mode uses a white-based presentation while dark mode keeps the darker treatment. |
 | 0.7.6 | 38 | 2026/07/11 | Implement runtime Shop dialogue pane imagery (Spec 8.4.1): render the transparent Shop background behind the pane and use the Felis owner portrait while preserving separate normal and dark mode presentation without applying image filters. |
 | 0.7.6 | 37 | 2026/06/27 | Update runtime early boss bonus modifiers (Spec 4.2.2): apply the requested `c.growth_x1.5` bonus to Enemy_ID 135, 171, and 207 while preserving their specified boss abilities, classes, drops, and Japanese names. |
