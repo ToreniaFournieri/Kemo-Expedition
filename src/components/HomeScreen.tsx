@@ -9696,10 +9696,10 @@ function ShopTab({
               className="shop-dialogue-pane__portrait h-12 w-12 self-center rounded-full object-cover shadow-sm"
             />
             <div className="shop-dialogue-pane__bubble space-y-1 rounded px-2 py-1">
-              <p className="text-sm text-gray-700 dark:text-slate-100">
+              <p className="shop-dialogue-pane__line text-sm">
                 {intimacyDialogue}
               </p>
-              <p className="text-xs text-gray-500 dark:text-slate-300">
+              <p className="shop-dialogue-pane__countdown text-xs">
                 （商品洗替まであと {countdownText.replace('後', '')}）
               </p>
             </div>
