@@ -239,12 +239,12 @@ HP: 312                 タイプ: 神魔
 
 | Setting | UI | Description | Default |
 |---|---|---|---|
+| Enemy level | Slider bar (`1–99`) | Sets enemy level | `10` |
 | Enemy name | Text input | Custom display name of the enemy | `ミーティア` |
 | Terrain effect | Pull-down list | Select terrain effect | `none` |
 | Enemy type | Pull-down list | Select enemy type category | `Jinma` |
 | Enemy main class | Pull-down list | Select enemy class | `class.duelist` |
 | Enemy sub class | Pull-down list | Select enemy class (optional) | `none` |
-| Enemy level | Slider bar (`1–99`) | Sets enemy level | `10` |
 | Enemy added ability 1 | Pull-down list | Adds an extra ability | `none` |
 | Enemy added ability 1 level | Pull-down list | level 1~5 | `1` |
 | Enemy added ability 2 | Pull-down list | Adds an extra ability | `none` |
