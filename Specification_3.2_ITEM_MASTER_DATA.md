@@ -391,19 +391,19 @@
 | 8 | E | `Voidspawn` | `i.gauntlet`EA | 虚痕の手甲 |
 | 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.fading_memory`, `r.ice_x1.5, `r.ice_x1.25`, `r.thunder_x1.25` |
 | 8 | E | `Voidspawn` | `i.robe`EA | 虚痕の法衣 |
-| 8 | E | `Ghost` | `i.bolt`EB | 冥霊のボルト |
-| 8 | E | `Ghost` | `i.katana`EB | 冥霊の太刀 |
-| 8 | E | `Ghost` | `i.shield`EB | 冥霊の盾 |
-| 8 | E | `Ghost` | `i.wand`EB | 冥霊の杖 |
-| 8 | E | `Ghost` | `i.catalyst`EB | 冥霊核の触媒 |
-| 8 | E | `Ghost` | `i.robe`EB | 冥霊の法衣 |
-| 8 | E | `Ghost` | `i.archery`EB | 幽冥の長弓 |
-| 8 | E | `Jinma` | `i.gauntlet`EC | 神魔の拳甲 |
-| 8 | E | `Jinma` | `i.katana`EC | 神魔の太刀 |
-| 8 | E | `Jinma` | `i.arrow`EC | 神魔の祀矢 |
+| 8 | E | `Ghost` | `i.bolt`EB | 霊撃のボルト |
+| 8 | E | `Ghost` | `i.katana`EB | 拒絶の刀 |
+| 8 | E | `Ghost` | `i.shield`EB | 霊の盾 |
+| 8 | E | `Ghost` | `i.wand`EB | 珪素の杖 |
+| 8 | E | `Ghost` | `i.catalyst`EB | コバルト |
+| 8 | E | `Ghost` | `i.robe`EB | ファイアーヴェール | `r.fire_x2/3` |
+| 8 | E | `Ghost` | `i.archery`EB | 残痕の弓 |
+| 8 | E | `Jinma` | `i.gauntlet`EC | 炭素繊維の拳甲 |
+| 8 | E | `Jinma` | `i.katana`EC | グラフェンブレード |
+| 8 | E | `Jinma` | `i.arrow`EC | 磁気矢 |
 | 8 | E | `Jinma` | `i.grimoire`EC | 反乱の手引 | `a.defiance` | 
-| 8 | E | `Jinma` | `i.shield`EC | 神魔の盾 |
-| 8 | E | `Jinma` | `i.robe`EC | 神魔の衣 |
+| 8 | E | `Jinma` | `i.shield`EC | ライオットシールド |
+| 8 | E | `Jinma` | `i.robe`EC | パーカー |
 | 8 | E | `Cervin` | `i.sword`ED | 勇鹿の剣 |
 | 8 | E | `Cervin` | `i.armor`ED | セルヴィンの鎧 |
 | 8 | E | `Cervin` | `i.wand`ED | 勇鹿の杖 |
