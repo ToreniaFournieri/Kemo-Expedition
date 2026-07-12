@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 13 | 2026/07/12 | Update runtime enemy HP level scaling (Spec 4.1.2): compute `x.exp_HP_mult` with base 1.192 and the specified level-25/49 soft-cap penalties. |
 | 0.8.0 | 12 | 2026/07/12 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 4-8 base enemy levels with the current definition table (20, 26, 32, 38, and 44). |
 | 0.8.0 | 11 | 2026/07/12 | Align runtime Expedition Difficulty Offset slider (Spec 8.3): compute the maximum offset as `2 × ceil(min(80, 88 - x.enemy_level) / 2)` and normalize displayed persisted values to even slider steps. |
 | 0.8.0 | 10 | 2026/07/12 | Update runtime Expedition Difficulty Offset slider (Spec 8.3): clamp the maximum offset to `min(80, ceil(88 - x.enemy_level))` and restrict selectable values to +2 increments. |
