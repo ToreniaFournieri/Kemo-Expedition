@@ -27,7 +27,7 @@ import { getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
-import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets } from '../game/difficultyOffset';
+import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
@@ -8653,7 +8653,7 @@ function ExpeditionTab({
         const isDifficultyOffsetUnlocked = hasDefeatedDungeonBoss(party, party.selectedDungeonId);
         const difficultyOffsetMax = getDifficultyOffsetMax(selectedDungeon?.expLevel ?? 88);
         const selectedDifficultyOffset = isDifficultyOffsetUnlocked
-          ? Math.max(0, Math.min(difficultyOffsetMax, party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset))
+          ? normalizeDifficultyOffset(party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset, difficultyOffsetMax)
           : 0;
         const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(selectedDifficultyOffset);
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);

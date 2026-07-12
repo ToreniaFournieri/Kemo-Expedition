@@ -9,7 +9,8 @@ export function normalizeDifficultyOffset(value: unknown, maxOffset: number = 80
 // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
 export function getDifficultyOffsetMax(enemyLevel: number): number {
   if (!Number.isFinite(enemyLevel)) return 0;
-  return Math.max(0, Math.min(80, Math.ceil(88 - enemyLevel)));
+  const cappedLevelGap = Math.min(80, 88 - enemyLevel);
+  return Math.max(0, 2 * Math.ceil(cappedLevelGap / 2));
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
