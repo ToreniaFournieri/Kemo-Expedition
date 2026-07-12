@@ -56,7 +56,7 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 ```
 
 - Difficulty Offset (難易度):
-  - Adjustable with a slider from +0 to min(80, ceil(88 - x.enemy_level)). Default: 0
+  - Adjustable with a slider from +0 to `2 × ceil(min(80, 88 - x.enemy_level) / 2)`. Default: 0
   - Step: +2 per step
   - Higher Difficulty Offset values grant additional reward tickets:
     - Additional Item Chance Ticket: +1 ticket at +2, +6, +10, +14, and every +4 thereafter.
