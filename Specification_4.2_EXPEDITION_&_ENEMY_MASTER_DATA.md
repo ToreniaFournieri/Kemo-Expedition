@@ -260,18 +260,18 @@
 | 313 | 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.ranger.duelist | `i.arrow`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | クインシー | `c.growth_x1.5` |
 | 314 | 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.samurai.ranger | `i.shield`BD, `i.katana`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | スキッパー | `c.growth_x1.5` |
 | 315 | 6 | 6 | 4 | 45 | BOSS | `Procyonian` | class.sage.lord | `i.grimoire`BD, `i.catalyst`BD, `i.shield`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セレスティアルリーパー | `a.soul-reap`3, `c.growth_x1.5` |
-| 316 | 7 | 1 | 1-2 | 42 | Normal | `Pony` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月輪の巨斥候 |
-| 317 | 7 | 1 | 1-2 | 42 | Normal | `Pony` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 光輪の巨斥候 |
-| 318 | 7 | 1 | 1-2 | 42 | Normal | `Pony` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 星屑の巨導師 |
-| 319 | 7 | 1 | 3 | 43 | Normal | `Pony` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 月砕きの巨兵 |
-| 320 | 7 | 1 | 3 | 43 | Normal | `Pony` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 光冠の巨長 |
-| 321 | 7 | 1 | 4 | 45 | Elite | `Pony` | class.lord.striker | `i.shield`EA, `i.katana`EA, `i.bolt`EA, `i.armor`C, `i.robe`C, `i.shield`C | 天蓋の巨王兵 | `a.m-barrier-breaker`1 |
-| 322 | 7 | 2 | 1-2 | 43 | Normal | `Pony` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 影月の巨忍 |
-| 323 | 7 | 2 | 1-2 | 43 | Normal | `Pony` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月詠みの巨賢 |
-| 324 | 7 | 2 | 1-2 | 43 | Normal | `Pony` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 星詠みの巨侍 |
-| 325 | 7 | 2 | 3 | 46 | Elite | `Leporian` | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 白兎巡礼士 | `a.re-counter`1 |
-| 326 | 7 | 2 | 3 | 46 | Elite | `Leporian` | class.wizard.striker | `i.archery`BD, `i.grimoire`BD, `i.arrow`BD, `i.wand`C, `i.grimoire`C | 白兎術師 | `a.ranged-null`1 |
-| 327 | 7 | 2 | 4 | 46 | Elite | `Pony` | class.wizard.sage | `i.wand`EA, `i.robe`EA, `i.grimoire`EA, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 天文の巨導賢 | `a.melee-reflect`1 |
+| 316 | 7 | 1 | 1-2 | 42 | Normal | `Pony` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | リッカ |
+| 317 | 7 | 1 | 1-2 | 42 | Normal | `Pony` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ナナラ |
+| 318 | 7 | 1 | 1-2 | 42 | Normal | `Pony` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ノワ |
+| 319 | 7 | 1 | 3 | 43 | Normal | `Pony` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | ジータ |
+| 320 | 7 | 1 | 3 | 43 | Normal | `Pony` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | ベルタ |
+| 321 | 7 | 1 | 4 | 45 | Elite | `Pony` | class.lord.striker | `i.shield`EA, `i.katana`EA, `i.bolt`EA, `i.armor`C, `i.robe`C, `i.shield`C | ソレナ | `a.m-barrier-breaker`1 |
+| 322 | 7 | 2 | 1-2 | 43 | Normal | `Pony` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ザフィール |
+| 323 | 7 | 2 | 1-2 | 43 | Normal | `Pony` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | フィナ |
+| 324 | 7 | 2 | 1-2 | 43 | Normal | `Pony` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | バルト |
+| 325 | 7 | 2 | 3 | 46 | Elite | `Leporian` | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | ランスロット | `a.re-counter`1 |
+| 326 | 7 | 2 | 3 | 46 | Elite | `Leporian` | class.wizard.striker | `i.archery`BD, `i.grimoire`BD, `i.arrow`BD, `i.wand`C, `i.grimoire`C | ジョサン | `a.ranged-null`1 |
+| 327 | 7 | 2 | 4 | 46 | Elite | `Pony` | class.wizard.sage | `i.wand`EA, `i.robe`EA, `i.grimoire`EA, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ネイル | `a.melee-reflect`1 |
 | 328 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 光翼の錬空将 |
 | 329 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 光翼の戦空兵 |
 | 330 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 蒼空の翼兵 |
