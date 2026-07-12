@@ -27,6 +27,7 @@ import { getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
+import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets } from '../game/difficultyOffset';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
@@ -8650,9 +8651,13 @@ function ExpeditionTab({
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
         const isDifficultyOffsetUnlocked = hasDefeatedDungeonBoss(party, party.selectedDungeonId);
+        const difficultyOffsetMax = getDifficultyOffsetMax(selectedDungeon?.expLevel ?? 88);
         const selectedDifficultyOffset = isDifficultyOffsetUnlocked
-          ? (party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset)
+          ? Math.max(0, Math.min(difficultyOffsetMax, party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset))
           : 0;
+        const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(selectedDifficultyOffset);
+        const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
+        const getDifficultyOffsetBubbleText = (offset: number) => `敵レベル +${formatNumber(offset)}\nアイテム獲得チャンス +${formatNumber(getDifficultyOffsetItemChanceTickets(offset))}\n超レア獲得チャンス +${formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset))}`;
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
@@ -9074,14 +9079,21 @@ function ExpeditionTab({
                       <input
                         type="range"
                         min={0}
-                        max={30}
+                        max={difficultyOffsetMax}
                         step={1}
                         value={selectedDifficultyOffset}
-                        onChange={(e) => onSetExpeditionDifficultyOffset(partyIndex, Number(e.target.value))}
+                        onChange={(e) => {
+                          const nextOffset = Number(e.target.value);
+                          onSetExpeditionDifficultyOffset(partyIndex, nextOffset);
+                          handleProgressBubbleToggle(`${party.id}:difficulty-offset`, getDifficultyOffsetBubbleText(nextOffset), e.currentTarget);
+                        }}
+                        onPointerDown={(e) => {
+                          handleProgressBubbleToggle(`${party.id}:difficulty-offset`, getDifficultyOffsetBubbleText(selectedDifficultyOffset), e.currentTarget);
+                        }}
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
-                        style={getSliderProgressStyle(selectedDifficultyOffset, 0, 30)}
+                        style={getSliderProgressStyle(selectedDifficultyOffset, 0, difficultyOffsetMax)}
                       />
-                      <span className="shrink-0">+{formatNumber(selectedDifficultyOffset)}</span>
+                      <span className="shrink-0">+{formatNumber(selectedDifficultyOffset)} (🪎+{formatNumber(difficultyItemChanceTickets)}, ✨+{formatNumber(difficultySuperRareChanceTickets)})</span>
                     </div>
                   </div>
                 )}
