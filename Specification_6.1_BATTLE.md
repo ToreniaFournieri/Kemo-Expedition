@@ -733,8 +733,8 @@ If `a.*` with phase = START:
   - Base: **2**
   - +1 if `c.unlock`
   - +1 if (terrain is not terrain.gehenna) and {Goddess of Discord or (God of Oblivion and its rank ≥ 10)}
+  - +N from `Difficulty Offset` (Additional Item Chance Tickets)
   - +N from `a.auriferous`
- 
 	- `a.auriferous`
 	  - N = floor(total hits received `enemyHitsReceived` / 10)
 	  - Multi-hit attacks count as multiple hits
@@ -742,6 +742,7 @@ If `a.*` with phase = START:
       - Log: `log.auriferous` + (累計X回→ +N回抽選回数増加)
 
 - For every item listed in the enemy's potential drop items,
+  - Chance: 1 + N from `Difficulty Offset` (Additional Super Rare Chance Tickets)
   - If the item is common,
     - Draw tickets from `t.common_reward_bag` equal to the total ticket count.
 	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
