@@ -56,7 +56,24 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 ```
 
 - Difficulty Offset (難易度):
-  - Adjustable with a slider from +0 to +30. Default: 0
+  - Adjustable with a slider from +0 to min(40, ceil((88 - x.enemy_level) / 2)). Default: 0
+  - Higher Difficulty Offset values grant additional reward tickets:
+    - Additional Item Chance Ticket: +1 ticket at +2, +6, +10, +14, and every +4 thereafter.
+    - Additional Super Rare Chance Ticket: +1 ticket at +4, +8, +12, +16 and every +4 thereafter.
+    - Example: At Difficulty Offset +12, the party gains:
+      - +3 Additional Item Chance Tickets
+      - +3 Additional Super Rare Chance Tickets
+  - **Display Style**
+    - Slider value display: +12 (🪎+3, ✨+3)
+      - Where:
+        - 🪎 represents Additional Item Chance Tickets.
+        - ✨ represents Additional Super Rare Chance Tickets.
+	- Floating bubble:
+      - When the user adjusts or interacts with the Difficulty Offset slider, display a floating bubble showing the current effects:
+        - 敵レベル +12
+        - アイテム獲得チャンス +3
+        - 超レア獲得チャンス +3
+
   - The selected value is added to the level of all enemies in the selected expedition.
   - This option becomes available only after the party has defeated that expedition’s Boss at least once (lifetime, party-wide).
   - Scope: The offset is independently stored per party–expedition pair and does not affect other expeditions.
