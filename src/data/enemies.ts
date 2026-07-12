@@ -205,6 +205,14 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
       { type: 'thunder_defense_multiplier_xV', value: 1.5 },
     ],
   },
+  Chiropteran: {
+    ability1: [{ id: 'bulwark_breaker', level: 1 }],
+    ability30: [{ id: 'mutual_physical_amplify', level: 1 }],
+    bonuses: [
+      { type: 'growth_xV', value: 1.1 },
+      { type: 'thunder_defense_multiplier_xV', value: 1.2 },
+    ],
+  },
   Chimera: {
     ability1: [{ id: 'unstable_core', level: 1 }],
     ability30: [{ id: 'mutual_magic_restraint', level: 1 }],

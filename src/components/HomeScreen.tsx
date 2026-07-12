@@ -12435,6 +12435,7 @@ function SettingTab({
     Golem: 'ゴーレム',
     Shadowfang: '影牙',
     Mech: '機械',
+    Chiropteran: 'カイロプテラン',
     Chimera: 'キメラ',
     Titan: '巨人',
     Jinma: '神魔',
