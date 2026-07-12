@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 45 | 2026/07/12 | Refine runtime Shop owner dialogue formatting (Spec 8.4.1): remove Japanese corner quotes from Felis’s comments and render the dialogue in normal font weight while keeping the countdown emphasized. |
 | 0.7.6 | 44 | 2026/07/12 | Update runtime Expedition 6 enemy master data (Spec 4.2.2): align Enemy_ID 280-315 names, enemy types, classes, drops, and specified elite/boss bonus abilities and modifiers with the provided table. |
 | 0.7.6 | 43 | 2026/07/12 | Update runtime Expedition 5 enemy master data (Spec 4.2.2): align Enemy_ID 244-279 Japanese names with the provided table and apply the specified elite, normal, and boss bonus abilities/modifiers. |
 | 0.7.6 | 42 | 2026/07/12 | Update runtime Expedition 2 Frost enemy names (Spec 4.2.2): align Enemy_ID 136-144, 147, 151-152, and 166-168 Japanese names with the master-data table while preserving classes, drops, and bonus abilities. |
