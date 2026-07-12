@@ -84,19 +84,19 @@
 ## 9. Environment
 **Branch:**
   - `main` → `/dev/`
-  - *obsoleted*:`qa` → `/qa/`
   - `beta` → `/beta/`
+  - `prod` → `/`
 **Environment:**
-  - `/dev/` = 開発環境,
-  - `/beta/` = βテスト.
-  - display the environment label in the version line.
-    onfiguration:**
-  - `/dev/`:
+  - `/dev/`: 開発環境
     - Debug mode: ON
     - Speed of time: x20 hyper 
-  - `/beta/`:
+  - `/beta/`: βテスト
     - Debug mode: OFF
     - Theme: `m.laika` (fixed; not user-configurable)
+  - `/` : 本番環境
+    - Debug mode: OFF
+    - Speed of time: x1
+    - 
 **Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/` and `/beta/`) and never shared between them.
 
 ## 10. Coding Rule: SpecRef Traceability
