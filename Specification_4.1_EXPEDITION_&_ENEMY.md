@@ -185,7 +185,7 @@
 | Chiropteran | カイロプテラン | 蝙 | `a.bulwark-breaker`1 | `a.mutual-physical-amplify`1 | `c.growth_x1.1`, `r.thunder_x1.2` |
 | Chimera | キメラ | 合 | `a.unstable-core`1 | `a.mutual-magic-restraint`1  | `e.thunder+30`, `c.grit+1`, `c.pursuit+1`, `c.caster+1`, `c.growth_x1.7`  |
 | Titan | 巨人 | 巨 | `a.colossal`1 | `a.mutual-physical-restraint`1 | `c.growth_x1.5` |
-| Edge | エッジ | 界 | `a.illusion-breaker`1 | `a.mutual-magic-amplify`1 | `c.growth_x1.2` |
+| Pony | ポニー | 馬 | `a.illusion-breaker`1 | `a.mutual-magic-amplify`1 | `c.growth_x1.2` |
 | Voidspawn | 虚無 | 虚 | `a.null-counter`1 | `a.oblivion`1 | `r.fire_x2/3`, `r.ice_x2/3`, `r.thunder_x1.3` |
 | Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1 , race ability1 | none | `c.growth_x1.3` |
 | Orcinian | オルシニアン | 鯱 | `a.execution`1 | `a.overwatch`1 | |
