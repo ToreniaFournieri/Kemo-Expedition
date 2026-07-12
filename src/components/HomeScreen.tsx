@@ -12438,6 +12438,7 @@ function SettingTab({
     Chiropteran: 'カイロプテラン',
     Chimera: 'キメラ',
     Titan: '巨人',
+    Pony: 'ポニー',
     Jinma: '神魔',
     Orcinian: 'オルシニアン',
     Caninian: 'ケイナイアン',
