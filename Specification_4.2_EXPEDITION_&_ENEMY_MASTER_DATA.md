@@ -279,20 +279,20 @@
 | 332 | 7 | 3 | 3 | 45 | Normal | `Pony` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | クロウ |
 | 333 | 7 | 3 | 4 | 47 | Elite | `Aerial` | class.pilgrim.sword-saint | `i.robe`EC, `i.grimoire`EC, `i.gauntlet`EC, `i.armor`C, `i.robe`C, `i.shield`C | ネージュ | `a.melee-reflect`1 |
 | 334 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | ムミア |
-| 335 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 闇刃の亡者 |
-| 336 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 宵闇の亡者 |
-| 337 | 7 | 4 | 3 | 46 | Normal | `Aerial` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 闇翔の翼兵 |
-| 338 | 7 | 4 | 3 | 46 | Normal | `Aerial` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 闇天の翼将 |
-| 339 | 7 | 4 | 4 | 48 | Elite | `Undead` | class.ranger.samurai | `i.arrow`EB, `i.archery`EB, `i.katana`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 冥月の亡者アドリアン | `c.growth_x1.3` |
-| 340 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 深淵の翼忍 |
-| 341 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 深淵の翼侍 |
-| 342 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 深淵の翼賢 |
-| 343 | 7 | 5 | 3 | 47 | Normal | `Undead` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 墓園の亡護剣士 |
-| 344 | 7 | 5 | 3 | 47 | Normal | `Undead` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 墓園の亡術忍士 |
-| 345 | 7 | 5 | 4 | 49 | Elite | `Undead` | class.duelist.alchemist | `i.sword`EB, `i.armor`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | 冥府の剣士ヴァレン | `c.physical-offense-multiplier_x1.4` |
-| 346 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月宮の戦士長 |
-| 347 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 月宮の導師 |
-| 348 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月宮の親衛隊 |
+| 335 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ガルド |
+| 336 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | シロネ |
+| 337 | 7 | 4 | 3 | 46 | Normal | `Aerial` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | クルミ |
+| 338 | 7 | 4 | 3 | 46 | Normal | `Aerial` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | パッカ |
+| 339 | 7 | 4 | 4 | 48 | Elite | `Undead` | class.ranger.samurai | `i.arrow`EB, `i.archery`EB, `i.katana`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | ラグネ | `c.growth_x1.3` |
+| 340 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | チュリ |
+| 341 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | コハル |
+| 342 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ミュラ |
+| 343 | 7 | 5 | 3 | 47 | Normal | `Undead` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | モルナ |
+| 344 | 7 | 5 | 3 | 47 | Normal | `Undead` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ヴィネ |
+| 345 | 7 | 5 | 4 | 49 | Elite | `Undead` | class.duelist.alchemist | `i.sword`EB, `i.armor`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | バルグ | `c.physical-offense-multiplier_x1.4` |
+| 346 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ルーノ |
+| 347 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | エレノア |
+| 348 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ニーヴ |
 | 349 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月王の寵臣ナヴィル |
 | 350 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月王の寵臣カリス |
 | 351 | 7 | 6 | 4 | 52 | BOSS | `Leporian` | class.lord.ninja | `i.shield`BD, `i.katana`BD, `i.archery`BD, `i.armor`C, `i.robe`C, `i.shield`C | 月王ラピエル | `a.melee-reflect`2, `c.growth_x1.4` |
