@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 49 | 2026/07/12 | Update runtime Expedition 8 elite Ghost and Jinma item-drop names (Spec 3.2.1): align the EB/EC bolt, katana, shield, wand, catalyst, robe, archery, gauntlet, arrow, and grimoire display names with the item master data while preserving existing items. |
 | 0.7.6 | 48 | 2026/07/12 | Update runtime Expedition 6 elite Chiropteran item-drop name pools (Spec 3.2.1): replace the former Golem EB weapon names with the requested Chiropteran katana, arrow, archery, bolt, grimoire, shield, and sword names. |
 | 0.7.6 | 47 | 2026/07/12 | Update runtime Expedition 8 floor concept names (Spec 4.1.1): align floor 2 and floor 3 Japanese display labels with Expedition Floor Concepts (`亜世界`, `もう一つの人々`) while preserving terrain effects. |
 | 0.7.6 | 46 | 2026/07/12 | Add runtime Chiropteran enemy category (Spec 4.1/4.2.2): apply its base abilities, growth/thunder bonuses, display short name, and align Expedition 6 Enemy_ID 289-290, 298-300, 303, and 307-309 with the Chiropteran type. |
