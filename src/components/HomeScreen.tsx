@@ -9085,15 +9085,30 @@ function ExpeditionTab({
                         onChange={(e) => {
                           const nextOffset = Number(e.target.value);
                           onSetExpeditionDifficultyOffset(partyIndex, nextOffset);
-                          handleProgressBubbleToggle(`${party.id}:difficulty-offset`, getDifficultyOffsetBubbleText(nextOffset), e.currentTarget);
-                        }}
-                        onPointerDown={(e) => {
-                          handleProgressBubbleToggle(`${party.id}:difficulty-offset`, getDifficultyOffsetBubbleText(selectedDifficultyOffset), e.currentTarget);
                         }}
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
                         style={getSliderProgressStyle(selectedDifficultyOffset, 0, difficultyOffsetMax)}
                       />
-                      <span className="shrink-0">+{formatNumber(selectedDifficultyOffset)} (🪎+{formatNumber(difficultyItemChanceTickets)}, ✨+{formatNumber(difficultySuperRareChanceTickets)})</span>
+                      <button
+                        type="button"
+                        className="shrink-0 rounded px-1 text-left hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-sub/60"
+                        title={getDifficultyOffsetBubbleText(selectedDifficultyOffset)}
+                        aria-label={getDifficultyOffsetBubbleText(selectedDifficultyOffset)}
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleProgressBubbleToggle(
+                            `${party.id}:difficulty-offset`,
+                            getDifficultyOffsetBubbleText(selectedDifficultyOffset),
+                            event.currentTarget,
+                          );
+                        }}
+                      >
+                        +{formatNumber(selectedDifficultyOffset)} (🪎+{formatNumber(difficultyItemChanceTickets)}, ✨+{formatNumber(difficultySuperRareChanceTickets)})
+                      </button>
                     </div>
                   </div>
                 )}

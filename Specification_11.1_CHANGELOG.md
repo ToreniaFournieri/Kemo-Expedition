@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 9 | 2026/07/12 | Refine runtime Expedition Difficulty Offset tooltip targeting (Spec 8.3): keep slider dragging focused on changing difficulty and open the floating bubble from the offset bonus label area instead of the slider bar. |
 | 0.8.0 | 8 | 2026/07/12 | Implement runtime Expedition Difficulty Offset reward tickets (Spec 8.3/6.1.6): compute item and super-rare bonus tickets, clamp slider by expedition enemy level up to +40, show the ticket effects in the slider label and floating bubble, and apply the bonuses to enemy reward and super-rare rolls. |
 | 0.8.0 | 7 | 2026/07/12 | Update runtime enemy level scaling (Spec 4.1.2): align HP base, attack soft-cap penalty, and attack amplifier soft-cap penalty with the specified formulas. |
 | 0.8.0 | 6 | 2026/07/12 | Update runtime enemy level scaling (Spec 4.1.2): align HP, attack, attack amplifier, NoA, defense, and defense amplifier multipliers with the specified level-25/49 soft-cap formulas. |
