@@ -272,21 +272,21 @@
 | 325 | 7 | 2 | 3 | 46 | Elite | `Leporian` | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | ランスロット | `a.re-counter`1 |
 | 326 | 7 | 2 | 3 | 46 | Elite | `Leporian` | class.wizard.striker | `i.archery`BD, `i.grimoire`BD, `i.arrow`BD, `i.wand`C, `i.grimoire`C | ジョサン | `a.ranged-null`1 |
 | 327 | 7 | 2 | 4 | 46 | Elite | `Pony` | class.wizard.sage | `i.wand`EA, `i.robe`EA, `i.grimoire`EA, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ネイル | `a.melee-reflect`1 |
-| 328 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | リーファ |
-| 329 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | ミカ |
-| 330 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ポルカ |
+| 328 | 7 | 3 | 1-2 | 44 | Normal | `Origami` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | リーファ |
+| 329 | 7 | 3 | 1-2 | 44 | Normal | `Origami` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | ミカ |
+| 330 | 7 | 3 | 1-2 | 44 | Normal | `Origami` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ポルカ |
 | 331 | 7 | 3 | 3 | 45 | Normal | `Pony` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヴィオラ |
 | 332 | 7 | 3 | 3 | 45 | Normal | `Pony` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | クロウ |
-| 333 | 7 | 3 | 4 | 47 | Elite | `Aerial` | class.pilgrim.sword-saint | `i.robe`EC, `i.grimoire`EC, `i.gauntlet`EC, `i.armor`C, `i.robe`C, `i.shield`C | ネージュ | `a.melee-reflect`1 |
+| 333 | 7 | 3 | 4 | 47 | Elite | `Origami` | class.pilgrim.sword-saint | `i.robe`EC, `i.grimoire`EC, `i.gauntlet`EC, `i.armor`C, `i.robe`C, `i.shield`C | ネージュ | `a.melee-reflect`1 |
 | 334 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | ムミア |
 | 335 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ガルド |
 | 336 | 7 | 4 | 1-2 | 45 | Normal | `Undead` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | シロネ |
-| 337 | 7 | 4 | 3 | 46 | Normal | `Aerial` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | クルミ |
-| 338 | 7 | 4 | 3 | 46 | Normal | `Aerial` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | パッカ |
+| 337 | 7 | 4 | 3 | 46 | Normal | `Origami` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | クルミ |
+| 338 | 7 | 4 | 3 | 46 | Normal | `Origami` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | パッカ |
 | 339 | 7 | 4 | 4 | 48 | Elite | `Undead` | class.ranger.samurai | `i.arrow`EB, `i.archery`EB, `i.katana`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | ラグネ | `c.growth_x1.3` |
-| 340 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | チュリ |
-| 341 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | コハル |
-| 342 | 7 | 5 | 1-2 | 46 | Normal | `Aerial` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ミュラ |
+| 340 | 7 | 5 | 1-2 | 46 | Normal | `Origami` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | チュリ |
+| 341 | 7 | 5 | 1-2 | 46 | Normal | `Origami` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | コハル |
+| 342 | 7 | 5 | 1-2 | 46 | Normal | `Origami` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ミュラ |
 | 343 | 7 | 5 | 3 | 47 | Normal | `Undead` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | モルナ |
 | 344 | 7 | 5 | 3 | 47 | Normal | `Undead` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ヴィネ |
 | 345 | 7 | 5 | 4 | 49 | Elite | `Undead` | class.duelist.alchemist | `i.sword`EB, `i.armor`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | バルグ | `c.physical-offense-multiplier_x1.4` |
