@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 53 | 2026/07/12 | Add runtime Origami enemy category (Spec 4.1/4.2.2): apply Thunder Null, evasion/fire modifiers, display labels, and align Expedition 7 Enemy_ID 328-330, 333, 337-338, and 340-342 with the Origami type. |
 | 0.7.6 | 52 | 2026/07/12 | Update runtime Expedition 7 enemy master names (Spec 4.2.2): align Enemy_ID 316-351 Japanese display names with the provided master-data table while preserving classes, drops, enemy types, and bonus abilities. |
 | 0.7.6 | 51 | 2026/07/12 | Update runtime Expedition 7 enemy master bonuses (Spec 4.2.2): apply the provided bonus abilities for Enemy_ID 321, 325-327, and 333 plus growth and physical-offense modifiers for Enemy_ID 339, 345, and boss 351. |
 | 0.7.6 | 50 | 2026/07/12 | Add runtime Pony enemy category (Spec 4.1/4.2.2): apply its Illusion Breaker and Mutual Magic Amplify abilities, growth bonus, display labels, and align Expedition 7 Enemy_ID 316-324, 327, 331-332, and 346-348 with the Pony type. |

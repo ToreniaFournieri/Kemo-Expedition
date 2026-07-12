@@ -234,6 +234,14 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability30: [{ id: 'mutual_magic_amplify', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.2 }],
   },
+  Origami: {
+    ability1: [{ id: 'thunder_null', level: 1 }],
+    ability30: [],
+    bonuses: [
+      { type: 'evasion', value: 0.4 },
+      { type: 'fire_defense_multiplier_xV', value: 1.5 },
+    ],
+  },
   Jinma: {
     ability1: [{ id: 'upgrade_all_abilities', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.3 }],

@@ -21,6 +21,7 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Chimera: '合',
   Titan: '巨',
   Pony: '馬',
+  Origami: '折',
   Jinma: '神',
   Orcinian: '鯱',
   Kemono: 'ケ',
