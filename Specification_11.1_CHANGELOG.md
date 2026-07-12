@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 54 | 2026/07/12 | Update runtime Expedition 7 elite Origami and Pony item-drop names (Spec 3.2.1): align EC Origami gauntlet, grimoire, robe, arrow, bolt, archery names and EA Pony sword, shield, wand, grimoire, robe, bolt, katana names with the item master data. |
 | 0.7.6 | 53 | 2026/07/12 | Add runtime Origami enemy category (Spec 4.1/4.2.2): apply Thunder Null, evasion/fire modifiers, display labels, and align Expedition 7 Enemy_ID 328-330, 333, 337-338, and 340-342 with the Origami type. |
 | 0.7.6 | 52 | 2026/07/12 | Update runtime Expedition 7 enemy master names (Spec 4.2.2): align Enemy_ID 316-351 Japanese display names with the provided master-data table while preserving classes, drops, enemy types, and bonus abilities. |
 | 0.7.6 | 51 | 2026/07/12 | Update runtime Expedition 7 enemy master bonuses (Spec 4.2.2): apply the provided bonus abilities for Enemy_ID 321, 325-327, and 333 plus growth and physical-offense modifiers for Enemy_ID 339, 345, and boss 351. |
