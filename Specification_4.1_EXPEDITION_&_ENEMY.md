@@ -70,8 +70,8 @@
 | 7 | 5 | The Abyss | 深淵 | `terrain.dark-field` |
 | 7 | 6 | Moon Palace | 月宮殿 | `terrain.low-gravity` |
 | 8 | 1 | Void-Scarred Valley Gate | 虚痕の峡谷門 | `terrain.mana-burn` |
-| 8 | 2 | Ossuary Research Fields | 納骨研究原野 | `terrain.gravity` |
-| 8 | 3 | Small Gods | 小さき神々 | `terrain.transcendence` |
+| 8 | 2 | Subworld | 亜世界 | `terrain.gravity` |
+| 8 | 3 | Another group of people | もう一つの人々 | `terrain.transcendence` |
 | 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
 | 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 | `terrain.suppression` |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 | `terrain.sanctuary` |
