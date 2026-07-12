@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.7.6 - SPECIFICATION
+# KEMO EXPEDITION v0.8.0 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
