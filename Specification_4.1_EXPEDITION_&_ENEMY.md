@@ -95,13 +95,13 @@
 
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
-  - `x.exp_HP_mult`(n) = (1.19 - max(0, 0.0010*(n-25)) - max(0, 0.000095*(n-49)))^n
+  - `x.exp_HP_mult`(n) = (1.19 - max(0, 0.0008*(n-25)) - max(0, 0.000195*(n-49)))^n
   - `x.exp_atk_mult`(n) =
-  (1.09 - max(0, 0.00055*(n-25)) - max(0, 0.00003*(n-49)))^n
-  - `x.exp_atk_amp_mult`(n) = (1.03 - max(0, 0.000165*(n-25)) - max(0, 0.000017*(n-49)))^n
+  (1.09 - max(0, 0.00047*(n-25)) - max(0, 0.00007*(n-49)))^n
+  - `x.exp_atk_amp_mult`(n) = (1.03 - max(0, 0.000145*(n-25)) - max(0, 0.000052*(n-49)))^n
   - `x.exp_NoA_mult`(n) =
   (1.05 - max(0, 0.00028*(n-25)) - max(0, 0.00002*(n-49)))^n
-  - `x.exp_def_mult`(n)= (1.11 - max(0, 0.00058*(n-25)) - max(0, 0.00004*(n-49)))^n
+  - `x.exp_def_mult`(n)= (1.11 - max(0, 0.00048*(n-25)) - max(0, 0.00006*(n-49)))^n
   - `x.exp_def_amp_mult`(n)= 1.0
 
 - If `m.luna`, add +5 `x.enemy_level` for all enemy 
