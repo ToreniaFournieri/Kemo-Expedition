@@ -11720,6 +11720,7 @@ function SettingTab({
   };
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
+  const isDevEnvironment = currentEnv === 'dev';
   const modeSelectionLocked = isBetaEnvironment;
   useEffect(() => {
     try {
@@ -13788,7 +13789,7 @@ function SettingTab({
       </div>
 
 
-      {!isBetaEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {isDevEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('debug', 'デバッグ')}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>

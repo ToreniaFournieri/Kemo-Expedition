@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 56 | 2026/07/12 | Add production environment runtime/deploy support (Spec 9): treat the root path `/` as prod with isolated save storage, Debug mode OFF, x1 time speed, and build the `prod` branch to the Pages root while keeping `/dev/` and `/beta/` artifacts. |
 | 0.7.6 | 55 | 2026/07/12 | Update runtime Expedition 8 enemy master data (Spec 4.2.2): align Enemy_ID 352-387 Japanese display names with the provided table while preserving classes, drops, enemy types, and boss bonus abilities. |
 | 0.7.6 | 54 | 2026/07/12 | Update runtime Expedition 7 elite Origami and Pony item-drop names (Spec 3.2.1): align EC Origami gauntlet, grimoire, robe, arrow, bolt, archery names and EA Pony sword, shield, wand, grimoire, robe, bolt, katana names with the item master data. |
 | 0.7.6 | 53 | 2026/07/12 | Add runtime Origami enemy category (Spec 4.1/4.2.2): apply Thunder Null, evasion/fire modifiers, display labels, and align Expedition 7 Enemy_ID 328-330, 333, 337-338, and 340-342 with the Origami type. |

@@ -96,8 +96,7 @@
   - `/` : 本番環境
     - Debug mode: OFF
     - Speed of time: x1
-    - 
-**Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/` and `/beta/`) and never shared between them.
+**Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/`, `/beta/`, and `/`) and never shared between them.
 
 ## 10. Coding Rule: SpecRef Traceability
 - To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.

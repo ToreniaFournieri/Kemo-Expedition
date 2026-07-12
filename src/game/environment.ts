@@ -1,4 +1,4 @@
-type EnvironmentId = 'dev' | 'beta' | 'default';
+type EnvironmentId = 'dev' | 'beta' | 'prod';
 
 function getPathname(): string {
   if (typeof window === 'undefined') return '';
@@ -11,7 +11,7 @@ export function getEnvironmentId(): EnvironmentId {
   const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
   if (normalizedPath.includes('/dev/')) return 'dev';
   if (normalizedPath.includes('/beta/')) return 'beta';
-  return 'default';
+  return 'prod';
 }
 
 // SpecRef: 9 | Environment | getEnvLabel
@@ -19,7 +19,7 @@ export function getEnvLabel(): string {
   const env = getEnvironmentId();
   if (env === 'dev') return 'D';
   if (env === 'beta') return 'β';
-  return '';
+  return 'P';
 }
 
 // SpecRef: 9 | Environment | createEnvironmentStorageKey
