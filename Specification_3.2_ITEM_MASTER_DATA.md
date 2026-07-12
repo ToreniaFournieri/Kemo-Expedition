@@ -285,13 +285,13 @@
 | 6 | E | `Chimera` | `i.wand`EC | 継ぎ獣導杖 |
 | 6 | E | `Chimera` | `i.grimoire`EC | 合成獣秘録 |
 | 6 | E | `Chimera` | `i.catalyst`EC | 継核触媒 |
-| 6 | E | `Golem` | `i.katana`EB | 岩核の太刀 |
-| 6 | E | `Golem` | `i.arrow`EB | 岩芯矢 |
-| 6 | E | `Golem` | `i.archery`EB | 岩核の弓 |
-| 6 | E | `Golem` | `i.bolt`EB | 岩核のボルト |
-| 6 | E | `Golem` | `i.grimoire`EB | 岩核の秘本 |
-| 6 | E | `Golem` | `i.shield`EB | 岩核の盾 |
-| 6 | E | `Golem` | `i.sword`EB | 岩核の剣 |
+| 6 | E | `Chiropteran` | `i.katana`EB | 蝙蝠の太刀 |
+| 6 | E | `Chiropteran` | `i.arrow`EB | 影の矢 |
+| 6 | E | `Chiropteran` | `i.archery`EB | 影の弓 |
+| 6 | E | `Chiropteran` | `i.bolt`EB | 蝙蝠の牙 |
+| 6 | E | `Chiropteran` | `i.grimoire`EB | 暗闇の秘本 |
+| 6 | E | `Chiropteran` | `i.shield`EB | 蝙蝠の盾 |
+| 6 | E | `Chiropteran` | `i.sword`EB | 蝙蝠の剣 |
 | 6 | E | `Mech` | `i.archery`EA | 鉄筒 |
 | 6 | E | `Mech` | `i.arrow`EA | 鉄礫 | `a.illusion-breaker` |
 | 6 | E | `Mech` | `i.bolt`EA | 鉄塊 |
