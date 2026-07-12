@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 3 | 2026/07/12 | Implement production Speed of Time progress reporting (Spec 8.1.2): route root-path runtime reports through `PROD_DISCORD_WEBHOOK_URL` via Vite's `VITE_PROD_DISCORD_WEBHOOK_URL`, include the env type declaration, and pass the production webhook secret in Pages builds. |
 | 0.8.0 | 2 | 2026/07/12 | Update runtime Party List visibility (Spec 8.2.1): keep the PT selection list visible when only one party is unlocked so the single PT tab is shown. |
 | 0.8.0 | 1 | 2026/07/12 | Prepare v0.8.0 release: bump app version to `v0.8.0` and reset build number to `1`. |
 | 0.7.6 | 56 | 2026/07/12 | Add production environment runtime/deploy support (Spec 9): treat the root path `/` as prod with isolated save storage, Debug mode OFF, x1 time speed, and build the `prod` branch to the Pages root while keeping `/dev/` and `/beta/` artifacts. |

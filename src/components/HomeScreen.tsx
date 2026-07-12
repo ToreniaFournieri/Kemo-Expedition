@@ -1294,6 +1294,7 @@ const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
 const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
+const PROD_DISCORD_WEBHOOK_URL = import.meta.env.VITE_PROD_DISCORD_WEBHOOK_URL;
 const FEEDBACK_DISCORD_WEBHOOK_URL = import.meta.env.VITE_FEEDBACK_DISCORD_WEBHOOK_URL;
 
 function formatNumber(value: number): string {
@@ -3188,9 +3189,13 @@ export function HomeScreen({
       ? DEV_DISCORD_WEBHOOK_URL
       : environmentId === 'beta'
         ? BETA_DISCORD_WEBHOOK_URL
-        : null;
+        : PROD_DISCORD_WEBHOOK_URL;
     if (!webhookUrl) {
-      const requiredEnvName = environmentId === 'dev' ? 'VITE_DEV_DISCORD_WEBHOOK_URL' : 'VITE_BETA_DISCORD_WEBHOOK_URL';
+      const requiredEnvName = environmentId === 'dev'
+        ? 'VITE_DEV_DISCORD_WEBHOOK_URL'
+        : environmentId === 'beta'
+          ? 'VITE_BETA_DISCORD_WEBHOOK_URL'
+          : 'VITE_PROD_DISCORD_WEBHOOK_URL';
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
