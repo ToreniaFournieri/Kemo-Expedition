@@ -293,9 +293,9 @@
 | 346 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ルーノ |
 | 347 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | エレノア |
 | 348 | 7 | 6 | 1-2 | 47 | Normal | `Pony` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ニーヴ |
-| 349 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月王の寵臣ナヴィル |
-| 350 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月王の寵臣カリス |
-| 351 | 7 | 6 | 4 | 52 | BOSS | `Leporian` | class.lord.ninja | `i.shield`BD, `i.katana`BD, `i.archery`BD, `i.armor`C, `i.robe`C, `i.shield`C | 月王ラピエル | `a.melee-reflect`2, `c.growth_x1.4` |
+| 349 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | サージャ |
+| 350 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | メルナ |
+| 351 | 7 | 6 | 4 | 52 | BOSS | `Leporian` | class.lord.ninja | `i.shield`BD, `i.katana`BD, `i.archery`BD, `i.armor`C, `i.robe`C, `i.shield`C | 宰相ヴァルター | `a.melee-reflect`2, `c.growth_x1.4` |
 | 352 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 谷門の斥候 |
 | 353 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 谷門の弩手 |
 | 354 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 谷門の術師 |
