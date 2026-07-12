@@ -9080,7 +9080,7 @@ function ExpeditionTab({
                         type="range"
                         min={0}
                         max={difficultyOffsetMax}
-                        step={1}
+                        step={2}
                         value={selectedDifficultyOffset}
                         onChange={(e) => {
                           const nextOffset = Number(e.target.value);

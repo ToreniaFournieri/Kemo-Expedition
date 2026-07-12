@@ -1,13 +1,15 @@
 // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
-export function normalizeDifficultyOffset(value: unknown, maxOffset: number = 40): number {
+export function normalizeDifficultyOffset(value: unknown, maxOffset: number = 80): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
-  return Math.max(0, Math.min(Math.max(0, Math.floor(maxOffset)), Math.floor(value)));
+  const maxEvenOffset = Math.floor(Math.max(0, Math.floor(maxOffset)) / 2) * 2;
+  const evenOffset = Math.floor(value / 2) * 2;
+  return Math.max(0, Math.min(maxEvenOffset, evenOffset));
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
 export function getDifficultyOffsetMax(enemyLevel: number): number {
   if (!Number.isFinite(enemyLevel)) return 0;
-  return Math.max(0, Math.min(40, Math.ceil((88 - enemyLevel) / 2)));
+  return Math.max(0, Math.min(80, Math.ceil(88 - enemyLevel)));
 }
 
 // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
