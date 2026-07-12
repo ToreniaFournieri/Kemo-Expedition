@@ -188,18 +188,18 @@
 | 241 | 4 | 6 | 3 | 27 | Normal | `Murid` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 銀髭のヴァロ |
 | 242 | 4 | 6 | 3 | 27 | Normal | `Murid` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 銭のマーン |
 | 243 | 4 | 6 | 4 | 31 | BOSS | `Felidian` | class.striker.ranger | `i.bolt`BD, `i.arrow`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 大司祭マウラ | `c.fire-defense-multiplier_x4/5`, `c.growth_x1.5` |
-| 244 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 火灰の狩獣 |
-| 245 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 熱霧の迅獣 |
-| 246 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 火口原の呪獣 |
-| 247 | 5 | 1 | 3 | 29 | Normal | `Beast` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 炎峰の爪獣 |
-| 248 | 5 | 1 | 3 | 29 | Normal | `Beast` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 灰毛の群核 |
-| 249 | 5 | 1 | 4 | 31 | Elite | `Beast` | class.ninja.sword-saint | `i.archery`EA, `i.bolt`EA, `i.gauntlet`EA, `i.arrow`C, `i.bolt`C, `i.archery`C | 炎嶺の忍刃頭 |
-| 250 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 灰走りの獣影 |
-| 251 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 焔智の獣兵 |
-| 252 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 焼土の古獣 |
-| 253 | 5 | 2 | 3 | 30 | Normal | `Dragon` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 溶鱗の竜 |
-| 254 | 5 | 2 | 3 | 30 | Normal | `Dragon` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 火道の竜 |
-| 255 | 5 | 2 | 4 | 32 | Elite | `Beast` | class.pilgrim.alchemist | `i.robe`EA, `i.grimoire`EA, `i.catalyst`EA, `i.armor`C, `i.robe`C, `i.shield`C | 焔狩の導き手 |
+| 244 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ジスカ |
+| 245 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | スナ |
+| 246 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ラテラ |
+| 247 | 5 | 1 | 3 | 29 | Normal | `Beast` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | プレシア |
+| 248 | 5 | 1 | 3 | 29 | Normal | `Beast` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | グアナ |
+| 249 | 5 | 1 | 4 | 31 | Elite | `Beast` | class.ninja.sword-saint | `i.archery`EA, `i.bolt`EA, `i.gauntlet`EA, `i.arrow`C, `i.bolt`C, `i.archery`C | カウダ | `a.re-attack`1 |
+| 250 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ストロフィア |
+| 251 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | トリボラ |
+| 252 | 5 | 2 | 1-2 | 29 | Normal | `Beast` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | コルシア |
+| 253 | 5 | 2 | 3 | 30 | Normal | `Dragon` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | プルミア |
+| 254 | 5 | 2 | 3 | 30 | Normal | `Dragon` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | オフィサ |
+| 255 | 5 | 2 | 4 | 32 | Elite | `Beast` | class.pilgrim.alchemist | `i.robe`EA, `i.grimoire`EA, `i.catalyst`EA, `i.armor`C, `i.robe`C, `i.shield`C | ランプロサ | `a.illusion`1 |
 | 256 | 5 | 3 | 1-2 | 30 | Normal | `Beast` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 炎砦の熊錬師 |
 | 257 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 火護りの熊守衛 |
 | 258 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 灼鋼の熊戦士 |
