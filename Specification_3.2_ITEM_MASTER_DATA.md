@@ -132,20 +132,20 @@
 | 3 | U | none | `i.arrow`U | 波羽矢 |
 | 3 | U | none | `i.bolt`U | 潮先ボルト |
 | 3 | U | none | `i.archery`U | 海曲の弓 |
-| 3 | E | `Marine` | `i.grimoire`EA | 潮海の秘本 |
-| 3 | E | `Marine` | `i.katana`EA | 潮海の太刀 |
-| 3 | E | `Marine` | `i.wand`EA | 潮海の杖 |
-| 3 | E | `Marine` | `i.catalyst`EA | 深潮核の触媒 |
-| 3 | E | `Marine` | `i.robe`EA | 潮王の外套 |
-| 3 | E | `Marine` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
-| 3 | E | `Marine` | `i.sword`EA | 小刀 | `a.null-bind` |
-| 3 | E | `Marine` | `i.armor`EA | 鮫肌の鎧 | `a.execution-null` |
-| 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
+| 3 | E | `Fruit` | `i.grimoire`EA | 潮海の秘本 |
+| 3 | E | `Fruit` | `i.katana`EA | 潮海の太刀 |
+| 3 | E | `Fruit` | `i.wand`EA | 潮海の杖 |
+| 3 | E | `Fruit` | `i.catalyst`EA | 深潮核の触媒 |
+| 3 | E | `Fruit` | `i.robe`EA | 潮王の外套 |
+| 3 | E | `Fruit` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
+| 3 | E | `Fruit` | `i.sword`EA | 小刀 | `a.null-bind` |
+| 3 | E | `Fruit` | `i.armor`EA | 鮫肌の鎧 | `a.execution-null` |
 | 3 | E | `Spirit` | `i.grimoire`EC | 誘いの書 |
 | 3 | E | `Spirit` | `i.gauntlet`EC | 霊波の手甲 |
 | 3 | E | `Spirit` | `i.katana`EC | 幽刀 |
-| 3 | E | `Spirit` | `i.archery`EC | 潮霊の弓 |
-| 3 | E | `Spirit` | `i.robe`EC | 潮霊の羽衣 |
+| 3 | E | `Orcinian‎` | `i.wand`ED | シャチの杖 |
+| 3 | E | `Orcinian‎` | `i.archery`ED | 鯨髭の弓 |
+| 3 | E | `Orcinian‎` | `i.robe`ED | 鮫肌 |
 | 3 | E | `Slime_Colony` | `i.arrow`EB | 粘波の矢 |
 | 3 | E | `Slime_Colony` | `i.bolt`EB | 硫酸刺 | `a.corrode` |
 | 3 | E | `Slime_Colony` | `i.archery`EB | 群粘の弓 |
@@ -285,13 +285,13 @@
 | 6 | E | `Chimera` | `i.wand`EC | 継ぎ獣導杖 |
 | 6 | E | `Chimera` | `i.grimoire`EC | 合成獣秘録 |
 | 6 | E | `Chimera` | `i.catalyst`EC | 継核触媒 |
-| 6 | E | `Golem` | `i.katana`EB | 岩核の太刀 |
-| 6 | E | `Golem` | `i.arrow`EB | 岩芯矢 |
-| 6 | E | `Golem` | `i.archery`EB | 岩核の弓 |
-| 6 | E | `Golem` | `i.bolt`EB | 岩核のボルト |
-| 6 | E | `Golem` | `i.grimoire`EB | 岩核の秘本 |
-| 6 | E | `Golem` | `i.shield`EB | 岩核の盾 |
-| 6 | E | `Golem` | `i.sword`EB | 岩核の剣 |
+| 6 | E | `Chiropteran` | `i.katana`EB | 蝙蝠の太刀 |
+| 6 | E | `Chiropteran` | `i.arrow`EB | 影の矢 |
+| 6 | E | `Chiropteran` | `i.archery`EB | 影の弓 |
+| 6 | E | `Chiropteran` | `i.bolt`EB | 蝙蝠の牙 |
+| 6 | E | `Chiropteran` | `i.grimoire`EB | 暗闇の秘本 |
+| 6 | E | `Chiropteran` | `i.shield`EB | 蝙蝠の盾 |
+| 6 | E | `Chiropteran` | `i.sword`EB | 蝙蝠の剣 |
 | 6 | E | `Mech` | `i.archery`EA | 鉄筒 |
 | 6 | E | `Mech` | `i.arrow`EA | 鉄礫 | `a.illusion-breaker` |
 | 6 | E | `Mech` | `i.bolt`EA | 鉄塊 |
@@ -333,19 +333,19 @@
 | 7 | U | none | `i.arrow`U | 光閃矢 |
 | 7 | U | none | `i.bolt`U | 亡影ボルト |
 | 7 | U | none | `i.archery`U | 光闇の弓 |
-| 7 | E | `Aerial` | `i.gauntlet`EC | 飛翼の手甲 |
-| 7 | E | `Aerial` | `i.grimoire`EC | 飛翼の秘本 |
-| 7 | E | `Aerial` | `i.robe`EC | 飛翼の羽衣 |
-| 7 | E | `Aerial` | `i.arrow`EC | 天翔の翼矢 |
-| 7 | E | `Aerial` | `i.bolt`EC | 風裂ボルト |
-| 7 | E | `Aerial` | `i.archery`EC | 翼騎の長弓 |
-| 7 | E | `Titan` | `i.sword`EA | 巨人剣 |
-| 7 | E | `Titan` | `i.shield`EA | 巨大盾 |
-| 7 | E | `Titan` | `i.wand`EA | 巨神の導杖 |
-| 7 | E | `Titan` | `i.grimoire`EA | ロゼッタストーン |
-| 7 | E | `Titan` | `i.robe`EA | 巨神の法衣 |
-| 7 | E | `Titan` | `i.bolt`EA | 巨神のボルト |
-| 7 | E | `Titan` | `i.katana`EA | 巨太刀 |
+| 7 | E | `Origami` | `i.gauntlet`EC | 折紙の手甲 |
+| 7 | E | `Origami` | `i.grimoire`EC | 千折の秘本 |
+| 7 | E | `Origami` | `i.robe`EC | 紙の羽衣 |
+| 7 | E | `Origami` | `i.arrow`EC | 折矢 |
+| 7 | E | `Origami` | `i.bolt`EC | 紙裂のボルト |
+| 7 | E | `Origami` | `i.archery`EC | 千羽の長弓 |
+| 7 | E | `Pony` | `i.sword`EA | 群馬の長剣 |
+| 7 | E | `Pony` | `i.shield`EA | 蹄鉄の大盾 |
+| 7 | E | `Pony` | `i.wand`EA | 駿馬の導杖 |
+| 7 | E | `Pony` | `i.grimoire`EA | 万馬の秘典 |
+| 7 | E | `Pony` | `i.robe`EA | 風駆の馬衣 |
+| 7 | E | `Pony` | `i.bolt`EA | 蹄鉄のボルト |
+| 7 | E | `Pony` | `i.katana`EA | 馬駆の太刀 |
 | 7 | E | `Undead` | `i.armor`EB | 冥府の鎧 |
 | 7 | E | `Undead` | `i.catalyst`EB | 冥核 |
 | 7 | E | `Undead` | `i.gauntlet`EB | 冥爪の手甲 |
@@ -389,21 +389,21 @@
 | 8 | E | `Voidspawn` | `i.armor`EA | 虚痕の鎧 |
 | 8 | E | `Voidspawn` | `i.catalyst`EA | 虚痕の触媒 |
 | 8 | E | `Voidspawn` | `i.gauntlet`EA | 虚痕の手甲 |
-| 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.oblivion`, `r.ice_x3.0, `r.ice_x2.0`, `r.thunder_x2.0` |
+| 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.fading_memory`, `r.ice_x1.5, `r.ice_x1.25`, `r.thunder_x1.25` |
 | 8 | E | `Voidspawn` | `i.robe`EA | 虚痕の法衣 |
-| 8 | E | `Ghost` | `i.bolt`EB | 冥霊のボルト |
-| 8 | E | `Ghost` | `i.katana`EB | 冥霊の太刀 |
-| 8 | E | `Ghost` | `i.shield`EB | 冥霊の盾 |
-| 8 | E | `Ghost` | `i.wand`EB | 冥霊の杖 |
-| 8 | E | `Ghost` | `i.catalyst`EB | 冥霊核の触媒 |
-| 8 | E | `Ghost` | `i.robe`EB | 冥霊の法衣 |
-| 8 | E | `Ghost` | `i.archery`EB | 幽冥の長弓 |
-| 8 | E | `Jinma` | `i.gauntlet`EC | 神魔の拳甲 |
-| 8 | E | `Jinma` | `i.katana`EC | 神魔の太刀 |
-| 8 | E | `Jinma` | `i.arrow`EC | 神魔の祀矢 |
+| 8 | E | `Ghost` | `i.bolt`EB | 霊撃のボルト |
+| 8 | E | `Ghost` | `i.katana`EB | 拒絶の刀 |
+| 8 | E | `Ghost` | `i.shield`EB | 霊の盾 |
+| 8 | E | `Ghost` | `i.wand`EB | 珪素の杖 |
+| 8 | E | `Ghost` | `i.catalyst`EB | コバルト |
+| 8 | E | `Ghost` | `i.robe`EB | ファイアーヴェール | `r.fire_x2/3` |
+| 8 | E | `Ghost` | `i.archery`EB | 残痕の弓 |
+| 8 | E | `Jinma` | `i.gauntlet`EC | 炭素繊維の拳甲 |
+| 8 | E | `Jinma` | `i.katana`EC | グラフェンブレード |
+| 8 | E | `Jinma` | `i.arrow`EC | 磁気矢 |
 | 8 | E | `Jinma` | `i.grimoire`EC | 反乱の手引 | `a.defiance` | 
-| 8 | E | `Jinma` | `i.shield`EC | 神魔の盾 |
-| 8 | E | `Jinma` | `i.robe`EC | 神魔の衣 |
+| 8 | E | `Jinma` | `i.shield`EC | ライオットシールド |
+| 8 | E | `Jinma` | `i.robe`EC | パーカー |
 | 8 | E | `Cervin` | `i.sword`ED | 勇鹿の剣 |
 | 8 | E | `Cervin` | `i.armor`ED | セルヴィンの鎧 |
 | 8 | E | `Cervin` | `i.wand`ED | 勇鹿の杖 |

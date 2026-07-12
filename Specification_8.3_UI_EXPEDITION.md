@@ -99,7 +99,11 @@ HP 2350 / 4680
   - Disable conditions:
     - (Party HP = 0) and (0 Charges).
     - Party is in `state.explore` and 0 Charges.
-    - "神魔戦" button is pressed and party is going to engage gods battle. 
+    - "神魔戦" button is pressed and party is going to engage gods battle.
+  - Exception:
+    - If x.exp_id = 0 (Colosseum):
+    - No Instant Expedition Charge is consumed.
+    - Departure is always allowed, regardless of the above conditions.
 
 **Progress Visual Update**
 - Display compact progress summaries in the party pane without changing the pane height.
@@ -153,15 +157,18 @@ HP 2350 / 4680
       - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
       - The process ends after the final `state.return` is completed.
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
+  - **Special boost:** 
+    - Each cleared expedition tier increases the maximum charge time that can be accumulated for each stock slot.
+    - If the max charge is 3, display ▰▰▰MAX.
 
-| Stock Level | Time Required for This Charge | 
-| ----------- | ----------: |
-| 1st         |  8 min |
-| 2nd         | 16 min |
-| 3rd         | 30 min |
-| 4th         | 60 min |
-| 5th         |120 min |
-| 6th         |240 min |
+| Stock Level | initial | After clearing expedition 1 | After clearing expedition 2 | After clearing expedition 3 |
+| --- | -----: | -----: | -----: | -----:|
+| 1st |  1 min |  2 min |  4 min |  8 min |
+| 2nd |  2 min |  4 min |  8 min | 16 min |
+| 3rd |  4 min |  8 min | 15 min | 30 min |
+| 4th | (none) | 15 min | 30 min | 60 min |
+| 5th | (none) | (none) | 60 min |120 min |
+| 6th | (none) | (none) | (none) |240 min |
 
 
 - **Outcome**

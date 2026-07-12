@@ -131,7 +131,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
       { type: 'ice_defense_multiplier_xV', value: 1 / 5 },
     ],
   },
-  Marine: {
+  Fruit: {
     ability1: [{ id: 'bind', level: 1 }],
     ability30: [{ id: 'execution', level: 1 }],
     bonuses: [{ type: 'thunder_defense_multiplier_xV', value: 1.3 }],
@@ -205,6 +205,14 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
       { type: 'thunder_defense_multiplier_xV', value: 1.5 },
     ],
   },
+  Chiropteran: {
+    ability1: [{ id: 'bulwark_breaker', level: 1 }],
+    ability30: [{ id: 'mutual_physical_amplify', level: 1 }],
+    bonuses: [
+      { type: 'growth_xV', value: 1.1 },
+      { type: 'thunder_defense_multiplier_xV', value: 1.2 },
+    ],
+  },
   Chimera: {
     ability1: [{ id: 'unstable_core', level: 1 }],
     ability30: [{ id: 'mutual_magic_restraint', level: 1 }],
@@ -221,9 +229,27 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability30: [{ id: 'mutual_physical_restraint', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.5 }],
   },
+  Pony: {
+    ability1: [{ id: 'illusion_breaker', level: 1 }],
+    ability30: [{ id: 'mutual_magic_amplify', level: 1 }],
+    bonuses: [{ type: 'growth_xV', value: 1.2 }],
+  },
+  Origami: {
+    ability1: [{ id: 'thunder_null', level: 1 }],
+    ability30: [],
+    bonuses: [
+      { type: 'evasion', value: 0.4 },
+      { type: 'fire_defense_multiplier_xV', value: 1.5 },
+    ],
+  },
   Jinma: {
     ability1: [{ id: 'upgrade_all_abilities', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.3 }],
+  },
+  Orcinian: {
+    ability1: [{ id: 'execution', level: 1 }],
+    ability30: [{ id: 'overwatch', level: 1 }],
+    bonuses: [],
   },
   Kemono: {
     ability1: [],
@@ -442,7 +468,8 @@ function getDropItemIdFromMaster(tier: number, drops: string[]): number {
     const pool = getItemsByTierAndRarity(tier, parsed.rarity).filter((item) => item.category === parsed.category);
     if (pool.length > 0) {
       const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
-      return (pool[variantIndex] ?? pool[0]).id;
+      const isOutOfRangeOrcinianEliteD = drop.endsWith('ED') && variantIndex >= pool.length;
+      return (isOutOfRangeOrcinianEliteD ? pool[pool.length - 1] : (pool[variantIndex] ?? pool[0])).id;
     }
   }
 
@@ -495,13 +522,68 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   121: [{ id: 'execution', level: 1 }],
   122: [{ id: 'deflection', level: 1 }],
   123: [{ id: 'wind_rider', level: 1 }],
-  129: [{ id: 'null_death_touch', level: 1 }],
+  129: [{ id: 'null_death_touch', level: 1 }, { id: 're_attack', level: 1 }],
   135: [{ id: 'ice_absorb', level: 1 }, { id: 'true_sight', level: 1 }],
+  141: [{ id: 'ice_protect_breaker', level: 1 }],
+  142: [{ id: 'howl', level: 3 }],
+  144: [{ id: 'predator_sense', level: 1 }],
+  153: [{ id: 'boost', level: 2 }],
+  159: [{ id: 'ranged_reflect', level: 1 }],
+  164: [{ id: 'covering_fire', level: 1 }],
+  165: [{ id: 'slow', level: 1 }],
+  171: [{ id: 'deflection', level: 2 }, { id: 'life_drain', level: 6 }, { id: 'null_life_drain', level: 1 }],
+  177: [{ id: 'null_shock', level: 1 }],
+  183: [{ id: 'unforgettable', level: 1 }],
+  189: [{ id: 're_attack', level: 1 }],
+  195: [{ id: 'resurrect', level: 1 }],
+  201: [{ id: 'overwatch', level: 1 }],
+  225: [{ id: 're_attack', level: 1 }],
+  229: [{ id: 'reanimate', level: 1 }],
+  230: [{ id: 'stealth', level: 1 }],
+  231: [{ id: 'rage', level: 1 }],
+  249: [{ id: 're_attack', level: 1 }],
+  255: [{ id: 'illusion', level: 1 }],
+  259: [{ id: 'rage', level: 1 }],
+  261: [{ id: 'deflection', level: 2 }],
+  267: [{ id: 'magic_seal', level: 1 }],
+  270: [{ id: 'mimic', level: 1 }],
+  273: [{ id: 'boost', level: 1 }],
+  303: [{ id: 'first_strike', level: 1 }],
+  309: [{ id: 'ranged_confusion', level: 1 }],
+  321: [{ id: 'm_barrier_breaker', level: 1 }],
+  325: [{ id: 're_counter', level: 1 }],
+  326: [{ id: 'ranged_null', level: 1 }],
+  327: [{ id: 'melee_reflect', level: 1 }],
+  333: [{ id: 'melee_reflect', level: 1 }],
 };
 
 const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   // SpecRef: 4.2.2 | Enemy | Rare items drop
-  4: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }],
+  4: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }, { type: 'growth_xV', value: 1.5 }],
+  7: [{ type: 'growth_xV', value: 1.4 }],
+};
+
+const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
+  // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+  135: [{ type: 'growth_xV', value: 1.5 }],
+  171: [{ type: 'growth_xV', value: 1.5 }],
+  207: [{ type: 'growth_xV', value: 1.5 }],
+  213: [{ type: 'growth_xV', value: 1.3 }],
+  219: [{ type: 'penet', value: 0.4 }],
+  237: [{ type: 'evasion', value: 0.03 }],
+  147: [{ type: 'physical_defense_multiplier_xV', value: 1 / 2 }],
+  163: [{ type: 'physical_defense_multiplier_xV', value: 2 / 5 }],
+  164: [{ type: 'physical_defense_multiplier_xV', value: 3 / 5 }],
+  260: [{ type: 'physical_defense_multiplier_xV', value: 1 / 3 }],
+  279: [{ type: 'growth_xV', value: 1.3 }],
+  285: [{ type: 'growth_xV', value: 1.3 }],
+  291: [{ type: 'penet', value: 0.4 }],
+  297: [{ type: 'magical_offense_multiplier_xV', value: 1.4 }],
+  313: [{ type: 'growth_xV', value: 1.5 }],
+  314: [{ type: 'growth_xV', value: 1.5 }],
+  315: [{ type: 'growth_xV', value: 1.5 }],
+  339: [{ type: 'growth_xV', value: 1.3 }],
+  345: [{ type: 'physical_offense_multiplier_xV', value: 1.4 }],
 };
 
 function generateEnemies(): EnemyDef[] {
@@ -533,6 +615,10 @@ function generateEnemies(): EnemyDef[] {
       const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.masterDropTokens = assignCommonDropTokensByClass(masterDropTokens, row[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
+      const enemyBonusModifiers = MASTER_ENEMY_BONUS_MODIFIERS[id] ?? [];
+      if (enemyBonusModifiers.length > 0) {
+        enemy.bonuses = [...(enemy.bonuses ?? []), ...enemyBonusModifiers];
+      }
       if (spawnType === 'boss') {
         const bossBonusModifiers = MASTER_BOSS_BONUS_MODIFIERS[tier] ?? [];
         if (bossBonusModifiers.length > 0) {
@@ -630,12 +716,13 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     const exactDrops = enemy.masterDropTokens
       .map((token) => parseMasterDropToken(token))
       .filter((parsed): parsed is { category: ItemCategory; rarity: MasterDropRarity; variantIndex?: number } => parsed !== null)
-      .map((parsed) => {
+      .map((parsed, index) => {
         const pool = getItemsByTierAndRarity(enemy.spawnTier || getTierFromEnemy(enemy.id), parsed.rarity)
           .filter((item) => item.category === parsed.category);
         if (pool.length === 0) return undefined;
         const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
-        return pool[variantIndex] ?? pool[0];
+        const isOutOfRangeEliteD = enemy.masterDropTokens?.[index]?.endsWith('ED') && variantIndex >= pool.length;
+        return isOutOfRangeEliteD ? pool[pool.length - 1] : (pool[variantIndex] ?? pool[0]);
       })
       .filter((item): item is ItemDef => item !== undefined);
 

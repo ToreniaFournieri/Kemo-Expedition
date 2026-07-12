@@ -1156,6 +1156,7 @@ function loadSavedState(): LoadSavedStateResult {
           const instantChargeState = getInstantExpeditionChargeState({
             instantExpeditionStock: party.instantExpeditionStock,
             instantExpeditionChargeStartedAt: party.instantExpeditionChargeStartedAt,
+            defeatedBossExpeditions: party.defeatedBossExpeditions,
           });
           party.instantExpeditionStock = instantChargeState.stock;
           party.instantExpeditionChargeStartedAt = instantChargeState.chargeStartedAt;

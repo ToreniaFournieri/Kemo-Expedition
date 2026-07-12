@@ -474,7 +474,7 @@ function getAutoSellStepCount(party: Party): number {
   return Math.max(1, autoSellItemCount);
 }
 
-const HEADER_HEIGHT_CLASS = 'pt-[74px] pb-[calc(88px+env(safe-area-inset-bottom))]';
+const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -664,7 +664,16 @@ function getEnemyClassSummary(enemy: EnemyDef): string {
 
 function FloatingBubblePortal({ children }: { children: ReactNode }) {
   if (typeof document === 'undefined') return null;
-  return createPortal(children, document.body);
+  const portalThemeClass = document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark')
+    ? 'theme-dark'
+    : '';
+
+  return createPortal(
+    <div className={portalThemeClass}>
+      {children}
+    </div>,
+    document.body,
+  );
 }
 
 function EnemyBestiaryBubble({
@@ -2188,7 +2197,7 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   predator_sense: '近接9(開始)タイミングで発動。相手のHPが30％未満〜50％未満なら命中+40。',
   slow: '自身の行動順番に-1して遅くなる。',
   corrode: '通常近接攻撃が3回以上命中した相手に対して、攻撃倍率を x6/7〜x2/7 にする。',
-  life_drain: '通常近接攻撃で相手に与えたダメージの1/10〜全てを回復する。',
+  life_drain: '通常近接攻撃で相手に与えたダメージの1/1000〜1000/1000を回復する。',
   no_offense: '通常行動をしなくなる（反撃などは行う）。',
   decompose: '近接2タイミングで発動。相手の物理防御力を 6/7〜2/7 にする。',
   swarm: '失ったHP割合に応じて、物理与ダメージが低下し、物理被ダメージが増加する(HP1%につき0.5%)。',
@@ -2218,6 +2227,7 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   melee_confusion: '近接1〜2タイミングで発動。近接攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
   self_destruct: '近接2タイミングで発動。自爆し、相手に残ダメージの1/10〜全てを与える。',
   oblivion: '無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
+  fading_memory: '敵味方問わず無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
   reanimate: '自身のHPが0となったタイミングで発動。HP20%〜38%で復活する(戦闘中1回のみ有効)。',
   auriferous: '自身が受ける総攻撃回数10回毎に、自身がドロップするアイテム抽選確率を+1する。',
   magic_seal: '最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)。',
@@ -5238,7 +5248,9 @@ export function HomeScreen({
     const now = Date.now();
     const instantChargeState = getInstantExpeditionChargeState(party, now);
 
-    if (party.currentHp <= 0 || partyStats.hp <= 0) {
+    const isColosseumSortie = party.selectedDungeonId === 99;
+
+    if (!isColosseumSortie && (party.currentHp <= 0 || partyStats.hp <= 0)) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
       actions.addNotification(`${refusingCharacter} は疲弊しており出撃を拒否した`);
       return;
@@ -5250,7 +5262,7 @@ export function HomeScreen({
       return;
     }
     // SpecRef: 8.3 | UI_EXPEDITION | Charge
-    if (instantChargeState.stock <= 0) {
+    if (!isColosseumSortie && instantChargeState.stock <= 0) {
       actions.addNotification(`${party.name} の即時出撃チャージが不足している`);
       return;
     }
@@ -5271,7 +5283,9 @@ export function HomeScreen({
     }
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
-    actions.consumeInstantExpeditionStock(partyIndex, now);
+    if (!isColosseumSortie) {
+      actions.consumeInstantExpeditionStock(partyIndex, now);
+    }
     if (cycle?.state === 'explore') {
       actions.finalizeDiaryLog(partyIndex);
     }
@@ -5490,9 +5504,9 @@ export function HomeScreen({
   };
 
   return (
-    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
+    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-30">
+      <div className="fixed top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
         <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
@@ -5550,13 +5564,13 @@ export function HomeScreen({
 
       {/* Bottom Tabs */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2"
+        className="pointer-events-none fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2"
         aria-label="Main navigation"
         onPointerDown={(event) => { primaryNavSwipeHandledRef.current = false; primaryNavPointerStartRef.current = { x: event.clientX, y: event.clientY, tab: activeTab }; }}
         onPointerUp={(event) => completePrimaryNavSwipe(event.clientX, event.clientY)}
         onPointerCancel={() => { primaryNavPointerStartRef.current = null; }}
       >
-        <div className="mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-transparent bg-white/12 p-1.5 shadow-[0_8px_20px_rgb(15_23_42/0.12)] backdrop-blur-sm">
+        <div className="pointer-events-auto mx-auto flex w-full max-w-[500px] gap-1.5 rounded-[26px] border border-transparent bg-white/10 p-1.5 shadow-[0_8px_20px_rgb(15_23_42/0.10)] backdrop-blur-sm">
           {tabs.map(tab => {
             const isActive = (isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id);
             return (
@@ -5592,7 +5606,7 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
-        className={prefersDocumentScroll ? 'px-4 pb-4' : `flex-1 px-4 pb-4 ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
+        className={prefersDocumentScroll ? `px-4 ${CHROME_CONTENT_PADDING_CLASS}` : `flex-1 px-4 ${CHROME_CONTENT_PADDING_CLASS} ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
         onScroll={() => {
           if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
@@ -5777,7 +5791,7 @@ function PartyTab({
   const prevSelectedCharRef = useRef(selectedCharacter);
   const prevSelectedPartyRef = useRef(selectedPartyIndex);
   const touchDraggingCharacterIndexRef = useRef<number | null>(null);
-  const touchReorderConfirmedRef = useRef(false);
+  const touchReorderTargetIndexRef = useRef<number | null>(null);
   const partyPaneBackgroundImageFileName = useMemo(() => {
     const partyNumber = selectedPartyIndex + 1;
     if (partyNumber < 1 || partyNumber > 6) return null;
@@ -6774,7 +6788,7 @@ function PartyTab({
               }}
               onTouchStart={() => {
                 touchDraggingCharacterIndexRef.current = i;
-                touchReorderConfirmedRef.current = false;
+                touchReorderTargetIndexRef.current = null;
                 setDraggingCharacterIndex(i);
               }}
               onTouchMove={(event) => {
@@ -6787,23 +6801,18 @@ function PartyTab({
                 const fromIndex = touchDraggingCharacterIndexRef.current;
                 if (fromIndex === null || Number.isNaN(toIndex) || fromIndex === toIndex) return;
 
-                if (!touchReorderConfirmedRef.current) {
-                  if (!confirmPartyCharacterReorder()) {
-                    touchDraggingCharacterIndexRef.current = null;
-                    setDraggingCharacterIndex(null);
-                    return;
-                  }
-                  touchReorderConfirmedRef.current = true;
-                }
-
-                reorderCharacter(fromIndex, toIndex);
-                touchDraggingCharacterIndexRef.current = toIndex;
+                touchReorderTargetIndexRef.current = toIndex;
                 setDraggingCharacterIndex(toIndex);
               }}
               onTouchEnd={() => {
+                const fromIndex = touchDraggingCharacterIndexRef.current;
+                const toIndex = touchReorderTargetIndexRef.current;
                 touchDraggingCharacterIndexRef.current = null;
-                touchReorderConfirmedRef.current = false;
+                touchReorderTargetIndexRef.current = null;
                 setDraggingCharacterIndex(null);
+
+                if (fromIndex === null || toIndex === null || fromIndex === toIndex) return;
+                reorderCharacterWithConfirmation(fromIndex, toIndex);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
               className={`${IOS_GLASS_BUTTON_CLASS} relative w-[50px] overflow-visible min-w-0 p-0 transition-colors ${
@@ -6841,6 +6850,13 @@ function PartyTab({
       <div className="relative overflow-visible bg-pane rounded-lg border border-gray-200 p-4 mb-4 shadow-md shadow-slate-900/15">
         {partyMemberImageSrc && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg" aria-hidden="true">
+            {isDarkModeEnabled && (
+              <div
+                // SpecRef: 8.2.2 | Party member details | Display character image
+                className="absolute inset-0 bg-slate-500/20"
+                aria-hidden="true"
+              />
+            )}
             {/* SpecRef: 8.2.2 | Party member details | Display character image */}
             <img
               src={partyMemberImageSrc}
@@ -8752,9 +8768,11 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
         const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
         const isPartyHpDepletedForSortie = hpForSortieCheck <= 0 || partyStats.hp <= 0;
-        const isSortieDisabled = (!!selectedDungeonGate?.locked && !isColosseumSelected)
+        const isSortieDisabled = !isColosseumSelected && (
+          !!selectedDungeonGate?.locked
           || (isPartyHpDepletedForSortie && isInstantExpeditionStockEmpty)
-          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty);
+          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty)
+        );
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
@@ -9367,13 +9385,13 @@ function ExpeditionTab({
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, 'text-gray-500')}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : isAbsorbDamageLog
                                       ? (
                                         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                          ({renderUiIcon(iconKey, 'text-gray-500')}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
+                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
                                         </span>
                                       )
                                       : (
@@ -9589,12 +9607,12 @@ function ShopTab({
   }
 
   const intimacyDialogue = effectiveIntimacy >= 80
-    ? '「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」'
+    ? '待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？'
     : effectiveIntimacy >= 40
-      ? '「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」'
+      ? 'やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。'
       : effectiveIntimacy >= 20
-        ? '「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」'
-        : '「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。」';
+        ? 'お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。'
+        : 'ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。';
 
   const rarityPool: number[] = effectiveIntimacy >= 80
     ? [400, 300, 300, 200, 200]
@@ -9662,16 +9680,26 @@ function ShopTab({
 
   return (
     <div className="space-y-4">
-      <div className="rounded border border-gray-200 bg-white p-3">
-        <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
-        <div className="mt-2 flex items-center justify-between gap-3">
+      <div className="shop-dialogue-pane relative isolate overflow-hidden rounded p-3">
+        <img
+          src={`${import.meta.env.BASE_URL}background/Shop.png`}
+          alt=""
+          aria-hidden="true"
+          className="shop-dialogue-pane__background pointer-events-none absolute inset-0 -z-10 h-full w-full select-none object-cover"
+        />
+        <div className="shop-dialogue-pane__title relative z-10 inline-block rounded px-2 py-0.5 text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
+        <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
-            <RaceIcon race={mustelidRace} className="h-10 w-10 self-center" />
-            <div className="space-y-1">
-              <p className="text-sm text-gray-700">
+            <img
+              src={`${import.meta.env.BASE_URL}background/Felis.png`}
+              alt="フェリス"
+              className="shop-dialogue-pane__portrait h-12 w-12 self-center rounded-full object-cover shadow-sm"
+            />
+            <div className="shop-dialogue-pane__bubble space-y-1 rounded px-2 py-1">
+              <p className="shop-dialogue-pane__line text-sm">
                 {intimacyDialogue}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="shop-dialogue-pane__countdown text-xs">
                 （商品洗替まであと {countdownText.replace('後', '')}）
               </p>
             </div>
@@ -9683,7 +9711,7 @@ function ShopTab({
               className={`rounded px-3 py-1 text-xs font-semibold ${
                 gold >= refreshPrice
                   ? 'bg-accent text-white hover:bg-accent/90'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500'
               }`}
             >
               <span className="block">有償洗替</span>
@@ -9695,7 +9723,7 @@ function ShopTab({
 
       <div className="space-y-2">
         {shopItems.map((entry) => (
-          <div key={entry.key} className="rounded border border-gray-200 bg-white px-3 py-2">
+          <div key={entry.key} className="shop-item-card rounded px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className={`flex items-center gap-2 text-sm ${entry.rarityClass}`}>
@@ -9938,6 +9966,12 @@ function InventoryTab({
   const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>(() => (hasFirstJewel ? 'jewel' : 'armor'));
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
   const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
+  const [sellStackConfirmation, setSellStackConfirmation] = useState<{
+    variantKey: string;
+    itemName: string;
+    count: number;
+    sellPrice: number;
+  } | null>(null);
   const categoryGroups = hasFirstJewel ? INVENTORY_CATEGORY_GROUPS : CATEGORY_GROUPS;
   const isJewelCategory = selectedCategory === 'jewel';
 
@@ -10173,6 +10207,13 @@ function InventoryTab({
     });
   };
 
+  // SpecRef: 8.4.2 | Inventory(所持品) | Sell all button(全売却)
+  const confirmSellStack = () => {
+    if (!sellStackConfirmation) return;
+    onSellStack(sellStackConfirmation.variantKey);
+    setSellStackConfirmation(null);
+  };
+
   return (
     <div
       onPointerDown={() => {
@@ -10356,11 +10397,12 @@ function InventoryTab({
                           window.alert('超レア称号がついたアイテムは売却出来ません');
                           return;
                         }
-                        const shouldSell = window.confirm(
-                          `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？`
-                        );
-                        if (!shouldSell) return;
-                        onSellStack(entry.key);
+                        setSellStackConfirmation({
+                          variantKey: entry.key,
+                          itemName: getItemDisplayName(item),
+                          count,
+                          sellPrice,
+                        });
                       }}
                       className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                     >
@@ -10455,6 +10497,46 @@ function InventoryTab({
             </div>
           )}
         </div>
+      )}
+      {sellStackConfirmation && (
+        <FloatingBubblePortal>
+          <div
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 px-5 py-8"
+            role="presentation"
+            onPointerDown={() => setSellStackConfirmation(null)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="sell-stack-confirm-title"
+              className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-5 text-gray-900 shadow-2xl"
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <div id="sell-stack-confirm-title" className="text-base font-medium leading-relaxed">
+                「{sellStackConfirmation.itemName} x{formatNumber(sellStackConfirmation.count)}」を全売却します。
+              </div>
+              <div className="mt-2 text-sm leading-relaxed text-gray-600">
+                {formatNumber(sellStackConfirmation.sellPrice)}Gを獲得します。よろしいですか？
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSellStackConfirmation(null)}
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-sub hover:bg-blue-50"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmSellStack}
+                  className="rounded-full bg-sub px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </FloatingBubblePortal>
       )}
       {activeInventoryAbilityBubble && (
         <FloatingBubblePortal>
@@ -11223,13 +11305,13 @@ function DiaryTab({
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                      ({renderUiIcon(iconKey, 'text-gray-500')}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
+                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
                                     </span>
                                   )
                                   : isAbsorbDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, 'text-gray-500')}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : (
@@ -11638,6 +11720,7 @@ function SettingTab({
   };
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
+  const isDevEnvironment = currentEnv === 'dev';
   const modeSelectionLocked = isBetaEnvironment;
   useEffect(() => {
     try {
@@ -12345,7 +12428,7 @@ function SettingTab({
     Insect_Swarm: '昆虫',
     Aerial: '飛行',
     Frost: '氷雪',
-    Marine: '海棲',
+    Fruit: '果物',
     Dragon: '竜',
     Spirit: '精霊',
     Ghost: '怨霊',
@@ -12353,9 +12436,13 @@ function SettingTab({
     Golem: 'ゴーレム',
     Shadowfang: '影牙',
     Mech: '機械',
+    Chiropteran: 'カイロプテラン',
     Chimera: 'キメラ',
     Titan: '巨人',
+    Pony: 'ポニー',
+    Origami: '折り紙',
     Jinma: '神魔',
+    Orcinian: 'オルシニアン',
     Caninian: 'ケイナイアン',
     Lupinian: 'ルピニアン',
     Vulpinian: 'ヴァルピニアン',
@@ -12530,19 +12617,22 @@ function SettingTab({
       }}
     >
       {activeAbilityHelp && abilityHelpPosition && (
-        <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
-          style={{
-            top: abilityHelpPosition.top,
-            left: abilityHelpPosition.left,
-            width: abilityHelpPosition.width,
-          }}
-        >
-          <div className="text-xs text-gray-700">
-            <span className="font-semibold text-gray-800">{activeAbilityHelp.title}</span>
-            <span>：{activeAbilityHelp.description}</span>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg p-3"
+            style={{
+              top: abilityHelpPosition.top,
+              left: abilityHelpPosition.left,
+              width: abilityHelpPosition.width,
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <div className="text-xs text-gray-700">
+              <span className="font-semibold text-gray-800">{activeAbilityHelp.title}</span>
+              <span>：{activeAbilityHelp.description}</span>
+            </div>
           </div>
-        </div>
+        </FloatingBubblePortal>
       )}
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
@@ -13699,7 +13789,7 @@ function SettingTab({
       </div>
 
 
-      {!isBetaEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {isDevEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('debug', 'デバッグ')}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>

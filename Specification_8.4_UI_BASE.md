@@ -12,7 +12,9 @@
 - **Shop name:** フェリスのガラクタ屋 (Felis’s Junk Shop)
 
 **Dialogue pane (UI)**
-- **Column 1:** Shop owner icon (Mustelid icon)  
+- Background image: `/public/background/Shop.png` as a transparent background behind the dialogue pane.
+
+- **Column 1:** Shop owner icon ( `/public/background/Felis.png` )  
 - **Column 2:** Dialogue + countdown  
   - 表示例: （商品洗替まであと 34 分）
 - **Column 3:** 有償洗替 X,XXXG

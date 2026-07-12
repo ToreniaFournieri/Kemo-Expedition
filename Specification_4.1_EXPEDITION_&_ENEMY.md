@@ -12,7 +12,7 @@
 |---|-----|-----|-----|-----|-----|
 | 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | C:primitive |
 | 2 | 2 | 7 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  |
-| 3 | 3 | 14 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:marine, E:enemy_type B:enemy_type |
+| 3 | 3 | 14 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type |
 | 4 | 4 | 21 | フェリディ砂漠(Felidian Desert) | 砂 | C:Bone , U:Desert, E:enemy_type B:enemy_type |
 | 5 | 5 | 28 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type |
 | 6 | 6 | 35 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
@@ -70,8 +70,8 @@
 | 7 | 5 | The Abyss | 深淵 | `terrain.dark-field` |
 | 7 | 6 | Moon Palace | 月宮殿 | `terrain.low-gravity` |
 | 8 | 1 | Void-Scarred Valley Gate | 虚痕の峡谷門 | `terrain.mana-burn` |
-| 8 | 2 | Ossuary Research Fields | 納骨研究原野 | `terrain.gravity` |
-| 8 | 3 | Small Gods | 小さき神々 | `terrain.transcendence` |
+| 8 | 2 | Subworld | 亜世界 | `terrain.gravity` |
+| 8 | 3 | Another group of people | もう一つの人々 | `terrain.transcendence` |
 | 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
 | 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 | `terrain.suppression` |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 | `terrain.sanctuary` |
@@ -174,7 +174,7 @@
 | Insect_Swarm | 昆虫 | 虫 | `a.swarm`1 | `a.death-touch`1 | `e.thunder+20`, `r.fire_x1.3`, `r.thunder_x2/3` |
 | Aerial | 飛行 | 飛 | `a.flying`1 | `a.free`1 | `c.evasion+0.045`, `c.growth_x0.7`  |
 | Frost | 氷雪 | 雪 | `a.frostbite`1 | `a.ice-reflect`1 | `e.ice+20`, `r.fire_x1.3`, `r.ice_x1/5` |
-| Marine | 海棲 | 海 | `a.bind`1 | `a.execution`1 | `r.thunder_x1.3` |
+| Fruit | 果物 | 果 | `a.bind`1 | `a.execution`1 | `r.thunder_x1.3` |
 | Dragon | 竜 | 竜 | `a.burn`1 | `a.fire-reflect`1 | `e.fire+40`, `r.fire_x1/2`, `r.ice_x1.3`|
 | Spirit | 精霊 | 霊 | `a.soul-reap`1 | `a.mutual-magic-amplify`1 |  `e.ice+20`, `r.fire_x1.5`, `r.ice_x2/3`,`r.thunder_x4/5`, `c.physical-defense-multiplier_x3/5` |
 | Ghost | 怨霊 | 怨 | `a.ranged-confusion`1 | `a.self-destruct`1 |  `c.evasion+0.020`, `c.physical-defense-multiplier_x3/5`, `r.ice_x1.5` |
@@ -182,10 +182,14 @@
 | Golem | ゴーレム | 造 | `a.auriferous`1 | `a.magic-seal`1 | `c.growth_x1.3`, `r.thunder_x1.3` |
 | Shadowfang | 影牙 | 影 | `a.ambush`1 | `a.mimic`1 | `e.fire+20`, `r.fire_x1.3`, `r.ice_x2/3` |
 | Mech | 機械 | 機 | `a.shock`1 | `a.mutual-physical-amplify`2 | `c.physical-defense-multiplier_x3/5`, `r.thunder_x1.5` |
+| Chiropteran | カイロプテラン | 蝙 | `a.bulwark-breaker`1 | `a.mutual-physical-amplify`1 | `c.growth_x1.1`, `r.thunder_x1.2` |
 | Chimera | キメラ | 合 | `a.unstable-core`1 | `a.mutual-magic-restraint`1  | `e.thunder+30`, `c.grit+1`, `c.pursuit+1`, `c.caster+1`, `c.growth_x1.7`  |
 | Titan | 巨人 | 巨 | `a.colossal`1 | `a.mutual-physical-restraint`1 | `c.growth_x1.5` |
+| Pony | ポニー | 馬 | `a.illusion-breaker`1 | `a.mutual-magic-amplify`1 | `c.growth_x1.2` |
+| Origami | 折り紙 | 折 | `a.thunder-null`1 | `c.evasion+40` | `r.fire_x1.5` |
 | Voidspawn | 虚無 | 虚 | `a.null-counter`1 | `a.oblivion`1 | `r.fire_x2/3`, `r.ice_x2/3`, `r.thunder_x1.3` |
 | Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1 , race ability1 | none | `c.growth_x1.3` |
+| Orcinian | オルシニアン | 鯱 | `a.execution`1 | `a.overwatch`1 | |
 | Kemono | ケモノ | ケ | race ability1 | none | |
 
 | Kemono races      | ability1 | ability30　 | c. bonus of enemey     | 
@@ -294,7 +298,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |-|-|-|-|-|
 | 1 | `Beast` | `Aerial` | `Insect_Swarm` | `Caninian` |
 | 2 | `Frost` | `Golem` | `Plant_Fungal` | `Lupinian` |
-| 3 | `Marine` | `Slime_Colony` | `Spirit` | `Vulpinian` |
+| 3 | `Fruit` | `Slime_Colony` | `Spirit` | `Vulpinian` |
 | 4 | `Shadowfang` | `Felidian` | `Titan` | `Felidian` |
 | 5 | `Beast` | `Dragon` | `Ursan` | `Ursan` |
 | 6 | `Mech` | `Golem` | `Chimera` | `Procyonian` |
