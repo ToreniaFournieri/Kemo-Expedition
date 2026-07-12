@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 6 | 2026/07/12 | Update runtime enemy level scaling (Spec 4.1.2): align HP, attack, attack amplifier, NoA, defense, and defense amplifier multipliers with the specified level-25/49 soft-cap formulas. |
 | 0.8.0 | 5 | 2026/07/12 | Update runtime enemy HP level scaling (Spec 4.1.2): compute `x.exp_HP_mult` with base 1.19 and the specified level-25/49 soft-cap penalties. |
 | 0.8.0 | 4 | 2026/07/12 | Reorder runtime Enemy Edit pane fields (Spec 8.6): move the Enemy level slider to the top of the selection list before Enemy name. |
 | 0.8.0 | 3 | 2026/07/12 | Implement production Speed of Time progress reporting (Spec 8.1.2): route root-path runtime reports through `PROD_DISCORD_WEBHOOK_URL` via Vite's `VITE_PROD_DISCORD_WEBHOOK_URL`, include the env type declaration, and pass the production webhook secret in Pages builds. |
