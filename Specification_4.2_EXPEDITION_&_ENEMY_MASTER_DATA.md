@@ -296,20 +296,20 @@
 | 349 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | サージャ |
 | 350 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | メルナ |
 | 351 | 7 | 6 | 4 | 52 | BOSS | `Leporian` | class.lord.ninja | `i.shield`BD, `i.katana`BD, `i.archery`BD, `i.armor`C, `i.robe`C, `i.shield`C | 宰相ヴァルター | `a.melee-reflect`2, `c.growth_x1.4` |
-| 352 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 谷門の斥候 |
-| 353 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 谷門の弩手 |
-| 354 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 谷門の術師 |
-| 355 | 8 | 1 | 3 | 50 | Normal | `Voidspawn` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | 虚痕の守衛 |
-| 356 | 8 | 1 | 3 | 50 | Normal | `Voidspawn` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 虚痕の監視長 |
-| 357 | 8 | 1 | 4 | 52 | Elite | `Voidspawn` | class.guardian.pilgrim | `i.armor`EA, `i.gauntlet`EA, `i.robe`EA, `i.armor`C, `i.robe`C, `i.shield`C | 虚爪の古衛兵 |
-| 358 | 8 | 2 | 1-2 | 50 | Normal | `Voidspawn` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 虚骨域の影刃 |
-| 359 | 8 | 2 | 1-2 | 50 | Normal | `Voidspawn` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 虚骨域の賢刀兵 |
-| 360 | 8 | 2 | 1-2 | 50 | Normal | `Voidspawn` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 虚骨域の碑文侍 |
-| 361 | 8 | 2 | 3 | 51 | Normal | `Ghost` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 霊域の決闘霊 |
-| 362 | 8 | 2 | 3 | 51 | Normal | `Ghost` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 霊域の巡礼霊 |
-| 363 | 8 | 2 | 4 | 53 | Elite | `Voidspawn` | class.sage.alchemist | `i.grimoire`EA, `i.catalyst`EA, `i.catalyst`EA, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 虚智の語部 |
-| 364 | 8 | 3 | 1-2 | 51 | Normal | `Jinma` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 錬金術鬼 
-| 365 | 8 | 3 | 1-2 | 51 | Normal | `Jinma` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 祭術鬼 |
+| 352 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ヴェスパ |
+| 353 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | キリカ |
+| 354 | 8 | 1 | 1-2 | 49 | Normal | `Voidspawn` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ミレア |
+| 355 | 8 | 1 | 3 | 50 | Normal | `Voidspawn` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | グレタ |
+| 356 | 8 | 1 | 3 | 50 | Normal | `Voidspawn` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | ゼノア |
+| 357 | 8 | 1 | 4 | 52 | Elite | `Voidspawn` | class.guardian.pilgrim | `i.armor`EA, `i.gauntlet`EA, `i.robe`EA, `i.armor`C, `i.robe`C, `i.shield`C | ルッカ |
+| 358 | 8 | 2 | 1-2 | 50 | Normal | `Voidspawn` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ミュウラ |
+| 359 | 8 | 2 | 1-2 | 50 | Normal | `Voidspawn` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ラウラ |
+| 360 | 8 | 2 | 1-2 | 50 | Normal | `Voidspawn` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | シグナ |
+| 361 | 8 | 2 | 3 | 51 | Normal | `Ghost` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | エコア |
+| 362 | 8 | 2 | 3 | 51 | Normal | `Ghost` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | セフィラ |
+| 363 | 8 | 2 | 4 | 53 | Elite | `Voidspawn` | class.sage.alchemist | `i.grimoire`EA, `i.catalyst`EA, `i.catalyst`EA, `i.wand`C, `i.grimoire`C, `i.catalyst`C | レイヴァ |
+| 364 | 8 | 3 | 1-2 | 51 | Normal | `Jinma` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | カイル | 
+| 365 | 8 | 3 | 1-2 | 51 | Normal | `Jinma` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | ライラ |
 | 366 | 8 | 3 | 1-2 | 51 | Normal | `Jinma` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 戦祀鬼 |
 | 367 | 8 | 3 | 3 | 52 | Normal | `Voidspawn` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 虚紋の決刀士 |
 | 368 | 8 | 3 | 3 | 52 | Normal | `Voidspawn` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 虚紋の導術士 |
