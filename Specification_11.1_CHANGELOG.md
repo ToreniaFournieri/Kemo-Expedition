@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 46 | 2026/07/12 | Add runtime Chiropteran enemy category (Spec 4.1/4.2.2): apply its base abilities, growth/thunder bonuses, display short name, and align Expedition 6 Enemy_ID 289-290, 298-300, 303, and 307-309 with the Chiropteran type. |
 | 0.7.6 | 45 | 2026/07/12 | Refine runtime Shop owner dialogue formatting (Spec 8.4.1): remove Japanese corner quotes from Felis’s comments and render the dialogue in normal font weight while keeping the countdown emphasized. |
 | 0.7.6 | 44 | 2026/07/12 | Update runtime Expedition 6 enemy master data (Spec 4.2.2): align Enemy_ID 280-315 names, enemy types, classes, drops, and specified elite/boss bonus abilities and modifiers with the provided table. |
 | 0.7.6 | 43 | 2026/07/12 | Update runtime Expedition 5 enemy master data (Spec 4.2.2): align Enemy_ID 244-279 Japanese names with the provided table and apply the specified elite, normal, and boss bonus abilities/modifiers. |

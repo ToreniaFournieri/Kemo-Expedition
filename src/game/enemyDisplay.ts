@@ -17,6 +17,7 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Golem: '造',
   Shadowfang: '影',
   Mech: '機',
+  Chiropteran: '蝙',
   Chimera: '合',
   Titan: '巨',
   Jinma: '神',
