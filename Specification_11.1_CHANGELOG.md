@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.7.6 | 52 | 2026/07/12 | Update runtime Expedition 7 enemy master names (Spec 4.2.2): align Enemy_ID 316-351 Japanese display names with the provided master-data table while preserving classes, drops, enemy types, and bonus abilities. |
 | 0.7.6 | 51 | 2026/07/12 | Update runtime Expedition 7 enemy master bonuses (Spec 4.2.2): apply the provided bonus abilities for Enemy_ID 321, 325-327, and 333 plus growth and physical-offense modifiers for Enemy_ID 339, 345, and boss 351. |
 | 0.7.6 | 50 | 2026/07/12 | Add runtime Pony enemy category (Spec 4.1/4.2.2): apply its Illusion Breaker and Mutual Magic Amplify abilities, growth bonus, display labels, and align Expedition 7 Enemy_ID 316-324, 327, 331-332, and 346-348 with the Pony type. |
 | 0.7.6 | 49 | 2026/07/12 | Update runtime Expedition 8 elite Ghost and Jinma item-drop names (Spec 3.2.1): align the EB/EC bolt, katana, shield, wand, catalyst, robe, archery, gauntlet, arrow, and grimoire display names with the item master data while preserving existing items. |
