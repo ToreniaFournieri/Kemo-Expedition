@@ -224,28 +224,28 @@
 | 277 | 5 | 6 | 3 | 34 | Normal | `Dragon` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | モロキア |
 | 278 | 5 | 6 | 3 | 34 | Normal | `Dragon` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ハイドロサ |
 | 279 | 5 | 6 | 4 | 38 | BOSS | `Ursan` | class.samurai.duelist | `i.katana`BD, `i.shield`BD, `i.sword`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | ケルビナ | `a.fire-reflect`1, `c.growth_x1.3` |
-| 280 | 6 | 1 | 1-2 | 35 | Normal | `Mech` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 遺構斥候ユニット |
-| 281 | 6 | 1 | 1-2 | 35 | Normal | `Mech` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 遺構演算コア機 |
-| 282 | 6 | 1 | 1-2 | 35 | Normal | `Mech` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 遺構術式ドローン |
-| 283 | 6 | 1 | 3 | 36 | Normal | `Mech` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | オートマタ |
-| 284 | 6 | 1 | 3 | 36 | Normal | `Mech` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | 遺構制御機 |
-| 285 | 6 | 1 | 4 | 38 | Elite | `Mech` | class.guardian.ninja | `i.armor`EA, `i.gauntlet`EA, `i.archery`EA, `i.armor`C, `i.robe`C, `i.shield`C | オートマタVer2.1 |
-| 286 | 6 | 2 | 1-2 | 36 | Normal | `Mech` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 潜伏偵察オートマタ |
-| 287 | 6 | 2 | 1-2 | 36 | Normal | `Mech` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 遺構演算フレーム |
-| 288 | 6 | 2 | 1-2 | 36 | Normal | `Mech` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺構斬撃解析機 |
-| 289 | 6 | 2 | 3 | 37 | Normal | `Golem` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 鉱核デュエラ |
-| 290 | 6 | 2 | 3 | 37 | Normal | `Golem` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 岩核アーカイブ像 |
-| 291 | 6 | 2 | 4 | 39 | Elite | `Mech` | class.ranger.striker | `i.arrow`EA, `i.archery`EA, `i.bolt`EA, `i.arrow`C, `i.bolt`C, `i.archery`C | 試作暗殺ユニット |
-| 292 | 6 | 3 | 1-2 | 37 | Normal | `Chimera` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | キメラ試作体α |
-| 293 | 6 | 3 | 1-2 | 37 | Normal | `Chimera` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | キメラ試作体β |
-| 294 | 6 | 3 | 1-2 | 37 | Normal | `Chimera` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | キメラ試作体γ |
-| 295 | 6 | 3 | 3 | 38 | Normal | `Mech` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺構斬撃兵装 |
-| 296 | 6 | 3 | 3 | 38 | Normal | `Mech` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 遺構術式兵装 |
-| 297 | 6 | 3 | 4 | 40 | Elite | `Chimera` | class.alchemist.wizard | `i.catalyst`EC, `i.wand`EC, `i.wand`EC, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ナイトメア |
-| 298 | 6 | 4 | 1-2 | 38 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 岩殻術衛像 |
-| 299 | 6 | 4 | 1-2 | 38 | Normal | `Golem` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 鉱晶旗手像 |
-| 300 | 6 | 4 | 1-2 | 38 | Normal | `Golem` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 岩壁賢刃像 |
-| 301 | 6 | 4 | 3 | 39 | Normal | `Chimera` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | キメラ試作体δ |
+| 280 | 6 | 1 | 1-2 | 35 | Normal | `Mech` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | リヴェッタ |
+| 281 | 6 | 1 | 1-2 | 35 | Normal | `Mech` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ピペット |
+| 282 | 6 | 1 | 1-2 | 35 | Normal | `Mech` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | スプロクサ |
+| 283 | 6 | 1 | 3 | 36 | Normal | `Mech` | class.guardian.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`U, `i.armor`C, `i.robe`C, `i.shield`C | タンブル |
+| 284 | 6 | 1 | 3 | 36 | Normal | `Mech` | class.lord.lord | `i.shield`U, `i.katana`U, `i.shield`U, `i.armor`C, `i.robe`C, `i.shield`C | モクシー |
+| 285 | 6 | 1 | 4 | 38 | Elite | `Mech` | class.guardian.ninja | `i.armor`EA, `i.gauntlet`EA, `i.archery`EA, `i.armor`C, `i.robe`C, `i.shield`C | パッチ | `c.growth_x1.3` |
+| 286 | 6 | 2 | 1-2 | 36 | Normal | `Mech` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ニブルズ |
+| 287 | 6 | 2 | 1-2 | 36 | Normal | `Mech` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ティッカ |
+| 288 | 6 | 2 | 1-2 | 36 | Normal | `Mech` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ジッピー |
+| 289 | 6 | 2 | 3 | 37 | Normal | `Golem` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヴェスパー |
+| 290 | 6 | 2 | 3 | 37 | Normal | `Golem` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | サーリ |
+| 291 | 6 | 2 | 4 | 39 | Elite | `Mech` | class.ranger.striker | `i.arrow`EA, `i.archery`EA, `i.bolt`EA, `i.arrow`C, `i.bolt`C, `i.archery`C | ラチェット | `c.penet+40` |
+| 292 | 6 | 3 | 1-2 | 37 | Normal | `Chimera` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ミスティ |
+| 293 | 6 | 3 | 1-2 | 37 | Normal | `Chimera` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | モロウ |
+| 294 | 6 | 3 | 1-2 | 37 | Normal | `Chimera` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ルー |
+| 295 | 6 | 3 | 3 | 38 | Normal | `Mech` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヴェクサ |
+| 296 | 6 | 3 | 3 | 38 | Normal | `Mech` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ビクシー |
+| 297 | 6 | 3 | 4 | 40 | Elite | `Chimera` | class.alchemist.wizard | `i.catalyst`EC, `i.wand`EC, `i.wand`EC, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ダスク | `c.magical-offense-multiplier_x1.4` |
+| 298 | 6 | 4 | 1-2 | 38 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | スカリー |
+| 299 | 6 | 4 | 1-2 | 38 | Normal | `Golem` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ヴェローラ |
+| 300 | 6 | 4 | 1-2 | 38 | Normal | `Golem` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | カーミラ |
+| 301 | 6 | 4 | 3 | 39 | Normal | `Chimera` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ラズリ |
 | 302 | 6 | 4 | 3 | 39 | Normal | `Chimera` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | キメラ試作体ε |
 | 303 | 6 | 4 | 4 | 41 | Elite | `Golem` | class.samurai.duelist | `i.katana`EB, `i.shield`EB, `i.sword`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | 断刃決闘像 |
 | 304 | 6 | 5 | 1-2 | 39 | Normal | `Chimera` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | キメラ潜伏個体 |
