@@ -527,6 +527,8 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   267: [{ id: 'magic_seal', level: 1 }],
   270: [{ id: 'mimic', level: 1 }],
   273: [{ id: 'boost', level: 1 }],
+  303: [{ id: 'first_strike', level: 1 }],
+  309: [{ id: 'ranged_confusion', level: 1 }],
 };
 
 const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
@@ -547,6 +549,12 @@ const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   164: [{ type: 'physical_defense_multiplier_xV', value: 3 / 5 }],
   260: [{ type: 'physical_defense_multiplier_xV', value: 1 / 3 }],
   279: [{ type: 'growth_xV', value: 1.3 }],
+  285: [{ type: 'growth_xV', value: 1.3 }],
+  291: [{ type: 'penet', value: 0.4 }],
+  297: [{ type: 'magical_offense_multiplier_xV', value: 1.4 }],
+  313: [{ type: 'growth_xV', value: 1.5 }],
+  314: [{ type: 'growth_xV', value: 1.5 }],
+  315: [{ type: 'growth_xV', value: 1.5 }],
 };
 
 function generateEnemies(): EnemyDef[] {
