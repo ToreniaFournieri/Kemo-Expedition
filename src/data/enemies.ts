@@ -229,6 +229,11 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability30: [{ id: 'mutual_physical_restraint', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.5 }],
   },
+  Pony: {
+    ability1: [{ id: 'illusion_breaker', level: 1 }],
+    ability30: [{ id: 'mutual_magic_amplify', level: 1 }],
+    bonuses: [{ type: 'growth_xV', value: 1.2 }],
+  },
   Jinma: {
     ability1: [{ id: 'upgrade_all_abilities', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.3 }],
