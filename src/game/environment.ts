@@ -19,7 +19,7 @@ export function getEnvLabel(): string {
   const env = getEnvironmentId();
   if (env === 'dev') return 'D';
   if (env === 'beta') return 'β';
-  return 'P';
+  return '';
 }
 
 // SpecRef: 9 | Environment | createEnvironmentStorageKey
