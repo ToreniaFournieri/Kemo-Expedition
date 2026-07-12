@@ -249,6 +249,7 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
     { type: 'ice_defense_multiplier_xV', value: 2.0 },
     { type: 'thunder_defense_multiplier_xV', value: 2.0 },
   ],
+  'ファイアーヴェール': [{ type: 'fire_defense_multiplier_xV', value: 2 / 3 }],
   '反乱の手引': [{ type: 'ability', value: 1, abilityId: 'defiance', abilityLevel: 1 }],
 };
 
