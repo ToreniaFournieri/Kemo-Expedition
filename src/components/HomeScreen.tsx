@@ -2968,6 +2968,7 @@ export function HomeScreen({
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
+
   const pendingAfkMsRef = useRef(0);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
@@ -8436,6 +8437,27 @@ function ExpeditionTab({
     left: number;
     maxWidth: number;
   } | null>(null);
+  const [disclosedExpeditionLogs, setDisclosedExpeditionLogs] = useState<Array<Party['lastExpeditionLog'] | null>>(() =>
+    state.parties.map((party) => party.lastExpeditionLog)
+  );
+
+  useEffect(() => {
+    // SpecRef: 8.3 | UI_EXPEDITION | Update Timing
+    // The engine prepares the latest expedition log while state.explore is still
+    // animating. Keep the headline floor/outcome pinned to the last disclosed
+    // log until exploration finishes so the first row does not spoil the result.
+    setDisclosedExpeditionLogs((previousLogs) => {
+      let changed = previousLogs.length !== state.parties.length;
+      const nextLogs = state.parties.map((party, index) => {
+        const cycleState = partyCycles[index]?.state ?? 'idle';
+        if (cycleState === 'explore') return previousLogs[index] ?? null;
+        const nextLog = party.lastExpeditionLog ?? null;
+        if (previousLogs[index] !== nextLog) changed = true;
+        return nextLog;
+      });
+      return changed ? nextLogs : previousLogs;
+    });
+  }, [state.parties, partyCycles]);
   const [activeRingStatusBubble, setActiveRingStatusBubble] = useState<{
     key: string;
     text: string;
@@ -8664,21 +8686,21 @@ function ExpeditionTab({
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
+        const disclosedLog = cycle.state === 'explore'
+          ? disclosedExpeditionLogs[partyIndex] ?? null
+          : currentLog;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
-        // SpecRef: 8.3 | UI_EXPEDITION | First row text
+        // SpecRef: 8.3 | UI_EXPEDITION | First row text / Update Timing
         const headlineFloorName = (() => {
-          if (cycle.state === 'explore') return selectedDungeon?.name ?? '-';
-          if (!currentLog) return selectedDungeon?.name ?? '-';
-          const latestEntry = currentLog.entries[currentLog.entries.length - 1];
-          if (!latestEntry?.floor) return currentLog.dungeonName;
-          return getExpeditionFloorConcept(currentLog.dungeonId, latestEntry.floor)
+          if (!disclosedLog) return selectedDungeon?.name ?? '-';
+          const latestEntry = disclosedLog.entries[disclosedLog.entries.length - 1];
+          if (!latestEntry?.floor) return disclosedLog.dungeonName;
+          return getExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
             ?? `${formatNumber(latestEntry.floor)}階層`;
         })();
-        const headlineState = cycle.state === 'explore'
-          ? getPartyCycleStateLabel('explore')
-          : currentLog
-            ? getExpeditionOutcomeLabel(currentLog.finalOutcome)
-            : getPartyCycleStateLabel(cycle.state);
+        const headlineState = disclosedLog
+          ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
+          : getPartyCycleStateLabel(cycle.state);
         const conditionLabel = getConditionLabel(party.condition, true);
 
         const displayedEntries = (() => {
@@ -9139,7 +9161,7 @@ function ExpeditionTab({
                     </div>
                   )}
 
-                  {currentLog.rewards.length > 0 && (
+                  {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
                       <span className="text-gray-500">獲得アイテム: </span>
                       {currentLog.rewards.map((item, i) => {
