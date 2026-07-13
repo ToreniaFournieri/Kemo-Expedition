@@ -44,7 +44,7 @@ import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRank
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
+import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -3140,6 +3140,7 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeLabel = useMemo(() => {
+    if (debugSettings.timeSpeed === 'unlimited') return '(∞)';
     const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
     if (!isBonusSpeed) return '';
     const remainingHours = timeSpeedBonusUntilMs === null
@@ -4533,11 +4534,22 @@ export function HomeScreen({
       return;
     }
 
+    const unlimitedTimeSpeed = isUnlimitedTimeSpeed(debugSettings);
     const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
 
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
         afkQuestCarryMsRef.current[partyIndex] = 0;
+        return;
+      }
+
+      if (unlimitedTimeSpeed) {
+        const remainingSeconds = Math.max(0, party.sideQuest.target - party.sideQuest.progress);
+        afkQuestCarryMsRef.current[partyIndex] = 0;
+        if (remainingSeconds > 0) {
+          const simulatedAt = lastCheckpointAtRef.current + elapsedMs;
+          actions.advanceSideQuest(partyIndex, remainingSeconds, simulatedAt);
+        }
         return;
       }
 
@@ -13855,6 +13867,7 @@ function SettingTab({
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x5' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x5' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x5 boost</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x20' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x20' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x20 hyper</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x100' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x100' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x100 Ultra</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'unlimited' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'unlimited' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x∞ Unlimited</button>
             </div>
           </div>
           <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
