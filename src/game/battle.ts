@@ -1011,9 +1011,21 @@ function getReflectAmplifier(level: number): number {
   return 0.1;
 }
 
+function getElementalReflectAmplifier(level: number): number {
+  if (level >= 5) return 0.5;
+  if (level === 4) return 0.35;
+  if (level === 3) return 0.2;
+  if (level === 2) return 0.1;
+  return 0.05;
+}
+
 function getReflectPortionText(amplifier: number): string {
   if (amplifier >= 1.0) return '全';
   return `${Math.round(amplifier * 10)}/10`;
+}
+
+function getPercentPortionText(amplifier: number): string {
+  return `${Math.round(amplifier * 100)}%`;
 }
 
 function getAbsorbAmplifier(level: number): number {
@@ -1032,40 +1044,40 @@ function getReflectDescriptor(
 ): ReflectDescriptor | null {
   const iceLevel = getAbilityLevelFromList(defenderAbilities, 'ice_reflect');
   if (elementalOffense === 'ice' && iceLevel > 0 && !hasAbility(attackerAbilities, 'ice_protect_breaker')) {
-    const amplifier = getReflectAmplifier(iceLevel);
+    const amplifier = getElementalReflectAmplifier(iceLevel);
     return {
       abilityId: 'ice_reflect',
       name: '氷結反射',
       summary: '氷属性',
       amplifier,
-      reflectedPortionText: getReflectPortionText(amplifier),
-      receivedPortionText: getReflectPortionText(1 - amplifier),
+      reflectedPortionText: getPercentPortionText(amplifier),
+      receivedPortionText: getPercentPortionText(1 - amplifier),
     };
   }
 
   const fireLevel = getAbilityLevelFromList(defenderAbilities, 'fire_reflect');
   if (elementalOffense === 'fire' && fireLevel > 0 && !hasAbility(attackerAbilities, 'fire_protect_breaker')) {
-    const amplifier = getReflectAmplifier(fireLevel);
+    const amplifier = getElementalReflectAmplifier(fireLevel);
     return {
       abilityId: 'fire_reflect',
       name: '火炎反射',
       summary: '火属性',
       amplifier,
-      reflectedPortionText: getReflectPortionText(amplifier),
-      receivedPortionText: getReflectPortionText(1 - amplifier),
+      reflectedPortionText: getPercentPortionText(amplifier),
+      receivedPortionText: getPercentPortionText(1 - amplifier),
     };
   }
 
   const thunderLevel = getAbilityLevelFromList(defenderAbilities, 'thunder_reflect');
   if (elementalOffense === 'thunder' && thunderLevel > 0 && !hasAbility(attackerAbilities, 'thunder_protect_breaker')) {
-    const amplifier = getReflectAmplifier(thunderLevel);
+    const amplifier = getElementalReflectAmplifier(thunderLevel);
     return {
       abilityId: 'thunder_reflect',
       name: '雷撃反射',
       summary: '雷属性',
       amplifier,
-      reflectedPortionText: getReflectPortionText(amplifier),
-      receivedPortionText: getReflectPortionText(1 - amplifier),
+      reflectedPortionText: getPercentPortionText(amplifier),
+      receivedPortionText: getPercentPortionText(1 - amplifier),
     };
   }
 
@@ -1084,14 +1096,14 @@ function getReflectDescriptor(
 
   const magicalLevel = getAbilityLevelFromList(defenderAbilities, 'magical_reflect');
   if (phase === 'mid' && magicalLevel > 0 && !hasAbility(attackerAbilities, 'm_barrier_breaker')) {
-    const amplifier = getReflectAmplifier(magicalLevel);
+    const amplifier = getElementalReflectAmplifier(magicalLevel);
     return {
       abilityId: 'magical_reflect',
       name: '魔法反射',
       summary: '魔法',
       amplifier,
-      reflectedPortionText: getReflectPortionText(amplifier),
-      receivedPortionText: getReflectPortionText(1 - amplifier),
+      reflectedPortionText: getPercentPortionText(amplifier),
+      receivedPortionText: getPercentPortionText(1 - amplifier),
     };
   }
 
