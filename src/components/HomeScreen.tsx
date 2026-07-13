@@ -9154,7 +9154,7 @@ function ExpeditionTab({
             {currentLog && isLogExpanded && (
               <div className="mx-1 border-t border-gray-200 pt-3">
                 <div className="space-y-2">
-                  {(currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
+                  {cycle.state !== 'explore' && (currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
                     <div className="text-sm text-gray-500">
                       EXP: +{formatNumber(currentLog.totalExperience)}
                       {currentLog.autoSellProfit > 0 && <span> | {formatAutoSellSummary(currentLog.autoSellProfit, currentLog.autoSellMultiplier)}</span>}
