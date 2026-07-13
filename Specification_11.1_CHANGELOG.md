@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 26 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 5-8 base enemy levels with the current definition table (28, 33, 37, and 40). |
 | 0.8.0 | 25 | 2026/07/13 | Update runtime life-drain and physical-range reflect abilities (Spec 1.1/6.1): display life-drain scaling as percentages and apply the specified 5/10/20/35/50% reflection curve with matching received-damage percentages to ranged and melee reflect runtime descriptions and battle resolution. |
 | 0.8.0 | 24 | 2026/07/13 | Update runtime elemental and magical reflect abilities (Spec 1.1/6.1): apply the specified 5/10/20/35/50% reflection curve with matching received-damage percentages in glossary text, ability descriptions, and battle resolution while preserving ranged and melee reflect scaling. |
 | 0.8.0 | 23 | 2026/07/13 | Fix party HP synchronization after equipment changes (Spec 8.2.4): preserve only the damaged HP amount when manual, auto, jewel, or character equipment-related stat changes alter Max HP. |
