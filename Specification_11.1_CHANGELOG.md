@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 23 | 2026/07/13 | Fix party HP synchronization after equipment changes (Spec 8.2.4): preserve only the damaged HP amount when manual, auto, jewel, or character equipment-related stat changes alter Max HP. |
 | 0.8.0 | 22 | 2026/07/13 | Implement runtime Debug pane Speed of Time Unlimited option (Spec 8.6): persist/select `x∞ Unlimited`, show the header infinity label, and complete AFK-style time side quests immediately on the next runtime checkpoint without applying a fixed speed multiplier. |
 | 0.8.0 | 21 | 2026/07/13 | Fix runtime Expedition tab reward summary disclosure timing (Spec 8.3): hide EXP and auto-sell totals while `state.explore` is still in progress, matching the delayed outcome and item reward display at exploration completion. |
 | 0.8.0 | 20 | 2026/07/13 | Fix runtime Expedition tab update timing (Spec 8.3): keep the headline floor and outcome pinned to the last disclosed expedition while `state.explore` is still in progress, and hide reward details until exploration finishes to prevent spoilers. |
