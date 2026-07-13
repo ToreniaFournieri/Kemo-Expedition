@@ -335,9 +335,10 @@ HP: 312                 タイプ: 神魔
  
 - Clairvoyance: OFF/ON
   - if OFF, disable `Clairvoyance (未来視)` as default.
-- Speed of time: Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra
+- Speed of time: Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra / x∞ Unlimited
   - Default: Real time
-  - affects side quest duration. 
+  - affects side quest duration.
+  - Unlimited: Processes the side quest as quickly as the player’s PC or smartphone can execute it, without applying a fixed speed multiplier.
 - Gods Battle condition: boss items require Normal / Simple(1)
   - Default: Normal
   - Simple: 1 boss rare item instead of actual setting
