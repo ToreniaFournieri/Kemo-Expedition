@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 15 | 2026/07/13 | Update runtime enemy base status (Spec 4.1.4): align base `d.HP` to `96` and base `d.experience` to `5` for enemy master stat construction. |
 | 0.8.0 | 14 | 2026/07/13 | Update runtime Expedition 7 boss Enemy_ID 351 (Spec 4.2.2): align 宰相ヴァルター bonus ability to `a.melee-reflect`1 while preserving the specified growth modifier and master-table row data. |
 | 0.8.0 | 13 | 2026/07/12 | Update runtime enemy HP level scaling (Spec 4.1.2): compute `x.exp_HP_mult` with base 1.192 and the specified level-25/49 soft-cap penalties. |
 | 0.8.0 | 12 | 2026/07/12 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 4-8 base enemy levels with the current definition table (20, 26, 32, 38, and 44). |
