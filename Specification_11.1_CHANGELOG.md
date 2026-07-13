@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 18 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 2-8 base enemy levels with the current definition table (9, 17, 24, 30, 35, 39, and 43). |
 | 0.8.0 | 17 | 2026/07/13 | Update runtime Expedition 2 boss Enemy_ID 171 (Spec 4.2.2): align ロザリア bonus ability `a.life-drain`7 and growth modifier `c.growth_x2.0` while preserving the specified boss class, drops, and Japanese name. |
 | 0.8.0 | 16 | 2026/07/13 | Update runtime Expedition 1 boss Enemy_ID 135 (Spec 4.2.2): align ヴェルグ bonus growth modifier to `c.growth_x1.2` while preserving the specified boss abilities, class, drops, and Japanese name. |
 | 0.8.0 | 15 | 2026/07/13 | Update runtime enemy base status (Spec 4.1.4): align base `d.HP` to `96` and base `d.experience` to `5` for enemy master stat construction. |
