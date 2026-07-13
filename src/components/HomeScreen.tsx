@@ -44,7 +44,7 @@ import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRank
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
+import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -4534,12 +4534,22 @@ export function HomeScreen({
       return;
     }
 
-    const rawTimeSpeedScale = getTimeSpeedScale(debugSettings);
-    const timeSpeedScale = rawTimeSpeedScale > 0 ? rawTimeSpeedScale : 1;
+    const unlimitedTimeSpeed = isUnlimitedTimeSpeed(debugSettings);
+    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
 
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
         afkQuestCarryMsRef.current[partyIndex] = 0;
+        return;
+      }
+
+      if (unlimitedTimeSpeed) {
+        const remainingSeconds = Math.max(0, party.sideQuest.target - party.sideQuest.progress);
+        afkQuestCarryMsRef.current[partyIndex] = 0;
+        if (remainingSeconds > 0) {
+          const simulatedAt = lastCheckpointAtRef.current + elapsedMs;
+          actions.advanceSideQuest(partyIndex, remainingSeconds, simulatedAt);
+        }
         return;
       }
 
