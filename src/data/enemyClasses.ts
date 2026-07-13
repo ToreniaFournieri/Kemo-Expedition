@@ -40,7 +40,7 @@ type EnemyClassMasterStats = {
 
 // SpecRef: 4.1.4 | Base data structure (enemy) | Base status
 const ENEMY_BASE_STATUS = {
-  hp: 80,
+  hp: 96,
   accuracy: 0,
   evasion: 0,
   rangedAttack: 31,
@@ -51,7 +51,7 @@ const ENEMY_BASE_STATUS = {
   meleeAttackAmplifier: 1,
   physicalDefense: 12,
   magicalDefense: 12,
-  experience: 3,
+  experience: 5,
 };
 
 // SpecRef: 4.1.4 | Base data structure (enemy) | Class modifier
