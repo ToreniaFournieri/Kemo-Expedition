@@ -509,7 +509,7 @@ const MASTER_BOSS_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   3: [{ id: 'melee_confusion', level: 1 }],
   5: [{ id: 'fire_reflect', level: 1 }],
   6: [{ id: 'soul_reap', level: 3 }],
-  7: [{ id: 'melee_reflect', level: 2 }],
+  7: [{ id: 'melee_reflect', level: 1 }],
   8: [{ id: 'shock', level: 1 }, { id: 'magic_seal', level: 1 }],
 };
 
