@@ -338,7 +338,7 @@ HP: 312                 タイプ: 神魔
 - Speed of time: Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra / x∞ Unlimited
   - Default: Real time
   - affects side quest duration.
-  - Unlimited: Immediately accelerates AFK emulation while the party is in `state.reactivate`; it does not directly complete the `q.AFK` side quest or other timed side quests outside that emulation.
+  - Unlimited: Immediately processes side quests using AFK emulation, without waiting for real time to pass.
 - Gods Battle condition: boss items require Normal / Simple(1)
   - Default: Normal
   - Simple: 1 boss rare item instead of actual setting
