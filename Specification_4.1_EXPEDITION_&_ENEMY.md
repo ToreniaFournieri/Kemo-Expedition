@@ -11,9 +11,9 @@
 | `x.exp_id` | `x.item_tier` | `x.enemy_level` | `x.expedition` | short name | item concept |
 |---|-----|-----|-----|-----|-----|
 | 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | C:primitive |
-| 2 | 2 | 9 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  |
-| 3 | 3 | 16 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type |
-| 4 | 4 | 23 | フェリディ砂漠(Felidian Desert) | 砂 | C:Bone , U:Desert, E:enemy_type B:enemy_type |
+| 2 | 2 | 10 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  |
+| 3 | 3 | 17 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type |
+| 4 | 4 | 24 | フェリディ砂漠(Felidian Desert) | 砂 | C:Bone , U:Desert, E:enemy_type B:enemy_type |
 | 5 | 5 | 28 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type |
 | 6 | 6 | 33 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
 | 7 | 7 | 37 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type |
