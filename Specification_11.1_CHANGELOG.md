@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 21 | 2026/07/13 | Fix runtime Expedition tab reward summary disclosure timing (Spec 8.3): hide EXP and auto-sell totals while `state.explore` is still in progress, matching the delayed outcome and item reward display at exploration completion. |
 | 0.8.0 | 20 | 2026/07/13 | Fix runtime Expedition tab update timing (Spec 8.3): keep the headline floor and outcome pinned to the last disclosed expedition while `state.explore` is still in progress, and hide reward details until exploration finishes to prevent spoilers. |
 | 0.8.0 | 19 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 3-8 base enemy levels with the current definition table (16, 23, 29, 34, 38, and 41). |
 | 0.8.0 | 18 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 2-8 base enemy levels with the current definition table (9, 17, 24, 30, 35, 39, and 43). |
