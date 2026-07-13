@@ -2901,6 +2901,24 @@ function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean 
   return currentHp <= maxHp * 0.3;
 }
 
+function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Party): Party {
+  const previousMaxHp = computePartyStats(previousParty).partyStats.hp;
+  const nextMaxHp = computePartyStats(nextParty).partyStats.hp;
+  if (nextMaxHp <= 0) return nextParty;
+
+  const previousCurrentHp = typeof previousParty.currentHp === 'number'
+    ? previousParty.currentHp
+    : previousMaxHp;
+  const damagedHp = Math.max(0, previousMaxHp - Math.max(0, previousCurrentHp));
+  const nextCurrentHp = Math.max(1, Math.min(nextMaxHp, nextMaxHp - damagedHp));
+
+  return {
+    ...nextParty,
+    // SpecRef: 8.2.4 | Equipment management | HP synchronization after equipment changes
+    currentHp: nextCurrentHp,
+  };
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SELECT_PARTY':
@@ -4044,10 +4062,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           newCharacters[charIndex] = equippedCharacter;
 
           const updatedParties = [...state.parties];
-          updatedParties[targetPartyIndex] = {
+          updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
             ...currentParty,
             characters: newCharacters
-          };
+          });
 
           return {
             ...state,
@@ -4065,10 +4083,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = unequippedCharacter;
 
       const updatedParties = [...state.parties];
-      updatedParties[targetPartyIndex] = {
+      updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      };
+      });
 
       return {
         ...state,
@@ -4122,10 +4140,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
 
         const updatedParties = [...state.parties];
-        updatedParties[targetPartyIndex] = {
+        updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
           ...currentParty,
           characters: newCharacters,
-        };
+        });
 
         return {
           ...state,
@@ -4145,10 +4163,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
 
       const updatedParties = [...state.parties];
-      updatedParties[targetPartyIndex] = {
+      updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters,
-      };
+      });
 
       return {
         ...state,
@@ -4236,10 +4254,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = { ...oldChar, ...sanitizedUpdates, equipment: newEquipment };
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = {
+      updatedParties[state.selectedPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      };
+      });
 
       return {
         ...state,
