@@ -140,7 +140,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability1: [{ id: 'burn', level: 1 }],
     ability30: [{ id: 'fire_reflect', level: 1 }],
     bonuses: [
-      { type: 'fire_offense', value: 40 },
+      { type: 'fire_offense', value: 25 },
       { type: 'fire_defense_multiplier_xV', value: 1 / 2 },
       { type: 'ice_defense_multiplier_xV', value: 1.3 },
     ],
