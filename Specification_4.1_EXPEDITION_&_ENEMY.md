@@ -193,13 +193,13 @@
 
 | Kemono races      | ability1 | ability30　 | c. bonus of enemey     | 
 |------------|-----------|-----------|-------------------|
-| Lupinian   | `a.rage`1 | `a.re-counter`1      | `e.ice+25`, `c.ice-defense-multiplier_x2/3`|
-| Vulpinian  |`a.momentum`1 | `a.cunning`1         | `e.thunder+25` |
+| Lupinian   | `a.rage`1 | `a.re-counter`1      | `e.ice+5`, `c.ice-defense-multiplier_x2/3`|
+| Vulpinian  |`a.momentum`1 | `a.cunning`1         | `e.thunder+5` |
 | Felidian   |`a.first-strike`1 | `a.covering-fire`1   | `e.fire+5`, `c.fire-defense-multiplier_x2/3`|
 | Caninian   |`a.seeker`1 |  `a.resurrect`1       | `c.growth_x1.1`|
-| Ursan      |`a.bulwark`1 | `a.cyborgization`1   | `e.fire+40` |
-| Procyonian |`a.resonance`1 |  `a.illusion`1          | `e.thunder+40`, `c.thunder-defense-multiplier_x2/3` |
-| Leporian   |`a.composure`1 |  `a.magical-counter`1 | `e.ice+40` |
+| Ursan      |`a.bulwark`1 | `a.cyborgization`1   | `e.fire+20` |
+| Procyonian |`a.resonance`1 |  `a.illusion`1          | `e.thunder+20`, `c.thunder-defense-multiplier_x2/3` |
+| Leporian   |`a.composure`1 |  `a.magical-counter`1 | `e.ice+20` |
 | Cervin     |`a.focus`    | `a.prophecy`1        | |
 | Murid      |`a.stealth`1 |                    | `c.penet+0.10` |
 
