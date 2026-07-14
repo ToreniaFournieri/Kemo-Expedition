@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 34 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 6-8 base enemy levels with the current definition table (30, 34, and 38). |
 | 0.8.0 | 33 | 2026/07/14 | Update runtime Dragon enemy type bonuses (Spec 4.1): align elemental fire offense bonus to `e.fire+25` while preserving Burn, Fire Reflect, fire resistance, and ice weakness behavior. |
 | 0.8.0 | 32 | 2026/07/14 | Update runtime Kemono race enemy type bonuses (Spec 4.1): align Lupinian, Vulpinian, Ursan, Procyonian, and Leporian elemental offense bonuses with the Enemy Master Specification while preserving listed abilities and defense/growth modifiers. |
 | 0.8.0 | 31 | 2026/07/14 | Update runtime Felidian enemy type bonuses (Spec 4.1): align elemental fire offense bonus to `e.fire+5` while preserving first-strike, covering-fire, and fire-defense multiplier behavior. |
