@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.0 | 29 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 5 base enemy level with the current definition table (27). |
 | 0.8.0 | 28 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 2-4 base enemy levels with the current definition table (10, 17, and 24). |
 | 0.8.0 | 27 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 8 base enemy level with the current definition table (41). |
 | 0.8.0 | 26 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 5-8 base enemy levels with the current definition table (28, 33, 37, and 40). |

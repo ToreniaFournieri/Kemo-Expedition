@@ -240,7 +240,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 5,
     tier: 5,
-    expLevel: 28,
+    expLevel: 27,
     name: 'ウルサンの炎嶺',
     enemyPoolIds: [5],
     bossId: 279,
