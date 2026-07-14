@@ -264,14 +264,14 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability1: [{ id: 'rage', level: 1 }],
     ability30: [{ id: 're_counter', level: 1 }],
     bonuses: [
-      { type: 'ice_offense', value: 25 },
+      { type: 'ice_offense', value: 5 },
       { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Vulpinian: {
     ability1: [{ id: 'momentum', level: 1 }],
     ability30: [{ id: 'cunning', level: 1 }],
-    bonuses: [{ type: 'thunder_offense', value: 25 }],
+    bonuses: [{ type: 'thunder_offense', value: 5 }],
   },
   Felidian: {
     ability1: [{ id: 'first_strike', level: 1 }],
@@ -284,20 +284,20 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   Ursan: {
     ability1: [{ id: 'bulwark', level: 1 }],
     ability30: [{ id: 'cyborgization', level: 1 }],
-    bonuses: [{ type: 'fire_offense', value: 40 }],
+    bonuses: [{ type: 'fire_offense', value: 20 }],
   },
   Procyonian: {
     ability1: [{ id: 'resonance', level: 1 }],
     ability30: [{ id: 'illusion', level: 1 }],
     bonuses: [
-      { type: 'thunder_offense', value: 40 },
+      { type: 'thunder_offense', value: 20 },
       { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Leporian: {
     ability1: [{ id: 'composure', level: 1 }],
     ability30: [{ id: 'magical_counter', level: 1 }],
-    bonuses: [{ type: 'ice_offense', value: 40 }],
+    bonuses: [{ type: 'ice_offense', value: 20 }],
   },
   Cervin: {
     ability1: [{ id: 'focus', level: 1 }],
