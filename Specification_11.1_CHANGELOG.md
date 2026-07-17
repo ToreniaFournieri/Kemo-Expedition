@@ -10,6 +10,43 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.1 | 1 | 2026/07/17 | Prepare v0.8.1 runtime update: bump app version to `v0.8.1` and reset build number to `1`. |
+| 0.8.0 | 37 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 6-8 base enemy levels with the current definition table (29, 34, and 40). |
+| 0.8.0 | 36 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 4-8 base enemy levels with the current definition table (21, 24, 28, 32, and 36). |
+| 0.8.0 | 35 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 3-8 base enemy levels with the current definition table (16, 22, 25, 29, 33, and 37). |
+| 0.8.0 | 34 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 6-8 base enemy levels with the current definition table (30, 34, and 38). |
+| 0.8.0 | 33 | 2026/07/14 | Update runtime Dragon enemy type bonuses (Spec 4.1): align elemental fire offense bonus to `e.fire+25` while preserving Burn, Fire Reflect, fire resistance, and ice weakness behavior. |
+| 0.8.0 | 32 | 2026/07/14 | Update runtime Kemono race enemy type bonuses (Spec 4.1): align Lupinian, Vulpinian, Ursan, Procyonian, and Leporian elemental offense bonuses with the Enemy Master Specification while preserving listed abilities and defense/growth modifiers. |
+| 0.8.0 | 31 | 2026/07/14 | Update runtime Felidian enemy type bonuses (Spec 4.1): align elemental fire offense bonus to `e.fire+5` while preserving first-strike, covering-fire, and fire-defense multiplier behavior. |
+| 0.8.0 | 30 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 4-8 base enemy levels with the current definition table (23, 26, 32, 36, and 40). |
+| 0.8.0 | 29 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 5 base enemy level with the current definition table (27). |
+| 0.8.0 | 28 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 2-4 base enemy levels with the current definition table (10, 17, and 24). |
+| 0.8.0 | 27 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 8 base enemy level with the current definition table (41). |
+| 0.8.0 | 26 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 5-8 base enemy levels with the current definition table (28, 33, 37, and 40). |
+| 0.8.0 | 25 | 2026/07/13 | Update runtime life-drain and physical-range reflect abilities (Spec 1.1/6.1): display life-drain scaling as percentages and apply the specified 5/10/20/35/50% reflection curve with matching received-damage percentages to ranged and melee reflect runtime descriptions and battle resolution. |
+| 0.8.0 | 24 | 2026/07/13 | Update runtime elemental and magical reflect abilities (Spec 1.1/6.1): apply the specified 5/10/20/35/50% reflection curve with matching received-damage percentages in glossary text, ability descriptions, and battle resolution while preserving ranged and melee reflect scaling. |
+| 0.8.0 | 23 | 2026/07/13 | Fix party HP synchronization after equipment changes (Spec 8.2.4): preserve only the damaged HP amount when manual, auto, jewel, or character equipment-related stat changes alter Max HP. |
+| 0.8.0 | 22 | 2026/07/13 | Implement runtime Debug pane Speed of Time Unlimited option (Spec 8.6): persist/select `x∞ Unlimited`, show the header infinity label, and complete AFK-style time side quests immediately on the next runtime checkpoint without applying a fixed speed multiplier. |
+| 0.8.0 | 21 | 2026/07/13 | Fix runtime Expedition tab reward summary disclosure timing (Spec 8.3): hide EXP and auto-sell totals while `state.explore` is still in progress, matching the delayed outcome and item reward display at exploration completion. |
+| 0.8.0 | 20 | 2026/07/13 | Fix runtime Expedition tab update timing (Spec 8.3): keep the headline floor and outcome pinned to the last disclosed expedition while `state.explore` is still in progress, and hide reward details until exploration finishes to prevent spoilers. |
+| 0.8.0 | 19 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 3-8 base enemy levels with the current definition table (16, 23, 29, 34, 38, and 41). |
+| 0.8.0 | 18 | 2026/07/13 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 2-8 base enemy levels with the current definition table (9, 17, 24, 30, 35, 39, and 43). |
+| 0.8.0 | 17 | 2026/07/13 | Update runtime Expedition 2 boss Enemy_ID 171 (Spec 4.2.2): align ロザリア bonus ability `a.life-drain`7 and growth modifier `c.growth_x2.0` while preserving the specified boss class, drops, and Japanese name. |
+| 0.8.0 | 16 | 2026/07/13 | Update runtime Expedition 1 boss Enemy_ID 135 (Spec 4.2.2): align ヴェルグ bonus growth modifier to `c.growth_x1.2` while preserving the specified boss abilities, class, drops, and Japanese name. |
+| 0.8.0 | 15 | 2026/07/13 | Update runtime enemy base status (Spec 4.1.4): align base `d.HP` to `96` and base `d.experience` to `5` for enemy master stat construction. |
+| 0.8.0 | 14 | 2026/07/13 | Update runtime Expedition 7 boss Enemy_ID 351 (Spec 4.2.2): align 宰相ヴァルター bonus ability to `a.melee-reflect`1 while preserving the specified growth modifier and master-table row data. |
+| 0.8.0 | 13 | 2026/07/12 | Update runtime enemy HP level scaling (Spec 4.1.2): compute `x.exp_HP_mult` with base 1.192 and the specified level-25/49 soft-cap penalties. |
+| 0.8.0 | 12 | 2026/07/12 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 4-8 base enemy levels with the current definition table (20, 26, 32, 38, and 44). |
+| 0.8.0 | 11 | 2026/07/12 | Align runtime Expedition Difficulty Offset slider (Spec 8.3): compute the maximum offset as `2 × ceil(min(80, 88 - x.enemy_level) / 2)` and normalize displayed persisted values to even slider steps. |
+| 0.8.0 | 10 | 2026/07/12 | Update runtime Expedition Difficulty Offset slider (Spec 8.3): clamp the maximum offset to `min(80, ceil(88 - x.enemy_level))` and restrict selectable values to +2 increments. |
+| 0.8.0 | 9 | 2026/07/12 | Refine runtime Expedition Difficulty Offset tooltip targeting (Spec 8.3): keep slider dragging focused on changing difficulty and open the floating bubble from the offset bonus label area instead of the slider bar. |
+| 0.8.0 | 8 | 2026/07/12 | Implement runtime Expedition Difficulty Offset reward tickets (Spec 8.3/6.1.6): compute item and super-rare bonus tickets, clamp slider by expedition enemy level up to +40, show the ticket effects in the slider label and floating bubble, and apply the bonuses to enemy reward and super-rare rolls. |
+| 0.8.0 | 7 | 2026/07/12 | Update runtime enemy level scaling (Spec 4.1.2): align HP base, attack soft-cap penalty, and attack amplifier soft-cap penalty with the specified formulas. |
+| 0.8.0 | 6 | 2026/07/12 | Update runtime enemy level scaling (Spec 4.1.2): align HP, attack, attack amplifier, NoA, defense, and defense amplifier multipliers with the specified level-25/49 soft-cap formulas. |
+| 0.8.0 | 5 | 2026/07/12 | Update runtime enemy HP level scaling (Spec 4.1.2): compute `x.exp_HP_mult` with base 1.19 and the specified level-25/49 soft-cap penalties. |
+| 0.8.0 | 4 | 2026/07/12 | Reorder runtime Enemy Edit pane fields (Spec 8.6): move the Enemy level slider to the top of the selection list before Enemy name. |
+| 0.8.0 | 3 | 2026/07/12 | Implement production Speed of Time progress reporting (Spec 8.1.2): route root-path runtime reports through `PROD_DISCORD_WEBHOOK_URL` via Vite's `VITE_PROD_DISCORD_WEBHOOK_URL`, include the env type declaration, and pass the production webhook secret in Pages builds. |
+| 0.8.0 | 2 | 2026/07/12 | Update runtime Party List visibility (Spec 8.2.1): keep the PT selection list visible when only one party is unlocked so the single PT tab is shown. |
 | 0.8.0 | 1 | 2026/07/12 | Prepare v0.8.0 release: bump app version to `v0.8.0` and reset build number to `1`. |
 | 0.7.6 | 56 | 2026/07/12 | Add production environment runtime/deploy support (Spec 9): treat the root path `/` as prod with isolated save storage, Debug mode OFF, x1 time speed, and build the `prod` branch to the Pages root while keeping `/dev/` and `/beta/` artifacts. |
 | 0.7.6 | 55 | 2026/07/12 | Update runtime Expedition 8 enemy master data (Spec 4.2.2): align Enemy_ID 352-387 Japanese display names with the provided table while preserving classes, drops, enemy types, and boss bonus abilities. |

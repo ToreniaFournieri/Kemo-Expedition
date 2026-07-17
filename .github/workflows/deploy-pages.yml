@@ -39,6 +39,7 @@ jobs:
         env:
           VITE_DEV_DISCORD_WEBHOOK_URL: ${{ secrets.DEV_DISCORD_WEBHOOK_URL }}
           VITE_BETA_DISCORD_WEBHOOK_URL: ${{ secrets.BETA_DISCORD_WEBHOOK_URL }}
+          VITE_PROD_DISCORD_WEBHOOK_URL: ${{ secrets.PROD_DISCORD_WEBHOOK_URL }}
           VITE_FEEDBACK_DISCORD_WEBHOOK_URL: ${{ secrets.FEEDBACK_DISCORD_WEBHOOK_URL }}
         run: |
           set -euo pipefail

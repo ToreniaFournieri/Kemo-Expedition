@@ -140,7 +140,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability1: [{ id: 'burn', level: 1 }],
     ability30: [{ id: 'fire_reflect', level: 1 }],
     bonuses: [
-      { type: 'fire_offense', value: 40 },
+      { type: 'fire_offense', value: 25 },
       { type: 'fire_defense_multiplier_xV', value: 1 / 2 },
       { type: 'ice_defense_multiplier_xV', value: 1.3 },
     ],
@@ -264,40 +264,40 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability1: [{ id: 'rage', level: 1 }],
     ability30: [{ id: 're_counter', level: 1 }],
     bonuses: [
-      { type: 'ice_offense', value: 25 },
+      { type: 'ice_offense', value: 5 },
       { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Vulpinian: {
     ability1: [{ id: 'momentum', level: 1 }],
     ability30: [{ id: 'cunning', level: 1 }],
-    bonuses: [{ type: 'thunder_offense', value: 25 }],
+    bonuses: [{ type: 'thunder_offense', value: 5 }],
   },
   Felidian: {
     ability1: [{ id: 'first_strike', level: 1 }],
     ability30: [{ id: 'covering_fire', level: 1 }],
     bonuses: [
-      { type: 'fire_offense', value: 25 },
+      { type: 'fire_offense', value: 5 },
       { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Ursan: {
     ability1: [{ id: 'bulwark', level: 1 }],
     ability30: [{ id: 'cyborgization', level: 1 }],
-    bonuses: [{ type: 'fire_offense', value: 40 }],
+    bonuses: [{ type: 'fire_offense', value: 20 }],
   },
   Procyonian: {
     ability1: [{ id: 'resonance', level: 1 }],
     ability30: [{ id: 'illusion', level: 1 }],
     bonuses: [
-      { type: 'thunder_offense', value: 40 },
+      { type: 'thunder_offense', value: 20 },
       { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Leporian: {
     ability1: [{ id: 'composure', level: 1 }],
     ability30: [{ id: 'magical_counter', level: 1 }],
-    bonuses: [{ type: 'ice_offense', value: 40 }],
+    bonuses: [{ type: 'ice_offense', value: 20 }],
   },
   Cervin: {
     ability1: [{ id: 'focus', level: 1 }],
@@ -509,7 +509,7 @@ const MASTER_BOSS_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   3: [{ id: 'melee_confusion', level: 1 }],
   5: [{ id: 'fire_reflect', level: 1 }],
   6: [{ id: 'soul_reap', level: 3 }],
-  7: [{ id: 'melee_reflect', level: 2 }],
+  7: [{ id: 'melee_reflect', level: 1 }],
   8: [{ id: 'shock', level: 1 }, { id: 'magic_seal', level: 1 }],
 };
 
@@ -531,7 +531,7 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   159: [{ id: 'ranged_reflect', level: 1 }],
   164: [{ id: 'covering_fire', level: 1 }],
   165: [{ id: 'slow', level: 1 }],
-  171: [{ id: 'deflection', level: 2 }, { id: 'life_drain', level: 6 }, { id: 'null_life_drain', level: 1 }],
+  171: [{ id: 'deflection', level: 2 }, { id: 'life_drain', level: 7 }, { id: 'null_life_drain', level: 1 }],
   177: [{ id: 'null_shock', level: 1 }],
   183: [{ id: 'unforgettable', level: 1 }],
   189: [{ id: 're_attack', level: 1 }],
@@ -565,8 +565,8 @@ const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
 
 const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
-  135: [{ type: 'growth_xV', value: 1.5 }],
-  171: [{ type: 'growth_xV', value: 1.5 }],
+  135: [{ type: 'growth_xV', value: 1.2 }],
+  171: [{ type: 'growth_xV', value: 2.0 }],
   207: [{ type: 'growth_xV', value: 1.5 }],
   213: [{ type: 'growth_xV', value: 1.3 }],
   219: [{ type: 'penet', value: 0.4 }],
