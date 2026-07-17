@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.1 | 1 | 2026/07/17 | Prepare v0.8.1 runtime update: bump app version to `v0.8.1` and reset build number to `1`. |
 | 0.8.0 | 37 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 6-8 base enemy levels with the current definition table (29, 34, and 40). |
 | 0.8.0 | 36 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 4-8 base enemy levels with the current definition table (21, 24, 28, 32, and 36). |
 | 0.8.0 | 35 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 3-8 base enemy levels with the current definition table (16, 22, 25, 29, 33, and 37). |
