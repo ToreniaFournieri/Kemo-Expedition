@@ -53,11 +53,11 @@ export function getEnemyMultipliersForLevel(enemyLevel: number): CombatMultiplie
   const n = clampEnemyLevel(enemyLevel);
 
   return {
-    hp: round2(applyEnemyLevelGrowth(n, 1.18, 25, 0.0011, 49, 0.000019)),
-    attack: round2(applyEnemyLevelGrowth(n, 1.09, 25, 0.00055, 49, 0.00003)),
-    attackAmplifier: round2(applyEnemyLevelGrowth(n, 1.03, 25, 0.000165, 49, 0.000017)),
+    hp: round2(applyEnemyLevelGrowth(n, 1.192, 25, 0.0008, 49, 0.000195)),
+    attack: round2(applyEnemyLevelGrowth(n, 1.09, 25, 0.00049, 49, 0.00007)),
+    attackAmplifier: round2(applyEnemyLevelGrowth(n, 1.03, 25, 0.000151, 49, 0.000052)),
     noa: round2(applyEnemyLevelGrowth(n, 1.05, 25, 0.00028, 49, 0.00002)),
-    defense: round2(applyEnemyLevelGrowth(n, 1.11, 25, 0.00058, 49, 0.00004)),
+    defense: round2(applyEnemyLevelGrowth(n, 1.11, 25, 0.00048, 49, 0.00006)),
     defenseAmplifier: 1.0,
   };
 }
@@ -204,7 +204,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 2,
     tier: 2,
-    expLevel: 7,
+    expLevel: 10,
     name: 'ルピニアンの亜寒帯',
     enemyPoolIds: [2],
     bossId: 171,
@@ -216,7 +216,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 3,
     tier: 3,
-    expLevel: 14,
+    expLevel: 16,
     name: 'ヴァルンの海洋',
     enemyPoolIds: [3],
     bossId: 207,
@@ -240,7 +240,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 5,
     tier: 5,
-    expLevel: 28,
+    expLevel: 24,
     name: 'ウルサンの炎嶺',
     enemyPoolIds: [5],
     bossId: 279,
@@ -252,7 +252,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 6,
     tier: 6,
-    expLevel: 35,
+    expLevel: 29,
     name: 'プロキオン巣穴',
     enemyPoolIds: [6],
     bossId: 315,
@@ -264,7 +264,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 7,
     tier: 7,
-    expLevel: 42,
+    expLevel: 34,
     name: 'レポリアンの月宮',
     enemyPoolIds: [7],
     bossId: 351,
@@ -276,7 +276,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 8,
     tier: 8,
-    expLevel: 49,
+    expLevel: 40,
     name: 'セルヴィンの谷',
     enemyPoolIds: [8],
     bossId: 387,

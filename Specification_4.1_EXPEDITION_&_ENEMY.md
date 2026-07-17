@@ -11,13 +11,13 @@
 | `x.exp_id` | `x.item_tier` | `x.enemy_level` | `x.expedition` | short name | item concept |
 |---|-----|-----|-----|-----|-----|
 | 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | C:primitive |
-| 2 | 2 | 7 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  |
-| 3 | 3 | 14 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type |
+| 2 | 2 | 10 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  |
+| 3 | 3 | 16 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type |
 | 4 | 4 | 21 | フェリディ砂漠(Felidian Desert) | 砂 | C:Bone , U:Desert, E:enemy_type B:enemy_type |
-| 5 | 5 | 28 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type |
-| 6 | 6 | 35 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
-| 7 | 7 | 42 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type |
-| 8 | 8 | 49 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
+| 5 | 5 | 24 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type |
+| 6 | 6 | 29 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
+| 7 | 7 | 34 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type |
+| 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
 | 0 | 0 | 0 | 闘技場 (Colosseum) | 闘 | Debug-only area. Displayed only when Colosseum is enabled. |
 
 - Floor of each expedition
@@ -95,14 +95,13 @@
 
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
-  - `x.exp_HP_mult`(n) =
-  (1.18 - max(0, 0.0011*(n-25)) - max(0, 0.000019*(n-49)))^n
+  - `x.exp_HP_mult`(n) = (1.192 - max(0, 0.0008*(n-25)) - max(0, 0.000195*(n-49)))^n
   - `x.exp_atk_mult`(n) =
-  (1.09 - max(0, 0.00055*(n-25)) - max(0, 0.00003*(n-49)))^n
-  - `x.exp_atk_amp_mult`(n) = (1.03 - max(0, 0.000165*(n-25)) - max(0, 0.000017*(n-49)))^n
+  (1.09 - max(0, 0.00049*(n-25)) - max(0, 0.00007*(n-49)))^n
+  - `x.exp_atk_amp_mult`(n) = (1.03 - max(0, 0.000151*(n-25)) - max(0, 0.000052*(n-49)))^n
   - `x.exp_NoA_mult`(n) =
   (1.05 - max(0, 0.00028*(n-25)) - max(0, 0.00002*(n-49)))^n
-  - `x.exp_def_mult`(n)= (1.11 - max(0, 0.00058*(n-25)) - max(0, 0.00004*(n-49)))^n
+  - `x.exp_def_mult`(n)= (1.11 - max(0, 0.00048*(n-25)) - max(0, 0.00006*(n-49)))^n
   - `x.exp_def_amp_mult`(n)= 1.0
 
 - If `m.luna`, add +5 `x.enemy_level` for all enemy 
@@ -175,7 +174,7 @@
 | Aerial | 飛行 | 飛 | `a.flying`1 | `a.free`1 | `c.evasion+0.045`, `c.growth_x0.7`  |
 | Frost | 氷雪 | 雪 | `a.frostbite`1 | `a.ice-reflect`1 | `e.ice+20`, `r.fire_x1.3`, `r.ice_x1/5` |
 | Fruit | 果物 | 果 | `a.bind`1 | `a.execution`1 | `r.thunder_x1.3` |
-| Dragon | 竜 | 竜 | `a.burn`1 | `a.fire-reflect`1 | `e.fire+40`, `r.fire_x1/2`, `r.ice_x1.3`|
+| Dragon | 竜 | 竜 | `a.burn`1 | `a.fire-reflect`1 | `e.fire+25`, `r.fire_x1/2`, `r.ice_x1.3`|
 | Spirit | 精霊 | 霊 | `a.soul-reap`1 | `a.mutual-magic-amplify`1 |  `e.ice+20`, `r.fire_x1.5`, `r.ice_x2/3`,`r.thunder_x4/5`, `c.physical-defense-multiplier_x3/5` |
 | Ghost | 怨霊 | 怨 | `a.ranged-confusion`1 | `a.self-destruct`1 |  `c.evasion+0.020`, `c.physical-defense-multiplier_x3/5`, `r.ice_x1.5` |
 | Undead | 不死 | 屍 | `a.slow`1, `a.oblivion`1 | `a.reanimate`3 | `c.physical-defense-multiplier_x1/2`, `r.fire_x1.5`, `r.ice_x2/3` |
@@ -194,13 +193,13 @@
 
 | Kemono races      | ability1 | ability30　 | c. bonus of enemey     | 
 |------------|-----------|-----------|-------------------|
-| Lupinian   | `a.rage`1 | `a.re-counter`1      | `e.ice+25`, `c.ice-defense-multiplier_x2/3`|
-| Vulpinian  |`a.momentum`1 | `a.cunning`1         | `e.thunder+25` |
-| Felidian   |`a.first-strike`1 | `a.covering-fire`1   | `e.fire+25`, `c.fire-defense-multiplier_x2/3`|
+| Lupinian   | `a.rage`1 | `a.re-counter`1      | `e.ice+5`, `c.ice-defense-multiplier_x2/3`|
+| Vulpinian  |`a.momentum`1 | `a.cunning`1         | `e.thunder+5` |
+| Felidian   |`a.first-strike`1 | `a.covering-fire`1   | `e.fire+5`, `c.fire-defense-multiplier_x2/3`|
 | Caninian   |`a.seeker`1 |  `a.resurrect`1       | `c.growth_x1.1`|
-| Ursan      |`a.bulwark`1 | `a.cyborgization`1   | `e.fire+40` |
-| Procyonian |`a.resonance`1 |  `a.illusion`1          | `e.thunder+40`, `c.thunder-defense-multiplier_x2/3` |
-| Leporian   |`a.composure`1 |  `a.magical-counter`1 | `e.ice+40` |
+| Ursan      |`a.bulwark`1 | `a.cyborgization`1   | `e.fire+20` |
+| Procyonian |`a.resonance`1 |  `a.illusion`1          | `e.thunder+20`, `c.thunder-defense-multiplier_x2/3` |
+| Leporian   |`a.composure`1 |  `a.magical-counter`1 | `e.ice+20` |
 | Cervin     |`a.focus`    | `a.prophecy`1        | |
 | Murid      |`a.stealth`1 |                    | `c.penet+0.10` |
 
@@ -238,7 +237,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 | `d.HP` | `a.ability` | `d.accuracy` | `d.evasion` | `d.ranged_attack` | `d.magical_attack` | `d.melee_attack` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 80 | (none) | 0.00 | 0.00 | 31 | 29 | 40 | x1.0 | x1.0 | x1.0 | 12 | 12 | 3 |
+| 96 | (none) | 0.00 | 0.00 | 31 | 29 | 40 | x1.0 | x1.0 | x1.0 | 12 | 12 | 5 |
 
 - **Class modifier**
 

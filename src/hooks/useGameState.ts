@@ -37,6 +37,7 @@ import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMult
 import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import { getGodProfileForDungeon } from '../data/dropTables';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
+import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import { formatEnemyDefName } from '../game/enemyDisplay';
 import {
   drawFromBag,
@@ -724,9 +725,8 @@ function getExpeditionDepthLimitWithDefault(value: unknown): ExpeditionDepthLimi
   return validDepthLimits.includes(value as ExpeditionDepthLimit) ? (value as ExpeditionDepthLimit) : 'all';
 }
 
-function normalizeExpeditionDifficultyOffset(value: unknown): number {
-  if (typeof value !== 'number' || Number.isNaN(value)) return 0;
-  return Math.max(0, Math.min(30, Math.floor(value)));
+function normalizeExpeditionDifficultyOffset(value: unknown, maxOffset: number = 40): number {
+  return normalizeDifficultyOffset(value, maxOffset);
 }
 
 function normalizeExpeditionDifficultyOffsetByDungeon(value: unknown): Record<number, number> {
@@ -2185,6 +2185,8 @@ function resolveEnemyRewards(
   terrainEffect: TerrainEffectKey | undefined,
   hasExtraRewardRollBlessing: boolean = false,
   auriferousBonusRolls: number = 0,
+  difficultyItemChanceTickets: number = 0,
+  difficultySuperRareChanceTickets: number = 0,
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -2235,6 +2237,7 @@ function resolveEnemyRewards(
       2
       + (hasUnlock ? 1 : 0)
       + (terrainEffect !== 'terrain.gehenna' && hasExtraRewardRollBlessing ? 1 : 0)
+      + difficultyItemChanceTickets
       + auriferousBonusRolls;
     const bonusRollCount = Math.max(0, totalTicketCount - 1);
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
@@ -2252,14 +2255,14 @@ function resolveEnemyRewards(
 
     const normalizedEnhancement = enhVal;
 
-    const minEnhancementForSuperRare = baseRarity === 'common' ? 2 : 1;
-
+    // SpecRef: 6.1.6 | REWARD | Super Rare Chance Ticket
     let srVal = 0;
-    if (normalizedEnhancement >= minEnhancementForSuperRare) {
+    const superRareRollCount = 1 + Math.max(0, difficultySuperRareChanceTickets);
+    for (let srRollIndex = 0; srRollIndex < superRareRollCount; srRollIndex++) {
       bags = refillBagIfEmpty(bags, superRareBagType);
       const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags[superRareBagType]);
       bags = { ...bags, [superRareBagType]: newSRBag };
-      srVal = drawnSrVal;
+      srVal = Math.max(srVal, drawnSrVal);
     }
 
     const newItem: Item = { ...baseItem, enhancement: normalizedEnhancement, superRare: srVal };
@@ -2898,6 +2901,24 @@ function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean 
   return currentHp <= maxHp * 0.3;
 }
 
+function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Party): Party {
+  const previousMaxHp = computePartyStats(previousParty).partyStats.hp;
+  const nextMaxHp = computePartyStats(nextParty).partyStats.hp;
+  if (nextMaxHp <= 0) return nextParty;
+
+  const previousCurrentHp = typeof previousParty.currentHp === 'number'
+    ? previousParty.currentHp
+    : previousMaxHp;
+  const damagedHp = Math.max(0, previousMaxHp - Math.max(0, previousCurrentHp));
+  const nextCurrentHp = Math.max(1, Math.min(nextMaxHp, nextMaxHp - damagedHp));
+
+  return {
+    ...nextParty,
+    // SpecRef: 8.2.4 | Equipment management | HP synchronization after equipment changes
+    currentHp: nextCurrentHp,
+  };
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SELECT_PARTY':
@@ -2941,7 +2962,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_EXPEDITION_DIFFICULTY_OFFSET': {
       const updatedParties = [...state.parties];
       const targetParty = updatedParties[action.partyIndex];
-      const normalizedOffset = normalizeExpeditionDifficultyOffset(action.difficultyOffset);
+      const targetDungeon = getDungeonById(targetParty.selectedDungeonId);
+      const normalizedOffset = normalizeExpeditionDifficultyOffset(action.difficultyOffset, getDifficultyOffsetMax(targetDungeon?.expLevel ?? 88));
       updatedParties[action.partyIndex] = {
         ...targetParty,
         expeditionDifficultyOffset: normalizedOffset,
@@ -3026,9 +3048,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
       let currentHp = Math.max(0, Math.min(persistedCurrentHp, partyStats.hp));
       // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
+      const difficultyOffsetMax = getDifficultyOffsetMax(dungeon.expLevel);
       const effectiveDifficultyOffset = hasDefeatedDungeonBoss(currentParty, dungeon.id)
-        ? normalizeExpeditionDifficultyOffset(currentParty.expeditionDifficultyOffsetByDungeon?.[dungeon.id] ?? currentParty.expeditionDifficultyOffset)
+        ? normalizeExpeditionDifficultyOffset(currentParty.expeditionDifficultyOffsetByDungeon?.[dungeon.id] ?? currentParty.expeditionDifficultyOffset, difficultyOffsetMax)
         : 0;
+      const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(effectiveDifficultyOffset);
+      const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(effectiveDifficultyOffset);
 
       const entries: ExpeditionLogEntry[] = [];
       const rewards: Item[] = [];
@@ -3275,6 +3300,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   terrainEffect,
                   hasExtraRewardRollBlessing,
                   auriferousBonusRolls,
+                  difficultyItemChanceTickets,
+                  difficultySuperRareChanceTickets,
                 );
                 bags = rewardResult.bags;
                 currentInventory = rewardResult.inventory;
@@ -4035,10 +4062,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           newCharacters[charIndex] = equippedCharacter;
 
           const updatedParties = [...state.parties];
-          updatedParties[targetPartyIndex] = {
+          updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
             ...currentParty,
             characters: newCharacters
-          };
+          });
 
           return {
             ...state,
@@ -4056,10 +4083,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = unequippedCharacter;
 
       const updatedParties = [...state.parties];
-      updatedParties[targetPartyIndex] = {
+      updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      };
+      });
 
       return {
         ...state,
@@ -4113,10 +4140,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
 
         const updatedParties = [...state.parties];
-        updatedParties[targetPartyIndex] = {
+        updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
           ...currentParty,
           characters: newCharacters,
-        };
+        });
 
         return {
           ...state,
@@ -4136,10 +4163,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
 
       const updatedParties = [...state.parties];
-      updatedParties[targetPartyIndex] = {
+      updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters,
-      };
+      });
 
       return {
         ...state,
@@ -4227,10 +4254,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = { ...oldChar, ...sanitizedUpdates, equipment: newEquipment };
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = {
+      updatedParties[state.selectedPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      };
+      });
 
       return {
         ...state,

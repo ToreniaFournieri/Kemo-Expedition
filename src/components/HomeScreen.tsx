@@ -27,6 +27,7 @@ import { getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
+import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
@@ -43,7 +44,7 @@ import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRank
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
+import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -2198,7 +2199,7 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   predator_sense: '近接9(開始)タイミングで発動。相手のHPが30％未満〜50％未満なら命中+40。',
   slow: '自身の行動順番に-1して遅くなる。',
   corrode: '通常近接攻撃が3回以上命中した相手に対して、攻撃倍率を x6/7〜x2/7 にする。',
-  life_drain: '通常近接攻撃で相手に与えたダメージの1/1000〜1000/1000を回復する。',
+  life_drain: '通常近接攻撃で相手に与えたダメージの0.1%〜100%を回復する。',
   no_offense: '通常行動をしなくなる（反撃などは行う）。',
   decompose: '近接2タイミングで発動。相手の物理防御力を 6/7〜2/7 にする。',
   swarm: '失ったHP割合に応じて、物理与ダメージが低下し、物理被ダメージが増加する(HP1%につき0.5%)。',
@@ -2967,6 +2968,7 @@ export function HomeScreen({
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
+
   const pendingAfkMsRef = useRef(0);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
@@ -3138,6 +3140,7 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeLabel = useMemo(() => {
+    if (debugSettings.timeSpeed === 'unlimited') return '(∞)';
     const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
     if (!isBonusSpeed) return '';
     const remainingHours = timeSpeedBonusUntilMs === null
@@ -4531,11 +4534,22 @@ export function HomeScreen({
       return;
     }
 
+    const unlimitedTimeSpeed = isUnlimitedTimeSpeed(debugSettings);
     const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
 
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
         afkQuestCarryMsRef.current[partyIndex] = 0;
+        return;
+      }
+
+      if (unlimitedTimeSpeed) {
+        const remainingSeconds = Math.max(0, party.sideQuest.target - party.sideQuest.progress);
+        afkQuestCarryMsRef.current[partyIndex] = 0;
+        if (remainingSeconds > 0) {
+          const simulatedAt = lastCheckpointAtRef.current + elapsedMs;
+          actions.advanceSideQuest(partyIndex, remainingSeconds, simulatedAt);
+        }
         return;
       }
 
@@ -8435,6 +8449,27 @@ function ExpeditionTab({
     left: number;
     maxWidth: number;
   } | null>(null);
+  const [disclosedExpeditionLogs, setDisclosedExpeditionLogs] = useState<Array<Party['lastExpeditionLog'] | null>>(() =>
+    state.parties.map((party) => party.lastExpeditionLog)
+  );
+
+  useEffect(() => {
+    // SpecRef: 8.3 | UI_EXPEDITION | Update Timing
+    // The engine prepares the latest expedition log while state.explore is still
+    // animating. Keep the headline floor/outcome pinned to the last disclosed
+    // log until exploration finishes so the first row does not spoil the result.
+    setDisclosedExpeditionLogs((previousLogs) => {
+      let changed = previousLogs.length !== state.parties.length;
+      const nextLogs = state.parties.map((party, index) => {
+        const cycleState = partyCycles[index]?.state ?? 'idle';
+        if (cycleState === 'explore') return previousLogs[index] ?? null;
+        const nextLog = party.lastExpeditionLog ?? null;
+        if (previousLogs[index] !== nextLog) changed = true;
+        return nextLog;
+      });
+      return changed ? nextLogs : previousLogs;
+    });
+  }, [state.parties, partyCycles]);
   const [activeRingStatusBubble, setActiveRingStatusBubble] = useState<{
     key: string;
     text: string;
@@ -8650,30 +8685,34 @@ function ExpeditionTab({
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
         const isDifficultyOffsetUnlocked = hasDefeatedDungeonBoss(party, party.selectedDungeonId);
+        const difficultyOffsetMax = getDifficultyOffsetMax(selectedDungeon?.expLevel ?? 88);
         const selectedDifficultyOffset = isDifficultyOffsetUnlocked
-          ? (party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset)
+          ? normalizeDifficultyOffset(party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset, difficultyOffsetMax)
           : 0;
+        const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(selectedDifficultyOffset);
+        const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
+        const getDifficultyOffsetBubbleText = (offset: number) => `敵レベル +${formatNumber(offset)}\nアイテム獲得チャンス +${formatNumber(getDifficultyOffsetItemChanceTickets(offset))}\n超レア獲得チャンス +${formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset))}`;
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
+        const disclosedLog = cycle.state === 'explore'
+          ? disclosedExpeditionLogs[partyIndex] ?? null
+          : currentLog;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
-        // SpecRef: 8.3 | UI_EXPEDITION | First row text
+        // SpecRef: 8.3 | UI_EXPEDITION | First row text / Update Timing
         const headlineFloorName = (() => {
-          if (cycle.state === 'explore') return selectedDungeon?.name ?? '-';
-          if (!currentLog) return selectedDungeon?.name ?? '-';
-          const latestEntry = currentLog.entries[currentLog.entries.length - 1];
-          if (!latestEntry?.floor) return currentLog.dungeonName;
-          return getExpeditionFloorConcept(currentLog.dungeonId, latestEntry.floor)
+          if (!disclosedLog) return selectedDungeon?.name ?? '-';
+          const latestEntry = disclosedLog.entries[disclosedLog.entries.length - 1];
+          if (!latestEntry?.floor) return disclosedLog.dungeonName;
+          return getExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
             ?? `${formatNumber(latestEntry.floor)}階層`;
         })();
-        const headlineState = cycle.state === 'explore'
-          ? getPartyCycleStateLabel('explore')
-          : currentLog
-            ? getExpeditionOutcomeLabel(currentLog.finalOutcome)
-            : getPartyCycleStateLabel(cycle.state);
+        const headlineState = disclosedLog
+          ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
+          : getPartyCycleStateLabel(cycle.state);
         const conditionLabel = getConditionLabel(party.condition, true);
 
         const displayedEntries = (() => {
@@ -9074,14 +9113,36 @@ function ExpeditionTab({
                       <input
                         type="range"
                         min={0}
-                        max={30}
-                        step={1}
+                        max={difficultyOffsetMax}
+                        step={2}
                         value={selectedDifficultyOffset}
-                        onChange={(e) => onSetExpeditionDifficultyOffset(partyIndex, Number(e.target.value))}
+                        onChange={(e) => {
+                          const nextOffset = Number(e.target.value);
+                          onSetExpeditionDifficultyOffset(partyIndex, nextOffset);
+                        }}
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
-                        style={getSliderProgressStyle(selectedDifficultyOffset, 0, 30)}
+                        style={getSliderProgressStyle(selectedDifficultyOffset, 0, difficultyOffsetMax)}
                       />
-                      <span className="shrink-0">+{formatNumber(selectedDifficultyOffset)}</span>
+                      <button
+                        type="button"
+                        className="shrink-0 rounded px-1 text-left hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-sub/60"
+                        title={getDifficultyOffsetBubbleText(selectedDifficultyOffset)}
+                        aria-label={getDifficultyOffsetBubbleText(selectedDifficultyOffset)}
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleProgressBubbleToggle(
+                            `${party.id}:difficulty-offset`,
+                            getDifficultyOffsetBubbleText(selectedDifficultyOffset),
+                            event.currentTarget,
+                          );
+                        }}
+                      >
+                        +{formatNumber(selectedDifficultyOffset)} (🪎+{formatNumber(difficultyItemChanceTickets)}, ✨+{formatNumber(difficultySuperRareChanceTickets)})
+                      </button>
                     </div>
                   </div>
                 )}
@@ -9105,14 +9166,14 @@ function ExpeditionTab({
             {currentLog && isLogExpanded && (
               <div className="mx-1 border-t border-gray-200 pt-3">
                 <div className="space-y-2">
-                  {(currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
+                  {cycle.state !== 'explore' && (currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
                     <div className="text-sm text-gray-500">
                       EXP: +{formatNumber(currentLog.totalExperience)}
                       {currentLog.autoSellProfit > 0 && <span> | {formatAutoSellSummary(currentLog.autoSellProfit, currentLog.autoSellMultiplier)}</span>}
                     </div>
                   )}
 
-                  {currentLog.rewards.length > 0 && (
+                  {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
                       <span className="text-gray-500">獲得アイテム: </span>
                       {currentLog.rewards.map((item, i) => {
@@ -13585,6 +13646,7 @@ function SettingTab({
         </button>
         {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
           {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane */}
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
           <label className="space-y-1">
             <div className="text-xs text-gray-600">Terrain effect</div>
@@ -13604,7 +13666,6 @@ function SettingTab({
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           {[0, 1, 2, 3, 4].map((slot) => {
             const slotAbility = colosseumEnemySettings.abilities[slot];
             return (
@@ -13806,6 +13867,7 @@ function SettingTab({
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x5' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x5' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x5 boost</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x20' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x20' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x20 hyper</button>
               <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x100' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x100' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x100 Ultra</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'unlimited' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'unlimited' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x∞ Unlimited</button>
             </div>
           </div>
           <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
