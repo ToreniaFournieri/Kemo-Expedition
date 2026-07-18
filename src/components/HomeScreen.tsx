@@ -64,7 +64,7 @@ import {
 } from '../game/lootGate';
 
 const DEVELOPER_NEWS_ITEMS = [
-  { id: 'v8.1.2-2026-07-18-beta-report-bonus-fix', version: 'v8.1.2', date: '2026/07/18', content: '開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。' },
+  { id: 'v8.1.2-2026-07-18-beta-report-bonus-fix', version: 'v8.1.2', date: '2026/07/18', content: t('home.developerNews.betaReportBonusFix') },
 ] as const;
 
 function resolvePublicAssetPath(path?: string): string | null {
@@ -713,8 +713,8 @@ function EnemyBestiaryBubble({
       : enemy.elementalOffense === 'thunder'
         ? 'thunder'
         : null;
-  const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ') || 'なし';
-  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || 'なし';
+  const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ') || t('common.none');
+  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || t('common.none');
 
   return (
     <FloatingBubblePortal>
@@ -731,27 +731,27 @@ function EnemyBestiaryBubble({
           {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
         <div>ID: {enemy.id}</div>
-        {bubble.enemyLevel !== null && <div>レベル: {formatNumber(bubble.enemyLevel)}</div>}
+        {bubble.enemyLevel !== null && <div>{t('party.status.level')}: {formatNumber(bubble.enemyLevel)}</div>}
         <div>HP: {formatNumber(enemy.hp)}</div>
-        <div>クラス: {classText}</div>
-        <div>タイプ: {enemyTypeText}</div>
-        {hasRangedAttack && <div>遠距離攻撃: {formatNumber(enemy.rangedAttack)} x {formatNumber(enemy.rangedNoA)}回 (x{enemy.rangedAttackAmplifier.toFixed(2)})</div>}
-        {hasMeleeAttack && <div>近接攻撃: {formatNumber(enemy.meleeAttack)} x {formatNumber(enemy.meleeNoA)}回 (x{enemy.meleeAttackAmplifier.toFixed(2)})</div>}
-        {hasPhysicalAttack && <div>物理命中率: 100% (減衰: {decay})</div>}
-        {hasMagicalAttack && <div>魔法攻撃: {formatNumber(enemy.magicalAttack)} x {formatNumber(enemy.magicalNoA)}回 (x{enemy.magicalAttackAmplifier.toFixed(2)})</div>}
-        {hasMagicCasting && <div>詠唱魔法: {getEnemyBestiarySpellName(enemy)}</div>}
-        <div>属性: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : '無'} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
-        <div>物理防御: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
-        <div>魔法防御: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
-        {hasMagicalAttack && <div>魔法命中率: 100% (減衰: {decay})</div>}
-        <div>回避: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
+        <div>{t('home.enemy.class')}: {classText}</div>
+        <div>{t('home.enemy.type')}: {enemyTypeText}</div>
+        {hasRangedAttack && <div>{t('home.enemy.attackLine', { label: t('combat.rangedAttack'), attack: formatNumber(enemy.rangedAttack), count: formatNumber(enemy.rangedNoA), amplifier: enemy.rangedAttackAmplifier.toFixed(2) })}</div>}
+        {hasMeleeAttack && <div>{t('home.enemy.attackLine', { label: t('combat.meleeAttack'), attack: formatNumber(enemy.meleeAttack), count: formatNumber(enemy.meleeNoA), amplifier: enemy.meleeAttackAmplifier.toFixed(2) })}</div>}
+        {hasPhysicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('combat.physicalAccuracy'), decay })}</div>}
+        {hasMagicalAttack && <div>{t('home.enemy.attackLine', { label: t('combat.magicalAttack'), attack: formatNumber(enemy.magicalAttack), count: formatNumber(enemy.magicalNoA), amplifier: enemy.magicalAttackAmplifier.toFixed(2) })}</div>}
+        {hasMagicCasting && <div>{t('home.enemy.castingSpell')}: {getEnemyBestiarySpellName(enemy)}</div>}
+        <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
+        <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.enemy.magicalAccuracy'), decay })}</div>}
+        <div>{t('combat.evasion')}: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
         <div>{renderElementalResistanceInline(enemy.elementalResistance)}</div>
         {(() => {
           const bonusText = getEnemyTypeCBonusText(enemy);
-          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+          return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
         })()}
-        <div>アビリティ: {abilityText}</div>
-        <div className="text-gray-600">ドロップ候補: {dropText}</div>
+        <div>{t('party.status.abilities')}: {abilityText}</div>
+        <div className="text-gray-600">{t('home.enemy.dropCandidates')}: {dropText}</div>
         </div>
       </div>
     </FloatingBubblePortal>
@@ -1096,15 +1096,15 @@ function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null {
 // SpecRef: 5.1.1 | Party State Machine | Notification
 function buildAfkSummaryNotification(stats: AfkSummaryStats): string | null {
   const summaryParts: string[] = [];
-  if (stats.Clear > 0) summaryParts.push(`踏破${formatNumber(stats.Clear)}回`);
-  if (stats.Turned_Back > 0) summaryParts.push(`帰還${formatNumber(stats.Turned_Back)}回`);
-  if (stats.Draw_Retreat > 0) summaryParts.push(`引分${formatNumber(stats.Draw_Retreat)}回`);
-  if (stats.Wounded_Retreat > 0) summaryParts.push(`撤退${formatNumber(stats.Wounded_Retreat)}回`);
-  if (stats.Defeat > 0) summaryParts.push(`敗北${formatNumber(stats.Defeat)}回`);
+  if (stats.Clear > 0) summaryParts.push(t('home.afk.clearCount', { count: formatNumber(stats.Clear) }));
+  if (stats.Turned_Back > 0) summaryParts.push(t('home.afk.returnCount', { count: formatNumber(stats.Turned_Back) }));
+  if (stats.Draw_Retreat > 0) summaryParts.push(t('home.afk.drawCount', { count: formatNumber(stats.Draw_Retreat) }));
+  if (stats.Wounded_Retreat > 0) summaryParts.push(t('home.afk.retreatCount', { count: formatNumber(stats.Wounded_Retreat) }));
+  if (stats.Defeat > 0) summaryParts.push(t('home.afk.defeatCount', { count: formatNumber(stats.Defeat) }));
 
   const financeParts: string[] = [];
-  if (stats.donatedGold > 0) financeParts.push(`寄付金額: ${formatNumber(stats.donatedGold)}G`);
-  if (stats.savedGold > 0) financeParts.push(`貯金額:　${formatNumber(stats.savedGold)}G`);
+  if (stats.donatedGold > 0) financeParts.push(t('home.afk.donatedGold', { gold: formatNumber(stats.donatedGold) }));
+  if (stats.savedGold > 0) financeParts.push(t('home.afk.savedGold', { gold: formatNumber(stats.savedGold) }));
 
   if (summaryParts.length === 0 && financeParts.length === 0) return null;
   return [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
@@ -1135,59 +1135,59 @@ const getRarityFilterNote = (filter: RarityFilter): string => t(`party.rarity.${
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
 
 const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: string }> = [
-  { value: 'all', label: '全て' },
-  { value: 1, label: '名工以上' },
-  { value: 2, label: '魔性以上' },
-  { value: 3, label: '宿った以上' },
-  { value: 4, label: '伝説以上' },
-  { value: 5, label: '恐ろしい以上' },
-  { value: 6, label: '究極' },
-  { value: 'none', label: 'なし' },
+  { value: 'all', label: t('party.rarity.all') },
+  { value: 1, label: t('home.diaryThreshold.masterworkPlus') },
+  { value: 2, label: t('home.diaryThreshold.demonicPlus') },
+  { value: 3, label: t('home.diaryThreshold.hauntedPlus') },
+  { value: 4, label: t('home.diaryThreshold.legendaryPlus') },
+  { value: 5, label: t('home.diaryThreshold.terrifyingPlus') },
+  { value: 6, label: t('home.diaryThreshold.ultimate') },
+  { value: 'none', label: t('common.none') },
 ];
 
 const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold; label: string }> = [
-  { value: 'all', label: '全て' },
-  { value: 2, label: '2良晶以上' },
-  { value: 3, label: '3雅晶以上' },
-  { value: 4, label: '4煌晶以上' },
-  { value: 5, label: '5碧晶以上' },
-  { value: 6, label: '6紫晶以上' },
-  { value: 7, label: '7金晶以上' },
-  { value: 8, label: '8王晶のみ' },
-  { value: 'none', label: 'なし' },
+  { value: 'all', label: t('party.rarity.all') },
+  { value: 2, label: t('home.sideQuestThreshold.rank2Plus') },
+  { value: 3, label: t('home.sideQuestThreshold.rank3Plus') },
+  { value: 4, label: t('home.sideQuestThreshold.rank4Plus') },
+  { value: 5, label: t('home.sideQuestThreshold.rank5Plus') },
+  { value: 6, label: t('home.sideQuestThreshold.rank6Plus') },
+  { value: 7, label: t('home.sideQuestThreshold.rank7Plus') },
+  { value: 8, label: t('home.sideQuestThreshold.rank8Only') },
+  { value: 'none', label: t('common.none') },
 ];
 
 
 const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; label: string }> = [
-  { value: 'defeatOnly', label: '敗北のみ' },
-  { value: 'defeatAndDraw', label: '敗北と引分' },
-  { value: 'none', label: 'なし' },
+  { value: 'defeatOnly', label: t('home.defeatNotification.defeatOnly') },
+  { value: 'defeatAndDraw', label: t('home.defeatNotification.defeatAndDraw') },
+  { value: 'none', label: t('common.none') },
 ];
 
 function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
   // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
-  const beforeBossConcept = getExpeditionFloorConcept(dungeonId, 6) ?? '6階層';
+  const beforeBossConcept = getExpeditionFloorConcept(dungeonId, 6) ?? t('home.floorConcept.fallback', { floor: 6 });
   const floorConceptByFloor: Record<number, string> = {
-    1: getExpeditionFloorConcept(dungeonId, 1) ?? '1階層',
-    2: getExpeditionFloorConcept(dungeonId, 2) ?? '2階層',
-    3: getExpeditionFloorConcept(dungeonId, 3) ?? '3階層',
-    4: getExpeditionFloorConcept(dungeonId, 4) ?? '4階層',
-    5: getExpeditionFloorConcept(dungeonId, 5) ?? '5階層',
+    1: getExpeditionFloorConcept(dungeonId, 1) ?? t('home.floorConcept.fallback', { floor: 1 }),
+    2: getExpeditionFloorConcept(dungeonId, 2) ?? t('home.floorConcept.fallback', { floor: 2 }),
+    3: getExpeditionFloorConcept(dungeonId, 3) ?? t('home.floorConcept.fallback', { floor: 3 }),
+    4: getExpeditionFloorConcept(dungeonId, 4) ?? t('home.floorConcept.fallback', { floor: 4 }),
+    5: getExpeditionFloorConcept(dungeonId, 5) ?? t('home.floorConcept.fallback', { floor: 5 }),
   };
 
   return [
-    { value: '1f-3', label: `1F-3 ${floorConceptByFloor[1]}まで` },
-    { value: '1f-4', label: `1F-4 ${floorConceptByFloor[1]}まで` },
-    { value: '2f-3', label: `2F-3 ${floorConceptByFloor[2]}まで` },
-    { value: '2f-4', label: `2F-4 ${floorConceptByFloor[2]}まで` },
-    { value: '3f-3', label: `3F-3 ${floorConceptByFloor[3]}まで` },
-    { value: '3f-4', label: `3F-4 ${floorConceptByFloor[3]}まで` },
-    { value: '4f-3', label: `4F-3 ${floorConceptByFloor[4]}まで` },
-    { value: '4f-4', label: `4F-4 ${floorConceptByFloor[4]}まで` },
-    { value: '5f-3', label: `5F-3 ${floorConceptByFloor[5]}まで` },
-    { value: '5f-4', label: `5F-4 ${floorConceptByFloor[5]}まで` },
-    { value: 'beforeBoss', label: `${beforeBossConcept}ボス直前まで` },
-    { value: 'all', label: '全て' },
+    { value: '1f-3', label: t('home.depth.untilFloor', { marker: '1F-3', concept: floorConceptByFloor[1] }) },
+    { value: '1f-4', label: t('home.depth.untilFloor', { marker: '1F-4', concept: floorConceptByFloor[1] }) },
+    { value: '2f-3', label: t('home.depth.untilFloor', { marker: '2F-3', concept: floorConceptByFloor[2] }) },
+    { value: '2f-4', label: t('home.depth.untilFloor', { marker: '2F-4', concept: floorConceptByFloor[2] }) },
+    { value: '3f-3', label: t('home.depth.untilFloor', { marker: '3F-3', concept: floorConceptByFloor[3] }) },
+    { value: '3f-4', label: t('home.depth.untilFloor', { marker: '3F-4', concept: floorConceptByFloor[3] }) },
+    { value: '4f-3', label: t('home.depth.untilFloor', { marker: '4F-3', concept: floorConceptByFloor[4] }) },
+    { value: '4f-4', label: t('home.depth.untilFloor', { marker: '4F-4', concept: floorConceptByFloor[4] }) },
+    { value: '5f-3', label: t('home.depth.untilFloor', { marker: '5F-3', concept: floorConceptByFloor[5] }) },
+    { value: '5f-4', label: t('home.depth.untilFloor', { marker: '5F-4', concept: floorConceptByFloor[5] }) },
+    { value: 'beforeBoss', label: t('home.depth.beforeBoss', { concept: beforeBossConcept }) },
+    { value: 'all', label: t('party.rarity.all') },
   ];
 }
 
@@ -1304,9 +1304,9 @@ function formatNumber(value: number): string {
 
 function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier?: number): string {
   if (autoSellMultiplier && autoSellMultiplier > 1) {
-    return `自動売却額(x${autoSellMultiplier.toFixed(1)}): ${formatNumber(autoSellProfit)}G`;
+    return t('home.autoSell.withMultiplier', { multiplier: autoSellMultiplier.toFixed(1), gold: formatNumber(autoSellProfit) });
   }
-  return `自動売却額: ${formatNumber(autoSellProfit)}G`;
+  return t('home.autoSell.basic', { gold: formatNumber(autoSellProfit) });
 }
 
 function getItemRarityById(itemId: number): ItemRarity {
@@ -1371,7 +1371,7 @@ function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
   if (entry.rewardItems && entry.rewardItems.length > 0) {
     return (
       <>
-        <span className="text-black">獲得:</span>
+        <span className="text-black">{t('home.reward.acquired')}:</span>
         {entry.rewardItems.map((item, index) => {
           const rarity = getItemRarityById(item.id);
           const isSuperRare = item.superRare > 0;
@@ -1390,7 +1390,7 @@ function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
 
   return (
     <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${getRewardFontWeightClass(entry.rewardRarity ?? 'common', entry.rewardIsSuperRare ?? false)}`}>
-      獲得:{entry.reward}
+      {t('home.reward.acquired')}: {entry.reward}
     </span>
   );
 }
@@ -1403,18 +1403,18 @@ function getDungeonEntryGateState(
   gateText: string;
 } {
   if (dungeon.id === 1) {
-    return { locked: false, gateText: 'なし（最初の探検地）' };
+    return { locked: false, gateText: t('home.gate.firstDungeonNone') };
   }
 
   const required = ENTRY_GATE_REQUIRED;
   const collected = party.defeatedBossExpeditions?.[dungeon.id - 1] ? 1 : 0;
   const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
 
-  const gateProgressText = required === 1 ? 'ボス撃破' : `ボス撃破 ${collected}/${required}`;
+  const gateProgressText = required === 1 ? t('home.gate.bossDefeated') : t('home.gate.bossProgress', { collected, required });
 
   return {
     locked: !unlocked,
-    gateText: `${gateProgressText}で${dungeon.name}開放`,
+    gateText: t('home.gate.unlockDungeon', { progress: gateProgressText, dungeon: dungeon.name }),
   };
 }
 
@@ -1430,7 +1430,7 @@ function getGodBattleLabel(dungeon: Dungeon): string {
   // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
   const godProfile = getGodProfileForDungeon(dungeon.id, dungeon.name);
   const godShortName = godProfile?.displayName.split(' ')[0]?.trim();
-  return godShortName ? `神魔${godShortName}戦` : '神魔戦';
+  return godShortName ? t('home.godsBattle.named', { god: godShortName }) : t('party.expedition.godsBattle');
 }
 
 function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDurationScale: number): number {
@@ -1496,53 +1496,53 @@ function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedN
 
   const progressByType: Record<string, { text: string; current?: string }> = {
     'q.squander': {
-      text: `宴会で${formatNumber(displayTarget)}G浪費する`,
+      text: t('home.sideQuest.squander', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
     'q.sleeping': {
-      text: `${formatNumber(displayTarget)}回寝る`,
+      text: t('home.sideQuest.sleeping', { count: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}回`,
     },
     'q.exercise': {
-      text: `${formatNumber(displayTarget)}分歩く`,
+      text: t('home.sideQuest.exercise', { minutes: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}分`,
     },
     'q.embezzlement': {
-      text: `${formatNumber(displayTarget)}G着服する`,
+      text: t('home.sideQuest.embezzlement', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
     'q.donation': {
-      text: `${formatNumber(displayTarget)}G寄付する`,
+      text: t('home.sideQuest.donation', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
     'q.healing': {
-      text: `${formatNumber(displayTarget)}分治療を受ける`,
+      text: t('home.sideQuest.healing', { minutes: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}分`,
     },
     'q.AFK': {
-      text: `${formatNumber(displayTarget)}分神から見放されている`,
+      text: t('home.sideQuest.afk', { minutes: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}分`,
     },
     'q.treasure-super-rare': {
-      text: '超レアを獲得する',
+      text: t('home.sideQuest.treasureSuperRare'),
     },
     'q.treasure-boss-rare': {
-      text: `ボスレアを${formatNumber(displayTarget)}個獲得する`,
+      text: t('home.sideQuest.treasureBossRare', { count: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}個`,
     },
     'q.poor-kid': {
-      text: `${formatNumber(displayTarget)}回アイテム獲得空振り`,
+      text: t('home.sideQuest.poorKid', { count: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}回`,
     },
     'q.consecutive-wins': {
-      text: `${formatNumber(displayTarget)}連続して踏破する`,
+      text: t('home.sideQuest.consecutiveWins', { streak: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}連`,
     },
     'q.losers': {
-      text: '敗北する',
+      text: t('home.sideQuest.losers'),
     },
     'q.savings': {
-      text: `${formatNumber(displayTarget)}G貯金する`,
+      text: t('home.sideQuest.savings', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
   };
@@ -1560,8 +1560,8 @@ function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedN
   const remainingLabel = !hasDeadline
     ? null
     : remainingMs >= (60 * 60 * 1000)
-      ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
-      : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
+      ? t('home.remaining.hours', { count: formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000))) })
+      : t('home.remaining.minutes', { count: formatNumber(Math.ceil(remainingMs / (60 * 1000))) });
   const progressParts = [`${percent}%`];
   if (display.current) progressParts.push(display.current);
   if (remainingLabel) progressParts.push(remainingLabel);
@@ -1596,8 +1596,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
       const normalizedCollected = Math.max(0, Math.min(collected, safeRequired));
       pushUniqueProgressItem({
         key: `elite-gate:${currentDungeon.id}:${floor.floorNumber}`,
-        compactText: `🗃️${formatNumber(collected)}/${formatNumber(required)} ${floor.floorNumber}F-4解放`,
-        bubbleText: `アンコモンアイテム ${formatNumber(collected)}/${formatNumber(required)}で ${floor.floorNumber}F-4解放`,
+        compactText: t('home.progress.eliteCompact', { collected: formatNumber(collected), required: formatNumber(required), floor: floor.floorNumber }),
+        bubbleText: t('home.progress.eliteBubble', { collected: formatNumber(collected), required: formatNumber(required), floor: floor.floorNumber }),
         progressRatio: normalizedCollected / safeRequired,
       });
       break;
@@ -1613,8 +1613,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
       if (!entryUnlocked) {
         pushUniqueProgressItem({
           key: `entry-gate:${nextDungeon.id}`,
-          compactText: '🗺️ボス撃破せよ',
-          bubbleText: `ボス撃破 で${nextDungeon.name} 開放`,
+          compactText: t('home.progress.defeatBossCompact'),
+          bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: nextDungeon.name }),
           progressRatio: null,
         });
       }
@@ -1630,15 +1630,15 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
         const normalizedBossRareCollected = Math.max(0, Math.min(bossRareCollected, safeGodsRequired));
         pushUniqueProgressItem({
           key: `god-gate:${currentDungeon.id}`,
-          compactText: `🗃️${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} 神魔解放`,
-          bubbleText: `ボスレアアイテム ${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} で${getGodBattleLabel(currentDungeon)}`,
+          compactText: t('home.progress.godCompact', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired) }),
+          bubbleText: t('home.progress.godBubble', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired), label: getGodBattleLabel(currentDungeon) }),
           progressRatio: normalizedBossRareCollected / safeGodsRequired,
         });
       } else {
         pushUniqueProgressItem({
           key: `god-entry:${currentDungeon.id}`,
-          compactText: '🗺️ボス撃破せよ',
-          bubbleText: `ボス撃破 で${getGodBattleLabel(currentDungeon)} 開放`,
+          compactText: t('home.progress.defeatBossCompact'),
+          bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
           progressRatio: null,
         });
       }
@@ -12663,7 +12663,7 @@ function SettingTab({
   const parseAbilityTokens = (abilities: Array<{ id: string; level: number }>) => {
     // SpecRef: 4.1.2 | Enemy | x.ability
     if (abilities.length === 0) {
-      return [{ key: 'none', label: 'なし', abilityId: '', level: 0, isMissing: true }];
+      return [{ key: 'none', label: t('common.none'), abilityId: '', level: 0, isMissing: true }];
     }
 
     const highestAbilityLevelById = new Map<string, number>();
@@ -13427,7 +13427,7 @@ function SettingTab({
                         <div>{renderEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
                         {(() => {
                           const bonusText = getEnemyTypeCBonusText(godRuntimeEnemy);
-                          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                          return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                         })()}
                       </>
                     )}
@@ -13514,7 +13514,7 @@ function SettingTab({
                     </div>
                     {(() => {
                       const bonusText = getEnemyTypeCBonusText(colosseumEnemy);
-                      return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                      return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                     })()}
                     <div className="flex items-start gap-1">
                       <div>アビリティ:</div>
@@ -13656,7 +13656,7 @@ function SettingTab({
                         <div>{renderEnemyElementalResistanceLine(displayEnemy)}</div>
                         {(() => {
                           const bonusText = getEnemyTypeCBonusText(displayEnemy);
-                          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                          return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                         })()}
                         <div className="flex items-start gap-1">
                           <div>アビリティ:</div>
@@ -13786,7 +13786,7 @@ function SettingTab({
                 <div className="text-gray-500">{title.value}.</div>
                 <div>
                   <div className="font-medium text-gray-700">{title.title}</div>
-                  <div className="text-xs text-sub">{uniqueBonus || 'なし'}</div>
+                  <div className="text-xs text-sub">{uniqueBonus || t('common.none')}</div>
                 </div>
               </div>
             );

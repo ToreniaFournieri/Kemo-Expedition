@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 13 | 2026/07/18 | Route HomeScreen developer news, enemy bubble labels, AFK summary, auto-sell, reward, and gate strings through Japanese/English i18n templates. |
 | 0.8.2 | 12 | 2026/07/18 | Replace unlock and side quest progress notification fragments with Japanese/English i18n templates so each language can format complete messages naturally. |
 | 0.8.2 | 11 | 2026/07/18 | Move the save/load failure warning message to the Japanese/English i18n dictionaries and resolve it after runtime language initialization. |
 | 0.8.2 | 10 | 2026/07/18 | Internationalize runtime side quest short labels by storing stable translation keys and resolving Japanese/English labels at assignment, display, and notification sites. |
