@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 8 | 2026/07/18 | Centralize additional runtime Japanese strings in magic profiles and expedition log effects through Japanese/English i18n lookup keys. |
 | 0.8.2 | 7 | 2026/07/18 | Translate English battle flavor i18n entries from Japanese into English while preserving placeholders and runtime battle narration keys. |
 | 0.8.2 | 6 | 2026/07/18 | Route Expedition tab cycle/outcome/battle-log chrome and Specification 6.2 battle flavor text pools through runtime Japanese/English i18n keys. |
 | 0.8.2 | 5 | 2026/07/18 | Route Party overview and selected member status labels through Japanese/English i18n keys, including deity rank/effect, edit controls, base stats, combat labels, defenses, bonuses, and abilities. |
