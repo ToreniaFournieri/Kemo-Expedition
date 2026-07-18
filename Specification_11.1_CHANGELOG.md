@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 50 | 2026/07/18 | Localize muted battle-log terrain start text, terrain descriptions, resonance bonus notes, and hit-attempt summaries so gray battle log details follow the active language. |
 | 0.8.2 | 49 | 2026/07/18 | Remove duplicated Japanese ability labels and descriptions from bonus ability glossary master data so localized ability text has a single i18n source of truth. |
 | 0.8.2 | 48 | 2026/07/18 | Route bonus ability glossary names and descriptions through Japanese/English i18n keys so English mode displays localized ability help text. |
 | 0.8.2 | 47 | 2026/07/18 | Route normal battle attack, spell-cast, and defensive reaction action logs through Japanese/English i18n templates so English battle logs no longer show Japanese attack text. |
