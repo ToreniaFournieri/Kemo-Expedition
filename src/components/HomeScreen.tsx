@@ -24,7 +24,7 @@ import {
   type BonusAbilityGlossarySubcategoryId,
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
-import { getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
+import { getItemCoreConceptValue, getItemDisplayName, getLocalizedItemName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
@@ -714,7 +714,7 @@ function EnemyBestiaryBubble({
       : enemy.elementalOffense === 'thunder'
         ? 'thunder'
         : null;
-  const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ') || t('common.none');
+  const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ') || t('common.none');
   const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || t('common.none');
 
   return (
@@ -9803,7 +9803,7 @@ function ShopTab({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className={`flex items-center gap-2 text-sm ${entry.rarityClass}`}>
-                  <span className="truncate">?{entry.item.name}</span>
+                  <span className="truncate">{t('common.unknown')} {getLocalizedItemName(entry.item)}</span>
                   <span className={`shrink-0 text-xs ${entry.isSoldOut ? 'text-gray-400' : 'text-gray-500'}`}>
                     {formatNumber(entry.price)}G
                   </span>
@@ -9928,7 +9928,7 @@ function DebugStoreTab({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm text-gray-900">
-                  <span className="truncate">{item.name}</span>
+                  <span className="truncate">{getLocalizedItemName(item)}</span>
                   <span className="shrink-0 text-xs text-gray-500">{formatNumber(DEBUG_STORE_PRICE)}G</span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -13141,7 +13141,7 @@ function SettingTab({
                   className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
                 >
                   <span>
-                    <span className="text-black">{item.name}</span>
+                    <span className="text-black">{getLocalizedItemName(item)}</span>
                     <span className="text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(baseItem))}</span>
                   </span>
                   <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
@@ -13666,7 +13666,7 @@ function SettingTab({
                             ))}
                           </div>
                         </div>
-                        <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ')}</div>
+                        <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ')}</div>
                         {(() => {
                           const battleStats = getBestiaryEnemyBattleStats(displayEnemy.id);
                           return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
