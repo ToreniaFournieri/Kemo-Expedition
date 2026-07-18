@@ -3761,6 +3761,18 @@ const ja = {
   'party.categoryName.arrow': '矢',
   'party.categoryName.unknown': '不明',
 
+  'home.progressReport.statusHeader.partyPosition': 'PT-列',
+  'home.progressReport.statusHeader.nameAndBuild': '名前, ビルド',
+  'home.progressReport.statusHeader.physicalDefense': '物防',
+  'home.progressReport.statusHeader.magicalDefense': '魔防',
+  'home.progressReport.statusHeader.evasionAndPenetration': '回避,貫通',
+  'home.progressReport.statusHeader.attack': '攻撃',
+  'home.progressReport.statusHeader.elementalDefense': '属防',
+  'home.progressReport.statusHeader.abilities': 'アビリティ',
+  'home.progressReport.attackSummary.ranged': '遠{attack}. {multiplier}, {count}回',
+  'home.progressReport.attackSummary.magic': '魔{attack}. {multiplier}, {count}回',
+  'home.progressReport.attackSummary.melee': '近{attack}. {multiplier}, {count}回',
+
 } as const;
 
 export default ja;

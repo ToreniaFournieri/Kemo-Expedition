@@ -3145,7 +3145,16 @@ export function HomeScreen({
     value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   );
   function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
-    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const statusHeaders = [
+      t('home.progressReport.statusHeader.partyPosition'),
+      t('home.progressReport.statusHeader.nameAndBuild'),
+      t('home.progressReport.statusHeader.physicalDefense'),
+      t('home.progressReport.statusHeader.magicalDefense'),
+      t('home.progressReport.statusHeader.evasionAndPenetration'),
+      t('home.progressReport.statusHeader.attack'),
+      t('home.progressReport.statusHeader.elementalDefense'),
+      t('home.progressReport.statusHeader.abilities'),
+    ];
     const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
     const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     return new File([html], fileName, { type: 'text/html' });
@@ -3223,13 +3232,25 @@ export function HomeScreen({
         const attackParts: string[] = [];
         const combatBonuses = getCharacterCombatBonusLevels(member);
         if (combatBonuses.ranged) {
-          attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
+          attackParts.push(t('home.progressReport.attackSummary.ranged', {
+            attack: formatNumber(computed.rangedAttack),
+            multiplier: formatPercent(computed.physicalOffenseMultiplier),
+            count: formatNumber(computed.rangedNoA),
+          }));
         }
         if (combatBonuses.magic) {
-          attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
+          attackParts.push(t('home.progressReport.attackSummary.magic', {
+            attack: formatNumber(computed.magicalAttack),
+            multiplier: formatPercent(computed.magicalOffenseMultiplier),
+            count: formatNumber(computed.magicalNoA),
+          }));
         }
         if (combatBonuses.melee) {
-          attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.meleeNoA)}回`);
+          attackParts.push(t('home.progressReport.attackSummary.melee', {
+            attack: formatNumber(computed.meleeAttack),
+            multiplier: formatPercent(computed.physicalOffenseMultiplier),
+            count: formatNumber(computed.meleeNoA),
+          }));
         }
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const elementalOffense = computed.elementalOffense === 'none'
