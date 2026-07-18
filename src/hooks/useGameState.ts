@@ -112,7 +112,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { Language, normalizeLanguage } from '../i18n';
+import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage } from '../i18n';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -1762,11 +1762,21 @@ type InitialStateResult = {
 };
 
 function createInitialState(): InitialStateResult {
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Language URL parameter
+  const initialLanguage = resolveInitialLanguage();
+  persistLanguage(initialLanguage);
   // Try to load saved state first
   const savedStateResult = loadSavedState();
   if (savedStateResult.state) {
     // Update build number in case it changed
-    return { state: { ...savedStateResult.state, buildNumber: BUILD_NUMBER }, loadErrorLog: null };
+    return {
+      state: {
+        ...savedStateResult.state,
+        buildNumber: BUILD_NUMBER,
+        global: { ...savedStateResult.state.global, language: initialLanguage },
+      },
+      loadErrorLog: null,
+    };
   }
 
   return {
@@ -1792,7 +1802,7 @@ function createInitialState(): InitialStateResult {
       shopIntimacyLastDecayAt: Date.now(),
       enemyBattleStats: {},
       readDeveloperNewsItemIds: [],
-      language: 'ja',
+      language: initialLanguage,
     },
     parties: [createInitialParty()],
     selectedPartyIndex: 0,
@@ -2930,9 +2940,13 @@ function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Par
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    case 'SET_LANGUAGE':
+    case 'SET_LANGUAGE': {
+      // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
       // SpecRef: 5.1.4 | Save and load | Persisted user settings
-      return { ...state, global: { ...state.global, language: normalizeLanguage(action.language) } };
+      const language = normalizeLanguage(action.language);
+      persistLanguage(language);
+      return { ...state, global: { ...state.global, language } };
+    }
 
     case 'SELECT_PARTY':
       return { ...state, selectedPartyIndex: action.partyIndex };
