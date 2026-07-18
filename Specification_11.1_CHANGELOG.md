@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 71 | 2026/07/18 | Route the remaining Japanese runtime literals in the first 6,000 HomeScreen lines through meaningful shop fallback and attack-multiplier i18n keys. |
 | 0.8.2 | 70 | 2026/07/18 | Route the remaining Japanese runtime literals in the first 4,000 HomeScreen lines through meaningful progress-report header and attack-summary i18n keys. |
 | 0.8.2 | 69 | 2026/07/18 | Route all Japanese runtime literals in the first 3,000 HomeScreen lines through meaningful i18n keys, including bonus, subcategory, lineage, predisposition, and equipment-category labels. |
 | 0.8.2 | 68 | 2026/07/18 | Translate English i18n default generated character names from Japanese script into English-readable names. |
