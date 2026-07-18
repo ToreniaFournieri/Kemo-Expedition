@@ -38,41 +38,9 @@ export const ENEMY_TYPE_SHORT_NAME_KEYS: Record<string, string> = {
   Murid: 'masterData.enemyType.Murid.short',
 };
 
-export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
-  Beast: '猛',
-  Slime_Colony: '粘',
-  Plant_Fungal: '植',
-  Insect_Swarm: '虫',
-  Aerial: '飛',
-  Frost: '雪',
-  Fruit: '果',
-  Dragon: '竜',
-  Voidspawn: '虚',
-  Spirit: '霊',
-  Ghost: '怨',
-  Undead: '屍',
-  Golem: '造',
-  Shadowfang: '影',
-  Mech: '機',
-  Chiropteran: '蝙',
-  Chimera: '合',
-  Titan: '巨',
-  Pony: '馬',
-  Origami: '折',
-  Jinma: '神',
-  Orcinian: '鯱',
-  Kemono: 'ケ',
-  Caninian: 'ケイナイアン',
-  Lupinian: 'ルピニアン',
-  Vulpinian: 'ヴァルピニアン',
-  Ursan: 'ウルサン',
-  Felidian: 'フェリディアン',
-  Mustelid: 'マステリド',
-  Leporian: 'レポリアン',
-  Cervin: 'セルヴィン',
-  Procyonian: 'プロキオニアン',
-  Murid: 'ミュリッド',
-};
+export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = Object.fromEntries(
+  Object.keys(ENEMY_TYPE_SHORT_NAME_KEYS).map((enemyType) => [enemyType, t(ENEMY_TYPE_SHORT_NAME_KEYS[enemyType])]),
+);
 
 export function getEnemyTypeShortName(enemyType: string): string {
   return t(ENEMY_TYPE_SHORT_NAME_KEYS[enemyType] ?? enemyType);
