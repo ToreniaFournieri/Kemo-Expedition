@@ -398,10 +398,10 @@ function getUnlockDiaryLog(
     });
 
   const unlockHeadline = unlockSourceEntry?.enemyName.includes('(BOSS)')
-    ? `${log.dungeonName}踏破`
-    : '解禁条件達成';
+    ? t('unlock.condition.dungeonCleared', { dungeon: log.dungeonName })
+    : t('unlock.condition.met');
 
-  const unlockPartyLabel = unlockedPartySlot ? `PT${unlockedPartySlot}解放` : '';
+  const unlockPartyLabel = unlockedPartySlot ? t('unlock.partySlot', { slot: unlockedPartySlot }) : '';
   const unlockDetail = [unlockPartyLabel].filter(Boolean).join('、');
 
   return {
@@ -423,24 +423,25 @@ function getCycleDurationScale(): number {
 function formatSideQuestShortText(type: string, shortTextKey: string, target: number): string {
   const shortText = t(shortTextKey);
   const formatNumber = (value: number) => Math.floor(value).toLocaleString('ja-JP');
-  const valueByType: Partial<Record<string, string>> = {
-    'q.squander': `${formatNumber(target)}G`,
-    'q.sleeping': `${formatNumber(target)}回`,
-    'q.exercise': `${formatNumber(target)}分`,
-    'q.embezzlement': `${formatNumber(target)}G`,
-    'q.donation': `${formatNumber(target)}G`,
-    'q.healing': `${formatNumber(target)}分`,
-    'q.AFK': `${formatNumber(target)}分`,
+  const value = formatNumber(target);
+  const targetTemplateByType: Partial<Record<string, string>> = {
+    'q.squander': 'sideQuest.target.gold',
+    'q.sleeping': 'sideQuest.target.count',
+    'q.exercise': 'sideQuest.target.minutes',
+    'q.embezzlement': 'sideQuest.target.gold',
+    'q.donation': 'sideQuest.target.gold',
+    'q.healing': 'sideQuest.target.minutes',
+    'q.AFK': 'sideQuest.target.minutes',
     'q.treasure-super-rare': '',
-    'q.treasure-boss-rare': `${formatNumber(target)}個`,
-    'q.poor-kid': `${formatNumber(target)}回`,
-    'q.consecutive-wins': `${formatNumber(target)}連`,
+    'q.treasure-boss-rare': 'sideQuest.target.items',
+    'q.poor-kid': 'sideQuest.target.count',
+    'q.consecutive-wins': 'sideQuest.target.streak',
     'q.losers': '',
-    'q.savings': `${formatNumber(target)}G`,
+    'q.savings': 'sideQuest.target.gold',
   };
-  const suffix = valueByType[type];
-  if (suffix === '') return shortText;
-  return `${shortText}(${suffix ?? formatNumber(target)})`;
+  const targetTemplateKey = targetTemplateByType[type];
+  if (targetTemplateKey === '') return shortText;
+  return t(targetTemplateKey ?? 'sideQuest.target.count', { label: shortText, value });
 }
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
