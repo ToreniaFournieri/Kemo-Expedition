@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 11 | 2026/07/18 | Move the save/load failure warning message to the Japanese/English i18n dictionaries and resolve it after runtime language initialization. |
 | 0.8.2 | 10 | 2026/07/18 | Internationalize runtime side quest short labels by storing stable translation keys and resolving Japanese/English labels at assignment, display, and notification sites. |
 | 0.8.2 | 9 | 2026/07/18 | Move battle and environment narration flavor pools into grouped i18n keys and route runtime random selection through translation lookups. |
 | 0.8.2 | 8 | 2026/07/18 | Centralize additional runtime Japanese strings in magic profiles and expedition log effects through Japanese/English i18n lookup keys. |
