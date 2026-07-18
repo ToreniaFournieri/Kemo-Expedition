@@ -203,7 +203,7 @@ const renderElementalResistanceInline = (
   multipliers: Record<'fire' | 'ice' | 'thunder', number>
 ): JSX.Element => (
   <>
-    属性耐性:{' '}
+    {t('home.elementalResistance.label')}: {' '}
     {ELEMENTAL_RESISTANCE_ORDER.map(({ key, icon }, index) => (
       <Fragment key={key}>
         {index > 0 ? ',' : ''}
@@ -243,7 +243,7 @@ function getSliderProgressStyle(value: number, min: number, max: number): CSSPro
 
 const TERRAIN_EFFECT_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects');
 const TERRAIN_EFFECT_OPTIONS = [
-  { key: 'none', label: 'none', description: '地形効果なし' },
+  { key: 'none', label: 'none', description: t('home.terrainEffect.noneDescription') },
   ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []),
 ];
 const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, string>>((acc, entry) => {
@@ -265,10 +265,10 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
 };
 
 const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
-  LONG: '遠距離',
-  MID: '魔法',
-  CLOSE: '近接',
-  END: '終了',
+  LONG: t('combat.ranged'),
+  MID: t('combat.magic'),
+  CLOSE: t('combat.melee'),
+  END: t('common.end'),
 };
 
 function formatBonusAbilityPhaseDisplay(value: string): string {
@@ -3241,7 +3241,7 @@ export function HomeScreen({
           : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
         const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
-        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
         return [
           `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
@@ -5541,21 +5541,21 @@ export function HomeScreen({
                 type="button"
                 onClick={async () => {
                   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane(デバッグ)
-                  const confirmed = window.confirm('現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）');
+                  const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
                   if (!confirmed) return;
                   try {
                     const isReported = await reportProgressForSpeedOfTime();
                     if (!isReported) {
-                      window.alert('進捗報告先が未設定のため、速度ボーナスは適用されませんでした。');
+                      window.alert(t('home.debug.reportProgressUnset'));
                       return;
                     }
                     const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
                     setTimeSpeedBonusUntilMs(bonusUntilMs);
                     updateDebugSettings({ timeSpeed: 'x1_2' });
-                    actions.addNotification('進捗報告に成功しました。1日間、ゲーム進行速度が1.2倍になります。', 'normal', 'stat', true);
+                    actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
                   } catch (error) {
                     console.error('Failed to report progress for Speed of Time:', error);
-                    window.alert('進捗報告に失敗したため、速度ボーナスは適用されませんでした。');
+                    window.alert(t('home.debug.reportProgressFailure'));
                   }
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
@@ -5852,7 +5852,7 @@ function PartyTab({
 
   const confirmPartyCharacterReorder = useCallback(() => {
     // SpecRef: 8.2.2 | Party member details | Party member order swap confirmation
-    return window.confirm('選択したパーティメンバーの順番を入れ替えますか？');
+    return window.confirm(t('home.party.reorderConfirm'));
   }, []);
 
   const reorderCharacterWithConfirmation = useCallback((fromIndex: number, toIndex: number) => {
@@ -6855,7 +6855,7 @@ function PartyTab({
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
                   )}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
-                    <div>{mcShort}({isMaster ? '師' : scShort})</div>
+                    <div>{mcShort}({isMaster ? t('party.class.masterShort') : scShort})</div>
                     <div>{lineageShort}/{predispositionShort}</div>
                   </div>
                 </div>
@@ -6956,7 +6956,7 @@ function PartyTab({
                             key={gender}
                             type="button"
                             disabled={isDisabled}
-                            title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                            title={isBlockedByDuplicate ? t('home.party.duplicateRaceGenderWarning') : undefined}
                             onClick={() => setPendingEdits({ ...pendingEdits, gender })}
                             className={`flex items-center justify-center px-2 py-1 text-xs border rounded ${
                               (pendingEdits?.gender ?? char.gender) === gender
@@ -6971,7 +6971,7 @@ function PartyTab({
                             }`}
                           >
                             <span className="inline-flex h-full w-3 items-center justify-center leading-none">
-                              {shouldShowGenderSymbol ? (gender === 'male' ? '男' : '女') : null}
+                              {shouldShowGenderSymbol ? (gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')) : null}
                             </span>
                           </button>
                         );
@@ -7065,7 +7065,7 @@ function PartyTab({
                         key={`race-image-${race.id}`}
                         type="button"
                         aria-label={race.name}
-                        title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                        title={isBlockedByDuplicate ? t('home.party.duplicateRaceGenderWarning') : undefined}
                         disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
                         className={`min-w-0 flex flex-1 items-center justify-center px-0 py-1 text-xs border ${
@@ -7126,7 +7126,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
+                        <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.masterFull') : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -7371,7 +7371,7 @@ function PartyTab({
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={handleBaseStatHelpToggle}
                 className="inline-flex items-center gap-1 text-left hover:text-gray-700"
-                aria-label="基礎値ヘルプを表示"
+                aria-label={t('home.party.baseStatsHelpAria')}
               >
                 <RaceIcon race={race} className="h-4 w-4" />
                 <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / {lineage.name} / {predisposition.name}</span>
@@ -7382,7 +7382,7 @@ function PartyTab({
                   style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
-                  <div className="font-medium text-gray-900">現在の基礎値とその補正解説:</div>
+                  <div className="font-medium text-gray-900">{t('home.party.baseStatsHelpTitle')}:</div>
                   <div className="space-y-1">
                     {baseStatMultiplierRows.map((row) => (
                       <div key={row.label}>
@@ -7391,8 +7391,8 @@ function PartyTab({
                     ))}
                   </div>
                   <div className="pt-1 border-t border-gray-100 space-y-1">
-                    <div>HP増加基礎値: +{formatNumber(Math.floor(hpBaseIncrease))}</div>
-                    <div>アイテムHP増加値: +{formatNumber(Math.floor(hpItemIncrease))}</div>
+                    <div>{t('home.party.hpBaseIncrease')}: +{formatNumber(Math.floor(hpBaseIncrease))}</div>
+                    <div>{t('home.party.hpItemIncrease')}: +{formatNumber(Math.floor(hpItemIncrease))}</div>
                   </div>
                 </div>
               )}
@@ -7469,7 +7469,7 @@ function PartyTab({
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
-                    helpTitle: '魔法攻撃',
+                    helpTitle: t('combat.magicalAttack'),
                     helpLines: [
                       `魔法攻撃力: ${formatNumber(Math.floor(stats.magicalAttack))} ※ダメージを与えるには敵の魔法防御力を超える必要があります`,
                       `魔法攻撃回数: ${formatNumber(stats.magicalNoA)}回`,
@@ -7513,7 +7513,7 @@ function PartyTab({
                   offenseLines.push({
                     key: 'magical-accuracy',
                     text: `魔法命中率: 100% (減衰: ${decayText})`,
-                    helpTitle: '魔法命中率',
+                    helpTitle: t('home.party.magicalAccuracy'),
                     helpLines: [
                       '魔法命中率: 100% ※初回の命中率',
                       `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
@@ -7531,7 +7531,7 @@ function PartyTab({
                   offenseLines.push({
                     key: 'magic-spell',
                     text: `詠唱魔法: ${magicProfile.spellName}`,
-                    helpTitle: '詠唱魔法',
+                    helpTitle: t('home.party.castingSpell'),
                     helpLines: [
                       `詠唱魔法: ${magicProfile.spellName}`,
                       `スタイル: ${magicProfile.style}`,
@@ -7577,7 +7577,7 @@ function PartyTab({
                         (x{stats.elementalOffenseValue.toFixed(2)})
                       </>
                     ),
-                    helpTitle: 'e. 属性攻撃(重複有効)',
+                    helpTitle: t('home.party.elementalAttackHelpTitle'),
                     helpLines: getElementalOffenseHelpLines(char, stats),
                   },
                   {
@@ -7940,7 +7940,7 @@ function PartyTab({
               const bonusEntries = sortedBonusDisplayEntries.map((entry, index) => ({
                 key: `status-bonus-${index}-${entry.key}-${entry.label}`,
                 label: entry.label,
-                description: bonusHelpMap.get(entry.label) ?? 'このボーナスの説明は未設定です。',
+                description: bonusHelpMap.get(entry.label) ?? t('home.bonus.descriptionMissing'),
               }));
 
               if (bonusEntries.length === 0) return null;
@@ -8092,7 +8092,7 @@ function PartyTab({
                         onToggleEquipmentLock(char.id, slotIndex);
                       }}
                       className="text-base leading-none"
-                      aria-label={isLocked ? '装備ロック解除' : '装備ロック'}
+                      aria-label={isLocked ? t('home.equipment.unlockAria') : t('home.equipment.lockAria')}
                     >
                       {renderUiIcon(isLocked ? 'lock' : 'unlock', lockEmojiClassName)}
                     </button>
@@ -11705,7 +11705,7 @@ function SettingTab({
           const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
           const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
           const race = RACES.find((entry) => entry.id === member.raceId);
-          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
           const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
           return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
         });
@@ -13234,7 +13234,7 @@ function SettingTab({
                         <button
                           type="button"
                           onPointerDown={(event) => event.stopPropagation()}
-                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? 'このボーナスの説明は未設定です。'}`, event.currentTarget); }}
+                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? t('home.bonus.descriptionMissing')}`, event.currentTarget); }}
                           className="text-left hover:underline"
                           title="タップで詳細を表示"
                         >
