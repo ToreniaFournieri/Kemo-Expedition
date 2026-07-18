@@ -6007,15 +6007,15 @@ function PartyTab({
       }
       if (combatTotals.accuracy !== prev.accuracy) {
         const isPositive = combatTotals.accuracy > prev.accuracy;
-        changes.push({ message: `命中 ${prev.accuracy >= 0 ? '+' : ''}${formatNumber(prev.accuracy)} → ${combatTotals.accuracy >= 0 ? '+' : ''}${formatNumber(combatTotals.accuracy)}`, isPositive });
+        changes.push({ message: `${t('party.bonus.accuracy')} ${prev.accuracy >= 0 ? '+' : ''}${formatNumber(prev.accuracy)} → ${combatTotals.accuracy >= 0 ? '+' : ''}${formatNumber(combatTotals.accuracy)}`, isPositive });
       }
       if (combatTotals.evasion !== prev.evasion) {
         const isPositive = combatTotals.evasion > prev.evasion;
-        changes.push({ message: `回避 ${prev.evasion >= 0 ? '+' : ''}${formatNumber(prev.evasion)} → ${combatTotals.evasion >= 0 ? '+' : ''}${formatNumber(combatTotals.evasion)}`, isPositive });
+        changes.push({ message: `${t('party.bonus.evasion')} ${prev.evasion >= 0 ? '+' : ''}${formatNumber(prev.evasion)} → ${combatTotals.evasion >= 0 ? '+' : ''}${formatNumber(combatTotals.evasion)}`, isPositive });
       }
       if (combatTotals.penet !== prev.penet) {
         const isPositive = combatTotals.penet > prev.penet;
-        changes.push({ message: `貫通 ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
+        changes.push({ message: `${t('party.bonus.penet')} ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
       }
       const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
         fire: t('common.element.fire.short'),
@@ -6193,20 +6193,19 @@ function PartyTab({
   // SpecRef: 8.2.2 | Party member details | Character image (background)
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
-  const previewName = pendingEdits?.name ?? char.name;
-  const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
-    'ケモ': 'Unique_Kemo.png',
-    'ライカ': 'Unique_Laika.png',
-    'ルナ': 'Unique_Luna.png',
-    'ノクス': 'Unique_Nox.png',
-    'マーレ': 'Unique_Merle.png',
-    'プチーツァ': 'Unique_Puchitsa.png',
-    '蒼牙破': 'Unique_Souga-ha.png',
-    'レナード': 'Unique_Leonard.png',
-    '葉隠': 'Unique_Hagakure.png',
-    'フィン': 'Unique_Finn.png',
-    'オルカ': 'Unique_Orca.png',
-    'ミシュカ': 'Unique_Mishka.png',
+  const uniquePartyMemberImageByLineage: Partial<Record<string, string>> = {
+    unascertained: 'Unique_Kemo.png',
+    pioneer: 'Unique_Laika.png',
+    crescent_jade: 'Unique_Luna.png',
+    phantom_thief: 'Unique_Nox.png',
+    incarnation: 'Unique_Merle.png',
+    flamebound_grove: 'Unique_Puchitsa.png',
+    almighty: 'Unique_Souga-ha.png',
+    meddlesome_fox: 'Unique_Leonard.png',
+    hidden_grail: 'Unique_Hagakure.png',
+    'unexpected_prince(ss)': 'Unique_Finn.png',
+    rowdy_orca_girl: 'Unique_Orca.png',
+    apostate: 'Unique_Mishka.png',
   };
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
@@ -6223,7 +6222,7 @@ function PartyTab({
     male: 'Male',
     female: 'Female',
   };
-  const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByName[previewName] : undefined;
+  const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByLineage[char.lineageId] : undefined;
   const raceLabel = raceLabelByRaceId[previewRaceId];
   const genderLabel = genderLabelByGender[previewGender];
   const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
@@ -6237,7 +6236,7 @@ function PartyTab({
   const partyInventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
 
   const getPartyInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
-    const uniqueFileName = character.isUnique ? uniquePartyMemberImageByName[character.name] : undefined;
+    const uniqueFileName = character.isUnique ? uniquePartyMemberImageByLineage[character.lineageId] : undefined;
     if (uniqueFileName) {
       const chibiFileName = `C_${uniqueFileName}`;
       if (partyInventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
@@ -6796,7 +6795,7 @@ function PartyTab({
           const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
           const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
           const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
-          const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByName[c.name] : undefined;
+          const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByLineage[c.lineageId] : undefined;
           const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
             : undefined;
@@ -7890,23 +7889,23 @@ function PartyTab({
               }
               const growthMultiplier = multipliers.growth_xV ?? 1;
               if (growthMultiplier !== 1) {
-                const label = `${addNames.growth_xV}${formatMultiplierValue(growthMultiplier)}倍`;
+                const label = t('party.bonusDisplay.growthMultiplier', { value: formatMultiplierValue(growthMultiplier) });
                 const description = getBonusHelpDescription({ type: 'growth_xV', value: growthMultiplier });
                 pushBonusDisplayEntry({ key: 'growth_xV', label, description: description ?? undefined });
               }
 
               const bHelpRows = ([
-                { key: 'vitality', short: '体' },
-                { key: 'strength', short: '力' },
-                { key: 'intelligence', short: '知' },
-                { key: 'mind', short: '精' },
+                { key: 'vitality', labelKey: 'party.bonusDisplay.vitality' },
+                { key: 'strength', labelKey: 'party.bonusDisplay.strength' },
+                { key: 'intelligence', labelKey: 'party.bonusDisplay.intelligence' },
+                { key: 'mind', labelKey: 'party.bonusDisplay.mind' },
               ] as const)
                 .map((row) => {
                   const value = additive[row.key];
                   if (!value) return null;
                   const description = getBonusHelpDescription({ type: row.key, value });
                   if (!description) return null;
-                  return { label: `${row.short}+${value}`, description };
+                  return { label: t(row.labelKey, { value: `+${formatNumber(value)}` }), description };
                 })
                 .filter((row): row is { label: string; description: string } => row !== null);
 
