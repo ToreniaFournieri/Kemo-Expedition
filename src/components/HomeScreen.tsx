@@ -5555,7 +5555,7 @@ export function HomeScreen({
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
-                  <span>ケモ</span>
+                  <span>{t('divineBureau.theme.kemo')}</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
@@ -11663,7 +11663,7 @@ function SettingTab({
   const handleFeedbackFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
     if (selectedFiles.length > 4) {
-      window.alert('添付画像は最大4枚までです。先頭4枚のみ送信されます。');
+      window.alert(t('divineBureau.feedback.maxFilesWarning'));
     }
     setFeedbackFiles(selectedFiles.slice(0, 4));
   };
@@ -11671,7 +11671,7 @@ function SettingTab({
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const handleSendFeedback = async () => {
     if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert('VITE_FEEDBACK_DISCORD_WEBHOOK_URL が未設定です。'); return; }
-    if (!feedbackText.trim()) { window.alert('フィードバック本文を入力してください。'); return; }
+    if (!feedbackText.trim()) { window.alert(t('divineBureau.feedback.bodyRequired')); return; }
     setIsSendingFeedback(true);
     try {
       const nav = typeof navigator === 'undefined' ? null : navigator;
@@ -12501,7 +12501,7 @@ function SettingTab({
     .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
-    `${label}: ${formatNumber(attack)} x ${formatNumber(noA)}回 (x${amplifier.toFixed(2)})`;
+    t('home.enemy.attackLine', { label, attack: formatNumber(attack), count: formatNumber(noA), amplifier: amplifier.toFixed(2) });
 
   const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
   const hasEnemyMagicCasting = (enemy: EnemyDef) =>
@@ -12509,7 +12509,7 @@ function SettingTab({
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
-    `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
+    t('home.enemy.defenseLine', { label, defense: formatNumber(defense), percent: percent.toFixed(0) });
 
   const ENEMY_ELEMENT_ICONS: Record<string, UiIconKey> = {
     fire: 'fire',
@@ -12521,7 +12521,7 @@ function SettingTab({
     const elementIcon = ENEMY_ELEMENT_ICONS[elementalOffense];
     return (
       <>
-        属性: {elementIcon ? renderUiIcon(elementIcon) : '無'} (x{elementalOffenseValue.toFixed(2)})
+        {t('home.enemy.element')}: {elementIcon ? renderUiIcon(elementIcon) : t('home.enemy.noElement')} (x{elementalOffenseValue.toFixed(2)})
       </>
     );
   };
@@ -13775,9 +13775,9 @@ function SettingTab({
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
+        {renderDivineBureauPanelHeader('superRare', t('divineBureau.superRare'))}
         {divineBureauPanelExpanded.superRare && <>
-        <div className="text-xs text-gray-500 mt-3 mb-2">Super Rare List (超レア一覧)</div>
+        <div className="text-xs text-gray-500 mt-3 mb-2">{t('divineBureau.superRareListCaption')}</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto pane-button-shadow">
           {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
             const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
@@ -13795,7 +13795,7 @@ function SettingTab({
         </>}
       </div>
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
+        {renderDivineBureauPanelHeader('modeSelect', t('divineBureau.modeSelect'))}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
           <div className="space-y-2">
             <button
@@ -13806,7 +13806,7 @@ function SettingTab({
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">自動周回</span>
+                <span className="text-sm font-medium text-gray-700">{t('divineBureau.autoRepeat')}</span>
                 <span className="flex items-center gap-2">
                   <span className={`text-xs font-semibold ${isAutoRepeatEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isAutoRepeatEnabled ? 'ON' : 'OFF'}
@@ -13828,7 +13828,7 @@ function SettingTab({
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">統計情報表示</span>
+                <span className="text-sm font-medium text-gray-700">{t('divineBureau.expeditionStatsDisplay')}</span>
                 <span className="flex items-center gap-2">
                   <span className={`text-xs font-semibold ${isExpeditionStatsDisplayEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isExpeditionStatsDisplayEnabled ? 'ON' : 'OFF'}
@@ -13842,7 +13842,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">ダークモード</div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('divineBureau.darkMode')}</div>
             <div className="grid grid-cols-3 gap-2">
               {(['off', 'on', 'system'] as const).map((mode) => (
                 <button
@@ -13854,21 +13854,21 @@ function SettingTab({
                       : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                   }`}
                 >
-                  {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : 'システム'}
+                  {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : t('divineBureau.darkMode.system')}
                 </button>
               ))}
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {darkModeSetting === 'system'
-                ? '端末の表示設定に追従します'
+                ? t('divineBureau.darkMode.description.system')
                 : darkModeSetting === 'on'
-                  ? '常にダークモードで表示します'
-                  : '常にライトモードで表示します'}
+                  ? t('divineBureau.darkMode.description.on')
+                  : t('divineBureau.darkMode.description.off')}
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">テーマカラー</div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('divineBureau.themeColor')}</div>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
@@ -13879,7 +13879,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                ケモ
+                {t('divineBureau.theme.kemo')}
               </button>
               <button
                 onClick={() => onSetGameMode('m.luna')}
@@ -13890,7 +13890,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                ルナ
+                {t('divineBureau.theme.luna')}
               </button>
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
@@ -13901,15 +13901,15 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                ライカ
+                {t('divineBureau.theme.laika')}
               </button>
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {gameMode === 'm.kemo'
-                ? '青を基調としたテーマです'
+                ? t('divineBureau.theme.description.kemo')
                 : gameMode === 'm.luna'
-                  ? '黄色を基調としたテーマです'
-                  : '緑を基調としたテーマです'}
+                  ? t('divineBureau.theme.description.luna')
+                  : t('divineBureau.theme.description.laika')}
             </div>
           </div>
         </div>}
@@ -13917,7 +13917,7 @@ function SettingTab({
 
 
       {isDevEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('debug', 'デバッグ')}
+        {renderDivineBureauPanelHeader('debug', t('divineBureau.debug'))}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
           <div className="bg-white rounded border p-2">
@@ -13946,13 +13946,13 @@ function SettingTab({
 
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('feedback', 'フィードバック')}
+        {renderDivineBureauPanelHeader('feedback', t('divineBureau.feedback'))}
         {divineBureauPanelExpanded.feedback && <div className="space-y-3 mt-3">
-          <div className="text-sm text-gray-600">開発チームにフィードバックを送信します。</div>
-          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder="名前" />
-          <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder="フィードバック本文" />
+          <div className="text-sm text-gray-600">{t('divineBureau.feedback.description')}</div>
+          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('divineBureau.feedback.namePlaceholder')} />
+          <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('divineBureau.feedback.bodyPlaceholder')} />
           <div>
-            <label className="text-sm font-medium">最終戦闘ログ選択</label>
+            <label className="text-sm font-medium">{t('divineBureau.feedback.latestBattleLog')}</label>
             <select value={feedbackLatestBattleLogSelection} onChange={(e) => setFeedbackLatestBattleLogSelection(e.target.value as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None')} className="w-full rounded border border-gray-300 bg-white px-3 py-2 mt-1">
               <option value="PT1">PT1</option>
               <option value="PT2">PT2</option>
@@ -13972,9 +13972,9 @@ function SettingTab({
               onChange={handleFeedbackFileChange}
               className="w-full text-sm"
             />
-            <div className="mt-1 text-xs text-gray-500">添付画像: {formatNumber(feedbackFiles.length)}/4</div>
+            <div className="mt-1 text-xs text-gray-500">{t('divineBureau.feedback.attachedImages', { count: formatNumber(feedbackFiles.length) })}</div>
           </div>
-          <button onClick={handleSendFeedback} disabled={isSendingFeedback} className="w-full py-2 bg-sub text-white rounded font-medium disabled:opacity-60">{isSendingFeedback ? '送信中…' : '送信'}</button>
+          <button onClick={handleSendFeedback} disabled={isSendingFeedback} className="w-full py-2 bg-sub text-white rounded font-medium disabled:opacity-60">{isSendingFeedback ? t('divineBureau.feedback.sending') : t('divineBureau.feedback.send')}</button>
         </div>}
       </div>
 
