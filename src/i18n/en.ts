@@ -1,5 +1,5 @@
 const en = {
-  'app.title': 'Kemo Expedition',
+  'app.title': 'Bo-Kemo',
   'nav.expedition': 'Expedition',
   'nav.party': 'Party',
   'nav.base': 'Base',
