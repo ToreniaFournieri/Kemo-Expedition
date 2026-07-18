@@ -5074,12 +5074,15 @@ export function HomeScreen({
         });
 
         const wasAutoSold = !purchasedVariant && Boolean(autoSoldVariant);
+        const purchasedMasterItem = ITEMS.find((item) => item.id === itemId);
 
         const purchasedName = purchasedVariant
           ? getItemDisplayName(purchasedVariant.item)
           : autoSoldVariant
             ? getItemDisplayName(autoSoldVariant.item)
-            : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
+            : t('home.notification.shopPurchasedItemFallback', {
+              item: purchasedMasterItem ? getLocalizedItemName(purchasedMasterItem) : t('common.unknown'),
+            });
 
         if (wasAutoSold) {
           actions.addNotification(t('home.notification.shopBoughtAndAutoSold', { item: purchasedName }), 'normal', 'item', true);
@@ -5324,7 +5327,7 @@ export function HomeScreen({
     actions.finalizeDiaryLog(partyIndex);
     actions.rollPartySleepiness(partyIndex);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
-    // Manual 出撃/神魔戦 resolves the expedition and its return tail immediately,
+    // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
     // leaving the runtime at the beginning of rest so normal rest healing still occurs.
     const finalRestDurationMs = getStateDurationMs(party, 'rest');
     setPartyCycles((prev) => ({
@@ -5988,15 +5991,15 @@ function PartyTab({
       }
       if (combatTotals.meleeAttackAmp !== prev.meleeAttackAmp) {
         const isPositive = combatTotals.meleeAttackAmp > prev.meleeAttackAmp;
-        changes.push({ message: `近接攻撃倍率 x${prev.meleeAttackAmp.toFixed(2)} → x${combatTotals.meleeAttackAmp.toFixed(2)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.help.meleeAttackMultiplierLabel', `x${prev.meleeAttackAmp.toFixed(2)}`, `x${combatTotals.meleeAttackAmp.toFixed(2)}`), isPositive });
       }
       if (combatTotals.rangedAttackAmp !== prev.rangedAttackAmp) {
         const isPositive = combatTotals.rangedAttackAmp > prev.rangedAttackAmp;
-        changes.push({ message: `遠距離攻撃倍率 x${prev.rangedAttackAmp.toFixed(2)} → x${combatTotals.rangedAttackAmp.toFixed(2)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.help.rangedAttackMultiplierLabel', `x${prev.rangedAttackAmp.toFixed(2)}`, `x${combatTotals.rangedAttackAmp.toFixed(2)}`), isPositive });
       }
       if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
         const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
-        changes.push({ message: `魔法攻撃倍率 x${prev.magicalAttackAmp.toFixed(2)} → x${combatTotals.magicalAttackAmp.toFixed(2)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${prev.magicalAttackAmp.toFixed(2)}`, `x${combatTotals.magicalAttackAmp.toFixed(2)}`), isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
