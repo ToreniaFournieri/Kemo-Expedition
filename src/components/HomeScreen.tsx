@@ -1659,15 +1659,15 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
 }
 
 function getConditionLabel(condition: number, showValue: boolean): string {
-  let label = '絶好調';
-  if (condition <= -350) label = '絶不調';
-  else if (condition <= -250) label = '不調';
-  else if (condition <= -150) label = '低調';
-  else if (condition <= -50) label = '慎重';
-  else if (condition <= 50) label = '平常';
-  else if (condition <= 150) label = '順調';
-  else if (condition <= 250) label = '快調';
-  else if (condition <= 350) label = '好調';
+  let label = t('condition.excellent');
+  if (condition <= -350) label = t('condition.awful');
+  else if (condition <= -250) label = t('condition.bad');
+  else if (condition <= -150) label = t('condition.low');
+  else if (condition <= -50) label = t('condition.cautious');
+  else if (condition <= 50) label = t('condition.normal');
+  else if (condition <= 150) label = t('condition.steady');
+  else if (condition <= 250) label = t('condition.brisk');
+  else if (condition <= 350) label = t('condition.good');
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `condition` OFF/ON
   if (!showValue) return label;
   return `${label}(${condition >= 0 ? '+' : ''}${formatNumber(condition)})`;
@@ -2106,28 +2106,28 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
   }
 
   const elementMeta: Record<Exclude<ElementalOffense, 'none'>, { label: string }> = {
-    fire: { label: '火' },
-    ice: { label: '氷' },
-    thunder: { label: '雷' },
+    fire: { label: t('element.fire.short') },
+    ice: { label: t('element.ice.short') },
+    thunder: { label: t('element.thunder.short') },
   };
 
   const lines: string[] = [];
 
   if (stats.elementalOffense === 'none') {
-    lines.push('攻撃は無属性です。');
+    lines.push(t('party.elementalOffense.noneHelp'));
     return lines;
   }
 
   const selectedMeta = elementMeta[stats.elementalOffense];
   const selectedPercent = Math.round((stats.elementalOffenseValue - 1) * 100);
-  lines.push(`攻撃が${selectedMeta.label}属性になり、${selectedPercent}%威力が増加する`);
+  lines.push(t('party.elementalOffense.selectedHelp', { element: selectedMeta.label, percent: selectedPercent }));
 
   (['fire', 'ice', 'thunder'] as const).forEach((element) => {
     if (element === stats.elementalOffense) return;
     const total = elementalSums[element];
     if (total <= 0) return;
     const meta = elementMeta[element];
-    lines.push(`(非採用)${meta.label}属性 ${Math.round(total * 100)}%威力増加`);
+    lines.push(t('party.elementalOffense.unselectedHelp', { element: meta.label, percent: Math.round(total * 100) }));
   });
 
   return lines;
@@ -2574,32 +2574,32 @@ function getBonusHelpDescription(bonus: Bonus): string | null {
   }
 
   if (bonus.type === 'equip_slot') return t('party.bonusHelp.equip_slot', { value: bonus.value });
-  if (bonus.type === 'vitality') return `基礎体力に ${bonus.value} を加算（HP/物防に影響）`;
-  if (bonus.type === 'strength') return `基礎筋力に ${bonus.value} を加算（近接火力に影響）`;
-  if (bonus.type === 'intelligence') return `基礎知性に ${bonus.value} を加算（魔法火力に影響）`;
-  if (bonus.type === 'mind') return `基礎精神に ${bonus.value} を加算（HP/魔防に影響）`;
-  if (bonus.type === 'grit' || bonus.type === 'equip_melee') return '近接攻撃の装備が出来るようになる';
-  if (bonus.type === 'caster' || bonus.type === 'equip_magic') return '魔法攻撃の装備が出来るようになる';
-  if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return '遠距離攻撃の装備が出来るようになる';
+  if (bonus.type === 'vitality') return t('party.bonusHelp.vitality', { value: bonus.value });
+  if (bonus.type === 'strength') return t('party.bonusHelp.strength', { value: bonus.value });
+  if (bonus.type === 'intelligence') return t('party.bonusHelp.intelligence', { value: bonus.value });
+  if (bonus.type === 'mind') return t('party.bonusHelp.mind', { value: bonus.value });
+  if (bonus.type === 'grit' || bonus.type === 'equip_melee') return t('party.bonusHelp.equipMelee');
+  if (bonus.type === 'caster' || bonus.type === 'equip_magic') return t('party.bonusHelp.equipMagic');
+  if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return t('party.bonusHelp.equipRanged');
   if (bonus.type === 'penet') return t('combat.penetrationHelp', { percent: Math.round(bonus.value * 100) });
-  if (bonus.type === 'antagonism') return '味方を攻撃するようになる';
-  if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return '値が多いほどより多くの攻撃が命中するようになる';
-  if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return '値が多いほどより多くの攻撃を回避するようになる';
-  if (bonus.type === 'deity_move_first') return `先制の発動段階が ${bonus.value} 段階強化する`;
-  if (bonus.type === 'melee_attack') return '近接攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'ranged_attack') return '遠距離攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'magical_attack') return '魔法攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'physical_attack') return '遠距離攻撃・近接攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'physical_defense') return '物理耐性を強化する';
-  if (bonus.type === 'magical_defense') return '魔法耐性を強化する';
-  if (bonus.type === 'fire_offense') return '炎属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'ice_offense') return '氷属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'thunder_offense') return '雷属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'growth_xV') return `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(bonus.value)} 倍になる`;
-  if (bonus.type === 'ability_upgrade' && bonus.abilityId) return `アビリティ「${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}」を ${bonus.value} 段階強化する`;
+  if (bonus.type === 'antagonism') return t('party.bonusHelp.antagonism');
+  if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return t('party.bonusHelp.accuracy');
+  if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return t('party.bonusHelp.evasion');
+  if (bonus.type === 'deity_move_first') return t('party.bonusHelp.deityMoveFirst', { value: bonus.value });
+  if (bonus.type === 'melee_attack') return t('party.bonusHelp.meleeAttack');
+  if (bonus.type === 'ranged_attack') return t('party.bonusHelp.rangedAttack');
+  if (bonus.type === 'magical_attack') return t('party.bonusHelp.magicalAttack');
+  if (bonus.type === 'physical_attack') return t('party.bonusHelp.physicalAttack');
+  if (bonus.type === 'physical_defense') return t('party.bonusHelp.physicalDefense');
+  if (bonus.type === 'magical_defense') return t('party.bonusHelp.magicalDefense');
+  if (bonus.type === 'fire_offense') return t('party.bonusHelp.fireOffense');
+  if (bonus.type === 'ice_offense') return t('party.bonusHelp.iceOffense');
+  if (bonus.type === 'thunder_offense') return t('party.bonusHelp.thunderOffense');
+  if (bonus.type === 'growth_xV') return t('party.bonusHelp.growthMultiplier', { value: formatMultiplierValue(bonus.value) });
+  if (bonus.type === 'ability_upgrade' && bonus.abilityId) return t('party.bonusHelp.abilityUpgrade', { ability: ABILITY_NAMES[bonus.abilityId] || bonus.abilityId, value: bonus.value });
 
   if (bonus.type in UNLOCK_ABILITY_BONUS_LABELS) {
-    return '対象種族の解放アビリティを使用できるようになる';
+    return t('party.bonusHelp.unlockRaceAbility');
   }
 
   return null;
@@ -10735,25 +10735,25 @@ function DiaryTab({
     .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
   const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
-    if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
-    if (triggers.includes('draw') && triggers.length === 1) return '引分の記録';
-    if (triggers.includes('unlock')) return '解放の記録';
-    if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
-    if (triggers.includes('godsBattle')) return '神魔戦の記録';
-    if (triggers.includes('superRare')) return '超レア獲得の記録';
-    if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
-    if (triggers.includes('bossRare')) return 'ボスレア獲得の記録';
-    if (triggers.includes('eliteRare')) return 'エリートレア獲得の記録';
-    return '特別記録';
+    if (triggers.includes('defeat') && triggers.length === 1) return t('diary.title.defeat');
+    if (triggers.includes('draw') && triggers.length === 1) return t('diary.title.draw');
+    if (triggers.includes('unlock')) return t('diary.title.unlock');
+    if (triggers.includes('sideQuest')) return t('diary.title.sideQuest');
+    if (triggers.includes('godsBattle')) return t('diary.title.godsBattle');
+    if (triggers.includes('superRare')) return t('diary.title.superRare');
+    if (triggers.includes('mythicRare')) return t('diary.title.mythicRare');
+    if (triggers.includes('bossRare')) return t('diary.title.bossRare');
+    if (triggers.includes('eliteRare')) return t('diary.title.eliteRare');
+    return t('diary.title.special');
   };
 
 
   const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLog) => {
     const hasGodsBattleEntry = expeditionLog.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
-    if (!hasGodsBattleEntry) return '未到達';
-    if (expeditionLog.finalOutcome === 'Clear') return '勝利';
-    if (expeditionLog.finalOutcome === 'Defeat') return '敗北';
-    return '引分';
+    if (!hasGodsBattleEntry) return t('diary.outcome.notReached');
+    if (expeditionLog.finalOutcome === 'Clear') return t('diary.outcome.victory');
+    if (expeditionLog.finalOutcome === 'Defeat') return t('diary.outcome.defeat');
+    return t('diary.outcome.draw');
   };
 
 
@@ -10791,28 +10791,28 @@ function DiaryTab({
       if (normalizedGodsBattleEnemyName) {
         return `[${partyName}] ${normalizedGodsBattleEnemyName} ${godsBattleOutcome}`;
       }
-      return `[${partyName}] 神魔戦 ${godsBattleOutcome}`;
+      return t('diary.headline.godsBattleGeneric', { party: partyName, outcome: godsBattleOutcome });
     }
 
 
     if (triggers.includes('unlock')) {
       return unlockHeadline
-        ? `[${partyName}] ${unlockHeadline}`
-        : `[${partyName}] 解放の記録`;
+        ? t('diary.headline.unlockNamed', { party: partyName, headline: unlockHeadline })
+        : t('diary.headline.unlock', { party: partyName });
     }
 
     if (triggers.includes('sideQuest')) {
       return sideQuestLabel
-        ? `[${partyName}] サイドクエスト達成(${sideQuestLabel})`
-        : `[${partyName}] サイドクエスト達成`;
+        ? t('diary.headline.sideQuestNamed', { party: partyName, quest: sideQuestLabel })
+        : t('diary.headline.sideQuest', { party: partyName });
     }
 
     if (triggers.includes('defeat') && triggers.length === 1) {
-      return `[${partyName}] 敗北の記録`;
+      return t('diary.headline.defeat', { party: partyName });
     }
 
     if (triggers.includes('draw') && triggers.length === 1) {
-      return `[${partyName}] 引分の記録`;
+      return t('diary.headline.draw', { party: partyName });
     }
 
     if (triggers.includes('superRare') || triggers.includes('mythicRare') || triggers.includes('bossRare')) {
@@ -10825,13 +10825,13 @@ function DiaryTab({
         .map((item) => getItemDisplayName(item))
         .join('、');
       const triggerPrefix = triggers.includes('superRare')
-        ? '超レア'
+        ? t('diary.reward.superRare')
         : triggers.includes('mythicRare')
-          ? '神魔レア'
-          : 'ボスレア';
+          ? t('diary.reward.mythicRare')
+          : t('diary.reward.bossRare');
       return rewardNames
-        ? `[${partyName}] ${triggerPrefix}(${rewardNames}) 獲得`
-        : `[${partyName}] ${triggerPrefix}獲得`;
+        ? t('diary.headline.rewardNamed', { party: partyName, rewardType: triggerPrefix, rewards: rewardNames })
+        : t('diary.headline.reward', { party: partyName, rewardType: triggerPrefix });
     }
 
     if (triggers.includes('eliteRare')) {
@@ -10839,7 +10839,7 @@ function DiaryTab({
         .filter((item) => getItemRarityById(item.id) === 'eliteRare')
         .map((item) => getItemDisplayName(item))
         .join('、');
-      return rewardNames ? `[${partyName}] エリートレア(${rewardNames}) 獲得` : `[${partyName}] エリートレア獲得`;
+      return rewardNames ? t('diary.headline.rewardNamed', { party: partyName, rewardType: t('diary.reward.eliteRare'), rewards: rewardNames }) : t('diary.headline.reward', { party: partyName, rewardType: t('diary.reward.eliteRare') });
     }
 
     const fallbackBossNames = rewards
@@ -10847,10 +10847,10 @@ function DiaryTab({
       .map((item) => getItemDisplayName(item))
       .join('、');
     if (fallbackBossNames) {
-      return `[${partyName}] ボスレア(${fallbackBossNames}) 獲得`;
+      return t('diary.headline.rewardNamed', { party: partyName, rewardType: t('diary.reward.bossRare'), rewards: fallbackBossNames });
     }
 
-    return `[${partyName}] ${getDiaryTitle(triggers)}`;
+    return t('diary.headline.title', { party: partyName, title: getDiaryTitle(triggers) });
   };
 
   const formatDiaryTimestamp = (timestamp: number) => {
@@ -10872,7 +10872,7 @@ function DiaryTab({
         className="w-full text-left"
       >
         <span className="flex items-center justify-between text-sm font-medium">
-          <span>日誌記録設定</span>
+          <span>{t('diary.settings.title')}</span>
           <span className={`transform transition-transform ${isSettingsExpanded ? 'rotate-180' : ''}`}>▼</span>
         </span>
       </button>
@@ -10886,7 +10886,7 @@ function DiaryTab({
                 <div className="mb-2 text-xs text-gray-500">{party.name}</div>
                 <div className="grid gap-2 text-sm sm:grid-cols-2">
                   <label className="flex items-center justify-between gap-2">
-                    <span>超レア通知</span>
+                    <span>{t('diary.settings.superRareNotification')}</span>
                     <select
                       value={settings.superRareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { superRareThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10898,7 +10898,7 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>エリートレア通知</span>
+                    <span>{t('diary.settings.eliteRareNotification')}</span>
                     <select
                       value={settings.rareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { rareThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10910,7 +10910,7 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>ボスレア通知</span>
+                    <span>{t('diary.settings.bossRareNotification')}</span>
                     <select
                       value={settings.bossThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { bossThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10922,18 +10922,18 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>神魔戦通知</span>
+                    <span>{t('diary.settings.godsBattleNotification')}</span>
                     <select
-                      value={settings.notifyGodsBattle ? 'あり' : 'なし'}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'あり' })}
+                      value={settings.notifyGodsBattle ? 'yes' : 'no'}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'yes' })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
-                      <option value="あり">あり</option>
-                      <option value="なし">なし</option>
+                      <option value="yes">{t('common.yes')}</option>
+                      <option value="no">{t('common.no')}</option>
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>神魔レア通知</span>
+                    <span>{t('diary.settings.mythicRareNotification')}</span>
                     <select
                       value={settings.mythicThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10945,7 +10945,7 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>敗北通知</span>
+                    <span>{t('diary.settings.defeatNotification')}</span>
                     <select
                       value={settings.defeatNotificationMode}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { defeatNotificationMode: event.target.value as DiaryDefeatNotificationMode })}
@@ -10958,7 +10958,7 @@ function DiaryTab({
                   </label>
                   {/* SpecRef: 8.5 | UI_DIARY | Setting. */}
                   <label className="flex items-center justify-between gap-2">
-                    <span>サイドクエスト獲得通知</span>
+                    <span>{t('diary.settings.sideQuestNotification')}</span>
                     <select
                       value={settings.sideQuestThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { sideQuestThreshold: parseDiarySideQuestThreshold(event.target.value) })}
@@ -11004,7 +11004,7 @@ function DiaryTab({
           </FloatingBubblePortal>
         )}
         {renderDiarySettings()}
-        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">記録された日誌はありません</div>
+        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">{t('diary.empty')}</div>
       </div>
     );
   }
@@ -11074,7 +11074,7 @@ function DiaryTab({
 
             {specialRewards.length > 0 && diaryLog.triggers.includes('defeat') && (
               <div className="mt-1 text-xs text-gray-500">
-                特別獲得: {specialRewards.map((item, i) => {
+                {t('diary.specialRewards')}: {specialRewards.map((item, i) => {
                   const rarity = getItemRarityById(item.id);
                   const isSuperRare = item.superRare > 0;
                   const rarityClass = getRarityTextClass(rarity, isSuperRare);
@@ -11208,9 +11208,9 @@ function DiaryTab({
                                 entry.outcome === 'victory' ? 'text-sub font-medium' :
                                 entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'
                               }>
-                                {entry.gateInfo ? '未到達' :
-                                 entry.outcome === 'victory' ? '勝利' :
-                                 entry.outcome === 'defeat' ? '敗北' : '引分'}
+                                {entry.gateInfo ? t('diary.outcome.notReached') :
+                                 entry.outcome === 'victory' ? t('diary.outcome.victory') :
+                                 entry.outcome === 'defeat' ? t('diary.outcome.defeat') : t('diary.outcome.draw')}
                               </span>
                               <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                             </span>
@@ -11376,13 +11376,13 @@ function DiaryTab({
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
+                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>{t('battleLog.damage.reflected')} {formatNumber(battleLog.reflectedDamage || 0)}</span>)
                                     </span>
                                   )
                                   : isAbsorbDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>{t('battleLog.damage.absorbed')} {formatNumber(battleLog.absorbedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : (
@@ -11651,7 +11651,7 @@ function SettingTab({
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const handleSendFeedback = async () => {
-    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert('VITE_FEEDBACK_DISCORD_WEBHOOK_URL が未設定です。'); return; }
+    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert(t('divineBureau.feedback.webhookMissing')); return; }
     if (!feedbackText.trim()) { window.alert(t('divineBureau.feedback.bodyRequired')); return; }
     setIsSendingFeedback(true);
     try {
@@ -11722,7 +11722,7 @@ function SettingTab({
       }
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
-      onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
+      onAddNotification(t('divineBureau.feedback.sent'), 'normal', 'item', true);
       setFeedbackText('');
       setFeedbackFiles([]);
       if (feedbackFileInputRef.current) {
@@ -11730,7 +11730,7 @@ function SettingTab({
       }
     } catch (error) {
       console.error(error);
-      window.alert('フィードバック送信に失敗しました。');
+      window.alert(t('divineBureau.feedback.sendFailed'));
     } finally {
       setIsSendingFeedback(false);
     }
@@ -11893,7 +11893,7 @@ function SettingTab({
       getBackupFileName('compressed'),
       'application/json',
     );
-    onAddNotification('バックアップをエクスポートしました', 'normal', 'item', true);
+    onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
   };
 
   const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -11911,7 +11911,7 @@ function SettingTab({
           : parsed;
 
       if (!source || typeof source !== 'object') {
-        window.alert('インポート失敗: 保存データ形式が不正です。');
+        window.alert(t('setting.import.invalidFormat'));
         return;
       }
 
@@ -11921,36 +11921,36 @@ function SettingTab({
       if (parsed && typeof parsed === 'object' && 'meta' in parsed) {
         const meta = (parsed as { meta?: { version?: string; env?: string; format?: string } }).meta;
         if (meta?.version && meta.version !== versionTag) {
-          issues.push(`バージョン差異: 現在 ${versionTag} / ファイル ${meta.version}`);
+          issues.push(t('setting.import.issue.versionMismatch', { current: versionTag, file: meta.version }));
         }
         if (meta?.env && meta.env !== currentEnv) {
-          issues.push(`環境差異: 現在 ${currentEnv} / ファイル ${meta.env}`);
+          issues.push(t('setting.import.issue.envMismatch', { current: currentEnv, file: meta.env }));
         }
         if (meta?.format === 'compressed-v1') {
           const canonicalImported = serializeGameState(hydrateGameState(saveData as GameState));
           if (JSON.stringify(canonicalImported) !== JSON.stringify(saveData)) {
-            issues.push('形式差異: インポートデータが現在の保存/復元フォーマットに一致しません。');
+            issues.push(t('setting.import.issue.formatMismatch'));
           }
         }
       }
 
       if (issues.length > 0) {
         const shouldContinue = window.confirm(
-          `セーブデータ整合性チェックで注意事項が見つかりました:\n\n- ${issues.join('\n- ')}\n\nこのままインポートを適用しますか？`
+          t('setting.import.integrityWarning', { issues: issues.join('\n- ') })
         );
         if (!shouldContinue) return;
       }
 
       const shouldImport = window.confirm(
-        'インポートを実行すると現在のセーブデータは完全に置き換わります。\nこの操作は取り消せません。実行しますか？'
+        t('setting.import.confirmReplace')
       );
       if (!shouldImport) return;
 
       onImportGameState(saveData as GameState);
-      onAddNotification('バックアップをインポートしました', 'normal', 'item', true);
+      onAddNotification(t('setting.import.imported'), 'normal', 'item', true);
     } catch (error) {
       console.error(error);
-      window.alert('インポート失敗: JSONの解析に失敗しました。');
+      window.alert(t('setting.import.jsonParseFailed'));
     }
   };
 
@@ -11958,16 +11958,16 @@ function SettingTab({
     // SpecRef: 9 | Environment | Import/Export format consistency check
     const issues: string[] = [];
 
-    if (!Array.isArray(saveData.parties)) issues.push('parties が存在しない、または配列ではありません。');
+    if (!Array.isArray(saveData.parties)) issues.push(t('setting.import.issue.partiesMissing'));
     if (!saveData.global || typeof saveData.global !== 'object') {
-      issues.push('global が存在しません。');
+      issues.push(t('setting.import.issue.globalMissing'));
     } else {
-      if (typeof saveData.global.gold !== 'number') issues.push('global.gold が存在しない、または数値ではありません。');
-      if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push('global.inventory が存在しません。');
+      if (typeof saveData.global.gold !== 'number') issues.push(t('setting.import.issue.globalGoldMissing'));
+      if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push(t('setting.import.issue.globalInventoryMissing'));
     }
 
     if (!saveData.bags || typeof saveData.bags !== 'object') {
-      issues.push('bags が存在しません。');
+      issues.push(t('setting.import.issue.bagsMissing'));
     } else {
       const requiredBags: Array<keyof GameState['bags']> = [
         'commonRewardBag',
@@ -11984,16 +11984,16 @@ function SettingTab({
       ];
       const missingBags = requiredBags.filter((bagKey) => !(bagKey in saveData.bags!));
       if (missingBags.length > 0) {
-        issues.push(`bags に不足があります: ${missingBags.join(', ')}`);
+        issues.push(t('setting.import.issue.bagsIncomplete', { bags: missingBags.join(', ') }));
       }
     }
 
-    if (typeof saveData.selectedPartyIndex !== 'number') issues.push('selectedPartyIndex が存在しない、または数値ではありません。');
-    if (typeof saveData.buildNumber !== 'number') issues.push('buildNumber が存在しない、または数値ではありません。');
+    if (typeof saveData.selectedPartyIndex !== 'number') issues.push(t('setting.import.issue.selectedPartyIndexMissing'));
+    if (typeof saveData.buildNumber !== 'number') issues.push(t('setting.import.issue.buildNumberMissing'));
 
     if (Array.isArray(saveData.parties)) {
       if (saveData.parties.length === 0) {
-        issues.push('parties が空です。');
+        issues.push(t('setting.import.issue.partiesEmpty'));
       }
 
       saveData.parties.forEach((party, index) => {
