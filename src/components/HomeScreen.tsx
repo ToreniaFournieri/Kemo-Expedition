@@ -9628,7 +9628,7 @@ function BaseTab({
           onBuyDebugStoreItem={onBuyDebugStoreItem}
         />
       ) : (
-        <div className="text-sm text-gray-600">この機能は次のバージョンで利用可能になります。</div>
+        <div className="text-sm text-gray-600">{t('home.base.comingSoon')}</div>
       )}
     </div>
   );
@@ -9679,16 +9679,16 @@ function ShopTab({
   const soldOutItemKeys = shopPurchases[stockKey] ?? [];
 
   if (!mustelidRace) {
-    return <div className="text-sm text-gray-600">お店の準備中です。</div>;
+    return <div className="text-sm text-gray-600">{t('home.shop.preparing')}</div>;
   }
 
   const intimacyDialogue = effectiveIntimacy >= 80
-    ? '待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？'
+    ? t('home.shop.dialogue.intimacy80')
     : effectiveIntimacy >= 40
-      ? 'やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。'
+      ? t('home.shop.dialogue.intimacy40')
       : effectiveIntimacy >= 20
-        ? 'お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。'
-        : 'ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。';
+        ? t('home.shop.dialogue.intimacy20')
+        : t('home.shop.dialogue.default');
 
   const rarityPool: number[] = effectiveIntimacy >= 80
     ? [400, 300, 300, 200, 200]
@@ -9763,12 +9763,12 @@ function ShopTab({
           aria-hidden="true"
           className="shop-dialogue-pane__background pointer-events-none absolute inset-0 -z-10 h-full w-full select-none object-cover"
         />
-        <div className="shop-dialogue-pane__title relative z-10 inline-block rounded px-2 py-0.5 text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
+        <div className="shop-dialogue-pane__title relative z-10 inline-block rounded px-2 py-0.5 text-sm font-semibold text-sub">{t('home.shop.title')}</div>
         <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
             <img
               src={`${import.meta.env.BASE_URL}background/Felis.png`}
-              alt="フェリス"
+              alt={t('home.shopkeeper.felis')}
               className="shop-dialogue-pane__portrait h-12 w-12 self-center rounded-full object-cover shadow-sm"
             />
             <div className="shop-dialogue-pane__bubble space-y-1 rounded px-2 py-1">
@@ -9776,7 +9776,7 @@ function ShopTab({
                 {intimacyDialogue}
               </p>
               <p className="shop-dialogue-pane__countdown text-xs">
-                （商品洗替まであと {countdownText.replace('後', '')}）
+                {t('home.shop.refreshCountdown', { time: countdownText.replace('後', '') })}
               </p>
             </div>
           </div>
@@ -9790,7 +9790,7 @@ function ShopTab({
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500'
               }`}
             >
-              <span className="block">有償洗替</span>
+              <span className="block">{t('home.shop.paidRefresh')}</span>
               <span className="block text-[11px]">{formatNumber(refreshPrice)}G</span>
             </button>
           </div>
@@ -9823,7 +9823,7 @@ function ShopTab({
                     : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {entry.isSoldOut ? '売切' : '購入'}
+                {entry.isSoldOut ? t('home.shop.soldOut') : t('home.shop.buy')}
               </button>
             </div>
           </div>
@@ -9846,7 +9846,7 @@ function DebugStoreTab({
 }) {
   const shopkeeperRace = RACES.find((race) => race.id === 'vulpinian') ?? RACES.find((race) => race.id === 'mustelid');
   if (!shopkeeperRace) {
-    return <div className="text-sm text-gray-600">灰路の蔵の準備中です。</div>;
+    return <div className="text-sm text-gray-600">{t('home.debugStore.preparing')}</div>;
   }
 
   const DEBUG_STORE_PRICE = 1;
@@ -9878,17 +9878,17 @@ function DebugStoreTab({
   return (
     <div className="space-y-3">
       <div className="rounded border border-gray-200 bg-white p-3">
-        <div className="text-sm font-semibold text-sub">カリエスの灰路の蔵</div>
+        <div className="text-sm font-semibold text-sub">{t('home.debugStore.title')}</div>
         <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
           <RaceIcon race={shopkeeperRace} className="h-10 w-10 self-center" />
           <p className="text-sm text-gray-700">
-            お越し頂きありがとうございます。デバッグ用に全種類の商品を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。
+            {t('home.debugStore.description')}
           </p>
         </div>
       </div>
 
       <div className="text-sm text-gray-500">
-        {isJewelCategory ? '0個' : `${formatNumber(totalAvailableCount)}個`}
+        {isJewelCategory ? t('home.count.items', { count: 0 }) : t('home.count.items', { count: formatNumber(totalAvailableCount) })}
       </div>
 
       <div className="flex gap-1 overflow-x-auto pb-1">
@@ -9918,7 +9918,7 @@ function DebugStoreTab({
 
       {isJewelCategory && (
         <div className="rounded border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500">
-          晶カテゴリは準備中です。耐久・攻撃カテゴリからアイテムをご購入ください。
+          {t('home.debugStore.jewelPreparing')}
         </div>
       )}
 
@@ -9936,7 +9936,7 @@ function DebugStoreTab({
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <span className="text-[11px] text-gray-500">在庫 {formatNumber(remainingStock)}/{formatNumber(DEBUG_STORE_STOCK)}</span>
+                <span className="text-[11px] text-gray-500">{t('home.debugStore.stock', { remaining: formatNumber(remainingStock), total: formatNumber(DEBUG_STORE_STOCK) })}</span>
                 <button
                   onClick={() => onBuyDebugStoreItem(item.id)}
                   disabled={!canBuy}
@@ -9946,7 +9946,7 @@ function DebugStoreTab({
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  買う
+                  {t('home.shop.buy')}
                 </button>
               </div>
             </div>
@@ -9954,7 +9954,7 @@ function DebugStoreTab({
         ))}
         {!isJewelCategory && filteredDebugStoreItems.length === 0 && (
           <div className="rounded border border-gray-200 bg-white px-3 py-4 text-center text-sm text-gray-400">
-            このカテゴリの商品はありません
+            {t('home.inventory.emptyCategoryProducts')}
           </div>
         )}
       </div>
@@ -10190,7 +10190,7 @@ function InventoryTab({
   const totalJewelCount = jewelEntries.reduce((sum, entry) => sum + entry.count, 0) + equippedJewels.length;
   const jewelPriorityOptions = useMemo(
     () => [
-      { value: 'manual', label: '手動' },
+      { value: 'manual', label: t('home.inventory.jewelAuto.manual') },
       ...parties.map((party) => ({ value: `${party.id}`, label: party.name })),
     ],
     [parties],
@@ -10304,8 +10304,8 @@ function InventoryTab({
       <div className="flex justify-between items-center mb-2 gap-2">
         <div className="text-sm text-gray-500">
           {isJewelCategory
-            ? `${formatNumber(totalJewelCount)}個`
-            : `${formatNumber(filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0))}個`}
+            ? t('home.count.items', { count: formatNumber(totalJewelCount) })
+            : t('home.count.items', { count: formatNumber(filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)) })}
         </div>
         <div className="flex justify-end items-center gap-1">
           {!isJewelCategory && (
@@ -10370,14 +10370,14 @@ function InventoryTab({
       {/* Item list */}
       {isJewelCategory && (
         <div className="mb-2 text-xs text-gray-500">
-          結晶はパーティタブのキャラクターの装備一覧より、装備に結晶を装着することができます
+          {t('home.inventory.jewelEquipHint')}
         </div>
       )}
       {isJewelCategory && (
         // SpecRef: 7.1.3 | AUTO Jewel Equipment | 自動結晶装備
         <div className="mb-2 rounded border border-gray-200 bg-white px-2 py-1.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-gray-500">自動結晶装備</span>
+            <span className="text-xs text-gray-500">{t('home.inventory.autoJewelEquip')}</span>
             <select
               value={selectedJewelPriorityValue}
               onChange={(event) => {
@@ -10437,7 +10437,7 @@ function InventoryTab({
                     )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
+                        <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} ({t('home.inventory.equippedTo', { item: getItemDisplayName(entry.item) })})</span>
                         <span className="text-xs text-gray-500 shrink-0">x1</span>
                       </div>
                       <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
@@ -10470,7 +10470,7 @@ function InventoryTab({
                     <button
                       onClick={() => {
                         if (item.superRare >= 1) {
-                          window.alert('超レア称号がついたアイテムは売却出来ません');
+                          window.alert(t('home.inventory.superRareCannotSell'));
                           return;
                         }
                         setSellStackConfirmation({
@@ -10482,7 +10482,7 @@ function InventoryTab({
                       }}
                       className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                     >
-                      全売却 {formatNumber(sellPrice)}G
+                      {t('home.inventory.sellAllGold', { gold: formatNumber(sellPrice) })}
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -10532,10 +10532,10 @@ function InventoryTab({
             );
           })}
           {isJewelCategory && combinedJewelEntries.length === 0 && (
-            <div className="text-gray-400 text-sm text-center py-4">結晶を所持していません</div>
+            <div className="text-gray-400 text-sm text-center py-4">{t('home.inventory.noJewels')}</div>
           )}
           {!isJewelCategory && combinedDisplayItems.length === 0 && (
-            <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
+            <div className="text-gray-400 text-sm text-center py-4">{t('home.inventory.emptyCategoryItems')}</div>
           )}
       </div>
 
@@ -10547,7 +10547,7 @@ function InventoryTab({
             className="text-xs text-gray-500 flex items-center gap-1"
           >
             <span className={`transform transition-transform ${showSold ? 'rotate-180' : ''}`}>▼</span>
-            自動売却設定 ({filteredSoldItems.length}種類)
+            {t('home.inventory.autoSellSettings', { count: filteredSoldItems.length })}
           </button>
           {showSold && (
             <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
@@ -10568,7 +10568,7 @@ function InventoryTab({
                 </div>
               ))}
               {filteredSoldItems.length === 0 && (
-                <div className="text-gray-400 text-xs text-center py-2">このカテゴリに自動売却設定はありません</div>
+                <div className="text-gray-400 text-xs text-center py-2">{t('home.inventory.noAutoSellInCategory')}</div>
               )}
             </div>
           )}
@@ -10589,10 +10589,10 @@ function InventoryTab({
               onPointerDown={(event) => event.stopPropagation()}
             >
               <div id="sell-stack-confirm-title" className="text-base font-medium leading-relaxed">
-                「{sellStackConfirmation.itemName} x{formatNumber(sellStackConfirmation.count)}」を全売却します。
+                {t('home.inventory.sellConfirmTitle', { item: sellStackConfirmation.itemName, count: formatNumber(sellStackConfirmation.count) })}
               </div>
               <div className="mt-2 text-sm leading-relaxed text-gray-600">
-                {formatNumber(sellStackConfirmation.sellPrice)}Gを獲得します。よろしいですか？
+                {t('home.inventory.sellConfirmBody', { gold: formatNumber(sellStackConfirmation.sellPrice) })}
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button
@@ -10600,7 +10600,7 @@ function InventoryTab({
                   onClick={() => setSellStackConfirmation(null)}
                   className="rounded-full px-4 py-2 text-sm font-semibold text-sub hover:bg-blue-50"
                 >
-                  キャンセル
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
