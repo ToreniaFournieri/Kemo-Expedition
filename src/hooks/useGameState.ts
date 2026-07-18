@@ -1035,6 +1035,7 @@ function loadSavedState(): LoadSavedStateResult {
             shopIntimacyLastDecayAt: Date.now(),
             jewels: createStarterJewelInventory(),
             enemyBattleStats: {},
+            readDeveloperNewsItemIds: [],
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -1051,6 +1052,9 @@ function loadSavedState(): LoadSavedStateResult {
               .map((name: string) => normalizeChallengedGodName(name))
           : [];
         parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
+        parsed.global.readDeveloperNewsItemIds = Array.isArray(parsed.global.readDeveloperNewsItemIds)
+          ? Array.from(new Set(parsed.global.readDeveloperNewsItemIds.filter((itemId: unknown): itemId is string => typeof itemId === 'string' && itemId.trim().length > 0)))
+          : [];
         parsed.global.revealedItemCompendiumItemIds = Array.from(new Set([
           ...normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds),
           ...collectRevealedItemIdsFromOwnedData(parsed.global.inventory, parsed.parties),
@@ -1786,6 +1790,7 @@ function createInitialState(): InitialStateResult {
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
       enemyBattleStats: {},
+      readDeveloperNewsItemIds: [],
     },
     parties: [createInitialParty()],
     selectedPartyIndex: 0,
@@ -1845,6 +1850,7 @@ type GameAction =
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
+  | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
@@ -2923,6 +2929,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SELECT_PARTY':
       return { ...state, selectedPartyIndex: action.partyIndex };
+
+    case 'MARK_DEVELOPER_NEWS_READ': {
+      // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+      const nextReadIds = Array.from(new Set([
+        ...(state.global.readDeveloperNewsItemIds ?? []),
+        ...action.itemIds.filter((itemId) => itemId.trim().length > 0),
+      ]));
+      return { ...state, global: { ...state.global, readDeveloperNewsItemIds: nextReadIds } };
+    }
 
     case 'SELECT_DUNGEON': {
       // SpecRef: 8.3 | UI_EXPEDITION | Manual Destination Selection
@@ -4742,6 +4757,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
           enemyBattleStats: {},
+          readDeveloperNewsItemIds: [],
         },
         parties: [createInitialParty()],
         selectedPartyIndex: 0,
@@ -4811,6 +4827,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             ? hydrated.global.userId
             : generateUserId(),
           unlockedDeities: unlockedDeities,
+          readDeveloperNewsItemIds: Array.isArray(hydrated.global.readDeveloperNewsItemIds)
+            ? Array.from(new Set(hydrated.global.readDeveloperNewsItemIds.filter((itemId) => typeof itemId === 'string' && itemId.trim().length > 0)))
+            : [],
           jewelAutoEquipPriorityPartyId: normalizeJewelAutoEquipPriorityPartyId(
             hydrated.global.jewelAutoEquipPriorityPartyId,
             trimmedParties.length,
@@ -5211,6 +5230,10 @@ export function useGameState() {
 
     markAllDiaryLogsSeen: useCallback(() => {
       dispatch({ type: 'MARK_ALL_DIARY_LOGS_SEEN' });
+    }, []),
+
+    markDeveloperNewsRead: useCallback((itemIds: string[]) => {
+      dispatch({ type: 'MARK_DEVELOPER_NEWS_READ', itemIds });
     }, []),
 
     updateDiarySettings: useCallback((partyIndex: number, settings: Partial<DiarySettings>) => {

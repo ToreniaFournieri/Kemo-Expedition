@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.1 | 3 | 2026/07/18 | Implement Divine Bureau developer News runtime notification (Spec 8.6): add the News pane, unread badge, and save-persisted read tracking for the v8.1.2 beta report bonus fix notice. |
 | 0.8.1 | 2 | 2026/07/18 | Fix production Speed of Time bonus persistence (Spec 8.1.2/9): keep Debug mode OFF while allowing the legitimate `x1.2` report reward to persist until its saved 24-hour duration expires. |
 | 0.8.1 | 1 | 2026/07/17 | Prepare v0.8.1 runtime update: bump app version to `v0.8.1` and reset build number to `1`. |
 | 0.8.0 | 37 | 2026/07/14 | Update runtime Expedition Definitions (Spec 4.1.1): align Expedition 6-8 base enemy levels with the current definition table (29, 34, and 40). |

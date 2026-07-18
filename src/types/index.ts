@@ -448,6 +448,7 @@ interface GlobalState {
   jewels: JewelInventory;
   jewelAutoEquipPriorityPartyId?: number | null;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
+  readDeveloperNewsItemIds: string[];
 }
 
 // Computed party stats for battle
