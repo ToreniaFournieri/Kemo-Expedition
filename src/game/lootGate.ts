@@ -1,4 +1,5 @@
 import { Item, Party } from '../types';
+import { t } from '../i18n';
 import { getDebugSettings } from './debugSettings';
 
 type GateRarity = 'uncommon' | 'eliteRare' | 'bossRare';
@@ -102,7 +103,7 @@ export function checkLootGateRequirement(params: {
         blocked: true,
         required,
         collected,
-        label: 'ボス撃破',
+        label: t('home.gate.bossDefeated'),
       };
     }
     return { blocked: false };
@@ -120,7 +121,7 @@ export function checkLootGateRequirement(params: {
         blocked: true,
         required,
         collected,
-        label: 'アンコモンアイテム',
+        label: t('home.gate.uncommonItems'),
       };
     }
   }
@@ -134,7 +135,7 @@ export function checkLootGateRequirement(params: {
         blocked: true,
         required,
         collected,
-        label: 'エリートレアアイテム',
+        label: t('home.gate.eliteRareItems'),
       };
     }
   }

@@ -40,6 +40,8 @@ const ja = {
   'home.reward.acquired': '獲得',
   'home.gate.firstDungeonNone': 'なし（最初の探検地）',
   'home.gate.bossDefeated': 'ボス撃破',
+  'home.gate.uncommonItems': 'アンコモンアイテム',
+  'home.gate.eliteRareItems': 'エリートレアアイテム',
   'home.gate.bossProgress': 'ボス撃破 {collected}/{required}',
   'home.gate.unlockDungeon': '{progress}で{dungeon}開放',
   'home.godsBattle.named': '神魔{god}戦',

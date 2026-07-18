@@ -40,6 +40,8 @@ const en = {
   'home.reward.acquired': 'Acquired',
   'home.gate.firstDungeonNone': 'None (first expedition area)',
   'home.gate.bossDefeated': 'Boss defeated',
+  'home.gate.uncommonItems': 'Uncommon items',
+  'home.gate.eliteRareItems': 'Elite Rare items',
   'home.gate.bossProgress': 'Boss defeated {collected}/{required}',
   'home.gate.unlockDungeon': '{progress} unlocks {dungeon}',
   'home.godsBattle.named': '{god} God Battle',
