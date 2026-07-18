@@ -1743,7 +1743,7 @@ function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
 
 function getSideQuestAssignMessage(partyName: string, shortText: string): string {
   // SpecRef: 8.1 | UI_FOUNDATIONS | Side quest notifications
-  return `${partyName}はサイドクエスト ${shortText} を受けた`;
+  return t('home.notification.sideQuestAssigned', { party: partyName, quest: shortText });
 }
 
 function getSideQuestSuccessMessage(partyName: string, sideQuestDetail?: string): string | null {
@@ -1751,7 +1751,7 @@ function getSideQuestSuccessMessage(partyName: string, sideQuestDetail?: string)
   if (!sideQuestDetail) return null;
   const jewelMatch = sideQuestDetail.match(/:\s*(.+)\s*を手に入れた$/);
   if (!jewelMatch?.[1]) return null;
-  return `${partyName}はサイドクエストを達成し、${jewelMatch[1]}を手に入れた`;
+  return t('home.notification.sideQuestCompletedWithJewel', { party: partyName, jewel: jewelMatch[1] });
 }
 
 // Helper to format item stats
@@ -3383,10 +3383,10 @@ export function HomeScreen({
       const existing = slotNotifications.get(notificationKey);
       const startedFromEmpty = existing?.startedFromEmpty ?? previousItem == null;
       const message = startedFromEmpty
-        ? `${getItemDisplayName(item)}を装備した`
-        : `${getItemDisplayName(previousItem!)} を ${getItemDisplayName(item)}に装備しなおした`;
+        ? t('home.notification.equipment.equipped', { item: getItemDisplayName(item) })
+        : t('home.notification.equipment.replaced', { previous: getItemDisplayName(previousItem!), item: getItemDisplayName(item) });
       slotNotifications.set(notificationKey, {
-        message: `${partyName}${characterName}は ${message}`,
+        message: t('home.notification.equipment.characterChanged', { party: partyName, character: characterName, message }),
         startedFromEmpty,
       });
     };
@@ -4501,7 +4501,7 @@ export function HomeScreen({
 
     if (debugSettings.displayAfkDuration && elapsedMs > 60_000) {
       const elapsedSeconds = Math.floor(elapsedMs / 1000);
-      actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
+      actions.addNotification(t('home.notification.debug.elapsedSincePreviousUpdate', { seconds: formatNumber(elapsedSeconds) }));
     }
 
     // Long background spans should be simulated inside the reducer so each expedition
@@ -4593,7 +4593,7 @@ export function HomeScreen({
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
           actions.cancelSideQuest(partyIndex);
           if (!suppressCycleNotificationsForAfk) {
-            actions.addNotification(`${party.name}はサイドクエスト ${resolveSideQuestShortText(party.sideQuest)} を達成できなかった`);
+            actions.addNotification(t('home.notification.sideQuestFailed', { party: party.name, quest: resolveSideQuestShortText(party.sideQuest) }));
           }
           next[partyIndex] = updated;
           return;
@@ -4710,10 +4710,10 @@ export function HomeScreen({
               if (spend > 0) {
                 if (!suppressCycleNotificationsForAfk) {
                   if (squanderLevel > 0) {
-                    const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
-                    actions.addNotification(`${party.name} 君主${lordName}は贅沢に${formatNumber(spend)}G使った`);
+                    const lordName = getPartyAbilityOwnerName(party, 'squander') ?? t('common.unnamed');
+                    actions.addNotification(t('home.notification.lordSquanderedGold', { party: party.name, lord: lordName, gold: formatNumber(spend) }));
                   } else {
-                    actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+                    actions.addNotification(t('home.notification.partySpentGold', { party: party.name, gold: formatNumber(spend) }));
                   }
                 }
               }
@@ -4750,15 +4750,15 @@ export function HomeScreen({
               if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) actions.advanceSideQuest(partyIndex, embezzled, simulationNow);
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
-                const embezzledText = embezzled > 0 ? `(${formatNumber(embezzled)}Gを着服した)` : '';
+                const embezzledText = embezzled > 0 ? t('home.notification.embezzledSuffix', { gold: formatNumber(embezzled) }) : '';
                 if (!suppressCycleNotificationsForAfk) {
                   if (isNoFaith) {
-                    actions.addNotification(`${party.name}は ${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                    actions.addNotification(t('home.notification.partySavedGold', { party: party.name, gold: formatNumber(deposit), suffix: embezzledText }));
                   } else if (titheLevel > 0) {
-                    const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
-                    actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                    const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? t('common.unnamed');
+                    actions.addNotification(t('home.notification.pilgrimDonatedAndSavedGold', { party: party.name, pilgrim: pilgrimName, donation: formatNumber(donation), deposit: formatNumber(deposit), suffix: embezzledText }));
                   } else {
-                    actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                    actions.addNotification(t('home.notification.partyDonatedAndSavedGold', { party: party.name, donation: formatNumber(donation), deposit: formatNumber(deposit), suffix: embezzledText }));
                   }
                 }
               }
@@ -4786,7 +4786,7 @@ export function HomeScreen({
               if (triggerGodsBattle && party.sideQuest) {
                 actions.cancelSideQuest(partyIndex);
                 if (!suppressCycleNotificationsForAfk) {
-                  actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+                  actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
                 }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
@@ -4942,8 +4942,8 @@ export function HomeScreen({
           : 0;
 
         const levelUpMessage = equipSlotIncrease > 0
-          ? `${party.name} はレベルが${party.level}に上がった(装備枠が+${equipSlotIncrease}増えた)`
-          : `${party.name} はレベルが${party.level}に上がった`;
+          ? t('home.notification.partyLevelUpWithEquipmentSlot', { party: party.name, level: party.level, slots: equipSlotIncrease })
+          : t('home.notification.partyLevelUp', { party: party.name, level: party.level });
         actions.addNotification(levelUpMessage);
       }
 
@@ -4969,7 +4969,7 @@ export function HomeScreen({
           const itemName = getItemDisplayName(item);
           const rarity = getItemRarityById(item.id);
           actions.addNotification(
-            `${party.name}:${itemName}を入手！`,
+            t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
             rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
             'item',
             undefined,
@@ -5065,11 +5065,11 @@ export function HomeScreen({
             : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
 
         if (wasAutoSold) {
-          actions.addNotification(`店から ${purchasedName} を購入して失望した(自動売却)`, 'normal', 'item', true);
+          actions.addNotification(t('home.notification.shopBoughtAndAutoSold', { item: purchasedName }), 'normal', 'item', true);
           continue;
         }
 
-        actions.addNotification(`店から ${purchasedName} を購入した！`, 'normal', 'item', true);
+        actions.addNotification(t('home.notification.shopBought', { item: purchasedName }), 'normal', 'item', true);
       }
     }
 
@@ -5238,7 +5238,7 @@ export function HomeScreen({
       const itemName = getItemDisplayName(item);
       const rarity = getItemRarityById(item.id);
       actions.addNotification(
-        `${party.name}:${itemName}を入手！`,
+        t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
         rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
         'item',
         undefined,
@@ -5262,34 +5262,34 @@ export function HomeScreen({
 
     if (!isColosseumSortie && (party.currentHp <= 0 || partyStats.hp <= 0)) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
-      actions.addNotification(`${refusingCharacter} は疲弊しており出撃を拒否した`);
+      actions.addNotification(t('home.notification.characterRefusedExpedition', { character: refusingCharacter }));
       return;
     }
 
     // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
     if (triggerGodsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) {
-      actions.addNotification(`${party.name} は既に神魔戦へ向けて移動中だ`);
+      actions.addNotification(t('home.notification.partyAlreadyMovingToGodBattle', { party: party.name }));
       return;
     }
     // SpecRef: 8.3 | UI_EXPEDITION | Charge
     if (!isColosseumSortie && instantChargeState.stock <= 0) {
-      actions.addNotification(`${party.name} の即時出撃チャージが不足している`);
+      actions.addNotification(t('home.notification.instantExpeditionChargeInsufficient', { party: party.name }));
       return;
     }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
     if (stolenProfit > 0) {
-      actions.addNotification(`${party.name}は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして即時出撃した`);
+      actions.addNotification(t('home.notification.instantExpeditionWithStolenGold', { party: party.name, gold: formatNumber(stolenProfit) }));
     } else {
-      actions.addNotification(`${party.name}は即時出撃した`);
+      actions.addNotification(t('home.notification.instantExpeditionStarted', { party: party.name }));
     }
 
     notifyExpeditionRewardsIfNeeded(party, partyIndex);
 
     if (triggerGodsBattle && party.sideQuest) {
       actions.cancelSideQuest(partyIndex);
-      actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+      actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
     }
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;

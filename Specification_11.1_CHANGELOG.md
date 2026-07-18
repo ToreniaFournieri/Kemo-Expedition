@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 61 | 2026/07/18 | Route HomeScreen side quest, equipment, gold, level-up, item, shop, and instant expedition notification Japanese text through meaningful Japanese/English i18n keys. |
 | 0.8.2 | 60 | 2026/07/18 | Route additional HomeScreen header, party help, debug-report, terrain, gender, and equipment-lock Japanese UI text through meaningful Japanese/English i18n keys. |
 | 0.8.2 | 59 | 2026/07/18 | Localize remaining Party tab equipment, bonus, penetration, lineage and predisposition short labels, and battle hit-count displays through Japanese/English i18n keys. |
 | 0.8.2 | 58 | 2026/07/18 | Route additional HomeScreen shop, debug store, inventory, and sell-confirmation Japanese UI text through Japanese/English i18n keys. |
