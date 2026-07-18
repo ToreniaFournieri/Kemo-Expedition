@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 67 | 2026/07/18 | Route HomeScreen first-2000-line Japanese literals, generated names, legacy labels, and item stat fragments through meaningful i18n keys. |
 | 0.8.2 | 66 | 2026/07/18 | Translate remaining English i18n ability help and C-multiplier help values from Japanese to English. |
 | 0.8.2 | 65 | 2026/07/18 | Route HomeScreen bonus ability glossary subcategory labels, ability help, and C-multiplier help text through meaningful i18n keys. |
 | 0.8.2 | 64 | 2026/07/18 | Route additional HomeScreen condition, elemental-offense help, bonus-help, diary, feedback, and backup/import Japanese UI text through meaningful i18n keys. |

@@ -330,9 +330,9 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
         .replace(/xM/g, `x${multiplier}`)
         .replace(/N/g, threshold)
         .replace(/M/g, multiplier)
-        .replace(/を\s+x/g, 'をx')
-        .replace(/が\s+x/g, 'がx')
-        .replace(/の\s+x/g, 'のx');
+        .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
+        .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
+        .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
     }
   }
   if (abilityId === 'melee_conversion') {
@@ -348,18 +348,18 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;
 
-  if (abilityId.endsWith('_reflect') && value && value.includes('反射') && value.includes('被弾')) {
+  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken'))) {
     return entry.description
-      .replace('のNを反射して相手に与える(自身は残りを受ける)', `を${value}に分散する(反射分を相手に与え、自身は被弾分を受ける)`)
-      .replace(/を\s+x/g, 'をx')
-      .replace(/が\s+x/g, 'がx')
-      .replace(/の\s+x/g, 'のx');
+      .replace(t('home.abilityDescription.reflectTemplate'), t('home.abilityDescription.reflectDistributed', { value }))
+      .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
+      .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
+      .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
   }
 
   if (timing) {
     description = description
-      .replace('指定終了タイミング', `${timing}終了タイミング`)
-      .replace('指定タイミング', `${timing}タイミング`);
+      .replace(t('home.abilityDescription.specifiedEndTiming'), t('home.abilityDescription.resolvedEndTiming', { timing }))
+      .replace(t('home.abilityDescription.specifiedTiming'), t('home.abilityDescription.resolvedTiming', { timing }));
   }
 
   if (value) {
@@ -376,9 +376,9 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   }
 
   return description
-    .replace(/を\s+x/g, 'をx')
-    .replace(/が\s+x/g, 'がx')
-    .replace(/の\s+x/g, 'のx');
+    .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
+    .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
+    .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
 }
 
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
@@ -397,26 +397,30 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   explore: 'explore',
   return: 'return',
   reactivate: 'reactivate',
-  '休息中': 'rest',
-  '売却中': 'sell',
-  '宴会中': 'free_action',
-  '不貞腐れ中': 'free_action',
-  '自由行動中': 'free_action',
-  '睡眠中': 'sound_sleep',
-  '熟睡中': 'sound_sleep',
-  '仮眠中': 'move',
-  '身支度中': 'move',
-  '祈り中': 'pray',
-  '待機中': 'idle',
-  '移動中': 'move',
-  '探索中': 'explore',
-  '帰還中': 'return',
-  '復帰中': 'reactivate',
 };
 
 function toPartyCycleState(value: unknown): PartyCycleState {
   if (typeof value !== 'string') return 'idle';
-  return LEGACY_PARTY_CYCLE_STATE_MAP[value] ?? 'idle';
+  const legacyJapaneseStateEntries: Array<[string, PartyCycleState]> = [
+    [t('home.legacyCycle.rest'), 'rest'],
+    [t('home.legacyCycle.sell'), 'sell'],
+    [t('home.legacyCycle.feast'), 'free_action'],
+    [t('home.legacyCycle.slump'), 'free_action'],
+    [t('home.legacyCycle.freeAction'), 'free_action'],
+    [t('home.legacyCycle.sleep'), 'sound_sleep'],
+    [t('home.legacyCycle.soundSleep'), 'sound_sleep'],
+    [t('home.legacyCycle.nap'), 'move'],
+    [t('home.legacyCycle.outfit'), 'move'],
+    [t('home.legacyCycle.pray'), 'pray'],
+    [t('home.legacyCycle.idle'), 'idle'],
+    [t('home.legacyCycle.move'), 'move'],
+    [t('home.legacyCycle.explore'), 'explore'],
+    [t('home.legacyCycle.return'), 'return'],
+    [t('home.legacyCycle.reactivate'), 'reactivate'],
+  ];
+  return LEGACY_PARTY_CYCLE_STATE_MAP[value]
+    ?? legacyJapaneseStateEntries.find(([label]) => label === value)?.[1]
+    ?? 'idle';
 }
 
 function getPartyCycleStateLabel(state: PartyCycleState): string {
@@ -500,7 +504,7 @@ function getExpeditionTierDurationFactor(expTier: number): number {
 
 function normalizeBattleLogNote(note?: string): string | undefined {
   if (!note) return note;
-  return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
+  return note.replace(t('home.battleLog.legacyPartyAttackPower'), t('home.battleLog.partyPhysicalAttackPower'));
 }
 
 // SpecRef: 6.1.1.1 | START phase | floor.terrain.*
@@ -616,7 +620,7 @@ function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDef | nul
     return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
   }
 
-  const normalizedEnemyName = entry.enemyName.replace(/\s+\((ELITE|BOSS|神魔戦)\)\s*$/u, '').trim();
+  const normalizedEnemyName = entry.enemyName.replace(new RegExp(`\\s+\\((ELITE|BOSS|${escapeRegExp(t('home.godsBattle.label'))})\\)\\s*$`, 'u'), '').trim();
   if (!normalizedEnemyName) return null;
   return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
 }
@@ -765,24 +769,24 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-const UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME: Partial<Record<string, string>> = {
-  'ケモ': 'C_Unique_Kemo.png',
-  'ライカ': 'C_Unique_Laika.png',
-  'ルナ': 'C_Unique_Luna.png',
-  'ノクス': 'C_Unique_Nox.png',
-  'マーレ': 'C_Unique_Merle.png',
-  'プチーツァ': 'C_Unique_Puchitsa.png',
-  'ミシュカ': 'C_Unique_Mishka.png',
-  '蒼牙破': 'C_Unique_Souga-ha.png',
-  'レナード': 'C_Unique_Leonard.png',
-  '葉隠': 'C_Unique_Hagakure.png',
-  'フィン': 'C_Unique_Finn.png',
-  'オルカ': 'C_Unique_Orca.png',
-};
+const UNIQUE_BATTLE_LOG_CHIBI_FILES: ReadonlyArray<{ nameKey: string; fileName: string }> = [
+  { nameKey: 'character.unique.kemo.name', fileName: 'C_Unique_Kemo.png' },
+  { nameKey: 'character.unique.laika.name', fileName: 'C_Unique_Laika.png' },
+  { nameKey: 'character.unique.luna.name', fileName: 'C_Unique_Luna.png' },
+  { nameKey: 'character.unique.nox.name', fileName: 'C_Unique_Nox.png' },
+  { nameKey: 'character.unique.mare.name', fileName: 'C_Unique_Merle.png' },
+  { nameKey: 'character.unique.ptitsa.name', fileName: 'C_Unique_Puchitsa.png' },
+  { nameKey: 'character.unique.mishka.name', fileName: 'C_Unique_Mishka.png' },
+  { nameKey: 'character.unique.sogaha.name', fileName: 'C_Unique_Souga-ha.png' },
+  { nameKey: 'character.unique.leonard.name', fileName: 'C_Unique_Leonard.png' },
+  { nameKey: 'character.unique.hagakure.name', fileName: 'C_Unique_Hagakure.png' },
+  { nameKey: 'character.unique.finn.name', fileName: 'C_Unique_Finn.png' },
+  { nameKey: 'character.unique.orca.name', fileName: 'C_Unique_Orca.png' },
+];
 
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
   if (character.isUnique) {
-    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME[character.name];
+    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILES.find(({ nameKey }) => t(nameKey) === character.name)?.fileName;
     return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/${uniqueFileName}` : null;
   }
 
@@ -804,7 +808,7 @@ function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): string[] {
   ];
 
   return Array.from(new Set(names.flatMap((name) => {
-    const normalizedName = name.replace(/\(神魔戦\)/g, '').trim();
+    const normalizedName = name.replace(new RegExp(escapeRegExp(t('home.godsBattle.parenthetical')), 'g'), '').trim();
     if (!normalizedName) return [];
 
     const withoutTrailingMetadata = normalizedName.replace(/(?:\s*\([^()]+\))+\s*$/u, '').trim();
@@ -836,7 +840,7 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
     getBattleLogEnemyNameCandidates(entry).forEach((enemyName) => {
       markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
     });
-    if (/^敵/.test(action)) markers.push({ label: '敵', src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
+    if (new RegExp(`^${escapeRegExp(t('home.battleLog.enemyPrefix'))}`).test(action)) markers.push({ label: t('home.battleLog.enemyPrefix'), src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
   }
 
   party.characters.forEach((character: Character) => {
@@ -971,7 +975,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
     if (group) {
       const summarizedNote = group.templateLog.note?.replace(/✚[\d,]+(?=\))/gu, `✚${formatNumber(group.totalHealAmount)}`);
       const summarizedTargets = [...new Set(group.targetNames)];
-      const isNullifiedLifeDrain = group.templateLog.note?.includes('吸血無効') ?? false;
+      const isNullifiedLifeDrain = group.templateLog.note?.includes(t('home.battleLog.lifeDrainNullified')) ?? false;
       const effectSourceName = group.templateLog.effectSourceName ?? '';
       return [{
         ...group.templateLog,
@@ -1195,69 +1199,69 @@ function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Expedition
 type GenderedNamePool = { male: string[]; female: string[] };
 const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
   1: {
-    caninian: ['タロウ', 'コテツ', 'ハヤテ', 'シロ', 'レオ', 'リク', 'ソラ', 'マル', 'ジン'],
-    lupinian: ['ガルム', 'クロウ', 'ハク', 'レイガ', 'ギン', 'ランガ', 'ゼル', 'バルト'],
-    vulpinian: ['アカネ', 'イズナ', 'ヨウコ', 'センリ', 'コトネ', 'クズノハ', 'ミカゲ', 'ヒナ', 'アヤ'],
-    ursan: ['ゴンタ', 'バルド', 'クマジロウ', 'ドーガ', 'グルン', 'ダン', 'ボルグ', 'ガイ', 'ザン', 'ブラム'],
-    felidian: ['タマ', 'ネロ', 'シエル', 'レイ', 'アオ', 'カノン', 'ユイ'],
-    leporian: ['フブキ', 'ハル', 'トワ', 'ユキ', 'ナギ', 'ミナ', 'サラ', 'アオイ', 'レイナ', 'カスミ'],
-    cervin: ['サイカ', 'カナエ', 'リンネ', 'ミコト', 'ユズリハ', 'シオン', 'セツナ', 'トキ', 'マヒロ', 'ツムギ'],
-    murid: ['カゲ', 'コソネ', 'スズ', 'コマ', 'ヒソカ', 'ネム', 'チビ', 'クルミ'],
+    caninian: t('home.defaultNames.pt1.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    lupinian: t('home.defaultNames.pt1.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt1.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt1.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt1.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt1.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt1.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt1.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   2: {
-    lupinian: ['タウロ', 'カノア', 'ラウル', 'マウイ', 'タネ', 'ケアヌ'],
-    vulpinian: ['カラニ', 'カイロ', 'マコア', 'ナル', 'ラニ', 'ノアル'],
-    felidian: ['レイナ', 'レイア', 'モアナ', 'ナレア', 'カリア', 'マリエ'],
-    caninian: ['カイ', 'マナ', 'ノエル', 'ラウア', 'テオ', 'エナ'],
-    ursan: ['マロ', 'カヘア', 'タマ', 'ノルア', 'ハウ', 'カロ'],
-    procyonian: ['カイマ', 'マコ', 'ナルア', 'ロノ', 'タリ', 'モア'],
-    leporian: ['レア', 'ナニ', 'ミア', 'アロハ', 'カノエ', 'リノ'],
-    cervin: ['マナエル', 'ケアヌ', 'ノアル', 'ラニエル', 'マヒナ', 'カレオ'],
-    murid: ['ピコ', 'ミノ', 'ナオ', 'ティコ', 'ロア', 'エリオ'],
+    lupinian: t('home.defaultNames.pt2.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt2.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt2.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt2.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt2.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt2.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt2.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt2.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt2.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   3: {
-    lupinian: ['ファリス', 'ザヒル', 'ナシル', 'カリーム', 'ラシード', 'ハイダル'],
-    vulpinian: ['サーミル', 'ジャリル', 'ナビル', 'ファーディ', 'ザイード', 'アミール'],
-    felidian: ['ライラ', 'ナディア', 'サフィア', 'ヤスミン', 'ザーラ', 'マリカ'],
-    caninian: ['ハサン', 'オマル', 'ユースフ', 'ターリク', 'サリム', 'イブラヒム'],
-    ursan: ['バシール', 'マフムード', 'カーディル', 'ジャバル', 'ラヒム', 'ハムザ'],
-    procyonian: ['ナジーム', 'ファヒム', 'サーヒル', 'リヤド', 'ジャミル', 'カミル'],
-    leporian: ['アミナ', 'サルマ', 'ナイラ', 'リーム', 'ハナ', 'ダリア'],
-    cervin: ['ザヒラ', 'スハイル', 'ナディーム', 'カリラ', 'マジド', 'サミラ'],
-    murid: ['ミルザ', 'タリル', 'ラミ', 'サーミ', 'ナビハ', 'フィラス'],
+    lupinian: t('home.defaultNames.pt3.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt3.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt3.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt3.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt3.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt3.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt3.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt3.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt3.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   4: {
-    lupinian: ['イヴァン', 'ドミトリ', 'セルゲイ', 'ミハイル', 'アレクセイ', 'ボリス'],
-    vulpinian: ['ニコライ', 'ユーリ', 'ヴィクトル', 'ロマン', 'レフ', 'パーヴェル'],
-    felidian: ['アーニャ', 'ナターシャ', 'エカテリーナ', 'イリーナ', 'ソフィア', 'タチアナ'],
-    caninian: ['アンドレイ', 'コンスタンチン', 'フョードル', 'グリゴリー', 'ステパン', 'ヴァシリー'],
-    ursan: ['ウラジミール', 'ゲンナジー', 'イーゴリ', 'ロスチスラフ', 'ヤロスラフ', 'ボグダン'],
-    procyonian: ['ミーシャ', 'サーシャ', 'キリル', 'マクシム', 'オレグ', 'ティモフェイ'],
-    leporian: ['アリーナ', 'リュドミラ', 'ヴェーラ', 'スヴェトラーナ', 'ゼニア', 'マリーナ'],
-    cervin: ['ミラ', 'ラーダ', 'エレナ', 'ダリア', 'ズラータ', 'オリガ'],
-    murid: ['ピョートル', 'イリヤ', 'ラディム', 'ヴァレンチン', 'デニス', 'ルスラン'],
+    lupinian: t('home.defaultNames.pt4.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt4.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt4.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt4.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt4.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt4.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt4.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt4.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt4.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   5: {
-    lupinian: ['吠月', '銀吼', '狼髭', '鉄喉', '孤爪', '霜背', '夜襲', '咬輪', '雷牙'],
-    vulpinian: ['幻舌', '紅毛', '空耳', '妖面', '星瞳', '舞茸', '化葉', '千面'],
-    felidian: ['影髭', '夜目', '柔骨', '爪先', '眠須', '潜足', '鈴尾', '無聲', '陽溜'],
-    caninian: ['霜踏', '忠牙', '嗅丸', '群吠', '追尾', '散走', '守庭', '埋骨'],
-    ursan: ['冬籠', '熊掌', '山鳴', '蜜喰', '鈍爪', '大腹', '木倒', '岩背'],
-    procyonian: ['酒樽', '眠丸', '変身', '目隠', '落葉', '騙耳', '楽鼓', '空釜'],
-    leporian: ['長耳', '月跳', '軟足', '白尾', '草噛', '早駆', '雪隠'],
-    cervin: ['角王', '枝冠', '鈴蹄', '林鳴', '澄目', '茸角', '神着', '霜脚', '柵越'],
-    murid: ['砕歯', '灰背', '隙眼', '細尾', '穴人', '種盗', '顫髭', '鉄門'],
+    lupinian: t('home.defaultNames.pt5.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt5.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt5.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt5.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt5.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt5.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt5.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt5.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt5.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   6: {
-    lupinian: ['エヴァン', 'コール', 'ハドソン', 'ワイアット', 'ローガン', 'ブレイク'],
-    vulpinian: ['アッシャー', 'オーウェン', 'グラント', 'ジャスパー', 'ノーラン', 'リード'],
-    felidian: ['ヘイゼル', 'アイリス', 'クレア', 'オードリー', 'サディ', 'ヴァイオレット'],
-    caninian: ['メイソン', 'カーター', 'ベネット', 'ライアン', 'エリオット', 'テオドア'],
-    ursan: ['グレイソン', 'ハリソン', 'ウェスリー', 'サイラス', 'マーカス', 'デクラン'],
-    procyonian: ['ミロ', 'エズラ', 'ルカ', 'フェリックス', 'ジュード', 'ローワン'],
-    leporian: ['ジュニパー', 'ウィロー', 'エラ', 'ノラ', 'アイビー', 'ルビー'],
-    cervin: ['オータム', 'スカイラー', 'ハーパー', 'エヴリン', 'セージ', 'ブリア'],
-    murid: ['リアム', 'ノア', 'カレブ', 'サム', 'イアン', 'オリバー'],
+    lupinian: t('home.defaultNames.pt6.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt6.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt6.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt6.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt6.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt6.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt6.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt6.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt6.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
 };
 
@@ -1424,7 +1428,7 @@ function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState):
   const log = party.lastExpeditionLog;
   if (!log || log.finalOutcome !== 'Clear') return false;
   const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes('(神魔戦)');
+  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes(t('home.godsBattle.parenthetical'));
 }
 
 function getGodBattleLabel(dungeon: Dungeon): string {
@@ -1452,16 +1456,16 @@ type ProgressItemDisplay = {
 function formatSideQuestShortText(type: string, shortText: string, displayTarget: number): string {
   const valueByType: Partial<Record<string, string>> = {
     'q.squander': `${formatNumber(displayTarget)}G`,
-    'q.sleeping': `${formatNumber(displayTarget)}回`,
-    'q.exercise': `${formatNumber(displayTarget)}分`,
+    'q.sleeping': t('home.unit.count', { value: formatNumber(displayTarget) }),
+    'q.exercise': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
     'q.embezzlement': `${formatNumber(displayTarget)}G`,
     'q.donation': `${formatNumber(displayTarget)}G`,
-    'q.healing': `${formatNumber(displayTarget)}分`,
-    'q.AFK': `${formatNumber(displayTarget)}分`,
+    'q.healing': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
+    'q.AFK': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
     'q.treasure-super-rare': '',
-    'q.treasure-boss-rare': `${formatNumber(displayTarget)}個`,
-    'q.poor-kid': `${formatNumber(displayTarget)}回`,
-    'q.consecutive-wins': `${formatNumber(displayTarget)}連`,
+    'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(displayTarget) }),
+    'q.poor-kid': t('home.unit.count', { value: formatNumber(displayTarget) }),
+    'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(displayTarget) }),
     'q.losers': '',
     'q.savings': `${formatNumber(displayTarget)}G`,
   };
@@ -1502,11 +1506,11 @@ function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedN
     },
     'q.sleeping': {
       text: t('home.sideQuest.sleeping', { count: formatNumber(displayTarget) }),
-      current: `${formatNumber(displayProgress)}回`,
+      current: t('home.unit.count', { value: formatNumber(displayProgress) }),
     },
     'q.exercise': {
       text: t('home.sideQuest.exercise', { minutes: formatNumber(displayTarget) }),
-      current: `${formatNumber(displayProgress)}分`,
+      current: t('home.unit.minutes', { value: formatNumber(displayProgress) }),
     },
     'q.embezzlement': {
       text: t('home.sideQuest.embezzlement', { gold: formatNumber(displayTarget) }),
@@ -1518,26 +1522,26 @@ function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedN
     },
     'q.healing': {
       text: t('home.sideQuest.healing', { minutes: formatNumber(displayTarget) }),
-      current: `${formatNumber(displayProgress)}分`,
+      current: t('home.unit.minutes', { value: formatNumber(displayProgress) }),
     },
     'q.AFK': {
       text: t('home.sideQuest.afk', { minutes: formatNumber(displayTarget) }),
-      current: `${formatNumber(displayProgress)}分`,
+      current: t('home.unit.minutes', { value: formatNumber(displayProgress) }),
     },
     'q.treasure-super-rare': {
       text: t('home.sideQuest.treasureSuperRare'),
     },
     'q.treasure-boss-rare': {
       text: t('home.sideQuest.treasureBossRare', { count: formatNumber(displayTarget) }),
-      current: `${formatNumber(displayProgress)}個`,
+      current: t('home.unit.items', { value: formatNumber(displayProgress) }),
     },
     'q.poor-kid': {
       text: t('home.sideQuest.poorKid', { count: formatNumber(displayTarget) }),
-      current: `${formatNumber(displayProgress)}回`,
+      current: t('home.unit.count', { value: formatNumber(displayProgress) }),
     },
     'q.consecutive-wins': {
       text: t('home.sideQuest.consecutiveWins', { streak: formatNumber(displayTarget) }),
-      current: `${formatNumber(displayProgress)}連`,
+      current: t('home.unit.streak', { value: formatNumber(displayProgress) }),
     },
     'q.losers': {
       text: t('home.sideQuest.losers'),
@@ -1749,7 +1753,7 @@ function getSideQuestAssignMessage(partyName: string, shortText: string): string
 function getSideQuestSuccessMessage(partyName: string, sideQuestDetail?: string): string | null {
   // SpecRef: 8.1 | UI_FOUNDATIONS | Side quest notifications
   if (!sideQuestDetail) return null;
-  const jewelMatch = sideQuestDetail.match(/:\s*(.+)\s*を手に入れた$/);
+  const jewelMatch = sideQuestDetail.match(new RegExp(`:\\s*(.+)\\s*${escapeRegExp(t('home.sideQuest.legacyObtainedSuffix'))}$`));
   if (!jewelMatch?.[1]) return null;
   return t('home.notification.sideQuestCompletedWithJewel', { party: partyName, jewel: jewelMatch[1] });
 }
@@ -1888,53 +1892,53 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
       })();
       jewelDBonus[d.stat] += rankValue;
     }
-    if (jewel.cBonusType === 'physical_attack') cParts.push(`物攻撃+${cVal}%`);
-    if (jewel.cBonusType === 'magical_attack') cParts.push(`魔攻撃+${cVal}%`);
-    if (jewel.cBonusType === 'physical_defense') cParts.push(`物防+${cVal}%`);
-    if (jewel.cBonusType === 'magical_defense') cParts.push(`魔防+${cVal}%`);
-    if (jewel.cBonusType === 'accuracy') cParts.push(`命中+${cVal}`);
-    if (jewel.cBonusType === 'evasion') cParts.push(`回避+${cVal}`);
+    if (jewel.cBonusType === 'physical_attack') cParts.push(t('home.itemStat.physicalAttackPercent', { value: cVal }));
+    if (jewel.cBonusType === 'magical_attack') cParts.push(t('home.itemStat.magicalAttackPercent', { value: cVal }));
+    if (jewel.cBonusType === 'physical_defense') cParts.push(t('home.itemStat.physicalDefensePercent', { value: cVal }));
+    if (jewel.cBonusType === 'magical_defense') cParts.push(t('home.itemStat.magicalDefensePercent', { value: cVal }));
+    if (jewel.cBonusType === 'accuracy') cParts.push(t('home.itemStat.accuracyFlat', { value: cVal }));
+    if (jewel.cBonusType === 'evasion') cParts.push(t('home.itemStat.evasionFlat', { value: cVal }));
   }
   // Match displayed item values with runtime stat computation (rounded, not floored).
   const displayedMeleeAttack = (item.meleeAttack ?? 0) + jewelDBonus.meleeAttack;
   if (displayedMeleeAttack) {
-    dParts.push(`近攻+${Math.round(displayedMeleeAttack * multiplier)}`);
-    if (item.category === 'sword' && multiplierPercent) cParts.push(`近攻撃+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.meleeAttackFlat', { value: Math.round(displayedMeleeAttack * multiplier) }));
+    if (item.category === 'sword' && multiplierPercent) cParts.push(t('home.itemStat.meleeAttackPercent', { value: multiplierPercent }));
   }
   const displayedRangedAttack = (item.rangedAttack ?? 0) + jewelDBonus.rangedAttack;
   if (displayedRangedAttack) {
-    dParts.push(`遠攻+${Math.round(displayedRangedAttack * multiplier)}`);
-    if (item.category === 'arrow' && multiplierPercent) cParts.push(`遠攻撃+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.rangedAttackFlat', { value: Math.round(displayedRangedAttack * multiplier) }));
+    if (item.category === 'arrow' && multiplierPercent) cParts.push(t('home.itemStat.rangedAttackPercent', { value: multiplierPercent }));
   }
   const displayedMagicalAttack = (item.magicalAttack ?? 0) + jewelDBonus.magicalAttack;
   if (displayedMagicalAttack) {
-    dParts.push(`魔攻+${Math.round(displayedMagicalAttack * multiplier)}`);
-    if (item.category === 'wand' && multiplierPercent) cParts.push(`魔攻撃+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.magicalAttackFlat', { value: Math.round(displayedMagicalAttack * multiplier) }));
+    if (item.category === 'wand' && multiplierPercent) cParts.push(t('home.itemStat.magicalAttackPercent', { value: multiplierPercent }));
   }
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
-    if (baseNoA !== 0) dParts.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.meleeNoABonus) cParts.push(formatFixedNoA('近回数', item.meleeNoABonus));
+    if (baseNoA !== 0) dParts.push(t('home.itemStat.meleeNoASigned', { value: formatSigned(getScaledNoA(baseNoA)) }));
+    if (item.meleeNoABonus) cParts.push(formatFixedNoA(t('home.itemStat.meleeNoA'), item.meleeNoABonus));
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
-    if (baseNoA !== 0) dParts.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.rangedNoABonus) cParts.push(formatFixedNoA('遠回数', item.rangedNoABonus));
+    if (baseNoA !== 0) dParts.push(t('home.itemStat.rangedNoASigned', { value: formatSigned(getScaledNoA(baseNoA)) }));
+    if (item.rangedNoABonus) cParts.push(formatFixedNoA(t('home.itemStat.rangedNoA'), item.rangedNoABonus));
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
-    if (baseNoA !== 0) dParts.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.magicalNoABonus) cParts.push(formatFixedNoA('魔回数', item.magicalNoABonus));
+    if (baseNoA !== 0) dParts.push(t('home.itemStat.magicalNoASigned', { value: formatSigned(getScaledNoA(baseNoA)) }));
+    if (item.magicalNoABonus) cParts.push(formatFixedNoA(t('home.itemStat.magicalNoA'), item.magicalNoABonus));
   }
   const displayedPhysicalDefense = (item.physicalDefense ?? 0) + jewelDBonus.physicalDefense;
   if (displayedPhysicalDefense) {
-    dParts.push(`物防+${Math.round(displayedPhysicalDefense * multiplier)}`);
-    if (multiplierPercent) cParts.push(`物防+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.physicalDefenseFlat', { value: Math.round(displayedPhysicalDefense * multiplier) }));
+    if (multiplierPercent) cParts.push(t('home.itemStat.physicalDefensePercent', { value: multiplierPercent }));
   }
   const displayedMagicalDefense = (item.magicalDefense ?? 0) + jewelDBonus.magicalDefense;
   if (displayedMagicalDefense) {
-    dParts.push(`魔防+${Math.round(displayedMagicalDefense * multiplier)}`);
-    if (multiplierPercent) cParts.push(`魔防+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.magicalDefenseFlat', { value: Math.round(displayedMagicalDefense * multiplier) }));
+    if (multiplierPercent) cParts.push(t('home.itemStat.magicalDefensePercent', { value: multiplierPercent }));
   }
   const displayedPartyHp = (item.partyHP ? Math.round(item.partyHP * multiplier * hpScaleMultiplier) : 0)
     + (jewelDBonus.partyHP ? Math.round(jewelDBonus.partyHP * multiplier * hpScaleMultiplier) : 0);
@@ -1943,17 +1947,17 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     // Round base and jewel HP contributions separately, then sum.
     dParts.push(`HP+${displayedPartyHp}`);
   }
-  if (item.accuracyBonus) cParts.push(`命中+${Math.round(item.accuracyBonus * 1000)}`);
-  if (item.evasionBonus) cParts.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
-  if (item.vitalityBonus) bParts.push(`体力+${item.vitalityBonus}`);
-  if (item.strengthBonus) bParts.push(`力+${item.strengthBonus}`);
-  if (item.intelligenceBonus) bParts.push(`知性+${item.intelligenceBonus}`);
-  if (item.mindBonus) bParts.push(`精神+${item.mindBonus}`);
+  if (item.accuracyBonus) cParts.push(t('home.itemStat.accuracyFlat', { value: Math.round(item.accuracyBonus * 1000) }));
+  if (item.evasionBonus) cParts.push(t('home.itemStat.evasionSigned', { value: formatSigned(Math.round(item.evasionBonus * 1000)) }));
+  if (item.vitalityBonus) bParts.push(t('home.itemStat.vitalityFlat', { value: item.vitalityBonus }));
+  if (item.strengthBonus) bParts.push(t('home.itemStat.strengthFlat', { value: item.strengthBonus }));
+  if (item.intelligenceBonus) bParts.push(t('home.itemStat.intelligenceFlat', { value: item.intelligenceBonus }));
+  if (item.mindBonus) bParts.push(t('home.itemStat.mindFlat', { value: item.mindBonus }));
   if (item.penetBonus) cParts.push(`${t('party.bonus.penet')}+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: t('common.element.fire.short'), ice: t('common.element.ice.short'), thunder: t('common.element.thunder.short') }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
-    eParts.push(`${elem}属性+${elementalPercent}%`);
+    eParts.push(t('home.itemStat.elementalOffensePercent', { element: elem, value: elementalPercent }));
   }
   for (const bonus of itemUniqueBonuses) {
     const label = formatBonuses([bonus], { defenseMultiplierStyle: 'friendly' }).trim();
@@ -1965,7 +1969,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     else if (bucket === 'r') rParts.push(label);
     else otherParts.push(label);
   }
-  if (superRareUniqueBonusText) otherParts.push(`超:${superRareUniqueBonusText}`);
+  if (superRareUniqueBonusText) otherParts.push(t('home.itemStat.superRarePrefix', { text: superRareUniqueBonusText }));
 
   const eText = eParts.join(' ');
   const mergedBracketBonuses = [...cParts, ...rParts, ...otherParts];
