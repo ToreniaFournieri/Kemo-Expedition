@@ -24,7 +24,7 @@ import {
   type BonusAbilityGlossarySubcategoryId,
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
-import { getItemCoreConceptValue, getItemDisplayName, getLocalizedItemName } from '../game/gameState';
+import { getItemCoreConceptValue, getItemDisplayName, getLocalizedEnhancementTitle, getLocalizedItemName, getLocalizedSuperRareTitle } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
@@ -12045,12 +12045,12 @@ function SettingTab({
   const rareSuperRareTotal = getBagTicketTotal(createRareSuperRareBag());
   const superRareHitTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + (t.value > 0 ? t.tickets : 0), 0);
   const enhancementCountTargets = [
-    { value: 1, label: '名工の残り' },
-    { value: 2, label: '魔性の残り' },
-    { value: 3, label: '宿った残り' },
-    { value: 4, label: '伝説の残り' },
-    { value: 5, label: '恐ろしい残り' },
-    { value: 6, label: '究極の残り' },
+    { value: 1 },
+    { value: 2 },
+    { value: 3 },
+    { value: 4 },
+    { value: 5 },
+    { value: 6 },
   ] as const;
   const sideQuestDefaultBag = createSideQuestBag();
   const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
@@ -12794,12 +12794,12 @@ function SettingTab({
                   </div>
                   <div>コモン称号付与: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value, label }) => {
+                    {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                       return (
                         <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                           <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{label}</span>
+                          <span>{t('divineBureau.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
                           <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</span>
                         </div>
                       );
@@ -12829,12 +12829,12 @@ function SettingTab({
                   </div>
                   <div>称号付与: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value, label }) => {
+                    {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                       return (
                         <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                           <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{label}</span>
+                          <span>{t('divineBureau.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
                           <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</span>
                         </div>
                       );
@@ -13771,7 +13771,7 @@ function SettingTab({
               <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
                 <div className="text-gray-500">{title.value}.</div>
                 <div>
-                  <div className="font-medium text-gray-700">{title.title}</div>
+                  <div className="font-medium text-gray-700">{getLocalizedSuperRareTitle(title.value)}</div>
                   <div className="text-xs text-sub">{uniqueBonus || t('common.none')}</div>
                 </div>
               </div>
