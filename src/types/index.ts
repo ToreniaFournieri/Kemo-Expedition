@@ -377,6 +377,7 @@ interface SideQuestState {
   id: number;
   type: string;
   shortText: string;
+  shortTextKey?: string;
   target: number;
   progress: number;
   rolledTier: number;

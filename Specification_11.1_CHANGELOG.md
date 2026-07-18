@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 10 | 2026/07/18 | Internationalize runtime side quest short labels by storing stable translation keys and resolving Japanese/English labels at assignment, display, and notification sites. |
 | 0.8.2 | 9 | 2026/07/18 | Move battle and environment narration flavor pools into grouped i18n keys and route runtime random selection through translation lookups. |
 | 0.8.2 | 8 | 2026/07/18 | Centralize additional runtime Japanese strings in magic profiles and expedition log effects through Japanese/English i18n lookup keys. |
 | 0.8.2 | 7 | 2026/07/18 | Translate English battle flavor i18n entries from Japanese into English while preserving placeholders and runtime battle narration keys. |
