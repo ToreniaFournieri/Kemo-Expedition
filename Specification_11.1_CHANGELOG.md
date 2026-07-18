@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 40 | 2026/07/18 | Refine item-tier 3 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
 | 0.8.2 | 39 | 2026/07/18 | Refine item-tier 2 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
 | 0.8.2 | 38 | 2026/07/18 | Refine item-tier 1 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
 | 0.8.2 | 37 | 2026/07/18 | Refine Expedition 8 English enemy names with concise setting-conscious localized names for the Voidspawn, Ghost, Jinma, Cervin, elite, and boss roster. |
