@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 64 | 2026/07/18 | Route additional HomeScreen condition, elemental-offense help, bonus-help, diary, feedback, and backup/import Japanese UI text through meaningful i18n keys. |
 | 0.8.2 | 63 | 2026/07/18 | Route HomeScreen party stat help, locked party, difficulty offset, battle HP/damage, base tab, and shop countdown Japanese UI text through meaningful i18n keys. |
 | 0.8.2 | 62 | 2026/07/18 | Route additional HomeScreen header, party filter, stat-change, edit-warning, and base-stat Japanese UI text through meaningful Japanese/English i18n keys. |
 | 0.8.2 | 61 | 2026/07/18 | Route HomeScreen side quest, equipment, gold, level-up, item, shop, and instant expedition notification Japanese text through meaningful Japanese/English i18n keys. |
