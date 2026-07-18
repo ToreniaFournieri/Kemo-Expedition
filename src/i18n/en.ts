@@ -3206,7 +3206,7 @@ const en = {
   'home.equipment.unlockAria': 'Unlock equipment',
   'home.equipment.lockAria': 'Lock equipment',
   'home.bonus.descriptionMissing': 'No description is configured for this bonus.',
-  'home.nav.expeditionIcon': 'Adv',
+  'home.nav.expeditionIcon': 'Bo-',
   'home.party.reorderLongPressHint': 'Long-press a character icon to reorder the formation',
   'common.stat.vitality.short': 'Vit',
   'common.stat.strength.short': 'Str',
