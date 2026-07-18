@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 69 | 2026/07/18 | Route all Japanese runtime literals in the first 3,000 HomeScreen lines through meaningful i18n keys, including bonus, subcategory, lineage, predisposition, and equipment-category labels. |
 | 0.8.2 | 68 | 2026/07/18 | Translate English i18n default generated character names from Japanese script into English-readable names. |
 | 0.8.2 | 67 | 2026/07/18 | Route HomeScreen first-2000-line Japanese literals, generated names, legacy labels, and item stat fragments through meaningful i18n keys. |
 | 0.8.2 | 66 | 2026/07/18 | Translate remaining English i18n ability help and C-multiplier help values from Japanese to English. |
