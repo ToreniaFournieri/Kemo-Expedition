@@ -1,6 +1,7 @@
 import { Item } from '../types';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { jewelLabel } from './jewel';
+import { t } from '../i18n';
 
 const CORE_CONCEPT_KEY_BY_CATEGORY = {
   armor: 'physicalDefense',
@@ -17,11 +18,16 @@ const CORE_CONCEPT_KEY_BY_CATEGORY = {
   catalyst: 'magicalNoA',
 } as const satisfies Record<Item['category'], keyof Item>;
 
+// SpecRef: 3.2.1 | Item drop | Localized item display name
+export function getLocalizedItemName(item: Pick<Item, 'name'>): string {
+  return t(`item.name.${item.name}`);
+}
+
 // SpecRef: 3.1.3 | Item variation | getItemDisplayName
 export function getItemDisplayName(item: Item): string {
   const enhTitle = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.title ?? '';
   const srTitle = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.title ?? '';
-  return `${srTitle}${enhTitle}${item.name}${jewelLabel(item.jewel)}`;
+  return `${srTitle}${enhTitle}${getLocalizedItemName(item)}${jewelLabel(item.jewel)}`;
 }
 
 // SpecRef: 3.1.3 | Item variation | getItemMultiplier
