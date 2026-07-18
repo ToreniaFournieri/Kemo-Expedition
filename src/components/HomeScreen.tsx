@@ -1949,7 +1949,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   if (item.strengthBonus) bParts.push(`力+${item.strengthBonus}`);
   if (item.intelligenceBonus) bParts.push(`知性+${item.intelligenceBonus}`);
   if (item.mindBonus) bParts.push(`精神+${item.mindBonus}`);
-  if (item.penetBonus) cParts.push(`貫通+${Math.round(item.penetBonus * 100)}`);
+  if (item.penetBonus) cParts.push(`${t('party.bonus.penet')}+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
@@ -2133,19 +2133,19 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
   return lines;
 }
 
-const MULTIPLIER_LABELS: Record<string, string> = {
-  sword_multiplier: '剣',
-  katana_multiplier: '刀',
-  archery_multiplier: '弓',
-  armor_multiplier: '鎧',
-  gauntlet_multiplier: '手',
-  wand_multiplier: '杖',
-  robe_multiplier: '衣',
-  shield_multiplier: '盾',
-  bolt_multiplier: 'ボ',
-  grimoire_multiplier: '書',
-  catalyst_multiplier: '媒',
-  arrow_multiplier: '矢',
+const MULTIPLIER_LABEL_KEYS: Record<string, string> = {
+  sword_multiplier: 'party.bonus.sword',
+  katana_multiplier: 'party.bonus.katana',
+  archery_multiplier: 'party.bonus.archery',
+  armor_multiplier: 'party.bonus.armor',
+  gauntlet_multiplier: 'party.bonus.gauntlet',
+  wand_multiplier: 'party.bonus.wand',
+  robe_multiplier: 'party.bonus.robe',
+  shield_multiplier: 'party.bonus.shield',
+  bolt_multiplier: 'party.bonus.bolt',
+  grimoire_multiplier: 'party.bonus.grimoire',
+  catalyst_multiplier: 'party.bonus.catalyst',
+  arrow_multiplier: 'party.bonus.arrow',
 };
 
 const ABILITY_NAMES: Record<string, string> = { ...ABILITY_BASE_NAMES };
@@ -2441,10 +2441,10 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
   const formatRatePercent = (value: number): string => percentFormatter.format(Math.round(value * 1000) / 10);
   const formatSigned = (value: number): string => `${value >= 0 ? '+' : ''}${value}`;
   for (const b of bonuses) {
-    if (b.type.endsWith('_multiplier') && MULTIPLIER_LABELS[b.type]) {
-      parts.push(`${MULTIPLIER_LABELS[b.type]}x${b.value}`);
+    if (b.type.endsWith('_multiplier') && MULTIPLIER_LABEL_KEYS[b.type]) {
+      parts.push(`${t(MULTIPLIER_LABEL_KEYS[b.type])}x${b.value}`);
     } else if (b.type === 'equip_slot') {
-      parts.push(`装備+${b.value}`);
+      parts.push(`${t('party.bonus.equip_slot')}+${b.value}`);
     } else if (b.type === 'vitality') {
       parts.push(`体${formatSigned(b.value)}`);
     } else if (b.type === 'strength') {
@@ -2454,18 +2454,18 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'mind') {
       parts.push(`精${formatSigned(b.value)}`);
     } else if (b.type === 'grit' || b.type === 'equip_melee') {
-      parts.push('近接装備');
+      parts.push(t('party.bonus.equip_melee'));
     } else if (b.type === 'caster' || b.type === 'equip_magic') {
-      parts.push('魔法装備');
+      parts.push(t('party.bonus.equip_magic'));
     } else if (b.type === 'penet') {
-      parts.push(`貫通+${Math.round(b.value * 100)}`);
+      parts.push(`${t('party.bonus.penet')}+${Math.round(b.value * 100)}`);
     } else if (b.type === 'pursuit' || b.type === 'equip_ranged') {
-      parts.push('遠距離装備');
+      parts.push(t('party.bonus.equip_ranged'));
     } else if (b.type === 'antagonism') {
       parts.push('⚠️敵対');
     } else if (b.type === 'accuracy') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`命中${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(`${t('party.bonus.accuracy')}${rounded >= 0 ? '+' : ''}${rounded}`);
     } else if (b.type === 'evasion') {
       const rounded = Math.round(b.value * 1000);
       parts.push(`回避${rounded >= 0 ? '+' : ''}${rounded}`);
@@ -2573,7 +2573,7 @@ function getBonusHelpDescription(bonus: Bonus): string | null {
     return multiplierTemplate.replace('{value}', formatMultiplierValue(bonus.value));
   }
 
-  if (bonus.type === 'equip_slot') return `装備スロット数が ${bonus.value} 増える`;
+  if (bonus.type === 'equip_slot') return t('party.bonusHelp.equip_slot', { value: bonus.value });
   if (bonus.type === 'vitality') return `基礎体力に ${bonus.value} を加算（HP/物防に影響）`;
   if (bonus.type === 'strength') return `基礎筋力に ${bonus.value} を加算（近接火力に影響）`;
   if (bonus.type === 'intelligence') return `基礎知性に ${bonus.value} を加算（魔法火力に影響）`;
@@ -2581,7 +2581,7 @@ function getBonusHelpDescription(bonus: Bonus): string | null {
   if (bonus.type === 'grit' || bonus.type === 'equip_melee') return '近接攻撃の装備が出来るようになる';
   if (bonus.type === 'caster' || bonus.type === 'equip_magic') return '魔法攻撃の装備が出来るようになる';
   if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return '遠距離攻撃の装備が出来るようになる';
-  if (bonus.type === 'penet') return `敵の防御力を ${Math.round(bonus.value * 100)}% 分無視する`;
+  if (bonus.type === 'penet') return t('combat.penetrationHelp', { percent: Math.round(bonus.value * 100) });
   if (bonus.type === 'antagonism') return '味方を攻撃するようになる';
   if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return '値が多いほどより多くの攻撃が命中するようになる';
   if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return '値が多いほどより多くの攻撃を回避するようになる';
@@ -2848,18 +2848,8 @@ function getInitialDarkModeSetting(): DarkModeSetting {
 
 type AutoEquipmentMode = 0 | 1 | 2;
 
-const AUTO_EQUIPMENT_MODE_LABEL: Record<AutoEquipmentMode, string> = {
-  0: '手動',
-  1: '補助',
-  2: '一任',
-};
-
-const AUTO_EQUIPMENT_HELP_LINES = [
-  '手動: 装備の付け替えが自動で変わることはない',
-  '補助: 上位の通常称号の同一装備がある場合に置き換える。 (熟睡後の身支度が終わった段階で反映)',
-  '一任: 装備選定を一任する。自身の判断で現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (熟睡後の身支度が終わった段階で反映)',
-  '※超レア装備は置き換わる事はない',
-];
+const getAutoEquipmentModeLabel = (mode: AutoEquipmentMode): string => t(`party.equipment.autoMode.${mode}`);
+const getAutoEquipmentHelpLines = (): string[] => [0, 1, 2, 3].map((index) => t(`party.equipment.autoHelp.${index}`));
 
 type AutoEquipmentCombatStyle = 'ranged' | 'magic' | 'melee';
 type AutoEquipmentTargetCategory = ItemCategory | 'i.weapon' | 'i.NoA';
@@ -3172,7 +3162,7 @@ export function HomeScreen({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
@@ -6780,8 +6770,10 @@ function PartyTab({
           const isMaster = c.mainClassId === c.subClassId;
           const mcShort = CLASS_SHORT_NAMES[mc.id] ?? mc.name;
           const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
-          const predispositionShort = PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
-          const lineageShort = LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
+          const predispositionData = PREDISPOSITIONS.find((p) => p.id === c.predispositionId);
+          const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
+          const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
+          const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
           const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByName[c.name] : undefined;
           const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
@@ -7558,11 +7550,11 @@ function PartyTab({
                 if (penetrationPercent !== 0) {
                   offenseLines.push({
                     key: 'penetration',
-                    text: `貫通:+${formatNumber(penetrationPercent)}%`,
-                    helpTitle: '貫通',
+                    text: `${t('combat.penetration')}:+${formatNumber(penetrationPercent)}%`,
+                    helpTitle: t('combat.penetration'),
                     helpLines: [
-                      `貫通: +${formatNumber(penetrationPercent)}%`,
-                      `敵の防御力を ${penetrationPercent}% 分無視する`,
+                      `${t('combat.penetration')}: +${formatNumber(penetrationPercent)}%`,
+                      t('combat.penetrationHelp', { percent: penetrationPercent }),
                     ],
                   });
                 }
@@ -7779,21 +7771,22 @@ function PartyTab({
               type BonusDisplayEntry = { key: string; label: string; description?: string };
               const bonusDisplayEntries: BonusDisplayEntry[] = [];
               const helpRows: Array<{ label: string; description: string }> = [];
+              const bonusLabel = (key: string): string => t(`party.bonus.${key}`);
               const mulNames: Record<string, string> = {
-                sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
-                gauntlet: '手', wand: '杖', robe: '衣', shield: '盾',
-                bolt: 'ボ', grimoire: '書', catalyst: '媒', arrow: '矢',
-                physical_offense_multiplier_xV: '物攻撃', magical_offense_multiplier_xV: '魔攻撃',
-                physical_defense_multiplier_xV: '物防', magical_defense_multiplier_xV: '魔防',
-                fire_defense_multiplier_xV: '炎防', ice_defense_multiplier_xV: '氷防', thunder_defense_multiplier_xV: '雷防'
+                sword: bonusLabel('sword'), katana: bonusLabel('katana'), archery: bonusLabel('archery'), armor: bonusLabel('armor'),
+                gauntlet: bonusLabel('gauntlet'), wand: bonusLabel('wand'), robe: bonusLabel('robe'), shield: bonusLabel('shield'),
+                bolt: bonusLabel('bolt'), grimoire: bonusLabel('grimoire'), catalyst: bonusLabel('catalyst'), arrow: bonusLabel('arrow'),
+                physical_offense_multiplier_xV: bonusLabel('physical_offense_multiplier_xV'), magical_offense_multiplier_xV: bonusLabel('magical_offense_multiplier_xV'),
+                physical_defense_multiplier_xV: bonusLabel('physical_defense_multiplier_xV'), magical_defense_multiplier_xV: bonusLabel('magical_defense_multiplier_xV'),
+                fire_defense_multiplier_xV: bonusLabel('fire_defense_multiplier_xV'), ice_defense_multiplier_xV: bonusLabel('ice_defense_multiplier_xV'), thunder_defense_multiplier_xV: bonusLabel('thunder_defense_multiplier_xV')
               };
               const addNames: Record<string, string> = {
-                vitality: '体', strength: '力', intelligence: '知', mind: '精',
-                equip_slot: '装備', equip_melee: '近接装備', equip_ranged: '遠距離装備', equip_magic: '魔法装備', penet: '貫通',
-                accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化', antagonism: '⚠️敵対',
-                melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃',
-                physical_defense: '物防', magical_defense: '魔防',
-                fire_defense: '炎防', ice_defense: '氷防', thunder_defense: '雷防',
+                vitality: bonusLabel('vitality'), strength: bonusLabel('strength'), intelligence: bonusLabel('intelligence'), mind: bonusLabel('mind'),
+                equip_slot: bonusLabel('equip_slot'), equip_melee: bonusLabel('equip_melee'), equip_ranged: bonusLabel('equip_ranged'), equip_magic: bonusLabel('equip_magic'), penet: bonusLabel('penet'),
+                accuracy: bonusLabel('accuracy'), evasion: bonusLabel('evasion'), growth_xV: bonusLabel('growth_xV'), upgrade_V: bonusLabel('upgrade_V'), antagonism: bonusLabel('antagonism'),
+                melee_attack: bonusLabel('melee_attack'), ranged_attack: bonusLabel('ranged_attack'), magical_attack: bonusLabel('magical_attack'), physical_attack: bonusLabel('physical_attack'),
+                physical_defense: bonusLabel('physical_defense'), magical_defense: bonusLabel('magical_defense'),
+                fire_defense: bonusLabel('fire_defense'), ice_defense: bonusLabel('ice_defense'), thunder_defense: bonusLabel('thunder_defense'),
               };
               const hiddenBonusDisplayKeys = new Set([
                 'evasion',
@@ -8009,10 +8002,10 @@ function PartyTab({
       {/* Equipment section */}
       <div className="bg-pane rounded-lg border border-gray-200 p-4 shadow-md shadow-slate-900/15">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium">装備</span>
+          <span className="text-sm font-medium">{t('party.equipment.title')}</span>
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-500">
-              {formatNumber(equippedItemCount)} / {formatNumber(stats.maxEquipSlots)} スロット
+              {t('party.equipment.slotCount', { equipped: formatNumber(equippedItemCount), max: formatNumber(stats.maxEquipSlots) })}
             </span>
             {autoEquipmentMode === 2 && (
               <button
@@ -8020,7 +8013,7 @@ function PartyTab({
                 onClick={handleAutoEquipmentButtonClick}
                 className="text-xs font-semibold text-sub hover:opacity-80"
               >
-                自動装備
+                {t('party.equipment.autoEquip')}
               </button>
             )}
             <div className="flex items-center gap-1">
@@ -8029,13 +8022,13 @@ function PartyTab({
                 onClick={handleAutoEquipmentModeCycle}
                 className="text-xs font-semibold text-sub hover:opacity-80"
               >
-                {AUTO_EQUIPMENT_MODE_LABEL[autoEquipmentMode]}
+                {getAutoEquipmentModeLabel(autoEquipmentMode)}
               </button>
               <button
                 type="button"
                 onClick={handleAutoEquipmentHelpToggle}
                 className="h-5 w-5 rounded-full border border-gray-300 text-[10px] font-bold text-gray-600"
-                aria-label="自動装備モードの説明"
+                aria-label={t('party.equipment.autoHelpAria')}
               >
                 ?
               </button>
@@ -8052,7 +8045,7 @@ function PartyTab({
           }}
           onPointerDown={(event) => event.stopPropagation()}
         >
-          {AUTO_EQUIPMENT_HELP_LINES.map((line) => (
+          {getAutoEquipmentHelpLines().map((line) => (
             <div key={line}>{line}</div>
           ))}
         </div>
@@ -8118,7 +8111,7 @@ function PartyTab({
                         <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
                       </div>
                     ) : (
-                      <span className="text-gray-400">空きスロット</span>
+                      <span className="text-gray-400">{t('party.equipment.emptySlot')}</span>
                     )}
                   </button>
                 </div>
@@ -9444,7 +9437,7 @@ function ExpeditionTab({
                                 ].filter(Boolean);
                                 const mergedExtraSegments = Array.from(new Set(extraSegments));
                                 const compactHitDisplay = hitDisplay && mergedExtraSegments.length > 0
-                                  ? `(${hits}/${totalAttempts}回, ${mergedExtraSegments.join(', ')})`
+                                  ? t('battleLog.hitsWithExtras', { hits, total: totalAttempts, extras: mergedExtraSegments.join(', ') })
                                   : hitDisplay;
                                 const actionDisplay = trailingEffects.length > 0 && !allMissed
                                   ? actionText.replace(/\([^()]+\)$/, '')
@@ -11364,7 +11357,7 @@ function DiaryTab({
                               ].filter(Boolean);
                               const mergedExtraSegments = Array.from(new Set(extraSegments));
                               const compactHitDisplay = hitDisplay && mergedExtraSegments.length > 0
-                                ? `(${hits}/${totalAttempts}回, ${mergedExtraSegments.join(', ')})`
+                                ? t('battleLog.hitsWithExtras', { hits, total: totalAttempts, extras: mergedExtraSegments.join(', ') })
                                 : hitDisplay;
                               const actionDisplay = trailingEffects.length > 0 && !allMissed
                                 ? actionText.replace(/\([^()]+\)$/, '')
@@ -11632,7 +11625,7 @@ function SettingTab({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;

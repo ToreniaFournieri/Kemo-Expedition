@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 59 | 2026/07/18 | Localize remaining Party tab equipment, bonus, penetration, lineage and predisposition short labels, and battle hit-count displays through Japanese/English i18n keys. |
 | 0.8.2 | 58 | 2026/07/18 | Route additional HomeScreen shop, debug store, inventory, and sell-confirmation Japanese UI text through Japanese/English i18n keys. |
 | 0.8.2 | 57 | 2026/07/18 | Route Japanese runtime strings and default party character names in useGameState through Japanese/English i18n keys. |
 | 0.8.2 | 56 | 2026/07/18 | Translate remaining Japanese values in the English i18n dictionary, including glossary, deity, magic, side quest, terrain, lineage, predisposition, and race entries. |
