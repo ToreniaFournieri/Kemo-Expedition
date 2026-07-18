@@ -1,6 +1,7 @@
 import { getItemById } from '../data/items';
 import { getInstantExpeditionChargeState } from './instantExpedition';
 import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, Party, RandomBag, WeightedBagEntry } from '../types';
+import { normalizeLanguage } from '../i18n';
 
 type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel' | 'isLocked'>;
 type CompactBagEntry = [number, number];
@@ -173,6 +174,7 @@ export function hydrateGameState(state: GameState): GameState {
     global: {
       ...state.global,
       inventory: hydratedInventory,
+      language: normalizeLanguage(state.global.language),
     },
     parties: state.parties.map((party) => {
       const normalizedParty = normalizePartyInstantExpeditionCharge(party);

@@ -1,3 +1,5 @@
+import type { Language } from '../i18n';
+
 // Elemental Types
 export type ElementalOffense = 'none' | 'fire' | 'thunder' | 'ice';
 export type ElementalResistance = 'fire' | 'thunder' | 'ice';
@@ -449,6 +451,7 @@ interface GlobalState {
   jewelAutoEquipPriorityPartyId?: number | null;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   readDeveloperNewsItemIds: string[];
+  language: Language;
 }
 
 // Computed party stats for battle
