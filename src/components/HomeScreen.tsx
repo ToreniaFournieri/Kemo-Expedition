@@ -6671,15 +6671,15 @@ function PartyTab({
       <div className="relative z-20 mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-gray-600">
-            HP {formatNumber(Math.floor(partyStats.hp))}, レベル {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
+            {t('party.status.hp')} {formatNumber(Math.floor(partyStats.hp))}, {t('party.status.level')} {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
           </div>
           {hasUnlockedReligions && (
             <>
               <div className="font-medium mt-1">
                 {displayedDeityName}
-                {!isNoFaithDeity(displayedDeityName) ? ` (ランク${getDeityRank(displayedDeityDonation)})` : ''}
+                {!isNoFaithDeity(displayedDeityName) ? ` (${t('party.deity.rank', { rank: getDeityRank(displayedDeityDonation) })})` : ''}
               </div>
-              <div className="text-xs text-gray-600 mt-1">効果:{isNoFaithDeity(displayedDeityName) ? 'なし' : getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
+              <div className="text-xs text-gray-600 mt-1">{t('party.deity.effect')}:{isNoFaithDeity(displayedDeityName) ? t('common.none') : getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
             </>
           )}
         </div>
@@ -6693,7 +6693,7 @@ function PartyTab({
                 }}
                 className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                完了
+                {t('common.done')}
               </button>
               <button
                 onClick={() => {
@@ -6702,7 +6702,7 @@ function PartyTab({
                 }}
                 className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
-                取消
+                {t('common.cancel')}
               </button>
             </div>
             <select
@@ -6743,7 +6743,7 @@ function PartyTab({
             }}
             className="text-sm text-sub flex-shrink-0"
           >
-            編集
+            {t('common.edit')}
           </button>
         ) : null}
       </div>
@@ -6983,7 +6983,7 @@ function PartyTab({
                 onClick={showEditConfirm ? saveCharacterEditWithEquipmentReset : completeCharacterEdit}
                 className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {showEditConfirm ? '保存する' : '完了'}
+                {showEditConfirm ? t('common.save') : t('common.done')}
               </button>
               <button
                 onClick={() => {
@@ -6996,7 +6996,7 @@ function PartyTab({
                 }}
                 className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
-                {showEditConfirm ? '戻る' : '取消'}
+                {showEditConfirm ? t('common.back') : t('common.cancel')}
               </button>
             </div>
           ) : (
@@ -7008,7 +7008,7 @@ function PartyTab({
               }}
               className="text-sm text-sub"
             >
-              編集
+              {t('common.edit')}
             </button>
           )}
         </div>
@@ -7365,7 +7365,7 @@ function PartyTab({
                 aria-label="基礎値ヘルプを表示"
               >
                 <RaceIcon race={race} className="h-4 w-4" />
-                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {lineage.name} / {predisposition.name}</span>
+                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / {lineage.name} / {predisposition.name}</span>
               </button>
               {showBaseStatHelp && (
                 <div
@@ -7390,10 +7390,10 @@ function PartyTab({
             </div>
             <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
               {/* SpecRef: 8.2.2 | Party member details | Status */}
-              <div className="base-stat-chip">体力:{stats.baseStats.vitality}</div>
-              <div className="base-stat-chip">力:{stats.baseStats.strength}</div>
-              <div className="base-stat-chip">知性:{stats.baseStats.intelligence}</div>
-              <div className="base-stat-chip">精神:{stats.baseStats.mind}</div>
+              <div className="base-stat-chip">{t('stat.vitality')}:{stats.baseStats.vitality}</div>
+              <div className="base-stat-chip">{t('stat.strength')}:{stats.baseStats.strength}</div>
+              <div className="base-stat-chip">{t('stat.intelligence')}:{stats.baseStats.intelligence}</div>
+              <div className="base-stat-chip">{t('stat.mind')}:{stats.baseStats.mind}</div>
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 text-sm">
               {(() => {
@@ -7443,8 +7443,8 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'ranged-attack',
-                    text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
-                    helpTitle: '遠距離攻撃',
+                    text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    helpTitle: t('combat.rangedAttack'),
                     helpLines: [
                       `遠距離攻撃力: ${formatNumber(Math.floor(stats.rangedAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
                       `遠距離攻撃回数: ${formatNumber(stats.rangedNoA)}回`,
@@ -7475,8 +7475,8 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'melee-attack',
-                    text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
-                    helpTitle: '近接攻撃',
+                    text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    helpTitle: t('combat.meleeAttack'),
                     helpLines: [
                       `近接攻撃力: ${formatNumber(Math.floor(stats.meleeAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
                       `近接攻撃回数: ${formatNumber(stats.meleeNoA)}回`,
@@ -7491,8 +7491,8 @@ function PartyTab({
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
                     key: 'physical-accuracy',
-                    text: `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: ${decayText})`,
-                    helpTitle: '物理命中率',
+                    text: `${t('combat.physicalAccuracy')}: ${Math.round(stats.accuracyPotency * 100)}% (${t('combat.decay')}: ${decayText})`,
+                    helpTitle: t('combat.physicalAccuracy'),
                     helpLines: [
                       `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% ※初回の命中率`,
                       `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
@@ -7560,11 +7560,11 @@ function PartyTab({
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
-                    text: `属性:${elementIcon ? '有' : '無'}(x${stats.elementalOffenseValue.toFixed(2)})`,
+                    text: `${t('combat.element')}:${elementIcon ? t('common.yes') : t('common.none')}(x${stats.elementalOffenseValue.toFixed(2)})`,
                     renderedText: (
                       <>
-                        属性:
-                        {elementIcon ? renderUiIcon(elementIcon) : '無'}
+                        {t('combat.element')}:
+                        {elementIcon ? renderUiIcon(elementIcon) : t('common.none')}
                         (x{stats.elementalOffenseValue.toFixed(2)})
                       </>
                     ),
@@ -7573,8 +7573,8 @@ function PartyTab({
                   },
                   {
                     key: 'physical-defense',
-                    text: `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
-                    helpTitle: '物理防御',
+                    text: `${t('combat.physicalDefenseShort')}:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
+                    helpTitle: t('combat.physicalDefense'),
                     helpLines: [
                       `物理防御力: ${formatNumber(stats.physicalDefense)} ※敵の遠距離/近接攻撃力を超える物理防御力を持つとダメージをほぼ受けなくなります`,
                       `物理耐性: ${formatNumber(Math.round(defenseAmpPhysical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
@@ -7582,8 +7582,8 @@ function PartyTab({
                   },
                   {
                     key: 'magical-defense',
-                    text: `魔防:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
-                    helpTitle: '魔法防御',
+                    text: `${t('combat.magicalDefenseShort')}:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
+                    helpTitle: t('combat.magicalDefense'),
                     helpLines: [
                       `魔法防御力: ${formatNumber(stats.magicalDefense)} ※敵の魔法攻撃力を超える魔法防御力を持つとダメージをほぼ受けなくなります`,
                       `魔法耐性: ${formatNumber(Math.round(defenseAmpMagical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
@@ -7591,8 +7591,8 @@ function PartyTab({
                   },
                   {
                     key: 'evasion',
-                    text: `回避:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
-                    helpTitle: '回避',
+                    text: `${t('combat.evasion')}:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
+                    helpTitle: t('combat.evasion'),
                     helpLines: [
                       `回避: ${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
                       '※敵の命中減衰率を値分、減少させます(攻撃回数が多いほど回避しやすくなります)',
@@ -7936,7 +7936,7 @@ function PartyTab({
               if (bonusEntries.length === 0) return null;
               return (
                 <div className="text-xs text-gray-900 mt-1 leading-5">
-                  <span className="break-words leading-5">ボーナス: </span>
+                  <span className="break-words leading-5">{t('party.status.bonus')}: </span>
                   {bonusEntries.map((entry, index) => (
                     <span key={entry.key}>
                       {index > 0 && <span>, </span>}
@@ -7955,7 +7955,7 @@ function PartyTab({
             })()}
             {stats.abilities.length > 0 && (
               <div className="border-t border-gray-200 mt-2 pt-2">
-                <div className="text-gray-900 text-xs">アビリティ:</div>
+                <div className="text-gray-900 text-xs">{t('party.status.abilities')}:</div>
                 <div className="text-xs text-sub leading-5">
                   {stats.abilities.map((ability, index) => {
                     const label = ability.name;
