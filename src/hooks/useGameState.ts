@@ -112,7 +112,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, t } from '../i18n';
+import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, getRandomTranslation, t } from '../i18n';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -2518,97 +2518,13 @@ function buildDeityEffectLogEntry(
   return null;
 }
 
-const TERRAIN_REJUVENATION_LOGS = [
-  t('auto.jp.a4b7f2148e'),
-  t('auto.jp.39d24bcfb4'),
-  t('auto.jp.c772312b2f'),
-  t('auto.jp.47c83e24d9'),
-  t('auto.jp.eacf203fc2'),
-  t('auto.jp.dd72d1dc59'),
-  t('auto.jp.22c3a52eaf'),
-  t('auto.jp.defd6333f9'),
-  t('auto.jp.3f8d4c23b6'),
-  t('auto.jp.0cff5afd93'),
-] as const;
-
-const TERRAIN_ROTWOOD_LOGS = [
-  t('auto.jp.f8911758dd'),
-  t('auto.jp.d692527a62'),
-  t('auto.jp.10f8557645'),
-  t('auto.jp.d216cafa0b'),
-  t('auto.jp.82617864a8'),
-  t('auto.jp.2d74bde74a'),
-  t('auto.jp.f89012fb55'),
-  t('auto.jp.1050fa2077'),
-  t('auto.jp.26ecf51ecc'),
-  t('auto.jp.eb47018bbd'),
-] as const;
-
-const TERRAIN_ABUNDANT_LOGS = [
-  t('auto.jp.36b8679d09'),
-  t('auto.jp.7cc24bf1a6'),
-  t('auto.jp.773009388d'),
-  t('auto.jp.f2a8cf91fd'),
-  t('auto.jp.57ec4a9f8d'),
-  t('auto.jp.dc5390e61a'),
-  t('auto.jp.72cab2be69'),
-  t('auto.jp.980e60dd27'),
-  t('auto.jp.6b90d7f3b3'),
-  t('auto.jp.03da621c8b'),
-] as const;
-
-const TERRAIN_DECAY_LOGS = [
-  t('auto.jp.a1e50f308c'),
-  t('auto.jp.7c768d9e90'),
-  t('auto.jp.e7c2948676'),
-  t('auto.jp.40f154a8d6'),
-  t('auto.jp.229e30d47f'),
-  t('auto.jp.53eea8a663'),
-  t('auto.jp.2bb38d8e2d'),
-  t('auto.jp.0052eff16d'),
-  t('auto.jp.be286201d3'),
-  t('auto.jp.5ca325c1b7'),
-] as const;
-
-const TERRAIN_LEAKAGE_LOGS = [
-  t('auto.jp.1594e881f7'),
-  t('auto.jp.65cd5f7161'),
-  t('auto.jp.0421a94457'),
-  t('auto.jp.da88d1e8a8'),
-  t('auto.jp.e8bae2bb34'),
-  t('auto.jp.a825059916'),
-  t('auto.jp.5c38054b37'),
-  t('auto.jp.e67716a9a2'),
-  t('auto.jp.b9c5d38613'),
-  t('auto.jp.2bf7bd39fe'),
-] as const;
-
-
-const TERRAIN_HEATWAVE_LOGS = [
-  t('auto.jp.d433ea2262'),
-  t('auto.jp.0d30da1652'),
-  t('auto.jp.7dd78be348'),
-  t('auto.jp.cac5af4b40'),
-  t('auto.jp.d8c4f83c29'),
-  t('auto.jp.e44af1f6f3'),
-  t('auto.jp.43f6c024b7'),
-  t('auto.jp.2d406b445d'),
-  t('auto.jp.2dfdc46e86'),
-  t('auto.jp.3955f3ddc2'),
-] as const;
-
-const FIRST_AID_LOGS = [
-  t('auto.jp.4d3ea1c8a8'),
-  t('auto.jp.8e8187a186'),
-  t('auto.jp.e5d9a08142'),
-  t('auto.jp.e2397f1630'),
-  t('auto.jp.c1a7dd6a5a'),
-  t('auto.jp.715bf63f5d'),
-  t('auto.jp.8c67fb9006'),
-  t('auto.jp.4d71a5db7e'),
-  t('auto.jp.d989cd3c63'),
-  t('auto.jp.c8e9b5293f'),
-] as const;
+const TERRAIN_REJUVENATION_LOG_COUNT = 10;
+const TERRAIN_ROTWOOD_LOG_COUNT = 10;
+const TERRAIN_ABUNDANT_LOG_COUNT = 10;
+const TERRAIN_DECAY_LOG_COUNT = 10;
+const TERRAIN_LEAKAGE_LOG_COUNT = 10;
+const TERRAIN_HEATWAVE_LOG_COUNT = 10;
+const FIRST_AID_LOG_COUNT = 10;
 
 function getFirstAidHealRate(level: number): number {
   if (level >= 5) return 0.06;
@@ -2654,12 +2570,11 @@ function applyFirstAidHpEffect(
     const healAmount = Math.floor(hpContribution.totalHpBonus * healRate);
     if (healAmount <= 0) continue;
 
-    const flavorText = FIRST_AID_LOGS[Math.floor(Math.random() * FIRST_AID_LOGS.length)]
-      ?? t('auto.jp.4d3ea1c8a8');
+    const flavorText = getRandomTranslation('battleFlavor.passive.firstAid', FIRST_AID_LOG_COUNT, { actor: character.name });
     logs.push({
       phase: 'end',
       actor: 'effect',
-      action: flavorText.replace('{actor}', character.name),
+      action: flavorText,
       note: t('game.log.hpHeal', { amount: healAmount }),
     });
 
@@ -2753,8 +2668,7 @@ function applyTerrainDecayHpEffect(
 
 function buildTerrainAbundantLogEntry(healAmount?: number): BattleLogEntry | null {
   if (!healAmount || healAmount <= 0) return null;
-  const flavorText = TERRAIN_ABUNDANT_LOGS[Math.floor(Math.random() * TERRAIN_ABUNDANT_LOGS.length)]
-    ?? t('auto.jp.03da621c8b');
+  const flavorText = getRandomTranslation('battleFlavor.environment.abundant', TERRAIN_ABUNDANT_LOG_COUNT);
   return {
     phase: 'end',
     actor: 'effect',
@@ -2765,8 +2679,7 @@ function buildTerrainAbundantLogEntry(healAmount?: number): BattleLogEntry | nul
 
 function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = TERRAIN_DECAY_LOGS[Math.floor(Math.random() * TERRAIN_DECAY_LOGS.length)]
-    ?? t('auto.jp.5ca325c1b7');
+  const flavorText = getRandomTranslation('battleFlavor.environment.decay', TERRAIN_DECAY_LOG_COUNT);
   return {
     phase: 'end',
     actor: 'effect',
@@ -2778,20 +2691,18 @@ function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rejuvenation
 function buildTerrainRejuvenationLogEntry(actorName: string, healAmount?: number): BattleLogEntry | null {
   if (!healAmount || healAmount <= 0) return null;
-  const flavorText = TERRAIN_REJUVENATION_LOGS[Math.floor(Math.random() * TERRAIN_REJUVENATION_LOGS.length)]
-    ?? t('auto.jp.0cff5afd93');
+  const flavorText = getRandomTranslation('battleFlavor.environment.regeneration', TERRAIN_REJUVENATION_LOG_COUNT, { actor: actorName });
   return {
     phase: 'end',
     actor: 'effect',
-    action: flavorText.replace('{actor}', actorName),
+    action: flavorText,
     note: t('game.log.hpHeal', { amount: healAmount }),
   };
 }
 
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rotwood
 function buildTerrainRotwoodLogEntry(): BattleLogEntry {
-  const flavorText = TERRAIN_ROTWOOD_LOGS[Math.floor(Math.random() * TERRAIN_ROTWOOD_LOGS.length)]
-    ?? t('auto.jp.eb47018bbd');
+  const flavorText = getRandomTranslation('battleFlavor.environment.decayBlocked', TERRAIN_ROTWOOD_LOG_COUNT);
   return {
     phase: 'end',
     actor: 'effect',
@@ -2852,13 +2763,12 @@ function applyTerrainLeakageHpEffect(
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.heatwave
 function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = TERRAIN_HEATWAVE_LOGS[Math.floor(Math.random() * TERRAIN_HEATWAVE_LOGS.length)]
-    ?? t('auto.jp.3955f3ddc2');
+  const flavorText = getRandomTranslation('battleFlavor.environment.heatwave', TERRAIN_HEATWAVE_LOG_COUNT, { actor: actorName });
   return {
     phase: 'end',
     actor: 'effect',
     effectKind: 'terrain',
-    action: flavorText.replace('{actor}', actorName),
+    action: flavorText,
     note: t('game.log.hpDamage', { amount: damageAmount }),
   };
 }
@@ -2866,12 +2776,11 @@ function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number):
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.leakage
 function buildTerrainLeakageLogEntry(targetName: string, damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = TERRAIN_LEAKAGE_LOGS[Math.floor(Math.random() * TERRAIN_LEAKAGE_LOGS.length)]
-    ?? t('auto.jp.2bf7bd39fe');
+  const flavorText = getRandomTranslation('battleFlavor.environment.shock', TERRAIN_LEAKAGE_LOG_COUNT, { target: targetName });
   return {
     phase: 'end',
     actor: 'effect',
-    action: flavorText.replace('{target}', targetName),
+    action: flavorText,
     note: t('game.log.hpThunderDamage', { amount: damageAmount }),
   };
 }

@@ -60,6 +60,7 @@ import {
   formatRegenerationNote,
   getConfusionNoTargetLog,
 } from './battleNarration';
+import { getRandomTranslation } from '../i18n';
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -2277,114 +2278,13 @@ interface BattleEnvironment {
 const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
 const battleTerrainNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.vine-snare
-const TERRAIN_VINE_SNARE_LOGS = [
-  '{actor} は蔓に絡め取られた！',
-  '{actor} の動きに反応し、蔓が締め付けた！',
-  '{actor} は足元の蔓に絡みつかれた！',
-  '{actor} が動くたび、蔓が体を締め上げる！',
-  '{actor} の体に蔓が巻き付き、力を奪う！',
-  '{actor} は捕食蔓に絡め取られ、傷ついた！',
-  '{actor} の動きに応じて、蔓が締め付けた！',
-  '{actor} は蔓に拘束され、体力を削られた！',
-  '{actor} の足元から蔓が伸び、絡みついた！',
-  '{actor} は絡みつく蔓により傷を負った！',
-] as const;
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.crystal-zone
-const TERRAIN_CRYSTAL_ZONE_LOGS = [
-  '{actor} の魔力が反射し、体を傷つけた！',
-  '水晶が魔力を弾き返し、{actor} を傷つけた！',
-  '{actor} の放った魔法が反響し、自身に返ってきた！',
-  '水晶の共鳴が魔力を跳ね返した！',
-  '{actor} の魔力が歪み、反動となって返る！',
-  '水晶の輝きが魔法を屈折させ、{actor} に返した！',
-  '放たれた魔力が水晶に反射し、{actor} を襲う！',
-  '水晶域が魔力を拒み、{actor} に反動を与えた！',
-  '{actor} の魔法は水晶に吸収され、反動となって返る！',
-  '水晶の反響が、{actor} の体を打ち据えた！',
-] as const;
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.conduction
-const TERRAIN_CONDUCTION_LOGS = [
-  '{actor} の雷撃が伝導し、自身に跳ね返った！',
-  '電流が巡り、{actor} 自身を焼いた！',
-  '雷が導かれ、{actor} に逆流した！',
-  '放たれた電撃が伝わり、{actor} に返った！',
-  '電流が拡散し、{actor} を巻き込んだ！',
-  '雷の力が循環し、{actor} に戻ってきた！',
-  '導電する空間が、電撃を{actor} に返した！',
-  '電撃が伝播し、{actor} 自身を打った！',
-  '雷が巡り巡って、{actor} を貫いた！',
-  '放たれた電流が逆流し、{actor} を襲った！',
-] as const;
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.mana-burn
-const TERRAIN_MANA_BURN_LOGS = [
-  '{actor} の魔力が暴走し、体を蝕んだ！',
-  '魔力の反動が、{actor} の体を焼いた！',
-  '{actor} の内側で魔力が燃え上がった！',
-  '魔力の消耗が激しく、{actor} は傷ついた！',
-  '{actor} の魔力が乱れ、体に負荷がかかる！',
-  '魔力の奔流が、{actor} の体を侵食した！',
-  '{actor} は魔力の代償として体力を失った！',
-  '制御しきれない魔力が、{actor} を蝕む！',
-  '{actor} の体内で魔力が焼き付き、傷を負った！',
-  '魔力の過負荷が、{actor} にダメージを与えた！',
-] as const;
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.sacred-judgement
-const TERRAIN_SACRED_JUDGEMENT_LOGS = [
-  '天より雷が落ち、{actor} を打った！',
-  '神罰の雷が {actor} に下った！',
-  '最初に動いた {actor} に、裁きの雷が突き刺さった！',
-  '{actor} の軽挙を咎めるように、雷光が走った！',
-  '神意の雷が {actor} を撃ち抜いた！',
-  '{actor} に天の裁きが下された！',
-  '戦いの先陣を切った {actor} に、雷の報いが落ちた！',
-  '神罰の閃光が {actor} を貫いた！',
-  '{actor} を戒めるように、聖なる雷が落ちた！',
-  '天の怒りが雷となって {actor} に降り注いだ！',
-] as const;
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.chain-lightning
-const TERRAIN_CHAIN_LIGHTNING_LOGS = [
-  '雷が跳ね、{target} へと連鎖した！',
-  '稲妻が分岐し、{target} を打った！',
-  '電撃が飛び火し、{target} に広がった！',
-  '雷光が弾け、{target} へ走った！',
-  '閃光が連なり、{target} にもう一撃が放たれた！',
-  '雷が連鎖し、{target} を撃ち抜いた！',
-  '電流が伝播し、{target} へ流れた！',
-  '稲妻が枝分かれし、{target} を貫いた！',
-  '雷撃が跳躍し、{target} に到達した！',
-  '弾けた雷が連なり、{target} を襲った！',
-] as const;
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.deletion
-const TERRAIN_DELETION_LOGS = [
-  '{target}の {ability} が消去された！',
-  '{target}の {ability} は跡形もなく消えた！',
-  '{target}の {ability} が無に帰した！',
-  '{target}の {ability} が抹消された！',
-  '{target}の {ability} が削り取られた！',
-  '{target}の {ability} が崩壊した！',
-  '{target}の {ability} が消滅した！',
-  '{target}の {ability} は封じられた！',
-  '{target}の {ability} が切り離された！',
-  '{target}の {ability} が存在ごと消えた！',
-] as const;
+const TERRAIN_FLAVOR_LOG_COUNT = 10;
 
 function pickRandomTerrainFlavorText(
-  logs: readonly string[],
-  fallback: string,
+  prefix: string,
   replacements: Record<string, string>,
 ): string {
-  const selected = logs[Math.floor(Math.random() * logs.length)] ?? fallback;
-  return Object.entries(replacements).reduce(
-    (text, [key, value]) => text.split(`{${key}}`).join(value),
-    selected,
-  );
+  return getRandomTranslation(prefix, TERRAIN_FLAVOR_LOG_COUNT, replacements);
 }
 
 // SpecRef: 6.1.1.1 | START phase | actor.a.oblivion
@@ -2511,8 +2411,7 @@ export function executeBattle(
           effectKind: 'terrain',
           characterId: target.kind === 'character' ? target.stats.characterId : undefined,
           action: pickRandomTerrainFlavorText(
-            TERRAIN_DELETION_LOGS,
-            '{target}の {ability} が消去された！',
+            'battleFlavor.environment.deletion',
             {
               target: target.name,
               ability: getAbilityName(selectedAbility.id, selectedAbility.level),
@@ -2882,8 +2781,7 @@ export function executeBattle(
     if (terrainEffect === 'terrain.vine-snare' && !hasAbility(actorAbilities, 'vine_cutter')) {
       selfDamage = Math.floor(currentHp * 0.01);
       actionText = pickRandomTerrainFlavorText(
-        TERRAIN_VINE_SNARE_LOGS,
-        '{actor} は蔓に絡め取られた！',
+        'battleFlavor.environment.vineSnare',
         { actor: actor.name },
       );
       noteTextTemplate = '(HP減少-{damage})';
@@ -2891,16 +2789,14 @@ export function executeBattle(
     } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'mid' && !hasAbility(actorAbilities, 'mana_ward')) {
       selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
-        TERRAIN_CRYSTAL_ZONE_LOGS,
-        '{actor} の魔力が反射し、体を傷つけた！',
+        'battleFlavor.environment.crystalZone',
         { actor: actor.name },
       );
       noteTextTemplate = '(HP減少-{damage})';
     } else if (terrainEffect === 'terrain.conduction' && elementalOffense === 'thunder') {
       selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
-        TERRAIN_CONDUCTION_LOGS,
-        '{actor} の雷撃が伝導し、自身に跳ね返った！',
+        'battleFlavor.environment.conduction',
         { actor: actor.name },
       );
       noteTextTemplate = '(HP減少 ⚡-{damage})';
@@ -2908,8 +2804,7 @@ export function executeBattle(
     } else if (terrainEffect === 'terrain.mana-burn' && phase === 'mid' && !hasAbility(actorAbilities, 'mana_ward')) {
       selfDamage = Math.floor(maxHp * 0.02);
       actionText = pickRandomTerrainFlavorText(
-        TERRAIN_MANA_BURN_LOGS,
-        '{actor} の魔力が暴走し、体を蝕んだ！',
+        'battleFlavor.environment.manaBurn',
         { actor: actor.name },
       );
       noteTextTemplate = '(HP減少-{damage})';
@@ -2923,8 +2818,7 @@ export function executeBattle(
     ) {
       selfDamage = Math.floor(currentHp * 0.05);
       actionText = pickRandomTerrainFlavorText(
-        TERRAIN_SACRED_JUDGEMENT_LOGS,
-        '天より雷が落ち、{actor} を打った！',
+        'battleFlavor.environment.sacredJudgement',
         { actor: actor.name },
       );
       noteTextTemplate = '(HP減少 ⚡-{damage})';
@@ -2977,8 +2871,7 @@ export function executeBattle(
         effectKind: 'terrain',
         characterId: actor.stats.characterId,
         action: pickRandomTerrainFlavorText(
-          TERRAIN_CHAIN_LIGHTNING_LOGS,
-          '雷が跳ね、{target} へと連鎖した！',
+          'battleFlavor.environment.chainLightning',
           { target: enemy.name },
         ),
         note: `(⚡ ${battleTerrainNoteValueFormatter.format(appliedDamage)})`,
@@ -3002,8 +2895,7 @@ export function executeBattle(
       effectKind: 'terrain',
       characterId: chainTarget.characterId,
       action: pickRandomTerrainFlavorText(
-        TERRAIN_CHAIN_LIGHTNING_LOGS,
-        '雷が跳ね、{target} へと連鎖した！',
+        'battleFlavor.environment.chainLightning',
         { target: chainTargetName },
       ),
       note: `(⚡ ${battleTerrainNoteValueFormatter.format(appliedDamage)})`,
