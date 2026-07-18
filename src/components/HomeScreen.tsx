@@ -203,7 +203,7 @@ const renderElementalResistanceInline = (
   multipliers: Record<'fire' | 'ice' | 'thunder', number>
 ): JSX.Element => (
   <>
-    属性耐性:{' '}
+    {t('home.auto.jp.d1f7c6d7c2')}{' '}
     {ELEMENTAL_RESISTANCE_ORDER.map(({ key, icon }, index) => (
       <Fragment key={key}>
         {index > 0 ? ',' : ''}
@@ -243,7 +243,7 @@ function getSliderProgressStyle(value: number, min: number, max: number): CSSPro
 
 const TERRAIN_EFFECT_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects');
 const TERRAIN_EFFECT_OPTIONS = [
-  { key: 'none', label: 'none', description: '地形効果なし' },
+  { key: 'none', label: 'none', description: t('home.auto.jp.da06746779') },
   ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []),
 ];
 const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, string>>((acc, entry) => {
@@ -265,10 +265,10 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
 };
 
 const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
-  LONG: '遠距離',
-  MID: '魔法',
-  CLOSE: '近接',
-  END: '終了',
+  LONG: t('home.auto.jp.b66f2bd024'),
+  MID: t('home.auto.jp.53ce4fd2b0'),
+  CLOSE: t('home.auto.jp.28b5bcd8a5'),
+  END: t('home.auto.jp.ecc8edea5c'),
 };
 
 function formatBonusAbilityPhaseDisplay(value: string): string {
@@ -285,7 +285,7 @@ function parseBonusAbilityLevelScale(levelScale: string): { timing: string | nul
     return { timing: null, value: null };
   }
 
-  const separatorIndex = scaleContent.indexOf('・');
+  const separatorIndex = scaleContent.indexOf(t('home.auto.jp.e2b902230d'));
   if (separatorIndex < 0) {
     const isTimingOnly = /^(LONG|MID|CLOSE|END)\d/.test(scaleContent);
     return {
@@ -330,9 +330,9 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
         .replace(/xM/g, `x${multiplier}`)
         .replace(/N/g, threshold)
         .replace(/M/g, multiplier)
-        .replace(/を\s+x/g, 'をx')
-        .replace(/が\s+x/g, 'がx')
-        .replace(/の\s+x/g, 'のx');
+        .replace(/を\s+x/g, t('home.auto.jp.f1084f41b7'))
+        .replace(/が\s+x/g, t('home.auto.jp.0c49364f8e'))
+        .replace(/の\s+x/g, t('home.auto.jp.cdee03a987'));
     }
   }
   if (abilityId === 'melee_conversion') {
@@ -348,18 +348,18 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;
 
-  if (abilityId.endsWith('_reflect') && value && value.includes('反射') && value.includes('被弾')) {
+  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.auto.jp.776127c53a')) && value.includes(t('home.auto.jp.1c155a99a1'))) {
     return entry.description
-      .replace('のNを反射して相手に与える(自身は残りを受ける)', `を${value}に分散する(反射分を相手に与え、自身は被弾分を受ける)`)
-      .replace(/を\s+x/g, 'をx')
-      .replace(/が\s+x/g, 'がx')
-      .replace(/の\s+x/g, 'のx');
+      .replace(t('home.auto.jp.7cfcdf30f4'), `を${value}に分散する(反射分を相手に与え、自身は被弾分を受ける)`)
+      .replace(/を\s+x/g, t('home.auto.jp.f1084f41b7'))
+      .replace(/が\s+x/g, t('home.auto.jp.0c49364f8e'))
+      .replace(/の\s+x/g, t('home.auto.jp.cdee03a987'));
   }
 
   if (timing) {
     description = description
-      .replace('指定終了タイミング', `${timing}終了タイミング`)
-      .replace('指定タイミング', `${timing}タイミング`);
+      .replace(t('home.auto.jp.990f7e6f2e'), `${timing}終了タイミング`)
+      .replace(t('home.auto.jp.192151e58d'), `${timing}タイミング`);
   }
 
   if (value) {
@@ -376,9 +376,9 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   }
 
   return description
-    .replace(/を\s+x/g, 'をx')
-    .replace(/が\s+x/g, 'がx')
-    .replace(/の\s+x/g, 'のx');
+    .replace(/を\s+x/g, t('home.auto.jp.f1084f41b7'))
+    .replace(/が\s+x/g, t('home.auto.jp.0c49364f8e'))
+    .replace(/の\s+x/g, t('home.auto.jp.cdee03a987'));
 }
 
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
@@ -500,7 +500,7 @@ function getExpeditionTierDurationFactor(expTier: number): number {
 
 function normalizeBattleLogNote(note?: string): string | undefined {
   if (!note) return note;
-  return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
+  return note.replace(t('home.auto.jp.110a295472'), t('home.auto.jp.26f77b1d79'));
 }
 
 // SpecRef: 6.1.1.1 | START phase | floor.terrain.*
@@ -836,7 +836,7 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
     getBattleLogEnemyNameCandidates(entry).forEach((enemyName) => {
       markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
     });
-    if (/^敵/.test(action)) markers.push({ label: '敵', src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
+    if (/^敵/.test(action)) markers.push({ label: t('home.auto.jp.b0af5773fc'), src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
   }
 
   party.characters.forEach((character: Character) => {
@@ -971,7 +971,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
     if (group) {
       const summarizedNote = group.templateLog.note?.replace(/✚[\d,]+(?=\))/gu, `✚${formatNumber(group.totalHealAmount)}`);
       const summarizedTargets = [...new Set(group.targetNames)];
-      const isNullifiedLifeDrain = group.templateLog.note?.includes('吸血無効') ?? false;
+      const isNullifiedLifeDrain = group.templateLog.note?.includes(t('home.auto.jp.da40aefa7c')) ?? false;
       const effectSourceName = group.templateLog.effectSourceName ?? '';
       return [{
         ...group.templateLog,
@@ -1195,69 +1195,69 @@ function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Expedition
 type GenderedNamePool = { male: string[]; female: string[] };
 const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
   1: {
-    caninian: ['タロウ', 'コテツ', 'ハヤテ', 'シロ', 'レオ', 'リク', 'ソラ', 'マル', 'ジン'],
-    lupinian: ['ガルム', 'クロウ', 'ハク', 'レイガ', 'ギン', 'ランガ', 'ゼル', 'バルト'],
-    vulpinian: ['アカネ', 'イズナ', 'ヨウコ', 'センリ', 'コトネ', 'クズノハ', 'ミカゲ', 'ヒナ', 'アヤ'],
-    ursan: ['ゴンタ', 'バルド', 'クマジロウ', 'ドーガ', 'グルン', 'ダン', 'ボルグ', 'ガイ', 'ザン', 'ブラム'],
-    felidian: ['タマ', 'ネロ', 'シエル', 'レイ', 'アオ', 'カノン', 'ユイ'],
-    leporian: ['フブキ', 'ハル', 'トワ', 'ユキ', 'ナギ', 'ミナ', 'サラ', 'アオイ', 'レイナ', 'カスミ'],
-    cervin: ['サイカ', 'カナエ', 'リンネ', 'ミコト', 'ユズリハ', 'シオン', 'セツナ', 'トキ', 'マヒロ', 'ツムギ'],
-    murid: ['カゲ', 'コソネ', 'スズ', 'コマ', 'ヒソカ', 'ネム', 'チビ', 'クルミ'],
+    caninian: [t('home.auto.jp.b1f22b88f6'), t('home.auto.jp.9b03e8611a'), t('home.auto.jp.c1767e20b9'), t('home.auto.jp.13c27941c7'), t('home.auto.jp.ca86dd1492'), t('home.auto.jp.9d2d6fca31'), t('home.auto.jp.10a319716e'), t('home.auto.jp.fc01d733ce'), t('home.auto.jp.2eec9454a0')],
+    lupinian: [t('home.auto.jp.38b98cf9ed'), t('home.auto.jp.9c0f674239'), t('home.auto.jp.3705a5f3da'), t('home.auto.jp.75c993fe4e'), t('home.auto.jp.5794e1b2d5'), t('home.auto.jp.8d3adacd10'), t('home.auto.jp.2fbdd63a28'), t('home.auto.jp.7dc33857eb')],
+    vulpinian: [t('home.auto.jp.1978fc8193'), t('home.auto.jp.8c68c789b3'), t('home.auto.jp.cad1fcf444'), t('home.auto.jp.0ba22489d5'), t('home.auto.jp.ec88d35260'), t('home.auto.jp.be3b526752'), t('home.auto.jp.0af73a8ea4'), t('home.auto.jp.f2c8fec52a'), t('home.auto.jp.8f9ea98748')],
+    ursan: [t('home.auto.jp.1c5051a2ae'), t('home.auto.jp.7c5f4fbca4'), t('home.auto.jp.5865fee93f'), t('home.auto.jp.58c1a9f8af'), t('home.auto.jp.844316b1d0'), t('home.auto.jp.75124b39bf'), t('home.auto.jp.a6d8e80e3b'), t('home.auto.jp.cae822e13d'), t('home.auto.jp.902d0de06b'), t('home.auto.jp.cc59b39fe8')],
+    felidian: [t('home.auto.jp.df881f3d50'), t('home.auto.jp.5ab7665c85'), t('home.auto.jp.318dcd60a5'), t('home.auto.jp.f39a590a3e'), t('home.auto.jp.f3ef78af4c'), t('home.auto.jp.5a6fa752cb'), t('home.auto.jp.83436b48dc')],
+    leporian: [t('home.auto.jp.40f5527db7'), t('home.auto.jp.0712054ce2'), t('home.auto.jp.119b84ffae'), t('home.auto.jp.506f982ad7'), t('home.auto.jp.d246d16b87'), t('home.auto.jp.7e03a02dce'), t('home.auto.jp.2ffa227c23'), t('home.auto.jp.633d580edd'), t('home.auto.jp.f1f7a5f495'), t('home.auto.jp.a60acc0ef2')],
+    cervin: [t('home.auto.jp.423dca9836'), t('home.auto.jp.5b57fe1ea0'), t('home.auto.jp.68ff7a258c'), t('home.auto.jp.2e8728adca'), t('home.auto.jp.d61e252027'), t('home.auto.jp.0fa41cad77'), t('home.auto.jp.214ea141ee'), t('home.auto.jp.5ccbac7990'), t('home.auto.jp.f08fad5e18'), t('home.auto.jp.f7e22d08be')],
+    murid: [t('home.auto.jp.de549b7955'), t('home.auto.jp.c5a4ba915a'), t('home.auto.jp.3010ab4569'), t('home.auto.jp.5c53d02bae'), t('home.auto.jp.eda98f2908'), t('home.auto.jp.e0952504a6'), t('home.auto.jp.75116ecfb2'), t('home.auto.jp.f69a9675cc')],
   },
   2: {
-    lupinian: ['タウロ', 'カノア', 'ラウル', 'マウイ', 'タネ', 'ケアヌ'],
-    vulpinian: ['カラニ', 'カイロ', 'マコア', 'ナル', 'ラニ', 'ノアル'],
-    felidian: ['レイナ', 'レイア', 'モアナ', 'ナレア', 'カリア', 'マリエ'],
-    caninian: ['カイ', 'マナ', 'ノエル', 'ラウア', 'テオ', 'エナ'],
-    ursan: ['マロ', 'カヘア', 'タマ', 'ノルア', 'ハウ', 'カロ'],
-    procyonian: ['カイマ', 'マコ', 'ナルア', 'ロノ', 'タリ', 'モア'],
-    leporian: ['レア', 'ナニ', 'ミア', 'アロハ', 'カノエ', 'リノ'],
-    cervin: ['マナエル', 'ケアヌ', 'ノアル', 'ラニエル', 'マヒナ', 'カレオ'],
-    murid: ['ピコ', 'ミノ', 'ナオ', 'ティコ', 'ロア', 'エリオ'],
+    lupinian: [t('home.auto.jp.0699c77c4d'), t('home.auto.jp.a0152d9e26'), t('home.auto.jp.29ad7cced0'), t('home.auto.jp.bdba9b4650'), t('home.auto.jp.060f1dedd9'), t('home.auto.jp.71b626f744')],
+    vulpinian: [t('home.auto.jp.3d3b6459ba'), t('home.auto.jp.67504df32d'), t('home.auto.jp.66c409193f'), t('home.auto.jp.f039f84f46'), t('home.auto.jp.78b4695a37'), t('home.auto.jp.5d383faf82')],
+    felidian: [t('home.auto.jp.f1f7a5f495'), t('home.auto.jp.d1b24d861f'), t('home.auto.jp.84555f6313'), t('home.auto.jp.bf4e8827d7'), t('home.auto.jp.0f0d9a55a5'), t('home.auto.jp.44643e8c33')],
+    caninian: [t('home.auto.jp.5b16cfeee5'), t('home.auto.jp.bc7fb1a130'), t('home.auto.jp.f2ac0a913d'), t('home.auto.jp.831ebb9b15'), t('home.auto.jp.06b9a13e94'), t('home.auto.jp.e496658a47')],
+    ursan: [t('home.auto.jp.52e7df03b5'), t('home.auto.jp.240ba15bb9'), t('home.auto.jp.df881f3d50'), t('home.auto.jp.eeeb74b722'), t('home.auto.jp.89c54595ba'), t('home.auto.jp.14a1dde5fb')],
+    procyonian: [t('home.auto.jp.6c7e487be8'), t('home.auto.jp.4e60419f99'), t('home.auto.jp.3f80f01c37'), t('home.auto.jp.e1825b79d4'), t('home.auto.jp.3cd4caa4bc'), t('home.auto.jp.f925e75452')],
+    leporian: [t('home.auto.jp.7eea85e064'), t('home.auto.jp.8882959f64'), t('home.auto.jp.3191f30bab'), t('home.auto.jp.68add79d81'), t('home.auto.jp.9904699d8c'), t('home.auto.jp.cf62c4b3fe')],
+    cervin: [t('home.auto.jp.4fde7fc7cf'), t('home.auto.jp.71b626f744'), t('home.auto.jp.5d383faf82'), t('home.auto.jp.8e1aa2bd0f'), t('home.auto.jp.2589cb72d6'), t('home.auto.jp.14dad2faf4')],
+    murid: [t('home.auto.jp.39b389a474'), t('home.auto.jp.1854df24de'), t('home.auto.jp.68e30bf8aa'), t('home.auto.jp.53e128794e'), t('home.auto.jp.4f820ad771'), t('home.auto.jp.e9d07ec105')],
   },
   3: {
-    lupinian: ['ファリス', 'ザヒル', 'ナシル', 'カリーム', 'ラシード', 'ハイダル'],
-    vulpinian: ['サーミル', 'ジャリル', 'ナビル', 'ファーディ', 'ザイード', 'アミール'],
-    felidian: ['ライラ', 'ナディア', 'サフィア', 'ヤスミン', 'ザーラ', 'マリカ'],
-    caninian: ['ハサン', 'オマル', 'ユースフ', 'ターリク', 'サリム', 'イブラヒム'],
-    ursan: ['バシール', 'マフムード', 'カーディル', 'ジャバル', 'ラヒム', 'ハムザ'],
-    procyonian: ['ナジーム', 'ファヒム', 'サーヒル', 'リヤド', 'ジャミル', 'カミル'],
-    leporian: ['アミナ', 'サルマ', 'ナイラ', 'リーム', 'ハナ', 'ダリア'],
-    cervin: ['ザヒラ', 'スハイル', 'ナディーム', 'カリラ', 'マジド', 'サミラ'],
-    murid: ['ミルザ', 'タリル', 'ラミ', 'サーミ', 'ナビハ', 'フィラス'],
+    lupinian: [t('home.auto.jp.da8a729ac0'), t('home.auto.jp.e0c5bcdf52'), t('home.auto.jp.003eb647e4'), t('home.auto.jp.0b35f8a60a'), t('home.auto.jp.1ca1777fdc'), t('home.auto.jp.bd46f74feb')],
+    vulpinian: [t('home.auto.jp.47cedd72fe'), t('home.auto.jp.bb35b41cc5'), t('home.auto.jp.f6e6b366cb'), t('home.auto.jp.9267e61f8d'), t('home.auto.jp.ca31abae38'), t('home.auto.jp.ac4b23f102')],
+    felidian: [t('home.auto.jp.f106f2a805'), t('home.auto.jp.d3319295d4'), t('home.auto.jp.74ca36e336'), t('home.auto.jp.1dbc124e64'), t('home.auto.jp.5bbd07f5ce'), t('home.auto.jp.3867d98610')],
+    caninian: [t('home.auto.jp.19fdb3f69b'), t('home.auto.jp.d8a9121d60'), t('home.auto.jp.2c2e8620c4'), t('home.auto.jp.165a766445'), t('home.auto.jp.bf88cc25c2'), t('home.auto.jp.797edf39c4')],
+    ursan: [t('home.auto.jp.cefd61ecb4'), t('home.auto.jp.c5756701e6'), t('home.auto.jp.da5d1e9cb5'), t('home.auto.jp.5db3790eab'), t('home.auto.jp.db20f14c6b'), t('home.auto.jp.ab00d3d243')],
+    procyonian: [t('home.auto.jp.861c7805ff'), t('home.auto.jp.5182b2d202'), t('home.auto.jp.c9bda361b6'), t('home.auto.jp.3685e8212a'), t('home.auto.jp.83aff79f39'), t('home.auto.jp.db118d3a89')],
+    leporian: [t('home.auto.jp.0aedb55559'), t('home.auto.jp.8c643ce4e4'), t('home.auto.jp.2573beabf9'), t('home.auto.jp.810c1cbe30'), t('home.auto.jp.d592baef03'), t('home.auto.jp.e89db7c734')],
+    cervin: [t('home.auto.jp.5d9df78a4d'), t('home.auto.jp.83b4f8e8a2'), t('home.auto.jp.3847236353'), t('home.auto.jp.07ab83fe71'), t('home.auto.jp.9708c62955'), t('home.auto.jp.4697e35198')],
+    murid: [t('home.auto.jp.f03a5fd608'), t('home.auto.jp.191ab3bd4b'), t('home.auto.jp.4253ad12a1'), t('home.auto.jp.58996d4686'), t('home.auto.jp.2b2b3a3326'), t('home.auto.jp.7783eec086')],
   },
   4: {
-    lupinian: ['イヴァン', 'ドミトリ', 'セルゲイ', 'ミハイル', 'アレクセイ', 'ボリス'],
-    vulpinian: ['ニコライ', 'ユーリ', 'ヴィクトル', 'ロマン', 'レフ', 'パーヴェル'],
-    felidian: ['アーニャ', 'ナターシャ', 'エカテリーナ', 'イリーナ', 'ソフィア', 'タチアナ'],
-    caninian: ['アンドレイ', 'コンスタンチン', 'フョードル', 'グリゴリー', 'ステパン', 'ヴァシリー'],
-    ursan: ['ウラジミール', 'ゲンナジー', 'イーゴリ', 'ロスチスラフ', 'ヤロスラフ', 'ボグダン'],
-    procyonian: ['ミーシャ', 'サーシャ', 'キリル', 'マクシム', 'オレグ', 'ティモフェイ'],
-    leporian: ['アリーナ', 'リュドミラ', 'ヴェーラ', 'スヴェトラーナ', 'ゼニア', 'マリーナ'],
-    cervin: ['ミラ', 'ラーダ', 'エレナ', 'ダリア', 'ズラータ', 'オリガ'],
-    murid: ['ピョートル', 'イリヤ', 'ラディム', 'ヴァレンチン', 'デニス', 'ルスラン'],
+    lupinian: [t('home.auto.jp.9eb01686ca'), t('home.auto.jp.5f4ad75ec7'), t('home.auto.jp.e5d49ca99b'), t('home.auto.jp.89ea6a587c'), t('home.auto.jp.bdbabb52d1'), t('home.auto.jp.4a82a82acf')],
+    vulpinian: [t('home.auto.jp.23c9bb68df'), t('home.auto.jp.11d6d0f4be'), t('home.auto.jp.c099e05af6'), t('home.auto.jp.de6430e2b9'), t('home.auto.jp.d66b54b242'), t('home.auto.jp.f70b1cb731')],
+    felidian: [t('home.auto.jp.e50439cbbf'), t('home.auto.jp.2176b53dbe'), t('home.auto.jp.d83856ccfe'), t('home.auto.jp.20b2c27606'), t('home.auto.jp.900dcba4cd'), t('home.auto.jp.c2ff64e75c')],
+    caninian: [t('home.auto.jp.4a97463361'), t('home.auto.jp.798394569d'), t('home.auto.jp.7d399c8c3f'), t('home.auto.jp.08bc75429f'), t('home.auto.jp.2396ecee64'), t('home.auto.jp.27f4514d3a')],
+    ursan: [t('home.auto.jp.b4263e5b09'), t('home.auto.jp.c463c38e83'), t('home.auto.jp.c351d4d8c6'), t('home.auto.jp.e8d04b6df1'), t('home.auto.jp.6587af8f71'), t('home.auto.jp.3cd4374a37')],
+    procyonian: [t('home.auto.jp.4a1724921f'), t('home.auto.jp.47a40ef438'), t('home.auto.jp.b8b5b0ca18'), t('home.auto.jp.c6a535d119'), t('home.auto.jp.6e32de792b'), t('home.auto.jp.db5d29f526')],
+    leporian: [t('home.auto.jp.f048e893e4'), t('home.auto.jp.3a4d57fd0c'), t('home.auto.jp.c9b6c91985'), t('home.auto.jp.18475f642e'), t('home.auto.jp.97471bd7df'), t('home.auto.jp.f41ff4f98b')],
+    cervin: [t('home.auto.jp.f1b4790b3c'), t('home.auto.jp.edcc6af177'), t('home.auto.jp.e4da3225a4'), t('home.auto.jp.e89db7c734'), t('home.auto.jp.6bbdb76525'), t('home.auto.jp.317047433c')],
+    murid: [t('home.auto.jp.91e9b3832d'), t('home.auto.jp.2a28d91518'), t('home.auto.jp.b9e847cd93'), t('home.auto.jp.ba2fb6b8de'), t('home.auto.jp.74a54429cf'), t('home.auto.jp.78aed808bb')],
   },
   5: {
-    lupinian: ['吠月', '銀吼', '狼髭', '鉄喉', '孤爪', '霜背', '夜襲', '咬輪', '雷牙'],
-    vulpinian: ['幻舌', '紅毛', '空耳', '妖面', '星瞳', '舞茸', '化葉', '千面'],
-    felidian: ['影髭', '夜目', '柔骨', '爪先', '眠須', '潜足', '鈴尾', '無聲', '陽溜'],
-    caninian: ['霜踏', '忠牙', '嗅丸', '群吠', '追尾', '散走', '守庭', '埋骨'],
-    ursan: ['冬籠', '熊掌', '山鳴', '蜜喰', '鈍爪', '大腹', '木倒', '岩背'],
-    procyonian: ['酒樽', '眠丸', '変身', '目隠', '落葉', '騙耳', '楽鼓', '空釜'],
-    leporian: ['長耳', '月跳', '軟足', '白尾', '草噛', '早駆', '雪隠'],
-    cervin: ['角王', '枝冠', '鈴蹄', '林鳴', '澄目', '茸角', '神着', '霜脚', '柵越'],
-    murid: ['砕歯', '灰背', '隙眼', '細尾', '穴人', '種盗', '顫髭', '鉄門'],
+    lupinian: [t('home.auto.jp.c9d1bd1528'), t('home.auto.jp.a8a4e5e573'), t('home.auto.jp.5c01a53e43'), t('home.auto.jp.fa8be81986'), t('home.auto.jp.2d63893cc9'), t('home.auto.jp.3dc9b0369e'), t('home.auto.jp.5ca9151969'), t('home.auto.jp.3f1d293684'), t('home.auto.jp.fc2b653f14')],
+    vulpinian: [t('home.auto.jp.8ed2452c41'), t('home.auto.jp.03e5bebd87'), t('home.auto.jp.44922ddfd7'), t('home.auto.jp.5495213c0f'), t('home.auto.jp.3dfb3d9ee6'), t('home.auto.jp.4535c642ba'), t('home.auto.jp.134e463d18'), t('home.auto.jp.3352be7190')],
+    felidian: [t('home.auto.jp.a768f17644'), t('home.auto.jp.592fc4d26f'), t('home.auto.jp.7f658b4c73'), t('home.auto.jp.7c882ebcca'), t('home.auto.jp.0ca1d43539'), t('home.auto.jp.c5426804fd'), t('home.auto.jp.6a40c21d0c'), t('home.auto.jp.c5a1aa402c'), t('home.auto.jp.99885da655')],
+    caninian: [t('home.auto.jp.18ea16b452'), t('home.auto.jp.fe98f3bc3d'), t('home.auto.jp.7fdcbf27ca'), t('home.auto.jp.695423f1d6'), t('home.auto.jp.69f91275bc'), t('home.auto.jp.9153f19ba3'), t('home.auto.jp.642372462b'), t('home.auto.jp.cce7522f96')],
+    ursan: [t('home.auto.jp.024c726061'), t('home.auto.jp.d1577074ec'), t('home.auto.jp.febcca3284'), t('home.auto.jp.23cb042b89'), t('home.auto.jp.d080113e73'), t('home.auto.jp.0e8f12410a'), t('home.auto.jp.1336fee4a4'), t('home.auto.jp.f8e957e0f7')],
+    procyonian: [t('home.auto.jp.8a2f7a2f20'), t('home.auto.jp.eb91c57e01'), t('home.auto.jp.f2e263a959'), t('home.auto.jp.e6086a1d4c'), t('home.auto.jp.7f0ac7bc27'), t('home.auto.jp.b2b764ea5a'), t('home.auto.jp.4030d2eea8'), t('home.auto.jp.1393511f38')],
+    leporian: [t('home.auto.jp.dca66175ba'), t('home.auto.jp.88e0b2e663'), t('home.auto.jp.2da52ab607'), t('home.auto.jp.d39912c501'), t('home.auto.jp.2aed5968c3'), t('home.auto.jp.6b0851ccc0'), t('home.auto.jp.0972d989a4')],
+    cervin: [t('home.auto.jp.e40cee1cca'), t('home.auto.jp.63897b688c'), t('home.auto.jp.a48dbd0799'), t('home.auto.jp.9d8a8db9d3'), t('home.auto.jp.eecffa35f1'), t('home.auto.jp.fd2df7fe88'), t('home.auto.jp.51f3788b35'), t('home.auto.jp.30a795380a'), t('home.auto.jp.4ee4c27912')],
+    murid: [t('home.auto.jp.baa8daf13b'), t('home.auto.jp.5386f866c3'), t('home.auto.jp.7135f16479'), t('home.auto.jp.e72654885a'), t('home.auto.jp.68e5c82446'), t('home.auto.jp.cba7057739'), t('home.auto.jp.8755b4d867'), t('home.auto.jp.ffc52e191a')],
   },
   6: {
-    lupinian: ['エヴァン', 'コール', 'ハドソン', 'ワイアット', 'ローガン', 'ブレイク'],
-    vulpinian: ['アッシャー', 'オーウェン', 'グラント', 'ジャスパー', 'ノーラン', 'リード'],
-    felidian: ['ヘイゼル', 'アイリス', 'クレア', 'オードリー', 'サディ', 'ヴァイオレット'],
-    caninian: ['メイソン', 'カーター', 'ベネット', 'ライアン', 'エリオット', 'テオドア'],
-    ursan: ['グレイソン', 'ハリソン', 'ウェスリー', 'サイラス', 'マーカス', 'デクラン'],
-    procyonian: ['ミロ', 'エズラ', 'ルカ', 'フェリックス', 'ジュード', 'ローワン'],
-    leporian: ['ジュニパー', 'ウィロー', 'エラ', 'ノラ', 'アイビー', 'ルビー'],
-    cervin: ['オータム', 'スカイラー', 'ハーパー', 'エヴリン', 'セージ', 'ブリア'],
-    murid: ['リアム', 'ノア', 'カレブ', 'サム', 'イアン', 'オリバー'],
+    lupinian: [t('home.auto.jp.354cf9b764'), t('home.auto.jp.b34f6cc8e5'), t('home.auto.jp.361496ff1b'), t('home.auto.jp.e75d96bc21'), t('home.auto.jp.3388d7e581'), t('home.auto.jp.165ea63031')],
+    vulpinian: [t('home.auto.jp.3a18804bff'), t('home.auto.jp.3e73b5e472'), t('home.auto.jp.37a4120ab8'), t('home.auto.jp.52aa626d82'), t('home.auto.jp.288bc0a792'), t('home.auto.jp.c98104b18c')],
+    felidian: [t('home.auto.jp.7f38404eff'), t('home.auto.jp.6e973362e4'), t('home.auto.jp.6582922018'), t('home.auto.jp.ba4a1f78d5'), t('home.auto.jp.6bf800a06e'), t('home.auto.jp.3be72fe2f6')],
+    caninian: [t('home.auto.jp.194779c4ca'), t('home.auto.jp.264128d181'), t('home.auto.jp.d9521fe8b2'), t('home.auto.jp.ea23bc07d7'), t('home.auto.jp.adf21deca5'), t('home.auto.jp.b50b78eee5')],
+    ursan: [t('home.auto.jp.654d920ca6'), t('home.auto.jp.fb46a74a35'), t('home.auto.jp.04397fd8ea'), t('home.auto.jp.d41a5cef27'), t('home.auto.jp.6da4ded0a3'), t('home.auto.jp.ed92d9b1f9')],
+    procyonian: [t('home.auto.jp.61458a03d7'), t('home.auto.jp.abd1604fd7'), t('home.auto.jp.44aafabeea'), t('home.auto.jp.e55a0c1fb9'), t('home.auto.jp.1ab357f039'), t('home.auto.jp.7355a91e24')],
+    leporian: [t('home.auto.jp.d9c7e89d8d'), t('home.auto.jp.b2c8bce411'), t('home.auto.jp.f1807682a7'), t('home.auto.jp.4564722c98'), t('home.auto.jp.2257fe2c7d'), t('home.auto.jp.b798279d6c')],
+    cervin: [t('home.auto.jp.b3656a5672'), t('home.auto.jp.d49189182e'), t('home.auto.jp.ad8293d033'), t('home.auto.jp.827638e37d'), t('home.auto.jp.9fa767df39'), t('home.auto.jp.36aca54aeb')],
+    murid: [t('home.auto.jp.36e6e5af1f'), t('home.auto.jp.60b9f88d77'), t('home.auto.jp.e86ab0f0e2'), t('home.auto.jp.e832384d97'), t('home.auto.jp.f94799f2ad'), t('home.auto.jp.a727cb9dfc')],
   },
 };
 
@@ -1424,7 +1424,7 @@ function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState):
   const log = party.lastExpeditionLog;
   if (!log || log.finalOutcome !== 'Clear') return false;
   const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes('(神魔戦)');
+  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes(t('home.auto.jp.cf021b8714'));
 }
 
 function getGodBattleLabel(dungeon: Dungeon): string {
@@ -1659,15 +1659,15 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
 }
 
 function getConditionLabel(condition: number, showValue: boolean): string {
-  let label = '絶好調';
-  if (condition <= -350) label = '絶不調';
-  else if (condition <= -250) label = '不調';
-  else if (condition <= -150) label = '低調';
-  else if (condition <= -50) label = '慎重';
-  else if (condition <= 50) label = '平常';
-  else if (condition <= 150) label = '順調';
-  else if (condition <= 250) label = '快調';
-  else if (condition <= 350) label = '好調';
+  let label = t('home.auto.jp.b9cae9deb1');
+  if (condition <= -350) label = t('home.auto.jp.d2c9a2c948');
+  else if (condition <= -250) label = t('home.auto.jp.f492b28cdf');
+  else if (condition <= -150) label = t('home.auto.jp.198586b37e');
+  else if (condition <= -50) label = t('home.auto.jp.b089b9baa2');
+  else if (condition <= 50) label = t('home.auto.jp.759edd9927');
+  else if (condition <= 150) label = t('home.auto.jp.9ad292281d');
+  else if (condition <= 250) label = t('home.auto.jp.72d33c938a');
+  else if (condition <= 350) label = t('home.auto.jp.dc93ce0ade');
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `condition` OFF/ON
   if (!showValue) return label;
   return `${label}(${condition >= 0 ? '+' : ''}${formatNumber(condition)})`;
@@ -1914,17 +1914,17 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
     if (baseNoA !== 0) dParts.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.meleeNoABonus) cParts.push(formatFixedNoA('近回数', item.meleeNoABonus));
+    if (item.meleeNoABonus) cParts.push(formatFixedNoA(t('home.auto.jp.f635a8222c'), item.meleeNoABonus));
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
     if (baseNoA !== 0) dParts.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.rangedNoABonus) cParts.push(formatFixedNoA('遠回数', item.rangedNoABonus));
+    if (item.rangedNoABonus) cParts.push(formatFixedNoA(t('home.auto.jp.49f1b72c03'), item.rangedNoABonus));
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
     if (baseNoA !== 0) dParts.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.magicalNoABonus) cParts.push(formatFixedNoA('魔回数', item.magicalNoABonus));
+    if (item.magicalNoABonus) cParts.push(formatFixedNoA(t('home.auto.jp.b688c9ee2e'), item.magicalNoABonus));
   }
   const displayedPhysicalDefense = (item.physicalDefense ?? 0) + jewelDBonus.physicalDefense;
   if (displayedPhysicalDefense) {
@@ -1951,7 +1951,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   if (item.mindBonus) bParts.push(`精神+${item.mindBonus}`);
   if (item.penetBonus) cParts.push(`${t('party.bonus.penet')}+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
-    const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
+    const elem = { fire: t('home.auto.jp.d56e09ae24'), ice: t('home.auto.jp.19ffed6948'), thunder: t('home.auto.jp.deaefde2be') }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
     eParts.push(`${elem}属性+${elementalPercent}%`);
   }
@@ -2106,15 +2106,15 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
   }
 
   const elementMeta: Record<Exclude<ElementalOffense, 'none'>, { label: string }> = {
-    fire: { label: '火' },
-    ice: { label: '氷' },
-    thunder: { label: '雷' },
+    fire: { label: t('home.auto.jp.efb2620838') },
+    ice: { label: t('home.auto.jp.19ffed6948') },
+    thunder: { label: t('home.auto.jp.deaefde2be') },
   };
 
   const lines: string[] = [];
 
   if (stats.elementalOffense === 'none') {
-    lines.push('攻撃は無属性です。');
+    lines.push(t('home.auto.jp.8fbc65128b'));
     return lines;
   }
 
@@ -2155,151 +2155,151 @@ const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
   shortLabel: '常' | '征' | '反' | '時';
   label: string;
 }> = [
-  { id: 'passive', shortLabel: '常', label: '常時効果アビリティ' },
-  { id: 'expedition', shortLabel: '征', label: '遠征アビリティ' },
-  { id: 'reactive', shortLabel: '反', label: '反応アビリティ' },
-  { id: 'timed', shortLabel: '時', label: '時限アビリティ' },
+  { id: 'passive', shortLabel: '常', label: t('home.auto.jp.c8b04c81e5') },
+  { id: 'expedition', shortLabel: '征', label: t('home.auto.jp.60bdd10654') },
+  { id: 'reactive', shortLabel: '反', label: t('home.auto.jp.25c1e893ca') },
+  { id: 'timed', shortLabel: '時', label: t('home.auto.jp.6534912ebf') },
 ];
 
 const ABILITY_HELP_TEXTS: Record<string, string> = {
-  'defender:1': '自身より後列の味方への物理ダメージを 2/3倍。',
-  'defender:2': '自身より後列の味方への物理ダメージを 3/5倍。',
-  'defender:3': '自身より後列の味方への物理ダメージを 1/2倍。',
-  'counter:1': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減）。',
-  'counter:2': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減しない）。',
-  'counter:3': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は2倍）。',
-  're_attack:1': '攻撃時に追加攻撃を行う（攻撃回数は半減）。',
-  're_attack:2': '攻撃時に追加攻撃を行う（攻撃回数は0.7倍）。',
-  're_attack:3': '攻撃時に追加攻撃を行う（攻撃回数は半減しない）。',
-  'iaigiri:1': '物理ダメージをx1.6倍する（攻撃回数は半減）。',
-  'iaigiri:2': '物理ダメージをx1.8倍する（攻撃回数は半減）。',
-  'iaigiri:3': '物理ダメージをx2.0倍する（攻撃回数は半減）。',
-  'command:1': '自身より後列の味方が与える物理ダメージを 1.4倍。',
-  'command:2': '自身より後列の味方が与える物理ダメージを 1.5倍。',
-  'command:3': '自身より後列の味方が与える物理ダメージを 1.6倍。',
-  'hunter:1': '列による命中率減衰を 1列ごと15%→10% に軽減する。',
-  'hunter:2': '列による命中率減衰を 1列ごと15%→7% に軽減する。',
-  'hunter:3': '列による命中率減衰を 1列ごと15%→5% に軽減する。',
-  'resonance:1': '魔法攻撃1回毎に、全ヒットのダメージが +4% 増加する。',
-  'resonance:2': '魔法攻撃1回毎に、全ヒットのダメージが +7% 増加する。',
-  'resonance:3': '魔法攻撃1回毎に、全ヒットのダメージが +9% 増加する。',
-  'resonance:4': '魔法攻撃1回毎に、全ヒットのダメージが +11% 増加する。',
-  'resonance:5': '魔法攻撃1回毎に、全ヒットのダメージが +12% 増加する。',
-  'm_barrier:1': '自身より後列の味方への魔法ダメージを 2/3倍。',
-  'm_barrier:2': '自身より後列の味方への魔法ダメージを 3/5倍。',
-  'm_barrier:3': '自身より後列の味方への魔法ダメージを 1/2倍。',
-  'deflection:1': '敵の遠距離攻撃の命中率を 10%低下させる。',
-  'deflection:2': '敵の遠距離攻撃の命中率を 15%低下させる。',
-  first_strike: '行動が速くなる。レベルが高いほど先行しやすい。',
-  equation_breaker: '機械理論・静寂領域の地形干渉を無効化する。',
-  domain_breaker: '必達/臨界/残響/静寂/剣戟/必中狙撃/必中魔法領域の効果を無効化する。',
-  fire_protect_breaker: '火属性攻撃時、相手の火炎反射・火炎吸収を無視する。',
-  ice_protect_breaker: '氷属性攻撃時、相手の氷結反射・氷結吸収を無視する。',
-  thunder_protect_breaker: '雷属性攻撃時、相手の雷撃反射・雷撃吸収を無視する。',
-  m_barrier_breaker: '相手の魔法障壁・魔法反射・魔法吸収を無視する。',
-  null_counter: '反撃を無効化する。レベルが高いほど有効回数が増える。',
-  resurrect: '致命ダメージを1回だけ耐える。',
-  rage: '受けたダメージに応じて物理/魔法攻撃倍率が増大する。',
-  re_counter: '敵の反撃に対してさらに反撃する。',
-  pursuit: '相手が逃げても追いかける(逃走・隠れ蓑アビリティを無効化)。',
-  illusion_breaker: '相手の幻を見破る(幻化アビリティを無効化)。',
-  bulwark_breaker: '壁を取り壊す(壁アビリティを無効化)。',
-  'illusion-breaker': '相手の幻を見破る(幻化アビリティを無効化)。',
-  'bulwark-breaker': '壁を取り壊す(壁アビリティを無効化)。',
-  momentum: '攻撃倍率が上がる代わりに被ダメージで効果が減少し、収益の一部を着服する。',
-  bulwark: '後列味方への攻撃を肩代わりする。',
-  covering_fire: '味方近接攻撃が単発命中時に遠距離で援護する。',
-  magical_counter: '魔法攻撃に対して魔法で反撃する。',
-  stealth: 'HPが一定未満の時、自身へのダメージをすべて回避する。',
-  illusion: '最初の遠距離攻撃を無効化する。',
-  howl: '遠距離2タイミングで発動。レベルに応じて相手の次の攻撃回数を 5/7〜1/7 にする。',
-  predator_sense: '近接9(開始)タイミングで発動。相手のHPが30％未満〜50％未満なら命中+40。',
-  slow: '自身の行動順番に-1して遅くなる。',
-  corrode: '通常近接攻撃が3回以上命中した相手に対して、攻撃倍率を x6/7〜x2/7 にする。',
-  life_drain: '通常近接攻撃で相手に与えたダメージの0.1%〜100%を回復する。',
-  no_offense: '通常行動をしなくなる（反撃などは行う）。',
-  decompose: '近接2タイミングで発動。相手の物理防御力を 6/7〜2/7 にする。',
-  swarm: '失ったHP割合に応じて、物理与ダメージが低下し、物理被ダメージが増加する(HP1%につき0.5%)。',
-  death_touch: '通常近接攻撃の命中回数 x 2/256〜6/256 の確率で即死させる。',
-  flying: '相手の近接攻撃回数が1/4になる。',
-  free: '近接1〜3または魔法1〜2タイミングで発動。戦闘から逃げる(戦闘は引分になる)。',
-  frostbite: '相手の行動順を遅らせる。',
-  ice_reflect: '自身が受ける予定の通常攻撃の氷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  ice_absorb: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  ice_null: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化する。',
-  bind: '近接攻撃の命中回数 x 2/64〜6/64 の確率で相手の行動を封じる。',
-  regeneration: '近接9(開始)タイミングで発動。この戦闘で失ったHPの10%〜24%を回復する。近接フェーズ前までにHPが0となった場合には発動しない。',
-  burn: '近接攻撃を受けた際に、相手に命中回数×最大HPの0.5%〜1.5%の火属性ダメージを与え返す。',
-  fire_reflect: '自身が受ける予定の通常攻撃の火属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  fire_absorb: '自身が受ける予定の通常攻撃の火属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  fire_null: '自身が受ける予定の通常攻撃の火属性ダメージを無効化する。',
-  thunder_reflect: '自身が受ける予定の通常攻撃の雷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  thunder_absorb: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  thunder_null: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化する。',
-  soul_reap: '魔法0(終了)タイミングで発動。相手のHPが10％未満〜20％未満なら即死させる。回避も復活もできない。',
-  mutual_magic_amplify: '双方の魔法ダメージを増幅する。',
-  mutual_magic_restraint: '双方の魔法ダメージを抑制する。',
-  mutual_physical_amplify: '双方の物理ダメージを増幅する。',
-  mutual_physical_restraint: '双方の物理ダメージを抑制する。',
-  ranged_confusion: '遠距離1〜2タイミングで発動。遠距離攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  magic_confusion: '魔法1〜2タイミングで発動。魔法攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  melee_confusion: '近接1〜2タイミングで発動。近接攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  self_destruct: '近接2タイミングで発動。自爆し、相手に残ダメージの1/10〜全てを与える。',
-  oblivion: '無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
-  fading_memory: '敵味方問わず無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
-  reanimate: '自身のHPが0となったタイミングで発動。HP20%〜38%で復活する(戦闘中1回のみ有効)。',
-  auriferous: '自身が受ける総攻撃回数10回毎に、自身がドロップするアイテム抽選確率を+1する。',
-  magic_seal: '最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)。',
-  ambush: '自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.3〜1.68倍。',
-  mimic: '相手のアビリティ1つを無作為に指定する。指定したアビリティの効果を発動する。',
-  unforgettable: 'アビリティは消して忘れることがなくなる(忘却無効)。',
-  shock: '相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる。',
-  null_shock: '感電しなくなる。',
-  null_corrode: '腐食しなくなる。',
-  null_life_drain: '吸血されることがなくなる。',
-  null_death_touch: '接死が無効化する。',
-  null_burn: '火傷を負わなくなる。',
-  null_bind: '拘束を速やかに解くことができる。',
-  null_requiem: '鎮魂歌では成仏はしない。',
-  unstable_core: '遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP12%〜30%の自傷ダメージを受ける。',
-  magical_reflect: '自身が受ける予定の通常攻撃の魔法ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  magical_absorb: '自身が受ける予定の通常攻撃の魔法ダメージを無効化し、レベルに応じて吸収して回復する。',
-  magical_null: '自身が受ける予定の通常攻撃の魔法ダメージを無効化する。',
-  ranged_reflect: '自身が受ける予定の遠距離攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  ranged_null: '自身が受ける予定の遠距離攻撃ダメージを無効化する。',
-  melee_reflect: '自身が受ける予定の近接攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  melee_null: '自身が受ける予定の近接攻撃ダメージを無効化する。',
-  colossal: '自身の物理防御力が2倍になり、物理被ダメージ補正がx2.0になる。',
-  upgrade_all_abilities: '自身の他のアビリティを1〜4段階強化する(上限レベル5)。',
+  'defender:1': t('home.auto.jp.10f2324e70'),
+  'defender:2': t('home.auto.jp.c766a5a804'),
+  'defender:3': t('home.auto.jp.cc4dd0182c'),
+  'counter:1': t('home.auto.jp.e4a7481554'),
+  'counter:2': t('home.auto.jp.8c9dda782f'),
+  'counter:3': t('home.auto.jp.d70766480f'),
+  're_attack:1': t('home.auto.jp.2b5045e748'),
+  're_attack:2': t('home.auto.jp.aa535cba11'),
+  're_attack:3': t('home.auto.jp.470f1942d8'),
+  'iaigiri:1': t('home.auto.jp.dd086b47d0'),
+  'iaigiri:2': t('home.auto.jp.220d8245ee'),
+  'iaigiri:3': t('home.auto.jp.2053ceb275'),
+  'command:1': t('home.auto.jp.cd9d9cff07'),
+  'command:2': t('home.auto.jp.29ce28f175'),
+  'command:3': t('home.auto.jp.5870ceed11'),
+  'hunter:1': t('home.auto.jp.4af9b5d458'),
+  'hunter:2': t('home.auto.jp.2fdb57a988'),
+  'hunter:3': t('home.auto.jp.e1e897e5ca'),
+  'resonance:1': t('home.auto.jp.d02881f8da'),
+  'resonance:2': t('home.auto.jp.22b13ae482'),
+  'resonance:3': t('home.auto.jp.80a7e72a25'),
+  'resonance:4': t('home.auto.jp.677bc7fc83'),
+  'resonance:5': t('home.auto.jp.e36f1705ff'),
+  'm_barrier:1': t('home.auto.jp.811a2f1712'),
+  'm_barrier:2': t('home.auto.jp.13028677f3'),
+  'm_barrier:3': t('home.auto.jp.a0b1bc3718'),
+  'deflection:1': t('home.auto.jp.830721b3f5'),
+  'deflection:2': t('home.auto.jp.0457850799'),
+  first_strike: t('home.auto.jp.64efb19a61'),
+  equation_breaker: t('home.auto.jp.c726f35853'),
+  domain_breaker: t('home.auto.jp.afc8f4d9ae'),
+  fire_protect_breaker: t('home.auto.jp.cb9aac3f00'),
+  ice_protect_breaker: t('home.auto.jp.95aa2a419a'),
+  thunder_protect_breaker: t('home.auto.jp.128a263639'),
+  m_barrier_breaker: t('home.auto.jp.90f39b9483'),
+  null_counter: t('home.auto.jp.395fd3d67f'),
+  resurrect: t('home.auto.jp.15ce8a1036'),
+  rage: t('home.auto.jp.c7d9faa524'),
+  re_counter: t('home.auto.jp.fd133d83ae'),
+  pursuit: t('home.auto.jp.a1b51e52a3'),
+  illusion_breaker: t('home.auto.jp.9af6dd0403'),
+  bulwark_breaker: t('home.auto.jp.2e6e35ba24'),
+  'illusion-breaker': t('home.auto.jp.9af6dd0403'),
+  'bulwark-breaker': t('home.auto.jp.2e6e35ba24'),
+  momentum: t('home.auto.jp.46c74e94ed'),
+  bulwark: t('home.auto.jp.6bb04ebfca'),
+  covering_fire: t('home.auto.jp.c85c9329e3'),
+  magical_counter: t('home.auto.jp.28907fbee6'),
+  stealth: t('home.auto.jp.3bdb827aa3'),
+  illusion: t('home.auto.jp.71e65f82a7'),
+  howl: t('home.auto.jp.ee8ab6de97'),
+  predator_sense: t('home.auto.jp.5586fc6692'),
+  slow: t('home.auto.jp.938541ce12'),
+  corrode: t('home.auto.jp.4914ba8292'),
+  life_drain: t('home.auto.jp.a82af28ff2'),
+  no_offense: t('home.auto.jp.46d6a84648'),
+  decompose: t('home.auto.jp.7d37944f21'),
+  swarm: t('home.auto.jp.f330fd6c88'),
+  death_touch: t('home.auto.jp.86eccfe8ce'),
+  flying: t('home.auto.jp.f40e650f88'),
+  free: t('home.auto.jp.d0f87da48a'),
+  frostbite: t('home.auto.jp.f462f07765'),
+  ice_reflect: t('home.auto.jp.6448561436'),
+  ice_absorb: t('home.auto.jp.a662a41c0f'),
+  ice_null: t('home.auto.jp.a8e53651b2'),
+  bind: t('home.auto.jp.da68014dc2'),
+  regeneration: t('home.auto.jp.161e005bb0'),
+  burn: t('home.auto.jp.e3aa649aca'),
+  fire_reflect: t('home.auto.jp.79e1990314'),
+  fire_absorb: t('home.auto.jp.fa842d64d1'),
+  fire_null: t('home.auto.jp.9688af1752'),
+  thunder_reflect: t('home.auto.jp.a82a2898f1'),
+  thunder_absorb: t('home.auto.jp.32e1f8c417'),
+  thunder_null: t('home.auto.jp.6bab50e71b'),
+  soul_reap: t('home.auto.jp.554671ac8e'),
+  mutual_magic_amplify: t('home.auto.jp.fc7a8b77f5'),
+  mutual_magic_restraint: t('home.auto.jp.ce2d8819a6'),
+  mutual_physical_amplify: t('home.auto.jp.e9830d78d1'),
+  mutual_physical_restraint: t('home.auto.jp.e72d84e99e'),
+  ranged_confusion: t('home.auto.jp.e51e98656c'),
+  magic_confusion: t('home.auto.jp.35aba6b8df'),
+  melee_confusion: t('home.auto.jp.3f4a0b8819'),
+  self_destruct: t('home.auto.jp.d325a03dfd'),
+  oblivion: t('home.auto.jp.bed85365f0'),
+  fading_memory: t('home.auto.jp.ab66a608a2'),
+  reanimate: t('home.auto.jp.35a672d4e6'),
+  auriferous: t('home.auto.jp.b794cdb6bc'),
+  magic_seal: t('home.auto.jp.3c4584df97'),
+  ambush: t('home.auto.jp.65340f4d40'),
+  mimic: t('home.auto.jp.c2ce7769af'),
+  unforgettable: t('home.auto.jp.c43599883f'),
+  shock: t('home.auto.jp.91933601fa'),
+  null_shock: t('home.auto.jp.ab34115cee'),
+  null_corrode: t('home.auto.jp.3c34ffba5f'),
+  null_life_drain: t('home.auto.jp.434ac1c966'),
+  null_death_touch: t('home.auto.jp.a9fe8f287b'),
+  null_burn: t('home.auto.jp.b6cb19846f'),
+  null_bind: t('home.auto.jp.9acb9f2a53'),
+  null_requiem: t('home.auto.jp.67611f8cf5'),
+  unstable_core: t('home.auto.jp.f67dbaf4a6'),
+  magical_reflect: t('home.auto.jp.0c5793848d'),
+  magical_absorb: t('home.auto.jp.acb1bd8663'),
+  magical_null: t('home.auto.jp.fcc0348ced'),
+  ranged_reflect: t('home.auto.jp.107b266700'),
+  ranged_null: t('home.auto.jp.e1ea126bee'),
+  melee_reflect: t('home.auto.jp.30861a5c45'),
+  melee_null: t('home.auto.jp.0ebab3c903'),
+  colossal: t('home.auto.jp.f0b1835b3e'),
+  upgrade_all_abilities: t('home.auto.jp.29f87efb4a'),
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
-  sword: '剣カテゴリ装備の効果が {value} 倍',
-  katana: '刀カテゴリ装備の効果が {value} 倍',
-  archery: '弓カテゴリ装備の効果が {value} 倍',
-  armor: '鎧カテゴリ装備の効果が {value} 倍',
-  gauntlet: '籠手カテゴリ装備の効果が {value} 倍',
-  wand: '杖カテゴリ装備の効果が {value} 倍',
-  robe: '法衣カテゴリ装備の効果が {value} 倍',
-  shield: '盾カテゴリ装備の効果が {value} 倍',
-  bolt: 'ボルトカテゴリ装備の効果が {value} 倍',
-  grimoire: '魔導書カテゴリ装備の効果が {value} 倍',
-  catalyst: '触媒カテゴリ装備の効果が {value} 倍',
-  arrow: '矢カテゴリ装備の効果が {value} 倍',
-  physical_offense_multiplier_xV: '遠距離攻撃・近接攻撃の攻撃倍率が {value} 倍',
-  magical_offense_multiplier_xV: '魔法攻撃の攻撃倍率が {value} 倍',
-  physical_defense_multiplier_xV: '物理防御倍率が {value} 倍',
-  magical_defense_multiplier_xV: '魔法防御倍率が {value} 倍',
-  fire_defense_multiplier_xV: '炎属性耐性が {value} 倍',
-  ice_defense_multiplier_xV: '氷属性耐性が {value} 倍',
-  thunder_defense_multiplier_xV: '雷属性耐性が {value} 倍',
-  deity_physical_attack_xV: '遠距離攻撃・近接攻撃のダメージが {value} 倍',
-  deity_magical_attack_xV: '魔法攻撃のダメージが {value} 倍',
-  "deity_physical_defense_x2/3": '物理防御倍率が 2/3 倍',
-  deity_physical_defense_xV: '物理防御倍率が {value} 倍',
-  deity_pysical_defense_xV: '物理防御倍率が {value} 倍',
-  "deity_magical_defense_x2/3": '魔法防御倍率が 2/3 倍',
-  deity_magical_defense_xV: '魔法防御倍率が {value} 倍',
+  sword: t('home.auto.jp.b493bb5dbb'),
+  katana: t('home.auto.jp.9a4697234b'),
+  archery: t('home.auto.jp.db9ff0adee'),
+  armor: t('home.auto.jp.1db85ca0ae'),
+  gauntlet: t('home.auto.jp.0323a68e26'),
+  wand: t('home.auto.jp.b9b97df174'),
+  robe: t('home.auto.jp.20d5d0e581'),
+  shield: t('home.auto.jp.c35a30e25a'),
+  bolt: t('home.auto.jp.f34e18a1bc'),
+  grimoire: t('home.auto.jp.7d3934d220'),
+  catalyst: t('home.auto.jp.e1ffb77532'),
+  arrow: t('home.auto.jp.d744dd9401'),
+  physical_offense_multiplier_xV: t('home.auto.jp.5c313dfde6'),
+  magical_offense_multiplier_xV: t('home.auto.jp.8393f186a0'),
+  physical_defense_multiplier_xV: t('home.auto.jp.264ae46f67'),
+  magical_defense_multiplier_xV: t('home.auto.jp.6734bf8152'),
+  fire_defense_multiplier_xV: t('home.auto.jp.f04b7cdda5'),
+  ice_defense_multiplier_xV: t('home.auto.jp.5bfc91042c'),
+  thunder_defense_multiplier_xV: t('home.auto.jp.b965dd8f26'),
+  deity_physical_attack_xV: t('home.auto.jp.6685183822'),
+  deity_magical_attack_xV: t('home.auto.jp.8a437fd37c'),
+  "deity_physical_defense_x2/3": t('home.auto.jp.46e9c90f8d'),
+  deity_physical_defense_xV: t('home.auto.jp.264ae46f67'),
+  deity_pysical_defense_xV: t('home.auto.jp.264ae46f67'),
+  "deity_magical_defense_x2/3": t('home.auto.jp.cdec5c6d74'),
+  deity_magical_defense_xV: t('home.auto.jp.6734bf8152'),
 };
 
 const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
@@ -2421,16 +2421,16 @@ function formatElementalResistanceBonus(label: string, value: number): string {
 }
 
 const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
-  unlock_caninian_ability: '🐶解放',
-  unlock_lupinian_ability: '🐺解放',
-  unlock_vulpinian_ability: '🦊解放',
-  unlock_ursan_ability: '🐻解放',
-  unlock_felidian_ability: '😺解放',
-  unlock_mustelid_ability: '🦡解放',
-  unlock_leporian_ability: '🐰解放',
-  unlock_cervin_ability: '🦌解放',
-  unlock_murid_ability: '🐭解放',
-  unlock_procyonian_ability: '🦝解放',
+  unlock_caninian_ability: t('home.auto.jp.8733e7e029'),
+  unlock_lupinian_ability: t('home.auto.jp.db288f3c56'),
+  unlock_vulpinian_ability: t('home.auto.jp.ab0b0697ba'),
+  unlock_ursan_ability: t('home.auto.jp.813b742fbd'),
+  unlock_felidian_ability: t('home.auto.jp.85877867df'),
+  unlock_mustelid_ability: t('home.auto.jp.ed8f1a51fb'),
+  unlock_leporian_ability: t('home.auto.jp.1a0e6ed6c1'),
+  unlock_cervin_ability: t('home.auto.jp.fe0838cc47'),
+  unlock_murid_ability: t('home.auto.jp.c860547a4f'),
+  unlock_procyonian_ability: t('home.auto.jp.97b429fd74'),
 };
 
 
@@ -2462,7 +2462,7 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'pursuit' || b.type === 'equip_ranged') {
       parts.push(t('party.bonus.equip_ranged'));
     } else if (b.type === 'antagonism') {
-      parts.push('⚠️敵対');
+      parts.push(t('home.auto.jp.5cd9f4ad34'));
     } else if (b.type === 'accuracy') {
       const rounded = Math.round(b.value * 1000);
       parts.push(`${t('party.bonus.accuracy')}${rounded >= 0 ? '+' : ''}${rounded}`);
@@ -2504,41 +2504,41 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'magical_offense_multiplier_xV') {
       parts.push(`魔攻撃x${b.value.toFixed(2)}`);
     } else if (b.type === 'deity_physical_defense_x2/3') {
-      parts.push('天物防2/3');
+      parts.push(t('home.auto.jp.851f98d299'));
     } else if (b.type === 'deity_physical_defense_xV' || b.type === 'deity_pysical_defense_xV') {
       parts.push(`天物防x${formatMultiplierValue(b.value)}`);
     } else if (b.type === 'deity_magical_defense_x2/3') {
-      parts.push('天魔防2/3');
+      parts.push(t('home.auto.jp.38bc71e442'));
     } else if (b.type === 'deity_magical_defense_xV') {
       parts.push(`天魔防x${formatMultiplierValue(b.value)}`);
     } else if (b.type === 'physical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('物防', b.value)
+          ? formatDefenseMultiplierBonus(t('home.auto.jp.c55bc3bbd5'), b.value)
           : `物防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'magical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('魔防', b.value)
+          ? formatDefenseMultiplierBonus(t('home.auto.jp.fb0b27180f'), b.value)
           : `魔防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'fire_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('炎防', b.value)
+          ? formatElementalResistanceBonus(t('home.auto.jp.a551f3664f'), b.value)
           : `炎防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'ice_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('氷防', b.value)
+          ? formatElementalResistanceBonus(t('home.auto.jp.c7cd7cb43d'), b.value)
           : `氷防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('雷防', b.value)
+          ? formatElementalResistanceBonus(t('home.auto.jp.e8a0e02ebf'), b.value)
           : `雷防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'fire_defense') {
@@ -2556,9 +2556,9 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}強化+${b.value}`);
     } else if (b.type === 'unimplemented_bonus') {
-      parts.push(`(${b.unimplementedLabel || '未実装ボーナス'})`);
+      parts.push(`(${b.unimplementedLabel || t('home.auto.jp.a2cf095b87')})`);
     } else if (b.type in UNLOCK_ABILITY_BONUS_LABELS) {
-      parts.push(UNLOCK_ABILITY_BONUS_LABELS[b.type as BonusType] ?? '[解放]');
+      parts.push(UNLOCK_ABILITY_BONUS_LABELS[b.type as BonusType] ?? t('home.auto.jp.5f0cda4ca0'));
     }
   }
   return parts.join(', ');
@@ -2578,28 +2578,28 @@ function getBonusHelpDescription(bonus: Bonus): string | null {
   if (bonus.type === 'strength') return `基礎筋力に ${bonus.value} を加算（近接火力に影響）`;
   if (bonus.type === 'intelligence') return `基礎知性に ${bonus.value} を加算（魔法火力に影響）`;
   if (bonus.type === 'mind') return `基礎精神に ${bonus.value} を加算（HP/魔防に影響）`;
-  if (bonus.type === 'grit' || bonus.type === 'equip_melee') return '近接攻撃の装備が出来るようになる';
-  if (bonus.type === 'caster' || bonus.type === 'equip_magic') return '魔法攻撃の装備が出来るようになる';
-  if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return '遠距離攻撃の装備が出来るようになる';
+  if (bonus.type === 'grit' || bonus.type === 'equip_melee') return t('home.auto.jp.85e1a6b64b');
+  if (bonus.type === 'caster' || bonus.type === 'equip_magic') return t('home.auto.jp.6d8d7a0a68');
+  if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return t('home.auto.jp.a9ee5102e8');
   if (bonus.type === 'penet') return t('combat.penetrationHelp', { percent: Math.round(bonus.value * 100) });
-  if (bonus.type === 'antagonism') return '味方を攻撃するようになる';
-  if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return '値が多いほどより多くの攻撃が命中するようになる';
-  if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return '値が多いほどより多くの攻撃を回避するようになる';
+  if (bonus.type === 'antagonism') return t('home.auto.jp.ecb9c6f454');
+  if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return t('home.auto.jp.8fc7b45815');
+  if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return t('home.auto.jp.924aea89a6');
   if (bonus.type === 'deity_move_first') return `先制の発動段階が ${bonus.value} 段階強化する`;
-  if (bonus.type === 'melee_attack') return '近接攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'ranged_attack') return '遠距離攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'magical_attack') return '魔法攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'physical_attack') return '遠距離攻撃・近接攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'physical_defense') return '物理耐性を強化する';
-  if (bonus.type === 'magical_defense') return '魔法耐性を強化する';
-  if (bonus.type === 'fire_offense') return '炎属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'ice_offense') return '氷属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'thunder_offense') return '雷属性攻撃のダメージ倍率が上昇する';
+  if (bonus.type === 'melee_attack') return t('home.auto.jp.d076a34975');
+  if (bonus.type === 'ranged_attack') return t('home.auto.jp.7c79623e41');
+  if (bonus.type === 'magical_attack') return t('home.auto.jp.da84b85f64');
+  if (bonus.type === 'physical_attack') return t('home.auto.jp.fc62de4dd6');
+  if (bonus.type === 'physical_defense') return t('home.auto.jp.33be4eac6a');
+  if (bonus.type === 'magical_defense') return t('home.auto.jp.42a96d9f47');
+  if (bonus.type === 'fire_offense') return t('home.auto.jp.8dc851a2ea');
+  if (bonus.type === 'ice_offense') return t('home.auto.jp.798140b040');
+  if (bonus.type === 'thunder_offense') return t('home.auto.jp.2ebf484305');
   if (bonus.type === 'growth_xV') return `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(bonus.value)} 倍になる`;
   if (bonus.type === 'ability_upgrade' && bonus.abilityId) return `アビリティ「${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}」を ${bonus.value} 段階強化する`;
 
   if (bonus.type in UNLOCK_ABILITY_BONUS_LABELS) {
-    return '対象種族の解放アビリティを使用できるようになる';
+    return t('home.auto.jp.7d782bcf4e');
   }
 
   return null;
@@ -2650,61 +2650,61 @@ function getRaceBonusesForSelection(race: Race, unlockAbilityActive = false): Bo
 
 const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
   none: '-',
-  aggressive: '好',
-  inquisitive: '探',
-  amiable: '和',
-  stubborn: '頑',
-  evasive: '避',
-  introspective: '内',
-  devoted: '献',
-  serene: '冷',
-  nimble: '軽',
-  perceptive: '看',
-  precise: '精',
-  resourceful: '腕',
+  aggressive: t('home.auto.jp.27e4fe4c3f'),
+  inquisitive: t('home.auto.jp.9433e30531'),
+  amiable: t('home.auto.jp.9a3eb34097'),
+  stubborn: t('home.auto.jp.c88a891571'),
+  evasive: t('home.auto.jp.914e19be93'),
+  introspective: t('home.auto.jp.55f45903e8'),
+  devoted: t('home.auto.jp.8c5621e570'),
+  serene: t('home.auto.jp.e2fc60d070'),
+  nimble: t('home.auto.jp.9e7c1778a1'),
+  perceptive: t('home.auto.jp.5f386ebdbb'),
+  precise: t('home.auto.jp.fcb83b62bc'),
+  resourceful: t('home.auto.jp.bbef2b0a05'),
 };
 
 const LINEAGE_SHORT_NAMES: Record<string, string> = {
-  sandstorm: '砂',
-  ashen_capital: '灰',
-  blaze_peak: '焔',
-  abyssal_sea: '海',
-  firmament: '穹',
-  frozen_forest: '凍',
-  utopia: '桃',
-  machina: '機',
-  adaptation: '適',
-  fragment: '断',
-  windcross: '風',
-  oath: '誓',
-  unascertained: '不',
-  pioneer: '先',
-  almighty: '全',
-  hidden_grail: '杯',
-  rowdy_orca_girl: 'わ',
-  meddlesome_fox: '世',
-  crescent_jade: '月',
-  phantom_thief: '怪',
-  flamebound_grove: '炎',
-  apostate: '背',
-  incarnation: '化',
+  sandstorm: t('home.auto.jp.51b9ebd1e6'),
+  ashen_capital: t('home.auto.jp.c010838dd8'),
+  blaze_peak: t('home.auto.jp.45166520ab'),
+  abyssal_sea: t('home.auto.jp.b188c5e30d'),
+  firmament: t('home.auto.jp.6c0c0ac4b5'),
+  frozen_forest: t('home.auto.jp.d0925f108e'),
+  utopia: t('home.auto.jp.0140b61db8'),
+  machina: t('home.auto.jp.2714e34246'),
+  adaptation: t('home.auto.jp.e37e3a8652'),
+  fragment: t('home.auto.jp.42d3108d5a'),
+  windcross: t('home.auto.jp.0b70303973'),
+  oath: t('home.auto.jp.6da18b6e58'),
+  unascertained: t('home.auto.jp.8fa7401e90'),
+  pioneer: t('home.auto.jp.82d45ef210'),
+  almighty: t('home.auto.jp.32a6d731e2'),
+  hidden_grail: t('home.auto.jp.2535fb0654'),
+  rowdy_orca_girl: t('home.auto.jp.dedb707d83'),
+  meddlesome_fox: t('home.auto.jp.5b8938b72f'),
+  crescent_jade: t('home.auto.jp.d9b59879f3'),
+  phantom_thief: t('home.auto.jp.7bc1e4b27e'),
+  flamebound_grove: t('home.auto.jp.d56e09ae24'),
+  apostate: t('home.auto.jp.e072ffdd2a'),
+  incarnation: t('home.auto.jp.8c7c1d2840'),
   'unexpected_prince(ss)': 'U',
 };
 
 // Category name mapping
 const CATEGORY_NAMES: Record<string, string> = {
-  sword: '剣',
-  katana: '刀',
-  archery: '弓',
-  armor: '鎧',
-  gauntlet: '籠手',
-  wand: 'ワンド',
-  robe: '法衣',
-  shield: '盾',
-  bolt: 'ボルト',
-  grimoire: '魔道書',
-  catalyst: '触媒',
-  arrow: '矢',
+  sword: t('home.auto.jp.8cc4957ea1'),
+  katana: t('home.auto.jp.c8f6dd0c32'),
+  archery: t('home.auto.jp.a0ec11cd07'),
+  armor: t('home.auto.jp.91e5e04918'),
+  gauntlet: t('home.auto.jp.6290363f36'),
+  wand: t('home.auto.jp.35806e5f13'),
+  robe: t('home.auto.jp.7ff1eb270a'),
+  shield: t('home.auto.jp.4dd9294514'),
+  bolt: t('home.auto.jp.bf50e946eb'),
+  grimoire: t('home.auto.jp.c3636a821c'),
+  catalyst: t('home.auto.jp.753883b1ed'),
+  arrow: t('home.auto.jp.e713975fe8'),
 };
 
 // Category groups for tabs
@@ -3149,7 +3149,7 @@ export function HomeScreen({
     value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   );
   function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
-    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const statusHeaders = [t('home.auto.jp.64e0d296da'), t('home.auto.jp.47aa1f5e6d'), t('home.auto.jp.c55bc3bbd5'), t('home.auto.jp.fb0b27180f'), t('home.auto.jp.cce4942d2b'), t('home.auto.jp.63d8f43c5b'), t('home.auto.jp.48ef52203b'), t('home.auto.jp.ae290c639c')];
     const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
     const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     return new File([html], fileName, { type: 'text/html' });
@@ -3241,7 +3241,7 @@ export function HomeScreen({
           : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
         const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
-        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('home.auto.jp.51625d909c') : t('home.auto.jp.26bc84961c')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
         const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
         return [
           `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
@@ -4710,7 +4710,7 @@ export function HomeScreen({
               if (spend > 0) {
                 if (!suppressCycleNotificationsForAfk) {
                   if (squanderLevel > 0) {
-                    const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
+                    const lordName = getPartyAbilityOwnerName(party, 'squander') ?? t('home.auto.jp.9d457c9fc1');
                     actions.addNotification(`${party.name} 君主${lordName}は贅沢に${formatNumber(spend)}G使った`);
                   } else {
                     actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
@@ -4755,7 +4755,7 @@ export function HomeScreen({
                   if (isNoFaith) {
                     actions.addNotification(`${party.name}は ${formatNumber(deposit)}Gを貯金した${embezzledText}`);
                   } else if (titheLevel > 0) {
-                    const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
+                    const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? t('home.auto.jp.9d457c9fc1');
                     actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
                   } else {
                     actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
@@ -5062,7 +5062,7 @@ export function HomeScreen({
           ? getItemDisplayName(purchasedVariant.item)
           : autoSoldVariant
             ? getItemDisplayName(autoSoldVariant.item)
-            : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
+            : `${ITEMS.find((item) => item.id === itemId)?.name ?? t('home.auto.jp.5377198cd2')} x1`;
 
         if (wasAutoSold) {
           actions.addNotification(`店から ${purchasedName} を購入して失望した(自動売却)`, 'normal', 'item', true);
@@ -5530,7 +5530,7 @@ export function HomeScreen({
               {/* SpecRef: 8.1.2 | Header | Game title label */}
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
+                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.auto.jp.5a1c83c8e4')}</span>
                   <span>{t('divineBureau.theme.kemo')}</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
@@ -5541,21 +5541,21 @@ export function HomeScreen({
                 type="button"
                 onClick={async () => {
                   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane(デバッグ)
-                  const confirmed = window.confirm('現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）');
+                  const confirmed = window.confirm(t('home.auto.jp.78a344df70'));
                   if (!confirmed) return;
                   try {
                     const isReported = await reportProgressForSpeedOfTime();
                     if (!isReported) {
-                      window.alert('進捗報告先が未設定のため、速度ボーナスは適用されませんでした。');
+                      window.alert(t('home.auto.jp.b54ee6a050'));
                       return;
                     }
                     const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
                     setTimeSpeedBonusUntilMs(bonusUntilMs);
                     updateDebugSettings({ timeSpeed: 'x1_2' });
-                    actions.addNotification('進捗報告に成功しました。1日間、ゲーム進行速度が1.2倍になります。', 'normal', 'stat', true);
+                    actions.addNotification(t('home.auto.jp.a6c517f682'), 'normal', 'stat', true);
                   } catch (error) {
                     console.error('Failed to report progress for Speed of Time:', error);
-                    window.alert('進捗報告に失敗したため、速度ボーナスは適用されませんでした。');
+                    window.alert(t('home.auto.jp.c9ed9bd0ec'));
                   }
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
@@ -5569,8 +5569,7 @@ export function HomeScreen({
                   onClick={() => setAutoRepeatEnabled(true)}
                   className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
                 >
-                  静止中
-                </button>
+                  {t('home.auto.jp.f923df605e')}</button>
               )}
             </div>
           </div>
@@ -5852,7 +5851,7 @@ function PartyTab({
 
   const confirmPartyCharacterReorder = useCallback(() => {
     // SpecRef: 8.2.2 | Party member details | Party member order swap confirmation
-    return window.confirm('選択したパーティメンバーの順番を入れ替えますか？');
+    return window.confirm(t('home.auto.jp.dc8add0525'));
   }, []);
 
   const reorderCharacterWithConfirmation = useCallback((fromIndex: number, toIndex: number) => {
@@ -5996,9 +5995,9 @@ function PartyTab({
         changes.push({ message: `貫通 ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
       }
       const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
-        fire: '火',
-        ice: '氷',
-        thunder: '雷',
+        fire: t('home.auto.jp.efb2620838'),
+        ice: t('home.auto.jp.19ffed6948'),
+        thunder: t('home.auto.jp.deaefde2be'),
       };
       const prevElementPercents: Record<Exclude<ElementalOffense, 'none'>, number> = {
         fire: 0,
@@ -6243,28 +6242,28 @@ function PartyTab({
     setPartyMemberImageSrc(nextPartyMemberImageSrc);
   }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
-    { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
-    { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
-    { label: '草食', raceIds: ['leporian', 'cervin', 'murid'] },
+    { label: t('home.auto.jp.b21e7daefc'), raceIds: ['lupinian', 'vulpinian', 'felidian'] },
+    { label: t('home.auto.jp.37f0e0fb1c'), raceIds: ['caninian', 'ursan', 'procyonian'] },
+    { label: t('home.auto.jp.c8fc45e93f'), raceIds: ['leporian', 'cervin', 'murid'] },
   ];
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
-    { label: '近接', classIds: ['duelist', 'samurai', 'sword-saint'] },
-    { label: '遠距離', classIds: ['ranger', 'striker', 'ninja'] },
-    { label: '魔法', classIds: ['wizard', 'sage', 'alchemist'] },
-    { label: '補助', classIds: ['guardian', 'pilgrim', 'lord'] },
+    { label: t('home.auto.jp.28b5bcd8a5'), classIds: ['duelist', 'samurai', 'sword-saint'] },
+    { label: t('home.auto.jp.b66f2bd024'), classIds: ['ranger', 'striker', 'ninja'] },
+    { label: t('home.auto.jp.53ce4fd2b0'), classIds: ['wizard', 'sage', 'alchemist'] },
+    { label: t('home.auto.jp.ef3b91fd9a'), classIds: ['guardian', 'pilgrim', 'lord'] },
   ];
   const classCategorySelectorGridClass = 'grid grid-cols-4 gap-1';
   const predispositionCategoryDefinitions: Array<{ label: string; ids: Character['predispositionId'][] }> = [
-    { label: '外向的', ids: ['aggressive', 'inquisitive', 'amiable'] },
-    { label: '内向的', ids: ['stubborn', 'evasive', 'introspective'] },
-    { label: '適応', ids: ['devoted', 'serene', 'nimble'] },
-    { label: '機知', ids: ['perceptive', 'precise', 'resourceful'] },
+    { label: t('home.auto.jp.960faf24f0'), ids: ['aggressive', 'inquisitive', 'amiable'] },
+    { label: t('home.auto.jp.0a36dc9e4d'), ids: ['stubborn', 'evasive', 'introspective'] },
+    { label: t('home.auto.jp.67ae2d0a8f'), ids: ['devoted', 'serene', 'nimble'] },
+    { label: t('home.auto.jp.6c0bd823ee'), ids: ['perceptive', 'precise', 'resourceful'] },
   ];
   const lineageCategoryDefinitions: Array<{ label: string; ids: Character['lineageId'][] }> = [
-    { label: '動乱', ids: ['sandstorm', 'ashen_capital', 'blaze_peak'] },
-    { label: '狩猟', ids: ['abyssal_sea', 'firmament', 'frozen_forest'] },
-    { label: '学識', ids: ['utopia', 'machina', 'adaptation'] },
-    { label: '生存', ids: ['fragment', 'windcross', 'oath'] },
+    { label: t('home.auto.jp.5fb0ccb3f2'), ids: ['sandstorm', 'ashen_capital', 'blaze_peak'] },
+    { label: t('home.auto.jp.e66cb30cca'), ids: ['abyssal_sea', 'firmament', 'frozen_forest'] },
+    { label: t('home.auto.jp.35e72dfed6'), ids: ['utopia', 'machina', 'adaptation'] },
+    { label: t('home.auto.jp.874e95e24b'), ids: ['fragment', 'windcross', 'oath'] },
   ];
   const classById = new Map(CLASSES.map((classDef) => [classDef.id, classDef]));
 
@@ -6375,13 +6374,13 @@ function PartyTab({
 
     const capabilityWarnings = getCapabilityRemovalWarningState(edits);
     if (capabilityWarnings.melee) {
-      warnings.push('近距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.auto.jp.4bc824d6f1'));
     }
     if (capabilityWarnings.ranged) {
-      warnings.push('遠距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.auto.jp.a83f7ea087'));
     }
     if (capabilityWarnings.magic) {
-      warnings.push('魔法攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.auto.jp.156f98dd9b'));
     }
 
     return warnings;
@@ -6441,10 +6440,10 @@ function PartyTab({
   };
 
   const baseStatMultiplierRows = [
-    { label: '体力', value: stats.baseStats.vitality, note: '物理耐性', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
-    { label: '力', value: stats.baseStats.strength, note: '遠距離/近接攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.strength) },
-    { label: '知性', value: stats.baseStats.intelligence, note: '魔法攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
-    { label: '精神', value: stats.baseStats.mind, note: '魔法耐性', ratio: getBaseDefenseScale(stats.baseStats.mind) },
+    { label: t('home.auto.jp.5f5ffadb73'), value: stats.baseStats.vitality, note: t('home.auto.jp.9d5e348bcc'), ratio: getBaseDefenseScale(stats.baseStats.vitality) },
+    { label: t('home.auto.jp.a81c2ab80e'), value: stats.baseStats.strength, note: t('home.auto.jp.a69734887d'), ratio: getBaseOffenseScale(stats.baseStats.strength) },
+    { label: t('home.auto.jp.2b266e02ba'), value: stats.baseStats.intelligence, note: t('home.auto.jp.daec119122'), ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
+    { label: t('home.auto.jp.70ea6ee229'), value: stats.baseStats.mind, note: t('home.auto.jp.bf5bce483e'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
   const hpContribution = computeCharacterHpContribution(char, party.level);
@@ -6757,8 +6756,7 @@ function PartyTab({
 
       {hasUnlockedReligions && editingDeity && (
         <div className="mb-3 text-xs text-gray-500">
-          キャラクターアイコン長押しで隊列変更
-        </div>
+          {t('home.auto.jp.1849c29a07')}</div>
       )}
 
       {/* Character selector */}
@@ -6855,7 +6853,7 @@ function PartyTab({
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
                   )}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
-                    <div>{mcShort}({isMaster ? '師' : scShort})</div>
+                    <div>{mcShort}({isMaster ? t('home.auto.jp.b48e9d30fb') : scShort})</div>
                     <div>{lineageShort}/{predispositionShort}</div>
                   </div>
                 </div>
@@ -6912,8 +6910,7 @@ function PartyTab({
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
               {char.isUnique && (
                 <div className="text-[11px] text-gray-500">
-                  固有キャラクター(クラスのみ編集可能)
-                </div>
+                  {t('home.auto.jp.d976942312')}</div>
               )}
 
               <div className="mt-2 flex items-center gap-2">
@@ -6956,7 +6953,7 @@ function PartyTab({
                             key={gender}
                             type="button"
                             disabled={isDisabled}
-                            title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                            title={isBlockedByDuplicate ? t('home.auto.jp.ffcf86a045') : undefined}
                             onClick={() => setPendingEdits({ ...pendingEdits, gender })}
                             className={`flex items-center justify-center px-2 py-1 text-xs border rounded ${
                               (pendingEdits?.gender ?? char.gender) === gender
@@ -6971,7 +6968,7 @@ function PartyTab({
                             }`}
                           >
                             <span className="inline-flex h-full w-3 items-center justify-center leading-none">
-                              {shouldShowGenderSymbol ? (gender === 'male' ? '男' : '女') : null}
+                              {shouldShowGenderSymbol ? (gender === 'male' ? t('home.auto.jp.51625d909c') : t('home.auto.jp.26bc84961c')) : null}
                             </span>
                           </button>
                         );
@@ -7065,7 +7062,7 @@ function PartyTab({
                         key={`race-image-${race.id}`}
                         type="button"
                         aria-label={race.name}
-                        title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                        title={isBlockedByDuplicate ? t('home.auto.jp.ffcf86a045') : undefined}
                         disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
                         className={`min-w-0 flex flex-1 items-center justify-center px-0 py-1 text-xs border ${
@@ -7084,8 +7081,8 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        <span className="font-bold">種族</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
-                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {renderInlineBonusEntries(selectedRaceBonusEntries)}
+                        <span className="font-bold">{t('home.auto.jp.c34d1bc482')}</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
+                        {selectedRace.name} {t('home.auto.jp.597439e9f9')}{selectedRace.stats.vitality}{t('home.auto.jp.4cef34e6d0')}{selectedRace.stats.strength}{t('home.auto.jp.9583904521')}{selectedRace.stats.intelligence}{t('home.auto.jp.675f842326')}{selectedRace.stats.mind} | {renderInlineBonusEntries(selectedRaceBonusEntries)}
                       </div>
                       <div className="grid grid-cols-3 gap-1">
                         {raceCategoryDefinitions.map((category) => (
@@ -7126,7 +7123,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
+                        <span className="font-bold">{t('home.auto.jp.a005c48795')}</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('home.auto.jp.158c32790f') : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -7202,7 +7199,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
+                        <span className="font-bold">{t('home.auto.jp.eda9a2ae3f')}</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.length === 0
                           ? '-'
                           : selectedSubBonusEntries.map((entry, index) => (
@@ -7274,7 +7271,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">系譜</span>: {selectedLineage.name} | {renderInlineBonusEntries(selectedLineageBonusEntries)}
+                        <span className="font-bold">{t('home.auto.jp.6c290744b0')}</span>: {selectedLineage.name} | {renderInlineBonusEntries(selectedLineageBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {lineageCategoryDefinitions.map((category) => (
@@ -7323,7 +7320,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">性格</span>: {selectedPredisposition.name} | {renderInlineBonusEntries(selectedPredispositionBonusEntries)}
+                        <span className="font-bold">{t('home.auto.jp.492e0da986')}</span>: {selectedPredisposition.name} | {renderInlineBonusEntries(selectedPredispositionBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {predispositionCategoryDefinitions.map((category) => (
@@ -7382,7 +7379,7 @@ function PartyTab({
                   style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
-                  <div className="font-medium text-gray-900">現在の基礎値とその補正解説:</div>
+                  <div className="font-medium text-gray-900">{t('home.auto.jp.7217a52d6b')}</div>
                   <div className="space-y-1">
                     {baseStatMultiplierRows.map((row) => (
                       <div key={row.label}>
@@ -7391,8 +7388,8 @@ function PartyTab({
                     ))}
                   </div>
                   <div className="pt-1 border-t border-gray-100 space-y-1">
-                    <div>HP増加基礎値: +{formatNumber(Math.floor(hpBaseIncrease))}</div>
-                    <div>アイテムHP増加値: +{formatNumber(Math.floor(hpItemIncrease))}</div>
+                    <div>{t('home.auto.jp.e2c3d6af6b')}{formatNumber(Math.floor(hpBaseIncrease))}</div>
+                    <div>{t('home.auto.jp.e41b913e4d')}{formatNumber(Math.floor(hpItemIncrease))}</div>
                   </div>
                 </div>
               )}
@@ -7469,7 +7466,7 @@ function PartyTab({
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
-                    helpTitle: '魔法攻撃',
+                    helpTitle: t('home.auto.jp.67053223d0'),
                     helpLines: [
                       `魔法攻撃力: ${formatNumber(Math.floor(stats.magicalAttack))} ※ダメージを与えるには敵の魔法防御力を超える必要があります`,
                       `魔法攻撃回数: ${formatNumber(stats.magicalNoA)}回`,
@@ -7513,9 +7510,9 @@ function PartyTab({
                   offenseLines.push({
                     key: 'magical-accuracy',
                     text: `魔法命中率: 100% (減衰: ${decayText})`,
-                    helpTitle: '魔法命中率',
+                    helpTitle: t('home.auto.jp.1f3328e311'),
                     helpLines: [
-                      '魔法命中率: 100% ※初回の命中率',
+                      t('home.auto.jp.a5c18dccfd'),
                       `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
                     ],
                   });
@@ -7531,7 +7528,7 @@ function PartyTab({
                   offenseLines.push({
                     key: 'magic-spell',
                     text: `詠唱魔法: ${magicProfile.spellName}`,
-                    helpTitle: '詠唱魔法',
+                    helpTitle: t('home.auto.jp.c64c8d44a0'),
                     helpLines: [
                       `詠唱魔法: ${magicProfile.spellName}`,
                       `スタイル: ${magicProfile.style}`,
@@ -7577,7 +7574,7 @@ function PartyTab({
                         (x{stats.elementalOffenseValue.toFixed(2)})
                       </>
                     ),
-                    helpTitle: 'e. 属性攻撃(重複有効)',
+                    helpTitle: t('home.auto.jp.d5715226f4'),
                     helpLines: getElementalOffenseHelpLines(char, stats),
                   },
                   {
@@ -7604,7 +7601,7 @@ function PartyTab({
                     helpTitle: t('combat.evasion'),
                     helpLines: [
                       `回避: ${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
-                      '※敵の命中減衰率を値分、減少させます(攻撃回数が多いほど回避しやすくなります)',
+                      t('home.auto.jp.1bfdac641b'),
                     ],
                   },
                 ];
@@ -7874,10 +7871,10 @@ function PartyTab({
               }
 
               const bHelpRows = ([
-                { key: 'vitality', short: '体' },
-                { key: 'strength', short: '力' },
-                { key: 'intelligence', short: '知' },
-                { key: 'mind', short: '精' },
+                { key: 'vitality', short: t('home.auto.jp.d37fc6a5eb') },
+                { key: 'strength', short: t('home.auto.jp.a81c2ab80e') },
+                { key: 'intelligence', short: t('home.auto.jp.c524682048') },
+                { key: 'mind', short: t('home.auto.jp.fcb83b62bc') },
               ] as const)
                 .map((row) => {
                   const value = additive[row.key];
@@ -7940,7 +7937,7 @@ function PartyTab({
               const bonusEntries = sortedBonusDisplayEntries.map((entry, index) => ({
                 key: `status-bonus-${index}-${entry.key}-${entry.label}`,
                 label: entry.label,
-                description: bonusHelpMap.get(entry.label) ?? 'このボーナスの説明は未設定です。',
+                description: bonusHelpMap.get(entry.label) ?? t('home.auto.jp.838e848ae1'),
               }));
 
               if (bonusEntries.length === 0) return null;
@@ -8092,7 +8089,7 @@ function PartyTab({
                         onToggleEquipmentLock(char.id, slotIndex);
                       }}
                       className="text-base leading-none"
-                      aria-label={isLocked ? '装備ロック解除' : '装備ロック'}
+                      aria-label={isLocked ? t('home.auto.jp.85aa930358') : t('home.auto.jp.e01672aeef')}
                     >
                       {renderUiIcon(isLocked ? 'lock' : 'unlock', lockEmojiClassName)}
                     </button>
@@ -8662,11 +8659,11 @@ function ExpeditionTab({
         const party = state.parties[partyIndex];
         if (!party) {
           const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = {
-            1: '(未開放)ヴァルンの海洋踏破で開放',
-            2: '(未開放)フェリディ砂漠踏破で開放',
-            3: '(未開放)ウルサンの炎嶺踏破で開放',
-            4: '(未開放)プロキオン巣穴踏破で開放',
-            5: '(未開放)レポリアンの月宮踏破で開放',
+            1: t('home.auto.jp.5b03074edc'),
+            2: t('home.auto.jp.990e356b69'),
+            3: t('home.auto.jp.e4b746f923'),
+            4: t('home.auto.jp.edf35b6720'),
+            5: t('home.auto.jp.426052d34b'),
           };
           const lockedPartyHintVisibleRequirementByIndex: Partial<Record<number, number>> = {
             1: 2,
@@ -8681,7 +8678,7 @@ function ExpeditionTab({
             ? state.parties.some((existingParty) => hasDefeatedDungeonBoss(existingParty, hintVisibleRequiredBossDungeonId))
             : false;
           if (!isHintVisible) return null;
-          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
+          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? t('home.auto.jp.f01c589eeb');
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
@@ -9178,7 +9175,7 @@ function ExpeditionTab({
 
                   {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
-                      <span className="text-gray-500">獲得アイテム: </span>
+                      <span className="text-gray-500">{t('home.auto.jp.4e8cbe53b3')}</span>
                       {currentLog.rewards.map((item, i) => {
                         const rarity = getItemRarityById(item.id);
                         const isSuperRare = item.superRare > 0;
@@ -9309,7 +9306,7 @@ function ExpeditionTab({
                             {!entry.gateInfo && (
                               <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
-                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                                  <div className="mb-0.5">{t('home.auto.jp.80889856ff')}{formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
@@ -9317,7 +9314,7 @@ function ExpeditionTab({
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                                  <div className="mb-0.5">{t('home.auto.jp.518a6346a3')}{formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                     <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                   </div>
@@ -9346,14 +9343,14 @@ function ExpeditionTab({
                               <div className="relative z-10">
                               <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
-                                const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
+                                const isResurrectLog = log.note?.startsWith(t('home.auto.jp.73eeeafeac')) || log.note?.startsWith(t('home.auto.jp.782f940e0b'));
                                 const isTriggeredLog = log.actor === 'triggered';
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
-                                const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
-                                const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
-                                const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
-                                const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
+                                const isStealthEffectLog = log.actor === 'effect' && (log.action.includes(t('home.auto.jp.345da5998f')) || log.action.includes(t('home.auto.jp.10707c046b')));
+                                const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes(t('home.auto.jp.8811424c95'));
+                                const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes(t('home.auto.jp.345da5998f')) || previousLog.action.includes(t('home.auto.jp.10707c046b')));
+                                const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes(t('home.auto.jp.8811424c95'));
                                 const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'long' || previousLog.phase === 'mid' || previousLog.phase === 'close');
                                 const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                                 const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
@@ -9417,7 +9414,7 @@ function ExpeditionTab({
                                   if (isResurrectLog) {
                                     actionText = t('battleLog.action.enemyResurrect', { action: log.action });
                                   } else if (log.isEnemyTargetHit) {
-                                    actionText = allMissed ? t('battleLog.action.targetHitMissed', { action: log.action.replace('命中！', '') }) : log.action;
+                                    actionText = allMissed ? t('battleLog.action.targetHitMissed', { action: log.action.replace(t('home.auto.jp.a0f50dc0c0'), '') }) : log.action;
                                   } else {
                                     actionText = allMissed ? t('battleLog.action.enemyMissed', { action: log.action.replace('！', '') }) : t('battleLog.action.enemyActed', { action: log.action });
                                   }
@@ -9454,13 +9451,13 @@ function ExpeditionTab({
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>{t('home.auto.jp.776127c53a')}{formatNumber(log.reflectedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : isAbsorbDamageLog
                                       ? (
                                         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
+                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>{t('home.auto.jp.472eb4040f')}{formatNumber(log.absorbedDamage || 0)}</span>)
                                         </span>
                                       )
                                       : (
@@ -9562,11 +9559,11 @@ function BaseTab({
   debugSettings: DebugSettings;
 }) {
   const baseSubTabs = [
-    { id: 'shop' as const, label: 'お店', isAvailable: true },
-    { id: 'inventory' as const, label: '所持品', isAvailable: true },
-    { id: 'debugStore' as const, label: '灰路の蔵', isAvailable: debugSettings.jewelShopOpen },
-    { id: 'workshop' as const, label: '工房', isAvailable: false },
-    { id: 'altar' as const, label: '祭壇', isAvailable: false },
+    { id: 'shop' as const, label: t('home.auto.jp.1006e5787c'), isAvailable: true },
+    { id: 'inventory' as const, label: t('home.auto.jp.c9d7cc66c0'), isAvailable: true },
+    { id: 'debugStore' as const, label: t('home.auto.jp.aa9745498f'), isAvailable: debugSettings.jewelShopOpen },
+    { id: 'workshop' as const, label: t('home.auto.jp.92dab277d6'), isAvailable: false },
+    { id: 'altar' as const, label: t('home.auto.jp.387bf79ba1'), isAvailable: false },
   ];
 
   return (
@@ -9769,7 +9766,7 @@ function ShopTab({
                 {intimacyDialogue}
               </p>
               <p className="shop-dialogue-pane__countdown text-xs">
-                {t('home.shop.refreshCountdown', { time: countdownText.replace('後', '') })}
+                {t('home.shop.refreshCountdown', { time: countdownText.replace(t('home.auto.jp.a1a8cfd1de'), '') })}
               </p>
             </div>
           </div>
@@ -10733,25 +10730,25 @@ function DiaryTab({
     .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
   const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
-    if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
-    if (triggers.includes('draw') && triggers.length === 1) return '引分の記録';
-    if (triggers.includes('unlock')) return '解放の記録';
-    if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
-    if (triggers.includes('godsBattle')) return '神魔戦の記録';
-    if (triggers.includes('superRare')) return '超レア獲得の記録';
-    if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
-    if (triggers.includes('bossRare')) return 'ボスレア獲得の記録';
-    if (triggers.includes('eliteRare')) return 'エリートレア獲得の記録';
-    return '特別記録';
+    if (triggers.includes('defeat') && triggers.length === 1) return t('home.auto.jp.ef0c2bf716');
+    if (triggers.includes('draw') && triggers.length === 1) return t('home.auto.jp.0a6463faa2');
+    if (triggers.includes('unlock')) return t('home.auto.jp.78e66c5106');
+    if (triggers.includes('sideQuest')) return t('home.auto.jp.217f3767c6');
+    if (triggers.includes('godsBattle')) return t('home.auto.jp.e82006625e');
+    if (triggers.includes('superRare')) return t('home.auto.jp.f0b93c7ad3');
+    if (triggers.includes('mythicRare')) return t('home.auto.jp.04cdb7801f');
+    if (triggers.includes('bossRare')) return t('home.auto.jp.a7bdd44817');
+    if (triggers.includes('eliteRare')) return t('home.auto.jp.dd4bfb3915');
+    return t('home.auto.jp.8559264fcd');
   };
 
 
   const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLog) => {
-    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
-    if (!hasGodsBattleEntry) return '未到達';
-    if (expeditionLog.finalOutcome === 'Clear') return '勝利';
-    if (expeditionLog.finalOutcome === 'Defeat') return '敗北';
-    return '引分';
+    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => entry.enemyName.includes(t('home.auto.jp.cf021b8714')));
+    if (!hasGodsBattleEntry) return t('home.auto.jp.e46a9c5b2e');
+    if (expeditionLog.finalOutcome === 'Clear') return t('home.auto.jp.2949d100bd');
+    if (expeditionLog.finalOutcome === 'Defeat') return t('home.auto.jp.8e72993d13');
+    return t('home.auto.jp.9c030ad1bb');
   };
 
 
@@ -10779,7 +10776,7 @@ function DiaryTab({
     // SpecRef: 8.5 | UI_DIARY | 神魔戦通知
     if (triggers.includes('godsBattle')) {
       const godsBattleEnemyName = expeditionLog.entries
-        .find((entry) => entry.enemyName.includes('(神魔戦)'))
+        .find((entry) => entry.enemyName.includes(t('home.auto.jp.cf021b8714')))
         ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
         .trim();
       const normalizedGodsBattleEnemyName = godsBattleEnemyName
@@ -10823,10 +10820,10 @@ function DiaryTab({
         .map((item) => getItemDisplayName(item))
         .join('、');
       const triggerPrefix = triggers.includes('superRare')
-        ? '超レア'
+        ? t('home.auto.jp.64d014f5a1')
         : triggers.includes('mythicRare')
-          ? '神魔レア'
-          : 'ボスレア';
+          ? t('home.auto.jp.55f1552320')
+          : t('home.auto.jp.c76e45ee27');
       return rewardNames
         ? `[${partyName}] ${triggerPrefix}(${rewardNames}) 獲得`
         : `[${partyName}] ${triggerPrefix}獲得`;
@@ -10870,7 +10867,7 @@ function DiaryTab({
         className="w-full text-left"
       >
         <span className="flex items-center justify-between text-sm font-medium">
-          <span>日誌記録設定</span>
+          <span>{t('home.auto.jp.2336988a2b')}</span>
           <span className={`transform transition-transform ${isSettingsExpanded ? 'rotate-180' : ''}`}>▼</span>
         </span>
       </button>
@@ -10884,7 +10881,7 @@ function DiaryTab({
                 <div className="mb-2 text-xs text-gray-500">{party.name}</div>
                 <div className="grid gap-2 text-sm sm:grid-cols-2">
                   <label className="flex items-center justify-between gap-2">
-                    <span>超レア通知</span>
+                    <span>{t('home.auto.jp.29877b668c')}</span>
                     <select
                       value={settings.superRareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { superRareThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10896,7 +10893,7 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>エリートレア通知</span>
+                    <span>{t('home.auto.jp.9539074edf')}</span>
                     <select
                       value={settings.rareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { rareThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10908,7 +10905,7 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>ボスレア通知</span>
+                    <span>{t('home.auto.jp.a4f8535a56')}</span>
                     <select
                       value={settings.bossThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { bossThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10920,18 +10917,18 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>神魔戦通知</span>
+                    <span>{t('home.auto.jp.4ef72b27f3')}</span>
                     <select
-                      value={settings.notifyGodsBattle ? 'あり' : 'なし'}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'あり' })}
+                      value={settings.notifyGodsBattle ? t('home.auto.jp.d55be023c2') : t('home.auto.jp.1a2e920ba7')}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === t('home.auto.jp.d55be023c2') })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
-                      <option value="あり">あり</option>
-                      <option value="なし">なし</option>
+                      <option value="あり">{t('home.auto.jp.d55be023c2')}</option>
+                      <option value="なし">{t('home.auto.jp.1a2e920ba7')}</option>
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>神魔レア通知</span>
+                    <span>{t('home.auto.jp.3fb882ad09')}</span>
                     <select
                       value={settings.mythicThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
@@ -10943,7 +10940,7 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>敗北通知</span>
+                    <span>{t('home.auto.jp.778174ff07')}</span>
                     <select
                       value={settings.defeatNotificationMode}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { defeatNotificationMode: event.target.value as DiaryDefeatNotificationMode })}
@@ -10956,7 +10953,7 @@ function DiaryTab({
                   </label>
                   {/* SpecRef: 8.5 | UI_DIARY | Setting. */}
                   <label className="flex items-center justify-between gap-2">
-                    <span>サイドクエスト獲得通知</span>
+                    <span>{t('home.auto.jp.90bb0aa45a')}</span>
                     <select
                       value={settings.sideQuestThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { sideQuestThreshold: parseDiarySideQuestThreshold(event.target.value) })}
@@ -11002,7 +10999,7 @@ function DiaryTab({
           </FloatingBubblePortal>
         )}
         {renderDiarySettings()}
-        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">記録された日誌はありません</div>
+        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">{t('home.auto.jp.95db96982a')}</div>
       </div>
     );
   }
@@ -11072,7 +11069,7 @@ function DiaryTab({
 
             {specialRewards.length > 0 && diaryLog.triggers.includes('defeat') && (
               <div className="mt-1 text-xs text-gray-500">
-                特別獲得: {specialRewards.map((item, i) => {
+                {t('home.auto.jp.9344eb0658')}{specialRewards.map((item, i) => {
                   const rarity = getItemRarityById(item.id);
                   const isSuperRare = item.superRare > 0;
                   const rarityClass = getRarityTextClass(rarity, isSuperRare);
@@ -11098,7 +11095,7 @@ function DiaryTab({
 
                 {log.rewards.length > 0 && (
                   <div className="text-sm">
-                    <span className="text-gray-500">獲得アイテム: </span>
+                    <span className="text-gray-500">{t('home.auto.jp.4e8cbe53b3')}</span>
                     {log.rewards.map((item, i) => {
                       const rarity = getItemRarityById(item.id);
                       const isSuperRare = item.superRare > 0;
@@ -11206,9 +11203,9 @@ function DiaryTab({
                                 entry.outcome === 'victory' ? 'text-sub font-medium' :
                                 entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'
                               }>
-                                {entry.gateInfo ? '未到達' :
-                                 entry.outcome === 'victory' ? '勝利' :
-                                 entry.outcome === 'defeat' ? '敗北' : '引分'}
+                                {entry.gateInfo ? t('home.auto.jp.e46a9c5b2e') :
+                                 entry.outcome === 'victory' ? t('home.auto.jp.2949d100bd') :
+                                 entry.outcome === 'defeat' ? t('home.auto.jp.8e72993d13') : t('home.auto.jp.9c030ad1bb')}
                               </span>
                               <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                             </span>
@@ -11222,7 +11219,7 @@ function DiaryTab({
                           {!entry.gateInfo && (
                             <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                               <div>
-                                <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                                <div className="mb-0.5">{t('home.auto.jp.80889856ff')}{formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                   <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                   <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
@@ -11230,7 +11227,7 @@ function DiaryTab({
                                 </div>
                               </div>
                               <div>
-                                <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                                <div className="mb-0.5">{t('home.auto.jp.518a6346a3')}{formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                   <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                 </div>
@@ -11259,14 +11256,14 @@ function DiaryTab({
                             <div className="relative z-10">
                             <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(log.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
-                              const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
+                              const isResurrectLog = battleLog.note?.startsWith(t('home.auto.jp.73eeeafeac')) || battleLog.note?.startsWith(t('home.auto.jp.782f940e0b'));
                               const isTriggeredLog = battleLog.actor === 'triggered';
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
-                              const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
-                              const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
-                              const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
-                              const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
+                              const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes(t('home.auto.jp.345da5998f')) || battleLog.action.includes(t('home.auto.jp.10707c046b')));
+                              const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes(t('home.auto.jp.8811424c95'));
+                              const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes(t('home.auto.jp.345da5998f')) || previousLog.action.includes(t('home.auto.jp.10707c046b')));
+                              const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes(t('home.auto.jp.8811424c95'));
                               const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'long' || previousLog.phase === 'mid' || previousLog.phase === 'close');
                               const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                               const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
@@ -11329,7 +11326,7 @@ function DiaryTab({
                                   actionText = t('battleLog.action.enemyResurrect', { action: battleLog.action });
                                 } else if (battleLog.isEnemyTargetHit) {
                                   actionText = allMissed
-                                    ? t('battleLog.action.targetHitMissed', { action: battleLog.action.replace('命中！', '') })
+                                    ? t('battleLog.action.targetHitMissed', { action: battleLog.action.replace(t('home.auto.jp.a0f50dc0c0'), '') })
                                     : battleLog.action;
                                 } else if (allMissed) {
                                   actionText = t('battleLog.action.enemyMissed', { action: battleLog.action.replace('！', '') });
@@ -11374,13 +11371,13 @@ function DiaryTab({
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
+                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>{t('home.auto.jp.776127c53a')}{formatNumber(battleLog.reflectedDamage || 0)}</span>)
                                     </span>
                                   )
                                   : isAbsorbDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>{t('home.auto.jp.472eb4040f')}{formatNumber(battleLog.absorbedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : (
@@ -11612,7 +11609,7 @@ function SettingTab({
     value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   );
   function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
-    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const statusHeaders = [t('home.auto.jp.64e0d296da'), t('home.auto.jp.47aa1f5e6d'), t('home.auto.jp.c55bc3bbd5'), t('home.auto.jp.fb0b27180f'), t('home.auto.jp.cce4942d2b'), t('home.auto.jp.63d8f43c5b'), t('home.auto.jp.48ef52203b'), t('home.auto.jp.ae290c639c')];
     const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
     const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     return new File([html], fileName, { type: 'text/html' });
@@ -11649,7 +11646,7 @@ function SettingTab({
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const handleSendFeedback = async () => {
-    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert('VITE_FEEDBACK_DISCORD_WEBHOOK_URL が未設定です。'); return; }
+    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert(t('home.auto.jp.0c85322c4c')); return; }
     if (!feedbackText.trim()) { window.alert(t('divineBureau.feedback.bodyRequired')); return; }
     setIsSendingFeedback(true);
     try {
@@ -11705,7 +11702,7 @@ function SettingTab({
           const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
           const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
           const race = RACES.find((entry) => entry.id === member.raceId);
-          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('home.auto.jp.51625d909c') : t('home.auto.jp.26bc84961c')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
           const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
           return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
         });
@@ -11720,7 +11717,7 @@ function SettingTab({
       }
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
-      onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
+      onAddNotification(t('home.auto.jp.07cd1970b4'), 'normal', 'item', true);
       setFeedbackText('');
       setFeedbackFiles([]);
       if (feedbackFileInputRef.current) {
@@ -11728,7 +11725,7 @@ function SettingTab({
       }
     } catch (error) {
       console.error(error);
-      window.alert('フィードバック送信に失敗しました。');
+      window.alert(t('home.auto.jp.1b0eac468e'));
     } finally {
       setIsSendingFeedback(false);
     }
@@ -11891,7 +11888,7 @@ function SettingTab({
       getBackupFileName('compressed'),
       'application/json',
     );
-    onAddNotification('バックアップをエクスポートしました', 'normal', 'item', true);
+    onAddNotification(t('home.auto.jp.f31b7fae5f'), 'normal', 'item', true);
   };
 
   const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -11909,7 +11906,7 @@ function SettingTab({
           : parsed;
 
       if (!source || typeof source !== 'object') {
-        window.alert('インポート失敗: 保存データ形式が不正です。');
+        window.alert(t('home.auto.jp.c48b8cb22c'));
         return;
       }
 
@@ -11927,7 +11924,7 @@ function SettingTab({
         if (meta?.format === 'compressed-v1') {
           const canonicalImported = serializeGameState(hydrateGameState(saveData as GameState));
           if (JSON.stringify(canonicalImported) !== JSON.stringify(saveData)) {
-            issues.push('形式差異: インポートデータが現在の保存/復元フォーマットに一致しません。');
+            issues.push(t('home.auto.jp.7c9c2101de'));
           }
         }
       }
@@ -11940,15 +11937,15 @@ function SettingTab({
       }
 
       const shouldImport = window.confirm(
-        'インポートを実行すると現在のセーブデータは完全に置き換わります。\nこの操作は取り消せません。実行しますか？'
+        t('home.auto.jp.3ca58f5390')
       );
       if (!shouldImport) return;
 
       onImportGameState(saveData as GameState);
-      onAddNotification('バックアップをインポートしました', 'normal', 'item', true);
+      onAddNotification(t('home.auto.jp.d786cc8b1d'), 'normal', 'item', true);
     } catch (error) {
       console.error(error);
-      window.alert('インポート失敗: JSONの解析に失敗しました。');
+      window.alert(t('home.auto.jp.8526c329a8'));
     }
   };
 
@@ -11956,16 +11953,16 @@ function SettingTab({
     // SpecRef: 9 | Environment | Import/Export format consistency check
     const issues: string[] = [];
 
-    if (!Array.isArray(saveData.parties)) issues.push('parties が存在しない、または配列ではありません。');
+    if (!Array.isArray(saveData.parties)) issues.push(t('home.auto.jp.2803935f10'));
     if (!saveData.global || typeof saveData.global !== 'object') {
-      issues.push('global が存在しません。');
+      issues.push(t('home.auto.jp.51b697f30d'));
     } else {
-      if (typeof saveData.global.gold !== 'number') issues.push('global.gold が存在しない、または数値ではありません。');
-      if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push('global.inventory が存在しません。');
+      if (typeof saveData.global.gold !== 'number') issues.push(t('home.auto.jp.40e7698698'));
+      if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push(t('home.auto.jp.d61979e5eb'));
     }
 
     if (!saveData.bags || typeof saveData.bags !== 'object') {
-      issues.push('bags が存在しません。');
+      issues.push(t('home.auto.jp.39a4ed3b45'));
     } else {
       const requiredBags: Array<keyof GameState['bags']> = [
         'commonRewardBag',
@@ -11986,12 +11983,12 @@ function SettingTab({
       }
     }
 
-    if (typeof saveData.selectedPartyIndex !== 'number') issues.push('selectedPartyIndex が存在しない、または数値ではありません。');
-    if (typeof saveData.buildNumber !== 'number') issues.push('buildNumber が存在しない、または数値ではありません。');
+    if (typeof saveData.selectedPartyIndex !== 'number') issues.push(t('home.auto.jp.685124d505'));
+    if (typeof saveData.buildNumber !== 'number') issues.push(t('home.auto.jp.6e7f389be0'));
 
     if (Array.isArray(saveData.parties)) {
       if (saveData.parties.length === 0) {
-        issues.push('parties が空です。');
+        issues.push(t('home.auto.jp.347e8e38fc'));
       }
 
       saveData.parties.forEach((party, index) => {
@@ -12244,19 +12241,19 @@ function SettingTab({
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) => {
     const sectionSubtitle = section.subtitle;
     if (glossaryTab === '属') {
-      return sectionSubtitle.startsWith('増.');
+      return sectionSubtitle.startsWith(t('home.auto.jp.0d60723f2c'));
     }
 
     const glossarySectionsByTab: Record<Exclude<GlossaryTabKey, '属'>, string> = {
-      能: '能.',
-      基: '基.',
-      固: '固.',
-      増: '増.',
-      機: '機.',
-      信: '信.',
-      魔: '魔.',
-      地: '地.',
-      求: '求.',
+      能: t('home.auto.jp.8b8b4e4ff9'),
+      基: t('home.auto.jp.d167f0d226'),
+      固: t('home.auto.jp.52f71a637f'),
+      増: t('home.auto.jp.0d60723f2c'),
+      機: t('home.auto.jp.8c48e7695c'),
+      信: t('home.auto.jp.cdbc8ea531'),
+      魔: t('home.auto.jp.a38f76274d'),
+      地: t('home.auto.jp.18ff0a34a2'),
+      求: t('home.auto.jp.75b37dd52e'),
     };
 
     return sectionSubtitle.startsWith(glossarySectionsByTab[glossaryTab]);
@@ -12292,16 +12289,16 @@ function SettingTab({
   return { headers, rows };
   };
   const BESTIARY_TAB_LABELS: Record<number, string> = {
-    1: '原',
-    2: '寒',
-    3: '海',
-    4: '砂',
-    5: '炎',
-    6: '巣',
-    7: '月',
-    8: '谷',
-    9: '神',
-    99: '特',
+    1: t('home.auto.jp.fe70d21c81'),
+    2: t('home.auto.jp.2d4f5882b0'),
+    3: t('home.auto.jp.b188c5e30d'),
+    4: t('home.auto.jp.51b9ebd1e6'),
+    5: t('home.auto.jp.d56e09ae24'),
+    6: t('home.auto.jp.9713149909'),
+    7: t('home.auto.jp.d9b59879f3'),
+    8: t('home.auto.jp.ce0b6d1af2'),
+    9: t('home.auto.jp.87a94db45b'),
+    99: t('home.auto.jp.20d7a24045'),
   };
 
   const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 9;
@@ -12352,8 +12349,8 @@ function SettingTab({
     ...DUNGEONS
       .filter((dungeon) => dungeon.id !== 99 && unlockedBestiaryDungeonIds.has(dungeon.id))
       .map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
-    ...(revealedGodBestiaryNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神' }] : []),
-    ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: '特' }] : []),
+    ...(revealedGodBestiaryNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: t('home.auto.jp.87a94db45b') }] : []),
+    ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: t('home.auto.jp.20d7a24045') }] : []),
   ];
 
 
@@ -12510,54 +12507,54 @@ function SettingTab({
   };
 
   const ENEMY_TYPE_LABELS: Record<string, string> = {
-    Beast: '猛獣',
-    Slime_Colony: '粘体群',
-    Plant_Fungal: '植菌',
-    Insect_Swarm: '昆虫',
-    Aerial: '飛行',
-    Frost: '氷雪',
-    Fruit: '果物',
-    Dragon: '竜',
-    Spirit: '精霊',
-    Ghost: '怨霊',
-    Undead: '不死',
-    Golem: 'ゴーレム',
-    Shadowfang: '影牙',
-    Mech: '機械',
-    Chiropteran: 'カイロプテラン',
-    Chimera: 'キメラ',
-    Titan: '巨人',
-    Pony: 'ポニー',
-    Origami: '折り紙',
-    Jinma: '神魔',
-    Orcinian: 'オルシニアン',
-    Caninian: 'ケイナイアン',
-    Lupinian: 'ルピニアン',
-    Vulpinian: 'ヴァルピニアン',
-    Ursan: 'ウルサン',
-    Felidian: 'フェリディアン',
-    Mustelid: 'マステリド',
-    Leporian: 'レポリアン',
-    Cervin: 'セルヴィン',
-    Procyonian: 'プロキオニアン',
-    Murid: 'ミュリッド',
+    Beast: t('home.auto.jp.1fd0537cd6'),
+    Slime_Colony: t('home.auto.jp.e39ded08dd'),
+    Plant_Fungal: t('home.auto.jp.fdaa3afdfe'),
+    Insect_Swarm: t('home.auto.jp.0a20633d3b'),
+    Aerial: t('home.auto.jp.5bfbc419da'),
+    Frost: t('home.auto.jp.01a8e3d500'),
+    Fruit: t('home.auto.jp.c5d04a4971'),
+    Dragon: t('home.auto.jp.ffcf652351'),
+    Spirit: t('home.auto.jp.45fabc25dc'),
+    Ghost: t('home.auto.jp.c3dbb4af08'),
+    Undead: t('home.auto.jp.d7c5ca71ea'),
+    Golem: t('home.auto.jp.5b3cd32819'),
+    Shadowfang: t('home.auto.jp.1a99e54b36'),
+    Mech: t('home.auto.jp.5f3418bd26'),
+    Chiropteran: t('home.auto.jp.d96cd31d07'),
+    Chimera: t('home.auto.jp.f9b880a805'),
+    Titan: t('home.auto.jp.d85a2a9523'),
+    Pony: t('home.auto.jp.1ebe0faf8a'),
+    Origami: t('home.auto.jp.1321ad1077'),
+    Jinma: t('home.auto.jp.50f1a8b96e'),
+    Orcinian: t('home.auto.jp.be67e0d84c'),
+    Caninian: t('home.auto.jp.e0b661c192'),
+    Lupinian: t('home.auto.jp.00e8c3f752'),
+    Vulpinian: t('home.auto.jp.8f8e1a42fc'),
+    Ursan: t('home.auto.jp.72fdef54a8'),
+    Felidian: t('home.auto.jp.030820025a'),
+    Mustelid: t('home.auto.jp.4ed8378392'),
+    Leporian: t('home.auto.jp.8ae47af321'),
+    Cervin: t('home.auto.jp.b3941c29bf'),
+    Procyonian: t('home.auto.jp.aa9400cfa4'),
+    Murid: t('home.auto.jp.93726b4750'),
   };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
-    guardian: '防人',
-    duelist: '剣士',
-    samurai: '侍',
-    'sword-saint': '剣聖',
-    ranger: '狩人',
-    striker: '弩手',
-    ninja: '忍者',
-    wizard: '魔法使い',
-    sage: '賢者',
-    alchemist: '錬金術師',
-    pilgrim: '巡礼者',
-    lord: '君主',
-    fighter: '戦士',
-    rogue: '盗賊',
+    guardian: t('home.auto.jp.306e13c49a'),
+    duelist: t('home.auto.jp.38758d6506'),
+    samurai: t('home.auto.jp.24b9e7269b'),
+    'sword-saint': t('home.auto.jp.2ab93baf81'),
+    ranger: t('home.auto.jp.ba753d51f0'),
+    striker: t('home.auto.jp.e02c54a7b6'),
+    ninja: t('home.auto.jp.c00bcea479'),
+    wizard: t('home.auto.jp.6d7419e22e'),
+    sage: t('home.auto.jp.62485fc17d'),
+    alchemist: t('home.auto.jp.19cfe5dbab'),
+    pilgrim: t('home.auto.jp.424972ad42'),
+    lord: t('home.auto.jp.b8cd0ddbc0'),
+    fighter: t('home.auto.jp.f71aec055e'),
+    rogue: t('home.auto.jp.28377e0607'),
   };
 
   const getBestiaryEnemyBattleStats = (enemyId: number) => gameState.global.enemyBattleStats?.[enemyId] ?? { defeats: 0, encounters: 0 };
@@ -12570,17 +12567,17 @@ function SettingTab({
     const mainClassLabel = ENEMY_CLASS_LABELS[mainClassId] ?? mainClassId;
     const hasSubClass = !!subClassId && subClassId !== 'none';
     if (!hasSubClass) {
-      return [<div key="main">メインクラス: {mainClassLabel}</div>];
+      return [<div key="main">{t('home.auto.jp.ec10b0d13b')}{mainClassLabel}</div>];
     }
 
     const subClassLabel = ENEMY_CLASS_LABELS[subClassId] ?? subClassId;
     if (mainClassId === subClassId) {
-      return [<div key="main">メインクラス: {mainClassLabel}(師範)</div>];
+      return [<div key="main">{t('home.auto.jp.ec10b0d13b')}{mainClassLabel}{t('home.auto.jp.158c32790f')}</div>];
     }
 
     return [
-      <div key="main">メインクラス: {mainClassLabel}</div>,
-      <div key="sub">サブクラス: {subClassLabel}</div>,
+      <div key="main">{t('home.auto.jp.ec10b0d13b')}{mainClassLabel}</div>,
+      <div key="sub">{t('home.auto.jp.2d73bfe826')}{subClassLabel}</div>,
     ];
   };
 
@@ -12614,7 +12611,7 @@ function SettingTab({
     const drops = GOD_MYTHIC_DROPS
       .filter((drop) => drop.dropBy === godName)
       .map((drop) => `${getRarityShortLabel(drop.tier * 1000 + 500)}${drop.name}`);
-    return drops.length > 0 ? drops.join(' / ') : 'なし';
+    return drops.length > 0 ? drops.join(' / ') : t('home.auto.jp.1a2e920ba7');
   };
 
   const getAbilityHelpDescription = (abilityId: string, level: number): string => {
@@ -12625,7 +12622,7 @@ function SettingTab({
 
     const levelDescription = ABILITY_HELP_TEXTS[`${abilityId}:${level}`];
     if (levelDescription) return levelDescription;
-    return ABILITY_HELP_TEXTS[abilityId] ?? 'このアビリティの説明は未設定です。';
+    return ABILITY_HELP_TEXTS[abilityId] ?? t('home.auto.jp.e8e3e131b0');
   };
 
   const getAbilityHelpText = (abilityId: string, level: number, abilityLabel: string): { title: string; description: string } => ({
@@ -12741,28 +12738,28 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
-        {renderDivineBureauPanelHeader('donation', '寄付箱')}
+        {renderDivineBureauPanelHeader('donation', t('home.auto.jp.782f1e07b5'))}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
-            <span>神格</span>
-            <span>寄付額</span>
+            <span>{t('home.auto.jp.b7dc4c656e')}</span>
+            <span>{t('home.auto.jp.21393e6122')}</span>
           </div>
           {donationRows.length > 0 ? (
             donationRows.map(({ deityName, donationGold, rank, nextRankDonationRequirement }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
-                <span className="text-gray-700">{deityName}(ランク{rank})</span>
-                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">(次{nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : '到達済み'})</span></span>
+                <span className="text-gray-700">{deityName}{t('home.auto.jp.92d5b0f3f9')}{rank})</span>
+                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">{t('home.auto.jp.c618fa737a')}{nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : t('home.auto.jp.e16fb23430')})</span></span>
               </div>
             ))
           ) : (
-            <div className="text-gray-500">まだ寄付の記録がありません</div>
+            <div className="text-gray-500">{t('home.auto.jp.d98a8ac2b3')}</div>
           )}
         </div>}
       </div>
 
       {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
       {(debugSettings.clairvoyanceEnabled || gameState.parties.some((party) => getDivineBureauPartyAbilityLevel(party, 'prophecy') >= 1)) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
+        {renderDivineBureauPanelHeader('clairvoyance', t('home.auto.jp.58f72ba1f4'))}
         {divineBureauPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
           {gameState.parties.map((party, partyIndex) => {
             const prophecyLevel = getDivineBureauPartyAbilityLevel(party, 'prophecy');
@@ -12780,12 +12777,12 @@ function SettingTab({
               </button>
               {isExpanded && <div className="mt-2 space-y-3 text-sm">
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">コモン</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('home.auto.jp.c78ad2076e')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>コモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
+                    <div>{t('home.auto.jp.866e4cb5e7')}<span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('home.auto.jp.7ac12c4b35')}<span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
                   </div>
-                  <div>コモン称号付与: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
+                  <div>{t('home.auto.jp.7a458f4854')}{formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
                     {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
@@ -12798,29 +12795,29 @@ function SettingTab({
                       );
                     })}
                   </div>
-                  <div>コモン超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>}
+                  <div>{t('home.auto.jp.9c40e7d24a')}{formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('home.auto.jp.e6eff0cab0')}{formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('home.auto.jp.af02e31672'), () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('home.auto.jp.af02e31672')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">その他レアリティ</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('home.auto.jp.6d7df935cc')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>アンコモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
+                    <div>{t('home.auto.jp.d7db403602')}<span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('home.auto.jp.7ac12c4b35')}<span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>エリートレア報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
+                    <div>{t('home.auto.jp.622ffaef10')}<span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('home.auto.jp.7ac12c4b35')}<span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>ボスレア報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
+                    <div>{t('home.auto.jp.eabb66bef2')}<span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('home.auto.jp.7ac12c4b35')}<span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>神魔レア報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
+                    <div>{t('home.auto.jp.69abb1f10f')}<span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('home.auto.jp.7ac12c4b35')}<span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
                   </div>
-                  <div>称号付与: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
+                  <div>{t('home.auto.jp.00789ea53c')}{formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
                     {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
@@ -12833,25 +12830,25 @@ function SettingTab({
                       );
                     })}
                   </div>
-                  <div>超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>}
+                  <div>{t('home.auto.jp.6aa83f8ccf')}{formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('home.auto.jp.e6eff0cab0')}{formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('home.auto.jp.52cd0fd5dd'), () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('home.auto.jp.52cd0fd5dd')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">サイドクエスト</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('home.auto.jp.968ddd9c11')}</div>
                   {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | サイドクエスト */}
-                  <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
+                  <div>{t('home.auto.jp.9e2dd515e0')}{formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    当たり残り {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
+                    {t('home.auto.jp.7ac12c4b35')}{formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
                       entry.id > 0 ? sum + getBagEntryTickets(partyBags.sideQuestBag, entry.id) : sum
                     ), 0))}
                   </div>
-                  {canResetBags && <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>}
+                  {canResetBags && <button onClick={() => confirmReset(t('home.auto.jp.e4ca80a4a3'), () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('home.auto.jp.e4ca80a4a3')}</button>}
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <div>眠気抽選: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
+                  <div>{t('home.auto.jp.08d18c077c')}{formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    寝ない: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0))} / 仮眠: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1))} / 熟睡: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2))}
+                    {t('home.auto.jp.934c17232b')}{formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0))} {t('home.auto.jp.051dc9abd6')}{formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1))} {t('home.auto.jp.fd82edf9a7')}{formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2))}
                   </div>
                 </div>
               </div>}
@@ -12861,7 +12858,7 @@ function SettingTab({
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('glossary', '用語集')}
+        {renderDivineBureauPanelHeader('glossary', t('home.auto.jp.fd531a2578'))}
         {divineBureauPanelExpanded.glossary && (
           <>
           <div className="flex justify-end items-center gap-1 mt-3 mb-3">
@@ -12957,7 +12954,7 @@ function SettingTab({
                             if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
                               return null;
                             }
-                            const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
+                            const isSideQuestGlossarySection = section.subtitle.startsWith(t('home.auto.jp.75b37dd52e'));
                             if (isSideQuestGlossarySection && entry.key === 'q.none') {
                               return null;
                             }
@@ -12966,19 +12963,19 @@ function SettingTab({
                             if (glossaryTab === '属' && !isElementalEntry) {
                               return null;
                             }
-                            if (glossaryTab === '増' && isElementalEntry) {
+                            if (glossaryTab === t('home.auto.jp.8b69cca8ce') && isElementalEntry) {
                               return null;
                             }
-                            const isGodGlossarySection = section.subtitle.startsWith('信.');
-                            const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
-                            const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
+                            const isGodGlossarySection = section.subtitle.startsWith(t('home.auto.jp.cdbc8ea531'));
+                            const shouldCollapseEntry = glossaryTab === t('home.auto.jp.8b69cca8ce') || glossaryTab === '属';
+                            const useDefaultGlossaryTextColor = glossaryTab === t('home.auto.jp.8b69cca8ce') || glossaryTab === '属';
                             const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                             const descriptionLines = entry.description.split('\n');
                             const normalizedDescriptionLines = isSideQuestGlossarySection
                               ? descriptionLines
                                 .map((line) => {
                                   const trimmedLine = line.trim();
-                                  if (!trimmedLine.startsWith('表示:')) {
+                                  if (!trimmedLine.startsWith(t('home.auto.jp.112a618ab2'))) {
                                     return line;
                                   }
                                   return trimmedLine.replace(/^表示:\s*/, '');
@@ -13077,7 +13074,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('itemCompendium', 'アイテム図鑑')}
+        {renderDivineBureauPanelHeader('itemCompendium', t('home.auto.jp.3b89109e52'))}
         {divineBureauPanelExpanded.itemCompendium && <>
         <div className="flex justify-end items-center gap-1 mt-3 mb-3">
           <span className="text-xs text-gray-500">
@@ -13152,7 +13149,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('characterRoster', '味方キャラクター図鑑')}
+        {renderDivineBureauPanelHeader('characterRoster', t('home.auto.jp.ae566e2bf6'))}
         {divineBureauPanelExpanded.characterRoster && <>
           {activeRosterStatusBubble ? (
             <div
@@ -13193,10 +13190,10 @@ function SettingTab({
           </div>
           <div className="flex gap-1 mb-3">
             {visibleRosterGenders.includes('male') && (
-              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>男</button>
+              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>{t('home.auto.jp.51625d909c')}</button>
             )}
             {visibleRosterGenders.includes('female') && (
-              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>女</button>
+              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>{t('home.auto.jp.26bc84961c')}</button>
             )}
             {visibleRosterGenders.includes('unique') && (
               <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>
@@ -13214,19 +13211,19 @@ function SettingTab({
                   className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] max-w-[507px] h-auto"
                 />
               ) : null}
-              <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
+              <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">{t('home.auto.jp.e9b3b48bab')}{selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
               <div className="relative z-10 mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/25 rounded px-2 py-1 space-y-1">
-                <div className="font-semibold">種族ステータス</div>
+                <div className="font-semibold">{t('home.auto.jp.271499f64e')}</div>
                 <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', `体力:${selectedRosterRace?.stats.vitality ?? '-'}  力:${selectedRosterRace?.stats.strength ?? '-'}  知性:${selectedRosterRace?.stats.intelligence ?? '-'}  精神:${selectedRosterRace?.stats.mind ?? '-'}`, event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
-                    <span className="base-stat-chip">体力:{selectedRosterRace?.stats.vitality ?? '-'}</span>
-                    <span className="base-stat-chip">力:{selectedRosterRace?.stats.strength ?? '-'}</span>
-                    <span className="base-stat-chip">知性:{selectedRosterRace?.stats.intelligence ?? '-'}</span>
-                    <span className="base-stat-chip">精神:{selectedRosterRace?.stats.mind ?? '-'}</span>
+                    <span className="base-stat-chip">{t('home.auto.jp.b7343f6002')}{selectedRosterRace?.stats.vitality ?? '-'}</span>
+                    <span className="base-stat-chip">{t('home.auto.jp.aa802eb1d3')}{selectedRosterRace?.stats.strength ?? '-'}</span>
+                    <span className="base-stat-chip">{t('home.auto.jp.88d226f168')}{selectedRosterRace?.stats.intelligence ?? '-'}</span>
+                    <span className="base-stat-chip">{t('home.auto.jp.7d9d54ec5b')}{selectedRosterRace?.stats.mind ?? '-'}</span>
                   </span>
                 </button>
                 <div className="text-xs text-gray-900 mt-1 leading-5">
-                  <span className="break-words leading-5 font-medium">ボーナス: </span>
+                  <span className="break-words leading-5 font-medium">{t('home.auto.jp.1dbd021668')}</span>
                   {rosterBonusStatusEntries.length > 0 ? (
                     rosterBonusStatusEntries.map((entry, index) => (
                       <span key={entry.key}>
@@ -13234,7 +13231,7 @@ function SettingTab({
                         <button
                           type="button"
                           onPointerDown={(event) => event.stopPropagation()}
-                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? 'このボーナスの説明は未設定です。'}`, event.currentTarget); }}
+                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? t('home.auto.jp.838e848ae1')}`, event.currentTarget); }}
                           className="text-left hover:underline"
                           title="タップで詳細を表示"
                         >
@@ -13255,12 +13252,12 @@ function SettingTab({
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-default-ability',
-                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : '初期アビリティ: -',
+                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('home.auto.jp.1c21d8d444'),
                       event.currentTarget,
                     );
                   }}
                 >
-                  初期アビリティ: {selectedRosterRace?.defaultAbility?.name ?? '-'}
+                  {t('home.auto.jp.1bcb9ac759')}{selectedRosterRace?.defaultAbility?.name ?? '-'}
                 </button>
                 <button
                   type="button"
@@ -13271,23 +13268,23 @@ function SettingTab({
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-unlock-ability',
-                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : 'アンロックアビリティ: -',
+                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('home.auto.jp.a767f58780'),
                       event.currentTarget,
                     );
                   }}
                 >
-                  アンロックアビリティ: {selectedRosterRace?.unlockAbility?.name ?? '-'}
+                  {t('home.auto.jp.00b919b193')}{selectedRosterRace?.unlockAbility?.name ?? '-'}
                 </button>
               </div>
             </div>
           )}
-          {!activeRosterCharacter && <div className="text-xs text-gray-500">該当キャラクターなし</div>}
-          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">画像データなし</div>}
+          {!activeRosterCharacter && <div className="text-xs text-gray-500">{t('home.auto.jp.5ca83b9634')}</div>}
+          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">{t('home.auto.jp.0aa7f0760c')}</div>}
         </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('bestiary', '敵キャラクター図鑑')}
+        {renderDivineBureauPanelHeader('bestiary', t('home.auto.jp.86d64bbfb1'))}
         {divineBureauPanelExpanded.bestiary && <>
         <div className="flex gap-1 mt-3 mb-3 overflow-x-auto pb-1">
           {bestiaryTabOptions.map(dungeon => (
@@ -13313,7 +13310,7 @@ function SettingTab({
             onSetBestiaryScrollTop(currentScrollTop);
           }}
         >
-          <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神' : selectedBestiaryDungeon.name}</div>
+          <div className="text-xs text-gray-500">{isGodBestiaryTab ? t('home.auto.jp.87a94db45b') : selectedBestiaryDungeon.name}</div>
           {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
@@ -13354,9 +13351,9 @@ function SettingTab({
                       <div>ID: {getGodBestiaryDisplayEnemyId(god)}</div>
                       <div></div>
                       <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
-                      <div>レベル: {formatNumber(god.level)}</div>
-                      <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
-                      <div>タイプ: {ENEMY_TYPE_LABELS[godRuntimeEnemy?.enemyType ?? ''] ?? (godRuntimeEnemy?.enemyType ?? '不明')}</div>
+                      <div>{t('home.auto.jp.69345af084')}{formatNumber(god.level)}</div>
+                      <div>{t('home.auto.jp.34ce9b23b6')}{ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
+                      <div>{t('home.auto.jp.56d838094c')}{ENEMY_TYPE_LABELS[godRuntimeEnemy?.enemyType ?? ''] ?? (godRuntimeEnemy?.enemyType ?? t('home.auto.jp.75e9dd8f76'))}</div>
                     </div>
                     {godRuntimeEnemy && (
                       <>
@@ -13373,16 +13370,16 @@ function SettingTab({
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
-                              offenseRows.push(formatEnemyAttackLine('遠距離攻撃', godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('home.auto.jp.08947bea2d'), godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier));
                             }
                             if (hasMeleeAttack) {
-                              offenseRows.push(formatEnemyAttackLine('近接攻撃', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('home.auto.jp.2c86e8c42b'), godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
                               offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
+                              offenseRows.push(formatEnemyAttackLine(t('home.auto.jp.67053223d0'), godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicCasting) {
@@ -13391,8 +13388,8 @@ function SettingTab({
 
                             const defenseRows: ReactNode[] = [
                               formatEnemyElementOffenseLine(godRuntimeEnemy.elementalOffense, godRuntimeEnemy.elementalOffenseValue),
-                              formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
-                              formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('home.auto.jp.bc6446c813'), godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('home.auto.jp.ea8524afde'), godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}`,
                             ];
 
@@ -13411,7 +13408,7 @@ function SettingTab({
                       </>
                     )}
                     <div className="flex items-start gap-1">
-                      <div>アビリティ:</div>
+                      <div>{t('home.auto.jp.204df7681f')}</div>
                       <div className="flex flex-wrap items-center gap-1">
                         {parseAbilityTokens(godRuntimeEnemy?.abilities ?? god.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
@@ -13432,11 +13429,11 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>待機探索地: {god.expedition}</div>
-                    <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
+                    <div>{t('home.auto.jp.bccddeb9e0')}{god.expedition}</div>
+                    <div className="pt-1">{t('home.auto.jp.03a1155de7')}{getGodDropCandidates(god.name)}</div>
                     {(() => {
                       const battleStats = getGodBestiaryBattleStats(god);
-                      return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                      return <div>{t('home.auto.jp.c210c2978d')}{formatNumber(battleStats.defeats)}　{t('home.auto.jp.a63f793ebe')}{formatNumber(battleStats.encounters)}</div>;
                     })()}
                     </div>
                   </div>
@@ -13474,20 +13471,20 @@ function SettingTab({
                         const classRows = getBestiaryClassRows(colosseumEnemy.enemyClass, colosseumEnemy.enemySubClass);
                         return (
                           <>
-                            <div>ID: {colosseumEnemy.id}</div><div>レベル: {formatNumber(colosseumEnemySettings.level)}</div>
-                            <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div>
+                            <div>ID: {colosseumEnemy.id}</div><div>{t('home.auto.jp.69345af084')}{formatNumber(colosseumEnemySettings.level)}</div>
+                            <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>{t('home.auto.jp.56d838094c')}{ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div>
                             {classRows.map((row) => row)}
                             {classRows.length === 1 && <div></div>}
-                            <div>地形: {TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div><div></div>
+                            <div>{t('home.auto.jp.ae745c2515')}{TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div><div></div>
                           </>
                         );
                       })()}
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementOffenseLine(colosseumEnemy.elementalOffense, colosseumEnemy.elementalOffenseValue)}</div>
-                      <div>{hasMeleeAttack ? formatEnemyAttackLine('近接攻撃', colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine('物理防御', colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
-                      <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
-                      <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
+                      <div>{hasRangedAttack ? formatEnemyAttackLine(t('home.auto.jp.08947bea2d'), colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementOffenseLine(colosseumEnemy.elementalOffense, colosseumEnemy.elementalOffenseValue)}</div>
+                      <div>{hasMeleeAttack ? formatEnemyAttackLine(t('home.auto.jp.2c86e8c42b'), colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine(t('home.auto.jp.bc6446c813'), colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
+                      <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine(t('home.auto.jp.ea8524afde'), colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
+                      <div>{hasMagicalAttack ? formatEnemyAttackLine(t('home.auto.jp.67053223d0'), colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>{t('home.auto.jp.d1a8821c92')}{formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
                       <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
                       <div>{hasMagicCasting ? `詠唱魔法: ${getEnemyBestiarySpellName(colosseumEnemy)}` : ''}</div><div></div>
                     </div>
@@ -13496,7 +13493,7 @@ function SettingTab({
                       return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                     })()}
                     <div className="flex items-start gap-1">
-                      <div>アビリティ:</div>
+                      <div>{t('home.auto.jp.204df7681f')}</div>
                       <div className="flex flex-wrap items-center gap-1">
                         {parseAbilityTokens(colosseumEnemy.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
@@ -13517,7 +13514,7 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>ドロップ候補: なし</div>
+                    <div>{t('home.auto.jp.cf2166a746')}</div>
                   </div>}
                 </div>
               </div>
@@ -13572,10 +13569,10 @@ function SettingTab({
                           <div>ID: {displayEnemy.id}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
-                          <div>レベル: {formatNumber(enemyLevelFinal)}</div>
+                          <div>{t('home.auto.jp.69345af084')}{formatNumber(enemyLevelFinal)}</div>
                           {classRows.map((row) => row)}
                           {classRows.length === 1 && <div></div>}
-                          <div>タイプ: {ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType}</div>
+                          <div>{t('home.auto.jp.56d838094c')}{ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType}</div>
                           <div></div>
                           {(() => {
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
@@ -13587,16 +13584,16 @@ function SettingTab({
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
-                              offenseRows.push(formatEnemyAttackLine('遠距離攻撃', displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('home.auto.jp.08947bea2d'), displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier));
                             }
                             if (hasMeleeAttack) {
-                              offenseRows.push(formatEnemyAttackLine('近接攻撃', displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('home.auto.jp.2c86e8c42b'), displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
                               offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
+                              offenseRows.push(formatEnemyAttackLine(t('home.auto.jp.67053223d0'), displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicCasting) {
@@ -13620,8 +13617,8 @@ function SettingTab({
                             // Bestiary detail keeps the compact 4-line defense block.
                             const defenseRows: ReactNode[] = [
                               formatEnemyElementOffenseLine(displayEnemy.elementalOffense, displayEnemy.elementalOffenseValue),
-                              formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
-                              formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('home.auto.jp.bc6446c813'), displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('home.auto.jp.ea8524afde'), displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,
                             ];
 
@@ -13638,7 +13635,7 @@ function SettingTab({
                           return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                         })()}
                         <div className="flex items-start gap-1">
-                          <div>アビリティ:</div>
+                          <div>{t('home.auto.jp.204df7681f')}</div>
                           <div className="flex flex-wrap items-center gap-1">
                             {parseAbilityTokens(displayEnemy.abilities).map((token, tokenIndex) => (
                               <Fragment key={token.key}>
@@ -13659,10 +13656,10 @@ function SettingTab({
                             ))}
                           </div>
                         </div>
-                        <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ')}</div>
+                        <div className="pt-1">{t('home.auto.jp.03a1155de7')}{getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ')}</div>
                         {(() => {
                           const battleStats = getBestiaryEnemyBattleStats(displayEnemy.id);
-                          return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                          return <div>{t('home.auto.jp.c210c2978d')}{formatNumber(battleStats.defeats)}　{t('home.auto.jp.a63f793ebe')}{formatNumber(battleStats.encounters)}</div>;
                         })()}
                       </div>
                     )}
@@ -13700,7 +13697,7 @@ function SettingTab({
               ))}
             </select>
             <div className="text-[11px] text-gray-500">
-              {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? '地形効果なし'}
+              {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? t('home.auto.jp.da06746779')}
             </div>
           </label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
