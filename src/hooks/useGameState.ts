@@ -146,7 +146,7 @@ type SideQuestScaleByLevel = {
 
 type SideQuestRuntimeDef = {
   type: string;
-  shortText: string;
+  shortTextKey: string;
   baseMin: number;
   baseMax: number;
   deadlineHours: number;
@@ -154,19 +154,19 @@ type SideQuestRuntimeDef = {
 };
 
 const SIDE_QUEST_RUNTIME_DEFS: Record<number, SideQuestRuntimeDef> = {
-  1: { type: 'q.squander', shortText: '散財', baseMin: 100, baseMax: 400, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  2: { type: 'q.sleeping', shortText: '安眠', baseMin: 1, baseMax: 4, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  3: { type: 'q.exercise', shortText: '運動', baseMin: 5, baseMax: 15, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  4: { type: 'q.embezzlement', shortText: '横領', baseMin: 25, baseMax: 100, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  5: { type: 'q.donation', shortText: '寄付', baseMin: 100, baseMax: 500, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  6: { type: 'q.healing', shortText: '治療', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  7: { type: 'q.AFK', shortText: '放置', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  8: { type: 'q.treasure-super-rare', shortText: '超レア獲得', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  9: { type: 'q.treasure-boss-rare', shortText: 'ボスレア獲得', baseMin: 1, baseMax: 4, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  10: { type: 'q.poor-kid', shortText: 'アイテム獲得空振り', baseMin: 10, baseMax: 30, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  11: { type: 'q.consecutive-wins', shortText: '連続踏破', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  12: { type: 'q.losers', shortText: '敗北', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  13: { type: 'q.savings', shortText: '貯金', baseMin: 200, baseMax: 1000, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  1: { type: 'q.squander', shortTextKey: 'sideQuest.squander.short', baseMin: 100, baseMax: 400, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  2: { type: 'q.sleeping', shortTextKey: 'sideQuest.sleeping.short', baseMin: 1, baseMax: 4, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  3: { type: 'q.exercise', shortTextKey: 'sideQuest.exercise.short', baseMin: 5, baseMax: 15, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  4: { type: 'q.embezzlement', shortTextKey: 'sideQuest.embezzlement.short', baseMin: 25, baseMax: 100, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  5: { type: 'q.donation', shortTextKey: 'sideQuest.donation.short', baseMin: 100, baseMax: 500, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  6: { type: 'q.healing', shortTextKey: 'sideQuest.healing.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  7: { type: 'q.AFK', shortTextKey: 'sideQuest.afk.short', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  8: { type: 'q.treasure-super-rare', shortTextKey: 'sideQuest.treasureSuperRare.short', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  9: { type: 'q.treasure-boss-rare', shortTextKey: 'sideQuest.treasureBossRare.short', baseMin: 1, baseMax: 4, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  10: { type: 'q.poor-kid', shortTextKey: 'sideQuest.poorKid.short', baseMin: 10, baseMax: 30, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  11: { type: 'q.consecutive-wins', shortTextKey: 'sideQuest.consecutiveWins.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  12: { type: 'q.losers', shortTextKey: 'sideQuest.losers.short', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  13: { type: 'q.savings', shortTextKey: 'sideQuest.savings.short', baseMin: 200, baseMax: 1000, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
 };
 
 function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
@@ -175,6 +175,11 @@ function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
   if (expId <= 4) return 2;
   if (expId <= 6) return 3;
   return 4;
+}
+
+
+function getSideQuestShortTextKey(type: string): string | undefined {
+  return Object.values(SIDE_QUEST_RUNTIME_DEFS).find((def) => def.type === normalizeSideQuestType(type))?.shortTextKey;
 }
 
 function normalizeSideQuestType(type: string): string {
@@ -415,7 +420,8 @@ function getCycleDurationScale(): number {
   return env === 'dev' ? DEBUG_CYCLE_DURATION_SCALE : 1;
 }
 
-function formatSideQuestShortText(type: string, shortText: string, target: number): string {
+function formatSideQuestShortText(type: string, shortTextKey: string, target: number): string {
+  const shortText = t(shortTextKey);
   const formatNumber = (value: number) => Math.floor(value).toLocaleString('ja-JP');
   const valueByType: Partial<Record<string, string>> = {
     'q.squander': `${formatNumber(target)}G`,
@@ -1316,6 +1322,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
   const normalizedSideQuest = party.sideQuest
     ? {
         ...party.sideQuest,
+        shortTextKey: party.sideQuest.shortTextKey ?? getSideQuestShortTextKey(party.sideQuest.type),
         assignedAt: Number.isFinite(party.sideQuest.assignedAt) ? party.sideQuest.assignedAt : now,
         expiresAt: Number.isFinite(party.sideQuest.expiresAt) ? party.sideQuest.expiresAt : now + (16 * 60 * 60 * 1000),
       }
@@ -3819,7 +3826,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         sideQuest: {
           id: ticket,
           type: def.type,
-          shortText: formatSideQuestShortText(def.type, def.shortText, target),
+          shortTextKey: def.shortTextKey,
+          shortText: formatSideQuestShortText(def.type, def.shortTextKey, target),
           target: internalTarget,
           progress: 0,
           rolledTier: Math.max(1, Math.min(8, Math.floor(action.rolledTier))),
@@ -3859,7 +3867,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const rewardRank = Math.floor(Math.random() * currentParty.sideQuest.rolledTier) + 1;
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
       const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
-      const sideQuestLabel = currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
+      const sideQuestLabel = currentParty.sideQuest.shortTextKey
+        ? t(currentParty.sideQuest.shortTextKey)
+        : currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
       const sideQuestDetail = `${dungeonName}: ${getJewelNameByRank(key, rewardRank)} を手に入れた`;
       const shouldAddSideQuestDiary = matchesSideQuestDiaryThreshold(
         rewardRank,

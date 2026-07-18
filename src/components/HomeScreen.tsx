@@ -1447,6 +1447,36 @@ type ProgressItemDisplay = {
   progressRatio: number | null;
 };
 
+
+function formatSideQuestShortText(type: string, shortText: string, displayTarget: number): string {
+  const valueByType: Partial<Record<string, string>> = {
+    'q.squander': `${formatNumber(displayTarget)}G`,
+    'q.sleeping': `${formatNumber(displayTarget)}回`,
+    'q.exercise': `${formatNumber(displayTarget)}分`,
+    'q.embezzlement': `${formatNumber(displayTarget)}G`,
+    'q.donation': `${formatNumber(displayTarget)}G`,
+    'q.healing': `${formatNumber(displayTarget)}分`,
+    'q.AFK': `${formatNumber(displayTarget)}分`,
+    'q.treasure-super-rare': '',
+    'q.treasure-boss-rare': `${formatNumber(displayTarget)}個`,
+    'q.poor-kid': `${formatNumber(displayTarget)}回`,
+    'q.consecutive-wins': `${formatNumber(displayTarget)}連`,
+    'q.losers': '',
+    'q.savings': `${formatNumber(displayTarget)}G`,
+  };
+  const suffix = valueByType[type];
+  if (suffix === '') return shortText;
+  return `${shortText}(${suffix ?? formatNumber(displayTarget)})`;
+}
+
+function resolveSideQuestShortText(sideQuest: NonNullable<Party['sideQuest']>): string {
+  if (!sideQuest.shortTextKey) return sideQuest.shortText;
+  const displayTarget = TIME_BASED_SIDE_QUEST_TYPES.has(sideQuest.type)
+    ? Math.floor(Math.max(1, sideQuest.target) / 60)
+    : Math.max(1, sideQuest.target);
+  return formatSideQuestShortText(sideQuest.type, t(sideQuest.shortTextKey), displayTarget);
+}
+
 function getRemainingClockEmoji(remainingMs: number): string {
   const remainingHours = Math.max(1, Math.ceil(remainingMs / (60 * 60 * 1000)));
   const clockFaces = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚'];
@@ -1455,7 +1485,8 @@ function getRemainingClockEmoji(remainingMs: number): string {
 
 function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedNowMs: number): ProgressItemDisplay | null {
   if (!party.sideQuest) return null;
-  const { type, shortText, progress, target } = party.sideQuest;
+  const { type, progress, target } = party.sideQuest;
+  const shortText = resolveSideQuestShortText(party.sideQuest);
   const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(type);
   const safeTarget = Math.max(1, target);
   const clampedProgress = Math.max(0, Math.min(progress, safeTarget));
@@ -4586,7 +4617,7 @@ export function HomeScreen({
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
           actions.cancelSideQuest(partyIndex);
           if (!suppressCycleNotificationsForAfk) {
-            actions.addNotification(`${party.name}はサイドクエスト ${party.sideQuest.shortText} を達成できなかった`);
+            actions.addNotification(`${party.name}はサイドクエスト ${resolveSideQuestShortText(party.sideQuest)} を達成できなかった`);
           }
           next[partyIndex] = updated;
           return;
@@ -4990,7 +5021,7 @@ export function HomeScreen({
       const prevQuest = prevSideQuestRef.current[index] ?? null;
       const nextQuest = party.sideQuest ?? null;
       if (!prevQuest && nextQuest && !suppressNotificationsForAfkEmulation) {
-        actions.addNotification(getSideQuestAssignMessage(party.name, nextQuest.shortText));
+        actions.addNotification(getSideQuestAssignMessage(party.name, resolveSideQuestShortText(nextQuest)));
       }
       if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation) {
         const latestDiary = party.diaryLogs?.[0];
