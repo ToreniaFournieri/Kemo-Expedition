@@ -10,7 +10,7 @@ import {
   getExpeditionFloorConcept,
 } from '../data/dungeons';
 import { RACES } from '../data/races';
-import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
+import { CLASSES, CLASS_SHORT_NAMES, getClassShortName } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
@@ -36,7 +36,7 @@ import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, g
 import { calculateItemSellPrice } from '../game/pricing';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
-import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
+import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
@@ -662,10 +662,10 @@ function renderCollapsedBestiaryEnemyImage(enemyId: number): JSX.Element {
 }
 
 function getEnemyClassSummary(enemy: EnemyDef): string {
-  const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
+  const mainClass = getClassShortName(enemy.enemyClass);
   if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
   if (enemy.enemySubClass === enemy.enemyClass) return `${mainClass}M`;
-  const subClass = CLASS_SHORT_NAMES[enemy.enemySubClass] ?? enemy.enemySubClass;
+  const subClass = getClassShortName(enemy.enemySubClass);
   return `${mainClass}/${subClass}`;
 }
 
@@ -705,7 +705,7 @@ function EnemyBestiaryBubble({
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
   const decay = `${((0.90 + enemy.accuracyBonus) * 100).toFixed(1)}%`;
   const classText = getEnemyClassSummary(enemy).replace('/', ' / ');
-  const enemyTypeText = ENEMY_TYPE_SHORT_NAMES[enemy.enemyType] ?? enemy.enemyType;
+  const enemyTypeText = getEnemyTypeShortName(enemy.enemyType);
   const elementalOffenseIcon: UiIconKey | null = enemy.elementalOffense === 'fire'
     ? 'fire'
     : enemy.elementalOffense === 'ice'

@@ -1,4 +1,22 @@
+import { t } from '../i18n';
 import { ClassDef, ClassId } from '../types';
+
+export const CLASS_SHORT_NAME_KEYS: Record<ClassId | 'fighter' | 'rogue', string> = {
+  fighter: 'masterData.class.fighter.short',
+  guardian: 'masterData.class.guardian.short',
+  duelist: 'masterData.class.duelist.short',
+  samurai: 'masterData.class.samurai.short',
+  'sword-saint': 'masterData.class.sword-saint.short',
+  ranger: 'masterData.class.ranger.short',
+  striker: 'masterData.class.striker.short',
+  ninja: 'masterData.class.ninja.short',
+  wizard: 'masterData.class.wizard.short',
+  sage: 'masterData.class.sage.short',
+  alchemist: 'masterData.class.alchemist.short',
+  pilgrim: 'masterData.class.pilgrim.short',
+  lord: 'masterData.class.lord.short',
+  rogue: 'masterData.class.rogue.short',
+};
 
 export const CLASS_SHORT_NAMES: Record<ClassId | 'fighter' | 'rogue', string> = {
   fighter: '戦',
@@ -16,6 +34,11 @@ export const CLASS_SHORT_NAMES: Record<ClassId | 'fighter' | 'rogue', string> = 
   lord: '君',
   rogue: '盗',
 };
+
+
+export function getClassShortName(classId: ClassId | 'fighter' | 'rogue'): string {
+  return t(CLASS_SHORT_NAME_KEYS[classId] ?? classId);
+}
 
 // SpecRef: 2.2 | CHARACTER_&_PARTY_MASTER_DATA | class.master_data
 export const CLASSES: ClassDef[] = [
