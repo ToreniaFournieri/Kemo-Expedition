@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 54 | 2026/07/18 | Route ability names, class labels, deity profile labels, expedition names, and mythic drop names through Japanese/English i18n keys. |
 | 0.8.2 | 53 | 2026/07/18 | Route Japanese text in character ability descriptions, enemy short labels, and loot-gate labels through Japanese/English i18n keys. |
 | 0.8.2 | 52 | 2026/07/18 | Route deity option names, legacy aliases, and effect descriptions through Japanese/English i18n keys so deity displays follow the active language. |
 | 0.8.2 | 51 | 2026/07/18 | Route remaining Japanese battle runtime notes and action text in battle.ts through Japanese/English i18n keys, covering reactive abilities, start effects, stealth, counters, Requiem, and HP-loss notes. |
