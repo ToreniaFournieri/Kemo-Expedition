@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { AbilityId } from '../types';
 
 export type BonusAbilityGlossarySubcategoryId = 'passive' | 'expedition' | 'reactive' | 'timed';
@@ -135,6 +136,30 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'first_aid', label: '応急措置', description: '各エリート戦後に、自身のHP増加基礎値とアイテムHP増加値のN%を回復する', levelScale: ['Lv1: 2%', 'Lv2: 3%', 'Lv3: 4%', 'Lv4: 5%', 'Lv5: 6%'], subcategory: 'timed', phase: 'END', priority: 4 },
 ];
 
+
+function bonusAbilityTranslationKey(abilityId: AbilityId, field: 'label' | 'description'): string {
+  return `ability.${abilityId}.${field}`;
+}
+
+export function getBonusAbilityLabel(abilityId: AbilityId): string {
+  return t(bonusAbilityTranslationKey(abilityId, 'label'));
+}
+
+export function getBonusAbilityDescription(abilityId: AbilityId): string {
+  return t(bonusAbilityTranslationKey(abilityId, 'description'));
+}
+
+export const LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => ({
+  ...entry,
+  get label() {
+    return getBonusAbilityLabel(entry.abilityId);
+  },
+  get description() {
+    return getBonusAbilityDescription(entry.abilityId);
+  },
+}));
+
 export const BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID = new Map(
-  BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => [entry.abilityId, entry]),
+  LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => [entry.abilityId, entry]),
 );
+
