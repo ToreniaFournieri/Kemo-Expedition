@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 47 | 2026/07/18 | Route normal battle attack, spell-cast, and defensive reaction action logs through Japanese/English i18n templates so English battle logs no longer show Japanese attack text. |
 | 0.8.2 | 46 | 2026/07/18 | Localize item enhancement and Super Rare title prefixes in English displays, add missing English item names for Oblivion Mail and Thundertail Arrow, and show localized title labels in Divine Bureau debug lists. |
 | 0.8.2 | 45 | 2026/07/18 | Refine item-tier 8 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
 | 0.8.2 | 44 | 2026/07/18 | Refine item-tier 7 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
