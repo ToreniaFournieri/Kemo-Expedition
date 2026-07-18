@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 52 | 2026/07/18 | Route deity option names, legacy aliases, and effect descriptions through Japanese/English i18n keys so deity displays follow the active language. |
 | 0.8.2 | 51 | 2026/07/18 | Route remaining Japanese battle runtime notes and action text in battle.ts through Japanese/English i18n keys, covering reactive abilities, start effects, stealth, counters, Requiem, and HP-loss notes. |
 | 0.8.2 | 50 | 2026/07/18 | Localize muted battle-log terrain start text, terrain descriptions, resonance bonus notes, and hit-attempt summaries so gray battle log details follow the active language. |
 | 0.8.2 | 49 | 2026/07/18 | Remove duplicated Japanese ability labels and descriptions from bonus ability glossary master data so localized ability text has a single i18n source of truth. |
