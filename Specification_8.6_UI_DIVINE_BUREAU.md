@@ -5,6 +5,20 @@
   - All panes are collapsed by default and expandable.
   - The expanded/collapsed state is persisted and saved.
 
+**Developer News Notification (通知)**
+- Purpose: Displays announcements and issue-fix notices from the development team.
+- Label: Use `News` as the list title.
+- Badge behavior:
+  - Show a notification badge when there is at least one unread developer news item.
+  - When the player opens and reads the developer news list, clear the notification badge.
+  - Persist the read/unread state in save data so the badge does not reappear after refresh or restart unless a new news item is added.
+- News list:
+
+| Version | Date | Content |
+|----|----|----|
+| v8.1.2 | 2026/07/18 | 開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。 |
+
+
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
@@ -284,6 +298,7 @@ HP: 312                 タイプ: 神魔
     - `m.kemo` "青を基調としたテーマです"
     - `m.luna` "黄色を基調としたテーマです"
     - `m.laika` "緑を基調としたテーマです"
+
 
 **フィードバック**
   - Send feedback to the development team.
