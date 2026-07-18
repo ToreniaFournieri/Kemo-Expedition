@@ -4,12 +4,14 @@ import { getItemById, getItemsByTierAndRarity } from './items';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from '../game/enemyPassiveAbilities';
 import { buildEnemyClassMasterStats } from './enemyClasses';
+import { getLanguage, t } from '../i18n';
 
 // ============================================================
 // EnemyTemplate type - compact format for defining enemies
 // ============================================================
 type EnemyTemplate = {
   name: string;
+  nameKey?: string;
   hpMod: number;
   attackType: 'melee' | 'ranged' | 'magical' | 'mixed';
   attackMod: number;
@@ -389,7 +391,7 @@ function createEnemyFromTemplate(
     spawnTier: tier,
     spawnPool,
     poolId,
-    name: template.name,
+    name: template.nameKey && getLanguage() === 'en' ? t(template.nameKey) : template.name,
     enemyClass,
     enemySubClass,
     abilities: enemyAbilities,
@@ -598,7 +600,7 @@ function generateEnemies(): EnemyDef[] {
       const spawnType = row[3];
       const enemy = createEnemyFromTemplate(
         id,
-        { name: row[7], hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
+        { name: row[7], nameKey: `masterData.enemyName.${id}`, hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
         tier,
         spawnType,
         spawnType === 'boss' ? 0 : tier,
