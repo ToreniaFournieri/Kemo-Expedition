@@ -1,23 +1,55 @@
+import { t } from '../i18n';
 import { ComputedCharacterStats, Party } from '../types';
 
+type DeityOptionKey =
+  | 'None'
+  | 'Goddess of Restoration'
+  | 'God of Attrition'
+  | 'God of Cunning'
+  | 'God of Fortification'
+  | 'Goddess of Fertility'
+  | 'God of Resonance'
+  | 'Goddess of Precision'
+  | 'God of Fate'
+  | 'God of Dusk'
+  | 'Goddess of Mirage'
+  | 'God of Oblivion'
+  | 'Goddess of Discord';
+
+type DeityOption = {
+  key: DeityOptionKey;
+  nameKey: string;
+  readonly name: string;
+};
+
+function createDeityOption(key: DeityOptionKey, nameKey: string): DeityOption {
+  return {
+    key,
+    nameKey,
+    get name() {
+      return t(nameKey);
+    },
+  };
+}
+
 export const DEITY_OPTIONS = [
-  { key: 'None', name: '信仰なし' },
-  { key: 'Goddess of Restoration', name: '再生の女神' },
-  { key: 'God of Attrition', name: '消耗の神' },
-  { key: 'God of Cunning', name: '狡猾の神' },
-  { key: 'God of Fortification', name: '防備の神' },
-  { key: 'Goddess of Fertility', name: '豊穣の女神' },
-  { key: 'God of Resonance', name: '共鳴の神' },
-  { key: 'Goddess of Precision', name: '精密の女神' },
-  { key: 'God of Fate', name: '運命の神' },
-  { key: 'God of Dusk', name: '黄昏の神' },
-  { key: 'Goddess of Mirage', name: '幻影の女神' },
-  { key: 'God of Oblivion', name: '忘却されし神' },
-  { key: 'Goddess of Discord', name: '不和の神' },
+  createDeityOption('None', 'deity.name.None'),
+  createDeityOption('Goddess of Restoration', 'deity.name.GoddessOfRestoration'),
+  createDeityOption('God of Attrition', 'deity.name.GodOfAttrition'),
+  createDeityOption('God of Cunning', 'deity.name.GodOfCunning'),
+  createDeityOption('God of Fortification', 'deity.name.GodOfFortification'),
+  createDeityOption('Goddess of Fertility', 'deity.name.GoddessOfFertility'),
+  createDeityOption('God of Resonance', 'deity.name.GodOfResonance'),
+  createDeityOption('Goddess of Precision', 'deity.name.GoddessOfPrecision'),
+  createDeityOption('God of Fate', 'deity.name.GodOfFate'),
+  createDeityOption('God of Dusk', 'deity.name.GodOfDusk'),
+  createDeityOption('Goddess of Mirage', 'deity.name.GoddessOfMirage'),
+  createDeityOption('God of Oblivion', 'deity.name.GodOfOblivion'),
+  createDeityOption('Goddess of Discord', 'deity.name.GoddessOfDiscord'),
 ] as const;
 
-const NO_FAITH_DEITY_NAME = '信仰なし';
-const NO_FAITH_DEITY_ALIASES = new Set([NO_FAITH_DEITY_NAME, 'None', 'none']);
+const NO_FAITH_DEITY_NAME_KEY = 'deity.name.None';
+const NO_FAITH_DEITY_ALIASES = new Set(['None', 'none']);
 
 type DeityKey = typeof DEITY_OPTIONS[number]['key'];
 
@@ -48,22 +80,22 @@ const DONATION_THRESHOLDS = [0, ...calculateRankUpDonations().reduce<number[]>((
   return thresholds;
 }, [])] as const;
 
-const DEITY_NAME_MAP: Record<DeityKey, string> = DEITY_OPTIONS.reduce((acc, deity) => {
-  acc[deity.key] = deity.name;
+const DEITY_NAME_KEY_MAP: Record<DeityKey, string> = DEITY_OPTIONS.reduce((acc, deity) => {
+  acc[deity.key] = deity.nameKey;
   return acc;
 }, {} as Record<DeityKey, string>);
 
 const DEITY_KEY_BY_NAME: Record<string, DeityKey> = DEITY_OPTIONS.reduce((acc, deity) => {
   acc[deity.key] = deity.key;
-  acc[deity.name] = deity.key;
+  acc[t(deity.nameKey)] = deity.key;
   return acc;
 }, {} as Record<string, DeityKey>);
 
 // Backward compatibility for older save data.
-DEITY_KEY_BY_NAME['反響の神'] = 'God of Resonance';
-DEITY_KEY_BY_NAME['再生の神'] = 'Goddess of Restoration';
-DEITY_KEY_BY_NAME['命中の神'] = 'Goddess of Precision';
-DEITY_KEY_BY_NAME['回避の神'] = 'God of Dusk';
+DEITY_KEY_BY_NAME[t('deity.legacyName.echoGod')] = 'God of Resonance';
+DEITY_KEY_BY_NAME[t('deity.legacyName.restorationGod')] = 'Goddess of Restoration';
+DEITY_KEY_BY_NAME[t('deity.legacyName.accuracyGod')] = 'Goddess of Precision';
+DEITY_KEY_BY_NAME[t('deity.legacyName.evasionGod')] = 'God of Dusk';
 DEITY_KEY_BY_NAME['God of Restoration'] = 'Goddess of Restoration';
 DEITY_KEY_BY_NAME['God of Precision'] = 'Goddess of Precision';
 DEITY_KEY_BY_NAME['God of Evasion'] = 'God of Dusk';
@@ -105,19 +137,24 @@ function getEffectiveDeityTier(totalDonatedGold: number): number {
 
 // SpecRef: 2.1.3 | Religions lists | normalizeDeityName
 export function normalizeDeityName(name: string): string {
-  if (NO_FAITH_DEITY_ALIASES.has(name)) {
-    return NO_FAITH_DEITY_NAME;
-  }
-  return DEITY_KEY_BY_NAME[name] ? DEITY_NAME_MAP[DEITY_KEY_BY_NAME[name]] : name;
+  const deityKey = getDeityKey(name);
+  return deityKey ? t(DEITY_NAME_KEY_MAP[deityKey]) : name;
 }
 
 export function isNoFaithDeity(name: string): boolean {
-  return normalizeDeityName(name) === NO_FAITH_DEITY_NAME;
+  return getDeityKey(name) === 'None';
 }
 
 // SpecRef: 2.1.3 | Religions lists | getDeityKey
 export function getDeityKey(name: string): DeityKey | null {
-  return DEITY_KEY_BY_NAME[name] ?? null;
+  if (NO_FAITH_DEITY_ALIASES.has(name) || name === t(NO_FAITH_DEITY_NAME_KEY)) {
+    return 'None';
+  }
+
+  const mappedKey = DEITY_KEY_BY_NAME[name];
+  if (mappedKey) return mappedKey;
+
+  return DEITY_OPTIONS.find((deity) => deity.name === name)?.key ?? null;
 }
 
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
@@ -127,49 +164,49 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
   switch (deityKey) {
     case 'Goddess of Restoration': {
       const healMissingPct = 0.2 + 0.001 * effectiveTier;
-      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間2倍。氷属性に弱い(1.5倍ダメージ増)`;
+      return t('deity.effect.GoddessOfRestoration', { healMissingPercent: Math.round(healMissingPct * 100) });
     }
     case 'God of Attrition': {
       const attackMult = 1.2 + 0.01 * effectiveTier;
-      return `全員に物理攻撃倍率${attackMult.toFixed(2)}倍。4部屋毎に残りHPの5%を失う。`;
+      return t('deity.effect.GodOfAttrition', { attackMultiplier: attackMult.toFixed(2) });
     }
     case 'God of Cunning': {
       const autoSellMultiplier = Math.min(1, 0.5 + 0.01 * effectiveTier);
-      return `全員に魔法防御倍率2/3倍。貯金額${autoSellMultiplier.toFixed(2)}倍(着服する)。`;
+      return t('deity.effect.GodOfCunning', { autoSellMultiplier: autoSellMultiplier.toFixed(2) });
     }
     case 'God of Fortification': {
-      return '全員に物理防御倍率2/3倍。休息時間2倍。雷属性に弱い(1.5倍ダメージ増)';
+      return t('deity.effect.GodOfFortification');
     }
     case 'Goddess of Fertility': {
-      return '全員に先制+1。宴会時間2倍。火属性に弱い(1.5倍ダメージ増)';
+      return t('deity.effect.GoddessOfFertility');
     }
     case 'Goddess of Precision': {
       const accuracyBonus = 0.015 + 0.001 * effectiveTier;
-      return `全員の命中+${(accuracyBonus * 1000).toFixed(0)}、回避-5。探索時間1.2倍`;
+      return t('deity.effect.GoddessOfPrecision', { accuracyBonus: (accuracyBonus * 1000).toFixed(0) });
     }
     case 'God of Fate': {
-      return '未来改変。祈り時間2倍。';
+      return t('deity.effect.GodOfFate');
     }
     case 'God of Dusk': {
       const evasionBonus = 0.015 + 0.001 * effectiveTier;
-      return `全員の回避+${(evasionBonus * 1000).toFixed(0)}、魔法防御倍率1.10倍。売却時間2倍。`;
+      return t('deity.effect.GodOfDusk', { evasionBonus: (evasionBonus * 1000).toFixed(0) });
     }
     case 'Goddess of Mirage': {
       const magicalAttack = 1.2 + 0.01 * effectiveTier;
-      return `全員に魔法攻撃倍率${magicalAttack.toFixed(2)}倍、物理防御倍率1.10倍。`;
+      return t('deity.effect.GoddessOfMirage', { magicalAttackMultiplier: magicalAttack.toFixed(2) });
     }
     case 'God of Resonance': {
       const hpMultiplier = 0.9 + 0.002 * effectiveTier;
-      return `全員の共鳴を1+α段階強化。共鳴は魔法攻撃だけでなく、遠距離攻撃にも適用。魔法防御倍率1.10倍、HP${hpMultiplier.toFixed(2)}倍。`;
+      return t('deity.effect.GodOfResonance', { hpMultiplier: hpMultiplier.toFixed(2) });
     }
     case 'God of Oblivion': {
-      return effectiveTier >= 10 ? 'なし。追加報酬抽選+1回' : 'なし。';
+      return effectiveTier >= 10 ? t('deity.effect.GodOfOblivion.bonus') : t('deity.effect.GodOfOblivion');
     }
     case 'Goddess of Discord': {
-      return '戦闘開始時、ランダムな1名を⚠️敵対させる。追加報酬抽選+1回。';
+      return t('deity.effect.GoddessOfDiscord');
     }
     default:
-      return '効果なし';
+      return t('deity.effect.none');
   }
 }
 
