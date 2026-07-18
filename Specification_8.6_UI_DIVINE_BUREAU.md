@@ -18,7 +18,6 @@
 |----|----|----|
 | v8.1.2 | 2026/07/18 | 開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。 |
 
-
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
@@ -280,6 +279,15 @@ HP: 312                 タイプ: 神魔
 - Display Super Rare list with its unique bonus.
 
 **Mode select (モード切替)**
+
+- Language (言語)
+  - Options: 日本語 / English
+  - The language is determined by the lang URL parameter:
+    - Default → 日本語 
+    - `lang=ja` → 日本語
+    - `lang=en` → English
+    - Example: `https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja`
+  - Persist the selected language in local storage.
 
 - ダークモード OFF/ON/システム
   - Dark mode setting
