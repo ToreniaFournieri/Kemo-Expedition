@@ -1951,7 +1951,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   if (item.mindBonus) bParts.push(`精神+${item.mindBonus}`);
   if (item.penetBonus) cParts.push(`${t('party.bonus.penet')}+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
-    const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
+    const elem = { fire: t('common.element.fire.short'), ice: t('common.element.ice.short'), thunder: t('common.element.thunder.short') }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
     eParts.push(`${elem}属性+${elementalPercent}%`);
   }
@@ -5530,7 +5530,7 @@ export function HomeScreen({
               {/* SpecRef: 8.1.2 | Header | Game title label */}
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
+                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
                   <span>{t('divineBureau.theme.kemo')}</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
@@ -5569,7 +5569,7 @@ export function HomeScreen({
                   onClick={() => setAutoRepeatEnabled(true)}
                   className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
                 >
-                  静止中
+                  {t('home.header.paused')}
                 </button>
               )}
             </div>
@@ -5881,65 +5881,67 @@ function PartyTab({
     if (prevStatsRef.current) {
       const prev = prevStatsRef.current;
       const changes: { message: string; isPositive: boolean }[] = [];
+      const formatStatChange = (labelKey: string, previous: string | number, current: string | number): string =>
+        t('home.party.statChange', { label: t(labelKey), previous, current });
 
       if (combatTotals.vitality !== prev.vitality) {
         const isPositive = combatTotals.vitality > prev.vitality;
-        changes.push({ message: `体力 ${formatNumber(prev.vitality)} → ${formatNumber(combatTotals.vitality)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.vitality', formatNumber(prev.vitality), formatNumber(combatTotals.vitality)), isPositive });
       }
       if (combatTotals.strength !== prev.strength) {
         const isPositive = combatTotals.strength > prev.strength;
-        changes.push({ message: `力 ${formatNumber(prev.strength)} → ${formatNumber(combatTotals.strength)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.strength', formatNumber(prev.strength), formatNumber(combatTotals.strength)), isPositive });
       }
       if (combatTotals.intelligence !== prev.intelligence) {
         const isPositive = combatTotals.intelligence > prev.intelligence;
-        changes.push({ message: `知性 ${formatNumber(prev.intelligence)} → ${formatNumber(combatTotals.intelligence)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.intelligence', formatNumber(prev.intelligence), formatNumber(combatTotals.intelligence)), isPositive });
       }
       if (combatTotals.mind !== prev.mind) {
         const isPositive = combatTotals.mind > prev.mind;
-        changes.push({ message: `精神 ${formatNumber(prev.mind)} → ${formatNumber(combatTotals.mind)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.mind', formatNumber(prev.mind), formatNumber(combatTotals.mind)), isPositive });
       }
 
       // Check all stat changes and collect them
       if (combatTotals.physDef !== prev.physDef) {
         const isPositive = combatTotals.physDef > prev.physDef;
-        changes.push({ message: `物防 ${formatNumber(prev.physDef)} → ${formatNumber(combatTotals.physDef)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.physicalDefenseShort', formatNumber(prev.physDef), formatNumber(combatTotals.physDef)), isPositive });
       }
       if (combatTotals.magDef !== prev.magDef) {
         const isPositive = combatTotals.magDef > prev.magDef;
-        changes.push({ message: `魔防 ${formatNumber(prev.magDef)} → ${formatNumber(combatTotals.magDef)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.magicalDefenseShort', formatNumber(prev.magDef), formatNumber(combatTotals.magDef)), isPositive });
       }
       if (combatTotals.physicalDefenseResistPercent !== prev.physicalDefenseResistPercent) {
         const isPositive = combatTotals.physicalDefenseResistPercent < prev.physicalDefenseResistPercent;
         changes.push({
-          message: `物理防御耐性 ${formatNumber(prev.physicalDefenseResistPercent)}% → ${formatNumber(combatTotals.physicalDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.physicalDefenseResistance', `${formatNumber(prev.physicalDefenseResistPercent)}%`, `${formatNumber(combatTotals.physicalDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.magicalDefenseResistPercent !== prev.magicalDefenseResistPercent) {
         const isPositive = combatTotals.magicalDefenseResistPercent < prev.magicalDefenseResistPercent;
         changes.push({
-          message: `魔法防御耐性 ${formatNumber(prev.magicalDefenseResistPercent)}% → ${formatNumber(combatTotals.magicalDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.magicalDefenseResistance', `${formatNumber(prev.magicalDefenseResistPercent)}%`, `${formatNumber(combatTotals.magicalDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.fireDefenseResistPercent !== prev.fireDefenseResistPercent) {
         const isPositive = combatTotals.fireDefenseResistPercent < prev.fireDefenseResistPercent;
         changes.push({
-          message: `炎防御耐性 ${formatNumber(prev.fireDefenseResistPercent)}% → ${formatNumber(combatTotals.fireDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.fireDefenseResistance', `${formatNumber(prev.fireDefenseResistPercent)}%`, `${formatNumber(combatTotals.fireDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.iceDefenseResistPercent !== prev.iceDefenseResistPercent) {
         const isPositive = combatTotals.iceDefenseResistPercent < prev.iceDefenseResistPercent;
         changes.push({
-          message: `氷防御耐性 ${formatNumber(prev.iceDefenseResistPercent)}% → ${formatNumber(combatTotals.iceDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.iceDefenseResistance', `${formatNumber(prev.iceDefenseResistPercent)}%`, `${formatNumber(combatTotals.iceDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.thunderDefenseResistPercent !== prev.thunderDefenseResistPercent) {
         const isPositive = combatTotals.thunderDefenseResistPercent < prev.thunderDefenseResistPercent;
         changes.push({
-          message: `雷防御耐性 ${formatNumber(prev.thunderDefenseResistPercent)}% → ${formatNumber(combatTotals.thunderDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.thunderDefenseResistance', `${formatNumber(prev.thunderDefenseResistPercent)}%`, `${formatNumber(combatTotals.thunderDefenseResistPercent)}%`),
           isPositive,
         });
       }
@@ -5949,23 +5951,23 @@ function PartyTab({
       }
       if (combatTotals.meleeAtk !== prev.meleeAtk) {
         const isPositive = combatTotals.meleeAtk > prev.meleeAtk;
-        changes.push({ message: `近攻 ${formatNumber(prev.meleeAtk)} → ${formatNumber(combatTotals.meleeAtk)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.meleeAttackShort', formatNumber(prev.meleeAtk), formatNumber(combatTotals.meleeAtk)), isPositive });
       }
       if (combatTotals.meleeNoA !== prev.meleeNoA) {
         const isPositive = combatTotals.meleeNoA > prev.meleeNoA;
-        changes.push({ message: `近回数 ${formatNumber(prev.meleeNoA)} → ${formatNumber(combatTotals.meleeNoA)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.meleeAttackCountShort', formatNumber(prev.meleeNoA), formatNumber(combatTotals.meleeNoA)), isPositive });
       }
       if (combatTotals.rangedAtk !== prev.rangedAtk) {
         const isPositive = combatTotals.rangedAtk > prev.rangedAtk;
-        changes.push({ message: `遠攻 ${formatNumber(prev.rangedAtk)} → ${formatNumber(combatTotals.rangedAtk)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.rangedAttackShort', formatNumber(prev.rangedAtk), formatNumber(combatTotals.rangedAtk)), isPositive });
       }
       if (combatTotals.rangedNoA !== prev.rangedNoA) {
         const isPositive = combatTotals.rangedNoA > prev.rangedNoA;
-        changes.push({ message: `遠回数 ${formatNumber(prev.rangedNoA)} → ${formatNumber(combatTotals.rangedNoA)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.rangedAttackCountShort', formatNumber(prev.rangedNoA), formatNumber(combatTotals.rangedNoA)), isPositive });
       }
       if (combatTotals.magicalAtk !== prev.magicalAtk) {
         const isPositive = combatTotals.magicalAtk > prev.magicalAtk;
-        changes.push({ message: `魔攻 ${formatNumber(prev.magicalAtk)} → ${formatNumber(combatTotals.magicalAtk)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.magicalAttackShort', formatNumber(prev.magicalAtk), formatNumber(combatTotals.magicalAtk)), isPositive });
       }
       if (combatTotals.meleeAttackAmp !== prev.meleeAttackAmp) {
         const isPositive = combatTotals.meleeAttackAmp > prev.meleeAttackAmp;
@@ -5981,7 +5983,7 @@ function PartyTab({
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
-        changes.push({ message: `魔回数 ${formatNumber(prev.magicalNoA)} → ${formatNumber(combatTotals.magicalNoA)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.magicalAttackCountShort', formatNumber(prev.magicalNoA), formatNumber(combatTotals.magicalNoA)), isPositive });
       }
       if (combatTotals.accuracy !== prev.accuracy) {
         const isPositive = combatTotals.accuracy > prev.accuracy;
@@ -5996,9 +5998,9 @@ function PartyTab({
         changes.push({ message: `貫通 ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
       }
       const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
-        fire: '火',
-        ice: '氷',
-        thunder: '雷',
+        fire: t('common.element.fire.short'),
+        ice: t('common.element.ice.short'),
+        thunder: t('common.element.thunder.short'),
       };
       const prevElementPercents: Record<Exclude<ElementalOffense, 'none'>, number> = {
         fire: 0,
@@ -6022,7 +6024,7 @@ function PartyTab({
         if (prevElementPercents[element] === currentElementPercents[element]) return;
         const isPositive = currentElementPercents[element] > prevElementPercents[element];
         changes.push({
-          message: `${elementalLabels[element]}属性: ${prevElementPercents[element]}% → ${currentElementPercents[element]}%`,
+          message: t('home.party.elementalStatChange', { element: elementalLabels[element], previous: prevElementPercents[element], current: currentElementPercents[element] }),
           isPositive,
         });
       });
@@ -6034,8 +6036,8 @@ function PartyTab({
       ) {
         changes.push({
           message: combatTotals.unlockConditionActive
-            ? `${combatTotals.unlockRaceName}の${combatTotals.unlockAbilityName}アビリティが解放されました`
-            : `${combatTotals.unlockRaceName}の${combatTotals.unlockAbilityName}アビリティがロックされました`,
+            ? t('home.party.abilityUnlocked', { race: combatTotals.unlockRaceName, ability: combatTotals.unlockAbilityName })
+            : t('home.party.abilityLocked', { race: combatTotals.unlockRaceName, ability: combatTotals.unlockAbilityName }),
           isPositive: combatTotals.unlockConditionActive,
         });
       }
@@ -6050,7 +6052,7 @@ function PartyTab({
         if (previousLevel === currentLevel) return;
         const abilityName = ABILITY_NAMES[abilityId] ?? abilityId;
         changes.push({
-          message: `${abilityName}アビリティレベル ${previousLevel} → ${currentLevel}`,
+          message: t('home.party.abilityLevelChange', { ability: abilityName, previous: previousLevel, current: currentLevel }),
           isPositive: currentLevel > previousLevel,
         });
       });
@@ -6243,28 +6245,28 @@ function PartyTab({
     setPartyMemberImageSrc(nextPartyMemberImageSrc);
   }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
-    { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
-    { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
-    { label: '草食', raceIds: ['leporian', 'cervin', 'murid'] },
+    { label: t('home.party.filter.carnivore'), raceIds: ['lupinian', 'vulpinian', 'felidian'] },
+    { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian'] },
+    { label: t('home.party.filter.herbivore'), raceIds: ['leporian', 'cervin', 'murid'] },
   ];
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
-    { label: '近接', classIds: ['duelist', 'samurai', 'sword-saint'] },
-    { label: '遠距離', classIds: ['ranger', 'striker', 'ninja'] },
-    { label: '魔法', classIds: ['wizard', 'sage', 'alchemist'] },
-    { label: '補助', classIds: ['guardian', 'pilgrim', 'lord'] },
+    { label: t('combat.melee'), classIds: ['duelist', 'samurai', 'sword-saint'] },
+    { label: t('combat.ranged'), classIds: ['ranger', 'striker', 'ninja'] },
+    { label: t('combat.magic'), classIds: ['wizard', 'sage', 'alchemist'] },
+    { label: t('home.party.filter.support'), classIds: ['guardian', 'pilgrim', 'lord'] },
   ];
   const classCategorySelectorGridClass = 'grid grid-cols-4 gap-1';
   const predispositionCategoryDefinitions: Array<{ label: string; ids: Character['predispositionId'][] }> = [
-    { label: '外向的', ids: ['aggressive', 'inquisitive', 'amiable'] },
-    { label: '内向的', ids: ['stubborn', 'evasive', 'introspective'] },
-    { label: '適応', ids: ['devoted', 'serene', 'nimble'] },
-    { label: '機知', ids: ['perceptive', 'precise', 'resourceful'] },
+    { label: t('home.party.filter.extroverted'), ids: ['aggressive', 'inquisitive', 'amiable'] },
+    { label: t('home.party.filter.introverted'), ids: ['stubborn', 'evasive', 'introspective'] },
+    { label: t('home.party.filter.adaptation'), ids: ['devoted', 'serene', 'nimble'] },
+    { label: t('home.party.filter.wit'), ids: ['perceptive', 'precise', 'resourceful'] },
   ];
   const lineageCategoryDefinitions: Array<{ label: string; ids: Character['lineageId'][] }> = [
-    { label: '動乱', ids: ['sandstorm', 'ashen_capital', 'blaze_peak'] },
-    { label: '狩猟', ids: ['abyssal_sea', 'firmament', 'frozen_forest'] },
-    { label: '学識', ids: ['utopia', 'machina', 'adaptation'] },
-    { label: '生存', ids: ['fragment', 'windcross', 'oath'] },
+    { label: t('home.party.filter.turmoil'), ids: ['sandstorm', 'ashen_capital', 'blaze_peak'] },
+    { label: t('home.party.filter.hunting'), ids: ['abyssal_sea', 'firmament', 'frozen_forest'] },
+    { label: t('home.party.filter.scholarship'), ids: ['utopia', 'machina', 'adaptation'] },
+    { label: t('home.party.filter.survival'), ids: ['fragment', 'windcross', 'oath'] },
   ];
   const classById = new Map(CLASSES.map((classDef) => [classDef.id, classDef]));
 
@@ -6370,18 +6372,18 @@ function PartyTab({
     const warnings: string[] = [];
     const equipSlotReductionCount = getEquipSlotReductionCount(edits);
     if (equipSlotReductionCount > 0) {
-      warnings.push(`変更を保存すると装備枠が${equipSlotReductionCount}枠減るため、該当分の装備が外れます。`);
+      warnings.push(t('home.party.equipmentSlotReductionWarning', { count: equipSlotReductionCount }));
     }
 
     const capabilityWarnings = getCapabilityRemovalWarningState(edits);
     if (capabilityWarnings.melee) {
-      warnings.push('近距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.party.meleeCapabilityRemovedWarning'));
     }
     if (capabilityWarnings.ranged) {
-      warnings.push('遠距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.party.rangedCapabilityRemovedWarning'));
     }
     if (capabilityWarnings.magic) {
-      warnings.push('魔法攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.party.magicCapabilityRemovedWarning'));
     }
 
     return warnings;
@@ -6441,10 +6443,10 @@ function PartyTab({
   };
 
   const baseStatMultiplierRows = [
-    { label: '体力', value: stats.baseStats.vitality, note: '物理耐性', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
-    { label: '力', value: stats.baseStats.strength, note: '遠距離/近接攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.strength) },
-    { label: '知性', value: stats.baseStats.intelligence, note: '魔法攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
-    { label: '精神', value: stats.baseStats.mind, note: '魔法耐性', ratio: getBaseDefenseScale(stats.baseStats.mind) },
+    { label: t('common.stat.vitality'), value: stats.baseStats.vitality, note: t('home.party.physicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.vitality) },
+    { label: t('common.stat.strength'), value: stats.baseStats.strength, note: t('home.party.physicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.strength) },
+    { label: t('common.stat.intelligence'), value: stats.baseStats.intelligence, note: t('home.party.magicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
+    { label: t('common.stat.mind'), value: stats.baseStats.mind, note: t('home.party.magicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
   const hpContribution = computeCharacterHpContribution(char, party.level);
@@ -6757,7 +6759,7 @@ function PartyTab({
 
       {hasUnlockedReligions && editingDeity && (
         <div className="mb-3 text-xs text-gray-500">
-          キャラクターアイコン長押しで隊列変更
+          {t('home.party.reorderLongPressHint')}
         </div>
       )}
 
@@ -6912,7 +6914,7 @@ function PartyTab({
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
               {char.isUnique && (
                 <div className="text-[11px] text-gray-500">
-                  固有キャラクター(クラスのみ編集可能)
+                  {t('home.party.uniqueCharacterClassOnly')}
                 </div>
               )}
 
@@ -7084,8 +7086,8 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        <span className="font-bold">種族</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
-                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {renderInlineBonusEntries(selectedRaceBonusEntries)}
+                        <span className="font-bold">{t('home.party.race')}</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
+                        {selectedRace.name} | {t('common.stat.vitality.short')}{selectedRace.stats.vitality},{t('common.stat.strength.short')}{selectedRace.stats.strength},{t('common.stat.intelligence.short')}{selectedRace.stats.intelligence},{t('common.stat.mind.short')}{selectedRace.stats.mind} | {renderInlineBonusEntries(selectedRaceBonusEntries)}
                       </div>
                       <div className="grid grid-cols-3 gap-1">
                         {raceCategoryDefinitions.map((category) => (
@@ -7126,7 +7128,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.masterFull') : ''} |{' '}
+                        <span className="font-bold">{t('home.party.mainClass')}</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.masterFull') : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -7202,7 +7204,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
+                        <span className="font-bold">{t('home.party.subClass')}</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.length === 0
                           ? '-'
                           : selectedSubBonusEntries.map((entry, index) => (
@@ -7274,7 +7276,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">系譜</span>: {selectedLineage.name} | {renderInlineBonusEntries(selectedLineageBonusEntries)}
+                        <span className="font-bold">{t('home.party.lineage')}</span>: {selectedLineage.name} | {renderInlineBonusEntries(selectedLineageBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {lineageCategoryDefinitions.map((category) => (
@@ -7323,7 +7325,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">性格</span>: {selectedPredisposition.name} | {renderInlineBonusEntries(selectedPredispositionBonusEntries)}
+                        <span className="font-bold">{t('home.party.predisposition')}</span>: {selectedPredisposition.name} | {renderInlineBonusEntries(selectedPredispositionBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {predispositionCategoryDefinitions.map((category) => (
