@@ -40,7 +40,7 @@ import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay'
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
-import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
+import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelDisplayName, getJewelNameByRank, getJewelOwnedCount, getJewelShortLabel, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
@@ -1993,7 +1993,7 @@ function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
     if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
     return `HP+${value}`;
   }).join(' ');
-  return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
+  return [`[${getJewelShortLabel(jewelKey)}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
 
 function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): string {
@@ -2018,7 +2018,7 @@ function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): string {
     return `HP+${value}`;
   }).join(' ');
 
-  return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
+  return [`[${getJewelShortLabel(jewelKey)}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
 
 function getOffenseMultiplierSum(
@@ -8140,7 +8140,7 @@ function PartyTab({
                   <div className="mt-2 space-y-1 text-xs">
                     {allowedJewels.map((jewelKey) => (
                       <div key={jewelKey} className="flex items-center gap-1">
-                        <span className="w-10 text-sm leading-none font-normal">{JEWEL_DEFS[jewelKey].displayName}:</span>
+                        <span className="w-10 text-sm leading-none font-normal">{getJewelDisplayName(jewelKey)}:</span>
                         {Array.from({ length: 8 }).map((_, i) => {
                           const rank = i + 1;
                           const owned = getJewelOwnedCount(jewels, jewelKey, rank);
