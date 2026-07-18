@@ -1,5 +1,42 @@
-import { CLASS_SHORT_NAMES } from '../data/classes';
-import { EnemyDef } from '../types';
+import { getClassShortName } from '../data/classes';
+import { t } from '../i18n';
+import { EnemyClassId, EnemyDef } from '../types';
+
+export const ENEMY_TYPE_SHORT_NAME_KEYS: Record<string, string> = {
+  Beast: 'masterData.enemyType.Beast.short',
+  Slime_Colony: 'masterData.enemyType.Slime_Colony.short',
+  Plant_Fungal: 'masterData.enemyType.Plant_Fungal.short',
+  Insect_Swarm: 'masterData.enemyType.Insect_Swarm.short',
+  Aerial: 'masterData.enemyType.Aerial.short',
+  Frost: 'masterData.enemyType.Frost.short',
+  Fruit: 'masterData.enemyType.Fruit.short',
+  Dragon: 'masterData.enemyType.Dragon.short',
+  Voidspawn: 'masterData.enemyType.Voidspawn.short',
+  Spirit: 'masterData.enemyType.Spirit.short',
+  Ghost: 'masterData.enemyType.Ghost.short',
+  Undead: 'masterData.enemyType.Undead.short',
+  Golem: 'masterData.enemyType.Golem.short',
+  Shadowfang: 'masterData.enemyType.Shadowfang.short',
+  Mech: 'masterData.enemyType.Mech.short',
+  Chiropteran: 'masterData.enemyType.Chiropteran.short',
+  Chimera: 'masterData.enemyType.Chimera.short',
+  Titan: 'masterData.enemyType.Titan.short',
+  Pony: 'masterData.enemyType.Pony.short',
+  Origami: 'masterData.enemyType.Origami.short',
+  Jinma: 'masterData.enemyType.Jinma.short',
+  Orcinian: 'masterData.enemyType.Orcinian.short',
+  Kemono: 'masterData.enemyType.Kemono.short',
+  Caninian: 'masterData.enemyType.Caninian.short',
+  Lupinian: 'masterData.enemyType.Lupinian.short',
+  Vulpinian: 'masterData.enemyType.Vulpinian.short',
+  Ursan: 'masterData.enemyType.Ursan.short',
+  Felidian: 'masterData.enemyType.Felidian.short',
+  Mustelid: 'masterData.enemyType.Mustelid.short',
+  Leporian: 'masterData.enemyType.Leporian.short',
+  Cervin: 'masterData.enemyType.Cervin.short',
+  Procyonian: 'masterData.enemyType.Procyonian.short',
+  Murid: 'masterData.enemyType.Murid.short',
+};
 
 export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Beast: '猛',
@@ -37,20 +74,24 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Murid: 'ミュリッド',
 };
 
+export function getEnemyTypeShortName(enemyType: string): string {
+  return t(ENEMY_TYPE_SHORT_NAME_KEYS[enemyType] ?? enemyType);
+}
+
 function formatEnemyName(
   name: string,
   enemyType: string,
-  classId: keyof typeof CLASS_SHORT_NAMES,
-  subClassId?: keyof typeof CLASS_SHORT_NAMES | 'none',
+  classId: EnemyClassId,
+  subClassId?: EnemyClassId | 'none',
 ): string {
   // SpecRef: 6.1.7 | Logs | p.enemy_name
   const enemyTypeLabel = ['Caninian', 'Lupinian', 'Vulpinian', 'Ursan', 'Felidian', 'Mustelid', 'Leporian', 'Cervin', 'Procyonian', 'Murid']
     .includes(enemyType)
     ? `icon.${enemyType}`
-    : ENEMY_TYPE_SHORT_NAMES[enemyType];
-  const classLabel = CLASS_SHORT_NAMES[classId];
+    : getEnemyTypeShortName(enemyType);
+  const classLabel = getClassShortName(classId);
   const hasSubClass = !!subClassId && subClassId !== 'none';
-  const subClassLabel = hasSubClass ? CLASS_SHORT_NAMES[subClassId] : '';
+  const subClassLabel = hasSubClass ? getClassShortName(subClassId) : '';
   const isMasterClass = hasSubClass && classId === subClassId;
   const classText = classLabel
     ? (isMasterClass ? `${classLabel}M` : (subClassLabel ? `${classLabel}/${subClassLabel}` : classLabel))

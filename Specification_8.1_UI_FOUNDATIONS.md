@@ -10,6 +10,13 @@
   - No modal spam
   - Most actions resolve immediately
   
+- **Master Data i18n Boundary**
+  - `src/data/**` may keep canonical proper nouns unchanged when the string is part of the game identity or stable save/log identity: character names, enemy names, deity names, dungeon names, item names, race names, lineage names, and raw master specification tables such as `src/data/masterSpecData.ts`.
+  - Localized display labels must use stable IDs/keys in code and resolve through `t(...)` from `src/i18n/ja.ts` and `src/i18n/en.ts`. Examples: class short labels, enemy-type short labels, UI-only category labels, option labels, and reusable status labels.
+  - Localized descriptions/flavor text must also live in i18n dictionaries when rendered directly to players. Data records may keep stable ability/item/category IDs, but player-facing explanatory text should be represented by translation keys before new usages are added.
+  - Japanese strings found in `src/data/masterSpecData.ts`, `src/data/items.ts`, and `src/data/enemies.ts` are classified as canonical names unless explicitly documented as display-only descriptions. Japanese labels in `src/data/classes.ts`, `src/data/races.ts`, `src/data/lineages.ts`, `src/data/predispositions.ts`, `src/data/glossary.ts`, and `src/data/bonusAbilityGlossary.ts` must not gain new player-facing fields without corresponding i18n keys.
+  - Consumers in UI/game modules must call the relevant resolver (for example `getClassShortName`, `getEnemyTypeShortName`, or `t(...)`) instead of reading display-only Japanese lookup tables directly.
+
 - **Color Scheme**
 
   - `m.kemo` mode:
