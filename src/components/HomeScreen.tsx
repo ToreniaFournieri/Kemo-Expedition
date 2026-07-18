@@ -2153,153 +2153,153 @@ const ABILITY_NAMES: Record<string, string> = { ...ABILITY_BASE_NAMES };
 const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
   id: BonusAbilityGlossarySubcategoryId;
   shortLabel: '常' | '征' | '反' | '時';
-  label: string;
+  labelKey: string;
 }> = [
-  { id: 'passive', shortLabel: '常', label: '常時効果アビリティ' },
-  { id: 'expedition', shortLabel: '征', label: '遠征アビリティ' },
-  { id: 'reactive', shortLabel: '反', label: '反応アビリティ' },
-  { id: 'timed', shortLabel: '時', label: '時限アビリティ' },
+  { id: 'passive', shortLabel: '常', labelKey: 'home.bonusAbility.subcategory.passive' },
+  { id: 'expedition', shortLabel: '征', labelKey: 'home.bonusAbility.subcategory.expedition' },
+  { id: 'reactive', shortLabel: '反', labelKey: 'home.bonusAbility.subcategory.reactive' },
+  { id: 'timed', shortLabel: '時', labelKey: 'home.bonusAbility.subcategory.timed' },
 ];
 
-const ABILITY_HELP_TEXTS: Record<string, string> = {
-  'defender:1': '自身より後列の味方への物理ダメージを 2/3倍。',
-  'defender:2': '自身より後列の味方への物理ダメージを 3/5倍。',
-  'defender:3': '自身より後列の味方への物理ダメージを 1/2倍。',
-  'counter:1': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減）。',
-  'counter:2': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減しない）。',
-  'counter:3': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は2倍）。',
-  're_attack:1': '攻撃時に追加攻撃を行う（攻撃回数は半減）。',
-  're_attack:2': '攻撃時に追加攻撃を行う（攻撃回数は0.7倍）。',
-  're_attack:3': '攻撃時に追加攻撃を行う（攻撃回数は半減しない）。',
-  'iaigiri:1': '物理ダメージをx1.6倍する（攻撃回数は半減）。',
-  'iaigiri:2': '物理ダメージをx1.8倍する（攻撃回数は半減）。',
-  'iaigiri:3': '物理ダメージをx2.0倍する（攻撃回数は半減）。',
-  'command:1': '自身より後列の味方が与える物理ダメージを 1.4倍。',
-  'command:2': '自身より後列の味方が与える物理ダメージを 1.5倍。',
-  'command:3': '自身より後列の味方が与える物理ダメージを 1.6倍。',
-  'hunter:1': '列による命中率減衰を 1列ごと15%→10% に軽減する。',
-  'hunter:2': '列による命中率減衰を 1列ごと15%→7% に軽減する。',
-  'hunter:3': '列による命中率減衰を 1列ごと15%→5% に軽減する。',
-  'resonance:1': '魔法攻撃1回毎に、全ヒットのダメージが +4% 増加する。',
-  'resonance:2': '魔法攻撃1回毎に、全ヒットのダメージが +7% 増加する。',
-  'resonance:3': '魔法攻撃1回毎に、全ヒットのダメージが +9% 増加する。',
-  'resonance:4': '魔法攻撃1回毎に、全ヒットのダメージが +11% 増加する。',
-  'resonance:5': '魔法攻撃1回毎に、全ヒットのダメージが +12% 増加する。',
-  'm_barrier:1': '自身より後列の味方への魔法ダメージを 2/3倍。',
-  'm_barrier:2': '自身より後列の味方への魔法ダメージを 3/5倍。',
-  'm_barrier:3': '自身より後列の味方への魔法ダメージを 1/2倍。',
-  'deflection:1': '敵の遠距離攻撃の命中率を 10%低下させる。',
-  'deflection:2': '敵の遠距離攻撃の命中率を 15%低下させる。',
-  first_strike: '行動が速くなる。レベルが高いほど先行しやすい。',
-  equation_breaker: '機械理論・静寂領域の地形干渉を無効化する。',
-  domain_breaker: '必達/臨界/残響/静寂/剣戟/必中狙撃/必中魔法領域の効果を無効化する。',
-  fire_protect_breaker: '火属性攻撃時、相手の火炎反射・火炎吸収を無視する。',
-  ice_protect_breaker: '氷属性攻撃時、相手の氷結反射・氷結吸収を無視する。',
-  thunder_protect_breaker: '雷属性攻撃時、相手の雷撃反射・雷撃吸収を無視する。',
-  m_barrier_breaker: '相手の魔法障壁・魔法反射・魔法吸収を無視する。',
-  null_counter: '反撃を無効化する。レベルが高いほど有効回数が増える。',
-  resurrect: '致命ダメージを1回だけ耐える。',
-  rage: '受けたダメージに応じて物理/魔法攻撃倍率が増大する。',
-  re_counter: '敵の反撃に対してさらに反撃する。',
-  pursuit: '相手が逃げても追いかける(逃走・隠れ蓑アビリティを無効化)。',
-  illusion_breaker: '相手の幻を見破る(幻化アビリティを無効化)。',
-  bulwark_breaker: '壁を取り壊す(壁アビリティを無効化)。',
-  'illusion-breaker': '相手の幻を見破る(幻化アビリティを無効化)。',
-  'bulwark-breaker': '壁を取り壊す(壁アビリティを無効化)。',
-  momentum: '攻撃倍率が上がる代わりに被ダメージで効果が減少し、収益の一部を着服する。',
-  bulwark: '後列味方への攻撃を肩代わりする。',
-  covering_fire: '味方近接攻撃が単発命中時に遠距離で援護する。',
-  magical_counter: '魔法攻撃に対して魔法で反撃する。',
-  stealth: 'HPが一定未満の時、自身へのダメージをすべて回避する。',
-  illusion: '最初の遠距離攻撃を無効化する。',
-  howl: '遠距離2タイミングで発動。レベルに応じて相手の次の攻撃回数を 5/7〜1/7 にする。',
-  predator_sense: '近接9(開始)タイミングで発動。相手のHPが30％未満〜50％未満なら命中+40。',
-  slow: '自身の行動順番に-1して遅くなる。',
-  corrode: '通常近接攻撃が3回以上命中した相手に対して、攻撃倍率を x6/7〜x2/7 にする。',
-  life_drain: '通常近接攻撃で相手に与えたダメージの0.1%〜100%を回復する。',
-  no_offense: '通常行動をしなくなる（反撃などは行う）。',
-  decompose: '近接2タイミングで発動。相手の物理防御力を 6/7〜2/7 にする。',
-  swarm: '失ったHP割合に応じて、物理与ダメージが低下し、物理被ダメージが増加する(HP1%につき0.5%)。',
-  death_touch: '通常近接攻撃の命中回数 x 2/256〜6/256 の確率で即死させる。',
-  flying: '相手の近接攻撃回数が1/4になる。',
-  free: '近接1〜3または魔法1〜2タイミングで発動。戦闘から逃げる(戦闘は引分になる)。',
-  frostbite: '相手の行動順を遅らせる。',
-  ice_reflect: '自身が受ける予定の通常攻撃の氷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  ice_absorb: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  ice_null: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化する。',
-  bind: '近接攻撃の命中回数 x 2/64〜6/64 の確率で相手の行動を封じる。',
-  regeneration: '近接9(開始)タイミングで発動。この戦闘で失ったHPの10%〜24%を回復する。近接フェーズ前までにHPが0となった場合には発動しない。',
-  burn: '近接攻撃を受けた際に、相手に命中回数×最大HPの0.5%〜1.5%の火属性ダメージを与え返す。',
-  fire_reflect: '自身が受ける予定の通常攻撃の火属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  fire_absorb: '自身が受ける予定の通常攻撃の火属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  fire_null: '自身が受ける予定の通常攻撃の火属性ダメージを無効化する。',
-  thunder_reflect: '自身が受ける予定の通常攻撃の雷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  thunder_absorb: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  thunder_null: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化する。',
-  soul_reap: '魔法0(終了)タイミングで発動。相手のHPが10％未満〜20％未満なら即死させる。回避も復活もできない。',
-  mutual_magic_amplify: '双方の魔法ダメージを増幅する。',
-  mutual_magic_restraint: '双方の魔法ダメージを抑制する。',
-  mutual_physical_amplify: '双方の物理ダメージを増幅する。',
-  mutual_physical_restraint: '双方の物理ダメージを抑制する。',
-  ranged_confusion: '遠距離1〜2タイミングで発動。遠距離攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  magic_confusion: '魔法1〜2タイミングで発動。魔法攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  melee_confusion: '近接1〜2タイミングで発動。近接攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  self_destruct: '近接2タイミングで発動。自爆し、相手に残ダメージの1/10〜全てを与える。',
-  oblivion: '無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
-  fading_memory: '敵味方問わず無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
-  reanimate: '自身のHPが0となったタイミングで発動。HP20%〜38%で復活する(戦闘中1回のみ有効)。',
-  auriferous: '自身が受ける総攻撃回数10回毎に、自身がドロップするアイテム抽選確率を+1する。',
-  magic_seal: '最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)。',
-  ambush: '自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.3〜1.68倍。',
-  mimic: '相手のアビリティ1つを無作為に指定する。指定したアビリティの効果を発動する。',
-  unforgettable: 'アビリティは消して忘れることがなくなる(忘却無効)。',
-  shock: '相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる。',
-  null_shock: '感電しなくなる。',
-  null_corrode: '腐食しなくなる。',
-  null_life_drain: '吸血されることがなくなる。',
-  null_death_touch: '接死が無効化する。',
-  null_burn: '火傷を負わなくなる。',
-  null_bind: '拘束を速やかに解くことができる。',
-  null_requiem: '鎮魂歌では成仏はしない。',
-  unstable_core: '遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP12%〜30%の自傷ダメージを受ける。',
-  magical_reflect: '自身が受ける予定の通常攻撃の魔法ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  magical_absorb: '自身が受ける予定の通常攻撃の魔法ダメージを無効化し、レベルに応じて吸収して回復する。',
-  magical_null: '自身が受ける予定の通常攻撃の魔法ダメージを無効化する。',
-  ranged_reflect: '自身が受ける予定の遠距離攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  ranged_null: '自身が受ける予定の遠距離攻撃ダメージを無効化する。',
-  melee_reflect: '自身が受ける予定の近接攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  melee_null: '自身が受ける予定の近接攻撃ダメージを無効化する。',
-  colossal: '自身の物理防御力が2倍になり、物理被ダメージ補正がx2.0になる。',
-  upgrade_all_abilities: '自身の他のアビリティを1〜4段階強化する(上限レベル5)。',
+const ABILITY_HELP_TEXT_KEYS: Record<string, string> = {
+  'defender:1': 'home.abilityHelp.defender.1',
+  'defender:2': 'home.abilityHelp.defender.2',
+  'defender:3': 'home.abilityHelp.defender.3',
+  'counter:1': 'home.abilityHelp.counter.1',
+  'counter:2': 'home.abilityHelp.counter.2',
+  'counter:3': 'home.abilityHelp.counter.3',
+  're_attack:1': 'home.abilityHelp.re_attack.1',
+  're_attack:2': 'home.abilityHelp.re_attack.2',
+  're_attack:3': 'home.abilityHelp.re_attack.3',
+  'iaigiri:1': 'home.abilityHelp.iaigiri.1',
+  'iaigiri:2': 'home.abilityHelp.iaigiri.2',
+  'iaigiri:3': 'home.abilityHelp.iaigiri.3',
+  'command:1': 'home.abilityHelp.command.1',
+  'command:2': 'home.abilityHelp.command.2',
+  'command:3': 'home.abilityHelp.command.3',
+  'hunter:1': 'home.abilityHelp.hunter.1',
+  'hunter:2': 'home.abilityHelp.hunter.2',
+  'hunter:3': 'home.abilityHelp.hunter.3',
+  'resonance:1': 'home.abilityHelp.resonance.1',
+  'resonance:2': 'home.abilityHelp.resonance.2',
+  'resonance:3': 'home.abilityHelp.resonance.3',
+  'resonance:4': 'home.abilityHelp.resonance.4',
+  'resonance:5': 'home.abilityHelp.resonance.5',
+  'm_barrier:1': 'home.abilityHelp.m_barrier.1',
+  'm_barrier:2': 'home.abilityHelp.m_barrier.2',
+  'm_barrier:3': 'home.abilityHelp.m_barrier.3',
+  'deflection:1': 'home.abilityHelp.deflection.1',
+  'deflection:2': 'home.abilityHelp.deflection.2',
+  first_strike: 'home.abilityHelp.first_strike',
+  equation_breaker: 'home.abilityHelp.equation_breaker',
+  domain_breaker: 'home.abilityHelp.domain_breaker',
+  fire_protect_breaker: 'home.abilityHelp.fire_protect_breaker',
+  ice_protect_breaker: 'home.abilityHelp.ice_protect_breaker',
+  thunder_protect_breaker: 'home.abilityHelp.thunder_protect_breaker',
+  m_barrier_breaker: 'home.abilityHelp.m_barrier_breaker',
+  null_counter: 'home.abilityHelp.null_counter',
+  resurrect: 'home.abilityHelp.resurrect',
+  rage: 'home.abilityHelp.rage',
+  re_counter: 'home.abilityHelp.re_counter',
+  pursuit: 'home.abilityHelp.pursuit',
+  illusion_breaker: 'home.abilityHelp.illusion_breaker',
+  bulwark_breaker: 'home.abilityHelp.bulwark_breaker',
+  'illusion-breaker': 'home.abilityHelp.illusion-breaker',
+  'bulwark-breaker': 'home.abilityHelp.bulwark-breaker',
+  momentum: 'home.abilityHelp.momentum',
+  bulwark: 'home.abilityHelp.bulwark',
+  covering_fire: 'home.abilityHelp.covering_fire',
+  magical_counter: 'home.abilityHelp.magical_counter',
+  stealth: 'home.abilityHelp.stealth',
+  illusion: 'home.abilityHelp.illusion',
+  howl: 'home.abilityHelp.howl',
+  predator_sense: 'home.abilityHelp.predator_sense',
+  slow: 'home.abilityHelp.slow',
+  corrode: 'home.abilityHelp.corrode',
+  life_drain: 'home.abilityHelp.life_drain',
+  no_offense: 'home.abilityHelp.no_offense',
+  decompose: 'home.abilityHelp.decompose',
+  swarm: 'home.abilityHelp.swarm',
+  death_touch: 'home.abilityHelp.death_touch',
+  flying: 'home.abilityHelp.flying',
+  free: 'home.abilityHelp.free',
+  frostbite: 'home.abilityHelp.frostbite',
+  ice_reflect: 'home.abilityHelp.ice_reflect',
+  ice_absorb: 'home.abilityHelp.ice_absorb',
+  ice_null: 'home.abilityHelp.ice_null',
+  bind: 'home.abilityHelp.bind',
+  regeneration: 'home.abilityHelp.regeneration',
+  burn: 'home.abilityHelp.burn',
+  fire_reflect: 'home.abilityHelp.fire_reflect',
+  fire_absorb: 'home.abilityHelp.fire_absorb',
+  fire_null: 'home.abilityHelp.fire_null',
+  thunder_reflect: 'home.abilityHelp.thunder_reflect',
+  thunder_absorb: 'home.abilityHelp.thunder_absorb',
+  thunder_null: 'home.abilityHelp.thunder_null',
+  soul_reap: 'home.abilityHelp.soul_reap',
+  mutual_magic_amplify: 'home.abilityHelp.mutual_magic_amplify',
+  mutual_magic_restraint: 'home.abilityHelp.mutual_magic_restraint',
+  mutual_physical_amplify: 'home.abilityHelp.mutual_physical_amplify',
+  mutual_physical_restraint: 'home.abilityHelp.mutual_physical_restraint',
+  ranged_confusion: 'home.abilityHelp.ranged_confusion',
+  magic_confusion: 'home.abilityHelp.magic_confusion',
+  melee_confusion: 'home.abilityHelp.melee_confusion',
+  self_destruct: 'home.abilityHelp.self_destruct',
+  oblivion: 'home.abilityHelp.oblivion',
+  fading_memory: 'home.abilityHelp.fading_memory',
+  reanimate: 'home.abilityHelp.reanimate',
+  auriferous: 'home.abilityHelp.auriferous',
+  magic_seal: 'home.abilityHelp.magic_seal',
+  ambush: 'home.abilityHelp.ambush',
+  mimic: 'home.abilityHelp.mimic',
+  unforgettable: 'home.abilityHelp.unforgettable',
+  shock: 'home.abilityHelp.shock',
+  null_shock: 'home.abilityHelp.null_shock',
+  null_corrode: 'home.abilityHelp.null_corrode',
+  null_life_drain: 'home.abilityHelp.null_life_drain',
+  null_death_touch: 'home.abilityHelp.null_death_touch',
+  null_burn: 'home.abilityHelp.null_burn',
+  null_bind: 'home.abilityHelp.null_bind',
+  null_requiem: 'home.abilityHelp.null_requiem',
+  unstable_core: 'home.abilityHelp.unstable_core',
+  magical_reflect: 'home.abilityHelp.magical_reflect',
+  magical_absorb: 'home.abilityHelp.magical_absorb',
+  magical_null: 'home.abilityHelp.magical_null',
+  ranged_reflect: 'home.abilityHelp.ranged_reflect',
+  ranged_null: 'home.abilityHelp.ranged_null',
+  melee_reflect: 'home.abilityHelp.melee_reflect',
+  melee_null: 'home.abilityHelp.melee_null',
+  colossal: 'home.abilityHelp.colossal',
+  upgrade_all_abilities: 'home.abilityHelp.upgrade_all_abilities',
 };
 
-const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
-  sword: '剣カテゴリ装備の効果が {value} 倍',
-  katana: '刀カテゴリ装備の効果が {value} 倍',
-  archery: '弓カテゴリ装備の効果が {value} 倍',
-  armor: '鎧カテゴリ装備の効果が {value} 倍',
-  gauntlet: '籠手カテゴリ装備の効果が {value} 倍',
-  wand: '杖カテゴリ装備の効果が {value} 倍',
-  robe: '法衣カテゴリ装備の効果が {value} 倍',
-  shield: '盾カテゴリ装備の効果が {value} 倍',
-  bolt: 'ボルトカテゴリ装備の効果が {value} 倍',
-  grimoire: '魔導書カテゴリ装備の効果が {value} 倍',
-  catalyst: '触媒カテゴリ装備の効果が {value} 倍',
-  arrow: '矢カテゴリ装備の効果が {value} 倍',
-  physical_offense_multiplier_xV: '遠距離攻撃・近接攻撃の攻撃倍率が {value} 倍',
-  magical_offense_multiplier_xV: '魔法攻撃の攻撃倍率が {value} 倍',
-  physical_defense_multiplier_xV: '物理防御倍率が {value} 倍',
-  magical_defense_multiplier_xV: '魔法防御倍率が {value} 倍',
-  fire_defense_multiplier_xV: '炎属性耐性が {value} 倍',
-  ice_defense_multiplier_xV: '氷属性耐性が {value} 倍',
-  thunder_defense_multiplier_xV: '雷属性耐性が {value} 倍',
-  deity_physical_attack_xV: '遠距離攻撃・近接攻撃のダメージが {value} 倍',
-  deity_magical_attack_xV: '魔法攻撃のダメージが {value} 倍',
-  "deity_physical_defense_x2/3": '物理防御倍率が 2/3 倍',
-  deity_physical_defense_xV: '物理防御倍率が {value} 倍',
-  deity_pysical_defense_xV: '物理防御倍率が {value} 倍',
-  "deity_magical_defense_x2/3": '魔法防御倍率が 2/3 倍',
-  deity_magical_defense_xV: '魔法防御倍率が {value} 倍',
+const C_MULTIPLIER_HELP_DESCRIPTION_KEYS: Record<string, string> = {
+  sword: 'home.cMultiplierHelp.sword',
+  katana: 'home.cMultiplierHelp.katana',
+  archery: 'home.cMultiplierHelp.archery',
+  armor: 'home.cMultiplierHelp.armor',
+  gauntlet: 'home.cMultiplierHelp.gauntlet',
+  wand: 'home.cMultiplierHelp.wand',
+  robe: 'home.cMultiplierHelp.robe',
+  shield: 'home.cMultiplierHelp.shield',
+  bolt: 'home.cMultiplierHelp.bolt',
+  grimoire: 'home.cMultiplierHelp.grimoire',
+  catalyst: 'home.cMultiplierHelp.catalyst',
+  arrow: 'home.cMultiplierHelp.arrow',
+  physical_offense_multiplier_xV: 'home.cMultiplierHelp.physical_offense_multiplier_xV',
+  magical_offense_multiplier_xV: 'home.cMultiplierHelp.magical_offense_multiplier_xV',
+  physical_defense_multiplier_xV: 'home.cMultiplierHelp.physical_defense_multiplier_xV',
+  magical_defense_multiplier_xV: 'home.cMultiplierHelp.magical_defense_multiplier_xV',
+  fire_defense_multiplier_xV: 'home.cMultiplierHelp.fire_defense_multiplier_xV',
+  ice_defense_multiplier_xV: 'home.cMultiplierHelp.ice_defense_multiplier_xV',
+  thunder_defense_multiplier_xV: 'home.cMultiplierHelp.thunder_defense_multiplier_xV',
+  deity_physical_attack_xV: 'home.cMultiplierHelp.deity_physical_attack_xV',
+  deity_magical_attack_xV: 'home.cMultiplierHelp.deity_magical_attack_xV',
+  "deity_physical_defense_x2/3": 'home.cMultiplierHelp.deity_physical_defense_x2_3',
+  deity_physical_defense_xV: 'home.cMultiplierHelp.deity_physical_defense_xV',
+  deity_pysical_defense_xV: 'home.cMultiplierHelp.deity_pysical_defense_xV',
+  "deity_magical_defense_x2/3": 'home.cMultiplierHelp.deity_magical_defense_x2_3',
+  deity_magical_defense_xV: 'home.cMultiplierHelp.deity_magical_defense_xV',
 };
 
 const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
@@ -2568,9 +2568,9 @@ function getBonusHelpDescription(bonus: Bonus): string | null {
   const multiplierKey = bonus.type.endsWith('_multiplier')
     ? bonus.type.replace(/_multiplier$/, '')
     : bonus.type;
-  const multiplierTemplate = C_MULTIPLIER_HELP_DESCRIPTIONS[multiplierKey];
-  if (multiplierTemplate) {
-    return multiplierTemplate.replace('{value}', formatMultiplierValue(bonus.value));
+  const multiplierKeyForTranslation = C_MULTIPLIER_HELP_DESCRIPTION_KEYS[multiplierKey];
+  if (multiplierKeyForTranslation) {
+    return t(multiplierKeyForTranslation, { value: formatMultiplierValue(bonus.value) });
   }
 
   if (bonus.type === 'equip_slot') return t('party.bonusHelp.equip_slot', { value: bonus.value });
@@ -7819,11 +7819,11 @@ function PartyTab({
                     ? effectiveMultiplier.toFixed(2)
                     : effectiveMultiplier.toFixed(1);
                   const label = `${mulNames[key] ?? key}x${formattedMultiplier}`;
-                  const template = C_MULTIPLIER_HELP_DESCRIPTIONS[key];
+                  const templateKey = C_MULTIPLIER_HELP_DESCRIPTION_KEYS[key];
                   pushBonusDisplayEntry({
                     key,
                     label,
-                    description: template ? template.replace('{value}', formattedMultiplier) : undefined,
+                    description: templateKey ? t(templateKey, { value: formattedMultiplier }) : undefined,
                   });
                 }
               }
@@ -12625,9 +12625,10 @@ function SettingTab({
       return formatBonusAbilityHelpDescription(abilityId as AbilityId, level);
     }
 
-    const levelDescription = ABILITY_HELP_TEXTS[`${abilityId}:${level}`];
-    if (levelDescription) return levelDescription;
-    return ABILITY_HELP_TEXTS[abilityId] ?? 'このアビリティの説明は未設定です。';
+    const levelDescriptionKey = ABILITY_HELP_TEXT_KEYS[`${abilityId}:${level}`];
+    if (levelDescriptionKey) return t(levelDescriptionKey);
+    const abilityDescriptionKey = ABILITY_HELP_TEXT_KEYS[abilityId];
+    return abilityDescriptionKey ? t(abilityDescriptionKey) : t('home.abilityHelp.unconfigured');
   };
 
   const getAbilityHelpText = (abilityId: string, level: number, abilityLabel: string): { title: string; description: string } => ({
@@ -12920,7 +12921,7 @@ function SettingTab({
                                       ? 'border-sub bg-sub text-white'
                                       : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
                                   }`}
-                                  title={subcategory.label}
+                                  title={t(subcategory.labelKey)}
                                   aria-pressed={isActive}
                                 >
                                   {subcategory.shortLabel}
@@ -12928,7 +12929,7 @@ function SettingTab({
                               );
                             })}
                           </div>
-                          <div className="text-[11px] text-gray-500">{activeBonusAbilitySubcategory?.label}</div>
+                          <div className="text-[11px] text-gray-500">{activeBonusAbilitySubcategory?.labelKey ? t(activeBonusAbilitySubcategory.labelKey) : null}</div>
                         </div>
                       )}
                       <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
