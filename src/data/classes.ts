@@ -18,22 +18,11 @@ export const CLASS_SHORT_NAME_KEYS: Record<ClassId | 'fighter' | 'rogue', string
   rogue: 'masterData.class.rogue.short',
 };
 
-export const CLASS_SHORT_NAMES: Record<ClassId | 'fighter' | 'rogue', string> = {
-  fighter: '戦',
-  guardian: '防',
-  duelist: '剣',
-  samurai: '侍',
-  'sword-saint': '聖',
-  ranger: '狩',
-  striker: '弩',
-  ninja: '忍',
-  wizard: '魔',
-  sage: '賢',
-  alchemist: '錬',
-  pilgrim: '巡',
-  lord: '君',
-  rogue: '盗',
-};
+export const CLASS_SHORT_NAMES: Record<ClassId | 'fighter' | 'rogue', string> = new Proxy(CLASS_SHORT_NAME_KEYS, {
+  get: (target, classId: string) => t(target[classId as ClassId | 'fighter' | 'rogue'] ?? classId),
+}) as Record<ClassId | 'fighter' | 'rogue', string>;
+
+
 
 
 export function getClassShortName(classId: ClassId | 'fighter' | 'rogue'): string {
@@ -44,7 +33,7 @@ export function getClassShortName(classId: ClassId | 'fighter' | 'rogue'): strin
 export const CLASSES: ClassDef[] = [
   {
     id: 'guardian',
-    name: '防人',
+    get name() { return t('masterData.class.guardian.name'); },
     mainSubBonuses: [
       { type: 'armor_multiplier', value: 1.4 },
       { type: 'equip_slot', value: 2 },
@@ -58,7 +47,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'duelist',
-    name: '剣士',
+    get name() { return t('masterData.class.duelist.name'); },
     mainSubBonuses: [
       { type: 'equip_melee', value: 1 },
       { type: 'sword_multiplier', value: 1.4 },
@@ -73,7 +62,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'samurai',
-    name: '侍',
+    get name() { return t('masterData.class.samurai.name'); },
     mainSubBonuses: [
       { type: 'equip_melee', value: 1 },
       { type: 'katana_multiplier', value: 1.4 },
@@ -88,7 +77,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'sword-saint',
-    name: '剣聖',
+    get name() { return t('masterData.class.sword-saint.name'); },
     mainSubBonuses: [
       { type: 'equip_melee', value: 1 },
       { type: 'gauntlet_multiplier', value: 1.4 },
@@ -104,7 +93,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'ranger',
-    name: '狩人',
+    get name() { return t('masterData.class.ranger.name'); },
     mainSubBonuses: [
       { type: 'equip_ranged', value: 1 },
       { type: 'arrow_multiplier', value: 1.4 },
@@ -119,7 +108,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'striker',
-    name: '弩手',
+    get name() { return t('masterData.class.striker.name'); },
     mainSubBonuses: [
       { type: 'equip_ranged', value: 1 },
       { type: 'bolt_multiplier', value: 1.4 },
@@ -134,7 +123,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'ninja',
-    name: '忍者',
+    get name() { return t('masterData.class.ninja.name'); },
     mainSubBonuses: [
       { type: 'equip_ranged', value: 1 },
       { type: 'archery_multiplier', value: 1.4 },
@@ -150,7 +139,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'wizard',
-    name: '魔法使い',
+    get name() { return t('masterData.class.wizard.name'); },
     mainSubBonuses: [
       { type: 'equip_magic', value: 1 },
       { type: 'wand_multiplier', value: 1.4 },
@@ -165,7 +154,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'sage',
-    name: '賢者',
+    get name() { return t('masterData.class.sage.name'); },
     mainSubBonuses: [
       { type: 'equip_magic', value: 1 },
       { type: 'grimoire_multiplier', value: 1.4 },
@@ -180,7 +169,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'alchemist',
-    name: '錬金術師',
+    get name() { return t('masterData.class.alchemist.name'); },
     mainSubBonuses: [
       { type: 'equip_magic', value: 1 },
       { type: 'catalyst_multiplier', value: 1.4 },
@@ -196,7 +185,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'pilgrim',
-    name: '巡礼者',
+    get name() { return t('masterData.class.pilgrim.name'); },
     mainSubBonuses: [
       { type: 'robe_multiplier', value: 1.4 },
       { type: 'equip_slot', value: 2 },
@@ -212,7 +201,7 @@ export const CLASSES: ClassDef[] = [
   },
   {
     id: 'lord',
-    name: '君主',
+    get name() { return t('masterData.class.lord.name'); },
     mainSubBonuses: [
       { type: 'shield_multiplier', value: 1.4 },
       { type: 'equip_slot', value: 2 },
