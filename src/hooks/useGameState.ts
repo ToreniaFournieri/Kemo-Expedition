@@ -112,7 +112,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, getRandomTranslation, t } from '../i18n';
+import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t } from '../i18n';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -131,7 +131,7 @@ function generateUserId(): string {
   return `uuid-${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
 }
 const APPROX_CYCLE_STEP_COUNT = 30;
-const SAVE_LOAD_WARNING_MESSAGE = t('auto.jp.fc6d50af2e');
+const SAVE_LOAD_WARNING_KEY = 'save.loadWarning';
 const VALID_GLOSSARY_ABILITY_IDS = new Set(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
 const VALID_GLOSSARY_TERRAIN_KEYS = new Set(
   (TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []).map((entry) => entry.key as TerrainEffectKey),
@@ -1772,6 +1772,7 @@ function createInitialState(): InitialStateResult {
   // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Language URL parameter
   const initialLanguage = resolveInitialLanguage();
   persistLanguage(initialLanguage);
+  setActiveLanguage(initialLanguage);
   // Try to load saved state first
   const savedStateResult = loadSavedState();
   if (savedStateResult.state) {
@@ -5239,7 +5240,7 @@ export function useGameState() {
     notifications,
     saveLoadWarning: loadErrorLog
       ? {
-          message: SAVE_LOAD_WARNING_MESSAGE,
+          message: t(SAVE_LOAD_WARNING_KEY),
           errorLog: loadErrorLog,
         }
       : null,
