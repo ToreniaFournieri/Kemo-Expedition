@@ -486,6 +486,7 @@ export interface EnemyDef {
   spawnPool: number;
   poolId: number;
   name: string;
+  nameKey?: string;
   enemyClass: EnemyClassId;
   enemySubClass?: EnemyClassId | 'none';
   abilities: EnemyAbility[];
