@@ -9,7 +9,7 @@
 - Purpose: Displays announcements and issue-fix notices from the development team.
 - Label: Use `News` as the list title.
 - Badge behavior:
-  - Show a notification badge when there is at least one unread developer news item.
+  - Show a notification badge on `Divine Bureau` and `通知` when there is at least one unread developer news item.
   - When the player opens and reads the developer news list, clear the notification badge.
   - Persist the read/unread state in save data so the badge does not reappear after refresh or restart unless a new news item is added.
 - News list:
