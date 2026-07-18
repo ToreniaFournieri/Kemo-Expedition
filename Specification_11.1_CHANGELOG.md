@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 27 | 2026/07/18 | Correct the English i18n entry for Enemy_ID 315 so Celestial Reaper displays from the localization dictionary without any non-i18n fallback. |
 | 0.8.2 | 26 | 2026/07/18 | Add Japanese i18n entries for expedition enemy display names and resolve enemy master names through the shared localization lookup for all languages. |
 | 0.8.2 | 25 | 2026/07/18 | Route item display names through Japanese/English i18n keys and add English item-name entries for the item master list. |
 | 0.8.2 | 24 | 2026/07/18 | Route expedition enemy display names through English i18n translations while preserving Japanese master names as the default. |
