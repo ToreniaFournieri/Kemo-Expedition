@@ -50,7 +50,16 @@ function enforceEnvironmentDebugPolicy(settings: DebugSettings): DebugSettings {
   }
   // SpecRef: 9 | Environment | / Debug mode OFF
   if (env === 'prod') {
-    return DEFAULT_DEBUG_SETTINGS;
+    // SpecRef: 8.1.2 | Header | Speed of Time
+    // Keep the production Debug pane locked OFF, but preserve the legitimate
+    // Speed of Time report reward while its separate duration record is valid.
+    const prodTimeSpeed: DebugTimeSpeed = settings.timeSpeed === 'x1_2' ? 'x1_2' : 'realtime';
+    return {
+      ...DEFAULT_DEBUG_SETTINGS,
+      timeSpeed: prodTimeSpeed,
+      godsBattleCondition: 'normal',
+      godStrength: 'normal',
+    };
   }
   return settings;
 }

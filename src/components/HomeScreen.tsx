@@ -62,6 +62,10 @@ import {
   isLootGateUnlocked,
 } from '../game/lootGate';
 
+const DEVELOPER_NEWS_ITEMS = [
+  { id: 'v8.1.2-2026-07-18-beta-report-bonus-fix', version: 'v8.1.2', date: '2026/07/18', content: '開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。' },
+] as const;
+
 function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
   if (/^https?:\/\//.test(path)) return path;
@@ -109,6 +113,7 @@ interface HomeScreenProps {
     markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
+    markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number) => void;
@@ -5375,6 +5380,8 @@ export function HomeScreen({
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  const hasUnreadDeveloperNews = DEVELOPER_NEWS_ITEMS.some((item) => !(state.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const envLabel = getEnvLabel();
   const versionLabel = envLabel
     ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
@@ -5518,6 +5525,7 @@ export function HomeScreen({
         onUpdateDebugSettings={updateDebugSettings}
         partyCount={state.parties.length}
         onPartyUnlock={actions.unlockPartySlot}
+        onMarkDeveloperNewsRead={actions.markDeveloperNewsRead}
       />
     );
   };
@@ -5615,6 +5623,9 @@ export function HomeScreen({
                   <span className="absolute -top-1 right-1 z-50 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
                     {unreadDiaryBadgeLabel}
                   </span>
+                )}
+                {tab.id === 'setting' && hasUnreadDeveloperNews && (
+                  <span className="absolute -top-1 right-1 z-50 inline-flex h-2.5 w-2.5 rounded-full bg-red-500" aria-label="Unread developer news" />
                 )}
               </button>
             );
@@ -11458,6 +11469,7 @@ function SettingTab({
   onUpdateDebugSettings,
   partyCount,
   onPartyUnlock,
+  onMarkDeveloperNewsRead,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -11490,8 +11502,9 @@ function SettingTab({
   onUpdateDebugSettings: (updates: Partial<DebugSettings>) => void;
   partyCount: number;
   onPartyUnlock: () => void;
+  onMarkDeveloperNewsRead: (itemIds: string[]) => void;
 }) {
-  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
+  type DivineBureauPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
   // SpecRef: 9 | Environment | Save Data Isolation
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.panel-expanded');
@@ -11500,6 +11513,7 @@ function SettingTab({
   const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-expanded-entries');
   const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
+    news: false,
     modeSelect: false,
     donation: false,
     clairvoyance: false,
@@ -11519,6 +11533,7 @@ function SettingTab({
       if (!saved) return defaultDivineBureauPanelState;
       const parsed = JSON.parse(saved) as Partial<Record<DivineBureauPanelKey, boolean>>;
       return {
+        news: parsed.news === true,
         modeSelect: parsed.modeSelect === true,
         donation: parsed.donation === true,
         clairvoyance: parsed.clairvoyance === true,
@@ -11814,7 +11829,13 @@ function SettingTab({
     }
   }, [expandedGlossaryEntries]);
 
+  const unreadDeveloperNewsItems = DEVELOPER_NEWS_ITEMS.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.id));
+  const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
+
   const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
+    if (panelKey === 'news' && !divineBureauPanelExpanded.news) {
+      onMarkDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+    }
     setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
   };
 
@@ -11827,7 +11848,12 @@ function SettingTab({
         onClick={() => toggleDivineBureauPanel(panelKey)}
         className="w-full flex items-center justify-between text-sm font-medium"
       >
-        <span>{title}</span>
+        <span className="inline-flex items-center gap-2">
+          <span>{title}</span>
+          {panelKey === 'news' && hasUnreadDeveloperNews && (
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-500" aria-label="Unread developer news" />
+          )}
+        </span>
         <span className={`text-xs text-gray-500 transform transition-transform ${expanded ? 'rotate-180' : ''}`}>▼</span>
       </button>
     );
@@ -12700,6 +12726,24 @@ function SettingTab({
           </div>
         </FloatingBubblePortal>
       )}
+      {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知) */}
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
+        {renderDivineBureauPanelHeader('news', 'News')}
+        {divineBureauPanelExpanded.news && (
+          <div className="mt-3 overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
+            {DEVELOPER_NEWS_ITEMS.map((item) => (
+              <div key={item.id} className="space-y-1 border-b border-gray-100 p-3 last:border-b-0">
+                <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
+                  <span className="font-semibold text-gray-700">{item.version}</span>
+                  <span>{item.date}</span>
+                </div>
+                <p className="text-gray-700">{item.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
