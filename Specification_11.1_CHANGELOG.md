@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 22 | 2026/07/18 | Fix HomeScreen jewel status formatter scope so slot and inventory jewel helpers are top-level functions and TypeScript builds successfully. |
 | 0.8.2 | 21 | 2026/07/18 | Route jewel status bonus labels through i18n keys and reuse one formatter for equipped and inventory jewel descriptions. |
 | 0.8.2 | 18 | 2026/07/18 | Route battle defensive reaction labels, magic-seal start log text, and generic battle fallback labels through Japanese/English i18n keys. |
 | 0.8.2 | 17 | 2026/07/18 | Route jewel display names, short labels, and rank-generated names through Japanese/English i18n keys while preserving stable jewel runtime identifiers. |

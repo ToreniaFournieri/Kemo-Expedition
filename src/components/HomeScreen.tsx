@@ -1995,15 +1995,15 @@ function formatJewelStatusText(jewelKey: JewelKey, rank: number): string {
     value: getJewelDRankValue(bonus.base, rank),
   })).join(' ');
 
+  return [`[${getJewelShortLabel(jewelKey)}${rank}]`, cText, dText].filter(Boolean).join(' ');
+}
+
 function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
   return formatJewelStatusText(jewelKey, rank);
 }
 
 function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): string {
   return formatJewelStatusText(jewelKey, rank);
-}
-
-  return [`[${getJewelShortLabel(jewelKey)}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
 
 function getOffenseMultiplierSum(
