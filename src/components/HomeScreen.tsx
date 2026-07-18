@@ -19,7 +19,7 @@ import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '.
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { getMasterItemCategoriesByRarity } from '../data/masterSpecData';
 import {
-  BONUS_ABILITY_GLOSSARY_ENTRIES,
+  LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES,
   BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
   type BonusAbilityGlossarySubcategoryId,
 } from '../data/bonusAbilityGlossary';
@@ -12939,7 +12939,7 @@ function SettingTab({
                       <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                         {isBonusAbilityGlossarySection
                           // SpecRef: 1.0.3 | Glossary Reveal Rule | ability visibility
-                          ? BONUS_ABILITY_GLOSSARY_ENTRIES
+                          ? LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES
                             .filter((entry) => entry.subcategory === bonusAbilityGlossarySubcategory)
                             .filter((entry) => debugSettings.displayAllGlossary || revealedGlossaryAbilityIds.has(entry.abilityId))
                             .map((entry, index) => {
