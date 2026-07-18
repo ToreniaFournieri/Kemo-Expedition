@@ -7457,9 +7457,9 @@ function PartyTab({
                     text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.rangedAttack'),
                     helpLines: [
-                      `遠距離攻撃力: ${formatNumber(Math.floor(stats.rangedAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
-                      `遠距離攻撃回数: ${formatNumber(stats.rangedNoA)}回`,
-                      `遠距離攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                      t('home.party.help.rangedAttackPower', { value: formatNumber(Math.floor(stats.rangedAttack)) }),
+                      t('home.party.help.rangedAttackCount', { value: formatNumber(stats.rangedNoA) }),
+                      t('home.party.help.rangedAttackMultiplier', { value: amp.toFixed(2) }),
                     ],
                   });
                 }
@@ -7470,12 +7470,12 @@ function PartyTab({
                   );
                   offenseLines.push({
                     key: 'magical-attack',
-                    text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
+                    text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.magicalAttack'),
                     helpLines: [
-                      `魔法攻撃力: ${formatNumber(Math.floor(stats.magicalAttack))} ※ダメージを与えるには敵の魔法防御力を超える必要があります`,
-                      `魔法攻撃回数: ${formatNumber(stats.magicalNoA)}回`,
-                      `魔法攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                      t('home.party.help.magicalAttackPower', { value: formatNumber(Math.floor(stats.magicalAttack)) }),
+                      t('home.party.help.magicalAttackCount', { value: formatNumber(stats.magicalNoA) }),
+                      t('home.party.help.magicalAttackMultiplier', { value: amp.toFixed(2) }),
                     ],
                   });
                 }
@@ -7489,9 +7489,9 @@ function PartyTab({
                     text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.meleeAttack'),
                     helpLines: [
-                      `近接攻撃力: ${formatNumber(Math.floor(stats.meleeAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
-                      `近接攻撃回数: ${formatNumber(stats.meleeNoA)}回`,
-                      `近接攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                      t('home.party.help.meleeAttackPower', { value: formatNumber(Math.floor(stats.meleeAttack)) }),
+                      t('home.party.help.meleeAttackCount', { value: formatNumber(stats.meleeNoA) }),
+                      t('home.party.help.meleeAttackMultiplier', { value: amp.toFixed(2) }),
                     ],
                   });
                 }
@@ -7505,8 +7505,8 @@ function PartyTab({
                     text: `${t('combat.physicalAccuracy')}: ${Math.round(stats.accuracyPotency * 100)}% (${t('combat.decay')}: ${decayText})`,
                     helpTitle: t('combat.physicalAccuracy'),
                     helpLines: [
-                      `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% ※初回の命中率`,
-                      `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
+                      t('home.party.help.physicalAccuracy', { value: Math.round(stats.accuracyPotency * 100) }),
+                      t('home.party.help.accuracyDecay', { value: decayText }),
                     ],
                   });
                 }
@@ -7514,11 +7514,11 @@ function PartyTab({
                 if (hasCastableMagic) {
                   offenseLines.push({
                     key: 'magical-accuracy',
-                    text: `魔法命中率: 100% (減衰: ${decayText})`,
+                    text: t('home.party.magicalAccuracyWithDecay', { value: decayText }),
                     helpTitle: t('home.party.magicalAccuracy'),
                     helpLines: [
-                      '魔法命中率: 100% ※初回の命中率',
-                      `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
+                      t('home.party.help.magicalAccuracy'),
+                      t('home.party.help.accuracyDecay', { value: decayText }),
                     ],
                   });
                 }
@@ -7532,12 +7532,12 @@ function PartyTab({
                   });
                   offenseLines.push({
                     key: 'magic-spell',
-                    text: `詠唱魔法: ${magicProfile.spellName}`,
+                    text: t('home.party.castingSpellValue', { spell: magicProfile.spellName }),
                     helpTitle: t('home.party.castingSpell'),
                     helpLines: [
-                      `詠唱魔法: ${magicProfile.spellName}`,
-                      `スタイル: ${magicProfile.style}`,
-                      `効果: ${magicProfile.description}`,
+                      t('home.party.castingSpellValue', { spell: magicProfile.spellName }),
+                      t('home.party.magicStyleValue', { style: magicProfile.style }),
+                      t('home.party.magicEffectValue', { effect: magicProfile.description }),
                     ],
                   });
                 }
@@ -7587,8 +7587,8 @@ function PartyTab({
                     text: `${t('combat.physicalDefenseShort')}:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
                     helpTitle: t('combat.physicalDefense'),
                     helpLines: [
-                      `物理防御力: ${formatNumber(stats.physicalDefense)} ※敵の遠距離/近接攻撃力を超える物理防御力を持つとダメージをほぼ受けなくなります`,
-                      `物理耐性: ${formatNumber(Math.round(defenseAmpPhysical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
+                      t('home.party.help.physicalDefensePower', { value: formatNumber(stats.physicalDefense) }),
+                      t('home.party.help.physicalResistance', { value: formatNumber(Math.round(defenseAmpPhysical * 100)) }),
                     ],
                   },
                   {
@@ -7596,8 +7596,8 @@ function PartyTab({
                     text: `${t('combat.magicalDefenseShort')}:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
                     helpTitle: t('combat.magicalDefense'),
                     helpLines: [
-                      `魔法防御力: ${formatNumber(stats.magicalDefense)} ※敵の魔法攻撃力を超える魔法防御力を持つとダメージをほぼ受けなくなります`,
-                      `魔法耐性: ${formatNumber(Math.round(defenseAmpMagical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
+                      t('home.party.help.magicalDefensePower', { value: formatNumber(stats.magicalDefense) }),
+                      t('home.party.help.magicalResistance', { value: formatNumber(Math.round(defenseAmpMagical * 100)) }),
                     ],
                   },
                   {
@@ -7605,8 +7605,8 @@ function PartyTab({
                     text: `${t('combat.evasion')}:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
                     helpTitle: t('combat.evasion'),
                     helpLines: [
-                      `回避: ${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
-                      '※敵の命中減衰率を値分、減少させます(攻撃回数が多いほど回避しやすくなります)',
+                      t('home.party.evasionValue', { value: `${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}` }),
+                      t('home.party.help.evasion'),
                     ],
                   },
                 ];
@@ -8664,11 +8664,11 @@ function ExpeditionTab({
         const party = state.parties[partyIndex];
         if (!party) {
           const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = {
-            1: '(未開放)ヴァルンの海洋踏破で開放',
-            2: '(未開放)フェリディ砂漠踏破で開放',
-            3: '(未開放)ウルサンの炎嶺踏破で開放',
-            4: '(未開放)プロキオン巣穴踏破で開放',
-            5: '(未開放)レポリアンの月宮踏破で開放',
+            1: t('home.party.locked.clearVarunSea'),
+            2: t('home.party.locked.clearFelidyDesert'),
+            3: t('home.party.locked.clearUrsanBlaze'),
+            4: t('home.party.locked.clearProcyonNest'),
+            5: t('home.party.locked.clearLeporianMoon'),
           };
           const lockedPartyHintVisibleRequirementByIndex: Partial<Record<number, number>> = {
             1: 2,
@@ -8683,7 +8683,7 @@ function ExpeditionTab({
             ? state.parties.some((existingParty) => hasDefeatedDungeonBoss(existingParty, hintVisibleRequiredBossDungeonId))
             : false;
           if (!isHintVisible) return null;
-          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
+          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? t('home.party.locked.unreleased');
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
@@ -8696,7 +8696,7 @@ function ExpeditionTab({
           : 0;
         const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(selectedDifficultyOffset);
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
-        const getDifficultyOffsetBubbleText = (offset: number) => `敵レベル +${formatNumber(offset)}\nアイテム獲得チャンス +${formatNumber(getDifficultyOffsetItemChanceTickets(offset))}\n超レア獲得チャンス +${formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset))}`;
+        const getDifficultyOffsetBubbleText = (offset: number) => t('home.expedition.difficultyOffsetBubble', { enemyLevel: formatNumber(offset), itemChance: formatNumber(getDifficultyOffsetItemChanceTickets(offset)), superRareChance: formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset)) });
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
@@ -9180,7 +9180,7 @@ function ExpeditionTab({
 
                   {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
-                      <span className="text-gray-500">獲得アイテム: </span>
+                      <span className="text-gray-500">{t('home.battle.acquiredItemsLabel')} </span>
                       {currentLog.rewards.map((item, i) => {
                         const rarity = getItemRarityById(item.id);
                         const isSuperRare = item.superRare > 0;
@@ -9311,7 +9311,7 @@ function ExpeditionTab({
                             {!entry.gateInfo && (
                               <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
-                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                                  <div className="mb-0.5">{t('home.battle.partyHpLabel')} {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
@@ -9319,7 +9319,7 @@ function ExpeditionTab({
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                                  <div className="mb-0.5">{t('home.battle.enemyHpLabel')} {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                     <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                   </div>
@@ -9456,13 +9456,13 @@ function ExpeditionTab({
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>{t('home.battle.reflectedDamage', { damage: formatNumber(log.reflectedDamage || 0) })}</span>)
                                       </span>
                                     )
                                     : isAbsorbDamageLog
                                       ? (
                                         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
+                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>{t('home.battle.absorbedDamage', { damage: formatNumber(log.absorbedDamage || 0) })}</span>)
                                         </span>
                                       )
                                       : (
@@ -9564,11 +9564,11 @@ function BaseTab({
   debugSettings: DebugSettings;
 }) {
   const baseSubTabs = [
-    { id: 'shop' as const, label: 'お店', isAvailable: true },
-    { id: 'inventory' as const, label: '所持品', isAvailable: true },
-    { id: 'debugStore' as const, label: '灰路の蔵', isAvailable: debugSettings.jewelShopOpen },
-    { id: 'workshop' as const, label: '工房', isAvailable: false },
-    { id: 'altar' as const, label: '祭壇', isAvailable: false },
+    { id: 'shop' as const, label: t('home.base.tab.shop'), isAvailable: true },
+    { id: 'inventory' as const, label: t('home.base.tab.inventory'), isAvailable: true },
+    { id: 'debugStore' as const, label: t('home.base.tab.debugStore'), isAvailable: debugSettings.jewelShopOpen },
+    { id: 'workshop' as const, label: t('home.base.tab.workshop'), isAvailable: false },
+    { id: 'altar' as const, label: t('home.base.tab.altar'), isAvailable: false },
   ];
 
   return (
@@ -9656,8 +9656,8 @@ function ShopTab({
   const nextRefreshDate = getNextShopRefreshDate(now);
   const minutesToRefresh = Math.max(1, Math.ceil((nextRefreshDate.getTime() - now.getTime()) / 60000));
   const countdownText = minutesToRefresh >= 60
-    ? `後${Math.floor(minutesToRefresh / 60)}時間`
-    : `後${minutesToRefresh}分`;
+    ? t('home.shop.countdown.hours', { count: Math.floor(minutesToRefresh / 60) })
+    : t('home.shop.countdown.minutes', { count: minutesToRefresh });
   const hourKey = getShopHourKey(now);
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
   const refreshPrice = getShopRefreshPrice(refreshCount);
@@ -11100,7 +11100,7 @@ function DiaryTab({
 
                 {log.rewards.length > 0 && (
                   <div className="text-sm">
-                    <span className="text-gray-500">獲得アイテム: </span>
+                    <span className="text-gray-500">{t('home.battle.acquiredItemsLabel')} </span>
                     {log.rewards.map((item, i) => {
                       const rarity = getItemRarityById(item.id);
                       const isSuperRare = item.superRare > 0;
@@ -11224,7 +11224,7 @@ function DiaryTab({
                           {!entry.gateInfo && (
                             <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                               <div>
-                                <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                                <div className="mb-0.5">{t('home.battle.partyHpLabel')} {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                   <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                   <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
@@ -11232,7 +11232,7 @@ function DiaryTab({
                                 </div>
                               </div>
                               <div>
-                                <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                                <div className="mb-0.5">{t('home.battle.enemyHpLabel')} {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                   <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                 </div>
