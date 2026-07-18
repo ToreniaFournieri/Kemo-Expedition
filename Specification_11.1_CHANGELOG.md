@@ -10,6 +10,15 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 37 | 2026/07/18 | Refine Expedition 8 English enemy names with concise setting-conscious localized names for the Voidspawn, Ghost, Jinma, Cervin, elite, and boss roster. |
+| 0.8.2 | 36 | 2026/07/18 | Refine Expedition 6 English enemy names again with shorter, more setting-conscious Mech, Chiropteran, Chimera, Procyonian, elite, and boss display names. |
+| 0.8.2 | 35 | 2026/07/18 | Refine Expedition 7 English enemy names with concise setting-conscious localized names for the Pony, Leporian, Origami, Undead, elite, and boss roster. |
+| 0.8.2 | 34 | 2026/07/18 | Refine Expedition 6 English enemy names with concise setting-conscious localized names for the Mech, Chiropteran, Chimera, Procyonian, elite, and boss roster. |
+| 0.8.2 | 33 | 2026/07/18 | Refine Expedition 5 English enemy names with concise setting-conscious localized names for the Beast, Dragon, Ursan, elite, and boss roster. |
+| 0.8.2 | 32 | 2026/07/18 | Refine Expedition 4 English enemy names with concise setting-conscious localized names for the Shadowfang, Titan, Murid, Felidian, elite, and boss roster. |
+| 0.8.2 | 31 | 2026/07/18 | Refine Expedition 3 English enemy names with concise setting-conscious localized names for the beach, Fruit, Spirit, Orcinian, Slime Colony, Vulpinian, elite, and boss roster. |
+| 0.8.2 | 30 | 2026/07/18 | Refine Expedition 2 English enemy names with setting-conscious localized names for the frost, golem, fungal, Lupinian, elite, and boss roster. |
+| 0.8.2 | 29 | 2026/07/18 | Refine Expedition 1 English enemy names with setting-conscious localized names for the grassland, beast, aerial, insect, Caninian, elite, and boss roster. |
 | 0.8.2 | 28 | 2026/07/18 | Resolve generated enemy master names dynamically from their i18n keys so English mode updates the whole enemy roster instead of retaining Japanese module-load names. |
 | 0.8.2 | 27 | 2026/07/18 | Correct the English i18n entry for Enemy_ID 315 so Celestial Reaper displays from the localization dictionary without any non-i18n fallback. |
 | 0.8.2 | 26 | 2026/07/18 | Add Japanese i18n entries for expedition enemy display names and resolve enemy master names through the shared localization lookup for all languages. |
