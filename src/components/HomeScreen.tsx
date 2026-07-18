@@ -8,6 +8,7 @@ import {
   getEffectiveEnemyMultipliers,
   getEffectiveExpeditionTier,
   getExpeditionFloorConcept,
+  getLocalizedExpeditionFloorConcept,
 } from '../data/dungeons';
 import { RACES } from '../data/races';
 import { CLASSES, CLASS_SHORT_NAMES, getClassShortName } from '../data/classes';
@@ -9350,7 +9351,7 @@ function ExpeditionTab({
                                 </>
                               )}
                               <div className="relative z-10">
-                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} 戦闘ログ:`}</div>
+                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
@@ -9388,32 +9389,32 @@ function ExpeditionTab({
                                 const hits = log.hits ?? 0;
                                 const totalAttempts = log.totalAttempts ?? 0;
                                 const allMissed = totalAttempts > 0 && hits === 0 && !log.wasNegated;
-                                const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                                const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
                                 const trailingEffectMatch = /\(([^()]+)\)$/.exec(log.action);
                                 const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                   .split(',')
                                   .map(effect => effect.trim())
                                   .filter(effect => /^(共鳴\+\d+%|残響\+\d+%)$/.test(effect));
                                 const rageDisplay = log.rageBonusPercent && log.rageBonusPercent > 0
-                                  ? `闘志+${log.rageBonusPercent}%`
+                                  ? t('battleLog.extra.rage', { percent: log.rageBonusPercent })
                                   : '';
                                 const momentumDisplay = typeof log.momentumBonusPercent === 'number'
-                                  ? `気勢${log.momentumBonusPercent >= 0 ? '+' : ''}${log.momentumBonusPercent}%`
+                                  ? t('battleLog.extra.momentum', { sign: log.momentumBonusPercent >= 0 ? '+' : '', percent: log.momentumBonusPercent })
                                   : '';
                                 const ambushDisplay = typeof log.ambushMultiplier === 'number' && log.ambushMultiplier > 1
-                                  ? `待ち伏せ:x${log.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                  ? t('battleLog.extra.ambush', { multiplier: log.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                   : '';
                                 const overwatchDisplay = typeof log.overwatchMultiplier === 'number' && log.overwatchMultiplier > 1
-                                  ? `監視:x${log.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                  ? t('battleLog.extra.overwatch', { multiplier: log.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                   : '';
                                 const executionDisplay = typeof log.executionMultiplier === 'number' && log.executionMultiplier > 1
-                                  ? `エクセキューション:x${log.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                  ? t('battleLog.extra.execution', { multiplier: log.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                   : '';
                                 const swarmActorDisplay = typeof log.swarmActorPenaltyPercent === 'number' && log.swarmActorPenaltyPercent > 0
-                                  ? `威力-${log.swarmActorPenaltyPercent}%`
+                                  ? t('battleLog.extra.powerDown', { percent: log.swarmActorPenaltyPercent })
                                   : '';
                                 const swarmOpponentDisplay = typeof log.swarmOpponentBonusPercent === 'number' && log.swarmOpponentBonusPercent > 0
-                                  ? `相手被ダメ${log.swarmOpponentBonusPercent}%増`
+                                  ? t('battleLog.extra.opponentDamageUp', { percent: log.swarmOpponentBonusPercent })
                                   : '';
 
                                 let actionText: string;
@@ -9421,14 +9422,14 @@ function ExpeditionTab({
                                   actionText = log.action;
                                 } else if (isEnemy) {
                                   if (isResurrectLog) {
-                                    actionText = `敵${log.action}`;
+                                    actionText = t('battleLog.action.enemyResurrect', { action: log.action });
                                   } else if (log.isEnemyTargetHit) {
-                                    actionText = allMissed ? `${log.action.replace('命中！', 'への攻撃は外れた！')}` : log.action;
+                                    actionText = allMissed ? t('battleLog.action.targetHitMissed', { action: log.action.replace('命中！', '') }) : log.action;
                                   } else {
-                                    actionText = allMissed ? `敵が${log.action.replace('！', 'したが外れた！')}` : `敵が${log.action}`;
+                                    actionText = allMissed ? t('battleLog.action.enemyMissed', { action: log.action.replace('！', '') }) : t('battleLog.action.enemyActed', { action: log.action });
                                   }
                                 } else {
-                                  actionText = allMissed ? `${log.action.replace(/ の.*$/, '')} の攻撃は外れた！` : log.action;
+                                  actionText = allMissed ? t('battleLog.action.partyMissed', { actor: log.action.replace(/ の.*$/, '') }) : log.action;
                                 }
 
                                 const extraSegments = [
@@ -11263,7 +11264,7 @@ function DiaryTab({
                               </>
                             )}
                             <div className="relative z-10">
-                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} 戦闘ログ:`}</div>
+                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(log.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';
@@ -11299,32 +11300,32 @@ function DiaryTab({
                               const hits = battleLog.hits ?? 0;
                               const totalAttempts = battleLog.totalAttempts ?? 0;
                               const allMissed = totalAttempts > 0 && hits === 0 && !battleLog.wasNegated;
-                              const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                              const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
                               const trailingEffectMatch = /\(([^()]+)\)$/.exec(battleLog.action);
                               const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                 .split(',')
                                 .map(effect => effect.trim())
                                 .filter(effect => /^(共鳴\+\d+%|残響\+\d+%)$/.test(effect));
                               const rageDisplay = battleLog.rageBonusPercent && battleLog.rageBonusPercent > 0
-                                ? `闘志+${battleLog.rageBonusPercent}%`
+                                ? t('battleLog.extra.rage', { percent: battleLog.rageBonusPercent })
                                 : '';
                               const momentumDisplay = typeof battleLog.momentumBonusPercent === 'number'
-                                ? `気勢${battleLog.momentumBonusPercent >= 0 ? '+' : ''}${battleLog.momentumBonusPercent}%`
+                                ? t('battleLog.extra.momentum', { sign: battleLog.momentumBonusPercent >= 0 ? '+' : '', percent: battleLog.momentumBonusPercent })
                                 : '';
                               const ambushDisplay = typeof battleLog.ambushMultiplier === 'number' && battleLog.ambushMultiplier > 1
-                                ? `待ち伏せ:x${battleLog.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                ? t('battleLog.extra.ambush', { multiplier: battleLog.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                 : '';
                               const overwatchDisplay = typeof battleLog.overwatchMultiplier === 'number' && battleLog.overwatchMultiplier > 1
-                                ? `監視:x${battleLog.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                ? t('battleLog.extra.overwatch', { multiplier: battleLog.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                 : '';
                               const executionDisplay = typeof battleLog.executionMultiplier === 'number' && battleLog.executionMultiplier > 1
-                                ? `エクセキューション:x${battleLog.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                ? t('battleLog.extra.execution', { multiplier: battleLog.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                 : '';
                               const swarmActorDisplay = typeof battleLog.swarmActorPenaltyPercent === 'number' && battleLog.swarmActorPenaltyPercent > 0
-                                ? `威力-${battleLog.swarmActorPenaltyPercent}%`
+                                ? t('battleLog.extra.powerDown', { percent: battleLog.swarmActorPenaltyPercent })
                                 : '';
                               const swarmOpponentDisplay = typeof battleLog.swarmOpponentBonusPercent === 'number' && battleLog.swarmOpponentBonusPercent > 0
-                                ? `相手被ダメ${battleLog.swarmOpponentBonusPercent}%増`
+                                ? t('battleLog.extra.opponentDamageUp', { percent: battleLog.swarmOpponentBonusPercent })
                                 : '';
 
                               let actionText: string;
@@ -11332,20 +11333,20 @@ function DiaryTab({
                                 actionText = battleLog.action;
                               } else if (isEnemy) {
                                 if (isResurrectLog) {
-                                  actionText = `敵${battleLog.action}`;
+                                  actionText = t('battleLog.action.enemyResurrect', { action: battleLog.action });
                                 } else if (battleLog.isEnemyTargetHit) {
                                   actionText = allMissed
-                                    ? `${battleLog.action.replace('命中！', 'への攻撃は外れた！')}`
+                                    ? t('battleLog.action.targetHitMissed', { action: battleLog.action.replace('命中！', '') })
                                     : battleLog.action;
                                 } else if (allMissed) {
-                                  actionText = `敵が${battleLog.action.replace('！', 'したが外れた！')}`;
+                                  actionText = t('battleLog.action.enemyMissed', { action: battleLog.action.replace('！', '') });
                                 } else {
-                                  actionText = `敵が${battleLog.action}`;
+                                  actionText = t('battleLog.action.enemyActed', { action: battleLog.action });
                                 }
                               } else {
                                 if (allMissed) {
                                   const charName = battleLog.action.replace(/ の.*$/, '');
-                                  actionText = `${charName} の攻撃は外れた！`;
+                                  actionText = t('battleLog.action.partyMissed', { actor: charName });
                                 } else {
                                   actionText = battleLog.action;
                                 }
