@@ -1,10 +1,11 @@
+import { t } from '../i18n';
 import { BonusType, Character, ItemCategory, JewelAttachment, JewelInventory, JewelKey } from '../types';
 
 interface JewelDef {
   key: JewelKey;
-  name: string;
-  displayName: string;
-  short: string;
+  nameKey: string;
+  displayNameKey: string;
+  shortKey: string;
   cBonusType: BonusType;
   dBaseBonuses: Array<{ stat: JewelDStat; base: number }>;
 }
@@ -13,27 +14,27 @@ type JewelDStat = 'meleeAttack' | 'rangedAttack' | 'magicalAttack' | 'physicalDe
 
 export const JEWEL_DEFS: Record<JewelKey, JewelDef> = {
   might: {
-    key: 'might', name: '剛力の結晶', displayName: '剛力', short: '剛', cBonusType: 'physical_attack',
+    key: 'might', nameKey: 'jewel.might.name', displayNameKey: 'jewel.might.displayName', shortKey: 'jewel.might.short', cBonusType: 'physical_attack',
     dBaseBonuses: [{ stat: 'meleeAttack', base: 12 }, { stat: 'rangedAttack', base: 9 }],
   },
   arcana: {
-    key: 'arcana', name: '魔導の結晶', displayName: '魔導', short: '魔', cBonusType: 'magical_attack',
+    key: 'arcana', nameKey: 'jewel.arcana.name', displayNameKey: 'jewel.arcana.displayName', shortKey: 'jewel.arcana.short', cBonusType: 'magical_attack',
     dBaseBonuses: [{ stat: 'magicalAttack', base: 6 }, { stat: 'partyHP', base: 3 }],
   },
   fort: {
-    key: 'fort', name: '堅牢の結晶', displayName: '堅牢', short: '堅', cBonusType: 'physical_defense',
+    key: 'fort', nameKey: 'jewel.fort.name', displayNameKey: 'jewel.fort.displayName', shortKey: 'jewel.fort.short', cBonusType: 'physical_defense',
     dBaseBonuses: [{ stat: 'physicalDefense', base: 6 }, { stat: 'partyHP', base: 6 }],
   },
   ward: {
-    key: 'ward', name: '障壁の結晶', displayName: '障壁', short: '障', cBonusType: 'magical_defense',
+    key: 'ward', nameKey: 'jewel.ward.name', displayNameKey: 'jewel.ward.displayName', shortKey: 'jewel.ward.short', cBonusType: 'magical_defense',
     dBaseBonuses: [{ stat: 'magicalDefense', base: 6 }, { stat: 'partyHP', base: 6 }],
   },
   shade: {
-    key: 'shade', name: '影走の結晶', displayName: '影走', short: '影', cBonusType: 'evasion',
+    key: 'shade', nameKey: 'jewel.shade.name', displayNameKey: 'jewel.shade.displayName', shortKey: 'jewel.shade.short', cBonusType: 'evasion',
     dBaseBonuses: [{ stat: 'magicalDefense', base: 4 }, { stat: 'partyHP', base: 4 }],
   },
   focus: {
-    key: 'focus', name: '精密の結晶', displayName: '精密', short: '精', cBonusType: 'accuracy',
+    key: 'focus', nameKey: 'jewel.focus.name', displayNameKey: 'jewel.focus.displayName', shortKey: 'jewel.focus.short', cBonusType: 'accuracy',
     dBaseBonuses: [{ stat: 'physicalDefense', base: 4 }, { stat: 'partyHP', base: 3 }],
   },
 };
@@ -41,7 +42,16 @@ export const JEWEL_DEFS: Record<JewelKey, JewelDef> = {
 const C_ATTACK_BY_RANK = [22, 21, 19, 18, 17, 16, 15, 14] as const;
 const C_DEFENSE_BY_RANK = [13, 12, 11, 9, 8, 7, 6, 5] as const;
 const C_SUBTLE_BY_RANK = [8, 7, 6, 5, 4, 3, 2, 1] as const;
-const JEWEL_TIER_NAME_BY_RANK = ['素晶', '良晶', '雅晶', '煌晶', '碧晶', '紫晶', '金晶', '王晶'] as const;
+const JEWEL_TIER_KEY_BY_RANK = [
+  'jewel.tier.1',
+  'jewel.tier.2',
+  'jewel.tier.3',
+  'jewel.tier.4',
+  'jewel.tier.5',
+  'jewel.tier.6',
+  'jewel.tier.7',
+  'jewel.tier.8',
+] as const;
 
 export const JEWELS_BY_ITEM_CATEGORY: Record<ItemCategory, JewelKey[]> = {
   armor: ['fort', 'ward', 'shade'],
@@ -115,9 +125,17 @@ function getJewelInventoryKey(key: JewelKey, rank: number): string {
 }
 
 // SpecRef: 3.1.7 | Jewel (結晶) | Tier Name
+export function getJewelDisplayName(key: JewelKey): string {
+  return t(JEWEL_DEFS[key].displayNameKey);
+}
+
+export function getJewelShortLabel(key: JewelKey): string {
+  return t(JEWEL_DEFS[key].shortKey);
+}
+
 export function getJewelNameByRank(key: JewelKey, rank: number): string {
   const idx = Math.max(0, Math.min(7, rank - 1));
-  return `${JEWEL_DEFS[key].displayName}の${JEWEL_TIER_NAME_BY_RANK[idx]}`;
+  return t('jewel.nameByRank', { jewel: getJewelDisplayName(key), tier: t(JEWEL_TIER_KEY_BY_RANK[idx]) });
 }
 
 export function getJewelOwnedCount(inv: JewelInventory, key: JewelKey, rank: number): number {
@@ -211,5 +229,5 @@ export function planAutoJewelAssignmentsForCharacter(
 // SpecRef: 3.1.7 | Jewel (結晶) | Display
 export function jewelLabel(attachment: JewelAttachment | null | undefined): string {
   if (!attachment) return '';
-  return `[${JEWEL_DEFS[attachment.key].short}${attachment.rank}]`;
+  return `[${getJewelShortLabel(attachment.key)}${attachment.rank}]`;
 }

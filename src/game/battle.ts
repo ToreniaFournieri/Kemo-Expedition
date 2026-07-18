@@ -60,7 +60,7 @@ import {
   formatRegenerationNote,
   getConfusionNoTargetLog,
 } from './battleNarration';
-import { getRandomTranslation } from '../i18n';
+import { getRandomTranslation, t } from '../i18n';
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -978,8 +978,8 @@ interface CharacterAttackResult {
 
 type ReflectDescriptor = {
   abilityId: AbilityId;
-  name: '氷結反射' | '火炎反射' | '雷撃反射' | '魔法反射' | '矢返し' | '打ち返し';
-  summary: '氷属性' | '火属性' | '雷属性' | '魔法' | '遠距離' | '近接';
+  name: string;
+  summary: string;
   amplifier: number;
   reflectedPortionText: string;
   receivedPortionText: string;
@@ -987,14 +987,14 @@ type ReflectDescriptor = {
 
 type NullDescriptor = {
   abilityId: AbilityId;
-  name: '氷結無効' | '火炎無効' | '雷撃無効' | '魔法無効' | '遠距離無効' | '近接無効';
-  summary: '氷属性' | '火属性' | '雷属性' | '魔法' | '遠距離' | '近接';
+  name: string;
+  summary: string;
 };
 
 type AbsorbDescriptor = {
   abilityId: AbilityId;
-  name: '氷結吸収' | '火炎吸収' | '雷撃吸収' | '魔法吸収';
-  summary: '氷属性' | '火属性' | '雷属性' | '魔法';
+  name: string;
+  summary: string;
   amplifier: number;
   absorbedPortionText: string;
 };
@@ -1013,7 +1013,7 @@ function getElementalReflectAmplifier(level: number): number {
 }
 
 function getReflectPortionText(amplifier: number): string {
-  if (amplifier >= 1.0) return '全';
+  if (amplifier >= 1.0) return t('battle.portion.all');
   return `${Math.round(amplifier * 10)}/10`;
 }
 
@@ -1040,8 +1040,8 @@ function getReflectDescriptor(
     const amplifier = getElementalReflectAmplifier(iceLevel);
     return {
       abilityId: 'ice_reflect',
-      name: '氷結反射',
-      summary: '氷属性',
+      name: t('battle.reaction.iceReflect.name'),
+      summary: t('battle.reaction.summary.ice'),
       amplifier,
       reflectedPortionText: getPercentPortionText(amplifier),
       receivedPortionText: getPercentPortionText(1 - amplifier),
@@ -1053,8 +1053,8 @@ function getReflectDescriptor(
     const amplifier = getElementalReflectAmplifier(fireLevel);
     return {
       abilityId: 'fire_reflect',
-      name: '火炎反射',
-      summary: '火属性',
+      name: t('battle.reaction.fireReflect.name'),
+      summary: t('battle.reaction.summary.fire'),
       amplifier,
       reflectedPortionText: getPercentPortionText(amplifier),
       receivedPortionText: getPercentPortionText(1 - amplifier),
@@ -1066,8 +1066,8 @@ function getReflectDescriptor(
     const amplifier = getElementalReflectAmplifier(thunderLevel);
     return {
       abilityId: 'thunder_reflect',
-      name: '雷撃反射',
-      summary: '雷属性',
+      name: t('battle.reaction.thunderReflect.name'),
+      summary: t('battle.reaction.summary.thunder'),
       amplifier,
       reflectedPortionText: getPercentPortionText(amplifier),
       receivedPortionText: getPercentPortionText(1 - amplifier),
@@ -1079,8 +1079,8 @@ function getReflectDescriptor(
     const amplifier = getElementalReflectAmplifier(rangedLevel);
     return {
       abilityId: 'ranged_reflect',
-      name: '矢返し',
-      summary: '遠距離',
+      name: t('battle.reaction.rangedReflect.name'),
+      summary: t('battle.reaction.summary.ranged'),
       amplifier,
       reflectedPortionText: getPercentPortionText(amplifier),
       receivedPortionText: getPercentPortionText(1 - amplifier),
@@ -1092,8 +1092,8 @@ function getReflectDescriptor(
     const amplifier = getElementalReflectAmplifier(magicalLevel);
     return {
       abilityId: 'magical_reflect',
-      name: '魔法反射',
-      summary: '魔法',
+      name: t('battle.reaction.magicalReflect.name'),
+      summary: t('battle.reaction.summary.magic'),
       amplifier,
       reflectedPortionText: getPercentPortionText(amplifier),
       receivedPortionText: getPercentPortionText(1 - amplifier),
@@ -1105,8 +1105,8 @@ function getReflectDescriptor(
     const amplifier = getElementalReflectAmplifier(meleeLevel);
     return {
       abilityId: 'melee_reflect',
-      name: '打ち返し',
-      summary: '近接',
+      name: t('battle.reaction.meleeReflect.name'),
+      summary: t('battle.reaction.summary.melee'),
       amplifier,
       reflectedPortionText: getPercentPortionText(amplifier),
       receivedPortionText: getPercentPortionText(1 - amplifier),
@@ -1127,8 +1127,8 @@ function getAbsorbDescriptor(
     const amplifier = getAbsorbAmplifier(iceLevel);
     return {
       abilityId: 'ice_absorb',
-      name: '氷結吸収',
-      summary: '氷属性',
+      name: t('battle.reaction.iceAbsorb.name'),
+      summary: t('battle.reaction.summary.ice'),
       amplifier,
       absorbedPortionText: getReflectPortionText(amplifier),
     };
@@ -1139,8 +1139,8 @@ function getAbsorbDescriptor(
     const amplifier = getAbsorbAmplifier(fireLevel);
     return {
       abilityId: 'fire_absorb',
-      name: '火炎吸収',
-      summary: '火属性',
+      name: t('battle.reaction.fireAbsorb.name'),
+      summary: t('battle.reaction.summary.fire'),
       amplifier,
       absorbedPortionText: getReflectPortionText(amplifier),
     };
@@ -1151,8 +1151,8 @@ function getAbsorbDescriptor(
     const amplifier = getAbsorbAmplifier(thunderLevel);
     return {
       abilityId: 'thunder_absorb',
-      name: '雷撃吸収',
-      summary: '雷属性',
+      name: t('battle.reaction.thunderAbsorb.name'),
+      summary: t('battle.reaction.summary.thunder'),
       amplifier,
       absorbedPortionText: getReflectPortionText(amplifier),
     };
@@ -1163,8 +1163,8 @@ function getAbsorbDescriptor(
     const amplifier = getAbsorbAmplifier(magicalLevel);
     return {
       abilityId: 'magical_absorb',
-      name: '魔法吸収',
-      summary: '魔法',
+      name: t('battle.reaction.magicalAbsorb.name'),
+      summary: t('battle.reaction.summary.magic'),
       amplifier,
       absorbedPortionText: getReflectPortionText(amplifier),
     };
@@ -1182,8 +1182,8 @@ function getNullDescriptor(
   if (elementalOffense === 'ice' && iceLevel > 0) {
     return {
       abilityId: 'ice_null',
-      name: '氷結無効',
-      summary: '氷属性',
+      name: t('battle.reaction.iceNull.name'),
+      summary: t('battle.reaction.summary.ice'),
     };
   }
 
@@ -1191,8 +1191,8 @@ function getNullDescriptor(
   if (elementalOffense === 'fire' && fireLevel > 0) {
     return {
       abilityId: 'fire_null',
-      name: '火炎無効',
-      summary: '火属性',
+      name: t('battle.reaction.fireNull.name'),
+      summary: t('battle.reaction.summary.fire'),
     };
   }
 
@@ -1200,8 +1200,8 @@ function getNullDescriptor(
   if (elementalOffense === 'thunder' && thunderLevel > 0) {
     return {
       abilityId: 'thunder_null',
-      name: '雷撃無効',
-      summary: '雷属性',
+      name: t('battle.reaction.thunderNull.name'),
+      summary: t('battle.reaction.summary.thunder'),
     };
   }
 
@@ -1209,8 +1209,8 @@ function getNullDescriptor(
   if (phase === 'long' && rangedLevel > 0) {
     return {
       abilityId: 'ranged_null',
-      name: '遠距離無効',
-      summary: '遠距離',
+      name: t('battle.reaction.rangedNull.name'),
+      summary: t('battle.reaction.summary.ranged'),
     };
   }
 
@@ -1218,8 +1218,8 @@ function getNullDescriptor(
   if (phase === 'mid' && magicalLevel > 0) {
     return {
       abilityId: 'magical_null',
-      name: '魔法無効',
-      summary: '魔法',
+      name: t('battle.reaction.magicalNull.name'),
+      summary: t('battle.reaction.summary.magic'),
     };
   }
 
@@ -1227,8 +1227,8 @@ function getNullDescriptor(
   if (phase === 'close' && meleeLevel > 0) {
     return {
       abilityId: 'melee_null',
-      name: '近接無効',
-      summary: '近接',
+      name: t('battle.reaction.meleeNull.name'),
+      summary: t('battle.reaction.summary.melee'),
     };
   }
 
@@ -1788,7 +1788,7 @@ type AbilityLike = { id: AbilityId; level: number };
 const TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS = new Set<AbilityId>(TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS);
 
 function formatAbilityLabel(ability: AbilityLike): string {
-  return `${getAbilityName(ability.id, ability.level)}アビリティ`;
+  return t('battle.abilityLabel', { name: getAbilityName(ability.id, ability.level) });
 }
 
 function grantCharacterAbility(charStats: ComputedCharacterStats, ability: AbilityLike): void {
@@ -1860,7 +1860,7 @@ function createMagicSealQueue(
   for (const stats of characterStats) {
     if (isActorAbilitySuppressedBySilenceField(terrainEffect, stats.abilities)) continue;
     if (getAbilityLevel(stats, 'magic_seal') <= 0) continue;
-    const ownerName = party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方';
+    const ownerName = party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally');
     queue.push(ownerName);
   }
 
@@ -1879,8 +1879,8 @@ function getMagicSealStartLog(ownerName: string): BattleLogEntry {
   return {
     phase: 'start',
     actor: 'effect',
-    action: `${ownerName} の魔封！`,
-    note: '(この場で最初に唱える魔法は無効化される)',
+    action: t('battle.magicSeal.startAction', { ownerName }),
+    note: t('battle.magicSeal.startNote'),
   };
 }
 
@@ -2362,7 +2362,7 @@ export function executeBattle(
       ...characterStats
         .filter((stats) => hasAbility(stats.abilities, 'domain_breaker'))
         .map((stats) => ({
-          name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          name: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
           characterId: stats.characterId,
         })),
       ...(hasAbility(enemy.abilities, 'domain_breaker')
@@ -2388,7 +2388,7 @@ export function executeBattle(
       { kind: 'enemy', name: enemy.name, abilities: enemy.abilities },
       ...characterStats.map((stats) => ({
         kind: 'character' as const,
-        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         stats,
         abilities: stats.abilities,
       })),
@@ -2444,7 +2444,7 @@ export function executeBattle(
       ...characterStats
         .filter((stats) => hasAbility(stats.abilities, 'equation_breaker'))
         .map((stats) => ({
-          name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          name: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
           characterId: stats.characterId,
         })),
       ...(hasAbility(enemy.abilities, 'equation_breaker')
@@ -2521,7 +2521,7 @@ export function executeBattle(
       .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
       .filter((stats) => getAbilityLevel(stats, 'oblivion') >= 1)
       .map((stats) => ({
-        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         stats,
       }))
   );
@@ -2531,7 +2531,7 @@ export function executeBattle(
       .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
       .filter((stats) => getAbilityLevel(stats, 'mimic') >= 1)
       .map((stats) => ({
-        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         stats,
       }))
   );
@@ -2541,7 +2541,7 @@ export function executeBattle(
       .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
       .filter((stats) => getAbilityLevel(stats, 'fading_memory') >= 1)
       .map((stats) => ({
-        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         stats,
       }))
   );
@@ -2884,7 +2884,7 @@ export function executeBattle(
     const chainTargetCandidates = characterStats.filter(stats => stats.characterId !== excludedPartyMemberId);
     const chainTarget = chainTargetCandidates[Math.floor(Math.random() * chainTargetCandidates.length)] ?? characterStats[0];
     if (!chainTarget) return;
-    const chainTargetName = party.characters.find((c) => c.id === chainTarget.characterId)?.name ?? '味方';
+    const chainTargetName = party.characters.find((c) => c.id === chainTarget.characterId)?.name ?? t('battle.actor.ally');
 
     const appliedDamage = applyPartyDamage(chainDamage);
     if (appliedDamage <= 0) return;
@@ -3226,7 +3226,7 @@ export function executeBattle(
       .map((stats) => ({
         stats,
         level: getAbilityLevel(stats, 'pursuit'),
-        ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
       }))
       .filter((entry) => entry.level > 0)
       .sort((a, b) => a.stats.row - b.stats.row)[0];
@@ -3256,7 +3256,7 @@ export function executeBattle(
       .map((stats) => ({
         stats,
         level: getAbilityLevel(stats, 'free'),
-        ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
       }))
       .filter((entry) => getFreeTimingForPhase(phase, entry.level) === timing)
       .sort((a, b) => a.stats.row - b.stats.row);
@@ -3386,7 +3386,7 @@ export function executeBattle(
       log.push({
         phase,
         actor: 'effect',
-        action: `${nullifier?.name ?? '味方'}の反撃無効化により、${enemy.name}の反撃は防がれた！`,
+        action: `${nullifier?.name ?? t('battle.actor.ally')}の反撃無効化により、${enemy.name}の反撃は防がれた！`,
       });
       return;
     }
@@ -3656,7 +3656,7 @@ export function executeBattle(
       { kind: 'enemy', name: enemy.name, abilities: enemy.abilities },
       ...characterStats.map((stats) => ({
         kind: 'character' as const,
-        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         stats,
         abilities: stats.abilities,
       })),
@@ -3705,7 +3705,7 @@ export function executeBattle(
       if (enemyHasOblivion() && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
-        const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+        const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally');
         const targetHasUnforgettable = getAbilityLevel(target, 'unforgettable') >= 1;
         if (targetHasUnforgettable) {
           log.push({
@@ -3782,7 +3782,7 @@ export function executeBattle(
       if (enemyHasMimic() && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
-        const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+        const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally');
         const targetValidAbilities = target.abilities.filter(
           (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion' && ability.id !== 'fading_memory',
         );
@@ -3836,7 +3836,7 @@ export function executeBattle(
           const stats = characterStats.find(candidate => candidate.characterId === c.id);
           return stats ? hasAbility(stats.abilities, 'frostbite') : false;
         });
-        pushFrostbiteLog(frostbiteOwner?.name ?? '味方');
+        pushFrostbiteLog(frostbiteOwner?.name ?? t('battle.actor.ally'));
       }
 
       if (enemyHasFrostbite()) {
@@ -3932,7 +3932,7 @@ export function executeBattle(
       const partyHowlEntries = characterStats
         .map((stats) => ({
           level: getAbilityLevel(stats, 'howl'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
           stats,
         }))
         .filter((entry) => entry.level > 0 && canPartyTriggerHowl)
@@ -3987,7 +3987,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, 'predator_sense'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => {
           const threshold = getPredatorSenseThresholdPercent(entry.level);
@@ -4038,7 +4038,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, 'regeneration'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => getRegenerationPercent(entry.level) > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
@@ -4091,7 +4091,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, 'flying'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => entry.level > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
@@ -4126,7 +4126,7 @@ export function executeBattle(
           const multiplier = getDecomposeDefenseMultiplier(enemyDecomposeLevel);
           const previousDefense = target.physicalDefense;
           const nextDefense = roundDecomposeDefenseValue(previousDefense * multiplier);
-          const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+          const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally');
           characterStats = characterStats.map((stats) => (
             stats.characterId === target.characterId
               ? { ...stats, physicalDefense: nextDefense }
@@ -4151,7 +4151,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, 'decompose'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => entry.level > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
@@ -4219,7 +4219,7 @@ export function executeBattle(
             }
           }
 
-          const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+          const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally');
           log.push({
             phase,
             initiativeRoll: timing,
@@ -4238,7 +4238,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, confusionAbilityId),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => getConfusionTiming(entry.level) === timing)
         .sort((a, b) => a.stats.row - b.stats.row);
@@ -4296,7 +4296,7 @@ export function executeBattle(
           ?? null;
 
         const targetName = target
-          ? party.characters.find((char) => char.id === target.characterId)?.name ?? '味方'
+          ? party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally')
           : '味方';
         const targetDefenseAmplifier = target
           ? Math.max(0.01, target.physicalDefenseAmplifier * target.deityDefenseAmplifierBonus.physical)
@@ -4334,7 +4334,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, 'self_destruct'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => entry.level > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
@@ -4398,7 +4398,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, 'unstable_core'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => entry.level > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
@@ -4447,7 +4447,7 @@ export function executeBattle(
         .map((stats) => ({
           stats,
           level: getAbilityLevel(stats, 'soul_reap'),
-          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
         .filter((entry) => entry.level > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
@@ -5078,7 +5078,7 @@ export function executeBattle(
                 log.push({
                   phase,
                   actor: 'effect',
-                  action: `${nullifier?.name ?? '味方'}の反撃無効化により、${enemy.name}の再反撃は防がれた！`,
+                  action: `${nullifier?.name ?? t('battle.actor.ally')}の反撃無効化により、${enemy.name}の再反撃は防がれた！`,
                 });
               }
               continue;
