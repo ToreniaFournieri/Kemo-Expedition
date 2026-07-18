@@ -251,16 +251,16 @@ const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, strin
 }, {});
 
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
-  rest: '休息中',
-  sell: '売却中',
-  free_action: '自由行動中',
-  sound_sleep: '熟睡中',
-  pray: '祈り中',
-  idle: '待機中',
-  move: '移動中',
-  explore: '探索中',
-  return: '帰還中',
-  reactivate: '復帰中',
+  rest: 'expedition.cycle.rest',
+  sell: 'expedition.cycle.sell',
+  free_action: 'expedition.cycle.freeAction',
+  sound_sleep: 'expedition.cycle.soundSleep',
+  pray: 'expedition.cycle.pray',
+  idle: 'expedition.cycle.idle',
+  move: 'expedition.cycle.move',
+  explore: 'expedition.cycle.explore',
+  return: 'expedition.cycle.return',
+  reactivate: 'expedition.cycle.reactivate',
 };
 
 const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
@@ -419,7 +419,7 @@ function toPartyCycleState(value: unknown): PartyCycleState {
 }
 
 function getPartyCycleStateLabel(state: PartyCycleState): string {
-  return PARTY_CYCLE_STATE_LABELS[state];
+  return t(PARTY_CYCLE_STATE_LABELS[state]);
 }
 
 interface PartyCycleRuntime {
@@ -505,9 +505,9 @@ function normalizeBattleLogNote(note?: string): string | undefined {
 // SpecRef: 6.1.1.1 | START phase | floor.terrain.*
 function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isTriggeredLog: boolean, isResurrectLog: boolean, isStealthEffectLog: boolean, isCounterNegationEffectLog: boolean): string {
   const isTerrainStartLog = log.phase === 'start' && log.effectKind === 'terrain';
-  if (isTerrainStartLog) return '地形';
-  if (log.phase === 'start') return '効';
-  if (log.phase === 'end') return '末';
+  if (isTerrainStartLog) return t('battleLog.phase.terrainShort');
+  if (log.phase === 'start') return t('battleLog.phase.effectShort');
+  if (log.phase === 'end') return t('battleLog.phase.endShort');
   if (log.effectKind === 'terrain') return '-';
   if (isPhaseAction) {
     if (log.isAggregated) return '-';
@@ -517,7 +517,7 @@ function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isT
     return `${log.initiativeRoll ?? '?'}`;
   }
   if (isStealthEffectLog || isCounterNegationEffectLog) return '-';
-  return log.actor === 'deity' ? '末' : '-';
+  return log.actor === 'deity' ? t('battleLog.phase.endShort') : '-';
 }
 
 function getBattleLogNoteClass(noteTone?: 'default' | 'sub' | 'muted'): string {
@@ -573,10 +573,10 @@ function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, t
 }
 
 function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' | string): string {
-  if (outcome === 'Clear' || outcome === 'victory') return '踏破';
-  if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return '帰還';
-  if (outcome === 'Defeat' || outcome === 'defeat') return '敗北';
-  return '撤退';
+  if (outcome === 'Clear' || outcome === 'victory') return t('expedition.outcome.clear');
+  if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return t('expedition.outcome.return');
+  if (outcome === 'Defeat' || outcome === 'defeat') return t('expedition.outcome.defeat');
+  return t('expedition.outcome.retreat');
 }
 
 function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
@@ -8701,7 +8701,7 @@ function ExpeditionTab({
           const latestEntry = disclosedLog.entries[disclosedLog.entries.length - 1];
           if (!latestEntry?.floor) return disclosedLog.dungeonName;
           return getExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
-            ?? `${formatNumber(latestEntry.floor)}階層`;
+            ?? t('expedition.floor', { floor: formatNumber(latestEntry.floor) });
         })();
         const headlineState = disclosedLog
           ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
@@ -9285,7 +9285,7 @@ function ExpeditionTab({
                               </span>
                               <span className="flex items-center gap-2">
                                 <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'}>
-                                  {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
+                                  {entry.gateInfo ? t('expedition.outcome.unreached') : entry.outcome === 'victory' ? t('expedition.outcome.victory') : entry.outcome === 'defeat' ? t('expedition.outcome.defeat') : t('expedition.outcome.draw')}
                                 </span>
                                 {canExpandRoom && <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>}
                               </span>
@@ -9334,7 +9334,7 @@ function ExpeditionTab({
                                 </>
                               )}
                               <div className="relative z-10">
-                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
+                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} 戦闘ログ:`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
@@ -9351,11 +9351,11 @@ function ExpeditionTab({
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = getBattleLogPhaseLabel(log, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
                                 const phaseHeader = log.phase === 'long'
-                                  ? '遠距離攻撃フェーズ'
+                                  ? t('battleLog.phase.long')
                                   : log.phase === 'mid'
-                                    ? '魔法攻撃フェーズ'
+                                    ? t('battleLog.phase.mid')
                                     : log.phase === 'close'
-                                      ? '近接攻撃フェーズ'
+                                      ? t('battleLog.phase.close')
                                       : '';
                                 const iconKey: UiIconKey = log.elementalOffense === 'fire'
                                   ? 'fire'
@@ -9495,7 +9495,7 @@ function ExpeditionTab({
                       );
                     })}
                     {cycle.state === 'explore' && displayedEntries.length === 0 && (
-                      <div className="text-xs text-gray-500">探索進行中... 1部屋ずつログを更新中</div>
+                      <div className="text-xs text-gray-500">{t('expedition.exploringLogUpdate')}</div>
                     )}
                   </div>
                 </div>
@@ -11247,7 +11247,7 @@ function DiaryTab({
                               </>
                             )}
                             <div className="relative z-10">
-                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
+                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} 戦闘ログ:`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';
@@ -11264,11 +11264,11 @@ function DiaryTab({
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = getBattleLogPhaseLabel(battleLog, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
                               const phaseHeader = battleLog.phase === 'long'
-                                ? '遠距離攻撃フェーズ'
+                                ? t('battleLog.phase.long')
                                 : battleLog.phase === 'mid'
-                                  ? '魔法攻撃フェーズ'
+                                  ? t('battleLog.phase.mid')
                                   : battleLog.phase === 'close'
-                                    ? '近接攻撃フェーズ'
+                                    ? t('battleLog.phase.close')
                                     : '';
                               const getPhaseIcon = (): UiIconKey => {
                                 if (battleLog.elementalOffense === 'fire') return 'fire';

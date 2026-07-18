@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 7 | 2026/07/18 | Translate English battle flavor i18n entries from Japanese into English while preserving placeholders and runtime battle narration keys. |
+| 0.8.2 | 6 | 2026/07/18 | Route Expedition tab cycle/outcome/battle-log chrome and Specification 6.2 battle flavor text pools through runtime Japanese/English i18n keys. |
 | 0.8.2 | 5 | 2026/07/18 | Route Party overview and selected member status labels through Japanese/English i18n keys, including deity rank/effect, edit controls, base stats, combat labels, defenses, bonuses, and abilities. |
 | 0.8.2 | 4 | 2026/07/18 | Expand runtime Party tab localization: route equipment slot prompts, rarity/category tabs, super-rare labels, sortie controls, difficulty label, and expedition stats controls through Japanese/English translation keys. |
 | 0.8.2 | 3 | 2026/07/18 | Implement runtime language mode selection: resolve Japanese/English from the `lang` URL parameter with Japanese default, persist the selected language in local storage, and apply that runtime preference over saved game data on startup. |
