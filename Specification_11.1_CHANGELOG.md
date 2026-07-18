@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 24 | 2026/07/18 | Route expedition enemy display names through English i18n translations while preserving Japanese master names as the default. |
 | 0.8.2 | 23 | 2026/07/18 | Route Expedition floor concepts and remaining battle-log display wrappers/extras through Japanese/English i18n keys. |
 | 0.8.2 | 22 | 2026/07/18 | Fix HomeScreen jewel status formatter scope so slot and inventory jewel helpers are top-level functions and TypeScript builds successfully. |
 | 0.8.2 | 21 | 2026/07/18 | Route jewel status bonus labels through i18n keys and reuse one formatter for equipped and inventory jewel descriptions. |
