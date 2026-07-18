@@ -1730,7 +1730,7 @@ function getPredatorSenseThresholdPercent(level: number): number {
 
 function getPredatorSenseNote(level: number): string {
   const threshold = getPredatorSenseThresholdPercent(level);
-  return `(HP ${threshold}%未満で命中+40)`;
+  return t('battle.note.predatorSense', { threshold });
 }
 
 function getRegenerationPercent(level: number): number {
@@ -1750,10 +1750,7 @@ function getFlyingEvasionBonus(level: number): number {
 }
 
 function getFlyingNote(level: number): string {
-  if (level >= 3) return '(飛行:回避+50)';
-  if (level === 2) return '(飛行:回避+45)';
-  if (level === 1) return '(飛行:回避+40)';
-  return '(飛行:回避+0)';
+  return t('battle.note.flying', { evasion: Math.round(getFlyingEvasionBonus(level) * 100) });
 }
 
 function getFreeTimingForPhase(
@@ -1818,7 +1815,7 @@ function formatDeathTouchProbabilityNote(level: number, hits: number): string {
   const numerator = DEATH_TOUCH_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
   const successfulHits = Math.max(0, hits);
   const probabilityNumerator = Math.min(256, successfulHits * numerator);
-  return `(接死:有効 ${probabilityNumerator}/256 の確率で即死)`;
+  return t('battle.note.deathTouch', { probabilityNumerator });
 }
 
 function getBindChance(level: number, hits: number): number {
@@ -2171,11 +2168,8 @@ function getHowlNoAMultiplier(level: number): number {
 }
 
 function getHowlNote(level: number): string {
-  if (level >= 5) return '(相手の次の攻撃回数1/7)';
-  if (level === 4) return '(相手の次の攻撃回数2/7)';
-  if (level === 3) return '(相手の次の攻撃回数3/7)';
-  if (level === 2) return '(相手の次の攻撃回数4/7)';
-  return '(相手の次の攻撃回数5/7)';
+  const numerator = level >= 5 ? 1 : level === 4 ? 2 : level === 3 ? 3 : level === 2 ? 4 : 5;
+  return t('battle.note.howl', { numerator });
 }
 
 function getConfusionChance(level: number): number {
@@ -2202,11 +2196,11 @@ function getConfusionAbilityIdForPhase(phase: BattleActionPhase): AbilityId {
 }
 
 function getConfusionNote(level: number, success: boolean): string {
-  return `(混乱確率${getConfusionChance(level)}/32: ${success ? '成功' : '失敗'})`;
+  return t('battle.note.confusion', { chance: getConfusionChance(level), result: t(success ? 'battle.result.success' : 'battle.result.failure') });
 }
 
 function getNullAntagonismNote(): string {
-  return '(敵対無効化)';
+  return t('battle.note.nullAntagonism');
 }
 
 function getUnstableCoreDamagePercent(level: number): number {
@@ -2226,7 +2220,7 @@ function getSoulReapThresholdPercent(level: number): number {
 }
 
 function getUnstableCoreNote(level: number): string {
-  return `(残HP ${getUnstableCoreDamagePercent(level)}%の自傷ダメージ)`;
+  return t('battle.note.unstableCore', { percent: getUnstableCoreDamagePercent(level) });
 }
 
 function getShockAdjustedDamage(damage: number, hits: number): number {
@@ -2241,7 +2235,7 @@ function getRandomPartyMemberName(party: Party): string {
 }
 
 function getSoulReapNote(level: number): string {
-  return `(HP ${getSoulReapThresholdPercent(level)}％未満で即死)`;
+  return t('battle.note.soulReap', { percent: getSoulReapThresholdPercent(level) });
 }
 
 function getSelfDestructRatio(level: number): { numerator: number; denominator: number } | null {
@@ -2436,7 +2430,7 @@ export function executeBattle(
         phase: 'start',
         actor: 'effect',
         characterId: owner.characterId,
-        action: `${owner.name} は${domainLabel}の影響を受けない`,
+        action: t('battle.action.domainBreakerUnaffected', { actor: owner.name, domain: domainLabel }),
       });
     }
   }
@@ -2519,7 +2513,7 @@ export function executeBattle(
         actor: 'effect',
         characterId: owner.characterId,
         action: buildEquationBreakerAction(owner.name),
-        note: '(式破り:静寂領域無効化)',
+        note: t('battle.note.equationBreakerSilence'),
       });
     }
   }
@@ -2554,8 +2548,8 @@ export function executeBattle(
       log.push({
         phase: 'start',
         actor: 'effect',
-        action: '不和の神の効果！',
-        note: `([⚠️敵対]${targetName}が仲違いした)`,
+        action: t('battle.action.discordDeityEffect'),
+        note: t('battle.note.discordAntagonism', { target: targetName }),
       });
     } else {
       log.push({
@@ -2638,7 +2632,7 @@ export function executeBattle(
     const count = elementalOffenseUsageCounter[elementalOffense] ?? 0;
     const bonusPercent = Math.max(0, (count - 1) * 10);
     if (bonusPercent <= 0) return '';
-    return `(残響+${bonusPercent}%)`;
+    return t('battle.note.echoDomain', { bonusPercent });
   };
   const characterOffenseAmplifierMultiplierById = new Map<number, number>(
     characterStats.map((stats) => [stats.characterId, 1.0]),
@@ -2742,7 +2736,7 @@ export function executeBattle(
         characterId: targetStats.characterId,
         isCounter: isCounter || undefined,
         action: buildResurrectAction(targetName),
-        note: formatDefeatRecoveryNote('再起', healAmount),
+        note: formatDefeatRecoveryNote(t('ability.resurrect.label'), healAmount),
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
@@ -2761,7 +2755,7 @@ export function executeBattle(
         characterId: targetStats.characterId,
         isCounter: isCounter || undefined,
         action: buildReanimateAction(targetName),
-        note: formatDefeatRecoveryNote('即時蘇生', healAmount),
+        note: formatDefeatRecoveryNote(t('ability.reanimate.label'), healAmount),
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
@@ -2789,7 +2783,7 @@ export function executeBattle(
         initiativeRoll,
         actor: 'enemy',
         action: buildResurrectAction(enemy.name),
-        note: formatDefeatRecoveryNote('再起', healAmount),
+        note: formatDefeatRecoveryNote(t('ability.resurrect.label'), healAmount),
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
@@ -2806,7 +2800,7 @@ export function executeBattle(
         initiativeRoll,
         actor: 'enemy',
         action: buildReanimateAction(enemy.name),
-        note: formatDefeatRecoveryNote('即時蘇生', healAmount),
+        note: formatDefeatRecoveryNote(t('ability.reanimate.label'), healAmount),
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
@@ -2845,7 +2839,7 @@ export function executeBattle(
         'battleFlavor.environment.vineSnare',
         { actor: actor.name },
       );
-      noteTextTemplate = '(HP減少-{damage})';
+      noteTextTemplate = t('battle.note.hpLossTemplate');
     // SpecRef: 6.1.3.1 | Actor action | a.mana-ward
     } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'mid' && !hasAbility(actorAbilities, 'mana_ward')) {
       selfDamage = Math.floor(totalDamage * 0.05);
@@ -2853,14 +2847,14 @@ export function executeBattle(
         'battleFlavor.environment.crystalZone',
         { actor: actor.name },
       );
-      noteTextTemplate = '(HP減少-{damage})';
+      noteTextTemplate = t('battle.note.hpLossTemplate');
     } else if (terrainEffect === 'terrain.conduction' && elementalOffense === 'thunder') {
       selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
         'battleFlavor.environment.conduction',
         { actor: actor.name },
       );
-      noteTextTemplate = '(HP減少 ⚡-{damage})';
+      noteTextTemplate = t('battle.note.hpLossThunderTemplate');
       elementalTag = 'thunder';
     } else if (terrainEffect === 'terrain.mana-burn' && phase === 'mid' && !hasAbility(actorAbilities, 'mana_ward')) {
       selfDamage = Math.floor(maxHp * 0.02);
@@ -2868,7 +2862,7 @@ export function executeBattle(
         'battleFlavor.environment.manaBurn',
         { actor: actor.name },
       );
-      noteTextTemplate = '(HP減少-{damage})';
+      noteTextTemplate = t('battle.note.hpLossTemplate');
     } else if (
       terrainEffect === 'terrain.sacred-judgement'
       && !sacredJudgementTriggered
@@ -2882,7 +2876,7 @@ export function executeBattle(
         'battleFlavor.environment.sacredJudgement',
         { actor: actor.name },
       );
-      noteTextTemplate = '(HP減少 ⚡-{damage})';
+      noteTextTemplate = t('battle.note.hpLossThunderTemplate');
       elementalTag = 'thunder';
       sacredJudgementTriggered = true;
     }
@@ -3003,8 +2997,8 @@ export function executeBattle(
           ? buildNullCorrodeAction(actorName, enemy.name)
           : buildCorrodeAction(actorName, enemy.name),
         note: targetNullCorrode
-          ? '(防腐)'
-          : `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
+          ? t('battle.note.nullCorrode')
+          : t('battle.note.corrode', { multiplier: formatMultiplierAsFraction(multiplier) }),
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
@@ -3031,8 +3025,8 @@ export function executeBattle(
           ? buildNullLifeDrainAction(actorName, enemy.name)
           : buildLifeDrainAction(actorName, enemy.name),
         note: targetNullLifeDrain
-          ? '(吸血無効)'
-          : `(吸血: 与ダメージの${formatLifeDrainMultiplierLabel(lifeDrainLevel)}回復: ✚${healAmount})`,
+          ? t('battle.note.nullLifeDrain')
+          : t('battle.note.lifeDrain', { portion: formatLifeDrainMultiplierLabel(lifeDrainLevel), healAmount }),
         noteTone: 'muted',
       });
     }
@@ -3047,7 +3041,7 @@ export function executeBattle(
           actor: 'triggered',
           characterId: actorStats.characterId,
           action: buildNullDeathTouchAction(actorName, enemy.name),
-          note: '(即死無効)',
+          note: t('battle.note.nullDeathTouch'),
           noteTone: 'muted',
         });
       } else if (Math.random() < getDeathTouchChance(deathTouchLevel, result.hits)) {
@@ -3087,7 +3081,7 @@ export function executeBattle(
           action: actorNullBurn ? buildNullBurnAction(enemy.name, actorName) : buildBurnAction(actorName),
           damage: reflectedDamage > 0 ? reflectedDamage : undefined,
           damageTarget: reflectedDamage > 0 ? 'party' : undefined,
-          note: actorNullBurn ? '(火傷無効)' : '(火傷)',
+          note: actorNullBurn ? t('battle.note.nullBurn') : t('battle.note.burn'),
           noteTone: 'muted',
           hideInitiativeLabel: true,
           elementalOffense: reflectedDamage > 0 ? 'fire' : undefined,
@@ -3109,7 +3103,7 @@ export function executeBattle(
           actor: 'triggered',
           characterId: actorStats.characterId,
           action: buildNullBindAction(actorName, enemy.name),
-          note: '(拘束無効)',
+          note: t('battle.note.nullBind'),
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
@@ -3121,7 +3115,7 @@ export function executeBattle(
           actor: 'triggered',
           characterId: actorStats.characterId,
           action: buildBindAction(actorName, enemy.name),
-          note: '(拘束:行動不能)',
+          note: t('battle.note.bindIncapacitated'),
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
@@ -3150,8 +3144,8 @@ export function executeBattle(
           ? buildNullCorrodeAction(enemy.name, targetName)
           : buildCorrodeAction(enemy.name, targetName),
         note: targetNullCorrode
-          ? '(防腐)'
-          : `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
+          ? t('battle.note.nullCorrode')
+          : t('battle.note.corrode', { multiplier: formatMultiplierAsFraction(multiplier) }),
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
@@ -3180,8 +3174,8 @@ export function executeBattle(
           ? buildNullLifeDrainAction(enemy.name, targetName)
           : buildLifeDrainAction(enemy.name, targetName),
         note: targetNullLifeDrain
-          ? '(吸血無効)'
-          : `(吸血: 与ダメージの${formatLifeDrainMultiplierLabel(enemyLifeDrainLevel)}回復: ✚${healAmount})`,
+          ? t('battle.note.nullLifeDrain')
+          : t('battle.note.lifeDrain', { portion: formatLifeDrainMultiplierLabel(enemyLifeDrainLevel), healAmount }),
         noteTone: 'muted',
       });
     }
@@ -3195,7 +3189,7 @@ export function executeBattle(
           initiativeRoll,
           actor: 'triggered',
           action: buildNullDeathTouchAction(enemy.name, targetName),
-          note: '(即死無効)',
+          note: t('battle.note.nullDeathTouch'),
           noteTone: 'muted',
         });
       } else if (Math.random() < getDeathTouchChance(enemyDeathTouchLevel, appliedHits)) {
@@ -3234,7 +3228,7 @@ export function executeBattle(
           action: actorNullBurn ? buildNullBurnAction(targetName, enemy.name) : buildBurnAction(enemy.name),
           damage: reflectedDamage > 0 ? reflectedDamage : undefined,
           damageTarget: reflectedDamage > 0 ? 'enemy' : undefined,
-          note: actorNullBurn ? '(火傷無効)' : '(火傷)',
+          note: actorNullBurn ? t('battle.note.nullBurn') : t('battle.note.burn'),
           noteTone: 'muted',
           hideInitiativeLabel: true,
           elementalOffense: reflectedDamage > 0 ? 'fire' : undefined,
@@ -3255,7 +3249,7 @@ export function executeBattle(
           actor: 'triggered',
           characterId: targetStats.characterId,
           action: buildNullBindAction(enemy.name, targetName),
-          note: '(拘束無効)',
+          note: t('battle.note.nullBind'),
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
@@ -3267,7 +3261,7 @@ export function executeBattle(
           actor: 'triggered',
           characterId: targetStats.characterId,
           action: buildBindAction(enemy.name, targetName),
-          note: '(拘束:行動不能)',
+          note: t('battle.note.bindIncapacitated'),
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
@@ -3375,7 +3369,7 @@ export function executeBattle(
     return {
       phase: 'start',
       actor: 'effect',
-      action: `${ownerName}の ${label(bestLevel)}！`,
+      action: t('battle.action.ownerAbility', { owner: ownerName, ability: label(bestLevel) }),
       note: noteText(bestLevel),
     };
   };
@@ -3406,23 +3400,23 @@ export function executeBattle(
     return {
       phase: 'start',
       actor: 'effect',
-      action: `${ownerName}の ${label(bestLevel)}！`,
+      action: t('battle.action.ownerAbility', { owner: ownerName, ability: label(bestLevel) }),
       note: noteText(bestLevel),
     };
   };
 
-  const mBarrierEffectEntry = createPartyEffectEntry('m_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`);
+  const mBarrierEffectEntry = createPartyEffectEntry('m_barrier', () => t('ability.m_barrier.label'), level => t('battle.note.backlineMagicDamageMultiplier', { multiplier: level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3' }));
   const partyEffects = [
-    createPartyEffectEntry('defender', () => '守護者', level => `(後列の味方への物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
-    createPartyEffectEntry('command', () => '指揮', level => `(後列の味方が与える物理ダメージ × ${level >= 3 ? '1.6' : level === 2 ? '1.5' : '1.4'})`),
+    createPartyEffectEntry('defender', () => t('ability.defender.label'), level => t('battle.note.backlinePhysicalDamageMultiplier', { multiplier: level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3' })),
+    createPartyEffectEntry('command', () => t('ability.command.label'), level => t('battle.note.backlinePhysicalDamageDealtMultiplier', { multiplier: level >= 3 ? '1.6' : level === 2 ? '1.5' : '1.4' })),
     mBarrierEffectEntry && hasAbility(enemy.abilities, 'm_barrier_breaker')
       ? {
         phase: 'start',
         actor: 'effect',
-        action: `${enemy.name}は魔法障壁を打ち破り無効化した(魔法障壁破り)`,
+        action: t('battle.action.magicBarrierBroken', { enemy: enemy.name }),
       } as BattleLogEntry
       : mBarrierEffectEntry,
-    createPartyAbilityEffectEntry('deflection', () => '矢払い', level => `(敵の遠距離攻撃の命中率を${level >= 2 ? '15' : '10'}%低下)`),
+    createPartyAbilityEffectEntry('deflection', () => t('ability.deflection.label'), level => t('battle.note.deflection', { percent: level >= 2 ? '15' : '10' })),
   ];
 
   const triggerEnemyCounter = (
@@ -3447,7 +3441,7 @@ export function executeBattle(
       log.push({
         phase,
         actor: 'effect',
-        action: `${nullifier?.name ?? t('battle.actor.ally')}の反撃無効化により、${enemy.name}の反撃は防がれた！`,
+        action: t('battle.action.counterNullified', { nullifier: nullifier?.name ?? t('battle.actor.ally'), target: enemy.name, counter: t('ability.counter.label') }),
       });
       return;
     }
@@ -3512,7 +3506,7 @@ export function executeBattle(
       phase,
       initiativeRoll,
       actor: 'enemy',
-      action: `${targetName} に反撃！`,
+      action: t('battle.action.counterTarget', { target: targetName }),
       damage: damage > 0 ? damage : undefined,
       hits: appliedHits,
       totalAttempts: attempts,
@@ -3535,7 +3529,7 @@ export function executeBattle(
       log.push({
         phase,
         actor: 'effect',
-        action: `${targetName} は物陰に隠れて攻撃をやり過ごせたのだ！`,
+        action: t('battle.action.stealthAvoided', { actor: targetName }),
       });
     }
 
@@ -3563,7 +3557,7 @@ export function executeBattle(
       phase,
       actor: 'character',
       characterId: targetCharStats.characterId,
-      action: `${targetChar.name} の再反撃！`,
+      action: t('battle.action.reCounter', { actor: targetChar.name }),
       damage: reCounterResult.damage,
       hits: reCounterResult.hits,
       totalAttempts: reCounterResult.totalAttempts,
@@ -3634,7 +3628,7 @@ export function executeBattle(
         initiativeRoll,
         actor: 'character',
         characterId: coverCharStats.characterId,
-        action: `${coverChar.name} の援護射撃！`,
+        action: t('battle.action.coveringFire', { actor: coverChar.name }),
         damage: coveringFireResult.damage,
         hits: coveringFireResult.hits,
         totalAttempts: coveringFireResult.totalAttempts,
@@ -3659,7 +3653,7 @@ export function executeBattle(
         log.push({
           phase,
           actor: 'effect',
-          action: `${enemy.name} は神隠れした。もう攻撃はこれ以上あたらない！`,
+          action: t('battle.action.enemyStealthAvoided', { enemy: enemy.name }),
         });
       }
 
@@ -3687,8 +3681,8 @@ export function executeBattle(
     log.push({
       phase: 'start',
       actor: 'effect',
-      action: `${ownerName} の凍傷！`,
-      note: '(相手の行動を少し遅らせる)',
+      action: t('battle.action.frostbite', { actor: ownerName }),
+      note: t('battle.note.frostbite'),
     });
   };
 
@@ -3702,10 +3696,10 @@ export function executeBattle(
     ...(isEnemyActorAbilitiesSuppressed() ? [] : [{ name: enemy.name, abilities: enemy.abilities }]),
   ];
   const startPhaseEffects: Array<{ abilityId: AbilityId; actionName: string; effectLabel: string; multipliersByLevel: Record<number, number> }> = [
-    { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
-    { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS },
-    { abilityId: 'mutual_magic_amplify', actionName: '魔法増幅', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS },
-    { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS },
+    { abilityId: 'mutual_physical_amplify', actionName: t('ability.mutual_physical_amplify.label'), effectLabel: t('battle.effect.bothPhysicalDamage'), multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
+    { abilityId: 'mutual_physical_restraint', actionName: t('ability.mutual_physical_restraint.label'), effectLabel: t('battle.effect.bothPhysicalDamage'), multipliersByLevel: MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS },
+    { abilityId: 'mutual_magic_amplify', actionName: t('ability.mutual_magic_amplify.label'), effectLabel: t('battle.effect.bothMagicDamage'), multipliersByLevel: MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS },
+    { abilityId: 'mutual_magic_restraint', actionName: t('ability.mutual_magic_restraint.label'), effectLabel: t('battle.effect.bothMagicDamage'), multipliersByLevel: MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS },
   ];
 
   type FadingMemoryTarget =
@@ -3735,7 +3729,7 @@ export function executeBattle(
         actor: 'effect',
         characterId: target.kind === 'character' ? target.stats.characterId : undefined,
         action: buildUnforgettableAction(ownerName, target.name),
-        note: '(忘却無効)',
+        note: t('battle.note.unforgettable'),
         noteTone: 'muted',
       });
       return;
@@ -3757,7 +3751,7 @@ export function executeBattle(
       phase: 'start',
       actor: 'effect',
       characterId: target.kind === 'character' ? target.stats.characterId : undefined,
-      action: `${ownerName} の薄れる記憶が ${target.name} の ${formatAbilityLabel(selectedAbility)} を忘却の彼方に消し去った！`,
+      action: t('battle.action.fadingMemoryForget', { owner: ownerName, target: target.name, ability: formatAbilityLabel(selectedAbility) }),
     });
   };
 
@@ -3774,7 +3768,7 @@ export function executeBattle(
             actor: 'effect',
             characterId: target.characterId,
             action: buildUnforgettableAction(enemy.name, targetName),
-            note: '(忘却無効)',
+            note: t('battle.note.unforgettable'),
             noteTone: 'muted',
           });
         }
@@ -3793,7 +3787,7 @@ export function executeBattle(
           log.push({
             phase: 'start',
             actor: 'effect',
-            action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を忘却の彼方に消し去った！`,
+            action: t('battle.action.oblivionForget', { owner: enemy.name, target: targetName, ability: formatAbilityLabel(selectedTargetAbility) }),
           });
         }
       }
@@ -3805,7 +3799,7 @@ export function executeBattle(
             phase: 'start',
             actor: 'effect',
             action: buildUnforgettableAction(owner.name, enemy.name),
-            note: '(忘却無効)',
+            note: t('battle.note.unforgettable'),
             noteTone: 'muted',
           });
           continue;
@@ -3826,7 +3820,7 @@ export function executeBattle(
         log.push({
           phase: 'start',
           actor: 'effect',
-          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を忘却の彼方に消し去った！`,
+          action: t('battle.action.oblivionForget', { owner: owner.name, target: enemy.name, ability: formatAbilityLabel(selectedEnemyAbility) }),
         });
       }
     }
@@ -3855,7 +3849,7 @@ export function executeBattle(
           log.push({
             phase: 'start',
             actor: 'effect',
-            action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を模倣した！`,
+            action: t('battle.action.mimic', { owner: enemy.name, target: targetName, ability: formatAbilityLabel(selectedTargetAbility) }),
           });
         }
       }
@@ -3872,7 +3866,7 @@ export function executeBattle(
         log.push({
           phase: 'start',
           actor: 'effect',
-          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を模倣した！`,
+          action: t('battle.action.mimic', { owner: owner.name, target: enemy.name, ability: formatAbilityLabel(selectedEnemyAbility) }),
         });
       }
     }
@@ -3912,8 +3906,8 @@ export function executeBattle(
             log.push({
               phase: 'start',
               actor: 'effect',
-              action: `${owner.name} の${effect.actionName}！`,
-              note: `(${effect.effectLabel}${multiplier}倍)`,
+              action: t('battle.action.ownerAbility', { owner: owner.name, ability: effect.actionName }),
+              note: t('battle.note.effectMultiplier', { effect: effect.effectLabel, multiplier }),
             });
           }
         }
@@ -4004,7 +3998,7 @@ export function executeBattle(
           phase,
           initiativeRoll: 2,
           actor: 'triggered',
-          action: `${enemy.name} が遠吠えをした！`,
+          action: t('battle.action.howl', { actor: enemy.name }),
           note: getHowlNote(enemyHowlLevel),
         });
       }
@@ -4021,7 +4015,7 @@ export function executeBattle(
           initiativeRoll: 2,
           actor: 'triggered',
           characterId: entry.stats.characterId,
-          action: `${entry.ownerName} が遠吠えをした！`,
+          action: t('battle.action.howl', { actor: entry.ownerName }),
           note: getHowlNote(entry.level),
         });
       }
@@ -4039,7 +4033,7 @@ export function executeBattle(
           phase,
           initiativeRoll: timing,
           actor: 'triggered',
-          action: `${enemy.name} の捕食！`,
+          action: t('battle.action.predatorSense', { actor: enemy.name }),
           note: getPredatorSenseNote(enemyPredatorSenseLevel),
         });
       }
@@ -4066,7 +4060,7 @@ export function executeBattle(
           initiativeRoll: timing,
           actor: 'triggered',
           characterId: entry.stats.characterId,
-          action: `${entry.ownerName} の捕食！`,
+          action: t('battle.action.predatorSense', { actor: entry.ownerName }),
           note: getPredatorSenseNote(entry.level),
         });
       }
@@ -4358,7 +4352,7 @@ export function executeBattle(
 
         const targetName = target
           ? party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally')
-          : '味方';
+          : t('battle.actor.ally');
         const targetDefenseAmplifier = target
           ? Math.max(0.01, target.physicalDefenseAmplifier * target.deityDefenseAmplifierBonus.physical)
           : 1.0;
@@ -4878,7 +4872,7 @@ export function executeBattle(
                     action: actorIsNullShock
                       ? buildNullShockAction(enemy.name, targetName)
                       : buildShockAction(enemy.name, targetName),
-                    note: actorIsNullShock ? '(感電予防:攻撃継続)' : '(感電:攻撃中断)',
+                    note: actorIsNullShock ? t('battle.note.nullShockContinue') : t('battle.note.shockInterrupted'),
                     noteTone: 'muted' as const,
                     hideInitiativeLabel: true,
                   };
@@ -4902,8 +4896,8 @@ export function executeBattle(
                 initiativeRoll: turn.roll,
                 actor: 'enemy',
                 action: hasNullRequiem(attack.charStats)
-                  ? `${buildNullRequiemAction(enemy.name, targetName)} (鎮魂無効)`
-                  : `${buildRequiemAction(enemy.name, targetName)} (鎮魂歌)`,
+                  ? `${buildNullRequiemAction(enemy.name, targetName)} ${t('battle.note.nullRequiemInline')}`
+                  : `${buildRequiemAction(enemy.name, targetName)} ${t('battle.note.requiemInline')}`,
               });
               if (!hasNullRequiem(attack.charStats)) {
                 partyHp = 0;
@@ -5031,7 +5025,7 @@ export function executeBattle(
               log.push({
                 phase,
                 actor: 'effect',
-                action: `${targetName} は物陰に隠れて攻撃をやり過ごせたのだ！`,
+                action: t('battle.action.stealthAvoided', { actor: targetName }),
               });
             }
 
@@ -5061,7 +5055,7 @@ export function executeBattle(
               log.push({
                 phase,
                 actor: 'effect',
-                action: `${enemy.name}の反撃無効化により、${targetChar?.name ?? '???'}の反撃は防がれた！`,
+                action: t('battle.action.counterNullified', { nullifier: enemy.name, target: targetChar?.name ?? '???', counter: t('ability.counter.label') }),
               });
               continue;
             }
@@ -5094,7 +5088,7 @@ export function executeBattle(
               applyEnemyDamage(counterResult.damage);
             }
 
-            const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
+            const counterType = phase === 'mid' ? t('ability.magical_counter.label') : t('ability.counter.label');
             const resonanceLogText = getResonanceLogText(
               attack.charStats.abilities,
               counterResult.hits,
@@ -5111,7 +5105,7 @@ export function executeBattle(
               initiativeRoll: initiativeByCharacter.get(charId),
               actor: 'character',
               characterId: charId,
-              action: `${targetChar?.name ?? '???'} の${counterType}！${counterBonusLogText}`,
+              action: `${t('battle.action.ownerAbility', { owner: targetChar?.name ?? '???', ability: counterType })}${counterBonusLogText}`,
               damage: counterResult.damage,
               hits: counterResult.hits,
               totalAttempts: counterResult.totalAttempts,
@@ -5139,7 +5133,7 @@ export function executeBattle(
                 log.push({
                   phase,
                   actor: 'effect',
-                  action: `${nullifier?.name ?? t('battle.actor.ally')}の反撃無効化により、${enemy.name}の再反撃は防がれた！`,
+                  action: t('battle.action.counterNullified', { nullifier: nullifier?.name ?? t('battle.actor.ally'), target: enemy.name, counter: t('ability.re_counter.label') }),
                 });
               }
               continue;
@@ -5219,7 +5213,7 @@ export function executeBattle(
               phase,
               initiativeRoll: turn.roll,
               actor: 'enemy',
-              action: `${targetChar?.name ?? '???'} に再反撃！`,
+              action: t('battle.action.reCounterTarget', { target: targetChar?.name ?? '???' }),
               damage: reCounterDamage > 0 ? reCounterDamage : undefined,
               hits: reCounterHits,
               totalAttempts: reCounterAttempts,
@@ -5243,7 +5237,7 @@ export function executeBattle(
               log.push({
                 phase,
                 actor: 'effect',
-                action: `${targetChar?.name ?? '???'} は物陰に隠れて攻撃をやり過ごせたのだ！`,
+                action: t('battle.action.stealthAvoided', { actor: targetChar?.name ?? '???' }),
               });
             }
 
@@ -5311,7 +5305,7 @@ export function executeBattle(
               initiativeRoll: initiativeByCharacter.get(charId),
               actor: 'character',
               characterId: charId,
-              action: `${magicalCounterChar.name} の魔法反撃！${magicalCounterBonusLogText}`,
+              action: `${t('battle.action.ownerAbility', { owner: magicalCounterChar.name, ability: t('ability.magical_counter.label') })}${magicalCounterBonusLogText}`,
               damage: magicalCounterResult.damage,
               hits: magicalCounterResult.hits,
               totalAttempts: magicalCounterResult.totalAttempts,
@@ -5473,7 +5467,7 @@ export function executeBattle(
                   action: actorIsNullShock
                     ? buildNullShockAction(char.name, antagonismTargetName)
                     : buildShockAction(char.name, antagonismTargetName),
-                  note: actorIsNullShock ? '(感電予防:攻撃継続)' : '(感電:攻撃中断)',
+                  note: actorIsNullShock ? t('battle.note.nullShockContinue') : t('battle.note.shockInterrupted'),
                   noteTone: 'muted' as const,
                   hideInitiativeLabel: true,
                 };
@@ -5538,7 +5532,7 @@ export function executeBattle(
                   action: actorIsNullShock
                     ? buildNullShockAction(char.name, enemy.name)
                     : buildShockAction(char.name, enemy.name),
-                  note: actorIsNullShock ? '(感電予防:攻撃継続)' : '(感電:攻撃中断)',
+                  note: actorIsNullShock ? t('battle.note.nullShockContinue') : t('battle.note.shockInterrupted'),
                   noteTone: 'muted' as const,
                   hideInitiativeLabel: true,
                 };
@@ -5762,7 +5756,7 @@ export function executeBattle(
           log.push({
             phase,
             actor: 'effect',
-            action: `${enemy.name} は神隠れした。もう攻撃はこれ以上あたらない！`,
+            action: t('battle.action.enemyStealthAvoided', { enemy: enemy.name }),
           });
         }
 
@@ -5783,8 +5777,8 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: enemyHasNullRequiem(enemy)
-              ? `${buildNullRequiemAction(char.name, enemy.name)} (鎮魂無効)`
-              : `${buildRequiemAction(char.name, enemy.name)} (鎮魂歌)`,
+              ? `${buildNullRequiemAction(char.name, enemy.name)} ${t('battle.note.nullRequiemInline')}`
+              : `${buildRequiemAction(char.name, enemy.name)} ${t('battle.note.requiemInline')}`,
           });
           if (!enemyHasNullRequiem(enemy)) {
             enemyHp = 0;
