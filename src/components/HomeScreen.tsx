@@ -784,6 +784,22 @@ const UNIQUE_BATTLE_LOG_CHIBI_FILES: ReadonlyArray<{ nameKey: string; fileName: 
   { nameKey: 'character.unique.orca.name', fileName: 'C_Unique_Orca.png' },
 ];
 
+// SpecRef: 8.2.2 | Party member details | Character image (background)
+const UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE: Readonly<Partial<Record<Character['lineageId'], string>>> = {
+  unascertained: 'Unique_Kemo.png',
+  pioneer: 'Unique_Laika.png',
+  crescent_jade: 'Unique_Luna.png',
+  phantom_thief: 'Unique_Nox.png',
+  incarnation: 'Unique_Merle.png',
+  flamebound_grove: 'Unique_Puchitsa.png',
+  almighty: 'Unique_Souga-ha.png',
+  meddlesome_fox: 'Unique_Leonard.png',
+  hidden_grail: 'Unique_Hagakure.png',
+  'unexpected_prince(ss)': 'Unique_Finn.png',
+  rowdy_orca_girl: 'Unique_Orca.png',
+  apostate: 'Unique_Mishka.png',
+};
+
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
   if (character.isUnique) {
     const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILES.find(({ nameKey }) => t(nameKey) === character.name)?.fileName;
@@ -6193,20 +6209,6 @@ function PartyTab({
   // SpecRef: 8.2.2 | Party member details | Character image (background)
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
-  const uniquePartyMemberImageByLineage: Partial<Record<string, string>> = {
-    unascertained: 'Unique_Kemo.png',
-    pioneer: 'Unique_Laika.png',
-    crescent_jade: 'Unique_Luna.png',
-    phantom_thief: 'Unique_Nox.png',
-    incarnation: 'Unique_Merle.png',
-    flamebound_grove: 'Unique_Puchitsa.png',
-    almighty: 'Unique_Souga-ha.png',
-    meddlesome_fox: 'Unique_Leonard.png',
-    hidden_grail: 'Unique_Hagakure.png',
-    'unexpected_prince(ss)': 'Unique_Finn.png',
-    rowdy_orca_girl: 'Unique_Orca.png',
-    apostate: 'Unique_Mishka.png',
-  };
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
     vulpinian: 'Vulpinian',
@@ -6222,7 +6224,7 @@ function PartyTab({
     male: 'Male',
     female: 'Female',
   };
-  const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByLineage[char.lineageId] : undefined;
+  const uniquePartyMemberImageFileName = char.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[char.lineageId] : undefined;
   const raceLabel = raceLabelByRaceId[previewRaceId];
   const genderLabel = genderLabelByGender[previewGender];
   const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
@@ -6236,7 +6238,7 @@ function PartyTab({
   const partyInventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
 
   const getPartyInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
-    const uniqueFileName = character.isUnique ? uniquePartyMemberImageByLineage[character.lineageId] : undefined;
+    const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId] : undefined;
     if (uniqueFileName) {
       const chibiFileName = `C_${uniqueFileName}`;
       if (partyInventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
@@ -6795,7 +6797,7 @@ function PartyTab({
           const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
           const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
           const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
-          const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByLineage[c.lineageId] : undefined;
+          const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
           const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
             : undefined;
@@ -9993,24 +9995,10 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
 }) {
-  const UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME: Record<string, string> = {
-    'ケモ': 'Unique_Kemo.png',
-    'ライカ': 'Unique_Laika.png',
-    'ルナ': 'Unique_Luna.png',
-    'ノクス': 'Unique_Nox.png',
-    'マーレ': 'Unique_Merle.png',
-    'プチーツァ': 'Unique_Puchitsa.png',
-    '蒼牙破': 'Unique_Souga-ha.png',
-    'レナード': 'Unique_Leonard.png',
-    '葉隠': 'Unique_Hagakure.png',
-    'フィン': 'Unique_Finn.png',
-    'オルカ': 'Unique_Orca.png',
-    'ミシュカ': 'Unique_Mishka.png',
-  };
   const inventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
   const inventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
   const getInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
-    const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME[character.name] : undefined;
+    const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId] : undefined;
     if (uniqueFileName) {
       const chibiFileName = `C_${uniqueFileName}`;
       if (inventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) {
@@ -12155,12 +12143,7 @@ function SettingTab({
     );
   }, [rosterCharacterImageModules]);
   const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
-    const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
-      'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
-      'マーレ': 'Unique_Merle.png', 'プチーツァ': 'Unique_Puchitsa.png', '蒼牙破': 'Unique_Souga-ha.png', 'レナード': 'Unique_Leonard.png',
-      '葉隠': 'Unique_Hagakure.png', 'フィン': 'Unique_Finn.png', 'オルカ': 'Unique_Orca.png', 'ミシュカ': 'Unique_Mishka.png',
-    };
-    if (character.isUnique) return uniquePartyMemberImageByName[character.name] ?? null;
+    if (character.isUnique) return UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId] ?? null;
     const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === character.raceId);
     const genderLabel = character.gender === 'male' ? 'Male' : character.gender === 'female' ? 'Female' : null;
     if (!raceMeta || !genderLabel) return null;
