@@ -105,6 +105,66 @@ function getElementalMultiplier(
   return resistance[offense] ?? 1.0;
 }
 
+
+
+function getBattleAttackActionName(): string {
+  return t('battleLog.action.attackName');
+}
+
+function getBattleReAttackActionName(): string {
+  return t('battleLog.action.reAttackName');
+}
+
+function getBattleReAttackSuffix(): string {
+  return t('battleLog.action.reAttackSuffix');
+}
+
+function buildEnemyMagicSealNegatedAction(enemyName: string, attackName: string): string {
+  return t('battleLog.action.enemySpellNegated', { enemy: enemyName, attack: attackName });
+}
+
+function buildEnemyMagicAction(attackName: string, bonusText = ''): string {
+  return `${t('battleLog.action.enemySpellCast', { attack: attackName })}${bonusText}`;
+}
+
+function buildEnemyTargetMagicHitAction(targetName: string): string {
+  return t('battleLog.action.targetMagicHit', { target: targetName });
+}
+
+function buildEnemyTargetAttackAction(targetName: string, attackName: string, bonusText = ''): string {
+  return `${t('battleLog.action.targetAttack', { target: targetName, attack: attackName })}${bonusText}`;
+}
+
+function buildEnemySpellReactionAction(enemyName: string, attackName: string, reaction: 'reflected' | 'absorbed' | 'nullified', attemptText: string): string {
+  return t(`battleLog.action.enemySpell.${reaction}`, { enemy: enemyName, attack: attackName, attempts: attemptText });
+}
+
+function buildEnemyPhysicalReactionAction(enemyName: string, targetName: string, summary: string, reaction: 'reflected' | 'absorbed' | 'nullified', attemptText: string): string {
+  const key = reaction === 'reflected' ? 'battleLog.action.targetAttackReflected' : `battleLog.action.enemyAttack.${reaction}`;
+  return t(key, { enemy: enemyName, target: targetName, summary, attempts: attemptText });
+}
+
+function buildCharacterMagicSealNegatedAction(actorName: string, attackName: string): string {
+  return t('battleLog.action.characterSpellNegated', { actor: actorName, attack: attackName });
+}
+
+function buildCharacterSpellReactionAction(actorName: string, attackName: string, reaction: 'reflected' | 'absorbed' | 'nullified', bonusText = ''): string {
+  return `${t(`battleLog.action.characterSpell.${reaction}`, { actor: actorName, attack: attackName })}${bonusText}`;
+}
+
+function buildCharacterPhysicalReactionAction(actorName: string, summary: string, reaction: 'reflected' | 'absorbed' | 'nullified', bonusText = ''): string {
+  return `${t(`battleLog.action.characterAttack.${reaction}`, { actor: actorName, summary })}${bonusText}`;
+}
+
+
+function buildCharacterAntagonismFallbackAction(actorName: string, targetName: string | null, attackName: string, isMagic: boolean, bonusText = ''): string {
+  return `${t(isMagic ? 'battleLog.action.characterAntagonismSpell' : 'battleLog.action.characterAntagonismAttack', { actor: actorName, target: targetName ?? '???', attack: attackName })}${bonusText}`;
+}
+
+function buildCharacterNormalAction(actorName: string, attackName: string, isMagic: boolean, bonusText = ''): string {
+  return `${t(isMagic ? 'battleLog.action.characterSpellCast' : 'battleLog.action.characterAttack', { actor: actorName, attack: attackName })}${bonusText}`;
+}
+
 // SpecRef: 6.1.4.1 | Function of attack | f.rage_amplifier
 function getCharacterRageAmplifier(
   charStats: ComputedCharacterStats,
@@ -4680,7 +4740,7 @@ export function executeBattle(
               phase,
               initiativeRoll: turn.roll,
               actor: 'enemy',
-              action: `${enemy.name} が${magicProfile.spellName}${isReAttack ? '連撃' : ''}を唱えたがかき消された！`,
+              action: buildEnemyMagicSealNegatedAction(enemy.name, `${magicProfile.spellName}${isReAttack ? getBattleReAttackSuffix() : ''}`),
               damage: 0,
               showZeroDamage: true,
               hits: 0,
@@ -4703,7 +4763,7 @@ export function executeBattle(
               phase,
               initiativeRoll: turn.roll,
               actor: 'enemy',
-              action: `${magicProfile.spellName}${isReAttack ? '連撃' : ''}を唱えた！${enemyAttackBonusLogText}`,
+              action: buildEnemyMagicAction(`${magicProfile.spellName}${isReAttack ? getBattleReAttackSuffix() : ''}`, enemyAttackBonusLogText),
               hits: enemySuccessfulHits,
               totalAttempts: attempts,
               rageBonusPercent: toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp)) || undefined,
@@ -4717,8 +4777,8 @@ export function executeBattle(
 
             const targetChar = party.characters.find(c => c.id === charId);
             const attackName = isReAttack
-              ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
-              : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
+              ? (phase === 'mid' ? `${magicProfile.spellName}${getBattleReAttackSuffix()}` : getBattleReAttackActionName())
+              : (phase === 'mid' ? `${magicProfile.spellName}` : getBattleAttackActionName());
 
             const targetName = targetChar?.name ?? '???';
             let appliedHits = 0;
@@ -4861,8 +4921,8 @@ export function executeBattle(
                 initiativeRoll: turn.roll,
                 actor: 'enemy',
                 action: phase === 'mid'
-                  ? `${enemy.name} が${attackName}を唱えたが反射された！ (${reflectedAttemptText})`
-                  : `${targetName}に攻撃したが、${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
+                  ? buildEnemySpellReactionAction(enemy.name, attackName, 'reflected', reflectedAttemptText)
+                  : buildEnemyPhysicalReactionAction(enemy.name, targetName, reflect.summary, 'reflected', reflectedAttemptText),
                 damage: appliedDamage,
                 reflectedDamage,
                 reflectedSourceDamage,
@@ -4886,8 +4946,8 @@ export function executeBattle(
                 initiativeRoll: turn.roll,
                 actor: 'enemy',
                 action: phase === 'mid'
-                  ? `${enemy.name} が${attackName}を唱えたが吸収された！ (${reflectedAttemptText})`
-                  : `${enemy.name} の${absorb.summary}攻撃は吸収された！ (${reflectedAttemptText})`,
+                  ? buildEnemySpellReactionAction(enemy.name, attackName, 'absorbed', reflectedAttemptText)
+                  : buildEnemyPhysicalReactionAction(enemy.name, targetName, absorb.summary, 'absorbed', reflectedAttemptText),
                 damage: 0,
                 showZeroDamage: true,
                 absorbedDamage,
@@ -4911,8 +4971,8 @@ export function executeBattle(
                 initiativeRoll: turn.roll,
                 actor: 'enemy',
                 action: phase === 'mid'
-                  ? `${enemy.name} が${attackName}を唱えたが無効化された！ (${reflectedAttemptText})`
-                  : `${enemy.name} の${nullify.summary}攻撃は無効化された！ (${reflectedAttemptText})`,
+                  ? buildEnemySpellReactionAction(enemy.name, attackName, 'nullified', reflectedAttemptText)
+                  : buildEnemyPhysicalReactionAction(enemy.name, targetName, nullify.summary, 'nullified', reflectedAttemptText),
                 damage: 0,
                 showZeroDamage: true,
                 hits: appliedHits,
@@ -4934,8 +4994,8 @@ export function executeBattle(
                 initiativeRoll: turn.roll,
                 actor: 'enemy',
                 action: phase === 'mid'
-                  ? `${targetName} に命中！`
-                  : `${targetName} に${attackName}！${enemyAttackBonusLogText}`,
+                  ? buildEnemyTargetMagicHitAction(targetName)
+                  : buildEnemyTargetAttackAction(targetName, attackName, enemyAttackBonusLogText),
                 damage: appliedDamage > 0 ? appliedDamage : undefined,
                 hits: appliedHits,
                 totalAttempts: attack.totalAttempts,
@@ -5305,8 +5365,8 @@ export function executeBattle(
           magicalNoA: Math.max(1, Math.ceil(cs.magicalNoA * noAMultiplier)),
         });
         const attackType = isReAttack
-          ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
-          : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
+          ? (phase === 'mid' ? `${magicProfile.spellName}${getBattleReAttackSuffix()}` : getBattleReAttackActionName())
+          : (phase === 'mid' ? `${magicProfile.spellName}` : getBattleAttackActionName());
 
         if (isMagicSealTargetForCharacter(phase, cs, noAMultiplier) && consumeMagicSeal()) {
           const characterMagicSealSwarmBonuses = getSwarmLogBonuses(cs.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
@@ -5315,7 +5375,7 @@ export function executeBattle(
             initiativeRoll: turn.roll,
             actor: 'character',
             characterId: cs.characterId,
-            action: `${char.name} が${attackType}を唱えたがかき消された！`,
+            action: buildCharacterMagicSealNegatedAction(char.name, attackType),
             damage: 0,
             showZeroDamage: true,
             hits: 0,
@@ -5582,8 +5642,8 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが反射された！${characterAttackBonusLogText}`
-              : `${char.name} の${reflect.summary}攻撃は反射された！${characterAttackBonusLogText}`,
+              ? buildCharacterSpellReactionAction(char.name, attackType, 'reflected', characterAttackBonusLogText)
+              : buildCharacterPhysicalReactionAction(char.name, reflect.summary, 'reflected', characterAttackBonusLogText),
             damage: result.damage,
             reflectedDamage: result.reflectedDamage,
             reflectedSourceDamage: result.reflectedSourceDamage,
@@ -5609,8 +5669,8 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが吸収された！${characterAttackBonusLogText}`
-              : `${char.name} の${absorb.summary}攻撃は吸収された！${characterAttackBonusLogText}`,
+              ? buildCharacterSpellReactionAction(char.name, attackType, 'absorbed', characterAttackBonusLogText)
+              : buildCharacterPhysicalReactionAction(char.name, absorb.summary, 'absorbed', characterAttackBonusLogText),
             damage: 0,
             showZeroDamage: true,
             absorbedDamage: result.absorbedDamage,
@@ -5636,8 +5696,8 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが無効化された！${characterAttackBonusLogText}`
-              : `${char.name} の${nullify.summary}攻撃は無効化された！${characterAttackBonusLogText}`,
+              ? buildCharacterSpellReactionAction(char.name, attackType, 'nullified', characterAttackBonusLogText)
+              : buildCharacterPhysicalReactionAction(char.name, nullify.summary, 'nullified', characterAttackBonusLogText),
             damage: 0,
             showZeroDamage: true,
             hits: result.hits,
@@ -5664,10 +5724,10 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: isAntagonism
-              ? `${antagonismAction ?? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！`}${characterAttackBonusLogText}`
+              ? antagonismAction ? `${antagonismAction}${characterAttackBonusLogText}` : buildCharacterAntagonismFallbackAction(char.name, antagonismTargetName, attackType, phase === 'mid', characterAttackBonusLogText)
               : phase === 'mid'
-                ? `${char.name} が${attackType}を唱えた！${characterAttackBonusLogText}`
-                : `${char.name} の${attackType}！${characterAttackBonusLogText}`,
+                ? buildCharacterNormalAction(char.name, attackType, true, characterAttackBonusLogText)
+                : buildCharacterNormalAction(char.name, attackType, false, characterAttackBonusLogText),
             damage: result.damage,
             damageTarget: isAntagonism ? 'party' : 'enemy',
             hits: result.hits,
