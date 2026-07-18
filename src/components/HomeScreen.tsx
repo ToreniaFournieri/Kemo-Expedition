@@ -62,6 +62,10 @@ import {
   isLootGateUnlocked,
 } from '../game/lootGate';
 
+const DEVELOPER_NEWS_ITEMS = [
+  { id: 'v8.1.2-2026-07-18-beta-report-bonus-fix', version: 'v8.1.2', date: '2026/07/18', content: '開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。' },
+] as const;
+
 function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
   if (/^https?:\/\//.test(path)) return path;
@@ -5376,6 +5380,8 @@ export function HomeScreen({
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  const hasUnreadDeveloperNews = DEVELOPER_NEWS_ITEMS.some((item) => !(state.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const envLabel = getEnvLabel();
   const versionLabel = envLabel
     ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
@@ -5617,6 +5623,9 @@ export function HomeScreen({
                   <span className="absolute -top-1 right-1 z-50 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
                     {unreadDiaryBadgeLabel}
                   </span>
+                )}
+                {tab.id === 'setting' && hasUnreadDeveloperNews && (
+                  <span className="absolute -top-1 right-1 z-50 inline-flex h-2.5 w-2.5 rounded-full bg-red-500" aria-label="Unread developer news" />
                 )}
               </button>
             );
@@ -11502,9 +11511,6 @@ function SettingTab({
   const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.clairvoyance-party-expanded');
   const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-tab');
   const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-expanded-entries');
-  const DEVELOPER_NEWS_ITEMS = [
-    { id: 'v8.1.2-2026-07-18-beta-report-bonus-fix', version: 'v8.1.2', date: '2026/07/18', content: '開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。' },
-  ] as const;
   const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     news: false,
