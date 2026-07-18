@@ -1,4 +1,5 @@
 import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType, TerrainEffectKey } from '../types';
+import { t } from '../i18n';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 
 type CombatMultipliers = {
@@ -124,6 +125,14 @@ export function getExpeditionFloorConcept(expeditionId: number, floorNumber: num
   }
 
   return concepts[floorNumber - 1] ?? null;
+}
+
+export function getLocalizedExpeditionFloorConcept(expeditionId: number, floorNumber: number): string | null {
+  const canonicalConcept = getExpeditionFloorConcept(expeditionId, floorNumber);
+  if (!canonicalConcept) return null;
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
+  const localizedConcept = t(`expedition.floorConcept.${expeditionId}.${floorNumber}`);
+  return localizedConcept === `expedition.floorConcept.${expeditionId}.${floorNumber}` ? canonicalConcept : localizedConcept;
 }
 
 type RoomIdKey = `${number}-${number}`;
