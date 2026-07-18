@@ -112,6 +112,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
+import { Language, normalizeLanguage } from '../i18n';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -1791,6 +1792,7 @@ function createInitialState(): InitialStateResult {
       shopIntimacyLastDecayAt: Date.now(),
       enemyBattleStats: {},
       readDeveloperNewsItemIds: [],
+      language: 'ja',
     },
     parties: [createInitialParty()],
     selectedPartyIndex: 0,
@@ -1861,6 +1863,7 @@ type GameAction =
   | { type: 'RESET_COMMON_SUPER_RARE_BAG'; partyIndex?: number }
   | { type: 'RESET_RARE_SUPER_RARE_BAG'; partyIndex?: number }
   | { type: 'RESET_SIDE_QUEST_BAG'; partyIndex?: number }
+  | { type: 'SET_LANGUAGE'; language: Language }
   | { type: 'UNLOCK_PARTY_SLOT' };
 
 // Select enemy based on room type and pool
@@ -2927,6 +2930,10 @@ function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Par
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    case 'SET_LANGUAGE':
+      // SpecRef: 5.1.4 | Save and load | Persisted user settings
+      return { ...state, global: { ...state.global, language: normalizeLanguage(action.language) } };
+
     case 'SELECT_PARTY':
       return { ...state, selectedPartyIndex: action.partyIndex };
 
@@ -4758,6 +4765,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopIntimacyLastDecayAt: Date.now(),
           enemyBattleStats: {},
           readDeveloperNewsItemIds: [],
+          language: state.global.language,
         },
         parties: [createInitialParty()],
         selectedPartyIndex: 0,
@@ -5274,6 +5282,10 @@ export function useGameState() {
 
     resetSideQuestBag: useCallback((partyIndex?: number) => {
       dispatch({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
+    }, []),
+
+    setLanguage: useCallback((language: Language) => {
+      dispatch({ type: 'SET_LANGUAGE', language });
     }, []),
 
     unlockPartySlot: useCallback(() => {

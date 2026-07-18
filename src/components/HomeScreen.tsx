@@ -47,6 +47,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import {
   ELITE_GATE_REQUIREMENTS,
@@ -124,6 +125,7 @@ interface HomeScreenProps {
     resetCommonSuperRareBag: () => void;
     resetRareSuperRareBag: () => void;
     resetSideQuestBag: () => void;
+    setLanguage: (language: Language) => void;
     unlockPartySlot: () => void;
     addNotification: (
       message: string,
@@ -5354,9 +5356,10 @@ export function HomeScreen({
     actions.markItemsSeen();
   }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
 
+  setLanguage(state.global.language);
   const tabs: { id: Tab; label: string }[] = MAIN_TAB_ORDER.map((id) => ({
     id,
-    label: id === 'expedition' ? '探索' : id === 'party' ? 'パーティ' : id === 'base' ? '拠点' : id === 'diary' ? '日誌' : '神聖局',
+    label: t(`nav.${id}`),
   }));
 
   // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
@@ -5386,7 +5389,7 @@ export function HomeScreen({
   const versionLabel = envLabel
     ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
     : `${APP_VERSION}(${state.buildNumber})`;
-  const gameTitle = '冒ケモ';
+  const gameTitle = t('app.title');
 
   useEffect(() => {
     document.title = gameTitle;
@@ -5525,6 +5528,8 @@ export function HomeScreen({
         onUpdateDebugSettings={updateDebugSettings}
         partyCount={state.parties.length}
         onPartyUnlock={actions.unlockPartySlot}
+        language={state.global.language}
+        onSetLanguage={actions.setLanguage}
         onMarkDeveloperNewsRead={actions.markDeveloperNewsRead}
       />
     );
@@ -11469,6 +11474,8 @@ function SettingTab({
   onUpdateDebugSettings,
   partyCount,
   onPartyUnlock,
+  language,
+  onSetLanguage,
   onMarkDeveloperNewsRead,
 }: {
   gameState: GameState;
@@ -11502,6 +11509,8 @@ function SettingTab({
   onUpdateDebugSettings: (updates: Partial<DebugSettings>) => void;
   partyCount: number;
   onPartyUnlock: () => void;
+  language: Language;
+  onSetLanguage: (language: Language) => void;
   onMarkDeveloperNewsRead: (itemIds: string[]) => void;
 }) {
   type DivineBureauPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
@@ -13962,20 +13971,34 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('gameSetting', 'バックアップ・リセット')}
+        {renderDivineBureauPanelHeader('gameSetting', t('setting.backupReset'))}
         {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
           <div>
-            <div className="text-sm font-medium mb-1">バックアップ（Export）</div>
+            <div className="text-sm font-medium mb-1">{t('setting.language.title')}</div>
+            <p className="mb-2 text-xs text-gray-500">{t('setting.language.description')}</p>
+            <select
+              value={language}
+              onChange={(event) => onSetLanguage(event.target.value as Language)}
+              className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm"
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <option key={lang} value={lang}>{t(`setting.language.${lang}`)}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <div className="text-sm font-medium mb-1">{t('setting.backup.title')}</div>
             <button
               onClick={handleExportBackup}
               className="w-full py-2 bg-sub text-white rounded font-medium"
             >
-              バックアップをダウンロード
+              {t('setting.backup.download')}
             </button>
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">インポート（Import）</div>
+            <div className="text-sm font-medium mb-1">{t('setting.import.title')}</div>
             <input
               ref={importInputRef}
               type="file"
@@ -13987,20 +14010,20 @@ function SettingTab({
               onClick={() => importInputRef.current?.click()}
               className="w-full py-2 bg-sub text-white rounded font-medium"
             >
-              バックアップファイルを選択
+              {t('setting.import.select')}
             </button>
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">フルリセット（Reset）</div>
+            <div className="text-sm font-medium mb-1">{t('setting.reset.title')}</div>
             {!showResetConfirm ? (
-              <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
+              <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">{t('setting.reset.button')}</button>
             ) : (
               <div>
-                <div className="text-sm text-accent mb-2 p-2 bg-accent/10 rounded border border-accent/25">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
+                <div className="text-sm text-accent mb-2 p-2 bg-accent/10 rounded border border-accent/25">{t('setting.reset.confirm')}</div>
                 <div className="flex gap-2">
-                  <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">リセット実行</button>
-                  <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">キャンセル</button>
+                  <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">{t('setting.reset.execute')}</button>
+                  <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">{t('common.cancel')}</button>
                 </div>
               </div>
             )}
