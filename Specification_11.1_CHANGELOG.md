@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 57 | 2026/07/18 | Route Japanese runtime strings and default party character names in useGameState through Japanese/English i18n keys. |
 | 0.8.2 | 56 | 2026/07/18 | Translate remaining Japanese values in the English i18n dictionary, including glossary, deity, magic, side quest, terrain, lineage, predisposition, and race entries. |
 | 0.8.2 | 55 | 2026/07/18 | Route Japanese text in dungeon, glossary, lineage, predisposition, and race data through Japanese/English i18n keys. |
 | 0.8.2 | 54 | 2026/07/18 | Route ability names, class labels, deity profile labels, expedition names, and mythic drop names through Japanese/English i18n keys. |
