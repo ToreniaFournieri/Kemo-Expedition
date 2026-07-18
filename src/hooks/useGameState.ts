@@ -112,7 +112,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage } from '../i18n';
+import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, t } from '../i18n';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -131,7 +131,7 @@ function generateUserId(): string {
   return `uuid-${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
 }
 const APPROX_CYCLE_STEP_COUNT = 30;
-const SAVE_LOAD_WARNING_MESSAGE = 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください';
+const SAVE_LOAD_WARNING_MESSAGE = t('auto.jp.fc6d50af2e');
 const VALID_GLOSSARY_ABILITY_IDS = new Set(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
 const VALID_GLOSSARY_TERRAIN_KEYS = new Set(
   (TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []).map((entry) => entry.key as TerrainEffectKey),
@@ -2501,8 +2501,8 @@ function buildDeityEffectLogEntry(
     return {
       phase: 'end',
       actor: 'effect',
-      action: '再生の女神の祝福！',
-      note: `(HP回復+${healAmount})`,
+      action: t('auto.jp.b871f82e74'),
+      note: t('game.log.hpHeal', { amount: healAmount }),
     };
   }
 
@@ -2510,8 +2510,8 @@ function buildDeityEffectLogEntry(
     return {
       phase: 'end',
       actor: 'effect',
-      action: '消耗の神への代償！',
-      note: `(HP消耗-${attritionAmount})`,
+      action: t('auto.jp.f8c08c2728'),
+      note: t('game.log.hpAttrition', { amount: attritionAmount }),
     };
   }
 
@@ -2519,95 +2519,95 @@ function buildDeityEffectLogEntry(
 }
 
 const TERRAIN_REJUVENATION_LOGS = [
-  '{actor} は周囲の活力に満たされ、体力を回復した',
-  '{actor} の傷がゆっくりと癒えていく',
-  '{actor} は大地の力を受け、HPを回復した',
-  '{actor} の身体に微かな活力が巡った',
-  '{actor} は自然の息吹に包まれ、回復した',
-  '{actor} の疲労がわずかに和らいだ',
-  '{actor} の傷口が静かにふさがっていく',
-  '{actor} は環境の恩恵を受け、体力を取り戻した',
-  '{actor} に穏やかな再生の力が働いた',
-  '{actor} の身体がじんわりと回復していく',
+  t('auto.jp.a4b7f2148e'),
+  t('auto.jp.39d24bcfb4'),
+  t('auto.jp.c772312b2f'),
+  t('auto.jp.47c83e24d9'),
+  t('auto.jp.eacf203fc2'),
+  t('auto.jp.dd72d1dc59'),
+  t('auto.jp.22c3a52eaf'),
+  t('auto.jp.defd6333f9'),
+  t('auto.jp.3f8d4c23b6'),
+  t('auto.jp.0cff5afd93'),
 ] as const;
 
 const TERRAIN_ROTWOOD_LOGS = [
-  '腐敗の気配が癒しを拒んだ…',
-  '大地は腐り、再生の力は働かない',
-  '生命の流れが淀み、回復は起こらない',
-  '癒しの力は腐敗に呑まれた',
-  '周囲は朽ち、再生の気配はない',
-  '腐敗した空気が、回復を阻んでいる',
-  '大地は死に、癒しは届かない',
-  '再生の力は遮られ、何も起こらない',
-  'すべてが朽ち、回復の兆しは消えた',
-  '腐敗が満ち、癒しの力は失われた',
+  t('auto.jp.f8911758dd'),
+  t('auto.jp.d692527a62'),
+  t('auto.jp.10f8557645'),
+  t('auto.jp.d216cafa0b'),
+  t('auto.jp.82617864a8'),
+  t('auto.jp.2d74bde74a'),
+  t('auto.jp.f89012fb55'),
+  t('auto.jp.1050fa2077'),
+  t('auto.jp.26ecf51ecc'),
+  t('auto.jp.eb47018bbd'),
 ] as const;
 
 const TERRAIN_ABUNDANT_LOGS = [
-  '豊かな力が満ち、体力が満たされた',
-  '大地の恵みが溢れ、体力が回復した',
-  '満ち足りた気配が、体を力で満たす',
-  '豊穣の力が流れ込み、体力が回復した',
-  'あふれる生命力が、体を満たしていく',
-  '大地の祝福が降り注ぎ、体力が回復した',
-  '力が満ち、失われた分を超えて満たされる',
-  '周囲に満ちる力が、体力を押し上げる',
-  '濃密な生命の気配が、体を満たす',
-  '豊かな流れが巡り、体力が回復した',
+  t('auto.jp.36b8679d09'),
+  t('auto.jp.7cc24bf1a6'),
+  t('auto.jp.773009388d'),
+  t('auto.jp.f2a8cf91fd'),
+  t('auto.jp.57ec4a9f8d'),
+  t('auto.jp.dc5390e61a'),
+  t('auto.jp.72cab2be69'),
+  t('auto.jp.980e60dd27'),
+  t('auto.jp.6b90d7f3b3'),
+  t('auto.jp.03da621c8b'),
 ] as const;
 
 const TERRAIN_DECAY_LOGS = [
-  '見えぬ力が心を蝕んだ…',
-  '正体不明の気配が、じわりと体力を削る',
-  '理解できぬ何かが、内側から力を奪う',
-  '不穏な気配が満ち、心が削られていく',
-  '触れられぬ何かが、確かに力を奪った',
-  '静かな異質さが、体力を侵食する',
-  '名状しがたい力が、じわじわと削っていく',
-  '違和感が広がり、気づかぬうちに力が失われる',
-  '不可視の圧力が、心をすり減らす',
-  '得体の知れぬ力が、体力を奪っていく',
+  t('auto.jp.a1e50f308c'),
+  t('auto.jp.7c768d9e90'),
+  t('auto.jp.e7c2948676'),
+  t('auto.jp.40f154a8d6'),
+  t('auto.jp.229e30d47f'),
+  t('auto.jp.53eea8a663'),
+  t('auto.jp.2bb38d8e2d'),
+  t('auto.jp.0052eff16d'),
+  t('auto.jp.be286201d3'),
+  t('auto.jp.5ca325c1b7'),
 ] as const;
 
 const TERRAIN_LEAKAGE_LOGS = [
-  '{target} に電流が走った！',
-  '{target} は漏電により感電した！',
-  '{target} の体を電撃が駆け抜けた！',
-  '{target} は不意の電流に打たれた！',
-  '{target} に漏れ出した電流が襲いかかった！',
-  '{target} は電撃により体力を失った！',
-  '{target} の周囲で電流が弾け、感電した！',
-  '{target} に稲妻のような電流が走る！',
-  '{target} は漏電の影響を受け、感電した！',
-  '{target} に不規則な電流が流れ込んだ！',
+  t('auto.jp.1594e881f7'),
+  t('auto.jp.65cd5f7161'),
+  t('auto.jp.0421a94457'),
+  t('auto.jp.da88d1e8a8'),
+  t('auto.jp.e8bae2bb34'),
+  t('auto.jp.a825059916'),
+  t('auto.jp.5c38054b37'),
+  t('auto.jp.e67716a9a2'),
+  t('auto.jp.b9c5d38613'),
+  t('auto.jp.2bf7bd39fe'),
 ] as const;
 
 
 const TERRAIN_HEATWAVE_LOGS = [
-  '灼熱の風が {actor} を焼いた！',
-  '熱波が押し寄せ、{actor} の体力を削った！',
-  'うだるような暑さが {actor} を蝕む！',
-  '焼けつく空気が {actor} を包み込んだ！',
-  '熱気が渦巻き、{actor} の力を奪った！',
-  '容赦ない熱波が {actor} を襲った！',
-  '焦げつくような空気が {actor} を消耗させる！',
-  '灼ける大気が {actor} を締めつけた！',
-  '熱波が吹き荒れ、{actor} のHPを削り取る！',
-  '逃げ場のない暑さが {actor} を苦しめた！',
+  t('auto.jp.d433ea2262'),
+  t('auto.jp.0d30da1652'),
+  t('auto.jp.7dd78be348'),
+  t('auto.jp.cac5af4b40'),
+  t('auto.jp.d8c4f83c29'),
+  t('auto.jp.e44af1f6f3'),
+  t('auto.jp.43f6c024b7'),
+  t('auto.jp.2d406b445d'),
+  t('auto.jp.2dfdc46e86'),
+  t('auto.jp.3955f3ddc2'),
 ] as const;
 
 const FIRST_AID_LOGS = [
-  '{actor}は応急処置を行った',
-  '{actor}は手早く傷を手当てした',
-  '{actor}は戦いの傷をその場で塞いだ',
-  '{actor}は乱れた呼吸を整えた',
-  '{actor}は自らに簡易手当てを施した',
-  '{actor}は傷口を押さえて持ち直した',
-  '{actor}は素早く体勢を立て直した',
-  '{actor}は慣れた手つきで止血した',
-  '{actor}は戦場の合間に傷を癒やした',
-  '{actor}は最小限の処置で回復した',
+  t('auto.jp.4d3ea1c8a8'),
+  t('auto.jp.8e8187a186'),
+  t('auto.jp.e5d9a08142'),
+  t('auto.jp.e2397f1630'),
+  t('auto.jp.c1a7dd6a5a'),
+  t('auto.jp.715bf63f5d'),
+  t('auto.jp.8c67fb9006'),
+  t('auto.jp.4d71a5db7e'),
+  t('auto.jp.d989cd3c63'),
+  t('auto.jp.c8e9b5293f'),
 ] as const;
 
 function getFirstAidHealRate(level: number): number {
@@ -2655,12 +2655,12 @@ function applyFirstAidHpEffect(
     if (healAmount <= 0) continue;
 
     const flavorText = FIRST_AID_LOGS[Math.floor(Math.random() * FIRST_AID_LOGS.length)]
-      ?? '{actor}は応急処置を行った';
+      ?? t('auto.jp.4d3ea1c8a8');
     logs.push({
       phase: 'end',
       actor: 'effect',
       action: flavorText.replace('{actor}', character.name),
-      note: `(HP回復+${healAmount})`,
+      note: t('game.log.hpHeal', { amount: healAmount }),
     });
 
     nextHp = Math.min(maxHp, nextHp + healAmount);
@@ -2754,24 +2754,24 @@ function applyTerrainDecayHpEffect(
 function buildTerrainAbundantLogEntry(healAmount?: number): BattleLogEntry | null {
   if (!healAmount || healAmount <= 0) return null;
   const flavorText = TERRAIN_ABUNDANT_LOGS[Math.floor(Math.random() * TERRAIN_ABUNDANT_LOGS.length)]
-    ?? '豊かな流れが巡り、体力が回復した';
+    ?? t('auto.jp.03da621c8b');
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText,
-    note: `(HP回復+${healAmount})`,
+    note: t('game.log.hpHeal', { amount: healAmount }),
   };
 }
 
 function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
   const flavorText = TERRAIN_DECAY_LOGS[Math.floor(Math.random() * TERRAIN_DECAY_LOGS.length)]
-    ?? '得体の知れぬ力が、体力を奪っていく';
+    ?? t('auto.jp.5ca325c1b7');
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText,
-    note: `(HP減少-${damageAmount})`,
+    note: t('game.log.hpDamage', { amount: damageAmount }),
   };
 }
 
@@ -2779,19 +2779,19 @@ function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null
 function buildTerrainRejuvenationLogEntry(actorName: string, healAmount?: number): BattleLogEntry | null {
   if (!healAmount || healAmount <= 0) return null;
   const flavorText = TERRAIN_REJUVENATION_LOGS[Math.floor(Math.random() * TERRAIN_REJUVENATION_LOGS.length)]
-    ?? '{actor} の身体がじんわりと回復していく';
+    ?? t('auto.jp.0cff5afd93');
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText.replace('{actor}', actorName),
-    note: `(HP回復+${healAmount})`,
+    note: t('game.log.hpHeal', { amount: healAmount }),
   };
 }
 
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rotwood
 function buildTerrainRotwoodLogEntry(): BattleLogEntry {
   const flavorText = TERRAIN_ROTWOOD_LOGS[Math.floor(Math.random() * TERRAIN_ROTWOOD_LOGS.length)]
-    ?? '腐敗が満ち、癒しの力は失われた';
+    ?? t('auto.jp.eb47018bbd');
   return {
     phase: 'end',
     actor: 'effect',
@@ -2853,13 +2853,13 @@ function applyTerrainLeakageHpEffect(
 function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
   const flavorText = TERRAIN_HEATWAVE_LOGS[Math.floor(Math.random() * TERRAIN_HEATWAVE_LOGS.length)]
-    ?? '逃げ場のない暑さが {actor} を苦しめた！';
+    ?? t('auto.jp.3955f3ddc2');
   return {
     phase: 'end',
     actor: 'effect',
     effectKind: 'terrain',
     action: flavorText.replace('{actor}', actorName),
-    note: `(HP減少-${damageAmount})`,
+    note: t('game.log.hpDamage', { amount: damageAmount }),
   };
 }
 
@@ -2867,12 +2867,12 @@ function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number):
 function buildTerrainLeakageLogEntry(targetName: string, damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
   const flavorText = TERRAIN_LEAKAGE_LOGS[Math.floor(Math.random() * TERRAIN_LEAKAGE_LOGS.length)]
-    ?? '{target} に不規則な電流が流れ込んだ！';
+    ?? t('auto.jp.2bf7bd39fe');
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText.replace('{target}', targetName),
-    note: `(HP減少 ⚡-${damageAmount})`,
+    note: t('game.log.hpThunderDamage', { amount: damageAmount }),
   };
 }
 
@@ -2882,37 +2882,37 @@ function buildRewardLogEntries(
   return rewardLogEntries.map((rewardEntry) => ({
     phase: 'end',
     actor: 'effect',
-    action: `${rewardEntry.itemName} を獲得した！`,
+    action: t('game.log.itemObtained', { item: rewardEntry.itemName }),
     note: rewardEntry.autoSellProfit && rewardEntry.autoSellProfit > 0
-      ? `(自動売却対象: ${rewardEntry.autoSellProfit}G)`
+      ? t('game.log.autoSellTarget', { amount: rewardEntry.autoSellProfit })
       : undefined,
   }));
 }
 
 const AURIFEROUS_LOGS = [
-  '{actor} の体に蓄えられた衝撃からアイテムが零れ落ちた！',
-  '{actor} は受けた攻撃により、装備の一部が露出した！',
-  '{actor} の内側から、価値あるアイテムが静かに形成された…',
-  '{actor} の体内で圧縮された力が、新たなる可能性の輝きとなった！',
-  '{actor} への打撃が重なることで、生成される価値が増している！',
-  '{actor} は打撃を受けるほど、何かを生成している…',
-  '{actor} の損傷が、別の形の“価値”へと転換された！',
-  '{actor} の肉体が圧縮され、素材としての価値を帯び始めた！',
-  '{actor} に刻まれた傷が、アイテムとなる因子へと変わった！',
-  '{actor} は攻撃の蓄積により、価値ある断片を生み出した！',
+  t('auto.jp.6210566513'),
+  t('auto.jp.fe83eae722'),
+  t('auto.jp.ca50cc6a99'),
+  t('auto.jp.24a6922d44'),
+  t('auto.jp.cd3b6f0501'),
+  t('auto.jp.daafdc6596'),
+  t('auto.jp.9932e8fabf'),
+  t('auto.jp.8a3caa810b'),
+  t('auto.jp.01bba62abd'),
+  t('auto.jp.dc0d0cd51a'),
 ] as const;
 
 function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
   if (bonusRolls <= 0) return null;
 
   const flavorText = AURIFEROUS_LOGS[Math.floor(Math.random() * AURIFEROUS_LOGS.length)]
-    ?? '{actor} は攻撃の蓄積により、価値ある断片を生み出した！';
+    ?? t('auto.jp.dc0d0cd51a');
 
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText.replace('{actor}', actorName),
-    note: `(累計${totalHitsReceived}回→ +${bonusRolls}回抽選回数増加)`,
+    note: t('game.log.auriferousBonus', { totalHits: totalHitsReceived, bonusRolls }),
   };
 }
 
@@ -3151,7 +3151,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   false,
                   effectiveDifficultyOffset,
                 ),
-                enemyName: '[扉が封印されている]',
+                enemyName: t('auto.jp.270d06353e'),
                 enemyHP: 0,
                 enemyAttackValues: '',
                 outcome: 'draw', // Not a battle - displayed as 未到達
@@ -3507,8 +3507,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push({
                   phase: 'end',
                   actor: 'deity',
-                  action: '撤退',
-                  note: 'HPが30%以下のため、戦利品を持ち帰ります。',
+                  action: t('auto.jp.2660ad39fa'),
+                  note: t('auto.jp.36cbc2e27f'),
                 });
               } else {
                 const decayHpEffect = applyTerrainDecayHpEffect(
@@ -3543,7 +3543,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   entry.details.push({
                     phase: 'end',
                     actor: 'deity',
-                    action: '探索深度に到達した為帰還します',
+                    action: t('auto.jp.96b6003d0c'),
                   });
                 }
               }
