@@ -1972,51 +1972,36 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   return [dParts.join(' '), bParts.join(' '), eText, mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
-function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
+function getJewelCBonusLabelKey(bonusType: typeof JEWEL_DEFS[JewelKey]['cBonusType']): string {
+  return `jewel.status.cBonus.${bonusType}`;
+}
+
+function getJewelDStatLabelKey(stat: typeof JEWEL_DEFS[JewelKey]['dBaseBonuses'][number]['stat']): string {
+  return `jewel.status.dStat.${stat}`;
+}
+
+function formatJewelStatusText(jewelKey: JewelKey, rank: number): string {
   const jewel = JEWEL_DEFS[jewelKey];
   const cValue = getJewelCBonusValue(jewelKey, rank);
-  const cText = (() => {
-    if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_attack') return `[魔攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'physical_defense') return `[物防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_defense') return `[魔防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'accuracy') return `[命中+${Math.round(cValue * 1000)}]`;
-    if (jewel.cBonusType === 'evasion') return `[回避+${Math.round(cValue * 1000)}]`;
-    return '';
-  })();
-  const dText = jewel.dBaseBonuses.map((bonus) => {
-    const value = getJewelDRankValue(bonus.base, rank);
-    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
-    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
-    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
-    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
-    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
-    return `HP+${value}`;
-  }).join(' ');
-  return [`[${getJewelShortLabel(jewelKey)}${rank}]`, cText, dText].filter(Boolean).join(' ');
+  const cMagnitude = jewel.cBonusType === 'accuracy' || jewel.cBonusType === 'evasion'
+    ? Math.round(cValue * 1000)
+    : `${Math.round(cValue * 100)}%`;
+  const cText = t('jewel.status.bracketedBonus', {
+    label: t(getJewelCBonusLabelKey(jewel.cBonusType)),
+    value: cMagnitude,
+  });
+  const dText = jewel.dBaseBonuses.map((bonus) => t('jewel.status.flatBonus', {
+    label: t(getJewelDStatLabelKey(bonus.stat)),
+    value: getJewelDRankValue(bonus.base, rank),
+  })).join(' ');
+
+function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
+  return formatJewelStatusText(jewelKey, rank);
 }
 
 function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): string {
-  const jewel = JEWEL_DEFS[jewelKey];
-  const cValue = getJewelCBonusValue(jewelKey, rank);
-  const cText = (() => {
-    if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_attack') return `[魔攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'physical_defense') return `[物防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_defense') return `[魔防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'accuracy') return `[命中+${Math.round(cValue * 1000)}]`;
-    if (jewel.cBonusType === 'evasion') return `[回避+${Math.round(cValue * 1000)}]`;
-    return '';
-  })();
-  const dText = jewel.dBaseBonuses.map((bonus) => {
-    const value = getJewelDRankValue(bonus.base, rank);
-    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
-    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
-    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
-    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
-    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
-    return `HP+${value}`;
-  }).join(' ');
+  return formatJewelStatusText(jewelKey, rank);
+}
 
   return [`[${getJewelShortLabel(jewelKey)}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
