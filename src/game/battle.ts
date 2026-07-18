@@ -1376,7 +1376,7 @@ function getResonanceLogText(
   }
 
   const bonusPercent = getResonanceBonusPerHit(resonance.level) * successfulHits;
-  return `(共鳴+${bonusPercent}%)`;
+  return `(${t('battleLog.note.resonanceBonus', { percent: bonusPercent })})`;
 }
 
 function mergeAttackBonusLogText(...bonusTexts: string[]): string {
@@ -2400,24 +2400,25 @@ export function executeBattle(
   const partyDeityKey = getDeityKey(party.deity.name);
   const terrainEntry = environment.terrainEffect ? getTerrainEffectGlossaryEntry(environment.terrainEffect) : undefined;
 
-  if (terrainEntry) {
-    const terrainDescription = environment.terrainEffect === 'terrain.chill'
-      ? '部屋の継続時間が1.5倍になる'
-      : terrainEntry.description;
+  if (terrainEntry && environment.terrainEffect) {
+    const terrainLabel = t(`terrainEffect.${environment.terrainEffect}.label`);
+    const terrainDescription = t(`terrainEffect.${environment.terrainEffect}.description`);
 
     log.push({
       phase: 'start',
       actor: 'effect',
       effectKind: 'terrain',
-      action: terrainEntry.label,
-      note: `(${terrainDescription})`,
+      action: terrainLabel === `terrainEffect.${environment.terrainEffect}.label` ? terrainEntry.label : terrainLabel,
+      note: `(${terrainDescription === `terrainEffect.${environment.terrainEffect}.description` ? terrainEntry.description : terrainDescription})`,
       noteTone: 'muted',
     });
   }
 
   // SpecRef: 6.1.1.1 | START phase | actor.a.domain-breaker
   if (isDomainTerrainEffect(environment.terrainEffect)) {
-    const domainLabel = terrainEntry?.label ?? '領域';
+    const terrainKey = environment.terrainEffect;
+    const localizedDomainLabel = terrainKey ? t(`terrainEffect.${terrainKey}.label`) : '';
+    const domainLabel = localizedDomainLabel && localizedDomainLabel !== `terrainEffect.${terrainKey}.label` ? localizedDomainLabel : terrainEntry?.label ?? t('battle.terrain.domainFallback');
     const domainBreakerOwners = [
       ...characterStats
         .filter((stats) => hasAbility(stats.abilities, 'domain_breaker'))
@@ -4885,8 +4886,8 @@ export function executeBattle(
               : null;
 
             const reflectedAttemptText = enemyAttackBonusLogText
-              ? `${appliedHits}/${attack.totalAttempts}回, ${enemyAttackBonusLogText.slice(1, -1)}`
-              : `${appliedHits}/${attack.totalAttempts}回`;
+              ? `${t('battleLog.note.attempts', { hits: appliedHits, total: attack.totalAttempts })}, ${enemyAttackBonusLogText.slice(1, -1)}`
+              : t('battleLog.note.attempts', { hits: appliedHits, total: attack.totalAttempts });
 
             triggerPartyDefeatRecovery(attack.charStats, phase, turn.roll, true);
             // SpecRef: 6.1.3.1 | Actor action | actor.a.requiem
