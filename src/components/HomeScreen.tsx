@@ -1130,14 +1130,7 @@ const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
   mythicRare: 'M',
 };
 
-const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
-  all: '全て',
-  common: '通常',
-  uncommon: 'アンコモン',
-  eliteRare: 'エリートレア',
-  bossRare: 'ボスレア',
-  mythicRare: '神魔レア',
-};
+const getRarityFilterNote = (filter: RarityFilter): string => t(`party.rarity.${filter}`);
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
 
@@ -2697,32 +2690,16 @@ const CATEGORY_NAMES: Record<string, string> = {
   arrow: '矢',
 };
 
-// Category short names for tabs
-const CATEGORY_SHORT_NAMES: Record<string, string> = {
-  sword: '剣',
-  katana: '刀',
-  archery: '弓',
-  armor: '鎧',
-  gauntlet: '手',
-  wand: '杖',
-  robe: '衣',
-  shield: '盾',
-  bolt: 'ボ',
-  grimoire: '書',
-  catalyst: '媒',
-  arrow: '矢',
-};
-
 // Category groups for tabs
 const CATEGORY_GROUPS = [
-  { id: 'durability', label: '耐久', categories: ['armor', 'robe', 'shield'] },
-  { id: 'melee', label: '近距離攻撃', categories: ['sword', 'katana', 'gauntlet'] },
-  { id: 'ranged', label: '遠距離攻撃', categories: ['arrow', 'bolt', 'archery'] },
-  { id: 'magic', label: '魔法攻撃', categories: ['wand', 'grimoire', 'catalyst'] },
+  { id: 'durability', labelKey: 'party.category.durability', categories: ['armor', 'robe', 'shield'] },
+  { id: 'melee', labelKey: 'party.category.melee', categories: ['sword', 'katana', 'gauntlet'] },
+  { id: 'ranged', labelKey: 'party.category.ranged', categories: ['arrow', 'bolt', 'archery'] },
+  { id: 'magic', labelKey: 'party.category.magic', categories: ['wand', 'grimoire', 'catalyst'] },
 ];
 
 const INVENTORY_CATEGORY_GROUPS = [
-  { id: 'jewel', label: '晶', categories: ['jewel'] },
+  { id: 'jewel', labelKey: 'party.category.jewel', categories: ['jewel'] },
   ...CATEGORY_GROUPS,
 ];
 
@@ -8274,10 +8251,10 @@ function PartyTab({
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">
                   {selectingSlot !== null
-                    ? `スロット ${selectingSlot + 1} に装備`
+                    ? t('party.equipment.slotEquip', { slot: selectingSlot + 1 })
                     : hasEmptySlot
-                      ? 'タップで装備/解除'
-                      : 'スロットを選択してください'}
+                      ? t('party.equipment.tapEquipUnequip')
+                      : t('party.equipment.selectSlot')}
                 </span>
                 {selectingSlot !== null && (
                   <div className="flex gap-2">
@@ -8286,20 +8263,20 @@ function PartyTab({
                         onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
                         className="text-xs text-accent px-2 py-1 border border-accent/40 rounded bg-white"
                       >
-                        外す
+                        {t('party.equipment.remove')}
                       </button>
                     )}
                     <button
                       onClick={() => setSelectingSlot(null)}
                       className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
                     >
-                      解除
+                      {t('party.equipment.clearSelection')}
                     </button>
                   </div>
                 )}
               </div>
               <div className="mt-1 flex justify-end items-center gap-1">
-                <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[partyRarityFilter]}</span>
+                <span className="text-xs text-gray-500">{getRarityFilterNote(partyRarityFilter)}</span>
                 {RARITY_FILTER_OPTIONS.map(filter => (
                   <button
                     key={filter}
@@ -8309,12 +8286,12 @@ function PartyTab({
                         ? 'bg-sub text-white border-sub'
                         : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
                     }`}
-                    title={RARITY_FILTER_NOTES[filter]}
+                    title={getRarityFilterNote(filter)}
                   >
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
-                <span className="text-xs text-gray-500"> 超レア</span>
+                <span className="text-xs text-gray-500"> {t('party.equipment.superRare')}</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
                   className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
@@ -8331,7 +8308,7 @@ function PartyTab({
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
               {availableCategoryGroups.map(group => (
                 <div key={group.id} className="flex flex-col">
-                  <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+                  <div className="text-xs text-gray-400 text-center mb-0.5">{t(group.labelKey)}</div>
                   <div className="flex">
                     {group.categories.map((cat, i) => (
                       <button
@@ -8345,7 +8322,7 @@ function PartyTab({
                             : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                         }`}
                       >
-                        {CATEGORY_SHORT_NAMES[cat]}
+                        {t(`party.categoryShort.${cat}`)}
                       </button>
                     ))}
                   </div>
@@ -8396,7 +8373,7 @@ function PartyTab({
                 </button>
               ))}
               {filteredDisplayItems.length === 0 && (
-                <div className="text-gray-400 text-sm text-center py-2">このカテゴリに装備可能なアイテムがありません</div>
+                <div className="text-gray-400 text-sm text-center py-2">{t('party.equipment.noItemsInCategory')}</div>
               )}
             </div>
           </div>
@@ -9082,7 +9059,7 @@ function ExpeditionTab({
                     )}
                     className="w-11 px-1 py-1 text-xs font-medium whitespace-nowrap text-center"
                   >
-                    {party.expeditionDestinationMode === 'auto' ? '一任' : '固定'}
+                    {party.expeditionDestinationMode === 'auto' ? t('party.expedition.mode.auto') : t('party.expedition.mode.fixed')}
                   </button>
                   <select
                     value={party.selectedDungeonId}
@@ -9111,7 +9088,7 @@ function ExpeditionTab({
                       disabled={isGodsBattleButtonDisabled}
                       className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isGodsBattleButtonDisabled ? '' : 'liquid-glass-sortie-button--accent'}`}
                     >
-                      神魔戦
+                      {t('party.expedition.godsBattle')}
                     </button>
                   )}
                   <button
@@ -9119,13 +9096,13 @@ function ExpeditionTab({
                     disabled={isSortieDisabled}
                     className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : 'liquid-glass-sortie-button--sub'}`}
                   >
-                    出撃
+                    {t('party.expedition.sortie')}
                   </button>
                 </div>
                 {isDifficultyOffsetUnlocked && (
                   <div className="text-xs text-gray-600 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="shrink-0">難易度:</span>
+                      <span className="shrink-0">{t('party.expedition.difficulty')}</span>
                       <input
                         type="range"
                         min={0}
@@ -9165,14 +9142,14 @@ function ExpeditionTab({
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
-                      踏破{formatNumber(displayedExpeditionStats.Clear)}/帰還{formatNumber(displayedExpeditionStats.Turned_Back)}/引分{formatNumber(displayedExpeditionStats.Draw_Retreat)}/撤退{formatNumber(displayedExpeditionStats.Wounded_Retreat)}/敗北{formatNumber(displayedExpeditionStats.Defeat)} 合計 {formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat)}回
+                      {t('party.expedition.stats', { clear: formatNumber(displayedExpeditionStats.Clear), returned: formatNumber(displayedExpeditionStats.Turned_Back), draw: formatNumber(displayedExpeditionStats.Draw_Retreat), retreat: formatNumber(displayedExpeditionStats.Wounded_Retreat), defeat: formatNumber(displayedExpeditionStats.Defeat), total: formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat) })}
                     </span>
                     <button
                       type="button"
                       onClick={() => onResetExpeditionStats(partyIndex)}
                       className="shrink-0 underline hover:text-accent"
                     >
-                      リセット
+                      {t('party.expedition.reset')}
                     </button>
                   </div>
                 )}
@@ -9900,7 +9877,7 @@ function DebugStoreTab({
       <div className="flex gap-1 overflow-x-auto pb-1">
         {INVENTORY_CATEGORY_GROUPS.map((group) => (
           <div key={group.id} className="flex flex-col">
-            <div className="mb-0.5 text-center text-xs text-gray-400">{group.label}</div>
+            <div className="mb-0.5 text-center text-xs text-gray-400">{t(group.labelKey)}</div>
             <div className="flex">
               {group.categories.map((cat, i) => (
                 <button
@@ -9914,7 +9891,7 @@ function DebugStoreTab({
                       : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                 >
-                  {cat === 'jewel' ? '晶' : CATEGORY_SHORT_NAMES[cat]}
+                  {t(cat === 'jewel' ? 'party.categoryShort.jewel' : `party.categoryShort.${cat}`)}
                 </button>
               ))}
             </div>
@@ -10316,7 +10293,7 @@ function InventoryTab({
         <div className="flex justify-end items-center gap-1">
           {!isJewelCategory && (
             <>
-          <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
+          <span className="text-xs text-gray-500">{getRarityFilterNote(inventoryRarityFilter)}</span>
           {RARITY_FILTER_OPTIONS.map(filter => (
             <button
               key={filter}
@@ -10326,12 +10303,12 @@ function InventoryTab({
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
               }`}
-              title={RARITY_FILTER_NOTES[filter]}
+              title={getRarityFilterNote(filter)}
             >
               {RARITY_FILTER_LABELS[filter]}
             </button>
           ))}
-          <span className="text-xs text-gray-500"> 超レア</span>
+          <span className="text-xs text-gray-500"> {t('party.equipment.superRare')}</span>
           <button
             onClick={() => setInventorySuperRareOnly(prev => !prev)}
             className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
@@ -10351,7 +10328,7 @@ function InventoryTab({
       <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
         {categoryGroups.map(group => (
           <div key={group.id} className="flex flex-col">
-            <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+            <div className="text-xs text-gray-400 text-center mb-0.5">{t(group.labelKey)}</div>
             <div className="flex">
               {group.categories.map((cat, i) => (
                 <button
@@ -10365,7 +10342,7 @@ function InventoryTab({
                       : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                 >
-                  {cat === 'jewel' ? '晶' : CATEGORY_SHORT_NAMES[cat]}
+                  {t(cat === 'jewel' ? 'party.categoryShort.jewel' : `party.categoryShort.${cat}`)}
                 </button>
               ))}
             </div>
@@ -10565,7 +10542,7 @@ function InventoryTab({
                       onClick={() => onSetVariantStatus(key, 'notown')}
                       className="text-xs text-sub px-2 py-1 border border-sub rounded"
                     >
-                      解除
+                      {t('party.equipment.clearSelection')}
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -13094,7 +13071,7 @@ function SettingTab({
         {divineBureauPanelExpanded.itemCompendium && <>
         <div className="flex justify-end items-center gap-1 mt-3 mb-3">
           <span className="text-xs text-gray-500">
-            {compendiumRarityFilter === 'all' ? '全て表示' : `${RARITY_FILTER_NOTES[compendiumRarityFilter]}のみ`}
+            {compendiumRarityFilter === 'all' ? t('party.rarity.showAll') : t('party.rarity.only', { rarity: getRarityFilterNote(compendiumRarityFilter) })}
           </span>
           {RARITY_FILTER_OPTIONS.map(filter => (
             <button
@@ -13105,7 +13082,7 @@ function SettingTab({
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
               }`}
-              title={RARITY_FILTER_NOTES[filter]}
+              title={getRarityFilterNote(filter)}
             >
               {RARITY_FILTER_LABELS[filter]}
             </button>
@@ -13114,7 +13091,7 @@ function SettingTab({
         <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
           {CATEGORY_GROUPS.map(group => (
             <div key={group.id} className="flex flex-col">
-              <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+              <div className="text-xs text-gray-400 text-center mb-0.5">{t(group.labelKey)}</div>
               <div className="flex">
                 {group.categories.map((cat, i) => (
                   <button
@@ -13128,7 +13105,7 @@ function SettingTab({
                         : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                     }`}
                   >
-                    {CATEGORY_SHORT_NAMES[cat]}
+                    {t(`party.categoryShort.${cat}`)}
                   </button>
                 ))}
               </div>

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 4 | 2026/07/18 | Expand runtime Party tab localization: route equipment slot prompts, rarity/category tabs, super-rare labels, sortie controls, difficulty label, and expedition stats controls through Japanese/English translation keys. |
 | 0.8.2 | 3 | 2026/07/18 | Implement runtime language mode selection: resolve Japanese/English from the `lang` URL parameter with Japanese default, persist the selected language in local storage, and apply that runtime preference over saved game data on startup. |
 | 0.8.2 | 2 | 2026/07/18 | Add runtime localization groundwork (Spec 8.1/5.1.4): introduce Japanese/English dictionaries with Japanese fallback, persist the selected language in game state, and route core navigation/loading/settings labels through translation lookup while preserving Japanese number formatting. |
 | 0.8.2 | 1 | 2026/07/18 | Prepare v0.8.2 runtime update: bump app version to `v0.8.2` and reset build number to `1`. |
