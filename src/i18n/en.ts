@@ -3763,6 +3763,18 @@ const en = {
   'party.categoryName.arrow': 'Arrow',
   'party.categoryName.unknown': 'Unknown',
 
+  'home.progressReport.statusHeader.partyPosition': 'Party-Row',
+  'home.progressReport.statusHeader.nameAndBuild': 'Name, Build',
+  'home.progressReport.statusHeader.physicalDefense': 'P.Def',
+  'home.progressReport.statusHeader.magicalDefense': 'M.Def',
+  'home.progressReport.statusHeader.evasionAndPenetration': 'Evasion, Penetration',
+  'home.progressReport.statusHeader.attack': 'Attack',
+  'home.progressReport.statusHeader.elementalDefense': 'Elem.Def',
+  'home.progressReport.statusHeader.abilities': 'Abilities',
+  'home.progressReport.attackSummary.ranged': 'Rng {attack}. {multiplier}, {count} hits',
+  'home.progressReport.attackSummary.magic': 'Mag {attack}. {multiplier}, {count} casts',
+  'home.progressReport.attackSummary.melee': 'Mel {attack}. {multiplier}, {count} hits',
+
 } as const;
 
 export default en;
