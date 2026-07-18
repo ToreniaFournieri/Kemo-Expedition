@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 44 | 2026/07/18 | Refine item-tier 7 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
 | 0.8.2 | 43 | 2026/07/18 | Refine item-tier 6 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
 | 0.8.2 | 42 | 2026/07/18 | Refine item-tier 5 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
 | 0.8.2 | 41 | 2026/07/18 | Refine item-tier 4 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
