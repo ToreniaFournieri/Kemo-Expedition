@@ -4,7 +4,7 @@ import { getItemById, getItemsByTierAndRarity } from './items';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from '../game/enemyPassiveAbilities';
 import { buildEnemyClassMasterStats } from './enemyClasses';
-import { getLanguage, t } from '../i18n';
+import { t } from '../i18n';
 
 // ============================================================
 // EnemyTemplate type - compact format for defining enemies
@@ -391,7 +391,7 @@ function createEnemyFromTemplate(
     spawnTier: tier,
     spawnPool,
     poolId,
-    name: template.nameKey && getLanguage() === 'en' ? t(template.nameKey) : template.name,
+    name: template.nameKey ? t(template.nameKey) : template.name,
     enemyClass,
     enemySubClass,
     abilities: enemyAbilities,
