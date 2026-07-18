@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 16 | 2026/07/18 | Route additional runtime Japanese UI strings in enemy stat formatting and Divine Bureau mode/feedback panels through Japanese/English i18n keys. |
 | 0.8.2 | 15 | 2026/07/18 | Define the master-data i18n boundary and route class/enemy-type display short labels through Japanese/English translation keys. |
 | 0.8.2 | 14 | 2026/07/18 | Translate remaining Japanese entries in the English i18n dictionary for magic labels, runtime logs, and battle/environment narration. |
 | 0.8.2 | 13 | 2026/07/18 | Route HomeScreen developer news, enemy bubble labels, AFK summary, auto-sell, reward, and gate strings through Japanese/English i18n templates. |
