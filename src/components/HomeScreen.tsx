@@ -1788,7 +1788,7 @@ function getItemDisplayMultiplier(item: Item, categoryMultiplier: number = 1): n
 }
 
 function getItemInventoryDetailText(item: Item): string {
-  return `[${CATEGORY_NAMES[item.category]}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
+  return `[${t(CATEGORY_NAME_KEYS[item.category] ?? 'party.categoryName.unknown')}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
 }
 
 type RewardItemBubble = {
@@ -1863,7 +1863,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
       bonus.type === 'ability'
       || bonus.type === 'ability_upgrade'
       || bonus.type === 'unimplemented_bonus'
-      || bonus.type in UNLOCK_ABILITY_BONUS_LABELS
+      || bonus.type in UNLOCK_ABILITY_BONUS_LABEL_KEYS
     ) {
       return 'other';
     }
@@ -2156,13 +2156,13 @@ const ABILITY_NAMES: Record<string, string> = { ...ABILITY_BASE_NAMES };
 
 const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
   id: BonusAbilityGlossarySubcategoryId;
-  shortLabel: '常' | '征' | '反' | '時';
+  shortLabelKey: string;
   labelKey: string;
 }> = [
-  { id: 'passive', shortLabel: '常', labelKey: 'home.bonusAbility.subcategory.passive' },
-  { id: 'expedition', shortLabel: '征', labelKey: 'home.bonusAbility.subcategory.expedition' },
-  { id: 'reactive', shortLabel: '反', labelKey: 'home.bonusAbility.subcategory.reactive' },
-  { id: 'timed', shortLabel: '時', labelKey: 'home.bonusAbility.subcategory.timed' },
+  { id: 'passive', shortLabelKey: 'home.bonusAbility.subcategory.passiveShort', labelKey: 'home.bonusAbility.subcategory.passive' },
+  { id: 'expedition', shortLabelKey: 'home.bonusAbility.subcategory.expeditionShort', labelKey: 'home.bonusAbility.subcategory.expedition' },
+  { id: 'reactive', shortLabelKey: 'home.bonusAbility.subcategory.reactiveShort', labelKey: 'home.bonusAbility.subcategory.reactive' },
+  { id: 'timed', shortLabelKey: 'home.bonusAbility.subcategory.timedShort', labelKey: 'home.bonusAbility.subcategory.timed' },
 ];
 
 const ABILITY_HELP_TEXT_KEYS: Record<string, string> = {
@@ -2416,25 +2416,17 @@ function formatMultiplierAsFraction(value: number): string {
   return formatMultiplierValue(value);
 }
 
-function formatDefenseMultiplierBonus(label: string, value: number): string {
-  return `${label}x${formatMultiplierAsFraction(value)}`;
-}
-
-function formatElementalResistanceBonus(label: string, value: number): string {
-  return `${label}x${formatMultiplierAsFraction(value)}`;
-}
-
-const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
-  unlock_caninian_ability: '🐶解放',
-  unlock_lupinian_ability: '🐺解放',
-  unlock_vulpinian_ability: '🦊解放',
-  unlock_ursan_ability: '🐻解放',
-  unlock_felidian_ability: '😺解放',
-  unlock_mustelid_ability: '🦡解放',
-  unlock_leporian_ability: '🐰解放',
-  unlock_cervin_ability: '🦌解放',
-  unlock_murid_ability: '🐭解放',
-  unlock_procyonian_ability: '🦝解放',
+const UNLOCK_ABILITY_BONUS_LABEL_KEYS: Partial<Record<BonusType, string>> = {
+  unlock_caninian_ability: 'party.bonus.unlockAbility.caninian',
+  unlock_lupinian_ability: 'party.bonus.unlockAbility.lupinian',
+  unlock_vulpinian_ability: 'party.bonus.unlockAbility.vulpinian',
+  unlock_ursan_ability: 'party.bonus.unlockAbility.ursan',
+  unlock_felidian_ability: 'party.bonus.unlockAbility.felidian',
+  unlock_mustelid_ability: 'party.bonus.unlockAbility.mustelid',
+  unlock_leporian_ability: 'party.bonus.unlockAbility.leporian',
+  unlock_cervin_ability: 'party.bonus.unlockAbility.cervin',
+  unlock_murid_ability: 'party.bonus.unlockAbility.murid',
+  unlock_procyonian_ability: 'party.bonus.unlockAbility.procyonian',
 };
 
 
@@ -2450,13 +2442,13 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'equip_slot') {
       parts.push(`${t('party.bonus.equip_slot')}+${b.value}`);
     } else if (b.type === 'vitality') {
-      parts.push(`体${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.vitality', { value: formatSigned(b.value) }));
     } else if (b.type === 'strength') {
-      parts.push(`力${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.strength', { value: formatSigned(b.value) }));
     } else if (b.type === 'intelligence') {
-      parts.push(`知${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.intelligence', { value: formatSigned(b.value) }));
     } else if (b.type === 'mind') {
-      parts.push(`精${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.mind', { value: formatSigned(b.value) }));
     } else if (b.type === 'grit' || b.type === 'equip_melee') {
       parts.push(t('party.bonus.equip_melee'));
     } else if (b.type === 'caster' || b.type === 'equip_magic') {
@@ -2466,103 +2458,103 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'pursuit' || b.type === 'equip_ranged') {
       parts.push(t('party.bonus.equip_ranged'));
     } else if (b.type === 'antagonism') {
-      parts.push('⚠️敵対');
+      parts.push(t('party.bonusDisplay.antagonism'));
     } else if (b.type === 'accuracy') {
       const rounded = Math.round(b.value * 1000);
       parts.push(`${t('party.bonus.accuracy')}${rounded >= 0 ? '+' : ''}${rounded}`);
     } else if (b.type === 'evasion') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`回避${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(t('party.bonusDisplay.evasion', { value: `${rounded >= 0 ? '+' : ''}${rounded}` }));
     } else if (b.type === 'deity_accuracy') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`天命中${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(t('party.bonusDisplay.deityAccuracy', { value: `${rounded >= 0 ? '+' : ''}${rounded}` }));
     } else if (b.type === 'deity_evasion') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`天回避${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(t('party.bonusDisplay.deityEvasion', { value: `${rounded >= 0 ? '+' : ''}${rounded}` }));
     } else if (b.type === 'deity_move_first') {
-      parts.push(`天速度+${b.value}`);
+      parts.push(t('party.bonusDisplay.deityMoveFirst', { value: b.value }));
     } else if (b.type === 'melee_attack') {
-      parts.push(`近攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.meleeAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'ranged_attack') {
-      parts.push(`遠攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.rangedAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'magical_attack') {
-      parts.push(`魔攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.magicalAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'physical_attack') {
-      parts.push(`物攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.physicalAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'physical_defense') {
-      parts.push(`物防+${formatRatePercent(b.value)}%`);
+      parts.push(t('party.bonusDisplay.physicalDefense', { value: formatRatePercent(b.value) }));
     } else if (b.type === 'magical_defense') {
-      parts.push(`魔防+${formatRatePercent(b.value)}%`);
+      parts.push(t('party.bonusDisplay.magicalDefense', { value: formatRatePercent(b.value) }));
     } else if (b.type === 'fire_offense') {
-      parts.push(`炎攻+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.fireOffense', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'ice_offense') {
-      parts.push(`氷攻+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.iceOffense', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'thunder_offense') {
-      parts.push(`雷攻+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.thunderOffense', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'deity_physical_attack_xV') {
-      parts.push(`天物攻x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityPhysicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'deity_magical_attack_xV') {
-      parts.push(`天魔攻x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityMagicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'physical_offense_multiplier_xV') {
-      parts.push(`物攻撃x${b.value.toFixed(2)}`);
+      parts.push(t('party.bonusDisplay.physicalOffenseMultiplier', { value: b.value.toFixed(2) }));
     } else if (b.type === 'magical_offense_multiplier_xV') {
-      parts.push(`魔攻撃x${b.value.toFixed(2)}`);
+      parts.push(t('party.bonusDisplay.magicalOffenseMultiplier', { value: b.value.toFixed(2) }));
     } else if (b.type === 'deity_physical_defense_x2/3') {
-      parts.push('天物防2/3');
+      parts.push(t('party.bonusDisplay.deityPhysicalDefenseTwoThirds'));
     } else if (b.type === 'deity_physical_defense_xV' || b.type === 'deity_pysical_defense_xV') {
-      parts.push(`天物防x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityPhysicalDefenseMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'deity_magical_defense_x2/3') {
-      parts.push('天魔防2/3');
+      parts.push(t('party.bonusDisplay.deityMagicalDefenseTwoThirds'));
     } else if (b.type === 'deity_magical_defense_xV') {
-      parts.push(`天魔防x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityMagicalDefenseMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'physical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('物防', b.value)
-          : `物防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.physicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.physicalDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'magical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('魔防', b.value)
-          : `魔防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.magicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.magicalDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'fire_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('炎防', b.value)
-          : `炎防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.fireDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.fireDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'ice_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('氷防', b.value)
-          : `氷防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.iceDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.iceDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('雷防', b.value)
-          : `雷防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.thunderDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.thunderDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'fire_defense') {
-      parts.push(`炎防${Math.round(b.value)}%`);
+      parts.push(t('party.bonusDisplay.fireDefense', { value: Math.round(b.value) }));
     } else if (b.type === 'ice_defense') {
-      parts.push(`氷防${Math.round(b.value)}%`);
+      parts.push(t('party.bonusDisplay.iceDefense', { value: Math.round(b.value) }));
     } else if (b.type === 'thunder_defense') {
-      parts.push(`雷防${Math.round(b.value)}%`);
+      parts.push(t('party.bonusDisplay.thunderDefense', { value: Math.round(b.value) }));
     } else if (b.type === 'growth_xV') {
-      parts.push(`成長${formatMultiplierValue(b.value)}倍`);
+      parts.push(t('party.bonusDisplay.growthMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
     } else if (b.type === 'ability_upgrade' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
-      parts.push(`${name}強化+${b.value}`);
+      parts.push(t('party.bonusDisplay.abilityUpgrade', { name, value: b.value }));
     } else if (b.type === 'unimplemented_bonus') {
-      parts.push(`(${b.unimplementedLabel || '未実装ボーナス'})`);
-    } else if (b.type in UNLOCK_ABILITY_BONUS_LABELS) {
-      parts.push(UNLOCK_ABILITY_BONUS_LABELS[b.type as BonusType] ?? '[解放]');
+      parts.push(t('party.bonusDisplay.parenthetical', { label: b.unimplementedLabel || t('party.bonusDisplay.unimplemented') }));
+    } else if (b.type in UNLOCK_ABILITY_BONUS_LABEL_KEYS) {
+      parts.push(t(UNLOCK_ABILITY_BONUS_LABEL_KEYS[b.type as BonusType] ?? 'party.bonus.unlockAbility.generic'));
     }
   }
   return parts.join(', ');
@@ -2602,7 +2594,7 @@ function getBonusHelpDescription(bonus: Bonus): string | null {
   if (bonus.type === 'growth_xV') return t('party.bonusHelp.growthMultiplier', { value: formatMultiplierValue(bonus.value) });
   if (bonus.type === 'ability_upgrade' && bonus.abilityId) return t('party.bonusHelp.abilityUpgrade', { ability: ABILITY_NAMES[bonus.abilityId] || bonus.abilityId, value: bonus.value });
 
-  if (bonus.type in UNLOCK_ABILITY_BONUS_LABELS) {
+  if (bonus.type in UNLOCK_ABILITY_BONUS_LABEL_KEYS) {
     return t('party.bonusHelp.unlockRaceAbility');
   }
 
@@ -2652,63 +2644,63 @@ function getRaceBonusesForSelection(race: Race, unlockAbilityActive = false): Bo
   );
 }
 
-const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
-  none: '-',
-  aggressive: '好',
-  inquisitive: '探',
-  amiable: '和',
-  stubborn: '頑',
-  evasive: '避',
-  introspective: '内',
-  devoted: '献',
-  serene: '冷',
-  nimble: '軽',
-  perceptive: '看',
-  precise: '精',
-  resourceful: '腕',
+const PREDISPOSITION_SHORT_NAME_KEYS: Record<string, string> = {
+  none: 'party.predispositionShort.none',
+  aggressive: 'party.predispositionShort.aggressive',
+  inquisitive: 'party.predispositionShort.inquisitive',
+  amiable: 'party.predispositionShort.amiable',
+  stubborn: 'party.predispositionShort.stubborn',
+  evasive: 'party.predispositionShort.evasive',
+  introspective: 'party.predispositionShort.introspective',
+  devoted: 'party.predispositionShort.devoted',
+  serene: 'party.predispositionShort.serene',
+  nimble: 'party.predispositionShort.nimble',
+  perceptive: 'party.predispositionShort.perceptive',
+  precise: 'party.predispositionShort.precise',
+  resourceful: 'party.predispositionShort.resourceful',
 };
 
-const LINEAGE_SHORT_NAMES: Record<string, string> = {
-  sandstorm: '砂',
-  ashen_capital: '灰',
-  blaze_peak: '焔',
-  abyssal_sea: '海',
-  firmament: '穹',
-  frozen_forest: '凍',
-  utopia: '桃',
-  machina: '機',
-  adaptation: '適',
-  fragment: '断',
-  windcross: '風',
-  oath: '誓',
-  unascertained: '不',
-  pioneer: '先',
-  almighty: '全',
-  hidden_grail: '杯',
-  rowdy_orca_girl: 'わ',
-  meddlesome_fox: '世',
-  crescent_jade: '月',
-  phantom_thief: '怪',
-  flamebound_grove: '炎',
-  apostate: '背',
-  incarnation: '化',
-  'unexpected_prince(ss)': 'U',
+const LINEAGE_SHORT_NAME_KEYS: Record<string, string> = {
+  sandstorm: 'party.lineageShort.sandstorm',
+  ashen_capital: 'party.lineageShort.ashenCapital',
+  blaze_peak: 'party.lineageShort.blazePeak',
+  abyssal_sea: 'party.lineageShort.abyssalSea',
+  firmament: 'party.lineageShort.firmament',
+  frozen_forest: 'party.lineageShort.frozenForest',
+  utopia: 'party.lineageShort.utopia',
+  machina: 'party.lineageShort.machina',
+  adaptation: 'party.lineageShort.adaptation',
+  fragment: 'party.lineageShort.fragment',
+  windcross: 'party.lineageShort.windcross',
+  oath: 'party.lineageShort.oath',
+  unascertained: 'party.lineageShort.unascertained',
+  pioneer: 'party.lineageShort.pioneer',
+  almighty: 'party.lineageShort.almighty',
+  hidden_grail: 'party.lineageShort.hiddenGrail',
+  rowdy_orca_girl: 'party.lineageShort.rowdyOrcaGirl',
+  meddlesome_fox: 'party.lineageShort.meddlesomeFox',
+  crescent_jade: 'party.lineageShort.crescentJade',
+  phantom_thief: 'party.lineageShort.phantomThief',
+  flamebound_grove: 'party.lineageShort.flameboundGrove',
+  apostate: 'party.lineageShort.apostate',
+  incarnation: 'party.lineageShort.incarnation',
+  'unexpected_prince(ss)': 'party.lineageShort.unexpectedPrince',
 };
 
 // Category name mapping
-const CATEGORY_NAMES: Record<string, string> = {
-  sword: '剣',
-  katana: '刀',
-  archery: '弓',
-  armor: '鎧',
-  gauntlet: '籠手',
-  wand: 'ワンド',
-  robe: '法衣',
-  shield: '盾',
-  bolt: 'ボルト',
-  grimoire: '魔道書',
-  catalyst: '触媒',
-  arrow: '矢',
+const CATEGORY_NAME_KEYS: Record<string, string> = {
+  sword: 'party.categoryName.sword',
+  katana: 'party.categoryName.katana',
+  archery: 'party.categoryName.archery',
+  armor: 'party.categoryName.armor',
+  gauntlet: 'party.categoryName.gauntlet',
+  wand: 'party.categoryName.wand',
+  robe: 'party.categoryName.robe',
+  shield: 'party.categoryName.shield',
+  bolt: 'party.categoryName.bolt',
+  grimoire: 'party.categoryName.grimoire',
+  catalyst: 'party.categoryName.catalyst',
+  arrow: 'party.categoryName.arrow',
 };
 
 // Category groups for tabs
@@ -3245,7 +3237,7 @@ export function HomeScreen({
           : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
         const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
-        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
         const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
         return [
           `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
@@ -6778,8 +6770,8 @@ function PartyTab({
           const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
           const predispositionData = PREDISPOSITIONS.find((p) => p.id === c.predispositionId);
           const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
-          const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
-          const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
+          const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
+          const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
           const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByName[c.name] : undefined;
           const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
@@ -7305,7 +7297,7 @@ function PartyTab({
                                         : `border-gray-200 ${char.isUnique ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
-                                    {lineageData.shortName ?? LINEAGE_SHORT_NAMES[lineageId] ?? lineageData.name}
+                                    {lineageData.shortName ?? LINEAGE_SHORT_NAME_KEYS[lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[lineageId]) : lineageData.name}
                                   </button>
                                 );
                               })}
@@ -7355,7 +7347,7 @@ function PartyTab({
                                         : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
-                                    {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
+                                    {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[predispositionId]) : predispositionData.name}
                                   </button>
                                 );
                               })}
@@ -8114,7 +8106,7 @@ function PartyTab({
                           <span className={getItemNameFontWeightClass(item)}>{getItemDisplayName(item)}</span>
                           <span className="text-xs leading-tight text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
                         </span>
-                        <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
+                        <span className="text-xs text-gray-400">[{t(CATEGORY_NAME_KEYS[item.category] ?? 'party.categoryName.unknown')}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
                       </div>
                     ) : (
                       <span className="text-gray-400">{t('party.equipment.emptySlot')}</span>
@@ -11711,7 +11703,7 @@ function SettingTab({
           const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
           const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
           const race = RACES.find((entry) => entry.id === member.raceId);
-          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
           const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
           return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
         });
@@ -12928,7 +12920,7 @@ function SettingTab({
                                   title={t(subcategory.labelKey)}
                                   aria-pressed={isActive}
                                 >
-                                  {subcategory.shortLabel}
+                                  {t(subcategory.shortLabelKey)}
                                 </button>
                               );
                             })}
