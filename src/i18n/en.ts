@@ -1199,7 +1199,7 @@ const en = {
   'masterData.enemyName.312': 'Minti',
   'masterData.enemyName.313': 'Kuinsea',
   'masterData.enemyName.314': 'Sukippa',
-  'masterData.enemyName.315': 'Seresutiaruri Pa',
+  'masterData.enemyName.315': 'Celestial Reaper',
   'masterData.enemyName.316': 'Rikka',
   'masterData.enemyName.317': 'Nanara',
   'masterData.enemyName.318': 'Nowa',

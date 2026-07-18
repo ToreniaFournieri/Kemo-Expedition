@@ -384,6 +384,9 @@ function createEnemyFromTemplate(
     dropItemId = getBossMythicDropId(tier, id);
   }
 
+  const enemyNameKey = template.nameKey;
+  const enemyName = enemyNameKey ? t(enemyNameKey) : template.name;
+
   return {
     id,
     type,
@@ -391,7 +394,11 @@ function createEnemyFromTemplate(
     spawnTier: tier,
     spawnPool,
     poolId,
-    name: template.nameKey ? t(template.nameKey) : template.name,
+    get name() {
+      // SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
+      return enemyNameKey ? t(enemyNameKey) : enemyName;
+    },
+    ...(enemyNameKey ? { nameKey: enemyNameKey } : {}),
     enemyClass,
     enemySubClass,
     abilities: enemyAbilities,

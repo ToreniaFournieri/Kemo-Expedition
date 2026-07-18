@@ -100,6 +100,8 @@ function formatEnemyName(
   return labels.length > 0 ? `${name}(${labels.join(',')})` : name;
 }
 
-export function formatEnemyDefName(enemy: Pick<EnemyDef, 'name' | 'enemyType' | 'enemyClass' | 'enemySubClass'>): string {
-  return formatEnemyName(enemy.name, enemy.enemyType, enemy.enemyClass, enemy.enemySubClass);
+export function formatEnemyDefName(enemy: Pick<EnemyDef, 'name' | 'nameKey' | 'enemyType' | 'enemyClass' | 'enemySubClass'>): string {
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
+  const localizedName = enemy.nameKey ? t(enemy.nameKey) : enemy.name;
+  return formatEnemyName(localizedName, enemy.enemyType, enemy.enemyClass, enemy.enemySubClass);
 }
