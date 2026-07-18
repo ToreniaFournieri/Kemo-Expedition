@@ -23,10 +23,22 @@ export function getLocalizedItemName(item: Pick<Item, 'name'>): string {
   return t(`item.name.${item.name}`);
 }
 
+// SpecRef: 3.1.3 | Item variation | Localized enhancement title
+export function getLocalizedEnhancementTitle(value: number): string {
+  const title = ENHANCEMENT_TITLES.find(t => t.value === value)?.title ?? '';
+  return title ? t(`item.enhancementTitle.${title}`) : '';
+}
+
+// SpecRef: 3.1.3 | Item variation | Localized Super Rare title
+export function getLocalizedSuperRareTitle(value: number): string {
+  const title = SUPER_RARE_TITLES.find(t => t.value === value)?.title ?? '';
+  return title ? t(`item.superRareTitle.${title}`) : '';
+}
+
 // SpecRef: 3.1.3 | Item variation | getItemDisplayName
 export function getItemDisplayName(item: Item): string {
-  const enhTitle = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.title ?? '';
-  const srTitle = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.title ?? '';
+  const enhTitle = getLocalizedEnhancementTitle(item.enhancement);
+  const srTitle = getLocalizedSuperRareTitle(item.superRare);
   return `${srTitle}${enhTitle}${getLocalizedItemName(item)}${jewelLabel(item.jewel)}`;
 }
 
