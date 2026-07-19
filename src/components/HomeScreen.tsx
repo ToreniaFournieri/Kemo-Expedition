@@ -13791,6 +13791,21 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('modeSelect', t('divineBureau.modeSelect'))}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
+          {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Mode select (モード切替) */}
+          <div>
+            <div className="text-sm font-medium mb-1">{t('setting.language.title')}</div>
+            <p className="mb-2 text-xs text-gray-500">{t('setting.language.description')}</p>
+            <select
+              value={language}
+              onChange={(event) => onSetLanguage(event.target.value as Language)}
+              className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm"
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <option key={lang} value={lang}>{t(`setting.language.${lang}`)}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="space-y-2">
             <button
               type="button"
@@ -13975,20 +13990,6 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('gameSetting', t('setting.backupReset'))}
         {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
-          <div>
-            <div className="text-sm font-medium mb-1">{t('setting.language.title')}</div>
-            <p className="mb-2 text-xs text-gray-500">{t('setting.language.description')}</p>
-            <select
-              value={language}
-              onChange={(event) => onSetLanguage(event.target.value as Language)}
-              className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm"
-            >
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <option key={lang} value={lang}>{t(`setting.language.${lang}`)}</option>
-              ))}
-            </select>
-          </div>
-
           <div>
             <div className="text-sm font-medium mb-1">{t('setting.backup.title')}</div>
             <button
