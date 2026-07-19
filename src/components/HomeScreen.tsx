@@ -1187,34 +1187,34 @@ const getRarityFilterNote = (filter: RarityFilter): string => t(`party.rarity.${
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
 
-const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: string }> = [
-  { value: 'all', label: t('party.rarity.all') },
-  { value: 1, label: t('home.diaryThreshold.masterworkPlus') },
-  { value: 2, label: t('home.diaryThreshold.demonicPlus') },
-  { value: 3, label: t('home.diaryThreshold.hauntedPlus') },
-  { value: 4, label: t('home.diaryThreshold.legendaryPlus') },
-  { value: 5, label: t('home.diaryThreshold.terrifyingPlus') },
-  { value: 6, label: t('home.diaryThreshold.ultimate') },
-  { value: 'none', label: t('common.none') },
+const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; labelKey: string }> = [
+  { value: 'all', labelKey: 'party.rarity.all' },
+  { value: 1, labelKey: 'home.diaryThreshold.masterworkPlus' },
+  { value: 2, labelKey: 'home.diaryThreshold.demonicPlus' },
+  { value: 3, labelKey: 'home.diaryThreshold.hauntedPlus' },
+  { value: 4, labelKey: 'home.diaryThreshold.legendaryPlus' },
+  { value: 5, labelKey: 'home.diaryThreshold.terrifyingPlus' },
+  { value: 6, labelKey: 'home.diaryThreshold.ultimate' },
+  { value: 'none', labelKey: 'common.none' },
 ];
 
-const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold; label: string }> = [
-  { value: 'all', label: t('party.rarity.all') },
-  { value: 2, label: t('home.sideQuestThreshold.rank2Plus') },
-  { value: 3, label: t('home.sideQuestThreshold.rank3Plus') },
-  { value: 4, label: t('home.sideQuestThreshold.rank4Plus') },
-  { value: 5, label: t('home.sideQuestThreshold.rank5Plus') },
-  { value: 6, label: t('home.sideQuestThreshold.rank6Plus') },
-  { value: 7, label: t('home.sideQuestThreshold.rank7Plus') },
-  { value: 8, label: t('home.sideQuestThreshold.rank8Only') },
-  { value: 'none', label: t('common.none') },
+const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold; labelKey: string }> = [
+  { value: 'all', labelKey: 'party.rarity.all' },
+  { value: 2, labelKey: 'home.sideQuestThreshold.rank2Plus' },
+  { value: 3, labelKey: 'home.sideQuestThreshold.rank3Plus' },
+  { value: 4, labelKey: 'home.sideQuestThreshold.rank4Plus' },
+  { value: 5, labelKey: 'home.sideQuestThreshold.rank5Plus' },
+  { value: 6, labelKey: 'home.sideQuestThreshold.rank6Plus' },
+  { value: 7, labelKey: 'home.sideQuestThreshold.rank7Plus' },
+  { value: 8, labelKey: 'home.sideQuestThreshold.rank8Only' },
+  { value: 'none', labelKey: 'common.none' },
 ];
 
 
-const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; label: string }> = [
-  { value: 'defeatOnly', label: t('home.defeatNotification.defeatOnly') },
-  { value: 'defeatAndDraw', label: t('home.defeatNotification.defeatAndDraw') },
-  { value: 'none', label: t('common.none') },
+const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; labelKey: string }> = [
+  { value: 'defeatOnly', labelKey: 'home.defeatNotification.defeatOnly' },
+  { value: 'defeatAndDraw', labelKey: 'home.defeatNotification.defeatAndDraw' },
+  { value: 'none', labelKey: 'common.none' },
 ];
 
 function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
@@ -10888,7 +10888,7 @@ function DiaryTab({
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`sr-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`sr-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
@@ -10900,7 +10900,7 @@ function DiaryTab({
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`ra-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`ra-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
@@ -10912,7 +10912,7 @@ function DiaryTab({
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`bo-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`bo-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
@@ -10935,7 +10935,7 @@ function DiaryTab({
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`my-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`my-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
@@ -10947,7 +10947,7 @@ function DiaryTab({
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_DEFEAT_NOTIFICATION_OPTIONS.map((option) => (
-                        <option key={`df-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`df-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
@@ -10960,7 +10960,7 @@ function DiaryTab({
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_SIDE_QUEST_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`sq-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`sq-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
