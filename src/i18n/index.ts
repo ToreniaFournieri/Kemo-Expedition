@@ -49,14 +49,19 @@ export function getLanguage(): Language {
   return activeLanguage;
 }
 
-// SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
-export function t(key: string, params?: TranslationParams): string {
-  const template = dictionaries[activeLanguage][key] ?? dictionaries[DEFAULT_LANGUAGE][key] ?? key;
+export function translate(language: Language, key: string, params?: TranslationParams): string {
+  const normalizedLanguage = normalizeLanguage(language);
+  const template = dictionaries[normalizedLanguage][key] ?? dictionaries[DEFAULT_LANGUAGE][key] ?? key;
   if (!params) return template;
   return template.replace(/\{(\w+)\}/g, (match, paramKey: string) => {
     const value = params[paramKey];
     return value === undefined ? match : String(value);
   });
+}
+
+// SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
+export function t(key: string, params?: TranslationParams): string {
+  return translate(activeLanguage, key, params);
 }
 export function getRandomTranslation(prefix: string, count: number, params?: TranslationParams): string {
   const safeCount = Math.max(0, Math.floor(count));

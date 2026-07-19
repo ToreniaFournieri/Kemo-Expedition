@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 84 | 2026/07/19 | Translate unique and unchanged default character names to their corresponding localized names on language changes while preserving player-entered custom names. |
 | 0.8.2 | 83 | 2026/07/19 | Resolve generated character-name pools when a race is changed from the active i18n language so English and Simplified Chinese no longer use Japanese names. |
 | 0.8.2 | 82 | 2026/07/19 | Abbreviate the four base-stat labels in the English Party status pane to VIT, STR, INT, and MND. |
 | 0.8.2 | 81 | 2026/07/19 | Localize the Illusion reactive ability label, description, and corrected Lv1/Lv2 target-and-use scale in Japanese, English, and Simplified Chinese. |
