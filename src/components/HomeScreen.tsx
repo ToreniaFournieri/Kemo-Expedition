@@ -74,6 +74,54 @@ function resolvePublicAssetPath(path?: string): string | null {
   return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
 }
 
+const UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE: Readonly<Partial<Record<string, string>>> = {
+  unascertained: 'Unique_Kemo.png',
+  pioneer: 'Unique_Laika.png',
+  crescent_jade: 'Unique_Luna.png',
+  phantom_thief: 'Unique_Nox.png',
+  incarnation: 'Unique_Merle.png',
+  flamebound_grove: 'Unique_Puchitsa.png',
+  almighty: 'Unique_Souga-ha.png',
+  meddlesome_fox: 'Unique_Leonard.png',
+  hidden_grail: 'Unique_Hagakure.png',
+  'unexpected_prince(ss)': 'Unique_Finn.png',
+  rowdy_orca_girl: 'Unique_Orca.png',
+  apostate: 'Unique_Mishka.png',
+};
+
+const CHARACTER_CHIBI_IMAGE_MODULES = import.meta.glob('/public/chibi/*.png', { eager: true });
+const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { eager: true });
+
+// SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
+// SpecRef: 8.4.2 | Inventory(所持品) | Item list
+function getInventoryOwnerCharacterImageSrc(character: Character, partyId: number): string | null {
+  const uniqueFileName = character.isUnique
+    ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId]
+    : undefined;
+  if (uniqueFileName) {
+    const chibiFileName = `C_${uniqueFileName}`;
+    if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/${chibiFileName}`]) {
+      return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
+    }
+    if (CHARACTER_IMAGE_MODULES[`/public/character/${uniqueFileName}`]) {
+      return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+    }
+    return null;
+  }
+
+  const race = RACES.find((entry) => entry.id === character.raceId);
+  if (!race) return null;
+  const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
+  const partyRaceGenderFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
+  if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/C_${partyRaceGenderFileName}`]) {
+    return `${import.meta.env.BASE_URL}chibi/C_${partyRaceGenderFileName}`;
+  }
+  if (CHARACTER_IMAGE_MODULES[`/public/character/${partyRaceGenderFileName}`]) {
+    return `${import.meta.env.BASE_URL}character/${partyRaceGenderFileName}`;
+  }
+  return null;
+}
+
 interface HomeScreenProps {
   state: GameState;
   notifications: GameNotification[];
@@ -6193,20 +6241,6 @@ function PartyTab({
   // SpecRef: 8.2.2 | Party member details | Character image (background)
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
-  const uniquePartyMemberImageByLineage: Partial<Record<string, string>> = {
-    unascertained: 'Unique_Kemo.png',
-    pioneer: 'Unique_Laika.png',
-    crescent_jade: 'Unique_Luna.png',
-    phantom_thief: 'Unique_Nox.png',
-    incarnation: 'Unique_Merle.png',
-    flamebound_grove: 'Unique_Puchitsa.png',
-    almighty: 'Unique_Souga-ha.png',
-    meddlesome_fox: 'Unique_Leonard.png',
-    hidden_grail: 'Unique_Hagakure.png',
-    'unexpected_prince(ss)': 'Unique_Finn.png',
-    rowdy_orca_girl: 'Unique_Orca.png',
-    apostate: 'Unique_Mishka.png',
-  };
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
     vulpinian: 'Vulpinian',
@@ -6222,7 +6256,7 @@ function PartyTab({
     male: 'Male',
     female: 'Female',
   };
-  const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByLineage[char.lineageId] : undefined;
+  const uniquePartyMemberImageFileName = char.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[char.lineageId] : undefined;
   const raceLabel = raceLabelByRaceId[previewRaceId];
   const genderLabel = genderLabelByGender[previewGender];
   const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
@@ -6232,26 +6266,6 @@ function PartyTab({
     ? `${raceLabel}_${genderLabel}.png`
     : undefined;
   const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
-  const partyInventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
-  const partyInventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
-
-  const getPartyInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
-    const uniqueFileName = character.isUnique ? uniquePartyMemberImageByLineage[character.lineageId] : undefined;
-    if (uniqueFileName) {
-      const chibiFileName = `C_${uniqueFileName}`;
-      if (partyInventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
-      if (partyInventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
-      return null;
-    }
-
-    const characterRace = RACES.find((entry) => entry.id === character.raceId);
-    if (!characterRace) return null;
-    const characterGenderLabel = character.gender === 'male' ? 'Male' : 'Female';
-    const ptRaceGenderImageFileName = `${partyId}_${characterRace.englishName}_${characterGenderLabel}.png`;
-    if (partyInventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
-    if (partyInventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
-    return null;
-  };
 
   useEffect(() => {
     const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
@@ -6795,7 +6809,7 @@ function PartyTab({
           const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
           const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
           const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
-          const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByLineage[c.lineageId] : undefined;
+          const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
           const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
             : undefined;
@@ -8377,7 +8391,7 @@ function PartyTab({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 min-w-0 flex-1">
                       {displayItem.isEquipped && (() => {
-                        const equippedOwnerImageSrc = getPartyInventoryCharacterImageSrc(char, party.id);
+                        const equippedOwnerImageSrc = getInventoryOwnerCharacterImageSrc(char, party.id);
                         return equippedOwnerImageSrc
                           ? (
                             <div className="relative shrink-0 h-10 w-10 overflow-visible rounded">
@@ -9993,46 +10007,6 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
 }) {
-  const UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME: Record<string, string> = {
-    'ケモ': 'Unique_Kemo.png',
-    'ライカ': 'Unique_Laika.png',
-    'ルナ': 'Unique_Luna.png',
-    'ノクス': 'Unique_Nox.png',
-    'マーレ': 'Unique_Merle.png',
-    'プチーツァ': 'Unique_Puchitsa.png',
-    '蒼牙破': 'Unique_Souga-ha.png',
-    'レナード': 'Unique_Leonard.png',
-    '葉隠': 'Unique_Hagakure.png',
-    'フィン': 'Unique_Finn.png',
-    'オルカ': 'Unique_Orca.png',
-    'ミシュカ': 'Unique_Mishka.png',
-  };
-  const inventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
-  const inventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
-  const getInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
-    const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME[character.name] : undefined;
-    if (uniqueFileName) {
-      const chibiFileName = `C_${uniqueFileName}`;
-      if (inventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) {
-        return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
-      }
-      if (inventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) {
-        return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
-      }
-      return null;
-    }
-    const race = RACES.find((entry) => entry.id === character.raceId);
-    if (!race) return null;
-    const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
-    const ptRaceGenderImageFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
-    if (inventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) {
-      return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
-    }
-    if (inventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) {
-      return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
-    }
-    return null;
-  };
   const [showSold, setShowSold] = useState(false);
   const [activeInventoryOwnerBubble, setActiveInventoryOwnerBubble] = useState<{
     key: string;
@@ -10102,7 +10076,7 @@ function InventoryTab({
           slotIndex,
           characterName: character.name,
           raceId: character.raceId,
-          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
+          characterImageSrc: getInventoryOwnerCharacterImageSrc(character, party.id),
         }];
       })
     )
@@ -10175,7 +10149,7 @@ function InventoryTab({
           raceId: character.raceId,
           jewelKey: item.jewel.key,
           rank: item.jewel.rank,
-          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
+          characterImageSrc: getInventoryOwnerCharacterImageSrc(character, party.id),
         }];
       });
     })

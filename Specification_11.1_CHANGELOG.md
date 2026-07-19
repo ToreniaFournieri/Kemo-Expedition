@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 74 | 2026/07/18 | Share Party and Base Inventory equipped-owner image selection and identify unique characters by stable lineage instead of localized display names, fixing Kemo portraits in English. |
 | 0.8.2 | 73 | 2026/07/18 | Route remaining HomeScreen Divine Bureau, clairvoyance, glossary, roster, bestiary, validation, and report runtime Japanese UI text through meaningful Japanese and English i18n keys. |
 | 0.8.2 | 72 | 2026/07/18 | Route all remaining Japanese runtime literals in the first 8,000 HomeScreen lines through meaningful stat and bonus i18n keys, and identify unique character images without localized-name literals. |
 | 0.8.2 | 71 | 2026/07/18 | Route the remaining Japanese runtime literals in the first 6,000 HomeScreen lines through meaningful shop fallback and attack-multiplier i18n keys. |
