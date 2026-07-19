@@ -136,6 +136,7 @@ interface HomeScreenProps {
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
     runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
+    resolveInstantExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
     consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
     finalizeDiaryLog: (partyIndex: number, simulatedAt?: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
@@ -5374,8 +5375,7 @@ export function HomeScreen({
     actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
     instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
-    actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
-    actions.finalizeDiaryLog(partyIndex);
+    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
     actions.rollPartySleepiness(partyIndex);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
     // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
