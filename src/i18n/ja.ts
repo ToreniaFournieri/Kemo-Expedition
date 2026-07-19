@@ -2417,6 +2417,8 @@ const ja = {
   'item.name.竜脈の杖': '竜脈の杖',
   'item.name.竜脈の触媒': '竜脈の触媒',
   'item.name.竜稜の盾': '竜稜の盾',
+  'item.name.忘却の鎧': '忘却の鎧',
+  'item.name.雷尾矢': '雷尾矢',
   'item.name.霊の盾': '霊の盾',
   'item.name.霊銀矢': '霊銀矢',
   'item.name.霊撃のボルト': '霊撃のボルト',
