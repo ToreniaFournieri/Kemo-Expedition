@@ -1244,7 +1244,9 @@ function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Expedition
 }
 
 type GenderedNamePool = { male: string[]; female: string[] };
-const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
+function getPotentialDefaultNamesByPt(): Record<number, Partial<Record<RaceId, GenderedNamePool>>> {
+  // Build the pools on demand so their i18n values follow the currently active language.
+  const pools: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
   1: {
     caninian: t('home.defaultNames.pt1.caninian').split('|').map((name) => name.trim()).filter(Boolean),
     lupinian: t('home.defaultNames.pt1.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
@@ -1310,7 +1312,7 @@ const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, Gende
     cervin: t('home.defaultNames.pt6.cervin').split('|').map((name) => name.trim()).filter(Boolean),
     murid: t('home.defaultNames.pt6.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
-};
+  };
 
 
 const getGenderedNamePool = (names: string[]): GenderedNamePool => {
@@ -1318,15 +1320,17 @@ const getGenderedNamePool = (names: string[]): GenderedNamePool => {
   return { male: names.slice(0, pivot), female: names.slice(pivot) };
 };
 
-Object.keys(POTENTIAL_DEFAULT_NAMES_BY_PT).forEach((ptKey) => {
-  const races = POTENTIAL_DEFAULT_NAMES_BY_PT[Number(ptKey)]!;
-  Object.keys(races).forEach((raceKey) => {
-    const value = (races as Record<string, unknown>)[raceKey];
-    if (Array.isArray(value)) {
-      (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
-    }
+  Object.values(pools).forEach((races) => {
+    Object.keys(races).forEach((raceKey) => {
+      const value = (races as Record<string, unknown>)[raceKey];
+      if (Array.isArray(value)) {
+        (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
+      }
+    });
   });
-});
+
+  return pools as Record<number, Partial<Record<RaceId, GenderedNamePool>>>;
+}
 
 function parseDiaryThreshold(value: string): DiaryRarityThreshold {
   if (value === 'all' || value === 'none') return value;
@@ -6196,8 +6200,7 @@ function PartyTab({
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Trigger: when race is changed.
   const getDefaultNameForRace = (raceId: RaceId): string => {
-    const racePool = POTENTIAL_DEFAULT_NAMES_BY_PT[party.id]?.[raceId];
-    const genderedPool = Array.isArray(racePool) ? getGenderedNamePool(racePool) : racePool;
+    const genderedPool = getPotentialDefaultNamesByPt()[party.id]?.[raceId];
     const ptCandidates = genderedPool?.[(pendingEdits?.gender ?? char.gender)] ?? [];
     if (ptCandidates.length === 0) return char.name;
 

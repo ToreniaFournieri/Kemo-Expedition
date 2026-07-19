@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 83 | 2026/07/19 | Resolve generated character-name pools when a race is changed from the active i18n language so English and Simplified Chinese no longer use Japanese names. |
 | 0.8.2 | 82 | 2026/07/19 | Abbreviate the four base-stat labels in the English Party status pane to VIT, STR, INT, and MND. |
 | 0.8.2 | 81 | 2026/07/19 | Localize the Illusion reactive ability label, description, and corrected Lv1/Lv2 target-and-use scale in Japanese, English, and Simplified Chinese. |
 | 0.8.2 | 80 | 2026/07/19 | Move the language selector from the Backup & Reset pane into the Mode Select pane, matching the Divine Bureau UI specification. |
