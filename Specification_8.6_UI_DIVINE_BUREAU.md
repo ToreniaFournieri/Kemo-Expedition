@@ -289,6 +289,7 @@ HP: 312                 タイプ: 神魔
     - `lang=zh` → 中文
     - Example: `https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja`
   - Persist the selected language in local storage.
+  - When the selected language changes, replace the current URL's `lang` parameter with the selected language without reloading the page. Preserve the current path, all other query parameters, and the URL fragment.
 
 - ダークモード OFF/ON/システム
   - Dark mode setting

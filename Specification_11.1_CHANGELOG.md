@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 87 | 2026/07/19 | Synchronize the URL `lang` query parameter with in-game language changes while preserving the current path, other query parameters, and fragment without reloading the page. |
 | 0.8.2 | 86 | 2026/07/19 | Add the missing magical-attack label to the Japanese, English, and Simplified Chinese i18n dictionaries so the Party pane no longer displays its translation key. |
 | 0.8.2 | 85 | 2026/07/19 | Use the emulated in-game event time for diary entries finalized during AFK recovery instead of falling back to the device timestamp. |
 | 0.8.2 | 84 | 2026/07/19 | Translate unique and unchanged default character names to their corresponding localized names on language changes while preserving player-entered custom names. |
