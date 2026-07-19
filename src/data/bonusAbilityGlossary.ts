@@ -72,7 +72,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'no_offense', levelScale: [], subcategory: 'reactive' },
   { abilityId: 'swarm', levelScale: ['Lv1: 失ったHP1%につき0.5%'], subcategory: 'reactive' },
   { abilityId: 'stealth', levelScale: ['Lv1: 24%', 'Lv2: 29%'], subcategory: 'reactive' },
-  { abilityId: 'illusion', levelScale: ['Lv1: 自身', 'Lv2: パーティー全体'], subcategory: 'reactive' },
+  { abilityId: 'illusion', levelScale: ['Lv1', 'Lv2'], subcategory: 'reactive' },
   // SpecRef: 1.1 | CONSTANTS_GLOSSARY | a.flying
   { abilityId: 'flying', levelScale: ['Lv1: 40', 'Lv2: 45', 'Lv3: 50'], subcategory: 'timed', phase: 'CLOSE', priority: 9 },
   { abilityId: 'bulwark', levelScale: ['Lv1: 遠距離', 'Lv2: 遠距離＋近距離'], subcategory: 'reactive' },
@@ -152,6 +152,13 @@ export function getBonusAbilityDescription(abilityId: AbilityId): string {
   return t(bonusAbilityTranslationKey(abilityId, 'description'));
 }
 
+function getBonusAbilityLevelScale(entry: BonusAbilityGlossaryEntry): string[] {
+  if (entry.abilityId === 'illusion') {
+    return [t('ability.illusion.levelScale.1'), t('ability.illusion.levelScale.2')];
+  }
+  return entry.levelScale;
+}
+
 export const LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES: LocalizedBonusAbilityGlossaryEntry[] = BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => ({
   ...entry,
   get label() {
@@ -160,9 +167,11 @@ export const LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES: LocalizedBonusAbilityGlos
   get description() {
     return getBonusAbilityDescription(entry.abilityId);
   },
+  get levelScale() {
+    return getBonusAbilityLevelScale(entry);
+  },
 }));
 
 export const BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID = new Map(
   LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => [entry.abilityId, entry]),
 );
-

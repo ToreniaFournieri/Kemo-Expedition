@@ -2565,6 +2565,8 @@ const ja = {
   'ability.stealth.description': 'HPがN%未満のとき、自身へのダメージをすべて回避する',
   'ability.illusion.label': '幻化',
   'ability.illusion.description': '最初の遠距離攻撃を無効化する(対象範囲:N)',
+  'ability.illusion.levelScale.1': 'Lv1: 自身に1回',
+  'ability.illusion.levelScale.2': 'Lv2: 自身+パーティー1名の2回',
   'ability.flying.label': '飛行',
   'ability.flying.description': '近接開始タイミングで発動し、自身の回避を+Nする',
   'ability.bulwark.label': '壁',
