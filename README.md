@@ -2,6 +2,11 @@
 
 Text-based deterministic fantasy RPG expedition game.
 
-- βテスト期間中となります。
+- オープンβテスト期間中となります。
 
-- βテストに協力いただける方はこちらをご覧ください [冒ケモ　βテスト開始のお知らせ(4/29)](https://note.com/fournieri/n/nfe09af9df37c?sub_rt=share_pw)
+- [冒ケモ 日本語](https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja)
+- [BoKemo English](https://toreniafournieri.github.io/Kemo-Expedition/?lang=en)
+- [冒兽 中文](https://toreniafournieri.github.io/Kemo-Expedition/?lang=zh)
+
+
+- 記事 [冒ケモ オープンβテスト開始のお知らせ](https://note.com/fournieri/n/n0edb2cf72299?app_launch=false)
