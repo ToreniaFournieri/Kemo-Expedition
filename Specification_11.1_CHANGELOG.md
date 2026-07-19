@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 1 | 2026/07/19 | Release version 0.8.3 and reset the build number to 1. |
 | 0.8.2 | 92 | 2026/07/19 | Load the runtime Developer News list from Specification 11.2, display every entry newest-first, and select its Japanese, English, or Simplified Chinese content from the active language. |
 | 0.8.2 | 91 | 2026/07/19 | Add decrement and increment buttons around each unlocked Expedition Difficulty Offset slider, applying the specified two-level step and disabling controls at the valid bounds. |
 | 0.8.2 | 90 | 2026/07/19 | Align the runtime common and rare Super Rare bag defaults with the specification by assigning 819,918 and 122,918 no-title tickets, respectively. |
