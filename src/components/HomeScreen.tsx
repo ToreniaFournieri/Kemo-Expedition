@@ -3394,18 +3394,16 @@ export function HomeScreen({
       : null;
     const lastReportTime = lastReportHours == null
       ? '-'
-      : `${formatNumber(Math.floor(lastReportHours))} Hours ago`;
+      : `${formatNumber(Math.floor(lastReportHours))} hours ago`;
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
+    const reporterName = (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-';
     const reportHeaderRows = [
-      ['Name', (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-'],
-      ['Total number of sending report', progressReportCount],
-      ['The last report time', lastReportTime],
-      ['User ID', state.global.userId],
-      ['Version', APP_VERSION],
-      ['Build', formatNumber(state.buildNumber)],
-      ['Environment', getEnvironmentId()],
+      ['Name', `${reporterName} (${state.global.language})`],
+      ['Total number of sending report', `${progressReportCount} (${lastReportTime})`],
+      ['Version Build env', `${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`],
       ['Timestamp', timestamp],
       ['browser, version', `${browserName}, ${browserVersion}`],
+      ['User ID', state.global.userId],
       ['OS version', osVersion],
       ['Resolution', resolution],
     ];
