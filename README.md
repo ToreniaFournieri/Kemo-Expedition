@@ -1,6 +1,6 @@
 # 冒ケモ - Kemo Expedition (ケモの冒険)
 
-Text-based deterministic fantasy RPG expedition game.
+- 冒ケモ, BoKemo, 冒兽 is text-based deterministic fantasy RPG expedition game.
 
 - オープンβテスト期間中となります。
 
