@@ -6313,9 +6313,16 @@ function PartyTab({
   };
 
   const displayedDeityName = normalizeDeityName(editingDeity ? pendingDeityName : party.deity.name);
-  const normalizedDisplayedDeityName = normalizeDeityName(displayedDeityName);
-  const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
-  const hasUnlockedReligions = unlockedDeities.length > 0;
+  const displayedDeityKey = getDeityKey(displayedDeityName);
+  const displayedDeityDonation = Object.entries(deityDonations).find(
+    ([deityName]) => getDeityKey(deityName) === displayedDeityKey
+  )?.[1] ?? 0;
+  const unlockedDeityKeys = new Set(
+    unlockedDeities
+      .map((deityName) => getDeityKey(deityName))
+      .filter((deityKey) => deityKey !== null && deityKey !== 'None')
+  );
+  const hasUnlockedReligions = unlockedDeityKeys.size > 0;
   const equippedItemCount = char.equipment.slice(0, stats.maxEquipSlots).filter((item) => item != null).length;
   const autoEquipmentMode = normalizeAutoEquipmentMode(char.autoEquipmentMode);
 
@@ -6752,17 +6759,15 @@ function PartyTab({
               className="text-sm border rounded px-3 py-1.5"
             >
               {DEITY_OPTIONS.filter((deity) => {
-                const normalizedName = normalizeDeityName(deity.name);
-                return isNoFaithDeity(normalizedName)
-                  || unlockedDeities.includes(normalizedName)
-                  || normalizeDeityName(party.deity.name) === normalizedName;
+                return deity.key === 'None'
+                  || unlockedDeityKeys.has(deity.key)
+                  || getDeityKey(party.deity.name) === deity.key;
               }).map((deity) => {
-                const normalizedName = normalizeDeityName(deity.name);
-                const unlocked = isNoFaithDeity(normalizedName)
-                  || unlockedDeities.includes(normalizedName)
-                  || normalizeDeityName(party.deity.name) === normalizedName;
-                const inUseByOtherParty = !isNoFaithDeity(normalizedName) && parties.some((partyCandidate, index) =>
-                  index !== selectedPartyIndex && normalizeDeityName(partyCandidate.deity.name) === normalizedName
+                const unlocked = deity.key === 'None'
+                  || unlockedDeityKeys.has(deity.key)
+                  || getDeityKey(party.deity.name) === deity.key;
+                const inUseByOtherParty = deity.key !== 'None' && parties.some((partyCandidate, index) =>
+                  index !== selectedPartyIndex && getDeityKey(partyCandidate.deity.name) === deity.key
                 );
                 return (
                   <option
