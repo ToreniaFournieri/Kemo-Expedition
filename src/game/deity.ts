@@ -1,4 +1,4 @@
-import { t } from '../i18n';
+import { SUPPORTED_LANGUAGES, t, translate } from '../i18n';
 import { ComputedCharacterStats, Party } from '../types';
 
 type DeityOptionKey =
@@ -87,15 +87,19 @@ const DEITY_NAME_KEY_MAP: Record<DeityKey, string> = DEITY_OPTIONS.reduce((acc, 
 
 const DEITY_KEY_BY_NAME: Record<string, DeityKey> = DEITY_OPTIONS.reduce((acc, deity) => {
   acc[deity.key] = deity.key;
-  acc[t(deity.nameKey)] = deity.key;
+  SUPPORTED_LANGUAGES.forEach((language) => {
+    acc[translate(language, deity.nameKey)] = deity.key;
+  });
   return acc;
 }, {} as Record<string, DeityKey>);
 
 // Backward compatibility for older save data.
-DEITY_KEY_BY_NAME[t('deity.legacyName.echoGod')] = 'God of Resonance';
-DEITY_KEY_BY_NAME[t('deity.legacyName.restorationGod')] = 'Goddess of Restoration';
-DEITY_KEY_BY_NAME[t('deity.legacyName.accuracyGod')] = 'Goddess of Precision';
-DEITY_KEY_BY_NAME[t('deity.legacyName.evasionGod')] = 'God of Dusk';
+SUPPORTED_LANGUAGES.forEach((language) => {
+  DEITY_KEY_BY_NAME[translate(language, 'deity.legacyName.echoGod')] = 'God of Resonance';
+  DEITY_KEY_BY_NAME[translate(language, 'deity.legacyName.restorationGod')] = 'Goddess of Restoration';
+  DEITY_KEY_BY_NAME[translate(language, 'deity.legacyName.accuracyGod')] = 'Goddess of Precision';
+  DEITY_KEY_BY_NAME[translate(language, 'deity.legacyName.evasionGod')] = 'God of Dusk';
+});
 DEITY_KEY_BY_NAME['God of Restoration'] = 'Goddess of Restoration';
 DEITY_KEY_BY_NAME['God of Precision'] = 'Goddess of Precision';
 DEITY_KEY_BY_NAME['God of Evasion'] = 'God of Dusk';
