@@ -2390,6 +2390,7 @@ const en = {
   'item.name.毛飾りの枝杖': 'Tufted Branch Staff',
   'item.name.毛張りの丸盾': 'Fur-Lined Buckler',
   'item.name.毛皮あての服': 'Fur-Patched Garb',
+  'item.name.防寒の毛ローブ': 'Coldproof Fur Robe',
   'item.name.毛皮のまとい': 'Fur Mantle',
   'item.name.毛皮衣': 'Wolfhide Coldcloak',
   'item.name.毛表紙の術書': 'Fur-Bound Formulae',

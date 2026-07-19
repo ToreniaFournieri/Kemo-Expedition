@@ -2201,7 +2201,10 @@ const MULTIPLIER_LABEL_KEYS: Record<string, string> = {
   arrow_multiplier: 'party.bonus.arrow',
 };
 
-const ABILITY_NAMES: Record<string, string> = { ...ABILITY_BASE_NAMES };
+// Keep the translation-backed proxy intact so item ability labels resolve in the
+// currently selected language instead of being snapshotted in Japanese at load time.
+// SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
+const ABILITY_NAMES: Record<string, string> = ABILITY_BASE_NAMES;
 
 const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
   id: BonusAbilityGlossarySubcategoryId;
