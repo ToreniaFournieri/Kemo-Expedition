@@ -1,4 +1,4 @@
-const zhCN = {
+const cn = {
 'app.title': '冒兽',
 'nav.expedition': '探索',
 'nav.party': '队伍',
@@ -3062,4 +3062,4 @@ const zhCN = {
 
 };
 
-export default zhCN;
+export default cn;
