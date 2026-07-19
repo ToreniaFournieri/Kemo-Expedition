@@ -279,7 +279,7 @@
 | 6 | U | none | `i.wand`U | 銅杖 |
 | 6 | U | none | `i.grimoire`U | 雷導術式書 |
 | 6 | U | none | `i.catalyst`U | 電晶触媒 |
-| 6 | U | none | `i.arrow`U | 銅礫 |
+| 6 | U | none | `i.arrow`U | 雷尾矢 |
 | 6 | U | none | `i.bolt`U | 銅片 |
 | 6 | U | none | `i.archery`U | 轟雷の弓 |
 | 6 | E | `Chimera` | `i.wand`EC | 継ぎ獣導杖 |
