@@ -6654,20 +6654,22 @@ function PartyTab({
       }}
     >
       {activeInlineDetailHelp && inlineDetailHelpPosition && (
-        <div
-          className="floating-bubble-pane fixed z-20 rounded-lg p-3"
-          style={{
-            top: inlineDetailHelpPosition.top,
-            left: inlineDetailHelpPosition.left,
-            width: inlineDetailHelpPosition.width,
-          }}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          <div className="text-xs text-gray-700">
-            <span className="font-semibold text-gray-800">{activeInlineDetailHelp.title}</span>
-            <span> {activeInlineDetailHelp.description}</span>
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane fixed z-50 rounded-lg p-3"
+            style={{
+              top: inlineDetailHelpPosition.top,
+              left: inlineDetailHelpPosition.left,
+              width: inlineDetailHelpPosition.width,
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <div className="text-xs text-gray-700">
+              <span className="font-semibold text-gray-800">{activeInlineDetailHelp.title}</span>
+              <span> {activeInlineDetailHelp.description}</span>
+            </div>
           </div>
-        </div>
+        </FloatingBubblePortal>
       )}
       <div className="relative mb-4 overflow-hidden rounded-2xl p-2">
         {isPartyPaneBackgroundAvailable && partyPaneBackgroundImageFileName && (
