@@ -2031,6 +2031,7 @@ const en = {
   'divineBureau.feedback.bodyPlaceholder': 'Feedback body',
   'divineBureau.feedback.latestBattleLog': 'Latest battle log selection',
   'divineBureau.feedback.attachedImages': 'Attached images: {count}/4',
+  'divineBureau.feedback.backupAttached': 'A backup file will be attached automatically when you send.',
   'divineBureau.feedback.sending': 'Sending…',
   'divineBureau.feedback.send': 'Send',
   'divineBureau.feedback.maxFilesWarning': 'You can attach up to 4 images. Only the first 4 images will be sent.',

@@ -1743,6 +1743,7 @@ const ja = {
   'divineBureau.feedback.bodyPlaceholder': 'フィードバック本文',
   'divineBureau.feedback.latestBattleLog': '最終戦闘ログ選択',
   'divineBureau.feedback.attachedImages': '添付画像: {count}/4',
+  'divineBureau.feedback.backupAttached': 'バックアップファイルは送信時に自動で添付されます。',
   'divineBureau.feedback.sending': '送信中…',
   'divineBureau.feedback.send': '送信',
   'divineBureau.feedback.maxFilesWarning': '添付画像は最大4枚までです。先頭4枚のみ送信されます。',

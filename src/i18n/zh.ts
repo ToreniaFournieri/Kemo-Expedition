@@ -1742,6 +1742,7 @@ const zh = {
   'divineBureau.feedback.bodyPlaceholder': '反馈内容',
   'divineBureau.feedback.latestBattleLog': '选择最近战斗日志',
   'divineBureau.feedback.attachedImages': '附加图片：{count}/4',
+  'divineBureau.feedback.backupAttached': '发送时会自动附加备份文件。',
   'divineBureau.feedback.sending': '发送中…',
   'divineBureau.feedback.send': '发送',
   'divineBureau.feedback.maxFilesWarning': '最多可附加4张图片。仅前4张会被发送。',

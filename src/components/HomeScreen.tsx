@@ -85,6 +85,28 @@ const UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE: Readonly<Partial<Record<string, stri
   apostate: 'Unique_Mishka.png',
 };
 
+const escapeExportHtml = (value: string): string => (
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+);
+
+// SpecRef: 8.1.2 | Header | Attached File
+// SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
+  const statusHeaders = [
+    t('home.progressReport.statusHeader.partyPosition'),
+    t('home.progressReport.statusHeader.nameAndBuild'),
+    t('home.progressReport.statusHeader.physicalDefense'),
+    t('home.progressReport.statusHeader.magicalDefense'),
+    t('home.progressReport.statusHeader.evasionAndPenetration'),
+    t('home.progressReport.statusHeader.attack'),
+    t('home.progressReport.statusHeader.elementalDefense'),
+    t('home.progressReport.statusHeader.abilities'),
+  ];
+  const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeExportHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
+  const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeExportHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeExportHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeExportHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+  return new File([html], fileName, { type: 'text/html' });
+}
+
 const CHARACTER_CHIBI_IMAGE_MODULES = import.meta.glob('/public/chibi/*.png', { eager: true });
 const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { eager: true });
 
@@ -3190,24 +3212,6 @@ export function HomeScreen({
     return '▶︎';
   }, [debugSettings.timeSpeed]);
 
-  const escapeFeedbackHtml = (value: string): string => (
-    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
-  );
-  function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
-    const statusHeaders = [
-      t('home.progressReport.statusHeader.partyPosition'),
-      t('home.progressReport.statusHeader.nameAndBuild'),
-      t('home.progressReport.statusHeader.physicalDefense'),
-      t('home.progressReport.statusHeader.magicalDefense'),
-      t('home.progressReport.statusHeader.evasionAndPenetration'),
-      t('home.progressReport.statusHeader.attack'),
-      t('home.progressReport.statusHeader.elementalDefense'),
-      t('home.progressReport.statusHeader.abilities'),
-    ];
-    const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
-    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
-    return new File([html], fileName, { type: 'text/html' });
-  }
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
     const party = state.parties[partyIndex];
@@ -3219,11 +3223,11 @@ export function HomeScreen({
         const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
-        return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
+        return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
       }).join('');
-      return `<section><h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3><p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
+      return `<section><h3>Room ${escapeExportHtml(String(entry.floor ?? '-'))}-${escapeExportHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeExportHtml(entry.enemyName)}</h3><p>Outcome: ${escapeExportHtml(entry.outcome)} / Damage dealt: ${escapeExportHtml(String(entry.damageDealt))} / Damage taken: ${escapeExportHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
     }).join('\n');
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeExportHtml(latestLog.dungeonName)} / Outcome: ${escapeExportHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeExportHtml(String(latestLog.totalRooms))} / Completed: ${escapeExportHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
     const now = new Date();
     const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
     return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
@@ -11639,24 +11643,6 @@ function SettingTab({
     return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
   };
 
-  const escapeFeedbackHtml = (value: string): string => (
-    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
-  );
-  function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
-    const statusHeaders = [
-      t('home.progressReport.statusHeader.partyPosition'),
-      t('home.progressReport.statusHeader.nameAndBuild'),
-      t('home.progressReport.statusHeader.physicalDefense'),
-      t('home.progressReport.statusHeader.magicalDefense'),
-      t('home.progressReport.statusHeader.evasionAndPenetration'),
-      t('home.progressReport.statusHeader.attack'),
-      t('home.progressReport.statusHeader.elementalDefense'),
-      t('home.progressReport.statusHeader.abilities'),
-    ];
-    const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
-    const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
-    return new File([html], fileName, { type: 'text/html' });
-  }
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
     const party = gameState.parties[partyIndex];
@@ -11668,11 +11654,11 @@ function SettingTab({
         const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
-        return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
+        return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
       }).join('');
-      return `<section><h3>Room ${escapeFeedbackHtml(String(entry.floor ?? '-'))}-${escapeFeedbackHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeFeedbackHtml(entry.enemyName)}</h3><p>Outcome: ${escapeFeedbackHtml(entry.outcome)} / Damage dealt: ${escapeFeedbackHtml(String(entry.damageDealt))} / Damage taken: ${escapeFeedbackHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
+      return `<section><h3>Room ${escapeExportHtml(String(entry.floor ?? '-'))}-${escapeExportHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeExportHtml(entry.enemyName)}</h3><p>Outcome: ${escapeExportHtml(entry.outcome)} / Damage dealt: ${escapeExportHtml(String(entry.damageDealt))} / Damage taken: ${escapeExportHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
     }).join('\n');
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeFeedbackHtml(latestLog.dungeonName)} / Outcome: ${escapeFeedbackHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeFeedbackHtml(String(latestLog.totalRooms))} / Completed: ${escapeFeedbackHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeExportHtml(latestLog.dungeonName)} / Outcome: ${escapeExportHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeExportHtml(String(latestLog.totalRooms))} / Completed: ${escapeExportHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
     const now = new Date();
     const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
     return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
@@ -11685,6 +11671,20 @@ function SettingTab({
       window.alert(t('divineBureau.feedback.maxFilesWarning'));
     }
     setFeedbackFiles(selectedFiles.slice(0, 4));
+  };
+
+  const buildBackupFile = (): File => {
+    const payload = {
+      meta: {
+        app: 'Kemo-Expedition',
+        version: versionTag,
+        env: currentEnv,
+        exportedAt: new Date().toISOString(),
+        format: 'compressed-v1',
+      },
+      saveDataCompressed: encodePersistedState(JSON.stringify(serializeGameState(gameState))),
+    };
+    return new File([JSON.stringify(payload)], getBackupFileName('compressed'), { type: 'application/json' });
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
@@ -11705,9 +11705,7 @@ function SettingTab({
       const payload = {
         content: [
           '**Feedback**',
-          `**Version:** ${APP_VERSION}`,
-          `**Build:** ${formatNumber(gameState.buildNumber)}`,
-          `**Environment:** ${getEnvironmentId()}`,
+          `**Version Build env:** ${APP_VERSION} (${formatNumber(gameState.buildNumber)}) ${getEnvironmentId()}`,
           `**Timestamp:** ${formatFeedbackTimestamp()}`,
           `**User ID:** ${gameState.global.userId}`,
           `**browser, version:** ${browser}, ${browserVersion}`,
@@ -11721,11 +11719,11 @@ function SettingTab({
       };
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
-      feedbackFiles.forEach((file, index) => formData.append(`files[${index}]`, file, file.name));
+      const generatedFiles: File[] = [buildBackupFile()];
       if (feedbackLatestBattleLogSelection !== 'None') {
         const latestBattleLogFile = buildLatestBattleLogHtml(feedbackLatestBattleLogSelection);
         if (latestBattleLogFile) {
-          formData.append(`files[${feedbackFiles.length}]`, latestBattleLogFile, latestBattleLogFile.name);
+          generatedFiles.push(latestBattleLogFile);
         }
         const partyIndex = Number(feedbackLatestBattleLogSelection.replace('PT', '')) - 1;
         const party = gameState.parties[partyIndex];
@@ -11747,7 +11745,7 @@ function SettingTab({
           const race = RACES.find((entry) => entry.id === member.raceId);
           const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
           const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
-          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
+          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`, attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, abilityText];
         });
         const now = new Date();
         const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
@@ -11756,8 +11754,11 @@ function SettingTab({
           `status-table-${feedbackLatestBattleLogSelection}-${timestamp}.html`,
           `Status table (${feedbackLatestBattleLogSelection})`,
         );
-        formData.append(`files[${feedbackFiles.length + (latestBattleLogFile ? 1 : 0)}]`, statusTableFile, statusTableFile.name);
+        generatedFiles.push(statusTableFile);
       }
+      [...generatedFiles, ...feedbackFiles].forEach((file, index) => {
+        formData.append(`files[${index}]`, file, file.name);
+      });
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
       onAddNotification(t('divineBureau.feedback.sent'), 'normal', 'item', true);
@@ -11904,7 +11905,7 @@ function SettingTab({
     return `Kemo-Expedition_Backup_${versionTag}_${currentEnv}_${yyyy}${mm}${dd}.${extension}`;
   };
 
-  const downloadBackupFile = (content: string, fileName: string, mimeType: string) => {
+  const downloadBackupFile = (content: BlobPart, fileName: string, mimeType: string) => {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
@@ -11915,21 +11916,12 @@ function SettingTab({
   };
 
   const handleExportBackup = () => {
-    const payload = {
-      meta: {
-        app: 'Kemo-Expedition',
-        version: versionTag,
-        env: currentEnv,
-        exportedAt: new Date().toISOString(),
-        format: 'compressed-v1',
-      },
-      saveDataCompressed: encodePersistedState(JSON.stringify(serializeGameState(gameState))),
-    };
+    const backupFile = buildBackupFile();
 
     downloadBackupFile(
-      JSON.stringify(payload),
-      getBackupFileName('compressed'),
-      'application/json',
+      backupFile,
+      backupFile.name,
+      backupFile.type,
     );
     onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
   };
@@ -13996,6 +13988,7 @@ function SettingTab({
               <option value="None">None</option>
             </select>
           </div>
+          <div className="text-xs text-gray-500">{t('divineBureau.feedback.backupAttached')}</div>
           <div>
             <input
               ref={feedbackFileInputRef}
