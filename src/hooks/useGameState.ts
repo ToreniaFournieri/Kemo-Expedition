@@ -112,7 +112,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t } from '../i18n';
+import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -470,6 +470,46 @@ function escapeRegExp(value: string): string {
 
 function characterName(key: string): string {
   return t(`character.default.${key}`);
+}
+
+const DEFAULT_NAME_RACES: readonly RaceId[] = [
+  'caninian', 'lupinian', 'vulpinian', 'ursan', 'felidian',
+  'leporian', 'cervin', 'murid', 'procyonian',
+];
+
+const UNIQUE_CHARACTER_NAME_KEYS: Partial<Record<LineageId, string>> = {
+  unascertained: 'n1', pioneer: 'n2', meddlesome_fox: 'n3', rowdy_orca_girl: 'n4',
+  phantom_thief: 'n5', crescent_jade: 'n6', apostate: 'n7', flamebound_grove: 'n8',
+  hidden_grail: 'n9', almighty: 'n10', 'unexpected_prince(ss)': 'n11', incarnation: 'n12',
+};
+
+function translateCharacterName(
+  character: Character,
+  partyIndex: number,
+  sourceLanguage: Language,
+  targetLanguage: Language,
+): string {
+  if (character.isUnique) {
+    const uniqueNameKey = UNIQUE_CHARACTER_NAME_KEYS[character.lineageId];
+    return uniqueNameKey ? translate(targetLanguage, `character.default.${uniqueNameKey}`) : character.name;
+  }
+
+  // SpecRef: 2.2.1 | Potential default name for player side characters | Potential Default Name Table
+  if (DEFAULT_NAME_RACES.includes(character.raceId) && partyIndex >= 0 && partyIndex < 6) {
+    const poolKey = `home.defaultNames.pt${partyIndex + 1}.${character.raceId}`;
+    const sourceNames = translate(sourceLanguage, poolKey).split('|');
+    const nameIndex = sourceNames.indexOf(character.name);
+    if (nameIndex >= 0) {
+      return translate(targetLanguage, poolKey).split('|')[nameIndex] ?? character.name;
+    }
+  }
+
+  // Initial non-unique members also have stable, localized default-name entries.
+  for (let nameNumber = 13; nameNumber <= 36; nameNumber += 1) {
+    const key = `character.default.n${nameNumber}`;
+    if (translate(sourceLanguage, key) === character.name) return translate(targetLanguage, key);
+  }
+  return character.name;
 }
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
@@ -2898,7 +2938,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // SpecRef: 5.1.4 | Save and load | Persisted user settings
       const language = normalizeLanguage(action.language);
       persistLanguage(language);
-      return { ...state, global: { ...state.global, language } };
+      const sourceLanguage = normalizeLanguage(state.global.language);
+      const parties = sourceLanguage === language ? state.parties : state.parties.map((party, partyIndex) => ({
+        ...party,
+        characters: party.characters.map((character) => ({
+          ...character,
+          name: translateCharacterName(character, partyIndex, sourceLanguage, language),
+        })),
+      }));
+      return { ...state, parties, global: { ...state.global, language } };
     }
 
     case 'SELECT_PARTY':
