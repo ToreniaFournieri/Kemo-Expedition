@@ -2564,6 +2564,8 @@ const zh = {
   'ability.stealth.description': 'HP低于 N% 时，回避所有对自身的伤害',
   'ability.illusion.label': '幻化',
   'ability.illusion.description': '第一次远程攻击无效化（对象范围：N）',
+  'ability.illusion.levelScale.1': 'Lv1：自身1次',
+  'ability.illusion.levelScale.2': 'Lv2：自身＋1名队友，共2次',
   'ability.flying.label': '飞行',
   'ability.flying.description': '近战开始阶段发动，自身回避 +N',
   'ability.bulwark.label': '壁',

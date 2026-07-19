@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 81 | 2026/07/19 | Localize the Illusion reactive ability label, description, and corrected Lv1/Lv2 target-and-use scale in Japanese, English, and Simplified Chinese. |
 | 0.8.2 | 80 | 2026/07/19 | Move the language selector from the Backup & Reset pane into the Mode Select pane, matching the Divine Bureau UI specification. |
 | 0.8.2 | 79 | 2026/07/19 | Allow the Glossary tab selector to wrap into a vertically scrollable list so longer English labels remain accessible without widening or clipping the selection field. |
 | 0.8.2 | 78 | 2026/07/19 | Resolve expedition floor concepts through the active-language lookup in depth options, expedition headlines, and Bestiary floor groups so Simplified Chinese no longer displays canonical English floor names. |
