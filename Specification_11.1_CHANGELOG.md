@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 4 | 2026/07/19 | Add the missing Coldproof Fur Robe item translation and resolve item-granted ability names through the active language instead of retaining Japanese labels. |
 | 0.8.3 | 3 | 2026/07/19 | Compare unlocked, selected, assigned, and donation religion records by stable deity identity so every unlocked religion remains selectable after switching away from Japanese. |
 | 0.8.3 | 2 | 2026/07/19 | Resolve religion identities across all supported translations and use stable deity keys in the Party selector so saved Japanese names display and remain selectable in English and Simplified Chinese modes. |
 | 0.8.3 | 1 | 2026/07/19 | Release version 0.8.3 and reset the build number to 1. |
