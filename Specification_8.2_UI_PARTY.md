@@ -83,18 +83,18 @@ line2: 桃/腕  ← text over background image
   - The image remains static relative to the panel (does not move with internal content changes).
 
   - If unique_cahracter == ture,
-    - If name == `ケモ`, use : /public/character/Unique_Kemo.png
-    - If name == `ライカ`, use : /public/character/Unique_Laika.png
-    - If name == `ルナ`, use : /public/character/Unique_Luna.png
-    - If name == `ノクス`, use : /public/character/Unique_Nox.png
-    - If name == `マーレ`, use : /public/character/Unique_Merle.png
-    - If name == `プチーツァ`, use : /public/character/Unique_Puchitsa.png
-    - If name == `ミシュカ`, use : /public/character/Unique_Mishka.png
-    - If name == `蒼牙破`, use : /public/character/Unique_Souga-ha.png
-    - If name == `レナード`, use : /public/character/Unique_Leonard.png
-    - If name == `葉隠`, use : /public/character/Unique_Hagakure.png
-    - If name == `フィン`, use : /public/character/Unique_Finn.png 
-    - If name == `オルカ`, use : /public/character/Unique_Orca.png 
+  	- lineage = unascertained: 'Unique_Kemo.png',
+  	- lineage = pioneer: 'Unique_Laika.png',
+    - lineage =  crescent_jade: 'Unique_Luna.png',
+    - lineage = phantom_thief: 'Unique_Nox.png',
+    - lineage =  incarnation: 'Unique_Merle.png',
+    - lineage = flamebound_grove: 'Unique_Puchitsa.png',
+    - lineage = almighty: 'Unique_Souga-ha.png',
+    - lineage = meddlesome_fox: 'Unique_Leonard.png',
+    - lineage = hidden_grail: 'Unique_Hagakure.png',
+    - lineage = 'unexpected_prince(ss)': 'Unique_Finn.png',
+    - lineage =  rowdy_orca_girl: 'Unique_Orca.png',
+    - lineage =  apostate: 'Unique_Mishka.png',
 
   - **File name logic**
   - `/public/character/{PT}_{RACE}_{GENDER}.png`

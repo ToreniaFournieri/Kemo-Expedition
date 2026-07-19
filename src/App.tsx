@@ -2,20 +2,21 @@ import { useEffect, useState } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { HomeScreen } from './components/HomeScreen';
 import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
+import { setLanguage, t } from './i18n';
 
-const LOADING_MESSAGES = [
-  'ケモは長い夢を見る',
-  'ライカは再興の為なら何でもする',
-  '蒼牙破は地位より信念を選ぶ',
-  '葉隠は真実よりも果実を望む',
-  'レナードは人を信じない。シャチは別',
-  'オルカは地上を歩きたい',
-  'ルナは奇跡を信じない',
-  'ノクスは宝石の心が盗めない',
-  'ミシュカは祖国に帰りたい',
-  'プチーツァは故郷を元に戻したい',
-  'フィンはまるい石が好き',
-  'マーレは普通のふりをする',
+const LOADING_MESSAGE_KEYS = [
+  'loading.kemoDream',
+  'loading.laika',
+  'loading.sogaha',
+  'loading.hagakure',
+  'loading.leonard',
+  'loading.orca',
+  'loading.luna',
+  'loading.nox',
+  'loading.mishka',
+  'loading.ptitsa',
+  'loading.finn',
+  'loading.mare',
 ] as const;
 const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -23,8 +24,8 @@ const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
 
 // SpecRef: 1.2.2 | Loading message | LOADING_MESSAGE
 function getRandomLoadingMessage() {
-  const randomIndex = Math.floor(Math.random() * LOADING_MESSAGES.length);
-  return LOADING_MESSAGES[randomIndex];
+  const randomIndex = Math.floor(Math.random() * LOADING_MESSAGE_KEYS.length);
+  return t(LOADING_MESSAGE_KEYS[randomIndex]);
 }
 
 function getInitialGameModeClass() {
@@ -45,6 +46,7 @@ function getInitialDarkModeEnabled() {
 export default function App() {
   const { state, actions, bags, notifications, saveLoadWarning } = useGameState();
   const [isLoading, setIsLoading] = useState(true);
+  setLanguage(state.global.language);
   const [loadingMessage, setLoadingMessage] = useState(() => getRandomLoadingMessage());
   const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(() => getInitialDarkModeEnabled());
   const [gameModeClass, setGameModeClass] = useState(() => getInitialGameModeClass());
@@ -85,6 +87,12 @@ export default function App() {
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
+    document.documentElement.lang = state.global.language === 'zh' ? 'zh-CN' : state.global.language;
+  }, [state.global.language]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
     document.body.classList.toggle('app-dark', isDarkModeEnabled);
     document.documentElement.classList.toggle('app-dark', isDarkModeEnabled);
 
@@ -99,7 +107,7 @@ export default function App() {
   useEffect(() => {
     if (!isLoading) return;
     setLoadingMessage(getRandomLoadingMessage());
-  }, [isLoading]);
+  }, [isLoading, state.global.language]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -130,7 +138,7 @@ export default function App() {
       <div className={`min-h-screen bg-white text-black flex items-center justify-center px-6 ${appThemeClasses}`}>
         <div className="w-full max-w-3xl rounded-lg border border-red-300 bg-red-50 p-5 shadow">
           <h1 className="text-lg font-bold text-red-700">{saveLoadWarning.message}</h1>
-          <p className="mt-2 text-sm text-red-700">エラーログ:</p>
+          <p className="mt-2 text-sm text-red-700">{t('save.errorLog')}</p>
           <pre className="mt-2 max-h-[60vh] overflow-auto whitespace-pre-wrap break-words rounded border border-red-200 bg-white p-3 text-xs text-red-900">
             {saveLoadWarning.errorLog}
           </pre>

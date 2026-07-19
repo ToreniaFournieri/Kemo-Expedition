@@ -112,6 +112,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
+import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -130,7 +131,7 @@ function generateUserId(): string {
   return `uuid-${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
 }
 const APPROX_CYCLE_STEP_COUNT = 30;
-const SAVE_LOAD_WARNING_MESSAGE = 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください';
+const SAVE_LOAD_WARNING_KEY = 'save.loadWarning';
 const VALID_GLOSSARY_ABILITY_IDS = new Set(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
 const VALID_GLOSSARY_TERRAIN_KEYS = new Set(
   (TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []).map((entry) => entry.key as TerrainEffectKey),
@@ -145,7 +146,7 @@ type SideQuestScaleByLevel = {
 
 type SideQuestRuntimeDef = {
   type: string;
-  shortText: string;
+  shortTextKey: string;
   baseMin: number;
   baseMax: number;
   deadlineHours: number;
@@ -153,19 +154,19 @@ type SideQuestRuntimeDef = {
 };
 
 const SIDE_QUEST_RUNTIME_DEFS: Record<number, SideQuestRuntimeDef> = {
-  1: { type: 'q.squander', shortText: '散財', baseMin: 100, baseMax: 400, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  2: { type: 'q.sleeping', shortText: '安眠', baseMin: 1, baseMax: 4, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  3: { type: 'q.exercise', shortText: '運動', baseMin: 5, baseMax: 15, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  4: { type: 'q.embezzlement', shortText: '横領', baseMin: 25, baseMax: 100, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  5: { type: 'q.donation', shortText: '寄付', baseMin: 100, baseMax: 500, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  6: { type: 'q.healing', shortText: '治療', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  7: { type: 'q.AFK', shortText: '放置', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  8: { type: 'q.treasure-super-rare', shortText: '超レア獲得', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  9: { type: 'q.treasure-boss-rare', shortText: 'ボスレア獲得', baseMin: 1, baseMax: 4, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  10: { type: 'q.poor-kid', shortText: 'アイテム獲得空振り', baseMin: 10, baseMax: 30, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  11: { type: 'q.consecutive-wins', shortText: '連続踏破', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  12: { type: 'q.losers', shortText: '敗北', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  13: { type: 'q.savings', shortText: '貯金', baseMin: 200, baseMax: 1000, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  1: { type: 'q.squander', shortTextKey: 'sideQuest.squander.short', baseMin: 100, baseMax: 400, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  2: { type: 'q.sleeping', shortTextKey: 'sideQuest.sleeping.short', baseMin: 1, baseMax: 4, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  3: { type: 'q.exercise', shortTextKey: 'sideQuest.exercise.short', baseMin: 5, baseMax: 15, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  4: { type: 'q.embezzlement', shortTextKey: 'sideQuest.embezzlement.short', baseMin: 25, baseMax: 100, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  5: { type: 'q.donation', shortTextKey: 'sideQuest.donation.short', baseMin: 100, baseMax: 500, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  6: { type: 'q.healing', shortTextKey: 'sideQuest.healing.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  7: { type: 'q.AFK', shortTextKey: 'sideQuest.afk.short', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  8: { type: 'q.treasure-super-rare', shortTextKey: 'sideQuest.treasureSuperRare.short', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  9: { type: 'q.treasure-boss-rare', shortTextKey: 'sideQuest.treasureBossRare.short', baseMin: 1, baseMax: 4, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  10: { type: 'q.poor-kid', shortTextKey: 'sideQuest.poorKid.short', baseMin: 10, baseMax: 30, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  11: { type: 'q.consecutive-wins', shortTextKey: 'sideQuest.consecutiveWins.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  12: { type: 'q.losers', shortTextKey: 'sideQuest.losers.short', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  13: { type: 'q.savings', shortTextKey: 'sideQuest.savings.short', baseMin: 200, baseMax: 1000, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
 };
 
 function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
@@ -174,6 +175,11 @@ function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
   if (expId <= 4) return 2;
   if (expId <= 6) return 3;
   return 4;
+}
+
+
+function getSideQuestShortTextKey(type: string): string | undefined {
+  return Object.values(SIDE_QUEST_RUNTIME_DEFS).find((def) => def.type === normalizeSideQuestType(type))?.shortTextKey;
 }
 
 function normalizeSideQuestType(type: string): string {
@@ -299,7 +305,7 @@ function normalizeUnlockedDeities(unlockedDeities: unknown): string[] {
 }
 
 function normalizeChallengedGodName(rawName: string): string {
-  const withoutBattleSuffix = rawName.replace(/\s*\(神魔戦\)\s*$/u, '').trim();
+  const withoutBattleSuffix = stripGodsBattleSuffix(rawName);
   const withoutRoleSuffix = withoutBattleSuffix.replace(/\([^)]*\)/gu, '').trim();
   const [head] = withoutRoleSuffix.split(/\s+/u);
   return (head ?? withoutRoleSuffix).trim();
@@ -392,10 +398,10 @@ function getUnlockDiaryLog(
     });
 
   const unlockHeadline = unlockSourceEntry?.enemyName.includes('(BOSS)')
-    ? `${log.dungeonName}踏破`
-    : '解禁条件達成';
+    ? t('unlock.condition.dungeonCleared', { dungeon: log.dungeonName })
+    : t('unlock.condition.met');
 
-  const unlockPartyLabel = unlockedPartySlot ? `PT${unlockedPartySlot}解放` : '';
+  const unlockPartyLabel = unlockedPartySlot ? t('unlock.partySlot', { slot: unlockedPartySlot }) : '';
   const unlockDetail = [unlockPartyLabel].filter(Boolean).join('、');
 
   return {
@@ -414,26 +420,96 @@ function getCycleDurationScale(): number {
   return env === 'dev' ? DEBUG_CYCLE_DURATION_SCALE : 1;
 }
 
-function formatSideQuestShortText(type: string, shortText: string, target: number): string {
+function formatSideQuestShortText(type: string, shortTextKey: string, target: number): string {
+  const shortText = t(shortTextKey);
   const formatNumber = (value: number) => Math.floor(value).toLocaleString('ja-JP');
-  const valueByType: Partial<Record<string, string>> = {
-    'q.squander': `${formatNumber(target)}G`,
-    'q.sleeping': `${formatNumber(target)}回`,
-    'q.exercise': `${formatNumber(target)}分`,
-    'q.embezzlement': `${formatNumber(target)}G`,
-    'q.donation': `${formatNumber(target)}G`,
-    'q.healing': `${formatNumber(target)}分`,
-    'q.AFK': `${formatNumber(target)}分`,
+  const value = formatNumber(target);
+  const targetTemplateByType: Partial<Record<string, string>> = {
+    'q.squander': 'sideQuest.target.gold',
+    'q.sleeping': 'sideQuest.target.count',
+    'q.exercise': 'sideQuest.target.minutes',
+    'q.embezzlement': 'sideQuest.target.gold',
+    'q.donation': 'sideQuest.target.gold',
+    'q.healing': 'sideQuest.target.minutes',
+    'q.AFK': 'sideQuest.target.minutes',
     'q.treasure-super-rare': '',
-    'q.treasure-boss-rare': `${formatNumber(target)}個`,
-    'q.poor-kid': `${formatNumber(target)}回`,
-    'q.consecutive-wins': `${formatNumber(target)}連`,
+    'q.treasure-boss-rare': 'sideQuest.target.items',
+    'q.poor-kid': 'sideQuest.target.count',
+    'q.consecutive-wins': 'sideQuest.target.streak',
     'q.losers': '',
-    'q.savings': `${formatNumber(target)}G`,
+    'q.savings': 'sideQuest.target.gold',
   };
-  const suffix = valueByType[type];
-  if (suffix === '') return shortText;
-  return `${shortText}(${suffix ?? formatNumber(target)})`;
+  const targetTemplateKey = targetTemplateByType[type];
+  if (targetTemplateKey === '') return shortText;
+  return t(targetTemplateKey ?? 'sideQuest.target.count', { label: shortText, value });
+}
+
+
+const GODS_BATTLE_SUFFIX_KEY = 'game.log.godsBattleSuffix';
+const GODS_BATTLE_SUFFIX_FALLBACKS = ['(神魔戦)', '(Gods Battle)'] as const;
+
+function getGodsBattleSuffix(): string {
+  return t(GODS_BATTLE_SUFFIX_KEY);
+}
+
+function hasGodsBattleSuffix(text: string): boolean {
+  const localizedSuffix = getGodsBattleSuffix();
+  return [localizedSuffix, ...GODS_BATTLE_SUFFIX_FALLBACKS].some((suffix) => text.includes(suffix));
+}
+
+function stripGodsBattleSuffix(text: string): string {
+  return [getGodsBattleSuffix(), ...GODS_BATTLE_SUFFIX_FALLBACKS].reduce(
+    (value, suffix) => value.replace(new RegExp(`\\s*${escapeRegExp(suffix)}\\s*$`, 'u'), '').trim(),
+    text,
+  );
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function characterName(key: string): string {
+  return t(`character.default.${key}`);
+}
+
+const DEFAULT_NAME_RACES: readonly RaceId[] = [
+  'caninian', 'lupinian', 'vulpinian', 'ursan', 'felidian',
+  'leporian', 'cervin', 'murid', 'procyonian',
+];
+
+const UNIQUE_CHARACTER_NAME_KEYS: Partial<Record<LineageId, string>> = {
+  unascertained: 'n1', pioneer: 'n2', meddlesome_fox: 'n3', rowdy_orca_girl: 'n4',
+  phantom_thief: 'n5', crescent_jade: 'n6', apostate: 'n7', flamebound_grove: 'n8',
+  hidden_grail: 'n9', almighty: 'n10', 'unexpected_prince(ss)': 'n11', incarnation: 'n12',
+};
+
+function translateCharacterName(
+  character: Character,
+  partyIndex: number,
+  sourceLanguage: Language,
+  targetLanguage: Language,
+): string {
+  if (character.isUnique) {
+    const uniqueNameKey = UNIQUE_CHARACTER_NAME_KEYS[character.lineageId];
+    return uniqueNameKey ? translate(targetLanguage, `character.default.${uniqueNameKey}`) : character.name;
+  }
+
+  // SpecRef: 2.2.1 | Potential default name for player side characters | Potential Default Name Table
+  if (DEFAULT_NAME_RACES.includes(character.raceId) && partyIndex >= 0 && partyIndex < 6) {
+    const poolKey = `home.defaultNames.pt${partyIndex + 1}.${character.raceId}`;
+    const sourceNames = translate(sourceLanguage, poolKey).split('|');
+    const nameIndex = sourceNames.indexOf(character.name);
+    if (nameIndex >= 0) {
+      return translate(targetLanguage, poolKey).split('|')[nameIndex] ?? character.name;
+    }
+  }
+
+  // Initial non-unique members also have stable, localized default-name entries.
+  for (let nameNumber = 13; nameNumber <= 36; nameNumber += 1) {
+    const key = `character.default.n${nameNumber}`;
+    if (translate(sourceLanguage, key) === character.name) return translate(targetLanguage, key);
+  }
+  return character.name;
 }
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
@@ -569,7 +645,7 @@ function getOutcomeConditionAdjustment(
 
 function isGodsBattleExpedition(log: ExpeditionLog | null): boolean {
   if (!log) return false;
-  return log.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
+  return log.entries.some((entry) => hasGodsBattleSuffix(entry.enemyName));
 }
 
 
@@ -1236,7 +1312,7 @@ function loadSavedState(): LoadSavedStateResult {
           .flatMap((party: Party) => party.diaryLogs ?? [])
           .flatMap((diaryLog: DiaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : [])
           .flatMap((log: ExpeditionLog) => log.entries)
-          .filter((entry: ExpeditionLogEntry) => entry.enemyName.includes('(神魔戦)'))
+          .filter((entry: ExpeditionLogEntry) => hasGodsBattleSuffix(entry.enemyName))
           .map((entry: ExpeditionLogEntry) => normalizeChallengedGodName(entry.enemyName))
           .filter((name: string, index: number, allNames: string[]) => allNames.indexOf(name) === index);
         parsed.global.challengedGodNames = Array.from(new Set([
@@ -1315,6 +1391,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
   const normalizedSideQuest = party.sideQuest
     ? {
         ...party.sideQuest,
+        shortTextKey: party.sideQuest.shortTextKey ?? getSideQuestShortTextKey(party.sideQuest.type),
         assignedAt: Number.isFinite(party.sideQuest.assignedAt) ? party.sideQuest.assignedAt : now,
         expiresAt: Number.isFinite(party.sideQuest.expiresAt) ? party.sideQuest.expiresAt : now + (16 * 60 * 60 * 1000),
       }
@@ -1351,14 +1428,21 @@ function normalizeSleepinessState(raw: unknown): SleepinessState {
 }
 
 
-const UNIQUE_CHARACTER_GENDER_BY_NAME: Record<string, CharacterGender> = {
-  'ケモ': 'male', 'ライカ': 'female', 'レナード': 'male', 'オルカ': 'female', 'ノクス': 'male', 'ルナ': 'female',
-  'ミシュカ': 'male', 'プチーツァ': 'male', '葉隠': 'male', '蒼牙破': 'male', 'フィン': 'male', 'マーレ': 'female',
+const UNIQUE_CHARACTER_GENDER_KEYS: Record<string, CharacterGender> = {
+  n1: 'male', n2: 'female', n3: 'male', n4: 'female', n5: 'male', n6: 'female',
+  n7: 'male', n8: 'male', n9: 'male', n10: 'male', n11: 'male', n12: 'female',
 };
+
+function getUniqueCharacterGenderByName(name: string): CharacterGender | undefined {
+  for (const [key, gender] of Object.entries(UNIQUE_CHARACTER_GENDER_KEYS)) {
+    if (name === characterName(key)) return gender;
+  }
+  return undefined;
+}
 
 function normalizeCharacterGender(raw: unknown, character?: Pick<Character, 'isUnique' | 'name'>): CharacterGender {
   if (raw === 'male' || raw === 'female') return raw;
-  if (character?.isUnique) return UNIQUE_CHARACTER_GENDER_BY_NAME[character.name] ?? 'male';
+  if (character?.isUnique) return getUniqueCharacterGenderByName(character.name) ?? 'male';
   return Math.random() < 0.5 ? 'male' : 'female';
 }
 
@@ -1388,12 +1472,12 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 // SpecRef: 2.1.4.2 | Initial setup | PT1 Party initial condition.
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: 'ケモ', gender: 'male', isUnique: true, equipmentIds: [1101, 1102, 1104, 1105, 1106, 1211] },
-    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'クズノハ', gender: 'female', equipmentIds: [1104, 1106] },
-    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', gender: 'female', equipmentIds: [1107, 1109] },
-    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', gender: 'male', equipmentIds: [1107, 1109] },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: 'セルフィン', gender: 'female', equipmentIds: [1110, 1112] },
-    { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: 'ライカ', gender: 'female', isUnique: true, equipmentIds: [1110, 1112] },
+    { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: characterName('n1'), gender: 'male', isUnique: true, equipmentIds: [1101, 1102, 1104, 1105, 1106, 1211] },
+    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: characterName('n13'), gender: 'female', equipmentIds: [1104, 1106] },
+    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: characterName('n14'), gender: 'female', equipmentIds: [1107, 1109] },
+    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: characterName('n15'), gender: 'male', equipmentIds: [1107, 1109] },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: characterName('n16'), gender: 'female', equipmentIds: [1110, 1112] },
+    { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: characterName('n2'), gender: 'female', isUnique: true, equipmentIds: [1110, 1112] },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1452,12 +1536,12 @@ function createInitialParty() {
 
 function createSecondParty() {
   const defaultSetup = [
-    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: 'レナード', gender: 'male', isUnique: true },
-    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: 'オルカ', gender: 'female', isUnique: true },
-    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'カイマ', gender: 'male' },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'inquisitive', lineage: 'utopia', name: 'マナエル', gender: 'male' },
-    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'レイナ', gender: 'female' },
-    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'タウロ', gender: 'male' },
+    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: characterName('n3'), gender: 'male', isUnique: true },
+    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: characterName('n4'), gender: 'female', isUnique: true },
+    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: characterName('n17'), gender: 'male' },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'inquisitive', lineage: 'utopia', name: characterName('n18'), gender: 'male' },
+    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: characterName('n19'), gender: 'female' },
+    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: characterName('n20'), gender: 'male' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1512,12 +1596,12 @@ function createSecondParty() {
 
 function createThirdParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: 'ハムザ', gender: 'male' },
-    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: 'ユースフ', gender: 'male' },
-    { race: 'murid', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'phantom_thief', name: 'ノクス', gender: 'male', isUnique: true },
-    { race: 'felidian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'crescent_jade', name: 'ルナ', gender: 'female', isUnique: true },
-    { race: 'lupinian', main: 'duelist', sub: 'striker', pred: 'perceptive', lineage: 'frozen_forest', name: 'カリーム', gender: 'male' },
-    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'inquisitive', lineage: 'adaptation', name: 'ジャリル', gender: 'male' },
+    { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: characterName('n21'), gender: 'male' },
+    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: characterName('n22'), gender: 'male' },
+    { race: 'murid', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'phantom_thief', name: characterName('n5'), gender: 'male', isUnique: true },
+    { race: 'felidian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'crescent_jade', name: characterName('n6'), gender: 'female', isUnique: true },
+    { race: 'lupinian', main: 'duelist', sub: 'striker', pred: 'perceptive', lineage: 'frozen_forest', name: characterName('n23'), gender: 'male' },
+    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'inquisitive', lineage: 'adaptation', name: characterName('n24'), gender: 'male' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1572,12 +1656,12 @@ function createThirdParty() {
 
 function createFourthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'lord', sub: 'duelist', pred: 'none', lineage: 'apostate', name: 'ミシュカ', gender: 'male', isUnique: true },
-    { race: 'avian', main: 'ninja', sub: 'sword-saint', pred: 'none', lineage: 'flamebound_grove', name: 'プチーツァ', gender: 'male', isUnique: true },
-    { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ヴェーラ', gender: 'female' },
-    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'イリーナ', gender: 'female' },
-    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'introspective', lineage: 'machina', name: 'ドミトリ', gender: 'male' },
-    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'ミラ', gender: 'female' },
+    { race: 'ursan', main: 'lord', sub: 'duelist', pred: 'none', lineage: 'apostate', name: characterName('n7'), gender: 'male', isUnique: true },
+    { race: 'avian', main: 'ninja', sub: 'sword-saint', pred: 'none', lineage: 'flamebound_grove', name: characterName('n8'), gender: 'male', isUnique: true },
+    { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: characterName('n25'), gender: 'female' },
+    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: characterName('n26'), gender: 'female' },
+    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'introspective', lineage: 'machina', name: characterName('n27'), gender: 'male' },
+    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: characterName('n28'), gender: 'female' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1632,12 +1716,12 @@ function createFourthParty() {
 
 function createFifthParty() {
   const defaultSetup = [
-    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: '葉隠', gender: 'male', isUnique: true },
-    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: '蒼牙破', gender: 'male', isUnique: true },
-    { race: 'felidian', main: 'wizard', sub: 'ranger', pred: 'precise', lineage: 'abyssal_sea', name: '影髭', gender: 'male' },
-    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: '砕歯', gender: 'male' },
-    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'amiable', lineage: 'frozen_forest', name: '霜踏', gender: 'female' },
-    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: '狐火', gender: 'female' },
+    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: characterName('n9'), gender: 'male', isUnique: true },
+    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: characterName('n10'), gender: 'male', isUnique: true },
+    { race: 'felidian', main: 'wizard', sub: 'ranger', pred: 'precise', lineage: 'abyssal_sea', name: characterName('n29'), gender: 'male' },
+    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: characterName('n30'), gender: 'male' },
+    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'amiable', lineage: 'frozen_forest', name: characterName('n31'), gender: 'female' },
+    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: characterName('n32'), gender: 'female' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1693,12 +1777,12 @@ function createFifthParty() {
 // SpecRef: 2.1.4.2 | Initial setup | PT6 Party initial condition.
 function createSixthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'pilgrim', sub: 'samurai', pred: 'stubborn', lineage: 'fragment', name: 'マーカス', gender: 'male' },
-    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'resourceful', lineage: 'abyssal_sea', name: 'ランスロット', gender: 'male' },
-    { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: 'フィン', gender: 'male', isUnique: true },
-    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'パーシヴァル', gender: 'male' },
-    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: 'マーレ', gender: 'female', isUnique: true },
-    { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'サム', gender: 'male' },
+    { race: 'ursan', main: 'pilgrim', sub: 'samurai', pred: 'stubborn', lineage: 'fragment', name: characterName('n33'), gender: 'male' },
+    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'resourceful', lineage: 'abyssal_sea', name: characterName('n34'), gender: 'male' },
+    { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: characterName('n11'), gender: 'male', isUnique: true },
+    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: characterName('n35'), gender: 'male' },
+    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: characterName('n12'), gender: 'female', isUnique: true },
+    { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: characterName('n36'), gender: 'male' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1761,11 +1845,22 @@ type InitialStateResult = {
 };
 
 function createInitialState(): InitialStateResult {
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Language URL parameter
+  const initialLanguage = resolveInitialLanguage();
+  persistLanguage(initialLanguage);
+  setActiveLanguage(initialLanguage);
   // Try to load saved state first
   const savedStateResult = loadSavedState();
   if (savedStateResult.state) {
     // Update build number in case it changed
-    return { state: { ...savedStateResult.state, buildNumber: BUILD_NUMBER }, loadErrorLog: null };
+    return {
+      state: {
+        ...savedStateResult.state,
+        buildNumber: BUILD_NUMBER,
+        global: { ...savedStateResult.state.global, language: initialLanguage },
+      },
+      loadErrorLog: null,
+    };
   }
 
   return {
@@ -1791,6 +1886,7 @@ function createInitialState(): InitialStateResult {
       shopIntimacyLastDecayAt: Date.now(),
       enemyBattleStats: {},
       readDeveloperNewsItemIds: [],
+      language: initialLanguage,
     },
     parties: [createInitialParty()],
     selectedPartyIndex: 0,
@@ -1825,8 +1921,9 @@ type GameAction =
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
+  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
-  | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; isAfkSimulation?: boolean }
+  | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
@@ -1861,6 +1958,7 @@ type GameAction =
   | { type: 'RESET_COMMON_SUPER_RARE_BAG'; partyIndex?: number }
   | { type: 'RESET_RARE_SUPER_RARE_BAG'; partyIndex?: number }
   | { type: 'RESET_SIDE_QUEST_BAG'; partyIndex?: number }
+  | { type: 'SET_LANGUAGE'; language: Language }
   | { type: 'UNLOCK_PARTY_SLOT' };
 
 // Select enemy based on room type and pool
@@ -2488,8 +2586,8 @@ function buildDeityEffectLogEntry(
     return {
       phase: 'end',
       actor: 'effect',
-      action: '再生の女神の祝福！',
-      note: `(HP回復+${healAmount})`,
+      action: t('auto.jp.b871f82e74'),
+      note: t('game.log.hpHeal', { amount: healAmount }),
     };
   }
 
@@ -2497,105 +2595,21 @@ function buildDeityEffectLogEntry(
     return {
       phase: 'end',
       actor: 'effect',
-      action: '消耗の神への代償！',
-      note: `(HP消耗-${attritionAmount})`,
+      action: t('auto.jp.f8c08c2728'),
+      note: t('game.log.hpAttrition', { amount: attritionAmount }),
     };
   }
 
   return null;
 }
 
-const TERRAIN_REJUVENATION_LOGS = [
-  '{actor} は周囲の活力に満たされ、体力を回復した',
-  '{actor} の傷がゆっくりと癒えていく',
-  '{actor} は大地の力を受け、HPを回復した',
-  '{actor} の身体に微かな活力が巡った',
-  '{actor} は自然の息吹に包まれ、回復した',
-  '{actor} の疲労がわずかに和らいだ',
-  '{actor} の傷口が静かにふさがっていく',
-  '{actor} は環境の恩恵を受け、体力を取り戻した',
-  '{actor} に穏やかな再生の力が働いた',
-  '{actor} の身体がじんわりと回復していく',
-] as const;
-
-const TERRAIN_ROTWOOD_LOGS = [
-  '腐敗の気配が癒しを拒んだ…',
-  '大地は腐り、再生の力は働かない',
-  '生命の流れが淀み、回復は起こらない',
-  '癒しの力は腐敗に呑まれた',
-  '周囲は朽ち、再生の気配はない',
-  '腐敗した空気が、回復を阻んでいる',
-  '大地は死に、癒しは届かない',
-  '再生の力は遮られ、何も起こらない',
-  'すべてが朽ち、回復の兆しは消えた',
-  '腐敗が満ち、癒しの力は失われた',
-] as const;
-
-const TERRAIN_ABUNDANT_LOGS = [
-  '豊かな力が満ち、体力が満たされた',
-  '大地の恵みが溢れ、体力が回復した',
-  '満ち足りた気配が、体を力で満たす',
-  '豊穣の力が流れ込み、体力が回復した',
-  'あふれる生命力が、体を満たしていく',
-  '大地の祝福が降り注ぎ、体力が回復した',
-  '力が満ち、失われた分を超えて満たされる',
-  '周囲に満ちる力が、体力を押し上げる',
-  '濃密な生命の気配が、体を満たす',
-  '豊かな流れが巡り、体力が回復した',
-] as const;
-
-const TERRAIN_DECAY_LOGS = [
-  '見えぬ力が心を蝕んだ…',
-  '正体不明の気配が、じわりと体力を削る',
-  '理解できぬ何かが、内側から力を奪う',
-  '不穏な気配が満ち、心が削られていく',
-  '触れられぬ何かが、確かに力を奪った',
-  '静かな異質さが、体力を侵食する',
-  '名状しがたい力が、じわじわと削っていく',
-  '違和感が広がり、気づかぬうちに力が失われる',
-  '不可視の圧力が、心をすり減らす',
-  '得体の知れぬ力が、体力を奪っていく',
-] as const;
-
-const TERRAIN_LEAKAGE_LOGS = [
-  '{target} に電流が走った！',
-  '{target} は漏電により感電した！',
-  '{target} の体を電撃が駆け抜けた！',
-  '{target} は不意の電流に打たれた！',
-  '{target} に漏れ出した電流が襲いかかった！',
-  '{target} は電撃により体力を失った！',
-  '{target} の周囲で電流が弾け、感電した！',
-  '{target} に稲妻のような電流が走る！',
-  '{target} は漏電の影響を受け、感電した！',
-  '{target} に不規則な電流が流れ込んだ！',
-] as const;
-
-
-const TERRAIN_HEATWAVE_LOGS = [
-  '灼熱の風が {actor} を焼いた！',
-  '熱波が押し寄せ、{actor} の体力を削った！',
-  'うだるような暑さが {actor} を蝕む！',
-  '焼けつく空気が {actor} を包み込んだ！',
-  '熱気が渦巻き、{actor} の力を奪った！',
-  '容赦ない熱波が {actor} を襲った！',
-  '焦げつくような空気が {actor} を消耗させる！',
-  '灼ける大気が {actor} を締めつけた！',
-  '熱波が吹き荒れ、{actor} のHPを削り取る！',
-  '逃げ場のない暑さが {actor} を苦しめた！',
-] as const;
-
-const FIRST_AID_LOGS = [
-  '{actor}は応急処置を行った',
-  '{actor}は手早く傷を手当てした',
-  '{actor}は戦いの傷をその場で塞いだ',
-  '{actor}は乱れた呼吸を整えた',
-  '{actor}は自らに簡易手当てを施した',
-  '{actor}は傷口を押さえて持ち直した',
-  '{actor}は素早く体勢を立て直した',
-  '{actor}は慣れた手つきで止血した',
-  '{actor}は戦場の合間に傷を癒やした',
-  '{actor}は最小限の処置で回復した',
-] as const;
+const TERRAIN_REJUVENATION_LOG_COUNT = 10;
+const TERRAIN_ROTWOOD_LOG_COUNT = 10;
+const TERRAIN_ABUNDANT_LOG_COUNT = 10;
+const TERRAIN_DECAY_LOG_COUNT = 10;
+const TERRAIN_LEAKAGE_LOG_COUNT = 10;
+const TERRAIN_HEATWAVE_LOG_COUNT = 10;
+const FIRST_AID_LOG_COUNT = 10;
 
 function getFirstAidHealRate(level: number): number {
   if (level >= 5) return 0.06;
@@ -2641,13 +2655,12 @@ function applyFirstAidHpEffect(
     const healAmount = Math.floor(hpContribution.totalHpBonus * healRate);
     if (healAmount <= 0) continue;
 
-    const flavorText = FIRST_AID_LOGS[Math.floor(Math.random() * FIRST_AID_LOGS.length)]
-      ?? '{actor}は応急処置を行った';
+    const flavorText = getRandomTranslation('battleFlavor.passive.firstAid', FIRST_AID_LOG_COUNT, { actor: character.name });
     logs.push({
       phase: 'end',
       actor: 'effect',
-      action: flavorText.replace('{actor}', character.name),
-      note: `(HP回復+${healAmount})`,
+      action: flavorText,
+      note: t('game.log.hpHeal', { amount: healAmount }),
     });
 
     nextHp = Math.min(maxHp, nextHp + healAmount);
@@ -2740,45 +2753,41 @@ function applyTerrainDecayHpEffect(
 
 function buildTerrainAbundantLogEntry(healAmount?: number): BattleLogEntry | null {
   if (!healAmount || healAmount <= 0) return null;
-  const flavorText = TERRAIN_ABUNDANT_LOGS[Math.floor(Math.random() * TERRAIN_ABUNDANT_LOGS.length)]
-    ?? '豊かな流れが巡り、体力が回復した';
+  const flavorText = getRandomTranslation('battleFlavor.environment.abundant', TERRAIN_ABUNDANT_LOG_COUNT);
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText,
-    note: `(HP回復+${healAmount})`,
+    note: t('game.log.hpHeal', { amount: healAmount }),
   };
 }
 
 function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = TERRAIN_DECAY_LOGS[Math.floor(Math.random() * TERRAIN_DECAY_LOGS.length)]
-    ?? '得体の知れぬ力が、体力を奪っていく';
+  const flavorText = getRandomTranslation('battleFlavor.environment.decay', TERRAIN_DECAY_LOG_COUNT);
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText,
-    note: `(HP減少-${damageAmount})`,
+    note: t('game.log.hpDamage', { amount: damageAmount }),
   };
 }
 
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rejuvenation
 function buildTerrainRejuvenationLogEntry(actorName: string, healAmount?: number): BattleLogEntry | null {
   if (!healAmount || healAmount <= 0) return null;
-  const flavorText = TERRAIN_REJUVENATION_LOGS[Math.floor(Math.random() * TERRAIN_REJUVENATION_LOGS.length)]
-    ?? '{actor} の身体がじんわりと回復していく';
+  const flavorText = getRandomTranslation('battleFlavor.environment.regeneration', TERRAIN_REJUVENATION_LOG_COUNT, { actor: actorName });
   return {
     phase: 'end',
     actor: 'effect',
-    action: flavorText.replace('{actor}', actorName),
-    note: `(HP回復+${healAmount})`,
+    action: flavorText,
+    note: t('game.log.hpHeal', { amount: healAmount }),
   };
 }
 
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rotwood
 function buildTerrainRotwoodLogEntry(): BattleLogEntry {
-  const flavorText = TERRAIN_ROTWOOD_LOGS[Math.floor(Math.random() * TERRAIN_ROTWOOD_LOGS.length)]
-    ?? '腐敗が満ち、癒しの力は失われた';
+  const flavorText = getRandomTranslation('battleFlavor.environment.decayBlocked', TERRAIN_ROTWOOD_LOG_COUNT);
   return {
     phase: 'end',
     actor: 'effect',
@@ -2839,27 +2848,25 @@ function applyTerrainLeakageHpEffect(
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.heatwave
 function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = TERRAIN_HEATWAVE_LOGS[Math.floor(Math.random() * TERRAIN_HEATWAVE_LOGS.length)]
-    ?? '逃げ場のない暑さが {actor} を苦しめた！';
+  const flavorText = getRandomTranslation('battleFlavor.environment.heatwave', TERRAIN_HEATWAVE_LOG_COUNT, { actor: actorName });
   return {
     phase: 'end',
     actor: 'effect',
     effectKind: 'terrain',
-    action: flavorText.replace('{actor}', actorName),
-    note: `(HP減少-${damageAmount})`,
+    action: flavorText,
+    note: t('game.log.hpDamage', { amount: damageAmount }),
   };
 }
 
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.leakage
 function buildTerrainLeakageLogEntry(targetName: string, damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = TERRAIN_LEAKAGE_LOGS[Math.floor(Math.random() * TERRAIN_LEAKAGE_LOGS.length)]
-    ?? '{target} に不規則な電流が流れ込んだ！';
+  const flavorText = getRandomTranslation('battleFlavor.environment.shock', TERRAIN_LEAKAGE_LOG_COUNT, { target: targetName });
   return {
     phase: 'end',
     actor: 'effect',
-    action: flavorText.replace('{target}', targetName),
-    note: `(HP減少 ⚡-${damageAmount})`,
+    action: flavorText,
+    note: t('game.log.hpThunderDamage', { amount: damageAmount }),
   };
 }
 
@@ -2869,37 +2876,37 @@ function buildRewardLogEntries(
   return rewardLogEntries.map((rewardEntry) => ({
     phase: 'end',
     actor: 'effect',
-    action: `${rewardEntry.itemName} を獲得した！`,
+    action: t('game.log.itemObtained', { item: rewardEntry.itemName }),
     note: rewardEntry.autoSellProfit && rewardEntry.autoSellProfit > 0
-      ? `(自動売却対象: ${rewardEntry.autoSellProfit}G)`
+      ? t('game.log.autoSellTarget', { amount: rewardEntry.autoSellProfit })
       : undefined,
   }));
 }
 
 const AURIFEROUS_LOGS = [
-  '{actor} の体に蓄えられた衝撃からアイテムが零れ落ちた！',
-  '{actor} は受けた攻撃により、装備の一部が露出した！',
-  '{actor} の内側から、価値あるアイテムが静かに形成された…',
-  '{actor} の体内で圧縮された力が、新たなる可能性の輝きとなった！',
-  '{actor} への打撃が重なることで、生成される価値が増している！',
-  '{actor} は打撃を受けるほど、何かを生成している…',
-  '{actor} の損傷が、別の形の“価値”へと転換された！',
-  '{actor} の肉体が圧縮され、素材としての価値を帯び始めた！',
-  '{actor} に刻まれた傷が、アイテムとなる因子へと変わった！',
-  '{actor} は攻撃の蓄積により、価値ある断片を生み出した！',
+  t('auto.jp.6210566513'),
+  t('auto.jp.fe83eae722'),
+  t('auto.jp.ca50cc6a99'),
+  t('auto.jp.24a6922d44'),
+  t('auto.jp.cd3b6f0501'),
+  t('auto.jp.daafdc6596'),
+  t('auto.jp.9932e8fabf'),
+  t('auto.jp.8a3caa810b'),
+  t('auto.jp.01bba62abd'),
+  t('auto.jp.dc0d0cd51a'),
 ] as const;
 
 function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
   if (bonusRolls <= 0) return null;
 
   const flavorText = AURIFEROUS_LOGS[Math.floor(Math.random() * AURIFEROUS_LOGS.length)]
-    ?? '{actor} は攻撃の蓄積により、価値ある断片を生み出した！';
+    ?? t('auto.jp.dc0d0cd51a');
 
   return {
     phase: 'end',
     actor: 'effect',
     action: flavorText.replace('{actor}', actorName),
-    note: `(累計${totalHitsReceived}回→ +${bonusRolls}回抽選回数増加)`,
+    note: t('game.log.auriferousBonus', { totalHits: totalHitsReceived, bonusRolls }),
   };
 }
 
@@ -2927,6 +2934,22 @@ function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Par
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    case 'SET_LANGUAGE': {
+      // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
+      // SpecRef: 5.1.4 | Save and load | Persisted user settings
+      const language = normalizeLanguage(action.language);
+      persistLanguage(language);
+      const sourceLanguage = normalizeLanguage(state.global.language);
+      const parties = sourceLanguage === language ? state.parties : state.parties.map((party, partyIndex) => ({
+        ...party,
+        characters: party.characters.map((character) => ({
+          ...character,
+          name: translateCharacterName(character, partyIndex, sourceLanguage, language),
+        })),
+      }));
+      return { ...state, parties, global: { ...state.global, language } };
+    }
+
     case 'SELECT_PARTY':
       return { ...state, selectedPartyIndex: action.partyIndex };
 
@@ -3051,6 +3074,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'RESOLVE_INSTANT_EXPEDITION': {
+      // SpecRef: 8.5 | UI_DIARY | When a party was defeated, the diary updates.
+      // Resolve and finalize as one reducer transaction so another sortie cannot
+      // replace the pending defeat entry before it reaches the diary.
+      const expeditionState = gameReducer(state, {
+        type: 'RUN_EXPEDITION',
+        partyIndex: action.partyIndex,
+        simulatedAt: action.simulatedAt,
+        gameMode: action.gameMode,
+        triggerGodsBattle: action.triggerGodsBattle,
+      });
+      return gameReducer(expeditionState, {
+        type: 'FINALIZE_DIARY_LOG',
+        partyIndex: action.partyIndex,
+        simulatedAt: action.simulatedAt,
+      });
+    }
+
     case 'RUN_EXPEDITION': {
       const currentParty = state.parties[action.partyIndex];
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
@@ -3130,7 +3171,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   false,
                   effectiveDifficultyOffset,
                 ),
-                enemyName: '[扉が封印されている]',
+                enemyName: t('auto.jp.270d06353e'),
                 enemyHP: 0,
                 enemyAttackValues: '',
                 outcome: 'draw', // Not a battle - displayed as 未到達
@@ -3140,10 +3181,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 maxPartyHP: partyStats.hp,
                 details: [],
                 gateInfo: roomDef.type === 'battle_Boss'
-                  ? `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}で ボス戦解放`
+                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required })
                   : roomIndex === 0
-                    ? `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}で${dungeon.name}開放`
-                    : `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}で ${floor.floorNumber}F-4解放`,
+                    ? t('game.log.gateInfo.dungeon', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required, dungeon: dungeon.name })
+                    : t('game.log.gateInfo.floor', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required, floor: floor.floorNumber }),
               };
               entries.push(gateEntry);
               finalOutcome = 'Escape';
@@ -3239,7 +3280,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             // Room type suffix for display
             let roomSuffix = '';
             if (roomDef.type === 'battle_Elite') roomSuffix = ' (ELITE)';
-            if (roomDef.type === 'battle_Boss') roomSuffix = isGodsBattle ? ' (神魔戦)' : ' (BOSS)';
+            if (roomDef.type === 'battle_Boss') roomSuffix = isGodsBattle ? ` ${getGodsBattleSuffix()}` : ' (BOSS)';
 
             const entry: ExpeditionLogEntry = {
               room: roomCounter,
@@ -3486,8 +3527,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push({
                   phase: 'end',
                   actor: 'deity',
-                  action: '撤退',
-                  note: 'HPが30%以下のため、戦利品を持ち帰ります。',
+                  action: t('auto.jp.2660ad39fa'),
+                  note: t('auto.jp.36cbc2e27f'),
                 });
               } else {
                 const decayHpEffect = applyTerrainDecayHpEffect(
@@ -3522,7 +3563,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   entry.details.push({
                     phase: 'end',
                     actor: 'deity',
-                    action: '探索深度に到達した為帰還します',
+                    action: t('auto.jp.96b6003d0c'),
                   });
                 }
               }
@@ -3690,7 +3731,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const pendingDiaryLog = party.pendingDiaryLog;
       const pendingUnlockState = party.pendingUnlockState;
-      const createdAtBase = pendingDiaryLog?.createdAt ?? Date.now();
+      // SpecRef: 8.5 | UI_DIARY | Use the emulated in-game timestamp rather than the device or system timestamp.
+      const createdAtBase = pendingDiaryLog?.createdAt ?? action.simulatedAt ?? Date.now();
       const unlockDiaryLog = pendingUnlockState
         ? getUnlockDiaryLog(
             party.lastExpeditionLog,
@@ -3769,7 +3811,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 
       const challengedGodNamesFromNewLog = (pendingDiaryLog?.expeditionLog?.entries ?? [])
-        .filter((entry) => entry.enemyName.includes('(神魔戦)'))
+        .filter((entry) => hasGodsBattleSuffix(entry.enemyName))
         .map((entry) => normalizeChallengedGodName(entry.enemyName));
       if (challengedGodNamesFromNewLog.length > 0) {
         nextGlobal = {
@@ -3889,7 +3931,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         sideQuest: {
           id: ticket,
           type: def.type,
-          shortText: formatSideQuestShortText(def.type, def.shortText, target),
+          shortTextKey: def.shortTextKey,
+          shortText: formatSideQuestShortText(def.type, def.shortTextKey, target),
           target: internalTarget,
           progress: 0,
           rolledTier: Math.max(1, Math.min(8, Math.floor(action.rolledTier))),
@@ -3929,8 +3972,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const rewardRank = Math.floor(Math.random() * currentParty.sideQuest.rolledTier) + 1;
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
       const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
-      const sideQuestLabel = currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
-      const sideQuestDetail = `${dungeonName}: ${getJewelNameByRank(key, rewardRank)} を手に入れた`;
+      const sideQuestLabel = currentParty.sideQuest.shortTextKey
+        ? t(currentParty.sideQuest.shortTextKey)
+        : currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
+      const sideQuestDetail = t('sideQuest.reward.jewelObtained', { dungeon: dungeonName, jewel: getJewelNameByRank(key, rewardRank) });
       const shouldAddSideQuestDiary = matchesSideQuestDiaryThreshold(
         rewardRank,
         getDiarySettingsWithDefaults(currentParty.diarySettings).sideQuestThreshold,
@@ -4624,7 +4669,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
           });
-          workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex, isAfkSimulation: true });
+          workingState = gameReducer(workingState, {
+            type: 'FINALIZE_DIARY_LOG',
+            partyIndex,
+            simulatedAt,
+            isAfkSimulation: true,
+          });
 
           const postFinalizeParty = workingState.parties[partyIndex];
           if (postFinalizeParty) {
@@ -4758,6 +4808,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopIntimacyLastDecayAt: Date.now(),
           enemyBattleStats: {},
           readDeveloperNewsItemIds: [],
+          language: state.global.language,
         },
         parties: [createInitialParty()],
         selectedPartyIndex: 0,
@@ -5132,12 +5183,16 @@ export function useGameState() {
       dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
     }, []),
 
+    resolveInstantExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt: number = Date.now()) => {
+      dispatch({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
+    }, []),
+
     consumeInstantExpeditionStock: useCallback((partyIndex: number, now?: number) => {
       dispatch({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now });
     }, []),
 
-    finalizeDiaryLog: useCallback((partyIndex: number) => {
-      dispatch({ type: 'FINALIZE_DIARY_LOG', partyIndex });
+    finalizeDiaryLog: useCallback((partyIndex: number, simulatedAt?: number) => {
+      dispatch({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt });
     }, []),
 
     healPartyHp: useCallback((partyIndex: number, amount: number) => {
@@ -5276,6 +5331,10 @@ export function useGameState() {
       dispatch({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
     }, []),
 
+    setLanguage: useCallback((language: Language) => {
+      dispatch({ type: 'SET_LANGUAGE', language });
+    }, []),
+
     unlockPartySlot: useCallback(() => {
       dispatch({ type: 'UNLOCK_PARTY_SLOT' });
     }, []),
@@ -5294,7 +5353,7 @@ export function useGameState() {
     notifications,
     saveLoadWarning: loadErrorLog
       ? {
-          message: SAVE_LOAD_WARNING_MESSAGE,
+          message: t(SAVE_LOAD_WARNING_KEY),
           errorLog: loadErrorLog,
         }
       : null,

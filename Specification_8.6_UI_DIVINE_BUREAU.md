@@ -12,12 +12,7 @@
   - Show a notification badge on `Divine Bureau` and `News` when there is at least one unread developer news item.
   - When the player opens and reads the developer news list, clear the notification badge.
   - Persist the read/unread state in save data so the badge does not reappear after refresh or restart unless a new news item is added.
-- News list:
-
-| Version | Date | Content |
-|----|----|----|
-| v8.1.2 | 2026/07/18 | 開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。 |
-
+- News list: @Specification_11.2_NEWS.md 
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
@@ -280,6 +275,17 @@ HP: 312                 タイプ: 神魔
 - Display Super Rare list with its unique bonus.
 
 **Mode select (モード切替)**
+
+- Language (言語)
+  - Options: 日本語 / English / 中文
+  - The language is determined by the lang URL parameter:
+    - Default → 日本語 
+    - `lang=ja` → 日本語
+    - `lang=en` → English
+    - `lang=zh` → 中文
+    - Example: `https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja`
+  - Persist the selected language in local storage.
+  - When the selected language changes, replace the current URL's `lang` parameter with the selected language without reloading the page. Preserve the current path, all other query parameters, and the URL fragment.
 
 - ダークモード OFF/ON/システム
   - Dark mode setting

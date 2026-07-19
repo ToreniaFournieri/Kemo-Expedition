@@ -1,4 +1,5 @@
 import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType, TerrainEffectKey } from '../types';
+import { t } from '../i18n';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 
 type CombatMultipliers = {
@@ -96,14 +97,14 @@ const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
 ];
 
 const EXPEDITION_FLOOR_CONCEPTS: Record<number, string[]> = {
-  1: ['風渡る草原', '捕食者の縄張り', '群生の巣盆地', '見張り台', '埋没遺跡原野', 'ケイナイアンの廃都'],
-  2: ['雪の森', '腐木の小径', '食肉植物群生地', '氷柱迷宮', '水晶洞窟', '水晶宮殿跡'],
-  3: ['陽だまりの浜辺', '静穏の海', '難破船', '海蝕門', '打ち捨てられた漁村', 'ヴルピニアン長老会の聖廷'],
-  4: ['砂漠の静夜', '岩石台地', '石灰洞窟', '夜盗の待ち伏せ', '失われた宝石の追跡', '豊穣の神殿'],
-  5: ['迷いの森', '険しき山道', 'ウルサンの戦陣', '竜の尾根', '火山火口', '要塞'],
-  6: ['蒸気仕掛けの地下穴', 'K9星間宇宙船の残骸', '禁断の研究施設', '心なき機械', '主なき艦橋', '共鳴の祭壇'],
-  7: ['巨大残骸環', '転送装置区画', '光の領域', '闇の領域', '深淵', '月宮殿'],
-  8: ['虚痕の峡谷門', '亜世界', 'もう一つの人々', 'ゲヘナ', 'セルヴィン文書保管街区', '千里眼の聖域'],
+  1: ['Wind-swept Grassland', 'Predator Territory', 'Colony Nest Basin', 'Watchtower', 'Buried Ruins Field', 'Ruined Kainanian Capital'],
+  2: ['Snow Forest', 'Rotwood Path', 'Carnivorous Plant Colony', 'Icicle Labyrinth', 'Crystal Cave', 'Crystal Palace Ruins'],
+  3: ['Sunny Beach', 'Tranquil Sea', 'Shipwreck', 'Sea-erosion Gate', 'Abandoned Fishing Village', 'Vulpinian Elder Council Holy Court'],
+  4: ['Silent Desert Night', 'Rocky Plateau', 'Limestone Cave', 'Night-bandit Ambush', 'Lost Jewel Pursuit', 'Temple of Abundance'],
+  5: ['Wandering Forest', 'Treacherous Mountain Path', 'Ursan Battle Line', 'Dragon Ridge', 'Volcanic Crater', 'Fortress'],
+  6: ['Steam-driven Burrow', 'K9 Interstellar Spaceship Wreckage', 'Forbidden Research Facility', 'Heartless Machines', 'Masterless Bridge', 'Altar of Resonance'],
+  7: ['Giant Wreckage Ring', 'Transfer Device Sector', 'Realm of Light', 'Realm of Darkness', 'Abyss', 'Moon Palace'],
+  8: ['Void-scar Canyon Gate', 'Subworld', 'Another People', 'Gehenna', 'Selvin Document Archive District', 'Clairvoyant Sanctuary'],
 };
 
 const EXPEDITION_FLOOR_TERRAIN_EFFECTS: Record<number, TerrainEffectKey[]> = {
@@ -124,6 +125,14 @@ export function getExpeditionFloorConcept(expeditionId: number, floorNumber: num
   }
 
   return concepts[floorNumber - 1] ?? null;
+}
+
+export function getLocalizedExpeditionFloorConcept(expeditionId: number, floorNumber: number): string | null {
+  const canonicalConcept = getExpeditionFloorConcept(expeditionId, floorNumber);
+  if (!canonicalConcept) return null;
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
+  const localizedConcept = t(`expedition.floorConcept.${expeditionId}.${floorNumber}`);
+  return localizedConcept === `expedition.floorConcept.${expeditionId}.${floorNumber}` ? canonicalConcept : localizedConcept;
 }
 
 type RoomIdKey = `${number}-${number}`;
@@ -188,96 +197,96 @@ function createFloors(poolId: number, bossId: number): FloorDef[] {
 // Expedition definitions with lore
 // 8 expeditions following the world progression
 export const DUNGEONS: Dungeon[] = [
-  // Tier 1: ケイナイアン平原 (Caninian Plains)
+  // Tier 1: Caninian Plains
   {
     id: 1,
     tier: 1,
     expLevel: 1,
-    name: 'ケイナイアン平原',
+    get name() { return t('data.dungeons.1.name'); },
     enemyPoolIds: [1],
     bossId: 135,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[0],
     floors: createFloors(1, 135),
   },
 
-  // Tier 2: ルピニアンの亜寒帯 (Lupinian Taiga)
+  // Tier 2: Lupinian Taiga
   {
     id: 2,
     tier: 2,
     expLevel: 10,
-    name: 'ルピニアンの亜寒帯',
+    get name() { return t('data.dungeons.2.name'); },
     enemyPoolIds: [2],
     bossId: 171,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[1],
     floors: createFloors(2, 171),
   },
 
-  // Tier 3: ヴァルンの海洋 (Vulpinian Ocean)
+  // Tier 3: Vulpinian Ocean
   {
     id: 3,
     tier: 3,
     expLevel: 16,
-    name: 'ヴァルンの海洋',
+    get name() { return t('data.dungeons.3.name'); },
     enemyPoolIds: [3],
     bossId: 207,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[2],
     floors: createFloors(3, 207),
   },
 
-  // Tier 4: フェリディ砂漠 (Felidian Desert)
+  // Tier 4: Felidian Desert
   {
     id: 4,
     tier: 4,
     expLevel: 21,
-    name: 'フェリディ砂漠',
+    get name() { return t('data.dungeons.4.name'); },
     enemyPoolIds: [4],
     bossId: 243,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[3],
     floors: createFloors(4, 243),
   },
 
-  // Tier 5: ウルサンの炎嶺 (Ursan Pyrepeak)
+  // Tier 5: Ursan Pyrepeak
   {
     id: 5,
     tier: 5,
     expLevel: 24,
-    name: 'ウルサンの炎嶺',
+    get name() { return t('data.dungeons.5.name'); },
     enemyPoolIds: [5],
     bossId: 279,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[4],
     floors: createFloors(5, 279),
   },
 
-  // Tier 6: プロキオン巣穴 (Procyonian Burrow)
+  // Tier 6: Procyonian Burrow
   {
     id: 6,
     tier: 6,
     expLevel: 29,
-    name: 'プロキオン巣穴',
+    get name() { return t('data.dungeons.6.name'); },
     enemyPoolIds: [6],
     bossId: 315,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[5],
     floors: createFloors(6, 315),
   },
 
-  // Tier 7: レポリアンの月宮 (Leporian Moon Palace)
+  // Tier 7: Leporian Moon Palace
   {
     id: 7,
     tier: 7,
     expLevel: 34,
-    name: 'レポリアンの月宮',
+    get name() { return t('data.dungeons.7.name'); },
     enemyPoolIds: [7],
     bossId: 351,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[6],
     floors: createFloors(7, 351),
   },
 
-  // Tier 8: セルヴィンの谷 (Cervin Vale)
+  // Tier 8: Cervin Vale
   {
     id: 8,
     tier: 8,
     expLevel: 40,
-    name: 'セルヴィンの谷',
+    get name() { return t('data.dungeons.8.name'); },
     enemyPoolIds: [8],
     bossId: 387,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[7],
@@ -288,7 +297,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 99,
     tier: 1,
     expLevel: 1,
-    name: '闘技場',
+    get name() { return t('data.dungeons.99.name'); },
     enemyPoolIds: [99],
     bossId: 9901,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[0],

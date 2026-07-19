@@ -1,3 +1,5 @@
+import type { Language } from '../i18n';
+
 // Elemental Types
 export type ElementalOffense = 'none' | 'fire' | 'thunder' | 'ice';
 export type ElementalResistance = 'fire' | 'thunder' | 'ice';
@@ -375,6 +377,7 @@ interface SideQuestState {
   id: number;
   type: string;
   shortText: string;
+  shortTextKey?: string;
   target: number;
   progress: number;
   rolledTier: number;
@@ -449,6 +452,7 @@ interface GlobalState {
   jewelAutoEquipPriorityPartyId?: number | null;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   readDeveloperNewsItemIds: string[];
+  language: Language;
 }
 
 // Computed party stats for battle
@@ -482,6 +486,7 @@ export interface EnemyDef {
   spawnPool: number;
   poolId: number;
   name: string;
+  nameKey?: string;
   enemyClass: EnemyClassId;
   enemySubClass?: EnemyClassId | 'none';
   abilities: EnemyAbility[];

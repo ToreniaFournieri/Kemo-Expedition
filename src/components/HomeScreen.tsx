@@ -7,10 +7,10 @@ import {
   getEffectiveEnemyLevel,
   getEffectiveEnemyMultipliers,
   getEffectiveExpeditionTier,
-  getExpeditionFloorConcept,
+  getLocalizedExpeditionFloorConcept,
 } from '../data/dungeons';
 import { RACES } from '../data/races';
-import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
+import { CLASSES, CLASS_SHORT_NAMES, getClassShortName } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
@@ -18,12 +18,12 @@ import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '.
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { getMasterItemCategoriesByRarity } from '../data/masterSpecData';
 import {
-  BONUS_ABILITY_GLOSSARY_ENTRIES,
+  LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES,
   BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
   type BonusAbilityGlossarySubcategoryId,
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
-import { getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
+import { getItemCoreConceptValue, getItemDisplayName, getLocalizedEnhancementTitle, getLocalizedItemName, getLocalizedSuperRareTitle } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
@@ -36,18 +36,20 @@ import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, g
 import { calculateItemSellPrice } from '../game/pricing';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
-import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
+import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
-import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
+import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelDisplayName, getJewelNameByRank, getJewelOwnedCount, getJewelShortLabel, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
+import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -62,14 +64,58 @@ import {
   isLootGateUnlocked,
 } from '../game/lootGate';
 
-const DEVELOPER_NEWS_ITEMS = [
-  { id: 'v8.1.2-2026-07-18-beta-report-bonus-fix', version: 'v8.1.2', date: '2026/07/18', content: '開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。' },
-] as const;
-
 function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
   if (/^https?:\/\//.test(path)) return path;
   return `${import.meta.env.BASE_URL}${path.replace(/^\/(public\/)?/, '')}`;
+}
+
+const UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE: Readonly<Partial<Record<string, string>>> = {
+  unascertained: 'Unique_Kemo.png',
+  pioneer: 'Unique_Laika.png',
+  crescent_jade: 'Unique_Luna.png',
+  phantom_thief: 'Unique_Nox.png',
+  incarnation: 'Unique_Merle.png',
+  flamebound_grove: 'Unique_Puchitsa.png',
+  almighty: 'Unique_Souga-ha.png',
+  meddlesome_fox: 'Unique_Leonard.png',
+  hidden_grail: 'Unique_Hagakure.png',
+  'unexpected_prince(ss)': 'Unique_Finn.png',
+  rowdy_orca_girl: 'Unique_Orca.png',
+  apostate: 'Unique_Mishka.png',
+};
+
+const CHARACTER_CHIBI_IMAGE_MODULES = import.meta.glob('/public/chibi/*.png', { eager: true });
+const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { eager: true });
+
+// SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
+// SpecRef: 8.4.2 | Inventory(所持品) | Item list
+function getInventoryOwnerCharacterImageSrc(character: Character, partyId: number): string | null {
+  const uniqueFileName = character.isUnique
+    ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId]
+    : undefined;
+  if (uniqueFileName) {
+    const chibiFileName = `C_${uniqueFileName}`;
+    if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/${chibiFileName}`]) {
+      return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
+    }
+    if (CHARACTER_IMAGE_MODULES[`/public/character/${uniqueFileName}`]) {
+      return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
+    }
+    return null;
+  }
+
+  const race = RACES.find((entry) => entry.id === character.raceId);
+  if (!race) return null;
+  const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
+  const partyRaceGenderFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
+  if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/C_${partyRaceGenderFileName}`]) {
+    return `${import.meta.env.BASE_URL}chibi/C_${partyRaceGenderFileName}`;
+  }
+  if (CHARACTER_IMAGE_MODULES[`/public/character/${partyRaceGenderFileName}`]) {
+    return `${import.meta.env.BASE_URL}character/${partyRaceGenderFileName}`;
+  }
+  return null;
 }
 
 interface HomeScreenProps {
@@ -87,8 +133,9 @@ interface HomeScreenProps {
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
     runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
+    resolveInstantExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
     consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
-    finalizeDiaryLog: (partyIndex: number) => void;
+    finalizeDiaryLog: (partyIndex: number, simulatedAt?: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
     clearPendingProfit: (partyIndex: number) => void;
@@ -124,6 +171,7 @@ interface HomeScreenProps {
     resetCommonSuperRareBag: () => void;
     resetRareSuperRareBag: () => void;
     resetSideQuestBag: () => void;
+    setLanguage: (language: Language) => void;
     unlockPartySlot: () => void;
     addNotification: (
       message: string,
@@ -200,7 +248,7 @@ const renderElementalResistanceInline = (
   multipliers: Record<'fire' | 'ice' | 'thunder', number>
 ): JSX.Element => (
   <>
-    属性耐性:{' '}
+    {t('home.elementalResistance.label')}: {' '}
     {ELEMENTAL_RESISTANCE_ORDER.map(({ key, icon }, index) => (
       <Fragment key={key}>
         {index > 0 ? ',' : ''}
@@ -240,7 +288,7 @@ function getSliderProgressStyle(value: number, min: number, max: number): CSSPro
 
 const TERRAIN_EFFECT_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects');
 const TERRAIN_EFFECT_OPTIONS = [
-  { key: 'none', label: 'none', description: '地形効果なし' },
+  { key: 'none', label: 'none', description: t('home.terrainEffect.noneDescription') },
   ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []),
 ];
 const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, string>>((acc, entry) => {
@@ -249,23 +297,23 @@ const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, strin
 }, {});
 
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
-  rest: '休息中',
-  sell: '売却中',
-  free_action: '自由行動中',
-  sound_sleep: '熟睡中',
-  pray: '祈り中',
-  idle: '待機中',
-  move: '移動中',
-  explore: '探索中',
-  return: '帰還中',
-  reactivate: '復帰中',
+  rest: 'expedition.cycle.rest',
+  sell: 'expedition.cycle.sell',
+  free_action: 'expedition.cycle.freeAction',
+  sound_sleep: 'expedition.cycle.soundSleep',
+  pray: 'expedition.cycle.pray',
+  idle: 'expedition.cycle.idle',
+  move: 'expedition.cycle.move',
+  explore: 'expedition.cycle.explore',
+  return: 'expedition.cycle.return',
+  reactivate: 'expedition.cycle.reactivate',
 };
 
 const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
-  LONG: '遠距離',
-  MID: '魔法',
-  CLOSE: '近接',
-  END: '終了',
+  LONG: t('combat.ranged'),
+  MID: t('combat.magic'),
+  CLOSE: t('combat.melee'),
+  END: t('common.end'),
 };
 
 function formatBonusAbilityPhaseDisplay(value: string): string {
@@ -327,9 +375,9 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
         .replace(/xM/g, `x${multiplier}`)
         .replace(/N/g, threshold)
         .replace(/M/g, multiplier)
-        .replace(/を\s+x/g, 'をx')
-        .replace(/が\s+x/g, 'がx')
-        .replace(/の\s+x/g, 'のx');
+        .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
+        .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
+        .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
     }
   }
   if (abilityId === 'melee_conversion') {
@@ -345,18 +393,18 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;
 
-  if (abilityId.endsWith('_reflect') && value && value.includes('反射') && value.includes('被弾')) {
+  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken'))) {
     return entry.description
-      .replace('のNを反射して相手に与える(自身は残りを受ける)', `を${value}に分散する(反射分を相手に与え、自身は被弾分を受ける)`)
-      .replace(/を\s+x/g, 'をx')
-      .replace(/が\s+x/g, 'がx')
-      .replace(/の\s+x/g, 'のx');
+      .replace(t('home.abilityDescription.reflectTemplate'), t('home.abilityDescription.reflectDistributed', { value }))
+      .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
+      .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
+      .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
   }
 
   if (timing) {
     description = description
-      .replace('指定終了タイミング', `${timing}終了タイミング`)
-      .replace('指定タイミング', `${timing}タイミング`);
+      .replace(t('home.abilityDescription.specifiedEndTiming'), t('home.abilityDescription.resolvedEndTiming', { timing }))
+      .replace(t('home.abilityDescription.specifiedTiming'), t('home.abilityDescription.resolvedTiming', { timing }));
   }
 
   if (value) {
@@ -373,9 +421,9 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   }
 
   return description
-    .replace(/を\s+x/g, 'をx')
-    .replace(/が\s+x/g, 'がx')
-    .replace(/の\s+x/g, 'のx');
+    .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
+    .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
+    .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
 }
 
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
@@ -394,30 +442,34 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   explore: 'explore',
   return: 'return',
   reactivate: 'reactivate',
-  '休息中': 'rest',
-  '売却中': 'sell',
-  '宴会中': 'free_action',
-  '不貞腐れ中': 'free_action',
-  '自由行動中': 'free_action',
-  '睡眠中': 'sound_sleep',
-  '熟睡中': 'sound_sleep',
-  '仮眠中': 'move',
-  '身支度中': 'move',
-  '祈り中': 'pray',
-  '待機中': 'idle',
-  '移動中': 'move',
-  '探索中': 'explore',
-  '帰還中': 'return',
-  '復帰中': 'reactivate',
 };
 
 function toPartyCycleState(value: unknown): PartyCycleState {
   if (typeof value !== 'string') return 'idle';
-  return LEGACY_PARTY_CYCLE_STATE_MAP[value] ?? 'idle';
+  const legacyJapaneseStateEntries: Array<[string, PartyCycleState]> = [
+    [t('home.legacyCycle.rest'), 'rest'],
+    [t('home.legacyCycle.sell'), 'sell'],
+    [t('home.legacyCycle.feast'), 'free_action'],
+    [t('home.legacyCycle.slump'), 'free_action'],
+    [t('home.legacyCycle.freeAction'), 'free_action'],
+    [t('home.legacyCycle.sleep'), 'sound_sleep'],
+    [t('home.legacyCycle.soundSleep'), 'sound_sleep'],
+    [t('home.legacyCycle.nap'), 'move'],
+    [t('home.legacyCycle.outfit'), 'move'],
+    [t('home.legacyCycle.pray'), 'pray'],
+    [t('home.legacyCycle.idle'), 'idle'],
+    [t('home.legacyCycle.move'), 'move'],
+    [t('home.legacyCycle.explore'), 'explore'],
+    [t('home.legacyCycle.return'), 'return'],
+    [t('home.legacyCycle.reactivate'), 'reactivate'],
+  ];
+  return LEGACY_PARTY_CYCLE_STATE_MAP[value]
+    ?? legacyJapaneseStateEntries.find(([label]) => label === value)?.[1]
+    ?? 'idle';
 }
 
 function getPartyCycleStateLabel(state: PartyCycleState): string {
-  return PARTY_CYCLE_STATE_LABELS[state];
+  return t(PARTY_CYCLE_STATE_LABELS[state]);
 }
 
 interface PartyCycleRuntime {
@@ -497,15 +549,15 @@ function getExpeditionTierDurationFactor(expTier: number): number {
 
 function normalizeBattleLogNote(note?: string): string | undefined {
   if (!note) return note;
-  return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
+  return note.replace(t('home.battleLog.legacyPartyAttackPower'), t('home.battleLog.partyPhysicalAttackPower'));
 }
 
 // SpecRef: 6.1.1.1 | START phase | floor.terrain.*
 function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isTriggeredLog: boolean, isResurrectLog: boolean, isStealthEffectLog: boolean, isCounterNegationEffectLog: boolean): string {
   const isTerrainStartLog = log.phase === 'start' && log.effectKind === 'terrain';
-  if (isTerrainStartLog) return '地形';
-  if (log.phase === 'start') return '効';
-  if (log.phase === 'end') return '末';
+  if (isTerrainStartLog) return t('battleLog.phase.terrainShort');
+  if (log.phase === 'start') return t('battleLog.phase.effectShort');
+  if (log.phase === 'end') return t('battleLog.phase.endShort');
   if (log.effectKind === 'terrain') return '-';
   if (isPhaseAction) {
     if (log.isAggregated) return '-';
@@ -515,7 +567,7 @@ function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isT
     return `${log.initiativeRoll ?? '?'}`;
   }
   if (isStealthEffectLog || isCounterNegationEffectLog) return '-';
-  return log.actor === 'deity' ? '末' : '-';
+  return log.actor === 'deity' ? t('battleLog.phase.endShort') : '-';
 }
 
 function getBattleLogNoteClass(noteTone?: 'default' | 'sub' | 'muted'): string {
@@ -571,10 +623,10 @@ function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, t
 }
 
 function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' | string): string {
-  if (outcome === 'Clear' || outcome === 'victory') return '踏破';
-  if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return '帰還';
-  if (outcome === 'Defeat' || outcome === 'defeat') return '敗北';
-  return '撤退';
+  if (outcome === 'Clear' || outcome === 'victory') return t('expedition.outcome.clear');
+  if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return t('expedition.outcome.return');
+  if (outcome === 'Defeat' || outcome === 'defeat') return t('expedition.outcome.defeat');
+  return t('expedition.outcome.retreat');
 }
 
 function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
@@ -613,7 +665,7 @@ function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDef | nul
     return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
   }
 
-  const normalizedEnemyName = entry.enemyName.replace(/\s+\((ELITE|BOSS|神魔戦)\)\s*$/u, '').trim();
+  const normalizedEnemyName = entry.enemyName.replace(new RegExp(`\\s+\\((ELITE|BOSS|${escapeRegExp(t('home.godsBattle.label'))})\\)\\s*$`, 'u'), '').trim();
   if (!normalizedEnemyName) return null;
   return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
 }
@@ -660,10 +712,10 @@ function renderCollapsedBestiaryEnemyImage(enemyId: number): JSX.Element {
 }
 
 function getEnemyClassSummary(enemy: EnemyDef): string {
-  const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
+  const mainClass = getClassShortName(enemy.enemyClass);
   if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
   if (enemy.enemySubClass === enemy.enemyClass) return `${mainClass}M`;
-  const subClass = CLASS_SHORT_NAMES[enemy.enemySubClass] ?? enemy.enemySubClass;
+  const subClass = getClassShortName(enemy.enemySubClass);
   return `${mainClass}/${subClass}`;
 }
 
@@ -703,7 +755,7 @@ function EnemyBestiaryBubble({
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
   const decay = `${((0.90 + enemy.accuracyBonus) * 100).toFixed(1)}%`;
   const classText = getEnemyClassSummary(enemy).replace('/', ' / ');
-  const enemyTypeText = ENEMY_TYPE_SHORT_NAMES[enemy.enemyType] ?? enemy.enemyType;
+  const enemyTypeText = getEnemyTypeShortName(enemy.enemyType);
   const elementalOffenseIcon: UiIconKey | null = enemy.elementalOffense === 'fire'
     ? 'fire'
     : enemy.elementalOffense === 'ice'
@@ -711,8 +763,8 @@ function EnemyBestiaryBubble({
       : enemy.elementalOffense === 'thunder'
         ? 'thunder'
         : null;
-  const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ') || 'なし';
-  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || 'なし';
+  const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ') || t('common.none');
+  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || t('common.none');
 
   return (
     <FloatingBubblePortal>
@@ -729,27 +781,27 @@ function EnemyBestiaryBubble({
           {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
         <div>ID: {enemy.id}</div>
-        {bubble.enemyLevel !== null && <div>レベル: {formatNumber(bubble.enemyLevel)}</div>}
+        {bubble.enemyLevel !== null && <div>{t('party.status.level')}: {formatNumber(bubble.enemyLevel)}</div>}
         <div>HP: {formatNumber(enemy.hp)}</div>
-        <div>クラス: {classText}</div>
-        <div>タイプ: {enemyTypeText}</div>
-        {hasRangedAttack && <div>遠距離攻撃: {formatNumber(enemy.rangedAttack)} x {formatNumber(enemy.rangedNoA)}回 (x{enemy.rangedAttackAmplifier.toFixed(2)})</div>}
-        {hasMeleeAttack && <div>近接攻撃: {formatNumber(enemy.meleeAttack)} x {formatNumber(enemy.meleeNoA)}回 (x{enemy.meleeAttackAmplifier.toFixed(2)})</div>}
-        {hasPhysicalAttack && <div>物理命中率: 100% (減衰: {decay})</div>}
-        {hasMagicalAttack && <div>魔法攻撃: {formatNumber(enemy.magicalAttack)} x {formatNumber(enemy.magicalNoA)}回 (x{enemy.magicalAttackAmplifier.toFixed(2)})</div>}
-        {hasMagicCasting && <div>詠唱魔法: {getEnemyBestiarySpellName(enemy)}</div>}
-        <div>属性: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : '無'} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
-        <div>物理防御: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
-        <div>魔法防御: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
-        {hasMagicalAttack && <div>魔法命中率: 100% (減衰: {decay})</div>}
-        <div>回避: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
+        <div>{t('home.enemy.class')}: {classText}</div>
+        <div>{t('home.enemy.type')}: {enemyTypeText}</div>
+        {hasRangedAttack && <div>{t('home.enemy.attackLine', { label: t('combat.rangedAttack'), attack: formatNumber(enemy.rangedAttack), count: formatNumber(enemy.rangedNoA), amplifier: enemy.rangedAttackAmplifier.toFixed(2) })}</div>}
+        {hasMeleeAttack && <div>{t('home.enemy.attackLine', { label: t('combat.meleeAttack'), attack: formatNumber(enemy.meleeAttack), count: formatNumber(enemy.meleeNoA), amplifier: enemy.meleeAttackAmplifier.toFixed(2) })}</div>}
+        {hasPhysicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('combat.physicalAccuracy'), decay })}</div>}
+        {hasMagicalAttack && <div>{t('home.enemy.attackLine', { label: t('combat.magicalAttack'), attack: formatNumber(enemy.magicalAttack), count: formatNumber(enemy.magicalNoA), amplifier: enemy.magicalAttackAmplifier.toFixed(2) })}</div>}
+        {hasMagicCasting && <div>{t('home.enemy.castingSpell')}: {getEnemyBestiarySpellName(enemy)}</div>}
+        <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
+        <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.enemy.magicalAccuracy'), decay })}</div>}
+        <div>{t('combat.evasion')}: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
         <div>{renderElementalResistanceInline(enemy.elementalResistance)}</div>
         {(() => {
           const bonusText = getEnemyTypeCBonusText(enemy);
-          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+          return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
         })()}
-        <div>アビリティ: {abilityText}</div>
-        <div className="text-gray-600">ドロップ候補: {dropText}</div>
+        <div>{t('party.status.abilities')}: {abilityText}</div>
+        <div className="text-gray-600">{t('home.enemy.dropCandidates')}: {dropText}</div>
         </div>
       </div>
     </FloatingBubblePortal>
@@ -762,24 +814,24 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-const UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME: Partial<Record<string, string>> = {
-  'ケモ': 'C_Unique_Kemo.png',
-  'ライカ': 'C_Unique_Laika.png',
-  'ルナ': 'C_Unique_Luna.png',
-  'ノクス': 'C_Unique_Nox.png',
-  'マーレ': 'C_Unique_Merle.png',
-  'プチーツァ': 'C_Unique_Puchitsa.png',
-  'ミシュカ': 'C_Unique_Mishka.png',
-  '蒼牙破': 'C_Unique_Souga-ha.png',
-  'レナード': 'C_Unique_Leonard.png',
-  '葉隠': 'C_Unique_Hagakure.png',
-  'フィン': 'C_Unique_Finn.png',
-  'オルカ': 'C_Unique_Orca.png',
-};
+const UNIQUE_BATTLE_LOG_CHIBI_FILES: ReadonlyArray<{ nameKey: string; fileName: string }> = [
+  { nameKey: 'character.unique.kemo.name', fileName: 'C_Unique_Kemo.png' },
+  { nameKey: 'character.unique.laika.name', fileName: 'C_Unique_Laika.png' },
+  { nameKey: 'character.unique.luna.name', fileName: 'C_Unique_Luna.png' },
+  { nameKey: 'character.unique.nox.name', fileName: 'C_Unique_Nox.png' },
+  { nameKey: 'character.unique.mare.name', fileName: 'C_Unique_Merle.png' },
+  { nameKey: 'character.unique.ptitsa.name', fileName: 'C_Unique_Puchitsa.png' },
+  { nameKey: 'character.unique.mishka.name', fileName: 'C_Unique_Mishka.png' },
+  { nameKey: 'character.unique.sogaha.name', fileName: 'C_Unique_Souga-ha.png' },
+  { nameKey: 'character.unique.leonard.name', fileName: 'C_Unique_Leonard.png' },
+  { nameKey: 'character.unique.hagakure.name', fileName: 'C_Unique_Hagakure.png' },
+  { nameKey: 'character.unique.finn.name', fileName: 'C_Unique_Finn.png' },
+  { nameKey: 'character.unique.orca.name', fileName: 'C_Unique_Orca.png' },
+];
 
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
   if (character.isUnique) {
-    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILE_BY_NAME[character.name];
+    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILES.find(({ nameKey }) => t(nameKey) === character.name)?.fileName;
     return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/${uniqueFileName}` : null;
   }
 
@@ -801,7 +853,7 @@ function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): string[] {
   ];
 
   return Array.from(new Set(names.flatMap((name) => {
-    const normalizedName = name.replace(/\(神魔戦\)/g, '').trim();
+    const normalizedName = name.replace(new RegExp(escapeRegExp(t('home.godsBattle.parenthetical')), 'g'), '').trim();
     if (!normalizedName) return [];
 
     const withoutTrailingMetadata = normalizedName.replace(/(?:\s*\([^()]+\))+\s*$/u, '').trim();
@@ -833,7 +885,7 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
     getBattleLogEnemyNameCandidates(entry).forEach((enemyName) => {
       markers.push({ label: enemyName, src: enemySrc, alt: `${enemyName} chibi`, priority: 0 });
     });
-    if (/^敵/.test(action)) markers.push({ label: '敵', src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
+    if (new RegExp(`^${escapeRegExp(t('home.battleLog.enemyPrefix'))}`).test(action)) markers.push({ label: t('home.battleLog.enemyPrefix'), src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
   }
 
   party.characters.forEach((character: Character) => {
@@ -968,7 +1020,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
     if (group) {
       const summarizedNote = group.templateLog.note?.replace(/✚[\d,]+(?=\))/gu, `✚${formatNumber(group.totalHealAmount)}`);
       const summarizedTargets = [...new Set(group.targetNames)];
-      const isNullifiedLifeDrain = group.templateLog.note?.includes('吸血無効') ?? false;
+      const isNullifiedLifeDrain = group.templateLog.note?.includes(t('home.battleLog.lifeDrainNullified')) ?? false;
       const effectSourceName = group.templateLog.effectSourceName ?? '';
       return [{
         ...group.templateLog,
@@ -1094,15 +1146,15 @@ function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null {
 // SpecRef: 5.1.1 | Party State Machine | Notification
 function buildAfkSummaryNotification(stats: AfkSummaryStats): string | null {
   const summaryParts: string[] = [];
-  if (stats.Clear > 0) summaryParts.push(`踏破${formatNumber(stats.Clear)}回`);
-  if (stats.Turned_Back > 0) summaryParts.push(`帰還${formatNumber(stats.Turned_Back)}回`);
-  if (stats.Draw_Retreat > 0) summaryParts.push(`引分${formatNumber(stats.Draw_Retreat)}回`);
-  if (stats.Wounded_Retreat > 0) summaryParts.push(`撤退${formatNumber(stats.Wounded_Retreat)}回`);
-  if (stats.Defeat > 0) summaryParts.push(`敗北${formatNumber(stats.Defeat)}回`);
+  if (stats.Clear > 0) summaryParts.push(t('home.afk.clearCount', { count: formatNumber(stats.Clear) }));
+  if (stats.Turned_Back > 0) summaryParts.push(t('home.afk.returnCount', { count: formatNumber(stats.Turned_Back) }));
+  if (stats.Draw_Retreat > 0) summaryParts.push(t('home.afk.drawCount', { count: formatNumber(stats.Draw_Retreat) }));
+  if (stats.Wounded_Retreat > 0) summaryParts.push(t('home.afk.retreatCount', { count: formatNumber(stats.Wounded_Retreat) }));
+  if (stats.Defeat > 0) summaryParts.push(t('home.afk.defeatCount', { count: formatNumber(stats.Defeat) }));
 
   const financeParts: string[] = [];
-  if (stats.donatedGold > 0) financeParts.push(`寄付金額: ${formatNumber(stats.donatedGold)}G`);
-  if (stats.savedGold > 0) financeParts.push(`貯金額:　${formatNumber(stats.savedGold)}G`);
+  if (stats.donatedGold > 0) financeParts.push(t('home.afk.donatedGold', { gold: formatNumber(stats.donatedGold) }));
+  if (stats.savedGold > 0) financeParts.push(t('home.afk.savedGold', { gold: formatNumber(stats.savedGold) }));
 
   if (summaryParts.length === 0 && financeParts.length === 0) return null;
   return [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
@@ -1128,142 +1180,137 @@ const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
   mythicRare: 'M',
 };
 
-const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
-  all: '全て',
-  common: '通常',
-  uncommon: 'アンコモン',
-  eliteRare: 'エリートレア',
-  bossRare: 'ボスレア',
-  mythicRare: '神魔レア',
-};
+const getRarityFilterNote = (filter: RarityFilter): string => t(`party.rarity.${filter}`);
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
 
-const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: string }> = [
-  { value: 'all', label: '全て' },
-  { value: 1, label: '名工以上' },
-  { value: 2, label: '魔性以上' },
-  { value: 3, label: '宿った以上' },
-  { value: 4, label: '伝説以上' },
-  { value: 5, label: '恐ろしい以上' },
-  { value: 6, label: '究極' },
-  { value: 'none', label: 'なし' },
+const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; labelKey: string }> = [
+  { value: 'all', labelKey: 'party.rarity.all' },
+  { value: 1, labelKey: 'home.diaryThreshold.masterworkPlus' },
+  { value: 2, labelKey: 'home.diaryThreshold.demonicPlus' },
+  { value: 3, labelKey: 'home.diaryThreshold.hauntedPlus' },
+  { value: 4, labelKey: 'home.diaryThreshold.legendaryPlus' },
+  { value: 5, labelKey: 'home.diaryThreshold.terrifyingPlus' },
+  { value: 6, labelKey: 'home.diaryThreshold.ultimate' },
+  { value: 'none', labelKey: 'common.none' },
 ];
 
-const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold; label: string }> = [
-  { value: 'all', label: '全て' },
-  { value: 2, label: '2良晶以上' },
-  { value: 3, label: '3雅晶以上' },
-  { value: 4, label: '4煌晶以上' },
-  { value: 5, label: '5碧晶以上' },
-  { value: 6, label: '6紫晶以上' },
-  { value: 7, label: '7金晶以上' },
-  { value: 8, label: '8王晶のみ' },
-  { value: 'none', label: 'なし' },
+const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold; labelKey: string }> = [
+  { value: 'all', labelKey: 'party.rarity.all' },
+  { value: 2, labelKey: 'home.sideQuestThreshold.rank2Plus' },
+  { value: 3, labelKey: 'home.sideQuestThreshold.rank3Plus' },
+  { value: 4, labelKey: 'home.sideQuestThreshold.rank4Plus' },
+  { value: 5, labelKey: 'home.sideQuestThreshold.rank5Plus' },
+  { value: 6, labelKey: 'home.sideQuestThreshold.rank6Plus' },
+  { value: 7, labelKey: 'home.sideQuestThreshold.rank7Plus' },
+  { value: 8, labelKey: 'home.sideQuestThreshold.rank8Only' },
+  { value: 'none', labelKey: 'common.none' },
 ];
 
 
-const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; label: string }> = [
-  { value: 'defeatOnly', label: '敗北のみ' },
-  { value: 'defeatAndDraw', label: '敗北と引分' },
-  { value: 'none', label: 'なし' },
+const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; labelKey: string }> = [
+  { value: 'defeatOnly', labelKey: 'home.defeatNotification.defeatOnly' },
+  { value: 'defeatAndDraw', labelKey: 'home.defeatNotification.defeatAndDraw' },
+  { value: 'none', labelKey: 'common.none' },
 ];
 
 function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
   // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
-  const beforeBossConcept = getExpeditionFloorConcept(dungeonId, 6) ?? '6階層';
+  const beforeBossConcept = getLocalizedExpeditionFloorConcept(dungeonId, 6) ?? t('home.floorConcept.fallback', { floor: 6 });
   const floorConceptByFloor: Record<number, string> = {
-    1: getExpeditionFloorConcept(dungeonId, 1) ?? '1階層',
-    2: getExpeditionFloorConcept(dungeonId, 2) ?? '2階層',
-    3: getExpeditionFloorConcept(dungeonId, 3) ?? '3階層',
-    4: getExpeditionFloorConcept(dungeonId, 4) ?? '4階層',
-    5: getExpeditionFloorConcept(dungeonId, 5) ?? '5階層',
+    1: getLocalizedExpeditionFloorConcept(dungeonId, 1) ?? t('home.floorConcept.fallback', { floor: 1 }),
+    2: getLocalizedExpeditionFloorConcept(dungeonId, 2) ?? t('home.floorConcept.fallback', { floor: 2 }),
+    3: getLocalizedExpeditionFloorConcept(dungeonId, 3) ?? t('home.floorConcept.fallback', { floor: 3 }),
+    4: getLocalizedExpeditionFloorConcept(dungeonId, 4) ?? t('home.floorConcept.fallback', { floor: 4 }),
+    5: getLocalizedExpeditionFloorConcept(dungeonId, 5) ?? t('home.floorConcept.fallback', { floor: 5 }),
   };
 
   return [
-    { value: '1f-3', label: `1F-3 ${floorConceptByFloor[1]}まで` },
-    { value: '1f-4', label: `1F-4 ${floorConceptByFloor[1]}まで` },
-    { value: '2f-3', label: `2F-3 ${floorConceptByFloor[2]}まで` },
-    { value: '2f-4', label: `2F-4 ${floorConceptByFloor[2]}まで` },
-    { value: '3f-3', label: `3F-3 ${floorConceptByFloor[3]}まで` },
-    { value: '3f-4', label: `3F-4 ${floorConceptByFloor[3]}まで` },
-    { value: '4f-3', label: `4F-3 ${floorConceptByFloor[4]}まで` },
-    { value: '4f-4', label: `4F-4 ${floorConceptByFloor[4]}まで` },
-    { value: '5f-3', label: `5F-3 ${floorConceptByFloor[5]}まで` },
-    { value: '5f-4', label: `5F-4 ${floorConceptByFloor[5]}まで` },
-    { value: 'beforeBoss', label: `${beforeBossConcept}ボス直前まで` },
-    { value: 'all', label: '全て' },
+    { value: '1f-3', label: t('home.depth.untilFloor', { marker: '1F-3', concept: floorConceptByFloor[1] }) },
+    { value: '1f-4', label: t('home.depth.untilFloor', { marker: '1F-4', concept: floorConceptByFloor[1] }) },
+    { value: '2f-3', label: t('home.depth.untilFloor', { marker: '2F-3', concept: floorConceptByFloor[2] }) },
+    { value: '2f-4', label: t('home.depth.untilFloor', { marker: '2F-4', concept: floorConceptByFloor[2] }) },
+    { value: '3f-3', label: t('home.depth.untilFloor', { marker: '3F-3', concept: floorConceptByFloor[3] }) },
+    { value: '3f-4', label: t('home.depth.untilFloor', { marker: '3F-4', concept: floorConceptByFloor[3] }) },
+    { value: '4f-3', label: t('home.depth.untilFloor', { marker: '4F-3', concept: floorConceptByFloor[4] }) },
+    { value: '4f-4', label: t('home.depth.untilFloor', { marker: '4F-4', concept: floorConceptByFloor[4] }) },
+    { value: '5f-3', label: t('home.depth.untilFloor', { marker: '5F-3', concept: floorConceptByFloor[5] }) },
+    { value: '5f-4', label: t('home.depth.untilFloor', { marker: '5F-4', concept: floorConceptByFloor[5] }) },
+    { value: 'beforeBoss', label: t('home.depth.beforeBoss', { concept: beforeBossConcept }) },
+    { value: 'all', label: t('party.rarity.all') },
   ];
 }
 
 type GenderedNamePool = { male: string[]; female: string[] };
-const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
+function getPotentialDefaultNamesByPt(): Record<number, Partial<Record<RaceId, GenderedNamePool>>> {
+  // Build the pools on demand so their i18n values follow the currently active language.
+  const pools: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
   1: {
-    caninian: ['タロウ', 'コテツ', 'ハヤテ', 'シロ', 'レオ', 'リク', 'ソラ', 'マル', 'ジン'],
-    lupinian: ['ガルム', 'クロウ', 'ハク', 'レイガ', 'ギン', 'ランガ', 'ゼル', 'バルト'],
-    vulpinian: ['アカネ', 'イズナ', 'ヨウコ', 'センリ', 'コトネ', 'クズノハ', 'ミカゲ', 'ヒナ', 'アヤ'],
-    ursan: ['ゴンタ', 'バルド', 'クマジロウ', 'ドーガ', 'グルン', 'ダン', 'ボルグ', 'ガイ', 'ザン', 'ブラム'],
-    felidian: ['タマ', 'ネロ', 'シエル', 'レイ', 'アオ', 'カノン', 'ユイ'],
-    leporian: ['フブキ', 'ハル', 'トワ', 'ユキ', 'ナギ', 'ミナ', 'サラ', 'アオイ', 'レイナ', 'カスミ'],
-    cervin: ['サイカ', 'カナエ', 'リンネ', 'ミコト', 'ユズリハ', 'シオン', 'セツナ', 'トキ', 'マヒロ', 'ツムギ'],
-    murid: ['カゲ', 'コソネ', 'スズ', 'コマ', 'ヒソカ', 'ネム', 'チビ', 'クルミ'],
+    caninian: t('home.defaultNames.pt1.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    lupinian: t('home.defaultNames.pt1.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt1.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt1.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt1.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt1.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt1.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt1.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   2: {
-    lupinian: ['タウロ', 'カノア', 'ラウル', 'マウイ', 'タネ', 'ケアヌ'],
-    vulpinian: ['カラニ', 'カイロ', 'マコア', 'ナル', 'ラニ', 'ノアル'],
-    felidian: ['レイナ', 'レイア', 'モアナ', 'ナレア', 'カリア', 'マリエ'],
-    caninian: ['カイ', 'マナ', 'ノエル', 'ラウア', 'テオ', 'エナ'],
-    ursan: ['マロ', 'カヘア', 'タマ', 'ノルア', 'ハウ', 'カロ'],
-    procyonian: ['カイマ', 'マコ', 'ナルア', 'ロノ', 'タリ', 'モア'],
-    leporian: ['レア', 'ナニ', 'ミア', 'アロハ', 'カノエ', 'リノ'],
-    cervin: ['マナエル', 'ケアヌ', 'ノアル', 'ラニエル', 'マヒナ', 'カレオ'],
-    murid: ['ピコ', 'ミノ', 'ナオ', 'ティコ', 'ロア', 'エリオ'],
+    lupinian: t('home.defaultNames.pt2.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt2.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt2.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt2.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt2.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt2.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt2.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt2.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt2.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   3: {
-    lupinian: ['ファリス', 'ザヒル', 'ナシル', 'カリーム', 'ラシード', 'ハイダル'],
-    vulpinian: ['サーミル', 'ジャリル', 'ナビル', 'ファーディ', 'ザイード', 'アミール'],
-    felidian: ['ライラ', 'ナディア', 'サフィア', 'ヤスミン', 'ザーラ', 'マリカ'],
-    caninian: ['ハサン', 'オマル', 'ユースフ', 'ターリク', 'サリム', 'イブラヒム'],
-    ursan: ['バシール', 'マフムード', 'カーディル', 'ジャバル', 'ラヒム', 'ハムザ'],
-    procyonian: ['ナジーム', 'ファヒム', 'サーヒル', 'リヤド', 'ジャミル', 'カミル'],
-    leporian: ['アミナ', 'サルマ', 'ナイラ', 'リーム', 'ハナ', 'ダリア'],
-    cervin: ['ザヒラ', 'スハイル', 'ナディーム', 'カリラ', 'マジド', 'サミラ'],
-    murid: ['ミルザ', 'タリル', 'ラミ', 'サーミ', 'ナビハ', 'フィラス'],
+    lupinian: t('home.defaultNames.pt3.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt3.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt3.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt3.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt3.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt3.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt3.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt3.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt3.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   4: {
-    lupinian: ['イヴァン', 'ドミトリ', 'セルゲイ', 'ミハイル', 'アレクセイ', 'ボリス'],
-    vulpinian: ['ニコライ', 'ユーリ', 'ヴィクトル', 'ロマン', 'レフ', 'パーヴェル'],
-    felidian: ['アーニャ', 'ナターシャ', 'エカテリーナ', 'イリーナ', 'ソフィア', 'タチアナ'],
-    caninian: ['アンドレイ', 'コンスタンチン', 'フョードル', 'グリゴリー', 'ステパン', 'ヴァシリー'],
-    ursan: ['ウラジミール', 'ゲンナジー', 'イーゴリ', 'ロスチスラフ', 'ヤロスラフ', 'ボグダン'],
-    procyonian: ['ミーシャ', 'サーシャ', 'キリル', 'マクシム', 'オレグ', 'ティモフェイ'],
-    leporian: ['アリーナ', 'リュドミラ', 'ヴェーラ', 'スヴェトラーナ', 'ゼニア', 'マリーナ'],
-    cervin: ['ミラ', 'ラーダ', 'エレナ', 'ダリア', 'ズラータ', 'オリガ'],
-    murid: ['ピョートル', 'イリヤ', 'ラディム', 'ヴァレンチン', 'デニス', 'ルスラン'],
+    lupinian: t('home.defaultNames.pt4.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt4.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt4.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt4.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt4.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt4.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt4.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt4.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt4.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   5: {
-    lupinian: ['吠月', '銀吼', '狼髭', '鉄喉', '孤爪', '霜背', '夜襲', '咬輪', '雷牙'],
-    vulpinian: ['幻舌', '紅毛', '空耳', '妖面', '星瞳', '舞茸', '化葉', '千面'],
-    felidian: ['影髭', '夜目', '柔骨', '爪先', '眠須', '潜足', '鈴尾', '無聲', '陽溜'],
-    caninian: ['霜踏', '忠牙', '嗅丸', '群吠', '追尾', '散走', '守庭', '埋骨'],
-    ursan: ['冬籠', '熊掌', '山鳴', '蜜喰', '鈍爪', '大腹', '木倒', '岩背'],
-    procyonian: ['酒樽', '眠丸', '変身', '目隠', '落葉', '騙耳', '楽鼓', '空釜'],
-    leporian: ['長耳', '月跳', '軟足', '白尾', '草噛', '早駆', '雪隠'],
-    cervin: ['角王', '枝冠', '鈴蹄', '林鳴', '澄目', '茸角', '神着', '霜脚', '柵越'],
-    murid: ['砕歯', '灰背', '隙眼', '細尾', '穴人', '種盗', '顫髭', '鉄門'],
+    lupinian: t('home.defaultNames.pt5.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt5.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt5.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt5.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt5.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt5.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt5.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt5.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt5.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
   6: {
-    lupinian: ['エヴァン', 'コール', 'ハドソン', 'ワイアット', 'ローガン', 'ブレイク'],
-    vulpinian: ['アッシャー', 'オーウェン', 'グラント', 'ジャスパー', 'ノーラン', 'リード'],
-    felidian: ['ヘイゼル', 'アイリス', 'クレア', 'オードリー', 'サディ', 'ヴァイオレット'],
-    caninian: ['メイソン', 'カーター', 'ベネット', 'ライアン', 'エリオット', 'テオドア'],
-    ursan: ['グレイソン', 'ハリソン', 'ウェスリー', 'サイラス', 'マーカス', 'デクラン'],
-    procyonian: ['ミロ', 'エズラ', 'ルカ', 'フェリックス', 'ジュード', 'ローワン'],
-    leporian: ['ジュニパー', 'ウィロー', 'エラ', 'ノラ', 'アイビー', 'ルビー'],
-    cervin: ['オータム', 'スカイラー', 'ハーパー', 'エヴリン', 'セージ', 'ブリア'],
-    murid: ['リアム', 'ノア', 'カレブ', 'サム', 'イアン', 'オリバー'],
+    lupinian: t('home.defaultNames.pt6.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
+    vulpinian: t('home.defaultNames.pt6.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
+    felidian: t('home.defaultNames.pt6.felidian').split('|').map((name) => name.trim()).filter(Boolean),
+    caninian: t('home.defaultNames.pt6.caninian').split('|').map((name) => name.trim()).filter(Boolean),
+    ursan: t('home.defaultNames.pt6.ursan').split('|').map((name) => name.trim()).filter(Boolean),
+    procyonian: t('home.defaultNames.pt6.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
+    leporian: t('home.defaultNames.pt6.leporian').split('|').map((name) => name.trim()).filter(Boolean),
+    cervin: t('home.defaultNames.pt6.cervin').split('|').map((name) => name.trim()).filter(Boolean),
+    murid: t('home.defaultNames.pt6.murid').split('|').map((name) => name.trim()).filter(Boolean),
   },
-};
+  };
 
 
 const getGenderedNamePool = (names: string[]): GenderedNamePool => {
@@ -1271,15 +1318,17 @@ const getGenderedNamePool = (names: string[]): GenderedNamePool => {
   return { male: names.slice(0, pivot), female: names.slice(pivot) };
 };
 
-Object.keys(POTENTIAL_DEFAULT_NAMES_BY_PT).forEach((ptKey) => {
-  const races = POTENTIAL_DEFAULT_NAMES_BY_PT[Number(ptKey)]!;
-  Object.keys(races).forEach((raceKey) => {
-    const value = (races as Record<string, unknown>)[raceKey];
-    if (Array.isArray(value)) {
-      (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
-    }
+  Object.values(pools).forEach((races) => {
+    Object.keys(races).forEach((raceKey) => {
+      const value = (races as Record<string, unknown>)[raceKey];
+      if (Array.isArray(value)) {
+        (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
+      }
+    });
   });
-});
+
+  return pools as Record<number, Partial<Record<RaceId, GenderedNamePool>>>;
+}
 
 function parseDiaryThreshold(value: string): DiaryRarityThreshold {
   if (value === 'all' || value === 'none') return value;
@@ -1309,9 +1358,9 @@ function formatNumber(value: number): string {
 
 function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier?: number): string {
   if (autoSellMultiplier && autoSellMultiplier > 1) {
-    return `自動売却額(x${autoSellMultiplier.toFixed(1)}): ${formatNumber(autoSellProfit)}G`;
+    return t('home.autoSell.withMultiplier', { multiplier: autoSellMultiplier.toFixed(1), gold: formatNumber(autoSellProfit) });
   }
-  return `自動売却額: ${formatNumber(autoSellProfit)}G`;
+  return t('home.autoSell.basic', { gold: formatNumber(autoSellProfit) });
 }
 
 function getItemRarityById(itemId: number): ItemRarity {
@@ -1376,7 +1425,7 @@ function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
   if (entry.rewardItems && entry.rewardItems.length > 0) {
     return (
       <>
-        <span className="text-black">獲得:</span>
+        <span className="text-black">{t('home.reward.acquired')}:</span>
         {entry.rewardItems.map((item, index) => {
           const rarity = getItemRarityById(item.id);
           const isSuperRare = item.superRare > 0;
@@ -1395,7 +1444,7 @@ function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
 
   return (
     <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${getRewardFontWeightClass(entry.rewardRarity ?? 'common', entry.rewardIsSuperRare ?? false)}`}>
-      獲得:{entry.reward}
+      {t('home.reward.acquired')}: {entry.reward}
     </span>
   );
 }
@@ -1408,18 +1457,18 @@ function getDungeonEntryGateState(
   gateText: string;
 } {
   if (dungeon.id === 1) {
-    return { locked: false, gateText: 'なし（最初の探検地）' };
+    return { locked: false, gateText: t('home.gate.firstDungeonNone') };
   }
 
   const required = ENTRY_GATE_REQUIRED;
   const collected = party.defeatedBossExpeditions?.[dungeon.id - 1] ? 1 : 0;
   const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
 
-  const gateProgressText = required === 1 ? 'ボス撃破' : `ボス撃破 ${collected}/${required}`;
+  const gateProgressText = required === 1 ? t('home.gate.bossDefeated') : t('home.gate.bossProgress', { collected, required });
 
   return {
     locked: !unlocked,
-    gateText: `${gateProgressText}で${dungeon.name}開放`,
+    gateText: t('home.gate.unlockDungeon', { progress: gateProgressText, dungeon: dungeon.name }),
   };
 }
 
@@ -1428,14 +1477,14 @@ function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState):
   const log = party.lastExpeditionLog;
   if (!log || log.finalOutcome !== 'Clear') return false;
   const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes('(神魔戦)');
+  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes(t('home.godsBattle.parenthetical'));
 }
 
 function getGodBattleLabel(dungeon: Dungeon): string {
   // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
   const godProfile = getGodProfileForDungeon(dungeon.id, dungeon.name);
   const godShortName = godProfile?.displayName.split(' ')[0]?.trim();
-  return godShortName ? `神魔${godShortName}戦` : '神魔戦';
+  return godShortName ? t('home.godsBattle.named', { god: godShortName }) : t('party.expedition.godsBattle');
 }
 
 function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDurationScale: number): number {
@@ -1452,6 +1501,36 @@ type ProgressItemDisplay = {
   progressRatio: number | null;
 };
 
+
+function formatSideQuestShortText(type: string, shortText: string, displayTarget: number): string {
+  const valueByType: Partial<Record<string, string>> = {
+    'q.squander': `${formatNumber(displayTarget)}G`,
+    'q.sleeping': t('home.unit.count', { value: formatNumber(displayTarget) }),
+    'q.exercise': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
+    'q.embezzlement': `${formatNumber(displayTarget)}G`,
+    'q.donation': `${formatNumber(displayTarget)}G`,
+    'q.healing': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
+    'q.AFK': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
+    'q.treasure-super-rare': '',
+    'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(displayTarget) }),
+    'q.poor-kid': t('home.unit.count', { value: formatNumber(displayTarget) }),
+    'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(displayTarget) }),
+    'q.losers': '',
+    'q.savings': `${formatNumber(displayTarget)}G`,
+  };
+  const suffix = valueByType[type];
+  if (suffix === '') return shortText;
+  return `${shortText}(${suffix ?? formatNumber(displayTarget)})`;
+}
+
+function resolveSideQuestShortText(sideQuest: NonNullable<Party['sideQuest']>): string {
+  if (!sideQuest.shortTextKey) return sideQuest.shortText;
+  const displayTarget = TIME_BASED_SIDE_QUEST_TYPES.has(sideQuest.type)
+    ? Math.floor(Math.max(1, sideQuest.target) / 60)
+    : Math.max(1, sideQuest.target);
+  return formatSideQuestShortText(sideQuest.type, t(sideQuest.shortTextKey), displayTarget);
+}
+
 function getRemainingClockEmoji(remainingMs: number): string {
   const remainingHours = Math.max(1, Math.ceil(remainingMs / (60 * 60 * 1000)));
   const clockFaces = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚'];
@@ -1460,7 +1539,8 @@ function getRemainingClockEmoji(remainingMs: number): string {
 
 function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedNowMs: number): ProgressItemDisplay | null {
   if (!party.sideQuest) return null;
-  const { type, shortText, progress, target } = party.sideQuest;
+  const { type, progress, target } = party.sideQuest;
+  const shortText = resolveSideQuestShortText(party.sideQuest);
   const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(type);
   const safeTarget = Math.max(1, target);
   const clampedProgress = Math.max(0, Math.min(progress, safeTarget));
@@ -1470,53 +1550,53 @@ function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedN
 
   const progressByType: Record<string, { text: string; current?: string }> = {
     'q.squander': {
-      text: `宴会で${formatNumber(displayTarget)}G浪費する`,
+      text: t('home.sideQuest.squander', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
     'q.sleeping': {
-      text: `${formatNumber(displayTarget)}回寝る`,
-      current: `${formatNumber(displayProgress)}回`,
+      text: t('home.sideQuest.sleeping', { count: formatNumber(displayTarget) }),
+      current: t('home.unit.count', { value: formatNumber(displayProgress) }),
     },
     'q.exercise': {
-      text: `${formatNumber(displayTarget)}分歩く`,
-      current: `${formatNumber(displayProgress)}分`,
+      text: t('home.sideQuest.exercise', { minutes: formatNumber(displayTarget) }),
+      current: t('home.unit.minutes', { value: formatNumber(displayProgress) }),
     },
     'q.embezzlement': {
-      text: `${formatNumber(displayTarget)}G着服する`,
+      text: t('home.sideQuest.embezzlement', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
     'q.donation': {
-      text: `${formatNumber(displayTarget)}G寄付する`,
+      text: t('home.sideQuest.donation', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
     'q.healing': {
-      text: `${formatNumber(displayTarget)}分治療を受ける`,
-      current: `${formatNumber(displayProgress)}分`,
+      text: t('home.sideQuest.healing', { minutes: formatNumber(displayTarget) }),
+      current: t('home.unit.minutes', { value: formatNumber(displayProgress) }),
     },
     'q.AFK': {
-      text: `${formatNumber(displayTarget)}分神から見放されている`,
-      current: `${formatNumber(displayProgress)}分`,
+      text: t('home.sideQuest.afk', { minutes: formatNumber(displayTarget) }),
+      current: t('home.unit.minutes', { value: formatNumber(displayProgress) }),
     },
     'q.treasure-super-rare': {
-      text: '超レアを獲得する',
+      text: t('home.sideQuest.treasureSuperRare'),
     },
     'q.treasure-boss-rare': {
-      text: `ボスレアを${formatNumber(displayTarget)}個獲得する`,
-      current: `${formatNumber(displayProgress)}個`,
+      text: t('home.sideQuest.treasureBossRare', { count: formatNumber(displayTarget) }),
+      current: t('home.unit.items', { value: formatNumber(displayProgress) }),
     },
     'q.poor-kid': {
-      text: `${formatNumber(displayTarget)}回アイテム獲得空振り`,
-      current: `${formatNumber(displayProgress)}回`,
+      text: t('home.sideQuest.poorKid', { count: formatNumber(displayTarget) }),
+      current: t('home.unit.count', { value: formatNumber(displayProgress) }),
     },
     'q.consecutive-wins': {
-      text: `${formatNumber(displayTarget)}連続して踏破する`,
-      current: `${formatNumber(displayProgress)}連`,
+      text: t('home.sideQuest.consecutiveWins', { streak: formatNumber(displayTarget) }),
+      current: t('home.unit.streak', { value: formatNumber(displayProgress) }),
     },
     'q.losers': {
-      text: '敗北する',
+      text: t('home.sideQuest.losers'),
     },
     'q.savings': {
-      text: `${formatNumber(displayTarget)}G貯金する`,
+      text: t('home.sideQuest.savings', { gold: formatNumber(displayTarget) }),
       current: `${formatNumber(displayProgress)}G`,
     },
   };
@@ -1534,8 +1614,8 @@ function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedN
   const remainingLabel = !hasDeadline
     ? null
     : remainingMs >= (60 * 60 * 1000)
-      ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
-      : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
+      ? t('home.remaining.hours', { count: formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000))) })
+      : t('home.remaining.minutes', { count: formatNumber(Math.ceil(remainingMs / (60 * 1000))) });
   const progressParts = [`${percent}%`];
   if (display.current) progressParts.push(display.current);
   if (remainingLabel) progressParts.push(remainingLabel);
@@ -1570,8 +1650,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
       const normalizedCollected = Math.max(0, Math.min(collected, safeRequired));
       pushUniqueProgressItem({
         key: `elite-gate:${currentDungeon.id}:${floor.floorNumber}`,
-        compactText: `🗃️${formatNumber(collected)}/${formatNumber(required)} ${floor.floorNumber}F-4解放`,
-        bubbleText: `アンコモンアイテム ${formatNumber(collected)}/${formatNumber(required)}で ${floor.floorNumber}F-4解放`,
+        compactText: t('home.progress.eliteCompact', { collected: formatNumber(collected), required: formatNumber(required), floor: floor.floorNumber }),
+        bubbleText: t('home.progress.eliteBubble', { collected: formatNumber(collected), required: formatNumber(required), floor: floor.floorNumber }),
         progressRatio: normalizedCollected / safeRequired,
       });
       break;
@@ -1587,8 +1667,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
       if (!entryUnlocked) {
         pushUniqueProgressItem({
           key: `entry-gate:${nextDungeon.id}`,
-          compactText: '🗺️ボス撃破せよ',
-          bubbleText: `ボス撃破 で${nextDungeon.name} 開放`,
+          compactText: t('home.progress.defeatBossCompact'),
+          bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: nextDungeon.name }),
           progressRatio: null,
         });
       }
@@ -1604,15 +1684,15 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
         const normalizedBossRareCollected = Math.max(0, Math.min(bossRareCollected, safeGodsRequired));
         pushUniqueProgressItem({
           key: `god-gate:${currentDungeon.id}`,
-          compactText: `🗃️${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} 神魔解放`,
-          bubbleText: `ボスレアアイテム ${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} で${getGodBattleLabel(currentDungeon)}`,
+          compactText: t('home.progress.godCompact', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired) }),
+          bubbleText: t('home.progress.godBubble', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired), label: getGodBattleLabel(currentDungeon) }),
           progressRatio: normalizedBossRareCollected / safeGodsRequired,
         });
       } else {
         pushUniqueProgressItem({
           key: `god-entry:${currentDungeon.id}`,
-          compactText: '🗺️ボス撃破せよ',
-          bubbleText: `ボス撃破 で${getGodBattleLabel(currentDungeon)} 開放`,
+          compactText: t('home.progress.defeatBossCompact'),
+          bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
           progressRatio: null,
         });
       }
@@ -1632,15 +1712,15 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
 }
 
 function getConditionLabel(condition: number, showValue: boolean): string {
-  let label = '絶好調';
-  if (condition <= -350) label = '絶不調';
-  else if (condition <= -250) label = '不調';
-  else if (condition <= -150) label = '低調';
-  else if (condition <= -50) label = '慎重';
-  else if (condition <= 50) label = '平常';
-  else if (condition <= 150) label = '順調';
-  else if (condition <= 250) label = '快調';
-  else if (condition <= 350) label = '好調';
+  let label = t('condition.excellent');
+  if (condition <= -350) label = t('condition.awful');
+  else if (condition <= -250) label = t('condition.bad');
+  else if (condition <= -150) label = t('condition.low');
+  else if (condition <= -50) label = t('condition.cautious');
+  else if (condition <= 50) label = t('condition.normal');
+  else if (condition <= 150) label = t('condition.steady');
+  else if (condition <= 250) label = t('condition.brisk');
+  else if (condition <= 350) label = t('condition.good');
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `condition` OFF/ON
   if (!showValue) return label;
   return `${label}(${condition >= 0 ? '+' : ''}${formatNumber(condition)})`;
@@ -1716,15 +1796,15 @@ function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
 
 function getSideQuestAssignMessage(partyName: string, shortText: string): string {
   // SpecRef: 8.1 | UI_FOUNDATIONS | Side quest notifications
-  return `${partyName}はサイドクエスト ${shortText} を受けた`;
+  return t('home.notification.sideQuestAssigned', { party: partyName, quest: shortText });
 }
 
 function getSideQuestSuccessMessage(partyName: string, sideQuestDetail?: string): string | null {
   // SpecRef: 8.1 | UI_FOUNDATIONS | Side quest notifications
   if (!sideQuestDetail) return null;
-  const jewelMatch = sideQuestDetail.match(/:\s*(.+)\s*を手に入れた$/);
+  const jewelMatch = sideQuestDetail.match(new RegExp(`:\\s*(.+)\\s*${escapeRegExp(t('home.sideQuest.legacyObtainedSuffix'))}$`));
   if (!jewelMatch?.[1]) return null;
-  return `${partyName}はサイドクエストを達成し、${jewelMatch[1]}を手に入れた`;
+  return t('home.notification.sideQuestCompletedWithJewel', { party: partyName, jewel: jewelMatch[1] });
 }
 
 // Helper to format item stats
@@ -1757,7 +1837,7 @@ function getItemDisplayMultiplier(item: Item, categoryMultiplier: number = 1): n
 }
 
 function getItemInventoryDetailText(item: Item): string {
-  return `[${CATEGORY_NAMES[item.category]}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
+  return `[${t(CATEGORY_NAME_KEYS[item.category] ?? 'party.categoryName.unknown')}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
 }
 
 type RewardItemBubble = {
@@ -1832,7 +1912,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
       bonus.type === 'ability'
       || bonus.type === 'ability_upgrade'
       || bonus.type === 'unimplemented_bonus'
-      || bonus.type in UNLOCK_ABILITY_BONUS_LABELS
+      || bonus.type in UNLOCK_ABILITY_BONUS_LABEL_KEYS
     ) {
       return 'other';
     }
@@ -1861,53 +1941,53 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
       })();
       jewelDBonus[d.stat] += rankValue;
     }
-    if (jewel.cBonusType === 'physical_attack') cParts.push(`物攻撃+${cVal}%`);
-    if (jewel.cBonusType === 'magical_attack') cParts.push(`魔攻撃+${cVal}%`);
-    if (jewel.cBonusType === 'physical_defense') cParts.push(`物防+${cVal}%`);
-    if (jewel.cBonusType === 'magical_defense') cParts.push(`魔防+${cVal}%`);
-    if (jewel.cBonusType === 'accuracy') cParts.push(`命中+${cVal}`);
-    if (jewel.cBonusType === 'evasion') cParts.push(`回避+${cVal}`);
+    if (jewel.cBonusType === 'physical_attack') cParts.push(t('home.itemStat.physicalAttackPercent', { value: cVal }));
+    if (jewel.cBonusType === 'magical_attack') cParts.push(t('home.itemStat.magicalAttackPercent', { value: cVal }));
+    if (jewel.cBonusType === 'physical_defense') cParts.push(t('home.itemStat.physicalDefensePercent', { value: cVal }));
+    if (jewel.cBonusType === 'magical_defense') cParts.push(t('home.itemStat.magicalDefensePercent', { value: cVal }));
+    if (jewel.cBonusType === 'accuracy') cParts.push(t('home.itemStat.accuracyFlat', { value: cVal }));
+    if (jewel.cBonusType === 'evasion') cParts.push(t('home.itemStat.evasionFlat', { value: cVal }));
   }
   // Match displayed item values with runtime stat computation (rounded, not floored).
   const displayedMeleeAttack = (item.meleeAttack ?? 0) + jewelDBonus.meleeAttack;
   if (displayedMeleeAttack) {
-    dParts.push(`近攻+${Math.round(displayedMeleeAttack * multiplier)}`);
-    if (item.category === 'sword' && multiplierPercent) cParts.push(`近攻撃+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.meleeAttackFlat', { value: Math.round(displayedMeleeAttack * multiplier) }));
+    if (item.category === 'sword' && multiplierPercent) cParts.push(t('home.itemStat.meleeAttackPercent', { value: multiplierPercent }));
   }
   const displayedRangedAttack = (item.rangedAttack ?? 0) + jewelDBonus.rangedAttack;
   if (displayedRangedAttack) {
-    dParts.push(`遠攻+${Math.round(displayedRangedAttack * multiplier)}`);
-    if (item.category === 'arrow' && multiplierPercent) cParts.push(`遠攻撃+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.rangedAttackFlat', { value: Math.round(displayedRangedAttack * multiplier) }));
+    if (item.category === 'arrow' && multiplierPercent) cParts.push(t('home.itemStat.rangedAttackPercent', { value: multiplierPercent }));
   }
   const displayedMagicalAttack = (item.magicalAttack ?? 0) + jewelDBonus.magicalAttack;
   if (displayedMagicalAttack) {
-    dParts.push(`魔攻+${Math.round(displayedMagicalAttack * multiplier)}`);
-    if (item.category === 'wand' && multiplierPercent) cParts.push(`魔攻撃+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.magicalAttackFlat', { value: Math.round(displayedMagicalAttack * multiplier) }));
+    if (item.category === 'wand' && multiplierPercent) cParts.push(t('home.itemStat.magicalAttackPercent', { value: multiplierPercent }));
   }
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
-    if (baseNoA !== 0) dParts.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.meleeNoABonus) cParts.push(formatFixedNoA('近回数', item.meleeNoABonus));
+    if (baseNoA !== 0) dParts.push(t('home.itemStat.meleeNoASigned', { value: formatSigned(getScaledNoA(baseNoA)) }));
+    if (item.meleeNoABonus) cParts.push(formatFixedNoA(t('home.itemStat.meleeNoA'), item.meleeNoABonus));
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
-    if (baseNoA !== 0) dParts.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.rangedNoABonus) cParts.push(formatFixedNoA('遠回数', item.rangedNoABonus));
+    if (baseNoA !== 0) dParts.push(t('home.itemStat.rangedNoASigned', { value: formatSigned(getScaledNoA(baseNoA)) }));
+    if (item.rangedNoABonus) cParts.push(formatFixedNoA(t('home.itemStat.rangedNoA'), item.rangedNoABonus));
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
-    if (baseNoA !== 0) dParts.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.magicalNoABonus) cParts.push(formatFixedNoA('魔回数', item.magicalNoABonus));
+    if (baseNoA !== 0) dParts.push(t('home.itemStat.magicalNoASigned', { value: formatSigned(getScaledNoA(baseNoA)) }));
+    if (item.magicalNoABonus) cParts.push(formatFixedNoA(t('home.itemStat.magicalNoA'), item.magicalNoABonus));
   }
   const displayedPhysicalDefense = (item.physicalDefense ?? 0) + jewelDBonus.physicalDefense;
   if (displayedPhysicalDefense) {
-    dParts.push(`物防+${Math.round(displayedPhysicalDefense * multiplier)}`);
-    if (multiplierPercent) cParts.push(`物防+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.physicalDefenseFlat', { value: Math.round(displayedPhysicalDefense * multiplier) }));
+    if (multiplierPercent) cParts.push(t('home.itemStat.physicalDefensePercent', { value: multiplierPercent }));
   }
   const displayedMagicalDefense = (item.magicalDefense ?? 0) + jewelDBonus.magicalDefense;
   if (displayedMagicalDefense) {
-    dParts.push(`魔防+${Math.round(displayedMagicalDefense * multiplier)}`);
-    if (multiplierPercent) cParts.push(`魔防+${multiplierPercent}%`);
+    dParts.push(t('home.itemStat.magicalDefenseFlat', { value: Math.round(displayedMagicalDefense * multiplier) }));
+    if (multiplierPercent) cParts.push(t('home.itemStat.magicalDefensePercent', { value: multiplierPercent }));
   }
   const displayedPartyHp = (item.partyHP ? Math.round(item.partyHP * multiplier * hpScaleMultiplier) : 0)
     + (jewelDBonus.partyHP ? Math.round(jewelDBonus.partyHP * multiplier * hpScaleMultiplier) : 0);
@@ -1916,17 +1996,17 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     // Round base and jewel HP contributions separately, then sum.
     dParts.push(`HP+${displayedPartyHp}`);
   }
-  if (item.accuracyBonus) cParts.push(`命中+${Math.round(item.accuracyBonus * 1000)}`);
-  if (item.evasionBonus) cParts.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
-  if (item.vitalityBonus) bParts.push(`体力+${item.vitalityBonus}`);
-  if (item.strengthBonus) bParts.push(`力+${item.strengthBonus}`);
-  if (item.intelligenceBonus) bParts.push(`知性+${item.intelligenceBonus}`);
-  if (item.mindBonus) bParts.push(`精神+${item.mindBonus}`);
-  if (item.penetBonus) cParts.push(`貫通+${Math.round(item.penetBonus * 100)}`);
+  if (item.accuracyBonus) cParts.push(t('home.itemStat.accuracyFlat', { value: Math.round(item.accuracyBonus * 1000) }));
+  if (item.evasionBonus) cParts.push(t('home.itemStat.evasionSigned', { value: formatSigned(Math.round(item.evasionBonus * 1000)) }));
+  if (item.vitalityBonus) bParts.push(t('home.itemStat.vitalityFlat', { value: item.vitalityBonus }));
+  if (item.strengthBonus) bParts.push(t('home.itemStat.strengthFlat', { value: item.strengthBonus }));
+  if (item.intelligenceBonus) bParts.push(t('home.itemStat.intelligenceFlat', { value: item.intelligenceBonus }));
+  if (item.mindBonus) bParts.push(t('home.itemStat.mindFlat', { value: item.mindBonus }));
+  if (item.penetBonus) cParts.push(`${t('party.bonus.penet')}+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
-    const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
+    const elem = { fire: t('common.element.fire.short'), ice: t('common.element.ice.short'), thunder: t('common.element.thunder.short') }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
-    eParts.push(`${elem}属性+${elementalPercent}%`);
+    eParts.push(t('home.itemStat.elementalOffensePercent', { element: elem, value: elementalPercent }));
   }
   for (const bonus of itemUniqueBonuses) {
     const label = formatBonuses([bonus], { defenseMultiplierStyle: 'friendly' }).trim();
@@ -1938,7 +2018,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     else if (bucket === 'r') rParts.push(label);
     else otherParts.push(label);
   }
-  if (superRareUniqueBonusText) otherParts.push(`超:${superRareUniqueBonusText}`);
+  if (superRareUniqueBonusText) otherParts.push(t('home.itemStat.superRarePrefix', { text: superRareUniqueBonusText }));
 
   const eText = eParts.join(' ');
   const mergedBracketBonuses = [...cParts, ...rParts, ...otherParts];
@@ -1946,53 +2026,38 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   return [dParts.join(' '), bParts.join(' '), eText, mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
-function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
+function getJewelCBonusLabelKey(bonusType: typeof JEWEL_DEFS[JewelKey]['cBonusType']): string {
+  return `jewel.status.cBonus.${bonusType}`;
+}
+
+function getJewelDStatLabelKey(stat: typeof JEWEL_DEFS[JewelKey]['dBaseBonuses'][number]['stat']): string {
+  return `jewel.status.dStat.${stat}`;
+}
+
+function formatJewelStatusText(jewelKey: JewelKey, rank: number): string {
   const jewel = JEWEL_DEFS[jewelKey];
   const cValue = getJewelCBonusValue(jewelKey, rank);
-  const cText = (() => {
-    if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_attack') return `[魔攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'physical_defense') return `[物防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_defense') return `[魔防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'accuracy') return `[命中+${Math.round(cValue * 1000)}]`;
-    if (jewel.cBonusType === 'evasion') return `[回避+${Math.round(cValue * 1000)}]`;
-    return '';
-  })();
-  const dText = jewel.dBaseBonuses.map((bonus) => {
-    const value = getJewelDRankValue(bonus.base, rank);
-    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
-    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
-    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
-    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
-    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
-    return `HP+${value}`;
-  }).join(' ');
-  return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
+  const cMagnitude = jewel.cBonusType === 'accuracy' || jewel.cBonusType === 'evasion'
+    ? Math.round(cValue * 1000)
+    : `${Math.round(cValue * 100)}%`;
+  const cText = t('jewel.status.bracketedBonus', {
+    label: t(getJewelCBonusLabelKey(jewel.cBonusType)),
+    value: cMagnitude,
+  });
+  const dText = jewel.dBaseBonuses.map((bonus) => t('jewel.status.flatBonus', {
+    label: t(getJewelDStatLabelKey(bonus.stat)),
+    value: getJewelDRankValue(bonus.base, rank),
+  })).join(' ');
+
+  return [`[${getJewelShortLabel(jewelKey)}${rank}]`, cText, dText].filter(Boolean).join(' ');
+}
+
+function getJewelSlotStatusText(jewelKey: JewelKey, rank: number): string {
+  return formatJewelStatusText(jewelKey, rank);
 }
 
 function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): string {
-  const jewel = JEWEL_DEFS[jewelKey];
-  const cValue = getJewelCBonusValue(jewelKey, rank);
-  const cText = (() => {
-    if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_attack') return `[魔攻撃+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'physical_defense') return `[物防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'magical_defense') return `[魔防+${Math.round(cValue * 100)}%]`;
-    if (jewel.cBonusType === 'accuracy') return `[命中+${Math.round(cValue * 1000)}]`;
-    if (jewel.cBonusType === 'evasion') return `[回避+${Math.round(cValue * 1000)}]`;
-    return '';
-  })();
-  const dText = jewel.dBaseBonuses.map((bonus) => {
-    const value = getJewelDRankValue(bonus.base, rank);
-    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
-    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
-    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
-    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
-    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
-    return `HP+${value}`;
-  }).join(' ');
-
-  return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
+  return formatJewelStatusText(jewelKey, rank);
 }
 
 function getOffenseMultiplierSum(
@@ -2094,200 +2159,200 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
   }
 
   const elementMeta: Record<Exclude<ElementalOffense, 'none'>, { label: string }> = {
-    fire: { label: '火' },
-    ice: { label: '氷' },
-    thunder: { label: '雷' },
+    fire: { label: t('element.fire.short') },
+    ice: { label: t('element.ice.short') },
+    thunder: { label: t('element.thunder.short') },
   };
 
   const lines: string[] = [];
 
   if (stats.elementalOffense === 'none') {
-    lines.push('攻撃は無属性です。');
+    lines.push(t('party.elementalOffense.noneHelp'));
     return lines;
   }
 
   const selectedMeta = elementMeta[stats.elementalOffense];
   const selectedPercent = Math.round((stats.elementalOffenseValue - 1) * 100);
-  lines.push(`攻撃が${selectedMeta.label}属性になり、${selectedPercent}%威力が増加する`);
+  lines.push(t('party.elementalOffense.selectedHelp', { element: selectedMeta.label, percent: selectedPercent }));
 
   (['fire', 'ice', 'thunder'] as const).forEach((element) => {
     if (element === stats.elementalOffense) return;
     const total = elementalSums[element];
     if (total <= 0) return;
     const meta = elementMeta[element];
-    lines.push(`(非採用)${meta.label}属性 ${Math.round(total * 100)}%威力増加`);
+    lines.push(t('party.elementalOffense.unselectedHelp', { element: meta.label, percent: Math.round(total * 100) }));
   });
 
   return lines;
 }
 
-const MULTIPLIER_LABELS: Record<string, string> = {
-  sword_multiplier: '剣',
-  katana_multiplier: '刀',
-  archery_multiplier: '弓',
-  armor_multiplier: '鎧',
-  gauntlet_multiplier: '手',
-  wand_multiplier: '杖',
-  robe_multiplier: '衣',
-  shield_multiplier: '盾',
-  bolt_multiplier: 'ボ',
-  grimoire_multiplier: '書',
-  catalyst_multiplier: '媒',
-  arrow_multiplier: '矢',
+const MULTIPLIER_LABEL_KEYS: Record<string, string> = {
+  sword_multiplier: 'party.bonus.sword',
+  katana_multiplier: 'party.bonus.katana',
+  archery_multiplier: 'party.bonus.archery',
+  armor_multiplier: 'party.bonus.armor',
+  gauntlet_multiplier: 'party.bonus.gauntlet',
+  wand_multiplier: 'party.bonus.wand',
+  robe_multiplier: 'party.bonus.robe',
+  shield_multiplier: 'party.bonus.shield',
+  bolt_multiplier: 'party.bonus.bolt',
+  grimoire_multiplier: 'party.bonus.grimoire',
+  catalyst_multiplier: 'party.bonus.catalyst',
+  arrow_multiplier: 'party.bonus.arrow',
 };
 
 const ABILITY_NAMES: Record<string, string> = { ...ABILITY_BASE_NAMES };
 
 const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
   id: BonusAbilityGlossarySubcategoryId;
-  shortLabel: '常' | '征' | '反' | '時';
-  label: string;
+  shortLabelKey: string;
+  labelKey: string;
 }> = [
-  { id: 'passive', shortLabel: '常', label: '常時効果アビリティ' },
-  { id: 'expedition', shortLabel: '征', label: '遠征アビリティ' },
-  { id: 'reactive', shortLabel: '反', label: '反応アビリティ' },
-  { id: 'timed', shortLabel: '時', label: '時限アビリティ' },
+  { id: 'passive', shortLabelKey: 'home.bonusAbility.subcategory.passiveShort', labelKey: 'home.bonusAbility.subcategory.passive' },
+  { id: 'expedition', shortLabelKey: 'home.bonusAbility.subcategory.expeditionShort', labelKey: 'home.bonusAbility.subcategory.expedition' },
+  { id: 'reactive', shortLabelKey: 'home.bonusAbility.subcategory.reactiveShort', labelKey: 'home.bonusAbility.subcategory.reactive' },
+  { id: 'timed', shortLabelKey: 'home.bonusAbility.subcategory.timedShort', labelKey: 'home.bonusAbility.subcategory.timed' },
 ];
 
-const ABILITY_HELP_TEXTS: Record<string, string> = {
-  'defender:1': '自身より後列の味方への物理ダメージを 2/3倍。',
-  'defender:2': '自身より後列の味方への物理ダメージを 3/5倍。',
-  'defender:3': '自身より後列の味方への物理ダメージを 1/2倍。',
-  'counter:1': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減）。',
-  'counter:2': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減しない）。',
-  'counter:3': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は2倍）。',
-  're_attack:1': '攻撃時に追加攻撃を行う（攻撃回数は半減）。',
-  're_attack:2': '攻撃時に追加攻撃を行う（攻撃回数は0.7倍）。',
-  're_attack:3': '攻撃時に追加攻撃を行う（攻撃回数は半減しない）。',
-  'iaigiri:1': '物理ダメージをx1.6倍する（攻撃回数は半減）。',
-  'iaigiri:2': '物理ダメージをx1.8倍する（攻撃回数は半減）。',
-  'iaigiri:3': '物理ダメージをx2.0倍する（攻撃回数は半減）。',
-  'command:1': '自身より後列の味方が与える物理ダメージを 1.4倍。',
-  'command:2': '自身より後列の味方が与える物理ダメージを 1.5倍。',
-  'command:3': '自身より後列の味方が与える物理ダメージを 1.6倍。',
-  'hunter:1': '列による命中率減衰を 1列ごと15%→10% に軽減する。',
-  'hunter:2': '列による命中率減衰を 1列ごと15%→7% に軽減する。',
-  'hunter:3': '列による命中率減衰を 1列ごと15%→5% に軽減する。',
-  'resonance:1': '魔法攻撃1回毎に、全ヒットのダメージが +4% 増加する。',
-  'resonance:2': '魔法攻撃1回毎に、全ヒットのダメージが +7% 増加する。',
-  'resonance:3': '魔法攻撃1回毎に、全ヒットのダメージが +9% 増加する。',
-  'resonance:4': '魔法攻撃1回毎に、全ヒットのダメージが +11% 増加する。',
-  'resonance:5': '魔法攻撃1回毎に、全ヒットのダメージが +12% 増加する。',
-  'm_barrier:1': '自身より後列の味方への魔法ダメージを 2/3倍。',
-  'm_barrier:2': '自身より後列の味方への魔法ダメージを 3/5倍。',
-  'm_barrier:3': '自身より後列の味方への魔法ダメージを 1/2倍。',
-  'deflection:1': '敵の遠距離攻撃の命中率を 10%低下させる。',
-  'deflection:2': '敵の遠距離攻撃の命中率を 15%低下させる。',
-  first_strike: '行動が速くなる。レベルが高いほど先行しやすい。',
-  equation_breaker: '機械理論・静寂領域の地形干渉を無効化する。',
-  domain_breaker: '必達/臨界/残響/静寂/剣戟/必中狙撃/必中魔法領域の効果を無効化する。',
-  fire_protect_breaker: '火属性攻撃時、相手の火炎反射・火炎吸収を無視する。',
-  ice_protect_breaker: '氷属性攻撃時、相手の氷結反射・氷結吸収を無視する。',
-  thunder_protect_breaker: '雷属性攻撃時、相手の雷撃反射・雷撃吸収を無視する。',
-  m_barrier_breaker: '相手の魔法障壁・魔法反射・魔法吸収を無視する。',
-  null_counter: '反撃を無効化する。レベルが高いほど有効回数が増える。',
-  resurrect: '致命ダメージを1回だけ耐える。',
-  rage: '受けたダメージに応じて物理/魔法攻撃倍率が増大する。',
-  re_counter: '敵の反撃に対してさらに反撃する。',
-  pursuit: '相手が逃げても追いかける(逃走・隠れ蓑アビリティを無効化)。',
-  illusion_breaker: '相手の幻を見破る(幻化アビリティを無効化)。',
-  bulwark_breaker: '壁を取り壊す(壁アビリティを無効化)。',
-  'illusion-breaker': '相手の幻を見破る(幻化アビリティを無効化)。',
-  'bulwark-breaker': '壁を取り壊す(壁アビリティを無効化)。',
-  momentum: '攻撃倍率が上がる代わりに被ダメージで効果が減少し、収益の一部を着服する。',
-  bulwark: '後列味方への攻撃を肩代わりする。',
-  covering_fire: '味方近接攻撃が単発命中時に遠距離で援護する。',
-  magical_counter: '魔法攻撃に対して魔法で反撃する。',
-  stealth: 'HPが一定未満の時、自身へのダメージをすべて回避する。',
-  illusion: '最初の遠距離攻撃を無効化する。',
-  howl: '遠距離2タイミングで発動。レベルに応じて相手の次の攻撃回数を 5/7〜1/7 にする。',
-  predator_sense: '近接9(開始)タイミングで発動。相手のHPが30％未満〜50％未満なら命中+40。',
-  slow: '自身の行動順番に-1して遅くなる。',
-  corrode: '通常近接攻撃が3回以上命中した相手に対して、攻撃倍率を x6/7〜x2/7 にする。',
-  life_drain: '通常近接攻撃で相手に与えたダメージの0.1%〜100%を回復する。',
-  no_offense: '通常行動をしなくなる（反撃などは行う）。',
-  decompose: '近接2タイミングで発動。相手の物理防御力を 6/7〜2/7 にする。',
-  swarm: '失ったHP割合に応じて、物理与ダメージが低下し、物理被ダメージが増加する(HP1%につき0.5%)。',
-  death_touch: '通常近接攻撃の命中回数 x 2/256〜6/256 の確率で即死させる。',
-  flying: '相手の近接攻撃回数が1/4になる。',
-  free: '近接1〜3または魔法1〜2タイミングで発動。戦闘から逃げる(戦闘は引分になる)。',
-  frostbite: '相手の行動順を遅らせる。',
-  ice_reflect: '自身が受ける予定の通常攻撃の氷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  ice_absorb: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  ice_null: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化する。',
-  bind: '近接攻撃の命中回数 x 2/64〜6/64 の確率で相手の行動を封じる。',
-  regeneration: '近接9(開始)タイミングで発動。この戦闘で失ったHPの10%〜24%を回復する。近接フェーズ前までにHPが0となった場合には発動しない。',
-  burn: '近接攻撃を受けた際に、相手に命中回数×最大HPの0.5%〜1.5%の火属性ダメージを与え返す。',
-  fire_reflect: '自身が受ける予定の通常攻撃の火属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  fire_absorb: '自身が受ける予定の通常攻撃の火属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  fire_null: '自身が受ける予定の通常攻撃の火属性ダメージを無効化する。',
-  thunder_reflect: '自身が受ける予定の通常攻撃の雷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  thunder_absorb: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化し、レベルに応じて吸収して回復する。',
-  thunder_null: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化する。',
-  soul_reap: '魔法0(終了)タイミングで発動。相手のHPが10％未満〜20％未満なら即死させる。回避も復活もできない。',
-  mutual_magic_amplify: '双方の魔法ダメージを増幅する。',
-  mutual_magic_restraint: '双方の魔法ダメージを抑制する。',
-  mutual_physical_amplify: '双方の物理ダメージを増幅する。',
-  mutual_physical_restraint: '双方の物理ダメージを抑制する。',
-  ranged_confusion: '遠距離1〜2タイミングで発動。遠距離攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  magic_confusion: '魔法1〜2タイミングで発動。魔法攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  melee_confusion: '近接1〜2タイミングで発動。近接攻撃能力を持つ相手一人を 1/32〜7/32 の確率で敵対状態とする。',
-  self_destruct: '近接2タイミングで発動。自爆し、相手に残ダメージの1/10〜全てを与える。',
-  oblivion: '無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
-  fading_memory: '敵味方問わず無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
-  reanimate: '自身のHPが0となったタイミングで発動。HP20%〜38%で復活する(戦闘中1回のみ有効)。',
-  auriferous: '自身が受ける総攻撃回数10回毎に、自身がドロップするアイテム抽選確率を+1する。',
-  magic_seal: '最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)。',
-  ambush: '自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.3〜1.68倍。',
-  mimic: '相手のアビリティ1つを無作為に指定する。指定したアビリティの効果を発動する。',
-  unforgettable: 'アビリティは消して忘れることがなくなる(忘却無効)。',
-  shock: '相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる。',
-  null_shock: '感電しなくなる。',
-  null_corrode: '腐食しなくなる。',
-  null_life_drain: '吸血されることがなくなる。',
-  null_death_touch: '接死が無効化する。',
-  null_burn: '火傷を負わなくなる。',
-  null_bind: '拘束を速やかに解くことができる。',
-  null_requiem: '鎮魂歌では成仏はしない。',
-  unstable_core: '遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP12%〜30%の自傷ダメージを受ける。',
-  magical_reflect: '自身が受ける予定の通常攻撃の魔法ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  magical_absorb: '自身が受ける予定の通常攻撃の魔法ダメージを無効化し、レベルに応じて吸収して回復する。',
-  magical_null: '自身が受ける予定の通常攻撃の魔法ダメージを無効化する。',
-  ranged_reflect: '自身が受ける予定の遠距離攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  ranged_null: '自身が受ける予定の遠距離攻撃ダメージを無効化する。',
-  melee_reflect: '自身が受ける予定の近接攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
-  melee_null: '自身が受ける予定の近接攻撃ダメージを無効化する。',
-  colossal: '自身の物理防御力が2倍になり、物理被ダメージ補正がx2.0になる。',
-  upgrade_all_abilities: '自身の他のアビリティを1〜4段階強化する(上限レベル5)。',
+const ABILITY_HELP_TEXT_KEYS: Record<string, string> = {
+  'defender:1': 'home.abilityHelp.defender.1',
+  'defender:2': 'home.abilityHelp.defender.2',
+  'defender:3': 'home.abilityHelp.defender.3',
+  'counter:1': 'home.abilityHelp.counter.1',
+  'counter:2': 'home.abilityHelp.counter.2',
+  'counter:3': 'home.abilityHelp.counter.3',
+  're_attack:1': 'home.abilityHelp.re_attack.1',
+  're_attack:2': 'home.abilityHelp.re_attack.2',
+  're_attack:3': 'home.abilityHelp.re_attack.3',
+  'iaigiri:1': 'home.abilityHelp.iaigiri.1',
+  'iaigiri:2': 'home.abilityHelp.iaigiri.2',
+  'iaigiri:3': 'home.abilityHelp.iaigiri.3',
+  'command:1': 'home.abilityHelp.command.1',
+  'command:2': 'home.abilityHelp.command.2',
+  'command:3': 'home.abilityHelp.command.3',
+  'hunter:1': 'home.abilityHelp.hunter.1',
+  'hunter:2': 'home.abilityHelp.hunter.2',
+  'hunter:3': 'home.abilityHelp.hunter.3',
+  'resonance:1': 'home.abilityHelp.resonance.1',
+  'resonance:2': 'home.abilityHelp.resonance.2',
+  'resonance:3': 'home.abilityHelp.resonance.3',
+  'resonance:4': 'home.abilityHelp.resonance.4',
+  'resonance:5': 'home.abilityHelp.resonance.5',
+  'm_barrier:1': 'home.abilityHelp.m_barrier.1',
+  'm_barrier:2': 'home.abilityHelp.m_barrier.2',
+  'm_barrier:3': 'home.abilityHelp.m_barrier.3',
+  'deflection:1': 'home.abilityHelp.deflection.1',
+  'deflection:2': 'home.abilityHelp.deflection.2',
+  first_strike: 'home.abilityHelp.first_strike',
+  equation_breaker: 'home.abilityHelp.equation_breaker',
+  domain_breaker: 'home.abilityHelp.domain_breaker',
+  fire_protect_breaker: 'home.abilityHelp.fire_protect_breaker',
+  ice_protect_breaker: 'home.abilityHelp.ice_protect_breaker',
+  thunder_protect_breaker: 'home.abilityHelp.thunder_protect_breaker',
+  m_barrier_breaker: 'home.abilityHelp.m_barrier_breaker',
+  null_counter: 'home.abilityHelp.null_counter',
+  resurrect: 'home.abilityHelp.resurrect',
+  rage: 'home.abilityHelp.rage',
+  re_counter: 'home.abilityHelp.re_counter',
+  pursuit: 'home.abilityHelp.pursuit',
+  illusion_breaker: 'home.abilityHelp.illusion_breaker',
+  bulwark_breaker: 'home.abilityHelp.bulwark_breaker',
+  'illusion-breaker': 'home.abilityHelp.illusion-breaker',
+  'bulwark-breaker': 'home.abilityHelp.bulwark-breaker',
+  momentum: 'home.abilityHelp.momentum',
+  bulwark: 'home.abilityHelp.bulwark',
+  covering_fire: 'home.abilityHelp.covering_fire',
+  magical_counter: 'home.abilityHelp.magical_counter',
+  stealth: 'home.abilityHelp.stealth',
+  illusion: 'home.abilityHelp.illusion',
+  howl: 'home.abilityHelp.howl',
+  predator_sense: 'home.abilityHelp.predator_sense',
+  slow: 'home.abilityHelp.slow',
+  corrode: 'home.abilityHelp.corrode',
+  life_drain: 'home.abilityHelp.life_drain',
+  no_offense: 'home.abilityHelp.no_offense',
+  decompose: 'home.abilityHelp.decompose',
+  swarm: 'home.abilityHelp.swarm',
+  death_touch: 'home.abilityHelp.death_touch',
+  flying: 'home.abilityHelp.flying',
+  free: 'home.abilityHelp.free',
+  frostbite: 'home.abilityHelp.frostbite',
+  ice_reflect: 'home.abilityHelp.ice_reflect',
+  ice_absorb: 'home.abilityHelp.ice_absorb',
+  ice_null: 'home.abilityHelp.ice_null',
+  bind: 'home.abilityHelp.bind',
+  regeneration: 'home.abilityHelp.regeneration',
+  burn: 'home.abilityHelp.burn',
+  fire_reflect: 'home.abilityHelp.fire_reflect',
+  fire_absorb: 'home.abilityHelp.fire_absorb',
+  fire_null: 'home.abilityHelp.fire_null',
+  thunder_reflect: 'home.abilityHelp.thunder_reflect',
+  thunder_absorb: 'home.abilityHelp.thunder_absorb',
+  thunder_null: 'home.abilityHelp.thunder_null',
+  soul_reap: 'home.abilityHelp.soul_reap',
+  mutual_magic_amplify: 'home.abilityHelp.mutual_magic_amplify',
+  mutual_magic_restraint: 'home.abilityHelp.mutual_magic_restraint',
+  mutual_physical_amplify: 'home.abilityHelp.mutual_physical_amplify',
+  mutual_physical_restraint: 'home.abilityHelp.mutual_physical_restraint',
+  ranged_confusion: 'home.abilityHelp.ranged_confusion',
+  magic_confusion: 'home.abilityHelp.magic_confusion',
+  melee_confusion: 'home.abilityHelp.melee_confusion',
+  self_destruct: 'home.abilityHelp.self_destruct',
+  oblivion: 'home.abilityHelp.oblivion',
+  fading_memory: 'home.abilityHelp.fading_memory',
+  reanimate: 'home.abilityHelp.reanimate',
+  auriferous: 'home.abilityHelp.auriferous',
+  magic_seal: 'home.abilityHelp.magic_seal',
+  ambush: 'home.abilityHelp.ambush',
+  mimic: 'home.abilityHelp.mimic',
+  unforgettable: 'home.abilityHelp.unforgettable',
+  shock: 'home.abilityHelp.shock',
+  null_shock: 'home.abilityHelp.null_shock',
+  null_corrode: 'home.abilityHelp.null_corrode',
+  null_life_drain: 'home.abilityHelp.null_life_drain',
+  null_death_touch: 'home.abilityHelp.null_death_touch',
+  null_burn: 'home.abilityHelp.null_burn',
+  null_bind: 'home.abilityHelp.null_bind',
+  null_requiem: 'home.abilityHelp.null_requiem',
+  unstable_core: 'home.abilityHelp.unstable_core',
+  magical_reflect: 'home.abilityHelp.magical_reflect',
+  magical_absorb: 'home.abilityHelp.magical_absorb',
+  magical_null: 'home.abilityHelp.magical_null',
+  ranged_reflect: 'home.abilityHelp.ranged_reflect',
+  ranged_null: 'home.abilityHelp.ranged_null',
+  melee_reflect: 'home.abilityHelp.melee_reflect',
+  melee_null: 'home.abilityHelp.melee_null',
+  colossal: 'home.abilityHelp.colossal',
+  upgrade_all_abilities: 'home.abilityHelp.upgrade_all_abilities',
 };
 
-const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
-  sword: '剣カテゴリ装備の効果が {value} 倍',
-  katana: '刀カテゴリ装備の効果が {value} 倍',
-  archery: '弓カテゴリ装備の効果が {value} 倍',
-  armor: '鎧カテゴリ装備の効果が {value} 倍',
-  gauntlet: '籠手カテゴリ装備の効果が {value} 倍',
-  wand: '杖カテゴリ装備の効果が {value} 倍',
-  robe: '法衣カテゴリ装備の効果が {value} 倍',
-  shield: '盾カテゴリ装備の効果が {value} 倍',
-  bolt: 'ボルトカテゴリ装備の効果が {value} 倍',
-  grimoire: '魔導書カテゴリ装備の効果が {value} 倍',
-  catalyst: '触媒カテゴリ装備の効果が {value} 倍',
-  arrow: '矢カテゴリ装備の効果が {value} 倍',
-  physical_offense_multiplier_xV: '遠距離攻撃・近接攻撃の攻撃倍率が {value} 倍',
-  magical_offense_multiplier_xV: '魔法攻撃の攻撃倍率が {value} 倍',
-  physical_defense_multiplier_xV: '物理防御倍率が {value} 倍',
-  magical_defense_multiplier_xV: '魔法防御倍率が {value} 倍',
-  fire_defense_multiplier_xV: '炎属性耐性が {value} 倍',
-  ice_defense_multiplier_xV: '氷属性耐性が {value} 倍',
-  thunder_defense_multiplier_xV: '雷属性耐性が {value} 倍',
-  deity_physical_attack_xV: '遠距離攻撃・近接攻撃のダメージが {value} 倍',
-  deity_magical_attack_xV: '魔法攻撃のダメージが {value} 倍',
-  "deity_physical_defense_x2/3": '物理防御倍率が 2/3 倍',
-  deity_physical_defense_xV: '物理防御倍率が {value} 倍',
-  deity_pysical_defense_xV: '物理防御倍率が {value} 倍',
-  "deity_magical_defense_x2/3": '魔法防御倍率が 2/3 倍',
-  deity_magical_defense_xV: '魔法防御倍率が {value} 倍',
+const C_MULTIPLIER_HELP_DESCRIPTION_KEYS: Record<string, string> = {
+  sword: 'home.cMultiplierHelp.sword',
+  katana: 'home.cMultiplierHelp.katana',
+  archery: 'home.cMultiplierHelp.archery',
+  armor: 'home.cMultiplierHelp.armor',
+  gauntlet: 'home.cMultiplierHelp.gauntlet',
+  wand: 'home.cMultiplierHelp.wand',
+  robe: 'home.cMultiplierHelp.robe',
+  shield: 'home.cMultiplierHelp.shield',
+  bolt: 'home.cMultiplierHelp.bolt',
+  grimoire: 'home.cMultiplierHelp.grimoire',
+  catalyst: 'home.cMultiplierHelp.catalyst',
+  arrow: 'home.cMultiplierHelp.arrow',
+  physical_offense_multiplier_xV: 'home.cMultiplierHelp.physical_offense_multiplier_xV',
+  magical_offense_multiplier_xV: 'home.cMultiplierHelp.magical_offense_multiplier_xV',
+  physical_defense_multiplier_xV: 'home.cMultiplierHelp.physical_defense_multiplier_xV',
+  magical_defense_multiplier_xV: 'home.cMultiplierHelp.magical_defense_multiplier_xV',
+  fire_defense_multiplier_xV: 'home.cMultiplierHelp.fire_defense_multiplier_xV',
+  ice_defense_multiplier_xV: 'home.cMultiplierHelp.ice_defense_multiplier_xV',
+  thunder_defense_multiplier_xV: 'home.cMultiplierHelp.thunder_defense_multiplier_xV',
+  deity_physical_attack_xV: 'home.cMultiplierHelp.deity_physical_attack_xV',
+  deity_magical_attack_xV: 'home.cMultiplierHelp.deity_magical_attack_xV',
+  "deity_physical_defense_x2/3": 'home.cMultiplierHelp.deity_physical_defense_x2_3',
+  deity_physical_defense_xV: 'home.cMultiplierHelp.deity_physical_defense_xV',
+  deity_pysical_defense_xV: 'home.cMultiplierHelp.deity_pysical_defense_xV',
+  "deity_magical_defense_x2/3": 'home.cMultiplierHelp.deity_magical_defense_x2_3',
+  deity_magical_defense_xV: 'home.cMultiplierHelp.deity_magical_defense_xV',
 };
 
 const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
@@ -2400,25 +2465,17 @@ function formatMultiplierAsFraction(value: number): string {
   return formatMultiplierValue(value);
 }
 
-function formatDefenseMultiplierBonus(label: string, value: number): string {
-  return `${label}x${formatMultiplierAsFraction(value)}`;
-}
-
-function formatElementalResistanceBonus(label: string, value: number): string {
-  return `${label}x${formatMultiplierAsFraction(value)}`;
-}
-
-const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
-  unlock_caninian_ability: '🐶解放',
-  unlock_lupinian_ability: '🐺解放',
-  unlock_vulpinian_ability: '🦊解放',
-  unlock_ursan_ability: '🐻解放',
-  unlock_felidian_ability: '😺解放',
-  unlock_mustelid_ability: '🦡解放',
-  unlock_leporian_ability: '🐰解放',
-  unlock_cervin_ability: '🦌解放',
-  unlock_murid_ability: '🐭解放',
-  unlock_procyonian_ability: '🦝解放',
+const UNLOCK_ABILITY_BONUS_LABEL_KEYS: Partial<Record<BonusType, string>> = {
+  unlock_caninian_ability: 'party.bonus.unlockAbility.caninian',
+  unlock_lupinian_ability: 'party.bonus.unlockAbility.lupinian',
+  unlock_vulpinian_ability: 'party.bonus.unlockAbility.vulpinian',
+  unlock_ursan_ability: 'party.bonus.unlockAbility.ursan',
+  unlock_felidian_ability: 'party.bonus.unlockAbility.felidian',
+  unlock_mustelid_ability: 'party.bonus.unlockAbility.mustelid',
+  unlock_leporian_ability: 'party.bonus.unlockAbility.leporian',
+  unlock_cervin_ability: 'party.bonus.unlockAbility.cervin',
+  unlock_murid_ability: 'party.bonus.unlockAbility.murid',
+  unlock_procyonian_ability: 'party.bonus.unlockAbility.procyonian',
 };
 
 
@@ -2429,124 +2486,124 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
   const formatRatePercent = (value: number): string => percentFormatter.format(Math.round(value * 1000) / 10);
   const formatSigned = (value: number): string => `${value >= 0 ? '+' : ''}${value}`;
   for (const b of bonuses) {
-    if (b.type.endsWith('_multiplier') && MULTIPLIER_LABELS[b.type]) {
-      parts.push(`${MULTIPLIER_LABELS[b.type]}x${b.value}`);
+    if (b.type.endsWith('_multiplier') && MULTIPLIER_LABEL_KEYS[b.type]) {
+      parts.push(`${t(MULTIPLIER_LABEL_KEYS[b.type])}x${b.value}`);
     } else if (b.type === 'equip_slot') {
-      parts.push(`装備+${b.value}`);
+      parts.push(`${t('party.bonus.equip_slot')}+${b.value}`);
     } else if (b.type === 'vitality') {
-      parts.push(`体${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.vitality', { value: formatSigned(b.value) }));
     } else if (b.type === 'strength') {
-      parts.push(`力${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.strength', { value: formatSigned(b.value) }));
     } else if (b.type === 'intelligence') {
-      parts.push(`知${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.intelligence', { value: formatSigned(b.value) }));
     } else if (b.type === 'mind') {
-      parts.push(`精${formatSigned(b.value)}`);
+      parts.push(t('party.bonusDisplay.mind', { value: formatSigned(b.value) }));
     } else if (b.type === 'grit' || b.type === 'equip_melee') {
-      parts.push('近接装備');
+      parts.push(t('party.bonus.equip_melee'));
     } else if (b.type === 'caster' || b.type === 'equip_magic') {
-      parts.push('魔法装備');
+      parts.push(t('party.bonus.equip_magic'));
     } else if (b.type === 'penet') {
-      parts.push(`貫通+${Math.round(b.value * 100)}`);
+      parts.push(`${t('party.bonus.penet')}+${Math.round(b.value * 100)}`);
     } else if (b.type === 'pursuit' || b.type === 'equip_ranged') {
-      parts.push('遠距離装備');
+      parts.push(t('party.bonus.equip_ranged'));
     } else if (b.type === 'antagonism') {
-      parts.push('⚠️敵対');
+      parts.push(t('party.bonusDisplay.antagonism'));
     } else if (b.type === 'accuracy') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`命中${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(`${t('party.bonus.accuracy')}${rounded >= 0 ? '+' : ''}${rounded}`);
     } else if (b.type === 'evasion') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`回避${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(t('party.bonusDisplay.evasion', { value: `${rounded >= 0 ? '+' : ''}${rounded}` }));
     } else if (b.type === 'deity_accuracy') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`天命中${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(t('party.bonusDisplay.deityAccuracy', { value: `${rounded >= 0 ? '+' : ''}${rounded}` }));
     } else if (b.type === 'deity_evasion') {
       const rounded = Math.round(b.value * 1000);
-      parts.push(`天回避${rounded >= 0 ? '+' : ''}${rounded}`);
+      parts.push(t('party.bonusDisplay.deityEvasion', { value: `${rounded >= 0 ? '+' : ''}${rounded}` }));
     } else if (b.type === 'deity_move_first') {
-      parts.push(`天速度+${b.value}`);
+      parts.push(t('party.bonusDisplay.deityMoveFirst', { value: b.value }));
     } else if (b.type === 'melee_attack') {
-      parts.push(`近攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.meleeAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'ranged_attack') {
-      parts.push(`遠攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.rangedAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'magical_attack') {
-      parts.push(`魔攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.magicalAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'physical_attack') {
-      parts.push(`物攻撃+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.physicalAttack', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'physical_defense') {
-      parts.push(`物防+${formatRatePercent(b.value)}%`);
+      parts.push(t('party.bonusDisplay.physicalDefense', { value: formatRatePercent(b.value) }));
     } else if (b.type === 'magical_defense') {
-      parts.push(`魔防+${formatRatePercent(b.value)}%`);
+      parts.push(t('party.bonusDisplay.magicalDefense', { value: formatRatePercent(b.value) }));
     } else if (b.type === 'fire_offense') {
-      parts.push(`炎攻+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.fireOffense', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'ice_offense') {
-      parts.push(`氷攻+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.iceOffense', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'thunder_offense') {
-      parts.push(`雷攻+${Math.round(b.value * 100)}%`);
+      parts.push(t('party.bonusDisplay.thunderOffense', { value: Math.round(b.value * 100) }));
     } else if (b.type === 'deity_physical_attack_xV') {
-      parts.push(`天物攻x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityPhysicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'deity_magical_attack_xV') {
-      parts.push(`天魔攻x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityMagicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'physical_offense_multiplier_xV') {
-      parts.push(`物攻撃x${b.value.toFixed(2)}`);
+      parts.push(t('party.bonusDisplay.physicalOffenseMultiplier', { value: b.value.toFixed(2) }));
     } else if (b.type === 'magical_offense_multiplier_xV') {
-      parts.push(`魔攻撃x${b.value.toFixed(2)}`);
+      parts.push(t('party.bonusDisplay.magicalOffenseMultiplier', { value: b.value.toFixed(2) }));
     } else if (b.type === 'deity_physical_defense_x2/3') {
-      parts.push('天物防2/3');
+      parts.push(t('party.bonusDisplay.deityPhysicalDefenseTwoThirds'));
     } else if (b.type === 'deity_physical_defense_xV' || b.type === 'deity_pysical_defense_xV') {
-      parts.push(`天物防x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityPhysicalDefenseMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'deity_magical_defense_x2/3') {
-      parts.push('天魔防2/3');
+      parts.push(t('party.bonusDisplay.deityMagicalDefenseTwoThirds'));
     } else if (b.type === 'deity_magical_defense_xV') {
-      parts.push(`天魔防x${formatMultiplierValue(b.value)}`);
+      parts.push(t('party.bonusDisplay.deityMagicalDefenseMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'physical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('物防', b.value)
-          : `物防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.physicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.physicalDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'magical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('魔防', b.value)
-          : `魔防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.magicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.magicalDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'fire_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('炎防', b.value)
-          : `炎防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.fireDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.fireDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'ice_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('氷防', b.value)
-          : `氷防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.iceDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.iceDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatElementalResistanceBonus('雷防', b.value)
-          : `雷防x${b.value.toFixed(2)}`
+          ? t('party.bonusDisplay.thunderDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
+          : t('party.bonusDisplay.thunderDefenseMultiplier', { value: b.value.toFixed(2) })
       );
     } else if (b.type === 'fire_defense') {
-      parts.push(`炎防${Math.round(b.value)}%`);
+      parts.push(t('party.bonusDisplay.fireDefense', { value: Math.round(b.value) }));
     } else if (b.type === 'ice_defense') {
-      parts.push(`氷防${Math.round(b.value)}%`);
+      parts.push(t('party.bonusDisplay.iceDefense', { value: Math.round(b.value) }));
     } else if (b.type === 'thunder_defense') {
-      parts.push(`雷防${Math.round(b.value)}%`);
+      parts.push(t('party.bonusDisplay.thunderDefense', { value: Math.round(b.value) }));
     } else if (b.type === 'growth_xV') {
-      parts.push(`成長${formatMultiplierValue(b.value)}倍`);
+      parts.push(t('party.bonusDisplay.growthMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
     } else if (b.type === 'ability_upgrade' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
-      parts.push(`${name}強化+${b.value}`);
+      parts.push(t('party.bonusDisplay.abilityUpgrade', { name, value: b.value }));
     } else if (b.type === 'unimplemented_bonus') {
-      parts.push(`(${b.unimplementedLabel || '未実装ボーナス'})`);
-    } else if (b.type in UNLOCK_ABILITY_BONUS_LABELS) {
-      parts.push(UNLOCK_ABILITY_BONUS_LABELS[b.type as BonusType] ?? '[解放]');
+      parts.push(t('party.bonusDisplay.parenthetical', { label: b.unimplementedLabel || t('party.bonusDisplay.unimplemented') }));
+    } else if (b.type in UNLOCK_ABILITY_BONUS_LABEL_KEYS) {
+      parts.push(t(UNLOCK_ABILITY_BONUS_LABEL_KEYS[b.type as BonusType] ?? 'party.bonus.unlockAbility.generic'));
     }
   }
   return parts.join(', ');
@@ -2556,38 +2613,38 @@ function getBonusHelpDescription(bonus: Bonus): string | null {
   const multiplierKey = bonus.type.endsWith('_multiplier')
     ? bonus.type.replace(/_multiplier$/, '')
     : bonus.type;
-  const multiplierTemplate = C_MULTIPLIER_HELP_DESCRIPTIONS[multiplierKey];
-  if (multiplierTemplate) {
-    return multiplierTemplate.replace('{value}', formatMultiplierValue(bonus.value));
+  const multiplierKeyForTranslation = C_MULTIPLIER_HELP_DESCRIPTION_KEYS[multiplierKey];
+  if (multiplierKeyForTranslation) {
+    return t(multiplierKeyForTranslation, { value: formatMultiplierValue(bonus.value) });
   }
 
-  if (bonus.type === 'equip_slot') return `装備スロット数が ${bonus.value} 増える`;
-  if (bonus.type === 'vitality') return `基礎体力に ${bonus.value} を加算（HP/物防に影響）`;
-  if (bonus.type === 'strength') return `基礎筋力に ${bonus.value} を加算（近接火力に影響）`;
-  if (bonus.type === 'intelligence') return `基礎知性に ${bonus.value} を加算（魔法火力に影響）`;
-  if (bonus.type === 'mind') return `基礎精神に ${bonus.value} を加算（HP/魔防に影響）`;
-  if (bonus.type === 'grit' || bonus.type === 'equip_melee') return '近接攻撃の装備が出来るようになる';
-  if (bonus.type === 'caster' || bonus.type === 'equip_magic') return '魔法攻撃の装備が出来るようになる';
-  if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return '遠距離攻撃の装備が出来るようになる';
-  if (bonus.type === 'penet') return `敵の防御力を ${Math.round(bonus.value * 100)}% 分無視する`;
-  if (bonus.type === 'antagonism') return '味方を攻撃するようになる';
-  if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return '値が多いほどより多くの攻撃が命中するようになる';
-  if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return '値が多いほどより多くの攻撃を回避するようになる';
-  if (bonus.type === 'deity_move_first') return `先制の発動段階が ${bonus.value} 段階強化する`;
-  if (bonus.type === 'melee_attack') return '近接攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'ranged_attack') return '遠距離攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'magical_attack') return '魔法攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'physical_attack') return '遠距離攻撃・近接攻撃の攻撃倍率が上昇する';
-  if (bonus.type === 'physical_defense') return '物理耐性を強化する';
-  if (bonus.type === 'magical_defense') return '魔法耐性を強化する';
-  if (bonus.type === 'fire_offense') return '炎属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'ice_offense') return '氷属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'thunder_offense') return '雷属性攻撃のダメージ倍率が上昇する';
-  if (bonus.type === 'growth_xV') return `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(bonus.value)} 倍になる`;
-  if (bonus.type === 'ability_upgrade' && bonus.abilityId) return `アビリティ「${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}」を ${bonus.value} 段階強化する`;
+  if (bonus.type === 'equip_slot') return t('party.bonusHelp.equip_slot', { value: bonus.value });
+  if (bonus.type === 'vitality') return t('party.bonusHelp.vitality', { value: bonus.value });
+  if (bonus.type === 'strength') return t('party.bonusHelp.strength', { value: bonus.value });
+  if (bonus.type === 'intelligence') return t('party.bonusHelp.intelligence', { value: bonus.value });
+  if (bonus.type === 'mind') return t('party.bonusHelp.mind', { value: bonus.value });
+  if (bonus.type === 'grit' || bonus.type === 'equip_melee') return t('party.bonusHelp.equipMelee');
+  if (bonus.type === 'caster' || bonus.type === 'equip_magic') return t('party.bonusHelp.equipMagic');
+  if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return t('party.bonusHelp.equipRanged');
+  if (bonus.type === 'penet') return t('combat.penetrationHelp', { percent: Math.round(bonus.value * 100) });
+  if (bonus.type === 'antagonism') return t('party.bonusHelp.antagonism');
+  if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return t('party.bonusHelp.accuracy');
+  if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return t('party.bonusHelp.evasion');
+  if (bonus.type === 'deity_move_first') return t('party.bonusHelp.deityMoveFirst', { value: bonus.value });
+  if (bonus.type === 'melee_attack') return t('party.bonusHelp.meleeAttack');
+  if (bonus.type === 'ranged_attack') return t('party.bonusHelp.rangedAttack');
+  if (bonus.type === 'magical_attack') return t('party.bonusHelp.magicalAttack');
+  if (bonus.type === 'physical_attack') return t('party.bonusHelp.physicalAttack');
+  if (bonus.type === 'physical_defense') return t('party.bonusHelp.physicalDefense');
+  if (bonus.type === 'magical_defense') return t('party.bonusHelp.magicalDefense');
+  if (bonus.type === 'fire_offense') return t('party.bonusHelp.fireOffense');
+  if (bonus.type === 'ice_offense') return t('party.bonusHelp.iceOffense');
+  if (bonus.type === 'thunder_offense') return t('party.bonusHelp.thunderOffense');
+  if (bonus.type === 'growth_xV') return t('party.bonusHelp.growthMultiplier', { value: formatMultiplierValue(bonus.value) });
+  if (bonus.type === 'ability_upgrade' && bonus.abilityId) return t('party.bonusHelp.abilityUpgrade', { ability: ABILITY_NAMES[bonus.abilityId] || bonus.abilityId, value: bonus.value });
 
-  if (bonus.type in UNLOCK_ABILITY_BONUS_LABELS) {
-    return '対象種族の解放アビリティを使用できるようになる';
+  if (bonus.type in UNLOCK_ABILITY_BONUS_LABEL_KEYS) {
+    return t('party.bonusHelp.unlockRaceAbility');
   }
 
   return null;
@@ -2636,91 +2693,75 @@ function getRaceBonusesForSelection(race: Race, unlockAbilityActive = false): Bo
   );
 }
 
-const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
-  none: '-',
-  aggressive: '好',
-  inquisitive: '探',
-  amiable: '和',
-  stubborn: '頑',
-  evasive: '避',
-  introspective: '内',
-  devoted: '献',
-  serene: '冷',
-  nimble: '軽',
-  perceptive: '看',
-  precise: '精',
-  resourceful: '腕',
+const PREDISPOSITION_SHORT_NAME_KEYS: Record<string, string> = {
+  none: 'party.predispositionShort.none',
+  aggressive: 'party.predispositionShort.aggressive',
+  inquisitive: 'party.predispositionShort.inquisitive',
+  amiable: 'party.predispositionShort.amiable',
+  stubborn: 'party.predispositionShort.stubborn',
+  evasive: 'party.predispositionShort.evasive',
+  introspective: 'party.predispositionShort.introspective',
+  devoted: 'party.predispositionShort.devoted',
+  serene: 'party.predispositionShort.serene',
+  nimble: 'party.predispositionShort.nimble',
+  perceptive: 'party.predispositionShort.perceptive',
+  precise: 'party.predispositionShort.precise',
+  resourceful: 'party.predispositionShort.resourceful',
 };
 
-const LINEAGE_SHORT_NAMES: Record<string, string> = {
-  sandstorm: '砂',
-  ashen_capital: '灰',
-  blaze_peak: '焔',
-  abyssal_sea: '海',
-  firmament: '穹',
-  frozen_forest: '凍',
-  utopia: '桃',
-  machina: '機',
-  adaptation: '適',
-  fragment: '断',
-  windcross: '風',
-  oath: '誓',
-  unascertained: '不',
-  pioneer: '先',
-  almighty: '全',
-  hidden_grail: '杯',
-  rowdy_orca_girl: 'わ',
-  meddlesome_fox: '世',
-  crescent_jade: '月',
-  phantom_thief: '怪',
-  flamebound_grove: '炎',
-  apostate: '背',
-  incarnation: '化',
-  'unexpected_prince(ss)': 'U',
+const LINEAGE_SHORT_NAME_KEYS: Record<string, string> = {
+  sandstorm: 'party.lineageShort.sandstorm',
+  ashen_capital: 'party.lineageShort.ashenCapital',
+  blaze_peak: 'party.lineageShort.blazePeak',
+  abyssal_sea: 'party.lineageShort.abyssalSea',
+  firmament: 'party.lineageShort.firmament',
+  frozen_forest: 'party.lineageShort.frozenForest',
+  utopia: 'party.lineageShort.utopia',
+  machina: 'party.lineageShort.machina',
+  adaptation: 'party.lineageShort.adaptation',
+  fragment: 'party.lineageShort.fragment',
+  windcross: 'party.lineageShort.windcross',
+  oath: 'party.lineageShort.oath',
+  unascertained: 'party.lineageShort.unascertained',
+  pioneer: 'party.lineageShort.pioneer',
+  almighty: 'party.lineageShort.almighty',
+  hidden_grail: 'party.lineageShort.hiddenGrail',
+  rowdy_orca_girl: 'party.lineageShort.rowdyOrcaGirl',
+  meddlesome_fox: 'party.lineageShort.meddlesomeFox',
+  crescent_jade: 'party.lineageShort.crescentJade',
+  phantom_thief: 'party.lineageShort.phantomThief',
+  flamebound_grove: 'party.lineageShort.flameboundGrove',
+  apostate: 'party.lineageShort.apostate',
+  incarnation: 'party.lineageShort.incarnation',
+  'unexpected_prince(ss)': 'party.lineageShort.unexpectedPrince',
 };
 
 // Category name mapping
-const CATEGORY_NAMES: Record<string, string> = {
-  sword: '剣',
-  katana: '刀',
-  archery: '弓',
-  armor: '鎧',
-  gauntlet: '籠手',
-  wand: 'ワンド',
-  robe: '法衣',
-  shield: '盾',
-  bolt: 'ボルト',
-  grimoire: '魔道書',
-  catalyst: '触媒',
-  arrow: '矢',
-};
-
-// Category short names for tabs
-const CATEGORY_SHORT_NAMES: Record<string, string> = {
-  sword: '剣',
-  katana: '刀',
-  archery: '弓',
-  armor: '鎧',
-  gauntlet: '手',
-  wand: '杖',
-  robe: '衣',
-  shield: '盾',
-  bolt: 'ボ',
-  grimoire: '書',
-  catalyst: '媒',
-  arrow: '矢',
+const CATEGORY_NAME_KEYS: Record<string, string> = {
+  sword: 'party.categoryName.sword',
+  katana: 'party.categoryName.katana',
+  archery: 'party.categoryName.archery',
+  armor: 'party.categoryName.armor',
+  gauntlet: 'party.categoryName.gauntlet',
+  wand: 'party.categoryName.wand',
+  robe: 'party.categoryName.robe',
+  shield: 'party.categoryName.shield',
+  bolt: 'party.categoryName.bolt',
+  grimoire: 'party.categoryName.grimoire',
+  catalyst: 'party.categoryName.catalyst',
+  arrow: 'party.categoryName.arrow',
 };
 
 // Category groups for tabs
 const CATEGORY_GROUPS = [
-  { id: 'durability', label: '耐久', categories: ['armor', 'robe', 'shield'] },
-  { id: 'melee', label: '近距離攻撃', categories: ['sword', 'katana', 'gauntlet'] },
-  { id: 'ranged', label: '遠距離攻撃', categories: ['arrow', 'bolt', 'archery'] },
-  { id: 'magic', label: '魔法攻撃', categories: ['wand', 'grimoire', 'catalyst'] },
+  { id: 'durability', labelKey: 'party.category.durability', categories: ['armor', 'robe', 'shield'] },
+  { id: 'melee', labelKey: 'party.category.melee', categories: ['sword', 'katana', 'gauntlet'] },
+  { id: 'ranged', labelKey: 'party.category.ranged', categories: ['arrow', 'bolt', 'archery'] },
+  { id: 'magic', labelKey: 'party.category.magic', categories: ['wand', 'grimoire', 'catalyst'] },
 ];
 
 const INVENTORY_CATEGORY_GROUPS = [
-  { id: 'jewel', label: '晶', categories: ['jewel'] },
+  { id: 'jewel', labelKey: 'party.category.jewel', categories: ['jewel'] },
   ...CATEGORY_GROUPS,
 ];
 
@@ -2852,18 +2893,8 @@ function getInitialDarkModeSetting(): DarkModeSetting {
 
 type AutoEquipmentMode = 0 | 1 | 2;
 
-const AUTO_EQUIPMENT_MODE_LABEL: Record<AutoEquipmentMode, string> = {
-  0: '手動',
-  1: '補助',
-  2: '一任',
-};
-
-const AUTO_EQUIPMENT_HELP_LINES = [
-  '手動: 装備の付け替えが自動で変わることはない',
-  '補助: 上位の通常称号の同一装備がある場合に置き換える。 (熟睡後の身支度が終わった段階で反映)',
-  '一任: 装備選定を一任する。自身の判断で現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (熟睡後の身支度が終わった段階で反映)',
-  '※超レア装備は置き換わる事はない',
-];
+const getAutoEquipmentModeLabel = (mode: AutoEquipmentMode): string => t(`party.equipment.autoMode.${mode}`);
+const getAutoEquipmentHelpLines = (): string[] => [0, 1, 2, 3].map((index) => t(`party.equipment.autoHelp.${index}`));
 
 type AutoEquipmentCombatStyle = 'ranged' | 'magic' | 'melee';
 type AutoEquipmentTargetCategory = ItemCategory | 'i.weapon' | 'i.NoA';
@@ -3163,7 +3194,16 @@ export function HomeScreen({
     value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   );
   function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
-    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const statusHeaders = [
+      t('home.progressReport.statusHeader.partyPosition'),
+      t('home.progressReport.statusHeader.nameAndBuild'),
+      t('home.progressReport.statusHeader.physicalDefense'),
+      t('home.progressReport.statusHeader.magicalDefense'),
+      t('home.progressReport.statusHeader.evasionAndPenetration'),
+      t('home.progressReport.statusHeader.attack'),
+      t('home.progressReport.statusHeader.elementalDefense'),
+      t('home.progressReport.statusHeader.abilities'),
+    ];
     const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
     const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     return new File([html], fileName, { type: 'text/html' });
@@ -3176,7 +3216,7 @@ export function HomeScreen({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
@@ -3241,13 +3281,25 @@ export function HomeScreen({
         const attackParts: string[] = [];
         const combatBonuses = getCharacterCombatBonusLevels(member);
         if (combatBonuses.ranged) {
-          attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
+          attackParts.push(t('home.progressReport.attackSummary.ranged', {
+            attack: formatNumber(computed.rangedAttack),
+            multiplier: formatPercent(computed.physicalOffenseMultiplier),
+            count: formatNumber(computed.rangedNoA),
+          }));
         }
         if (combatBonuses.magic) {
-          attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
+          attackParts.push(t('home.progressReport.attackSummary.magic', {
+            attack: formatNumber(computed.magicalAttack),
+            multiplier: formatPercent(computed.magicalOffenseMultiplier),
+            count: formatNumber(computed.magicalNoA),
+          }));
         }
         if (combatBonuses.melee) {
-          attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.meleeNoA)}回`);
+          attackParts.push(t('home.progressReport.attackSummary.melee', {
+            attack: formatNumber(computed.meleeAttack),
+            multiplier: formatPercent(computed.physicalOffenseMultiplier),
+            count: formatNumber(computed.meleeNoA),
+          }));
         }
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const elementalOffense = computed.elementalOffense === 'none'
@@ -3255,7 +3307,7 @@ export function HomeScreen({
           : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
         const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
         const race = RACES.find((entry) => entry.id === member.raceId);
-        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
         const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
         return [
           `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
@@ -3397,10 +3449,10 @@ export function HomeScreen({
       const existing = slotNotifications.get(notificationKey);
       const startedFromEmpty = existing?.startedFromEmpty ?? previousItem == null;
       const message = startedFromEmpty
-        ? `${getItemDisplayName(item)}を装備した`
-        : `${getItemDisplayName(previousItem!)} を ${getItemDisplayName(item)}に装備しなおした`;
+        ? t('home.notification.equipment.equipped', { item: getItemDisplayName(item) })
+        : t('home.notification.equipment.replaced', { previous: getItemDisplayName(previousItem!), item: getItemDisplayName(item) });
       slotNotifications.set(notificationKey, {
-        message: `${partyName}${characterName}は ${message}`,
+        message: t('home.notification.equipment.characterChanged', { party: partyName, character: characterName, message }),
         startedFromEmpty,
       });
     };
@@ -4413,7 +4465,7 @@ export function HomeScreen({
         const triggerGodsBattle = party ? shouldAutoTriggerGodsBattle(party) : false;
         actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt);
         if (shouldFinalizeDiary) {
-          actions.finalizeDiaryLog(partyIndex);
+          actions.finalizeDiaryLog(partyIndex, simulatedAt);
         }
       });
 
@@ -4515,7 +4567,7 @@ export function HomeScreen({
 
     if (debugSettings.displayAfkDuration && elapsedMs > 60_000) {
       const elapsedSeconds = Math.floor(elapsedMs / 1000);
-      actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
+      actions.addNotification(t('home.notification.debug.elapsedSincePreviousUpdate', { seconds: formatNumber(elapsedSeconds) }));
     }
 
     // Long background spans should be simulated inside the reducer so each expedition
@@ -4607,7 +4659,7 @@ export function HomeScreen({
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
           actions.cancelSideQuest(partyIndex);
           if (!suppressCycleNotificationsForAfk) {
-            actions.addNotification(`${party.name}はサイドクエスト ${party.sideQuest.shortText} を達成できなかった`);
+            actions.addNotification(t('home.notification.sideQuestFailed', { party: party.name, quest: resolveSideQuestShortText(party.sideQuest) }));
           }
           next[partyIndex] = updated;
           return;
@@ -4724,10 +4776,10 @@ export function HomeScreen({
               if (spend > 0) {
                 if (!suppressCycleNotificationsForAfk) {
                   if (squanderLevel > 0) {
-                    const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
-                    actions.addNotification(`${party.name} 君主${lordName}は贅沢に${formatNumber(spend)}G使った`);
+                    const lordName = getPartyAbilityOwnerName(party, 'squander') ?? t('common.unnamed');
+                    actions.addNotification(t('home.notification.lordSquanderedGold', { party: party.name, lord: lordName, gold: formatNumber(spend) }));
                   } else {
-                    actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+                    actions.addNotification(t('home.notification.partySpentGold', { party: party.name, gold: formatNumber(spend) }));
                   }
                 }
               }
@@ -4764,15 +4816,15 @@ export function HomeScreen({
               if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) actions.advanceSideQuest(partyIndex, embezzled, simulationNow);
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
-                const embezzledText = embezzled > 0 ? `(${formatNumber(embezzled)}Gを着服した)` : '';
+                const embezzledText = embezzled > 0 ? t('home.notification.embezzledSuffix', { gold: formatNumber(embezzled) }) : '';
                 if (!suppressCycleNotificationsForAfk) {
                   if (isNoFaith) {
-                    actions.addNotification(`${party.name}は ${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                    actions.addNotification(t('home.notification.partySavedGold', { party: party.name, gold: formatNumber(deposit), suffix: embezzledText }));
                   } else if (titheLevel > 0) {
-                    const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
-                    actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                    const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? t('common.unnamed');
+                    actions.addNotification(t('home.notification.pilgrimDonatedAndSavedGold', { party: party.name, pilgrim: pilgrimName, donation: formatNumber(donation), deposit: formatNumber(deposit), suffix: embezzledText }));
                   } else {
-                    actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                    actions.addNotification(t('home.notification.partyDonatedAndSavedGold', { party: party.name, donation: formatNumber(donation), deposit: formatNumber(deposit), suffix: embezzledText }));
                   }
                 }
               }
@@ -4800,7 +4852,7 @@ export function HomeScreen({
               if (triggerGodsBattle && party.sideQuest) {
                 actions.cancelSideQuest(partyIndex);
                 if (!suppressCycleNotificationsForAfk) {
-                  actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+                  actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
                 }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
@@ -4956,8 +5008,8 @@ export function HomeScreen({
           : 0;
 
         const levelUpMessage = equipSlotIncrease > 0
-          ? `${party.name} はレベルが${party.level}に上がった(装備枠が+${equipSlotIncrease}増えた)`
-          : `${party.name} はレベルが${party.level}に上がった`;
+          ? t('home.notification.partyLevelUpWithEquipmentSlot', { party: party.name, level: party.level, slots: equipSlotIncrease })
+          : t('home.notification.partyLevelUp', { party: party.name, level: party.level });
         actions.addNotification(levelUpMessage);
       }
 
@@ -4983,7 +5035,7 @@ export function HomeScreen({
           const itemName = getItemDisplayName(item);
           const rarity = getItemRarityById(item.id);
           actions.addNotification(
-            `${party.name}:${itemName}を入手！`,
+            t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
             rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
             'item',
             undefined,
@@ -5011,7 +5063,7 @@ export function HomeScreen({
       const prevQuest = prevSideQuestRef.current[index] ?? null;
       const nextQuest = party.sideQuest ?? null;
       if (!prevQuest && nextQuest && !suppressNotificationsForAfkEmulation) {
-        actions.addNotification(getSideQuestAssignMessage(party.name, nextQuest.shortText));
+        actions.addNotification(getSideQuestAssignMessage(party.name, resolveSideQuestShortText(nextQuest)));
       }
       if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation) {
         const latestDiary = party.diaryLogs?.[0];
@@ -5071,19 +5123,22 @@ export function HomeScreen({
         });
 
         const wasAutoSold = !purchasedVariant && Boolean(autoSoldVariant);
+        const purchasedMasterItem = ITEMS.find((item) => item.id === itemId);
 
         const purchasedName = purchasedVariant
           ? getItemDisplayName(purchasedVariant.item)
           : autoSoldVariant
             ? getItemDisplayName(autoSoldVariant.item)
-            : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
+            : t('home.notification.shopPurchasedItemFallback', {
+              item: purchasedMasterItem ? getLocalizedItemName(purchasedMasterItem) : t('common.unknown'),
+            });
 
         if (wasAutoSold) {
-          actions.addNotification(`店から ${purchasedName} を購入して失望した(自動売却)`, 'normal', 'item', true);
+          actions.addNotification(t('home.notification.shopBoughtAndAutoSold', { item: purchasedName }), 'normal', 'item', true);
           continue;
         }
 
-        actions.addNotification(`店から ${purchasedName} を購入した！`, 'normal', 'item', true);
+        actions.addNotification(t('home.notification.shopBought', { item: purchasedName }), 'normal', 'item', true);
       }
     }
 
@@ -5252,7 +5307,7 @@ export function HomeScreen({
       const itemName = getItemDisplayName(item);
       const rarity = getItemRarityById(item.id);
       actions.addNotification(
-        `${party.name}:${itemName}を入手！`,
+        t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
         rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
         'item',
         undefined,
@@ -5276,34 +5331,34 @@ export function HomeScreen({
 
     if (!isColosseumSortie && (party.currentHp <= 0 || partyStats.hp <= 0)) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
-      actions.addNotification(`${refusingCharacter} は疲弊しており出撃を拒否した`);
+      actions.addNotification(t('home.notification.characterRefusedExpedition', { character: refusingCharacter }));
       return;
     }
 
     // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
     if (triggerGodsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) {
-      actions.addNotification(`${party.name} は既に神魔戦へ向けて移動中だ`);
+      actions.addNotification(t('home.notification.partyAlreadyMovingToGodBattle', { party: party.name }));
       return;
     }
     // SpecRef: 8.3 | UI_EXPEDITION | Charge
     if (!isColosseumSortie && instantChargeState.stock <= 0) {
-      actions.addNotification(`${party.name} の即時出撃チャージが不足している`);
+      actions.addNotification(t('home.notification.instantExpeditionChargeInsufficient', { party: party.name }));
       return;
     }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
     if (stolenProfit > 0) {
-      actions.addNotification(`${party.name}は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして即時出撃した`);
+      actions.addNotification(t('home.notification.instantExpeditionWithStolenGold', { party: party.name, gold: formatNumber(stolenProfit) }));
     } else {
-      actions.addNotification(`${party.name}は即時出撃した`);
+      actions.addNotification(t('home.notification.instantExpeditionStarted', { party: party.name }));
     }
 
     notifyExpeditionRewardsIfNeeded(party, partyIndex);
 
     if (triggerGodsBattle && party.sideQuest) {
       actions.cancelSideQuest(partyIndex);
-      actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+      actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
     }
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
@@ -5317,11 +5372,10 @@ export function HomeScreen({
     actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
     instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
-    actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
-    actions.finalizeDiaryLog(partyIndex);
+    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
     actions.rollPartySleepiness(partyIndex);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
-    // Manual 出撃/神魔戦 resolves the expedition and its return tail immediately,
+    // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
     // leaving the runtime at the beginning of rest so normal rest healing still occurs.
     const finalRestDurationMs = getStateDurationMs(party, 'rest');
     setPartyCycles((prev) => ({
@@ -5354,9 +5408,10 @@ export function HomeScreen({
     actions.markItemsSeen();
   }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
 
+  setLanguage(state.global.language);
   const tabs: { id: Tab; label: string }[] = MAIN_TAB_ORDER.map((id) => ({
     id,
-    label: id === 'expedition' ? '探索' : id === 'party' ? 'パーティ' : id === 'base' ? '拠点' : id === 'diary' ? '日誌' : '神聖局',
+    label: t(`nav.${id}`),
   }));
 
   // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
@@ -5386,7 +5441,7 @@ export function HomeScreen({
   const versionLabel = envLabel
     ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
     : `${APP_VERSION}(${state.buildNumber})`;
-  const gameTitle = '冒ケモ';
+  const gameTitle = t('app.title');
 
   useEffect(() => {
     document.title = gameTitle;
@@ -5525,6 +5580,8 @@ export function HomeScreen({
         onUpdateDebugSettings={updateDebugSettings}
         partyCount={state.parties.length}
         onPartyUnlock={actions.unlockPartySlot}
+        language={state.global.language}
+        onSetLanguage={actions.setLanguage}
         onMarkDeveloperNewsRead={actions.markDeveloperNewsRead}
       />
     );
@@ -5541,8 +5598,8 @@ export function HomeScreen({
               {/* SpecRef: 8.1.2 | Header | Game title label */}
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
-                  <span>ケモ</span>
+                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
+                  <span>{t('divineBureau.theme.kemo')}</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
@@ -5552,21 +5609,21 @@ export function HomeScreen({
                 type="button"
                 onClick={async () => {
                   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane(デバッグ)
-                  const confirmed = window.confirm('現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）');
+                  const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
                   if (!confirmed) return;
                   try {
                     const isReported = await reportProgressForSpeedOfTime();
                     if (!isReported) {
-                      window.alert('進捗報告先が未設定のため、速度ボーナスは適用されませんでした。');
+                      window.alert(t('home.debug.reportProgressUnset'));
                       return;
                     }
                     const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
                     setTimeSpeedBonusUntilMs(bonusUntilMs);
                     updateDebugSettings({ timeSpeed: 'x1_2' });
-                    actions.addNotification('進捗報告に成功しました。1日間、ゲーム進行速度が1.2倍になります。', 'normal', 'stat', true);
+                    actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
                   } catch (error) {
                     console.error('Failed to report progress for Speed of Time:', error);
-                    window.alert('進捗報告に失敗したため、速度ボーナスは適用されませんでした。');
+                    window.alert(t('home.debug.reportProgressFailure'));
                   }
                 }}
                 className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
@@ -5580,7 +5637,7 @@ export function HomeScreen({
                   onClick={() => setAutoRepeatEnabled(true)}
                   className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
                 >
-                  静止中
+                  {t('home.header.paused')}
                 </button>
               )}
             </div>
@@ -5863,7 +5920,7 @@ function PartyTab({
 
   const confirmPartyCharacterReorder = useCallback(() => {
     // SpecRef: 8.2.2 | Party member details | Party member order swap confirmation
-    return window.confirm('選択したパーティメンバーの順番を入れ替えますか？');
+    return window.confirm(t('home.party.reorderConfirm'));
   }, []);
 
   const reorderCharacterWithConfirmation = useCallback((fromIndex: number, toIndex: number) => {
@@ -5892,65 +5949,67 @@ function PartyTab({
     if (prevStatsRef.current) {
       const prev = prevStatsRef.current;
       const changes: { message: string; isPositive: boolean }[] = [];
+      const formatStatChange = (labelKey: string, previous: string | number, current: string | number): string =>
+        t('home.party.statChange', { label: t(labelKey), previous, current });
 
       if (combatTotals.vitality !== prev.vitality) {
         const isPositive = combatTotals.vitality > prev.vitality;
-        changes.push({ message: `体力 ${formatNumber(prev.vitality)} → ${formatNumber(combatTotals.vitality)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.vitality', formatNumber(prev.vitality), formatNumber(combatTotals.vitality)), isPositive });
       }
       if (combatTotals.strength !== prev.strength) {
         const isPositive = combatTotals.strength > prev.strength;
-        changes.push({ message: `力 ${formatNumber(prev.strength)} → ${formatNumber(combatTotals.strength)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.strength', formatNumber(prev.strength), formatNumber(combatTotals.strength)), isPositive });
       }
       if (combatTotals.intelligence !== prev.intelligence) {
         const isPositive = combatTotals.intelligence > prev.intelligence;
-        changes.push({ message: `知性 ${formatNumber(prev.intelligence)} → ${formatNumber(combatTotals.intelligence)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.intelligence', formatNumber(prev.intelligence), formatNumber(combatTotals.intelligence)), isPositive });
       }
       if (combatTotals.mind !== prev.mind) {
         const isPositive = combatTotals.mind > prev.mind;
-        changes.push({ message: `精神 ${formatNumber(prev.mind)} → ${formatNumber(combatTotals.mind)}`, isPositive });
+        changes.push({ message: formatStatChange('common.stat.mind', formatNumber(prev.mind), formatNumber(combatTotals.mind)), isPositive });
       }
 
       // Check all stat changes and collect them
       if (combatTotals.physDef !== prev.physDef) {
         const isPositive = combatTotals.physDef > prev.physDef;
-        changes.push({ message: `物防 ${formatNumber(prev.physDef)} → ${formatNumber(combatTotals.physDef)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.physicalDefenseShort', formatNumber(prev.physDef), formatNumber(combatTotals.physDef)), isPositive });
       }
       if (combatTotals.magDef !== prev.magDef) {
         const isPositive = combatTotals.magDef > prev.magDef;
-        changes.push({ message: `魔防 ${formatNumber(prev.magDef)} → ${formatNumber(combatTotals.magDef)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.magicalDefenseShort', formatNumber(prev.magDef), formatNumber(combatTotals.magDef)), isPositive });
       }
       if (combatTotals.physicalDefenseResistPercent !== prev.physicalDefenseResistPercent) {
         const isPositive = combatTotals.physicalDefenseResistPercent < prev.physicalDefenseResistPercent;
         changes.push({
-          message: `物理防御耐性 ${formatNumber(prev.physicalDefenseResistPercent)}% → ${formatNumber(combatTotals.physicalDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.physicalDefenseResistance', `${formatNumber(prev.physicalDefenseResistPercent)}%`, `${formatNumber(combatTotals.physicalDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.magicalDefenseResistPercent !== prev.magicalDefenseResistPercent) {
         const isPositive = combatTotals.magicalDefenseResistPercent < prev.magicalDefenseResistPercent;
         changes.push({
-          message: `魔法防御耐性 ${formatNumber(prev.magicalDefenseResistPercent)}% → ${formatNumber(combatTotals.magicalDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.magicalDefenseResistance', `${formatNumber(prev.magicalDefenseResistPercent)}%`, `${formatNumber(combatTotals.magicalDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.fireDefenseResistPercent !== prev.fireDefenseResistPercent) {
         const isPositive = combatTotals.fireDefenseResistPercent < prev.fireDefenseResistPercent;
         changes.push({
-          message: `炎防御耐性 ${formatNumber(prev.fireDefenseResistPercent)}% → ${formatNumber(combatTotals.fireDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.fireDefenseResistance', `${formatNumber(prev.fireDefenseResistPercent)}%`, `${formatNumber(combatTotals.fireDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.iceDefenseResistPercent !== prev.iceDefenseResistPercent) {
         const isPositive = combatTotals.iceDefenseResistPercent < prev.iceDefenseResistPercent;
         changes.push({
-          message: `氷防御耐性 ${formatNumber(prev.iceDefenseResistPercent)}% → ${formatNumber(combatTotals.iceDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.iceDefenseResistance', `${formatNumber(prev.iceDefenseResistPercent)}%`, `${formatNumber(combatTotals.iceDefenseResistPercent)}%`),
           isPositive,
         });
       }
       if (combatTotals.thunderDefenseResistPercent !== prev.thunderDefenseResistPercent) {
         const isPositive = combatTotals.thunderDefenseResistPercent < prev.thunderDefenseResistPercent;
         changes.push({
-          message: `雷防御耐性 ${formatNumber(prev.thunderDefenseResistPercent)}% → ${formatNumber(combatTotals.thunderDefenseResistPercent)}%`,
+          message: formatStatChange('home.party.thunderDefenseResistance', `${formatNumber(prev.thunderDefenseResistPercent)}%`, `${formatNumber(combatTotals.thunderDefenseResistPercent)}%`),
           isPositive,
         });
       }
@@ -5960,56 +6019,56 @@ function PartyTab({
       }
       if (combatTotals.meleeAtk !== prev.meleeAtk) {
         const isPositive = combatTotals.meleeAtk > prev.meleeAtk;
-        changes.push({ message: `近攻 ${formatNumber(prev.meleeAtk)} → ${formatNumber(combatTotals.meleeAtk)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.meleeAttackShort', formatNumber(prev.meleeAtk), formatNumber(combatTotals.meleeAtk)), isPositive });
       }
       if (combatTotals.meleeNoA !== prev.meleeNoA) {
         const isPositive = combatTotals.meleeNoA > prev.meleeNoA;
-        changes.push({ message: `近回数 ${formatNumber(prev.meleeNoA)} → ${formatNumber(combatTotals.meleeNoA)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.meleeAttackCountShort', formatNumber(prev.meleeNoA), formatNumber(combatTotals.meleeNoA)), isPositive });
       }
       if (combatTotals.rangedAtk !== prev.rangedAtk) {
         const isPositive = combatTotals.rangedAtk > prev.rangedAtk;
-        changes.push({ message: `遠攻 ${formatNumber(prev.rangedAtk)} → ${formatNumber(combatTotals.rangedAtk)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.rangedAttackShort', formatNumber(prev.rangedAtk), formatNumber(combatTotals.rangedAtk)), isPositive });
       }
       if (combatTotals.rangedNoA !== prev.rangedNoA) {
         const isPositive = combatTotals.rangedNoA > prev.rangedNoA;
-        changes.push({ message: `遠回数 ${formatNumber(prev.rangedNoA)} → ${formatNumber(combatTotals.rangedNoA)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.rangedAttackCountShort', formatNumber(prev.rangedNoA), formatNumber(combatTotals.rangedNoA)), isPositive });
       }
       if (combatTotals.magicalAtk !== prev.magicalAtk) {
         const isPositive = combatTotals.magicalAtk > prev.magicalAtk;
-        changes.push({ message: `魔攻 ${formatNumber(prev.magicalAtk)} → ${formatNumber(combatTotals.magicalAtk)}`, isPositive });
+        changes.push({ message: formatStatChange('combat.magicalAttackShort', formatNumber(prev.magicalAtk), formatNumber(combatTotals.magicalAtk)), isPositive });
       }
       if (combatTotals.meleeAttackAmp !== prev.meleeAttackAmp) {
         const isPositive = combatTotals.meleeAttackAmp > prev.meleeAttackAmp;
-        changes.push({ message: `近接攻撃倍率 x${prev.meleeAttackAmp.toFixed(2)} → x${combatTotals.meleeAttackAmp.toFixed(2)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.help.meleeAttackMultiplierLabel', `x${prev.meleeAttackAmp.toFixed(2)}`, `x${combatTotals.meleeAttackAmp.toFixed(2)}`), isPositive });
       }
       if (combatTotals.rangedAttackAmp !== prev.rangedAttackAmp) {
         const isPositive = combatTotals.rangedAttackAmp > prev.rangedAttackAmp;
-        changes.push({ message: `遠距離攻撃倍率 x${prev.rangedAttackAmp.toFixed(2)} → x${combatTotals.rangedAttackAmp.toFixed(2)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.help.rangedAttackMultiplierLabel', `x${prev.rangedAttackAmp.toFixed(2)}`, `x${combatTotals.rangedAttackAmp.toFixed(2)}`), isPositive });
       }
       if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
         const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
-        changes.push({ message: `魔法攻撃倍率 x${prev.magicalAttackAmp.toFixed(2)} → x${combatTotals.magicalAttackAmp.toFixed(2)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${prev.magicalAttackAmp.toFixed(2)}`, `x${combatTotals.magicalAttackAmp.toFixed(2)}`), isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
-        changes.push({ message: `魔回数 ${formatNumber(prev.magicalNoA)} → ${formatNumber(combatTotals.magicalNoA)}`, isPositive });
+        changes.push({ message: formatStatChange('home.party.magicalAttackCountShort', formatNumber(prev.magicalNoA), formatNumber(combatTotals.magicalNoA)), isPositive });
       }
       if (combatTotals.accuracy !== prev.accuracy) {
         const isPositive = combatTotals.accuracy > prev.accuracy;
-        changes.push({ message: `命中 ${prev.accuracy >= 0 ? '+' : ''}${formatNumber(prev.accuracy)} → ${combatTotals.accuracy >= 0 ? '+' : ''}${formatNumber(combatTotals.accuracy)}`, isPositive });
+        changes.push({ message: `${t('party.bonus.accuracy')} ${prev.accuracy >= 0 ? '+' : ''}${formatNumber(prev.accuracy)} → ${combatTotals.accuracy >= 0 ? '+' : ''}${formatNumber(combatTotals.accuracy)}`, isPositive });
       }
       if (combatTotals.evasion !== prev.evasion) {
         const isPositive = combatTotals.evasion > prev.evasion;
-        changes.push({ message: `回避 ${prev.evasion >= 0 ? '+' : ''}${formatNumber(prev.evasion)} → ${combatTotals.evasion >= 0 ? '+' : ''}${formatNumber(combatTotals.evasion)}`, isPositive });
+        changes.push({ message: `${t('party.bonus.evasion')} ${prev.evasion >= 0 ? '+' : ''}${formatNumber(prev.evasion)} → ${combatTotals.evasion >= 0 ? '+' : ''}${formatNumber(combatTotals.evasion)}`, isPositive });
       }
       if (combatTotals.penet !== prev.penet) {
         const isPositive = combatTotals.penet > prev.penet;
-        changes.push({ message: `貫通 ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
+        changes.push({ message: `${t('party.bonus.penet')} ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
       }
       const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
-        fire: '火',
-        ice: '氷',
-        thunder: '雷',
+        fire: t('common.element.fire.short'),
+        ice: t('common.element.ice.short'),
+        thunder: t('common.element.thunder.short'),
       };
       const prevElementPercents: Record<Exclude<ElementalOffense, 'none'>, number> = {
         fire: 0,
@@ -6033,7 +6092,7 @@ function PartyTab({
         if (prevElementPercents[element] === currentElementPercents[element]) return;
         const isPositive = currentElementPercents[element] > prevElementPercents[element];
         changes.push({
-          message: `${elementalLabels[element]}属性: ${prevElementPercents[element]}% → ${currentElementPercents[element]}%`,
+          message: t('home.party.elementalStatChange', { element: elementalLabels[element], previous: prevElementPercents[element], current: currentElementPercents[element] }),
           isPositive,
         });
       });
@@ -6045,8 +6104,8 @@ function PartyTab({
       ) {
         changes.push({
           message: combatTotals.unlockConditionActive
-            ? `${combatTotals.unlockRaceName}の${combatTotals.unlockAbilityName}アビリティが解放されました`
-            : `${combatTotals.unlockRaceName}の${combatTotals.unlockAbilityName}アビリティがロックされました`,
+            ? t('home.party.abilityUnlocked', { race: combatTotals.unlockRaceName, ability: combatTotals.unlockAbilityName })
+            : t('home.party.abilityLocked', { race: combatTotals.unlockRaceName, ability: combatTotals.unlockAbilityName }),
           isPositive: combatTotals.unlockConditionActive,
         });
       }
@@ -6061,7 +6120,7 @@ function PartyTab({
         if (previousLevel === currentLevel) return;
         const abilityName = ABILITY_NAMES[abilityId] ?? abilityId;
         changes.push({
-          message: `${abilityName}アビリティレベル ${previousLevel} → ${currentLevel}`,
+          message: t('home.party.abilityLevelChange', { ability: abilityName, previous: previousLevel, current: currentLevel }),
           isPositive: currentLevel > previousLevel,
         });
       });
@@ -6138,8 +6197,7 @@ function PartyTab({
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Trigger: when race is changed.
   const getDefaultNameForRace = (raceId: RaceId): string => {
-    const racePool = POTENTIAL_DEFAULT_NAMES_BY_PT[party.id]?.[raceId];
-    const genderedPool = Array.isArray(racePool) ? getGenderedNamePool(racePool) : racePool;
+    const genderedPool = getPotentialDefaultNamesByPt()[party.id]?.[raceId];
     const ptCandidates = genderedPool?.[(pendingEdits?.gender ?? char.gender)] ?? [];
     if (ptCandidates.length === 0) return char.name;
 
@@ -6182,21 +6240,6 @@ function PartyTab({
   // SpecRef: 8.2.2 | Party member details | Character image (background)
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
-  const previewName = pendingEdits?.name ?? char.name;
-  const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
-    'ケモ': 'Unique_Kemo.png',
-    'ライカ': 'Unique_Laika.png',
-    'ルナ': 'Unique_Luna.png',
-    'ノクス': 'Unique_Nox.png',
-    'マーレ': 'Unique_Merle.png',
-    'プチーツァ': 'Unique_Puchitsa.png',
-    '蒼牙破': 'Unique_Souga-ha.png',
-    'レナード': 'Unique_Leonard.png',
-    '葉隠': 'Unique_Hagakure.png',
-    'フィン': 'Unique_Finn.png',
-    'オルカ': 'Unique_Orca.png',
-    'ミシュカ': 'Unique_Mishka.png',
-  };
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
     vulpinian: 'Vulpinian',
@@ -6212,7 +6255,7 @@ function PartyTab({
     male: 'Male',
     female: 'Female',
   };
-  const uniquePartyMemberImageFileName = char.isUnique ? uniquePartyMemberImageByName[previewName] : undefined;
+  const uniquePartyMemberImageFileName = char.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[char.lineageId] : undefined;
   const raceLabel = raceLabelByRaceId[previewRaceId];
   const genderLabel = genderLabelByGender[previewGender];
   const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
@@ -6222,26 +6265,6 @@ function PartyTab({
     ? `${raceLabel}_${genderLabel}.png`
     : undefined;
   const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
-  const partyInventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
-  const partyInventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
-
-  const getPartyInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
-    const uniqueFileName = character.isUnique ? uniquePartyMemberImageByName[character.name] : undefined;
-    if (uniqueFileName) {
-      const chibiFileName = `C_${uniqueFileName}`;
-      if (partyInventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
-      if (partyInventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
-      return null;
-    }
-
-    const characterRace = RACES.find((entry) => entry.id === character.raceId);
-    if (!characterRace) return null;
-    const characterGenderLabel = character.gender === 'male' ? 'Male' : 'Female';
-    const ptRaceGenderImageFileName = `${partyId}_${characterRace.englishName}_${characterGenderLabel}.png`;
-    if (partyInventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
-    if (partyInventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
-    return null;
-  };
 
   useEffect(() => {
     const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
@@ -6254,28 +6277,28 @@ function PartyTab({
     setPartyMemberImageSrc(nextPartyMemberImageSrc);
   }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
-    { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
-    { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
-    { label: '草食', raceIds: ['leporian', 'cervin', 'murid'] },
+    { label: t('home.party.filter.carnivore'), raceIds: ['lupinian', 'vulpinian', 'felidian'] },
+    { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian'] },
+    { label: t('home.party.filter.herbivore'), raceIds: ['leporian', 'cervin', 'murid'] },
   ];
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
-    { label: '近接', classIds: ['duelist', 'samurai', 'sword-saint'] },
-    { label: '遠距離', classIds: ['ranger', 'striker', 'ninja'] },
-    { label: '魔法', classIds: ['wizard', 'sage', 'alchemist'] },
-    { label: '補助', classIds: ['guardian', 'pilgrim', 'lord'] },
+    { label: t('combat.melee'), classIds: ['duelist', 'samurai', 'sword-saint'] },
+    { label: t('combat.ranged'), classIds: ['ranger', 'striker', 'ninja'] },
+    { label: t('combat.magic'), classIds: ['wizard', 'sage', 'alchemist'] },
+    { label: t('home.party.filter.support'), classIds: ['guardian', 'pilgrim', 'lord'] },
   ];
   const classCategorySelectorGridClass = 'grid grid-cols-4 gap-1';
   const predispositionCategoryDefinitions: Array<{ label: string; ids: Character['predispositionId'][] }> = [
-    { label: '外向的', ids: ['aggressive', 'inquisitive', 'amiable'] },
-    { label: '内向的', ids: ['stubborn', 'evasive', 'introspective'] },
-    { label: '適応', ids: ['devoted', 'serene', 'nimble'] },
-    { label: '機知', ids: ['perceptive', 'precise', 'resourceful'] },
+    { label: t('home.party.filter.extroverted'), ids: ['aggressive', 'inquisitive', 'amiable'] },
+    { label: t('home.party.filter.introverted'), ids: ['stubborn', 'evasive', 'introspective'] },
+    { label: t('home.party.filter.adaptation'), ids: ['devoted', 'serene', 'nimble'] },
+    { label: t('home.party.filter.wit'), ids: ['perceptive', 'precise', 'resourceful'] },
   ];
   const lineageCategoryDefinitions: Array<{ label: string; ids: Character['lineageId'][] }> = [
-    { label: '動乱', ids: ['sandstorm', 'ashen_capital', 'blaze_peak'] },
-    { label: '狩猟', ids: ['abyssal_sea', 'firmament', 'frozen_forest'] },
-    { label: '学識', ids: ['utopia', 'machina', 'adaptation'] },
-    { label: '生存', ids: ['fragment', 'windcross', 'oath'] },
+    { label: t('home.party.filter.turmoil'), ids: ['sandstorm', 'ashen_capital', 'blaze_peak'] },
+    { label: t('home.party.filter.hunting'), ids: ['abyssal_sea', 'firmament', 'frozen_forest'] },
+    { label: t('home.party.filter.scholarship'), ids: ['utopia', 'machina', 'adaptation'] },
+    { label: t('home.party.filter.survival'), ids: ['fragment', 'windcross', 'oath'] },
   ];
   const classById = new Map(CLASSES.map((classDef) => [classDef.id, classDef]));
 
@@ -6381,18 +6404,18 @@ function PartyTab({
     const warnings: string[] = [];
     const equipSlotReductionCount = getEquipSlotReductionCount(edits);
     if (equipSlotReductionCount > 0) {
-      warnings.push(`変更を保存すると装備枠が${equipSlotReductionCount}枠減るため、該当分の装備が外れます。`);
+      warnings.push(t('home.party.equipmentSlotReductionWarning', { count: equipSlotReductionCount }));
     }
 
     const capabilityWarnings = getCapabilityRemovalWarningState(edits);
     if (capabilityWarnings.melee) {
-      warnings.push('近距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.party.meleeCapabilityRemovedWarning'));
     }
     if (capabilityWarnings.ranged) {
-      warnings.push('遠距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.party.rangedCapabilityRemovedWarning'));
     }
     if (capabilityWarnings.magic) {
-      warnings.push('魔法攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push(t('home.party.magicCapabilityRemovedWarning'));
     }
 
     return warnings;
@@ -6452,10 +6475,10 @@ function PartyTab({
   };
 
   const baseStatMultiplierRows = [
-    { label: '体力', value: stats.baseStats.vitality, note: '物理耐性', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
-    { label: '力', value: stats.baseStats.strength, note: '遠距離/近接攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.strength) },
-    { label: '知性', value: stats.baseStats.intelligence, note: '魔法攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
-    { label: '精神', value: stats.baseStats.mind, note: '魔法耐性', ratio: getBaseDefenseScale(stats.baseStats.mind) },
+    { label: t('common.stat.vitality'), value: stats.baseStats.vitality, note: t('home.party.physicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.vitality) },
+    { label: t('common.stat.strength'), value: stats.baseStats.strength, note: t('home.party.physicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.strength) },
+    { label: t('common.stat.intelligence'), value: stats.baseStats.intelligence, note: t('home.party.magicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
+    { label: t('common.stat.mind'), value: stats.baseStats.mind, note: t('home.party.magicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
   const hpContribution = computeCharacterHpContribution(char, party.level);
@@ -6689,15 +6712,15 @@ function PartyTab({
       <div className="relative z-20 mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-gray-600">
-            HP {formatNumber(Math.floor(partyStats.hp))}, レベル {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
+            {t('party.status.hp')} {formatNumber(Math.floor(partyStats.hp))}, {t('party.status.level')} {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
           </div>
           {hasUnlockedReligions && (
             <>
               <div className="font-medium mt-1">
                 {displayedDeityName}
-                {!isNoFaithDeity(displayedDeityName) ? ` (ランク${getDeityRank(displayedDeityDonation)})` : ''}
+                {!isNoFaithDeity(displayedDeityName) ? ` (${t('party.deity.rank', { rank: getDeityRank(displayedDeityDonation) })})` : ''}
               </div>
-              <div className="text-xs text-gray-600 mt-1">効果:{isNoFaithDeity(displayedDeityName) ? 'なし' : getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
+              <div className="text-xs text-gray-600 mt-1">{t('party.deity.effect')}:{isNoFaithDeity(displayedDeityName) ? t('common.none') : getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
             </>
           )}
         </div>
@@ -6711,7 +6734,7 @@ function PartyTab({
                 }}
                 className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                完了
+                {t('common.done')}
               </button>
               <button
                 onClick={() => {
@@ -6720,7 +6743,7 @@ function PartyTab({
                 }}
                 className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
-                取消
+                {t('common.cancel')}
               </button>
             </div>
             <select
@@ -6761,14 +6784,14 @@ function PartyTab({
             }}
             className="text-sm text-sub flex-shrink-0"
           >
-            編集
+            {t('common.edit')}
           </button>
         ) : null}
       </div>
 
       {hasUnlockedReligions && editingDeity && (
         <div className="mb-3 text-xs text-gray-500">
-          キャラクターアイコン長押しで隊列変更
+          {t('home.party.reorderLongPressHint')}
         </div>
       )}
 
@@ -6781,9 +6804,11 @@ function PartyTab({
           const isMaster = c.mainClassId === c.subClassId;
           const mcShort = CLASS_SHORT_NAMES[mc.id] ?? mc.name;
           const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
-          const predispositionShort = PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
-          const lineageShort = LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
-          const uniquePreviewImageFileName = c.isUnique ? uniquePartyMemberImageByName[c.name] : undefined;
+          const predispositionData = PREDISPOSITIONS.find((p) => p.id === c.predispositionId);
+          const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
+          const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
+          const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
+          const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
           const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
             : undefined;
@@ -6864,7 +6889,7 @@ function PartyTab({
                     <div className="flex h-full w-full items-center justify-center"><RaceIcon race={r} className="h-7 w-7" /></div>
                   )}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
-                    <div>{mcShort}({isMaster ? '師' : scShort})</div>
+                    <div>{mcShort}({isMaster ? t('party.class.masterShort') : scShort})</div>
                     <div>{lineageShort}/{predispositionShort}</div>
                   </div>
                 </div>
@@ -6921,7 +6946,7 @@ function PartyTab({
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
               {char.isUnique && (
                 <div className="text-[11px] text-gray-500">
-                  固有キャラクター(クラスのみ編集可能)
+                  {t('home.party.uniqueCharacterClassOnly')}
                 </div>
               )}
 
@@ -6965,7 +6990,7 @@ function PartyTab({
                             key={gender}
                             type="button"
                             disabled={isDisabled}
-                            title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                            title={isBlockedByDuplicate ? t('home.party.duplicateRaceGenderWarning') : undefined}
                             onClick={() => setPendingEdits({ ...pendingEdits, gender })}
                             className={`flex items-center justify-center px-2 py-1 text-xs border rounded ${
                               (pendingEdits?.gender ?? char.gender) === gender
@@ -6980,7 +7005,7 @@ function PartyTab({
                             }`}
                           >
                             <span className="inline-flex h-full w-3 items-center justify-center leading-none">
-                              {shouldShowGenderSymbol ? (gender === 'male' ? '男' : '女') : null}
+                              {shouldShowGenderSymbol ? (gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')) : null}
                             </span>
                           </button>
                         );
@@ -7001,7 +7026,7 @@ function PartyTab({
                 onClick={showEditConfirm ? saveCharacterEditWithEquipmentReset : completeCharacterEdit}
                 className="text-sm text-white bg-sub/80 px-3 py-1 rounded whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {showEditConfirm ? '保存する' : '完了'}
+                {showEditConfirm ? t('common.save') : t('common.done')}
               </button>
               <button
                 onClick={() => {
@@ -7014,7 +7039,7 @@ function PartyTab({
                 }}
                 className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
               >
-                {showEditConfirm ? '戻る' : '取消'}
+                {showEditConfirm ? t('common.back') : t('common.cancel')}
               </button>
             </div>
           ) : (
@@ -7026,7 +7051,7 @@ function PartyTab({
               }}
               className="text-sm text-sub"
             >
-              編集
+              {t('common.edit')}
             </button>
           )}
         </div>
@@ -7074,7 +7099,7 @@ function PartyTab({
                         key={`race-image-${race.id}`}
                         type="button"
                         aria-label={race.name}
-                        title={isBlockedByDuplicate ? '同一PT内で同種族・同性(非固有)が既に存在します' : undefined}
+                        title={isBlockedByDuplicate ? t('home.party.duplicateRaceGenderWarning') : undefined}
                         disabled={isDisabled}
                         onClick={() => handleRaceChange(race.id)}
                         className={`min-w-0 flex flex-1 items-center justify-center px-0 py-1 text-xs border ${
@@ -7093,8 +7118,8 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        <span className="font-bold">種族</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
-                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {renderInlineBonusEntries(selectedRaceBonusEntries)}
+                        <span className="font-bold">{t('home.party.race')}</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
+                        {selectedRace.name} | {t('common.stat.vitality.short')}{selectedRace.stats.vitality},{t('common.stat.strength.short')}{selectedRace.stats.strength},{t('common.stat.intelligence.short')}{selectedRace.stats.intelligence},{t('common.stat.mind.short')}{selectedRace.stats.mind} | {renderInlineBonusEntries(selectedRaceBonusEntries)}
                       </div>
                       <div className="grid grid-cols-3 gap-1">
                         {raceCategoryDefinitions.map((category) => (
@@ -7135,7 +7160,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
+                        <span className="font-bold">{t('home.party.mainClass')}</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.masterFull') : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -7211,7 +7236,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
+                        <span className="font-bold">{t('home.party.subClass')}</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.length === 0
                           ? '-'
                           : selectedSubBonusEntries.map((entry, index) => (
@@ -7283,7 +7308,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">系譜</span>: {selectedLineage.name} | {renderInlineBonusEntries(selectedLineageBonusEntries)}
+                        <span className="font-bold">{t('home.party.lineage')}</span>: {selectedLineage.name} | {renderInlineBonusEntries(selectedLineageBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {lineageCategoryDefinitions.map((category) => (
@@ -7308,7 +7333,7 @@ function PartyTab({
                                         : `border-gray-200 ${char.isUnique ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
-                                    {lineageData.shortName ?? LINEAGE_SHORT_NAMES[lineageId] ?? lineageData.name}
+                                    {lineageData.shortName ?? LINEAGE_SHORT_NAME_KEYS[lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[lineageId]) : lineageData.name}
                                   </button>
                                 );
                               })}
@@ -7332,7 +7357,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">性格</span>: {selectedPredisposition.name} | {renderInlineBonusEntries(selectedPredispositionBonusEntries)}
+                        <span className="font-bold">{t('home.party.predisposition')}</span>: {selectedPredisposition.name} | {renderInlineBonusEntries(selectedPredispositionBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {predispositionCategoryDefinitions.map((category) => (
@@ -7358,7 +7383,7 @@ function PartyTab({
                                         : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
-                                    {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
+                                    {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[predispositionId]) : predispositionData.name}
                                   </button>
                                 );
                               })}
@@ -7380,10 +7405,10 @@ function PartyTab({
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={handleBaseStatHelpToggle}
                 className="inline-flex items-center gap-1 text-left hover:text-gray-700"
-                aria-label="基礎値ヘルプを表示"
+                aria-label={t('home.party.baseStatsHelpAria')}
               >
                 <RaceIcon race={race} className="h-4 w-4" />
-                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {lineage.name} / {predisposition.name}</span>
+                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / {lineage.name} / {predisposition.name}</span>
               </button>
               {showBaseStatHelp && (
                 <div
@@ -7391,7 +7416,7 @@ function PartyTab({
                   style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
-                  <div className="font-medium text-gray-900">現在の基礎値とその補正解説:</div>
+                  <div className="font-medium text-gray-900">{t('home.party.baseStatsHelpTitle')}:</div>
                   <div className="space-y-1">
                     {baseStatMultiplierRows.map((row) => (
                       <div key={row.label}>
@@ -7400,18 +7425,18 @@ function PartyTab({
                     ))}
                   </div>
                   <div className="pt-1 border-t border-gray-100 space-y-1">
-                    <div>HP増加基礎値: +{formatNumber(Math.floor(hpBaseIncrease))}</div>
-                    <div>アイテムHP増加値: +{formatNumber(Math.floor(hpItemIncrease))}</div>
+                    <div>{t('home.party.hpBaseIncrease')}: +{formatNumber(Math.floor(hpBaseIncrease))}</div>
+                    <div>{t('home.party.hpItemIncrease')}: +{formatNumber(Math.floor(hpItemIncrease))}</div>
                   </div>
                 </div>
               )}
             </div>
             <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
               {/* SpecRef: 8.2.2 | Party member details | Status */}
-              <div className="base-stat-chip">体力:{stats.baseStats.vitality}</div>
-              <div className="base-stat-chip">力:{stats.baseStats.strength}</div>
-              <div className="base-stat-chip">知性:{stats.baseStats.intelligence}</div>
-              <div className="base-stat-chip">精神:{stats.baseStats.mind}</div>
+              <div className="base-stat-chip">{t('stat.vitality')}:{stats.baseStats.vitality}</div>
+              <div className="base-stat-chip">{t('stat.strength')}:{stats.baseStats.strength}</div>
+              <div className="base-stat-chip">{t('stat.intelligence')}:{stats.baseStats.intelligence}</div>
+              <div className="base-stat-chip">{t('stat.mind')}:{stats.baseStats.mind}</div>
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 text-sm">
               {(() => {
@@ -7461,12 +7486,12 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'ranged-attack',
-                    text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
-                    helpTitle: '遠距離攻撃',
+                    text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    helpTitle: t('combat.rangedAttack'),
                     helpLines: [
-                      `遠距離攻撃力: ${formatNumber(Math.floor(stats.rangedAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
-                      `遠距離攻撃回数: ${formatNumber(stats.rangedNoA)}回`,
-                      `遠距離攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                      t('home.party.help.rangedAttackPower', { value: formatNumber(Math.floor(stats.rangedAttack)) }),
+                      t('home.party.help.rangedAttackCount', { value: formatNumber(stats.rangedNoA) }),
+                      t('home.party.help.rangedAttackMultiplier', { value: amp.toFixed(2) }),
                     ],
                   });
                 }
@@ -7477,12 +7502,12 @@ function PartyTab({
                   );
                   offenseLines.push({
                     key: 'magical-attack',
-                    text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
-                    helpTitle: '魔法攻撃',
+                    text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    helpTitle: t('combat.magicalAttack'),
                     helpLines: [
-                      `魔法攻撃力: ${formatNumber(Math.floor(stats.magicalAttack))} ※ダメージを与えるには敵の魔法防御力を超える必要があります`,
-                      `魔法攻撃回数: ${formatNumber(stats.magicalNoA)}回`,
-                      `魔法攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                      t('home.party.help.magicalAttackPower', { value: formatNumber(Math.floor(stats.magicalAttack)) }),
+                      t('home.party.help.magicalAttackCount', { value: formatNumber(stats.magicalNoA) }),
+                      t('home.party.help.magicalAttackMultiplier', { value: amp.toFixed(2) }),
                     ],
                   });
                 }
@@ -7493,12 +7518,12 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'melee-attack',
-                    text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
-                    helpTitle: '近接攻撃',
+                    text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    helpTitle: t('combat.meleeAttack'),
                     helpLines: [
-                      `近接攻撃力: ${formatNumber(Math.floor(stats.meleeAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
-                      `近接攻撃回数: ${formatNumber(stats.meleeNoA)}回`,
-                      `近接攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                      t('home.party.help.meleeAttackPower', { value: formatNumber(Math.floor(stats.meleeAttack)) }),
+                      t('home.party.help.meleeAttackCount', { value: formatNumber(stats.meleeNoA) }),
+                      t('home.party.help.meleeAttackMultiplier', { value: amp.toFixed(2) }),
                     ],
                   });
                 }
@@ -7509,11 +7534,11 @@ function PartyTab({
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
                     key: 'physical-accuracy',
-                    text: `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: ${decayText})`,
-                    helpTitle: '物理命中率',
+                    text: `${t('combat.physicalAccuracy')}: ${Math.round(stats.accuracyPotency * 100)}% (${t('combat.decay')}: ${decayText})`,
+                    helpTitle: t('combat.physicalAccuracy'),
                     helpLines: [
-                      `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% ※初回の命中率`,
-                      `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
+                      t('home.party.help.physicalAccuracy', { value: Math.round(stats.accuracyPotency * 100) }),
+                      t('home.party.help.accuracyDecay', { value: decayText }),
                     ],
                   });
                 }
@@ -7521,11 +7546,11 @@ function PartyTab({
                 if (hasCastableMagic) {
                   offenseLines.push({
                     key: 'magical-accuracy',
-                    text: `魔法命中率: 100% (減衰: ${decayText})`,
-                    helpTitle: '魔法命中率',
+                    text: t('home.party.magicalAccuracyWithDecay', { value: decayText }),
+                    helpTitle: t('home.party.magicalAccuracy'),
                     helpLines: [
-                      '魔法命中率: 100% ※初回の命中率',
-                      `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
+                      t('home.party.help.magicalAccuracy'),
+                      t('home.party.help.accuracyDecay', { value: decayText }),
                     ],
                   });
                 }
@@ -7539,12 +7564,12 @@ function PartyTab({
                   });
                   offenseLines.push({
                     key: 'magic-spell',
-                    text: `詠唱魔法: ${magicProfile.spellName}`,
-                    helpTitle: '詠唱魔法',
+                    text: t('home.party.castingSpellValue', { spell: magicProfile.spellName }),
+                    helpTitle: t('home.party.castingSpell'),
                     helpLines: [
-                      `詠唱魔法: ${magicProfile.spellName}`,
-                      `スタイル: ${magicProfile.style}`,
-                      `効果: ${magicProfile.description}`,
+                      t('home.party.castingSpellValue', { spell: magicProfile.spellName }),
+                      t('home.party.magicStyleValue', { style: magicProfile.style }),
+                      t('home.party.magicEffectValue', { effect: magicProfile.description }),
                     ],
                   });
                 }
@@ -7559,11 +7584,11 @@ function PartyTab({
                 if (penetrationPercent !== 0) {
                   offenseLines.push({
                     key: 'penetration',
-                    text: `貫通:+${formatNumber(penetrationPercent)}%`,
-                    helpTitle: '貫通',
+                    text: `${t('combat.penetration')}:+${formatNumber(penetrationPercent)}%`,
+                    helpTitle: t('combat.penetration'),
                     helpLines: [
-                      `貫通: +${formatNumber(penetrationPercent)}%`,
-                      `敵の防御力を ${penetrationPercent}% 分無視する`,
+                      `${t('combat.penetration')}: +${formatNumber(penetrationPercent)}%`,
+                      t('combat.penetrationHelp', { percent: penetrationPercent }),
                     ],
                   });
                 }
@@ -7578,42 +7603,42 @@ function PartyTab({
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
-                    text: `属性:${elementIcon ? '有' : '無'}(x${stats.elementalOffenseValue.toFixed(2)})`,
+                    text: `${t('combat.element')}:${elementIcon ? t('common.yes') : t('common.none')}(x${stats.elementalOffenseValue.toFixed(2)})`,
                     renderedText: (
                       <>
-                        属性:
-                        {elementIcon ? renderUiIcon(elementIcon) : '無'}
+                        {t('combat.element')}:
+                        {elementIcon ? renderUiIcon(elementIcon) : t('common.none')}
                         (x{stats.elementalOffenseValue.toFixed(2)})
                       </>
                     ),
-                    helpTitle: 'e. 属性攻撃(重複有効)',
+                    helpTitle: t('home.party.elementalAttackHelpTitle'),
                     helpLines: getElementalOffenseHelpLines(char, stats),
                   },
                   {
                     key: 'physical-defense',
-                    text: `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
-                    helpTitle: '物理防御',
+                    text: `${t('combat.physicalDefenseShort')}:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
+                    helpTitle: t('combat.physicalDefense'),
                     helpLines: [
-                      `物理防御力: ${formatNumber(stats.physicalDefense)} ※敵の遠距離/近接攻撃力を超える物理防御力を持つとダメージをほぼ受けなくなります`,
-                      `物理耐性: ${formatNumber(Math.round(defenseAmpPhysical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
+                      t('home.party.help.physicalDefensePower', { value: formatNumber(stats.physicalDefense) }),
+                      t('home.party.help.physicalResistance', { value: formatNumber(Math.round(defenseAmpPhysical * 100)) }),
                     ],
                   },
                   {
                     key: 'magical-defense',
-                    text: `魔防:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
-                    helpTitle: '魔法防御',
+                    text: `${t('combat.magicalDefenseShort')}:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
+                    helpTitle: t('combat.magicalDefense'),
                     helpLines: [
-                      `魔法防御力: ${formatNumber(stats.magicalDefense)} ※敵の魔法攻撃力を超える魔法防御力を持つとダメージをほぼ受けなくなります`,
-                      `魔法耐性: ${formatNumber(Math.round(defenseAmpMagical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
+                      t('home.party.help.magicalDefensePower', { value: formatNumber(stats.magicalDefense) }),
+                      t('home.party.help.magicalResistance', { value: formatNumber(Math.round(defenseAmpMagical * 100)) }),
                     ],
                   },
                   {
                     key: 'evasion',
-                    text: `回避:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
-                    helpTitle: '回避',
+                    text: `${t('combat.evasion')}:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
+                    helpTitle: t('combat.evasion'),
                     helpLines: [
-                      `回避: ${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
-                      '※敵の命中減衰率を値分、減少させます(攻撃回数が多いほど回避しやすくなります)',
+                      t('home.party.evasionValue', { value: `${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}` }),
+                      t('home.party.help.evasion'),
                     ],
                   },
                 ];
@@ -7780,21 +7805,22 @@ function PartyTab({
               type BonusDisplayEntry = { key: string; label: string; description?: string };
               const bonusDisplayEntries: BonusDisplayEntry[] = [];
               const helpRows: Array<{ label: string; description: string }> = [];
+              const bonusLabel = (key: string): string => t(`party.bonus.${key}`);
               const mulNames: Record<string, string> = {
-                sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
-                gauntlet: '手', wand: '杖', robe: '衣', shield: '盾',
-                bolt: 'ボ', grimoire: '書', catalyst: '媒', arrow: '矢',
-                physical_offense_multiplier_xV: '物攻撃', magical_offense_multiplier_xV: '魔攻撃',
-                physical_defense_multiplier_xV: '物防', magical_defense_multiplier_xV: '魔防',
-                fire_defense_multiplier_xV: '炎防', ice_defense_multiplier_xV: '氷防', thunder_defense_multiplier_xV: '雷防'
+                sword: bonusLabel('sword'), katana: bonusLabel('katana'), archery: bonusLabel('archery'), armor: bonusLabel('armor'),
+                gauntlet: bonusLabel('gauntlet'), wand: bonusLabel('wand'), robe: bonusLabel('robe'), shield: bonusLabel('shield'),
+                bolt: bonusLabel('bolt'), grimoire: bonusLabel('grimoire'), catalyst: bonusLabel('catalyst'), arrow: bonusLabel('arrow'),
+                physical_offense_multiplier_xV: bonusLabel('physical_offense_multiplier_xV'), magical_offense_multiplier_xV: bonusLabel('magical_offense_multiplier_xV'),
+                physical_defense_multiplier_xV: bonusLabel('physical_defense_multiplier_xV'), magical_defense_multiplier_xV: bonusLabel('magical_defense_multiplier_xV'),
+                fire_defense_multiplier_xV: bonusLabel('fire_defense_multiplier_xV'), ice_defense_multiplier_xV: bonusLabel('ice_defense_multiplier_xV'), thunder_defense_multiplier_xV: bonusLabel('thunder_defense_multiplier_xV')
               };
               const addNames: Record<string, string> = {
-                vitality: '体', strength: '力', intelligence: '知', mind: '精',
-                equip_slot: '装備', equip_melee: '近接装備', equip_ranged: '遠距離装備', equip_magic: '魔法装備', penet: '貫通',
-                accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化', antagonism: '⚠️敵対',
-                melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃',
-                physical_defense: '物防', magical_defense: '魔防',
-                fire_defense: '炎防', ice_defense: '氷防', thunder_defense: '雷防',
+                vitality: bonusLabel('vitality'), strength: bonusLabel('strength'), intelligence: bonusLabel('intelligence'), mind: bonusLabel('mind'),
+                equip_slot: bonusLabel('equip_slot'), equip_melee: bonusLabel('equip_melee'), equip_ranged: bonusLabel('equip_ranged'), equip_magic: bonusLabel('equip_magic'), penet: bonusLabel('penet'),
+                accuracy: bonusLabel('accuracy'), evasion: bonusLabel('evasion'), growth_xV: bonusLabel('growth_xV'), upgrade_V: bonusLabel('upgrade_V'), antagonism: bonusLabel('antagonism'),
+                melee_attack: bonusLabel('melee_attack'), ranged_attack: bonusLabel('ranged_attack'), magical_attack: bonusLabel('magical_attack'), physical_attack: bonusLabel('physical_attack'),
+                physical_defense: bonusLabel('physical_defense'), magical_defense: bonusLabel('magical_defense'),
+                fire_defense: bonusLabel('fire_defense'), ice_defense: bonusLabel('ice_defense'), thunder_defense: bonusLabel('thunder_defense'),
               };
               const hiddenBonusDisplayKeys = new Set([
                 'evasion',
@@ -7825,11 +7851,11 @@ function PartyTab({
                     ? effectiveMultiplier.toFixed(2)
                     : effectiveMultiplier.toFixed(1);
                   const label = `${mulNames[key] ?? key}x${formattedMultiplier}`;
-                  const template = C_MULTIPLIER_HELP_DESCRIPTIONS[key];
+                  const templateKey = C_MULTIPLIER_HELP_DESCRIPTION_KEYS[key];
                   pushBonusDisplayEntry({
                     key,
                     label,
-                    description: template ? template.replace('{value}', formattedMultiplier) : undefined,
+                    description: templateKey ? t(templateKey, { value: formattedMultiplier }) : undefined,
                   });
                 }
               }
@@ -7876,23 +7902,23 @@ function PartyTab({
               }
               const growthMultiplier = multipliers.growth_xV ?? 1;
               if (growthMultiplier !== 1) {
-                const label = `${addNames.growth_xV}${formatMultiplierValue(growthMultiplier)}倍`;
+                const label = t('party.bonusDisplay.growthMultiplier', { value: formatMultiplierValue(growthMultiplier) });
                 const description = getBonusHelpDescription({ type: 'growth_xV', value: growthMultiplier });
                 pushBonusDisplayEntry({ key: 'growth_xV', label, description: description ?? undefined });
               }
 
               const bHelpRows = ([
-                { key: 'vitality', short: '体' },
-                { key: 'strength', short: '力' },
-                { key: 'intelligence', short: '知' },
-                { key: 'mind', short: '精' },
+                { key: 'vitality', labelKey: 'party.bonusDisplay.vitality' },
+                { key: 'strength', labelKey: 'party.bonusDisplay.strength' },
+                { key: 'intelligence', labelKey: 'party.bonusDisplay.intelligence' },
+                { key: 'mind', labelKey: 'party.bonusDisplay.mind' },
               ] as const)
                 .map((row) => {
                   const value = additive[row.key];
                   if (!value) return null;
                   const description = getBonusHelpDescription({ type: row.key, value });
                   if (!description) return null;
-                  return { label: `${row.short}+${value}`, description };
+                  return { label: t(row.labelKey, { value: `+${formatNumber(value)}` }), description };
                 })
                 .filter((row): row is { label: string; description: string } => row !== null);
 
@@ -7948,13 +7974,13 @@ function PartyTab({
               const bonusEntries = sortedBonusDisplayEntries.map((entry, index) => ({
                 key: `status-bonus-${index}-${entry.key}-${entry.label}`,
                 label: entry.label,
-                description: bonusHelpMap.get(entry.label) ?? 'このボーナスの説明は未設定です。',
+                description: bonusHelpMap.get(entry.label) ?? t('home.bonus.descriptionMissing'),
               }));
 
               if (bonusEntries.length === 0) return null;
               return (
                 <div className="text-xs text-gray-900 mt-1 leading-5">
-                  <span className="break-words leading-5">ボーナス: </span>
+                  <span className="break-words leading-5">{t('party.status.bonus')}: </span>
                   {bonusEntries.map((entry, index) => (
                     <span key={entry.key}>
                       {index > 0 && <span>, </span>}
@@ -7973,7 +7999,7 @@ function PartyTab({
             })()}
             {stats.abilities.length > 0 && (
               <div className="border-t border-gray-200 mt-2 pt-2">
-                <div className="text-gray-900 text-xs">アビリティ:</div>
+                <div className="text-gray-900 text-xs">{t('party.status.abilities')}:</div>
                 <div className="text-xs text-sub leading-5">
                   {stats.abilities.map((ability, index) => {
                     const label = ability.name;
@@ -8010,10 +8036,10 @@ function PartyTab({
       {/* Equipment section */}
       <div className="bg-pane rounded-lg border border-gray-200 p-4 shadow-md shadow-slate-900/15">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium">装備</span>
+          <span className="text-sm font-medium">{t('party.equipment.title')}</span>
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-500">
-              {formatNumber(equippedItemCount)} / {formatNumber(stats.maxEquipSlots)} スロット
+              {t('party.equipment.slotCount', { equipped: formatNumber(equippedItemCount), max: formatNumber(stats.maxEquipSlots) })}
             </span>
             {autoEquipmentMode === 2 && (
               <button
@@ -8021,7 +8047,7 @@ function PartyTab({
                 onClick={handleAutoEquipmentButtonClick}
                 className="text-xs font-semibold text-sub hover:opacity-80"
               >
-                自動装備
+                {t('party.equipment.autoEquip')}
               </button>
             )}
             <div className="flex items-center gap-1">
@@ -8030,13 +8056,13 @@ function PartyTab({
                 onClick={handleAutoEquipmentModeCycle}
                 className="text-xs font-semibold text-sub hover:opacity-80"
               >
-                {AUTO_EQUIPMENT_MODE_LABEL[autoEquipmentMode]}
+                {getAutoEquipmentModeLabel(autoEquipmentMode)}
               </button>
               <button
                 type="button"
                 onClick={handleAutoEquipmentHelpToggle}
                 className="h-5 w-5 rounded-full border border-gray-300 text-[10px] font-bold text-gray-600"
-                aria-label="自動装備モードの説明"
+                aria-label={t('party.equipment.autoHelpAria')}
               >
                 ?
               </button>
@@ -8053,7 +8079,7 @@ function PartyTab({
           }}
           onPointerDown={(event) => event.stopPropagation()}
         >
-          {AUTO_EQUIPMENT_HELP_LINES.map((line) => (
+          {getAutoEquipmentHelpLines().map((line) => (
             <div key={line}>{line}</div>
           ))}
         </div>
@@ -8100,7 +8126,7 @@ function PartyTab({
                         onToggleEquipmentLock(char.id, slotIndex);
                       }}
                       className="text-base leading-none"
-                      aria-label={isLocked ? '装備ロック解除' : '装備ロック'}
+                      aria-label={isLocked ? t('home.equipment.unlockAria') : t('home.equipment.lockAria')}
                     >
                       {renderUiIcon(isLocked ? 'lock' : 'unlock', lockEmojiClassName)}
                     </button>
@@ -8116,10 +8142,10 @@ function PartyTab({
                           <span className={getItemNameFontWeightClass(item)}>{getItemDisplayName(item)}</span>
                           <span className="text-xs leading-tight text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
                         </span>
-                        <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
+                        <span className="text-xs text-gray-400">[{t(CATEGORY_NAME_KEYS[item.category] ?? 'party.categoryName.unknown')}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
                       </div>
                     ) : (
-                      <span className="text-gray-400">空きスロット</span>
+                      <span className="text-gray-400">{t('party.equipment.emptySlot')}</span>
                     )}
                   </button>
                 </div>
@@ -8127,7 +8153,7 @@ function PartyTab({
                   <div className="mt-2 space-y-1 text-xs">
                     {allowedJewels.map((jewelKey) => (
                       <div key={jewelKey} className="flex items-center gap-1">
-                        <span className="w-10 text-sm leading-none font-normal">{JEWEL_DEFS[jewelKey].displayName}:</span>
+                        <span className="w-10 text-sm leading-none font-normal">{getJewelDisplayName(jewelKey)}:</span>
                         {Array.from({ length: 8 }).map((_, i) => {
                           const rank = i + 1;
                           const owned = getJewelOwnedCount(jewels, jewelKey, rank);
@@ -8269,10 +8295,10 @@ function PartyTab({
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">
                   {selectingSlot !== null
-                    ? `スロット ${selectingSlot + 1} に装備`
+                    ? t('party.equipment.slotEquip', { slot: selectingSlot + 1 })
                     : hasEmptySlot
-                      ? 'タップで装備/解除'
-                      : 'スロットを選択してください'}
+                      ? t('party.equipment.tapEquipUnequip')
+                      : t('party.equipment.selectSlot')}
                 </span>
                 {selectingSlot !== null && (
                   <div className="flex gap-2">
@@ -8281,20 +8307,20 @@ function PartyTab({
                         onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
                         className="text-xs text-accent px-2 py-1 border border-accent/40 rounded bg-white"
                       >
-                        外す
+                        {t('party.equipment.remove')}
                       </button>
                     )}
                     <button
                       onClick={() => setSelectingSlot(null)}
                       className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
                     >
-                      解除
+                      {t('party.equipment.clearSelection')}
                     </button>
                   </div>
                 )}
               </div>
               <div className="mt-1 flex justify-end items-center gap-1">
-                <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[partyRarityFilter]}</span>
+                <span className="text-xs text-gray-500">{getRarityFilterNote(partyRarityFilter)}</span>
                 {RARITY_FILTER_OPTIONS.map(filter => (
                   <button
                     key={filter}
@@ -8304,12 +8330,12 @@ function PartyTab({
                         ? 'bg-sub text-white border-sub'
                         : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
                     }`}
-                    title={RARITY_FILTER_NOTES[filter]}
+                    title={getRarityFilterNote(filter)}
                   >
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
-                <span className="text-xs text-gray-500"> 超レア</span>
+                <span className="text-xs text-gray-500"> {t('party.equipment.superRare')}</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
                   className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
@@ -8326,7 +8352,7 @@ function PartyTab({
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
               {availableCategoryGroups.map(group => (
                 <div key={group.id} className="flex flex-col">
-                  <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+                  <div className="text-xs text-gray-400 text-center mb-0.5">{t(group.labelKey)}</div>
                   <div className="flex">
                     {group.categories.map((cat, i) => (
                       <button
@@ -8340,7 +8366,7 @@ function PartyTab({
                             : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                         }`}
                       >
-                        {CATEGORY_SHORT_NAMES[cat]}
+                        {t(`party.categoryShort.${cat}`)}
                       </button>
                     ))}
                   </div>
@@ -8364,7 +8390,7 @@ function PartyTab({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 min-w-0 flex-1">
                       {displayItem.isEquipped && (() => {
-                        const equippedOwnerImageSrc = getPartyInventoryCharacterImageSrc(char, party.id);
+                        const equippedOwnerImageSrc = getInventoryOwnerCharacterImageSrc(char, party.id);
                         return equippedOwnerImageSrc
                           ? (
                             <div className="relative shrink-0 h-10 w-10 overflow-visible rounded">
@@ -8391,7 +8417,7 @@ function PartyTab({
                 </button>
               ))}
               {filteredDisplayItems.length === 0 && (
-                <div className="text-gray-400 text-sm text-center py-2">このカテゴリに装備可能なアイテムがありません</div>
+                <div className="text-gray-400 text-sm text-center py-2">{t('party.equipment.noItemsInCategory')}</div>
               )}
             </div>
           </div>
@@ -8670,11 +8696,11 @@ function ExpeditionTab({
         const party = state.parties[partyIndex];
         if (!party) {
           const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = {
-            1: '(未開放)ヴァルンの海洋踏破で開放',
-            2: '(未開放)フェリディ砂漠踏破で開放',
-            3: '(未開放)ウルサンの炎嶺踏破で開放',
-            4: '(未開放)プロキオン巣穴踏破で開放',
-            5: '(未開放)レポリアンの月宮踏破で開放',
+            1: t('home.party.locked.clearVarunSea'),
+            2: t('home.party.locked.clearFelidyDesert'),
+            3: t('home.party.locked.clearUrsanBlaze'),
+            4: t('home.party.locked.clearProcyonNest'),
+            5: t('home.party.locked.clearLeporianMoon'),
           };
           const lockedPartyHintVisibleRequirementByIndex: Partial<Record<number, number>> = {
             1: 2,
@@ -8689,7 +8715,7 @@ function ExpeditionTab({
             ? state.parties.some((existingParty) => hasDefeatedDungeonBoss(existingParty, hintVisibleRequiredBossDungeonId))
             : false;
           if (!isHintVisible) return null;
-          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
+          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? t('home.party.locked.unreleased');
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
@@ -8702,7 +8728,7 @@ function ExpeditionTab({
           : 0;
         const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(selectedDifficultyOffset);
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
-        const getDifficultyOffsetBubbleText = (offset: number) => `敵レベル +${formatNumber(offset)}\nアイテム獲得チャンス +${formatNumber(getDifficultyOffsetItemChanceTickets(offset))}\n超レア獲得チャンス +${formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset))}`;
+        const getDifficultyOffsetBubbleText = (offset: number) => t('home.expedition.difficultyOffsetBubble', { enemyLevel: formatNumber(offset), itemChance: formatNumber(getDifficultyOffsetItemChanceTickets(offset)), superRareChance: formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset)) });
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
@@ -8718,8 +8744,8 @@ function ExpeditionTab({
           if (!disclosedLog) return selectedDungeon?.name ?? '-';
           const latestEntry = disclosedLog.entries[disclosedLog.entries.length - 1];
           if (!latestEntry?.floor) return disclosedLog.dungeonName;
-          return getExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
-            ?? `${formatNumber(latestEntry.floor)}階層`;
+          return getLocalizedExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
+            ?? t('expedition.floor', { floor: formatNumber(latestEntry.floor) });
         })();
         const headlineState = disclosedLog
           ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
@@ -9077,7 +9103,7 @@ function ExpeditionTab({
                     )}
                     className="w-11 px-1 py-1 text-xs font-medium whitespace-nowrap text-center"
                   >
-                    {party.expeditionDestinationMode === 'auto' ? '一任' : '固定'}
+                    {party.expeditionDestinationMode === 'auto' ? t('party.expedition.mode.auto') : t('party.expedition.mode.fixed')}
                   </button>
                   <select
                     value={party.selectedDungeonId}
@@ -9106,7 +9132,7 @@ function ExpeditionTab({
                       disabled={isGodsBattleButtonDisabled}
                       className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isGodsBattleButtonDisabled ? '' : 'liquid-glass-sortie-button--accent'}`}
                     >
-                      神魔戦
+                      {t('party.expedition.godsBattle')}
                     </button>
                   )}
                   <button
@@ -9114,13 +9140,22 @@ function ExpeditionTab({
                     disabled={isSortieDisabled}
                     className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : 'liquid-glass-sortie-button--sub'}`}
                   >
-                    出撃
+                    {t('party.expedition.sortie')}
                   </button>
                 </div>
                 {isDifficultyOffsetUnlocked && (
                   <div className="text-xs text-gray-600 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="shrink-0">難易度:</span>
+                      <span className="shrink-0">{t('party.expedition.difficulty')}</span>
+                      <button
+                        type="button"
+                        disabled={selectedDifficultyOffset <= 0}
+                        aria-label={t('party.expedition.difficultyDecrease')}
+                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset - 2)}
+                        className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
+                      >
+                        −
+                      </button>
                       <input
                         type="range"
                         min={0}
@@ -9134,6 +9169,15 @@ function ExpeditionTab({
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
                         style={getSliderProgressStyle(selectedDifficultyOffset, 0, difficultyOffsetMax)}
                       />
+                      <button
+                        type="button"
+                        disabled={selectedDifficultyOffset >= difficultyOffsetMax}
+                        aria-label={t('party.expedition.difficultyIncrease')}
+                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset + 2)}
+                        className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
+                      >
+                        +
+                      </button>
                       <button
                         type="button"
                         className="shrink-0 rounded px-1 text-left hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-sub/60"
@@ -9160,14 +9204,14 @@ function ExpeditionTab({
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
-                      踏破{formatNumber(displayedExpeditionStats.Clear)}/帰還{formatNumber(displayedExpeditionStats.Turned_Back)}/引分{formatNumber(displayedExpeditionStats.Draw_Retreat)}/撤退{formatNumber(displayedExpeditionStats.Wounded_Retreat)}/敗北{formatNumber(displayedExpeditionStats.Defeat)} 合計 {formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat)}回
+                      {t('party.expedition.stats', { clear: formatNumber(displayedExpeditionStats.Clear), returned: formatNumber(displayedExpeditionStats.Turned_Back), draw: formatNumber(displayedExpeditionStats.Draw_Retreat), retreat: formatNumber(displayedExpeditionStats.Wounded_Retreat), defeat: formatNumber(displayedExpeditionStats.Defeat), total: formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat) })}
                     </span>
                     <button
                       type="button"
                       onClick={() => onResetExpeditionStats(partyIndex)}
                       className="shrink-0 underline hover:text-accent"
                     >
-                      リセット
+                      {t('party.expedition.reset')}
                     </button>
                   </div>
                 )}
@@ -9186,7 +9230,7 @@ function ExpeditionTab({
 
                   {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
-                      <span className="text-gray-500">獲得アイテム: </span>
+                      <span className="text-gray-500">{t('home.battle.acquiredItemsLabel')} </span>
                       {currentLog.rewards.map((item, i) => {
                         const rarity = getItemRarityById(item.id);
                         const isSuperRare = item.superRare > 0;
@@ -9303,7 +9347,7 @@ function ExpeditionTab({
                               </span>
                               <span className="flex items-center gap-2">
                                 <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'}>
-                                  {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
+                                  {entry.gateInfo ? t('expedition.outcome.unreached') : entry.outcome === 'victory' ? t('expedition.outcome.victory') : entry.outcome === 'defeat' ? t('expedition.outcome.defeat') : t('expedition.outcome.draw')}
                                 </span>
                                 {canExpandRoom && <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>}
                               </span>
@@ -9317,7 +9361,7 @@ function ExpeditionTab({
                             {!entry.gateInfo && (
                               <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
-                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                                  <div className="mb-0.5">{t('home.battle.partyHpLabel')} {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
@@ -9325,7 +9369,7 @@ function ExpeditionTab({
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                                  <div className="mb-0.5">{t('home.battle.enemyHpLabel')} {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                     <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                   </div>
@@ -9352,7 +9396,7 @@ function ExpeditionTab({
                                 </>
                               )}
                               <div className="relative z-10">
-                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
+                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
@@ -9369,11 +9413,11 @@ function ExpeditionTab({
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = getBattleLogPhaseLabel(log, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
                                 const phaseHeader = log.phase === 'long'
-                                  ? '遠距離攻撃フェーズ'
+                                  ? t('battleLog.phase.long')
                                   : log.phase === 'mid'
-                                    ? '魔法攻撃フェーズ'
+                                    ? t('battleLog.phase.mid')
                                     : log.phase === 'close'
-                                      ? '近接攻撃フェーズ'
+                                      ? t('battleLog.phase.close')
                                       : '';
                                 const iconKey: UiIconKey = log.elementalOffense === 'fire'
                                   ? 'fire'
@@ -9390,32 +9434,32 @@ function ExpeditionTab({
                                 const hits = log.hits ?? 0;
                                 const totalAttempts = log.totalAttempts ?? 0;
                                 const allMissed = totalAttempts > 0 && hits === 0 && !log.wasNegated;
-                                const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                                const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
                                 const trailingEffectMatch = /\(([^()]+)\)$/.exec(log.action);
                                 const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                   .split(',')
                                   .map(effect => effect.trim())
                                   .filter(effect => /^(共鳴\+\d+%|残響\+\d+%)$/.test(effect));
                                 const rageDisplay = log.rageBonusPercent && log.rageBonusPercent > 0
-                                  ? `闘志+${log.rageBonusPercent}%`
+                                  ? t('battleLog.extra.rage', { percent: log.rageBonusPercent })
                                   : '';
                                 const momentumDisplay = typeof log.momentumBonusPercent === 'number'
-                                  ? `気勢${log.momentumBonusPercent >= 0 ? '+' : ''}${log.momentumBonusPercent}%`
+                                  ? t('battleLog.extra.momentum', { sign: log.momentumBonusPercent >= 0 ? '+' : '', percent: log.momentumBonusPercent })
                                   : '';
                                 const ambushDisplay = typeof log.ambushMultiplier === 'number' && log.ambushMultiplier > 1
-                                  ? `待ち伏せ:x${log.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                  ? t('battleLog.extra.ambush', { multiplier: log.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                   : '';
                                 const overwatchDisplay = typeof log.overwatchMultiplier === 'number' && log.overwatchMultiplier > 1
-                                  ? `監視:x${log.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                  ? t('battleLog.extra.overwatch', { multiplier: log.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                   : '';
                                 const executionDisplay = typeof log.executionMultiplier === 'number' && log.executionMultiplier > 1
-                                  ? `エクセキューション:x${log.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                  ? t('battleLog.extra.execution', { multiplier: log.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                   : '';
                                 const swarmActorDisplay = typeof log.swarmActorPenaltyPercent === 'number' && log.swarmActorPenaltyPercent > 0
-                                  ? `威力-${log.swarmActorPenaltyPercent}%`
+                                  ? t('battleLog.extra.powerDown', { percent: log.swarmActorPenaltyPercent })
                                   : '';
                                 const swarmOpponentDisplay = typeof log.swarmOpponentBonusPercent === 'number' && log.swarmOpponentBonusPercent > 0
-                                  ? `相手被ダメ${log.swarmOpponentBonusPercent}%増`
+                                  ? t('battleLog.extra.opponentDamageUp', { percent: log.swarmOpponentBonusPercent })
                                   : '';
 
                                 let actionText: string;
@@ -9423,14 +9467,14 @@ function ExpeditionTab({
                                   actionText = log.action;
                                 } else if (isEnemy) {
                                   if (isResurrectLog) {
-                                    actionText = `敵${log.action}`;
+                                    actionText = t('battleLog.action.enemyResurrect', { action: log.action });
                                   } else if (log.isEnemyTargetHit) {
-                                    actionText = allMissed ? `${log.action.replace('命中！', 'への攻撃は外れた！')}` : log.action;
+                                    actionText = allMissed ? t('battleLog.action.targetHitMissed', { action: log.action.replace('命中！', '') }) : log.action;
                                   } else {
-                                    actionText = allMissed ? `敵が${log.action.replace('！', 'したが外れた！')}` : `敵が${log.action}`;
+                                    actionText = allMissed ? t('battleLog.action.enemyMissed', { action: log.action.replace('！', '') }) : t('battleLog.action.enemyActed', { action: log.action });
                                   }
                                 } else {
-                                  actionText = allMissed ? `${log.action.replace(/ の.*$/, '')} の攻撃は外れた！` : log.action;
+                                  actionText = allMissed ? t('battleLog.action.partyMissed', { actor: log.action.replace(/ の.*$/, '') }) : log.action;
                                 }
 
                                 const extraSegments = [
@@ -9445,7 +9489,7 @@ function ExpeditionTab({
                                 ].filter(Boolean);
                                 const mergedExtraSegments = Array.from(new Set(extraSegments));
                                 const compactHitDisplay = hitDisplay && mergedExtraSegments.length > 0
-                                  ? `(${hits}/${totalAttempts}回, ${mergedExtraSegments.join(', ')})`
+                                  ? t('battleLog.hitsWithExtras', { hits, total: totalAttempts, extras: mergedExtraSegments.join(', ') })
                                   : hitDisplay;
                                 const actionDisplay = trailingEffects.length > 0 && !allMissed
                                   ? actionText.replace(/\([^()]+\)$/, '')
@@ -9462,13 +9506,13 @@ function ExpeditionTab({
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>{t('home.battle.reflectedDamage', { damage: formatNumber(log.reflectedDamage || 0) })}</span>)
                                       </span>
                                     )
                                     : isAbsorbDamageLog
                                       ? (
                                         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
+                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>{t('home.battle.absorbedDamage', { damage: formatNumber(log.absorbedDamage || 0) })}</span>)
                                         </span>
                                       )
                                       : (
@@ -9513,7 +9557,7 @@ function ExpeditionTab({
                       );
                     })}
                     {cycle.state === 'explore' && displayedEntries.length === 0 && (
-                      <div className="text-xs text-gray-500">探索進行中... 1部屋ずつログを更新中</div>
+                      <div className="text-xs text-gray-500">{t('expedition.exploringLogUpdate')}</div>
                     )}
                   </div>
                 </div>
@@ -9570,11 +9614,11 @@ function BaseTab({
   debugSettings: DebugSettings;
 }) {
   const baseSubTabs = [
-    { id: 'shop' as const, label: 'お店', isAvailable: true },
-    { id: 'inventory' as const, label: '所持品', isAvailable: true },
-    { id: 'debugStore' as const, label: '灰路の蔵', isAvailable: debugSettings.jewelShopOpen },
-    { id: 'workshop' as const, label: '工房', isAvailable: false },
-    { id: 'altar' as const, label: '祭壇', isAvailable: false },
+    { id: 'shop' as const, label: t('home.base.tab.shop'), isAvailable: true },
+    { id: 'inventory' as const, label: t('home.base.tab.inventory'), isAvailable: true },
+    { id: 'debugStore' as const, label: t('home.base.tab.debugStore'), isAvailable: debugSettings.jewelShopOpen },
+    { id: 'workshop' as const, label: t('home.base.tab.workshop'), isAvailable: false },
+    { id: 'altar' as const, label: t('home.base.tab.altar'), isAvailable: false },
   ];
 
   return (
@@ -9629,7 +9673,7 @@ function BaseTab({
           onBuyDebugStoreItem={onBuyDebugStoreItem}
         />
       ) : (
-        <div className="text-sm text-gray-600">この機能は次のバージョンで利用可能になります。</div>
+        <div className="text-sm text-gray-600">{t('home.base.comingSoon')}</div>
       )}
     </div>
   );
@@ -9662,8 +9706,8 @@ function ShopTab({
   const nextRefreshDate = getNextShopRefreshDate(now);
   const minutesToRefresh = Math.max(1, Math.ceil((nextRefreshDate.getTime() - now.getTime()) / 60000));
   const countdownText = minutesToRefresh >= 60
-    ? `後${Math.floor(minutesToRefresh / 60)}時間`
-    : `後${minutesToRefresh}分`;
+    ? t('home.shop.countdown.hours', { count: Math.floor(minutesToRefresh / 60) })
+    : t('home.shop.countdown.minutes', { count: minutesToRefresh });
   const hourKey = getShopHourKey(now);
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
   const refreshPrice = getShopRefreshPrice(refreshCount);
@@ -9680,16 +9724,16 @@ function ShopTab({
   const soldOutItemKeys = shopPurchases[stockKey] ?? [];
 
   if (!mustelidRace) {
-    return <div className="text-sm text-gray-600">お店の準備中です。</div>;
+    return <div className="text-sm text-gray-600">{t('home.shop.preparing')}</div>;
   }
 
   const intimacyDialogue = effectiveIntimacy >= 80
-    ? '待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？'
+    ? t('home.shop.dialogue.intimacy80')
     : effectiveIntimacy >= 40
-      ? 'やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。'
+      ? t('home.shop.dialogue.intimacy40')
       : effectiveIntimacy >= 20
-        ? 'お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。'
-        : 'ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。';
+        ? t('home.shop.dialogue.intimacy20')
+        : t('home.shop.dialogue.default');
 
   const rarityPool: number[] = effectiveIntimacy >= 80
     ? [400, 300, 300, 200, 200]
@@ -9764,12 +9808,12 @@ function ShopTab({
           aria-hidden="true"
           className="shop-dialogue-pane__background pointer-events-none absolute inset-0 -z-10 h-full w-full select-none object-cover"
         />
-        <div className="shop-dialogue-pane__title relative z-10 inline-block rounded px-2 py-0.5 text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
+        <div className="shop-dialogue-pane__title relative z-10 inline-block rounded px-2 py-0.5 text-sm font-semibold text-sub">{t('home.shop.title')}</div>
         <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
             <img
               src={`${import.meta.env.BASE_URL}background/Felis.png`}
-              alt="フェリス"
+              alt={t('home.shopkeeper.felis')}
               className="shop-dialogue-pane__portrait h-12 w-12 self-center rounded-full object-cover shadow-sm"
             />
             <div className="shop-dialogue-pane__bubble space-y-1 rounded px-2 py-1">
@@ -9777,7 +9821,7 @@ function ShopTab({
                 {intimacyDialogue}
               </p>
               <p className="shop-dialogue-pane__countdown text-xs">
-                （商品洗替まであと {countdownText.replace('後', '')}）
+                {t('home.shop.refreshCountdown', { time: countdownText.replace('後', '') })}
               </p>
             </div>
           </div>
@@ -9791,7 +9835,7 @@ function ShopTab({
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500'
               }`}
             >
-              <span className="block">有償洗替</span>
+              <span className="block">{t('home.shop.paidRefresh')}</span>
               <span className="block text-[11px]">{formatNumber(refreshPrice)}G</span>
             </button>
           </div>
@@ -9804,7 +9848,7 @@ function ShopTab({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className={`flex items-center gap-2 text-sm ${entry.rarityClass}`}>
-                  <span className="truncate">?{entry.item.name}</span>
+                  <span className="truncate">{t('common.unknown')} {getLocalizedItemName(entry.item)}</span>
                   <span className={`shrink-0 text-xs ${entry.isSoldOut ? 'text-gray-400' : 'text-gray-500'}`}>
                     {formatNumber(entry.price)}G
                   </span>
@@ -9824,7 +9868,7 @@ function ShopTab({
                     : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {entry.isSoldOut ? '売切' : '購入'}
+                {entry.isSoldOut ? t('home.shop.soldOut') : t('home.shop.buy')}
               </button>
             </div>
           </div>
@@ -9847,7 +9891,7 @@ function DebugStoreTab({
 }) {
   const shopkeeperRace = RACES.find((race) => race.id === 'vulpinian') ?? RACES.find((race) => race.id === 'mustelid');
   if (!shopkeeperRace) {
-    return <div className="text-sm text-gray-600">灰路の蔵の準備中です。</div>;
+    return <div className="text-sm text-gray-600">{t('home.debugStore.preparing')}</div>;
   }
 
   const DEBUG_STORE_PRICE = 1;
@@ -9879,23 +9923,23 @@ function DebugStoreTab({
   return (
     <div className="space-y-3">
       <div className="rounded border border-gray-200 bg-white p-3">
-        <div className="text-sm font-semibold text-sub">カリエスの灰路の蔵</div>
+        <div className="text-sm font-semibold text-sub">{t('home.debugStore.title')}</div>
         <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
           <RaceIcon race={shopkeeperRace} className="h-10 w-10 self-center" />
           <p className="text-sm text-gray-700">
-            お越し頂きありがとうございます。デバッグ用に全種類の商品を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。
+            {t('home.debugStore.description')}
           </p>
         </div>
       </div>
 
       <div className="text-sm text-gray-500">
-        {isJewelCategory ? '0個' : `${formatNumber(totalAvailableCount)}個`}
+        {isJewelCategory ? t('home.count.items', { count: 0 }) : t('home.count.items', { count: formatNumber(totalAvailableCount) })}
       </div>
 
       <div className="flex gap-1 overflow-x-auto pb-1">
         {INVENTORY_CATEGORY_GROUPS.map((group) => (
           <div key={group.id} className="flex flex-col">
-            <div className="mb-0.5 text-center text-xs text-gray-400">{group.label}</div>
+            <div className="mb-0.5 text-center text-xs text-gray-400">{t(group.labelKey)}</div>
             <div className="flex">
               {group.categories.map((cat, i) => (
                 <button
@@ -9909,7 +9953,7 @@ function DebugStoreTab({
                       : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                 >
-                  {cat === 'jewel' ? '晶' : CATEGORY_SHORT_NAMES[cat]}
+                  {t(cat === 'jewel' ? 'party.categoryShort.jewel' : `party.categoryShort.${cat}`)}
                 </button>
               ))}
             </div>
@@ -9919,7 +9963,7 @@ function DebugStoreTab({
 
       {isJewelCategory && (
         <div className="rounded border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500">
-          晶カテゴリは準備中です。耐久・攻撃カテゴリからアイテムをご購入ください。
+          {t('home.debugStore.jewelPreparing')}
         </div>
       )}
 
@@ -9929,7 +9973,7 @@ function DebugStoreTab({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm text-gray-900">
-                  <span className="truncate">{item.name}</span>
+                  <span className="truncate">{getLocalizedItemName(item)}</span>
                   <span className="shrink-0 text-xs text-gray-500">{formatNumber(DEBUG_STORE_PRICE)}G</span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -9937,7 +9981,7 @@ function DebugStoreTab({
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <span className="text-[11px] text-gray-500">在庫 {formatNumber(remainingStock)}/{formatNumber(DEBUG_STORE_STOCK)}</span>
+                <span className="text-[11px] text-gray-500">{t('home.debugStore.stock', { remaining: formatNumber(remainingStock), total: formatNumber(DEBUG_STORE_STOCK) })}</span>
                 <button
                   onClick={() => onBuyDebugStoreItem(item.id)}
                   disabled={!canBuy}
@@ -9947,7 +9991,7 @@ function DebugStoreTab({
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  買う
+                  {t('home.shop.buy')}
                 </button>
               </div>
             </div>
@@ -9955,7 +9999,7 @@ function DebugStoreTab({
         ))}
         {!isJewelCategory && filteredDebugStoreItems.length === 0 && (
           <div className="rounded border border-gray-200 bg-white px-3 py-4 text-center text-sm text-gray-400">
-            このカテゴリの商品はありません
+            {t('home.inventory.emptyCategoryProducts')}
           </div>
         )}
       </div>
@@ -9980,46 +10024,6 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
 }) {
-  const UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME: Record<string, string> = {
-    'ケモ': 'Unique_Kemo.png',
-    'ライカ': 'Unique_Laika.png',
-    'ルナ': 'Unique_Luna.png',
-    'ノクス': 'Unique_Nox.png',
-    'マーレ': 'Unique_Merle.png',
-    'プチーツァ': 'Unique_Puchitsa.png',
-    '蒼牙破': 'Unique_Souga-ha.png',
-    'レナード': 'Unique_Leonard.png',
-    '葉隠': 'Unique_Hagakure.png',
-    'フィン': 'Unique_Finn.png',
-    'オルカ': 'Unique_Orca.png',
-    'ミシュカ': 'Unique_Mishka.png',
-  };
-  const inventoryChibiImageModules = useMemo(() => import.meta.glob('/public/chibi/*.png', { eager: true }), []);
-  const inventoryCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
-  const getInventoryCharacterImageSrc = (character: Character, partyId: number): string | null => {
-    const uniqueFileName = character.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_NAME[character.name] : undefined;
-    if (uniqueFileName) {
-      const chibiFileName = `C_${uniqueFileName}`;
-      if (inventoryChibiImageModules[`/public/chibi/${chibiFileName}`]) {
-        return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
-      }
-      if (inventoryCharacterImageModules[`/public/character/${uniqueFileName}`]) {
-        return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
-      }
-      return null;
-    }
-    const race = RACES.find((entry) => entry.id === character.raceId);
-    if (!race) return null;
-    const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
-    const ptRaceGenderImageFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
-    if (inventoryChibiImageModules[`/public/chibi/C_${ptRaceGenderImageFileName}`]) {
-      return `${import.meta.env.BASE_URL}chibi/C_${ptRaceGenderImageFileName}`;
-    }
-    if (inventoryCharacterImageModules[`/public/character/${ptRaceGenderImageFileName}`]) {
-      return `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`;
-    }
-    return null;
-  };
   const [showSold, setShowSold] = useState(false);
   const [activeInventoryOwnerBubble, setActiveInventoryOwnerBubble] = useState<{
     key: string;
@@ -10089,7 +10093,7 @@ function InventoryTab({
           slotIndex,
           characterName: character.name,
           raceId: character.raceId,
-          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
+          characterImageSrc: getInventoryOwnerCharacterImageSrc(character, party.id),
         }];
       })
     )
@@ -10162,7 +10166,7 @@ function InventoryTab({
           raceId: character.raceId,
           jewelKey: item.jewel.key,
           rank: item.jewel.rank,
-          characterImageSrc: getInventoryCharacterImageSrc(character, party.id),
+          characterImageSrc: getInventoryOwnerCharacterImageSrc(character, party.id),
         }];
       });
     })
@@ -10191,7 +10195,7 @@ function InventoryTab({
   const totalJewelCount = jewelEntries.reduce((sum, entry) => sum + entry.count, 0) + equippedJewels.length;
   const jewelPriorityOptions = useMemo(
     () => [
-      { value: 'manual', label: '手動' },
+      { value: 'manual', label: t('home.inventory.jewelAuto.manual') },
       ...parties.map((party) => ({ value: `${party.id}`, label: party.name })),
     ],
     [parties],
@@ -10245,7 +10249,7 @@ function InventoryTab({
           return [{ label, detail: `${label}：${description}` }];
         }
         if (bonus.type === 'ability_upgrade' && bonus.abilityId) {
-          const label = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}強化+${bonus.value}`;
+          const label = t('party.bonusDisplay.abilityUpgrade', { name: ABILITY_NAMES[bonus.abilityId] || bonus.abilityId, value: bonus.value });
           const description = getAbilityDescription(bonus.abilityId as AbilityId, Math.max(1, bonus.value));
           return [{ label, detail: `${label}：${description}` }];
         }
@@ -10305,13 +10309,13 @@ function InventoryTab({
       <div className="flex justify-between items-center mb-2 gap-2">
         <div className="text-sm text-gray-500">
           {isJewelCategory
-            ? `${formatNumber(totalJewelCount)}個`
-            : `${formatNumber(filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0))}個`}
+            ? t('home.count.items', { count: formatNumber(totalJewelCount) })
+            : t('home.count.items', { count: formatNumber(filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)) })}
         </div>
         <div className="flex justify-end items-center gap-1">
           {!isJewelCategory && (
             <>
-          <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
+          <span className="text-xs text-gray-500">{getRarityFilterNote(inventoryRarityFilter)}</span>
           {RARITY_FILTER_OPTIONS.map(filter => (
             <button
               key={filter}
@@ -10321,12 +10325,12 @@ function InventoryTab({
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
               }`}
-              title={RARITY_FILTER_NOTES[filter]}
+              title={getRarityFilterNote(filter)}
             >
               {RARITY_FILTER_LABELS[filter]}
             </button>
           ))}
-          <span className="text-xs text-gray-500"> 超レア</span>
+          <span className="text-xs text-gray-500"> {t('party.equipment.superRare')}</span>
           <button
             onClick={() => setInventorySuperRareOnly(prev => !prev)}
             className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
@@ -10346,7 +10350,7 @@ function InventoryTab({
       <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
         {categoryGroups.map(group => (
           <div key={group.id} className="flex flex-col">
-            <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+            <div className="text-xs text-gray-400 text-center mb-0.5">{t(group.labelKey)}</div>
             <div className="flex">
               {group.categories.map((cat, i) => (
                 <button
@@ -10360,7 +10364,7 @@ function InventoryTab({
                       : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                 >
-                  {cat === 'jewel' ? '晶' : CATEGORY_SHORT_NAMES[cat]}
+                  {t(cat === 'jewel' ? 'party.categoryShort.jewel' : `party.categoryShort.${cat}`)}
                 </button>
               ))}
             </div>
@@ -10371,14 +10375,14 @@ function InventoryTab({
       {/* Item list */}
       {isJewelCategory && (
         <div className="mb-2 text-xs text-gray-500">
-          結晶はパーティタブのキャラクターの装備一覧より、装備に結晶を装着することができます
+          {t('home.inventory.jewelEquipHint')}
         </div>
       )}
       {isJewelCategory && (
         // SpecRef: 7.1.3 | AUTO Jewel Equipment | 自動結晶装備
         <div className="mb-2 rounded border border-gray-200 bg-white px-2 py-1.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-gray-500">自動結晶装備</span>
+            <span className="text-xs text-gray-500">{t('home.inventory.autoJewelEquip')}</span>
             <select
               value={selectedJewelPriorityValue}
               onChange={(event) => {
@@ -10438,7 +10442,7 @@ function InventoryTab({
                     )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
+                        <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} ({t('home.inventory.equippedTo', { item: getItemDisplayName(entry.item) })})</span>
                         <span className="text-xs text-gray-500 shrink-0">x1</span>
                       </div>
                       <div className="mt-0.5 text-xs leading-tight text-gray-400 truncate">
@@ -10471,7 +10475,7 @@ function InventoryTab({
                     <button
                       onClick={() => {
                         if (item.superRare >= 1) {
-                          window.alert('超レア称号がついたアイテムは売却出来ません');
+                          window.alert(t('home.inventory.superRareCannotSell'));
                           return;
                         }
                         setSellStackConfirmation({
@@ -10483,7 +10487,7 @@ function InventoryTab({
                       }}
                       className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                     >
-                      全売却 {formatNumber(sellPrice)}G
+                      {t('home.inventory.sellAllGold', { gold: formatNumber(sellPrice) })}
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -10533,10 +10537,10 @@ function InventoryTab({
             );
           })}
           {isJewelCategory && combinedJewelEntries.length === 0 && (
-            <div className="text-gray-400 text-sm text-center py-4">結晶を所持していません</div>
+            <div className="text-gray-400 text-sm text-center py-4">{t('home.inventory.noJewels')}</div>
           )}
           {!isJewelCategory && combinedDisplayItems.length === 0 && (
-            <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
+            <div className="text-gray-400 text-sm text-center py-4">{t('home.inventory.emptyCategoryItems')}</div>
           )}
       </div>
 
@@ -10548,7 +10552,7 @@ function InventoryTab({
             className="text-xs text-gray-500 flex items-center gap-1"
           >
             <span className={`transform transition-transform ${showSold ? 'rotate-180' : ''}`}>▼</span>
-            自動売却設定 ({filteredSoldItems.length}種類)
+            {t('home.inventory.autoSellSettings', { count: filteredSoldItems.length })}
           </button>
           {showSold && (
             <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
@@ -10560,7 +10564,7 @@ function InventoryTab({
                       onClick={() => onSetVariantStatus(key, 'notown')}
                       className="text-xs text-sub px-2 py-1 border border-sub rounded"
                     >
-                      解除
+                      {t('party.equipment.clearSelection')}
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -10569,7 +10573,7 @@ function InventoryTab({
                 </div>
               ))}
               {filteredSoldItems.length === 0 && (
-                <div className="text-gray-400 text-xs text-center py-2">このカテゴリに自動売却設定はありません</div>
+                <div className="text-gray-400 text-xs text-center py-2">{t('home.inventory.noAutoSellInCategory')}</div>
               )}
             </div>
           )}
@@ -10590,10 +10594,10 @@ function InventoryTab({
               onPointerDown={(event) => event.stopPropagation()}
             >
               <div id="sell-stack-confirm-title" className="text-base font-medium leading-relaxed">
-                「{sellStackConfirmation.itemName} x{formatNumber(sellStackConfirmation.count)}」を全売却します。
+                {t('home.inventory.sellConfirmTitle', { item: sellStackConfirmation.itemName, count: formatNumber(sellStackConfirmation.count) })}
               </div>
               <div className="mt-2 text-sm leading-relaxed text-gray-600">
-                {formatNumber(sellStackConfirmation.sellPrice)}Gを獲得します。よろしいですか？
+                {t('home.inventory.sellConfirmBody', { gold: formatNumber(sellStackConfirmation.sellPrice) })}
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button
@@ -10601,7 +10605,7 @@ function InventoryTab({
                   onClick={() => setSellStackConfirmation(null)}
                   className="rounded-full px-4 py-2 text-sm font-semibold text-sub hover:bg-blue-50"
                 >
-                  キャンセル
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
@@ -10741,25 +10745,25 @@ function DiaryTab({
     .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
   const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
-    if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
-    if (triggers.includes('draw') && triggers.length === 1) return '引分の記録';
-    if (triggers.includes('unlock')) return '解放の記録';
-    if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
-    if (triggers.includes('godsBattle')) return '神魔戦の記録';
-    if (triggers.includes('superRare')) return '超レア獲得の記録';
-    if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
-    if (triggers.includes('bossRare')) return 'ボスレア獲得の記録';
-    if (triggers.includes('eliteRare')) return 'エリートレア獲得の記録';
-    return '特別記録';
+    if (triggers.includes('defeat') && triggers.length === 1) return t('diary.title.defeat');
+    if (triggers.includes('draw') && triggers.length === 1) return t('diary.title.draw');
+    if (triggers.includes('unlock')) return t('diary.title.unlock');
+    if (triggers.includes('sideQuest')) return t('diary.title.sideQuest');
+    if (triggers.includes('godsBattle')) return t('diary.title.godsBattle');
+    if (triggers.includes('superRare')) return t('diary.title.superRare');
+    if (triggers.includes('mythicRare')) return t('diary.title.mythicRare');
+    if (triggers.includes('bossRare')) return t('diary.title.bossRare');
+    if (triggers.includes('eliteRare')) return t('diary.title.eliteRare');
+    return t('diary.title.special');
   };
 
 
   const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLog) => {
     const hasGodsBattleEntry = expeditionLog.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
-    if (!hasGodsBattleEntry) return '未到達';
-    if (expeditionLog.finalOutcome === 'Clear') return '勝利';
-    if (expeditionLog.finalOutcome === 'Defeat') return '敗北';
-    return '引分';
+    if (!hasGodsBattleEntry) return t('diary.outcome.notReached');
+    if (expeditionLog.finalOutcome === 'Clear') return t('diary.outcome.victory');
+    if (expeditionLog.finalOutcome === 'Defeat') return t('diary.outcome.defeat');
+    return t('diary.outcome.draw');
   };
 
 
@@ -10797,28 +10801,28 @@ function DiaryTab({
       if (normalizedGodsBattleEnemyName) {
         return `[${partyName}] ${normalizedGodsBattleEnemyName} ${godsBattleOutcome}`;
       }
-      return `[${partyName}] 神魔戦 ${godsBattleOutcome}`;
+      return t('diary.headline.godsBattleGeneric', { party: partyName, outcome: godsBattleOutcome });
     }
 
 
     if (triggers.includes('unlock')) {
       return unlockHeadline
-        ? `[${partyName}] ${unlockHeadline}`
-        : `[${partyName}] 解放の記録`;
+        ? t('diary.headline.unlockNamed', { party: partyName, headline: unlockHeadline })
+        : t('diary.headline.unlock', { party: partyName });
     }
 
     if (triggers.includes('sideQuest')) {
       return sideQuestLabel
-        ? `[${partyName}] サイドクエスト達成(${sideQuestLabel})`
-        : `[${partyName}] サイドクエスト達成`;
+        ? t('diary.headline.sideQuestNamed', { party: partyName, quest: sideQuestLabel })
+        : t('diary.headline.sideQuest', { party: partyName });
     }
 
     if (triggers.includes('defeat') && triggers.length === 1) {
-      return `[${partyName}] 敗北の記録`;
+      return t('diary.headline.defeat', { party: partyName });
     }
 
     if (triggers.includes('draw') && triggers.length === 1) {
-      return `[${partyName}] 引分の記録`;
+      return t('diary.headline.draw', { party: partyName });
     }
 
     if (triggers.includes('superRare') || triggers.includes('mythicRare') || triggers.includes('bossRare')) {
@@ -10831,13 +10835,13 @@ function DiaryTab({
         .map((item) => getItemDisplayName(item))
         .join('、');
       const triggerPrefix = triggers.includes('superRare')
-        ? '超レア'
+        ? t('diary.reward.superRare')
         : triggers.includes('mythicRare')
-          ? '神魔レア'
-          : 'ボスレア';
+          ? t('diary.reward.mythicRare')
+          : t('diary.reward.bossRare');
       return rewardNames
-        ? `[${partyName}] ${triggerPrefix}(${rewardNames}) 獲得`
-        : `[${partyName}] ${triggerPrefix}獲得`;
+        ? t('diary.headline.rewardNamed', { party: partyName, rewardType: triggerPrefix, rewards: rewardNames })
+        : t('diary.headline.reward', { party: partyName, rewardType: triggerPrefix });
     }
 
     if (triggers.includes('eliteRare')) {
@@ -10845,7 +10849,7 @@ function DiaryTab({
         .filter((item) => getItemRarityById(item.id) === 'eliteRare')
         .map((item) => getItemDisplayName(item))
         .join('、');
-      return rewardNames ? `[${partyName}] エリートレア(${rewardNames}) 獲得` : `[${partyName}] エリートレア獲得`;
+      return rewardNames ? t('diary.headline.rewardNamed', { party: partyName, rewardType: t('diary.reward.eliteRare'), rewards: rewardNames }) : t('diary.headline.reward', { party: partyName, rewardType: t('diary.reward.eliteRare') });
     }
 
     const fallbackBossNames = rewards
@@ -10853,10 +10857,10 @@ function DiaryTab({
       .map((item) => getItemDisplayName(item))
       .join('、');
     if (fallbackBossNames) {
-      return `[${partyName}] ボスレア(${fallbackBossNames}) 獲得`;
+      return t('diary.headline.rewardNamed', { party: partyName, rewardType: t('diary.reward.bossRare'), rewards: fallbackBossNames });
     }
 
-    return `[${partyName}] ${getDiaryTitle(triggers)}`;
+    return t('diary.headline.title', { party: partyName, title: getDiaryTitle(triggers) });
   };
 
   const formatDiaryTimestamp = (timestamp: number) => {
@@ -10878,7 +10882,7 @@ function DiaryTab({
         className="w-full text-left"
       >
         <span className="flex items-center justify-between text-sm font-medium">
-          <span>日誌記録設定</span>
+          <span>{t('diary.settings.title')}</span>
           <span className={`transform transition-transform ${isSettingsExpanded ? 'rotate-180' : ''}`}>▼</span>
         </span>
       </button>
@@ -10892,86 +10896,86 @@ function DiaryTab({
                 <div className="mb-2 text-xs text-gray-500">{party.name}</div>
                 <div className="grid gap-2 text-sm sm:grid-cols-2">
                   <label className="flex items-center justify-between gap-2">
-                    <span>超レア通知</span>
+                    <span>{t('diary.settings.superRareNotification')}</span>
                     <select
                       value={settings.superRareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { superRareThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`sr-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`sr-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>エリートレア通知</span>
+                    <span>{t('diary.settings.eliteRareNotification')}</span>
                     <select
                       value={settings.rareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { rareThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`ra-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`ra-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>ボスレア通知</span>
+                    <span>{t('diary.settings.bossRareNotification')}</span>
                     <select
                       value={settings.bossThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { bossThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`bo-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`bo-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>神魔戦通知</span>
+                    <span>{t('diary.settings.godsBattleNotification')}</span>
                     <select
-                      value={settings.notifyGodsBattle ? 'あり' : 'なし'}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'あり' })}
+                      value={settings.notifyGodsBattle ? 'yes' : 'no'}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'yes' })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
-                      <option value="あり">あり</option>
-                      <option value="なし">なし</option>
+                      <option value="yes">{t('common.yes')}</option>
+                      <option value="no">{t('common.no')}</option>
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>神魔レア通知</span>
+                    <span>{t('diary.settings.mythicRareNotification')}</span>
                     <select
                       value={settings.mythicThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`my-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`my-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>敗北通知</span>
+                    <span>{t('diary.settings.defeatNotification')}</span>
                     <select
                       value={settings.defeatNotificationMode}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { defeatNotificationMode: event.target.value as DiaryDefeatNotificationMode })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_DEFEAT_NOTIFICATION_OPTIONS.map((option) => (
-                        <option key={`df-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`df-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
                   {/* SpecRef: 8.5 | UI_DIARY | Setting. */}
                   <label className="flex items-center justify-between gap-2">
-                    <span>サイドクエスト獲得通知</span>
+                    <span>{t('diary.settings.sideQuestNotification')}</span>
                     <select
                       value={settings.sideQuestThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { sideQuestThreshold: parseDiarySideQuestThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_SIDE_QUEST_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`sq-${option.value}`} value={option.value}>{option.label}</option>
+                        <option key={`sq-${option.value}`} value={option.value}>{t(option.labelKey)}</option>
                       ))}
                     </select>
                   </label>
@@ -11010,7 +11014,7 @@ function DiaryTab({
           </FloatingBubblePortal>
         )}
         {renderDiarySettings()}
-        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">記録された日誌はありません</div>
+        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">{t('diary.empty')}</div>
       </div>
     );
   }
@@ -11080,7 +11084,7 @@ function DiaryTab({
 
             {specialRewards.length > 0 && diaryLog.triggers.includes('defeat') && (
               <div className="mt-1 text-xs text-gray-500">
-                特別獲得: {specialRewards.map((item, i) => {
+                {t('diary.specialRewards')}: {specialRewards.map((item, i) => {
                   const rarity = getItemRarityById(item.id);
                   const isSuperRare = item.superRare > 0;
                   const rarityClass = getRarityTextClass(rarity, isSuperRare);
@@ -11106,7 +11110,7 @@ function DiaryTab({
 
                 {log.rewards.length > 0 && (
                   <div className="text-sm">
-                    <span className="text-gray-500">獲得アイテム: </span>
+                    <span className="text-gray-500">{t('home.battle.acquiredItemsLabel')} </span>
                     {log.rewards.map((item, i) => {
                       const rarity = getItemRarityById(item.id);
                       const isSuperRare = item.superRare > 0;
@@ -11214,9 +11218,9 @@ function DiaryTab({
                                 entry.outcome === 'victory' ? 'text-sub font-medium' :
                                 entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'
                               }>
-                                {entry.gateInfo ? '未到達' :
-                                 entry.outcome === 'victory' ? '勝利' :
-                                 entry.outcome === 'defeat' ? '敗北' : '引分'}
+                                {entry.gateInfo ? t('diary.outcome.notReached') :
+                                 entry.outcome === 'victory' ? t('diary.outcome.victory') :
+                                 entry.outcome === 'defeat' ? t('diary.outcome.defeat') : t('diary.outcome.draw')}
                               </span>
                               <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                             </span>
@@ -11230,7 +11234,7 @@ function DiaryTab({
                           {!entry.gateInfo && (
                             <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                               <div>
-                                <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                                <div className="mb-0.5">{t('home.battle.partyHpLabel')} {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                   <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                   <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
@@ -11238,7 +11242,7 @@ function DiaryTab({
                                 </div>
                               </div>
                               <div>
-                                <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                                <div className="mb-0.5">{t('home.battle.enemyHpLabel')} {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                 <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
                                   <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                 </div>
@@ -11265,7 +11269,7 @@ function DiaryTab({
                               </>
                             )}
                             <div className="relative z-10">
-                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
+                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(log.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';
@@ -11282,11 +11286,11 @@ function DiaryTab({
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = getBattleLogPhaseLabel(battleLog, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
                               const phaseHeader = battleLog.phase === 'long'
-                                ? '遠距離攻撃フェーズ'
+                                ? t('battleLog.phase.long')
                                 : battleLog.phase === 'mid'
-                                  ? '魔法攻撃フェーズ'
+                                  ? t('battleLog.phase.mid')
                                   : battleLog.phase === 'close'
-                                    ? '近接攻撃フェーズ'
+                                    ? t('battleLog.phase.close')
                                     : '';
                               const getPhaseIcon = (): UiIconKey => {
                                 if (battleLog.elementalOffense === 'fire') return 'fire';
@@ -11301,32 +11305,32 @@ function DiaryTab({
                               const hits = battleLog.hits ?? 0;
                               const totalAttempts = battleLog.totalAttempts ?? 0;
                               const allMissed = totalAttempts > 0 && hits === 0 && !battleLog.wasNegated;
-                              const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                              const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
                               const trailingEffectMatch = /\(([^()]+)\)$/.exec(battleLog.action);
                               const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                 .split(',')
                                 .map(effect => effect.trim())
                                 .filter(effect => /^(共鳴\+\d+%|残響\+\d+%)$/.test(effect));
                               const rageDisplay = battleLog.rageBonusPercent && battleLog.rageBonusPercent > 0
-                                ? `闘志+${battleLog.rageBonusPercent}%`
+                                ? t('battleLog.extra.rage', { percent: battleLog.rageBonusPercent })
                                 : '';
                               const momentumDisplay = typeof battleLog.momentumBonusPercent === 'number'
-                                ? `気勢${battleLog.momentumBonusPercent >= 0 ? '+' : ''}${battleLog.momentumBonusPercent}%`
+                                ? t('battleLog.extra.momentum', { sign: battleLog.momentumBonusPercent >= 0 ? '+' : '', percent: battleLog.momentumBonusPercent })
                                 : '';
                               const ambushDisplay = typeof battleLog.ambushMultiplier === 'number' && battleLog.ambushMultiplier > 1
-                                ? `待ち伏せ:x${battleLog.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                ? t('battleLog.extra.ambush', { multiplier: battleLog.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                 : '';
                               const overwatchDisplay = typeof battleLog.overwatchMultiplier === 'number' && battleLog.overwatchMultiplier > 1
-                                ? `監視:x${battleLog.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                ? t('battleLog.extra.overwatch', { multiplier: battleLog.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                 : '';
                               const executionDisplay = typeof battleLog.executionMultiplier === 'number' && battleLog.executionMultiplier > 1
-                                ? `エクセキューション:x${battleLog.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                ? t('battleLog.extra.execution', { multiplier: battleLog.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
                                 : '';
                               const swarmActorDisplay = typeof battleLog.swarmActorPenaltyPercent === 'number' && battleLog.swarmActorPenaltyPercent > 0
-                                ? `威力-${battleLog.swarmActorPenaltyPercent}%`
+                                ? t('battleLog.extra.powerDown', { percent: battleLog.swarmActorPenaltyPercent })
                                 : '';
                               const swarmOpponentDisplay = typeof battleLog.swarmOpponentBonusPercent === 'number' && battleLog.swarmOpponentBonusPercent > 0
-                                ? `相手被ダメ${battleLog.swarmOpponentBonusPercent}%増`
+                                ? t('battleLog.extra.opponentDamageUp', { percent: battleLog.swarmOpponentBonusPercent })
                                 : '';
 
                               let actionText: string;
@@ -11334,20 +11338,20 @@ function DiaryTab({
                                 actionText = battleLog.action;
                               } else if (isEnemy) {
                                 if (isResurrectLog) {
-                                  actionText = `敵${battleLog.action}`;
+                                  actionText = t('battleLog.action.enemyResurrect', { action: battleLog.action });
                                 } else if (battleLog.isEnemyTargetHit) {
                                   actionText = allMissed
-                                    ? `${battleLog.action.replace('命中！', 'への攻撃は外れた！')}`
+                                    ? t('battleLog.action.targetHitMissed', { action: battleLog.action.replace('命中！', '') })
                                     : battleLog.action;
                                 } else if (allMissed) {
-                                  actionText = `敵が${battleLog.action.replace('！', 'したが外れた！')}`;
+                                  actionText = t('battleLog.action.enemyMissed', { action: battleLog.action.replace('！', '') });
                                 } else {
-                                  actionText = `敵が${battleLog.action}`;
+                                  actionText = t('battleLog.action.enemyActed', { action: battleLog.action });
                                 }
                               } else {
                                 if (allMissed) {
                                   const charName = battleLog.action.replace(/ の.*$/, '');
-                                  actionText = `${charName} の攻撃は外れた！`;
+                                  actionText = t('battleLog.action.partyMissed', { actor: charName });
                                 } else {
                                   actionText = battleLog.action;
                                 }
@@ -11365,7 +11369,7 @@ function DiaryTab({
                               ].filter(Boolean);
                               const mergedExtraSegments = Array.from(new Set(extraSegments));
                               const compactHitDisplay = hitDisplay && mergedExtraSegments.length > 0
-                                ? `(${hits}/${totalAttempts}回, ${mergedExtraSegments.join(', ')})`
+                                ? t('battleLog.hitsWithExtras', { hits, total: totalAttempts, extras: mergedExtraSegments.join(', ') })
                                 : hitDisplay;
                               const actionDisplay = trailingEffects.length > 0 && !allMissed
                                 ? actionText.replace(/\([^()]+\)$/, '')
@@ -11382,13 +11386,13 @@ function DiaryTab({
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
+                                      ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>{t('battleLog.damage.reflected')} {formatNumber(battleLog.reflectedDamage || 0)}</span>)
                                     </span>
                                   )
                                   : isAbsorbDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}<span className={absorbArrowClass}>{t('battleLog.damage.absorbed')} {formatNumber(battleLog.absorbedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : (
@@ -11469,6 +11473,8 @@ function SettingTab({
   onUpdateDebugSettings,
   partyCount,
   onPartyUnlock,
+  language,
+  onSetLanguage,
   onMarkDeveloperNewsRead,
 }: {
   gameState: GameState;
@@ -11502,6 +11508,8 @@ function SettingTab({
   onUpdateDebugSettings: (updates: Partial<DebugSettings>) => void;
   partyCount: number;
   onPartyUnlock: () => void;
+  language: Language;
+  onSetLanguage: (language: Language) => void;
   onMarkDeveloperNewsRead: (itemIds: string[]) => void;
 }) {
   type DivineBureauPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
@@ -11512,6 +11520,18 @@ function SettingTab({
   const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-tab');
   const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-expanded-entries');
   const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
+  const GLOSSARY_TAB_LABELS: Record<GlossaryTabKey, string> = {
+    能: t('divineBureau.glossary.tab.abilities'),
+    基: t('divineBureau.glossary.tab.baseStats'),
+    固: t('divineBureau.glossary.tab.fixedEffects'),
+    増: t('divineBureau.glossary.tab.bonuses'),
+    属: t('divineBureau.glossary.tab.elements'),
+    機: t('divineBureau.glossary.tab.mechanics'),
+    信: t('divineBureau.glossary.tab.faith'),
+    魔: t('divineBureau.glossary.tab.magic'),
+    地: t('divineBureau.glossary.tab.terrain'),
+    求: t('divineBureau.glossary.tab.sideQuests'),
+  };
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     news: false,
     modeSelect: false,
@@ -11616,7 +11636,16 @@ function SettingTab({
     value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   );
   function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
-    const statusHeaders = ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属防', 'アビリティ'];
+    const statusHeaders = [
+      t('home.progressReport.statusHeader.partyPosition'),
+      t('home.progressReport.statusHeader.nameAndBuild'),
+      t('home.progressReport.statusHeader.physicalDefense'),
+      t('home.progressReport.statusHeader.magicalDefense'),
+      t('home.progressReport.statusHeader.evasionAndPenetration'),
+      t('home.progressReport.statusHeader.attack'),
+      t('home.progressReport.statusHeader.elementalDefense'),
+      t('home.progressReport.statusHeader.abilities'),
+    ];
     const htmlRows = rows.map((row) => `<tr>${row.map((cell, cellIndex) => `<td${cellIndex <= 1 ? ' style="font-weight:700;"' : ''}>${escapeFeedbackHtml(cell.replace(/\*\*/g, ''))}</td>`).join('')}</tr>`).join('');
     const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${escapeFeedbackHtml(title)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:12px;color:#111}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px;vertical-align:top;text-align:left}th{background:#f3f4f6;position:sticky;top:0}@media (max-width:768px){table{font-size:11px}th,td{padding:4px}}</style></head><body><h1>${escapeFeedbackHtml(title)}</h1><table><thead><tr>${statusHeaders.map((header) => `<th>${escapeFeedbackHtml(header)}</th>`).join('')}</tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     return new File([html], fileName, { type: 'text/html' });
@@ -11629,7 +11658,7 @@ function SettingTab({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${formatNumber(detail.hits ?? 0)}/${formatNumber(detail.totalAttempts)}回)` : '';
+        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeFeedbackHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
@@ -11646,15 +11675,15 @@ function SettingTab({
   const handleFeedbackFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
     if (selectedFiles.length > 4) {
-      window.alert('添付画像は最大4枚までです。先頭4枚のみ送信されます。');
+      window.alert(t('divineBureau.feedback.maxFilesWarning'));
     }
     setFeedbackFiles(selectedFiles.slice(0, 4));
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
   const handleSendFeedback = async () => {
-    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert('VITE_FEEDBACK_DISCORD_WEBHOOK_URL が未設定です。'); return; }
-    if (!feedbackText.trim()) { window.alert('フィードバック本文を入力してください。'); return; }
+    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert(t('divineBureau.feedback.webhookMissing')); return; }
+    if (!feedbackText.trim()) { window.alert(t('divineBureau.feedback.bodyRequired')); return; }
     setIsSendingFeedback(true);
     try {
       const nav = typeof navigator === 'undefined' ? null : navigator;
@@ -11702,14 +11731,14 @@ function SettingTab({
           const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
           const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
           const attackParts: string[] = [];
-          if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`遠${formatNumber(computed.rangedAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.rangedNoA)}回`);
-          if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) attackParts.push(`魔${formatNumber(computed.magicalAttack)}. ${formatPercent(computed.magicalOffenseMultiplier)}, ${formatNumber(computed.magicalNoA)}回`);
-          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(`近${formatNumber(computed.meleeAttack)}. ${formatPercent(computed.physicalOffenseMultiplier)}, ${formatNumber(computed.meleeNoA)}回`);
+          if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.ranged', { attack: formatNumber(computed.rangedAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.rangedNoA) }));
+          if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.magic', { attack: formatNumber(computed.magicalAttack), multiplier: formatPercent(computed.magicalOffenseMultiplier), count: formatNumber(computed.magicalNoA) }));
+          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.melee', { attack: formatNumber(computed.meleeAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.meleeNoA) }));
           const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
           const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
           const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
           const race = RACES.find((entry) => entry.id === member.raceId);
-          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? '男' : '女'}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAMES[member.lineageId] ?? member.lineageId}${PREDISPOSITION_SHORT_NAMES[member.predispositionId] ?? member.predispositionId}`;
+          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
           const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
           return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, formatSignedScaledBy1000(computed.evasionBonus), attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, formatPercent(computed.penetMultiplier), abilityText];
         });
@@ -11724,7 +11753,7 @@ function SettingTab({
       }
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
-      onAddNotification('フィードバックを送信しました', 'normal', 'item', true);
+      onAddNotification(t('divineBureau.feedback.sent'), 'normal', 'item', true);
       setFeedbackText('');
       setFeedbackFiles([]);
       if (feedbackFileInputRef.current) {
@@ -11732,7 +11761,7 @@ function SettingTab({
       }
     } catch (error) {
       console.error(error);
-      window.alert('フィードバック送信に失敗しました。');
+      window.alert(t('divineBureau.feedback.sendFailed'));
     } finally {
       setIsSendingFeedback(false);
     }
@@ -11895,7 +11924,7 @@ function SettingTab({
       getBackupFileName('compressed'),
       'application/json',
     );
-    onAddNotification('バックアップをエクスポートしました', 'normal', 'item', true);
+    onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
   };
 
   const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -11913,7 +11942,7 @@ function SettingTab({
           : parsed;
 
       if (!source || typeof source !== 'object') {
-        window.alert('インポート失敗: 保存データ形式が不正です。');
+        window.alert(t('setting.import.invalidFormat'));
         return;
       }
 
@@ -11923,36 +11952,36 @@ function SettingTab({
       if (parsed && typeof parsed === 'object' && 'meta' in parsed) {
         const meta = (parsed as { meta?: { version?: string; env?: string; format?: string } }).meta;
         if (meta?.version && meta.version !== versionTag) {
-          issues.push(`バージョン差異: 現在 ${versionTag} / ファイル ${meta.version}`);
+          issues.push(t('setting.import.issue.versionMismatch', { current: versionTag, file: meta.version }));
         }
         if (meta?.env && meta.env !== currentEnv) {
-          issues.push(`環境差異: 現在 ${currentEnv} / ファイル ${meta.env}`);
+          issues.push(t('setting.import.issue.envMismatch', { current: currentEnv, file: meta.env }));
         }
         if (meta?.format === 'compressed-v1') {
           const canonicalImported = serializeGameState(hydrateGameState(saveData as GameState));
           if (JSON.stringify(canonicalImported) !== JSON.stringify(saveData)) {
-            issues.push('形式差異: インポートデータが現在の保存/復元フォーマットに一致しません。');
+            issues.push(t('setting.import.issue.formatMismatch'));
           }
         }
       }
 
       if (issues.length > 0) {
         const shouldContinue = window.confirm(
-          `セーブデータ整合性チェックで注意事項が見つかりました:\n\n- ${issues.join('\n- ')}\n\nこのままインポートを適用しますか？`
+          t('setting.import.integrityWarning', { issues: issues.join('\n- ') })
         );
         if (!shouldContinue) return;
       }
 
       const shouldImport = window.confirm(
-        'インポートを実行すると現在のセーブデータは完全に置き換わります。\nこの操作は取り消せません。実行しますか？'
+        t('setting.import.confirmReplace')
       );
       if (!shouldImport) return;
 
       onImportGameState(saveData as GameState);
-      onAddNotification('バックアップをインポートしました', 'normal', 'item', true);
+      onAddNotification(t('setting.import.imported'), 'normal', 'item', true);
     } catch (error) {
       console.error(error);
-      window.alert('インポート失敗: JSONの解析に失敗しました。');
+      window.alert(t('setting.import.jsonParseFailed'));
     }
   };
 
@@ -11960,16 +11989,16 @@ function SettingTab({
     // SpecRef: 9 | Environment | Import/Export format consistency check
     const issues: string[] = [];
 
-    if (!Array.isArray(saveData.parties)) issues.push('parties が存在しない、または配列ではありません。');
+    if (!Array.isArray(saveData.parties)) issues.push(t('setting.import.issue.partiesMissing'));
     if (!saveData.global || typeof saveData.global !== 'object') {
-      issues.push('global が存在しません。');
+      issues.push(t('setting.import.issue.globalMissing'));
     } else {
-      if (typeof saveData.global.gold !== 'number') issues.push('global.gold が存在しない、または数値ではありません。');
-      if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push('global.inventory が存在しません。');
+      if (typeof saveData.global.gold !== 'number') issues.push(t('setting.import.issue.globalGoldMissing'));
+      if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push(t('setting.import.issue.globalInventoryMissing'));
     }
 
     if (!saveData.bags || typeof saveData.bags !== 'object') {
-      issues.push('bags が存在しません。');
+      issues.push(t('setting.import.issue.bagsMissing'));
     } else {
       const requiredBags: Array<keyof GameState['bags']> = [
         'commonRewardBag',
@@ -11986,32 +12015,32 @@ function SettingTab({
       ];
       const missingBags = requiredBags.filter((bagKey) => !(bagKey in saveData.bags!));
       if (missingBags.length > 0) {
-        issues.push(`bags に不足があります: ${missingBags.join(', ')}`);
+        issues.push(t('setting.import.issue.bagsIncomplete', { bags: missingBags.join(', ') }));
       }
     }
 
-    if (typeof saveData.selectedPartyIndex !== 'number') issues.push('selectedPartyIndex が存在しない、または数値ではありません。');
-    if (typeof saveData.buildNumber !== 'number') issues.push('buildNumber が存在しない、または数値ではありません。');
+    if (typeof saveData.selectedPartyIndex !== 'number') issues.push(t('setting.import.issue.selectedPartyIndexMissing'));
+    if (typeof saveData.buildNumber !== 'number') issues.push(t('setting.import.issue.buildNumberMissing'));
 
     if (Array.isArray(saveData.parties)) {
       if (saveData.parties.length === 0) {
-        issues.push('parties が空です。');
+        issues.push(t('setting.import.issue.partiesEmpty'));
       }
 
       saveData.parties.forEach((party, index) => {
         if (!party || typeof party !== 'object') {
-          issues.push(`party[${index}] が不正です。`);
+          issues.push(t('divineBureau.importValidation.invalidParty', { index }));
           return;
         }
 
         if (!Array.isArray(party.characters)) {
-          issues.push(`party[${index}].characters が存在しない、または配列ではありません。`);
+          issues.push(t('divineBureau.importValidation.invalidCharacters', { index }));
           return;
         }
 
         party.characters.forEach((character, characterIndex) => {
           if (!character || typeof character !== 'object') {
-            issues.push(`party[${index}].characters[${characterIndex}] が不正です。`);
+            issues.push(t('divineBureau.importValidation.invalidCharacter', { index, characterIndex }));
           }
         });
       });
@@ -12031,7 +12060,7 @@ function SettingTab({
   const mythicRewardTotal = getBagTicketTotal(createMythicRareRewardBag());
 
   const confirmReset = (label: string, onConfirm: () => void) => {
-    if (!window.confirm(`${label}を実行します。\n現在の抽選状況が初期化されます。\nよろしいですか？`)) {
+    if (!window.confirm(t('divineBureau.clairvoyance.resetConfirmation', { label }))) {
       return;
     }
 
@@ -12042,12 +12071,12 @@ function SettingTab({
   const rareSuperRareTotal = getBagTicketTotal(createRareSuperRareBag());
   const superRareHitTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + (t.value > 0 ? t.tickets : 0), 0);
   const enhancementCountTargets = [
-    { value: 1, label: '名工の残り' },
-    { value: 2, label: '魔性の残り' },
-    { value: 3, label: '宿った残り' },
-    { value: 4, label: '伝説の残り' },
-    { value: 5, label: '恐ろしい残り' },
-    { value: 6, label: '究極の残り' },
+    { value: 1 },
+    { value: 2 },
+    { value: 3 },
+    { value: 4 },
+    { value: 5 },
+    { value: 6 },
   ] as const;
   const sideQuestDefaultBag = createSideQuestBag();
   const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
@@ -12245,25 +12274,24 @@ function SettingTab({
     [gameState.global.revealedGlossaryTerrainKeys],
   );
 
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Glossary (用語集)
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) => {
-    const sectionSubtitle = section.subtitle;
-    if (glossaryTab === '属') {
-      return sectionSubtitle.startsWith('増.');
-    }
-
-    const glossarySectionsByTab: Record<Exclude<GlossaryTabKey, '属'>, string> = {
-      能: '能.',
-      基: '基.',
-      固: '固.',
-      増: '増.',
-      機: '機.',
-      信: '信.',
-      魔: '魔.',
-      地: '地.',
-      求: '求.',
+    // Section subtitles are localized display text, so use stable master-data IDs
+    // for selection instead of language-specific subtitle prefixes.
+    const glossarySectionIdsByTab: Record<GlossaryTabKey, string> = {
+      能: '2-1-1',
+      基: '2-1-2',
+      固: '2-1-3',
+      増: '2-1-4',
+      属: '2-1-4',
+      機: '2-1-6',
+      信: '2-1-7',
+      魔: '2-1-8',
+      地: '2-1-10',
+      求: '2-1-9',
     };
 
-    return sectionSubtitle.startsWith(glossarySectionsByTab[glossaryTab]);
+    return section.id === glossarySectionIdsByTab[glossaryTab];
   });
 
 
@@ -12296,16 +12324,16 @@ function SettingTab({
   return { headers, rows };
   };
   const BESTIARY_TAB_LABELS: Record<number, string> = {
-    1: '原',
-    2: '寒',
-    3: '海',
-    4: '砂',
-    5: '炎',
-    6: '巣',
-    7: '月',
-    8: '谷',
-    9: '神',
-    99: '特',
+    1: t('divineBureau.bestiary.tab.grassland'),
+    2: t('divineBureau.bestiary.tab.frost'),
+    3: t('divineBureau.bestiary.tab.sea'),
+    4: t('divineBureau.bestiary.tab.desert'),
+    5: t('divineBureau.bestiary.tab.flame'),
+    6: t('divineBureau.bestiary.tab.nest'),
+    7: t('divineBureau.bestiary.tab.moon'),
+    8: t('divineBureau.bestiary.tab.valley'),
+    9: t('divineBureau.bestiary.tab.gods'),
+    99: t('divineBureau.bestiary.tab.colosseum'),
   };
 
   const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 9;
@@ -12356,8 +12384,8 @@ function SettingTab({
     ...DUNGEONS
       .filter((dungeon) => dungeon.id !== 99 && unlockedBestiaryDungeonIds.has(dungeon.id))
       .map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
-    ...(revealedGodBestiaryNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神' }] : []),
-    ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: '特' }] : []),
+    ...(revealedGodBestiaryNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: t('divineBureau.bestiary.tab.gods') }] : []),
+    ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: t('divineBureau.bestiary.tab.colosseum') }] : []),
   ];
 
 
@@ -12403,7 +12431,7 @@ function SettingTab({
           .filter((enemy): enemy is EnemyDef => !!enemy && enemy.type === 'elite')
           .sort((a, b) => a.id - b.id);
 
-        const floorConcept = getExpeditionFloorConcept(selectedBestiaryDungeon.id, floor.floorNumber);
+        const floorConcept = getLocalizedExpeditionFloorConcept(selectedBestiaryDungeon.id, floor.floorNumber);
         const baseFloorLabel = floorConcept
           ? `Floor ${floor.floorNumber} ${floorConcept}`
           : `Floor ${floor.floorNumber}`;
@@ -12484,7 +12512,7 @@ function SettingTab({
     .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
-    `${label}: ${formatNumber(attack)} x ${formatNumber(noA)}回 (x${amplifier.toFixed(2)})`;
+    t('home.enemy.attackLine', { label, attack: formatNumber(attack), count: formatNumber(noA), amplifier: amplifier.toFixed(2) });
 
   const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
   const hasEnemyMagicCasting = (enemy: EnemyDef) =>
@@ -12492,7 +12520,7 @@ function SettingTab({
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
-    `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
+    t('home.enemy.defenseLine', { label, defense: formatNumber(defense), percent: percent.toFixed(0) });
 
   const ENEMY_ELEMENT_ICONS: Record<string, UiIconKey> = {
     fire: 'fire',
@@ -12504,7 +12532,7 @@ function SettingTab({
     const elementIcon = ENEMY_ELEMENT_ICONS[elementalOffense];
     return (
       <>
-        属性: {elementIcon ? renderUiIcon(elementIcon) : '無'} (x{elementalOffenseValue.toFixed(2)})
+        {t('home.enemy.element')}: {elementIcon ? renderUiIcon(elementIcon) : t('home.enemy.noElement')} (x{elementalOffenseValue.toFixed(2)})
       </>
     );
   };
@@ -12514,54 +12542,54 @@ function SettingTab({
   };
 
   const ENEMY_TYPE_LABELS: Record<string, string> = {
-    Beast: '猛獣',
-    Slime_Colony: '粘体群',
-    Plant_Fungal: '植菌',
-    Insect_Swarm: '昆虫',
-    Aerial: '飛行',
-    Frost: '氷雪',
-    Fruit: '果物',
-    Dragon: '竜',
-    Spirit: '精霊',
-    Ghost: '怨霊',
-    Undead: '不死',
-    Golem: 'ゴーレム',
-    Shadowfang: '影牙',
-    Mech: '機械',
-    Chiropteran: 'カイロプテラン',
-    Chimera: 'キメラ',
-    Titan: '巨人',
-    Pony: 'ポニー',
-    Origami: '折り紙',
-    Jinma: '神魔',
-    Orcinian: 'オルシニアン',
-    Caninian: 'ケイナイアン',
-    Lupinian: 'ルピニアン',
-    Vulpinian: 'ヴァルピニアン',
-    Ursan: 'ウルサン',
-    Felidian: 'フェリディアン',
-    Mustelid: 'マステリド',
-    Leporian: 'レポリアン',
-    Cervin: 'セルヴィン',
-    Procyonian: 'プロキオニアン',
-    Murid: 'ミュリッド',
+    Beast: t('divineBureau.bestiary.enemyType.Beast'),
+    Slime_Colony: t('divineBureau.bestiary.enemyType.Slime_Colony'),
+    Plant_Fungal: t('divineBureau.bestiary.enemyType.Plant_Fungal'),
+    Insect_Swarm: t('divineBureau.bestiary.enemyType.Insect_Swarm'),
+    Aerial: t('divineBureau.bestiary.enemyType.Aerial'),
+    Frost: t('divineBureau.bestiary.enemyType.Frost'),
+    Fruit: t('divineBureau.bestiary.enemyType.Fruit'),
+    Dragon: t('divineBureau.bestiary.enemyType.Dragon'),
+    Spirit: t('divineBureau.bestiary.enemyType.Spirit'),
+    Ghost: t('divineBureau.bestiary.enemyType.Ghost'),
+    Undead: t('divineBureau.bestiary.enemyType.Undead'),
+    Golem: t('divineBureau.bestiary.enemyType.Golem'),
+    Shadowfang: t('divineBureau.bestiary.enemyType.Shadowfang'),
+    Mech: t('divineBureau.bestiary.enemyType.Mech'),
+    Chiropteran: t('divineBureau.bestiary.enemyType.Chiropteran'),
+    Chimera: t('divineBureau.bestiary.enemyType.Chimera'),
+    Titan: t('divineBureau.bestiary.enemyType.Titan'),
+    Pony: t('divineBureau.bestiary.enemyType.Pony'),
+    Origami: t('divineBureau.bestiary.enemyType.Origami'),
+    Jinma: t('divineBureau.bestiary.enemyType.Jinma'),
+    Orcinian: t('divineBureau.bestiary.enemyType.Orcinian'),
+    Caninian: t('divineBureau.bestiary.enemyType.Caninian'),
+    Lupinian: t('divineBureau.bestiary.enemyType.Lupinian'),
+    Vulpinian: t('divineBureau.bestiary.enemyType.Vulpinian'),
+    Ursan: t('divineBureau.bestiary.enemyType.Ursan'),
+    Felidian: t('divineBureau.bestiary.enemyType.Felidian'),
+    Mustelid: t('divineBureau.bestiary.enemyType.Mustelid'),
+    Leporian: t('divineBureau.bestiary.enemyType.Leporian'),
+    Cervin: t('divineBureau.bestiary.enemyType.Cervin'),
+    Procyonian: t('divineBureau.bestiary.enemyType.Procyonian'),
+    Murid: t('divineBureau.bestiary.enemyType.Murid'),
   };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
-    guardian: '防人',
-    duelist: '剣士',
-    samurai: '侍',
-    'sword-saint': '剣聖',
-    ranger: '狩人',
-    striker: '弩手',
-    ninja: '忍者',
-    wizard: '魔法使い',
-    sage: '賢者',
-    alchemist: '錬金術師',
-    pilgrim: '巡礼者',
-    lord: '君主',
-    fighter: '戦士',
-    rogue: '盗賊',
+    guardian: t('divineBureau.bestiary.enemyClass.guardian'),
+    duelist: t('divineBureau.bestiary.enemyClass.duelist'),
+    samurai: t('divineBureau.bestiary.enemyClass.samurai'),
+    'sword-saint': t('divineBureau.bestiary.enemyClass.sword-saint'),
+    ranger: t('divineBureau.bestiary.enemyClass.ranger'),
+    striker: t('divineBureau.bestiary.enemyClass.striker'),
+    ninja: t('divineBureau.bestiary.enemyClass.ninja'),
+    wizard: t('divineBureau.bestiary.enemyClass.wizard'),
+    sage: t('divineBureau.bestiary.enemyClass.sage'),
+    alchemist: t('divineBureau.bestiary.enemyClass.alchemist'),
+    pilgrim: t('divineBureau.bestiary.enemyClass.pilgrim'),
+    lord: t('divineBureau.bestiary.enemyClass.lord'),
+    fighter: t('divineBureau.bestiary.enemyClass.fighter'),
+    rogue: t('divineBureau.bestiary.enemyClass.rogue'),
   };
 
   const getBestiaryEnemyBattleStats = (enemyId: number) => gameState.global.enemyBattleStats?.[enemyId] ?? { defeats: 0, encounters: 0 };
@@ -12574,17 +12602,17 @@ function SettingTab({
     const mainClassLabel = ENEMY_CLASS_LABELS[mainClassId] ?? mainClassId;
     const hasSubClass = !!subClassId && subClassId !== 'none';
     if (!hasSubClass) {
-      return [<div key="main">メインクラス: {mainClassLabel}</div>];
+      return [<div key="main">{t('divineBureau.bestiary.mainClass', { className: mainClassLabel })}</div>];
     }
 
     const subClassLabel = ENEMY_CLASS_LABELS[subClassId] ?? subClassId;
     if (mainClassId === subClassId) {
-      return [<div key="main">メインクラス: {mainClassLabel}(師範)</div>];
+      return [<div key="main">{t('divineBureau.bestiary.masterClass', { className: mainClassLabel })}</div>];
     }
 
     return [
-      <div key="main">メインクラス: {mainClassLabel}</div>,
-      <div key="sub">サブクラス: {subClassLabel}</div>,
+      <div key="main">{t('divineBureau.bestiary.mainClass', { className: mainClassLabel })}</div>,
+      <div key="sub">{t('divineBureau.bestiary.subClass', { className: subClassLabel })}</div>,
     ];
   };
 
@@ -12618,7 +12646,7 @@ function SettingTab({
     const drops = GOD_MYTHIC_DROPS
       .filter((drop) => drop.dropBy === godName)
       .map((drop) => `${getRarityShortLabel(drop.tier * 1000 + 500)}${drop.name}`);
-    return drops.length > 0 ? drops.join(' / ') : 'なし';
+    return drops.length > 0 ? drops.join(' / ') : t('common.none');
   };
 
   const getAbilityHelpDescription = (abilityId: string, level: number): string => {
@@ -12627,9 +12655,10 @@ function SettingTab({
       return formatBonusAbilityHelpDescription(abilityId as AbilityId, level);
     }
 
-    const levelDescription = ABILITY_HELP_TEXTS[`${abilityId}:${level}`];
-    if (levelDescription) return levelDescription;
-    return ABILITY_HELP_TEXTS[abilityId] ?? 'このアビリティの説明は未設定です。';
+    const levelDescriptionKey = ABILITY_HELP_TEXT_KEYS[`${abilityId}:${level}`];
+    if (levelDescriptionKey) return t(levelDescriptionKey);
+    const abilityDescriptionKey = ABILITY_HELP_TEXT_KEYS[abilityId];
+    return abilityDescriptionKey ? t(abilityDescriptionKey) : t('home.abilityHelp.unconfigured');
   };
 
   const getAbilityHelpText = (abilityId: string, level: number, abilityLabel: string): { title: string; description: string } => ({
@@ -12646,7 +12675,7 @@ function SettingTab({
   const parseAbilityTokens = (abilities: Array<{ id: string; level: number }>) => {
     // SpecRef: 4.1.2 | Enemy | x.ability
     if (abilities.length === 0) {
-      return [{ key: 'none', label: 'なし', abilityId: '', level: 0, isMissing: true }];
+      return [{ key: 'none', label: t('common.none'), abilityId: '', level: 0, isMissing: true }];
     }
 
     const highestAbilityLevelById = new Map<string, number>();
@@ -12737,7 +12766,7 @@ function SettingTab({
                   <span className="font-semibold text-gray-700">{item.version}</span>
                   <span>{item.date}</span>
                 </div>
-                <p className="text-gray-700">{item.content}</p>
+                <p className="text-gray-700">{getDeveloperNewsContent(item, gameState.global.language)}</p>
               </div>
             ))}
           </div>
@@ -12745,28 +12774,28 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
-        {renderDivineBureauPanelHeader('donation', '寄付箱')}
+        {renderDivineBureauPanelHeader('donation', t('divineBureau.donation.title'))}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
-            <span>神格</span>
-            <span>寄付額</span>
+            <span>{t('divineBureau.donation.deity')}</span>
+            <span>{t('divineBureau.donation.amount')}</span>
           </div>
           {donationRows.length > 0 ? (
             donationRows.map(({ deityName, donationGold, rank, nextRankDonationRequirement }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
-                <span className="text-gray-700">{deityName}(ランク{rank})</span>
-                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">(次{nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : '到達済み'})</span></span>
+                <span className="text-gray-700">{t('divineBureau.donation.deityRank', { deity: deityName, rank })}</span>
+                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">{t('divineBureau.donation.nextRequirement', { amount: nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : t('divineBureau.donation.maxRank') })}</span></span>
               </div>
             ))
           ) : (
-            <div className="text-gray-500">まだ寄付の記録がありません</div>
+            <div className="text-gray-500">{t('divineBureau.donation.noRecords')}</div>
           )}
         </div>}
       </div>
 
       {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
       {(debugSettings.clairvoyanceEnabled || gameState.parties.some((party) => getDivineBureauPartyAbilityLevel(party, 'prophecy') >= 1)) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
+        {renderDivineBureauPanelHeader('clairvoyance', t('divineBureau.clairvoyance.title'))}
         {divineBureauPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
           {gameState.parties.map((party, partyIndex) => {
             const prophecyLevel = getDivineBureauPartyAbilityLevel(party, 'prophecy');
@@ -12784,78 +12813,78 @@ function SettingTab({
               </button>
               {isExpanded && <div className="mt-2 space-y-3 text-sm">
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">コモン</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('divineBureau.clairvoyance.common')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>コモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
+                    <div>{t('divineBureau.clairvoyance.commonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
                   </div>
-                  <div>コモン称号付与: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
+                  <div>{t('divineBureau.clairvoyance.commonEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value, label }) => {
+                    {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                       return (
                         <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                           <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{label}</span>
+                          <span>{t('divineBureau.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
                           <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div>コモン超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>}
+                  <div>{t('divineBureau.clairvoyance.commonSuperRare')}: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('divineBureau.clairvoyance.resetCommonRewards'), () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('divineBureau.clairvoyance.resetCommonRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">その他レアリティ</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('divineBureau.clairvoyance.otherRarities')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>アンコモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
+                    <div>{t('divineBureau.clairvoyance.uncommonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>エリートレア報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
+                    <div>{t('divineBureau.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>ボスレア報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
+                    <div>{t('divineBureau.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>神魔レア報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
+                    <div>{t('divineBureau.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
                   </div>
-                  <div>称号付与: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
+                  <div>{t('divineBureau.clairvoyance.enhancement')}: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value, label }) => {
+                    {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                       return (
                         <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                           <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{label}</span>
+                          <span>{t('divineBureau.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
                           <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div>超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>}
+                  <div>{t('divineBureau.clairvoyance.superRareEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('divineBureau.clairvoyance.resetRewards'), () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('divineBureau.clairvoyance.resetRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">サイドクエスト</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('divineBureau.clairvoyance.sideQuest')}</div>
                   {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | サイドクエスト */}
-                  <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
+                  <div>{t('divineBureau.clairvoyance.sideQuestDraw')}: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    当たり残り {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
+                    {t('divineBureau.clairvoyance.hitsRemaining')} {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
                       entry.id > 0 ? sum + getBagEntryTickets(partyBags.sideQuestBag, entry.id) : sum
                     ), 0))}
                   </div>
-                  {canResetBags && <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>}
+                  {canResetBags && <button onClick={() => confirmReset(t('divineBureau.clairvoyance.resetSideQuest'), () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('divineBureau.clairvoyance.resetSideQuest')}</button>}
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <div>眠気抽選: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
+                  <div>{t('divineBureau.clairvoyance.sleepinessDraw')}: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    寝ない: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0))} / 仮眠: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1))} / 熟睡: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2))}
+                    {t('divineBureau.clairvoyance.sleepinessOutcomes', { awake: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0)), nap: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1)), deepSleep: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2)) })}
                   </div>
                 </div>
               </div>}
@@ -12865,22 +12894,22 @@ function SettingTab({
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('glossary', '用語集')}
+        {renderDivineBureauPanelHeader('glossary', t('divineBureau.glossary.title'))}
         {divineBureauPanelExpanded.glossary && (
           <>
-          <div className="flex justify-end items-center gap-1 mt-3 mb-3">
+          <div className="mt-3 mb-3 flex max-h-20 flex-wrap items-center justify-start gap-1 overflow-y-auto pr-1">
             {GLOSSARY_TABS.map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setGlossaryTab(tab)}
-                className={`text-xs px-2 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
+                className={`shrink-0 text-xs px-2 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
                   glossaryTab === tab
                     ? 'bg-sub text-white border-sub'
                     : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
                 }`}
               >
-                {tab}
+                {GLOSSARY_TAB_LABELS[tab]}
               </button>
             ))}
           </div>
@@ -12922,21 +12951,21 @@ function SettingTab({
                                       ? 'border-sub bg-sub text-white'
                                       : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
                                   }`}
-                                  title={subcategory.label}
+                                  title={t(subcategory.labelKey)}
                                   aria-pressed={isActive}
                                 >
-                                  {subcategory.shortLabel}
+                                  {t(subcategory.shortLabelKey)}
                                 </button>
                               );
                             })}
                           </div>
-                          <div className="text-[11px] text-gray-500">{activeBonusAbilitySubcategory?.label}</div>
+                          <div className="text-[11px] text-gray-500">{activeBonusAbilitySubcategory?.labelKey ? t(activeBonusAbilitySubcategory.labelKey) : null}</div>
                         </div>
                       )}
                       <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                         {isBonusAbilityGlossarySection
                           // SpecRef: 1.0.3 | Glossary Reveal Rule | ability visibility
-                          ? BONUS_ABILITY_GLOSSARY_ENTRIES
+                          ? LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES
                             .filter((entry) => entry.subcategory === bonusAbilityGlossarySubcategory)
                             .filter((entry) => debugSettings.displayAllGlossary || revealedGlossaryAbilityIds.has(entry.abilityId))
                             .map((entry, index) => {
@@ -12961,7 +12990,7 @@ function SettingTab({
                             if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
                               return null;
                             }
-                            const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
+                            const isSideQuestGlossarySection = section.id === '2-1-9';
                             if (isSideQuestGlossarySection && entry.key === 'q.none') {
                               return null;
                             }
@@ -12973,7 +13002,7 @@ function SettingTab({
                             if (glossaryTab === '増' && isElementalEntry) {
                               return null;
                             }
-                            const isGodGlossarySection = section.subtitle.startsWith('信.');
+                            const isGodGlossarySection = section.id === '2-1-7';
                             const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
                             const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
                             const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
@@ -13005,7 +13034,7 @@ function SettingTab({
                                     type="button"
                                     onClick={() => setExpandedGlossaryEntries((prev) => ({ ...prev, [entryKey]: !isEntryExpanded }))}
                                     className="w-full flex items-center justify-between gap-2 text-left"
-                                    aria-label={isEntryExpanded ? `${entry.label}を折りたたむ` : `${entry.label}を展開する`}
+                                    aria-label={t(isEntryExpanded ? 'divineBureau.glossary.collapseEntry' : 'divineBureau.glossary.expandEntry', { label: entry.label })}
                                   >
                                     <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
                                     <span className="text-[11px] text-gray-500 hover:text-gray-700">{isEntryExpanded ? '▼' : '▲'}</span>
@@ -13081,11 +13110,11 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('itemCompendium', 'アイテム図鑑')}
+        {renderDivineBureauPanelHeader('itemCompendium', t('divineBureau.itemCompendium.title'))}
         {divineBureauPanelExpanded.itemCompendium && <>
         <div className="flex justify-end items-center gap-1 mt-3 mb-3">
           <span className="text-xs text-gray-500">
-            {compendiumRarityFilter === 'all' ? '全て表示' : `${RARITY_FILTER_NOTES[compendiumRarityFilter]}のみ`}
+            {compendiumRarityFilter === 'all' ? t('party.rarity.showAll') : t('party.rarity.only', { rarity: getRarityFilterNote(compendiumRarityFilter) })}
           </span>
           {RARITY_FILTER_OPTIONS.map(filter => (
             <button
@@ -13096,7 +13125,7 @@ function SettingTab({
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
               }`}
-              title={RARITY_FILTER_NOTES[filter]}
+              title={getRarityFilterNote(filter)}
             >
               {RARITY_FILTER_LABELS[filter]}
             </button>
@@ -13105,7 +13134,7 @@ function SettingTab({
         <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
           {CATEGORY_GROUPS.map(group => (
             <div key={group.id} className="flex flex-col">
-              <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+              <div className="text-xs text-gray-400 text-center mb-0.5">{t(group.labelKey)}</div>
               <div className="flex">
                 {group.categories.map((cat, i) => (
                   <button
@@ -13119,7 +13148,7 @@ function SettingTab({
                         : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                     }`}
                   >
-                    {CATEGORY_SHORT_NAMES[cat]}
+                    {t(`party.categoryShort.${cat}`)}
                   </button>
                 ))}
               </div>
@@ -13138,7 +13167,7 @@ function SettingTab({
                   className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
                 >
                   <span>
-                    <span className="text-black">{item.name}</span>
+                    <span className="text-black">{getLocalizedItemName(item)}</span>
                     <span className="text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(baseItem))}</span>
                   </span>
                   <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
@@ -13156,7 +13185,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('characterRoster', '味方キャラクター図鑑')}
+        {renderDivineBureauPanelHeader('characterRoster', t('divineBureau.characterRoster.title'))}
         {divineBureauPanelExpanded.characterRoster && <>
           {activeRosterStatusBubble ? (
             <div
@@ -13197,10 +13226,10 @@ function SettingTab({
           </div>
           <div className="flex gap-1 mb-3">
             {visibleRosterGenders.includes('male') && (
-              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>男</button>
+              <button onClick={() => setCharacterRosterGenderFilter('male')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'male' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>{t('common.gender.male')}</button>
             )}
             {visibleRosterGenders.includes('female') && (
-              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>女</button>
+              <button onClick={() => setCharacterRosterGenderFilter('female')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'female' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>{t('common.gender.female')}</button>
             )}
             {visibleRosterGenders.includes('unique') && (
               <button onClick={() => setCharacterRosterGenderFilter('unique')} className={`px-2 py-1 text-xs rounded ${characterRosterGenderFilter === 'unique' ? 'bg-sub text-white' : 'bg-gray-200 text-gray-700'}`}>U</button>
@@ -13218,19 +13247,19 @@ function SettingTab({
                   className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] max-w-[507px] h-auto"
                 />
               ) : null}
-              <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">種族: {selectedRosterRace?.name ?? activeRosterCharacter.raceId}</div>
+              <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">{t('divineBureau.characterRoster.race', { race: selectedRosterRace?.name ?? activeRosterCharacter.raceId })}</div>
               <div className="relative z-10 mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/25 rounded px-2 py-1 space-y-1">
-                <div className="font-semibold">種族ステータス</div>
-                <button type="button" className="w-full text-left" title="種族の基礎値です。" onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', `体力:${selectedRosterRace?.stats.vitality ?? '-'}  力:${selectedRosterRace?.stats.strength ?? '-'}  知性:${selectedRosterRace?.stats.intelligence ?? '-'}  精神:${selectedRosterRace?.stats.mind ?? '-'}`, event.currentTarget); }}>
+                <div className="font-semibold">{t('divineBureau.characterRoster.raceStats')}</div>
+                <button type="button" className="w-full text-left" title={t('divineBureau.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('divineBureau.characterRoster.baseStats', { vitality: selectedRosterRace?.stats.vitality ?? '-', strength: selectedRosterRace?.stats.strength ?? '-', intelligence: selectedRosterRace?.stats.intelligence ?? '-', mind: selectedRosterRace?.stats.mind ?? '-' }), event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
-                    <span className="base-stat-chip">体力:{selectedRosterRace?.stats.vitality ?? '-'}</span>
-                    <span className="base-stat-chip">力:{selectedRosterRace?.stats.strength ?? '-'}</span>
-                    <span className="base-stat-chip">知性:{selectedRosterRace?.stats.intelligence ?? '-'}</span>
-                    <span className="base-stat-chip">精神:{selectedRosterRace?.stats.mind ?? '-'}</span>
+                    <span className="base-stat-chip">{t('party.stat.vitality')}:{selectedRosterRace?.stats.vitality ?? '-'}</span>
+                    <span className="base-stat-chip">{t('party.stat.strength')}:{selectedRosterRace?.stats.strength ?? '-'}</span>
+                    <span className="base-stat-chip">{t('party.stat.intelligence')}:{selectedRosterRace?.stats.intelligence ?? '-'}</span>
+                    <span className="base-stat-chip">{t('party.stat.mind')}:{selectedRosterRace?.stats.mind ?? '-'}</span>
                   </span>
                 </button>
                 <div className="text-xs text-gray-900 mt-1 leading-5">
-                  <span className="break-words leading-5 font-medium">ボーナス: </span>
+                  <span className="break-words leading-5 font-medium">{t('party.status.bonus')}: </span>
                   {rosterBonusStatusEntries.length > 0 ? (
                     rosterBonusStatusEntries.map((entry, index) => (
                       <span key={entry.key}>
@@ -13238,9 +13267,9 @@ function SettingTab({
                         <button
                           type="button"
                           onPointerDown={(event) => event.stopPropagation()}
-                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? 'このボーナスの説明は未設定です。'}`, event.currentTarget); }}
+                          onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? t('home.bonus.descriptionMissing')}`, event.currentTarget); }}
                           className="text-left hover:underline"
-                          title="タップで詳細を表示"
+                          title={t('divineBureau.characterRoster.tapForDetails')}
                         >
                           {entry.label}
                         </button>
@@ -13253,45 +13282,45 @@ function SettingTab({
                 <button
                   type="button"
                   className="w-full text-left"
-                  title="初期から利用できる種族アビリティです。"
+                  title={t('divineBureau.characterRoster.defaultAbilityHelp')}
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-default-ability',
-                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : '初期アビリティ: -',
+                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('divineBureau.characterRoster.defaultAbility', { ability: '-' }),
                       event.currentTarget,
                     );
                   }}
                 >
-                  初期アビリティ: {selectedRosterRace?.defaultAbility?.name ?? '-'}
+                  {t('divineBureau.characterRoster.defaultAbility', { ability: selectedRosterRace?.defaultAbility?.name ?? '-' })}
                 </button>
                 <button
                   type="button"
                   className="w-full text-left"
-                  title="アンロック条件達成後に開放される種族アビリティです。"
+                  title={t('divineBureau.characterRoster.unlockAbilityHelp')}
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-unlock-ability',
-                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : 'アンロックアビリティ: -',
+                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('divineBureau.characterRoster.unlockAbility', { ability: '-' }),
                       event.currentTarget,
                     );
                   }}
                 >
-                  アンロックアビリティ: {selectedRosterRace?.unlockAbility?.name ?? '-'}
+                  {t('divineBureau.characterRoster.unlockAbility', { ability: selectedRosterRace?.unlockAbility?.name ?? '-' })}
                 </button>
               </div>
             </div>
           )}
-          {!activeRosterCharacter && <div className="text-xs text-gray-500">該当キャラクターなし</div>}
-          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">画像データなし</div>}
+          {!activeRosterCharacter && <div className="text-xs text-gray-500">{t('divineBureau.characterRoster.noMatches')}</div>}
+          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">{t('divineBureau.characterRoster.noImage')}</div>}
         </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('bestiary', '敵キャラクター図鑑')}
+        {renderDivineBureauPanelHeader('bestiary', t('divineBureau.bestiary.title'))}
         {divineBureauPanelExpanded.bestiary && <>
         <div className="flex gap-1 mt-3 mb-3 overflow-x-auto pb-1">
           {bestiaryTabOptions.map(dungeon => (
@@ -13317,7 +13346,7 @@ function SettingTab({
             onSetBestiaryScrollTop(currentScrollTop);
           }}
         >
-          <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神' : selectedBestiaryDungeon.name}</div>
+          <div className="text-xs text-gray-500">{isGodBestiaryTab ? t('divineBureau.bestiary.godsTab') : selectedBestiaryDungeon.name}</div>
           {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
@@ -13358,9 +13387,9 @@ function SettingTab({
                       <div>ID: {getGodBestiaryDisplayEnemyId(god)}</div>
                       <div></div>
                       <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
-                      <div>レベル: {formatNumber(god.level)}</div>
-                      <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
-                      <div>タイプ: {ENEMY_TYPE_LABELS[godRuntimeEnemy?.enemyType ?? ''] ?? (godRuntimeEnemy?.enemyType ?? '不明')}</div>
+                      <div>{t('divineBureau.bestiary.level', { value: formatNumber(god.level) })}</div>
+                      <div>{t('divineBureau.bestiary.class', { value: ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass })}</div>
+                      <div>{t('divineBureau.bestiary.type', { value: ENEMY_TYPE_LABELS[godRuntimeEnemy?.enemyType ?? ''] ?? (godRuntimeEnemy?.enemyType ?? t('common.unknown')) })}</div>
                     </div>
                     {godRuntimeEnemy && (
                       <>
@@ -13377,27 +13406,27 @@ function SettingTab({
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
-                              offenseRows.push(formatEnemyAttackLine('遠距離攻撃', godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.rangedAttack'), godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier));
                             }
                             if (hasMeleeAttack) {
-                              offenseRows.push(formatEnemyAttackLine('近接攻撃', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.meleeAttack'), godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
-                              offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
+                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.physical'), decay }));
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
-                              offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
+                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.magicAttack'), godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
+                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.magic'), decay }));
                             }
                             if (hasMagicCasting) {
-                              offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(godRuntimeEnemy)}`);
+                              offenseRows.push(t('divineBureau.bestiary.castMagic', { spell: getEnemyBestiarySpellName(godRuntimeEnemy) }));
                             }
 
                             const defenseRows: ReactNode[] = [
                               formatEnemyElementOffenseLine(godRuntimeEnemy.elementalOffense, godRuntimeEnemy.elementalOffenseValue),
-                              formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
-                              formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
-                              `回避: ${formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}`,
+                              formatEnemyDefenseLine(t('divineBureau.bestiary.physicalDefense'), godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('divineBureau.bestiary.magicalDefense'), godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
+                              t('divineBureau.bestiary.evasion', { value: formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000)) }),
                             ];
 
                             const rowCount = Math.max(offenseRows.length, defenseRows.length);
@@ -13410,12 +13439,12 @@ function SettingTab({
                         <div>{renderEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
                         {(() => {
                           const bonusText = getEnemyTypeCBonusText(godRuntimeEnemy);
-                          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                          return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                         })()}
                       </>
                     )}
                     <div className="flex items-start gap-1">
-                      <div>アビリティ:</div>
+                      <div>{t('divineBureau.bestiary.abilities')}</div>
                       <div className="flex flex-wrap items-center gap-1">
                         {parseAbilityTokens(godRuntimeEnemy?.abilities ?? god.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
@@ -13427,7 +13456,7 @@ function SettingTab({
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
                                 className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
-                                aria-label={`${token.label}の説明を表示`}
+                                aria-label={t('divineBureau.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
                               </button>
@@ -13436,11 +13465,11 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>待機探索地: {god.expedition}</div>
-                    <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
+                    <div>{t('divineBureau.bestiary.waitingExpedition', { value: god.expedition })}</div>
+                    <div className="pt-1">{t('divineBureau.bestiary.dropCandidates', { value: getGodDropCandidates(god.name) })}</div>
                     {(() => {
                       const battleStats = getGodBestiaryBattleStats(god);
-                      return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                      return <div>{t('divineBureau.bestiary.battleStats', { defeats: formatNumber(battleStats.defeats), encounters: formatNumber(battleStats.encounters) })}</div>;
                     })()}
                     </div>
                   </div>
@@ -13478,29 +13507,29 @@ function SettingTab({
                         const classRows = getBestiaryClassRows(colosseumEnemy.enemyClass, colosseumEnemy.enemySubClass);
                         return (
                           <>
-                            <div>ID: {colosseumEnemy.id}</div><div>レベル: {formatNumber(colosseumEnemySettings.level)}</div>
-                            <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div>
+                            <div>ID: {colosseumEnemy.id}</div><div>{t('divineBureau.bestiary.level', { value: formatNumber(colosseumEnemySettings.level) })}</div>
+                            <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>{t('divineBureau.bestiary.type', { value: ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType })}</div>
                             {classRows.map((row) => row)}
                             {classRows.length === 1 && <div></div>}
-                            <div>地形: {TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div><div></div>
+                            <div>{t('divineBureau.bestiary.terrain', { value: TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect })}</div><div></div>
                           </>
                         );
                       })()}
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementOffenseLine(colosseumEnemy.elementalOffense, colosseumEnemy.elementalOffenseValue)}</div>
-                      <div>{hasMeleeAttack ? formatEnemyAttackLine('近接攻撃', colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine('物理防御', colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
-                      <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
-                      <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
-                      <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
-                      <div>{hasMagicCasting ? `詠唱魔法: ${getEnemyBestiarySpellName(colosseumEnemy)}` : ''}</div><div></div>
+                      <div>{hasRangedAttack ? formatEnemyAttackLine(t('divineBureau.bestiary.rangedAttack'), colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementOffenseLine(colosseumEnemy.elementalOffense, colosseumEnemy.elementalOffenseValue)}</div>
+                      <div>{hasMeleeAttack ? formatEnemyAttackLine(t('divineBureau.bestiary.meleeAttack'), colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine(t('divineBureau.bestiary.physicalDefense'), colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
+                      <div>{hasPhysicalAttack ? t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.physical'), decay }) : ''}</div><div>{formatEnemyDefenseLine(t('divineBureau.bestiary.magicalDefense'), colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
+                      <div>{hasMagicalAttack ? formatEnemyAttackLine(t('divineBureau.bestiary.magicAttack'), colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>{t('divineBureau.bestiary.evasion', { value: formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000)) })}</div>
+                      <div>{hasMagicalAttack ? t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.magic'), decay }) : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
+                      <div>{hasMagicCasting ? t('divineBureau.bestiary.castMagic', { spell: getEnemyBestiarySpellName(colosseumEnemy) }) : ''}</div><div></div>
                     </div>
                     {(() => {
                       const bonusText = getEnemyTypeCBonusText(colosseumEnemy);
-                      return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                      return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                     })()}
                     <div className="flex items-start gap-1">
-                      <div>アビリティ:</div>
+                      <div>{t('divineBureau.bestiary.abilities')}</div>
                       <div className="flex flex-wrap items-center gap-1">
                         {parseAbilityTokens(colosseumEnemy.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
@@ -13512,7 +13541,7 @@ function SettingTab({
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
                                 className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
-                                aria-label={`${token.label}の説明を表示`}
+                                aria-label={t('divineBureau.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
                               </button>
@@ -13521,7 +13550,7 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>ドロップ候補: なし</div>
+                    <div>{t('divineBureau.bestiary.dropCandidates', { value: t('common.none') })}</div>
                   </div>}
                 </div>
               </div>
@@ -13576,10 +13605,10 @@ function SettingTab({
                           <div>ID: {displayEnemy.id}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
-                          <div>レベル: {formatNumber(enemyLevelFinal)}</div>
+                          <div>{t('divineBureau.bestiary.level', { value: formatNumber(enemyLevelFinal) })}</div>
                           {classRows.map((row) => row)}
                           {classRows.length === 1 && <div></div>}
-                          <div>タイプ: {ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType}</div>
+                          <div>{t('divineBureau.bestiary.type', { value: ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType })}</div>
                           <div></div>
                           {(() => {
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
@@ -13591,20 +13620,20 @@ function SettingTab({
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
-                              offenseRows.push(formatEnemyAttackLine('遠距離攻撃', displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.rangedAttack'), displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier));
                             }
                             if (hasMeleeAttack) {
-                              offenseRows.push(formatEnemyAttackLine('近接攻撃', displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.meleeAttack'), displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
-                              offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
+                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.physical'), decay }));
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
-                              offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
+                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.magicAttack'), displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
+                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.magic'), decay }));
                             }
                             if (hasMagicCasting) {
-                              offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(displayEnemy)}`);
+                              offenseRows.push(t('divineBureau.bestiary.castMagic', { spell: getEnemyBestiarySpellName(displayEnemy) }));
                             }
                             const basePenetration = (displayEnemy.bonuses ?? []).reduce((sum, bonus) => (
                               bonus.type === 'penet' ? sum + bonus.value : sum
@@ -13618,15 +13647,15 @@ function SettingTab({
                               : 0;
                             const penetrationPercent = Math.round((basePenetration + (heavyStrikeNoALoss * heavyStrikePenetPerNoA)) * 100);
                             if (penetrationPercent !== 0) {
-                              offenseRows.push(`貫通: +${formatNumber(penetrationPercent)}%`);
+                              offenseRows.push(t('divineBureau.bestiary.penetration', { value: formatNumber(penetrationPercent) }));
                             }
 
                             // Bestiary detail keeps the compact 4-line defense block.
                             const defenseRows: ReactNode[] = [
                               formatEnemyElementOffenseLine(displayEnemy.elementalOffense, displayEnemy.elementalOffenseValue),
-                              formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
-                              formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
-                              `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,
+                              formatEnemyDefenseLine(t('divineBureau.bestiary.physicalDefense'), displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('divineBureau.bestiary.magicalDefense'), displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
+                              t('divineBureau.bestiary.evasion', { value: formatNumber(Math.round(displayEnemy.evasionBonus * 1000)) }),
                             ];
 
                             const rowCount = Math.max(offenseRows.length, defenseRows.length);
@@ -13639,10 +13668,10 @@ function SettingTab({
                         <div>{renderEnemyElementalResistanceLine(displayEnemy)}</div>
                         {(() => {
                           const bonusText = getEnemyTypeCBonusText(displayEnemy);
-                          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                          return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                         })()}
                         <div className="flex items-start gap-1">
-                          <div>アビリティ:</div>
+                          <div>{t('divineBureau.bestiary.abilities')}</div>
                           <div className="flex flex-wrap items-center gap-1">
                             {parseAbilityTokens(displayEnemy.abilities).map((token, tokenIndex) => (
                               <Fragment key={token.key}>
@@ -13654,7 +13683,7 @@ function SettingTab({
                                     type="button"
                                     onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
                                     className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
-                                    aria-label={`${token.label}の説明を表示`}
+                                    aria-label={t('divineBureau.bestiary.showAbilityDescription', { ability: token.label })}
                                   >
                                     {token.label}
                                   </button>
@@ -13663,10 +13692,10 @@ function SettingTab({
                             ))}
                           </div>
                         </div>
-                        <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ')}</div>
+                        <div className="pt-1">{t('divineBureau.bestiary.dropCandidates', { value: getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ') })}</div>
                         {(() => {
                           const battleStats = getBestiaryEnemyBattleStats(displayEnemy.id);
-                          return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                          return <div>{t('divineBureau.bestiary.battleStats', { defeats: formatNumber(battleStats.defeats), encounters: formatNumber(battleStats.encounters) })}</div>;
                         })()}
                       </div>
                     )}
@@ -13704,7 +13733,7 @@ function SettingTab({
               ))}
             </select>
             <div className="text-[11px] text-gray-500">
-              {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? '地形効果なし'}
+              {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? t('home.terrainEffect.noneDescription')}
             </div>
           </label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
@@ -13758,9 +13787,9 @@ function SettingTab({
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
+        {renderDivineBureauPanelHeader('superRare', t('divineBureau.superRare'))}
         {divineBureauPanelExpanded.superRare && <>
-        <div className="text-xs text-gray-500 mt-3 mb-2">Super Rare List (超レア一覧)</div>
+        <div className="text-xs text-gray-500 mt-3 mb-2">{t('divineBureau.superRareListCaption')}</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto pane-button-shadow">
           {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
             const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
@@ -13768,8 +13797,8 @@ function SettingTab({
               <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
                 <div className="text-gray-500">{title.value}.</div>
                 <div>
-                  <div className="font-medium text-gray-700">{title.title}</div>
-                  <div className="text-xs text-sub">{uniqueBonus || 'なし'}</div>
+                  <div className="font-medium text-gray-700">{getLocalizedSuperRareTitle(title.value)}</div>
+                  <div className="text-xs text-sub">{uniqueBonus || t('common.none')}</div>
                 </div>
               </div>
             );
@@ -13778,8 +13807,23 @@ function SettingTab({
         </>}
       </div>
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
+        {renderDivineBureauPanelHeader('modeSelect', t('divineBureau.modeSelect'))}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
+          {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Mode select (モード切替) */}
+          <div>
+            <div className="text-sm font-medium mb-1">{t('setting.language.title')}</div>
+            <p className="mb-2 text-xs text-gray-500">{t('setting.language.description')}</p>
+            <select
+              value={language}
+              onChange={(event) => onSetLanguage(event.target.value as Language)}
+              className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm"
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <option key={lang} value={lang}>{t(`setting.language.${lang}`)}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="space-y-2">
             <button
               type="button"
@@ -13789,7 +13833,7 @@ function SettingTab({
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">自動周回</span>
+                <span className="text-sm font-medium text-gray-700">{t('divineBureau.autoRepeat')}</span>
                 <span className="flex items-center gap-2">
                   <span className={`text-xs font-semibold ${isAutoRepeatEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isAutoRepeatEnabled ? 'ON' : 'OFF'}
@@ -13811,7 +13855,7 @@ function SettingTab({
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">統計情報表示</span>
+                <span className="text-sm font-medium text-gray-700">{t('divineBureau.expeditionStatsDisplay')}</span>
                 <span className="flex items-center gap-2">
                   <span className={`text-xs font-semibold ${isExpeditionStatsDisplayEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isExpeditionStatsDisplayEnabled ? 'ON' : 'OFF'}
@@ -13825,7 +13869,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">ダークモード</div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('divineBureau.darkMode')}</div>
             <div className="grid grid-cols-3 gap-2">
               {(['off', 'on', 'system'] as const).map((mode) => (
                 <button
@@ -13837,21 +13881,21 @@ function SettingTab({
                       : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                   }`}
                 >
-                  {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : 'システム'}
+                  {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : t('divineBureau.darkMode.system')}
                 </button>
               ))}
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {darkModeSetting === 'system'
-                ? '端末の表示設定に追従します'
+                ? t('divineBureau.darkMode.description.system')
                 : darkModeSetting === 'on'
-                  ? '常にダークモードで表示します'
-                  : '常にライトモードで表示します'}
+                  ? t('divineBureau.darkMode.description.on')
+                  : t('divineBureau.darkMode.description.off')}
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">テーマカラー</div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('divineBureau.themeColor')}</div>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
@@ -13862,7 +13906,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                ケモ
+                {t('divineBureau.theme.kemo')}
               </button>
               <button
                 onClick={() => onSetGameMode('m.luna')}
@@ -13873,7 +13917,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                ルナ
+                {t('divineBureau.theme.luna')}
               </button>
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
@@ -13884,15 +13928,15 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                ライカ
+                {t('divineBureau.theme.laika')}
               </button>
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {gameMode === 'm.kemo'
-                ? '青を基調としたテーマです'
+                ? t('divineBureau.theme.description.kemo')
                 : gameMode === 'm.luna'
-                  ? '黄色を基調としたテーマです'
-                  : '緑を基調としたテーマです'}
+                  ? t('divineBureau.theme.description.luna')
+                  : t('divineBureau.theme.description.laika')}
             </div>
           </div>
         </div>}
@@ -13900,7 +13944,7 @@ function SettingTab({
 
 
       {isDevEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('debug', 'デバッグ')}
+        {renderDivineBureauPanelHeader('debug', t('divineBureau.debug'))}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
           <div className="bg-white rounded border p-2">
@@ -13929,13 +13973,13 @@ function SettingTab({
 
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('feedback', 'フィードバック')}
+        {renderDivineBureauPanelHeader('feedback', t('divineBureau.feedback'))}
         {divineBureauPanelExpanded.feedback && <div className="space-y-3 mt-3">
-          <div className="text-sm text-gray-600">開発チームにフィードバックを送信します。</div>
-          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder="名前" />
-          <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder="フィードバック本文" />
+          <div className="text-sm text-gray-600">{t('divineBureau.feedback.description')}</div>
+          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('divineBureau.feedback.namePlaceholder')} />
+          <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('divineBureau.feedback.bodyPlaceholder')} />
           <div>
-            <label className="text-sm font-medium">最終戦闘ログ選択</label>
+            <label className="text-sm font-medium">{t('divineBureau.feedback.latestBattleLog')}</label>
             <select value={feedbackLatestBattleLogSelection} onChange={(e) => setFeedbackLatestBattleLogSelection(e.target.value as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None')} className="w-full rounded border border-gray-300 bg-white px-3 py-2 mt-1">
               <option value="PT1">PT1</option>
               <option value="PT2">PT2</option>
@@ -13955,27 +13999,27 @@ function SettingTab({
               onChange={handleFeedbackFileChange}
               className="w-full text-sm"
             />
-            <div className="mt-1 text-xs text-gray-500">添付画像: {formatNumber(feedbackFiles.length)}/4</div>
+            <div className="mt-1 text-xs text-gray-500">{t('divineBureau.feedback.attachedImages', { count: formatNumber(feedbackFiles.length) })}</div>
           </div>
-          <button onClick={handleSendFeedback} disabled={isSendingFeedback} className="w-full py-2 bg-sub text-white rounded font-medium disabled:opacity-60">{isSendingFeedback ? '送信中…' : '送信'}</button>
+          <button onClick={handleSendFeedback} disabled={isSendingFeedback} className="w-full py-2 bg-sub text-white rounded font-medium disabled:opacity-60">{isSendingFeedback ? t('divineBureau.feedback.sending') : t('divineBureau.feedback.send')}</button>
         </div>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('gameSetting', 'バックアップ・リセット')}
+        {renderDivineBureauPanelHeader('gameSetting', t('setting.backupReset'))}
         {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
           <div>
-            <div className="text-sm font-medium mb-1">バックアップ（Export）</div>
+            <div className="text-sm font-medium mb-1">{t('setting.backup.title')}</div>
             <button
               onClick={handleExportBackup}
               className="w-full py-2 bg-sub text-white rounded font-medium"
             >
-              バックアップをダウンロード
+              {t('setting.backup.download')}
             </button>
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">インポート（Import）</div>
+            <div className="text-sm font-medium mb-1">{t('setting.import.title')}</div>
             <input
               ref={importInputRef}
               type="file"
@@ -13987,20 +14031,20 @@ function SettingTab({
               onClick={() => importInputRef.current?.click()}
               className="w-full py-2 bg-sub text-white rounded font-medium"
             >
-              バックアップファイルを選択
+              {t('setting.import.select')}
             </button>
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">フルリセット（Reset）</div>
+            <div className="text-sm font-medium mb-1">{t('setting.reset.title')}</div>
             {!showResetConfirm ? (
-              <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
+              <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">{t('setting.reset.button')}</button>
             ) : (
               <div>
-                <div className="text-sm text-accent mb-2 p-2 bg-accent/10 rounded border border-accent/25">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
+                <div className="text-sm text-accent mb-2 p-2 bg-accent/10 rounded border border-accent/25">{t('setting.reset.confirm')}</div>
                 <div className="flex gap-2">
-                  <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">リセット実行</button>
-                  <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">キャンセル</button>
+                  <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">{t('setting.reset.execute')}</button>
+                  <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">{t('common.cancel')}</button>
                 </div>
               </div>
             )}

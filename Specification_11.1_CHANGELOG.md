@@ -10,6 +10,96 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 1 | 2026/07/19 | Release version 0.8.3 and reset the build number to 1. |
+| 0.8.2 | 92 | 2026/07/19 | Load the runtime Developer News list from Specification 11.2, display every entry newest-first, and select its Japanese, English, or Simplified Chinese content from the active language. |
+| 0.8.2 | 91 | 2026/07/19 | Add decrement and increment buttons around each unlocked Expedition Difficulty Offset slider, applying the specified two-level step and disabling controls at the valid bounds. |
+| 0.8.2 | 90 | 2026/07/19 | Align the runtime common and rare Super Rare bag defaults with the specification by assigning 819,918 and 122,918 no-title tickets, respectively. |
+| 0.8.2 | 89 | 2026/07/19 | Resolve Diary setting option labels at render time so rarity, defeat, and side-quest selectors follow runtime language changes in Japanese, English, and Simplified Chinese. |
+| 0.8.2 | 88 | 2026/07/19 | Finalize immediate-sortie expedition and defeat diary results atomically so launching another sortie during rest cannot replace an uncommitted defeat record. |
+| 0.8.2 | 87 | 2026/07/19 | Synchronize the URL `lang` query parameter with in-game language changes while preserving the current path, other query parameters, and fragment without reloading the page. |
+| 0.8.2 | 86 | 2026/07/19 | Add the missing magical-attack label to the Japanese, English, and Simplified Chinese i18n dictionaries so the Party pane no longer displays its translation key. |
+| 0.8.2 | 85 | 2026/07/19 | Use the emulated in-game event time for diary entries finalized during AFK recovery instead of falling back to the device timestamp. |
+| 0.8.2 | 84 | 2026/07/19 | Translate unique and unchanged default character names to their corresponding localized names on language changes while preserving player-entered custom names. |
+| 0.8.2 | 83 | 2026/07/19 | Resolve generated character-name pools when a race is changed from the active i18n language so English and Simplified Chinese no longer use Japanese names. |
+| 0.8.2 | 82 | 2026/07/19 | Abbreviate the four base-stat labels in the English Party status pane to VIT, STR, INT, and MND. |
+| 0.8.2 | 81 | 2026/07/19 | Localize the Illusion reactive ability label, description, and corrected Lv1/Lv2 target-and-use scale in Japanese, English, and Simplified Chinese. |
+| 0.8.2 | 80 | 2026/07/19 | Move the language selector from the Backup & Reset pane into the Mode Select pane, matching the Divine Bureau UI specification. |
+| 0.8.2 | 79 | 2026/07/19 | Allow the Glossary tab selector to wrap into a vertically scrollable list so longer English labels remain accessible without widening or clipping the selection field. |
+| 0.8.2 | 78 | 2026/07/19 | Resolve expedition floor concepts through the active-language lookup in depth options, expedition headlines, and Bestiary floor groups so Simplified Chinese no longer displays canonical English floor names. |
+| 0.8.2 | 77 | 2026/07/19 | Enable Simplified Chinese at runtime: recognize `lang=zh`, persist the selection, expose 中文 in the language selector, load the Chinese dictionary, and synchronize the document language. |
+| 0.8.2 | 76 | 2026/07/19 | Fix the Simplified Chinese translation dictionary's invalid TypeScript identifier and export so environment builds compile successfully. |
+| 0.8.2 | 75 | 2026/07/19 | Select Glossary sections by stable master-data IDs instead of localized subtitle prefixes, restoring all Glossary contents in English. |
+| 0.8.2 | 74 | 2026/07/18 | Share Party and Base Inventory equipped-owner image selection and identify unique characters by stable lineage instead of localized display names, fixing Kemo portraits in English. |
+| 0.8.2 | 73 | 2026/07/18 | Route remaining HomeScreen Divine Bureau, clairvoyance, glossary, roster, bestiary, validation, and report runtime Japanese UI text through meaningful Japanese and English i18n keys. |
+| 0.8.2 | 72 | 2026/07/18 | Route all remaining Japanese runtime literals in the first 8,000 HomeScreen lines through meaningful stat and bonus i18n keys, and identify unique character images without localized-name literals. |
+| 0.8.2 | 71 | 2026/07/18 | Route the remaining Japanese runtime literals in the first 6,000 HomeScreen lines through meaningful shop fallback and attack-multiplier i18n keys. |
+| 0.8.2 | 70 | 2026/07/18 | Route the remaining Japanese runtime literals in the first 4,000 HomeScreen lines through meaningful progress-report header and attack-summary i18n keys. |
+| 0.8.2 | 69 | 2026/07/18 | Route all Japanese runtime literals in the first 3,000 HomeScreen lines through meaningful i18n keys, including bonus, subcategory, lineage, predisposition, and equipment-category labels. |
+| 0.8.2 | 68 | 2026/07/18 | Translate English i18n default generated character names from Japanese script into English-readable names. |
+| 0.8.2 | 67 | 2026/07/18 | Route HomeScreen first-2000-line Japanese literals, generated names, legacy labels, and item stat fragments through meaningful i18n keys. |
+| 0.8.2 | 66 | 2026/07/18 | Translate remaining English i18n ability help and C-multiplier help values from Japanese to English. |
+| 0.8.2 | 65 | 2026/07/18 | Route HomeScreen bonus ability glossary subcategory labels, ability help, and C-multiplier help text through meaningful i18n keys. |
+| 0.8.2 | 64 | 2026/07/18 | Route additional HomeScreen condition, elemental-offense help, bonus-help, diary, feedback, and backup/import Japanese UI text through meaningful i18n keys. |
+| 0.8.2 | 63 | 2026/07/18 | Route HomeScreen party stat help, locked party, difficulty offset, battle HP/damage, base tab, and shop countdown Japanese UI text through meaningful i18n keys. |
+| 0.8.2 | 62 | 2026/07/18 | Route additional HomeScreen header, party filter, stat-change, edit-warning, and base-stat Japanese UI text through meaningful Japanese/English i18n keys. |
+| 0.8.2 | 61 | 2026/07/18 | Route HomeScreen side quest, equipment, gold, level-up, item, shop, and instant expedition notification Japanese text through meaningful Japanese/English i18n keys. |
+| 0.8.2 | 60 | 2026/07/18 | Route additional HomeScreen header, party help, debug-report, terrain, gender, and equipment-lock Japanese UI text through meaningful Japanese/English i18n keys. |
+| 0.8.2 | 59 | 2026/07/18 | Localize remaining Party tab equipment, bonus, penetration, lineage and predisposition short labels, and battle hit-count displays through Japanese/English i18n keys. |
+| 0.8.2 | 58 | 2026/07/18 | Route additional HomeScreen shop, debug store, inventory, and sell-confirmation Japanese UI text through Japanese/English i18n keys. |
+| 0.8.2 | 57 | 2026/07/18 | Route Japanese runtime strings and default party character names in useGameState through Japanese/English i18n keys. |
+| 0.8.2 | 56 | 2026/07/18 | Translate remaining Japanese values in the English i18n dictionary, including glossary, deity, magic, side quest, terrain, lineage, predisposition, and race entries. |
+| 0.8.2 | 55 | 2026/07/18 | Route Japanese text in dungeon, glossary, lineage, predisposition, and race data through Japanese/English i18n keys. |
+| 0.8.2 | 54 | 2026/07/18 | Route ability names, class labels, deity profile labels, expedition names, and mythic drop names through Japanese/English i18n keys. |
+| 0.8.2 | 53 | 2026/07/18 | Route Japanese text in character ability descriptions, enemy short labels, and loot-gate labels through Japanese/English i18n keys. |
+| 0.8.2 | 52 | 2026/07/18 | Route deity option names, legacy aliases, and effect descriptions through Japanese/English i18n keys so deity displays follow the active language. |
+| 0.8.2 | 51 | 2026/07/18 | Route remaining Japanese battle runtime notes and action text in battle.ts through Japanese/English i18n keys, covering reactive abilities, start effects, stealth, counters, Requiem, and HP-loss notes. |
+| 0.8.2 | 50 | 2026/07/18 | Localize muted battle-log terrain start text, terrain descriptions, resonance bonus notes, and hit-attempt summaries so gray battle log details follow the active language. |
+| 0.8.2 | 49 | 2026/07/18 | Remove duplicated Japanese ability labels and descriptions from bonus ability glossary master data so localized ability text has a single i18n source of truth. |
+| 0.8.2 | 48 | 2026/07/18 | Route bonus ability glossary names and descriptions through Japanese/English i18n keys so English mode displays localized ability help text. |
+| 0.8.2 | 47 | 2026/07/18 | Route normal battle attack, spell-cast, and defensive reaction action logs through Japanese/English i18n templates so English battle logs no longer show Japanese attack text. |
+| 0.8.2 | 46 | 2026/07/18 | Localize item enhancement and Super Rare title prefixes in English displays, add missing English item names for Oblivion Mail and Thundertail Arrow, and show localized title labels in Divine Bureau debug lists. |
+| 0.8.2 | 45 | 2026/07/18 | Refine item-tier 8 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 44 | 2026/07/18 | Refine item-tier 7 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 43 | 2026/07/18 | Refine item-tier 6 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 42 | 2026/07/18 | Refine item-tier 5 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 41 | 2026/07/18 | Refine item-tier 4 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 40 | 2026/07/18 | Refine item-tier 3 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 39 | 2026/07/18 | Refine item-tier 2 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 38 | 2026/07/18 | Refine item-tier 1 English item names with concise setting-conscious localized names for common, uncommon, elite, and boss rare drops. |
+| 0.8.2 | 37 | 2026/07/18 | Refine Expedition 8 English enemy names with concise setting-conscious localized names for the Voidspawn, Ghost, Jinma, Cervin, elite, and boss roster. |
+| 0.8.2 | 36 | 2026/07/18 | Refine Expedition 6 English enemy names again with shorter, more setting-conscious Mech, Chiropteran, Chimera, Procyonian, elite, and boss display names. |
+| 0.8.2 | 35 | 2026/07/18 | Refine Expedition 7 English enemy names with concise setting-conscious localized names for the Pony, Leporian, Origami, Undead, elite, and boss roster. |
+| 0.8.2 | 34 | 2026/07/18 | Refine Expedition 6 English enemy names with concise setting-conscious localized names for the Mech, Chiropteran, Chimera, Procyonian, elite, and boss roster. |
+| 0.8.2 | 33 | 2026/07/18 | Refine Expedition 5 English enemy names with concise setting-conscious localized names for the Beast, Dragon, Ursan, elite, and boss roster. |
+| 0.8.2 | 32 | 2026/07/18 | Refine Expedition 4 English enemy names with concise setting-conscious localized names for the Shadowfang, Titan, Murid, Felidian, elite, and boss roster. |
+| 0.8.2 | 31 | 2026/07/18 | Refine Expedition 3 English enemy names with concise setting-conscious localized names for the beach, Fruit, Spirit, Orcinian, Slime Colony, Vulpinian, elite, and boss roster. |
+| 0.8.2 | 30 | 2026/07/18 | Refine Expedition 2 English enemy names with setting-conscious localized names for the frost, golem, fungal, Lupinian, elite, and boss roster. |
+| 0.8.2 | 29 | 2026/07/18 | Refine Expedition 1 English enemy names with setting-conscious localized names for the grassland, beast, aerial, insect, Caninian, elite, and boss roster. |
+| 0.8.2 | 28 | 2026/07/18 | Resolve generated enemy master names dynamically from their i18n keys so English mode updates the whole enemy roster instead of retaining Japanese module-load names. |
+| 0.8.2 | 27 | 2026/07/18 | Correct the English i18n entry for Enemy_ID 315 so Celestial Reaper displays from the localization dictionary without any non-i18n fallback. |
+| 0.8.2 | 26 | 2026/07/18 | Add Japanese i18n entries for expedition enemy display names and resolve enemy master names through the shared localization lookup for all languages. |
+| 0.8.2 | 25 | 2026/07/18 | Route item display names through Japanese/English i18n keys and add English item-name entries for the item master list. |
+| 0.8.2 | 24 | 2026/07/18 | Route expedition enemy display names through English i18n translations while preserving Japanese master names as the default. |
+| 0.8.2 | 23 | 2026/07/18 | Route Expedition floor concepts and remaining battle-log display wrappers/extras through Japanese/English i18n keys. |
+| 0.8.2 | 22 | 2026/07/18 | Fix HomeScreen jewel status formatter scope so slot and inventory jewel helpers are top-level functions and TypeScript builds successfully. |
+| 0.8.2 | 21 | 2026/07/18 | Route jewel status bonus labels through i18n keys and reuse one formatter for equipped and inventory jewel descriptions. |
+| 0.8.2 | 18 | 2026/07/18 | Route battle defensive reaction labels, magic-seal start log text, and generic battle fallback labels through Japanese/English i18n keys. |
+| 0.8.2 | 17 | 2026/07/18 | Route jewel display names, short labels, and rank-generated names through Japanese/English i18n keys while preserving stable jewel runtime identifiers. |
+| 0.8.2 | 16 | 2026/07/18 | Route additional runtime Japanese UI strings in enemy stat formatting and Divine Bureau mode/feedback panels through Japanese/English i18n keys. |
+| 0.8.2 | 15 | 2026/07/18 | Define the master-data i18n boundary and route class/enemy-type display short labels through Japanese/English translation keys. |
+| 0.8.2 | 14 | 2026/07/18 | Translate remaining Japanese entries in the English i18n dictionary for magic labels, runtime logs, and battle/environment narration. |
+| 0.8.2 | 13 | 2026/07/18 | Route HomeScreen developer news, enemy bubble labels, AFK summary, auto-sell, reward, and gate strings through Japanese/English i18n templates. |
+| 0.8.2 | 12 | 2026/07/18 | Replace unlock and side quest progress notification fragments with Japanese/English i18n templates so each language can format complete messages naturally. |
+| 0.8.2 | 11 | 2026/07/18 | Move the save/load failure warning message to the Japanese/English i18n dictionaries and resolve it after runtime language initialization. |
+| 0.8.2 | 10 | 2026/07/18 | Internationalize runtime side quest short labels by storing stable translation keys and resolving Japanese/English labels at assignment, display, and notification sites. |
+| 0.8.2 | 9 | 2026/07/18 | Move battle and environment narration flavor pools into grouped i18n keys and route runtime random selection through translation lookups. |
+| 0.8.2 | 8 | 2026/07/18 | Centralize additional runtime Japanese strings in magic profiles and expedition log effects through Japanese/English i18n lookup keys. |
+| 0.8.2 | 7 | 2026/07/18 | Translate English battle flavor i18n entries from Japanese into English while preserving placeholders and runtime battle narration keys. |
+| 0.8.2 | 6 | 2026/07/18 | Route Expedition tab cycle/outcome/battle-log chrome and Specification 6.2 battle flavor text pools through runtime Japanese/English i18n keys. |
+| 0.8.2 | 5 | 2026/07/18 | Route Party overview and selected member status labels through Japanese/English i18n keys, including deity rank/effect, edit controls, base stats, combat labels, defenses, bonuses, and abilities. |
+| 0.8.2 | 4 | 2026/07/18 | Expand runtime Party tab localization: route equipment slot prompts, rarity/category tabs, super-rare labels, sortie controls, difficulty label, and expedition stats controls through Japanese/English translation keys. |
+| 0.8.2 | 3 | 2026/07/18 | Implement runtime language mode selection: resolve Japanese/English from the `lang` URL parameter with Japanese default, persist the selected language in local storage, and apply that runtime preference over saved game data on startup. |
+| 0.8.2 | 2 | 2026/07/18 | Add runtime localization groundwork (Spec 8.1/5.1.4): introduce Japanese/English dictionaries with Japanese fallback, persist the selected language in game state, and route core navigation/loading/settings labels through translation lookup while preserving Japanese number formatting. |
 | 0.8.2 | 1 | 2026/07/18 | Prepare v0.8.2 runtime update: bump app version to `v0.8.2` and reset build number to `1`. |
 | 0.8.1 | 4 | 2026/07/18 | Update runtime Divine Bureau developer News badge (Spec 8.6): show the unread notification badge on the main Divine Bureau navigation tab in addition to the News pane header. |
 | 0.8.1 | 3 | 2026/07/18 | Implement Divine Bureau developer News runtime notification (Spec 8.6): add the News pane, unread badge, and save-persisted read tracking for the v8.1.2 beta report bonus fix notice. |

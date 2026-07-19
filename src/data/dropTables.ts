@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { AbilityId, Bonus, EnemyClassId, ItemCategory } from '../types';
 
 type GodMythicDrop = {
@@ -25,19 +26,21 @@ export type GodEnemyProfile = {
   image_path?: string;
 };
 
+
+
 export const GOD_ENEMY_PROFILES: GodEnemyProfile[] = [
-  { enemyId: 1, expId: 1, tier: 3, level: 18, name: 'Seiran', title: 'Goddess of Restoration', displayName: 'セイラン 再生の女神', enemyClass: 'pilgrim', representFor: 'Caninian', abilities: [{ id: 'resurrect', level: 2 }], dropItemTier: 3, dropItemCategories: ['grimoire', 'robe'], expedition: 'ケイナイアン平原', image_path: '/enemy/E_1.png' },
-  { enemyId: 2, expId: 2, tier: 4, level: 25, name: 'Garv', title: 'God of Attrition', displayName: 'ガーヴ 消耗の神', enemyClass: 'samurai', representFor: 'Lupinian', abilities: [{ id: 'rage', level: 2 }, { id: 're_counter', level: 2 }], dropItemTier: 4, dropItemCategories: ['katana', 'shield'], expedition: 'ルピニアンの亜寒帯', image_path: '/enemy/E_2.png' },
-  { enemyId: 3, expId: 3, tier: 5, level: 32, name: 'Kyōen', title: 'God of Cunning', displayName: 'キョウエン 狡猾の神', enemyClass: 'striker', representFor: 'Vulpinian', abilities: [{ id: 'momentum', level: 2 }], dropItemTier: 5, dropItemCategories: ['archery', 'bolt'], expedition: 'ヴァルンの海洋', image_path: '/enemy/E_3.png' },
-  { enemyId: 4, expId: 4, tier: 7, level: 39, name: 'Miora', title: 'Goddess of Fertility', displayName: 'ミオラ 豊穣の女神', enemyClass: 'sage', representFor: 'Felidian', abilities: [{ id: 'first_strike', level: 2 }], dropItemTier: 7, dropItemCategories: ['sword', 'catalyst'], expedition: 'フェリディ砂漠', image_path: '/enemy/E_4.png' },
-  { enemyId: 5, expId: 5, tier: 6, level: 46, name: 'Dolvar', title: 'God of Fortification', displayName: 'ドルヴァ 防備の神', enemyClass: 'guardian', representFor: 'Ursan', abilities: [{ id: 'cyborgization', level: 2 }], dropItemTier: 6, dropItemCategories: ['armor', 'gauntlet'], expedition: 'ウルサンの炎嶺', image_path: '/enemy/E_5.png' },
-  { enemyId: 5, expId: 6, tier: 7, level: 53, name: 'Tanue', title: 'Goddess of Mirage', displayName: 'タヌエ 幻影の女神', enemyClass: 'duelist', representFor: 'Procyonian', abilities: [], dropItemTier: 7, dropItemCategories: ['sword', 'gauntlet'], expedition: 'プロキオン巣穴', image_path: '/enemy/E_6.png' },
-  { enemyId: 7, expId: 7, tier: 8, level: 60, name: 'Lira', title: 'Goddess of Precision', displayName: 'リラ 精密の女神', enemyClass: 'ranger', representFor: 'Leporian', abilities: [{ id: 'composure', level: 2 }], dropItemTier: 8, dropItemCategories: ['arrow', 'archery'], expedition: 'レポリアンの月宮', image_path: '/enemy/E_7.png' },
-  { enemyId: 8, expId: 8, tier: 8, level: 61, name: 'Forne', title: 'God of Fate', displayName: 'フォルネ 運命の神', enemyClass: 'lord', representFor: 'Cervin', abilities: [{ id: 'focus', level: 2 }], dropItemTier: 8, dropItemCategories: ['armor', 'robe'], expedition: 'セルヴィンの谷', image_path: '/enemy/E_8.png' },
-  { enemyId: 9, expId: 9, tier: 8, level: 62, name: 'Skuva', title: 'God of Dusk', displayName: 'スクヴァ 黄昏の神', enemyClass: 'ninja', representFor: 'Murid', abilities: [{ id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['shield', 'catalyst'], expedition: '(not yet)', image_path: '/enemy/E_9.png' },
-  { enemyId: 10, expId: 10, tier: 7, level: 63, name: 'Rondel', title: 'God of Resonance', displayName: 'ロンデル 共鳴の神', enemyClass: 'wizard', representFor: 'Mustelid', abilities: [{ id: 'resonance', level: 4 }], dropItemTier: 7, dropItemCategories: ['wand', 'arrow'], expedition: '(not yet)', image_path: '/enemy/E_10.png' },
-  { enemyId: 11, expId: 11, tier: 8, level: 70, name: 'Noctyra', title: 'God of Oblivion', displayName: 'ノクティラ 忘却されし神', enemyClass: 'samurai', representFor: '-', abilities: [{ id: 'rage', level: 2 }, { id: 'first_strike', level: 2 }], dropItemTier: 8, dropItemCategories: ['bolt', 'katana'], expedition: '(not yet)', image_path: '/enemy/E_11.png' },
-  { enemyId: 12, expId: 12, tier: 8, level: 71, name: 'Eris', title: 'Goddess of Discord', displayName: 'エリス 不和の神', enemyClass: 'pilgrim', representFor: '-', abilities: [{ id: 'momentum', level: 2 }, { id: 'resonance', level: 4 }, { id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['grimoire', 'wand'], expedition: '(not yet)', image_path: '/enemy/E_12.png' },
+  { enemyId: 1, expId: 1, tier: 3, level: 18, name: 'Seiran', title: 'Goddess of Restoration', get displayName() { return t('masterData.god.Seiran.displayName'); }, enemyClass: 'pilgrim', representFor: 'Caninian', abilities: [{ id: 'resurrect', level: 2 }], dropItemTier: 3, dropItemCategories: ['grimoire', 'robe'], get expedition() { return t('masterData.god.Seiran.expedition'); }, image_path: '/enemy/E_1.png' },
+  { enemyId: 2, expId: 2, tier: 4, level: 25, name: 'Garv', title: 'God of Attrition', get displayName() { return t('masterData.god.Garv.displayName'); }, enemyClass: 'samurai', representFor: 'Lupinian', abilities: [{ id: 'rage', level: 2 }, { id: 're_counter', level: 2 }], dropItemTier: 4, dropItemCategories: ['katana', 'shield'], get expedition() { return t('masterData.god.Garv.expedition'); }, image_path: '/enemy/E_2.png' },
+  { enemyId: 3, expId: 3, tier: 5, level: 32, name: 'Kyōen', title: 'God of Cunning', get displayName() { return t('masterData.god.Kyōen.displayName'); }, enemyClass: 'striker', representFor: 'Vulpinian', abilities: [{ id: 'momentum', level: 2 }], dropItemTier: 5, dropItemCategories: ['archery', 'bolt'], get expedition() { return t('masterData.god.Kyōen.expedition'); }, image_path: '/enemy/E_3.png' },
+  { enemyId: 4, expId: 4, tier: 7, level: 39, name: 'Miora', title: 'Goddess of Fertility', get displayName() { return t('masterData.god.Miora.displayName'); }, enemyClass: 'sage', representFor: 'Felidian', abilities: [{ id: 'first_strike', level: 2 }], dropItemTier: 7, dropItemCategories: ['sword', 'catalyst'], get expedition() { return t('masterData.god.Miora.expedition'); }, image_path: '/enemy/E_4.png' },
+  { enemyId: 5, expId: 5, tier: 6, level: 46, name: 'Dolvar', title: 'God of Fortification', get displayName() { return t('masterData.god.Dolvar.displayName'); }, enemyClass: 'guardian', representFor: 'Ursan', abilities: [{ id: 'cyborgization', level: 2 }], dropItemTier: 6, dropItemCategories: ['armor', 'gauntlet'], get expedition() { return t('masterData.god.Dolvar.expedition'); }, image_path: '/enemy/E_5.png' },
+  { enemyId: 5, expId: 6, tier: 7, level: 53, name: 'Tanue', title: 'Goddess of Mirage', get displayName() { return t('masterData.god.Tanue.displayName'); }, enemyClass: 'duelist', representFor: 'Procyonian', abilities: [], dropItemTier: 7, dropItemCategories: ['sword', 'gauntlet'], get expedition() { return t('masterData.god.Tanue.expedition'); }, image_path: '/enemy/E_6.png' },
+  { enemyId: 7, expId: 7, tier: 8, level: 60, name: 'Lira', title: 'Goddess of Precision', get displayName() { return t('masterData.god.Lira.displayName'); }, enemyClass: 'ranger', representFor: 'Leporian', abilities: [{ id: 'composure', level: 2 }], dropItemTier: 8, dropItemCategories: ['arrow', 'archery'], get expedition() { return t('masterData.god.Lira.expedition'); }, image_path: '/enemy/E_7.png' },
+  { enemyId: 8, expId: 8, tier: 8, level: 61, name: 'Forne', title: 'God of Fate', get displayName() { return t('masterData.god.Forne.displayName'); }, enemyClass: 'lord', representFor: 'Cervin', abilities: [{ id: 'focus', level: 2 }], dropItemTier: 8, dropItemCategories: ['armor', 'robe'], get expedition() { return t('masterData.god.Forne.expedition'); }, image_path: '/enemy/E_8.png' },
+  { enemyId: 9, expId: 9, tier: 8, level: 62, name: 'Skuva', title: 'God of Dusk', get displayName() { return t('masterData.god.Skuva.displayName'); }, enemyClass: 'ninja', representFor: 'Murid', abilities: [{ id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['shield', 'catalyst'], expedition: '(not yet)', image_path: '/enemy/E_9.png' },
+  { enemyId: 10, expId: 10, tier: 7, level: 63, name: 'Rondel', title: 'God of Resonance', get displayName() { return t('masterData.god.Rondel.displayName'); }, enemyClass: 'wizard', representFor: 'Mustelid', abilities: [{ id: 'resonance', level: 4 }], dropItemTier: 7, dropItemCategories: ['wand', 'arrow'], expedition: '(not yet)', image_path: '/enemy/E_10.png' },
+  { enemyId: 11, expId: 11, tier: 8, level: 70, name: 'Noctyra', title: 'God of Oblivion', get displayName() { return t('masterData.god.Noctyra.displayName'); }, enemyClass: 'samurai', representFor: '-', abilities: [{ id: 'rage', level: 2 }, { id: 'first_strike', level: 2 }], dropItemTier: 8, dropItemCategories: ['bolt', 'katana'], expedition: '(not yet)', image_path: '/enemy/E_11.png' },
+  { enemyId: 12, expId: 12, tier: 8, level: 71, name: 'Eris', title: 'Goddess of Discord', get displayName() { return t('masterData.god.Eris.displayName'); }, enemyClass: 'pilgrim', representFor: '-', abilities: [{ id: 'momentum', level: 2 }, { id: 'resonance', level: 4 }, { id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['grimoire', 'wand'], expedition: '(not yet)', image_path: '/enemy/E_12.png' },
 ];
 
 export function getGodProfileForDungeon(dungeonId: number, dungeonName: string): GodEnemyProfile | undefined {
@@ -63,28 +66,28 @@ export const MYTHIC_DROP_POOLS: Record<number, ItemCategory[]> = {
 };
 
 export const GOD_MYTHIC_DROPS: GodMythicDrop[] = [
-  { dropBy: 'Seiran', tier: 3, category: 'grimoire', name: '再生の聖典', bonuses: [{ type: 'unlock_caninian_ability', value: 1 }] },
-  { dropBy: 'Seiran', tier: 3, category: 'robe', name: '甦生の法衣', bonuses: [{ type: 'unlock_caninian_ability', value: 1 }] },
-  { dropBy: 'Garv', tier: 4, category: 'katana', name: '血脈断ちの刀', bonuses: [{ type: 'unlock_lupinian_ability', value: 1 }] },
-  { dropBy: 'Garv', tier: 4, category: 'shield', name: '堅忍の護盾', bonuses: [{ type: 'unlock_lupinian_ability', value: 1 }] },
-  { dropBy: 'Kyōen', tier: 5, category: 'archery', name: '狡猾なる長弓', bonuses: [{ type: 'unlock_vulpinian_ability', value: 1 }] },
-  { dropBy: 'Kyōen', tier: 5, category: 'bolt', name: '虚影貫きの矢', bonuses: [{ type: 'unlock_vulpinian_ability', value: 1 }] },
-  { dropBy: 'Dolvar', tier: 6, category: 'armor', name: '不壊の重装', bonuses: [{ type: 'unlock_ursan_ability', value: 1 }] },
-  { dropBy: 'Dolvar', tier: 6, category: 'gauntlet', name: '鉄城の篭手', bonuses: [{ type: 'unlock_ursan_ability', value: 1 }] },
-  { dropBy: 'Miora', tier: 7, category: 'sword', name: '芽吹きの剣', bonuses: [{ type: 'unlock_felidian_ability', value: 1 }] },
-  { dropBy: 'Miora', tier: 7, category: 'catalyst', name: '生命循環の触媒', bonuses: [{ type: 'unlock_felidian_ability', value: 1 }] },
-  { dropBy: 'Rondel', tier: 7, category: 'wand', name: '共鳴導く魔杖', bonuses: [{ type: 'unlock_mustelid_ability', value: 1 }] },
-  { dropBy: 'Rondel', tier: 7, category: 'arrow', name: '反響する魔矢', bonuses: [{ type: 'unlock_mustelid_ability', value: 1 }] },
-  { dropBy: 'Lira', tier: 8, category: 'arrow', name: '精密射の矢', bonuses: [{ type: 'unlock_leporian_ability', value: 1 }] },
-  { dropBy: 'Lira', tier: 8, category: 'archery', name: '千里照準の弓', bonuses: [{ type: 'unlock_leporian_ability', value: 1 }] },
-  { dropBy: 'Forne', tier: 8, category: 'armor', name: '宿命纏いの鎧', bonuses: [{ type: 'unlock_cervin_ability', value: 1 }] },
-  { dropBy: 'Forne', tier: 8, category: 'robe', name: '運命編みの外套', bonuses: [{ type: 'unlock_cervin_ability', value: 1 }] },
-  { dropBy: 'Skuva', tier: 8, category: 'shield', name: '夕闇の円盾', bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
-  { dropBy: 'Skuva', tier: 8, category: 'catalyst', name: '薄暮の触媒', bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
-  { dropBy: 'Tanue', tier: 8, category: 'sword', name: '幻映の剣', bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
-  { dropBy: 'Tanue', tier: 8, category: 'gauntlet', name: '迷彩の篭手', bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
-  { dropBy: 'Noctyra', tier: 8, category: 'bolt', name: '虚無穿つ矢' },
-  { dropBy: 'Noctyra', tier: 8, category: 'katana', name: '絶滅の刀' },
-  { dropBy: 'Eris', tier: 8, category: 'grimoire', name: '争乱の書' },
-  { dropBy: 'Eris', tier: 8, category: 'wand', name: '乱調の魔杖' },
+  { dropBy: 'Seiran', tier: 3, category: 'grimoire', get name() { return t('masterData.mythicDrop.Seiran.1.name'); }, bonuses: [{ type: 'unlock_caninian_ability', value: 1 }] },
+  { dropBy: 'Seiran', tier: 3, category: 'robe', get name() { return t('masterData.mythicDrop.Seiran.2.name'); }, bonuses: [{ type: 'unlock_caninian_ability', value: 1 }] },
+  { dropBy: 'Garv', tier: 4, category: 'katana', get name() { return t('masterData.mythicDrop.Garv.1.name'); }, bonuses: [{ type: 'unlock_lupinian_ability', value: 1 }] },
+  { dropBy: 'Garv', tier: 4, category: 'shield', get name() { return t('masterData.mythicDrop.Garv.2.name'); }, bonuses: [{ type: 'unlock_lupinian_ability', value: 1 }] },
+  { dropBy: 'Kyōen', tier: 5, category: 'archery', get name() { return t('masterData.mythicDrop.Kyōen.1.name'); }, bonuses: [{ type: 'unlock_vulpinian_ability', value: 1 }] },
+  { dropBy: 'Kyōen', tier: 5, category: 'bolt', get name() { return t('masterData.mythicDrop.Kyōen.2.name'); }, bonuses: [{ type: 'unlock_vulpinian_ability', value: 1 }] },
+  { dropBy: 'Dolvar', tier: 6, category: 'armor', get name() { return t('masterData.mythicDrop.Dolvar.1.name'); }, bonuses: [{ type: 'unlock_ursan_ability', value: 1 }] },
+  { dropBy: 'Dolvar', tier: 6, category: 'gauntlet', get name() { return t('masterData.mythicDrop.Dolvar.2.name'); }, bonuses: [{ type: 'unlock_ursan_ability', value: 1 }] },
+  { dropBy: 'Miora', tier: 7, category: 'sword', get name() { return t('masterData.mythicDrop.Miora.1.name'); }, bonuses: [{ type: 'unlock_felidian_ability', value: 1 }] },
+  { dropBy: 'Miora', tier: 7, category: 'catalyst', get name() { return t('masterData.mythicDrop.Miora.2.name'); }, bonuses: [{ type: 'unlock_felidian_ability', value: 1 }] },
+  { dropBy: 'Rondel', tier: 7, category: 'wand', get name() { return t('masterData.mythicDrop.Rondel.1.name'); }, bonuses: [{ type: 'unlock_mustelid_ability', value: 1 }] },
+  { dropBy: 'Rondel', tier: 7, category: 'arrow', get name() { return t('masterData.mythicDrop.Rondel.2.name'); }, bonuses: [{ type: 'unlock_mustelid_ability', value: 1 }] },
+  { dropBy: 'Lira', tier: 8, category: 'arrow', get name() { return t('masterData.mythicDrop.Lira.1.name'); }, bonuses: [{ type: 'unlock_leporian_ability', value: 1 }] },
+  { dropBy: 'Lira', tier: 8, category: 'archery', get name() { return t('masterData.mythicDrop.Lira.2.name'); }, bonuses: [{ type: 'unlock_leporian_ability', value: 1 }] },
+  { dropBy: 'Forne', tier: 8, category: 'armor', get name() { return t('masterData.mythicDrop.Forne.1.name'); }, bonuses: [{ type: 'unlock_cervin_ability', value: 1 }] },
+  { dropBy: 'Forne', tier: 8, category: 'robe', get name() { return t('masterData.mythicDrop.Forne.2.name'); }, bonuses: [{ type: 'unlock_cervin_ability', value: 1 }] },
+  { dropBy: 'Skuva', tier: 8, category: 'shield', get name() { return t('masterData.mythicDrop.Skuva.1.name'); }, bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
+  { dropBy: 'Skuva', tier: 8, category: 'catalyst', get name() { return t('masterData.mythicDrop.Skuva.2.name'); }, bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
+  { dropBy: 'Tanue', tier: 8, category: 'sword', get name() { return t('masterData.mythicDrop.Tanue.1.name'); }, bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
+  { dropBy: 'Tanue', tier: 8, category: 'gauntlet', get name() { return t('masterData.mythicDrop.Tanue.2.name'); }, bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
+  { dropBy: 'Noctyra', tier: 8, category: 'bolt', get name() { return t('masterData.mythicDrop.Noctyra.1.name'); } },
+  { dropBy: 'Noctyra', tier: 8, category: 'katana', get name() { return t('masterData.mythicDrop.Noctyra.2.name'); } },
+  { dropBy: 'Eris', tier: 8, category: 'grimoire', get name() { return t('masterData.mythicDrop.Eris.1.name'); } },
+  { dropBy: 'Eris', tier: 8, category: 'wand', get name() { return t('masterData.mythicDrop.Eris.2.name'); } },
 ];
