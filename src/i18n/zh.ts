@@ -257,6 +257,7 @@ const zh = {
 'setting.reset.button': '重置游戏',
 'setting.reset.confirm': '确定要重置吗？所有数据将丢失。此操作不可撤销。',
 'setting.reset.execute': '执行重置',
+  
   'party.equipment.slotEquip': '装备到槽位 {slot}',
   'party.equipment.tapEquipUnequip': '点击装备/解除',
   'party.equipment.selectSlot': '请选择槽位',
@@ -2415,6 +2416,8 @@ const zh = {
   'item.name.竜脈の杖': '龙脉杖',
   'item.name.竜脈の触媒': '龙脉触媒',
   'item.name.竜稜の盾': '龙棱盾',
+  'item.name.忘却の鎧': '忘却之铠',
+  'item.name.雷尾矢': '雷尾箭',
   'item.name.霊の盾': '灵之盾',
   'item.name.霊銀矢': '灵银箭',
   'item.name.霊撃のボルト': '灵击弩箭',
