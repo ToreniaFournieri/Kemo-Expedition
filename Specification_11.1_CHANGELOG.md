@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 10 | 2026/07/19 | Keep automatic backup attachment internal to Divine Bureau feedback submissions by removing its explanatory form text and unused translations. |
+| 0.8.3 | 9 | 2026/07/19 | Complete the Divine Bureau feedback runtime by automatically attaching the current compressed backup before the selected latest battle log, shared Status Table HTML, and up to four user images; align webhook version/build/environment metadata and expose the automatic backup behavior in all supported languages. |
 | 0.8.3 | 8 | 2026/07/19 | Namespace the persisted language preference by deployment environment so `/dev/`, `/beta/`, and production no longer read or overwrite one another's language setting. |
 | 0.8.3 | 7 | 2026/07/19 | Derive every next-expedition entry check directly from the previous boss-defeat record so stale cached gate or selected-destination state cannot unlock an expedition before its corresponding party progression condition is met. |
 | 0.8.3 | 6 | 2026/07/19 | Complete Party floating-bubble descriptions for every AbilityId in Japanese, English, and Simplified Chinese, including Pursuit, True Sight, Illusion Breaker, Bulwark Breaker, and Unlock. |
