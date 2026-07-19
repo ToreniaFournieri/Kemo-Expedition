@@ -412,6 +412,7 @@ const en = {
   'stat.mind': 'MND',
   'combat.rangedAttack': 'Ranged attack',
   'combat.meleeAttack': 'Melee attack',
+  'combat.magicalAttack': 'Magical attack',
   'combat.physicalAccuracy': 'Physical accuracy',
   'combat.decay': 'Decay',
   'combat.element': 'Element',

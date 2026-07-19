@@ -413,6 +413,7 @@ const ja = {
   'stat.mind': '精神',
   'combat.rangedAttack': '遠距離攻撃',
   'combat.meleeAttack': '近接攻撃',
+  'combat.magicalAttack': '魔法攻撃',
   'combat.physicalAccuracy': '物理命中率',
   'combat.decay': '減衰',
   'combat.element': '属性',

@@ -413,6 +413,7 @@ const zh = {
   'stat.mind': '精神',
   'combat.rangedAttack': '远程攻击',
   'combat.meleeAttack': '近战攻击',
+  'combat.magicalAttack': '魔法攻击',
   'combat.physicalAccuracy': '物理命中率',
   'combat.decay': '衰减',
   'combat.element': '属性',
