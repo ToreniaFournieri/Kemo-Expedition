@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 85 | 2026/07/19 | Use the emulated in-game event time for diary entries finalized during AFK recovery instead of falling back to the device timestamp. |
 | 0.8.2 | 84 | 2026/07/19 | Translate unique and unchanged default character names to their corresponding localized names on language changes while preserving player-entered custom names. |
 | 0.8.2 | 83 | 2026/07/19 | Resolve generated character-name pools when a race is changed from the active i18n language so English and Simplified Chinese no longer use Japanese names. |
 | 0.8.2 | 82 | 2026/07/19 | Abbreviate the four base-stat labels in the English Party status pane to VIT, STR, INT, and MND. |

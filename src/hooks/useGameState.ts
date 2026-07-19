@@ -1922,7 +1922,7 @@ type GameAction =
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
-  | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; isAfkSimulation?: boolean }
+  | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
@@ -3712,7 +3712,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const pendingDiaryLog = party.pendingDiaryLog;
       const pendingUnlockState = party.pendingUnlockState;
-      const createdAtBase = pendingDiaryLog?.createdAt ?? Date.now();
+      // SpecRef: 8.5 | UI_DIARY | Use the emulated in-game timestamp rather than the device or system timestamp.
+      const createdAtBase = pendingDiaryLog?.createdAt ?? action.simulatedAt ?? Date.now();
       const unlockDiaryLog = pendingUnlockState
         ? getUnlockDiaryLog(
             party.lastExpeditionLog,
@@ -4649,7 +4650,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
           });
-          workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex, isAfkSimulation: true });
+          workingState = gameReducer(workingState, {
+            type: 'FINALIZE_DIARY_LOG',
+            partyIndex,
+            simulatedAt,
+            isAfkSimulation: true,
+          });
 
           const postFinalizeParty = workingState.parties[partyIndex];
           if (postFinalizeParty) {
@@ -5162,8 +5168,8 @@ export function useGameState() {
       dispatch({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now });
     }, []),
 
-    finalizeDiaryLog: useCallback((partyIndex: number) => {
-      dispatch({ type: 'FINALIZE_DIARY_LOG', partyIndex });
+    finalizeDiaryLog: useCallback((partyIndex: number, simulatedAt?: number) => {
+      dispatch({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt });
     }, []),
 
     healPartyHp: useCallback((partyIndex: number, amount: number) => {
