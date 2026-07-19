@@ -399,7 +399,7 @@ export type ExpeditionDepthLimit =
   | 'beforeBoss'
   | 'all';
 
-export type DiaryTrigger = 'defeat' | 'draw' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock' | 'firstBossDefeat';
+export type DiaryTrigger = 'defeat' | 'draw' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
 export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'none';
 
 export interface DiaryLog {
