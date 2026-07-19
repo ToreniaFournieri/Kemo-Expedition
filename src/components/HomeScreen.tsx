@@ -12257,25 +12257,24 @@ function SettingTab({
     [gameState.global.revealedGlossaryTerrainKeys],
   );
 
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Glossary (用語集)
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) => {
-    const sectionSubtitle = section.subtitle;
-    if (glossaryTab === '属') {
-      return sectionSubtitle.startsWith('増.');
-    }
-
-    const glossarySectionsByTab: Record<Exclude<GlossaryTabKey, '属'>, string> = {
-      能: '能.',
-      基: '基.',
-      固: '固.',
-      増: '増.',
-      機: '機.',
-      信: '信.',
-      魔: '魔.',
-      地: '地.',
-      求: '求.',
+    // Section subtitles are localized display text, so use stable master-data IDs
+    // for selection instead of language-specific subtitle prefixes.
+    const glossarySectionIdsByTab: Record<GlossaryTabKey, string> = {
+      能: '2-1-1',
+      基: '2-1-2',
+      固: '2-1-3',
+      増: '2-1-4',
+      属: '2-1-4',
+      機: '2-1-6',
+      信: '2-1-7',
+      魔: '2-1-8',
+      地: '2-1-10',
+      求: '2-1-9',
     };
 
-    return sectionSubtitle.startsWith(glossarySectionsByTab[glossaryTab]);
+    return section.id === glossarySectionIdsByTab[glossaryTab];
   });
 
 
@@ -12974,7 +12973,7 @@ function SettingTab({
                             if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
                               return null;
                             }
-                            const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
+                            const isSideQuestGlossarySection = section.id === '2-1-9';
                             if (isSideQuestGlossarySection && entry.key === 'q.none') {
                               return null;
                             }
@@ -12986,7 +12985,7 @@ function SettingTab({
                             if (glossaryTab === '増' && isElementalEntry) {
                               return null;
                             }
-                            const isGodGlossarySection = section.subtitle.startsWith('信.');
+                            const isGodGlossarySection = section.id === '2-1-7';
                             const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
                             const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
                             const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
