@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 7 | 2026/07/19 | Derive every next-expedition entry check directly from the previous boss-defeat record so stale cached gate or selected-destination state cannot unlock an expedition before its corresponding party progression condition is met. |
 | 0.8.3 | 6 | 2026/07/19 | Complete Party floating-bubble descriptions for every AbilityId in Japanese, English, and Simplified Chinese, including Pursuit, True Sight, Illusion Breaker, Bulwark Breaker, and Unlock. |
 | 0.8.3 | 5 | 2026/07/19 | Render Party ability descriptions in a document-level portal so their viewport coordinates remain correct, and add the missing localized Output Stabilizer description. |
 | 0.8.3 | 4 | 2026/07/19 | Add the missing Coldproof Fur Robe item translation and resolve item-granted ability names through the active language instead of retaining Japanese labels. |

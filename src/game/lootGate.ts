@@ -40,6 +40,14 @@ export function hasDefeatedDungeonBoss(
   return Boolean(party.defeatedBossExpeditions?.[dungeonId]);
 }
 
+// SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Entering
+export function isDungeonEntryUnlocked(
+  party: Pick<Party, 'defeatedBossExpeditions'>,
+  dungeonId: number,
+): boolean {
+  return dungeonId <= 1 || hasDefeatedDungeonBoss(party, dungeonId - 1);
+}
+
 // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | getLootCollectionKey
 export function getLootCollectionKey(tier: number, rarity: GateRarity): string {
   return `${tier}:${rarity}`;
@@ -97,7 +105,9 @@ export function checkLootGateRequirement(params: {
     const prevTier = tier - 1;
     const required = ENTRY_GATE_REQUIRED;
     const collected = party.defeatedBossExpeditions?.[prevTier] ? 1 : 0;
-    const gateUnlocked = isLootGateUnlocked(party, getEntryGateKey(dungeonId)) || collected >= required;
+    // Entry access is derived from the boss-defeat record. Unlike item gates,
+    // a stale cached lootGateStatus value must never bypass this requirement.
+    const gateUnlocked = isDungeonEntryUnlocked(party, dungeonId);
     if (!gateUnlocked) {
       return {
         blocked: true,

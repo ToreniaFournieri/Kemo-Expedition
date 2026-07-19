@@ -55,12 +55,12 @@ import {
   ENTRY_GATE_REQUIRED,
   BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
-  getEntryGateKey,
   getEliteGateKey,
   getBossGateKey,
   getLootCollectionCount,
   getItemRarityForLootGate,
   hasDefeatedDungeonBoss,
+  isDungeonEntryUnlocked,
   isLootGateUnlocked,
 } from '../game/lootGate';
 
@@ -1462,7 +1462,7 @@ function getDungeonEntryGateState(
 
   const required = ENTRY_GATE_REQUIRED;
   const collected = party.defeatedBossExpeditions?.[dungeon.id - 1] ? 1 : 0;
-  const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
+  const unlocked = isDungeonEntryUnlocked(party, dungeon.id);
 
   const gateProgressText = required === 1 ? t('home.gate.bossDefeated') : t('home.gate.bossProgress', { collected, required });
 
@@ -1660,10 +1660,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
 
   if (items.length === 0) {
     const nextDungeon = DUNGEONS.find((d) => d.id === currentDungeon.id + 1);
-    const previousBossDefeated = party.defeatedBossExpeditions?.[currentDungeon.id] ? 1 : 0;
     if (nextDungeon) {
-      const entryRequired = ENTRY_GATE_REQUIRED;
-      const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
+      const entryUnlocked = isDungeonEntryUnlocked(party, nextDungeon.id);
       if (!entryUnlocked) {
         pushUniqueProgressItem({
           key: `entry-gate:${nextDungeon.id}`,
@@ -1789,8 +1787,7 @@ function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
   const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
   if (!nextDungeon) return false;
 
-  const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
-    || Boolean(party.defeatedBossExpeditions?.[currentDungeon.id]);
+  const entryUnlocked = isDungeonEntryUnlocked(party, nextDungeon.id);
   return !entryUnlocked;
 }
 
@@ -4712,7 +4709,7 @@ export function HomeScreen({
                 party.defeatedBossExpeditions?.[party.selectedDungeonId],
               );
               const nextDungeonEntryUnlocked = nextDungeon
-                ? isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
+                ? isDungeonEntryUnlocked(party, nextDungeon.id)
                 : false;
               const selectedDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
               const selectedDungeonEnemyLevel = selectedDungeon?.expLevel ?? 0;
@@ -9724,7 +9721,7 @@ function ShopTab({
   const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
     const nextDungeonId = dungeon.id + 1;
     const hasBeatenBoss = parties.some((party) => (
-      party.selectedDungeonId >= nextDungeonId || isLootGateUnlocked(party, getEntryGateKey(nextDungeonId))
+      isDungeonEntryUnlocked(party, nextDungeonId)
     ));
     return hasBeatenBoss ? Math.max(highestTier, dungeon.id) : highestTier;
   }, 1);
@@ -12356,8 +12353,7 @@ function SettingTab({
     DUNGEONS
       .filter((dungeon) => dungeon.id !== 99)
       .filter((dungeon) => debugSettings.displayAllBestiary || gameState.parties.some((party) => (
-        party.selectedDungeonId >= dungeon.id
-        || isLootGateUnlocked(party, getEntryGateKey(dungeon.id))
+        isDungeonEntryUnlocked(party, dungeon.id)
       )))
       .map((dungeon) => dungeon.id)
   );
