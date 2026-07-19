@@ -51,12 +51,12 @@ const SUPER_RARE_BAG_DEFAULT: WeightedBagEntry[] = SUPER_RARE_TITLES.map((title)
 
 const COMMON_SUPER_RARE_BAG_DEFAULT: WeightedBagEntry[] = SUPER_RARE_TITLES.map((title) => ({
   id: title.value,
-  tickets: title.value === 0 ? 409_918 : 1,
+  tickets: title.value === 0 ? 819_918 : 1,
 }));
 
 const RARE_SUPER_RARE_BAG_DEFAULT: WeightedBagEntry[] = SUPER_RARE_TITLES.map((title) => ({
   id: title.value,
-  tickets: title.value === 0 ? 40_918 : 1,
+  tickets: title.value === 0 ? 122_918 : 1,
 }));
 
 const PHYSICAL_THREAT_WEIGHT_BAG_DEFAULT: WeightedBagEntry[] = [
