@@ -6152,7 +6152,7 @@ function PartyTab({
   const [activeStatusHelpKey, setActiveStatusHelpKey] = useState<string | null>(null);
   const [activeStatusHelpPosition, setActiveStatusHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [editingDeity, setEditingDeity] = useState(false);
-  const [pendingDeityName, setPendingDeityName] = useState(party.deity.name);
+  const [pendingDeityName, setPendingDeityName] = useState(getDeityKey(party.deity.name) ?? party.deity.name);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
 
   // Handle equipment slot tap with double-tap detection for removal
@@ -6225,7 +6225,7 @@ function PartyTab({
 
   useEffect(() => {
     if (!editingDeity) {
-      setPendingDeityName(party.deity.name);
+      setPendingDeityName(getDeityKey(party.deity.name) ?? party.deity.name);
     }
   }, [party.deity.name, editingDeity]);
 
@@ -6312,10 +6312,17 @@ function PartyTab({
     });
   };
 
-  const displayedDeityName = editingDeity ? pendingDeityName : party.deity.name;
-  const normalizedDisplayedDeityName = normalizeDeityName(displayedDeityName);
-  const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
-  const hasUnlockedReligions = unlockedDeities.length > 0;
+  const displayedDeityName = normalizeDeityName(editingDeity ? pendingDeityName : party.deity.name);
+  const displayedDeityKey = getDeityKey(displayedDeityName);
+  const displayedDeityDonation = Object.entries(deityDonations).find(
+    ([deityName]) => getDeityKey(deityName) === displayedDeityKey
+  )?.[1] ?? 0;
+  const unlockedDeityKeys = new Set(
+    unlockedDeities
+      .map((deityName) => getDeityKey(deityName))
+      .filter((deityKey) => deityKey !== null && deityKey !== 'None')
+  );
+  const hasUnlockedReligions = unlockedDeityKeys.size > 0;
   const equippedItemCount = char.equipment.slice(0, stats.maxEquipSlots).filter((item) => item != null).length;
   const autoEquipmentMode = normalizeAutoEquipmentMode(char.autoEquipmentMode);
 
@@ -6694,7 +6701,7 @@ function PartyTab({
                 onClick={() => {
                   onSelectParty(partyIndex);
                   setEditingDeity(false);
-                  setPendingDeityName(parties[partyIndex].deity.name);
+                  setPendingDeityName(getDeityKey(parties[partyIndex].deity.name) ?? parties[partyIndex].deity.name);
                 }}
                 className={`${IOS_GLASS_TAB_CLASS} flex-1 px-1 py-2 text-sm font-medium transition-colors ${
                   isSelected
@@ -6738,7 +6745,7 @@ function PartyTab({
               </button>
               <button
                 onClick={() => {
-                  setPendingDeityName(party.deity.name);
+                  setPendingDeityName(getDeityKey(party.deity.name) ?? party.deity.name);
                   setEditingDeity(false);
                 }}
                 className={`text-sm px-3 py-1 rounded whitespace-nowrap ${isDarkModeEnabled ? 'text-slate-300 bg-slate-700/80 border border-slate-500' : 'text-gray-600 bg-gray-200/80'}`}
@@ -6752,22 +6759,20 @@ function PartyTab({
               className="text-sm border rounded px-3 py-1.5"
             >
               {DEITY_OPTIONS.filter((deity) => {
-                const normalizedName = normalizeDeityName(deity.name);
-                return isNoFaithDeity(normalizedName)
-                  || unlockedDeities.includes(normalizedName)
-                  || normalizeDeityName(party.deity.name) === normalizedName;
+                return deity.key === 'None'
+                  || unlockedDeityKeys.has(deity.key)
+                  || getDeityKey(party.deity.name) === deity.key;
               }).map((deity) => {
-                const normalizedName = normalizeDeityName(deity.name);
-                const unlocked = isNoFaithDeity(normalizedName)
-                  || unlockedDeities.includes(normalizedName)
-                  || normalizeDeityName(party.deity.name) === normalizedName;
-                const inUseByOtherParty = !isNoFaithDeity(normalizedName) && parties.some((partyCandidate, index) =>
-                  index !== selectedPartyIndex && normalizeDeityName(partyCandidate.deity.name) === normalizedName
+                const unlocked = deity.key === 'None'
+                  || unlockedDeityKeys.has(deity.key)
+                  || getDeityKey(party.deity.name) === deity.key;
+                const inUseByOtherParty = deity.key !== 'None' && parties.some((partyCandidate, index) =>
+                  index !== selectedPartyIndex && getDeityKey(partyCandidate.deity.name) === deity.key
                 );
                 return (
                   <option
                     key={deity.key}
-                    value={deity.name}
+                    value={deity.key}
                     disabled={!unlocked || inUseByOtherParty}
                   >
                     {deity.name}
@@ -6779,7 +6784,7 @@ function PartyTab({
         ) : hasUnlockedReligions ? (
           <button
             onClick={() => {
-              setPendingDeityName(party.deity.name);
+              setPendingDeityName(getDeityKey(party.deity.name) ?? party.deity.name);
               setEditingDeity(true);
             }}
             className="text-sm text-sub flex-shrink-0"

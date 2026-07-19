@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 3 | 2026/07/19 | Compare unlocked, selected, assigned, and donation religion records by stable deity identity so every unlocked religion remains selectable after switching away from Japanese. |
+| 0.8.3 | 2 | 2026/07/19 | Resolve religion identities across all supported translations and use stable deity keys in the Party selector so saved Japanese names display and remain selectable in English and Simplified Chinese modes. |
 | 0.8.3 | 1 | 2026/07/19 | Release version 0.8.3 and reset the build number to 1. |
 | 0.8.2 | 92 | 2026/07/19 | Load the runtime Developer News list from Specification 11.2, display every entry newest-first, and select its Japanese, English, or Simplified Chinese content from the active language. |
 | 0.8.2 | 91 | 2026/07/19 | Add decrement and increment buttons around each unlocked Expedition Difficulty Offset slider, applying the specified two-level step and disabling controls at the valid bounds. |
