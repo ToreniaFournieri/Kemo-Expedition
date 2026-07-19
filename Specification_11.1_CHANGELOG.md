@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 79 | 2026/07/19 | Allow the Glossary tab selector to wrap into a vertically scrollable list so longer English labels remain accessible without widening or clipping the selection field. |
 | 0.8.2 | 78 | 2026/07/19 | Resolve expedition floor concepts through the active-language lookup in depth options, expedition headlines, and Bestiary floor groups so Simplified Chinese no longer displays canonical English floor names. |
 | 0.8.2 | 77 | 2026/07/19 | Enable Simplified Chinese at runtime: recognize `lang=zh`, persist the selection, expose 中文 in the language selector, load the Chinese dictionary, and synchronize the document language. |
 | 0.8.2 | 76 | 2026/07/19 | Fix the Simplified Chinese translation dictionary's invalid TypeScript identifier and export so environment builds compile successfully. |
