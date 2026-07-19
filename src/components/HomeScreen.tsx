@@ -137,7 +137,7 @@ interface HomeScreenProps {
     resetExpeditionStats: (partyIndex: number) => void;
     runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
     consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
-    finalizeDiaryLog: (partyIndex: number) => void;
+    finalizeDiaryLog: (partyIndex: number, simulatedAt?: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
     clearPendingProfit: (partyIndex: number) => void;
@@ -4467,7 +4467,7 @@ export function HomeScreen({
         const triggerGodsBattle = party ? shouldAutoTriggerGodsBattle(party) : false;
         actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt);
         if (shouldFinalizeDiary) {
-          actions.finalizeDiaryLog(partyIndex);
+          actions.finalizeDiaryLog(partyIndex, simulatedAt);
         }
       });
 
