@@ -281,11 +281,12 @@ HP: 312                 タイプ: 神魔
 **Mode select (モード切替)**
 
 - Language (言語)
-  - Options: 日本語 / English
+  - Options: 日本語 / English / 中文
   - The language is determined by the lang URL parameter:
     - Default → 日本語 
     - `lang=ja` → 日本語
     - `lang=en` → English
+    - `lang=zh` → 中文
     - Example: `https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja`
   - Persist the selected language in local storage.
 
