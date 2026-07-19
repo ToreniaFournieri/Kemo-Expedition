@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 76 | 2026/07/19 | Fix the Simplified Chinese translation dictionary's invalid TypeScript identifier and export so environment builds compile successfully. |
 | 0.8.2 | 75 | 2026/07/19 | Select Glossary sections by stable master-data IDs instead of localized subtitle prefixes, restoring all Glossary contents in English. |
 | 0.8.2 | 74 | 2026/07/18 | Share Party and Base Inventory equipped-owner image selection and identify unique characters by stable lineage instead of localized display names, fixing Kemo portraits in English. |
 | 0.8.2 | 73 | 2026/07/18 | Route remaining HomeScreen Divine Bureau, clairvoyance, glossary, roster, bestiary, validation, and report runtime Japanese UI text through meaningful Japanese and English i18n keys. |
