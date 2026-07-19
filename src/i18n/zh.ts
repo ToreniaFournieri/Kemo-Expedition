@@ -186,7 +186,6 @@ const zh = {
 
 'diary.title.defeat': '败北记录',
 'diary.title.draw': '平局记录',
-'diary.title.firstBossDefeat': '首次首领击破记录',
 'diary.title.unlock': '解锁记录',
 'diary.title.sideQuest': '支线任务达成',
 'diary.title.godsBattle': '神魔战记录',
@@ -206,7 +205,6 @@ const zh = {
 'diary.headline.sideQuest': '[{party}] 支线任务达成',
 'diary.headline.defeat': '[{party}] 败北记录',
 'diary.headline.draw': '[{party}] 平局记录',
-'diary.headline.firstBossDefeat': '[{party}] 首次击破{dungeon}首领',
 'diary.reward.superRare': '超稀有',
 'diary.reward.mythicRare': '神魔稀有',
 'diary.reward.bossRare': '首领稀有',

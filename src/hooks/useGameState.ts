@@ -3643,11 +3643,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
       const diaryTriggers: DiaryLog['triggers'] = [];
-      const isFirstExpeditionBossDefeat = !isGodsBattle
-        && finalOutcome === 'Clear'
-        && !currentParty.defeatedBossExpeditions?.[dungeon.id];
-      // SpecRef: 8.5 | UI_DIARY | The party defeats an expedition boss for the first time.
-      if (isFirstExpeditionBossDefeat) diaryTriggers.push('firstBossDefeat');
       // SpecRef: 8.5 | UI_DIARY | Setting.
       if (finalOutcome === 'Defeat' && diarySettings.defeatNotificationMode !== 'none') diaryTriggers.push('defeat');
       if (finalOutcome === 'Retreat' && endedWithDrawRetreat && diarySettings.defeatNotificationMode === 'defeatAndDraw') diaryTriggers.push('draw');
