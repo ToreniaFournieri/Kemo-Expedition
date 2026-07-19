@@ -1921,6 +1921,7 @@ type GameAction =
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
+  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
@@ -3071,6 +3072,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         parties: updatedParties,
       };
+    }
+
+    case 'RESOLVE_INSTANT_EXPEDITION': {
+      // SpecRef: 8.5 | UI_DIARY | When a party was defeated, the diary updates.
+      // Resolve and finalize as one reducer transaction so another sortie cannot
+      // replace the pending defeat entry before it reaches the diary.
+      const expeditionState = gameReducer(state, {
+        type: 'RUN_EXPEDITION',
+        partyIndex: action.partyIndex,
+        simulatedAt: action.simulatedAt,
+        gameMode: action.gameMode,
+        triggerGodsBattle: action.triggerGodsBattle,
+      });
+      return gameReducer(expeditionState, {
+        type: 'FINALIZE_DIARY_LOG',
+        partyIndex: action.partyIndex,
+        simulatedAt: action.simulatedAt,
+      });
     }
 
     case 'RUN_EXPEDITION': {
@@ -5162,6 +5181,10 @@ export function useGameState() {
 
     runExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt?: number) => {
       dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
+    }, []),
+
+    resolveInstantExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt: number = Date.now()) => {
+      dispatch({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
     }, []),
 
     consumeInstantExpeditionStock: useCallback((partyIndex: number, now?: number) => {
