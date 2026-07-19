@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 90 | 2026/07/19 | Align the runtime common and rare Super Rare bag defaults with the specification by assigning 819,918 and 122,918 no-title tickets, respectively. |
 | 0.8.2 | 89 | 2026/07/19 | Resolve Diary setting option labels at render time so rarity, defeat, and side-quest selectors follow runtime language changes in Japanese, English, and Simplified Chinese. |
 | 0.8.2 | 88 | 2026/07/19 | Finalize immediate-sortie expedition and defeat diary results atomically so launching another sortie during rest cannot replace an uncommitted defeat record. |
 | 0.8.2 | 87 | 2026/07/19 | Synchronize the URL `lang` query parameter with in-game language changes while preserving the current path, other query parameters, and fragment without reloading the page. |
