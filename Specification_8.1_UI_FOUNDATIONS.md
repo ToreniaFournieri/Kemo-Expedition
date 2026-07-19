@@ -114,6 +114,8 @@
   - Example: "PT1ケモは 名工の木の胸当て を装備した"
   - Example:　"PT3ガルドは 宿った鉄の短剣 を 伝説の鉄の短剣に装備しなおした"
 
+- Unlock a new party
+
 - notification while AFK mode:
   - no notifications shows while AFK mode until at the end of AFK mode. 
 
