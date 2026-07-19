@@ -1025,7 +1025,7 @@ const en = {
   'battleLog.action.enemySpellNegated': '{enemy} cast {attack}, but it was nullified!',
   'battleLog.action.enemySpellCast': 'cast {attack}!',
   'battleLog.action.targetMagicHit': 'hit {target}!',
-  'battleLog.action.targetAttack': 'attacked {target} with {attack}!',
+  'battleLog.action.targetAttack': '{attack}ed {target}!',
   'battleLog.action.enemySpell.reflected': '{enemy} cast {attack}, but it was reflected! ({attempts})',
   'battleLog.action.enemySpell.absorbed': '{enemy} cast {attack}, but it was absorbed! ({attempts})',
   'battleLog.action.enemySpell.nullified': '{enemy} cast {attack}, but it was nullified! ({attempts})',
