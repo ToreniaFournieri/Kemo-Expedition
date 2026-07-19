@@ -1,5 +1,5 @@
 const en = {
-  'app.title': 'Bo-Kemo',
+  'app.title': 'BoKemo',
   'nav.expedition': 'Expedition',
   'nav.party': 'Party',
   'nav.base': 'Base',
@@ -3307,7 +3307,7 @@ const en = {
   'home.equipment.unlockAria': 'Unlock equipment',
   'home.equipment.lockAria': 'Lock equipment',
   'home.bonus.descriptionMissing': 'No description is configured for this bonus.',
-  'home.nav.expeditionIcon': 'Bo-',
+  'home.nav.expeditionIcon': 'Bo',
   'home.party.reorderLongPressHint': 'Long-press a character icon to reorder the formation',
   'common.stat.vitality.short': 'Vit',
   'common.stat.strength.short': 'Str',
