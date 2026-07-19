@@ -248,6 +248,7 @@ const ja = {
   'setting.language.description': '表示言語を選択します。未翻訳の英語キーは日本語で表示されます。',
   'setting.language.ja': '日本語',
   'setting.language.en': 'English',
+  'setting.language.zh': '中文',
   'setting.backup.title': 'バックアップ（Export）',
   'setting.backup.download': 'バックアップをダウンロード',
   'setting.import.title': 'インポート（Import）',

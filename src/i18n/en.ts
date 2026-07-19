@@ -247,6 +247,7 @@ const en = {
   'setting.language.description': 'Choose the display language. Missing English keys fall back to Japanese.',
   'setting.language.ja': 'Japanese',
   'setting.language.en': 'English',
+  'setting.language.zh': 'Chinese',
   'setting.backup.title': 'Backup (Export)',
   'setting.backup.download': 'Download backup',
   'setting.import.title': 'Import',
