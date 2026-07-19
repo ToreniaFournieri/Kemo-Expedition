@@ -248,6 +248,7 @@ const zh = {
 'setting.language.description': '选择显示语言。未翻译的英文键将以日语显示。',
 'setting.language.ja': '日本語',
 'setting.language.en': 'English',
+'setting.language.zh': '中文',
 'setting.backup.title': '备份（Export）',
 'setting.backup.download': '下载备份',
 'setting.import.title': '导入（Import）',

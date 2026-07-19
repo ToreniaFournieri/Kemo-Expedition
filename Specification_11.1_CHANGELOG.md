@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.2 | 77 | 2026/07/19 | Enable Simplified Chinese at runtime: recognize `lang=zh`, persist the selection, expose 中文 in the language selector, load the Chinese dictionary, and synchronize the document language. |
 | 0.8.2 | 76 | 2026/07/19 | Fix the Simplified Chinese translation dictionary's invalid TypeScript identifier and export so environment builds compile successfully. |
 | 0.8.2 | 75 | 2026/07/19 | Select Glossary sections by stable master-data IDs instead of localized subtitle prefixes, restoring all Glossary contents in English. |
 | 0.8.2 | 74 | 2026/07/18 | Share Party and Base Inventory equipped-owner image selection and identify unique characters by stable lineage instead of localized display names, fixing Kemo portraits in English. |

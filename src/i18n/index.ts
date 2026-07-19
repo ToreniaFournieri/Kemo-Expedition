@@ -1,19 +1,20 @@
 import ja from './ja';
 import en from './en';
+import zh from './zh';
 
-export type Language = 'ja' | 'en';
+export type Language = 'ja' | 'en' | 'zh';
 export type TranslationParams = Record<string, string | number>;
 type TranslationDictionary = Record<string, string>;
 
-export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en'];
+export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en', 'zh'];
 export const DEFAULT_LANGUAGE: Language = 'ja';
 export const LANGUAGE_STORAGE_KEY = 'kemo-expedition-language';
 
-const dictionaries: Record<Language, TranslationDictionary> = { ja, en };
+const dictionaries: Record<Language, TranslationDictionary> = { ja, en, zh };
 let activeLanguage: Language = DEFAULT_LANGUAGE;
 
 export function normalizeLanguage(value: unknown): Language {
-  return value === 'en' || value === 'ja' ? value : DEFAULT_LANGUAGE;
+  return value === 'en' || value === 'ja' || value === 'zh' ? value : DEFAULT_LANGUAGE;
 }
 
 function getBrowserLanguageSources(): { urlLanguage: Language | null; savedLanguage: Language | null } {
@@ -22,9 +23,9 @@ function getBrowserLanguageSources(): { urlLanguage: Language | null; savedLangu
   }
 
   const urlParam = new URLSearchParams(window.location.search).get('lang');
-  const urlLanguage = urlParam === 'en' || urlParam === 'ja' ? urlParam : null;
+  const urlLanguage = urlParam === 'en' || urlParam === 'ja' || urlParam === 'zh' ? urlParam : null;
   const saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  const savedLanguage = saved === 'en' || saved === 'ja' ? saved : null;
+  const savedLanguage = saved === 'en' || saved === 'ja' || saved === 'zh' ? saved : null;
   return { urlLanguage, savedLanguage };
 }
 
@@ -63,4 +64,3 @@ export function getRandomTranslation(prefix: string, count: number, params?: Tra
   const index = Math.floor(Math.random() * safeCount) + 1;
   return t(`${prefix}.${index}`, params);
 }
-

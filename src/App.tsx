@@ -87,6 +87,12 @@ export default function App() {
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
+    document.documentElement.lang = state.global.language === 'zh' ? 'zh-CN' : state.global.language;
+  }, [state.global.language]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
     document.body.classList.toggle('app-dark', isDarkModeEnabled);
     document.documentElement.classList.toggle('app-dark', isDarkModeEnabled);
 
