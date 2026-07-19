@@ -9150,6 +9150,15 @@ function ExpeditionTab({
                   <div className="text-xs text-gray-600 space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="shrink-0">{t('party.expedition.difficulty')}</span>
+                      <button
+                        type="button"
+                        disabled={selectedDifficultyOffset <= 0}
+                        aria-label={t('party.expedition.difficultyDecrease')}
+                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset - 2)}
+                        className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
+                      >
+                        −
+                      </button>
                       <input
                         type="range"
                         min={0}
@@ -9163,6 +9172,15 @@ function ExpeditionTab({
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
                         style={getSliderProgressStyle(selectedDifficultyOffset, 0, difficultyOffsetMax)}
                       />
+                      <button
+                        type="button"
+                        disabled={selectedDifficultyOffset >= difficultyOffsetMax}
+                        aria-label={t('party.expedition.difficultyIncrease')}
+                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset + 2)}
+                        className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
+                      >
+                        +
+                      </button>
                       <button
                         type="button"
                         className="shrink-0 rounded px-1 text-left hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-sub/60"

@@ -392,6 +392,8 @@ const zh = {
   'party.expedition.godsBattle': '神魔战',
   'party.expedition.sortie': '出击',
   'party.expedition.difficulty': '难度：',
+  'party.expedition.difficultyDecrease': '难度降低2',
+  'party.expedition.difficultyIncrease': '难度提高2',
   'party.expedition.stats': '通关{clear}/归还{returned}/平局{draw}/撤退{retreat}/败北{defeat} 总计 {total}次',
   'party.expedition.reset': '重置',
   'common.edit': '编辑',

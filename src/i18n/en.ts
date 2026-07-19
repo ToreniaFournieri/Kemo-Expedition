@@ -391,6 +391,8 @@ const en = {
   'party.expedition.godsBattle': 'God Battle',
   'party.expedition.sortie': 'Sortie',
   'party.expedition.difficulty': 'Difficulty:',
+  'party.expedition.difficultyDecrease': 'Decrease difficulty by 2',
+  'party.expedition.difficultyIncrease': 'Increase difficulty by 2',
   'party.expedition.stats': 'Clear {clear} / Return {returned} / Draw {draw} / Retreat {retreat} / Defeat {defeat} / Total {total}',
   'party.expedition.reset': 'Reset',
   'common.edit': 'Edit',

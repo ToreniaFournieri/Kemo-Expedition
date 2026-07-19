@@ -392,6 +392,8 @@ const ja = {
   'party.expedition.godsBattle': '神魔戦',
   'party.expedition.sortie': '出撃',
   'party.expedition.difficulty': '難易度:',
+  'party.expedition.difficultyDecrease': '難易度を2下げる',
+  'party.expedition.difficultyIncrease': '難易度を2上げる',
   'party.expedition.stats': '踏破{clear}/帰還{returned}/引分{draw}/撤退{retreat}/敗北{defeat} 合計 {total}回',
   'party.expedition.reset': 'リセット',
   'common.edit': '編集',
