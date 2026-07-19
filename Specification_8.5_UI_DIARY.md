@@ -4,7 +4,8 @@
 
 - When a party was defeated, got boss rare or mythic rare item, gods battle, and acquiring super rare item, the diary updates. 
 - It keeps 24 entries. First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
-- Top record is latest (default position) and bottom is older logs. 
+- Top record is latest (default position) and bottom is older logs.
+- Use the emulated in-game timestamp rather than the device or system timestamp.
 
 - Setting. 
 ```
