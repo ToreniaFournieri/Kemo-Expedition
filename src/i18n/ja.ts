@@ -186,6 +186,7 @@ const ja = {
 
   'diary.title.defeat': '敗北の記録',
   'diary.title.draw': '引分の記録',
+  'diary.title.firstBossDefeat': '初回ボス撃破の記録',
   'diary.title.unlock': '解放の記録',
   'diary.title.sideQuest': 'サイドクエスト達成',
   'diary.title.godsBattle': '神魔戦の記録',
@@ -205,6 +206,7 @@ const ja = {
   'diary.headline.sideQuest': '[{party}] サイドクエスト達成',
   'diary.headline.defeat': '[{party}] 敗北の記録',
   'diary.headline.draw': '[{party}] 引分の記録',
+  'diary.headline.firstBossDefeat': '[{party}] {dungeon} ボス初撃破',
   'diary.reward.superRare': '超レア',
   'diary.reward.mythicRare': '神魔レア',
   'diary.reward.bossRare': 'ボスレア',

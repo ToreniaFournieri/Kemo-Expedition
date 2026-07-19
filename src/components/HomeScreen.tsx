@@ -10757,6 +10757,7 @@ function DiaryTab({
   const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
     if (triggers.includes('defeat') && triggers.length === 1) return t('diary.title.defeat');
     if (triggers.includes('draw') && triggers.length === 1) return t('diary.title.draw');
+    if (triggers.includes('firstBossDefeat')) return t('diary.title.firstBossDefeat');
     if (triggers.includes('unlock')) return t('diary.title.unlock');
     if (triggers.includes('sideQuest')) return t('diary.title.sideQuest');
     if (triggers.includes('godsBattle')) return t('diary.title.godsBattle');
@@ -10814,6 +10815,15 @@ function DiaryTab({
       return t('diary.headline.godsBattleGeneric', { party: partyName, outcome: godsBattleOutcome });
     }
 
+    // SpecRef: 8.5 | UI_DIARY | The party defeats an expedition boss for the first time.
+    if (triggers.includes('firstBossDefeat')) {
+      const localizedDungeonName = DUNGEONS.find((dungeon) => dungeon.id === expeditionLog.dungeonId)?.name
+        ?? expeditionLog.dungeonName;
+      return t('diary.headline.firstBossDefeat', {
+        party: partyName,
+        dungeon: localizedDungeonName,
+      });
+    }
 
     if (triggers.includes('unlock')) {
       return unlockHeadline
