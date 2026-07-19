@@ -13988,7 +13988,6 @@ function SettingTab({
               <option value="None">None</option>
             </select>
           </div>
-          <div className="text-xs text-gray-500">{t('divineBureau.feedback.backupAttached')}</div>
           <div>
             <input
               ref={feedbackFileInputRef}
