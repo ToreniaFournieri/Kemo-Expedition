@@ -12879,13 +12879,13 @@ function SettingTab({
         {renderDivineBureauPanelHeader('glossary', t('divineBureau.glossary.title'))}
         {divineBureauPanelExpanded.glossary && (
           <>
-          <div className="flex justify-end items-center gap-1 mt-3 mb-3">
+          <div className="mt-3 mb-3 flex max-h-20 flex-wrap items-center justify-start gap-1 overflow-y-auto pr-1">
             {GLOSSARY_TABS.map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setGlossaryTab(tab)}
-                className={`text-xs px-2 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
+                className={`shrink-0 text-xs px-2 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
                   glossaryTab === tab
                     ? 'bg-sub text-white border-sub'
                     : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
