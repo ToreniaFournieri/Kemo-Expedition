@@ -7,7 +7,6 @@ import {
   getEffectiveEnemyLevel,
   getEffectiveEnemyMultipliers,
   getEffectiveExpeditionTier,
-  getExpeditionFloorConcept,
   getLocalizedExpeditionFloorConcept,
 } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -1219,13 +1218,13 @@ const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationM
 
 function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
   // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
-  const beforeBossConcept = getExpeditionFloorConcept(dungeonId, 6) ?? t('home.floorConcept.fallback', { floor: 6 });
+  const beforeBossConcept = getLocalizedExpeditionFloorConcept(dungeonId, 6) ?? t('home.floorConcept.fallback', { floor: 6 });
   const floorConceptByFloor: Record<number, string> = {
-    1: getExpeditionFloorConcept(dungeonId, 1) ?? t('home.floorConcept.fallback', { floor: 1 }),
-    2: getExpeditionFloorConcept(dungeonId, 2) ?? t('home.floorConcept.fallback', { floor: 2 }),
-    3: getExpeditionFloorConcept(dungeonId, 3) ?? t('home.floorConcept.fallback', { floor: 3 }),
-    4: getExpeditionFloorConcept(dungeonId, 4) ?? t('home.floorConcept.fallback', { floor: 4 }),
-    5: getExpeditionFloorConcept(dungeonId, 5) ?? t('home.floorConcept.fallback', { floor: 5 }),
+    1: getLocalizedExpeditionFloorConcept(dungeonId, 1) ?? t('home.floorConcept.fallback', { floor: 1 }),
+    2: getLocalizedExpeditionFloorConcept(dungeonId, 2) ?? t('home.floorConcept.fallback', { floor: 2 }),
+    3: getLocalizedExpeditionFloorConcept(dungeonId, 3) ?? t('home.floorConcept.fallback', { floor: 3 }),
+    4: getLocalizedExpeditionFloorConcept(dungeonId, 4) ?? t('home.floorConcept.fallback', { floor: 4 }),
+    5: getLocalizedExpeditionFloorConcept(dungeonId, 5) ?? t('home.floorConcept.fallback', { floor: 5 }),
   };
 
   return [
@@ -8745,7 +8744,7 @@ function ExpeditionTab({
           if (!disclosedLog) return selectedDungeon?.name ?? '-';
           const latestEntry = disclosedLog.entries[disclosedLog.entries.length - 1];
           if (!latestEntry?.floor) return disclosedLog.dungeonName;
-          return getExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
+          return getLocalizedExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
             ?? t('expedition.floor', { floor: formatNumber(latestEntry.floor) });
         })();
         const headlineState = disclosedLog
@@ -12414,7 +12413,7 @@ function SettingTab({
           .filter((enemy): enemy is EnemyDef => !!enemy && enemy.type === 'elite')
           .sort((a, b) => a.id - b.id);
 
-        const floorConcept = getExpeditionFloorConcept(selectedBestiaryDungeon.id, floor.floorNumber);
+        const floorConcept = getLocalizedExpeditionFloorConcept(selectedBestiaryDungeon.id, floor.floorNumber);
         const baseFloorLabel = floorConcept
           ? `Floor ${floor.floorNumber} ${floorConcept}`
           : `Floor ${floor.floorNumber}`;
