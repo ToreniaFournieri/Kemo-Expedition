@@ -1,4 +1,4 @@
-const cn = {
+const zh = {
 'app.title': '冒兽',
 'nav.expedition': '探索',
 'nav.party': '队伍',
@@ -3919,4 +3919,4 @@ const cn = {
   'divineBureau.glossary.tab.sideQuests': '求',
 };
 
-export default cn;
+export default zh;
