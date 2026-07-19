@@ -1546,6 +1546,7 @@ const ja = {
   'masterData.ability.first_strike.name': '先制攻撃',
   'masterData.ability.true_sight.name': '真の視界',
   'masterData.ability.output_stabilizer.name': '攻撃安定化',
+  'ability.output_stabilizer.description': 'いつでも安定して攻撃を行う（地形効果による攻撃回数の変動を受けなくなる）',
   'masterData.ability.tithe.name': '十分の一税',
   'masterData.ability.null_counter.name': '反撃無効化',
   'masterData.ability.seeker.name': '探究者',

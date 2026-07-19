@@ -1834,6 +1834,7 @@ const en = {
   'masterData.ability.first_strike.name': 'First Strike',
   'masterData.ability.true_sight.name': 'True Sight',
   'masterData.ability.output_stabilizer.name': 'Output Stabilizer',
+  'ability.output_stabilizer.description': 'Stabilizes attacks at all times (attack count is no longer affected by terrain effects).',
   'masterData.ability.tithe.name': 'Tithe',
   'masterData.ability.null_counter.name': 'Null Counter',
   'masterData.ability.seeker.name': 'Seeker',

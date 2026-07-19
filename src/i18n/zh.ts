@@ -1546,6 +1546,7 @@ const zh = {
   'masterData.ability.first_strike.name': '先制攻击',
   'masterData.ability.true_sight.name': '真视界',
   'masterData.ability.output_stabilizer.name': '攻击稳定化',
+  'ability.output_stabilizer.description': '始终稳定地进行攻击（攻击次数不再受地形效果的影响）。',
   'masterData.ability.tithe.name': '什一税',
   'masterData.ability.null_counter.name': '反击无效化',
   'masterData.ability.seeker.name': '探究者',
