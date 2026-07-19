@@ -1,4 +1,4 @@
-const zh-CN = {
+const zhCN = {
 'app.title': '冒兽',
 'nav.expedition': '探索',
 'nav.party': '队伍',
@@ -3061,3 +3061,5 @@ const zh-CN = {
   'data.glossary.183.description': '双方的近战攻击全部必中',
 
 };
+
+export default zhCN;
