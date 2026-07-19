@@ -49,6 +49,7 @@ import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings,
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
 import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
+import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -62,10 +63,6 @@ import {
   hasDefeatedDungeonBoss,
   isLootGateUnlocked,
 } from '../game/lootGate';
-
-const DEVELOPER_NEWS_ITEMS = [
-  { id: 'v8.1.2-2026-07-18-beta-report-bonus-fix', version: 'v8.1.2', date: '2026/07/18', content: t('home.developerNews.betaReportBonusFix') },
-] as const;
 
 function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -12769,7 +12766,7 @@ function SettingTab({
                   <span className="font-semibold text-gray-700">{item.version}</span>
                   <span>{item.date}</span>
                 </div>
-                <p className="text-gray-700">{item.content}</p>
+                <p className="text-gray-700">{getDeveloperNewsContent(item, gameState.global.language)}</p>
               </div>
             ))}
           </div>
