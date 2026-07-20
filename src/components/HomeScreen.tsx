@@ -3395,11 +3395,35 @@ export function HomeScreen({
     const lastReportTime = lastReportHours == null
       ? '-'
       : `${formatNumber(Math.floor(lastReportHours))} hours ago`;
+    const superRareTotal = Object.values(state.global.inventory).reduce((total, variant) => (
+      variant.status === 'owned' && variant.item.superRare > 0
+        ? total + Math.max(0, variant.count)
+        : total
+    ), 0);
+    const jewelTotal = Object.values(state.global.jewels).reduce(
+      (total, count) => total + Math.max(0, count),
+      0,
+    ) + state.parties.reduce((partyTotal, party) => (
+      partyTotal + party.characters.reduce((characterTotal, character) => (
+        characterTotal + character.equipment.reduce(
+          (equippedTotal, item) => equippedTotal + (item?.jewel ? 1 : 0),
+          0,
+        )
+      ), 0)
+    ), 0);
+    const superRareTotalKey = createEnvironmentStorageKey('speedOfTimeLastReportedSuperRareTotal');
+    const jewelTotalKey = createEnvironmentStorageKey('speedOfTimeLastReportedJewelTotal');
+    const previousSuperRareTotal = Number.parseInt(localStorage.getItem(superRareTotalKey) ?? '0', 10);
+    const previousJewelTotal = Number.parseInt(localStorage.getItem(jewelTotalKey) ?? '0', 10);
+    const superRareIncrease = Math.max(0, superRareTotal - (Number.isFinite(previousSuperRareTotal) ? previousSuperRareTotal : 0));
+    const jewelIncrease = Math.max(0, jewelTotal - (Number.isFinite(previousJewelTotal) ? previousJewelTotal : 0));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
     const reporterName = (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-';
     const reportHeaderRows = [
       ['Name', `${reporterName} (${state.global.language})`],
-      ['Total number of sending report', `${progressReportCount} (${lastReportTime})`],
+      ['Report count', `${progressReportCount} (${lastReportTime})`],
+      ['Super rare', `${formatNumber(superRareTotal)} (+${formatNumber(superRareIncrease)})`],
+      ['Jewel', `${formatNumber(jewelTotal)} (+${formatNumber(jewelIncrease)})`],
       ['Version Build env', `${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`],
       ['Timestamp', timestamp],
       ['browser, version', `${browserName}, ${browserVersion}`],
@@ -3426,6 +3450,8 @@ export function HomeScreen({
     await postWebhookWithFiles(reportMessage, reportFiles, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
     localStorage.setItem(reportCounterKey, String(nextReportCount));
     localStorage.setItem(lastReportAtKey, String(reportCreatedAtMs));
+    localStorage.setItem(superRareTotalKey, String(superRareTotal));
+    localStorage.setItem(jewelTotalKey, String(jewelTotal));
     return true;
   }, [state]);
 
