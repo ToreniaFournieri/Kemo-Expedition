@@ -515,6 +515,7 @@ export interface EnemyDef {
   masterDropTokens?: string[];
   isGodEnemy?: boolean;
   godDropItemCategories?: [ItemCategory, ItemCategory];
+  godDropItemIds?: [number, number];
   image_path?: string;
 }
 

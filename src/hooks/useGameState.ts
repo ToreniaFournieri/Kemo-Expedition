@@ -2,7 +2,6 @@ import { useReducer, useCallback, useEffect, useRef, useState } from 'react';
 import {
   GameState,
   Item,
-  ItemCategory,
   Character,
   Party,
   SleepinessState,
@@ -35,7 +34,7 @@ import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseu
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
-import { getGodProfileForDungeon } from '../data/dropTables';
+import { getGodMythicDropIds, getGodProfileForDungeon } from '../data/dropTables';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import { formatEnemyDefName } from '../game/enemyDisplay';
@@ -62,7 +61,7 @@ import {
   normalizeGameBags,
   initializeBags,
 } from '../game/bags';
-import { getItemById, getItemsByTierAndRarity } from '../data/items';
+import { getItemById } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -2023,18 +2022,7 @@ function selectEnemyForRoom(
 }
 
 function getGodShortName(displayName: string): string {
-  return displayName.split(' ')[0] ?? displayName;
-}
-
-function getGodMythicDropId(dropItemTier: number, categories: [ItemCategory, ItemCategory], seed: number): number {
-  const mythicItems = getItemsByTierAndRarity(dropItemTier, 'mythicRare');
-  const options = categories.flatMap((category) => mythicItems.filter((item) => item.category === category));
-
-  if (options.length === 0) {
-    return mythicItems[seed % mythicItems.length]?.id ?? 8501;
-  }
-
-  return options[seed % options.length].id;
+  return displayName.split(/[ ,]/)[0] ?? displayName;
 }
 
 function createGodEnemy(
@@ -2068,17 +2056,21 @@ function createGodEnemy(
     };
   }
 
+  const godDropItemIds = getGodMythicDropIds(godProfile.name);
+
   const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, difficultyOffset);
 
   if (!runtimeGodEnemy) {
     return {
       ...enemy,
       name: godName,
+      nameKey: undefined,
       enemyClass: godProfile.enemyClass,
       abilities: godProfile.abilities,
-      dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
+      dropItemId: godDropItemIds[0],
       isGodEnemy: true,
       godDropItemCategories: godProfile.dropItemCategories,
+      godDropItemIds,
     };
   }
 
@@ -2090,9 +2082,10 @@ function createGodEnemy(
     spawnTier: enemy.spawnTier,
     spawnPool: enemy.spawnPool,
     poolId: enemy.poolId,
-    dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
+    dropItemId: godDropItemIds[0],
     isGodEnemy: true,
     godDropItemCategories: godProfile.dropItemCategories,
+    godDropItemIds,
   };
 }
 
