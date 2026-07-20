@@ -1,6 +1,7 @@
 import ja from './ja';
 import en from './en';
 import zh from './zh';
+import { createEnvironmentStorageKey } from '../game/environment';
 
 export type Language = 'ja' | 'en' | 'zh';
 export type TranslationParams = Record<string, string | number>;
@@ -8,7 +9,8 @@ type TranslationDictionary = Record<string, string>;
 
 export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en', 'zh'];
 export const DEFAULT_LANGUAGE: Language = 'ja';
-export const LANGUAGE_STORAGE_KEY = 'kemo-expedition-language';
+// SpecRef: 9 | Environment | Save Data Isolation
+export const LANGUAGE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-language');
 
 const dictionaries: Record<Language, TranslationDictionary> = { ja, en, zh };
 let activeLanguage: Language = DEFAULT_LANGUAGE;

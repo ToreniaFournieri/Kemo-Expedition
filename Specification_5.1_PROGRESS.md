@@ -240,7 +240,7 @@ PT3: 貯金額: 10G
 | Side quest gate | - | it depends on side quest `q.` condition | |
 
 ##### 5.1.3.2 Unlock party
-- Party unlock condition: Defeating corresponding gods.
+- Party unlock condition: Defeating corresponding boss.
   - max 6 parties.
 
 **Unlock Party**

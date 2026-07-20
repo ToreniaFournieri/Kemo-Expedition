@@ -75,18 +75,17 @@ import { BONUS_ABILITY_GLOSSARY_ENTRIES } from '../data/bonusAbilityGlossary';
 import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../data/glossary';
 import {
   ELITE_GATE_REQUIREMENTS,
-  ENTRY_GATE_REQUIRED,
   BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
   getLootCollectionCount,
   getLootCollectionKey,
-  getEntryGateKey,
   getEliteGateKey,
   getBossGateKey,
   isLootGateUnlocked,
   checkLootGateRequirement,
   addRecoveredItemsToLootProgress,
   hasDefeatedDungeonBoss,
+  isDungeonEntryUnlocked,
   unlockAvailableLootGates,
 } from '../game/lootGate';
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
@@ -561,7 +560,7 @@ function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: 
     return { shouldAdvance: false, nextDungeonId: null };
   }
 
-  if (!isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))) {
+  if (!isDungeonEntryUnlocked(party, nextDungeon.id)) {
     return { shouldAdvance: false, nextDungeonId: null };
   }
 
@@ -2246,9 +2245,7 @@ function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
   const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
   if (!nextDungeon) return false;
 
-  const previousBossDefeated = party.defeatedBossExpeditions?.[currentDungeon.id] ? 1 : 0;
-  const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
-    || previousBossDefeated >= ENTRY_GATE_REQUIRED;
+  const entryUnlocked = isDungeonEntryUnlocked(party, nextDungeon.id);
   return !entryUnlocked;
 }
 

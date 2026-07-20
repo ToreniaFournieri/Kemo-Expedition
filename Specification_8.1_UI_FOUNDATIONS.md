@@ -114,6 +114,8 @@
   - Example: "PT1ケモは 名工の木の胸当て を装備した"
   - Example:　"PT3ガルドは 宿った鉄の短剣 を 伝説の鉄の短剣に装備しなおした"
 
+- Unlock a new party
+
 - notification while AFK mode:
   - no notifications shows while AFK mode until at the end of AFK mode. 
 
@@ -186,17 +188,15 @@
   - Send the header and PT summary table in a single Discord message.
 - Header:  Progress Report
   - Name
-  - Total number of sending report: (ex. 12)
-  - The last report time: (ex. X Hours ago)
-  - User ID
-  - Version: (ex. v0.7.0)
-  - Build: (ex. 20)
-  - Environment: (ex. dev )
+    - name, lanugage:  ex. `Tom (en)`
+  - Total number of sending report 
+    - number, the last report time:  ex. `12 (12 hours ago)`
+  - Version Build env: (ex. v0.7.0 (12) dev)
   - Timestamp: YYYY/MM/DD HH:MM (Timezone)
   - browser, version:
+  - User ID
   - OS version: (ex. iOS 26.4.2)
-  - Resolution: (ex. 390 px, 844 px)
- 
+  - Resolution: (ex. 390 px, 844 px) 
 
 - PT Summary Table ( latest outcome and room )
   - `PT`: PT number ( PT1, PT2 ....)
