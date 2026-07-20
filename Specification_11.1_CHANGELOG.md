@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 18 | 2026/07/20 | Support backup export in iOS app-embedded browsers such as Qwen by opening the generated backup in a new page with localized Share / Save to Files instructions when native file sharing is unavailable. |
 | 0.8.3 | 17 | 2026/07/20 | Fix backup export on iOS by opening the native file share sheet (including Save to Files), retaining a standard download fallback, and delaying object-URL cleanup for WebKit compatibility. |
 | 0.8.3 | 16 | 2026/07/20 | Enable separate Simplified and Traditional Chinese runtime modes with `zh-CN`, legacy `zh`, and `zh-TW` URL resolution, persisted canonical selections, dedicated dictionaries, selector labels, and synchronized document language metadata. |
 | 0.8.3 | 15 | 2026/07/20 | Fix the runtime Discord progress report order by placing Version Build env after the PT summary block and before browser and device metadata, as specified. |

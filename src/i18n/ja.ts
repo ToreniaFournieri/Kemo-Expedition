@@ -226,6 +226,7 @@ const ja = {
   'divineBureau.feedback.sent': 'フィードバックを送信しました',
   'divineBureau.feedback.sendFailed': 'フィードバック送信に失敗しました。',
   'setting.backup.exported': 'バックアップをエクスポートしました',
+  'setting.backup.manualSaveInstructions': 'バックアップを新しいページで開きました。アプリ内ブラウザでは共有ボタンから「ファイルに保存」を選択してください。',
   'setting.import.invalidFormat': 'インポート失敗: 保存データ形式が不正です。',
   'setting.import.issue.versionMismatch': 'バージョン差異: 現在 {current} / ファイル {file}',
   'setting.import.issue.envMismatch': '環境差異: 現在 {current} / ファイル {file}',

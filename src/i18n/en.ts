@@ -225,6 +225,7 @@ const en = {
   'divineBureau.feedback.sent': 'Feedback sent.',
   'divineBureau.feedback.sendFailed': 'Failed to send feedback.',
   'setting.backup.exported': 'Backup exported.',
+  'setting.backup.manualSaveInstructions': 'The backup has opened in a new page. In an in-app browser, use its Share button and choose Save to Files.',
   'setting.import.invalidFormat': 'Import failed: save data format is invalid.',
   'setting.import.issue.versionMismatch': 'Version mismatch: current {current} / file {file}',
   'setting.import.issue.envMismatch': 'Environment mismatch: current {current} / file {file}',
