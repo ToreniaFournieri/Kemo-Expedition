@@ -212,7 +212,6 @@
   - `Room`: the deepest room of the latest expedition
 
   - Version Build env: (ex. v0.7.0 (12) dev)
-  - Do not include a timestamp.
   - browser, version:
   - User ID
   - OS version: (ex. iOS 26.4.2)
