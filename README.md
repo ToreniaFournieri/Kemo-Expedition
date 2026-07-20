@@ -1,4 +1,4 @@
-# 冒ケモ - (BoKemo, 冒兽)
+# 冒ケモ - (BoKemo/冒兽/冒獸)
 
 - BoKemo — A Beastfolk Expedition RPG
 The name BoKemo comes from the Japanese words bōken, meaning “adventure,” and kemono, meaning “beast” or “beastfolk.”
