@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 16 | 2026/07/20 | Enable separate Simplified and Traditional Chinese runtime modes with `zh-CN`, legacy `zh`, and `zh-TW` URL resolution, persisted canonical selections, dedicated dictionaries, selector labels, and synchronized document language metadata. |
 | 0.8.3 | 15 | 2026/07/20 | Fix the runtime Discord progress report order by placing Version Build env after the PT summary block and before browser and device metadata, as specified. |
 | 0.8.3 | 14 | 2026/07/20 | Streamline the runtime Discord progress report by removing its timestamp, report and PT table headings, and PT column labels; place PT summaries directly after version/build/environment details and before browser and device metadata. |
 | 0.8.3 | 13 | 2026/07/20 | Complete the runtime Discord PT summary (Spec 8.1.2) with combined level/EXP progress, max party HP, ranged/magic/melee ATK totals, and increases since the previous successful report, persisted independently per environment. |

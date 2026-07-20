@@ -52,7 +52,8 @@ function parseDeveloperNews(markdown: string): DeveloperNewsItem[] {
         content: {
           ja: cells[jaColumn] ?? '',
           en: cells[enColumn] ?? '',
-          zh: cells[zhColumn] ?? '',
+          'zh-CN': cells[zhColumn] ?? '',
+          'zh-TW': cells[zhColumn] ?? '',
         },
       };
     })

@@ -87,7 +87,7 @@ export default function App() {
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    document.documentElement.lang = state.global.language === 'zh' ? 'zh-CN' : state.global.language;
+    document.documentElement.lang = state.global.language;
   }, [state.global.language]);
 
   useEffect(() => {

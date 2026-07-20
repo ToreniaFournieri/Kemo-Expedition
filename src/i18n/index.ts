@@ -1,22 +1,24 @@
 import ja from './ja';
 import en from './en';
-import zh from './zh';
+import zhCN from './zh-CN';
+import zhTW from './zh-TW';
 import { createEnvironmentStorageKey } from '../game/environment';
 
-export type Language = 'ja' | 'en' | 'zh';
+export type Language = 'ja' | 'en' | 'zh-CN' | 'zh-TW';
 export type TranslationParams = Record<string, string | number>;
 type TranslationDictionary = Record<string, string>;
 
-export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en', 'zh'];
+export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en', 'zh-CN', 'zh-TW'];
 export const DEFAULT_LANGUAGE: Language = 'ja';
 // SpecRef: 9 | Environment | Save Data Isolation
 export const LANGUAGE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-language');
 
-const dictionaries: Record<Language, TranslationDictionary> = { ja, en, zh };
+const dictionaries: Record<Language, TranslationDictionary> = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW };
 let activeLanguage: Language = DEFAULT_LANGUAGE;
 
 export function normalizeLanguage(value: unknown): Language {
-  return value === 'en' || value === 'ja' || value === 'zh' ? value : DEFAULT_LANGUAGE;
+  if (value === 'zh') return 'zh-CN';
+  return value === 'en' || value === 'ja' || value === 'zh-CN' || value === 'zh-TW' ? value : DEFAULT_LANGUAGE;
 }
 
 function getBrowserLanguageSources(): { urlLanguage: Language | null; savedLanguage: Language | null } {
@@ -25,10 +27,14 @@ function getBrowserLanguageSources(): { urlLanguage: Language | null; savedLangu
   }
 
   const urlParam = new URLSearchParams(window.location.search).get('lang');
-  const urlLanguage = urlParam === 'en' || urlParam === 'ja' || urlParam === 'zh' ? urlParam : null;
+  const urlLanguage = urlParam === 'zh' ? 'zh-CN' : normalizeOptionalLanguage(urlParam);
   const saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  const savedLanguage = saved === 'en' || saved === 'ja' || saved === 'zh' ? saved : null;
+  const savedLanguage = saved === 'zh' ? 'zh-CN' : normalizeOptionalLanguage(saved);
   return { urlLanguage, savedLanguage };
+}
+
+function normalizeOptionalLanguage(value: unknown): Language | null {
+  return value === 'en' || value === 'ja' || value === 'zh-CN' || value === 'zh-TW' ? value : null;
 }
 
 export function resolveInitialLanguage(): Language {
