@@ -1746,294 +1746,294 @@ const zh = {
   'divineBureau.feedback.send': '发送',
   'divineBureau.feedback.maxFilesWarning': '最多可附加4张图片。仅前4张会被发送。',
   'divineBureau.feedback.bodyRequired': '请输入反馈内容。',
-  'masterData.enemyName.100': 'たんぽぽめ',
-  'masterData.enemyName.101': 'いしぽん',
-  'masterData.enemyName.102': 'もす',
-  'masterData.enemyName.103': 'くろーびっと',
-  'masterData.enemyName.104': 'くるくる',
-  'masterData.enemyName.105': 'わおーん',
-  'masterData.enemyName.106': 'りんりん',
-  'masterData.enemyName.107': 'こんた',
-  'masterData.enemyName.108': 'きっつん',
-  'masterData.enemyName.109': 'シーガル',
-  'masterData.enemyName.110': 'スパロゥ',
-  'masterData.enemyName.111': 'シンディパウ',
-  'masterData.enemyName.112': '鳳蝶',
-  'masterData.enemyName.113': 'レディバグ',
-  'masterData.enemyName.114': '花鎌娘',
-  'masterData.enemyName.115': 'ふわっと',
-  'masterData.enemyName.116': 'ひのこ',
-  'masterData.enemyName.117': 'ビーズ',
-  'masterData.enemyName.118': 'メロウル',
-  'masterData.enemyName.119': 'ぱんころう',
-  'masterData.enemyName.120': 'かわせみ',
-  'masterData.enemyName.121': 'サクラ',
-  'masterData.enemyName.122': 'エメラ',
-  'masterData.enemyName.123': 'ファルコ',
-  'masterData.enemyName.124': 'ハルビー',
-  'masterData.enemyName.125': 'ドラコフライ',
-  'masterData.enemyName.126': 'ホタル',
-  'masterData.enemyName.127': 'コーム',
-  'masterData.enemyName.128': 'セキレ',
-  'masterData.enemyName.129': 'トリコ',
-  'masterData.enemyName.130': 'みずうさぎ',
-  'masterData.enemyName.131': 'もすらむ',
-  'masterData.enemyName.132': 'あなこ',
-  'masterData.enemyName.133': 'ペネトレーター',
-  'masterData.enemyName.134': 'ヨキジ',
-  'masterData.enemyName.135': 'ヴェルグ',
-  'masterData.enemyName.136': 'シズク',
-  'masterData.enemyName.137': 'クリスティア',
-  'masterData.enemyName.138': 'ヴィエル',
-  'masterData.enemyName.139': 'ルルア',
-  'masterData.enemyName.140': 'リゼル',
-  'masterData.enemyName.141': 'アメル',
-  'masterData.enemyName.142': 'フィナ',
-  'masterData.enemyName.143': 'シエル',
-  'masterData.enemyName.144': 'ネネ',
-  'masterData.enemyName.145': 'ドレープ',
-  'masterData.enemyName.146': 'アルカパ',
-  'masterData.enemyName.147': 'シェリ',
-  'masterData.enemyName.148': 'スポレラ',
-  'masterData.enemyName.149': 'カプレット',
-  'masterData.enemyName.150': 'ルメモス',
-  'masterData.enemyName.151': 'ルミ',
-  'masterData.enemyName.152': 'マーニー',
-  'masterData.enemyName.153': 'アマニバン',
-  'masterData.enemyName.154': 'ウールワード',
-  'masterData.enemyName.155': 'パッチパウ',
-  'masterData.enemyName.156': 'メールホップ',
-  'masterData.enemyName.157': 'パールスポア',
-  'masterData.enemyName.158': 'ウールミ',
-  'masterData.enemyName.159': 'スティッチリング',
-  'masterData.enemyName.160': 'パフキャップ',
-  'masterData.enemyName.161': 'タリア',
-  'masterData.enemyName.162': 'インクキャップ',
-  'masterData.enemyName.163': 'ポルセラ',
-  'masterData.enemyName.164': 'ポルセル',
-  'masterData.enemyName.165': 'カップマウス',
-  'masterData.enemyName.166': 'ニナ',
-  'masterData.enemyName.167': 'ピッパ',
-  'masterData.enemyName.168': 'ミミ',
-  'masterData.enemyName.169': 'リボンバン',
-  'masterData.enemyName.170': 'パックベア',
-  'masterData.enemyName.171': 'ロザリア',
-  'masterData.enemyName.172': 'あぷりん',
-  'masterData.enemyName.173': 'ぐぁびー',
-  'masterData.enemyName.174': 'みむる',
-  'masterData.enemyName.175': 'ぷるみ',
-  'masterData.enemyName.176': 'まんぐー',
-  'masterData.enemyName.177': 'ぱや',
-  'masterData.enemyName.178': 'ぴな',
-  'masterData.enemyName.179': 'ちぇり',
-  'masterData.enemyName.180': 'ぱらーしゃ',
-  'masterData.enemyName.181': 'らびめる',
-  'masterData.enemyName.182': 'べとりーば',
-  'masterData.enemyName.183': 'りっぴー',
-  'masterData.enemyName.184': 'レイミ',
-  'masterData.enemyName.185': 'クリセレ',
-  'masterData.enemyName.186': 'シロハ',
-  'masterData.enemyName.187': 'ぴたっぴ',
-  'masterData.enemyName.188': 'からっぴ',
-  'masterData.enemyName.189': 'レディ・ネリッサ',
-  'masterData.enemyName.190': 'スミ',
-  'masterData.enemyName.191': 'ルミネ',
-  'masterData.enemyName.192': 'ヴァルディ',
-  'masterData.enemyName.193': 'アリア',
-  'masterData.enemyName.194': 'セレン',
-  'masterData.enemyName.195': 'サルナ',
-  'masterData.enemyName.196': 'ミズキ',
-  'masterData.enemyName.197': '鉄錨のマリナ',
-  'masterData.enemyName.198': 'ニメラ',
-  'masterData.enemyName.199': 'ヴェスパー',
-  'masterData.enemyName.200': 'セドリック',
-  'masterData.enemyName.201': 'ネリア',
-  'masterData.enemyName.202': 'なぴ',
-  'masterData.enemyName.203': 'みき',
-  'masterData.enemyName.204': 'エヴェリナ',
-  'masterData.enemyName.205': 'イリア',
-  'masterData.enemyName.206': 'ヴェスペラ',
-  'masterData.enemyName.207': '宰相ゴールドテイル',
-  'masterData.enemyName.208': 'ポムキャット',
-  'masterData.enemyName.209': 'フワテイル',
-  'masterData.enemyName.210': 'コロッチュ',
-  'masterData.enemyName.211': 'フェネップ',
-  'masterData.enemyName.212': 'トロポン',
-  'masterData.enemyName.213': 'ワメ',
-  'masterData.enemyName.214': 'マルカ',
-  'masterData.enemyName.215': 'タマ',
-  'masterData.enemyName.216': 'パフゥーク',
-  'masterData.enemyName.217': 'カラカル',
-  'masterData.enemyName.218': 'ゼファー',
-  'masterData.enemyName.219': 'タミャ',
-  'masterData.enemyName.220': 'K9-33',
-  'masterData.enemyName.221': 'K9-07',
-  'masterData.enemyName.222': 'K9-15',
-  'masterData.enemyName.223': 'ミーケ',
-  'masterData.enemyName.224': 'マレプ',
-  'masterData.enemyName.225': 'K9-01',
-  'masterData.enemyName.226': '怪力のロブ',
-  'masterData.enemyName.227': '転尻のタンブル',
-  'masterData.enemyName.228': '砂足のキリ',
-  'masterData.enemyName.229': '神官ネメア',
-  'masterData.enemyName.230': '審問官ザーラ',
-  'masterData.enemyName.231': '赤牙のリゾ',
-  'masterData.enemyName.232': 'K9-21',
-  'masterData.enemyName.233': 'K9-05',
-  'masterData.enemyName.234': 'K9-40',
-  'masterData.enemyName.235': 'カラリナ',
-  'masterData.enemyName.236': '鉤尾のヴェン',
-  'masterData.enemyName.237': 'ケマ',
-  'masterData.enemyName.238': 'ペシャ',
-  'masterData.enemyName.239': 'ネメア',
-  'masterData.enemyName.240': 'ラミル',
-  'masterData.enemyName.241': '銀髭のヴァロ',
-  'masterData.enemyName.242': '銭のマーン',
-  'masterData.enemyName.243': '大司祭マウラ',
-  'masterData.enemyName.244': 'ジスカ',
-  'masterData.enemyName.245': 'スナ',
-  'masterData.enemyName.246': 'ラテラ',
-  'masterData.enemyName.247': 'プレシア',
-  'masterData.enemyName.248': 'グアナ',
-  'masterData.enemyName.249': 'カウダ',
-  'masterData.enemyName.250': 'ストロフィア',
-  'masterData.enemyName.251': 'トリボラ',
-  'masterData.enemyName.252': 'コルシア',
-  'masterData.enemyName.253': 'プルミア',
-  'masterData.enemyName.254': 'オフィサ',
-  'masterData.enemyName.255': 'ランプロサ',
-  'masterData.enemyName.256': 'ウロプラ',
-  'masterData.enemyName.257': 'ウルシア',
-  'masterData.enemyName.258': 'アイルラ',
-  'masterData.enemyName.259': 'ベルネッタ',
-  'masterData.enemyName.260': 'ボンベラ',
-  'masterData.enemyName.261': 'アークトン',
-  'masterData.enemyName.262': 'ヘローラ',
-  'masterData.enemyName.263': 'クラミア',
-  'masterData.enemyName.264': 'ヘロディア',
-  'masterData.enemyName.265': 'マリティア',
-  'masterData.enemyName.266': 'アークティア',
-  'masterData.enemyName.267': 'サルヴァタ',
-  'masterData.enemyName.268': 'メルーラ',
-  'masterData.enemyName.269': 'モンタラ',
-  'masterData.enemyName.270': 'カメリア',
-  'masterData.enemyName.271': 'ヴァラナ',
-  'masterData.enemyName.272': 'アガミア',
-  'masterData.enemyName.273': 'フィコラ',
-  'masterData.enemyName.274': 'ティモニア',
-  'masterData.enemyName.275': 'フィシグナ',
-  'masterData.enemyName.276': 'ラティア',
-  'masterData.enemyName.277': 'モロキア',
-  'masterData.enemyName.278': 'ハイドロサ',
-  'masterData.enemyName.279': 'ケルビナ',
-  'masterData.enemyName.280': 'リヴェッタ',
-  'masterData.enemyName.281': 'ピペット',
-  'masterData.enemyName.282': 'スプロクサ',
-  'masterData.enemyName.283': 'タンブル',
-  'masterData.enemyName.284': 'モクシー',
-  'masterData.enemyName.285': 'パッチ',
-  'masterData.enemyName.286': 'ニブルズ',
-  'masterData.enemyName.287': 'ティッカ',
-  'masterData.enemyName.288': 'ジッピー',
-  'masterData.enemyName.289': 'ヴェスパー',
-  'masterData.enemyName.290': 'サーリ',
-  'masterData.enemyName.291': 'ラチェット',
-  'masterData.enemyName.292': 'ミスティ',
-  'masterData.enemyName.293': 'モロウ',
-  'masterData.enemyName.294': 'ルー',
-  'masterData.enemyName.295': 'ヴェクサ',
-  'masterData.enemyName.296': 'ビクシー',
-  'masterData.enemyName.297': 'ダスク',
-  'masterData.enemyName.298': 'スカリー',
-  'masterData.enemyName.299': 'ヴェローラ',
-  'masterData.enemyName.300': 'カーミラ',
-  'masterData.enemyName.301': 'ラズリ',
-  'masterData.enemyName.302': 'マンブル',
-  'masterData.enemyName.303': 'ネーヴェ',
-  'masterData.enemyName.304': 'スヌーズ',
-  'masterData.enemyName.305': 'ヨーニー',
-  'masterData.enemyName.306': 'ウィスプ',
-  'masterData.enemyName.307': 'ソラーラ',
-  'masterData.enemyName.308': 'フォリア',
-  'masterData.enemyName.309': 'セラフィー',
-  'masterData.enemyName.310': 'フィクシー',
-  'masterData.enemyName.311': 'キャリパー',
-  'masterData.enemyName.312': 'ミンティ',
-  'masterData.enemyName.313': 'クインシー',
-  'masterData.enemyName.314': 'スキッパー',
-  'masterData.enemyName.315': 'セレスティアルリーパー',
-  'masterData.enemyName.316': 'リッカ',
-  'masterData.enemyName.317': 'ナナラ',
-  'masterData.enemyName.318': 'ノワ',
-  'masterData.enemyName.319': 'ジータ',
-  'masterData.enemyName.320': 'ベルタ',
-  'masterData.enemyName.321': 'ソレナ',
-  'masterData.enemyName.322': 'ザフィール',
-  'masterData.enemyName.323': 'フィナ',
-  'masterData.enemyName.324': 'バルト',
-  'masterData.enemyName.325': 'ランスロット',
-  'masterData.enemyName.326': 'ジョサン',
-  'masterData.enemyName.327': 'ネイル',
-  'masterData.enemyName.328': 'リーファ',
-  'masterData.enemyName.329': 'ミカ',
-  'masterData.enemyName.330': 'ポルカ',
-  'masterData.enemyName.331': 'ヴィオラ',
-  'masterData.enemyName.332': 'クロウ',
-  'masterData.enemyName.333': 'ネージュ',
-  'masterData.enemyName.334': 'ムミア',
-  'masterData.enemyName.335': 'ガルド',
-  'masterData.enemyName.336': 'シロネ',
-  'masterData.enemyName.337': 'クルミ',
-  'masterData.enemyName.338': 'パッカ',
-  'masterData.enemyName.339': 'ラグネ',
-  'masterData.enemyName.340': 'チュリ',
-  'masterData.enemyName.341': 'コハル',
-  'masterData.enemyName.342': 'ミュラ',
-  'masterData.enemyName.343': 'モルナ',
-  'masterData.enemyName.344': 'ヴィネ',
-  'masterData.enemyName.345': 'バルグ',
-  'masterData.enemyName.346': 'ルーノ',
-  'masterData.enemyName.347': 'エレノア',
-  'masterData.enemyName.348': 'ニーヴ',
-  'masterData.enemyName.349': 'サージャ',
-  'masterData.enemyName.350': 'メルナ',
-  'masterData.enemyName.351': '宰相ヴァルター',
-  'masterData.enemyName.352': 'ヴェスパ',
-  'masterData.enemyName.353': 'キリカ',
-  'masterData.enemyName.354': 'ミレア',
-  'masterData.enemyName.355': 'グレタ',
-  'masterData.enemyName.356': 'ゼノア',
-  'masterData.enemyName.357': 'ルッカ',
-  'masterData.enemyName.358': 'ミュウラ',
-  'masterData.enemyName.359': 'ラウラ',
-  'masterData.enemyName.360': 'シグナ',
-  'masterData.enemyName.361': 'エコア',
-  'masterData.enemyName.362': 'セフィラ',
-  'masterData.enemyName.363': 'レイヴァ',
-  'masterData.enemyName.364': 'カイル',
-  'masterData.enemyName.365': 'ライラ',
-  'masterData.enemyName.366': 'レム',
-  'masterData.enemyName.367': 'ナージャ',
-  'masterData.enemyName.368': 'メルナ',
-  'masterData.enemyName.369': 'マキナ',
-  'masterData.enemyName.370': 'リグレ',
-  'masterData.enemyName.371': 'ルクシア',
-  'masterData.enemyName.372': 'フィーネ',
-  'masterData.enemyName.373': 'ミネット',
-  'masterData.enemyName.374': 'ミント',
-  'masterData.enemyName.375': 'ネイヴ',
-  'masterData.enemyName.376': 'ジーク',
-  'masterData.enemyName.377': 'レイト',
-  'masterData.enemyName.378': 'ニトラ',
-  'masterData.enemyName.379': 'エルネ',
-  'masterData.enemyName.380': 'アルヴィン',
-  'masterData.enemyName.381': 'ヴィレア',
-  'masterData.enemyName.382': 'ゼイン',
-  'masterData.enemyName.383': 'ガルナ',
-  'masterData.enemyName.384': 'コルヴァ',
-  'masterData.enemyName.385': 'レムリ',
-  'masterData.enemyName.386': 'モカ',
-  'masterData.enemyName.387': 'セルヴァ・レム',
+'masterData.enemyName.100': '茸茸',        // たんぽぽめ
+'masterData.enemyName.101': '石丸',        // いしぽん
+'masterData.enemyName.102': '小蘑',        // もす
+'masterData.enemyName.103': '黑刺',        // くろーびっと
+'masterData.enemyName.104': '转转',        // くるくる
+'masterData.enemyName.105': '嗷呜',        // わおーん
+'masterData.enemyName.106': '铃铃',        // りんりん
+'masterData.enemyName.107': '小团',        // こんた
+'masterData.enemyName.108': '小狐',        // きっつん
+'masterData.enemyName.109': '海鸥',        // シーガル
+'masterData.enemyName.110': '麻雀',        // スパロゥ
+'masterData.enemyName.111': '辛迪爪',      // シンディパウ
+'masterData.enemyName.112': '凤蝶',        // 鳳蝶 (already Chinese)
+'masterData.enemyName.113': '瓢虫',        // レディバグ
+'masterData.enemyName.114': '花镰娘',      // 花鎌娘
+'masterData.enemyName.115': '蓬蓬',        // ふわっと
+'masterData.enemyName.116': '火子',        // ひのこ
+'masterData.enemyName.117': '珠娘',        // ビーズ
+'masterData.enemyName.118': '海灵',        // メロウル
+'masterData.enemyName.119': '胖郎',        // ぱんころう
+'masterData.enemyName.120': '翠鸟',        // かわせみ
+'masterData.enemyName.121': '樱',          // サクラ
+'masterData.enemyName.122': '艾美拉',      // エメラ
+'masterData.enemyName.123': '隼',          // ファルコ
+'masterData.enemyName.124': '春蜂',        // ハルビー
+'masterData.enemyName.125': '龙蜓',        // ドラコフライ
+'masterData.enemyName.126': '萤',          // ホタル
+'masterData.enemyName.127': '梳鸟',        // コーム
+'masterData.enemyName.128': '鹡鸰',        // セキレ
+'masterData.enemyName.129': '鸟子',        // トリコ
+'masterData.enemyName.130': '水兔',        // みずうさぎ
+'masterData.enemyName.131': '苔蛾',        // もすらむ
+'masterData.enemyName.132': '穴子',        // あなこ
+'masterData.enemyName.133': '穿甲者',      // ペネトレーター
+'masterData.enemyName.134': '黄鸡',        // ヨキジ
+'masterData.enemyName.135': '灰狼',        // ヴェルグ
+'masterData.enemyName.136': '滴',          // シズク
+'masterData.enemyName.137': '克里斯蒂',    // クリスティア
+'masterData.enemyName.138': '维耶尔',      // ヴィエル
+'masterData.enemyName.139': '露露亚',      // ルルア
+'masterData.enemyName.140': '莉泽尔',      // リゼル
+'masterData.enemyName.141': '爱梅尔',      // アメル
+'masterData.enemyName.142': '菲娜',        // フィナ
+'masterData.enemyName.143': '天蓝',        // シエル
+'masterData.enemyName.144': '宁宁',        // ネネ
+'masterData.enemyName.145': '褶蜥',        // ドレープ
+'masterData.enemyName.146': '羊驼',        // アルカパ
+'masterData.enemyName.147': '雪莉',        // シェリ
+'masterData.enemyName.148': '孢蕾',        // スポレラ
+'masterData.enemyName.149': '小红帽',      // カプレット
+'masterData.enemyName.150': '露梅莫',      // ルメモス
+'masterData.enemyName.151': '露米',        // ルミ
+'masterData.enemyName.152': '玛尼',        // マーニー
+'masterData.enemyName.153': '毒伞',        // アマニバン
+'masterData.enemyName.154': '羊毛卫',      // ウールワード
+'masterData.enemyName.155': '补丁爪',      // パッチパウ
+'masterData.enemyName.156': '跳跳',        // メールホップ
+'masterData.enemyName.157': '珠孢',        // パールスポア
+'masterData.enemyName.158': '绒蠕',        // ウールミ
+'masterData.enemyName.159': '缝合灵',      // スティッチリング
+'masterData.enemyName.160': '伞菇',        // パフキャップ
+'masterData.enemyName.161': '塔莉亚',      // タリア
+'masterData.enemyName.162': '墨菇',        // インクキャップ
+'masterData.enemyName.163': '波尔塞拉',    // ポルセラ
+'masterData.enemyName.164': '波尔塞尔',    // ポルセル
+'masterData.enemyName.165': '杯鼠',        // カップマウス
+'masterData.enemyName.166': '妮娜',        // ニナ
+'masterData.enemyName.167': '皮帕',        // ピッパ
+'masterData.enemyName.168': '咪咪',        // ミミ
+'masterData.enemyName.169': '缎带',        // リボンバン
+'masterData.enemyName.170': '背包熊',      // パックベア
+'masterData.enemyName.171': '罗莎莉亚',    // ロザリア
+'masterData.enemyName.172': '小苹',        // あぷりん
+'masterData.enemyName.173': '小鳄',        // ぐぁびー
+'masterData.enemyName.174': '咪姆',        // みむる
+'masterData.enemyName.175': '噗嚕',        // ぷるみ
+'masterData.enemyName.176': '芒果',        // まんぐー
+'masterData.enemyName.177': '帕雅',        // ぱや
+'masterData.enemyName.178': '皮娜',        // ぴな
+'masterData.enemyName.179': '小莓',        // ちぇり
+'masterData.enemyName.180': '帕拉夏',      // ぱらーしゃ
+'masterData.enemyName.181': '兔萌',        // らびめる
+'masterData.enemyName.182': '黏菌',        // べとりーば
+'masterData.enemyName.183': '莉比',        // りっぴー
+'masterData.enemyName.184': '蕾米',        // レイミ
+'masterData.enemyName.185': '克莉赛尔',    // クリセレ
+'masterData.enemyName.186': '白羽',        // シロハ
+'masterData.enemyName.187': '啪嗒',        // ぴたっぴ
+'masterData.enemyName.188': '空殼',        // からっぴ
+'masterData.enemyName.189': '奈莉萨女士',  // レディ・ネリッサ
+'masterData.enemyName.190': '须弥',        // スミ
+'masterData.enemyName.191': '露米涅',      // ルミネ
+'masterData.enemyName.192': '瓦尔迪',      // ヴァルディ
+'masterData.enemyName.193': '阿莉亚',      // アリア
+'masterData.enemyName.194': '塞伦',        // セレン
+'masterData.enemyName.195': '萨尔娜',      // サルナ
+'masterData.enemyName.196': '瑞希',        // ミズキ
+'masterData.enemyName.197': '铁锚之玛莉娜', // 鉄錨のマリナ
+'masterData.enemyName.198': '妮梅拉',      // ニメラ
+'masterData.enemyName.199': '维斯帕',      // ヴェスパー
+'masterData.enemyName.200': '塞德里克',    // セドリック
+'masterData.enemyName.201': '奈莉亚',      // ネリア
+'masterData.enemyName.202': '娜皮',        // なぴ
+'masterData.enemyName.203': '米琪',        // みき
+'masterData.enemyName.204': '艾维莉娜',    // エヴェリナ
+'masterData.enemyName.205': '伊莉亚',      // イリア
+'masterData.enemyName.206': '维斯佩拉',    // ヴェスペラ
+'masterData.enemyName.207': '金尾宰相',    // 宰相ゴールドテイル
+'masterData.enemyName.208': '蓬猫',        // ポムキャット
+'masterData.enemyName.209': '蓬尾',        // フワテイル
+'masterData.enemyName.210': '小圆',        // コロッチュ
+'masterData.enemyName.211': '沙狐',        // フェネップ
+'masterData.enemyName.212': '胖墩',        // トロポン
+'masterData.enemyName.213': '瓦美',        // ワメ
+'masterData.enemyName.214': '玛尔卡',      // マルカ
+'masterData.enemyName.215': '玉',          // タマ
+'masterData.enemyName.216': '帕夫克',      // パフゥーク
+'masterData.enemyName.217': '狞猫',        // カラカル
+'masterData.enemyName.218': '泽法',        // ゼファー
+'masterData.enemyName.219': '塔米娅',      // タミャ
+'masterData.enemyName.220': 'K9-33',       // Keep
+'masterData.enemyName.221': 'K9-07',       // Keep
+'masterData.enemyName.222': 'K9-15',       // Keep
+'masterData.enemyName.223': '米凯',        // ミーケ
+'masterData.enemyName.224': '马雷普',      // マレプ
+'masterData.enemyName.225': 'K9-01',       // Keep
+'masterData.enemyName.226': '怪力罗布',    // 怪力のロブ
+'masterData.enemyName.227': '翻跟头',      // 転尻のタンブル
+'masterData.enemyName.228': '沙足奇里',    // 砂足のキリ
+'masterData.enemyName.229': '神官涅美亚',  // 神官ネメア
+'masterData.enemyName.230': '审问官扎拉',  // 審問官ザーラ
+'masterData.enemyName.231': '赤牙里佐',    // 赤牙のリゾ
+'masterData.enemyName.232': 'K9-21',       // Keep
+'masterData.enemyName.233': 'K9-05',       // Keep
+'masterData.enemyName.234': 'K9-40',       // Keep
+'masterData.enemyName.235': '卡拉莉娜',    // カラリナ
+'masterData.enemyName.236': '钩尾文',      // 鉤尾のヴェン
+'masterData.enemyName.237': '凯玛',        // ケマ
+'masterData.enemyName.238': '佩莎',        // ペシャ
+'masterData.enemyName.239': '涅美亚',      // ネメア
+'masterData.enemyName.240': '拉米尔',      // ラミル
+'masterData.enemyName.241': '银须瓦罗',    // 銀髭のヴァロ
+'masterData.enemyName.242': '钱爪马恩',    // 銭のマーン
+'masterData.enemyName.243': '大司祭玛乌拉', // 大司祭マウラ
+'masterData.enemyName.244': '吉斯卡',      // ジスカ
+'masterData.enemyName.245': '斯纳',        // スナ
+'masterData.enemyName.246': '拉泰拉',      // ラテラ
+'masterData.enemyName.247': '普蕾西亚',    // プレシア
+'masterData.enemyName.248': '瓜纳',        // グアナ
+'masterData.enemyName.249': '考达',        // カウダ
+'masterData.enemyName.250': '斯特罗菲亚',  // ストロフィア
+'masterData.enemyName.251': '特里波拉',    // トリボラ
+'masterData.enemyName.252': '科尔西亚',    // コルシア
+'masterData.enemyName.253': '普尔米亚',    // プルミア
+'masterData.enemyName.254': '奥菲萨',      // オフィサ
+'masterData.enemyName.255': '蓝普罗萨',    // ランプロサ
+'masterData.enemyName.256': '乌罗普拉',    // ウロプラ
+'masterData.enemyName.257': '乌尔西亚',    // ウルシア
+'masterData.enemyName.258': '艾尔拉',      // アイルラ
+'masterData.enemyName.259': '贝尔内塔',    // ベルネッタ
+'masterData.enemyName.260': '邦贝拉',      // ボンベラ
+'masterData.enemyName.261': '阿克顿',      // アークトン
+'masterData.enemyName.262': '赫罗拉',      // ヘローラ
+'masterData.enemyName.263': '克拉米亚',    // クラミア
+'masterData.enemyName.264': '赫罗迪亚',    // ヘロディア
+'masterData.enemyName.265': '马里蒂亚',    // マリティア
+'masterData.enemyName.266': '阿克蒂亚',    // アークティア
+'masterData.enemyName.267': '萨尔瓦塔',    // サルヴァタ
+'masterData.enemyName.268': '梅鲁拉',      // メルーラ
+'masterData.enemyName.269': '蒙塔拉',      // モンタラ
+'masterData.enemyName.270': '卡梅莉亚',    // カメリア
+'masterData.enemyName.271': '瓦拉纳',      // ヴァラナ
+'masterData.enemyName.272': '阿加米亚',    // アガミア
+'masterData.enemyName.273': '菲科拉',      // フィコラ
+'masterData.enemyName.274': '蒂莫尼亚',    // ティモニア
+'masterData.enemyName.275': '菲西格纳',    // フィシグナ
+'masterData.enemyName.276': '拉蒂亚',      // ラティア
+'masterData.enemyName.277': '莫洛基亚',    // モロキア
+'masterData.enemyName.278': '海德罗萨',    // ハイドロサ
+'masterData.enemyName.279': '凯尔维娜',    // ケルビナ
+'masterData.enemyName.280': '利维塔',      // リヴェッタ
+'masterData.enemyName.281': '皮佩特',      // ピペット
+'masterData.enemyName.282': '斯普罗克萨',  // スプロクサ
+'masterData.enemyName.283': '坦布尔',      // タンブル
+'masterData.enemyName.284': '莫克西',      // モクシー
+'masterData.enemyName.285': '帕奇',        // パッチ
+'masterData.enemyName.286': '尼布鲁兹',    // ニブルズ
+'masterData.enemyName.287': '蒂卡',        // ティッカ
+'masterData.enemyName.288': '吉皮',        // ジッピー
+'masterData.enemyName.289': '维斯帕',      // ヴェスパー
+'masterData.enemyName.290': '萨莉',        // サーリ
+'masterData.enemyName.291': '拉切特',      // ラチェット
+'masterData.enemyName.292': '米斯蒂',      // ミスティ
+'masterData.enemyName.293': '莫罗',        // モロウ
+'masterData.enemyName.294': '卢',          // ルー
+'masterData.enemyName.295': '维库萨',      // ヴェクサ
+'masterData.enemyName.296': '比克西',      // ビクシー
+'masterData.enemyName.297': '达斯克',      // ダスク
+'masterData.enemyName.298': '斯卡利',      // スカリー
+'masterData.enemyName.299': '维罗拉',      // ヴェローラ
+'masterData.enemyName.300': '卡米拉',      // カーミラ
+'masterData.enemyName.301': '拉兹莉',      // ラズリ
+'masterData.enemyName.302': '曼布尔',      // マンブル
+'masterData.enemyName.303': '内维',        // ネーヴェ
+'masterData.enemyName.304': '斯努兹',      // スヌーズ
+'masterData.enemyName.305': '约尼',        // ヨーニー
+'masterData.enemyName.306': '威斯普',      // ウィスプ
+'masterData.enemyName.307': '索拉拉',      // ソラーラ
+'masterData.enemyName.308': '福利亚',      // フォリア
+'masterData.enemyName.309': '塞拉菲',      // セラフィー
+'masterData.enemyName.310': '菲克西',      // フィクシー
+'masterData.enemyName.311': '卡利帕',      // キャリパー
+'masterData.enemyName.312': '明蒂',        // ミンティ
+'masterData.enemyName.313': '昆西',        // クインシー
+'masterData.enemyName.314': '斯基帕',      // スキッパー
+'masterData.enemyName.315': '天界收割者',  // セレスティアルリーパー
+'masterData.enemyName.316': '莉卡',        // リッカ
+'masterData.enemyName.317': '娜娜拉',      // ナナラ
+'masterData.enemyName.318': '诺瓦',        // ノワ
+'masterData.enemyName.319': '吉塔',        // ジータ
+'masterData.enemyName.320': '贝尔塔',      // ベルタ
+'masterData.enemyName.321': '索蕾娜',      // ソレナ
+'masterData.enemyName.322': '扎菲尔',      // ザフィール
+'masterData.enemyName.323': '菲娜',        // フィナ
+'masterData.enemyName.324': '巴尔特',      // バルト
+'masterData.enemyName.325': '兰斯洛特',    // ランスロット
+'masterData.enemyName.326': '乔桑',        // ジョサン
+'masterData.enemyName.327': '奈尔',        // ネイル
+'masterData.enemyName.328': '莉法',        // リーファ
+'masterData.enemyName.329': '美佳',        // ミカ
+'masterData.enemyName.330': '波尔卡',      // ポルカ
+'masterData.enemyName.331': '维奥拉',      // ヴィオラ
+'masterData.enemyName.332': '克劳',        // クロウ
+'masterData.enemyName.333': '涅祖',        // ネージュ
+'masterData.enemyName.334': '木乃伊',      // ムミア
+'masterData.enemyName.335': '加尔德',      // ガルド
+'masterData.enemyName.336': '希洛涅',      // シロネ
+'masterData.enemyName.337': '胡桃',        // クルミ
+'masterData.enemyName.338': '帕卡',        // パッカ
+'masterData.enemyName.339': '拉格涅',      // ラグネ
+'masterData.enemyName.340': '丘莉',        // チュリ
+'masterData.enemyName.341': '小春',        // コハル
+'masterData.enemyName.342': '缪拉',        // ミュラ
+'masterData.enemyName.343': '莫尔娜',      // モルナ
+'masterData.enemyName.344': '维涅',        // ヴィネ
+'masterData.enemyName.345': '巴尔格',      // バルグ
+'masterData.enemyName.346': '鲁诺',        // ルーノ
+'masterData.enemyName.347': '埃莉诺',      // エレノア
+'masterData.enemyName.348': '尼夫',        // ニーヴ
+'masterData.enemyName.349': '萨嘉',        // サージャ
+'masterData.enemyName.350': '梅尔娜',      // メルナ
+'masterData.enemyName.351': '瓦尔特宰相',  // 宰相ヴァルター
+'masterData.enemyName.352': '维斯帕',      // ヴェスパ
+'masterData.enemyName.353': '绮里香',      // キリカ
+'masterData.enemyName.354': '米蕾亚',      // ミレア
+'masterData.enemyName.355': '格雷塔',      // グレタ
+'masterData.enemyName.356': '泽诺亚',      // ゼノア
+'masterData.enemyName.357': '卢卡',        // ルッカ
+'masterData.enemyName.358': '缪拉',        // ミュウラ
+'masterData.enemyName.359': '劳拉',        // ラウラ
+'masterData.enemyName.360': '西格娜',      // シグナ
+'masterData.enemyName.361': '艾珂',        // エコア
+'masterData.enemyName.362': '塞菲拉',      // セフィラ
+'masterData.enemyName.363': '蕾瓦',        // レイヴァ
+'masterData.enemyName.364': '凯尔',        // カイル
+'masterData.enemyName.365': '莱拉',        // ライラ
+'masterData.enemyName.366': '莱姆',        // レム
+'masterData.enemyName.367': '纳嘉',        // ナージャ
+'masterData.enemyName.368': '梅尔娜',      // メルナ
+'masterData.enemyName.369': '玛奇娜',      // マキナ
+'masterData.enemyName.370': '利格雷',      // リグレ
+'masterData.enemyName.371': '卢克希亚',    // ルクシア
+'masterData.enemyName.372': '菲涅',        // フィーネ
+'masterData.enemyName.373': '米奈特',      // ミネット
+'masterData.enemyName.374': '敏特',        // ミント
+'masterData.enemyName.375': '奈夫',        // ネイヴ
+'masterData.enemyName.376': '齐格',        // ジーク
+'masterData.enemyName.377': '雷特',        // レイト
+'masterData.enemyName.378': '尼特拉',      // ニトラ
+'masterData.enemyName.379': '埃尔涅',      // エルネ
+'masterData.enemyName.380': '阿尔文',      // アルヴィン
+'masterData.enemyName.381': '维蕾亚',      // ヴィレア
+'masterData.enemyName.382': '赞恩',        // ゼイン
+'masterData.enemyName.383': '加尔娜',      // ガルナ
+'masterData.enemyName.384': '科尔瓦',      // コルヴァ
+'masterData.enemyName.385': '莱姆莉',      // レムリ
+'masterData.enemyName.386': '莫卡',        // モカ
+'masterData.enemyName.387': '塞尔瓦·莱姆', // セルヴァ・レム
   'item.name.アーマー': '护甲',
   'item.name.アイギスの盾': '宙斯盾',
   'item.name.アストラルブレイカー': '星界破坏者',
