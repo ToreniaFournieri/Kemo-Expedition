@@ -189,8 +189,15 @@
 - Header:  Progress Report
   - Name
     - name, lanugage:  ex. `Tom (en)`
-  - Total number of sending report 
-    - number, the last report time:  ex. `12 (12 hours ago)`
+  - Report count
+    - Total number of sending report , the last report time
+    - ex. `12 (12 hours ago)`
+  - Super rare
+    - Display the total number of Super Rare items obtained, followed by the increase since the previous report.
+    - ex. `120 (+3)`
+  - Jewel
+    - Display the total number of Jewels obtained, followed by the increase since the previous report.
+    - ex. `220 (+8)`
   - Version Build env: (ex. v0.7.0 (12) dev)
   - Timestamp: YYYY/MM/DD HH:MM (Timezone)
   - browser, version:
