@@ -3451,7 +3451,6 @@ export function HomeScreen({
       ['Report count', `${progressReportCount} (${lastReportTime})`],
       ['Super rare', `${formatNumber(superRareTotal)} (+${formatNumber(superRareIncrease)})`],
       ['Jewel', `${formatNumber(jewelTotal)} (+${formatNumber(jewelIncrease)})`],
-      ['Version Build env', `${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`],
     ];
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
@@ -3464,7 +3463,8 @@ export function HomeScreen({
     ]
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${environmentLines}`;
+    const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`;
+    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${versionBuildEnvironmentLine}\n${environmentLines}`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
     const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
     const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
