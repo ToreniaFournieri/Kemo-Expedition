@@ -129,7 +129,6 @@
       - Scale: Larger than surrounding text
       - Rotation: −22.5° (counterclockwise)
 
-
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
   if (p.includes("/dev/")) return "D";
