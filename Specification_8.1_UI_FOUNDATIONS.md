@@ -198,21 +198,26 @@
   - Jewel
     - Display the total number of Jewels obtained, followed by the increase since the previous report.
     - ex. `220 (+8)`
+
+- PT Summary Table ( latest outcome and room )
+  - `PT`: PT number ( PT1, PT2 ....)
+  - `Level`: level and experience, followed by the increase since the previous report.
+    - ex. 12, 24% (+54%)
+    - EXP gained may exceed 100% if the party leveled up. ex. 14, 44% (+120%)
+  - `HP`: max Party.`d.HP`, followed by the increase since the previous report.
+    - ex. 20,543 (+2,045)
+  - `ATK`: otal ranged, magic, and melee attack damage, in that order, followed by their respective increases since the previous report.
+    - ex. 10,200/6,244/8,127 (+545/+322/+0)
+  - `ID`: `x.exp_id` (1,2,.)
+  - `Outcome`: The latest outcome ( Clear )
+  - `Room`: the deepest room of the latest expedition
+
   - Version Build env: (ex. v0.7.0 (12) dev)
-  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
   - browser, version:
   - User ID
   - OS version: (ex. iOS 26.4.2)
   - Resolution: (ex. 390 px, 844 px) 
 
-- PT Summary Table ( latest outcome and room )
-  - `PT`: PT number ( PT1, PT2 ....)
-  - `Level`: level. ( 40 )
-  - `HP`: max Party.`d.HP` ( 20,543 )
-  - `Exp`: Experience remaining: (23%)
-  - `ID`: `x.exp_id` (1,2,.)
-  - `Outcome`: The latest outcome ( Clear )
-  - `Room`: the deepest room of the latest expedition
 
 - **Attached File**
   - (1) Status table. 
