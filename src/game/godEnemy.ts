@@ -41,7 +41,7 @@ function mergeUniqueBonuses(...groups: Bonus[][]): Bonus[] {
 }
 
 function getGodShortName(displayName: string): string {
-  return displayName.split(' ')[0] ?? displayName;
+  return displayName.split(/[ ,]/)[0] ?? displayName;
 }
 
 function getBaseGodEnemy(profile: GodEnemyProfile): EnemyDef | null {
@@ -104,6 +104,7 @@ export function buildGodRuntimeEnemy(
   return {
     ...scaledEnemy,
     name: getGodShortName(profile.displayName),
+    nameKey: undefined,
     enemyClass: profile.enemyClass,
     enemyType: 'Jinma',
     abilities: resolvedProfileAbilities,

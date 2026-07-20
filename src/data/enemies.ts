@@ -706,7 +706,9 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     const mythicItem = getItemById(enemy.dropItemId);
     if (mythicItem) {
       const drops: ItemDef[] = [mythicItem];
-      const mythicExtra = pickByCategory(mythicRare, godCats[1], enemy.id + 1, [mythicItem.id])
+      const exactSecondMythic = enemy.godDropItemIds ? getItemById(enemy.godDropItemIds[1]) : undefined;
+      const mythicExtra = exactSecondMythic
+        ?? pickByCategory(mythicRare, godCats[1], enemy.id + 1, [mythicItem.id])
         ?? pickByCategory(mythicRare, godCats[0], enemy.id + 2, [mythicItem.id])
         ?? pickAny(mythicRare, 1, enemy.id + 1, [mythicItem.id])[0];
       if (mythicExtra) drops.push(mythicExtra);

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 19 | 2026/07/20 | Fix every Gods Battle profile to preserve its canonical God name instead of an inherited expedition-enemy localization key, correct Tanue to Enemy_ID 6, and bind each god to its own two specified mythic drops (including Tanue tier 7). |
 | 0.8.3 | 18 | 2026/07/20 | Support backup export in iOS app-embedded browsers such as Qwen by opening the generated backup in a new page with localized Share / Save to Files instructions when native file sharing is unavailable. |
 | 0.8.3 | 17 | 2026/07/20 | Fix backup export on iOS by opening the native file share sheet (including Save to Files), retaining a standard download fallback, and delaying object-URL cleanup for WebKit compatibility. |
 | 0.8.3 | 16 | 2026/07/20 | Enable separate Simplified and Traditional Chinese runtime modes with `zh-CN`, legacy `zh`, and `zh-TW` URL resolution, persisted canonical selections, dedicated dictionaries, selector labels, and synchronized document language metadata. |
