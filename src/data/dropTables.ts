@@ -34,7 +34,7 @@ export const GOD_ENEMY_PROFILES: GodEnemyProfile[] = [
   { enemyId: 3, expId: 3, tier: 5, level: 32, name: 'Kyōen', title: 'God of Cunning', get displayName() { return t('masterData.god.Kyōen.displayName'); }, enemyClass: 'striker', representFor: 'Vulpinian', abilities: [{ id: 'momentum', level: 2 }], dropItemTier: 5, dropItemCategories: ['archery', 'bolt'], get expedition() { return t('masterData.god.Kyōen.expedition'); }, image_path: '/enemy/E_3.png' },
   { enemyId: 4, expId: 4, tier: 7, level: 39, name: 'Miora', title: 'Goddess of Fertility', get displayName() { return t('masterData.god.Miora.displayName'); }, enemyClass: 'sage', representFor: 'Felidian', abilities: [{ id: 'first_strike', level: 2 }], dropItemTier: 7, dropItemCategories: ['sword', 'catalyst'], get expedition() { return t('masterData.god.Miora.expedition'); }, image_path: '/enemy/E_4.png' },
   { enemyId: 5, expId: 5, tier: 6, level: 46, name: 'Dolvar', title: 'God of Fortification', get displayName() { return t('masterData.god.Dolvar.displayName'); }, enemyClass: 'guardian', representFor: 'Ursan', abilities: [{ id: 'cyborgization', level: 2 }], dropItemTier: 6, dropItemCategories: ['armor', 'gauntlet'], get expedition() { return t('masterData.god.Dolvar.expedition'); }, image_path: '/enemy/E_5.png' },
-  { enemyId: 5, expId: 6, tier: 7, level: 53, name: 'Tanue', title: 'Goddess of Mirage', get displayName() { return t('masterData.god.Tanue.displayName'); }, enemyClass: 'duelist', representFor: 'Procyonian', abilities: [], dropItemTier: 7, dropItemCategories: ['sword', 'gauntlet'], get expedition() { return t('masterData.god.Tanue.expedition'); }, image_path: '/enemy/E_6.png' },
+  { enemyId: 6, expId: 6, tier: 7, level: 53, name: 'Tanue', title: 'Goddess of Mirage', get displayName() { return t('masterData.god.Tanue.displayName'); }, enemyClass: 'duelist', representFor: 'Procyonian', abilities: [], dropItemTier: 7, dropItemCategories: ['sword', 'gauntlet'], get expedition() { return t('masterData.god.Tanue.expedition'); }, image_path: '/enemy/E_6.png' },
   { enemyId: 7, expId: 7, tier: 8, level: 60, name: 'Lira', title: 'Goddess of Precision', get displayName() { return t('masterData.god.Lira.displayName'); }, enemyClass: 'ranger', representFor: 'Leporian', abilities: [{ id: 'composure', level: 2 }], dropItemTier: 8, dropItemCategories: ['arrow', 'archery'], get expedition() { return t('masterData.god.Lira.expedition'); }, image_path: '/enemy/E_7.png' },
   { enemyId: 8, expId: 8, tier: 8, level: 61, name: 'Forne', title: 'God of Fate', get displayName() { return t('masterData.god.Forne.displayName'); }, enemyClass: 'lord', representFor: 'Cervin', abilities: [{ id: 'focus', level: 2 }], dropItemTier: 8, dropItemCategories: ['armor', 'robe'], get expedition() { return t('masterData.god.Forne.expedition'); }, image_path: '/enemy/E_8.png' },
   { enemyId: 9, expId: 9, tier: 8, level: 62, name: 'Skuva', title: 'God of Dusk', get displayName() { return t('masterData.god.Skuva.displayName'); }, enemyClass: 'ninja', representFor: 'Murid', abilities: [{ id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['shield', 'catalyst'], expedition: '(not yet)', image_path: '/enemy/E_9.png' },
@@ -84,10 +84,22 @@ export const GOD_MYTHIC_DROPS: GodMythicDrop[] = [
   { dropBy: 'Forne', tier: 8, category: 'robe', get name() { return t('masterData.mythicDrop.Forne.2.name'); }, bonuses: [{ type: 'unlock_cervin_ability', value: 1 }] },
   { dropBy: 'Skuva', tier: 8, category: 'shield', get name() { return t('masterData.mythicDrop.Skuva.1.name'); }, bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
   { dropBy: 'Skuva', tier: 8, category: 'catalyst', get name() { return t('masterData.mythicDrop.Skuva.2.name'); }, bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
-  { dropBy: 'Tanue', tier: 8, category: 'sword', get name() { return t('masterData.mythicDrop.Tanue.1.name'); }, bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
-  { dropBy: 'Tanue', tier: 8, category: 'gauntlet', get name() { return t('masterData.mythicDrop.Tanue.2.name'); }, bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
+  { dropBy: 'Tanue', tier: 7, category: 'sword', get name() { return t('masterData.mythicDrop.Tanue.1.name'); }, bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
+  { dropBy: 'Tanue', tier: 7, category: 'gauntlet', get name() { return t('masterData.mythicDrop.Tanue.2.name'); }, bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
   { dropBy: 'Noctyra', tier: 8, category: 'bolt', get name() { return t('masterData.mythicDrop.Noctyra.1.name'); } },
   { dropBy: 'Noctyra', tier: 8, category: 'katana', get name() { return t('masterData.mythicDrop.Noctyra.2.name'); } },
   { dropBy: 'Eris', tier: 8, category: 'grimoire', get name() { return t('masterData.mythicDrop.Eris.1.name'); } },
   { dropBy: 'Eris', tier: 8, category: 'wand', get name() { return t('masterData.mythicDrop.Eris.2.name'); } },
 ];
+
+// Mythic item IDs follow the GOD_MYTHIC_DROPS generation order in items.ts.
+export function getGodMythicDropIds(godName: string): [number, number] {
+  const ids = GOD_MYTHIC_DROPS
+    .map((drop, index) => ({ drop, id: 8501 + index }))
+    .filter(({ drop }) => drop.dropBy === godName)
+    .map(({ id }) => id);
+  if (ids.length !== 2) {
+    throw new Error(`God ${godName} must have exactly two configured mythic drops.`);
+  }
+  return [ids[0], ids[1]];
+}

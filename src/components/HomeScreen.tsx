@@ -11966,12 +11966,64 @@ function SettingTab({
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.download = fileName;
+    document.body.appendChild(anchor);
     anchor.click();
-    URL.revokeObjectURL(url);
+    anchor.remove();
+    // WebKit may not start reading the object URL until after the click handler returns.
+    window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
   };
 
-  const handleExportBackup = () => {
+  const openBackupFileForManualSave = (file: File) => {
+    const url = URL.createObjectURL(file);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    // Keep the URL alive while an embedded browser hands the new page to its viewer.
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    window.alert(t('setting.backup.manualSaveInstructions'));
+  };
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | 5.1 Backup (Export)
+  const handleExportBackup = async () => {
     const backupFile = buildBackupFile();
+    const nav = navigator as Navigator & {
+      canShare?: (data: ShareData) => boolean;
+      share?: (data: ShareData) => Promise<void>;
+    };
+    const isIos = /iPad|iPhone|iPod/.test(nav.userAgent)
+      || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+
+    if (isIos && nav.share) {
+      const shareData: ShareData = { files: [backupFile] };
+      let canShareBackup = !nav.canShare;
+      try {
+        canShareBackup ||= nav.canShare?.(shareData) === true;
+      } catch (error) {
+        console.warn('The browser rejected the backup share capability check.', error);
+      }
+      if (canShareBackup) {
+        try {
+          // iOS uses its native share sheet, where the player can choose Save to Files.
+          await nav.share(shareData);
+          onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') return;
+          console.warn('Native backup sharing failed; falling back to file download.', error);
+        }
+      }
+    }
+
+    if (isIos) {
+      // Embedded iOS browsers (including app webviews) can omit file sharing and
+      // ignore the download attribute. Open the backup so their toolbar can save it.
+      openBackupFileForManualSave(backupFile);
+      return;
+    }
 
     downloadBackupFile(
       backupFile,

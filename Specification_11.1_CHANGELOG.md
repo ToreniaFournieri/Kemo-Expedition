@@ -10,6 +10,11 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 1 | 2026/07/20 | Release version 0.8.4, reset the build number to 1, and load separate Simplified (`Content zh-CN`) and Traditional (`Content zh-TW`) Chinese Developer News columns. |
+| 0.8.3 | 20 | 2026/07/20 | Restrict every God reward table to its two explicitly configured mythic items, removing category, rarity, common-item, and default-God fallback drops. |
+| 0.8.3 | 19 | 2026/07/20 | Fix every Gods Battle profile to preserve its canonical God name instead of an inherited expedition-enemy localization key, correct Tanue to Enemy_ID 6, and bind each god to its own two specified mythic drops (including Tanue tier 7). |
+| 0.8.3 | 18 | 2026/07/20 | Support backup export in iOS app-embedded browsers such as Qwen by opening the generated backup in a new page with localized Share / Save to Files instructions when native file sharing is unavailable. |
+| 0.8.3 | 17 | 2026/07/20 | Fix backup export on iOS by opening the native file share sheet (including Save to Files), retaining a standard download fallback, and delaying object-URL cleanup for WebKit compatibility. |
 | 0.8.3 | 16 | 2026/07/20 | Enable separate Simplified and Traditional Chinese runtime modes with `zh-CN`, legacy `zh`, and `zh-TW` URL resolution, persisted canonical selections, dedicated dictionaries, selector labels, and synchronized document language metadata. |
 | 0.8.3 | 15 | 2026/07/20 | Fix the runtime Discord progress report order by placing Version Build env after the PT summary block and before browser and device metadata, as specified. |
 | 0.8.3 | 14 | 2026/07/20 | Streamline the runtime Discord progress report by removing its timestamp, report and PT table headings, and PT column labels; place PT summaries directly after version/build/environment details and before browser and device metadata. |
