@@ -10,6 +10,10 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.3 | 15 | 2026/07/20 | Fix the runtime Discord progress report order by placing Version Build env after the PT summary block and before browser and device metadata, as specified. |
+| 0.8.3 | 14 | 2026/07/20 | Streamline the runtime Discord progress report by removing its timestamp, report and PT table headings, and PT column labels; place PT summaries directly after version/build/environment details and before browser and device metadata. |
+| 0.8.3 | 13 | 2026/07/20 | Complete the runtime Discord PT summary (Spec 8.1.2) with combined level/EXP progress, max party HP, ranged/magic/melee ATK totals, and increases since the previous successful report, persisted independently per environment. |
+| 0.8.3 | 12 | 2026/07/20 | Complete the runtime Discord progress-report header (Spec 8.1.2) by adding total and since-previous-report counts for Super Rare items and Jewels, persisting successful-report baselines per environment, and using the specified Report count label. |
 | 0.8.3 | 11 | 2026/07/19 | Align the runtime Discord progress-report header with the specified readable format by appending the active language to Name, combining report count with the last-report interval, and combining version, build, and environment metadata. |
 | 0.8.3 | 10 | 2026/07/19 | Keep automatic backup attachment internal to Divine Bureau feedback submissions by removing its explanatory form text and unused translations. |
 | 0.8.3 | 9 | 2026/07/19 | Complete the Divine Bureau feedback runtime by automatically attaching the current compressed backup before the selected latest battle log, shared Status Table HTML, and up to four user images; align webhook version/build/environment metadata and expose the automatic backup behavior in all supported languages. |

@@ -129,7 +129,6 @@
       - Scale: Larger than surrounding text
       - Rotation: −22.5° (counterclockwise)
 
-
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
   if (p.includes("/dev/")) return "D";
@@ -182,30 +181,41 @@
 
 **Format of progress data**
 - Readable format for discord channel post.
-  - Bold text for title.
 
 - **Post content:**
-  - Send the header and PT summary table in a single Discord message.
-- Header:  Progress Report
+  - Send the header and PT summaries in a single Discord message.
+- Header:
   - Name
     - name, lanugage:  ex. `Tom (en)`
-  - Total number of sending report 
-    - number, the last report time:  ex. `12 (12 hours ago)`
+  - Report count
+    - Total number of sending report , the last report time
+    - ex. `12 (12 hours ago)`
+  - Super rare
+    - Display the total number of Super Rare items obtained, followed by the increase since the previous report.
+    - ex. `120 (+3)`
+  - Jewel
+    - Display the total number of Jewels obtained, followed by the increase since the previous report.
+    - ex. `220 (+8)`
+	
+  - Place the PT summaries, with no title or column-header row.
+	- `PT`: PT number ( PT1, PT2 ....)
+	- `Level`: level and experience, followed by the increase since the previous report.
+	  - ex. 12, 24% (+54%)
+	  - EXP gained may exceed 100% if the party leveled up. ex. 14, 44% (+120%)
+	- `HP`: max Party.`d.HP`, followed by the increase since the previous report.
+	  - ex. 20,543 (+2,045)
+	- `ATK`: otal ranged, magic, and melee attack damage, in that order, followed by their respective increases since the previous report.
+	  - ex. 10,200/6,244/8,127 (+545/+322/+0)
+	- `ID`: `x.exp_id` (1,2,.)
+	- `Outcome`: The latest outcome ( Clear )
+    - `Room`: the deepest room of the latest expedition
+
   - Version Build env: (ex. v0.7.0 (12) dev)
-  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
   - browser, version:
   - User ID
   - OS version: (ex. iOS 26.4.2)
   - Resolution: (ex. 390 px, 844 px) 
 
-- PT Summary Table ( latest outcome and room )
-  - `PT`: PT number ( PT1, PT2 ....)
-  - `Level`: level. ( 40 )
-  - `HP`: max Party.`d.HP` ( 20,543 )
-  - `Exp`: Experience remaining: (23%)
-  - `ID`: `x.exp_id` (1,2,.)
-  - `Outcome`: The latest outcome ( Clear )
-  - `Room`: the deepest room of the latest expedition
 
 - **Attached File**
   - (1) Status table. 

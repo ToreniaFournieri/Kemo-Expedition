@@ -3251,22 +3251,51 @@ export function HomeScreen({
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
-    const toSpaceSeparatedRows = (headers: string[], rows: string[][]): string => {
-      const headerLine = headers.join(' ');
-      const rowLines = rows.map((row) => row.join(' '));
-      return [headerLine, ...rowLines].join('\n');
+    type ProgressReportPartySnapshot = {
+      level: number;
+      expProgressPercent: number;
+      hp: number;
+      attacks: [number, number, number];
     };
+    const partySnapshotsKey = createEnvironmentStorageKey('speedOfTimeLastReportedPartySnapshots');
+    const storedPartySnapshots = (() => {
+      const raw = localStorage.getItem(partySnapshotsKey);
+      if (!raw) return [];
+      try {
+        const parsed: unknown = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed as ProgressReportPartySnapshot[] : [];
+      } catch {
+        return [];
+      }
+    })();
+    const formatSigned = (value: number): string => `${value >= 0 ? '+' : ''}${formatNumber(value)}`;
+    const partySnapshots: ProgressReportPartySnapshot[] = [];
     const ptRows = state.parties.map((party, index) => {
       const latestLog = party.lastExpeditionLog;
       const xpToNextLevel = getXpToNextLevel(party.level);
       const expProgressPercent = xpToNextLevel > 0
         ? Math.min(100, Math.max(0, Math.round((party.experience / xpToNextLevel) * 100)))
         : 100;
+      const hp = Math.max(0, Math.floor(computePartyStats(party).partyStats.hp));
+      const attacks = party.characters.reduce<[number, number, number]>((totals, member, memberIndex) => {
+        const computed = computeCharacterStats(member, party.level, memberIndex + 1);
+        totals[0] += computed.rangedAttack;
+        totals[1] += computed.magicalAttack;
+        totals[2] += computed.meleeAttack;
+        return totals;
+      }, [0, 0, 0]).map((value) => Math.max(0, Math.floor(value))) as [number, number, number];
+      const snapshot = { level: party.level, expProgressPercent, hp, attacks };
+      partySnapshots.push(snapshot);
+      const previous = storedPartySnapshots[index] ?? snapshot;
+      const expIncrease = ((party.level - previous.level) * 100)
+        + expProgressPercent
+        - previous.expProgressPercent;
+      const attackIncrease = attacks.map((value, attackIndex) => value - (previous.attacks?.[attackIndex] ?? value));
       return [
         `PT${formatNumber(index + 1)}`,
-        formatNumber(party.level),
-        formatNumber(Math.max(0, Math.floor(computePartyStats(party).partyStats.hp))),
-        `${formatNumber(expProgressPercent)}%`,
+        `${formatNumber(party.level)}, ${formatNumber(expProgressPercent)}% (${formatSigned(expIncrease)}%)`,
+        `${formatNumber(hp)} (${formatSigned(hp - previous.hp)})`,
+        `${attacks.map(formatNumber).join('/')} (${attackIncrease.map(formatSigned).join('/')})`,
         latestLog?.dungeonId != null ? formatNumber(latestLog.dungeonId) : '-',
         latestLog?.finalOutcome ?? '-',
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
@@ -3357,8 +3386,6 @@ export function HomeScreen({
     const day = timestampParts.find((part) => part.type === 'day')?.value ?? '00';
     const hour = timestampParts.find((part) => part.type === 'hour')?.value ?? '00';
     const minute = timestampParts.find((part) => part.type === 'minute')?.value ?? '00';
-    const timezone = timestampParts.find((part) => part.type === 'timeZoneName')?.value ?? 'UTC';
-    const timestamp = `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
     const nav = typeof navigator === 'undefined' ? null : navigator;
     const userAgent = nav?.userAgent ?? 'unknown';
     const navWithUaData = nav as Navigator & { userAgentData?: { brands?: Array<{ brand: string; version: string }> } };
@@ -3395,22 +3422,49 @@ export function HomeScreen({
     const lastReportTime = lastReportHours == null
       ? '-'
       : `${formatNumber(Math.floor(lastReportHours))} hours ago`;
+    const superRareTotal = Object.values(state.global.inventory).reduce((total, variant) => (
+      variant.status === 'owned' && variant.item.superRare > 0
+        ? total + Math.max(0, variant.count)
+        : total
+    ), 0);
+    const jewelTotal = Object.values(state.global.jewels).reduce(
+      (total, count) => total + Math.max(0, count),
+      0,
+    ) + state.parties.reduce((partyTotal, party) => (
+      partyTotal + party.characters.reduce((characterTotal, character) => (
+        characterTotal + character.equipment.reduce(
+          (equippedTotal, item) => equippedTotal + (item?.jewel ? 1 : 0),
+          0,
+        )
+      ), 0)
+    ), 0);
+    const superRareTotalKey = createEnvironmentStorageKey('speedOfTimeLastReportedSuperRareTotal');
+    const jewelTotalKey = createEnvironmentStorageKey('speedOfTimeLastReportedJewelTotal');
+    const previousSuperRareTotal = Number.parseInt(localStorage.getItem(superRareTotalKey) ?? '0', 10);
+    const previousJewelTotal = Number.parseInt(localStorage.getItem(jewelTotalKey) ?? '0', 10);
+    const superRareIncrease = Math.max(0, superRareTotal - (Number.isFinite(previousSuperRareTotal) ? previousSuperRareTotal : 0));
+    const jewelIncrease = Math.max(0, jewelTotal - (Number.isFinite(previousJewelTotal) ? previousJewelTotal : 0));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
     const reporterName = (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-';
     const reportHeaderRows = [
       ['Name', `${reporterName} (${state.global.language})`],
-      ['Total number of sending report', `${progressReportCount} (${lastReportTime})`],
-      ['Version Build env', `${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`],
-      ['Timestamp', timestamp],
-      ['browser, version', `${browserName}, ${browserVersion}`],
-      ['User ID', state.global.userId],
-      ['OS version', osVersion],
-      ['Resolution', resolution],
+      ['Report count', `${progressReportCount} (${lastReportTime})`],
+      ['Super rare', `${formatNumber(superRareTotal)} (+${formatNumber(superRareIncrease)})`],
+      ['Jewel', `${formatNumber(jewelTotal)} (+${formatNumber(jewelIncrease)})`],
     ];
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`;
+    const environmentLines = [
+      ['browser, version', `${browserName}, ${browserVersion}`],
+      ['User ID', state.global.userId],
+      ['OS version', osVersion],
+      ['Resolution', resolution],
+    ]
+      .map(([key, value]) => `**${key}:** ${value}`)
+      .join('\n');
+    const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`;
+    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${versionBuildEnvironmentLine}\n${environmentLines}`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
     const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
     const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
@@ -3426,6 +3480,9 @@ export function HomeScreen({
     await postWebhookWithFiles(reportMessage, reportFiles, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
     localStorage.setItem(reportCounterKey, String(nextReportCount));
     localStorage.setItem(lastReportAtKey, String(reportCreatedAtMs));
+    localStorage.setItem(superRareTotalKey, String(superRareTotal));
+    localStorage.setItem(jewelTotalKey, String(jewelTotal));
+    localStorage.setItem(partySnapshotsKey, JSON.stringify(partySnapshots));
     return true;
   }, [state]);
 
