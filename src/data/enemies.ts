@@ -673,54 +673,12 @@ function pickItems(pool: ItemDef[], count: number, seed: number): ItemDef[] {
 export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   // SpecRef: 4.2 | EXPEDITION_&_ENEMY_MASTER_DATA | x.drop
   // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
-  // God battle must prioritize mythic drop construction over master drop tokens.
-  if (enemy.isGodEnemy && enemy.dropItemId && enemy.dropItemId % 1000 >= 500) {
-    const tier = enemy.spawnTier || getTierFromEnemy(enemy.id);
-    const common = getItemsByTierAndRarity(tier, 'common');
-    const eliteRare = getItemsByTierAndRarity(tier, 'eliteRare');
-    const mythicRare = getItemsByTierAndRarity(tier, 'mythicRare');
-    const bossMythicByTier: Record<number, ItemCategory[]> = {
-      1: ['sword', 'grimoire'],
-      2: ['armor', 'arrow'],
-      3: ['wand', 'robe'],
-      4: ['katana', 'shield'],
-      5: ['bolt', 'archery'],
-      6: ['armor', 'catalyst'],
-      7: ['sword', 'wand'],
-      8: ['katana', 'bolt', 'grimoire'],
-    };
-    const godCats = enemy.godDropItemCategories ?? bossMythicByTier[tier] ?? ['sword', 'grimoire'];
-    const pickByCategory = (
-      pool: ItemDef[],
-      category: ItemCategory,
-      seed: number,
-      excludeItemIds: number[] = [],
-    ): ItemDef | undefined => {
-      const candidates = pool.filter(item => item.category === category && !excludeItemIds.includes(item.id));
-      if (candidates.length === 0) return undefined;
-      return candidates[Math.abs(seed) % candidates.length];
-    };
-    const pickAny = (pool: ItemDef[], count: number, seed: number, excludeItemIds: number[] = []): ItemDef[] =>
-      pickItems(pool.filter(item => !excludeItemIds.includes(item.id)), count, seed);
-
-    const mythicItem = getItemById(enemy.dropItemId);
-    if (mythicItem) {
-      const drops: ItemDef[] = [mythicItem];
-      const exactSecondMythic = enemy.godDropItemIds ? getItemById(enemy.godDropItemIds[1]) : undefined;
-      const mythicExtra = exactSecondMythic
-        ?? pickByCategory(mythicRare, godCats[1], enemy.id + 1, [mythicItem.id])
-        ?? pickByCategory(mythicRare, godCats[0], enemy.id + 2, [mythicItem.id])
-        ?? pickAny(mythicRare, 1, enemy.id + 1, [mythicItem.id])[0];
-      if (mythicExtra) drops.push(mythicExtra);
-
-      const eliteRareFallback = pickByCategory(eliteRare, godCats[0], enemy.id + 3)
-        ?? pickByCategory(eliteRare, godCats[1], enemy.id + 4)
-        ?? pickAny(eliteRare, 1, enemy.id + 3)[0];
-      if (eliteRareFallback) drops.push(eliteRareFallback);
-
-      drops.push(...pickAny(common, Math.max(0, 5 - drops.length), enemy.id + 5));
-      return drops.slice(0, 5);
-    }
+  // Gods expose only their two explicitly configured mythic drops. Missing or
+  // invalid configuration must not fall through to an expedition drop table.
+  if (enemy.isGodEnemy) {
+    return (enemy.godDropItemIds ?? [])
+      .map((itemId) => getItemById(itemId))
+      .filter((item): item is ItemDef => item !== undefined);
   }
 
   if (enemy.masterDropTokens && enemy.masterDropTokens.length > 0) {

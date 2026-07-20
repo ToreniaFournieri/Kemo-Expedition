@@ -98,5 +98,8 @@ export function getGodMythicDropIds(godName: string): [number, number] {
     .map((drop, index) => ({ drop, id: 8501 + index }))
     .filter(({ drop }) => drop.dropBy === godName)
     .map(({ id }) => id);
-  return [ids[0] ?? 8501, ids[1] ?? ids[0] ?? 8501];
+  if (ids.length !== 2) {
+    throw new Error(`God ${godName} must have exactly two configured mythic drops.`);
+  }
+  return [ids[0], ids[1]];
 }
