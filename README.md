@@ -1,6 +1,7 @@
-# 冒ケモ - Kemo Expedition (ケモの冒険)
+# 冒ケモ - (BoKemo, 冒兽)
 
-- 冒ケモ, BoKemo, 冒兽 is text-based deterministic fantasy RPG expedition game.
+- BoKemo — A Beastfolk Expedition RPG
+The name BoKemo comes from the Japanese words bōken, meaning “adventure,” and kemono, meaning “beast” or “beastfolk.”
 
 - オープンβテスト期間中となります。
 
