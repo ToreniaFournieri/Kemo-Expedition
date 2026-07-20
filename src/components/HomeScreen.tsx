@@ -3256,17 +3256,51 @@ export function HomeScreen({
       const rowLines = rows.map((row) => row.join(' '));
       return [headerLine, ...rowLines].join('\n');
     };
+    type ProgressReportPartySnapshot = {
+      level: number;
+      expProgressPercent: number;
+      hp: number;
+      attacks: [number, number, number];
+    };
+    const partySnapshotsKey = createEnvironmentStorageKey('speedOfTimeLastReportedPartySnapshots');
+    const storedPartySnapshots = (() => {
+      const raw = localStorage.getItem(partySnapshotsKey);
+      if (!raw) return [];
+      try {
+        const parsed: unknown = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed as ProgressReportPartySnapshot[] : [];
+      } catch {
+        return [];
+      }
+    })();
+    const formatSigned = (value: number): string => `${value >= 0 ? '+' : ''}${formatNumber(value)}`;
+    const partySnapshots: ProgressReportPartySnapshot[] = [];
     const ptRows = state.parties.map((party, index) => {
       const latestLog = party.lastExpeditionLog;
       const xpToNextLevel = getXpToNextLevel(party.level);
       const expProgressPercent = xpToNextLevel > 0
         ? Math.min(100, Math.max(0, Math.round((party.experience / xpToNextLevel) * 100)))
         : 100;
+      const hp = Math.max(0, Math.floor(computePartyStats(party).partyStats.hp));
+      const attacks = party.characters.reduce<[number, number, number]>((totals, member, memberIndex) => {
+        const computed = computeCharacterStats(member, party.level, memberIndex + 1);
+        totals[0] += computed.rangedAttack;
+        totals[1] += computed.magicalAttack;
+        totals[2] += computed.meleeAttack;
+        return totals;
+      }, [0, 0, 0]).map((value) => Math.max(0, Math.floor(value))) as [number, number, number];
+      const snapshot = { level: party.level, expProgressPercent, hp, attacks };
+      partySnapshots.push(snapshot);
+      const previous = storedPartySnapshots[index] ?? snapshot;
+      const expIncrease = ((party.level - previous.level) * 100)
+        + expProgressPercent
+        - previous.expProgressPercent;
+      const attackIncrease = attacks.map((value, attackIndex) => value - (previous.attacks?.[attackIndex] ?? value));
       return [
         `PT${formatNumber(index + 1)}`,
-        formatNumber(party.level),
-        formatNumber(Math.max(0, Math.floor(computePartyStats(party).partyStats.hp))),
-        `${formatNumber(expProgressPercent)}%`,
+        `${formatNumber(party.level)}, ${formatNumber(expProgressPercent)}% (${formatSigned(expIncrease)}%)`,
+        `${formatNumber(hp)} (${formatSigned(hp - previous.hp)})`,
+        `${attacks.map(formatNumber).join('/')} (${attackIncrease.map(formatSigned).join('/')})`,
         latestLog?.dungeonId != null ? formatNumber(latestLog.dungeonId) : '-',
         latestLog?.finalOutcome ?? '-',
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
@@ -3434,7 +3468,7 @@ export function HomeScreen({
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'Exp', 'ID', 'Outcome', 'Room'], ptRows)}`;
+    const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'ATK', 'ID', 'Outcome', 'Room'], ptRows)}`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
     const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
     const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
@@ -3452,6 +3486,7 @@ export function HomeScreen({
     localStorage.setItem(lastReportAtKey, String(reportCreatedAtMs));
     localStorage.setItem(superRareTotalKey, String(superRareTotal));
     localStorage.setItem(jewelTotalKey, String(jewelTotal));
+    localStorage.setItem(partySnapshotsKey, JSON.stringify(partySnapshots));
     return true;
   }, [state]);
 
