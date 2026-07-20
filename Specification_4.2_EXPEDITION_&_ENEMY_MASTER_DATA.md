@@ -336,7 +336,7 @@
 
 - Gods prompt
 
-| `x.exp_id` | `x.enemy_level` | Name | Title | Display Name | Class | Race Concept | Divine Philosophy | Visual Concept | Main Color | Sub Color | Accent Color | Sub Accent Color | Pose Direction |
+| `Enemy_ID` | `x.enemy_level` | Name | Title | Display Name | Class | Race Concept | Divine Philosophy | Visual Concept | Main Color | Sub Color | Accent Color | Sub Accent Color | Pose Direction |
 |---|---:|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 18 | Seiran | Goddess of Restoration | セイラン 再生の女神 | Pilgrim | Caninian, white Golden retriever | “Everything broken deserves another journey.” | Pilgrim healer deity with flowing prayer cloth and floating water vessels | Mist Blue | Warm Ivory | Pale Aqua | Sunlight Gold | Walking forward with one hand extended toward the wounded |
 | 2 | 25 | Garv | God of Attrition | ガーヴ 消耗の神 | Samurai | Lupinian | “Victory belongs to the one who remains.” | Scarred wolf warlord with damaged armor and broken katana | Iron Black | Dark Ash Red | Bone White | Rust Gold | Exhausted forward-leaning stance refusing to kneel |
