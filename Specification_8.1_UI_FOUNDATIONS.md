@@ -197,7 +197,7 @@
     - Display the total number of Jewels obtained, followed by the increase since the previous report.
     - ex. `220 (+8)`
 	
-  - Place the PT summaries immediately after `Version Build env`, with no title or column-header row.
+  - Place the PT summaries, with no title or column-header row.
 	- `PT`: PT number ( PT1, PT2 ....)
 	- `Level`: level and experience, followed by the increase since the previous report.
 	  - ex. 12, 24% (+54%)
