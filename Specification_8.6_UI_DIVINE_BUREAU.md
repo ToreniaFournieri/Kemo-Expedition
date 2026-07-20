@@ -277,12 +277,13 @@ HP: 312                 タイプ: 神魔
 **Mode select (モード切替)**
 
 - Language (言語)
-  - Options: 日本語 / English / 中文
+  - Options: 日本語 / English / 简体中文 / 繁體中文
   - The language is determined by the lang URL parameter:
     - Default → 日本語 
     - `lang=ja` → 日本語
     - `lang=en` → English
-    - `lang=zh` → 中文
+    - `lang=zh-CN` (or `lang=zh`) → 简体中文 
+    - `lang=zh-TW` → 繁體中文
     - Example: `https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja`
   - Persist the selected language in local storage.
   - When the selected language changes, replace the current URL's `lang` parameter with the selected language without reloading the page. Preserve the current path, all other query parameters, and the URL fragment.
