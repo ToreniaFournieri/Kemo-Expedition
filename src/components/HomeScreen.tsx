@@ -11966,12 +11966,37 @@ function SettingTab({
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.download = fileName;
+    document.body.appendChild(anchor);
     anchor.click();
-    URL.revokeObjectURL(url);
+    anchor.remove();
+    // WebKit may not start reading the object URL until after the click handler returns.
+    window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
   };
 
-  const handleExportBackup = () => {
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | 5.1 Backup (Export)
+  const handleExportBackup = async () => {
     const backupFile = buildBackupFile();
+    const nav = navigator as Navigator & {
+      canShare?: (data: ShareData) => boolean;
+      share?: (data: ShareData) => Promise<void>;
+    };
+    const isIos = /iPad|iPhone|iPod/.test(nav.userAgent)
+      || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+
+    if (isIos && nav.share) {
+      const shareData: ShareData = { files: [backupFile] };
+      if (!nav.canShare || nav.canShare(shareData)) {
+        try {
+          // iOS uses its native share sheet, where the player can choose Save to Files.
+          await nav.share(shareData);
+          onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') return;
+          console.warn('Native backup sharing failed; falling back to file download.', error);
+        }
+      }
+    }
 
     downloadBackupFile(
       backupFile,
