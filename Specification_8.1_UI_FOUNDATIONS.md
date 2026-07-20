@@ -182,11 +182,10 @@
 
 **Format of progress data**
 - Readable format for discord channel post.
-  - Bold text for title.
 
 - **Post content:**
-  - Send the header and PT summary table in a single Discord message.
-- Header:  Progress Report
+  - Send the header and PT summaries in a single Discord message.
+- Header:
   - Name
     - name, lanugage:  ex. `Tom (en)`
   - Report count
@@ -199,7 +198,7 @@
     - Display the total number of Jewels obtained, followed by the increase since the previous report.
     - ex. `220 (+8)`
 
-- PT Summary Table ( latest outcome and room )
+- Place the PT summaries immediately after `Version Build env`, with no title or column-header row.
   - `PT`: PT number ( PT1, PT2 ....)
   - `Level`: level and experience, followed by the increase since the previous report.
     - ex. 12, 24% (+54%)
@@ -213,6 +212,7 @@
   - `Room`: the deepest room of the latest expedition
 
   - Version Build env: (ex. v0.7.0 (12) dev)
+  - Do not include a timestamp.
   - browser, version:
   - User ID
   - OS version: (ex. iOS 26.4.2)

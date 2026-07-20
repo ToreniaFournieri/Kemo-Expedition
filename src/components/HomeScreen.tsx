@@ -3251,11 +3251,6 @@ export function HomeScreen({
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
-    const toSpaceSeparatedRows = (headers: string[], rows: string[][]): string => {
-      const headerLine = headers.join(' ');
-      const rowLines = rows.map((row) => row.join(' '));
-      return [headerLine, ...rowLines].join('\n');
-    };
     type ProgressReportPartySnapshot = {
       level: number;
       expProgressPercent: number;
@@ -3391,8 +3386,6 @@ export function HomeScreen({
     const day = timestampParts.find((part) => part.type === 'day')?.value ?? '00';
     const hour = timestampParts.find((part) => part.type === 'hour')?.value ?? '00';
     const minute = timestampParts.find((part) => part.type === 'minute')?.value ?? '00';
-    const timezone = timestampParts.find((part) => part.type === 'timeZoneName')?.value ?? 'UTC';
-    const timestamp = `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
     const nav = typeof navigator === 'undefined' ? null : navigator;
     const userAgent = nav?.userAgent ?? 'unknown';
     const navWithUaData = nav as Navigator & { userAgentData?: { brands?: Array<{ brand: string; version: string }> } };
@@ -3459,16 +3452,19 @@ export function HomeScreen({
       ['Super rare', `${formatNumber(superRareTotal)} (+${formatNumber(superRareIncrease)})`],
       ['Jewel', `${formatNumber(jewelTotal)} (+${formatNumber(jewelIncrease)})`],
       ['Version Build env', `${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`],
-      ['Timestamp', timestamp],
-      ['browser, version', `${browserName}, ${browserVersion}`],
-      ['User ID', state.global.userId],
-      ['OS version', osVersion],
-      ['Resolution', resolution],
     ];
     const headerLines = reportHeaderRows
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const reportMessage = `**Progress Report**\n${headerLines}\n\n**PT Summary Table (latest outcome and room)**\n${toSpaceSeparatedRows(['PT', 'Level', 'HP', 'ATK', 'ID', 'Outcome', 'Room'], ptRows)}`;
+    const environmentLines = [
+      ['browser, version', `${browserName}, ${browserVersion}`],
+      ['User ID', state.global.userId],
+      ['OS version', osVersion],
+      ['Resolution', resolution],
+    ]
+      .map(([key, value]) => `**${key}:** ${value}`)
+      .join('\n');
+    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${environmentLines}`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
     const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
     const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
