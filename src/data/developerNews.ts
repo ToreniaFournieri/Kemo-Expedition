@@ -35,7 +35,8 @@ function parseDeveloperNews(markdown: string): DeveloperNewsItem[] {
   const dateColumn = column('Date');
   const jaColumn = column('Content ja');
   const enColumn = column('Content en');
-  const zhColumn = column('Content zh');
+  const zhCNColumn = column('Content zh-CN');
+  const zhTWColumn = column('Content zh-TW');
 
   return rows
     .slice(2)
@@ -52,8 +53,8 @@ function parseDeveloperNews(markdown: string): DeveloperNewsItem[] {
         content: {
           ja: cells[jaColumn] ?? '',
           en: cells[enColumn] ?? '',
-          'zh-CN': cells[zhColumn] ?? '',
-          'zh-TW': cells[zhColumn] ?? '',
+          'zh-CN': cells[zhCNColumn] ?? '',
+          'zh-TW': cells[zhTWColumn] ?? '',
         },
       };
     })

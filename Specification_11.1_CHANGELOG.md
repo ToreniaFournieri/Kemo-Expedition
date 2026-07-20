@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 1 | 2026/07/20 | Release version 0.8.4, reset the build number to 1, and load separate Simplified (`Content zh-CN`) and Traditional (`Content zh-TW`) Chinese Developer News columns. |
 | 0.8.3 | 20 | 2026/07/20 | Restrict every God reward table to its two explicitly configured mythic items, removing category, rarity, common-item, and default-God fallback drops. |
 | 0.8.3 | 19 | 2026/07/20 | Fix every Gods Battle profile to preserve its canonical God name instead of an inherited expedition-enemy localization key, correct Tanue to Enemy_ID 6, and bind each god to its own two specified mythic drops (including Tanue tier 7). |
 | 0.8.3 | 18 | 2026/07/20 | Support backup export in iOS app-embedded browsers such as Qwen by opening the generated backup in a new page with localized Share / Save to Files instructions when native file sharing is unavailable. |
