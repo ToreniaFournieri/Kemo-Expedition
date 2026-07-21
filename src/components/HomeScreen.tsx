@@ -14128,7 +14128,6 @@ function SettingTab({
             <input
               ref={importInputRef}
               type="file"
-              accept="application/json,.json,.kemoz"
               onChange={handleImportFile}
               className="hidden"
             />
