@@ -1481,7 +1481,7 @@ const zhCN = {
   'deity.effect.GodOfDusk': '全员回避+{evasionBonus}，魔法防御倍率1.10倍。出售时间2倍。',
   'deity.effect.GoddessOfMirage': '全员魔法攻击倍率{magicalAttackMultiplier}倍，物理防御倍率1.10倍。',
   'deity.effect.GodOfResonance': '全员共鸣强化1+α阶段。共鸣不仅适用于魔法攻击，也适用于远程攻击。魔法防御倍率1.10倍，HP{hpMultiplier}倍。',
-  'deity.effect.GodOfOblivion': '每提升2个等级，超级稀有报酬抽选次数+1。',
+  'deity.effect.GodOfOblivion': '战斗开始时，随机1名成员获得淡薄记忆。每提升2个等级，超级稀有报酬抽选次数+1。',
   'deity.effect.GoddessOfDiscord': '战斗开始时，随机1名单位进入⚠️敌对状态。每提升1个等级，报酬抽选次数+1。',
   'deity.effect.none': '无效果',
   // 主数据i18n边界：本地化显示标签存放在字典中；规范名称保留在src/data中。

@@ -65,7 +65,7 @@ import { getItemById } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { DEITY_OPTIONS, getDeityKey, getDeityRank, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityKey, getDeityRewardDrawBonuses, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -2277,7 +2277,7 @@ function resolveEnemyRewards(
   hasUnlock: boolean,
   autoSellMultiplier: number,
   terrainEffect: TerrainEffectKey | undefined,
-  hasDiscordRewardBonus: boolean = false,
+  deityItemChanceTickets: number = 0,
   auriferousBonusRolls: number = 0,
   difficultyItemChanceTickets: number = 0,
   difficultySuperRareChanceTickets: number = 0,
@@ -2330,7 +2330,7 @@ function resolveEnemyRewards(
     const totalTicketCount =
       2
       + (hasUnlock ? 1 : 0)
-      + (terrainEffect !== 'terrain.gehenna' && hasDiscordRewardBonus ? 1 : 0)
+      + (terrainEffect !== 'terrain.gehenna' ? Math.max(0, deityItemChanceTickets) : 0)
       + difficultyItemChanceTickets
       + auriferousBonusRolls;
     const bonusRollCount = Math.max(0, totalTicketCount - 1);
@@ -3346,15 +3346,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const unlockActorName = getUnlockActorName(currentParty);
               const hasUnlock = !!unlockActorName;
               const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
-              const deityKey = getDeityKey(currentParty.deity.name);
               const deityDonation =
                 state.global.deityDonations[normalizeDeityName(currentParty.deity.name)]
                 ?? currentParty.deityGold
                 ?? 0;
-              const hasDiscordRewardBonus = deityKey === 'Goddess of Discord';
-              const oblivionSuperRareChanceTickets = deityKey === 'God of Oblivion'
-                ? Math.floor(getDeityRank(deityDonation) / 2)
-                : 0;
+              // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
+              // SpecRef: 1.1.7 | g. gods, religions | Goddess of Discord
+              const deityRewardDrawBonuses = getDeityRewardDrawBonuses(currentParty.deity.name, deityDonation);
               let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
               if (!isColosseumBattle) {
                 const enemyAuriferousLevel = enemy.abilities
@@ -3371,10 +3369,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   hasUnlock,
                   autoSellMultiplier,
                   terrainEffect,
-                  hasDiscordRewardBonus,
+                  deityRewardDrawBonuses.itemChanceTickets,
                   auriferousBonusRolls,
                   difficultyItemChanceTickets,
-                  difficultySuperRareChanceTickets + oblivionSuperRareChanceTickets,
+                  difficultySuperRareChanceTickets
+                    + (terrainEffect !== 'terrain.gehenna' ? deityRewardDrawBonuses.superRareChanceTickets : 0),
                 );
                 bags = rewardResult.bags;
                 currentInventory = rewardResult.inventory;

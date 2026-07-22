@@ -1480,7 +1480,7 @@ const zhTW = {
   'deity.effect.GodOfDusk': '全員迴避+{evasionBonus}，魔法防禦倍率1.10倍。出售時間2倍。',
   'deity.effect.GoddessOfMirage': '全員魔法攻擊倍率{magicalAttackMultiplier}倍，物理防禦倍率1.10倍。',
   'deity.effect.GodOfResonance': '全員共鳴強化1+α階段。共鳴不僅適用於魔法攻擊，也適用於遠程攻擊。魔法防禦倍率1.10倍，HP{hpMultiplier}倍。',
-  'deity.effect.GodOfOblivion': '每提升2個等級，超級稀有報酬抽選次數+1。',
+  'deity.effect.GodOfOblivion': '戰鬥開始時，隨機1名成員獲得淡薄記憶。每提升2個等級，超級稀有報酬抽選次數+1。',
   'deity.effect.GoddessOfDiscord': '戰鬥開始時，隨機1名單位進入⚠️敵對狀態。每提升1個等級，報酬抽選次數+1。',
   'deity.effect.none': '無效果',
   'masterData.class.fighter.short': '戰',

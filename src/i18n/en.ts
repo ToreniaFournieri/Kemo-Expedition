@@ -1480,7 +1480,7 @@ const en = {
   'deity.effect.GodOfDusk': 'Evasion +{evasionBonus} and magical defense multiplier x1.10 for everyone. Sell time x2.',
   'deity.effect.GoddessOfMirage': 'Magical attack multiplier x{magicalAttackMultiplier} and physical defense multiplier x1.10 for everyone.',
   'deity.effect.GodOfResonance': 'Strengthens resonance by 1+α stages for everyone. Resonance applies to ranged attacks as well as magic attacks. Magical defense multiplier x1.10, HP x{hpMultiplier}.',
-  'deity.effect.GodOfOblivion': 'Gain +1 additional Super Rare reward roll for every 2 ranks.',
+  'deity.effect.GodOfOblivion': 'At battle start, one random member gains Fading Memory. Gain +1 additional Super Rare reward roll for every 2 ranks.',
   'deity.effect.GoddessOfDiscord': 'At battle start, makes one random member ⚠️hostile. Gain +1 additional reward roll for every rank.',
   'deity.effect.none': 'No effect',
   // Master-data i18n boundary: localized display labels live in dictionaries; canonical names remain in src/data.
