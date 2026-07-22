@@ -204,7 +204,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
       return t('deity.effect.GodOfResonance', { hpMultiplier: hpMultiplier.toFixed(2) });
     }
     case 'God of Oblivion': {
-      return effectiveTier >= 10 ? t('deity.effect.GodOfOblivion.bonus') : t('deity.effect.GodOfOblivion');
+      return t('deity.effect.GodOfOblivion');
     }
     case 'Goddess of Discord': {
       return t('deity.effect.GoddessOfDiscord');
