@@ -58,7 +58,6 @@ import {
   getEliteGateKey,
   getBossGateKey,
   getLootCollectionCount,
-  getItemRarityForLootGate,
   hasDefeatedDungeonBoss,
   isDungeonEntryUnlocked,
   isLootGateUnlocked,
@@ -1654,6 +1653,17 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   const currentDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return [];
 
+  // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
+  // Rewards affect loot gates only after the party has completed its return. Keep
+  // the compact indicator aligned with the gate text in the active expedition log.
+  const displayedParty = party.expeditionRewardsPending && party.pendingLootGateSnapshot
+    ? {
+        ...party,
+        lootGateProgress: party.pendingLootGateSnapshot.progress,
+        lootGateStatus: party.pendingLootGateSnapshot.status,
+        defeatedBossExpeditions: party.pendingLootGateSnapshot.defeatedBossExpeditions,
+      }
+    : party;
   const tier = currentDungeon.enemyPoolIds[0];
   const items: ProgressItemDisplay[] = [];
   const pushUniqueProgressItem = (item: ProgressItemDisplay) => {
@@ -1665,8 +1675,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     const hasEliteGate = floor.floorNumber < 6;
     if (!hasEliteGate) continue;
     const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-    const collected = getLootCollectionCount(party, tier, 'uncommon');
-    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+    const collected = getLootCollectionCount(displayedParty, tier, 'uncommon');
+    const unlocked = isLootGateUnlocked(displayedParty, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
     if (!unlocked) {
       const safeRequired = Math.max(1, required);
       const normalizedCollected = Math.max(0, Math.min(collected, safeRequired));
@@ -1683,7 +1693,7 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   if (items.length === 0) {
     const nextDungeon = DUNGEONS.find((d) => d.id === currentDungeon.id + 1);
     if (nextDungeon) {
-      const entryUnlocked = isDungeonEntryUnlocked(party, nextDungeon.id);
+      const entryUnlocked = isDungeonEntryUnlocked(displayedParty, nextDungeon.id);
       if (!entryUnlocked) {
         pushUniqueProgressItem({
           key: `entry-gate:${nextDungeon.id}`,
@@ -1695,8 +1705,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     }
 
     const godsRequired = getGodsBattleRequired();
-    const bossRareCollected = getDisplayedBossRareCount(party, currentDungeon.id, cycleState);
-    const hasBossDefeat = hasDefeatedDungeonBoss(party, currentDungeon.id);
+    const bossRareCollected = getLootCollectionCount(displayedParty, currentDungeon.id, 'bossRare');
+    const hasBossDefeat = hasDefeatedDungeonBoss(displayedParty, currentDungeon.id);
     const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
     if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
       if (hasBossDefeat) {
@@ -1751,23 +1761,6 @@ function shouldAutoTriggerGodsBattle(party: Party): boolean {
   return party.condition >= 251
     && isGodsBattleAvailable(party, party.selectedDungeonId)
     && !party.sideQuest;
-}
-
-function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?: PartyCycleState): number {
-  const latestCount = getLootCollectionCount(party, dungeonId, 'bossRare');
-  if (cycleState !== 'explore') return latestCount;
-  const log = party.lastExpeditionLog;
-  if (!log || log.dungeonId !== dungeonId) return latestCount;
-
-  const newlyRecoveredBossRare = log.rewards.reduce((count, item) => {
-    const rarity = getItemRarityForLootGate(item.id);
-    if (rarity !== 'bossRare') return count;
-    const tier = Math.floor(item.id / 1000);
-    if (tier !== dungeonId) return count;
-    return count + 1;
-  }, 0);
-
-  return Math.max(0, latestCount - newlyRecoveredBossRare);
 }
 
 function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycleState): Party['expeditionStats'] {

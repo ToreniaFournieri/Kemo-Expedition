@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 7 | 2026/07/22 | Keep the compact expedition loot-gate indicator on its pre-expedition progress until the returning party finalizes recovered rewards, matching the active battle log gate condition. |
 | 0.8.4 | 6 | 2026/07/22 | Display localized base-stat names in the Character Roster race status summary instead of exposing internal translation keys. |
 | 0.8.4 | 5 | 2026/07/22 | Restore Japanese Glossary multiline descriptions so explanatory text and probability tables render as separate lines and structured tables instead of displaying literal escape sequences. |
 | 0.8.4 | 4 | 2026/07/22 | Fix the Expedition Difficulty Offset runtime display to use the specified `🍀` emoji for Additional Item Chance Tickets. |
