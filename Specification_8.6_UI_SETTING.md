@@ -1,7 +1,7 @@
 ## 8. UI
 
-### 8.6 UI_DIVINE_BUREAU
-- Divine Bureau (神聖局)
+### 8.6 UI_SETTING
+- Setting (設定)
   - All panes are collapsed by default and expandable.
   - The expanded/collapsed state is persisted and saved.
 
