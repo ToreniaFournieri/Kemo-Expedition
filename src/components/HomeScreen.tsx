@@ -835,25 +835,10 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-const UNIQUE_BATTLE_LOG_CHIBI_FILES: ReadonlyArray<{ nameKey: string; fileName: string }> = [
-  { nameKey: 'character.unique.kemo.name', fileName: 'C_Unique_Kemo.png' },
-  { nameKey: 'character.unique.laika.name', fileName: 'C_Unique_Laika.png' },
-  { nameKey: 'character.unique.luna.name', fileName: 'C_Unique_Luna.png' },
-  { nameKey: 'character.unique.nox.name', fileName: 'C_Unique_Nox.png' },
-  { nameKey: 'character.unique.mare.name', fileName: 'C_Unique_Merle.png' },
-  { nameKey: 'character.unique.ptitsa.name', fileName: 'C_Unique_Puchitsa.png' },
-  { nameKey: 'character.unique.mishka.name', fileName: 'C_Unique_Mishka.png' },
-  { nameKey: 'character.unique.sogaha.name', fileName: 'C_Unique_Souga-ha.png' },
-  { nameKey: 'character.unique.leonard.name', fileName: 'C_Unique_Leonard.png' },
-  { nameKey: 'character.unique.hagakure.name', fileName: 'C_Unique_Hagakure.png' },
-  { nameKey: 'character.unique.finn.name', fileName: 'C_Unique_Finn.png' },
-  { nameKey: 'character.unique.orca.name', fileName: 'C_Unique_Orca.png' },
-];
-
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
   if (character.isUnique) {
-    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILES.find(({ nameKey }) => t(nameKey) === character.name)?.fileName;
-    return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/${uniqueFileName}` : null;
+    const uniqueFileName = UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId];
+    return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/C_${uniqueFileName}` : null;
   }
 
   const race = RACES.find((candidate) => candidate.id === character.raceId);
