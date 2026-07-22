@@ -1,5 +1,6 @@
 import { SUPPORTED_LANGUAGES, t, translate } from '../i18n';
 import { ComputedCharacterStats, Party } from '../types';
+import { getAbilityDescription, getAbilityName } from './characterComputation';
 
 type DeityOptionKey =
   | 'None'
@@ -152,6 +153,12 @@ export function getNextRankDonationRequirement(totalDonatedGold: number): number
 // SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
 function getEffectiveDeityTier(totalDonatedGold: number): number {
   return Math.min(getDonationTier(totalDonatedGold), MAX_DEITY_RANK);
+}
+
+// SpecRef: 8.6 | UI_SETTING | God scaling
+export function getDeityResonanceUpgradeTiers(name: string, totalDonatedGold = 0): number {
+  if (getDeityKey(name) !== 'God of Resonance') return 0;
+  return 1 + Math.floor(getEffectiveDeityTier(totalDonatedGold) / 5);
 }
 
 // SpecRef: 2.1.3 | Religions lists | normalizeDeityName
@@ -309,6 +316,17 @@ export function applyDeityCharacterModifiers(
       case 'God of Resonance':
         return {
           ...stats,
+          // SpecRef: 2.1.3 | Religions lists | God of Resonance
+          abilities: stats.abilities.map((ability) => {
+            if (ability.id !== 'resonance') return ability;
+            const level = Math.min(5, ability.level + getDeityResonanceUpgradeTiers(party.deity.name, party.deityGold ?? 0));
+            return {
+              ...ability,
+              level,
+              name: getAbilityName(ability.id, level),
+              description: getAbilityDescription(ability.id, level),
+            };
+          }),
           deityDefenseAmplifierBonus: {
             physical: stats.deityDefenseAmplifierBonus.physical,
             magical: stats.deityDefenseAmplifierBonus.magical * 1.1,
