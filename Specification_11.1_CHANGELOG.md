@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 5 | 2026/07/22 | Audit all native alert and confirmation messages for visible newline escapes, and fix the two remaining English Glossary descriptions so their tables render with actual line breaks. |
+| 0.8.5 | 4 | 2026/07/22 | Fix the Japanese and English Clairvoyance reset confirmation dialogs so newline escapes render as line breaks instead of visible `\\n` text. |
 | 0.8.5 | 3 | 2026/07/22 | Audit specification/runtime consistency, remove six unreachable or unused runtime API fragments, correct the obsolete Progress Flavor Text SpecRef attached to the active party-state label, and document retained save-compatibility fragments. |
 | 0.8.5 | 2 | 2026/07/22 | Resolve unique-character battle-log chibi images by stable lineage identity so localization or renamed display names cannot suppress the image. |
 | 0.8.5 | 1 | 2026/07/22 | Release version 0.8.5 and reset the build number to 1. |
