@@ -9,7 +9,7 @@
 - Purpose: Displays announcements and issue-fix notices from the development team.
 - Label: Use `News` as the list title.
 - Badge behavior:
-  - Display a notification badge on both `Divine Bureau` and `News` when at least one unread news item exists. Unread news items are displayed in **bold**.
+  - Display a notification badge on both `Setting` and `News` when at least one unread news item exists. Unread news items are displayed in **bold**.
   - When the player taps a news item, mark it as read and change its text style from bold to normal.
   - Remove the notification badge when no unread news items remain.
   - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
@@ -19,7 +19,7 @@
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
-- Donation Scaling (Divine Bureau)
+- Donation Scaling (Setting)
   - For each god g:
   - Let D_g be total donated gold to god g.
   - Convert donation to tier T_g using thresholds. 

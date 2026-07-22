@@ -2969,7 +2969,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, selectedPartyIndex: action.partyIndex };
 
     case 'MARK_DEVELOPER_NEWS_READ': {
-      // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+      // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
       const nextReadIds = Array.from(new Set([
         ...(state.global.readDeveloperNewsItemIds ?? []),
         ...action.itemIds.filter((itemId) => itemId.trim().length > 0),

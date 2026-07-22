@@ -43,7 +43,7 @@ function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane
+// SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane
 export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<ColosseumEnemySettings> & { enemyClass?: string } : {};
   const normalizedAbilities = Array.isArray(parsed.abilities)

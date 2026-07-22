@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 4 | 2026/07/22 | Simplify the Divine Bureau header to Setting in every supported language and rename the corresponding runtime, localization, styling, persistence, and specification objects from Divine Bureau to Setting. |
 | 0.8.5 | 3 | 2026/07/22 | Match the Diary unread-badge lifecycle for Developer News by keeping expanded-pane announcements unread while they are visible and marking them read when the player leaves Divine Bureau for another tab. |
 | 0.8.5 | 2 | 2026/07/22 | Mark every visible Developer News announcement as read whenever the News pane is expanded, including unread announcements that arrive or load while the persisted pane state is already open. |
 | 0.8.5 | 1 | 2026/07/22 | Update the Divine Bureau News runtime so opening the list preserves unread state, unread announcements render in bold, and tapping an individual announcement alone marks it as read while both badges remain until all announcements are read. |
