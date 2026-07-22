@@ -1,4 +1,4 @@
-name: Release browser build
+name: Release browser and macOS builds
 
 on:
   push:
@@ -15,7 +15,61 @@ permissions:
   contents: write
 
 jobs:
+  desktop:
+    runs-on: macos-14
+    steps:
+      - name: Checkout release revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.ref_name }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup npm
+        run: npm install --global npm@11
+
+      - name: Require Apple release credentials
+        env:
+          CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          for variable in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            test -n "${!variable}" || { echo "Required secret for ${variable} is missing." >&2; exit 1; }
+          done
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build, sign, and notarize macOS packages
+        env:
+          CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npm run desktop:build
+
+      - name: Upload macOS release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts
+          path: |
+            release/desktop/bokemo-*-mac-arm64.dmg
+            release/desktop/bokemo-*-mac-arm64.zip
+            release/desktop/bokemo-*-mac-x64.dmg
+            release/desktop/bokemo-*-mac-x64.zip
+          if-no-files-found: error
+
   release:
+    needs: desktop
     runs-on: ubuntu-latest
     steps:
       - name: Resolve release tag
@@ -58,7 +112,7 @@ jobs:
         run: npm install --global npm@11
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build production browser bundle
         run: npm run build
@@ -94,6 +148,12 @@ jobs:
           (cd dist && zip -r "../${archive}" .)
           echo "ARCHIVE=${archive}" >> "${GITHUB_ENV}"
 
+      - name: Download macOS release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-release-artifacts
+          path: macos-artifacts
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -102,11 +162,11 @@ jobs:
         run: |
           set -euo pipefail
           cat > release-notes.md <<EOF
-          Download \`${ARCHIVE}\` and extract it to play this BoKemo browser release.
+          Download \`${ARCHIVE}\` and extract it to play this BoKemo browser release, or choose the DMG/ZIP matching your Mac's Apple Silicon (arm64) or Intel (x64) processor.
 
           See \`LOCAL_PLAY.md\` in the archive for local HTTP server instructions.
           EOF
-          gh release create "${RELEASE_TAG}" "${ARCHIVE}" \
+          gh release create "${RELEASE_TAG}" "${ARCHIVE}" macos-artifacts/* \
             --target "${TARGET_SHA}" \
             --notes-file release-notes.md \
             --title "BoKemo ${RELEASE_TAG}"
