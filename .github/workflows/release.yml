@@ -99,4 +99,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           TARGET_SHA: ${{ github.sha }}
-        run: gh release create "${RELEASE_TAG}" "${ARCHIVE}" --target "${TARGET_SHA}" --generate-notes --title "BoKemo ${RELEASE_TAG}"
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<EOF
+          Download \`${ARCHIVE}\` and extract it to play this BoKemo browser release.
+
+          See \`LOCAL_PLAY.md\` in the archive for local HTTP server instructions.
+          EOF
+          gh release create "${RELEASE_TAG}" "${ARCHIVE}" \
+            --target "${TARGET_SHA}" \
+            --notes-file release-notes.md \
+            --title "BoKemo ${RELEASE_TAG}"

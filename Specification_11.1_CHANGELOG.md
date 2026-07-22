@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 10 | 2026/07/22 | Prevent GitHub Release validation failures from oversized generated histories by publishing concise browser download and local-play notes. |
 | 0.8.5 | 9 | 2026/07/22 | Fix manually dispatched browser releases by building the selected branch revision and allowing GitHub CLI to create a requested release tag when it does not exist yet. |
 | 0.8.5 | 8 | 2026/07/22 | Add automated version-tagged GitHub Releases containing the complete production browser build, local HTTP serving instructions, and README download guidance. |
 | 0.8.5 | 7 | 2026/07/22 | Add current Gold and the current Paid Refresh cost to the runtime Discord progress report after the PT summaries. |
