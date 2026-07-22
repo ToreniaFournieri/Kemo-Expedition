@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 9 | 2026/07/22 | Extend the Spec 5.1.3.1 Loot-Gate return-item wording to the English, Simplified Chinese, and Traditional Chinese runtime progress and blocked-gate messages. |
+| 0.8.4 | 8 | 2026/07/22 | Align Japanese runtime Loot-Gate progress and blocked-gate messages with Spec 5.1.3.1 by stating that the required Uncommon or Elite Rare items must be brought back. |
 | 0.8.4 | 7 | 2026/07/22 | Keep the compact expedition loot-gate indicator on its pre-expedition progress until the returning party finalizes recovered rewards, matching the active battle log gate condition. |
 | 0.8.4 | 6 | 2026/07/22 | Display localized base-stat names in the Character Roster race status summary instead of exposing internal translation keys. |
 | 0.8.4 | 5 | 2026/07/22 | Restore Japanese Glossary multiline descriptions so explanatory text and probability tables render as separate lines and structured tables instead of displaying literal escape sequences. |
