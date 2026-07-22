@@ -2483,7 +2483,18 @@ function calculatePrayerProfit(party: Party, pendingProfit: number): PrayerProfi
   return { donation, deposit, embezzled };
 }
 
-function processAfkPrayerProfit(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+function calculateFreeActionSpend(party: Party, pendingProfit: number): number {
+  // SpecRef: 5.1.1 | Party State Machine | state.free_action
+  const cyclePendingProfit = Math.max(0, Math.floor(pendingProfit));
+  const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(20, 40)) / 100);
+  const squanderLevel = getPartyAbilityLevel(party, 'squander');
+  const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
+
+  return Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
+}
+
+function processAfkCycleProfit(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+  // SpecRef: 5.1.1 | Party State Machine | state.free_action
   // SpecRef: 5.1.1 | Party State Machine | state.pray
   const party = state.parties[partyIndex];
   if (!party) return state;
@@ -2491,16 +2502,26 @@ function processAfkPrayerProfit(state: GameState, partyIndex: number, simulatedA
   const pendingProfit = Math.max(0, Math.floor(party.pendingProfit ?? 0));
   if (pendingProfit <= 0) return state;
 
-  const { donation, deposit, embezzled } = calculatePrayerProfit(party, pendingProfit);
-  let nextState = gameReducer(state, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+  const spend = calculateFreeActionSpend(party, pendingProfit);
+  let nextState = gameReducer(state, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
 
-  if (party.sideQuest?.type === 'q.donation' && donation > 0) {
+  if (party.sideQuest?.type === 'q.squander' && spend > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: spend, simulatedAt });
+  }
+
+  const partyAtPrayer = nextState.parties[partyIndex];
+  if (!partyAtPrayer) return nextState;
+  const prayerPendingProfit = Math.max(0, Math.floor(partyAtPrayer.pendingProfit ?? 0));
+  const { donation, deposit, embezzled } = calculatePrayerProfit(partyAtPrayer, prayerPendingProfit);
+  nextState = gameReducer(nextState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+
+  if (partyAtPrayer.sideQuest?.type === 'q.donation' && donation > 0) {
     nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
   }
-  if (party.sideQuest?.type === 'q.savings' && deposit > 0) {
+  if (partyAtPrayer.sideQuest?.type === 'q.savings' && deposit > 0) {
     nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: deposit, simulatedAt });
   }
-  if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
+  if (partyAtPrayer.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
     nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled, simulatedAt });
   }
 
@@ -4715,7 +4736,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
 
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
-          workingState = processAfkPrayerProfit(workingState, partyIndex, simulatedAt);
+          workingState = processAfkCycleProfit(workingState, partyIndex, simulatedAt);
 
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty) {
