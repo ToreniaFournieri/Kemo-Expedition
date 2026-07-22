@@ -728,11 +728,10 @@ If `a.*` with phase = START:
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
 #### 6.1.6 REWARD 
-
 - Ticket calculation:
   - Base: **2**
   - +1 if `c.unlock`
-  - +1 if (terrain is not terrain.gehenna) and {Goddess of Discord or (God of Oblivion and its rank ≥ 10)}
+  - +1 if (terrain is not terrain.gehenna) and {Goddess of Discord}
   - +N from `Difficulty Offset` (Additional Item Chance Tickets)
   - +N from `a.auriferous`
 	- `a.auriferous`
@@ -742,23 +741,24 @@ If `a.*` with phase = START:
       - Log: `log.auriferous` + (累計X回→ +N回抽選回数増加)
 
 - For every item listed in the enemy's potential drop items,
-  - Chance: 1 + N from `Difficulty Offset` (Additional Super Rare Chance Tickets)
+  - Chance: 1
+  - Note: M from `Difficulty Offset` and (God of Oblivion) (Additional Super Rare Chance Tickets)
   - If the item is common,
     - Draw tickets from `t.common_reward_bag` equal to the total ticket count.
 	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 2, then get one ticket from `t.common_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 2, then get one + M ticket from `t.common_superRare_bag`.
   - If the item is uncommon,
     - Draw tickets from `t.uncommon_reward_bag` equal to the total ticket count.
     - If `t.uncommon_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.rare_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one + M  ticket from `t.rare_superRare_bag`.
   - If the item is elite rare or boss rare,
     - Draw tickets from `t.rare_reward_bag`  equal to the total ticket count.
     - If `t.rare_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.rare_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one + M  ticket from `t.rare_superRare_bag`.
   - If the item is mythic,
     - Draw tickets from `t.mythic_reward_bag` equal to the total ticket count.
     - If `t.rare_mythic_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.rare_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one + M ticket from `t.rare_superRare_bag`.
 
   - Combines them into one item.
 
