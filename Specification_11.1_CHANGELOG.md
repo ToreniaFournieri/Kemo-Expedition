@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 5 | 2026/07/22 | Restore Japanese Glossary multiline descriptions so explanatory text and probability tables render as separate lines and structured tables instead of displaying literal escape sequences. |
 | 0.8.4 | 4 | 2026/07/22 | Fix the Expedition Difficulty Offset runtime display to use the specified `🍀` emoji for Additional Item Chance Tickets. |
 | 0.8.4 | 3 | 2026/07/22 | Align runtime special bonuses for `砂猫のボルト`, `影の矢`, and `冥府の矢` with Spec 3.2.1 by applying penetration bonuses of `0.16`, `0.14`, and `0.12`, respectively. |
 | 0.8.4 | 2 | 2026/07/21 | Allow compressed `.kemoz` backups to be selected for import on platforms whose file pickers reject or hide unregistered extensions, while retaining content-based format validation for `.kemoz` and legacy `.json` backups. |
