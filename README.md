@@ -23,7 +23,7 @@ Versioned releases include separate Apple Silicon (`arm64`) and Intel (`x64`) do
 2. Open the DMG in Finder and drag **BoKemo** into **Applications**.
 3. Eject the DMG, then open BoKemo from Applications. The matching ZIP contains the same `.app` for users who prefer a zipped application.
 
-Release DMGs and applications are signed and notarized by the macOS release workflow. Locally produced development packages are unsigned: if macOS blocks one that you built or obtained from a trusted developer, Control-click the app, choose **Open**, and confirm once. Never bypass macOS security checks for an untrusted download.
+Release DMGs and applications are signed and notarized by the macOS release workflow, which verifies the signature and notarization ticket in every DMG and ZIP before publishing them. Locally produced development packages are unsigned and are for development only; never distribute them or bypass macOS security checks to open an untrusted download.
 
 ### Saves, backups, and upgrades
 
