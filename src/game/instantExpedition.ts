@@ -153,8 +153,3 @@ export function formatInstantExpeditionChargeDisplay(chargeState: InstantExpedit
     label: `${cells}${timerText}`,
   };
 }
-
-// SpecRef: 8.3 | UI_EXPEDITION | Charge
-export function formatInstantExpeditionCharge(chargeState: InstantExpeditionChargeState): string {
-  return formatInstantExpeditionChargeDisplay(chargeState).label;
-}

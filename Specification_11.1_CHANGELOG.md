@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 3 | 2026/07/22 | Audit specification/runtime consistency, remove six unreachable or unused runtime API fragments, correct the obsolete Progress Flavor Text SpecRef attached to the active party-state label, and document retained save-compatibility fragments. |
 | 0.8.5 | 2 | 2026/07/22 | Resolve unique-character battle-log chibi images by stable lineage identity so localization or renamed display names cannot suppress the image. |
 | 0.8.5 | 1 | 2026/07/22 | Release version 0.8.5 and reset the build number to 1. |
 | 0.8.5 | 5 | 2026/07/22 | Apply the God of Resonance rank-scaled Resonance level upgrade to computed character abilities so Party cards and battles show the strengthened level, while preserving the Gehenna suppression exception. |

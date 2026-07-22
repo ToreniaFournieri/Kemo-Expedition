@@ -8897,7 +8897,7 @@ function ExpeditionTab({
             const percentText = `${Math.round(normalizedProgressPercent)}%`;
             return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
           }
-          // SpecRef: 8.3 | UI_EXPEDITION | OBSOLETED: REMOVE THIS FROM THE RUNTIME PROGRAM
+          // SpecRef: 8.3 | UI_EXPEDITION | Party state progress bar
           return getPartyCycleStateLabel(cycle.state);
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;

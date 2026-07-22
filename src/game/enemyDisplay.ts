@@ -38,10 +38,6 @@ export const ENEMY_TYPE_SHORT_NAME_KEYS: Record<string, string> = {
   Murid: 'masterData.enemyType.Murid.short',
 };
 
-export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = Object.fromEntries(
-  Object.keys(ENEMY_TYPE_SHORT_NAME_KEYS).map((enemyType) => [enemyType, t(ENEMY_TYPE_SHORT_NAME_KEYS[enemyType])]),
-);
-
 export function getEnemyTypeShortName(enemyType: string): string {
   return t(ENEMY_TYPE_SHORT_NAME_KEYS[enemyType] ?? enemyType);
 }
