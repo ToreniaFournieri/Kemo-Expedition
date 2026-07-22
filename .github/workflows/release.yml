@@ -1,0 +1,98 @@
+name: Release browser build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing v* tag to release'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve release tag
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSHED_TAG: ${{ github.ref_name }}
+          MANUAL_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            tag="${MANUAL_TAG}"
+          else
+            tag="${PUSHED_TAG}"
+          fi
+
+          if [[ ! "${tag}" =~ ^v.+$ ]]; then
+            echo "Release tag must match v*." >&2
+            exit 1
+          fi
+
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "version=${tag#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout tagged revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.release.outputs.tag }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup npm
+        run: npm install --global npm@11
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production browser bundle
+        run: npm run build
+
+      - name: Add local play instructions
+        run: |
+          cat > dist/LOCAL_PLAY.md <<'EOF'
+          # Play BoKemo locally
+
+          This directory must be served over HTTP; opening `index.html` directly is not supported.
+
+          From this directory, run either:
+
+          ```sh
+          python -m http.server 8080
+          ```
+
+          or:
+
+          ```sh
+          npx serve .
+          ```
+
+          Then open http://localhost:8080/ in your browser.
+          EOF
+
+      - name: Package complete browser bundle
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          archive="bokemo-${VERSION}-browser.zip"
+          (cd dist && zip -r "../${archive}" .)
+          echo "ARCHIVE=${archive}" >> "${GITHUB_ENV}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: gh release create "${RELEASE_TAG}" "${ARCHIVE}" --verify-tag --generate-notes --title "BoKemo ${RELEASE_TAG}"
