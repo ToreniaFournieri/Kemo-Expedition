@@ -58,10 +58,6 @@ export function setLanguage(language: Language): void {
   activeLanguage = normalizeLanguage(language);
 }
 
-export function getLanguage(): Language {
-  return activeLanguage;
-}
-
 export function translate(language: Language, key: string, params?: TranslationParams): string {
   const normalizedLanguage = normalizeLanguage(language);
   const template = dictionaries[normalizedLanguage][key] ?? dictionaries[DEFAULT_LANGUAGE][key] ?? key;

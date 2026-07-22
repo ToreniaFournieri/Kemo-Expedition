@@ -835,25 +835,10 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-const UNIQUE_BATTLE_LOG_CHIBI_FILES: ReadonlyArray<{ nameKey: string; fileName: string }> = [
-  { nameKey: 'character.unique.kemo.name', fileName: 'C_Unique_Kemo.png' },
-  { nameKey: 'character.unique.laika.name', fileName: 'C_Unique_Laika.png' },
-  { nameKey: 'character.unique.luna.name', fileName: 'C_Unique_Luna.png' },
-  { nameKey: 'character.unique.nox.name', fileName: 'C_Unique_Nox.png' },
-  { nameKey: 'character.unique.mare.name', fileName: 'C_Unique_Merle.png' },
-  { nameKey: 'character.unique.ptitsa.name', fileName: 'C_Unique_Puchitsa.png' },
-  { nameKey: 'character.unique.mishka.name', fileName: 'C_Unique_Mishka.png' },
-  { nameKey: 'character.unique.sogaha.name', fileName: 'C_Unique_Souga-ha.png' },
-  { nameKey: 'character.unique.leonard.name', fileName: 'C_Unique_Leonard.png' },
-  { nameKey: 'character.unique.hagakure.name', fileName: 'C_Unique_Hagakure.png' },
-  { nameKey: 'character.unique.finn.name', fileName: 'C_Unique_Finn.png' },
-  { nameKey: 'character.unique.orca.name', fileName: 'C_Unique_Orca.png' },
-];
-
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
   if (character.isUnique) {
-    const uniqueFileName = UNIQUE_BATTLE_LOG_CHIBI_FILES.find(({ nameKey }) => t(nameKey) === character.name)?.fileName;
-    return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/${uniqueFileName}` : null;
+    const uniqueFileName = UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId];
+    return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/C_${uniqueFileName}` : null;
   }
 
   const race = RACES.find((candidate) => candidate.id === character.raceId);
@@ -3290,6 +3275,7 @@ export function HomeScreen({
         `${formatNumber(hp)} (${formatSigned(hp - previous.hp)})`,
         `${attacks.map(formatNumber).join('/')} (${attackIncrease.map(formatSigned).join('/')})`,
         latestLog?.dungeonId != null ? formatNumber(latestLog.dungeonId) : '-',
+        latestLog?.difficultyOffset != null ? `[${formatSigned(latestLog.difficultyOffset)}]` : '-',
         latestLog?.finalOutcome ?? '-',
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
       ];
@@ -3457,7 +3443,9 @@ export function HomeScreen({
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
     const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`;
-    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${versionBuildEnvironmentLine}\n${environmentLines}`;
+    const currentShopRefreshCount = state.global.shopRefreshCounts[getShopHourKey(now)] ?? 0;
+    const goldAndPaidRefreshCostLine = `**Gold and Paid Refresh cost:** ${formatNumber(state.global.gold)}G (${formatNumber(getShopRefreshPrice(currentShopRefreshCount))}G)`;
+    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${goldAndPaidRefreshCostLine}\n${versionBuildEnvironmentLine}\n${environmentLines}`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
     const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
     const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
@@ -8912,7 +8900,7 @@ function ExpeditionTab({
             const percentText = `${Math.round(normalizedProgressPercent)}%`;
             return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
           }
-          // SpecRef: 8.3 | UI_EXPEDITION | OBSOLETED: REMOVE THIS FROM THE RUNTIME PROGRAM
+          // SpecRef: 8.3 | UI_EXPEDITION | Party state progress bar
           return getPartyCycleStateLabel(cycle.state);
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;

@@ -207,9 +207,11 @@
 	- `ATK`: otal ranged, magic, and melee attack damage, in that order, followed by their respective increases since the previous report.
 	  - ex. 10,200/6,244/8,127 (+545/+322/+0)
 	- `ID`: `x.exp_id` (1,2,.)
+    - `Difficulty offset`: (ex. [+3] )
 	- `Outcome`: The latest outcome ( Clear )
     - `Room`: the deepest room of the latest expedition
 
+  - Gold and Paid Refresh cost  (ex. 7,174,903G (800G))
   - Version Build env: (ex. v0.7.0 (12) dev)
   - browser, version:
   - User ID

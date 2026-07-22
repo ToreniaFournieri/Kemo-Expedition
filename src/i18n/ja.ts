@@ -3805,7 +3805,7 @@ const ja = {
   'setting.donation.maxRank': '到達済み',
   'setting.donation.noRecords': 'まだ寄付の記録がありません',
   'setting.clairvoyance.title': '未来視',
-  'setting.clairvoyance.resetConfirmation': '{label}を実行します。\\n現在の抽選状況が初期化されます。\\nよろしいですか？',
+  'setting.clairvoyance.resetConfirmation': '{label}を実行します。\n現在の抽選状況が初期化されます。\nよろしいですか？',
   'setting.glossary.title': '用語集',
   'setting.itemCompendium.title': 'アイテム図鑑',
   'setting.characterRoster.title': '味方キャラクター図鑑',
