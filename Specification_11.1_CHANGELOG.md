@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 3 | 2026/07/22 | Align runtime special bonuses for `砂猫のボルト`, `影の矢`, and `冥府の矢` with Spec 3.2.1 by applying penetration bonuses of `0.16`, `0.14`, and `0.12`, respectively. |
 | 0.8.4 | 2 | 2026/07/21 | Allow compressed `.kemoz` backups to be selected for import on platforms whose file pickers reject or hide unregistered extensions, while retaining content-based format validation for `.kemoz` and legacy `.json` backups. |
 | 0.8.4 | 1 | 2026/07/20 | Release version 0.8.4, reset the build number to 1, and load separate Simplified (`Content zh-CN`) and Traditional (`Content zh-TW`) Chinese Developer News columns. |
 | 0.8.3 | 20 | 2026/07/20 | Restrict every God reward table to its two explicitly configured mythic items, removing category, rarity, common-item, and default-God fallback drops. |
