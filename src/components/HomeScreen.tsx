@@ -5453,6 +5453,22 @@ export function HomeScreen({
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
   }, [isDiaryTabVisible, actions]);
 
+  const isDivineBureauTabVisible = isPartyExpeditionSplitViewEnabled
+    ? activeWideModeSecondaryTab === 'setting'
+    : activeTab === 'setting';
+  const prevDivineBureauTabVisibleRef = useRef(isDivineBureauTabVisible);
+  const isDeveloperNewsPaneExpandedRef = useRef(false);
+  const handleDeveloperNewsPaneExpandedChange = useCallback((expanded: boolean) => {
+    isDeveloperNewsPaneExpandedRef.current = expanded;
+  }, []);
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  useEffect(() => {
+    if (prevDivineBureauTabVisibleRef.current && !isDivineBureauTabVisible && isDeveloperNewsPaneExpandedRef.current) {
+      actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+    }
+    prevDivineBureauTabVisibleRef.current = isDivineBureauTabVisible;
+  }, [isDivineBureauTabVisible, actions]);
+
   useEffect(() => {
     if (activeTab !== 'base' || activeBaseSubTab !== 'inventory') return;
     const hasNewInventoryItems = Object.values(state.global.inventory).some((variant) => variant.isNew);
@@ -5635,6 +5651,7 @@ export function HomeScreen({
         language={state.global.language}
         onSetLanguage={actions.setLanguage}
         onMarkDeveloperNewsRead={actions.markDeveloperNewsRead}
+        onNewsPaneExpandedChange={handleDeveloperNewsPaneExpandedChange}
       />
     );
   };
@@ -11535,6 +11552,7 @@ function SettingTab({
   language,
   onSetLanguage,
   onMarkDeveloperNewsRead,
+  onNewsPaneExpandedChange,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -11570,6 +11588,7 @@ function SettingTab({
   language: Language;
   onSetLanguage: (language: Language) => void;
   onMarkDeveloperNewsRead: (itemIds: string[]) => void;
+  onNewsPaneExpandedChange: (expanded: boolean) => void;
 }) {
   type DivineBureauPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
@@ -11916,13 +11935,11 @@ function SettingTab({
 
   const unreadDeveloperNewsItems = DEVELOPER_NEWS_ITEMS.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
-  const unreadDeveloperNewsItemIdsKey = JSON.stringify(unreadDeveloperNewsItems.map((item) => item.id));
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
   useEffect(() => {
-    if (!divineBureauPanelExpanded.news || unreadDeveloperNewsItemIdsKey === '[]') return;
-    onMarkDeveloperNewsRead(JSON.parse(unreadDeveloperNewsItemIdsKey) as string[]);
-  }, [divineBureauPanelExpanded.news, onMarkDeveloperNewsRead, unreadDeveloperNewsItemIdsKey]);
+    onNewsPaneExpandedChange(divineBureauPanelExpanded.news);
+  }, [divineBureauPanelExpanded.news, onNewsPaneExpandedChange]);
 
   const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
     setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
