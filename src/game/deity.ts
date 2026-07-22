@@ -219,10 +219,16 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
       return t('deity.effect.GodOfResonance', { hpMultiplier: hpMultiplier.toFixed(2) });
     }
     case 'God of Oblivion': {
-      return t('deity.effect.GodOfOblivion');
+      const { superRareChanceTickets } = getDeityRewardDrawBonuses(name, totalDonatedGold);
+      return t('deity.effect.GodOfOblivion', {
+        currentBonus: new Intl.NumberFormat('ja-JP').format(superRareChanceTickets),
+      });
     }
     case 'Goddess of Discord': {
-      return t('deity.effect.GoddessOfDiscord');
+      const { itemChanceTickets } = getDeityRewardDrawBonuses(name, totalDonatedGold);
+      return t('deity.effect.GoddessOfDiscord', {
+        currentBonus: new Intl.NumberFormat('ja-JP').format(itemChanceTickets),
+      });
     }
     default:
       return t('deity.effect.none');
