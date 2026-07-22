@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 11 | 2026/07/22 | Process AFK cycle profit through `state.free_action` spending before prayer so squander and embezzlement side quests use the same remaining profit and progression order as online cycles. |
 | 0.8.4 | 10 | 2026/07/22 | Align the Spec 6.1.6 reward runtime with enhancement-gated Super Rare draws, God of Oblivion Super Rare tickets, Discord-only item tickets, and END-phase Auriferous logging. |
 | 0.8.4 | 9 | 2026/07/22 | Extend the Spec 5.1.3.1 Loot-Gate return-item wording to the English, Simplified Chinese, and Traditional Chinese runtime progress and blocked-gate messages. |
 | 0.8.4 | 8 | 2026/07/22 | Align Japanese runtime Loot-Gate progress and blocked-gate messages with Spec 5.1.3.1 by stating that the required Uncommon or Elite Rare items must be brought back. |
