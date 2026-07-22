@@ -66,9 +66,9 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
       - +3 Additional Item Chance Tickets
       - +3 Additional Super Rare Chance Tickets
   - **Display Style**
-    - Slider value display: +12 (🪎+3, ✨+3)
+    - Slider value display: +12 (🍀+3, ✨+3)
       - Where:
-        - 🪎 represents Additional Item Chance Tickets.
+        - 🍀 represents Additional Item Chance Tickets.
         - ✨ represents Additional Super Rare Chance Tickets.
 	- Floating bubble:
       - When the user adjusts or interacts with the Difficulty Offset slider, display a floating bubble showing the current effects:
