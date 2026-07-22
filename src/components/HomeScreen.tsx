@@ -9262,7 +9262,7 @@ function ExpeditionTab({
                           );
                         }}
                       >
-                        +{formatNumber(selectedDifficultyOffset)} (🪎+{formatNumber(difficultyItemChanceTickets)}, ✨+{formatNumber(difficultySuperRareChanceTickets)})
+                        +{formatNumber(selectedDifficultyOffset)} (🍀+{formatNumber(difficultyItemChanceTickets)}, ✨+{formatNumber(difficultySuperRareChanceTickets)})
                       </button>
                     </div>
                   </div>
