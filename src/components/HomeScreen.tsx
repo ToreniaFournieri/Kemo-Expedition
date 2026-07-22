@@ -5453,6 +5453,22 @@ export function HomeScreen({
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
   }, [isDiaryTabVisible, actions]);
 
+  const isDivineBureauTabVisible = isPartyExpeditionSplitViewEnabled
+    ? activeWideModeSecondaryTab === 'setting'
+    : activeTab === 'setting';
+  const prevDivineBureauTabVisibleRef = useRef(isDivineBureauTabVisible);
+  const isDeveloperNewsPaneExpandedRef = useRef(false);
+  const handleDeveloperNewsPaneExpandedChange = useCallback((expanded: boolean) => {
+    isDeveloperNewsPaneExpandedRef.current = expanded;
+  }, []);
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  useEffect(() => {
+    if (prevDivineBureauTabVisibleRef.current && !isDivineBureauTabVisible && isDeveloperNewsPaneExpandedRef.current) {
+      actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+    }
+    prevDivineBureauTabVisibleRef.current = isDivineBureauTabVisible;
+  }, [isDivineBureauTabVisible, actions]);
+
   useEffect(() => {
     if (activeTab !== 'base' || activeBaseSubTab !== 'inventory') return;
     const hasNewInventoryItems = Object.values(state.global.inventory).some((variant) => variant.isNew);
@@ -5635,6 +5651,7 @@ export function HomeScreen({
         language={state.global.language}
         onSetLanguage={actions.setLanguage}
         onMarkDeveloperNewsRead={actions.markDeveloperNewsRead}
+        onNewsPaneExpandedChange={handleDeveloperNewsPaneExpandedChange}
       />
     );
   };
@@ -11535,6 +11552,7 @@ function SettingTab({
   language,
   onSetLanguage,
   onMarkDeveloperNewsRead,
+  onNewsPaneExpandedChange,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -11570,6 +11588,7 @@ function SettingTab({
   language: Language;
   onSetLanguage: (language: Language) => void;
   onMarkDeveloperNewsRead: (itemIds: string[]) => void;
+  onNewsPaneExpandedChange: (expanded: boolean) => void;
 }) {
   type DivineBureauPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
@@ -11917,10 +11936,12 @@ function SettingTab({
   const unreadDeveloperNewsItems = DEVELOPER_NEWS_ITEMS.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
 
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  useEffect(() => {
+    onNewsPaneExpandedChange(divineBureauPanelExpanded.news);
+  }, [divineBureauPanelExpanded.news, onNewsPaneExpandedChange]);
+
   const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
-    if (panelKey === 'news' && !divineBureauPanelExpanded.news) {
-      onMarkDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
-    }
     setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
   };
 
@@ -12896,13 +12917,20 @@ function SettingTab({
         {divineBureauPanelExpanded.news && (
           <div className="mt-3 overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
             {DEVELOPER_NEWS_ITEMS.map((item) => (
-              <div key={item.id} className="space-y-1 border-b border-gray-100 p-3 last:border-b-0">
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onMarkDeveloperNewsRead([item.id])}
+                className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
+              >
                 <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
                   <span className="font-semibold text-gray-700">{item.version}</span>
                   <span>{item.date}</span>
                 </div>
-                <p className="text-gray-700">{getDeveloperNewsContent(item, gameState.global.language)}</p>
-              </div>
+                <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
+                  {getDeveloperNewsContent(item, gameState.global.language)}
+                </p>
+              </button>
             ))}
           </div>
         )}
