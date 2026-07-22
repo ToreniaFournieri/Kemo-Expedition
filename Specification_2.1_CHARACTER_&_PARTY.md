@@ -396,8 +396,8 @@ Party.`d.HP` =
 | God of Fate | 運命の神 | alter future, longer praying 祈り中 by 2.0 | (none) | praying time -0.01 to x1.5 per rank |
 | God of Dusk | 黄昏の神 | Add `c.deity_evasion+0.015`,  `c.deity_magical_defense_x1.10` to each party member, longer trading 売却中 by 2.0 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
 | Goddess of Mirage | 幻影の女神 | Add `c.deity_magical_attack_x1.20` and `c.deity_pysical_defense_x1.10` to each party member | (none) | +0.01 to `c.deity_magical_attack_x1.20` per rank |
-| God of Oblivion | 忘却されし神 | (nothing) | (none) | at rank 10, one more additional reward chance |
-| Goddess of Discord | 不和の神 |  At the start of each battle,  1 randomly chosen member gets `c.antagonism`, one more additional reward chance | (none) | (none)  |
+| God of Oblivion | 忘却されし神 | (nothing) | (none) |  At the start of each battle,  1 randomly chosen member gets `a.fading_memory`, Gain +1 additional super rare reward chance for every 2 ranks. |
+| Goddess of Discord | 不和の神 |  At the start of each battle,  1 randomly chosen member gets `c.antagonism`, Gain +1 additional reward chance for every rank. | (none) | (none)  |
 
 
 #### 2.1.4 INITIALIZATION 
