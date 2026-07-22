@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 7 | 2026/07/22 | Add current Gold and the current Paid Refresh cost to the runtime Discord progress report after the PT summaries. |
 | 0.8.5 | 6 | 2026/07/22 | Add each party's latest expedition Difficulty offset to the runtime Discord progress summary between the expedition ID and outcome. |
 | 0.8.5 | 5 | 2026/07/22 | Audit all native alert and confirmation messages for visible newline escapes, and fix the two remaining English Glossary descriptions so their tables render with actual line breaks. |
 | 0.8.5 | 4 | 2026/07/22 | Fix the Japanese and English Clairvoyance reset confirmation dialogs so newline escapes render as line breaks instead of visible `\\n` text. |

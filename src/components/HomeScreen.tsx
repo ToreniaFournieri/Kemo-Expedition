@@ -3443,7 +3443,9 @@ export function HomeScreen({
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
     const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`;
-    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${versionBuildEnvironmentLine}\n${environmentLines}`;
+    const currentShopRefreshCount = state.global.shopRefreshCounts[getShopHourKey(now)] ?? 0;
+    const goldAndPaidRefreshCostLine = `**Gold and Paid Refresh cost:** ${formatNumber(state.global.gold)}G (${formatNumber(getShopRefreshPrice(currentShopRefreshCount))}G)`;
+    const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${goldAndPaidRefreshCostLine}\n${versionBuildEnvironmentLine}\n${environmentLines}`;
     const htmlFileName = `status-table-${year}${month}${day}${hour}${minute}.html`;
     const htmlFile = buildStatusTableHtmlFile(statusRows, htmlFileName);
     const reportTargetPartyIndex = state.parties.reduce((selectedIndex, party, partyIndex) => {
