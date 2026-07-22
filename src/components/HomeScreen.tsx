@@ -3275,6 +3275,7 @@ export function HomeScreen({
         `${formatNumber(hp)} (${formatSigned(hp - previous.hp)})`,
         `${attacks.map(formatNumber).join('/')} (${attackIncrease.map(formatSigned).join('/')})`,
         latestLog?.dungeonId != null ? formatNumber(latestLog.dungeonId) : '-',
+        latestLog?.difficultyOffset != null ? `[${formatSigned(latestLog.difficultyOffset)}]` : '-',
         latestLog?.finalOutcome ?? '-',
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
       ];
