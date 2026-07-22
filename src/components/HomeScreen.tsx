@@ -11918,9 +11918,6 @@ function SettingTab({
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
 
   const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
-    if (panelKey === 'news' && !divineBureauPanelExpanded.news) {
-      onMarkDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
-    }
     setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
   };
 
@@ -12896,13 +12893,20 @@ function SettingTab({
         {divineBureauPanelExpanded.news && (
           <div className="mt-3 overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
             {DEVELOPER_NEWS_ITEMS.map((item) => (
-              <div key={item.id} className="space-y-1 border-b border-gray-100 p-3 last:border-b-0">
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onMarkDeveloperNewsRead([item.id])}
+                className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
+              >
                 <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
                   <span className="font-semibold text-gray-700">{item.version}</span>
                   <span>{item.date}</span>
                 </div>
-                <p className="text-gray-700">{getDeveloperNewsContent(item, gameState.global.language)}</p>
-              </div>
+                <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
+                  {getDeveloperNewsContent(item, gameState.global.language)}
+                </p>
+              </button>
             ))}
           </div>
         )}
