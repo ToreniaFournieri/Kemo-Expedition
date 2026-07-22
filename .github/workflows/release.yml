@@ -17,6 +17,8 @@ permissions:
 jobs:
   desktop:
     runs-on: macos-14
+    outputs:
+      signed: ${{ steps.apple-credentials.outputs.available }}
     steps:
       - name: Checkout release revision
         uses: actions/checkout@v5
@@ -32,7 +34,8 @@ jobs:
       - name: Setup npm
         run: npm install --global npm@11
 
-      - name: Require Apple release credentials
+      - name: Detect Apple release credentials
+        id: apple-credentials
         env:
           CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
@@ -41,9 +44,24 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
+          present=0
           for variable in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
-            test -n "${!variable}" || { echo "Required secret for ${variable} is missing." >&2; exit 1; }
+            if [[ -n "${!variable}" ]]; then
+              present=$((present + 1))
+            fi
           done
+
+          if [[ "${present}" -eq 5 ]]; then
+            echo "available=true" >> "${GITHUB_OUTPUT}"
+            echo "Apple credentials found; packages will be signed and notarized."
+          elif [[ "${present}" -eq 0 ]]; then
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            echo "::warning::Apple credentials are unavailable; producing development-only unsigned packages."
+          else
+            echo "Only ${present} of 5 Apple credential secrets are configured." >&2
+            echo "Configure the complete credential set or remove the partial configuration." >&2
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm install
@@ -55,7 +73,13 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npm run desktop:build
+          APPLE_CREDENTIALS_AVAILABLE: ${{ steps.apple-credentials.outputs.available }}
+        run: |
+          set -euo pipefail
+          if [[ "${APPLE_CREDENTIALS_AVAILABLE}" != "true" ]]; then
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+          fi
+          npm run desktop:build
 
       - name: Upload macOS release artifacts
         uses: actions/upload-artifact@v4
@@ -159,6 +183,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           TARGET_SHA: ${{ github.sha }}
+          MACOS_SIGNED: ${{ needs.desktop.outputs.signed }}
         run: |
           set -euo pipefail
           cat > release-notes.md <<EOF
@@ -166,6 +191,12 @@ jobs:
 
           See \`LOCAL_PLAY.md\` in the archive for local HTTP server instructions.
           EOF
+          if [[ "${MACOS_SIGNED}" != "true" ]]; then
+            cat >> release-notes.md <<'EOF'
+
+          > **Development-only macOS packages:** Apple signing and notarization credentials were not available for this build. The attached DMG and macOS ZIP files are unsigned and are not intended for public distribution.
+          EOF
+          fi
           gh release create "${RELEASE_TAG}" "${ARCHIVE}" macos-artifacts/* \
             --target "${TARGET_SHA}" \
             --notes-file release-notes.md \
