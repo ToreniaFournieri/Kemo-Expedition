@@ -11,9 +11,9 @@
 - Badge behavior:
   - Display a notification badge on both `Divine Bureau` and `News` when at least one unread news item exists. Unread news items are displayed in **bold**.
   - When the player taps a news item, mark it as read and change its text style from bold to normal.
-  - Show a notification badge on `Divine Bureau` and `News` when there is at least one unread developer news item.
-  - When the player opens and reads the developer news list, clear the notification badge.
-  - Persist the read/unread state in save data so the badge does not reappear after refresh or restart unless a new news item is added.
+  - Remove the notification badge when no unread news items remain.
+  - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
+  - When a new news item is added, display the notification badge again.
 - News list: @Specification_11.2_NEWS.md 
 
 **Donation box (寄付箱)**
