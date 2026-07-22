@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 13 | 2026/07/22 | Replace the stale fixed deity reward text in Party cards with the specified rank-scaled reward descriptions for the God of Oblivion and Goddess of Discord in every supported language. |
 | 0.8.4 | 12 | 2026/07/22 | Align the localized runtime Glossary descriptions for the God of Oblivion and Goddess of Discord with their rank-scaled reward draw effects in Spec 1.1.7. |
 | 0.8.4 | 11 | 2026/07/22 | Process AFK cycle profit through `state.free_action` spending before prayer so squander and embezzlement side quests use the same remaining profit and progression order as online cycles. |
 | 0.8.4 | 10 | 2026/07/22 | Align the Spec 6.1.6 reward runtime with enhancement-gated Super Rare draws, God of Oblivion Super Rare tickets, Discord-only item tickets, and END-phase Auriferous logging. |
