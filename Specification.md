@@ -2,7 +2,7 @@
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
-    - Support Japanese language. 
+    - Support Japanese, English and Chinese (zh-CN, zh-TW) language. 
     - Tetris like randomness. (Bag Randomization)
     - Data persistence 
 
