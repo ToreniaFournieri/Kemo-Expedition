@@ -62,7 +62,7 @@ function parseDeveloperNews(markdown: string): DeveloperNewsItem[] {
     .sort((left, right) => right.date.localeCompare(left.date) || right.version.localeCompare(left.version));
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+// SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
 export const DEVELOPER_NEWS_ITEMS = parseDeveloperNews(developerNewsMarkdown);
 
 export function getDeveloperNewsContent(item: DeveloperNewsItem, language: Language): string {

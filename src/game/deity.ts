@@ -105,7 +105,7 @@ DEITY_KEY_BY_NAME['God of Precision'] = 'Goddess of Precision';
 DEITY_KEY_BY_NAME['God of Evasion'] = 'God of Dusk';
 
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | Donation Scaling (Divine Bureau)
+// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
 function getDonationTier(totalDonatedGold: number): number {
   const safeDonation = Math.max(0, totalDonatedGold);
   let tier = 0;
@@ -117,7 +117,7 @@ function getDonationTier(totalDonatedGold: number): number {
   return tier;
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | Donation Scaling (Divine Bureau)
+// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
 export function getDeityRank(totalDonatedGold: number): number {
   return Math.min(MAX_DEITY_RANK, getDonationTier(totalDonatedGold) + 1);
 }
@@ -137,7 +137,7 @@ export function getDeityRewardDrawBonuses(
   };
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | Donation Scaling (Divine Bureau)
+// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
 export function getNextRankDonationRequirement(totalDonatedGold: number): number | null {
   const safeDonation = Math.max(0, totalDonatedGold);
   const currentTier = getDonationTier(safeDonation);
@@ -149,7 +149,7 @@ export function getNextRankDonationRequirement(totalDonatedGold: number): number
   return nextThreshold;
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | Donation Scaling (Divine Bureau)
+// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
 function getEffectiveDeityTier(totalDonatedGold: number): number {
   return Math.min(getDonationTier(totalDonatedGold), MAX_DEITY_RANK);
 }
@@ -176,7 +176,7 @@ export function getDeityKey(name: string): DeityKey | null {
   return DEITY_OPTIONS.find((deity) => deity.name === name)?.key ?? null;
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
+// SpecRef: 8.6 | UI_SETTING | God scaling
 export function getDeityEffectDescription(name: string, totalDonatedGold = 0): string {
   const deityKey = getDeityKey(name);
   const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
@@ -235,7 +235,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
   }
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
+// SpecRef: 8.6 | UI_SETTING | God scaling
 export function applyDeityCharacterModifiers(
   party: Party,
   characterStats: ComputedCharacterStats[]
@@ -329,7 +329,7 @@ export function applyDeityCharacterModifiers(
   });
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
+// SpecRef: 8.6 | UI_SETTING | God scaling
 // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
 export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
@@ -345,7 +345,7 @@ export function getDeityStateDurationMultiplier(name: string, totalDonatedGold =
   return 1;
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
+// SpecRef: 8.6 | UI_SETTING | God scaling
 export function getDeityPartyHpMultiplier(name: string, totalDonatedGold = 0): number {
   const deityKey = getDeityKey(name);
   if (deityKey !== 'God of Resonance') return 1;
@@ -353,7 +353,7 @@ export function getDeityPartyHpMultiplier(name: string, totalDonatedGold = 0): n
   return 0.9 + 0.002 * effectiveTier;
 }
 
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
+// SpecRef: 8.6 | UI_SETTING | God scaling
 export function getDeityElementalResistanceModifier(name: string): { fire: number; thunder: number; ice: number } {
   const deityKey = getDeityKey(name);
   if (deityKey === 'Goddess of Restoration') return { fire: 1, thunder: 1, ice: 1.5 };

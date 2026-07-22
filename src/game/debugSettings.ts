@@ -39,7 +39,7 @@ function enforceEnvironmentDebugPolicy(settings: DebugSettings): DebugSettings {
   const env = getEnvironmentId();
   // SpecRef: 9 | Environment | /beta/ Debug mode OFF
   if (env === 'beta') {
-    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
+    // SpecRef: 8.6 | UI_SETTING | Speed of time
     const betaTimeSpeed: DebugTimeSpeed = settings.timeSpeed === 'x1_2' ? 'x1_2' : 'realtime';
     return {
       ...DEFAULT_DEBUG_SETTINGS,
@@ -76,11 +76,11 @@ function normalizeDebugSettings(raw: unknown): DebugSettings {
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
     jewelShopOpen: parsed.jewelShopOpen === true,
-    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `condition` OFF/ON
+    // SpecRef: 8.6 | UI_SETTING | Display `condition` OFF/ON
     displayCondition: parsed.displayCondition === true || parsed.displayMotivation === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
     colosseumEnabled: parsed.colosseumEnabled === true,
-    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane (デバッグ)
+    // SpecRef: 8.6 | UI_SETTING | Debug pane (デバッグ)
     displayAllBestiary: parsed.displayAllBestiary === true,
     displayAllCompendium: parsed.displayAllCompendium === true,
     displayAllGlossary: parsed.displayAllGlossary === true,

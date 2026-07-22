@@ -89,7 +89,7 @@ const escapeExportHtml = (value: string): string => (
 );
 
 // SpecRef: 8.1.2 | Header | Attached File
-// SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+// SpecRef: 8.6 | UI_SETTING | フィードバック
 function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'Status table'): File {
   const statusHeaders = [
     t('home.progressReport.statusHeader.partyPosition'),
@@ -720,7 +720,7 @@ function renderEnemyLogChibiBackground(entry: ExpeditionLogEntry): JSX.Element |
 }
 
 function renderCollapsedBestiaryEnemyImage(enemyId: number): JSX.Element {
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Image (Collapsed State)
+  // SpecRef: 8.6 | UI_SETTING | Enemy Image (Collapsed State)
   return (
     <img
       src={resolvePublicAssetPath(`/chibi/C_E_${enemyId}.png`) ?? undefined}
@@ -766,7 +766,7 @@ function EnemyBestiaryBubble({
     width: number;
   };
 }) {
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
   const enemy = bubble.enemy;
   const hasRangedAttack = enemy.rangedAttack > 0 && enemy.rangedNoA > 0;
   const hasMeleeAttack = enemy.meleeAttack > 0 && enemy.meleeNoA > 0;
@@ -1751,7 +1751,7 @@ function getConditionLabel(condition: number, showValue: boolean): string {
   else if (condition <= 150) label = t('condition.steady');
   else if (condition <= 250) label = t('condition.brisk');
   else if (condition <= 350) label = t('condition.good');
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `condition` OFF/ON
+  // SpecRef: 8.6 | UI_SETTING | Display `condition` OFF/ON
   if (!showValue) return label;
   return `${label}(${condition >= 0 ? '+' : ''}${formatNumber(condition)})`;
 }
@@ -3227,7 +3227,7 @@ export function HomeScreen({
   };
 
   const reportProgressForSpeedOfTime = useCallback(async () => {
-    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Speed of time
+    // SpecRef: 8.6 | UI_SETTING | Speed of time
     // SpecRef: 8.1.2 | Header | Format of progress data
     const environmentId = getEnvironmentId();
     const webhookUrl = environmentId === 'dev'
@@ -3438,7 +3438,7 @@ export function HomeScreen({
     const superRareIncrease = Math.max(0, superRareTotal - (Number.isFinite(previousSuperRareTotal) ? previousSuperRareTotal : 0));
     const jewelIncrease = Math.max(0, jewelTotal - (Number.isFinite(previousJewelTotal) ? previousJewelTotal : 0));
     // SpecRef: 8.1.2 | Header | Speed of Time Progress Report
-    const reporterName = (localStorage.getItem(createEnvironmentStorageKey('divineBureauFeedbackName')) ?? '').trim() || '-';
+    const reporterName = (localStorage.getItem(createEnvironmentStorageKey('settingFeedbackName')) ?? '').trim() || '-';
     const reportHeaderRows = [
       ['Name', `${reporterName} (${state.global.language})`],
       ['Report count', `${progressReportCount} (${lastReportTime})`],
@@ -5453,21 +5453,21 @@ export function HomeScreen({
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
   }, [isDiaryTabVisible, actions]);
 
-  const isDivineBureauTabVisible = isPartyExpeditionSplitViewEnabled
+  const isSettingTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'setting'
     : activeTab === 'setting';
-  const prevDivineBureauTabVisibleRef = useRef(isDivineBureauTabVisible);
+  const prevSettingTabVisibleRef = useRef(isSettingTabVisible);
   const isDeveloperNewsPaneExpandedRef = useRef(false);
   const handleDeveloperNewsPaneExpandedChange = useCallback((expanded: boolean) => {
     isDeveloperNewsPaneExpandedRef.current = expanded;
   }, []);
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   useEffect(() => {
-    if (prevDivineBureauTabVisibleRef.current && !isDivineBureauTabVisible && isDeveloperNewsPaneExpandedRef.current) {
+    if (prevSettingTabVisibleRef.current && !isSettingTabVisible && isDeveloperNewsPaneExpandedRef.current) {
       actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
     }
-    prevDivineBureauTabVisibleRef.current = isDivineBureauTabVisible;
-  }, [isDivineBureauTabVisible, actions]);
+    prevSettingTabVisibleRef.current = isSettingTabVisible;
+  }, [isSettingTabVisible, actions]);
 
   useEffect(() => {
     if (activeTab !== 'base' || activeBaseSubTab !== 'inventory') return;
@@ -5503,7 +5503,7 @@ export function HomeScreen({
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   const hasUnreadDeveloperNews = DEVELOPER_NEWS_ITEMS.some((item) => !(state.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const envLabel = getEnvLabel();
   const versionLabel = envLabel
@@ -5668,7 +5668,7 @@ export function HomeScreen({
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
-                  <span>{t('divineBureau.theme.kemo')}</span>
+                  <span>{t('setting.theme.kemo')}</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
@@ -5677,7 +5677,7 @@ export function HomeScreen({
               <button
                 type="button"
                 onClick={async () => {
-                  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Debug pane(デバッグ)
+                  // SpecRef: 8.6 | UI_SETTING | Debug pane(デバッグ)
                   const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
                   if (!confirmed) return;
                   try {
@@ -11590,27 +11590,27 @@ function SettingTab({
   onMarkDeveloperNewsRead: (itemIds: string[]) => void;
   onNewsPaneExpandedChange: (expanded: boolean) => void;
 }) {
-  type DivineBureauPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
+  type SettingPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
   // SpecRef: 9 | Environment | Save Data Isolation
-  const DIVINE_BUREAU_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.panel-expanded');
-  const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.clairvoyance-party-expanded');
-  const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-tab');
-  const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.divine-bureau.glossary-expanded-entries');
+  const SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
+  const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
+  const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-tab');
+  const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-expanded-entries');
   const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
   const GLOSSARY_TAB_LABELS: Record<GlossaryTabKey, string> = {
-    能: t('divineBureau.glossary.tab.abilities'),
-    基: t('divineBureau.glossary.tab.baseStats'),
-    固: t('divineBureau.glossary.tab.fixedEffects'),
-    増: t('divineBureau.glossary.tab.bonuses'),
-    属: t('divineBureau.glossary.tab.elements'),
-    機: t('divineBureau.glossary.tab.mechanics'),
-    信: t('divineBureau.glossary.tab.faith'),
-    魔: t('divineBureau.glossary.tab.magic'),
-    地: t('divineBureau.glossary.tab.terrain'),
-    求: t('divineBureau.glossary.tab.sideQuests'),
+    能: t('setting.glossary.tab.abilities'),
+    基: t('setting.glossary.tab.baseStats'),
+    固: t('setting.glossary.tab.fixedEffects'),
+    増: t('setting.glossary.tab.bonuses'),
+    属: t('setting.glossary.tab.elements'),
+    機: t('setting.glossary.tab.mechanics'),
+    信: t('setting.glossary.tab.faith'),
+    魔: t('setting.glossary.tab.magic'),
+    地: t('setting.glossary.tab.terrain'),
+    求: t('setting.glossary.tab.sideQuests'),
   };
-  const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
+  const defaultSettingPanelState: Record<SettingPanelKey, boolean> = {
     news: false,
     modeSelect: false,
     donation: false,
@@ -11625,11 +11625,11 @@ function SettingTab({
     debug: true,
   };
 
-  const getStoredDivineBureauPanelState = (): Record<DivineBureauPanelKey, boolean> => {
+  const getStoredSettingPanelState = (): Record<SettingPanelKey, boolean> => {
     try {
-      const saved = localStorage.getItem(DIVINE_BUREAU_PANEL_STORAGE_KEY);
-      if (!saved) return defaultDivineBureauPanelState;
-      const parsed = JSON.parse(saved) as Partial<Record<DivineBureauPanelKey, boolean>>;
+      const saved = localStorage.getItem(SETTING_PANEL_STORAGE_KEY);
+      if (!saved) return defaultSettingPanelState;
+      const parsed = JSON.parse(saved) as Partial<Record<SettingPanelKey, boolean>>;
       return {
         news: parsed.news === true,
         modeSelect: parsed.modeSelect === true,
@@ -11645,8 +11645,8 @@ function SettingTab({
         debug: parsed.debug === true,
       };
     } catch (error) {
-      console.error('Failed to load Divine Bureau panel state:', error);
-      return defaultDivineBureauPanelState;
+      console.error('Failed to load Setting panel state:', error);
+      return defaultSettingPanelState;
     }
   };
 
@@ -11675,7 +11675,7 @@ function SettingTab({
   };
 
 
-  const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('divineBureauFeedbackName');
+  const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackName');
   const [feedbackName, setFeedbackName] = useState(() => {
     try {
       return localStorage.getItem(FEEDBACK_NAME_STORAGE_KEY) ?? '';
@@ -11731,11 +11731,11 @@ function SettingTab({
     return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
   };
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  // SpecRef: 8.6 | UI_SETTING | フィードバック
   const handleFeedbackFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
     if (selectedFiles.length > 4) {
-      window.alert(t('divineBureau.feedback.maxFilesWarning'));
+      window.alert(t('setting.feedback.maxFilesWarning'));
     }
     setFeedbackFiles(selectedFiles.slice(0, 4));
   };
@@ -11754,10 +11754,10 @@ function SettingTab({
     return new File([JSON.stringify(payload)], getBackupFileName('compressed'), { type: 'application/json' });
   };
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | フィードバック
+  // SpecRef: 8.6 | UI_SETTING | フィードバック
   const handleSendFeedback = async () => {
-    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert(t('divineBureau.feedback.webhookMissing')); return; }
-    if (!feedbackText.trim()) { window.alert(t('divineBureau.feedback.bodyRequired')); return; }
+    if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert(t('setting.feedback.webhookMissing')); return; }
+    if (!feedbackText.trim()) { window.alert(t('setting.feedback.bodyRequired')); return; }
     setIsSendingFeedback(true);
     try {
       const nav = typeof navigator === 'undefined' ? null : navigator;
@@ -11828,7 +11828,7 @@ function SettingTab({
       });
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
-      onAddNotification(t('divineBureau.feedback.sent'), 'normal', 'item', true);
+      onAddNotification(t('setting.feedback.sent'), 'normal', 'item', true);
       setFeedbackText('');
       setFeedbackFiles([]);
       if (feedbackFileInputRef.current) {
@@ -11836,14 +11836,14 @@ function SettingTab({
       }
     } catch (error) {
       console.error(error);
-      window.alert(t('divineBureau.feedback.sendFailed'));
+      window.alert(t('setting.feedback.sendFailed'));
     } finally {
       setIsSendingFeedback(false);
     }
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [divineBureauPanelExpanded, setDivineBureauPanelExpanded] = useState<Record<DivineBureauPanelKey, boolean>>(() => getStoredDivineBureauPanelState());
+  const [settingPanelExpanded, setSettingPanelExpanded] = useState<Record<SettingPanelKey, boolean>>(() => getStoredSettingPanelState());
   const [clairvoyancePartyExpanded, setClairvoyancePartyExpanded] = useState<Record<number, boolean>>(() => {
     try {
       const saved = localStorage.getItem(CLAIRVOYANCE_PARTY_STORAGE_KEY);
@@ -11870,7 +11870,7 @@ function SettingTab({
   const [activeAbilityHelp, setActiveAbilityHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [abilityHelpPosition, setAbilityHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane
+  // SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane
   const updateColosseumEnemySettings = useCallback((updates: Partial<ColosseumEnemySettings>) => {
     setColosseumEnemySettings((prev) => {
       const nextSettings = normalizeColosseumEnemySettings({ ...prev, ...updates });
@@ -11894,7 +11894,7 @@ function SettingTab({
 
   const versionTag = APP_VERSION;
 
-  const getDivineBureauPartyAbilityLevel = (party: Party, abilityId: string): number => {
+  const getSettingPartyAbilityLevel = (party: Party, abilityId: string): number => {
     const { characterStats } = computePartyStats(party);
     return characterStats.reduce((maxLevel, stats) => {
       const level = stats.abilities
@@ -11909,11 +11909,11 @@ function SettingTab({
   const modeSelectionLocked = isBetaEnvironment;
   useEffect(() => {
     try {
-      localStorage.setItem(DIVINE_BUREAU_PANEL_STORAGE_KEY, JSON.stringify(divineBureauPanelExpanded));
+      localStorage.setItem(SETTING_PANEL_STORAGE_KEY, JSON.stringify(settingPanelExpanded));
     } catch (error) {
-      console.error('Failed to persist Divine Bureau panel state:', error);
+      console.error('Failed to persist Setting panel state:', error);
     }
-  }, [divineBureauPanelExpanded]);
+  }, [settingPanelExpanded]);
   useEffect(() => {
     localStorage.setItem(CLAIRVOYANCE_PARTY_STORAGE_KEY, JSON.stringify(clairvoyancePartyExpanded));
   }, [clairvoyancePartyExpanded]);
@@ -11936,22 +11936,22 @@ function SettingTab({
   const unreadDeveloperNewsItems = DEVELOPER_NEWS_ITEMS.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   useEffect(() => {
-    onNewsPaneExpandedChange(divineBureauPanelExpanded.news);
-  }, [divineBureauPanelExpanded.news, onNewsPaneExpandedChange]);
+    onNewsPaneExpandedChange(settingPanelExpanded.news);
+  }, [settingPanelExpanded.news, onNewsPaneExpandedChange]);
 
-  const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
-    setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
+  const toggleSettingPanel = (panelKey: SettingPanelKey) => {
+    setSettingPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
   };
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Divine Bureau (神聖局)
-  const renderDivineBureauPanelHeader = (panelKey: DivineBureauPanelKey, title: string) => {
-    const expanded = divineBureauPanelExpanded[panelKey];
+  // SpecRef: 8.6 | UI_SETTING | Setting (設定)
+  const renderSettingPanelHeader = (panelKey: SettingPanelKey, title: string) => {
+    const expanded = settingPanelExpanded[panelKey];
     return (
       <button
         type="button"
-        onClick={() => toggleDivineBureauPanel(panelKey)}
+        onClick={() => toggleSettingPanel(panelKey)}
         className="w-full flex items-center justify-between text-sm font-medium"
       >
         <span className="inline-flex items-center gap-2">
@@ -12029,7 +12029,7 @@ function SettingTab({
     }
   };
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | 5.1 Backup (Export)
+  // SpecRef: 8.6 | UI_SETTING | 5.1 Backup (Export)
   const handleExportBackup = async () => {
     const backupFile = buildBackupFile();
     const nav = navigator as Navigator & {
@@ -12186,18 +12186,18 @@ function SettingTab({
 
       saveData.parties.forEach((party, index) => {
         if (!party || typeof party !== 'object') {
-          issues.push(t('divineBureau.importValidation.invalidParty', { index }));
+          issues.push(t('setting.importValidation.invalidParty', { index }));
           return;
         }
 
         if (!Array.isArray(party.characters)) {
-          issues.push(t('divineBureau.importValidation.invalidCharacters', { index }));
+          issues.push(t('setting.importValidation.invalidCharacters', { index }));
           return;
         }
 
         party.characters.forEach((character, characterIndex) => {
           if (!character || typeof character !== 'object') {
-            issues.push(t('divineBureau.importValidation.invalidCharacter', { index, characterIndex }));
+            issues.push(t('setting.importValidation.invalidCharacter', { index, characterIndex }));
           }
         });
       });
@@ -12217,7 +12217,7 @@ function SettingTab({
   const mythicRewardTotal = getBagTicketTotal(createMythicRareRewardBag());
 
   const confirmReset = (label: string, onConfirm: () => void) => {
-    if (!window.confirm(t('divineBureau.clairvoyance.resetConfirmation', { label }))) {
+    if (!window.confirm(t('setting.clairvoyance.resetConfirmation', { label }))) {
       return;
     }
 
@@ -12431,7 +12431,7 @@ function SettingTab({
     [gameState.global.revealedGlossaryTerrainKeys],
   );
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Glossary (用語集)
+  // SpecRef: 8.6 | UI_SETTING | Glossary (用語集)
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) => {
     // Section subtitles are localized display text, so use stable master-data IDs
     // for selection instead of language-specific subtitle prefixes.
@@ -12481,16 +12481,16 @@ function SettingTab({
   return { headers, rows };
   };
   const BESTIARY_TAB_LABELS: Record<number, string> = {
-    1: t('divineBureau.bestiary.tab.grassland'),
-    2: t('divineBureau.bestiary.tab.frost'),
-    3: t('divineBureau.bestiary.tab.sea'),
-    4: t('divineBureau.bestiary.tab.desert'),
-    5: t('divineBureau.bestiary.tab.flame'),
-    6: t('divineBureau.bestiary.tab.nest'),
-    7: t('divineBureau.bestiary.tab.moon'),
-    8: t('divineBureau.bestiary.tab.valley'),
-    9: t('divineBureau.bestiary.tab.gods'),
-    99: t('divineBureau.bestiary.tab.colosseum'),
+    1: t('setting.bestiary.tab.grassland'),
+    2: t('setting.bestiary.tab.frost'),
+    3: t('setting.bestiary.tab.sea'),
+    4: t('setting.bestiary.tab.desert'),
+    5: t('setting.bestiary.tab.flame'),
+    6: t('setting.bestiary.tab.nest'),
+    7: t('setting.bestiary.tab.moon'),
+    8: t('setting.bestiary.tab.valley'),
+    9: t('setting.bestiary.tab.gods'),
+    99: t('setting.bestiary.tab.colosseum'),
   };
 
   const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 9;
@@ -12498,7 +12498,7 @@ function SettingTab({
   const isGodBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS;
   const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
   const unlockedBestiaryDungeonIds = new Set(
     DUNGEONS
       .filter((dungeon) => dungeon.id !== 99)
@@ -12522,7 +12522,7 @@ function SettingTab({
     return enemyBattleStats[god.enemyId] ?? { defeats: 0, encounters: 0 };
   };
 
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
   // Gods tab/rows are revealed only when god encounter count is at least 1 (遭遇数 > 0).
   const revealedGodBestiaryNames = new Set(
     GOD_ENEMY_PROFILES
@@ -12540,8 +12540,8 @@ function SettingTab({
     ...DUNGEONS
       .filter((dungeon) => dungeon.id !== 99 && unlockedBestiaryDungeonIds.has(dungeon.id))
       .map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
-    ...(revealedGodBestiaryNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: t('divineBureau.bestiary.tab.gods') }] : []),
-    ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: t('divineBureau.bestiary.tab.colosseum') }] : []),
+    ...(revealedGodBestiaryNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: t('setting.bestiary.tab.gods') }] : []),
+    ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: t('setting.bestiary.tab.colosseum') }] : []),
   ];
 
 
@@ -12698,54 +12698,54 @@ function SettingTab({
   };
 
   const ENEMY_TYPE_LABELS: Record<string, string> = {
-    Beast: t('divineBureau.bestiary.enemyType.Beast'),
-    Slime_Colony: t('divineBureau.bestiary.enemyType.Slime_Colony'),
-    Plant_Fungal: t('divineBureau.bestiary.enemyType.Plant_Fungal'),
-    Insect_Swarm: t('divineBureau.bestiary.enemyType.Insect_Swarm'),
-    Aerial: t('divineBureau.bestiary.enemyType.Aerial'),
-    Frost: t('divineBureau.bestiary.enemyType.Frost'),
-    Fruit: t('divineBureau.bestiary.enemyType.Fruit'),
-    Dragon: t('divineBureau.bestiary.enemyType.Dragon'),
-    Spirit: t('divineBureau.bestiary.enemyType.Spirit'),
-    Ghost: t('divineBureau.bestiary.enemyType.Ghost'),
-    Undead: t('divineBureau.bestiary.enemyType.Undead'),
-    Golem: t('divineBureau.bestiary.enemyType.Golem'),
-    Shadowfang: t('divineBureau.bestiary.enemyType.Shadowfang'),
-    Mech: t('divineBureau.bestiary.enemyType.Mech'),
-    Chiropteran: t('divineBureau.bestiary.enemyType.Chiropteran'),
-    Chimera: t('divineBureau.bestiary.enemyType.Chimera'),
-    Titan: t('divineBureau.bestiary.enemyType.Titan'),
-    Pony: t('divineBureau.bestiary.enemyType.Pony'),
-    Origami: t('divineBureau.bestiary.enemyType.Origami'),
-    Jinma: t('divineBureau.bestiary.enemyType.Jinma'),
-    Orcinian: t('divineBureau.bestiary.enemyType.Orcinian'),
-    Caninian: t('divineBureau.bestiary.enemyType.Caninian'),
-    Lupinian: t('divineBureau.bestiary.enemyType.Lupinian'),
-    Vulpinian: t('divineBureau.bestiary.enemyType.Vulpinian'),
-    Ursan: t('divineBureau.bestiary.enemyType.Ursan'),
-    Felidian: t('divineBureau.bestiary.enemyType.Felidian'),
-    Mustelid: t('divineBureau.bestiary.enemyType.Mustelid'),
-    Leporian: t('divineBureau.bestiary.enemyType.Leporian'),
-    Cervin: t('divineBureau.bestiary.enemyType.Cervin'),
-    Procyonian: t('divineBureau.bestiary.enemyType.Procyonian'),
-    Murid: t('divineBureau.bestiary.enemyType.Murid'),
+    Beast: t('setting.bestiary.enemyType.Beast'),
+    Slime_Colony: t('setting.bestiary.enemyType.Slime_Colony'),
+    Plant_Fungal: t('setting.bestiary.enemyType.Plant_Fungal'),
+    Insect_Swarm: t('setting.bestiary.enemyType.Insect_Swarm'),
+    Aerial: t('setting.bestiary.enemyType.Aerial'),
+    Frost: t('setting.bestiary.enemyType.Frost'),
+    Fruit: t('setting.bestiary.enemyType.Fruit'),
+    Dragon: t('setting.bestiary.enemyType.Dragon'),
+    Spirit: t('setting.bestiary.enemyType.Spirit'),
+    Ghost: t('setting.bestiary.enemyType.Ghost'),
+    Undead: t('setting.bestiary.enemyType.Undead'),
+    Golem: t('setting.bestiary.enemyType.Golem'),
+    Shadowfang: t('setting.bestiary.enemyType.Shadowfang'),
+    Mech: t('setting.bestiary.enemyType.Mech'),
+    Chiropteran: t('setting.bestiary.enemyType.Chiropteran'),
+    Chimera: t('setting.bestiary.enemyType.Chimera'),
+    Titan: t('setting.bestiary.enemyType.Titan'),
+    Pony: t('setting.bestiary.enemyType.Pony'),
+    Origami: t('setting.bestiary.enemyType.Origami'),
+    Jinma: t('setting.bestiary.enemyType.Jinma'),
+    Orcinian: t('setting.bestiary.enemyType.Orcinian'),
+    Caninian: t('setting.bestiary.enemyType.Caninian'),
+    Lupinian: t('setting.bestiary.enemyType.Lupinian'),
+    Vulpinian: t('setting.bestiary.enemyType.Vulpinian'),
+    Ursan: t('setting.bestiary.enemyType.Ursan'),
+    Felidian: t('setting.bestiary.enemyType.Felidian'),
+    Mustelid: t('setting.bestiary.enemyType.Mustelid'),
+    Leporian: t('setting.bestiary.enemyType.Leporian'),
+    Cervin: t('setting.bestiary.enemyType.Cervin'),
+    Procyonian: t('setting.bestiary.enemyType.Procyonian'),
+    Murid: t('setting.bestiary.enemyType.Murid'),
   };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
-    guardian: t('divineBureau.bestiary.enemyClass.guardian'),
-    duelist: t('divineBureau.bestiary.enemyClass.duelist'),
-    samurai: t('divineBureau.bestiary.enemyClass.samurai'),
-    'sword-saint': t('divineBureau.bestiary.enemyClass.sword-saint'),
-    ranger: t('divineBureau.bestiary.enemyClass.ranger'),
-    striker: t('divineBureau.bestiary.enemyClass.striker'),
-    ninja: t('divineBureau.bestiary.enemyClass.ninja'),
-    wizard: t('divineBureau.bestiary.enemyClass.wizard'),
-    sage: t('divineBureau.bestiary.enemyClass.sage'),
-    alchemist: t('divineBureau.bestiary.enemyClass.alchemist'),
-    pilgrim: t('divineBureau.bestiary.enemyClass.pilgrim'),
-    lord: t('divineBureau.bestiary.enemyClass.lord'),
-    fighter: t('divineBureau.bestiary.enemyClass.fighter'),
-    rogue: t('divineBureau.bestiary.enemyClass.rogue'),
+    guardian: t('setting.bestiary.enemyClass.guardian'),
+    duelist: t('setting.bestiary.enemyClass.duelist'),
+    samurai: t('setting.bestiary.enemyClass.samurai'),
+    'sword-saint': t('setting.bestiary.enemyClass.sword-saint'),
+    ranger: t('setting.bestiary.enemyClass.ranger'),
+    striker: t('setting.bestiary.enemyClass.striker'),
+    ninja: t('setting.bestiary.enemyClass.ninja'),
+    wizard: t('setting.bestiary.enemyClass.wizard'),
+    sage: t('setting.bestiary.enemyClass.sage'),
+    alchemist: t('setting.bestiary.enemyClass.alchemist'),
+    pilgrim: t('setting.bestiary.enemyClass.pilgrim'),
+    lord: t('setting.bestiary.enemyClass.lord'),
+    fighter: t('setting.bestiary.enemyClass.fighter'),
+    rogue: t('setting.bestiary.enemyClass.rogue'),
   };
 
   const getBestiaryEnemyBattleStats = (enemyId: number) => gameState.global.enemyBattleStats?.[enemyId] ?? { defeats: 0, encounters: 0 };
@@ -12754,21 +12754,21 @@ function SettingTab({
     mainClassId: string,
     subClassId?: string | 'none',
   ): JSX.Element[] => {
-    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+    // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
     const mainClassLabel = ENEMY_CLASS_LABELS[mainClassId] ?? mainClassId;
     const hasSubClass = !!subClassId && subClassId !== 'none';
     if (!hasSubClass) {
-      return [<div key="main">{t('divineBureau.bestiary.mainClass', { className: mainClassLabel })}</div>];
+      return [<div key="main">{t('setting.bestiary.mainClass', { className: mainClassLabel })}</div>];
     }
 
     const subClassLabel = ENEMY_CLASS_LABELS[subClassId] ?? subClassId;
     if (mainClassId === subClassId) {
-      return [<div key="main">{t('divineBureau.bestiary.masterClass', { className: mainClassLabel })}</div>];
+      return [<div key="main">{t('setting.bestiary.masterClass', { className: mainClassLabel })}</div>];
     }
 
     return [
-      <div key="main">{t('divineBureau.bestiary.mainClass', { className: mainClassLabel })}</div>,
-      <div key="sub">{t('divineBureau.bestiary.subClass', { className: subClassLabel })}</div>,
+      <div key="main">{t('setting.bestiary.mainClass', { className: mainClassLabel })}</div>,
+      <div key="sub">{t('setting.bestiary.subClass', { className: subClassLabel })}</div>,
     ];
   };
 
@@ -12882,7 +12882,7 @@ function SettingTab({
 
   return (
     <div
-      className="divine-bureau-tab"
+      className="setting-tab"
       onPointerDown={() => {
         if (activeAbilityHelp) {
           setActiveAbilityHelp(null);
@@ -12911,10 +12911,10 @@ function SettingTab({
           </div>
         </FloatingBubblePortal>
       )}
-      {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知) */}
+      {/* SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知) */}
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
-        {renderDivineBureauPanelHeader('news', 'News')}
-        {divineBureauPanelExpanded.news && (
+        {renderSettingPanelHeader('news', 'News')}
+        {settingPanelExpanded.news && (
           <div className="mt-3 overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
             {DEVELOPER_NEWS_ITEMS.map((item) => (
               <button
@@ -12937,31 +12937,31 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
-        {renderDivineBureauPanelHeader('donation', t('divineBureau.donation.title'))}
-        {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
+        {renderSettingPanelHeader('donation', t('setting.donation.title'))}
+        {settingPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
-            <span>{t('divineBureau.donation.deity')}</span>
-            <span>{t('divineBureau.donation.amount')}</span>
+            <span>{t('setting.donation.deity')}</span>
+            <span>{t('setting.donation.amount')}</span>
           </div>
           {donationRows.length > 0 ? (
             donationRows.map(({ deityName, donationGold, rank, nextRankDonationRequirement }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
-                <span className="text-gray-700">{t('divineBureau.donation.deityRank', { deity: deityName, rank })}</span>
-                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">{t('divineBureau.donation.nextRequirement', { amount: nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : t('divineBureau.donation.maxRank') })}</span></span>
+                <span className="text-gray-700">{t('setting.donation.deityRank', { deity: deityName, rank })}</span>
+                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">{t('setting.donation.nextRequirement', { amount: nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : t('setting.donation.maxRank') })}</span></span>
               </div>
             ))
           ) : (
-            <div className="text-gray-500">{t('divineBureau.donation.noRecords')}</div>
+            <div className="text-gray-500">{t('setting.donation.noRecords')}</div>
           )}
         </div>}
       </div>
 
-      {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
-      {(debugSettings.clairvoyanceEnabled || gameState.parties.some((party) => getDivineBureauPartyAbilityLevel(party, 'prophecy') >= 1)) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('clairvoyance', t('divineBureau.clairvoyance.title'))}
-        {divineBureauPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
+      {/* SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視) */}
+      {(debugSettings.clairvoyanceEnabled || gameState.parties.some((party) => getSettingPartyAbilityLevel(party, 'prophecy') >= 1)) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+        {renderSettingPanelHeader('clairvoyance', t('setting.clairvoyance.title'))}
+        {settingPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
           {gameState.parties.map((party, partyIndex) => {
-            const prophecyLevel = getDivineBureauPartyAbilityLevel(party, 'prophecy');
+            const prophecyLevel = getSettingPartyAbilityLevel(party, 'prophecy');
             const isPaneVisible = debugSettings.clairvoyanceEnabled || prophecyLevel >= 1;
             if (!isPaneVisible) {
               return null;
@@ -12976,78 +12976,78 @@ function SettingTab({
               </button>
               {isExpanded && <div className="mt-2 space-y-3 text-sm">
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('divineBureau.clairvoyance.common')}</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.common')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('divineBureau.clairvoyance.commonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.commonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
                   </div>
-                  <div>{t('divineBureau.clairvoyance.commonEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
+                  <div>{t('setting.clairvoyance.commonEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
                     {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                       return (
                         <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                           <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{t('divineBureau.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
+                          <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
                           <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div>{t('divineBureau.clairvoyance.commonSuperRare')}: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset(t('divineBureau.clairvoyance.resetCommonRewards'), () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('divineBureau.clairvoyance.resetCommonRewards')}</button>}
+                  <div>{t('setting.clairvoyance.commonSuperRare')}: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetCommonRewards'), () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetCommonRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('divineBureau.clairvoyance.otherRarities')}</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.otherRarities')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('divineBureau.clairvoyance.uncommonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.uncommonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('divineBureau.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('divineBureau.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('divineBureau.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
                   </div>
-                  <div>{t('divineBureau.clairvoyance.enhancement')}: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
+                  <div>{t('setting.clairvoyance.enhancement')}: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
                   <div className="pl-1 text-xs text-gray-500">
                     {enhancementCountTargets.map(({ value }) => {
                       const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                       return (
                         <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                           <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{t('divineBureau.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
+                          <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
                           <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div>{t('divineBureau.clairvoyance.superRareEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">{t('divineBureau.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset(t('divineBureau.clairvoyance.resetRewards'), () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('divineBureau.clairvoyance.resetRewards')}</button>}
+                  <div>{t('setting.clairvoyance.superRareEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetRewards'), () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
-                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('divineBureau.clairvoyance.sideQuest')}</div>
-                  {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | サイドクエスト */}
-                  <div>{t('divineBureau.clairvoyance.sideQuestDraw')}: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.sideQuest')}</div>
+                  {/* SpecRef: 8.6 | UI_SETTING | サイドクエスト */}
+                  <div>{t('setting.clairvoyance.sideQuestDraw')}: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    {t('divineBureau.clairvoyance.hitsRemaining')} {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
+                    {t('setting.clairvoyance.hitsRemaining')} {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
                       entry.id > 0 ? sum + getBagEntryTickets(partyBags.sideQuestBag, entry.id) : sum
                     ), 0))}
                   </div>
-                  {canResetBags && <button onClick={() => confirmReset(t('divineBureau.clairvoyance.resetSideQuest'), () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('divineBureau.clairvoyance.resetSideQuest')}</button>}
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetSideQuest'), () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetSideQuest')}</button>}
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <div>{t('divineBureau.clairvoyance.sleepinessDraw')}: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
+                  <div>{t('setting.clairvoyance.sleepinessDraw')}: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    {t('divineBureau.clairvoyance.sleepinessOutcomes', { awake: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0)), nap: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1)), deepSleep: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2)) })}
+                    {t('setting.clairvoyance.sleepinessOutcomes', { awake: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0)), nap: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1)), deepSleep: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2)) })}
                   </div>
                 </div>
               </div>}
@@ -13057,8 +13057,8 @@ function SettingTab({
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('glossary', t('divineBureau.glossary.title'))}
-        {divineBureauPanelExpanded.glossary && (
+        {renderSettingPanelHeader('glossary', t('setting.glossary.title'))}
+        {settingPanelExpanded.glossary && (
           <>
           <div className="mt-3 mb-3 flex max-h-20 flex-wrap items-center justify-start gap-1 overflow-y-auto pr-1">
             {GLOSSARY_TABS.map((tab) => (
@@ -13197,7 +13197,7 @@ function SettingTab({
                                     type="button"
                                     onClick={() => setExpandedGlossaryEntries((prev) => ({ ...prev, [entryKey]: !isEntryExpanded }))}
                                     className="w-full flex items-center justify-between gap-2 text-left"
-                                    aria-label={t(isEntryExpanded ? 'divineBureau.glossary.collapseEntry' : 'divineBureau.glossary.expandEntry', { label: entry.label })}
+                                    aria-label={t(isEntryExpanded ? 'setting.glossary.collapseEntry' : 'setting.glossary.expandEntry', { label: entry.label })}
                                   >
                                     <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
                                     <span className="text-[11px] text-gray-500 hover:text-gray-700">{isEntryExpanded ? '▼' : '▲'}</span>
@@ -13273,8 +13273,8 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('itemCompendium', t('divineBureau.itemCompendium.title'))}
-        {divineBureauPanelExpanded.itemCompendium && <>
+        {renderSettingPanelHeader('itemCompendium', t('setting.itemCompendium.title'))}
+        {settingPanelExpanded.itemCompendium && <>
         <div className="flex justify-end items-center gap-1 mt-3 mb-3">
           <span className="text-xs text-gray-500">
             {compendiumRarityFilter === 'all' ? t('party.rarity.showAll') : t('party.rarity.only', { rarity: getRarityFilterNote(compendiumRarityFilter) })}
@@ -13348,8 +13348,8 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('characterRoster', t('divineBureau.characterRoster.title'))}
-        {divineBureauPanelExpanded.characterRoster && <>
+        {renderSettingPanelHeader('characterRoster', t('setting.characterRoster.title'))}
+        {settingPanelExpanded.characterRoster && <>
           {activeRosterStatusBubble ? (
             <div
               className="floating-bubble-pane fixed z-20 rounded-lg p-2"
@@ -13365,7 +13365,7 @@ function SettingTab({
               </div>
             </div>
           ) : null}
-          {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Character Roster (味方キャラクター図鑑) */}
+          {/* SpecRef: 8.6 | UI_SETTING | Character Roster (味方キャラクター図鑑) */}
           <div className="mt-3 mb-2 overflow-x-auto pb-1">
             <div className="flex w-max min-w-full flex-nowrap gap-2">
               {CHARACTER_ROSTER_RACES.filter((race) => visibleRosterRaceIds.includes(race.id)).map((race) => (
@@ -13410,10 +13410,10 @@ function SettingTab({
                   className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] max-w-[507px] h-auto"
                 />
               ) : null}
-              <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">{t('divineBureau.characterRoster.race', { race: selectedRosterRace?.name ?? activeRosterCharacter.raceId })}</div>
+              <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">{t('setting.characterRoster.race', { race: selectedRosterRace?.name ?? activeRosterCharacter.raceId })}</div>
               <div className="relative z-10 mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/25 rounded px-2 py-1 space-y-1">
-                <div className="font-semibold">{t('divineBureau.characterRoster.raceStats')}</div>
-                <button type="button" className="w-full text-left" title={t('divineBureau.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('divineBureau.characterRoster.baseStats', { vitality: selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-', strength: selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-', intelligence: selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-', mind: selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-' }), event.currentTarget); }}>
+                <div className="font-semibold">{t('setting.characterRoster.raceStats')}</div>
+                <button type="button" className="w-full text-left" title={t('setting.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('setting.characterRoster.baseStats', { vitality: selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-', strength: selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-', intelligence: selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-', mind: selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-' }), event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
                     <span className="base-stat-chip">{t('common.stat.vitality')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-'}</span>
                     <span className="base-stat-chip">{t('common.stat.strength')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-'}</span>
@@ -13432,7 +13432,7 @@ function SettingTab({
                           onPointerDown={(event) => event.stopPropagation()}
                           onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle(entry.key, `${entry.label} ${entry.description ?? t('home.bonus.descriptionMissing')}`, event.currentTarget); }}
                           className="text-left hover:underline"
-                          title={t('divineBureau.characterRoster.tapForDetails')}
+                          title={t('setting.characterRoster.tapForDetails')}
                         >
                           {entry.label}
                         </button>
@@ -13445,46 +13445,46 @@ function SettingTab({
                 <button
                   type="button"
                   className="w-full text-left"
-                  title={t('divineBureau.characterRoster.defaultAbilityHelp')}
+                  title={t('setting.characterRoster.defaultAbilityHelp')}
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-default-ability',
-                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('divineBureau.characterRoster.defaultAbility', { ability: '-' }),
+                      selectedRosterRace?.defaultAbility ? `${selectedRosterRace.defaultAbility.name} ${getAbilityDescription(selectedRosterRace.defaultAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('setting.characterRoster.defaultAbility', { ability: '-' }),
                       event.currentTarget,
                     );
                   }}
                 >
-                  {t('divineBureau.characterRoster.defaultAbility', { ability: selectedRosterRace?.defaultAbility?.name ?? '-' })}
+                  {t('setting.characterRoster.defaultAbility', { ability: selectedRosterRace?.defaultAbility?.name ?? '-' })}
                 </button>
                 <button
                   type="button"
                   className="w-full text-left"
-                  title={t('divineBureau.characterRoster.unlockAbilityHelp')}
+                  title={t('setting.characterRoster.unlockAbilityHelp')}
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
                     handleRosterStatusBubbleToggle(
                       'roster-unlock-ability',
-                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('divineBureau.characterRoster.unlockAbility', { ability: '-' }),
+                      selectedRosterRace?.unlockAbility ? `${selectedRosterRace.unlockAbility.name} ${getAbilityDescription(selectedRosterRace.unlockAbility.id.replace(/^a\./, '').replace(/-/g, '_') as AbilityId, 1)}` : t('setting.characterRoster.unlockAbility', { ability: '-' }),
                       event.currentTarget,
                     );
                   }}
                 >
-                  {t('divineBureau.characterRoster.unlockAbility', { ability: selectedRosterRace?.unlockAbility?.name ?? '-' })}
+                  {t('setting.characterRoster.unlockAbility', { ability: selectedRosterRace?.unlockAbility?.name ?? '-' })}
                 </button>
               </div>
             </div>
           )}
-          {!activeRosterCharacter && <div className="text-xs text-gray-500">{t('divineBureau.characterRoster.noMatches')}</div>}
-          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">{t('divineBureau.characterRoster.noImage')}</div>}
+          {!activeRosterCharacter && <div className="text-xs text-gray-500">{t('setting.characterRoster.noMatches')}</div>}
+          {activeRosterCharacter && !selectedRosterImageSrc && <div className="mt-2 text-xs text-gray-500">{t('setting.characterRoster.noImage')}</div>}
         </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('bestiary', t('divineBureau.bestiary.title'))}
-        {divineBureauPanelExpanded.bestiary && <>
+        {renderSettingPanelHeader('bestiary', t('setting.bestiary.title'))}
+        {settingPanelExpanded.bestiary && <>
         <div className="flex gap-1 mt-3 mb-3 overflow-x-auto pb-1">
           {bestiaryTabOptions.map(dungeon => (
             <button
@@ -13509,7 +13509,7 @@ function SettingTab({
             onSetBestiaryScrollTop(currentScrollTop);
           }}
         >
-          <div className="text-xs text-gray-500">{isGodBestiaryTab ? t('divineBureau.bestiary.godsTab') : selectedBestiaryDungeon.name}</div>
+          <div className="text-xs text-gray-500">{isGodBestiaryTab ? t('setting.bestiary.godsTab') : selectedBestiaryDungeon.name}</div>
           {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
@@ -13532,7 +13532,7 @@ function SettingTab({
                   <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     {godImageSrc && (
                       <>
-                        {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑) */}
+                        {/* SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑) */}
                         <img
                           src={godImageSrc}
                           alt=""
@@ -13550,9 +13550,9 @@ function SettingTab({
                       <div>ID: {getGodBestiaryDisplayEnemyId(god)}</div>
                       <div></div>
                       <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
-                      <div>{t('divineBureau.bestiary.level', { value: formatNumber(god.level) })}</div>
-                      <div>{t('divineBureau.bestiary.class', { value: ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass })}</div>
-                      <div>{t('divineBureau.bestiary.type', { value: ENEMY_TYPE_LABELS[godRuntimeEnemy?.enemyType ?? ''] ?? (godRuntimeEnemy?.enemyType ?? t('common.unknown')) })}</div>
+                      <div>{t('setting.bestiary.level', { value: formatNumber(god.level) })}</div>
+                      <div>{t('setting.bestiary.class', { value: ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass })}</div>
+                      <div>{t('setting.bestiary.type', { value: ENEMY_TYPE_LABELS[godRuntimeEnemy?.enemyType ?? ''] ?? (godRuntimeEnemy?.enemyType ?? t('common.unknown')) })}</div>
                     </div>
                     {godRuntimeEnemy && (
                       <>
@@ -13569,27 +13569,27 @@ function SettingTab({
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
-                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.rangedAttack'), godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('setting.bestiary.rangedAttack'), godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier));
                             }
                             if (hasMeleeAttack) {
-                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.meleeAttack'), godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('setting.bestiary.meleeAttack'), godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
-                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.physical'), decay }));
+                              offenseRows.push(t('setting.bestiary.accuracy', { type: t('setting.bestiary.physical'), decay }));
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.magicAttack'), godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
-                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.magic'), decay }));
+                              offenseRows.push(formatEnemyAttackLine(t('setting.bestiary.magicAttack'), godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
+                              offenseRows.push(t('setting.bestiary.accuracy', { type: t('setting.bestiary.magic'), decay }));
                             }
                             if (hasMagicCasting) {
-                              offenseRows.push(t('divineBureau.bestiary.castMagic', { spell: getEnemyBestiarySpellName(godRuntimeEnemy) }));
+                              offenseRows.push(t('setting.bestiary.castMagic', { spell: getEnemyBestiarySpellName(godRuntimeEnemy) }));
                             }
 
                             const defenseRows: ReactNode[] = [
                               formatEnemyElementOffenseLine(godRuntimeEnemy.elementalOffense, godRuntimeEnemy.elementalOffenseValue),
-                              formatEnemyDefenseLine(t('divineBureau.bestiary.physicalDefense'), godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
-                              formatEnemyDefenseLine(t('divineBureau.bestiary.magicalDefense'), godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
-                              t('divineBureau.bestiary.evasion', { value: formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000)) }),
+                              formatEnemyDefenseLine(t('setting.bestiary.physicalDefense'), godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('setting.bestiary.magicalDefense'), godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
+                              t('setting.bestiary.evasion', { value: formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000)) }),
                             ];
 
                             const rowCount = Math.max(offenseRows.length, defenseRows.length);
@@ -13607,7 +13607,7 @@ function SettingTab({
                       </>
                     )}
                     <div className="flex items-start gap-1">
-                      <div>{t('divineBureau.bestiary.abilities')}</div>
+                      <div>{t('setting.bestiary.abilities')}</div>
                       <div className="flex flex-wrap items-center gap-1">
                         {parseAbilityTokens(godRuntimeEnemy?.abilities ?? god.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
@@ -13619,7 +13619,7 @@ function SettingTab({
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
                                 className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
-                                aria-label={t('divineBureau.bestiary.showAbilityDescription', { ability: token.label })}
+                                aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
                               </button>
@@ -13628,11 +13628,11 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>{t('divineBureau.bestiary.waitingExpedition', { value: god.expedition })}</div>
-                    <div className="pt-1">{t('divineBureau.bestiary.dropCandidates', { value: getGodDropCandidates(god.name) })}</div>
+                    <div>{t('setting.bestiary.waitingExpedition', { value: god.expedition })}</div>
+                    <div className="pt-1">{t('setting.bestiary.dropCandidates', { value: getGodDropCandidates(god.name) })}</div>
                     {(() => {
                       const battleStats = getGodBestiaryBattleStats(god);
-                      return <div>{t('divineBureau.bestiary.battleStats', { defeats: formatNumber(battleStats.defeats), encounters: formatNumber(battleStats.encounters) })}</div>;
+                      return <div>{t('setting.bestiary.battleStats', { defeats: formatNumber(battleStats.defeats), encounters: formatNumber(battleStats.encounters) })}</div>;
                     })()}
                     </div>
                   </div>
@@ -13670,29 +13670,29 @@ function SettingTab({
                         const classRows = getBestiaryClassRows(colosseumEnemy.enemyClass, colosseumEnemy.enemySubClass);
                         return (
                           <>
-                            <div>ID: {colosseumEnemy.id}</div><div>{t('divineBureau.bestiary.level', { value: formatNumber(colosseumEnemySettings.level) })}</div>
-                            <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>{t('divineBureau.bestiary.type', { value: ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType })}</div>
+                            <div>ID: {colosseumEnemy.id}</div><div>{t('setting.bestiary.level', { value: formatNumber(colosseumEnemySettings.level) })}</div>
+                            <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>{t('setting.bestiary.type', { value: ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType })}</div>
                             {classRows.map((row) => row)}
                             {classRows.length === 1 && <div></div>}
-                            <div>{t('divineBureau.bestiary.terrain', { value: TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect })}</div><div></div>
+                            <div>{t('setting.bestiary.terrain', { value: TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect })}</div><div></div>
                           </>
                         );
                       })()}
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>{hasRangedAttack ? formatEnemyAttackLine(t('divineBureau.bestiary.rangedAttack'), colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementOffenseLine(colosseumEnemy.elementalOffense, colosseumEnemy.elementalOffenseValue)}</div>
-                      <div>{hasMeleeAttack ? formatEnemyAttackLine(t('divineBureau.bestiary.meleeAttack'), colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine(t('divineBureau.bestiary.physicalDefense'), colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
-                      <div>{hasPhysicalAttack ? t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.physical'), decay }) : ''}</div><div>{formatEnemyDefenseLine(t('divineBureau.bestiary.magicalDefense'), colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
-                      <div>{hasMagicalAttack ? formatEnemyAttackLine(t('divineBureau.bestiary.magicAttack'), colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>{t('divineBureau.bestiary.evasion', { value: formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000)) })}</div>
-                      <div>{hasMagicalAttack ? t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.magic'), decay }) : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
-                      <div>{hasMagicCasting ? t('divineBureau.bestiary.castMagic', { spell: getEnemyBestiarySpellName(colosseumEnemy) }) : ''}</div><div></div>
+                      <div>{hasRangedAttack ? formatEnemyAttackLine(t('setting.bestiary.rangedAttack'), colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementOffenseLine(colosseumEnemy.elementalOffense, colosseumEnemy.elementalOffenseValue)}</div>
+                      <div>{hasMeleeAttack ? formatEnemyAttackLine(t('setting.bestiary.meleeAttack'), colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine(t('setting.bestiary.physicalDefense'), colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
+                      <div>{hasPhysicalAttack ? t('setting.bestiary.accuracy', { type: t('setting.bestiary.physical'), decay }) : ''}</div><div>{formatEnemyDefenseLine(t('setting.bestiary.magicalDefense'), colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
+                      <div>{hasMagicalAttack ? formatEnemyAttackLine(t('setting.bestiary.magicAttack'), colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>{t('setting.bestiary.evasion', { value: formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000)) })}</div>
+                      <div>{hasMagicalAttack ? t('setting.bestiary.accuracy', { type: t('setting.bestiary.magic'), decay }) : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
+                      <div>{hasMagicCasting ? t('setting.bestiary.castMagic', { spell: getEnemyBestiarySpellName(colosseumEnemy) }) : ''}</div><div></div>
                     </div>
                     {(() => {
                       const bonusText = getEnemyTypeCBonusText(colosseumEnemy);
                       return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                     })()}
                     <div className="flex items-start gap-1">
-                      <div>{t('divineBureau.bestiary.abilities')}</div>
+                      <div>{t('setting.bestiary.abilities')}</div>
                       <div className="flex flex-wrap items-center gap-1">
                         {parseAbilityTokens(colosseumEnemy.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
@@ -13704,7 +13704,7 @@ function SettingTab({
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
                                 className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
-                                aria-label={t('divineBureau.bestiary.showAbilityDescription', { ability: token.label })}
+                                aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
                               </button>
@@ -13713,7 +13713,7 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>{t('divineBureau.bestiary.dropCandidates', { value: t('common.none') })}</div>
+                    <div>{t('setting.bestiary.dropCandidates', { value: t('common.none') })}</div>
                   </div>}
                 </div>
               </div>
@@ -13768,10 +13768,10 @@ function SettingTab({
                           <div>ID: {displayEnemy.id}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
-                          <div>{t('divineBureau.bestiary.level', { value: formatNumber(enemyLevelFinal) })}</div>
+                          <div>{t('setting.bestiary.level', { value: formatNumber(enemyLevelFinal) })}</div>
                           {classRows.map((row) => row)}
                           {classRows.length === 1 && <div></div>}
-                          <div>{t('divineBureau.bestiary.type', { value: ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType })}</div>
+                          <div>{t('setting.bestiary.type', { value: ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType })}</div>
                           <div></div>
                           {(() => {
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
@@ -13783,20 +13783,20 @@ function SettingTab({
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
-                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.rangedAttack'), displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('setting.bestiary.rangedAttack'), displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier));
                             }
                             if (hasMeleeAttack) {
-                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.meleeAttack'), displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine(t('setting.bestiary.meleeAttack'), displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
-                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.physical'), decay }));
+                              offenseRows.push(t('setting.bestiary.accuracy', { type: t('setting.bestiary.physical'), decay }));
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine(t('divineBureau.bestiary.magicAttack'), displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
-                              offenseRows.push(t('divineBureau.bestiary.accuracy', { type: t('divineBureau.bestiary.magic'), decay }));
+                              offenseRows.push(formatEnemyAttackLine(t('setting.bestiary.magicAttack'), displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
+                              offenseRows.push(t('setting.bestiary.accuracy', { type: t('setting.bestiary.magic'), decay }));
                             }
                             if (hasMagicCasting) {
-                              offenseRows.push(t('divineBureau.bestiary.castMagic', { spell: getEnemyBestiarySpellName(displayEnemy) }));
+                              offenseRows.push(t('setting.bestiary.castMagic', { spell: getEnemyBestiarySpellName(displayEnemy) }));
                             }
                             const basePenetration = (displayEnemy.bonuses ?? []).reduce((sum, bonus) => (
                               bonus.type === 'penet' ? sum + bonus.value : sum
@@ -13810,15 +13810,15 @@ function SettingTab({
                               : 0;
                             const penetrationPercent = Math.round((basePenetration + (heavyStrikeNoALoss * heavyStrikePenetPerNoA)) * 100);
                             if (penetrationPercent !== 0) {
-                              offenseRows.push(t('divineBureau.bestiary.penetration', { value: formatNumber(penetrationPercent) }));
+                              offenseRows.push(t('setting.bestiary.penetration', { value: formatNumber(penetrationPercent) }));
                             }
 
                             // Bestiary detail keeps the compact 4-line defense block.
                             const defenseRows: ReactNode[] = [
                               formatEnemyElementOffenseLine(displayEnemy.elementalOffense, displayEnemy.elementalOffenseValue),
-                              formatEnemyDefenseLine(t('divineBureau.bestiary.physicalDefense'), displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
-                              formatEnemyDefenseLine(t('divineBureau.bestiary.magicalDefense'), displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
-                              t('divineBureau.bestiary.evasion', { value: formatNumber(Math.round(displayEnemy.evasionBonus * 1000)) }),
+                              formatEnemyDefenseLine(t('setting.bestiary.physicalDefense'), displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
+                              formatEnemyDefenseLine(t('setting.bestiary.magicalDefense'), displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
+                              t('setting.bestiary.evasion', { value: formatNumber(Math.round(displayEnemy.evasionBonus * 1000)) }),
                             ];
 
                             const rowCount = Math.max(offenseRows.length, defenseRows.length);
@@ -13834,7 +13834,7 @@ function SettingTab({
                           return bonusText ? <div>{t('party.status.bonus')}: {bonusText}</div> : null;
                         })()}
                         <div className="flex items-start gap-1">
-                          <div>{t('divineBureau.bestiary.abilities')}</div>
+                          <div>{t('setting.bestiary.abilities')}</div>
                           <div className="flex flex-wrap items-center gap-1">
                             {parseAbilityTokens(displayEnemy.abilities).map((token, tokenIndex) => (
                               <Fragment key={token.key}>
@@ -13846,7 +13846,7 @@ function SettingTab({
                                     type="button"
                                     onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
                                     className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
-                                    aria-label={t('divineBureau.bestiary.showAbilityDescription', { ability: token.label })}
+                                    aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                                   >
                                     {token.label}
                                   </button>
@@ -13855,10 +13855,10 @@ function SettingTab({
                             ))}
                           </div>
                         </div>
-                        <div className="pt-1">{t('divineBureau.bestiary.dropCandidates', { value: getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ') })}</div>
+                        <div className="pt-1">{t('setting.bestiary.dropCandidates', { value: getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ') })}</div>
                         {(() => {
                           const battleStats = getBestiaryEnemyBattleStats(displayEnemy.id);
-                          return <div>{t('divineBureau.bestiary.battleStats', { defeats: formatNumber(battleStats.defeats), encounters: formatNumber(battleStats.encounters) })}</div>;
+                          return <div>{t('setting.bestiary.battleStats', { defeats: formatNumber(battleStats.defeats), encounters: formatNumber(battleStats.encounters) })}</div>;
                         })()}
                       </div>
                     )}
@@ -13881,7 +13881,7 @@ function SettingTab({
           <span className="text-gray-500 text-xs" aria-hidden="true">{isEnemyEditExpanded ? '▲' : '▼'}</span>
         </button>
         {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
-          {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane */}
+          {/* SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane */}
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
           <label className="space-y-1">
@@ -13950,9 +13950,9 @@ function SettingTab({
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('superRare', t('divineBureau.superRare'))}
-        {divineBureauPanelExpanded.superRare && <>
-        <div className="text-xs text-gray-500 mt-3 mb-2">{t('divineBureau.superRareListCaption')}</div>
+        {renderSettingPanelHeader('superRare', t('setting.superRare'))}
+        {settingPanelExpanded.superRare && <>
+        <div className="text-xs text-gray-500 mt-3 mb-2">{t('setting.superRareListCaption')}</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto pane-button-shadow">
           {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
             const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
@@ -13970,9 +13970,9 @@ function SettingTab({
         </>}
       </div>
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('modeSelect', t('divineBureau.modeSelect'))}
-        {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
-          {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Mode select (モード切替) */}
+        {renderSettingPanelHeader('modeSelect', t('setting.modeSelect'))}
+        {settingPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
+          {/* SpecRef: 8.6 | UI_SETTING | Mode select (モード切替) */}
           <div>
             <div className="text-sm font-medium mb-1">{t('setting.language.title')}</div>
             <p className="mb-2 text-xs text-gray-500">{t('setting.language.description')}</p>
@@ -13996,7 +13996,7 @@ function SettingTab({
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">{t('divineBureau.autoRepeat')}</span>
+                <span className="text-sm font-medium text-gray-700">{t('setting.autoRepeat')}</span>
                 <span className="flex items-center gap-2">
                   <span className={`text-xs font-semibold ${isAutoRepeatEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isAutoRepeatEnabled ? 'ON' : 'OFF'}
@@ -14018,7 +14018,7 @@ function SettingTab({
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">{t('divineBureau.expeditionStatsDisplay')}</span>
+                <span className="text-sm font-medium text-gray-700">{t('setting.expeditionStatsDisplay')}</span>
                 <span className="flex items-center gap-2">
                   <span className={`text-xs font-semibold ${isExpeditionStatsDisplayEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isExpeditionStatsDisplayEnabled ? 'ON' : 'OFF'}
@@ -14032,7 +14032,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">{t('divineBureau.darkMode')}</div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.darkMode')}</div>
             <div className="grid grid-cols-3 gap-2">
               {(['off', 'on', 'system'] as const).map((mode) => (
                 <button
@@ -14044,21 +14044,21 @@ function SettingTab({
                       : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                   }`}
                 >
-                  {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : t('divineBureau.darkMode.system')}
+                  {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : t('setting.darkMode.system')}
                 </button>
               ))}
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {darkModeSetting === 'system'
-                ? t('divineBureau.darkMode.description.system')
+                ? t('setting.darkMode.description.system')
                 : darkModeSetting === 'on'
-                  ? t('divineBureau.darkMode.description.on')
-                  : t('divineBureau.darkMode.description.off')}
+                  ? t('setting.darkMode.description.on')
+                  : t('setting.darkMode.description.off')}
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">{t('divineBureau.themeColor')}</div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.themeColor')}</div>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
@@ -14069,7 +14069,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                {t('divineBureau.theme.kemo')}
+                {t('setting.theme.kemo')}
               </button>
               <button
                 onClick={() => onSetGameMode('m.luna')}
@@ -14080,7 +14080,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                {t('divineBureau.theme.luna')}
+                {t('setting.theme.luna')}
               </button>
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
@@ -14091,15 +14091,15 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                {t('divineBureau.theme.laika')}
+                {t('setting.theme.laika')}
               </button>
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {gameMode === 'm.kemo'
-                ? t('divineBureau.theme.description.kemo')
+                ? t('setting.theme.description.kemo')
                 : gameMode === 'm.luna'
-                  ? t('divineBureau.theme.description.luna')
-                  : t('divineBureau.theme.description.laika')}
+                  ? t('setting.theme.description.luna')
+                  : t('setting.theme.description.laika')}
             </div>
           </div>
         </div>}
@@ -14107,8 +14107,8 @@ function SettingTab({
 
 
       {isDevEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('debug', t('divineBureau.debug'))}
-        {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
+        {renderSettingPanelHeader('debug', t('setting.debug'))}
+        {settingPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
           <div className="bg-white rounded border p-2">
             <div className="text-xs text-gray-500 mb-1">Speed of time</div>
@@ -14136,13 +14136,13 @@ function SettingTab({
 
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('feedback', t('divineBureau.feedback'))}
-        {divineBureauPanelExpanded.feedback && <div className="space-y-3 mt-3">
-          <div className="text-sm text-gray-600">{t('divineBureau.feedback.description')}</div>
-          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('divineBureau.feedback.namePlaceholder')} />
-          <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('divineBureau.feedback.bodyPlaceholder')} />
+        {renderSettingPanelHeader('feedback', t('setting.feedback'))}
+        {settingPanelExpanded.feedback && <div className="space-y-3 mt-3">
+          <div className="text-sm text-gray-600">{t('setting.feedback.description')}</div>
+          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.namePlaceholder')} />
+          <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.bodyPlaceholder')} />
           <div>
-            <label className="text-sm font-medium">{t('divineBureau.feedback.latestBattleLog')}</label>
+            <label className="text-sm font-medium">{t('setting.feedback.latestBattleLog')}</label>
             <select value={feedbackLatestBattleLogSelection} onChange={(e) => setFeedbackLatestBattleLogSelection(e.target.value as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None')} className="w-full rounded border border-gray-300 bg-white px-3 py-2 mt-1">
               <option value="PT1">PT1</option>
               <option value="PT2">PT2</option>
@@ -14162,15 +14162,15 @@ function SettingTab({
               onChange={handleFeedbackFileChange}
               className="w-full text-sm"
             />
-            <div className="mt-1 text-xs text-gray-500">{t('divineBureau.feedback.attachedImages', { count: formatNumber(feedbackFiles.length) })}</div>
+            <div className="mt-1 text-xs text-gray-500">{t('setting.feedback.attachedImages', { count: formatNumber(feedbackFiles.length) })}</div>
           </div>
-          <button onClick={handleSendFeedback} disabled={isSendingFeedback} className="w-full py-2 bg-sub text-white rounded font-medium disabled:opacity-60">{isSendingFeedback ? t('divineBureau.feedback.sending') : t('divineBureau.feedback.send')}</button>
+          <button onClick={handleSendFeedback} disabled={isSendingFeedback} className="w-full py-2 bg-sub text-white rounded font-medium disabled:opacity-60">{isSendingFeedback ? t('setting.feedback.sending') : t('setting.feedback.send')}</button>
         </div>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
-        {renderDivineBureauPanelHeader('gameSetting', t('setting.backupReset'))}
-        {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
+        {renderSettingPanelHeader('gameSetting', t('setting.backupReset'))}
+        {settingPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
           <div>
             <div className="text-sm font-medium mb-1">{t('setting.backup.title')}</div>
             <button
