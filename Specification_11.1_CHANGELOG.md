@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 2 | 2026/07/22 | Mark every visible Developer News announcement as read whenever the News pane is expanded, including unread announcements that arrive or load while the persisted pane state is already open. |
 | 0.8.5 | 1 | 2026/07/22 | Update the Divine Bureau News runtime so opening the list preserves unread state, unread announcements render in bold, and tapping an individual announcement alone marks it as read while both badges remain until all announcements are read. |
 | 0.8.4 | 17 | 2026/07/22 | Fix Chromium desktop backup export by writing the `.kemoz` backup through the native save-file picker, avoiding unusable blob-link downloads while retaining existing platform fallbacks. |
 | 0.8.4 | 16 | 2026/07/22 | Display the current rank-scaled reward draw bonus in the Oblivion and Discord runtime effect text and align their localized Glossary entries with Spec 1.1.7. |

@@ -11916,6 +11916,13 @@ function SettingTab({
 
   const unreadDeveloperNewsItems = DEVELOPER_NEWS_ITEMS.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
+  const unreadDeveloperNewsItemIdsKey = JSON.stringify(unreadDeveloperNewsItems.map((item) => item.id));
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+  useEffect(() => {
+    if (!divineBureauPanelExpanded.news || unreadDeveloperNewsItemIdsKey === '[]') return;
+    onMarkDeveloperNewsRead(JSON.parse(unreadDeveloperNewsItemIdsKey) as string[]);
+  }, [divineBureauPanelExpanded.news, onMarkDeveloperNewsRead, unreadDeveloperNewsItemIdsKey]);
 
   const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
     setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
