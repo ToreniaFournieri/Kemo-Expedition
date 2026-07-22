@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing v* tag to release'
+        description: 'v* tag to create or release from the selected branch'
         required: true
         type: string
 
@@ -40,10 +40,13 @@ jobs:
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
           echo "version=${tag#v}" >> "${GITHUB_OUTPUT}"
 
-      - name: Checkout tagged revision
+      - name: Checkout release revision
         uses: actions/checkout@v5
         with:
-          ref: ${{ steps.release.outputs.tag }}
+          # A manually supplied tag may not exist yet. In that case, build the
+          # exact branch revision that dispatched this workflow and let `gh`
+          # create the tag when it creates the release.
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || steps.release.outputs.tag }}
 
       - name: Setup Node
         uses: actions/setup-node@v5
@@ -95,4 +98,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
-        run: gh release create "${RELEASE_TAG}" "${ARCHIVE}" --verify-tag --generate-notes --title "BoKemo ${RELEASE_TAG}"
+          TARGET_SHA: ${{ github.sha }}
+        run: gh release create "${RELEASE_TAG}" "${ARCHIVE}" --target "${TARGET_SHA}" --generate-notes --title "BoKemo ${RELEASE_TAG}"
