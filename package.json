@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "desktop:dev": "npm run build && electron .",
     "desktop:pack": "npm run build && electron-builder --mac --dir",
-    "desktop:build": "npm run build && electron-builder --mac --x64 --arm64",
+    "desktop:build": "npm run build && electron-builder --mac --x64 --arm64 --publish never",
     "lint": "eslint .",
     "preview": "vite preview"
   },

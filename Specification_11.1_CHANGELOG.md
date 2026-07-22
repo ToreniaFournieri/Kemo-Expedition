@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 14 | 2026/07/22 | Prevent electron-builder from attempting an implicit GitHub publish during tagged macOS packaging so the desktop job can produce artifacts without requiring a GitHub token. |
 | 0.8.5 | 13 | 2026/07/22 | Fix unsigned macOS release packaging by removing empty Apple signing and notarization environment variables before electron-builder runs, preventing an empty certificate path from resolving to the repository directory. |
 | 0.8.5 | 12 | 2026/07/22 | Allow macOS release workflows to produce clearly documented development-only unsigned packages when Apple credentials are absent, while retaining signed and notarized packages when the complete secret set is configured and rejecting partial credential configuration. |
 | 0.8.5 | 11 | 2026/07/22 | Add signed and notarized Intel and Apple Silicon macOS desktop distributions with secure isolated Electron rendering, stable browser-compatible persistence, DMG and ZIP release artifacts, and installation and upgrade documentation while retaining the browser ZIP. |
