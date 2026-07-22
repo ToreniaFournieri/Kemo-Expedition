@@ -65,7 +65,7 @@ import { getItemById } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { DEITY_OPTIONS, getDeityKey, getDeityRank, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityKey, getDeityRewardDrawBonuses, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -2277,7 +2277,7 @@ function resolveEnemyRewards(
   hasUnlock: boolean,
   autoSellMultiplier: number,
   terrainEffect: TerrainEffectKey | undefined,
-  hasExtraRewardRollBlessing: boolean = false,
+  deityItemChanceTickets: number = 0,
   auriferousBonusRolls: number = 0,
   difficultyItemChanceTickets: number = 0,
   difficultySuperRareChanceTickets: number = 0,
@@ -2330,7 +2330,7 @@ function resolveEnemyRewards(
     const totalTicketCount =
       2
       + (hasUnlock ? 1 : 0)
-      + (terrainEffect !== 'terrain.gehenna' && hasExtraRewardRollBlessing ? 1 : 0)
+      + (terrainEffect !== 'terrain.gehenna' ? Math.max(0, deityItemChanceTickets) : 0)
       + difficultyItemChanceTickets
       + auriferousBonusRolls;
     const bonusRollCount = Math.max(0, totalTicketCount - 1);
@@ -2349,9 +2349,15 @@ function resolveEnemyRewards(
 
     const normalizedEnhancement = enhVal;
 
-    // SpecRef: 6.1.6 | REWARD | Super Rare Chance Ticket
+    // SpecRef: 6.1.6 | REWARD | A Super Rare draw is only available when the
+    // rarity-specific enhancement threshold has been met.
     let srVal = 0;
-    const superRareRollCount = 1 + Math.max(0, difficultySuperRareChanceTickets);
+    const qualifiesForSuperRare = baseRarity === 'common'
+      ? normalizedEnhancement >= 2
+      : normalizedEnhancement >= 1;
+    const superRareRollCount = qualifiesForSuperRare
+      ? 1 + Math.max(0, difficultySuperRareChanceTickets)
+      : 0;
     for (let srRollIndex = 0; srRollIndex < superRareRollCount; srRollIndex++) {
       bags = refillBagIfEmpty(bags, superRareBagType);
       const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags[superRareBagType]);
@@ -2477,7 +2483,18 @@ function calculatePrayerProfit(party: Party, pendingProfit: number): PrayerProfi
   return { donation, deposit, embezzled };
 }
 
-function processAfkPrayerProfit(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+function calculateFreeActionSpend(party: Party, pendingProfit: number): number {
+  // SpecRef: 5.1.1 | Party State Machine | state.free_action
+  const cyclePendingProfit = Math.max(0, Math.floor(pendingProfit));
+  const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(20, 40)) / 100);
+  const squanderLevel = getPartyAbilityLevel(party, 'squander');
+  const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
+
+  return Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
+}
+
+function processAfkCycleProfit(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+  // SpecRef: 5.1.1 | Party State Machine | state.free_action
   // SpecRef: 5.1.1 | Party State Machine | state.pray
   const party = state.parties[partyIndex];
   if (!party) return state;
@@ -2485,16 +2502,26 @@ function processAfkPrayerProfit(state: GameState, partyIndex: number, simulatedA
   const pendingProfit = Math.max(0, Math.floor(party.pendingProfit ?? 0));
   if (pendingProfit <= 0) return state;
 
-  const { donation, deposit, embezzled } = calculatePrayerProfit(party, pendingProfit);
-  let nextState = gameReducer(state, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+  const spend = calculateFreeActionSpend(party, pendingProfit);
+  let nextState = gameReducer(state, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
 
-  if (party.sideQuest?.type === 'q.donation' && donation > 0) {
+  if (party.sideQuest?.type === 'q.squander' && spend > 0) {
+    nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: spend, simulatedAt });
+  }
+
+  const partyAtPrayer = nextState.parties[partyIndex];
+  if (!partyAtPrayer) return nextState;
+  const prayerPendingProfit = Math.max(0, Math.floor(partyAtPrayer.pendingProfit ?? 0));
+  const { donation, deposit, embezzled } = calculatePrayerProfit(partyAtPrayer, prayerPendingProfit);
+  nextState = gameReducer(nextState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+
+  if (partyAtPrayer.sideQuest?.type === 'q.donation' && donation > 0) {
     nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
   }
-  if (party.sideQuest?.type === 'q.savings' && deposit > 0) {
+  if (partyAtPrayer.sideQuest?.type === 'q.savings' && deposit > 0) {
     nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: deposit, simulatedAt });
   }
-  if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
+  if (partyAtPrayer.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
     nextState = gameReducer(nextState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled, simulatedAt });
   }
 
@@ -2887,8 +2914,6 @@ const AURIFEROUS_LOGS = [
 ] as const;
 
 function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
-  if (bonusRolls <= 0) return null;
-
   const flavorText = AURIFEROUS_LOGS[Math.floor(Math.random() * AURIFEROUS_LOGS.length)]
     ?? t('auto.jp.dc0d0cd51a');
 
@@ -2944,7 +2969,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, selectedPartyIndex: action.partyIndex };
 
     case 'MARK_DEVELOPER_NEWS_READ': {
-      // SpecRef: 8.6 | UI_DIVINE_BUREAU | Developer News Notification (通知)
+      // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
       const nextReadIds = Array.from(new Set([
         ...(state.global.readDeveloperNewsItemIds ?? []),
         ...action.itemIds.filter((itemId) => itemId.trim().length > 0),
@@ -3321,13 +3346,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const unlockActorName = getUnlockActorName(currentParty);
               const hasUnlock = !!unlockActorName;
               const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
-              const deityKey = getDeityKey(currentParty.deity.name);
               const deityDonation =
                 state.global.deityDonations[normalizeDeityName(currentParty.deity.name)]
                 ?? currentParty.deityGold
                 ?? 0;
-              const hasExtraRewardRollBlessing = deityKey === 'Goddess of Discord'
-                || (deityKey === 'God of Oblivion' && getDeityRank(deityDonation) >= 10);
+              // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
+              // SpecRef: 1.1.7 | g. gods, religions | Goddess of Discord
+              const deityRewardDrawBonuses = getDeityRewardDrawBonuses(currentParty.deity.name, deityDonation);
               let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
               if (!isColosseumBattle) {
                 const enemyAuriferousLevel = enemy.abilities
@@ -3344,10 +3369,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   hasUnlock,
                   autoSellMultiplier,
                   terrainEffect,
-                  hasExtraRewardRollBlessing,
+                  deityRewardDrawBonuses.itemChanceTickets,
                   auriferousBonusRolls,
                   difficultyItemChanceTickets,
-                  difficultySuperRareChanceTickets,
+                  difficultySuperRareChanceTickets
+                    + (terrainEffect !== 'terrain.gehenna' ? deityRewardDrawBonuses.superRareChanceTickets : 0),
                 );
                 bags = rewardResult.bags;
                 currentInventory = rewardResult.inventory;
@@ -3364,11 +3390,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
                 }
                 rewardLogEntries = rewardResult.rewardLogEntries;
-                const auriferousLogEntry = buildAuriferousLogEntry(
-                  enemy.name,
-                  battleResult.enemyHitsReceived,
-                  auriferousBonusRolls,
-                );
+                const auriferousLogEntry = enemyAuriferousLevel > 0
+                  ? buildAuriferousLogEntry(
+                    enemy.name,
+                    battleResult.enemyHitsReceived,
+                    auriferousBonusRolls,
+                  )
+                  : null;
                 if (auriferousLogEntry) {
                   entry.details.push(auriferousLogEntry);
                 }
@@ -3664,6 +3692,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...currentParty,
         bags,
         expeditionRewardsPending: true,
+        pendingLootGateSnapshot: {
+          progress: { ...(currentParty.lootGateProgress ?? {}) },
+          status: { ...(currentParty.lootGateStatus ?? {}) },
+          defeatedBossExpeditions: { ...(currentParty.defeatedBossExpeditions ?? {}) },
+        },
         defeatedBossExpeditions: nextDefeatedBossExpeditions,
         lootGateProgress: nextLootGateProgress,
         lootGateStatus: nextLootGateStatus,
@@ -3773,6 +3806,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         experience: nextExperience,
         condition: nextCondition,
         expeditionRewardsPending: false,
+        pendingLootGateSnapshot: null,
         pendingDiaryLog: null,
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
@@ -4701,7 +4735,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
 
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
-          workingState = processAfkPrayerProfit(workingState, partyIndex, simulatedAt);
+          workingState = processAfkCycleProfit(workingState, partyIndex, simulatedAt);
 
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty) {

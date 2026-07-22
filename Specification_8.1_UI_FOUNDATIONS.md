@@ -167,7 +167,7 @@
   - Party: パーティ
   - Base: 拠点
   - Diary: 日誌
-  - Divine Bureau: 神聖局
+  - Setting: 設定
 
 - If wide mode (two tabs) is on, it displays Expedition (always visible) and other tabs player selects.
   - One tabs width: ~ 500 width.

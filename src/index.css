@@ -607,7 +607,7 @@ body {
 }
 
 .theme-dark .diary-tab-surface .bg-pane,
-.theme-dark .divine-bureau-tab .bg-pane {
+.theme-dark .setting-tab .bg-pane {
   border: 1px solid rgb(100 116 139 / 0.72);
 }
 
@@ -617,12 +617,12 @@ body {
 }
 
 .theme-dark .diary-tab-surface .border-gray-200,
-.theme-dark .divine-bureau-tab .border-gray-200 {
+.theme-dark .setting-tab .border-gray-200 {
   border-color: rgb(100 116 139 / 0.9);
 }
 
 .theme-dark .diary-tab-surface .border-gray-100,
-.theme-dark .divine-bureau-tab .border-gray-100 {
+.theme-dark .setting-tab .border-gray-100 {
   border-color: rgb(71 85 105 / 0.9);
 }
 

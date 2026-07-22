@@ -46,7 +46,7 @@ export function resolveInitialLanguage(): Language {
 export function persistLanguage(language: Language): void {
   if (typeof window === 'undefined') return;
   const normalizedLanguage = normalizeLanguage(language);
-  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Mode select (モード切替) Language (言語)
+  // SpecRef: 8.6 | UI_SETTING | Mode select (モード切替) Language (言語)
   window.localStorage.setItem(LANGUAGE_STORAGE_KEY, normalizedLanguage);
 
   const url = new URL(window.location.href);

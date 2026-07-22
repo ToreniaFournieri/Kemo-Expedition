@@ -189,7 +189,7 @@
 | 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
 | 4 | E | `Shadowfang` | `i.robe`EA | 影衣 |  `a.anti-overwatch` |
 | 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
-| 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト |
+| 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト | `c.penet+0.16` |
 | 4 | E | `Felidian` | `i.arrow`EB | 猫牙矢 |
 | 4 | E | `Felidian` | `i.archery`EB | 短弓 |
 | 4 | E | `Felidian` | `i.robe`EB | 盗砂の猫衣 |
@@ -286,7 +286,7 @@
 | 6 | E | `Chimera` | `i.grimoire`EC | 合成獣秘録 |
 | 6 | E | `Chimera` | `i.catalyst`EC | 継核触媒 |
 | 6 | E | `Chiropteran` | `i.katana`EB | 蝙蝠の太刀 |
-| 6 | E | `Chiropteran` | `i.arrow`EB | 影の矢 |
+| 6 | E | `Chiropteran` | `i.arrow`EB | 影の矢 | `c.penet+0.14` |
 | 6 | E | `Chiropteran` | `i.archery`EB | 影の弓 |
 | 6 | E | `Chiropteran` | `i.bolt`EB | 蝙蝠の牙 |
 | 6 | E | `Chiropteran` | `i.grimoire`EB | 暗闇の秘本 |
@@ -351,7 +351,7 @@
 | 7 | E | `Undead` | `i.gauntlet`EB | 冥爪の手甲 |
 | 7 | E | `Undead` | `i.katana`EB | 大鎌 | `a.soul-reap`1, `r.fire_x1.3` |
 | 7 | E | `Undead` | `i.archery`EB | 冥府の弓 |
-| 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 | `a.life-drain`1, `r.fire_x1.3` |
+| 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 | `c.penet+0.12` |
 | 7 | E | `Undead` | `i.sword`EB | 冥府の剣 | `a.life-drain`1, `r.fire_x1.3` |
 | 7 | B | `Leporian` | `i.sword`BD | ホーリーソード | `a.requiem` |
 | 7 | B | `Leporian` | `i.wand`BD | 月兎の宝杖 |

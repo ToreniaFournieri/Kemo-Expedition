@@ -1,7 +1,7 @@
 ## 8. UI
 
-### 8.6 UI_DIVINE_BUREAU
-- Divine Bureau (神聖局)
+### 8.6 UI_SETTING
+- Setting (設定)
   - All panes are collapsed by default and expandable.
   - The expanded/collapsed state is persisted and saved.
 
@@ -9,15 +9,17 @@
 - Purpose: Displays announcements and issue-fix notices from the development team.
 - Label: Use `News` as the list title.
 - Badge behavior:
-  - Show a notification badge on `Divine Bureau` and `News` when there is at least one unread developer news item.
-  - When the player opens and reads the developer news list, clear the notification badge.
-  - Persist the read/unread state in save data so the badge does not reappear after refresh or restart unless a new news item is added.
+  - Display a notification badge on both `Setting` and `News` when at least one unread news item exists. Unread news items are displayed in **bold**.
+  - When the player taps a news item, mark it as read and change its text style from bold to normal.
+  - Remove the notification badge when no unread news items remain.
+  - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
+  - When a new news item is added, display the notification badge again.
 - News list: @Specification_11.2_NEWS.md 
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
-- Donation Scaling (Divine Bureau)
+- Donation Scaling (Setting)
   - For each god g:
   - Let D_g be total donated gold to god g.
   - Convert donation to tier T_g using thresholds. 
@@ -309,6 +311,7 @@ HP: 312                 タイプ: 神魔
 
 **フィードバック**
   - Send feedback to the development team.
+    - "開発チームにフィードバックを送信します。"
   - Name field (persist the previously entered value)
   - Text input form (Feedback text)
   - Latest Battle Log selection (最終戦闘ログ選択):

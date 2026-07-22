@@ -10,6 +10,27 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 1 | 2026/07/22 | Release version 0.8.5 and reset the build number to 1. |
+| 0.8.5 | 5 | 2026/07/22 | Apply the God of Resonance rank-scaled Resonance level upgrade to computed character abilities so Party cards and battles show the strengthened level, while preserving the Gehenna suppression exception. |
+| 0.8.5 | 4 | 2026/07/22 | Simplify the Divine Bureau header to Setting in every supported language and rename the corresponding runtime, localization, styling, persistence, and specification objects from Divine Bureau to Setting. |
+| 0.8.5 | 3 | 2026/07/22 | Match the Diary unread-badge lifecycle for Developer News by keeping expanded-pane announcements unread while they are visible and marking them read when the player leaves Divine Bureau for another tab. |
+| 0.8.5 | 2 | 2026/07/22 | Mark every visible Developer News announcement as read whenever the News pane is expanded, including unread announcements that arrive or load while the persisted pane state is already open. |
+| 0.8.5 | 1 | 2026/07/22 | Update the Divine Bureau News runtime so opening the list preserves unread state, unread announcements render in bold, and tapping an individual announcement alone marks it as read while both badges remain until all announcements are read. |
+| 0.8.4 | 17 | 2026/07/22 | Fix Chromium desktop backup export by writing the `.kemoz` backup through the native save-file picker, avoiding unusable blob-link downloads while retaining existing platform fallbacks. |
+| 0.8.4 | 16 | 2026/07/22 | Display the current rank-scaled reward draw bonus in the Oblivion and Discord runtime effect text and align their localized Glossary entries with Spec 1.1.7. |
+| 0.8.4 | 15 | 2026/07/22 | Add the God of Oblivion battle-start Fading Memory grant to the runtime effect description in every supported language. |
+| 0.8.4 | 14 | 2026/07/22 | Implement the God of Oblivion battle-start Fading Memory grant and make Oblivion and Discord reward tickets scale from completed deity rank increases at runtime. |
+| 0.8.4 | 13 | 2026/07/22 | Replace the stale fixed deity reward text in Party cards with the specified rank-scaled reward descriptions for the God of Oblivion and Goddess of Discord in every supported language. |
+| 0.8.4 | 12 | 2026/07/22 | Align the localized runtime Glossary descriptions for the God of Oblivion and Goddess of Discord with their rank-scaled reward draw effects in Spec 1.1.7. |
+| 0.8.4 | 11 | 2026/07/22 | Process AFK cycle profit through `state.free_action` spending before prayer so squander and embezzlement side quests use the same remaining profit and progression order as online cycles. |
+| 0.8.4 | 10 | 2026/07/22 | Align the Spec 6.1.6 reward runtime with enhancement-gated Super Rare draws, God of Oblivion Super Rare tickets, Discord-only item tickets, and END-phase Auriferous logging. |
+| 0.8.4 | 9 | 2026/07/22 | Extend the Spec 5.1.3.1 Loot-Gate return-item wording to the English, Simplified Chinese, and Traditional Chinese runtime progress and blocked-gate messages. |
+| 0.8.4 | 8 | 2026/07/22 | Align Japanese runtime Loot-Gate progress and blocked-gate messages with Spec 5.1.3.1 by stating that the required Uncommon or Elite Rare items must be brought back. |
+| 0.8.4 | 7 | 2026/07/22 | Keep the compact expedition loot-gate indicator on its pre-expedition progress until the returning party finalizes recovered rewards, matching the active battle log gate condition. |
+| 0.8.4 | 6 | 2026/07/22 | Display localized base-stat names in the Character Roster race status summary instead of exposing internal translation keys. |
+| 0.8.4 | 5 | 2026/07/22 | Restore Japanese Glossary multiline descriptions so explanatory text and probability tables render as separate lines and structured tables instead of displaying literal escape sequences. |
+| 0.8.4 | 4 | 2026/07/22 | Fix the Expedition Difficulty Offset runtime display to use the specified `🍀` emoji for Additional Item Chance Tickets. |
+| 0.8.4 | 3 | 2026/07/22 | Align runtime special bonuses for `砂猫のボルト`, `影の矢`, and `冥府の矢` with Spec 3.2.1 by applying penetration bonuses of `0.16`, `0.14`, and `0.12`, respectively. |
 | 0.8.4 | 2 | 2026/07/21 | Allow compressed `.kemoz` backups to be selected for import on platforms whose file pickers reject or hide unregistered extensions, while retaining content-based format validation for `.kemoz` and legacy `.json` backups. |
 | 0.8.4 | 1 | 2026/07/20 | Release version 0.8.4, reset the build number to 1, and load separate Simplified (`Content zh-CN`) and Traditional (`Content zh-TW`) Chinese Developer News columns. |
 | 0.8.3 | 20 | 2026/07/20 | Restrict every God reward table to its two explicitly configured mythic items, removing category, rarity, common-item, and default-God fallback drops. |

@@ -21,7 +21,7 @@ import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
 import { resolveMagicProfile } from './magic';
-import { getAbilityDescription, getAbilityName } from './characterComputation';
+import { computeCharacterStats, getAbilityDescription, getAbilityName } from './characterComputation';
 import {
   buildAntagonismAction,
   buildBindAction,
@@ -2519,10 +2519,20 @@ export function executeBattle(
   }
 
   // SpecRef: 6.1.1.1 | START phase | Deity effects
-  if (partyDeityKey === 'God of Resonance' && environment.terrainEffect !== 'terrain.gehenna') {
+  if (partyDeityKey === 'God of Resonance' && environment.terrainEffect === 'terrain.gehenna') {
     characterStats = characterStats.map((stats) => {
-      adjustCharacterAbilityLevel(stats, 'resonance', 1);
-      return stats;
+      const characterIndex = party.characters.findIndex((character) => character.id === stats.characterId);
+      const character = party.characters[characterIndex];
+      if (!character) return stats;
+
+      const baseResonance = computeCharacterStats(character, party.level, characterIndex + 1).abilities
+        .find((ability) => ability.id === 'resonance');
+      return {
+        ...stats,
+        abilities: baseResonance
+          ? stats.abilities.map((ability) => ability.id === 'resonance' ? baseResonance : ability)
+          : stats.abilities.filter((ability) => ability.id !== 'resonance'),
+      };
     });
 
     ctx = {
@@ -2565,6 +2575,12 @@ export function executeBattle(
       ...ctx,
       characterStats,
     };
+  }
+
+  // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
+  if (partyDeityKey === 'God of Oblivion' && environment.terrainEffect !== 'terrain.gehenna' && characterStats.length > 0) {
+    const targetStats = characterStats[Math.floor(Math.random() * characterStats.length)];
+    grantCharacterAbility(targetStats, { id: 'fading_memory', level: 1 });
   }
 
   const isEnemyActorAbilitiesSuppressed = (): boolean => (

@@ -331,6 +331,11 @@ export interface Party {
   defeatedBossExpeditions: Record<number, boolean>;
   lootGateProgress: Record<string, number>;
   lootGateStatus: Record<number, boolean>;
+  pendingLootGateSnapshot?: {
+    progress: Record<string, number>;
+    status: Record<number, boolean>;
+    defeatedBossExpeditions: Record<number, boolean>;
+  } | null;
   deity: Deity;
   characters: Character[];
   selectedDungeonId: number;

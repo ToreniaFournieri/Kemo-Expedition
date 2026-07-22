@@ -1,8 +1,8 @@
-# BOKEMO v0.8.4 - SPECIFICATION
+# BOKEMO v0.8.5 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
-    - Support Japanese language. 
+    - Support Japanese, English and Chinese (zh-CN, zh-TW) language. 
     - Tetris like randomness. (Bag Randomization)
     - Data persistence 
 
@@ -77,8 +77,8 @@
 ### 8.5 UI_DIARY
 - @Specification_8.5_UI_DIARY.md
 
-### 8.6 UI_DIVINE_BUREAU
-- @Specification_8.6_UI_DIVINE_BUREAU.md
+### 8.6 UI_SETTING
+- @Specification_8.6_UI_SETTING.md
 
 
 ## 9. Environment
