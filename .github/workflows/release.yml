@@ -17,6 +17,8 @@ permissions:
 jobs:
   desktop:
     runs-on: macos-14
+    outputs:
+      credentials_available: ${{ steps.apple-credentials.outputs.available }}
     steps:
       - name: Checkout release revision
         uses: actions/checkout@v5
@@ -49,9 +51,15 @@ jobs:
             fi
           done
 
+          if [[ "${present}" -eq 0 ]]; then
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            echo "Apple credentials are not configured; skipping development-only unsigned macOS packages."
+            exit 0
+          fi
+
           if [[ "${present}" -ne 5 ]]; then
             echo "Only ${present} of 5 Apple release credential secrets are configured." >&2
-            echo "Public macOS releases must be signed and notarized; configure the complete credential set." >&2
+            echo "Configure either the complete credential set for a public macOS release or none to publish only the browser bundle." >&2
             exit 1
           fi
 
@@ -59,9 +67,11 @@ jobs:
           echo "Apple credentials found; packages will be signed and notarized."
 
       - name: Install dependencies
+        if: steps.apple-credentials.outputs.available == 'true'
         run: npm install
 
       - name: Build, sign, and notarize macOS packages
+        if: steps.apple-credentials.outputs.available == 'true'
         env:
           CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
@@ -75,6 +85,7 @@ jobs:
           npm run desktop:build
 
       - name: Verify macOS signatures and notarization tickets
+        if: steps.apple-credentials.outputs.available == 'true'
         run: |
           set -euo pipefail
           verification_root="$(mktemp -d)"
@@ -104,6 +115,7 @@ jobs:
           done
 
       - name: Upload macOS release artifacts
+        if: steps.apple-credentials.outputs.available == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: macos-release-artifacts
@@ -195,6 +207,7 @@ jobs:
           echo "ARCHIVE=${archive}" >> "${GITHUB_ENV}"
 
       - name: Download macOS release artifacts
+        if: needs.desktop.outputs.credentials_available == 'true'
         uses: actions/download-artifact@v4
         with:
           name: macos-release-artifacts
@@ -205,14 +218,23 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           TARGET_SHA: ${{ github.sha }}
+          MACOS_ARTIFACTS_AVAILABLE: ${{ needs.desktop.outputs.credentials_available }}
         run: |
           set -euo pipefail
+          assets=("${ARCHIVE}")
+          if [[ "${MACOS_ARTIFACTS_AVAILABLE}" == "true" ]]; then
+            assets+=(macos-artifacts/*)
+            macos_note="Choose the signed and notarized DMG/ZIP matching your Mac's Apple Silicon (arm64) or Intel (x64) processor."
+          else
+            macos_note="macOS packages are omitted because Apple signing and notarization credentials were not configured; unsigned development packages are never published."
+          fi
+
           cat > release-notes.md <<EOF
-          Download \`${ARCHIVE}\` and extract it to play this BoKemo browser release, or choose the DMG/ZIP matching your Mac's Apple Silicon (arm64) or Intel (x64) processor.
+          Download \`${ARCHIVE}\` and extract it to play this BoKemo browser release. ${macos_note}
 
           See \`LOCAL_PLAY.md\` in the archive for local HTTP server instructions.
           EOF
-          gh release create "${RELEASE_TAG}" "${ARCHIVE}" macos-artifacts/* \
+          gh release create "${RELEASE_TAG}" "${assets[@]}" \
             --target "${TARGET_SHA}" \
             --notes-file release-notes.md \
             --title "BoKemo ${RELEASE_TAG}"

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.5 | 16 | 2026/07/22 | Allow browser-only public releases when no Apple credentials are configured while still rejecting partial credential sets and publishing macOS artifacts only after signing, notarization, and verification. |
 | 0.8.5 | 15 | 2026/07/22 | Prevent damaged or unsigned macOS applications from reaching public releases by requiring the complete Apple credential set and verifying strict code signatures, stapled notarization tickets, and Gatekeeper acceptance for both architectures in every DMG and ZIP. |
 | 0.8.5 | 14 | 2026/07/22 | Prevent electron-builder from attempting an implicit GitHub publish during tagged macOS packaging so the desktop job can produce artifacts without requiring a GitHub token. |
 | 0.8.5 | 13 | 2026/07/22 | Fix unsigned macOS release packaging by removing empty Apple signing and notarization environment variables before electron-builder runs, preventing an empty certificate path from resolving to the repository directory. |
