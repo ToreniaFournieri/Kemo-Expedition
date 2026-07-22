@@ -122,6 +122,21 @@ export function getDeityRank(totalDonatedGold: number): number {
   return Math.min(MAX_DEITY_RANK, getDonationTier(totalDonatedGold) + 1);
 }
 
+// SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
+// SpecRef: 1.1.7 | g. gods, religions | Goddess of Discord
+export function getDeityRewardDrawBonuses(
+  name: string,
+  totalDonatedGold: number,
+): { itemChanceTickets: number; superRareChanceTickets: number } {
+  const rankIncreases = Math.max(0, getDeityRank(totalDonatedGold) - MIN_DEITY_RANK);
+  const deityKey = getDeityKey(name);
+
+  return {
+    itemChanceTickets: deityKey === 'Goddess of Discord' ? rankIncreases : 0,
+    superRareChanceTickets: deityKey === 'God of Oblivion' ? Math.floor(rankIncreases / 2) : 0,
+  };
+}
+
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | Donation Scaling (Divine Bureau)
 export function getNextRankDonationRequirement(totalDonatedGold: number): number | null {
   const safeDonation = Math.max(0, totalDonatedGold);

@@ -1481,7 +1481,7 @@ const ja = {
   'deity.effect.GodOfDusk': '全員の回避+{evasionBonus}、魔法防御倍率1.10倍。売却時間2倍。',
   'deity.effect.GoddessOfMirage': '全員に魔法攻撃倍率{magicalAttackMultiplier}倍、物理防御倍率1.10倍。',
   'deity.effect.GodOfResonance': '全員の共鳴を1+α段階強化。共鳴は魔法攻撃だけでなく、遠距離攻撃にも適用。魔法防御倍率1.10倍、HP{hpMultiplier}倍。',
-  'deity.effect.GodOfOblivion': 'ランクが2上がるごとに、超レア報酬抽選回数が+1される。',
+  'deity.effect.GodOfOblivion': '戦闘開始時、ランダムな1名が薄れる記憶を得る。ランクが2上がるごとに、超レア報酬抽選回数が+1される。',
   'deity.effect.GoddessOfDiscord': '戦闘開始時、ランダムな1名を⚠️敵対させる。ランクが1上がるごとに、報酬抽選回数が+1される。',
   'deity.effect.none': '効果なし',
   // Master-data i18n boundary: localized display labels live in dictionaries; canonical names remain in src/data.

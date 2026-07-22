@@ -2567,6 +2567,12 @@ export function executeBattle(
     };
   }
 
+  // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
+  if (partyDeityKey === 'God of Oblivion' && environment.terrainEffect !== 'terrain.gehenna' && characterStats.length > 0) {
+    const targetStats = characterStats[Math.floor(Math.random() * characterStats.length)];
+    grantCharacterAbility(targetStats, { id: 'fading_memory', level: 1 });
+  }
+
   const isEnemyActorAbilitiesSuppressed = (): boolean => (
     isActorAbilitySuppressedBySilenceField(environment.terrainEffect, enemy.abilities)
   );
