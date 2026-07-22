@@ -2277,7 +2277,7 @@ function resolveEnemyRewards(
   hasUnlock: boolean,
   autoSellMultiplier: number,
   terrainEffect: TerrainEffectKey | undefined,
-  hasExtraRewardRollBlessing: boolean = false,
+  hasDiscordRewardBonus: boolean = false,
   auriferousBonusRolls: number = 0,
   difficultyItemChanceTickets: number = 0,
   difficultySuperRareChanceTickets: number = 0,
@@ -2330,7 +2330,7 @@ function resolveEnemyRewards(
     const totalTicketCount =
       2
       + (hasUnlock ? 1 : 0)
-      + (terrainEffect !== 'terrain.gehenna' && hasExtraRewardRollBlessing ? 1 : 0)
+      + (terrainEffect !== 'terrain.gehenna' && hasDiscordRewardBonus ? 1 : 0)
       + difficultyItemChanceTickets
       + auriferousBonusRolls;
     const bonusRollCount = Math.max(0, totalTicketCount - 1);
@@ -2349,9 +2349,15 @@ function resolveEnemyRewards(
 
     const normalizedEnhancement = enhVal;
 
-    // SpecRef: 6.1.6 | REWARD | Super Rare Chance Ticket
+    // SpecRef: 6.1.6 | REWARD | A Super Rare draw is only available when the
+    // rarity-specific enhancement threshold has been met.
     let srVal = 0;
-    const superRareRollCount = 1 + Math.max(0, difficultySuperRareChanceTickets);
+    const qualifiesForSuperRare = baseRarity === 'common'
+      ? normalizedEnhancement >= 2
+      : normalizedEnhancement >= 1;
+    const superRareRollCount = qualifiesForSuperRare
+      ? 1 + Math.max(0, difficultySuperRareChanceTickets)
+      : 0;
     for (let srRollIndex = 0; srRollIndex < superRareRollCount; srRollIndex++) {
       bags = refillBagIfEmpty(bags, superRareBagType);
       const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags[superRareBagType]);
@@ -2887,8 +2893,6 @@ const AURIFEROUS_LOGS = [
 ] as const;
 
 function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
-  if (bonusRolls <= 0) return null;
-
   const flavorText = AURIFEROUS_LOGS[Math.floor(Math.random() * AURIFEROUS_LOGS.length)]
     ?? t('auto.jp.dc0d0cd51a');
 
@@ -3326,8 +3330,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 state.global.deityDonations[normalizeDeityName(currentParty.deity.name)]
                 ?? currentParty.deityGold
                 ?? 0;
-              const hasExtraRewardRollBlessing = deityKey === 'Goddess of Discord'
-                || (deityKey === 'God of Oblivion' && getDeityRank(deityDonation) >= 10);
+              const hasDiscordRewardBonus = deityKey === 'Goddess of Discord';
+              const oblivionSuperRareChanceTickets = deityKey === 'God of Oblivion'
+                ? Math.floor(getDeityRank(deityDonation) / 2)
+                : 0;
               let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
               if (!isColosseumBattle) {
                 const enemyAuriferousLevel = enemy.abilities
@@ -3344,10 +3350,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   hasUnlock,
                   autoSellMultiplier,
                   terrainEffect,
-                  hasExtraRewardRollBlessing,
+                  hasDiscordRewardBonus,
                   auriferousBonusRolls,
                   difficultyItemChanceTickets,
-                  difficultySuperRareChanceTickets,
+                  difficultySuperRareChanceTickets + oblivionSuperRareChanceTickets,
                 );
                 bags = rewardResult.bags;
                 currentInventory = rewardResult.inventory;
@@ -3364,11 +3370,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
                 }
                 rewardLogEntries = rewardResult.rewardLogEntries;
-                const auriferousLogEntry = buildAuriferousLogEntry(
-                  enemy.name,
-                  battleResult.enemyHitsReceived,
-                  auriferousBonusRolls,
-                );
+                const auriferousLogEntry = enemyAuriferousLevel > 0
+                  ? buildAuriferousLogEntry(
+                    enemy.name,
+                    battleResult.enemyHitsReceived,
+                    auriferousBonusRolls,
+                  )
+                  : null;
                 if (auriferousLogEntry) {
                   entry.details.push(auriferousLogEntry);
                 }
