@@ -211,6 +211,7 @@
 	- `Outcome`: The latest outcome ( Clear )
     - `Room`: the deepest room of the latest expedition
 
+  - Gold and Paid Refresh cost  (ex. 7,174,903G (800G))
   - Version Build env: (ex. v0.7.0 (12) dev)
   - browser, version:
   - User ID
