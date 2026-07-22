@@ -309,6 +309,7 @@ HP: 312                 タイプ: 神魔
 
 **フィードバック**
   - Send feedback to the development team.
+    - "開発チームにフィードバックを送信します。"
   - Name field (persist the previously entered value)
   - Text input form (Feedback text)
   - Latest Battle Log selection (最終戦闘ログ選択):
