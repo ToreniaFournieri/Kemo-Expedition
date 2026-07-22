@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.4 | 17 | 2026/07/22 | Fix Chromium desktop backup export by writing the `.kemoz` backup through the native save-file picker, avoiding unusable blob-link downloads while retaining existing platform fallbacks. |
 | 0.8.4 | 16 | 2026/07/22 | Display the current rank-scaled reward draw bonus in the Oblivion and Discord runtime effect text and align their localized Glossary entries with Spec 1.1.7. |
 | 0.8.4 | 15 | 2026/07/22 | Add the God of Oblivion battle-start Fading Memory grant to the runtime effect description in every supported language. |
 | 0.8.4 | 14 | 2026/07/22 | Implement the God of Oblivion battle-start Fading Memory grant and make Oblivion and Discord reward tickets scale from completed deity rank increases at runtime. |

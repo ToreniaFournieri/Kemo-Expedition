@@ -11980,6 +11980,34 @@ function SettingTab({
     window.alert(t('setting.backup.manualSaveInstructions'));
   };
 
+  const saveBackupWithFilePicker = async (file: File): Promise<'saved' | 'cancelled' | 'unavailable'> => {
+    const filePickerWindow = window as Window & {
+      showSaveFilePicker?: (options: {
+        suggestedName: string;
+        types: Array<{ description: string; accept: Record<string, string[]> }>;
+      }) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }>;
+    };
+    if (!filePickerWindow.showSaveFilePicker) return 'unavailable';
+
+    try {
+      const fileHandle = await filePickerWindow.showSaveFilePicker({
+        suggestedName: file.name,
+        types: [{
+          description: 'KEMO EXPEDITION backup',
+          accept: { [file.type]: ['.kemoz'] },
+        }],
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(file);
+      await writable.close();
+      return 'saved';
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return 'cancelled';
+      console.warn('Native backup file saving failed; falling back to file download.', error);
+      return 'unavailable';
+    }
+  };
+
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | 5.1 Backup (Export)
   const handleExportBackup = async () => {
     const backupFile = buildBackupFile();
@@ -12015,6 +12043,15 @@ function SettingTab({
       // Embedded iOS browsers (including app webviews) can omit file sharing and
       // ignore the download attribute. Open the backup so their toolbar can save it.
       openBackupFileForManualSave(backupFile);
+      return;
+    }
+
+    // Chromium can disregard an object-URL anchor's download filename and save the
+    // blob URL itself as an unusable link. Its native picker writes the real file.
+    const filePickerResult = await saveBackupWithFilePicker(backupFile);
+    if (filePickerResult === 'cancelled') return;
+    if (filePickerResult === 'saved') {
+      onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
       return;
     }
 
