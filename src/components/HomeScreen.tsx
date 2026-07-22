@@ -13355,12 +13355,12 @@ function SettingTab({
               <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">{t('divineBureau.characterRoster.race', { race: selectedRosterRace?.name ?? activeRosterCharacter.raceId })}</div>
               <div className="relative z-10 mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/25 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">{t('divineBureau.characterRoster.raceStats')}</div>
-                <button type="button" className="w-full text-left" title={t('divineBureau.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('divineBureau.characterRoster.baseStats', { vitality: selectedRosterRace?.stats.vitality ?? '-', strength: selectedRosterRace?.stats.strength ?? '-', intelligence: selectedRosterRace?.stats.intelligence ?? '-', mind: selectedRosterRace?.stats.mind ?? '-' }), event.currentTarget); }}>
+                <button type="button" className="w-full text-left" title={t('divineBureau.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('divineBureau.characterRoster.baseStats', { vitality: selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-', strength: selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-', intelligence: selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-', mind: selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-' }), event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
-                    <span className="base-stat-chip">{t('party.stat.vitality')}:{selectedRosterRace?.stats.vitality ?? '-'}</span>
-                    <span className="base-stat-chip">{t('party.stat.strength')}:{selectedRosterRace?.stats.strength ?? '-'}</span>
-                    <span className="base-stat-chip">{t('party.stat.intelligence')}:{selectedRosterRace?.stats.intelligence ?? '-'}</span>
-                    <span className="base-stat-chip">{t('party.stat.mind')}:{selectedRosterRace?.stats.mind ?? '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.vitality')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.strength')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.intelligence')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.mind')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-'}</span>
                   </span>
                 </button>
                 <div className="text-xs text-gray-900 mt-1 leading-5">
