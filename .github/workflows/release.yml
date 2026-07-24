@@ -1,0 +1,218 @@
+name: Release browser and macOS builds
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'v* tag to create or release from the selected branch'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    runs-on: macos-14
+    steps:
+      - name: Checkout release revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.ref_name }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup npm
+        run: npm install --global npm@11
+
+      - name: Detect Apple release credentials
+        id: apple-credentials
+        env:
+          CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          present=0
+          for variable in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            if [[ -n "${!variable}" ]]; then
+              present=$((present + 1))
+            fi
+          done
+
+          if [[ "${present}" -ne 5 ]]; then
+            echo "Only ${present} of 5 Apple release credential secrets are configured." >&2
+            echo "Public macOS releases must be signed and notarized; configure the complete credential set." >&2
+            exit 1
+          fi
+
+          echo "available=true" >> "${GITHUB_OUTPUT}"
+          echo "Apple credentials found; packages will be signed and notarized."
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build, sign, and notarize macOS packages
+        env:
+          CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_CREDENTIALS_AVAILABLE: ${{ steps.apple-credentials.outputs.available }}
+        run: |
+          set -euo pipefail
+          [[ "${APPLE_CREDENTIALS_AVAILABLE}" == "true" ]]
+          npm run desktop:build
+
+      - name: Verify macOS signatures and notarization tickets
+        run: |
+          set -euo pipefail
+          verification_root="$(mktemp -d)"
+          trap 'hdiutil detach "${mounted_volume:-}" >/dev/null 2>&1 || true; rm -rf "${verification_root}"' EXIT
+
+          verify_app() {
+            app_path="$1"
+            codesign --verify --deep --strict --verbose=2 "${app_path}"
+            xcrun stapler validate "${app_path}"
+            spctl --assess --type execute --verbose=4 "${app_path}"
+          }
+
+          for arch in arm64 x64; do
+            zip_path="$(find release/desktop -maxdepth 1 -name "bokemo-*-mac-${arch}.zip" -print -quit)"
+            [[ -n "${zip_path}" ]]
+            unzip -q "${zip_path}" -d "${verification_root}/${arch}-zip"
+            verify_app "${verification_root}/${arch}-zip/BoKemo.app"
+
+            dmg_path="$(find release/desktop -maxdepth 1 -name "bokemo-*-mac-${arch}.dmg" -print -quit)"
+            [[ -n "${dmg_path}" ]]
+            mounted_volume="${verification_root}/${arch}-dmg"
+            mkdir -p "${mounted_volume}"
+            hdiutil attach "${dmg_path}" -nobrowse -readonly -mountpoint "${mounted_volume}"
+            verify_app "${mounted_volume}/BoKemo.app"
+            hdiutil detach "${mounted_volume}"
+            mounted_volume=""
+          done
+
+      - name: Upload macOS release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts
+          path: |
+            release/desktop/bokemo-*-mac-arm64.dmg
+            release/desktop/bokemo-*-mac-arm64.zip
+            release/desktop/bokemo-*-mac-x64.dmg
+            release/desktop/bokemo-*-mac-x64.zip
+          if-no-files-found: error
+
+  release:
+    needs: desktop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve release tag
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSHED_TAG: ${{ github.ref_name }}
+          MANUAL_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            tag="${MANUAL_TAG}"
+          else
+            tag="${PUSHED_TAG}"
+          fi
+
+          if [[ ! "${tag}" =~ ^v.+$ ]]; then
+            echo "Release tag must match v*." >&2
+            exit 1
+          fi
+
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "version=${tag#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout release revision
+        uses: actions/checkout@v5
+        with:
+          # A manually supplied tag may not exist yet. In that case, build the
+          # exact branch revision that dispatched this workflow and let `gh`
+          # create the tag when it creates the release.
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || steps.release.outputs.tag }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup npm
+        run: npm install --global npm@11
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build production browser bundle
+        run: npm run build
+
+      - name: Add local play instructions
+        run: |
+          cat > dist/LOCAL_PLAY.md <<'EOF'
+          # Play BoKemo locally
+
+          This directory must be served over HTTP; opening `index.html` directly is not supported.
+
+          From this directory, run either:
+
+          ```sh
+          python -m http.server 8080
+          ```
+
+          or:
+
+          ```sh
+          npx serve .
+          ```
+
+          Then open http://localhost:8080/ in your browser.
+          EOF
+
+      - name: Package complete browser bundle
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          archive="bokemo-${VERSION}-browser.zip"
+          (cd dist && zip -r "../${archive}" .)
+          echo "ARCHIVE=${archive}" >> "${GITHUB_ENV}"
+
+      - name: Download macOS release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-release-artifacts
+          path: macos-artifacts
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<EOF
+          Download \`${ARCHIVE}\` and extract it to play this BoKemo browser release, or choose the DMG/ZIP matching your Mac's Apple Silicon (arm64) or Intel (x64) processor.
+
+          See \`LOCAL_PLAY.md\` in the archive for local HTTP server instructions.
+          EOF
+          gh release create "${RELEASE_TAG}" "${ARCHIVE}" macos-artifacts/* \
+            --target "${TARGET_SHA}" \
+            --notes-file release-notes.md \
+            --title "BoKemo ${RELEASE_TAG}"

@@ -49,7 +49,9 @@ If `a.*` with phase = START:
   - Randomly select 1 valid ability from that target.
   - The selected ability is disabled for the rest of the battle.
    - Log: `log.terrain.deletion`
- 
+  - Exception: If the opponent has `a.unforgettable`, do not disable any ability.
+    - Log: `log.unforgettable` + "(忘却無効)"
+
 - `terrain.transcendence`
   - Increase the level of all reactive and timed abilities by +1.
   - Cap at 5.
@@ -329,7 +331,7 @@ If `a.*` with phase = START:
     
 	- **intercept**
 	- Reflect resolve
-	  - Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier.
+	  - Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier x actor.f.defense_amplifier x actor.f.elemental_resistance_attribute.
 	  - Dealt damage: opponent.`d.HP` -= `f.damage_calculation` x ( 1 - reflect damage amplifier).
 	  - log "ロップ の氷属性攻撃は反射された！　(2/4回)  (❄️ {Dealt damage}, 反射 {Reflect damage})" or
 	  - log "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%)  (❄️ {Dealt damage}, 反射 {Reflect damage})"

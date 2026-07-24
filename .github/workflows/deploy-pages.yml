@@ -65,7 +65,7 @@ jobs:
 
             git worktree add "${worktree_path}" "origin/${target_branch}"
 
-            npm ci --prefix "${worktree_path}"
+            npm install --prefix "${worktree_path}"
             npm run build --prefix "${worktree_path}"
 
             mkdir -p "site/${env_name}"

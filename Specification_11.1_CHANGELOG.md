@@ -10,6 +10,17 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 1 | 2026/07/24 | Release version 0.8.6 and reset the build number to 1. |
+| 0.8.5 | 17 | 2026/07/24 | Apply each attacking actor's phase-specific defense amplifier and elemental resistance attribute to reflected damage at runtime. |
+| 0.8.5 | 16 | 2026/07/24 | Make `terrain.deletion` respect `a.unforgettable` at runtime by preserving the selected target's abilities and logging the specified unforgettable flavor with the localized nullification note. |
+| 0.8.5 | 15 | 2026/07/22 | Prevent damaged or unsigned macOS applications from reaching public releases by requiring the complete Apple credential set and verifying strict code signatures, stapled notarization tickets, and Gatekeeper acceptance for both architectures in every DMG and ZIP. |
+| 0.8.5 | 14 | 2026/07/22 | Prevent electron-builder from attempting an implicit GitHub publish during tagged macOS packaging so the desktop job can produce artifacts without requiring a GitHub token. |
+| 0.8.5 | 13 | 2026/07/22 | Fix unsigned macOS release packaging by removing empty Apple signing and notarization environment variables before electron-builder runs, preventing an empty certificate path from resolving to the repository directory. |
+| 0.8.5 | 12 | 2026/07/22 | Allow macOS release workflows to produce clearly documented development-only unsigned packages when Apple credentials are absent, while retaining signed and notarized packages when the complete secret set is configured and rejecting partial credential configuration. |
+| 0.8.5 | 11 | 2026/07/22 | Add signed and notarized Intel and Apple Silicon macOS desktop distributions with secure isolated Electron rendering, stable browser-compatible persistence, DMG and ZIP release artifacts, and installation and upgrade documentation while retaining the browser ZIP. |
+| 0.8.5 | 10 | 2026/07/22 | Prevent GitHub Release validation failures from oversized generated histories by publishing concise browser download and local-play notes. |
+| 0.8.5 | 9 | 2026/07/22 | Fix manually dispatched browser releases by building the selected branch revision and allowing GitHub CLI to create a requested release tag when it does not exist yet. |
+| 0.8.5 | 8 | 2026/07/22 | Add automated version-tagged GitHub Releases containing the complete production browser build, local HTTP serving instructions, and README download guidance. |
 | 0.8.5 | 7 | 2026/07/22 | Add current Gold and the current Paid Refresh cost to the runtime Discord progress report after the PT summaries. |
 | 0.8.5 | 6 | 2026/07/22 | Add each party's latest expedition Difficulty offset to the runtime Discord progress summary between the expedition ID and outcome. |
 | 0.8.5 | 5 | 2026/07/22 | Audit all native alert and confirmation messages for visible newline escapes, and fix the two remaining English Glossary descriptions so their tables render with actual line breaks. |

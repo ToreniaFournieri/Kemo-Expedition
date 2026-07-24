@@ -1,4 +1,4 @@
-# BOKEMO v0.8.5 - SPECIFICATION
+# BOKEMO v0.8.6 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
@@ -97,6 +97,14 @@
     - Debug mode: OFF
     - Speed of time: x1
 **Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/`, `/beta/`, and `/`) and never shared between them.
+
+### 9.1 Desktop distribution
+- The production browser bundle must also be distributable as a macOS desktop application without requiring the user to start or manage a local web server.
+- The desktop renderer must use the same relative Vite assets, language query handling, browser persistence, and backup import/export behavior as the browser distribution.
+- Desktop web storage must use a stable application origin and profile so save data survives application upgrades. Renderer code must not have access to Node.js APIs; context isolation must be enabled and Node integration disabled.
+- Releases must retain the complete `bokemo-<version>-browser.zip` artifact and additionally provide Finder-installable DMG and zipped application artifacts for both Apple Silicon and Intel Macs (or one documented universal application).
+- The application bundle must define a stable bundle identifier, application name and version, the macOS icon, and the minimum supported macOS version.
+- Public macOS release artifacts must be code-signed and notarized using CI secrets when release credentials are available. Unsigned packages are development-only and must be documented accordingly.
 
 ## 10. Coding Rule: SpecRef Traceability
 - To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.

@@ -1,11 +1,15 @@
 {
   "name": "kemo-expedition",
   "private": true,
-  "version": "0.8.5",
+  "version": "0.8.6",
   "type": "module",
+  "main": "desktop/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "desktop:dev": "npm run build && electron .",
+    "desktop:pack": "npm run build && electron-builder --mac --dir",
+    "desktop:build": "npm run build && electron-builder --mac --x64 --arm64 --publish never",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -19,6 +23,9 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "@electron/notarize": "^3.0.1",
+    "electron": "^37.2.3",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
@@ -32,5 +39,37 @@
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=11.0.0"
+  },
+  "build": {
+    "appId": "com.toreniafournieri.bokemo",
+    "productName": "BoKemo",
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "desktop/**/*"
+    ],
+    "directories": {
+      "output": "release/desktop"
+    },
+    "artifactName": "bokemo-${version}-mac-${arch}.${ext}",
+    "afterSign": "scripts/notarize.cjs",
+    "mac": {
+      "category": "public.app-category.role-playing-games",
+      "icon": "public/app_icon.png",
+      "minimumSystemVersion": "12.0",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "dmg": {
+      "sign": false
+    }
   }
 }
