@@ -1077,6 +1077,33 @@ function getReflectPortionText(amplifier: number): string {
   return `${Math.round(amplifier * 10)}/10`;
 }
 
+// SpecRef: 6.1.3.1 | Actor action | Reflect damage
+function getCharacterReflectDefenseAmplifier(
+  phase: BattleActionPhase,
+  actor: ComputedCharacterStats,
+): number {
+  return phase === 'mid'
+    ? Math.max(0.01, actor.magicalDefenseAmplifier * actor.deityDefenseAmplifierBonus.magical)
+    : Math.max(0.01, actor.physicalDefenseAmplifier * actor.deityDefenseAmplifierBonus.physical);
+}
+
+// SpecRef: 6.1.3.1 | Actor action | Reflect damage
+function getEnemyReflectDefenseAmplifier(phase: BattleActionPhase, actor: EnemyDef): number {
+  return phase === 'mid' ? actor.magicalDefenseAmplifier : actor.physicalDefenseAmplifier;
+}
+
+function getCharacterReflectElementalResistance(actor: ComputedCharacterStats): number {
+  return actor.elementalOffense === 'none'
+    ? 1.0
+    : actor.elementalDefenseMultipliers[actor.elementalOffense] ?? 1.0;
+}
+
+function getEnemyReflectElementalResistance(actor: EnemyDef): number {
+  return actor.elementalOffense === 'none'
+    ? 1.0
+    : actor.elementalResistance[actor.elementalOffense] ?? 1.0;
+}
+
 function getPercentPortionText(amplifier: number): string {
   return `${Math.round(amplifier * 100)}%`;
 }
@@ -4869,8 +4896,14 @@ export function executeBattle(
 
                 appliedHits += 1;
                 if (reflect) {
-                  const reflectedHitDamage = Math.max(1, Math.floor(hitDamage * reflect.amplifier));
-                  const remainingHitDamage = Math.max(0, hitDamage - reflectedHitDamage);
+                  // SpecRef: 6.1.3.1 | Actor action | Reflect damage
+                  const reflectedHitDamage = Math.max(1, Math.floor(
+                    hitDamage
+                    * reflect.amplifier
+                    * getEnemyReflectDefenseAmplifier(phase, enemy)
+                    * getEnemyReflectElementalResistance(enemy),
+                  ));
+                  const remainingHitDamage = Math.max(0, Math.floor(hitDamage * (1 - reflect.amplifier)));
                   reflectedSourceDamage += hitDamage;
                   reflectedDamage += reflectedHitDamage;
                   appliedDamage += remainingHitDamage;
@@ -5611,10 +5644,16 @@ export function executeBattle(
           const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
           if (result.damage > 0 && reflect) {
             const reflectedSourceDamage = result.damage;
-            result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
+            // SpecRef: 6.1.3.1 | Actor action | Reflect damage
+            result.reflectedDamage = Math.max(1, Math.floor(
+              result.damage
+              * reflect.amplifier
+              * getCharacterReflectDefenseAmplifier(phase, cs)
+              * getCharacterReflectElementalResistance(cs),
+            ));
             result.reflectedSourceDamage = reflectedSourceDamage;
             applyPartyDamage(result.reflectedDamage);
-            result.damage = Math.max(0, reflectedSourceDamage - result.reflectedDamage);
+            result.damage = Math.max(0, Math.floor(reflectedSourceDamage * (1 - reflect.amplifier)));
           } else if (result.damage > 0 && absorb) {
             result.absorbedDamage = Math.max(1, Math.floor(result.damage * absorb.amplifier));
             result.absorbedBy = absorb;
