@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 1 | 2026/07/24 | Release version 0.8.6 and reset the build number to 1. |
 | 0.8.5 | 17 | 2026/07/24 | Apply each attacking actor's phase-specific defense amplifier and elemental resistance attribute to reflected damage at runtime. |
 | 0.8.5 | 16 | 2026/07/24 | Make `terrain.deletion` respect `a.unforgettable` at runtime by preserving the selected target's abilities and logging the specified unforgettable flavor with the localized nullification note. |
 | 0.8.5 | 15 | 2026/07/22 | Prevent damaged or unsigned macOS applications from reaching public releases by requiring the complete Apple credential set and verifying strict code signatures, stapled notarization tickets, and Gatekeeper acceptance for both architectures in every DMG and ZIP. |
