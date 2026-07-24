@@ -2435,6 +2435,7 @@ export function executeBattle(
     }
   }
 
+  // SpecRef: 6.1.1.1 | START phase | terrain.deletion
   if (environment.terrainEffect === 'terrain.deletion') {
     const terrainDeletionTargets: Array<
       { kind: 'enemy'; name: string; abilities: AbilityLike[] }
@@ -2451,28 +2452,49 @@ export function executeBattle(
 
     const target = terrainDeletionTargets[Math.floor(Math.random() * terrainDeletionTargets.length)];
     if (target) {
-      const validAbilities = target.abilities.filter((ability) => ability.level > 0);
-      const selectedAbility = validAbilities[Math.floor(Math.random() * validAbilities.length)];
-      if (selectedAbility) {
-        const selectedIndex = target.abilities.findIndex(
-          (ability) => ability.id === selectedAbility.id && ability.level === selectedAbility.level,
-        );
-        if (selectedIndex >= 0) {
-          target.abilities.splice(selectedIndex, 1);
-        }
+      // SpecRef: 6.1.1.1 | START phase | a.unforgettable
+      const targetHasUnforgettable = target.kind === 'enemy'
+        ? getEnemyAbilityLevel(enemy, 'unforgettable') >= 1
+        : getAbilityLevel(target.stats, 'unforgettable') >= 1;
+      if (targetHasUnforgettable) {
+        const deletionLabelKey = 'terrainEffect.terrain.deletion.label';
+        const localizedDeletionLabel = t(deletionLabelKey);
         log.push({
           phase: 'start',
           actor: 'effect',
           effectKind: 'terrain',
           characterId: target.kind === 'character' ? target.stats.characterId : undefined,
-          action: pickRandomTerrainFlavorText(
-            'battleFlavor.environment.deletion',
-            {
-              target: target.name,
-              ability: getAbilityName(selectedAbility.id, selectedAbility.level),
-            },
+          action: buildUnforgettableAction(
+            localizedDeletionLabel === deletionLabelKey ? terrainEntry?.label ?? 'terrain.deletion' : localizedDeletionLabel,
+            target.name,
           ),
+          note: t('battle.note.unforgettable'),
+          noteTone: 'muted',
         });
+      } else {
+        const validAbilities = target.abilities.filter((ability) => ability.level > 0);
+        const selectedAbility = validAbilities[Math.floor(Math.random() * validAbilities.length)];
+        if (selectedAbility) {
+          const selectedIndex = target.abilities.findIndex(
+            (ability) => ability.id === selectedAbility.id && ability.level === selectedAbility.level,
+          );
+          if (selectedIndex >= 0) {
+            target.abilities.splice(selectedIndex, 1);
+          }
+          log.push({
+            phase: 'start',
+            actor: 'effect',
+            effectKind: 'terrain',
+            characterId: target.kind === 'character' ? target.stats.characterId : undefined,
+            action: pickRandomTerrainFlavorText(
+              'battleFlavor.environment.deletion',
+              {
+                target: target.name,
+                ability: getAbilityName(selectedAbility.id, selectedAbility.level),
+              },
+            ),
+          });
+        }
       }
     }
   } else if (environment.terrainEffect === 'terrain.transcendence' || environment.terrainEffect === 'terrain.suppression') {
