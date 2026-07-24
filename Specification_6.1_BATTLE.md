@@ -49,7 +49,9 @@ If `a.*` with phase = START:
   - Randomly select 1 valid ability from that target.
   - The selected ability is disabled for the rest of the battle.
    - Log: `log.terrain.deletion`
- 
+  - Exception: If the opponent has `a.unforgettable`, do not disable any ability.
+    - Log: `log.unforgettable` + "(忘却無効)"
+
 - `terrain.transcendence`
   - Increase the level of all reactive and timed abilities by +1.
   - Cap at 5.
