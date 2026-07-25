@@ -168,7 +168,7 @@
 
 **2. Enemy Form List**
 
-* Enemy form category tabs: enemy type short text. Ex: 猛 飛 虫 …
+* Enemy form category tabs: enemy type short text or race icon. Ex: 猛 飛 虫 …
 
 * The Altar displays a list of enemy forms that can be unlocked.
 * Each entry represents one individual enemy ID.
