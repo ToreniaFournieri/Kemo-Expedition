@@ -3224,6 +3224,7 @@ const en = {
   'data.races.a_illusion.name': 'Illusion 1',
   'data.races.a_illusion.description': 'Nullifies the first ranged attack received',
   'data.races.murid.name': 'Murid',
+  'data.races.mimorian.name': 'Mimorian',
   'data.races.a_stealth.name': 'Stealth',
   'data.races.a_stealth.description': 'When below 24% HP, evades all damage to self',
   'data.races.kemoria.name': 'Kemoria',

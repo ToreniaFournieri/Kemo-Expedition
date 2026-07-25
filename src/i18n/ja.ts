@@ -3224,6 +3224,7 @@ const ja = {
   'data.races.a_illusion.name': '幻化1',
   'data.races.a_illusion.description': '自分が受ける最初の遠距離攻撃を無効化する',
   'data.races.murid.name': 'ミュリッド',
+  'data.races.mimorian.name': 'ミモリアン',
   'data.races.a_stealth.name': '隠れ蓑',
   'data.races.a_stealth.description': 'HP24%未満の時、自身へのダメージをすべて回避する',
   'data.races.kemoria.name': 'ケモリア',

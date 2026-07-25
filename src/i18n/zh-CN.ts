@@ -3223,6 +3223,7 @@ const zhCN = {
   'data.races.a_illusion.name': '幻化1',
   'data.races.a_illusion.description': '自身受到的第一次远程攻击无效化',
   'data.races.murid.name': '鼠裔',
+  'data.races.mimorian.name': 'Mimorian',
   'data.races.a_stealth.name': '隐藏斗篷',
   'data.races.a_stealth.description': 'HP低于24%时，回避所有对自身的伤害',
   'data.races.kemoria.name': '兽利亚',

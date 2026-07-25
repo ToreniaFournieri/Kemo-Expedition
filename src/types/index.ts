@@ -8,7 +8,7 @@ export type ElementalResistance = 'fire' | 'thunder' | 'ice';
 export type RaceId =
   | 'caninian' | 'lupinian' | 'vulpinian' | 'ursan'
   | 'felidian' | 'mustelid' | 'leporian' | 'cervin' | 'murid' | 'procyonian'
-  | 'kemoria' | 'orcinian' | 'avian';
+  | 'mimorian' | 'kemoria' | 'orcinian' | 'avian';
 
 export interface Race {
   id: RaceId;

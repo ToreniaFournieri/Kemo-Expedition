@@ -2489,7 +2489,7 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     if (b.type.endsWith('_multiplier') && MULTIPLIER_LABEL_KEYS[b.type]) {
       parts.push(`${t(MULTIPLIER_LABEL_KEYS[b.type])}x${b.value}`);
     } else if (b.type === 'equip_slot') {
-      parts.push(`${t('party.bonus.equip_slot')}+${b.value}`);
+      parts.push(`${t('party.bonus.equip_slot')}${formatSigned(b.value)}`);
     } else if (b.type === 'vitality') {
       parts.push(t('party.bonusDisplay.vitality', { value: formatSigned(b.value) }));
     } else if (b.type === 'strength') {
@@ -6275,6 +6275,8 @@ function PartyTab({
     setPendingEdits((prev) => ({
       ...prev,
       raceId,
+      // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian characters are an exception: Only `女` may be selected.
+      ...(raceId === 'mimorian' ? { gender: 'female' as const } : {}),
       name: getDefaultNameForRace(raceId),
     }));
   };
@@ -6335,7 +6337,7 @@ function PartyTab({
   }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: t('home.party.filter.carnivore'), raceIds: ['lupinian', 'vulpinian', 'felidian'] },
-    { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian'] },
+    { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian', 'mimorian'] },
     { label: t('home.party.filter.herbivore'), raceIds: ['leporian', 'cervin', 'murid'] },
   ];
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
@@ -7044,10 +7046,11 @@ function PartyTab({
                     <div className="flex gap-1">
                       {(['male', 'female'] as const).map((gender) => {
                         const isBlockedByDuplicate = isGenderOptionBlockedByDuplicate(gender);
-                        const isDisabled = char.isUnique || isBlockedByDuplicate;
+                        const isBlockedByMimorianGender = selectedRaceId === 'mimorian' && gender === 'male';
+                        const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
                         const shouldShowGenderSymbol = char.isUnique
                           ? (pendingEdits?.gender ?? char.gender) === gender
-                          : !isBlockedByDuplicate;
+                          : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
                         return (
                           <button
