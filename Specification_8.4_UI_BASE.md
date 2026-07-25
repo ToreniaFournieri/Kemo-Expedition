@@ -166,7 +166,37 @@
 * The sold item is removed from the inventory.
 * Prana is a shared currency and is not associated with a specific enemy type.
 
-**2. Enemy Form List**
+**3. Alter level**
+* Alter Level Requirement
+* Each enemy form requires a minimum **Alter Level** before it can be mimicked.
+
+**Required Alter Level = Tier Base + Number of Native Abilities**
+
+| Enemy Tier | Tier Base |
+| ---------- | --------: |
+| Normal     |         1 |
+| Elite      |         5 |
+| Boss       |        10 |
+
+* **Native Abilities** are the abilities and bonuses that the enemy inherently possesses.
+* Count only the enemy's built-in abilities; do not include equipment, temporary effects, or external modifiers.
+* This requirement represents the Mimorian's mastery needed to faithfully reproduce increasingly complex enemy forms.
+
+**Examples**
+
+| Enemy           | Tier   | Native Abilities | Required Alter Level |
+| --------------- | ------ | ---------------: | -------------------: |
+| Slime           | Normal |                0 |                    1 |
+| Poison Slime    | Normal |                1 |                    2 |
+| Goblin Shaman   | Normal |                2 |                    3 |
+| Dire Wolf       | Elite  |                1 |                    6 |
+| Lupinian Ranger | Elite  |                2 |                    7 |
+| Fenrir          | Boss   |                2 |                   12 |
+| Lupinian Hero   | Boss   |                4 |                   14 |
+
+
+
+**3. Enemy Form List**
 
 * Enemy form category tabs: enemy type short text or race icon. Ex: 猛 飛 虫 …
 
@@ -186,7 +216,7 @@
 
 
 
-**3. Unlock Costs**
+**4. Unlock Costs**
 
 | Enemy Category | Prana Cost |
 | -------------- | -------------------: |
@@ -201,14 +231,14 @@
 * Prana is consumed immediately upon unlocking an enemy form.
 * Once unlocked, the enemy form remains permanently available.
 
-**4. Mimorian Character Edit Mode**
+**5. Mimorian Character Edit Mode**
 * Mimorian characters may select only enemy forms that have been unlocked at the Altar.
 * The enemy-type dropdown displays only enemy types that contain at least one unlocked enemy.
 * The individual-enemy dropdown displays only unlocked enemies belonging to the selected enemy type.
 * Enemy forms that have not been unlocked at the Altar cannot be selected.
 * Locked enemy forms are displayed as disabled entries with their required Prana cost.
 
-**5. Unlock Examples**
+**6. Unlock Examples**
 * Normal enemy: 10 Prana
 * Elite enemy: 50 Prana
 * Boss enemy: 100 Prana
