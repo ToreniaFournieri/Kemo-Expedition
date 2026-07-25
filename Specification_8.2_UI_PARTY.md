@@ -244,7 +244,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 - Exception — Mimorian characters:
   - Mimorian characters do not have Lineage or Predisposition settings.
   - Instead, they use two dropdown lists:
-    - List 1: Enemy type (display enemy type short text)
+    - List 1: Enemy type (display enemy type text)
       - Displaying the enemy type related abilities and bonus
     - List 2: Individual enemy 
       - Displaying the individual enemy related abilities and bonus
