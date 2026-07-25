@@ -209,6 +209,7 @@ export const RACES: Race[] = [
     get name() { return t('data.races.mimorian.name'); },
     englishName: 'Mimorian',
     emoji: '🦎',
+    icon: '/race-icons/Mimorian.png',
     stats: { vitality: 8, strength: 8, intelligence: 8, mind: 8 },
     defaultAbility: { id: 'none', name: '(none)', description: '(none)' },
     memo: 'shapeshifter',
