@@ -3880,6 +3880,7 @@ const en = {
   'setting.bestiary.enemyType.Frost': 'Frost',
   'setting.bestiary.enemyType.Fruit': 'Fruit',
   'setting.bestiary.enemyType.Dragon': 'Dragon',
+  'setting.bestiary.enemyType.Voidspawn': 'Voidspawn',
   'setting.bestiary.enemyType.Spirit': 'Spirit',
   'setting.bestiary.enemyType.Ghost': 'Ghost',
   'setting.bestiary.enemyType.Undead': 'Undead',

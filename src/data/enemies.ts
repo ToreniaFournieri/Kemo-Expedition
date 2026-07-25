@@ -595,6 +595,16 @@ const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   345: [{ type: 'physical_offense_multiplier_xV', value: 1.4 }],
 };
 
+// SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+export function getEnemyIndividualAbilities(enemyId: number): EnemyAbility[] {
+  return MASTER_ENEMY_BONUS_ABILITIES[enemyId] ?? [];
+}
+
+// SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+export function getEnemyIndividualBonuses(enemyId: number): Bonus[] {
+  return MASTER_ENEMY_BONUS_MODIFIERS[enemyId] ?? [];
+}
+
 function generateEnemies(): EnemyDef[] {
   const enemies: EnemyDef[] = [];
 
