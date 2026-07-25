@@ -113,7 +113,7 @@
     - Ability text in item status details (e.g. `加速Lv1`) is tappable and shows its ability detail as floating bubble text.
 
   - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
-    - Super rare item sell block: when player is going to sell super rare item, it is not allowed: "超レア称号がついたアイテムは売却出来ません"
+    - When the player sells a super-rare item, they receive Prana instead of Gold. Display the amount of Prana gained in the sell confirmation and result message. Example: 5 Prana
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks (except equipped items)
