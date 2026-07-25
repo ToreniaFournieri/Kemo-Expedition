@@ -536,7 +536,9 @@ export function computeCharacterStats(
   };
 
   // Collect bonuses from all sources
-  collectRaceBonuses(race.id, race.bonuses, collection);
+  if (character.raceId !== 'mimorian') {
+    collectRaceBonuses(race.id, race.bonuses, collection);
+  }
   collectBonuses(mainClass.mainSubBonuses, collection);
   if (isMasterClass) {
     collectBonuses(mainClass.masterBonuses, collection);
@@ -555,6 +557,10 @@ export function computeCharacterStats(
         abilityId: ability.id,
       })), collection);
     }
+    // The copied form supplements the Mimorian rather than replacing its
+    // intrinsic penalty. Apply the race bonuses after the copied enemy so the
+    // Mimorian's own modifiers are always retained.
+    collectRaceBonuses(race.id, race.bonuses, collection);
   } else {
     collectBonuses(predisposition.bonuses, collection);
     collectBonuses(lineage.bonuses, collection);

@@ -6889,14 +6889,18 @@ function PartyTab({
           const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
           const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
           const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
-          const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
+          const previewMimorianEnemyImageSrc = c.raceId === 'mimorian' && c.mimorianEnemyId != null
+            ? `${import.meta.env.BASE_URL}enemy/E_${c.mimorianEnemyId}.png`
+            : undefined;
+          const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName && !previewMimorianEnemyImageSrc
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
             : undefined;
-          const previewImageSrc = uniquePreviewImageFileName
+          const previewImageSrc = previewMimorianEnemyImageSrc
+            ?? (uniquePreviewImageFileName
             ? `${import.meta.env.BASE_URL}character/${uniquePreviewImageFileName}`
             : previewPtRaceGenderImageFileName
               ? `${import.meta.env.BASE_URL}character/${previewPtRaceGenderImageFileName}`
-              : null;
+              : null);
           return (
             <button
               key={c.id}
@@ -7401,7 +7405,9 @@ function PartyTab({
                       }}
                       className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
                     >
-                      {enemyTypes.map((enemyType) => <option key={enemyType} value={enemyType}>{enemyType}</option>)}
+                      {enemyTypes.map((enemyType) => (
+                        <option key={enemyType} value={enemyType}>{t(`setting.bestiary.enemyType.${enemyType}`)}</option>
+                      ))}
                     </select>
                   </label>
                   <label className="block">
