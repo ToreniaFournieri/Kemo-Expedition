@@ -7451,7 +7451,7 @@ function PartyTab({
                       className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
                     >
                       {enemyTypes.map((enemyType) => (
-                        <option key={enemyType} value={enemyType}>{getEnemyTypeShortName(enemyType)}</option>
+                        <option key={enemyType} value={enemyType}>{t(`setting.bestiary.enemyType.${enemyType}`)}</option>
                       ))}
                     </select>
                     <span className="mt-1 block text-gray-600">{renderInlineBonusEntries(typeEntries)}</span>
