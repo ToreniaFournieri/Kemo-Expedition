@@ -21,6 +21,7 @@ import { getBaseMultiplier } from './baseMultiplier';
 import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { t } from '../i18n';
+import { ENEMIES } from '../data/enemies';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -543,8 +544,21 @@ export function computeCharacterStats(
     collectBonuses(mainClass.mainBonuses, collection);
     collectBonuses(filterSubclassMainSubBonuses(subClass.mainSubBonuses), collection);
   }
-  collectBonuses(predisposition.bonuses, collection);
-  collectBonuses(lineage.bonuses, collection);
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+  if (character.raceId === 'mimorian') {
+    const copiedEnemy = ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId);
+    if (copiedEnemy) {
+      collectBonuses(copiedEnemy.bonuses ?? [], collection);
+      collectBonuses(copiedEnemy.abilities.map((ability) => ({
+        type: 'ability' as const,
+        value: ability.level,
+        abilityId: ability.id,
+      })), collection);
+    }
+  } else {
+    collectBonuses(predisposition.bonuses, collection);
+    collectBonuses(lineage.bonuses, collection);
+  }
 
   // Calculate max equipment slots
   let baseSlots = 1;

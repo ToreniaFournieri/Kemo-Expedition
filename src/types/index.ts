@@ -275,6 +275,8 @@ export interface Character {
   subClassId: ClassId;
   predispositionId: PredispositionId;
   lineageId: LineageId;
+  /** Enemy whose form is copied when raceId is `mimorian`. */
+  mimorianEnemyId?: number;
   equipment: (Item | null)[];
 }
 

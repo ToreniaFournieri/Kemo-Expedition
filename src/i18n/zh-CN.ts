@@ -3312,6 +3312,8 @@ const zhCN = {
   'home.party.mainClass': '主职业',
   'home.party.subClass': '副职业',
   'home.party.lineage': '系谱',
+  'home.party.enemyType': '敌人类型',
+  'home.party.individualEnemy': '个体敌人',
   'home.party.predisposition': '性格',
   'home.party.race': '种族',
   'party.class.masterFull': '师范',

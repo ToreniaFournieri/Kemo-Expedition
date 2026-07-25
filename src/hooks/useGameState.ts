@@ -711,10 +711,16 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
     ? character.subClassId
     : normalizedMainClassId;
 
+  const normalizedRaceId = RACES.some((r) => r.id === character.raceId) ? character.raceId : fallbackCharacter.raceId;
+  const normalizedMimorianEnemyId = normalizedRaceId === 'mimorian'
+    ? (ENEMIES.some((enemy) => enemy.id === character.mimorianEnemyId) ? character.mimorianEnemyId : ENEMIES[0]?.id)
+    : undefined;
+
   return {
     ...character,
     isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
-    raceId: RACES.some((r) => r.id === character.raceId) ? character.raceId : fallbackCharacter.raceId,
+    raceId: normalizedRaceId,
+    mimorianEnemyId: normalizedMimorianEnemyId,
     mainClassId: normalizedMainClassId,
     subClassId: normalizedSubClassId,
     predispositionId: PREDISPOSITIONS.some((p) => p.id === character.predispositionId)

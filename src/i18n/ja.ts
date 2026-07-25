@@ -3313,6 +3313,8 @@ const ja = {
   'home.party.mainClass': 'メインクラス',
   'home.party.subClass': 'サブクラス',
   'home.party.lineage': '系譜',
+  'home.party.enemyType': '敵タイプ',
+  'home.party.individualEnemy': '個別の敵',
   'home.party.predisposition': '性格',
   'home.party.race': '種族',
   'party.class.masterFull': '師範',
