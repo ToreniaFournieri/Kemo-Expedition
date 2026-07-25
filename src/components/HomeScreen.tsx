@@ -9930,7 +9930,7 @@ function AltarTab({
       <div className="rounded-lg border border-sub/30 bg-pane p-3 text-sm font-semibold">
         {t('home.altar.pranaBalance', { prana: formatNumber(prana) })}
       </div>
-      <div className="liquid-glass-segmented flex flex-wrap gap-1 rounded-2xl p-1" role="tablist">
+      <div className="flex flex-nowrap gap-1 overflow-x-auto pb-1" role="tablist">
         {enemyTypes.map((enemyType) => (
           <button
             key={enemyType}
@@ -9938,10 +9938,10 @@ function AltarTab({
             role="tab"
             aria-selected={selectedEnemyType === enemyType}
             onClick={() => setSelectedEnemyType(enemyType)}
-            className={`${IOS_GLASS_TAB_CLASS} min-w-10 px-3 py-2 text-sm font-medium transition-colors ${
+            className={`shrink-0 rounded px-2 py-1 text-sm pane-button-shadow transition-colors ${
               selectedEnemyType === enemyType
-                ? 'liquid-glass-tab-active text-sub'
-                : 'text-gray-700 hover:text-gray-900'
+                ? 'bg-sub text-white'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
             }`}
           >
             {getEnemyTypeShortName(enemyType)}

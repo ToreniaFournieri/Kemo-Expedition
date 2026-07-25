@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 17 | 2026/07/25 | Explicitly prevent the horizontally scrollable Altar enemy-type selector from wrapping onto additional lines. |
+| 0.8.6 | 16 | 2026/07/25 | Restyle the Altar enemy-type selector to match the Bestiary tabs and keep all buttons on one horizontally scrollable line. |
 | 0.8.6 | 15 | 2026/07/25 | Add localized enemy-type short-text tabs to the Altar enemy-form list and display enemy chibi portraits instead of full enemy artwork. |
 | 0.8.6 | 14 | 2026/07/25 | Hide Mimorian from the Party character race selector until at least one valid enemy form has been unlocked at the Altar. |
 | 0.8.6 | 13 | 2026/07/25 | Redesign Altar enemy-form entries with larger artwork, inline enemy category and unlock status, and localized ability and bonus summaries. |
