@@ -235,7 +235,14 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 外交的    内向的    適応    機知
 好,探,和  頑,避,内  献,冷,軽  看,精,腕
 ```
-
+- Exception — Mimorian characters:
+  - Mimorian characters do not have Lineage or Predisposition settings.
+  - Instead, they use two dropdown lists:
+    - List 1: Enemy type
+    - List 2: Individual enemy
+  - Selecting an enemy assigns that enemy’s ID to the character.
+  - The Mimorian gains the same abilities and skills as the selected enemy.
+  - By default, the character’s name is set to the selected enemy’s name.
 
 **2. Edit Confirmation Rules:**
 - **Done (完了):**
