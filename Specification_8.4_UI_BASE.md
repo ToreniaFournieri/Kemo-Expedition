@@ -171,13 +171,18 @@
 * The Altar displays a list of enemy forms that can be unlocked.
 * Each entry represents one individual enemy ID.
 * Each entry displays:
+  * Enemy image    
+  * Enemy name with enemy type (Normal, Elite, Boss)
+  * Enemy ability
+  * Enemy Bonus
+  * Button ex: (解放 Xプラーナ1 or 解放済)
+```
+たんぽぽめ(猛,狩) ノーマル        解放 10プラーナ
+アビリティ: 遠吠えLv1 
+ボーナス: 成長1.1倍, 炎防x1.30, 雷防x0.67
+```
 
-  * Enemy image
-  * Enemy name
-  * Enemy type
-  * Enemy category
-  * Required Morphia Essence
-  * Unlock status
+
 
 **3. Unlock Costs**
 
