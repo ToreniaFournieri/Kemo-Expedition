@@ -179,6 +179,7 @@ interface HomeScreenProps {
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
+    unlockMimorianEnemy: (enemyId: number) => void;
     buyShopItem: (itemId: number, stockItemKey: string) => void;
     buyDebugStoreItem: (itemId: number) => void;
     refreshShopLineup: () => void;
