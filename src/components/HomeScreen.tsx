@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiaryDefeatNotificationMode, DiarySettings, DiaryLog, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiaryDefeatNotificationMode, DiarySettings, DiaryLog, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry, type EnemyAbility } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -24,7 +24,7 @@ import {
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemCoreConceptValue, getItemDisplayName, getLocalizedEnhancementTitle, getLocalizedItemName, getLocalizedSuperRareTitle } from '../game/gameState';
-import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
+import { ENEMIES, getEnemyDropCandidates, getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
@@ -7395,6 +7395,40 @@ function PartyTab({
               const enemyTypes = Array.from(new Set(ENEMIES.map((enemy) => enemy.enemyType)));
               const selectedEnemy = ENEMIES.find((enemy) => enemy.id === previewMimorianEnemyId) ?? ENEMIES[0];
               const enemiesForType = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemy?.enemyType);
+              const selectedEnemyTypeAbilities = getEnemyTypeAbilities(selectedEnemy?.enemyType ?? '', Number.MAX_SAFE_INTEGER)
+                .map((typeAbility) => selectedEnemy?.abilities.find((ability) => ability.id === typeAbility.id))
+                .filter((ability): ability is EnemyAbility => ability !== undefined);
+              const selectedEnemyTypeAbilityIds = new Set(
+                getEnemyTypeAbilities(selectedEnemy?.enemyType ?? '', Number.MAX_SAFE_INTEGER).map((ability) => ability.id),
+              );
+              const selectedEnemyTypeBonuses = getEnemyTypeBonuses(selectedEnemy?.enemyType ?? '');
+              const selectedEnemyIndividualAbilities = (selectedEnemy?.abilities ?? [])
+                .filter((ability) => !selectedEnemyTypeAbilityIds.has(ability.id));
+              const selectedEnemyIndividualBonuses = (selectedEnemy?.bonuses ?? []).slice(selectedEnemyTypeBonuses.length);
+              const buildEnemyAbilityEntries = (prefix: string, abilities: typeof selectedEnemyTypeAbilities) => abilities
+                .map((ability, index) => buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), {
+                  type: 'ability',
+                  value: ability.level,
+                  abilityId: ability.id,
+                  abilityLevel: ability.level,
+                }, index))
+                .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+              const buildEnemyBonusEntries = (prefix: string, bonuses: Bonus[]) => bonuses
+                .map((bonus, index) => {
+                  const displayBonus = ['fire_offense', 'ice_offense', 'thunder_offense'].includes(bonus.type) && bonus.value > 1
+                    ? { ...bonus, value: bonus.value / 100 }
+                    : bonus;
+                  return buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), displayBonus, index);
+                })
+                .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+              const typeEntries = [
+                ...buildEnemyAbilityEntries('mimorian-enemy-type-ability', selectedEnemyTypeAbilities),
+                ...buildEnemyBonusEntries('mimorian-enemy-type-bonus', selectedEnemyTypeBonuses),
+              ];
+              const individualEntries = [
+                ...buildEnemyAbilityEntries('mimorian-individual-enemy-ability', selectedEnemyIndividualAbilities),
+                ...buildEnemyBonusEntries('mimorian-individual-enemy-bonus', selectedEnemyIndividualBonuses),
+              ];
               const selectEnemy = (enemy: EnemyDef) => setPendingEdits({
                 ...pendingEdits,
                 mimorianEnemyId: enemy.id,
@@ -7415,9 +7449,10 @@ function PartyTab({
                       className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
                     >
                       {enemyTypes.map((enemyType) => (
-                        <option key={enemyType} value={enemyType}>{t(`setting.bestiary.enemyType.${enemyType}`)}</option>
+                        <option key={enemyType} value={enemyType}>{getEnemyTypeShortName(enemyType)}</option>
                       ))}
                     </select>
+                    <span className="mt-1 block text-gray-600">{renderInlineBonusEntries(typeEntries)}</span>
                   </label>
                   <label className="block">
                     <span className="mb-1 block font-bold text-gray-600">{t('home.party.individualEnemy')}</span>
@@ -7433,6 +7468,7 @@ function PartyTab({
                         <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat('ja-JP').format(enemy.id)})</option>
                       ))}
                     </select>
+                    <span className="mt-1 block text-gray-600">{renderInlineBonusEntries(individualEntries)}</span>
                   </label>
                 </div>
               );
