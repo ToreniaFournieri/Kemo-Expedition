@@ -9953,6 +9953,7 @@ function AltarTab({
         <button
           type="button"
           className="text-left underline decoration-dotted underline-offset-2"
+          onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => handleHelpToggle(entry.key, entry.label, entry.description!, event)}
         >
           {entry.label}
@@ -9962,7 +9963,14 @@ function AltarTab({
   ));
 
   return (
-    <div className="space-y-3">
+    <div
+      className="space-y-3"
+      onPointerDown={() => {
+        if (!activeHelp) return;
+        setActiveHelp(null);
+        setActiveHelpPosition(null);
+      }}
+    >
       <div className="rounded-lg border border-sub/30 bg-pane p-3 text-sm font-semibold">
         {t('home.altar.pranaBalance', { prana: formatNumber(prana) })}
       </div>
