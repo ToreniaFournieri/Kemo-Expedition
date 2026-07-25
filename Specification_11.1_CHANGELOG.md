@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 13 | 2026/07/25 | Redesign Altar enemy-form entries with larger artwork, inline enemy category and unlock status, and localized ability and bonus summaries. |
 | 0.8.6 | 12 | 2026/07/25 | Fix the Home screen action contract to expose the existing Mimorian enemy-form unlock action to the Altar UI. |
 | 0.8.6 | 11 | 2026/07/25 | Add persistent Prana rewards for selling Super Rare items, an enemy-form unlocking Altar with category costs, and Altar-gated Mimorian form selection. |
 | 0.8.6 | 10 | 2026/07/25 | Restrict Mimorian individual-enemy ability and bonus details to the master data's `additional abilities or bonus` column, excluding class-derived effects, and add the missing localized Voidspawn enemy-type name. |

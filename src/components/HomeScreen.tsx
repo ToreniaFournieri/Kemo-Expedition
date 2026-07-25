@@ -9898,6 +9898,15 @@ function BaseTab({
 }
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
+function mergeEnemyAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbility[] {
+  const merged = new Map<AbilityId, EnemyAbility>();
+  abilities.forEach((ability) => {
+    const current = merged.get(ability.id);
+    if (!current || ability.level > current.level) merged.set(ability.id, ability);
+  });
+  return Array.from(merged.values());
+}
+
 function AltarTab({
   prana,
   unlockedEnemyIds,
@@ -9919,30 +9928,45 @@ function AltarTab({
           const cost = getEnemyFormPranaCost(enemy);
           const unlocked = unlockedIds.has(enemy.id);
           const canUnlock = !unlocked && prana >= cost;
+          const formAbilities = mergeEnemyAbilityDisplayEntries([
+            ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
+            ...getEnemyIndividualAbilities(enemy.id),
+          ]);
+          const formBonuses = [
+            ...getEnemyTypeBonuses(enemy.enemyType),
+            ...getEnemyIndividualBonuses(enemy.id),
+          ];
+          const abilityText = formAbilities.length > 0
+            ? formAbilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}Lv${formatNumber(ability.level)}`).join(', ')
+            : t('common.none');
+          const bonusText = formatBonuses(formBonuses) || t('common.none');
           return (
-            <div key={enemy.id} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-pane p-2 shadow-sm">
+            <div key={enemy.id} className={`flex items-center gap-3 rounded-lg border bg-pane p-2 shadow-sm ${unlocked ? 'border-sub/40' : 'border-gray-200'}`}>
               <img
                 src={`${import.meta.env.BASE_URL}enemy/E_${enemy.id}.png`}
-                alt=""
-                className="h-16 w-16 shrink-0 object-contain"
+                alt={formatEnemyDefName(enemy)}
+                className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24"
               />
-              <div className="min-w-0 flex-1 text-xs">
-                <div className="truncate text-sm font-semibold">{formatEnemyDefName(enemy)} (ID: {formatNumber(enemy.id)})</div>
-                <div>{t('home.altar.enemyType', { type: t(`setting.bestiary.enemyType.${enemy.enemyType}`) })}</div>
-                <div>{t('home.altar.enemyCategory', { category: t(`home.altar.category.${enemy.type}`) })}</div>
-                <div>{t('home.altar.requiredEssence', { prana: formatNumber(cost) })}</div>
+              <div className="min-w-0 flex-1 space-y-1 text-xs">
+                <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+                  <div className="min-w-0 text-sm font-semibold">
+                    {formatEnemyDefName(enemy)} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!canUnlock}
+                    onClick={() => {
+                      if (!window.confirm(t('home.altar.unlockConfirm', { enemy: formatEnemyDefName(enemy), prana: formatNumber(cost) }))) return;
+                      onUnlockEnemy(enemy.id);
+                    }}
+                    className={`shrink-0 rounded border px-2 py-1 text-xs ${canUnlock ? 'border-sub text-sub' : 'cursor-not-allowed border-gray-300 text-gray-400'}`}
+                  >
+                    {unlocked ? t('home.altar.unlocked') : t('home.altar.unlockCost', { prana: formatNumber(cost) })}
+                  </button>
+                </div>
+                <div className="text-gray-700">{t('home.altar.ability', { abilities: abilityText })}</div>
+                <div className="text-gray-700">{t('home.altar.bonus', { bonuses: bonusText })}</div>
               </div>
-              <button
-                type="button"
-                disabled={!canUnlock}
-                onClick={() => {
-                  if (!window.confirm(t('home.altar.unlockConfirm', { enemy: formatEnemyDefName(enemy), prana: formatNumber(cost) }))) return;
-                  onUnlockEnemy(enemy.id);
-                }}
-                className={`shrink-0 rounded border px-2 py-1 text-xs ${canUnlock ? 'border-sub text-sub' : 'cursor-not-allowed border-gray-300 text-gray-400'}`}
-              >
-                {unlocked ? t('home.altar.unlocked') : t('home.altar.unlockCost', { prana: formatNumber(cost) })}
-              </button>
             </div>
           );
         })}
