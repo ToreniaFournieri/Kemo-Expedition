@@ -246,7 +246,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
     - List 1: Enemy type
     - List 2: Individual enemy
   - Selecting an enemy assigns that enemy’s ID to the character.
-  - The Mimorian gains the same abilities and skills as the selected enemy.
+  - The Mimorian gains the same abilities and skills as the selected enemy, and remains Mimorian's abilities.
   - By default, the character’s name is set to the selected enemy’s name.
 
 **2. Edit Confirmation Rules:**
