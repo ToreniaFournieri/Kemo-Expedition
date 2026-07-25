@@ -45,7 +45,9 @@
 | Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` | `true` |
 | Kemoria    |10,10,10,10| (none)            | (none)               | `c.growth_x1.2`, `c.equip_ranged`, `c.equip_melee`  | `false` |
 | Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
-| Avian     | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
+| Avian      | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
+| Mimorian   | 8, 8, 8, 8| -                 | -                    | `c.equip_slot-2`  | `true` |
+
 
 | races | Japanese name | category | concept | availability | PT1:Prairie Courier, green | PT2:Tropical seaside expedition traveler, aqua | PT3:Desert adventurer outfit | PT4: Pyrepeak, red and black | PT5: Steam punk, brown | PT6:Lerporian Moon Palace, Maid/Moon Steward, indigo |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
@@ -59,6 +61,7 @@
 | Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | Desert Cottontail, deep green | - | Dwarf Hotot | Holland Lop |
 | Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
 | Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
+| Mimorian | ミモリアン | 雑食 | shapeshifter | Y | - | - | - | - | - | - |
 | Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
