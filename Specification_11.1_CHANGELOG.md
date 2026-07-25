@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 19 | 2026/07/25 | Correct legacy enemy elemental-offense percentage formatting in Altar summaries and add floating help bubbles to every available enemy ability and bonus. |
 | 0.8.6 | 18 | 2026/07/25 | Replace main-race text in Altar enemy-type tabs and individual enemy names with the corresponding race icon assets. |
 | 0.8.6 | 17 | 2026/07/25 | Explicitly prevent the horizontally scrollable Altar enemy-type selector from wrapping onto additional lines. |
 | 0.8.6 | 16 | 2026/07/25 | Restyle the Altar enemy-type selector to match the Bestiary tabs and keep all buttons on one horizontally scrollable line. |

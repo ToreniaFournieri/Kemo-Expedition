@@ -2544,11 +2544,11 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'magical_defense') {
       parts.push(t('party.bonusDisplay.magicalDefense', { value: formatRatePercent(b.value) }));
     } else if (b.type === 'fire_offense') {
-      parts.push(t('party.bonusDisplay.fireOffense', { value: Math.round(b.value * 100) }));
+      parts.push(t('party.bonusDisplay.fireOffense', { value: Math.round(b.value > 1 ? b.value : b.value * 100) }));
     } else if (b.type === 'ice_offense') {
-      parts.push(t('party.bonusDisplay.iceOffense', { value: Math.round(b.value * 100) }));
+      parts.push(t('party.bonusDisplay.iceOffense', { value: Math.round(b.value > 1 ? b.value : b.value * 100) }));
     } else if (b.type === 'thunder_offense') {
-      parts.push(t('party.bonusDisplay.thunderOffense', { value: Math.round(b.value * 100) }));
+      parts.push(t('party.bonusDisplay.thunderOffense', { value: Math.round(b.value > 1 ? b.value : b.value * 100) }));
     } else if (b.type === 'deity_physical_attack_xV') {
       parts.push(t('party.bonusDisplay.deityPhysicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'deity_magical_attack_xV') {
@@ -9923,7 +9923,43 @@ function AltarTab({
   const unlockedIds = new Set(unlockedEnemyIds);
   const enemyTypes = Array.from(new Set(ENEMIES.map((enemy) => enemy.enemyType)));
   const [selectedEnemyType, setSelectedEnemyType] = useState(enemyTypes[0] ?? '');
+  const [activeHelp, setActiveHelp] = useState<{ key: string; title: string; description: string } | null>(null);
+  const [activeHelpPosition, setActiveHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const visibleEnemies = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemyType);
+
+  const handleHelpToggle = (key: string, title: string, description: string, event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (activeHelp?.key === key) {
+      setActiveHelp(null);
+      setActiveHelpPosition(null);
+      return;
+    }
+
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const width = Math.min(360, window.innerWidth - viewportPadding * 2);
+    setActiveHelpPosition({
+      top: triggerRect.bottom + 8,
+      left: Math.min(Math.max(triggerRect.left, viewportPadding), window.innerWidth - viewportPadding - width),
+      width,
+    });
+    setActiveHelp({ key, title, description });
+  };
+
+  const renderHelpEntries = (entries: Array<{ key: string; label: string; description: string | null }>) => entries.map((entry, index) => (
+    <span key={entry.key}>
+      {index > 0 && ', '}
+      {entry.description ? (
+        <button
+          type="button"
+          className="text-left underline decoration-dotted underline-offset-2"
+          onClick={(event) => handleHelpToggle(entry.key, entry.label, entry.description!, event)}
+        >
+          {entry.label}
+        </button>
+      ) : entry.label}
+    </span>
+  ));
 
   return (
     <div className="space-y-3">
@@ -9973,6 +10009,15 @@ function AltarTab({
             ? formAbilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}Lv${formatNumber(ability.level)}`).join(', ')
             : t('common.none');
           const bonusText = formatBonuses(formBonuses) || t('common.none');
+          const abilityEntries = formAbilities.map((ability, index) => buildInlineBonusEntry('altar-ability', enemy.id.toString(), {
+            type: 'ability',
+            value: ability.level,
+            abilityId: ability.id,
+            abilityLevel: ability.level,
+          }, index)).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+          const bonusEntries = formBonuses
+            .map((bonus, index) => buildInlineBonusEntry('altar-bonus', enemy.id.toString(), bonus, index))
+            .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
           return (
             <div key={enemy.id} className={`flex items-center gap-3 rounded-lg border bg-pane p-2 shadow-sm ${unlocked ? 'border-sub/40' : 'border-gray-200'}`}>
               <img
@@ -9997,13 +10042,31 @@ function AltarTab({
                     {unlocked ? t('home.altar.unlocked') : t('home.altar.unlockCost', { prana: formatNumber(cost) })}
                   </button>
                 </div>
-                <div className="text-gray-700">{t('home.altar.ability', { abilities: abilityText })}</div>
-                <div className="text-gray-700">{t('home.altar.bonus', { bonuses: bonusText })}</div>
+                <div className="text-gray-700">
+                  {abilityEntries.length > 0
+                    ? <>{t('home.altar.ability', { abilities: '' })}{renderHelpEntries(abilityEntries)}</>
+                    : t('home.altar.ability', { abilities: abilityText })}
+                </div>
+                <div className="text-gray-700">
+                  {bonusEntries.length > 0
+                    ? <>{t('home.altar.bonus', { bonuses: '' })}{renderHelpEntries(bonusEntries)}</>
+                    : t('home.altar.bonus', { bonuses: bonusText })}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+      {activeHelp && activeHelpPosition && (
+        <div
+          className="floating-bubble-pane fixed z-50 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
+          style={activeHelpPosition}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <div className="font-semibold text-gray-800">{activeHelp.title}</div>
+          <div className="whitespace-pre-line">{activeHelp.description}</div>
+        </div>
+      )}
     </div>
   );
 }
