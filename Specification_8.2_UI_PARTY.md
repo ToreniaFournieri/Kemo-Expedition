@@ -244,10 +244,12 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - Mimorian characters do not have Lineage or Predisposition settings.
   - Instead, they use two dropdown lists:
     - List 1: Enemy type (display enemy type short text)
+      - Displaying the enemy type related abilities and bonus
     - List 2: Individual enemy 
-      - Display format:
-        - `虫/N` for list of party member part (display normal: `N`, elite:`E`, boss:`B`)
-        - `ミモリアン / 防人(狩人) / 昆虫 / 鳳蝶` for status pane part
+      - Displaying the individual enemy related abilities and bonus
+  - Display format:
+    - `虫/N` for list of party member part (display normal: `N`, elite:`E`, boss:`B`)
+    - `ミモリアン / 防人(狩人) / 昆虫 / 鳳蝶` for status pane part
   - Selecting an enemy assigns that enemy’s ID to the character.
   - The Mimorian gains the same abilities and skills as the selected enemy, and remains Mimorian's abilities.
   - By default, the character’s name is set to the selected enemy’s name.
