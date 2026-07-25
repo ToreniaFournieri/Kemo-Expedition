@@ -170,7 +170,7 @@
 * Alter Level Requirement
 * Each enemy form requires a minimum **Alter Level** before it can be mimicked.
 
-**Required Alter Level = Tier Base + Number of Native Abilities**
+**Required Alter Level = Tier Base + Number of additional abilities or bonus**
 
 | Enemy Tier | Tier Base |
 | ---------- | --------: |
@@ -178,21 +178,16 @@
 | Elite      |         5 |
 | Boss       |        10 |
 
-* **Native Abilities** are the abilities and bonuses that the enemy inherently possesses.
-* Count only the enemy's built-in abilities; do not include equipment, temporary effects, or external modifiers.
-* This requirement represents the Mimorian's mastery needed to faithfully reproduce increasingly complex enemy forms.
+* **additional abilities or bonus** are the abilities and bonuses defined @Specification_4.2_EXPEDITION_&_ENEMY_MASTER_DATA.md.
 
 **Examples**
 
-| Enemy           | Tier   | Native Abilities | Required Alter Level |
+| Enemy           | Tier   | additional abilities or bonus | Required Alter Level |
 | --------------- | ------ | ---------------: | -------------------: |
-| Slime           | Normal |                0 |                    1 |
-| Poison Slime    | Normal |                1 |                    2 |
-| Goblin Shaman   | Normal |                2 |                    3 |
-| Dire Wolf       | Elite  |                1 |                    6 |
-| Lupinian Ranger | Elite  |                2 |                    7 |
-| Fenrir          | Boss   |                2 |                   12 |
-| Lupinian Hero   | Boss   |                4 |                   14 |
+| たんぽぽめ         | Normal |                0 |                    1 |
+| 花鎌娘            | Normal |                1 |                    2 |
+| わおーん          | Elite |                 1 |                    6 |
+| ヴェルグ          | Boss   |                3 |                   13 |
 
 
 
