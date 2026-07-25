@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 5 | 2026/07/25 | Preserve Mimorian intrinsic penalties alongside copied enemy abilities and skills, localize the enemy-type selector, and display the selected enemy image in the Party member pane. |
 | 0.8.6 | 4 | 2026/07/25 | Implement Mimorian enemy-form editing with enemy type and individual selectors, copied enemy abilities and skills, default enemy names, and enemy-based character and chibi images. |
 | 0.8.6 | 3 | 2026/07/25 | Localize the Mimorian race name as `拟形裔` in Simplified Chinese and `擬形裔` in Traditional Chinese. |
 | 0.8.6 | 2 | 2026/07/25 | Add the selectable Mimorian race at runtime with 8 base stats, two fewer equipment slots, and female-only character editing. |
