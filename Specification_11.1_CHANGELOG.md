@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 8 | 2026/07/25 | Size enemy artwork in the Party member list at 160% panel width while retaining 220% width for character artwork. |
 | 0.8.6 | 7 | 2026/07/25 | Show localized enemy-type short text and the selected type's and individual enemy's abilities and bonuses in the Mimorian status controls. |
 | 0.8.6 | 6 | 2026/07/25 | Correct Mimorian Party summaries to show copied enemy type, rank, and name instead of lineage or predisposition, prevent male characters from selecting Mimorian, and format negative equipment-slot totals without a redundant plus sign. |
 | 0.8.6 | 5 | 2026/07/25 | Preserve Mimorian intrinsic penalties alongside copied enemy abilities and skills, localize the enemy-type selector, and display the selected enemy image in the Party member pane. |
