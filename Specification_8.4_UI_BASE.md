@@ -114,6 +114,7 @@
 
   - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
     - When the player sells a super-rare item, they receive Prana instead of Gold. Display the amount of Prana gained in the sell confirmation and result message. Example: 5 Prana
+    - Super-rare items grant Prana only and never grant Gold. Invalid example: 45 Prana and 1,000 Gold
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks (except equipped items)
@@ -150,6 +151,7 @@
 
 #### 8.4.5 Altar (祭壇)
 - The Altar allows players to spend **Prana** (プラーナ) to unlock individual enemy forms for Mimorian characters.
+- Display the player’s current Prana balance.
 
 **1. Prana**
 * Selling a super-rare item grants Prana according to the item’s original rarity category.
