@@ -6888,6 +6888,13 @@ function PartyTab({
           const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
           const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
           const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
+          const mimorianEnemy = c.raceId === 'mimorian'
+            ? ENEMIES.find((enemy) => enemy.id === c.mimorianEnemyId)
+            : undefined;
+          const mimorianEnemyRank = mimorianEnemy?.type === 'boss' ? 'B' : mimorianEnemy?.type === 'elite' ? 'E' : 'N';
+          const mimorianListDescriptor = mimorianEnemy
+            ? `${t(`masterData.enemyType.${mimorianEnemy.enemyType}.short`)}/${mimorianEnemyRank}`
+            : '-/N';
           const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
           const previewMimorianEnemyImageSrc = c.raceId === 'mimorian' && c.mimorianEnemyId != null
             ? `${import.meta.env.BASE_URL}enemy/E_${c.mimorianEnemyId}.png`
@@ -6974,7 +6981,7 @@ function PartyTab({
                   )}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
                     <div>{mcShort}({isMaster ? t('party.class.masterShort') : scShort})</div>
-                    <div>{lineageShort}/{predispositionShort}</div>
+                    <div>{c.raceId === 'mimorian' ? mimorianListDescriptor : `${lineageShort}/${predispositionShort}`}</div>
                   </div>
                 </div>
               </div>
@@ -7174,10 +7181,12 @@ function PartyTab({
 
                   const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
                     const isBlockedByDuplicate = isRaceOptionBlockedByDuplicate(race.id);
-                    const isDisabled = char.isUnique || isBlockedByDuplicate;
+                    // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian characters are an exception: Only `女` may be selected.
+                    const isBlockedByMimorianGender = race.id === 'mimorian' && selectedGender === 'male';
+                    const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
                     const shouldShowRaceIcon = char.isUnique
                       ? isSelectedRace
-                      : !isBlockedByDuplicate;
+                      : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
                     return (
                       <button
@@ -7540,7 +7549,13 @@ function PartyTab({
                 aria-label={t('home.party.baseStatsHelpAria')}
               >
                 <RaceIcon race={race} className="h-4 w-4" />
-                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / {lineage.name} / {predisposition.name}</span>
+                <span>{char.raceId === 'mimorian' && char.mimorianEnemyId != null
+                  ? (() => {
+                    // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+                    const copiedEnemy = ENEMIES.find((enemy) => enemy.id === char.mimorianEnemyId);
+                    return `${race.name} / ${mainClass.name}(${char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / ${copiedEnemy ? t(`setting.bestiary.enemyType.${copiedEnemy.enemyType}`) : '-'} / ${copiedEnemy?.name ?? '-'}`;
+                  })()
+                  : `${race.name} / ${mainClass.name}(${char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / ${lineage.name} / ${predisposition.name}`}</span>
               </button>
               {showBaseStatHelp && (
                 <div
@@ -7858,12 +7873,17 @@ function PartyTab({
               const equippedItems = char.equipment
                 .slice(0, stats.maxEquipSlots)
                 .filter((item): item is Item => item != null);
+              // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+              const copiedMimorianEnemy = char.raceId === 'mimorian'
+                ? ENEMIES.find((enemy) => enemy.id === char.mimorianEnemyId)
+                : undefined;
               const allBonuses = [
                 ...race.bonuses,
                 ...mainClass.mainSubBonuses,
                 ...(isMasterClass ? mainClass.masterBonuses : [...mainClass.mainBonuses, ...subClass.mainSubBonuses]),
-                ...predisposition.bonuses,
-                ...lineage.bonuses,
+                ...(char.raceId === 'mimorian'
+                  ? (copiedMimorianEnemy?.bonuses ?? [])
+                  : [...predisposition.bonuses, ...lineage.bonuses]),
                 ...equippedItems.flatMap((item) => getSuperRareBonuses(item.superRare)),
               ];
 
@@ -8022,7 +8042,7 @@ function PartyTab({
                     const normalizedKey = key.replace(/\?+$/g, '');
                     const label = ['equip_melee', 'equip_ranged', 'equip_magic'].includes(normalizedKey)
                       ? `${addNames[normalizedKey] ?? normalizedKey}`
-                      : `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
+                      : `${addNames[normalizedKey] ?? normalizedKey}${val >= 0 ? '+' : ''}${val}`;
                     const description = getBonusHelpDescription({ type: normalizedKey as BonusType, value: val });
                     pushBonusDisplayEntry({
                       key: normalizedKey,
