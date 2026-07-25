@@ -9921,14 +9921,35 @@ function AltarTab({
   onUnlockEnemy: (enemyId: number) => void;
 }) {
   const unlockedIds = new Set(unlockedEnemyIds);
+  const enemyTypes = Array.from(new Set(ENEMIES.map((enemy) => enemy.enemyType)));
+  const [selectedEnemyType, setSelectedEnemyType] = useState(enemyTypes[0] ?? '');
+  const visibleEnemies = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemyType);
 
   return (
     <div className="space-y-3">
       <div className="rounded-lg border border-sub/30 bg-pane p-3 text-sm font-semibold">
         {t('home.altar.pranaBalance', { prana: formatNumber(prana) })}
       </div>
+      <div className="liquid-glass-segmented flex flex-wrap gap-1 rounded-2xl p-1" role="tablist">
+        {enemyTypes.map((enemyType) => (
+          <button
+            key={enemyType}
+            type="button"
+            role="tab"
+            aria-selected={selectedEnemyType === enemyType}
+            onClick={() => setSelectedEnemyType(enemyType)}
+            className={`${IOS_GLASS_TAB_CLASS} min-w-10 px-3 py-2 text-sm font-medium transition-colors ${
+              selectedEnemyType === enemyType
+                ? 'liquid-glass-tab-active text-sub'
+                : 'text-gray-700 hover:text-gray-900'
+            }`}
+          >
+            {getEnemyTypeShortName(enemyType)}
+          </button>
+        ))}
+      </div>
       <div className="max-h-[34rem] space-y-2 overflow-y-auto">
-        {ENEMIES.map((enemy) => {
+        {visibleEnemies.map((enemy) => {
           const cost = getEnemyFormPranaCost(enemy);
           const unlocked = unlockedIds.has(enemy.id);
           const canUnlock = !unlocked && prana >= cost;
@@ -9947,7 +9968,7 @@ function AltarTab({
           return (
             <div key={enemy.id} className={`flex items-center gap-3 rounded-lg border bg-pane p-2 shadow-sm ${unlocked ? 'border-sub/40' : 'border-gray-200'}`}>
               <img
-                src={`${import.meta.env.BASE_URL}enemy/E_${enemy.id}.png`}
+                src={`${import.meta.env.BASE_URL}chibi/C_E_${enemy.id}.png`}
                 alt={formatEnemyDefName(enemy)}
                 className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24"
               />
