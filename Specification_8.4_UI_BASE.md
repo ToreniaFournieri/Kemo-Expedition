@@ -168,10 +168,12 @@
 
 **2. Enemy Form List**
 
+* Enemy form category tabs: enemy type short text. Ex: 猛 飛 虫 …
+
 * The Altar displays a list of enemy forms that can be unlocked.
 * Each entry represents one individual enemy ID.
 * Each entry displays:
-  * Enemy image    
+  * Enemy chibi image    
   * Enemy name with enemy type (Normal, Elite, Boss)
   * Enemy ability
   * Enemy Bonus
