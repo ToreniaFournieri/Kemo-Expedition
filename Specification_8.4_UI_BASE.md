@@ -4,7 +4,7 @@
 - Base(拠点)
 - It has tabs inside Base tab. Shop(お店), Inventory(所持品),Ashen Route Vault(灰路の蔵) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - Default: Shop
-  - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
+  - not available for Workshop(工房), in this version. (Gray out)
 	
 #### 8.4.1 Shop (お店)
 
