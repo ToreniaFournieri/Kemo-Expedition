@@ -198,7 +198,7 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
     switch (bonus.type) {
       case 'equip_slot':
         {
-          const bonusName = `c.equip_slot+${formatCBonusValue(bonus.value)}`;
+          const bonusName = `c.equip_slot${bonus.value >= 0 ? '+' : ''}${formatCBonusValue(bonus.value)}`;
           if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
             collection.uniqueCAdditiveBonusNames.add(bonusName);
             collection.equipSlotBonusTotal += bonus.value;
