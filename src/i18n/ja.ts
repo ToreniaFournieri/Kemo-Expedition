@@ -3880,6 +3880,7 @@ const ja = {
   'setting.bestiary.enemyType.Frost': '氷雪',
   'setting.bestiary.enemyType.Fruit': '果物',
   'setting.bestiary.enemyType.Dragon': '竜',
+  'setting.bestiary.enemyType.Voidspawn': '虚無',
   'setting.bestiary.enemyType.Spirit': '精霊',
   'setting.bestiary.enemyType.Ghost': '怨霊',
   'setting.bestiary.enemyType.Undead': '不死',

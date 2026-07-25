@@ -3872,6 +3872,7 @@ const zhTW = {
   'setting.bestiary.enemyType.Frost': '冰雪',
   'setting.bestiary.enemyType.Fruit': '果實',
   'setting.bestiary.enemyType.Dragon': '龍',
+  'setting.bestiary.enemyType.Voidspawn': '虛無',
   'setting.bestiary.enemyType.Spirit': '精靈',
   'setting.bestiary.enemyType.Ghost': '怨靈',
   'setting.bestiary.enemyType.Undead': '不死',

@@ -24,7 +24,7 @@ import {
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemCoreConceptValue, getItemDisplayName, getLocalizedEnhancementTitle, getLocalizedItemName, getLocalizedSuperRareTitle } from '../game/gameState';
-import { ENEMIES, getEnemyDropCandidates, getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
+import { ENEMIES, getEnemyDropCandidates, getEnemyIndividualAbilities, getEnemyIndividualBonuses, getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
@@ -7400,13 +7400,14 @@ function PartyTab({
               const selectedEnemyTypeAbilities = getEnemyTypeAbilities(selectedEnemy?.enemyType ?? '', Number.MAX_SAFE_INTEGER)
                 .map((typeAbility) => selectedEnemy?.abilities.find((ability) => ability.id === typeAbility.id))
                 .filter((ability): ability is EnemyAbility => ability !== undefined);
-              const selectedEnemyTypeAbilityIds = new Set(
-                getEnemyTypeAbilities(selectedEnemy?.enemyType ?? '', Number.MAX_SAFE_INTEGER).map((ability) => ability.id),
-              );
               const selectedEnemyTypeBonuses = getEnemyTypeBonuses(selectedEnemy?.enemyType ?? '');
-              const selectedEnemyIndividualAbilities = (selectedEnemy?.abilities ?? [])
-                .filter((ability) => !selectedEnemyTypeAbilityIds.has(ability.id));
-              const selectedEnemyIndividualBonuses = (selectedEnemy?.bonuses ?? []).slice(selectedEnemyTypeBonuses.length);
+              // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+              const selectedEnemyIndividualAbilities = selectedEnemy
+                ? getEnemyIndividualAbilities(selectedEnemy.id)
+                : [];
+              const selectedEnemyIndividualBonuses = selectedEnemy
+                ? getEnemyIndividualBonuses(selectedEnemy.id)
+                : [];
               const buildEnemyAbilityEntries = (prefix: string, abilities: typeof selectedEnemyTypeAbilities) => abilities
                 .map((ability, index) => buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), {
                   type: 'ability',

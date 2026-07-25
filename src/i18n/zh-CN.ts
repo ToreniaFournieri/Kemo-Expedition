@@ -3877,6 +3877,7 @@ const zhCN = {
   'setting.bestiary.enemyType.Frost': '冰雪',
   'setting.bestiary.enemyType.Fruit': '果实',
   'setting.bestiary.enemyType.Dragon': '龙',
+  'setting.bestiary.enemyType.Voidspawn': '虚无',
   'setting.bestiary.enemyType.Spirit': '精灵',
   'setting.bestiary.enemyType.Ghost': '怨灵',
   'setting.bestiary.enemyType.Undead': '不死',
