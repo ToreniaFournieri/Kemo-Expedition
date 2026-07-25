@@ -226,7 +226,7 @@ const zhTW = {
   'setting.feedback.sent': '已傳送回饋',
   'setting.feedback.sendFailed': '回饋傳送失敗。',
   'setting.backup.exported': '已匯出備份',
-  'setting.backup.manualSaveInstructions': '備份已在新頁面中開啟。在千問等 App 內瀏覽器中，請點擊瀏覽器的分享按鈕，然後選擇「儲存到檔案」。',
+  'setting.backup.manualSaveInstructions': '備份已在新頁面中開啟。在夸克、千問等 App 內瀏覽器中，請點擊瀏覽器的分享按鈕，然後選擇「儲存到檔案」。',
   'setting.import.invalidFormat': '匯入失敗：存檔資料格式無效。',
   'setting.import.issue.versionMismatch': '版本差異：目前 {current} / 檔案 {file}',
   'setting.import.issue.envMismatch': '環境差異：目前 {current} / 檔案 {file}',
