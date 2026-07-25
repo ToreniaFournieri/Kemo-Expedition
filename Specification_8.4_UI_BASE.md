@@ -162,7 +162,6 @@
 | Mythic-rare item         |            50 |
 
 * The sold item is removed from the inventory.
-* Prana is granted in addition to the normal selling reward.
 * Prana is a shared currency and is not associated with a specific enemy type.
 
 **2. Enemy Form List**
