@@ -3313,6 +3313,8 @@ const en = {
   'home.party.mainClass': 'Main class',
   'home.party.subClass': 'Sub class',
   'home.party.lineage': 'Lineage',
+  'home.party.enemyType': 'Enemy type',
+  'home.party.individualEnemy': 'Individual enemy',
   'home.party.predisposition': 'Predisposition',
   'home.party.race': 'Race',
   'party.class.masterFull': 'Master',

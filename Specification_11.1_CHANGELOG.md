@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 4 | 2026/07/25 | Implement Mimorian enemy-form editing with enemy type and individual selectors, copied enemy abilities and skills, default enemy names, and enemy-based character and chibi images. |
 | 0.8.6 | 3 | 2026/07/25 | Localize the Mimorian race name as `拟形裔` in Simplified Chinese and `擬形裔` in Traditional Chinese. |
 | 0.8.6 | 2 | 2026/07/25 | Add the selectable Mimorian race at runtime with 8 base stats, two fewer equipment slots, and female-only character editing. |
 | 0.8.6 | 1 | 2026/07/24 | Release version 0.8.6 and reset the build number to 1. |

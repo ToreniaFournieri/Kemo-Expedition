@@ -112,6 +112,10 @@ const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { ea
 // SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
 // SpecRef: 8.4.2 | Inventory(所持品) | Item list
 function getInventoryOwnerCharacterImageSrc(character: Character, partyId: number): string | null {
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Chibi character
+  if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
+    return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
+  }
   const uniqueFileName = character.isUnique
     ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId]
     : undefined;
@@ -836,6 +840,9 @@ function escapeRegExp(value: string): string {
 }
 
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
+  if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
+    return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
+  }
   if (character.isUnique) {
     const uniqueFileName = UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId];
     return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/C_${uniqueFileName}` : null;
@@ -6272,12 +6279,15 @@ function PartyTab({
 
   const handleRaceChange = (raceId: Character['raceId']) => {
     if (char.isUnique) return;
+    const defaultMimorianEnemy = raceId === 'mimorian' ? ENEMIES[0] : undefined;
     setPendingEdits((prev) => ({
       ...prev,
       raceId,
       // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian characters are an exception: Only `女` may be selected.
       ...(raceId === 'mimorian' ? { gender: 'female' as const } : {}),
-      name: getDefaultNameForRace(raceId),
+      ...(defaultMimorianEnemy
+        ? { mimorianEnemyId: defaultMimorianEnemy.id, name: defaultMimorianEnemy.name }
+        : { name: getDefaultNameForRace(raceId) }),
     }));
   };
 
@@ -6299,6 +6309,7 @@ function PartyTab({
   // SpecRef: 8.2.2 | Party member details | Character image (background)
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
+  const previewMimorianEnemyId = pendingEdits?.mimorianEnemyId ?? char.mimorianEnemyId;
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
     vulpinian: 'Vulpinian',
@@ -6326,7 +6337,10 @@ function PartyTab({
   const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
+    // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Character image (background)
+    const nextPartyMemberImageSrc = previewRaceId === 'mimorian' && previewMimorianEnemyId != null
+      ? `${import.meta.env.BASE_URL}enemy/E_${previewMimorianEnemyId}.png`
+      : uniquePartyMemberImageFileName
       ? `${import.meta.env.BASE_URL}character/${uniquePartyMemberImageFileName}`
       : ptRaceGenderImageFileName
         ? `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`
@@ -6334,7 +6348,7 @@ function PartyTab({
           ? `${import.meta.env.BASE_URL}character/${raceGenderFallbackImageFileName}`
           : null;
     setPartyMemberImageSrc(nextPartyMemberImageSrc);
-  }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
+  }, [previewRaceId, previewMimorianEnemyId, uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: t('home.party.filter.carnivore'), raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian', 'mimorian'] },
@@ -7364,6 +7378,50 @@ function PartyTab({
                 );
               })()}
             </div>
+            {previewRaceId === 'mimorian' ? (() => {
+              const enemyTypes = Array.from(new Set(ENEMIES.map((enemy) => enemy.enemyType)));
+              const selectedEnemy = ENEMIES.find((enemy) => enemy.id === previewMimorianEnemyId) ?? ENEMIES[0];
+              const enemiesForType = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemy?.enemyType);
+              const selectEnemy = (enemy: EnemyDef) => setPendingEdits({
+                ...pendingEdits,
+                mimorianEnemyId: enemy.id,
+                name: enemy.name,
+              });
+
+              return (
+                // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+                <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs space-y-2">
+                  <label className="block">
+                    <span className="mb-1 block font-bold text-gray-600">{t('home.party.enemyType')}</span>
+                    <select
+                      value={selectedEnemy?.enemyType ?? ''}
+                      onChange={(event) => {
+                        const enemy = ENEMIES.find((candidate) => candidate.enemyType === event.target.value);
+                        if (enemy) selectEnemy(enemy);
+                      }}
+                      className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
+                    >
+                      {enemyTypes.map((enemyType) => <option key={enemyType} value={enemyType}>{enemyType}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block font-bold text-gray-600">{t('home.party.individualEnemy')}</span>
+                    <select
+                      value={selectedEnemy?.id ?? ''}
+                      onChange={(event) => {
+                        const enemy = ENEMIES.find((candidate) => candidate.id === Number(event.target.value));
+                        if (enemy) selectEnemy(enemy);
+                      }}
+                      className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
+                    >
+                      {enemiesForType.map((enemy) => (
+                        <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat('ja-JP').format(enemy.id)})</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              );
+            })() : <>
             <div>
               <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
@@ -7463,6 +7521,7 @@ function PartyTab({
                 })()}
               </div>
             </div>
+            </>}
           </div>
         ) : (
           <div className="space-y-1 text-sm">

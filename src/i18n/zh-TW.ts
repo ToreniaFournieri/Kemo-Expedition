@@ -3310,6 +3310,8 @@ const zhTW = {
   'home.party.mainClass': '主職業',
   'home.party.subClass': '副職業',
   'home.party.lineage': '系譜',
+  'home.party.enemyType': '敵人類型',
+  'home.party.individualEnemy': '個別敵人',
   'home.party.predisposition': '性格',
   'home.party.race': '種族',
   'party.class.masterFull': '師範',
