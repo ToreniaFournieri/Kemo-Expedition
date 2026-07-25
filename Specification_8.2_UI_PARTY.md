@@ -51,7 +51,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
     - Each panel should be narrow enough that all 6 members are visible at once without horizontal scrolling
 
   - Background image width: 220% of the panel width
-    - Exception — Enemy images: For images loaded from `/public/enemy/E_{enemy_ID}.png`, set the width to 160% of the panel width.
+    - Exception — Enemy images: For images loaded from `/public/enemy/E_{enemy_ID}.png`, set the width to 180% of the panel width.
   - Anchor the background image to the bottom-center of the panel.
   - Panel Background: Apply 40% transparency to the member panel background layer behind the character illustration.
   - Show the Main Class, Subclass, and Lineage/Predisposition
