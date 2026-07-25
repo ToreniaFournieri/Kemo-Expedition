@@ -6364,6 +6364,8 @@ function PartyTab({
     { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian', 'mimorian'] },
     { label: t('home.party.filter.herbivore'), raceIds: ['leporian', 'cervin', 'murid'] },
   ];
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian appears in the race selection field only after the player has unlocked at least one enemy form at the Altar.
+  const hasUnlockedMimorianForm = ENEMIES.some((enemy) => unlockedMimorianEnemyIds.includes(enemy.id));
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
     { label: t('combat.melee'), classIds: ['duelist', 'samurai', 'sword-saint'] },
     { label: t('combat.ranged'), classIds: ['ranger', 'striker', 'ninja'] },
@@ -7232,11 +7234,13 @@ function PartyTab({
                           <div key={`race-${category.label}`} className="space-y-1">
                             <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
                             <div className="flex w-full">
-                              {category.raceIds.map((raceId) => {
-                                const raceData = RACES.find((race) => race.id === raceId);
-                                if (!raceData) return null;
-                                return renderRaceOption(raceData, selectedRaceId === raceId);
-                              })}
+                              {category.raceIds
+                                .filter((raceId) => raceId !== 'mimorian' || hasUnlockedMimorianForm)
+                                .map((raceId) => {
+                                  const raceData = RACES.find((race) => race.id === raceId);
+                                  if (!raceData) return null;
+                                  return renderRaceOption(raceData, selectedRaceId === raceId);
+                                })}
                             </div>
                           </div>
                         ))}
