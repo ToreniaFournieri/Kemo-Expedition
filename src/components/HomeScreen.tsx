@@ -9931,22 +9931,30 @@ function AltarTab({
         {t('home.altar.pranaBalance', { prana: formatNumber(prana) })}
       </div>
       <div className="flex flex-nowrap gap-1 overflow-x-auto pb-1" role="tablist">
-        {enemyTypes.map((enemyType) => (
-          <button
-            key={enemyType}
-            type="button"
-            role="tab"
-            aria-selected={selectedEnemyType === enemyType}
-            onClick={() => setSelectedEnemyType(enemyType)}
-            className={`shrink-0 rounded px-2 py-1 text-sm pane-button-shadow transition-colors ${
-              selectedEnemyType === enemyType
-                ? 'bg-sub text-white'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
-          >
-            {getEnemyTypeShortName(enemyType)}
-          </button>
-        ))}
+        {enemyTypes.map((enemyType) => {
+          const enemyRace = RACES.find((race) => race.englishName === enemyType);
+          const enemyTypeLabel = getEnemyTypeShortName(enemyType);
+          return (
+            <button
+              key={enemyType}
+              type="button"
+              role="tab"
+              aria-label={enemyTypeLabel}
+              title={enemyTypeLabel}
+              aria-selected={selectedEnemyType === enemyType}
+              onClick={() => setSelectedEnemyType(enemyType)}
+              className={`flex h-8 min-w-8 shrink-0 items-center justify-center rounded px-2 py-1 text-sm pane-button-shadow transition-colors ${
+                selectedEnemyType === enemyType
+                  ? 'bg-sub text-white'
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+            >
+              {enemyRace?.icon
+                ? <RaceIcon race={enemyRace} className="h-5 w-5" />
+                : enemyTypeLabel}
+            </button>
+          );
+        })}
       </div>
       <div className="max-h-[34rem] space-y-2 overflow-y-auto">
         {visibleEnemies.map((enemy) => {
@@ -9975,7 +9983,7 @@ function AltarTab({
               <div className="min-w-0 flex-1 space-y-1 text-xs">
                 <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
                   <div className="min-w-0 text-sm font-semibold">
-                    {formatEnemyDefName(enemy)} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
+                    {renderTextWithRaceIcons(formatEnemyDefName(enemy), 'h-4 w-4')} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
                   </div>
                   <button
                     type="button"
