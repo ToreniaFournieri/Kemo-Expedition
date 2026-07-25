@@ -3942,6 +3942,22 @@ const ja = {
   'setting.glossary.tab.terrain': '地',
   'setting.glossary.tab.sideQuests': '求',
 
+  'home.altar.pranaBalance': 'プラーナ: {prana}',
+  'home.altar.enemyType': '敵タイプ: {type}',
+  'home.altar.enemyCategory': '敵カテゴリ: {category}',
+  'home.altar.requiredEssence': '必要モーフィアエッセンス: {prana} プラーナ',
+  'home.altar.category.normal': '通常敵',
+  'home.altar.category.elite': 'エリート敵',
+  'home.altar.category.boss': 'ボス敵',
+  'home.altar.unlocked': '解放済み',
+  'home.altar.unlockCost': '解放 ({prana} プラーナ)',
+  'home.altar.unlockConfirm': '{prana}プラーナを消費して{enemy}を解放しますか？',
+  'home.altar.noUnlockedForms': '先に祭壇で敵フォームを解放してください。',
+  'home.inventory.sellAllPrana': '全売却 {prana}プラーナ',
+  'home.inventory.sellConfirmPrana': '{prana}プラーナを獲得します。超レア品からゴールドは得られません。',
+  'home.inventory.sellResultPrana': '{prana}プラーナを獲得しました。',
+  'home.inventory.sellResultGold': '{gold}ゴールドを獲得しました。',
+
 } as const;
 
 export default ja;

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 11 | 2026/07/25 | Add persistent Prana rewards for selling Super Rare items, an enemy-form unlocking Altar with category costs, and Altar-gated Mimorian form selection. |
 | 0.8.6 | 10 | 2026/07/25 | Restrict Mimorian individual-enemy ability and bonus details to the master data's `additional abilities or bonus` column, excluding class-derived effects, and add the missing localized Voidspawn enemy-type name. |
 | 0.8.6 | 9 | 2026/07/25 | Display normal localized enemy-type names instead of abbreviated text in the Mimorian enemy-type selector. |
 | 0.8.6 | 8 | 2026/07/25 | Size enemy artwork in the Party member list at 160% panel width while retaining 220% width for character artwork. |

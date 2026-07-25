@@ -442,6 +442,8 @@ export interface Deity {
 
 interface GlobalState {
   gold: number;
+  prana: number;
+  unlockedMimorianEnemyIds: number[];
   inventory: InventoryRecord;
   userId: string;
   deityDonations: Record<string, number>;
