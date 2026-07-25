@@ -174,6 +174,7 @@ Left-aligned
 - Editable `name` field.
 - Toggle selection: `男` / `女` Exactly one must be selected (no null state)
   - If another member in the same party already has the same race, different gender, and `unique_character == false`, that gender option cannot be selected for the current member. (not display text 男 or 女 if cannot be selected, just bottun)
+  - Mimorian characters are an exception: Only `女` may be selected.
   - If selected character `unique_character == true`, (not display text 男 or 女 if cannot be selected, just bottun)
 - **Default Name Assignment**
   - Trigger: when `Race` is changed.
