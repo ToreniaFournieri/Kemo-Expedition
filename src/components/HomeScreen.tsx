@@ -9930,7 +9930,7 @@ function AltarTab({
       <div className="rounded-lg border border-sub/30 bg-pane p-3 text-sm font-semibold">
         {t('home.altar.pranaBalance', { prana: formatNumber(prana) })}
       </div>
-      <div className="flex gap-1 overflow-x-auto pb-1" role="tablist">
+      <div className="flex flex-nowrap gap-1 overflow-x-auto pb-1" role="tablist">
         {enemyTypes.map((enemyType) => (
           <button
             key={enemyType}
