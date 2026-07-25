@@ -147,4 +147,61 @@
         - Replace:
           - "全売却" → "買う"
           - "買う": Purchases 1 unit of the selected item.
-  
+
+#### 8.4.5 Altar (祭壇)
+- The Altar allows players to spend **Prana** (プラーナ) to unlock individual enemy forms for Mimorian characters.
+
+**1. Prana**
+* Selling a super-rare item grants Prana according to the item’s original rarity category.
+
+| Super-Rare Item Category | Prana Granted |
+| ------------------------ | ------------: |
+| Normal item              |             1 |
+| Elite-rare item          |             5 |
+| Boss-rare item           |            10 |
+| Mythic-rare item         |            50 |
+
+* The sold item is removed from the inventory.
+* Prana is granted in addition to the normal selling reward.
+* Prana is a shared currency and is not associated with a specific enemy type.
+
+**2. Enemy Form List**
+
+* The Altar displays a list of enemy forms that can be unlocked.
+* Each entry represents one individual enemy ID.
+* Each entry displays:
+
+  * Enemy image
+  * Enemy name
+  * Enemy type
+  * Enemy category
+  * Required Morphia Essence
+  * Unlock status
+
+**3. Unlock Costs**
+
+| Enemy Category | Prana Cost |
+| -------------- | -------------------: |
+| Normal enemy   |                   10 |
+| Elite enemy    |                   50 |
+| Boss enemy     |                  100 |
+| Mythic enemy   |                  500 |
+
+* Consume the required amount of Prana to unlock an individual enemy form.
+* Each enemy ID must be unlocked separately.
+* Unlocking one enemy does not unlock other enemies of the same type.
+* Prana is consumed immediately upon unlocking an enemy form.
+* Once unlocked, the enemy form remains permanently available.
+
+**4. Mimorian Character Edit Mode**
+* Mimorian characters may select only enemy forms that have been unlocked at the Altar.
+* The enemy-type dropdown displays only enemy types that contain at least one unlocked enemy.
+* The individual-enemy dropdown displays only unlocked enemies belonging to the selected enemy type.
+* Enemy forms that have not been unlocked at the Altar cannot be selected.
+* Locked enemy forms are displayed as disabled entries with their required Prana cost.
+
+**5. Unlock Examples**
+* Normal enemy: 10 Prana
+* Elite enemy: 50 Prana
+* Boss enemy: 100 Prana
+
