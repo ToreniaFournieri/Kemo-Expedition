@@ -6971,7 +6971,9 @@ function PartyTab({
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-[240%] w-[220%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat"
+                    className={`pointer-events-none absolute bottom-0 left-1/2 z-0 h-[240%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat ${
+                      previewMimorianEnemyImageSrc ? 'w-[160%]' : 'w-[220%]'
+                    }`}
                     style={{ backgroundImage: `url(${previewImageSrc})` }}
                   />
                 )}
