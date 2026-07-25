@@ -226,7 +226,7 @@ const zhCN = {
 'setting.feedback.sent': '已发送反馈',
 'setting.feedback.sendFailed': '反馈发送失败。',
 'setting.backup.exported': '已导出备份',
-'setting.backup.manualSaveInstructions': '备份已在新页面中打开。在千问等应用内浏览器中，请点击浏览器的分享按钮，然后选择“存储到文件”。',
+'setting.backup.manualSaveInstructions': '备份已在新页面中打开。在夸克、千问等应用内浏览器中，请点击浏览器的分享按钮，然后选择“存储到文件”。',
 'setting.import.invalidFormat': '导入失败：存档数据格式无效。',
 'setting.import.issue.versionMismatch': '版本差异：当前 {current} / 文件 {file}',
 'setting.import.issue.envMismatch': '环境差异：当前 {current} / 文件 {file}',

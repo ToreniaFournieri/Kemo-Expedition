@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 21 | 2026/07/25 | Fix Android Quark backup export by using native file sharing when available and a manual browser-save fallback when direct downloads are unsupported. |
 | 0.8.6 | 20 | 2026/07/25 | Allow Altar ability and bonus help bubbles to be dismissed by tapping elsewhere in the Altar, consistent with other floating help bubbles. |
 | 0.8.6 | 19 | 2026/07/25 | Correct legacy enemy elemental-offense percentage formatting in Altar summaries and add floating help bubbles to every available enemy ability and bonus. |
 | 0.8.6 | 18 | 2026/07/25 | Replace main-race text in Altar enemy-type tabs and individual enemy names with the corresponding race icon assets. |

@@ -12368,8 +12368,9 @@ function SettingTab({
     };
     const isIos = /iPad|iPhone|iPod/.test(nav.userAgent)
       || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+    const isQuark = /Quark/i.test(nav.userAgent);
 
-    if (isIos && nav.share) {
+    if ((isIos || isQuark) && nav.share) {
       const shareData: ShareData = { files: [backupFile] };
       let canShareBackup = !nav.canShare;
       try {
@@ -12379,7 +12380,7 @@ function SettingTab({
       }
       if (canShareBackup) {
         try {
-          // iOS uses its native share sheet, where the player can choose Save to Files.
+          // iOS and Quark use their native share sheet, where the player can save the file.
           await nav.share(shareData);
           onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
           return;
@@ -12390,9 +12391,9 @@ function SettingTab({
       }
     }
 
-    if (isIos) {
-      // Embedded iOS browsers (including app webviews) can omit file sharing and
-      // ignore the download attribute. Open the backup so their toolbar can save it.
+    if (isIos || isQuark) {
+      // Embedded iOS browsers and Quark can omit file sharing and ignore the
+      // download attribute. Open the backup so their toolbar can save it.
       openBackupFileForManualSave(backupFile);
       return;
     }
