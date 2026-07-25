@@ -3221,7 +3221,7 @@ const zhTW = {
   'data.races.a_illusion.name': '幻化1',
   'data.races.a_illusion.description': '自身受到的第一次遠程攻擊無效化',
   'data.races.murid.name': '鼠裔',
-  'data.races.mimorian.name': 'Mimorian',
+  'data.races.mimorian.name': '擬形裔',
   'data.races.a_stealth.name': '隱藏斗篷',
   'data.races.a_stealth.description': 'HP低於24%時，迴避所有對自身的傷害',
   'data.races.kemoria.name': '獸利亞',
