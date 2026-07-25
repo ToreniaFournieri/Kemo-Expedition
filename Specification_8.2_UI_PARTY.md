@@ -102,6 +102,11 @@ line2: 桃/腕  ← text over background image
     - `RACE`: Lupinian, Vulpinian, Felidian, Caninian, Ursan, Procyonian, Leporian, Cervin, Murid
     - `GENDER`: Male, Female
     - Example: PT2, Vulpinian Male character -> `/public/character/2_Vulpinian_Male.png`
+  - Exception — Mimorian characters:
+    - Use the selected enemy’s ID to determine the character image.
+    - `/public/enemy/E_{enemy_ID}.png`
+    - Chibi character: `public/chibi/C_E_{enemy_ID}.png`
+
   - Fallback Resolution:
     - If the primary path does not exist, Fallback to race-gender default: `/public/character/{RACE}_{GENDER}.png`
     - Example (Fallback)
