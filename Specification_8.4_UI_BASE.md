@@ -194,7 +194,7 @@
 **3. Enemy Form List**
 
 * Enemy form category tabs: enemy type short text or race icon. Ex: 猛 飛 虫 …
-
+  * When an enemy form category is selected, display its current Alter Level and Alter EXP for that category.
 * The Altar displays a list of enemy forms that can be unlocked.
 * Each entry represents one individual enemy ID.
 * Each entry displays:
