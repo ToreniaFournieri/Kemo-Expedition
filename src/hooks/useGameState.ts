@@ -101,6 +101,7 @@ import {
   getCurrentShopRefreshDate,
 } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
+import { getEnemyFormPranaCost, getSuperRareItemPrana } from '../game/prana';
 import {
   addJewelToInventory,
   createStarterJewelInventory,
@@ -1861,7 +1862,16 @@ function createInitialState(): InitialStateResult {
       state: {
         ...savedStateResult.state,
         buildNumber: BUILD_NUMBER,
-        global: { ...savedStateResult.state.global, language: initialLanguage },
+        global: {
+          ...savedStateResult.state.global,
+          prana: Number.isFinite(savedStateResult.state.global.prana)
+            ? Math.max(0, Math.floor(savedStateResult.state.global.prana))
+            : 0,
+          unlockedMimorianEnemyIds: Array.isArray(savedStateResult.state.global.unlockedMimorianEnemyIds)
+            ? savedStateResult.state.global.unlockedMimorianEnemyIds
+            : [],
+          language: initialLanguage,
+        },
       },
       loadErrorLog: null,
     };
@@ -1873,6 +1883,8 @@ function createInitialState(): InitialStateResult {
     scene: 'home',
     global: {
       gold: 200,
+      prana: 0,
+      unlockedMimorianEnemyIds: [],
       inventory: createStarterInventory(),
       userId: generateUserId(),
       jewels: createStarterJewelInventory(),
@@ -1944,6 +1956,7 @@ type GameAction =
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
+  | { type: 'UNLOCK_MIMORIAN_ENEMY'; enemyId: number }
   | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
@@ -4390,9 +4403,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELL_STACK': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const variant = state.global.inventory[action.variantKey];
-      if (!variant || variant.count <= 0 || variant.item.superRare >= 1) return state;
+      if (!variant || variant.count <= 0) return state;
 
       const sellPrice = calculateSellPrice(variant.item) * variant.count;
+      const pranaGranted = getSuperRareItemPrana(variant.item) * variant.count;
 
       const newInventory = { ...state.global.inventory };
       newInventory[action.variantKey] = {
@@ -4409,7 +4423,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         parties: updatedParties,
-        global: { ...state.global, inventory: newInventory, gold: state.global.gold + sellPrice },
+        global: {
+          ...state.global,
+          inventory: newInventory,
+          gold: state.global.gold + (pranaGranted > 0 ? 0 : sellPrice),
+          prana: state.global.prana + pranaGranted,
+        },
       };
     }
 
@@ -4417,14 +4436,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalSellPrice = 0;
       const newInventory = { ...state.global.inventory };
 
-      const hasOwnedSuperRare = Object.values(state.global.inventory).some((variant) => (
-        variant.status === 'owned' && variant.count > 0 && variant.item.superRare >= 1
-      ));
-      if (hasOwnedSuperRare) return state;
+      let totalPrana = 0;
 
       for (const [variantKey, variant] of Object.entries(state.global.inventory)) {
         if (variant.status !== 'owned' || variant.count <= 0) continue;
-        totalSellPrice += calculateSellPrice(variant.item) * variant.count;
+        const pranaGranted = getSuperRareItemPrana(variant.item) * variant.count;
+        if (pranaGranted > 0) totalPrana += pranaGranted;
+        else totalSellPrice += calculateSellPrice(variant.item) * variant.count;
         newInventory[variantKey] = {
           ...variant,
           count: 0,
@@ -4432,7 +4450,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
-      if (totalSellPrice <= 0) return state;
+      if (totalSellPrice <= 0 && totalPrana <= 0) return state;
 
       return {
         ...state,
@@ -4440,6 +4458,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: newInventory,
           gold: state.global.gold + totalSellPrice,
+          prana: state.global.prana + totalPrana,
+        },
+      };
+    }
+
+    case 'UNLOCK_MIMORIAN_ENEMY': {
+      // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
+      const enemy = ENEMIES.find((candidate) => candidate.id === action.enemyId);
+      if (!enemy || state.global.unlockedMimorianEnemyIds.includes(enemy.id)) return state;
+      const cost = getEnemyFormPranaCost(enemy);
+      if (state.global.prana < cost) return state;
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          prana: state.global.prana - cost,
+          unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds, enemy.id],
         },
       };
     }
@@ -4821,6 +4856,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         scene: 'home' as const,
         global: {
           gold: 200,
+          prana: 0,
+          unlockedMimorianEnemyIds: [],
           inventory: createStarterInventory(),
           userId: generateUserId(),
           jewels: createStarterJewelInventory(),
@@ -4910,6 +4947,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           unlockedDeities: unlockedDeities,
           readDeveloperNewsItemIds: Array.isArray(hydrated.global.readDeveloperNewsItemIds)
             ? Array.from(new Set(hydrated.global.readDeveloperNewsItemIds.filter((itemId) => typeof itemId === 'string' && itemId.trim().length > 0)))
+            : [],
+          prana: Number.isFinite(hydrated.global.prana) ? Math.max(0, Math.floor(hydrated.global.prana)) : 0,
+          unlockedMimorianEnemyIds: Array.isArray(hydrated.global.unlockedMimorianEnemyIds)
+            ? Array.from(new Set(hydrated.global.unlockedMimorianEnemyIds.filter((enemyId) => Number.isInteger(enemyId) && ENEMIES.some((enemy) => enemy.id === enemyId))))
             : [],
           jewelAutoEquipPriorityPartyId: normalizeJewelAutoEquipPriorityPartyId(
             hydrated.global.jewelAutoEquipPriorityPartyId,
@@ -5287,6 +5328,10 @@ export function useGameState() {
 
     sellAllOwned: useCallback(() => {
       dispatch({ type: 'SELL_ALL_OWNED' });
+    }, []),
+
+    unlockMimorianEnemy: useCallback((enemyId: number) => {
+      dispatch({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId });
     }, []),
 
     buyShopItem: useCallback((itemId: number, stockItemKey: string) => {

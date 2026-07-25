@@ -34,6 +34,7 @@ import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../g
 import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
+import { getEnemyFormPranaCost, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay';
@@ -5538,6 +5539,7 @@ export function HomeScreen({
           jewels={state.global.jewels}
           deityDonations={state.global.deityDonations}
           unlockedDeities={state.global.unlockedDeities}
+          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
           isDarkModeEnabled={isDarkModeEnabled}
         />
       );
@@ -5580,6 +5582,8 @@ export function HomeScreen({
           jewelAutoEquipPriorityPartyId={state.global.jewelAutoEquipPriorityPartyId ?? null}
           parties={state.parties}
           gold={state.global.gold}
+          prana={state.global.prana}
+          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
           shopPurchases={state.global.shopPurchases}
           debugStorePurchases={state.global.jewelShopPurchases}
           shopRefreshCounts={state.global.shopRefreshCounts}
@@ -5590,6 +5594,7 @@ export function HomeScreen({
           onBuyShopItem={actions.buyShopItem}
           onBuyDebugStoreItem={actions.buyDebugStoreItem}
           onRefreshShopLineup={actions.refreshShopLineup}
+          onUnlockMimorianEnemy={actions.unlockMimorianEnemy}
           onSetJewelAutoEquipPriorityParty={actions.setJewelAutoEquipPriorityParty}
           activeSubTab={activeBaseSubTab}
           onSetActiveSubTab={setActiveBaseSubTab}
@@ -5836,6 +5841,7 @@ function PartyTab({
   jewels,
   deityDonations,
   unlockedDeities,
+  unlockedMimorianEnemyIds,
   isDarkModeEnabled,
 }: {
   parties: Party[];
@@ -5860,6 +5866,7 @@ function PartyTab({
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
   unlockedDeities: string[];
+  unlockedMimorianEnemyIds: number[];
   isDarkModeEnabled: boolean;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
@@ -6279,7 +6286,9 @@ function PartyTab({
 
   const handleRaceChange = (raceId: Character['raceId']) => {
     if (char.isUnique) return;
-    const defaultMimorianEnemy = raceId === 'mimorian' ? ENEMIES[0] : undefined;
+    const defaultMimorianEnemy = raceId === 'mimorian'
+      ? ENEMIES.find((enemy) => unlockedMimorianEnemyIds.includes(enemy.id))
+      : undefined;
     setPendingEdits((prev) => ({
       ...prev,
       raceId,
@@ -7394,9 +7403,11 @@ function PartyTab({
               })()}
             </div>
             {previewRaceId === 'mimorian' ? (() => {
-              const enemyTypes = Array.from(new Set(ENEMIES.map((enemy) => enemy.enemyType)));
-              const selectedEnemy = ENEMIES.find((enemy) => enemy.id === previewMimorianEnemyId) ?? ENEMIES[0];
-              const enemiesForType = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemy?.enemyType);
+              // SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
+              const unlockedEnemies = ENEMIES.filter((enemy) => unlockedMimorianEnemyIds.includes(enemy.id));
+              const enemyTypes = Array.from(new Set(unlockedEnemies.map((enemy) => enemy.enemyType)));
+              const selectedEnemy = unlockedEnemies.find((enemy) => enemy.id === previewMimorianEnemyId) ?? unlockedEnemies[0];
+              const enemiesForType = unlockedEnemies.filter((enemy) => enemy.enemyType === selectedEnemy?.enemyType);
               const selectedEnemyTypeAbilities = getEnemyTypeAbilities(selectedEnemy?.enemyType ?? '', Number.MAX_SAFE_INTEGER)
                 .map((typeAbility) => selectedEnemy?.abilities.find((ability) => ability.id === typeAbility.id))
                 .filter((ability): ability is EnemyAbility => ability !== undefined);
@@ -7450,6 +7461,7 @@ function PartyTab({
                         if (enemy) selectEnemy(enemy);
                       }}
                       className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
+                      disabled={unlockedEnemies.length === 0}
                     >
                       {enemyTypes.map((enemyType) => (
                         <option key={enemyType} value={enemyType}>{t(`setting.bestiary.enemyType.${enemyType}`)}</option>
@@ -7466,11 +7478,13 @@ function PartyTab({
                         if (enemy) selectEnemy(enemy);
                       }}
                       className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
+                      disabled={unlockedEnemies.length === 0}
                     >
                       {enemiesForType.map((enemy) => (
                         <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat('ja-JP').format(enemy.id)})</option>
                       ))}
                     </select>
+                    {unlockedEnemies.length === 0 && <span className="mt-1 block text-accent">{t('home.altar.noUnlockedForms')}</span>}
                     <span className="mt-1 block text-gray-600">{renderInlineBonusEntries(individualEntries)}</span>
                   </label>
                 </div>
@@ -9769,6 +9783,8 @@ function BaseTab({
   jewelAutoEquipPriorityPartyId,
   parties,
   gold,
+  prana,
+  unlockedMimorianEnemyIds,
   shopPurchases,
   debugStorePurchases,
   shopRefreshCounts,
@@ -9779,6 +9795,7 @@ function BaseTab({
   onBuyShopItem,
   onBuyDebugStoreItem,
   onRefreshShopLineup,
+  onUnlockMimorianEnemy,
   onSetJewelAutoEquipPriorityParty,
   activeSubTab,
   onSetActiveSubTab,
@@ -9789,6 +9806,8 @@ function BaseTab({
   jewelAutoEquipPriorityPartyId: number | null;
   parties: Party[];
   gold: number;
+  prana: number;
+  unlockedMimorianEnemyIds: number[];
   shopPurchases: Record<string, string[]>;
   debugStorePurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
@@ -9799,6 +9818,7 @@ function BaseTab({
   onBuyShopItem: (itemId: number, stockItemKey: string) => void;
   onBuyDebugStoreItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
+  onUnlockMimorianEnemy: (enemyId: number) => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
@@ -9809,7 +9829,7 @@ function BaseTab({
     { id: 'inventory' as const, label: t('home.base.tab.inventory'), isAvailable: true },
     { id: 'debugStore' as const, label: t('home.base.tab.debugStore'), isAvailable: debugSettings.jewelShopOpen },
     { id: 'workshop' as const, label: t('home.base.tab.workshop'), isAvailable: false },
-    { id: 'altar' as const, label: t('home.base.tab.altar'), isAvailable: false },
+    { id: 'altar' as const, label: t('home.base.tab.altar'), isAvailable: true },
   ];
 
   return (
@@ -9846,6 +9866,12 @@ function BaseTab({
           onSetVariantStatus={onSetVariantStatus}
           onSetJewelAutoEquipPriorityParty={onSetJewelAutoEquipPriorityParty}
         />
+      ) : activeSubTab === 'altar' ? (
+        <AltarTab
+          prana={prana}
+          unlockedEnemyIds={unlockedMimorianEnemyIds}
+          onUnlockEnemy={onUnlockMimorianEnemy}
+        />
       ) : activeSubTab === 'shop' ? (
         <ShopTab
           gold={gold}
@@ -9866,6 +9892,60 @@ function BaseTab({
       ) : (
         <div className="text-sm text-gray-600">{t('home.base.comingSoon')}</div>
       )}
+    </div>
+  );
+}
+
+// SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
+function AltarTab({
+  prana,
+  unlockedEnemyIds,
+  onUnlockEnemy,
+}: {
+  prana: number;
+  unlockedEnemyIds: number[];
+  onUnlockEnemy: (enemyId: number) => void;
+}) {
+  const unlockedIds = new Set(unlockedEnemyIds);
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-lg border border-sub/30 bg-pane p-3 text-sm font-semibold">
+        {t('home.altar.pranaBalance', { prana: formatNumber(prana) })}
+      </div>
+      <div className="max-h-[34rem] space-y-2 overflow-y-auto">
+        {ENEMIES.map((enemy) => {
+          const cost = getEnemyFormPranaCost(enemy);
+          const unlocked = unlockedIds.has(enemy.id);
+          const canUnlock = !unlocked && prana >= cost;
+          return (
+            <div key={enemy.id} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-pane p-2 shadow-sm">
+              <img
+                src={`${import.meta.env.BASE_URL}enemy/E_${enemy.id}.png`}
+                alt=""
+                className="h-16 w-16 shrink-0 object-contain"
+              />
+              <div className="min-w-0 flex-1 text-xs">
+                <div className="truncate text-sm font-semibold">{formatEnemyDefName(enemy)} (ID: {formatNumber(enemy.id)})</div>
+                <div>{t('home.altar.enemyType', { type: t(`setting.bestiary.enemyType.${enemy.enemyType}`) })}</div>
+                <div>{t('home.altar.enemyCategory', { category: t(`home.altar.category.${enemy.type}`) })}</div>
+                <div>{t('home.altar.requiredEssence', { prana: formatNumber(cost) })}</div>
+              </div>
+              <button
+                type="button"
+                disabled={!canUnlock}
+                onClick={() => {
+                  if (!window.confirm(t('home.altar.unlockConfirm', { enemy: formatEnemyDefName(enemy), prana: formatNumber(cost) }))) return;
+                  onUnlockEnemy(enemy.id);
+                }}
+                className={`shrink-0 rounded border px-2 py-1 text-xs ${canUnlock ? 'border-sub text-sub' : 'cursor-not-allowed border-gray-300 text-gray-400'}`}
+              >
+                {unlocked ? t('home.altar.unlocked') : t('home.altar.unlockCost', { prana: formatNumber(cost) })}
+              </button>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -10243,6 +10323,7 @@ function InventoryTab({
     itemName: string;
     count: number;
     sellPrice: number;
+    prana: number;
   } | null>(null);
   const categoryGroups = hasFirstJewel ? INVENTORY_CATEGORY_GROUPS : CATEGORY_GROUPS;
   const isJewelCategory = selectedCategory === 'jewel';
@@ -10483,6 +10564,9 @@ function InventoryTab({
   const confirmSellStack = () => {
     if (!sellStackConfirmation) return;
     onSellStack(sellStackConfirmation.variantKey);
+    window.alert(sellStackConfirmation.prana > 0
+      ? t('home.inventory.sellResultPrana', { prana: formatNumber(sellStackConfirmation.prana) })
+      : t('home.inventory.sellResultGold', { gold: formatNumber(sellStackConfirmation.sellPrice) }));
     setSellStackConfirmation(null);
   };
 
@@ -10650,6 +10734,7 @@ function InventoryTab({
             if (entry.type === 'owned') {
               const { item, count } = entry.variant;
               const sellPrice = calculateItemSellPrice(item) * count;
+              const pranaGranted = getSuperRareItemPrana(item) * count;
 
               return (
                 <div
@@ -10665,20 +10750,19 @@ function InventoryTab({
                     </div>
                     <button
                       onClick={() => {
-                        if (item.superRare >= 1) {
-                          window.alert(t('home.inventory.superRareCannotSell'));
-                          return;
-                        }
                         setSellStackConfirmation({
                           variantKey: entry.key,
                           itemName: getItemDisplayName(item),
                           count,
                           sellPrice,
+                          prana: pranaGranted,
                         });
                       }}
                       className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                     >
-                      {t('home.inventory.sellAllGold', { gold: formatNumber(sellPrice) })}
+                      {pranaGranted > 0
+                        ? t('home.inventory.sellAllPrana', { prana: formatNumber(pranaGranted) })
+                        : t('home.inventory.sellAllGold', { gold: formatNumber(sellPrice) })}
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -10788,7 +10872,9 @@ function InventoryTab({
                 {t('home.inventory.sellConfirmTitle', { item: sellStackConfirmation.itemName, count: formatNumber(sellStackConfirmation.count) })}
               </div>
               <div className="mt-2 text-sm leading-relaxed text-gray-600">
-                {t('home.inventory.sellConfirmBody', { gold: formatNumber(sellStackConfirmation.sellPrice) })}
+                {sellStackConfirmation.prana > 0
+                  ? t('home.inventory.sellConfirmPrana', { prana: formatNumber(sellStackConfirmation.prana) })
+                  : t('home.inventory.sellConfirmBody', { gold: formatNumber(sellStackConfirmation.sellPrice) })}
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button

@@ -3933,6 +3933,22 @@ const zhTW = {
   'setting.glossary.tab.magic': '魔',
   'setting.glossary.tab.terrain': '地',
   'setting.glossary.tab.sideQuests': '求',
+  'home.altar.pranaBalance': '普拉納：{prana}',
+  'home.altar.enemyType': '敵人類型：{type}',
+  'home.altar.enemyCategory': '敵人類別：{category}',
+  'home.altar.requiredEssence': '所需擬形精華：{prana} 普拉納',
+  'home.altar.category.normal': '普通敵人',
+  'home.altar.category.elite': '菁英敵人',
+  'home.altar.category.boss': '首領敵人',
+  'home.altar.unlocked': '已解鎖',
+  'home.altar.unlockCost': '解鎖（{prana} 普拉納）',
+  'home.altar.unlockConfirm': '消耗 {prana} 普拉納解鎖{enemy}？',
+  'home.altar.noUnlockedForms': '請先在祭壇解鎖敵人形態。',
+  'home.inventory.sellAllPrana': '全部出售 {prana} 普拉納',
+  'home.inventory.sellConfirmPrana': '將獲得 {prana} 普拉納。超稀有物品不會獲得金幣。',
+  'home.inventory.sellResultPrana': '獲得了 {prana} 普拉納。',
+  'home.inventory.sellResultGold': '獲得了 {gold} 金幣。',
+
 };
 
 export default zhTW;

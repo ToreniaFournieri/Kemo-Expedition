@@ -3938,6 +3938,22 @@ const zhCN = {
   'setting.glossary.tab.magic': '魔',
   'setting.glossary.tab.terrain': '地',
   'setting.glossary.tab.sideQuests': '求',
+  'home.altar.pranaBalance': '普拉纳：{prana}',
+  'home.altar.enemyType': '敌人类型：{type}',
+  'home.altar.enemyCategory': '敌人类别：{category}',
+  'home.altar.requiredEssence': '所需拟形精华：{prana} 普拉纳',
+  'home.altar.category.normal': '普通敌人',
+  'home.altar.category.elite': '精英敌人',
+  'home.altar.category.boss': '首领敌人',
+  'home.altar.unlocked': '已解锁',
+  'home.altar.unlockCost': '解锁（{prana} 普拉纳）',
+  'home.altar.unlockConfirm': '消耗 {prana} 普拉纳解锁{enemy}？',
+  'home.altar.noUnlockedForms': '请先在祭坛解锁敌人形态。',
+  'home.inventory.sellAllPrana': '全部出售 {prana} 普拉纳',
+  'home.inventory.sellConfirmPrana': '将获得 {prana} 普拉纳。超稀有物品不会获得金币。',
+  'home.inventory.sellResultPrana': '获得了 {prana} 普拉纳。',
+  'home.inventory.sellResultGold': '获得了 {gold} 金币。',
+
 };
 
 export default zhCN;

@@ -3942,6 +3942,22 @@ const en = {
   'setting.glossary.tab.terrain': 'Terrain',
   'setting.glossary.tab.sideQuests': 'Quests',
 
+  'home.altar.pranaBalance': 'Prana: {prana}',
+  'home.altar.enemyType': 'Type: {type}',
+  'home.altar.enemyCategory': 'Category: {category}',
+  'home.altar.requiredEssence': 'Required Morphia Essence: {prana} Prana',
+  'home.altar.category.normal': 'Normal enemy',
+  'home.altar.category.elite': 'Elite enemy',
+  'home.altar.category.boss': 'Boss enemy',
+  'home.altar.unlocked': 'Unlocked',
+  'home.altar.unlockCost': 'Unlock ({prana} Prana)',
+  'home.altar.unlockConfirm': 'Spend {prana} Prana to unlock {enemy}?',
+  'home.altar.noUnlockedForms': 'Unlock an enemy form at the Altar first.',
+  'home.inventory.sellAllPrana': 'Sell all {prana} Prana',
+  'home.inventory.sellConfirmPrana': 'You will receive {prana} Prana. Super-rare items grant no Gold.',
+  'home.inventory.sellResultPrana': 'Received {prana} Prana.',
+  'home.inventory.sellResultGold': 'Received {gold} Gold.',
+
 } as const;
 
 export default en;
