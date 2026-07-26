@@ -65,7 +65,7 @@ import { getItemById } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { DEITY_OPTIONS, getDeityKey, getDeityRewardDrawBonuses, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -2477,14 +2477,11 @@ function getPartyCunningMultiplier(party: Party): number {
 }
 
 function getPrayerDepositMultiplier(party: Party): number {
-  const deityKey = getDeityKey(party.deity.name);
   const momentumLevel = getPartyAbilityLevel(party, 'momentum');
-  const embezzlementRate =
-    (deityKey === 'God of Cunning' ? 0.5 : 0)
-    + (momentumLevel > 0 ? 0.1 : 0);
+  const deityDepositMultiplier = getDeityDepositMultiplier(party.deity.name, party.deityGold ?? 0);
+  const momentumEmbezzlementRate = momentumLevel > 0 ? 0.1 : 0;
 
-  // Embezzlement at pray end: God of Cunning +50%, Momentum (party has at least one) +10%.
-  return Math.max(0, 1 - embezzlementRate);
+  return Math.max(0, deityDepositMultiplier - momentumEmbezzlementRate);
 }
 
 function rollPercentInclusive(min: number, max: number): number {
@@ -2582,6 +2579,7 @@ function getUnlockActorName(party: Party): string | undefined {
 
 function applyPeriodicDeityHpEffect(
   deityName: string,
+  totalDonatedGold: number,
   floorNumber: number,
   roomInFloor: number,
   roomType: RoomType,
@@ -2606,7 +2604,8 @@ function applyPeriodicDeityHpEffect(
       return { hp: currentHp };
     }
     const missingHp = maxHp - currentHp;
-    const healAmount = Math.floor(missingHp * 0.2);
+    const healRate = 0.2 + 0.001 * getDeityRank(totalDonatedGold);
+    const healAmount = Math.floor(missingHp * healRate);
     return {
       hp: Math.min(maxHp, currentHp + healAmount),
       healAmount: healAmount > 0 ? healAmount : undefined,
@@ -3443,6 +3442,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
               const deityHpEffect = applyPeriodicDeityHpEffect(
                 currentParty.deity.name,
+                deityDonation,
                 floor.floorNumber,
                 roomIndex + 1,
                 roomDef.type,

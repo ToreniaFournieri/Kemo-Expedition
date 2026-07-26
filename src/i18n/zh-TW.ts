@@ -1477,7 +1477,7 @@ const zhTW = {
   'deity.effect.GodOfFortification': '全員物理防禦倍率2/3倍。休息時間2倍。弱雷（1.5倍傷害增加）',
   'deity.effect.GoddessOfFertility': '全員先制+1。宴會時間2倍。弱火（1.5倍傷害增加）',
   'deity.effect.GoddessOfPrecision': '全員命中+{accuracyBonus}，迴避-5。探索時間1.2倍',
-  'deity.effect.GodOfFate': '未來改變。祈禱時間2倍。',
+  'deity.effect.GodOfFate': '未來改變。祈禱時間{prayerTimeMultiplier}倍。',
   'deity.effect.GodOfDusk': '全員迴避+{evasionBonus}，魔法防禦倍率1.10倍。出售時間2倍。',
   'deity.effect.GoddessOfMirage': '全員魔法攻擊倍率{magicalAttackMultiplier}倍，物理防禦倍率1.10倍。',
   'deity.effect.GodOfResonance': '全員共鳴強化1+α階段。共鳴不僅適用於魔法攻擊，也適用於遠程攻擊。魔法防禦倍率1.10倍，HP{hpMultiplier}倍。',

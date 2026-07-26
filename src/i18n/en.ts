@@ -1477,7 +1477,7 @@ const en = {
   'deity.effect.GodOfFortification': 'Physical defense multiplier x2/3 for everyone. Rest time x2. Weak to thunder (takes 1.5x damage).',
   'deity.effect.GoddessOfFertility': 'First strike +1 for everyone. Feast time x2. Weak to fire (takes 1.5x damage).',
   'deity.effect.GoddessOfPrecision': 'Accuracy +{accuracyBonus} and evasion -5 for everyone. Exploration time x1.2.',
-  'deity.effect.GodOfFate': 'Alters the future. Prayer time x2.',
+  'deity.effect.GodOfFate': 'Alters the future. Prayer time x{prayerTimeMultiplier}.',
   'deity.effect.GodOfDusk': 'Evasion +{evasionBonus} and magical defense multiplier x1.10 for everyone. Sell time x2.',
   'deity.effect.GoddessOfMirage': 'Magical attack multiplier x{magicalAttackMultiplier} and physical defense multiplier x1.10 for everyone.',
   'deity.effect.GodOfResonance': 'Strengthens resonance by 1+α stages for everyone. Resonance applies to ranged attacks as well as magic attacks. Magical defense multiplier x1.10, HP x{hpMultiplier}.',

@@ -1478,7 +1478,7 @@ const zhCN = {
   'deity.effect.GodOfFortification': '全员物理防御倍率2/3倍。休息时间2倍。弱雷（1.5倍伤害增加）',
   'deity.effect.GoddessOfFertility': '全员先制+1。宴会时间2倍。弱火（1.5倍伤害增加）',
   'deity.effect.GoddessOfPrecision': '全员命中+{accuracyBonus}，回避-5。探索时间1.2倍',
-  'deity.effect.GodOfFate': '未来改变。祈祷时间2倍。',
+  'deity.effect.GodOfFate': '未来改变。祈祷时间{prayerTimeMultiplier}倍。',
   'deity.effect.GodOfDusk': '全员回避+{evasionBonus}，魔法防御倍率1.10倍。出售时间2倍。',
   'deity.effect.GoddessOfMirage': '全员魔法攻击倍率{magicalAttackMultiplier}倍，物理防御倍率1.10倍。',
   'deity.effect.GodOfResonance': '全员共鸣强化1+α阶段。共鸣不仅适用于魔法攻击，也适用于远程攻击。魔法防御倍率1.10倍，HP{hpMultiplier}倍。',

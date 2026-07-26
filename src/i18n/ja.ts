@@ -1478,7 +1478,7 @@ const ja = {
   'deity.effect.GodOfFortification': '全員に物理防御倍率2/3倍。休息時間2倍。雷属性に弱い(1.5倍ダメージ増)',
   'deity.effect.GoddessOfFertility': '全員に先制+1。宴会時間2倍。火属性に弱い(1.5倍ダメージ増)',
   'deity.effect.GoddessOfPrecision': '全員の命中+{accuracyBonus}、回避-5。探索時間1.2倍',
-  'deity.effect.GodOfFate': '未来改変。祈り時間2倍。',
+  'deity.effect.GodOfFate': '未来改変。祈り時間{prayerTimeMultiplier}倍。',
   'deity.effect.GodOfDusk': '全員の回避+{evasionBonus}、魔法防御倍率1.10倍。売却時間2倍。',
   'deity.effect.GoddessOfMirage': '全員に魔法攻撃倍率{magicalAttackMultiplier}倍、物理防御倍率1.10倍。',
   'deity.effect.GodOfResonance': '全員の共鳴を1+α段階強化。共鳴は魔法攻撃だけでなく、遠距離攻撃にも適用。魔法防御倍率1.10倍、HP{hpMultiplier}倍。',

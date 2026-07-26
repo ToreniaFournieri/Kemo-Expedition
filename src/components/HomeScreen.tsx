@@ -28,7 +28,7 @@ import { ENEMIES, getEnemyDropCandidates, getEnemyIndividualAbilities, getEnemyI
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
-import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
@@ -5241,14 +5241,12 @@ export function HomeScreen({
   };
 
   const getPrayerDepositMultiplier = (party: Party): number => {
-    const deityKey = getDeityKey(party.deity.name);
     const momentumLevel = getPartyAbilityLevel(party, 'momentum');
-    const embezzlementRate =
-      (deityKey === 'God of Cunning' ? 0.5 : 0)
-      + (momentumLevel > 0 ? 0.1 : 0);
+    const deityDonation = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
+    const deityDepositMultiplier = getDeityDepositMultiplier(party.deity.name, deityDonation);
+    const momentumEmbezzlementRate = momentumLevel > 0 ? 0.1 : 0;
 
-    // Embezzlement at pray end: God of Cunning +50%, Momentum (party has at least one) +10%.
-    return Math.max(0, 1 - embezzlementRate);
+    return Math.max(0, deityDepositMultiplier - momentumEmbezzlementRate);
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
