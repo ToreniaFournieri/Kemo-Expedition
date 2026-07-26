@@ -4,6 +4,7 @@
 - Each encounter consists of one battle
 
 - **Attack capabilities**
+  - Each attack capability grants one action during a battle. Therefore, a character with two or more attack capabilities may act multiple times in the same battle.
   - A character has `ranged_attack` if it has either `d.ranged_attack` or `d.ranged_NoA`.
   - A character has `magical_attack` if it has either `d.magical_attack` or `d.magical_NoA`.
   - A character has `melee_attack` if it has either `d.melee_attack` or `d.melee_NoA`.
