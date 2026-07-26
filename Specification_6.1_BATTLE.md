@@ -127,40 +127,31 @@ If `a.*` with phase = START:
 
 ##### 6.1.1.2 Combat phase
 
-**Internal attack-type contract and battle-log compatibility**
-- Combat rules use `attack_type` as the authoritative discriminator. They must not infer ranged, magical, or melee behavior from a battle-log phase label.
-- The current runtime still resolves one combat phase as three ordered attack-type steps: `ranged` → `magical` → `melee`.
-- `LONG`, `MID`, and `CLOSE` are retained as battle-log phase labels only, so existing player-visible logs remain unchanged:
-  - `attack_type = ranged` is displayed as `LONG`.
-  - `attack_type = magical` is displayed as `MID`.
-  - `attack_type = melee` is displayed as `CLOSE`.
-- The battle-log phase label must be derived from the resolved action's `attack_type`. A caller must pass `attack_type` explicitly to combat-rule functions; a `CLOSE` log label, for example, must never cause an action with `attack_type = magical` to be treated as melee.
-- `START` and `END` remain lifecycle phases and do not represent an `attack_type`.
-
 **Speed & Turn Order (Rolling Dice Rule)**
 - At the start of each attack-type step, every **eligible actor** (enemy + each party member) rolls initiative for that step.
-- An actor is eligible when it has the capability matching the current `attack_type`:
-  - `attack_type = ranged`: actor has `ranged_attack`.
-  - `attack_type = magical`: actor has `magical_attack`.
-  - `attack_type = melee`: actor has `melee_attack`.
+- **Base-roll** determined by attack type.
+  - `ranged_attack`, `base-roll` is 3d3. (3-9)
+  - `magical_attack`, `base-roll` is  2d3. (2-6)
+  - `melee_attack`, `base-roll` is  1d3. (1-3)
 - **Initiative roll**
+  - Cap at 49. 
   - If actor has `a.first-strike`:
-      - If terrain = `terrain.machine-logic` and actor does not have `a.equation-breaker` : roll **1d3** (1–3)
-      - Else if terrain = `terrain.ash-haze` and actor does not have `a.true-sight`: roll **1d3** (1–3)
-      - Else if `a.first-strike`3: Roll **4d3**(4–12), cap at 9
-      - Else if `a.first-strike`2: Roll **3d3**(3–9)
-      - Else if `a.first-strike`1: Roll **2d3**(2–6)
-      - Otherwise: roll **1d3** (1–3)
+      - If terrain = `terrain.machine-logic` and actor does not have `a.equation-breaker` : roll **`base-roll`**
+      - Else if terrain = `terrain.ash-haze` and actor does not have `a.true-sight`: roll **`base-roll`**
+      - Else if `a.first-strike`3: Roll **`base-roll` +3d3**
+      - Else if `a.first-strike`2: Roll **`base-roll` +2d3**
+      - Else if `a.first-strike`1: Roll **`base-roll` +1d3**
+      - Otherwise: roll **`base-roll`**
 
 - **Modifications**
-  - If party.`Goddess of Fertility` and terrain not in {`terrain.machine-logic`, `terrain.gehenna` }: +1 (cap at 9)
+  - If party.`Goddess of Fertility` and terrain not in {`terrain.machine-logic`, `terrain.gehenna` }: +1
   - If actor.`a.slow`N and terrain != `terrain.machine-logic`: −N (minimum 1)
-  - If actor.`a.boost`N and terrain != `terrain.machine-logic`: +N (cap at 9)
+  - If actor.`a.boost`N and terrain != `terrain.machine-logic`: +N
   - If opponent.`a.frostbite`1 and (actor doesn't have `a.coldproof`) and terrain != `terrain.machine-logic`: -1 (minimum 1)
 
   - **Terrain effects**
-    - If `terrain.tailwind` and (actor doesn't has `a.wind-rider`) and (actor is a party member): +**1d3**, cap at 9
-    - If `terrain.enemy-high-ground` and actor is an enemy: +**1d3**, cap at 9
+    - If `terrain.tailwind` and (actor doesn't has `a.wind-rider`) and (actor is a party member): +**1d3**,
+    - If `terrain.enemy-high-ground` and actor is an enemy: +**1d3**,
 
 - Actions are resolved in descending order of roll result.
 - **Tie-breaker action order**
@@ -171,7 +162,7 @@ If `a.*` with phase = START:
     4. Back-row party member moves
    
 **Order by priority**
-- Each attack-type step is resolved from timing 9 down to timing 0. (0 is only for `Trigger`)
+- Each attack-type step is resolved from timing 49 down to timing 0. (0 is only for `Trigger`)
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
