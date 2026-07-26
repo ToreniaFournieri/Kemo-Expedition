@@ -337,17 +337,17 @@
 - Other enemy that for enemy form
 
 
-| `Enemy_ID` | `x.enemy_type` | `x.name` (Japanese) | additional abilities or bonus |
-|---|---|---|---|
-| 13 |`Lupinian` |  | |
-| 14 |`Vulpinian` |  | |
-| 15 |`Felidian` |  | |
-| 16 |`Caninian` |  | |
-| 17 |`Ursan` |  | |
-| 18 |`Procyonian` |  | |
-| 19 |`Leporian` |  | |
-| 20 |`Cervin` |  | |
-| 21 |`Murid` |  | |
+| `Enemy_ID` |`x.type` |`x.enemy_type` | `x.name` (Japanese) | additional abilities or bonus |
+|---|---|---|---|---|
+| 13 | Normal | `Lupinian` |  | |
+| 14 | Normal |`Vulpinian` |  | |
+| 15 | Normal |`Felidian` |  | |
+| 16 | Normal |`Caninian` | ミズ | |
+| 17 | Normal |`Ursan` |  | |
+| 18 | Normal |`Procyonian` |  | |
+| 19 | Normal |`Leporian` |  | |
+| 20 | Normal |`Cervin` |  | |
+| 21 | Normal |`Murid` |  | |
 
 
 - prompt example:
