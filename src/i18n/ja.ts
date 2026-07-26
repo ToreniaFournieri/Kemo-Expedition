@@ -224,6 +224,7 @@ const ja = {
   'diary.specialRewards': '特別獲得',
   'setting.feedback.webhookMissing': 'VITE_FEEDBACK_DISCORD_WEBHOOK_URL が未設定です。',
   'setting.feedback.sent': 'フィードバックを送信しました',
+  'setting.feedback.sentFirst': 'フィードバックを送信しました。(+10プラーナ獲得)',
   'setting.feedback.sendFailed': 'フィードバック送信に失敗しました。',
   'setting.backup.exported': 'バックアップをエクスポートしました',
   'setting.backup.manualSaveInstructions': 'バックアップを新しいページで開きました。アプリ内ブラウザでは共有ボタンから「ファイルに保存」を選択してください。',
