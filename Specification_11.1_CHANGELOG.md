@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 26 | 2026/07/26 | Implement the complete runtime feedback flow with required persisted names, categories, first-submission messaging and 10 Prana reward, diagnostic metadata, backup/log/status attachments, and shared status-table generation. |
 | 0.8.6 | 25 | 2026/07/26 | Align runtime enemy-form Alter level requirements with the specified tier bases: Normal 0, Elite 4, and Boss 10, plus each additional ability or bonus. |
 | 0.8.6 | 24 | 2026/07/26 | Count Altar victories once per successfully completed expedition for each enemy-form category assigned to a Mimorian, instead of deriving progression from defeated enemies. |
 | 0.8.6 | 23 | 2026/07/26 | Make unlocked Mimorian enemy forms exclusive to one character at a time, hide Mimorian when no unassigned form is available, and enforce form availability in runtime state updates. |
