@@ -777,6 +777,16 @@ function getEnemyBattleStatsWithDefaults(value: unknown): Record<number, { defea
     return acc;
   }, {});
 }
+
+function getAltarVictoriesWithDefaults(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object') return {};
+  return Object.entries(value as Record<string, unknown>).reduce<Record<string, number>>((acc, [enemyType, victories]) => {
+    if (typeof victories === 'number' && Number.isFinite(victories)) {
+      acc[enemyType] = Math.max(0, Math.floor(victories));
+    }
+    return acc;
+  }, {});
+}
 function getExpeditionStatsWithDefaults(value: unknown) {
   if (!value || typeof value !== 'object') {
     return { Clear: 0, Turned_Back: 0, Draw_Retreat: 0, Wounded_Retreat: 0, Defeat: 0, donatedGold: 0, savedGold: 0 };
@@ -1116,6 +1126,7 @@ function loadSavedState(): LoadSavedStateResult {
             shopIntimacyLastDecayAt: Date.now(),
             jewels: createStarterJewelInventory(),
             enemyBattleStats: {},
+            altarVictoriesByEnemyType: {},
             readDeveloperNewsItemIds: [],
           };
         }
@@ -1133,6 +1144,7 @@ function loadSavedState(): LoadSavedStateResult {
               .map((name: string) => normalizeChallengedGodName(name))
           : [];
         parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
+        parsed.global.altarVictoriesByEnemyType = getAltarVictoriesWithDefaults(parsed.global.altarVictoriesByEnemyType);
         parsed.global.readDeveloperNewsItemIds = Array.isArray(parsed.global.readDeveloperNewsItemIds)
           ? Array.from(new Set(parsed.global.readDeveloperNewsItemIds.filter((itemId: unknown): itemId is string => typeof itemId === 'string' && itemId.trim().length > 0)))
           : [];
@@ -1901,6 +1913,7 @@ function createInitialState(): InitialStateResult {
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
       enemyBattleStats: {},
+      altarVictoriesByEnemyType: {},
       readDeveloperNewsItemIds: [],
       language: initialLanguage,
     },
@@ -3706,6 +3719,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
         : null;
 
+      // SpecRef: 8.4.5 | Altar (祭壇) | Alter level
+      const nextAltarVictoriesByEnemyType = { ...(state.global.altarVictoriesByEnemyType ?? {}) };
+      if (finalOutcome === 'Clear') {
+        const assignedEnemyTypes = new Set(
+          currentParty.characters
+            .filter((character) => character.raceId === 'mimorian')
+            .map((character) => ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType)
+            .filter((enemyType): enemyType is string => Boolean(enemyType)),
+        );
+        assignedEnemyTypes.forEach((enemyType) => {
+          nextAltarVictoriesByEnemyType[enemyType] = (nextAltarVictoriesByEnemyType[enemyType] ?? 0) + 1;
+        });
+      }
+
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
@@ -3763,6 +3790,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
           revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
           enemyBattleStats: nextEnemyBattleStats,
+          altarVictoriesByEnemyType: nextAltarVictoriesByEnemyType,
         },
       };
     }
@@ -4486,7 +4514,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const enemy = ENEMIES.find((candidate) => candidate.id === action.enemyId);
       if (!enemy || state.global.unlockedMimorianEnemyIds.includes(enemy.id)) return state;
       const cost = getEnemyFormPranaCost(enemy);
-      const altarLevel = getAltarLevel(getAltarVictoriesForEnemyType(enemy.enemyType, state.global.enemyBattleStats));
+      const altarLevel = getAltarLevel(getAltarVictoriesForEnemyType(enemy.enemyType, state.global.altarVictoriesByEnemyType));
       if (state.global.prana < cost || altarLevel < getEnemyRequiredAltarLevel(enemy)) return state;
       return {
         ...state,
@@ -4893,6 +4921,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
           enemyBattleStats: {},
+          altarVictoriesByEnemyType: {},
           readDeveloperNewsItemIds: [],
           language: state.global.language,
         },
@@ -4971,6 +5000,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           unlockedMimorianEnemyIds: Array.isArray(hydrated.global.unlockedMimorianEnemyIds)
             ? Array.from(new Set(hydrated.global.unlockedMimorianEnemyIds.filter((enemyId) => Number.isInteger(enemyId) && ENEMIES.some((enemy) => enemy.id === enemyId))))
             : [],
+          altarVictoriesByEnemyType: getAltarVictoriesWithDefaults(hydrated.global.altarVictoriesByEnemyType),
           jewelAutoEquipPriorityPartyId: normalizeJewelAutoEquipPriorityPartyId(
             hydrated.global.jewelAutoEquipPriorityPartyId,
             trimmedParties.length,

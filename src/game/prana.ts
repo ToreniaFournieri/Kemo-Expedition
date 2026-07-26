@@ -1,5 +1,5 @@
 import { EnemyDef, Item } from '../types';
-import { ENEMIES, getEnemyIndividualAbilities, getEnemyIndividualBonuses } from '../data/enemies';
+import { getEnemyIndividualAbilities, getEnemyIndividualBonuses } from '../data/enemies';
 
 export const MAX_ALTAR_LEVEL = 20;
 
@@ -23,11 +23,9 @@ export function getEnemyFormPranaCost(enemy: EnemyDef): number {
 // SpecRef: 8.4.5 | Altar (祭壇) | Alter level
 export function getAltarVictoriesForEnemyType(
   enemyType: string,
-  enemyBattleStats: Record<number, { defeats: number; encounters: number }> = {},
+  altarVictoriesByEnemyType: Record<string, number> = {},
 ): number {
-  return ENEMIES
-    .filter((enemy) => enemy.enemyType === enemyType)
-    .reduce((total, enemy) => total + (enemyBattleStats[enemy.id]?.defeats ?? 0), 0);
+  return Math.max(0, Math.floor(altarVictoriesByEnemyType[enemyType] ?? 0));
 }
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Alter level
