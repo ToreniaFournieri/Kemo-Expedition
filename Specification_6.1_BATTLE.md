@@ -95,22 +95,22 @@ If `a.*` with phase = START:
 
 
 - actor.`a.command`
-	- party.`f.party.offense_amplifier`(phase: phase):
+	- party.`f.party.offense_amplifier`(attack_type: attack_type):
 	  - If phase is LONG or CLOSE:
 	    - If front_row_from_actor_member_has.`a.command`3: multiply x2.43
 		- If front_row_from_actor_member_has.`a.command`2: multiply x1.35
 	    - If front_row_from_actor_member_has.`a.command`1: multiply x1.2
 
 - actor.`a.defender` or `a.m-barrier`
-	- party.`f.abilities_defense_amplifier`(phase: phase):
+	- party.`f.abilities_defense_amplifier`(attack_type: attack_type):
 	  - If phase is LONG or CLOSE:
 	  	- If front_row_from_actor_member_has.`a.defender`3: multiply x1/2
 	  	- If front_row_from_actor_member_has.`a.defender`2: multiply x3/5
 		- If front_row_from_actor_member_has.`a.defender`1: multiply x2/3
 
 - actor.`a.m-barrier`
-	- party.`f.abilities_defense_amplifier`(phase: phase):
-    - If phase is MID:
+	- party.`f.abilities_defense_amplifier`(attack_type: attack_type):
+    - If `attack_type = magical`:
 	    - If front_row_from_actor_member_has.`a.m-barrier`3: multiply x1/2
 	    - If front_row_from_actor_member_has.`a.m-barrier`2: multiply x3/5
 	    - If front_row_from_actor_member_has.`a.m-barrier`1: multiply x2/3
@@ -204,7 +204,7 @@ If `a.*` with phase = START:
 
 #### 6.1.2 Timed ability
 - For each actor:
-  - If actor has an ability with matching timing (phase: current phase, timing: current timing):
+  - If actor has an ability with matching timing (attack_type: current attack_type, timing: current timing):
 - Resolve activation order using tie-breaker:
   - Enemy > Front-row party member > Back-row party member
 - Activate abilities in the above order.
@@ -251,13 +251,13 @@ If `a.*` with phase = START:
 
 - **Decompose**
   - Triggered by `a.decompose`
-  - Use `f.targeting` (phase: CLOSE) for choosing target.
+  - Use `f.targeting` (`attack_type = melee`) for choosing target.
   - target.`d.defense` = N/D x target.`d.defense`
   - Log: `log.decompose` + "(target.name の 防御力 XXX → YYY)"   gray text
 
 - **Self destruct**
   - Triggered by `a.self-destruct`
-  - Use `f.targeting` (phase: CLOSE) for choosing target.
+  - Use `f.targeting` (`attack_type = melee`) for choosing target.
   - opponent.`d.HP` -= N/D x ( actor.remaining_HP - opponent.`d.physical_defense` ) x opponent.`f.defense_amplifier`
   - actor.`d.HP` = 0.
   - Log: `log.self-destruct`
@@ -345,7 +345,7 @@ If `a.*` with phase = START:
 
 	- Null resolve
 	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
-   - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
+   - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, attack_type: attack_type)
 
 	- **self-inflicted damage**
       - If `terrain.vine-snare` and (actor doesn't have `a.vine-cutter`): actor.`d.HP` -= 0.01 x actor.current_HP
@@ -429,10 +429,10 @@ If `a.*` with phase = START:
 
 **Counter**
 - If opponent.`a.counter` 
-  - `f.counter`(actor:actor , opponent:opponent ,phase: )
-- If opponent.`a.magical-counter` and (`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
+  - `f.counter`(actor:actor , opponent:opponent ,attack_type: )
+- If opponent.`a.magical-counter` and (`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,attack_type: )
 - **counter-chain**
-  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
+  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,attack_type: )
 
 
 **Ally-follow-up**
@@ -473,7 +473,7 @@ If `a.*` with phase = START:
   	- If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
     Else, return 1.0.
 
-- `f.damage_calculation`: (actor: , opponent: , phase: )
+- `f.damage_calculation`: (actor: , opponent: , attack_type: )
   - max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )
   - x actor.`f.offense_amplifier`
   - x actor.`f.elemental_offense_attribute`
@@ -644,7 +644,7 @@ If `a.*` with phase = START:
 
 ##### 6.1.4.3 Function of Reactive ability
 
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, `attack_type = ranged` or `attack_type = melee`) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+- **`f.counter`(actor: , opponent: ,attack_type: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, `attack_type = ranged` or `attack_type = melee`) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
   - Attack resolution:
     - If `attack_type = ranged` : Execute a ranged attack.
     - If `attack_type = melee` : Execute a melee attack.
@@ -658,7 +658,7 @@ If `a.*` with phase = START:
     - IF actor.`a.counter` and (opponent or opponent.party.character have available `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”. Reduce null-counter counter. (note: `a.null-counter`1 can disable once in battle,  `a.null-counter`2 can disable twice in battle, `a.null-counter`3 can disable three times in battle. if the null-counter is 0, the `a.null-counter` is disable in this battle. )
     - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has available `a.null-counter`, nagete the counter attack.
 
-- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or opponent.party.character have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+- **`f.re-counter`(actor: , opponent: ,attack_type: ) :** IF actor.`a.re-counter` and (opponent or opponent.party.character have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
   	- `a.re-counter`1:   actor.`f.NoA` x 0.5, round up
   	- `a.re-counter`2:   actor.`f.NoA` x 1.0
     - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
@@ -668,7 +668,7 @@ If `a.*` with phase = START:
   	- `a.covering-fire`2:   actor.`f.NoA` x 1.0
     - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
 
-- **`f.magical-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+- **`f.magical-counter`(actor: , opponent: ,attack_type: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
   	- `a.magical-counter`1:   actor.`f.NoA` x 0.5, round up
   	- `a.magical-counter`2:   actor.`f.NoA` x 1.0
     - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
