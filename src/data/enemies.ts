@@ -512,16 +512,6 @@ function assignCommonDropTokensByClass(dropTokens: string[], enemyClass: EnemyCl
   return [...nonCommonDrops, ...commonDrops];
 }
 
-const MASTER_BOSS_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
-  // SpecRef: 4.2.2 | Enemy | Rare items drop
-  2: [{ id: 'deflection', level: 2 }],
-  3: [{ id: 'melee_confusion', level: 1 }],
-  5: [{ id: 'fire_reflect', level: 1 }],
-  6: [{ id: 'soul_reap', level: 3 }],
-  7: [{ id: 'melee_reflect', level: 1 }],
-  8: [{ id: 'shock', level: 1 }, { id: 'magic_seal', level: 1 }],
-};
-
 const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
   105: [{ id: 'howl', level: 1 }],
@@ -546,6 +536,7 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   189: [{ id: 're_attack', level: 1 }],
   195: [{ id: 'resurrect', level: 1 }],
   201: [{ id: 'overwatch', level: 1 }],
+  207: [{ id: 'melee_confusion', level: 1 }],
   225: [{ id: 're_attack', level: 1 }],
   229: [{ id: 'reanimate', level: 1 }],
   230: [{ id: 'stealth', level: 1 }],
@@ -557,19 +548,17 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   267: [{ id: 'magic_seal', level: 1 }],
   270: [{ id: 'mimic', level: 1 }],
   273: [{ id: 'boost', level: 1 }],
+  279: [{ id: 'fire_reflect', level: 1 }],
   303: [{ id: 'first_strike', level: 1 }],
   309: [{ id: 'ranged_confusion', level: 1 }],
+  315: [{ id: 'soul_reap', level: 3 }],
   321: [{ id: 'm_barrier_breaker', level: 1 }],
   325: [{ id: 're_counter', level: 1 }],
   326: [{ id: 'ranged_null', level: 1 }],
   327: [{ id: 'melee_reflect', level: 1 }],
   333: [{ id: 'melee_reflect', level: 1 }],
-};
-
-const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
-  // SpecRef: 4.2.2 | Enemy | Rare items drop
-  4: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }, { type: 'growth_xV', value: 1.5 }],
-  7: [{ type: 'growth_xV', value: 1.4 }],
+  351: [{ id: 'melee_reflect', level: 1 }],
+  387: [{ id: 'shock', level: 1 }, { id: 'magic_seal', level: 1 }],
 };
 
 const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
@@ -580,6 +569,7 @@ const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   213: [{ type: 'growth_xV', value: 1.3 }],
   219: [{ type: 'penet', value: 0.4 }],
   237: [{ type: 'evasion', value: 0.03 }],
+  243: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }, { type: 'growth_xV', value: 1.5 }],
   147: [{ type: 'physical_defense_multiplier_xV', value: 1 / 2 }],
   163: [{ type: 'physical_defense_multiplier_xV', value: 2 / 5 }],
   164: [{ type: 'physical_defense_multiplier_xV', value: 3 / 5 }],
@@ -593,6 +583,7 @@ const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   315: [{ type: 'growth_xV', value: 1.5 }],
   339: [{ type: 'growth_xV', value: 1.3 }],
   345: [{ type: 'physical_offense_multiplier_xV', value: 1.4 }],
+  351: [{ type: 'growth_xV', value: 1.4 }],
 };
 
 // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
@@ -625,10 +616,7 @@ function generateEnemies(): EnemyDef[] {
         row[8] ?? 'none',
         row[4],
         row[0],
-        mergeEnemyAbilities(
-          spawnType === 'boss' ? (MASTER_BOSS_BONUS_ABILITIES[tier] ?? []) : [],
-          MASTER_ENEMY_BONUS_ABILITIES[id] ?? [],
-        ),
+        MASTER_ENEMY_BONUS_ABILITIES[id] ?? [],
         row[2],
       );
       const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
@@ -637,12 +625,6 @@ function generateEnemies(): EnemyDef[] {
       const enemyBonusModifiers = MASTER_ENEMY_BONUS_MODIFIERS[id] ?? [];
       if (enemyBonusModifiers.length > 0) {
         enemy.bonuses = [...(enemy.bonuses ?? []), ...enemyBonusModifiers];
-      }
-      if (spawnType === 'boss') {
-        const bossBonusModifiers = MASTER_BOSS_BONUS_MODIFIERS[tier] ?? [];
-        if (bossBonusModifiers.length > 0) {
-          enemy.bonuses = [...(enemy.bonuses ?? []), ...bossBonusModifiers];
-        }
       }
       enemies.push(enemy);
     });
