@@ -3950,7 +3950,7 @@ const en = {
   'setting.glossary.tab.sideQuests': 'Quests',
 
   'home.altar.pranaBalance': 'Prana: {prana}',
-  'home.altar.levelProgress': 'Altar level: {level} ({victories} / {required})',
+  'home.altar.levelProgress': 'Altar level: {level} (Victories: {victories} / {required})',
   'home.altar.requiredLevel': 'Required Altar level: {level}',
   'home.altar.enemyType': 'Type: {type}',
   'home.altar.enemyCategory': 'Category: {category}',

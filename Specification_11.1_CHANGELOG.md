@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 28 | 2026/07/26 | Label the Altar level progress numbers as category victories in every supported runtime language, including 踏破数 in Japanese. |
 | 0.8.6 | 27 | 2026/07/26 | Update the successful first-feedback runtime notification to explicitly report the awarded 10 Prana in every supported language. |
 | 0.8.6 | 26 | 2026/07/26 | Implement the complete runtime feedback flow with required persisted names, categories, first-submission messaging and 10 Prana reward, diagnostic metadata, backup/log/status attachments, and shared status-table generation. |
 | 0.8.6 | 25 | 2026/07/26 | Align runtime enemy-form Alter level requirements with the specified tier bases: Normal 0, Elite 4, and Boss 10, plus each additional ability or bonus. |

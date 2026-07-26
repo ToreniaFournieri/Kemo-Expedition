@@ -3950,7 +3950,7 @@ const ja = {
   'setting.glossary.tab.sideQuests': '求',
 
   'home.altar.pranaBalance': 'プラーナ: {prana}',
-  'home.altar.levelProgress': '祭壇レベル: {level} ({victories} / {required})',
+  'home.altar.levelProgress': '祭壇レベル: {level} (踏破数: {victories} / {required})',
   'home.altar.requiredLevel': '必要祭壇レベル: {level}',
   'home.altar.enemyType': '敵タイプ: {type}',
   'home.altar.enemyCategory': '敵カテゴリ: {category}',
