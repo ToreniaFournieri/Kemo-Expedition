@@ -12179,12 +12179,18 @@ function SettingTab({
       });
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
-      if (!hasSubmittedFeedback) {
+      const isFirstSuccessfulSubmission = !hasSubmittedFeedback;
+      if (isFirstSuccessfulSubmission) {
         localStorage.setItem(FEEDBACK_SUBMITTED_STORAGE_KEY, 'true');
         setHasSubmittedFeedback(true);
         onGrantFeedbackReward();
       }
-      onAddNotification(t('setting.feedback.sent'), 'normal', 'item', true);
+      onAddNotification(
+        t(isFirstSuccessfulSubmission ? 'setting.feedback.sentFirst' : 'setting.feedback.sent'),
+        'normal',
+        'item',
+        true,
+      );
       setFeedbackText('');
       setFeedbackFiles([]);
       if (feedbackFileInputRef.current) {

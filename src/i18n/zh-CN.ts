@@ -224,6 +224,7 @@ const zhCN = {
 'diary.specialRewards': '特别获得',
 'setting.feedback.webhookMissing': 'VITE_FEEDBACK_DISCORD_WEBHOOK_URL 未设置。',
 'setting.feedback.sent': '已发送反馈',
+'setting.feedback.sentFirst': '已发送反馈。（获得+10普拉纳）',
 'setting.feedback.sendFailed': '反馈发送失败。',
 'setting.backup.exported': '已导出备份',
 'setting.backup.manualSaveInstructions': '备份已在新页面中打开。在夸克、千问等应用内浏览器中，请点击浏览器的分享按钮，然后选择“存储到文件”。',

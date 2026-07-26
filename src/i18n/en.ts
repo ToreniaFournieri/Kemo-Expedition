@@ -223,6 +223,7 @@ const en = {
   'diary.specialRewards': 'Special rewards',
   'setting.feedback.webhookMissing': 'VITE_FEEDBACK_DISCORD_WEBHOOK_URL is not configured.',
   'setting.feedback.sent': 'Feedback sent.',
+  'setting.feedback.sentFirst': 'Feedback sent. (+10 Prana earned)',
   'setting.feedback.sendFailed': 'Failed to send feedback.',
   'setting.backup.exported': 'Backup exported.',
   'setting.backup.manualSaveInstructions': 'The backup has opened in a new page. In an in-app browser, use its Share button and choose Save to Files.',

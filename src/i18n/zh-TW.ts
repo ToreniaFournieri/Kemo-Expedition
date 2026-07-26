@@ -224,6 +224,7 @@ const zhTW = {
   'diary.specialRewards': '特別獲得',
   'setting.feedback.webhookMissing': 'VITE_FEEDBACK_DISCORD_WEBHOOK_URL 未設定。',
   'setting.feedback.sent': '已傳送回饋',
+  'setting.feedback.sentFirst': '已傳送回饋。（獲得+10普拉納）',
   'setting.feedback.sendFailed': '回饋傳送失敗。',
   'setting.backup.exported': '已匯出備份',
   'setting.backup.manualSaveInstructions': '備份已在新頁面中開啟。在夸克、千問等 App 內瀏覽器中，請點擊瀏覽器的分享按鈕，然後選擇「儲存到檔案」。',
