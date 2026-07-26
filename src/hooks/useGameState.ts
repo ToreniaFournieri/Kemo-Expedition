@@ -101,6 +101,7 @@ import {
   getCurrentShopRefreshDate,
 } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
+import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getSuperRareItemPrana } from '../game/prana';
 import {
   addJewelToInventory,
   createStarterJewelInventory,
@@ -711,10 +712,16 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
     ? character.subClassId
     : normalizedMainClassId;
 
+  const normalizedRaceId = RACES.some((r) => r.id === character.raceId) ? character.raceId : fallbackCharacter.raceId;
+  const normalizedMimorianEnemyId = normalizedRaceId === 'mimorian'
+    ? (ENEMIES.some((enemy) => enemy.id === character.mimorianEnemyId) ? character.mimorianEnemyId : ENEMIES[0]?.id)
+    : undefined;
+
   return {
     ...character,
     isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
-    raceId: RACES.some((r) => r.id === character.raceId) ? character.raceId : fallbackCharacter.raceId,
+    raceId: normalizedRaceId,
+    mimorianEnemyId: normalizedMimorianEnemyId,
     mainClassId: normalizedMainClassId,
     subClassId: normalizedSubClassId,
     predispositionId: PREDISPOSITIONS.some((p) => p.id === character.predispositionId)
@@ -767,6 +774,16 @@ function getEnemyBattleStatsWithDefaults(value: unknown): Record<number, { defea
       defeats: typeof raw.defeats === 'number' ? Math.max(0, Math.floor(raw.defeats)) : 0,
       encounters: typeof raw.encounters === 'number' ? Math.max(0, Math.floor(raw.encounters)) : 0,
     };
+    return acc;
+  }, {});
+}
+
+function getAltarVictoriesWithDefaults(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object') return {};
+  return Object.entries(value as Record<string, unknown>).reduce<Record<string, number>>((acc, [enemyType, victories]) => {
+    if (typeof victories === 'number' && Number.isFinite(victories)) {
+      acc[enemyType] = Math.max(0, Math.floor(victories));
+    }
     return acc;
   }, {});
 }
@@ -1109,6 +1126,7 @@ function loadSavedState(): LoadSavedStateResult {
             shopIntimacyLastDecayAt: Date.now(),
             jewels: createStarterJewelInventory(),
             enemyBattleStats: {},
+            altarVictoriesByEnemyType: {},
             readDeveloperNewsItemIds: [],
           };
         }
@@ -1126,6 +1144,7 @@ function loadSavedState(): LoadSavedStateResult {
               .map((name: string) => normalizeChallengedGodName(name))
           : [];
         parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
+        parsed.global.altarVictoriesByEnemyType = getAltarVictoriesWithDefaults(parsed.global.altarVictoriesByEnemyType);
         parsed.global.readDeveloperNewsItemIds = Array.isArray(parsed.global.readDeveloperNewsItemIds)
           ? Array.from(new Set(parsed.global.readDeveloperNewsItemIds.filter((itemId: unknown): itemId is string => typeof itemId === 'string' && itemId.trim().length > 0)))
           : [];
@@ -1855,7 +1874,16 @@ function createInitialState(): InitialStateResult {
       state: {
         ...savedStateResult.state,
         buildNumber: BUILD_NUMBER,
-        global: { ...savedStateResult.state.global, language: initialLanguage },
+        global: {
+          ...savedStateResult.state.global,
+          prana: Number.isFinite(savedStateResult.state.global.prana)
+            ? Math.max(0, Math.floor(savedStateResult.state.global.prana))
+            : 0,
+          unlockedMimorianEnemyIds: Array.isArray(savedStateResult.state.global.unlockedMimorianEnemyIds)
+            ? savedStateResult.state.global.unlockedMimorianEnemyIds
+            : [],
+          language: initialLanguage,
+        },
       },
       loadErrorLog: null,
     };
@@ -1867,6 +1895,8 @@ function createInitialState(): InitialStateResult {
     scene: 'home',
     global: {
       gold: 200,
+      prana: 0,
+      unlockedMimorianEnemyIds: [],
       inventory: createStarterInventory(),
       userId: generateUserId(),
       jewels: createStarterJewelInventory(),
@@ -1883,6 +1913,7 @@ function createInitialState(): InitialStateResult {
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
       enemyBattleStats: {},
+      altarVictoriesByEnemyType: {},
       readDeveloperNewsItemIds: [],
       language: initialLanguage,
     },
@@ -1938,6 +1969,8 @@ type GameAction =
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
+  | { type: 'GRANT_FEEDBACK_REWARD' }
+  | { type: 'UNLOCK_MIMORIAN_ENEMY'; enemyId: number }
   | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
@@ -3117,7 +3150,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
         return state;
       }
-      let currentHp = Math.max(0, Math.min(persistedCurrentHp, partyStats.hp));
+      // SpecRef: 5.1.1 | Party State Machine | state.explore
+      // RUN_EXPEDITION is shared by Online and AFK resolution, so restoring HP
+      // here guarantees that every exploration begins at the party's current MaxHP.
+      let currentHp = partyStats.hp;
       // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
       const difficultyOffsetMax = getDifficultyOffsetMax(dungeon.expLevel);
       const effectiveDifficultyOffset = hasDefeatedDungeonBoss(currentParty, dungeon.id)
@@ -3687,6 +3723,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
         : null;
 
+      // SpecRef: 8.4.5 | Altar (祭壇) | Alter level
+      const nextAltarVictoriesByEnemyType = { ...(state.global.altarVictoriesByEnemyType ?? {}) };
+      if (finalOutcome === 'Clear') {
+        const assignedEnemyTypes = new Set(
+          currentParty.characters
+            .filter((character) => character.raceId === 'mimorian')
+            .map((character) => ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType)
+            .filter((enemyType): enemyType is string => Boolean(enemyType)),
+        );
+        assignedEnemyTypes.forEach((enemyType) => {
+          nextAltarVictoriesByEnemyType[enemyType] = (nextAltarVictoriesByEnemyType[enemyType] ?? 0) + 1;
+        });
+      }
+
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
@@ -3744,6 +3794,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
           revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
           enemyBattleStats: nextEnemyBattleStats,
+          altarVictoriesByEnemyType: nextAltarVictoriesByEnemyType,
         },
       };
     }
@@ -4272,6 +4323,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           Object.entries(action.updates).filter(([key]) => !immutableForUnique.has(key as keyof Character))
         ) as Partial<Character>
         : action.updates;
+
+      // SpecRef: 8.2.3 | Character Edit Mode | A Mimorian enemy form can be assigned only once.
+      // Enforce this in the reducer as well as the selector so non-UI callers cannot bypass it.
+      const requestedRaceId = sanitizedUpdates.raceId ?? oldChar.raceId;
+      const requestedMimorianEnemyId = sanitizedUpdates.mimorianEnemyId ?? oldChar.mimorianEnemyId;
+      const isChangingMimorianAssignment = requestedRaceId === 'mimorian'
+        && (oldChar.raceId !== 'mimorian' || requestedMimorianEnemyId !== oldChar.mimorianEnemyId);
+      if (isChangingMimorianAssignment) {
+        const isUnlockedForm = requestedMimorianEnemyId != null
+          && state.global.unlockedMimorianEnemyIds.includes(requestedMimorianEnemyId)
+          && ENEMIES.some((enemy) => enemy.id === requestedMimorianEnemyId);
+        const isAssignedElsewhere = state.parties.some((party) => party.characters.some((character) =>
+          character.id !== oldChar.id
+          && character.raceId === 'mimorian'
+          && character.mimorianEnemyId === requestedMimorianEnemyId
+        ));
+        if (!isUnlockedForm || isAssignedElsewhere) return state;
+      }
       const newCharacters = [...currentParty.characters];
 
       let newInventory = state.global.inventory;
@@ -4384,9 +4453,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELL_STACK': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const variant = state.global.inventory[action.variantKey];
-      if (!variant || variant.count <= 0 || variant.item.superRare >= 1) return state;
+      if (!variant || variant.count <= 0) return state;
 
       const sellPrice = calculateSellPrice(variant.item) * variant.count;
+      const pranaGranted = getSuperRareItemPrana(variant.item) * variant.count;
 
       const newInventory = { ...state.global.inventory };
       newInventory[action.variantKey] = {
@@ -4403,7 +4473,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         parties: updatedParties,
-        global: { ...state.global, inventory: newInventory, gold: state.global.gold + sellPrice },
+        global: {
+          ...state.global,
+          inventory: newInventory,
+          gold: state.global.gold + (pranaGranted > 0 ? 0 : sellPrice),
+          prana: state.global.prana + pranaGranted,
+        },
       };
     }
 
@@ -4411,14 +4486,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalSellPrice = 0;
       const newInventory = { ...state.global.inventory };
 
-      const hasOwnedSuperRare = Object.values(state.global.inventory).some((variant) => (
-        variant.status === 'owned' && variant.count > 0 && variant.item.superRare >= 1
-      ));
-      if (hasOwnedSuperRare) return state;
+      let totalPrana = 0;
 
       for (const [variantKey, variant] of Object.entries(state.global.inventory)) {
         if (variant.status !== 'owned' || variant.count <= 0) continue;
-        totalSellPrice += calculateSellPrice(variant.item) * variant.count;
+        const pranaGranted = getSuperRareItemPrana(variant.item) * variant.count;
+        if (pranaGranted > 0) totalPrana += pranaGranted;
+        else totalSellPrice += calculateSellPrice(variant.item) * variant.count;
         newInventory[variantKey] = {
           ...variant,
           count: 0,
@@ -4426,7 +4500,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
-      if (totalSellPrice <= 0) return state;
+      if (totalSellPrice <= 0 && totalPrana <= 0) return state;
 
       return {
         ...state,
@@ -4434,6 +4508,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: newInventory,
           gold: state.global.gold + totalSellPrice,
+          prana: state.global.prana + totalPrana,
+        },
+      };
+    }
+
+    case 'GRANT_FEEDBACK_REWARD': {
+      // SpecRef: 8.6 | UI_SETTING | フィードバック
+      return {
+        ...state,
+        global: { ...state.global, prana: state.global.prana + 10 },
+      };
+    }
+
+    case 'UNLOCK_MIMORIAN_ENEMY': {
+      // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
+      const enemy = ENEMIES.find((candidate) => candidate.id === action.enemyId);
+      if (!enemy || state.global.unlockedMimorianEnemyIds.includes(enemy.id)) return state;
+      const cost = getEnemyFormPranaCost(enemy);
+      const altarLevel = getAltarLevel(getAltarVictoriesForEnemyType(enemy.enemyType, state.global.altarVictoriesByEnemyType));
+      if (state.global.prana < cost || altarLevel < getEnemyRequiredAltarLevel(enemy)) return state;
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          prana: state.global.prana - cost,
+          unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds, enemy.id],
         },
       };
     }
@@ -4815,6 +4915,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         scene: 'home' as const,
         global: {
           gold: 200,
+          prana: 0,
+          unlockedMimorianEnemyIds: [],
           inventory: createStarterInventory(),
           userId: generateUserId(),
           jewels: createStarterJewelInventory(),
@@ -4831,6 +4933,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
           enemyBattleStats: {},
+          altarVictoriesByEnemyType: {},
           readDeveloperNewsItemIds: [],
           language: state.global.language,
         },
@@ -4905,6 +5008,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           readDeveloperNewsItemIds: Array.isArray(hydrated.global.readDeveloperNewsItemIds)
             ? Array.from(new Set(hydrated.global.readDeveloperNewsItemIds.filter((itemId) => typeof itemId === 'string' && itemId.trim().length > 0)))
             : [],
+          prana: Number.isFinite(hydrated.global.prana) ? Math.max(0, Math.floor(hydrated.global.prana)) : 0,
+          unlockedMimorianEnemyIds: Array.isArray(hydrated.global.unlockedMimorianEnemyIds)
+            ? Array.from(new Set(hydrated.global.unlockedMimorianEnemyIds.filter((enemyId) => Number.isInteger(enemyId) && ENEMIES.some((enemy) => enemy.id === enemyId))))
+            : [],
+          altarVictoriesByEnemyType: getAltarVictoriesWithDefaults(hydrated.global.altarVictoriesByEnemyType),
           jewelAutoEquipPriorityPartyId: normalizeJewelAutoEquipPriorityPartyId(
             hydrated.global.jewelAutoEquipPriorityPartyId,
             trimmedParties.length,
@@ -5281,6 +5389,14 @@ export function useGameState() {
 
     sellAllOwned: useCallback(() => {
       dispatch({ type: 'SELL_ALL_OWNED' });
+    }, []),
+
+    grantFeedbackReward: useCallback(() => {
+      dispatch({ type: 'GRANT_FEEDBACK_REWARD' });
+    }, []),
+
+    unlockMimorianEnemy: useCallback((enemyId: number) => {
+      dispatch({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId });
     }, []),
 
     buyShopItem: useCallback((itemId: number, stockItemKey: string) => {

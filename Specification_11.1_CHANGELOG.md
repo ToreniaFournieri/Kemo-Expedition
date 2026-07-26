@@ -10,6 +10,34 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 29 | 2026/07/26 | Fully restore party HP at the beginning of every exploration in both Online and AFK runtime handling. |
+| 0.8.6 | 28 | 2026/07/26 | Label the Altar level progress numbers as category victories in every supported runtime language, including 踏破数 in Japanese. |
+| 0.8.6 | 27 | 2026/07/26 | Update the successful first-feedback runtime notification to explicitly report the awarded 10 Prana in every supported language. |
+| 0.8.6 | 26 | 2026/07/26 | Implement the complete runtime feedback flow with required persisted names, categories, first-submission messaging and 10 Prana reward, diagnostic metadata, backup/log/status attachments, and shared status-table generation. |
+| 0.8.6 | 25 | 2026/07/26 | Align runtime enemy-form Alter level requirements with the specified tier bases: Normal 0, Elite 4, and Boss 10, plus each additional ability or bonus. |
+| 0.8.6 | 24 | 2026/07/26 | Count Altar victories once per successfully completed expedition for each enemy-form category assigned to a Mimorian, instead of deriving progression from defeated enemies. |
+| 0.8.6 | 23 | 2026/07/26 | Make unlocked Mimorian enemy forms exclusive to one character at a time, hide Mimorian when no unassigned form is available, and enforce form availability in runtime state updates. |
+| 0.8.6 | 22 | 2026/07/26 | Add category-based Alter victory progression, required Alter levels derived from enemy tier and additional traits, localized Altar progress displays, and server-side unlock enforcement. |
+| 0.8.6 | 21 | 2026/07/25 | Fix Android Quark backup export by using native file sharing when available and a manual browser-save fallback when direct downloads are unsupported. |
+| 0.8.6 | 20 | 2026/07/25 | Allow Altar ability and bonus help bubbles to be dismissed by tapping elsewhere in the Altar, consistent with other floating help bubbles. |
+| 0.8.6 | 19 | 2026/07/25 | Correct legacy enemy elemental-offense percentage formatting in Altar summaries and add floating help bubbles to every available enemy ability and bonus. |
+| 0.8.6 | 18 | 2026/07/25 | Replace main-race text in Altar enemy-type tabs and individual enemy names with the corresponding race icon assets. |
+| 0.8.6 | 17 | 2026/07/25 | Explicitly prevent the horizontally scrollable Altar enemy-type selector from wrapping onto additional lines. |
+| 0.8.6 | 16 | 2026/07/25 | Restyle the Altar enemy-type selector to match the Bestiary tabs and keep all buttons on one horizontally scrollable line. |
+| 0.8.6 | 15 | 2026/07/25 | Add localized enemy-type short-text tabs to the Altar enemy-form list and display enemy chibi portraits instead of full enemy artwork. |
+| 0.8.6 | 14 | 2026/07/25 | Hide Mimorian from the Party character race selector until at least one valid enemy form has been unlocked at the Altar. |
+| 0.8.6 | 13 | 2026/07/25 | Redesign Altar enemy-form entries with larger artwork, inline enemy category and unlock status, and localized ability and bonus summaries. |
+| 0.8.6 | 12 | 2026/07/25 | Fix the Home screen action contract to expose the existing Mimorian enemy-form unlock action to the Altar UI. |
+| 0.8.6 | 11 | 2026/07/25 | Add persistent Prana rewards for selling Super Rare items, an enemy-form unlocking Altar with category costs, and Altar-gated Mimorian form selection. |
+| 0.8.6 | 10 | 2026/07/25 | Restrict Mimorian individual-enemy ability and bonus details to the master data's `additional abilities or bonus` column, excluding class-derived effects, and add the missing localized Voidspawn enemy-type name. |
+| 0.8.6 | 9 | 2026/07/25 | Display normal localized enemy-type names instead of abbreviated text in the Mimorian enemy-type selector. |
+| 0.8.6 | 8 | 2026/07/25 | Size enemy artwork in the Party member list at 160% panel width while retaining 220% width for character artwork. |
+| 0.8.6 | 7 | 2026/07/25 | Show localized enemy-type short text and the selected type's and individual enemy's abilities and bonuses in the Mimorian status controls. |
+| 0.8.6 | 6 | 2026/07/25 | Correct Mimorian Party summaries to show copied enemy type, rank, and name instead of lineage or predisposition, prevent male characters from selecting Mimorian, and format negative equipment-slot totals without a redundant plus sign. |
+| 0.8.6 | 5 | 2026/07/25 | Preserve Mimorian intrinsic penalties alongside copied enemy abilities and skills, localize the enemy-type selector, and display the selected enemy image in the Party member pane. |
+| 0.8.6 | 4 | 2026/07/25 | Implement Mimorian enemy-form editing with enemy type and individual selectors, copied enemy abilities and skills, default enemy names, and enemy-based character and chibi images. |
+| 0.8.6 | 3 | 2026/07/25 | Localize the Mimorian race name as `拟形裔` in Simplified Chinese and `擬形裔` in Traditional Chinese. |
+| 0.8.6 | 2 | 2026/07/25 | Add the selectable Mimorian race at runtime with 8 base stats, two fewer equipment slots, and female-only character editing. |
 | 0.8.6 | 1 | 2026/07/24 | Release version 0.8.6 and reset the build number to 1. |
 | 0.8.5 | 17 | 2026/07/24 | Apply each attacking actor's phase-specific defense amplifier and elemental resistance attribute to reflected damage at runtime. |
 | 0.8.5 | 16 | 2026/07/24 | Make `terrain.deletion` respect `a.unforgettable` at runtime by preserving the selected target's abilities and logging the specified unforgettable flavor with the localized nullification note. |

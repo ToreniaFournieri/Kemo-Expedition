@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiaryDefeatNotificationMode, DiarySettings, DiaryLog, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiaryDefeatNotificationMode, DiarySettings, DiaryLog, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry, type EnemyAbility } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -24,7 +24,7 @@ import {
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemCoreConceptValue, getItemDisplayName, getLocalizedEnhancementTitle, getLocalizedItemName, getLocalizedSuperRareTitle } from '../game/gameState';
-import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
+import { ENEMIES, getEnemyDropCandidates, getEnemyIndividualAbilities, getEnemyIndividualBonuses, getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
@@ -34,6 +34,7 @@ import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../g
 import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
+import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getRequiredAltarVictories, MAX_ALTAR_LEVEL, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay';
@@ -106,12 +107,52 @@ function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'S
   return new File([html], fileName, { type: 'text/html' });
 }
 
+
+// SpecRef: 8.1.2 | Header | Status table
+// SpecRef: 8.6 | UI_SETTING | フィードバック
+function buildStatusTableRows(parties: Party[], partyIndexes = parties.map((_, index) => index)): string[][] {
+  return partyIndexes.flatMap((partyIndex) => {
+    const party = parties[partyIndex];
+    if (!party) return [];
+    return party.characters.map((member, rowIndex) => {
+      const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
+      const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
+      const computed = computeCharacterStats(member, party.level, rowIndex + 1);
+      const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+      const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
+      const attackParts: string[] = [];
+      const combatBonuses = getCharacterCombatBonusLevels(member);
+      if (combatBonuses.ranged) attackParts.push(t('home.progressReport.attackSummary.ranged', { attack: formatNumber(computed.rangedAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.rangedNoA) }));
+      if (combatBonuses.magic) attackParts.push(t('home.progressReport.attackSummary.magic', { attack: formatNumber(computed.magicalAttack), multiplier: formatPercent(computed.magicalOffenseMultiplier), count: formatNumber(computed.magicalNoA) }));
+      if (combatBonuses.melee) attackParts.push(t('home.progressReport.attackSummary.melee', { attack: formatNumber(computed.meleeAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.meleeNoA) }));
+      const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+      const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+      const race = RACES.find((entry) => entry.id === member.raceId);
+      const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
+      return [
+        `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
+        `**${member.name}, ${build}**`,
+        `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`,
+        `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`,
+        `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`,
+        attackParts.length ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense,
+        `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`,
+        computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-',
+      ];
+    });
+  });
+}
+
 const CHARACTER_CHIBI_IMAGE_MODULES = import.meta.glob('/public/chibi/*.png', { eager: true });
 const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { eager: true });
 
 // SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
 // SpecRef: 8.4.2 | Inventory(所持品) | Item list
 function getInventoryOwnerCharacterImageSrc(character: Character, partyId: number): string | null {
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Chibi character
+  if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
+    return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
+  }
   const uniqueFileName = character.isUnique
     ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId]
     : undefined;
@@ -174,6 +215,8 @@ interface HomeScreenProps {
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
+    grantFeedbackReward: () => void;
+    unlockMimorianEnemy: (enemyId: number) => void;
     buyShopItem: (itemId: number, stockItemKey: string) => void;
     buyDebugStoreItem: (itemId: number) => void;
     refreshShopLineup: () => void;
@@ -836,6 +879,9 @@ function escapeRegExp(value: string): string {
 }
 
 function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
+  if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
+    return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
+  }
   if (character.isUnique) {
     const uniqueFileName = UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId];
     return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/C_${uniqueFileName}` : null;
@@ -2489,7 +2535,7 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     if (b.type.endsWith('_multiplier') && MULTIPLIER_LABEL_KEYS[b.type]) {
       parts.push(`${t(MULTIPLIER_LABEL_KEYS[b.type])}x${b.value}`);
     } else if (b.type === 'equip_slot') {
-      parts.push(`${t('party.bonus.equip_slot')}+${b.value}`);
+      parts.push(`${t('party.bonus.equip_slot')}${formatSigned(b.value)}`);
     } else if (b.type === 'vitality') {
       parts.push(t('party.bonusDisplay.vitality', { value: formatSigned(b.value) }));
     } else if (b.type === 'strength') {
@@ -2535,11 +2581,11 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'magical_defense') {
       parts.push(t('party.bonusDisplay.magicalDefense', { value: formatRatePercent(b.value) }));
     } else if (b.type === 'fire_offense') {
-      parts.push(t('party.bonusDisplay.fireOffense', { value: Math.round(b.value * 100) }));
+      parts.push(t('party.bonusDisplay.fireOffense', { value: Math.round(b.value > 1 ? b.value : b.value * 100) }));
     } else if (b.type === 'ice_offense') {
-      parts.push(t('party.bonusDisplay.iceOffense', { value: Math.round(b.value * 100) }));
+      parts.push(t('party.bonusDisplay.iceOffense', { value: Math.round(b.value > 1 ? b.value : b.value * 100) }));
     } else if (b.type === 'thunder_offense') {
-      parts.push(t('party.bonusDisplay.thunderOffense', { value: Math.round(b.value * 100) }));
+      parts.push(t('party.bonusDisplay.thunderOffense', { value: Math.round(b.value > 1 ? b.value : b.value * 100) }));
     } else if (b.type === 'deity_physical_attack_xV') {
       parts.push(t('party.bonusDisplay.deityPhysicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'deity_magical_attack_xV') {
@@ -3280,61 +3326,7 @@ export function HomeScreen({
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
       ];
     });
-    // SpecRef: 8.1.2 | Header | Format of progress data
-    const statusRows = state.parties.flatMap((party, partyIndex) =>
-      party.characters.map((member, rowIndex) => {
-        const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
-        const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
-        const computed = computeCharacterStats(member, party.level, rowIndex + 1);
-        const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
-        const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
-        const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
-        const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
-        const attackParts: string[] = [];
-        const combatBonuses = getCharacterCombatBonusLevels(member);
-        if (combatBonuses.ranged) {
-          attackParts.push(t('home.progressReport.attackSummary.ranged', {
-            attack: formatNumber(computed.rangedAttack),
-            multiplier: formatPercent(computed.physicalOffenseMultiplier),
-            count: formatNumber(computed.rangedNoA),
-          }));
-        }
-        if (combatBonuses.magic) {
-          attackParts.push(t('home.progressReport.attackSummary.magic', {
-            attack: formatNumber(computed.magicalAttack),
-            multiplier: formatPercent(computed.magicalOffenseMultiplier),
-            count: formatNumber(computed.magicalNoA),
-          }));
-        }
-        if (combatBonuses.melee) {
-          attackParts.push(t('home.progressReport.attackSummary.melee', {
-            attack: formatNumber(computed.meleeAttack),
-            multiplier: formatPercent(computed.physicalOffenseMultiplier),
-            count: formatNumber(computed.meleeNoA),
-          }));
-        }
-        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const elementalOffense = computed.elementalOffense === 'none'
-          ? '-'
-          : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-        const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
-        const race = RACES.find((entry) => entry.id === member.raceId);
-        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
-        const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
-        return [
-          `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
-          `**${member.name}, ${build}**`,
-          defensePhysical,
-          defenseMagical,
-          `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`,
-          attackParts.length > 0
-            ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim()
-            : elementalOffense,
-          elementalDefense,
-          abilityText,
-        ];
-      })
-    );
+    const statusRows = buildStatusTableRows(state.parties);
     const postWebhookWithFiles = async (content: string, files: File[], username: string) => {
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify({ content, username }));
@@ -5531,6 +5523,7 @@ export function HomeScreen({
           jewels={state.global.jewels}
           deityDonations={state.global.deityDonations}
           unlockedDeities={state.global.unlockedDeities}
+          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
           isDarkModeEnabled={isDarkModeEnabled}
         />
       );
@@ -5573,6 +5566,9 @@ export function HomeScreen({
           jewelAutoEquipPriorityPartyId={state.global.jewelAutoEquipPriorityPartyId ?? null}
           parties={state.parties}
           gold={state.global.gold}
+          prana={state.global.prana}
+          altarVictoriesByEnemyType={state.global.altarVictoriesByEnemyType}
+          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
           shopPurchases={state.global.shopPurchases}
           debugStorePurchases={state.global.jewelShopPurchases}
           shopRefreshCounts={state.global.shopRefreshCounts}
@@ -5583,6 +5579,7 @@ export function HomeScreen({
           onBuyShopItem={actions.buyShopItem}
           onBuyDebugStoreItem={actions.buyDebugStoreItem}
           onRefreshShopLineup={actions.refreshShopLineup}
+          onUnlockMimorianEnemy={actions.unlockMimorianEnemy}
           onSetJewelAutoEquipPriorityParty={actions.setJewelAutoEquipPriorityParty}
           activeSubTab={activeBaseSubTab}
           onSetActiveSubTab={setActiveBaseSubTab}
@@ -5615,6 +5612,7 @@ export function HomeScreen({
         onResetGame={handleResetGame}
         onImportGameState={actions.importGameState}
         onAddNotification={actions.addNotification}
+        onGrantFeedbackReward={actions.grantFeedbackReward}
         onResetCommonBags={actions.resetCommonBags}
         onResetUniqueBags={actions.resetUniqueBags}
         onResetSideQuestBag={actions.resetSideQuestBag}
@@ -5829,6 +5827,7 @@ function PartyTab({
   jewels,
   deityDonations,
   unlockedDeities,
+  unlockedMimorianEnemyIds,
   isDarkModeEnabled,
 }: {
   parties: Party[];
@@ -5853,6 +5852,7 @@ function PartyTab({
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
   unlockedDeities: string[];
+  unlockedMimorianEnemyIds: number[];
   isDarkModeEnabled: boolean;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
@@ -6272,10 +6272,25 @@ function PartyTab({
 
   const handleRaceChange = (raceId: Character['raceId']) => {
     if (char.isUnique) return;
+    const assignedMimorianEnemyIds = new Set(
+      parties
+        .flatMap((currentParty) => currentParty.characters)
+        .filter((character) => character.id !== char.id && character.raceId === 'mimorian')
+        .map((character) => character.mimorianEnemyId)
+        .filter((enemyId): enemyId is number => enemyId != null)
+    );
+    const defaultMimorianEnemy = raceId === 'mimorian'
+      ? ENEMIES.find((enemy) => unlockedMimorianEnemyIds.includes(enemy.id) && !assignedMimorianEnemyIds.has(enemy.id))
+      : undefined;
+    if (raceId === 'mimorian' && !defaultMimorianEnemy) return;
     setPendingEdits((prev) => ({
       ...prev,
       raceId,
-      name: getDefaultNameForRace(raceId),
+      // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian characters are an exception: Only `女` may be selected.
+      ...(raceId === 'mimorian' ? { gender: 'female' as const } : {}),
+      ...(defaultMimorianEnemy
+        ? { mimorianEnemyId: defaultMimorianEnemy.id, name: defaultMimorianEnemy.name }
+        : { name: getDefaultNameForRace(raceId) }),
     }));
   };
 
@@ -6297,6 +6312,7 @@ function PartyTab({
   // SpecRef: 8.2.2 | Party member details | Character image (background)
   const previewGender = pendingEdits?.gender ?? char.gender;
   const previewRaceId = pendingEdits?.raceId ?? char.raceId;
+  const previewMimorianEnemyId = pendingEdits?.mimorianEnemyId ?? char.mimorianEnemyId;
   const raceLabelByRaceId: Partial<Record<RaceId, string>> = {
     lupinian: 'Lupinian',
     vulpinian: 'Vulpinian',
@@ -6324,7 +6340,10 @@ function PartyTab({
   const [partyMemberImageSrc, setPartyMemberImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    const nextPartyMemberImageSrc = uniquePartyMemberImageFileName
+    // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Character image (background)
+    const nextPartyMemberImageSrc = previewRaceId === 'mimorian' && previewMimorianEnemyId != null
+      ? `${import.meta.env.BASE_URL}enemy/E_${previewMimorianEnemyId}.png`
+      : uniquePartyMemberImageFileName
       ? `${import.meta.env.BASE_URL}character/${uniquePartyMemberImageFileName}`
       : ptRaceGenderImageFileName
         ? `${import.meta.env.BASE_URL}character/${ptRaceGenderImageFileName}`
@@ -6332,12 +6351,23 @@ function PartyTab({
           ? `${import.meta.env.BASE_URL}character/${raceGenderFallbackImageFileName}`
           : null;
     setPartyMemberImageSrc(nextPartyMemberImageSrc);
-  }, [uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
+  }, [previewRaceId, previewMimorianEnemyId, uniquePartyMemberImageFileName, ptRaceGenderImageFileName, raceGenderFallbackImageFileName]);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: t('home.party.filter.carnivore'), raceIds: ['lupinian', 'vulpinian', 'felidian'] },
-    { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian'] },
+    { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian', 'mimorian'] },
     { label: t('home.party.filter.herbivore'), raceIds: ['leporian', 'cervin', 'murid'] },
   ];
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian appears only when an Altar form is available.
+  const assignedMimorianEnemyIds = new Set(
+    parties
+      .flatMap((currentParty) => currentParty.characters)
+      .filter((character) => character.id !== char.id && character.raceId === 'mimorian')
+      .map((character) => character.mimorianEnemyId)
+      .filter((enemyId): enemyId is number => enemyId != null)
+  );
+  const hasAvailableMimorianForm = ENEMIES.some((enemy) =>
+    unlockedMimorianEnemyIds.includes(enemy.id) && !assignedMimorianEnemyIds.has(enemy.id)
+  );
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
     { label: t('combat.melee'), classIds: ['duelist', 'samurai', 'sword-saint'] },
     { label: t('combat.ranged'), classIds: ['ranger', 'striker', 'ninja'] },
@@ -6872,15 +6902,26 @@ function PartyTab({
           const lineageData = LINEAGES.find((l) => l.id === c.lineageId);
           const predispositionShort = predispositionData?.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[c.predispositionId]) : c.predispositionId;
           const lineageShort = lineageData?.shortName ?? LINEAGE_SHORT_NAME_KEYS[c.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[c.lineageId]) : c.lineageId;
+          const mimorianEnemy = c.raceId === 'mimorian'
+            ? ENEMIES.find((enemy) => enemy.id === c.mimorianEnemyId)
+            : undefined;
+          const mimorianEnemyRank = mimorianEnemy?.type === 'boss' ? 'B' : mimorianEnemy?.type === 'elite' ? 'E' : 'N';
+          const mimorianListDescriptor = mimorianEnemy
+            ? `${t(`masterData.enemyType.${mimorianEnemy.enemyType}.short`)}/${mimorianEnemyRank}`
+            : '-/N';
           const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
-          const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName
+          const previewMimorianEnemyImageSrc = c.raceId === 'mimorian' && c.mimorianEnemyId != null
+            ? `${import.meta.env.BASE_URL}enemy/E_${c.mimorianEnemyId}.png`
+            : undefined;
+          const previewPtRaceGenderImageFileName = !uniquePreviewImageFileName && !previewMimorianEnemyImageSrc
             ? `${party.id}_${r.englishName}_${c.gender === 'male' ? 'Male' : 'Female'}.png`
             : undefined;
-          const previewImageSrc = uniquePreviewImageFileName
+          const previewImageSrc = previewMimorianEnemyImageSrc
+            ?? (uniquePreviewImageFileName
             ? `${import.meta.env.BASE_URL}character/${uniquePreviewImageFileName}`
             : previewPtRaceGenderImageFileName
               ? `${import.meta.env.BASE_URL}character/${previewPtRaceGenderImageFileName}`
-              : null;
+              : null);
           return (
             <button
               key={c.id}
@@ -6944,7 +6985,9 @@ function PartyTab({
                 {previewImageSrc && (
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-[240%] w-[220%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat"
+                    className={`pointer-events-none absolute bottom-0 left-1/2 z-0 h-[240%] -translate-x-1/2 bg-contain bg-bottom bg-no-repeat ${
+                      previewMimorianEnemyImageSrc ? 'w-[180%]' : 'w-[220%]'
+                    }`}
                     style={{ backgroundImage: `url(${previewImageSrc})` }}
                   />
                 )}
@@ -6954,7 +6997,7 @@ function PartyTab({
                   )}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-1 py-0.5 text-center text-[10px] leading-tight text-white">
                     <div>{mcShort}({isMaster ? t('party.class.masterShort') : scShort})</div>
-                    <div>{lineageShort}/{predispositionShort}</div>
+                    <div>{c.raceId === 'mimorian' ? mimorianListDescriptor : `${lineageShort}/${predispositionShort}`}</div>
                   </div>
                 </div>
               </div>
@@ -7044,10 +7087,11 @@ function PartyTab({
                     <div className="flex gap-1">
                       {(['male', 'female'] as const).map((gender) => {
                         const isBlockedByDuplicate = isGenderOptionBlockedByDuplicate(gender);
-                        const isDisabled = char.isUnique || isBlockedByDuplicate;
+                        const isBlockedByMimorianGender = selectedRaceId === 'mimorian' && gender === 'male';
+                        const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
                         const shouldShowGenderSymbol = char.isUnique
                           ? (pendingEdits?.gender ?? char.gender) === gender
-                          : !isBlockedByDuplicate;
+                          : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
                         return (
                           <button
@@ -7153,10 +7197,12 @@ function PartyTab({
 
                   const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
                     const isBlockedByDuplicate = isRaceOptionBlockedByDuplicate(race.id);
-                    const isDisabled = char.isUnique || isBlockedByDuplicate;
+                    // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian characters are an exception: Only `女` may be selected.
+                    const isBlockedByMimorianGender = race.id === 'mimorian' && selectedGender === 'male';
+                    const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
                     const shouldShowRaceIcon = char.isUnique
                       ? isSelectedRace
-                      : !isBlockedByDuplicate;
+                      : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
                     return (
                       <button
@@ -7190,11 +7236,13 @@ function PartyTab({
                           <div key={`race-${category.label}`} className="space-y-1">
                             <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
                             <div className="flex w-full">
-                              {category.raceIds.map((raceId) => {
-                                const raceData = RACES.find((race) => race.id === raceId);
-                                if (!raceData) return null;
-                                return renderRaceOption(raceData, selectedRaceId === raceId);
-                              })}
+                              {category.raceIds
+                                .filter((raceId) => raceId !== 'mimorian' || selectedRaceId === 'mimorian' || hasAvailableMimorianForm)
+                                .map((raceId) => {
+                                  const raceData = RACES.find((race) => race.id === raceId);
+                                  if (!raceData) return null;
+                                  return renderRaceOption(raceData, selectedRaceId === raceId);
+                                })}
                             </div>
                           </div>
                         ))}
@@ -7361,6 +7409,98 @@ function PartyTab({
                 );
               })()}
             </div>
+            {previewRaceId === 'mimorian' ? (() => {
+              // SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
+              // A copied enemy form is exclusive to one Mimorian across every party.
+              // Keep this character's current form in the list while excluding forms used by others.
+              const unlockedEnemies = ENEMIES.filter((enemy) =>
+                unlockedMimorianEnemyIds.includes(enemy.id) && !assignedMimorianEnemyIds.has(enemy.id)
+              );
+              const enemyTypes = Array.from(new Set(unlockedEnemies.map((enemy) => enemy.enemyType)));
+              const selectedEnemy = unlockedEnemies.find((enemy) => enemy.id === previewMimorianEnemyId) ?? unlockedEnemies[0];
+              const enemiesForType = unlockedEnemies.filter((enemy) => enemy.enemyType === selectedEnemy?.enemyType);
+              const selectedEnemyTypeAbilities = getEnemyTypeAbilities(selectedEnemy?.enemyType ?? '', Number.MAX_SAFE_INTEGER)
+                .map((typeAbility) => selectedEnemy?.abilities.find((ability) => ability.id === typeAbility.id))
+                .filter((ability): ability is EnemyAbility => ability !== undefined);
+              const selectedEnemyTypeBonuses = getEnemyTypeBonuses(selectedEnemy?.enemyType ?? '');
+              // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+              const selectedEnemyIndividualAbilities = selectedEnemy
+                ? getEnemyIndividualAbilities(selectedEnemy.id)
+                : [];
+              const selectedEnemyIndividualBonuses = selectedEnemy
+                ? getEnemyIndividualBonuses(selectedEnemy.id)
+                : [];
+              const buildEnemyAbilityEntries = (prefix: string, abilities: typeof selectedEnemyTypeAbilities) => abilities
+                .map((ability, index) => buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), {
+                  type: 'ability',
+                  value: ability.level,
+                  abilityId: ability.id,
+                  abilityLevel: ability.level,
+                }, index))
+                .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+              const buildEnemyBonusEntries = (prefix: string, bonuses: Bonus[]) => bonuses
+                .map((bonus, index) => {
+                  const displayBonus = ['fire_offense', 'ice_offense', 'thunder_offense'].includes(bonus.type) && bonus.value > 1
+                    ? { ...bonus, value: bonus.value / 100 }
+                    : bonus;
+                  return buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), displayBonus, index);
+                })
+                .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+              const typeEntries = [
+                ...buildEnemyAbilityEntries('mimorian-enemy-type-ability', selectedEnemyTypeAbilities),
+                ...buildEnemyBonusEntries('mimorian-enemy-type-bonus', selectedEnemyTypeBonuses),
+              ];
+              const individualEntries = [
+                ...buildEnemyAbilityEntries('mimorian-individual-enemy-ability', selectedEnemyIndividualAbilities),
+                ...buildEnemyBonusEntries('mimorian-individual-enemy-bonus', selectedEnemyIndividualBonuses),
+              ];
+              const selectEnemy = (enemy: EnemyDef) => setPendingEdits({
+                ...pendingEdits,
+                mimorianEnemyId: enemy.id,
+                name: enemy.name,
+              });
+
+              return (
+                // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+                <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs space-y-2">
+                  <label className="block">
+                    <span className="mb-1 block font-bold text-gray-600">{t('home.party.enemyType')}</span>
+                    <select
+                      value={selectedEnemy?.enemyType ?? ''}
+                      onChange={(event) => {
+                        const enemy = unlockedEnemies.find((candidate) => candidate.enemyType === event.target.value);
+                        if (enemy) selectEnemy(enemy);
+                      }}
+                      className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
+                      disabled={unlockedEnemies.length === 0}
+                    >
+                      {enemyTypes.map((enemyType) => (
+                        <option key={enemyType} value={enemyType}>{t(`setting.bestiary.enemyType.${enemyType}`)}</option>
+                      ))}
+                    </select>
+                    <span className="mt-1 block text-gray-600">{renderInlineBonusEntries(typeEntries)}</span>
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block font-bold text-gray-600">{t('home.party.individualEnemy')}</span>
+                    <select
+                      value={selectedEnemy?.id ?? ''}
+                      onChange={(event) => {
+                        const enemy = unlockedEnemies.find((candidate) => candidate.id === Number(event.target.value));
+                        if (enemy) selectEnemy(enemy);
+                      }}
+                      className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
+                      disabled={unlockedEnemies.length === 0}
+                    >
+                      {enemiesForType.map((enemy) => (
+                        <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat('ja-JP').format(enemy.id)})</option>
+                      ))}
+                    </select>
+                    {unlockedEnemies.length === 0 && <span className="mt-1 block text-accent">{t('home.altar.noUnlockedForms')}</span>}
+                    <span className="mt-1 block text-gray-600">{renderInlineBonusEntries(individualEntries)}</span>
+                  </label>
+                </div>
+              );
+            })() : <>
             <div>
               <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                 {(() => {
@@ -7460,6 +7600,7 @@ function PartyTab({
                 })()}
               </div>
             </div>
+            </>}
           </div>
         ) : (
           <div className="space-y-1 text-sm">
@@ -7472,7 +7613,13 @@ function PartyTab({
                 aria-label={t('home.party.baseStatsHelpAria')}
               >
                 <RaceIcon race={race} className="h-4 w-4" />
-                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / {lineage.name} / {predisposition.name}</span>
+                <span>{char.raceId === 'mimorian' && char.mimorianEnemyId != null
+                  ? (() => {
+                    // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+                    const copiedEnemy = ENEMIES.find((enemy) => enemy.id === char.mimorianEnemyId);
+                    return `${race.name} / ${mainClass.name}(${char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / ${copiedEnemy ? t(`setting.bestiary.enemyType.${copiedEnemy.enemyType}`) : '-'} / ${copiedEnemy?.name ?? '-'}`;
+                  })()
+                  : `${race.name} / ${mainClass.name}(${char.mainClassId === char.subClassId ? t('party.class.master') : subClass.name}) / ${lineage.name} / ${predisposition.name}`}</span>
               </button>
               {showBaseStatHelp && (
                 <div
@@ -7790,12 +7937,17 @@ function PartyTab({
               const equippedItems = char.equipment
                 .slice(0, stats.maxEquipSlots)
                 .filter((item): item is Item => item != null);
+              // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+              const copiedMimorianEnemy = char.raceId === 'mimorian'
+                ? ENEMIES.find((enemy) => enemy.id === char.mimorianEnemyId)
+                : undefined;
               const allBonuses = [
                 ...race.bonuses,
                 ...mainClass.mainSubBonuses,
                 ...(isMasterClass ? mainClass.masterBonuses : [...mainClass.mainBonuses, ...subClass.mainSubBonuses]),
-                ...predisposition.bonuses,
-                ...lineage.bonuses,
+                ...(char.raceId === 'mimorian'
+                  ? (copiedMimorianEnemy?.bonuses ?? [])
+                  : [...predisposition.bonuses, ...lineage.bonuses]),
                 ...equippedItems.flatMap((item) => getSuperRareBonuses(item.superRare)),
               ];
 
@@ -7954,7 +8106,7 @@ function PartyTab({
                     const normalizedKey = key.replace(/\?+$/g, '');
                     const label = ['equip_melee', 'equip_ranged', 'equip_magic'].includes(normalizedKey)
                       ? `${addNames[normalizedKey] ?? normalizedKey}`
-                      : `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
+                      : `${addNames[normalizedKey] ?? normalizedKey}${val >= 0 ? '+' : ''}${val}`;
                     const description = getBonusHelpDescription({ type: normalizedKey as BonusType, value: val });
                     pushBonusDisplayEntry({
                       key: normalizedKey,
@@ -9642,6 +9794,9 @@ function BaseTab({
   jewelAutoEquipPriorityPartyId,
   parties,
   gold,
+  prana,
+  altarVictoriesByEnemyType,
+  unlockedMimorianEnemyIds,
   shopPurchases,
   debugStorePurchases,
   shopRefreshCounts,
@@ -9652,6 +9807,7 @@ function BaseTab({
   onBuyShopItem,
   onBuyDebugStoreItem,
   onRefreshShopLineup,
+  onUnlockMimorianEnemy,
   onSetJewelAutoEquipPriorityParty,
   activeSubTab,
   onSetActiveSubTab,
@@ -9662,6 +9818,9 @@ function BaseTab({
   jewelAutoEquipPriorityPartyId: number | null;
   parties: Party[];
   gold: number;
+  prana: number;
+  altarVictoriesByEnemyType?: Record<string, number>;
+  unlockedMimorianEnemyIds: number[];
   shopPurchases: Record<string, string[]>;
   debugStorePurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
@@ -9672,6 +9831,7 @@ function BaseTab({
   onBuyShopItem: (itemId: number, stockItemKey: string) => void;
   onBuyDebugStoreItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
+  onUnlockMimorianEnemy: (enemyId: number) => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
@@ -9682,7 +9842,7 @@ function BaseTab({
     { id: 'inventory' as const, label: t('home.base.tab.inventory'), isAvailable: true },
     { id: 'debugStore' as const, label: t('home.base.tab.debugStore'), isAvailable: debugSettings.jewelShopOpen },
     { id: 'workshop' as const, label: t('home.base.tab.workshop'), isAvailable: false },
-    { id: 'altar' as const, label: t('home.base.tab.altar'), isAvailable: false },
+    { id: 'altar' as const, label: t('home.base.tab.altar'), isAvailable: true },
   ];
 
   return (
@@ -9719,6 +9879,13 @@ function BaseTab({
           onSetVariantStatus={onSetVariantStatus}
           onSetJewelAutoEquipPriorityParty={onSetJewelAutoEquipPriorityParty}
         />
+      ) : activeSubTab === 'altar' ? (
+        <AltarTab
+          prana={prana}
+          altarVictoriesByEnemyType={altarVictoriesByEnemyType}
+          unlockedEnemyIds={unlockedMimorianEnemyIds}
+          onUnlockEnemy={onUnlockMimorianEnemy}
+        />
       ) : activeSubTab === 'shop' ? (
         <ShopTab
           gold={gold}
@@ -9738,6 +9905,203 @@ function BaseTab({
         />
       ) : (
         <div className="text-sm text-gray-600">{t('home.base.comingSoon')}</div>
+      )}
+    </div>
+  );
+}
+
+// SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
+function mergeEnemyAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbility[] {
+  const merged = new Map<AbilityId, EnemyAbility>();
+  abilities.forEach((ability) => {
+    const current = merged.get(ability.id);
+    if (!current || ability.level > current.level) merged.set(ability.id, ability);
+  });
+  return Array.from(merged.values());
+}
+
+function AltarTab({
+  prana,
+  altarVictoriesByEnemyType,
+  unlockedEnemyIds,
+  onUnlockEnemy,
+}: {
+  prana: number;
+  altarVictoriesByEnemyType?: Record<string, number>;
+  unlockedEnemyIds: number[];
+  onUnlockEnemy: (enemyId: number) => void;
+}) {
+  const unlockedIds = new Set(unlockedEnemyIds);
+  const enemyTypes = Array.from(new Set(ENEMIES.map((enemy) => enemy.enemyType)));
+  const [selectedEnemyType, setSelectedEnemyType] = useState(enemyTypes[0] ?? '');
+  const [activeHelp, setActiveHelp] = useState<{ key: string; title: string; description: string } | null>(null);
+  const [activeHelpPosition, setActiveHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const visibleEnemies = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemyType);
+  const altarVictories = getAltarVictoriesForEnemyType(selectedEnemyType, altarVictoriesByEnemyType);
+  const altarLevel = getAltarLevel(altarVictories);
+  const nextLevelVictories = getRequiredAltarVictories(Math.min(MAX_ALTAR_LEVEL, altarLevel + 1));
+
+  const handleHelpToggle = (key: string, title: string, description: string, event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (activeHelp?.key === key) {
+      setActiveHelp(null);
+      setActiveHelpPosition(null);
+      return;
+    }
+
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const width = Math.min(360, window.innerWidth - viewportPadding * 2);
+    setActiveHelpPosition({
+      top: triggerRect.bottom + 8,
+      left: Math.min(Math.max(triggerRect.left, viewportPadding), window.innerWidth - viewportPadding - width),
+      width,
+    });
+    setActiveHelp({ key, title, description });
+  };
+
+  const renderHelpEntries = (entries: Array<{ key: string; label: string; description: string | null }>) => entries.map((entry, index) => (
+    <span key={entry.key}>
+      {index > 0 && ', '}
+      {entry.description ? (
+        <button
+          type="button"
+          className="text-left underline decoration-dotted underline-offset-2"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => handleHelpToggle(entry.key, entry.label, entry.description!, event)}
+        >
+          {entry.label}
+        </button>
+      ) : entry.label}
+    </span>
+  ));
+
+  return (
+    <div
+      className="space-y-3"
+      onPointerDown={() => {
+        if (!activeHelp) return;
+        setActiveHelp(null);
+        setActiveHelpPosition(null);
+      }}
+    >
+      <div className="rounded-lg border border-sub/30 bg-pane p-3 text-sm font-semibold">
+        {t('home.altar.pranaBalance', { prana: formatNumber(prana) })}
+      </div>
+      <div className="flex flex-nowrap gap-1 overflow-x-auto pb-1" role="tablist">
+        {enemyTypes.map((enemyType) => {
+          const enemyRace = RACES.find((race) => race.englishName === enemyType);
+          const enemyTypeLabel = getEnemyTypeShortName(enemyType);
+          return (
+            <button
+              key={enemyType}
+              type="button"
+              role="tab"
+              aria-label={enemyTypeLabel}
+              title={enemyTypeLabel}
+              aria-selected={selectedEnemyType === enemyType}
+              onClick={() => setSelectedEnemyType(enemyType)}
+              className={`flex h-8 min-w-8 shrink-0 items-center justify-center rounded px-2 py-1 text-sm pane-button-shadow transition-colors ${
+                selectedEnemyType === enemyType
+                  ? 'bg-sub text-white'
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+            >
+              {enemyRace?.icon
+                ? <RaceIcon race={enemyRace} className="h-5 w-5" />
+                : enemyTypeLabel}
+            </button>
+          );
+        })}
+      </div>
+      <div className="text-sm font-medium text-gray-700">
+        {t('home.altar.levelProgress', {
+          level: formatNumber(altarLevel),
+          victories: formatNumber(altarVictories),
+          required: formatNumber(nextLevelVictories),
+        })}
+      </div>
+      <div className="max-h-[34rem] space-y-2 overflow-y-auto">
+        {visibleEnemies.map((enemy) => {
+          const cost = getEnemyFormPranaCost(enemy);
+          const unlocked = unlockedIds.has(enemy.id);
+          const requiredAltarLevel = getEnemyRequiredAltarLevel(enemy);
+          const meetsLevelRequirement = altarLevel >= requiredAltarLevel;
+          const canUnlock = !unlocked && meetsLevelRequirement && prana >= cost;
+          const formAbilities = mergeEnemyAbilityDisplayEntries([
+            ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
+            ...getEnemyIndividualAbilities(enemy.id),
+          ]);
+          const formBonuses = [
+            ...getEnemyTypeBonuses(enemy.enemyType),
+            ...getEnemyIndividualBonuses(enemy.id),
+          ];
+          const abilityText = formAbilities.length > 0
+            ? formAbilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}Lv${formatNumber(ability.level)}`).join(', ')
+            : t('common.none');
+          const bonusText = formatBonuses(formBonuses) || t('common.none');
+          const abilityEntries = formAbilities.map((ability, index) => buildInlineBonusEntry('altar-ability', enemy.id.toString(), {
+            type: 'ability',
+            value: ability.level,
+            abilityId: ability.id,
+            abilityLevel: ability.level,
+          }, index)).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+          const bonusEntries = formBonuses
+            .map((bonus, index) => buildInlineBonusEntry('altar-bonus', enemy.id.toString(), bonus, index))
+            .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+          return (
+            <div key={enemy.id} className={`flex items-center gap-3 rounded-lg border bg-pane p-2 shadow-sm ${unlocked ? 'border-sub/40' : 'border-gray-200'}`}>
+              <img
+                src={`${import.meta.env.BASE_URL}chibi/C_E_${enemy.id}.png`}
+                alt={formatEnemyDefName(enemy)}
+                className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24"
+              />
+              <div className="min-w-0 flex-1 space-y-1 text-xs">
+                <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+                  <div className="min-w-0 text-sm font-semibold">
+                    {renderTextWithRaceIcons(formatEnemyDefName(enemy), 'h-4 w-4')} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!canUnlock}
+                    onClick={() => {
+                      if (!window.confirm(t('home.altar.unlockConfirm', { enemy: formatEnemyDefName(enemy), prana: formatNumber(cost) }))) return;
+                      onUnlockEnemy(enemy.id);
+                    }}
+                    className={`shrink-0 rounded border px-2 py-1 text-xs ${canUnlock ? 'border-sub text-sub' : 'cursor-not-allowed border-gray-300 text-gray-400'}`}
+                  >
+                    {unlocked ? t('home.altar.unlocked') : t('home.altar.unlockCost', { prana: formatNumber(cost) })}
+                  </button>
+                </div>
+                <div className="text-gray-700">
+                  {abilityEntries.length > 0
+                    ? <>{t('home.altar.ability', { abilities: '' })}{renderHelpEntries(abilityEntries)}</>
+                    : t('home.altar.ability', { abilities: abilityText })}
+                </div>
+                {!unlocked && !meetsLevelRequirement && (
+                  <div className="font-medium text-accent">
+                    {t('home.altar.requiredLevel', { level: formatNumber(requiredAltarLevel) })}
+                  </div>
+                )}
+                <div className="text-gray-700">
+                  {bonusEntries.length > 0
+                    ? <>{t('home.altar.bonus', { bonuses: '' })}{renderHelpEntries(bonusEntries)}</>
+                    : t('home.altar.bonus', { bonuses: bonusText })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {activeHelp && activeHelpPosition && (
+        <div
+          className="floating-bubble-pane fixed z-50 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg p-3 text-xs text-gray-700 space-y-1"
+          style={activeHelpPosition}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <div className="font-semibold text-gray-800">{activeHelp.title}</div>
+          <div className="whitespace-pre-line">{activeHelp.description}</div>
+        </div>
       )}
     </div>
   );
@@ -10116,6 +10480,7 @@ function InventoryTab({
     itemName: string;
     count: number;
     sellPrice: number;
+    prana: number;
   } | null>(null);
   const categoryGroups = hasFirstJewel ? INVENTORY_CATEGORY_GROUPS : CATEGORY_GROUPS;
   const isJewelCategory = selectedCategory === 'jewel';
@@ -10356,6 +10721,9 @@ function InventoryTab({
   const confirmSellStack = () => {
     if (!sellStackConfirmation) return;
     onSellStack(sellStackConfirmation.variantKey);
+    window.alert(sellStackConfirmation.prana > 0
+      ? t('home.inventory.sellResultPrana', { prana: formatNumber(sellStackConfirmation.prana) })
+      : t('home.inventory.sellResultGold', { gold: formatNumber(sellStackConfirmation.sellPrice) }));
     setSellStackConfirmation(null);
   };
 
@@ -10523,6 +10891,7 @@ function InventoryTab({
             if (entry.type === 'owned') {
               const { item, count } = entry.variant;
               const sellPrice = calculateItemSellPrice(item) * count;
+              const pranaGranted = getSuperRareItemPrana(item) * count;
 
               return (
                 <div
@@ -10538,20 +10907,19 @@ function InventoryTab({
                     </div>
                     <button
                       onClick={() => {
-                        if (item.superRare >= 1) {
-                          window.alert(t('home.inventory.superRareCannotSell'));
-                          return;
-                        }
                         setSellStackConfirmation({
                           variantKey: entry.key,
                           itemName: getItemDisplayName(item),
                           count,
                           sellPrice,
+                          prana: pranaGranted,
                         });
                       }}
                       className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                     >
-                      {t('home.inventory.sellAllGold', { gold: formatNumber(sellPrice) })}
+                      {pranaGranted > 0
+                        ? t('home.inventory.sellAllPrana', { prana: formatNumber(pranaGranted) })
+                        : t('home.inventory.sellAllGold', { gold: formatNumber(sellPrice) })}
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -10661,7 +11029,9 @@ function InventoryTab({
                 {t('home.inventory.sellConfirmTitle', { item: sellStackConfirmation.itemName, count: formatNumber(sellStackConfirmation.count) })}
               </div>
               <div className="mt-2 text-sm leading-relaxed text-gray-600">
-                {t('home.inventory.sellConfirmBody', { gold: formatNumber(sellStackConfirmation.sellPrice) })}
+                {sellStackConfirmation.prana > 0
+                  ? t('home.inventory.sellConfirmPrana', { prana: formatNumber(sellStackConfirmation.prana) })
+                  : t('home.inventory.sellConfirmBody', { gold: formatNumber(sellStackConfirmation.sellPrice) })}
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button
@@ -11516,6 +11886,7 @@ function SettingTab({
   onResetGame,
   onImportGameState,
   onAddNotification,
+  onGrantFeedbackReward,
   onResetCommonBags,
   onResetUniqueBags,
   onResetSideQuestBag,
@@ -11552,6 +11923,7 @@ function SettingTab({
     category?: NotificationCategory,
     isPositive?: boolean
   ) => void;
+  onGrantFeedbackReward: () => void;
   onResetCommonBags: (partyIndex?: number) => void;
   onResetUniqueBags: (partyIndex?: number) => void;
   onResetSideQuestBag: (partyIndex?: number) => void;
@@ -11664,6 +12036,7 @@ function SettingTab({
 
 
   const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackName');
+  const FEEDBACK_SUBMITTED_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackSubmitted');
   const [feedbackName, setFeedbackName] = useState(() => {
     try {
       return localStorage.getItem(FEEDBACK_NAME_STORAGE_KEY) ?? '';
@@ -11672,6 +12045,14 @@ function SettingTab({
     }
   });
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackCategory, setFeedbackCategory] = useState<'Feedback' | 'Question' | 'Feature Request' | 'Bug Report'>('Feedback');
+  const [hasSubmittedFeedback, setHasSubmittedFeedback] = useState(() => {
+    try {
+      return localStorage.getItem(FEEDBACK_SUBMITTED_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
   const [feedbackLatestBattleLogSelection, setFeedbackLatestBattleLogSelection] = useState<'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None'>('PT1');
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
@@ -11745,6 +12126,7 @@ function SettingTab({
   // SpecRef: 8.6 | UI_SETTING | フィードバック
   const handleSendFeedback = async () => {
     if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert(t('setting.feedback.webhookMissing')); return; }
+    if (!feedbackName.trim()) { window.alert(t('setting.feedback.nameRequired')); return; }
     if (!feedbackText.trim()) { window.alert(t('setting.feedback.bodyRequired')); return; }
     setIsSendingFeedback(true);
     try {
@@ -11767,6 +12149,7 @@ function SettingTab({
           `**OS version:** ${osVersion}`,
           `**Resolution:** ${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`,
           `**Name:** ${feedbackName.trim() || '-'}`,
+          `**Category:** ${feedbackCategory}`,
           `**Feedback text:** ${feedbackText.trim()}`,
           `**Latest Battle Log selection:** ${feedbackLatestBattleLogSelection}`
         ].join('\n'),
@@ -11781,27 +12164,7 @@ function SettingTab({
           generatedFiles.push(latestBattleLogFile);
         }
         const partyIndex = Number(feedbackLatestBattleLogSelection.replace('PT', '')) - 1;
-        const party = gameState.parties[partyIndex];
-        const partyStatusRows = party == null ? [] : party.characters.map((member, rowIndex) => {
-          const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
-          const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
-          const computed = computeCharacterStats(member, party.level, rowIndex + 1);
-          const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
-          const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
-          const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
-          const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
-          const attackParts: string[] = [];
-          if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.ranged', { attack: formatNumber(computed.rangedAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.rangedNoA) }));
-          if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.magic', { attack: formatNumber(computed.magicalAttack), multiplier: formatPercent(computed.magicalOffenseMultiplier), count: formatNumber(computed.magicalNoA) }));
-          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.melee', { attack: formatNumber(computed.meleeAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.meleeNoA) }));
-          const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-          const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-          const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
-          const race = RACES.find((entry) => entry.id === member.raceId);
-          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
-          const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
-          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`, attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, abilityText];
-        });
+        const partyStatusRows = buildStatusTableRows(gameState.parties, [partyIndex]);
         const now = new Date();
         const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
         const statusTableFile = buildStatusTableHtmlFile(
@@ -11816,7 +12179,18 @@ function SettingTab({
       });
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
-      onAddNotification(t('setting.feedback.sent'), 'normal', 'item', true);
+      const isFirstSuccessfulSubmission = !hasSubmittedFeedback;
+      if (isFirstSuccessfulSubmission) {
+        localStorage.setItem(FEEDBACK_SUBMITTED_STORAGE_KEY, 'true');
+        setHasSubmittedFeedback(true);
+        onGrantFeedbackReward();
+      }
+      onAddNotification(
+        t(isFirstSuccessfulSubmission ? 'setting.feedback.sentFirst' : 'setting.feedback.sent'),
+        'normal',
+        'item',
+        true,
+      );
       setFeedbackText('');
       setFeedbackFiles([]);
       if (feedbackFileInputRef.current) {
@@ -12026,8 +12400,9 @@ function SettingTab({
     };
     const isIos = /iPad|iPhone|iPod/.test(nav.userAgent)
       || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+    const isQuark = /Quark/i.test(nav.userAgent);
 
-    if (isIos && nav.share) {
+    if ((isIos || isQuark) && nav.share) {
       const shareData: ShareData = { files: [backupFile] };
       let canShareBackup = !nav.canShare;
       try {
@@ -12037,7 +12412,7 @@ function SettingTab({
       }
       if (canShareBackup) {
         try {
-          // iOS uses its native share sheet, where the player can choose Save to Files.
+          // iOS and Quark use their native share sheet, where the player can save the file.
           await nav.share(shareData);
           onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
           return;
@@ -12048,9 +12423,9 @@ function SettingTab({
       }
     }
 
-    if (isIos) {
-      // Embedded iOS browsers (including app webviews) can omit file sharing and
-      // ignore the download attribute. Open the backup so their toolbar can save it.
+    if (isIos || isQuark) {
+      // Embedded iOS browsers and Quark can omit file sharing and ignore the
+      // download attribute. Open the backup so their toolbar can save it.
       openBackupFileForManualSave(backupFile);
       return;
     }
@@ -14126,8 +14501,14 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('feedback', t('setting.feedback'))}
         {settingPanelExpanded.feedback && <div className="space-y-3 mt-3">
-          <div className="text-sm text-gray-600">{t('setting.feedback.description')}</div>
-          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.namePlaceholder')} />
+          <div className="text-sm text-gray-600">{t(hasSubmittedFeedback ? 'setting.feedback.description' : 'setting.feedback.descriptionFirst')}</div>
+          <input required value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.namePlaceholder')} />
+          <select value={feedbackCategory} onChange={(e) => setFeedbackCategory(e.target.value as typeof feedbackCategory)} className="w-full rounded border border-gray-300 bg-white px-3 py-2">
+            <option value="Feedback">{t('setting.feedback.category.feedback')}</option>
+            <option value="Question">{t('setting.feedback.category.question')}</option>
+            <option value="Feature Request">{t('setting.feedback.category.featureRequest')}</option>
+            <option value="Bug Report">{t('setting.feedback.category.bugReport')}</option>
+          </select>
           <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.bodyPlaceholder')} />
           <div>
             <label className="text-sm font-medium">{t('setting.feedback.latestBattleLog')}</label>

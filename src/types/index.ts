@@ -8,7 +8,7 @@ export type ElementalResistance = 'fire' | 'thunder' | 'ice';
 export type RaceId =
   | 'caninian' | 'lupinian' | 'vulpinian' | 'ursan'
   | 'felidian' | 'mustelid' | 'leporian' | 'cervin' | 'murid' | 'procyonian'
-  | 'kemoria' | 'orcinian' | 'avian';
+  | 'mimorian' | 'kemoria' | 'orcinian' | 'avian';
 
 export interface Race {
   id: RaceId;
@@ -275,6 +275,8 @@ export interface Character {
   subClassId: ClassId;
   predispositionId: PredispositionId;
   lineageId: LineageId;
+  /** Enemy whose form is copied when raceId is `mimorian`. */
+  mimorianEnemyId?: number;
   equipment: (Item | null)[];
 }
 
@@ -440,6 +442,8 @@ export interface Deity {
 
 interface GlobalState {
   gold: number;
+  prana: number;
+  unlockedMimorianEnemyIds: number[];
   inventory: InventoryRecord;
   userId: string;
   deityDonations: Record<string, number>;
@@ -456,6 +460,7 @@ interface GlobalState {
   jewels: JewelInventory;
   jewelAutoEquipPriorityPartyId?: number | null;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
+  altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];
   language: Language;
 }

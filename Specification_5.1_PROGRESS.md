@@ -32,7 +32,7 @@
 | `state.idle` | Only when 自動周回 = OFF (idle state) | - |
 | `state.pray` | Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
 | `state.move` | If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
-| `state.explore` | - | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
+| `state.explore` | **At the beginning of exploration, fully restore the party’s HP.** | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
 | `state.return` | If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3  round up, `a.peddler`2: 3/5 round up) | rest | 
 | `state.reactivate` | Reactivating from AFK mode | - | - |
 

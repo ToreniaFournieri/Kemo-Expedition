@@ -311,8 +311,16 @@ HP: 312                 タイプ: 神魔
 
 **フィードバック**
   - Send feedback to the development team.
-    - "開発チームにフィードバックを送信します。"
-  - Name field (persist the previously entered value)
+    - If the player has no previous feedback submissions: "開発チームにフィードバックを送信します。お礼として10プラーナを獲得できます。"
+    - If the player has submitted feedback before: "開発チームにフィードバックを送信します。"
+    - Reward 10 Prana for the first successful feedback submission only.
+      - "フィードバックを送信しました。(+10プラーナ獲得)"　or "フィードバックを送信しました。"
+  - Name field (Required, persist the previously entered value)
+  - Category list
+    - Feedback: 感想(ゲームバランスなど)
+    - Question: 質問
+    - Feature Request:　欲しい機能の要望
+    - Bug Report: バグ報告
   - Text input form (Feedback text)
   - Latest Battle Log selection (最終戦闘ログ選択):
     - PT1, PT2, PT3, PT4, PT5, PT6, None
@@ -324,6 +332,7 @@ HP: 312                 タイプ: 神魔
     - Content:
 	  - User ID
       - Name
+      - Category
       - Version Build env: (ex. v0.7.0 (12) dev)
 	  - Timestamp: YYYY/MM/DD HH:MM (Timezone)
 	  - browser, version:

@@ -4,7 +4,7 @@
 - Base(拠点)
 - It has tabs inside Base tab. Shop(お店), Inventory(所持品),Ashen Route Vault(灰路の蔵) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - Default: Shop
-  - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
+  - not available for Workshop(工房), in this version. (Gray out)
 	
 #### 8.4.1 Shop (お店)
 
@@ -113,7 +113,8 @@
     - Ability text in item status details (e.g. `加速Lv1`) is tappable and shows its ability detail as floating bubble text.
 
   - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
-    - Super rare item sell block: when player is going to sell super rare item, it is not allowed: "超レア称号がついたアイテムは売却出来ません"
+    - When the player sells a super-rare item, they receive Prana instead of Gold. Display the amount of Prana gained in the sell confirmation and result message. Example: 5 Prana
+    - Super-rare items grant Prana only and never grant Gold. Invalid example: 5 Prana and 1,000 Gold
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks (except equipped items)
@@ -147,4 +148,102 @@
         - Replace:
           - "全売却" → "買う"
           - "買う": Purchases 1 unit of the selected item.
-  
+
+#### 8.4.5 Altar (祭壇)
+- The Altar allows players to spend **Prana** (プラーナ) to unlock individual enemy forms for Mimorian characters.
+- Display the player’s current Prana balance.
+
+**1. Prana**
+* Selling a super-rare item grants Prana according to the item’s original rarity category.
+
+| Super-Rare Item Category | Prana Granted |
+| ------------------------ | ------------: |
+| Normal item              |             1 |
+| Elite-rare item          |             5 |
+| Boss-rare item           |            10 |
+| Mythic-rare item         |            50 |
+
+* The sold item is removed from the inventory.
+* Prana is a shared currency and is not associated with a specific enemy type.
+
+**3. Alter level**
+* Alter Level Requirement
+  * Required Total Victories = `50 × n × (n + 2)`
+  * `n` is the target Alter Level.
+  * Victories are counted only when a Mimorian is assigned an enemy form from the selected enemy form category and the party successfully completes an expedition.
+    * Each successful expedition counts as **1 victory** for the corresponding enemy form category.
+    * Example:
+    * A Mimorian transformed into a **Bat** form completes 10 expeditions → **Bat** enemy form category: **+10 Total Victories**.
+    * If no Mimorian in the party is assigned an enemy form from the **Bat** category, **no victories** are added to the Bat enemy form category.
+  * Maximum Alter Level: 20.
+* Each enemy form requires a minimum **Alter Level** before it can be mimicked.
+
+**Required Alter Level = Tier Base + Number of additional abilities or bonus**
+
+| Enemy Tier | Tier Base |
+| ---------- | --------: |
+| Normal     |         0 |
+| Elite      |         4 |
+| Boss       |        10 |
+
+* **additional abilities or bonus** are the abilities and bonuses defined @Specification_4.2_EXPEDITION_&_ENEMY_MASTER_DATA.md.
+
+**Examples**
+
+| Enemy           | Tier   | additional abilities or bonus | Required Alter Level |
+| --------------- | ------ | ---------------: | -------------------: |
+| たんぽぽめ         | Normal |                0 |                    1 |
+| 花鎌娘            | Normal |                1 |                    2 |
+| わおーん          | Elite |                 1 |                    6 |
+| ヴェルグ          | Boss   |                3 |                   13 |
+
+
+
+**3. Enemy Form List**
+
+* Enemy form category tabs: enemy type short text or race icon. Ex: 猛 飛 虫 …
+  * When an enemy form category is selected, display its current Alter Level and Alter total victories for that category.
+  * Ex. Alter level: 5 (踏破数: 1,853/ 2,400)
+* The Altar displays a list of enemy forms that can be unlocked.
+* Each entry represents one individual enemy ID.
+* Each entry displays:
+  * Enemy chibi image    
+  * Enemy name with enemy type (Normal, Elite, Boss)
+  * Enemy ability
+  * Enemy Bonus
+  * Button ex: (解放 Xプラーナ1 or 解放済)
+```
+たんぽぽめ(猛,狩) ノーマル        解放 10プラーナ
+アビリティ: 遠吠えLv1 
+ボーナス: 成長1.1倍, 炎防x1.30, 雷防x0.67
+```
+
+
+
+**4. Unlock Costs**
+
+| Enemy Category | Prana Cost |
+| -------------- | -------------------: |
+| Normal enemy   |                   10 |
+| Elite enemy    |                   50 |
+| Boss enemy     |                  100 |
+| Mythic enemy   |                  500 |
+
+* Consume the required amount of Prana to unlock an individual enemy form.
+* Each enemy ID must be unlocked separately.
+* Unlocking one enemy does not unlock other enemies of the same type.
+* Prana is consumed immediately upon unlocking an enemy form.
+* Once unlocked, the enemy form remains permanently available.
+
+**5. Mimorian Character Edit Mode**
+* Mimorian characters may select only enemy forms that have been unlocked at the Altar.
+* The enemy-type dropdown displays only enemy types that contain at least one unlocked enemy.
+* The individual-enemy dropdown displays only unlocked enemies belonging to the selected enemy type.
+* Enemy forms that have not been unlocked at the Altar cannot be selected.
+* Locked enemy forms are displayed as disabled entries with their required Prana cost.
+
+**6. Unlock Examples**
+* Normal enemy: 10 Prana
+* Elite enemy: 50 Prana
+* Boss enemy: 100 Prana
+

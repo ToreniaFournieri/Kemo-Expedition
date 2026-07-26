@@ -51,6 +51,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
     - Each panel should be narrow enough that all 6 members are visible at once without horizontal scrolling
 
   - Background image width: 220% of the panel width
+    - Exception — Enemy images: For images loaded from `/public/enemy/E_{enemy_ID}.png`, set the width to 180% of the panel width.
   - Anchor the background image to the bottom-center of the panel.
   - Panel Background: Apply 40% transparency to the member panel background layer behind the character illustration.
   - Show the Main Class, Subclass, and Lineage/Predisposition
@@ -102,6 +103,11 @@ line2: 桃/腕  ← text over background image
     - `RACE`: Lupinian, Vulpinian, Felidian, Caninian, Ursan, Procyonian, Leporian, Cervin, Murid
     - `GENDER`: Male, Female
     - Example: PT2, Vulpinian Male character -> `/public/character/2_Vulpinian_Male.png`
+  - Exception — Mimorian characters:
+    - Use the selected enemy’s ID to determine the character image.
+    - `/public/enemy/E_{enemy_ID}.png`
+    - Chibi character: `public/chibi/C_E_{enemy_ID}.png`
+
   - Fallback Resolution:
     - If the primary path does not exist, Fallback to race-gender default: `/public/character/{RACE}_{GENDER}.png`
     - Example (Fallback)
@@ -174,6 +180,7 @@ Left-aligned
 - Editable `name` field.
 - Toggle selection: `男` / `女` Exactly one must be selected (no null state)
   - If another member in the same party already has the same race, different gender, and `unique_character == false`, that gender option cannot be selected for the current member. (not display text 男 or 女 if cannot be selected, just bottun)
+  - Mimorian characters are an exception: Only `女` may be selected.
   - If selected character `unique_character == true`, (not display text 男 or 女 if cannot be selected, just bottun)
 - **Default Name Assignment**
   - Trigger: when `Race` is changed.
@@ -234,7 +241,21 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 外交的    内向的    適応    機知
 好,探,和  頑,避,内  献,冷,軽  看,精,腕
 ```
-
+- Exception — Mimorian characters:
+  - Mimorian characters do not have Lineage or Predisposition settings.
+  - Mimorian appears in the race selection list only after the player has unlocked at least one available enemy form at the Altar.
+  - An enemy form can be assigned to only one Mimorian at a time. If it is already assigned to another Mimorian, it is unavailable for selection.
+  - Instead, they use two dropdown lists:
+    - List 1: Enemy type (display enemy type text)
+      - Displaying the enemy type related abilities and bonus
+    - List 2: Individual enemy 
+      - Displaying the individual enemy related abilities and bonus
+  - Display format:
+    - `虫/N` for list of party member part (display normal: `N`, elite:`E`, boss:`B`)
+    - `ミモリアン / 防人(狩人) / 昆虫 / 鳳蝶` for status pane part
+  - Selecting an enemy assigns that enemy’s ID to the character.
+  - The Mimorian gains the same abilities and skills as the selected enemy, and remains Mimorian's abilities.
+  - By default, the character’s name is set to the selected enemy’s name.
 
 **2. Edit Confirmation Rules:**
 - **Done (完了):**

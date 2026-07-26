@@ -21,6 +21,7 @@ import { getBaseMultiplier } from './baseMultiplier';
 import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { t } from '../i18n';
+import { ENEMIES } from '../data/enemies';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -198,7 +199,7 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
     switch (bonus.type) {
       case 'equip_slot':
         {
-          const bonusName = `c.equip_slot+${formatCBonusValue(bonus.value)}`;
+          const bonusName = `c.equip_slot${bonus.value >= 0 ? '+' : ''}${formatCBonusValue(bonus.value)}`;
           if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
             collection.uniqueCAdditiveBonusNames.add(bonusName);
             collection.equipSlotBonusTotal += bonus.value;
@@ -535,7 +536,9 @@ export function computeCharacterStats(
   };
 
   // Collect bonuses from all sources
-  collectRaceBonuses(race.id, race.bonuses, collection);
+  if (character.raceId !== 'mimorian') {
+    collectRaceBonuses(race.id, race.bonuses, collection);
+  }
   collectBonuses(mainClass.mainSubBonuses, collection);
   if (isMasterClass) {
     collectBonuses(mainClass.masterBonuses, collection);
@@ -543,8 +546,25 @@ export function computeCharacterStats(
     collectBonuses(mainClass.mainBonuses, collection);
     collectBonuses(filterSubclassMainSubBonuses(subClass.mainSubBonuses), collection);
   }
-  collectBonuses(predisposition.bonuses, collection);
-  collectBonuses(lineage.bonuses, collection);
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Exception — Mimorian characters
+  if (character.raceId === 'mimorian') {
+    const copiedEnemy = ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId);
+    if (copiedEnemy) {
+      collectBonuses(copiedEnemy.bonuses ?? [], collection);
+      collectBonuses(copiedEnemy.abilities.map((ability) => ({
+        type: 'ability' as const,
+        value: ability.level,
+        abilityId: ability.id,
+      })), collection);
+    }
+    // The copied form supplements the Mimorian rather than replacing its
+    // intrinsic penalty. Apply the race bonuses after the copied enemy so the
+    // Mimorian's own modifiers are always retained.
+    collectRaceBonuses(race.id, race.bonuses, collection);
+  } else {
+    collectBonuses(predisposition.bonuses, collection);
+    collectBonuses(lineage.bonuses, collection);
+  }
 
   // Calculate max equipment slots
   let baseSlots = 1;
