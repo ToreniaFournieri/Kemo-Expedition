@@ -96,14 +96,14 @@ If `a.*` with phase = START:
 
 - actor.`a.command`
 	- party.`f.party.offense_amplifier`(attack_type: attack_type):
-	  - If phase is LONG or CLOSE:
+	  - If (`attack_type = ranged` or `attack_type = melee`):
 	    - If front_row_from_actor_member_has.`a.command`3: multiply x2.43
 		- If front_row_from_actor_member_has.`a.command`2: multiply x1.35
 	    - If front_row_from_actor_member_has.`a.command`1: multiply x1.2
 
 - actor.`a.defender` or `a.m-barrier`
 	- party.`f.abilities_defense_amplifier`(attack_type: attack_type):
-	  - If phase is LONG or CLOSE:
+	  - If (`attack_type = ranged` or `attack_type = melee`):
 	  	- If front_row_from_actor_member_has.`a.defender`3: multiply x1/2
 	  	- If front_row_from_actor_member_has.`a.defender`2: multiply x3/5
 		- If front_row_from_actor_member_has.`a.defender`1: multiply x2/3
@@ -295,19 +295,19 @@ If `a.*` with phase = START:
   	  01. If actor.`e.ice` and opponent.`a.ice-absorb`
 	  02. If actor.`e.fire` and opponent.`a.fire-absorb`
 	  03. If actor.`e.thunder` and opponent.`a.thunder-absorb`
-	  04. If phase is `MID` and opponent.`a.magical-absorb`         
+	  04. If `attack_type = magical` and opponent.`a.magical-absorb`         
 	  05. If actor.`e.ice` and opponent.`a.ice-null`
 	  06. If actor.`e.fire` and opponent.`a.fire-null`
 	  07. If actor.`e.thunder` and opponent.`a.thunder-null`
-	  08. If phase is `LONG` and opponent.`a.ranged-null`
-	  09. If phase is `MID` and opponent.`a.magical-null`
-      10. If phase is `CLOSE` and opponent.`a.melee-null`
+	  08. If `attack_type = ranged` and opponent.`a.ranged-null`
+	  09. If `attack_type = magical` and opponent.`a.magical-null`
+      10. If `attack_type = melee` and opponent.`a.melee-null`
       11. If actor.`e.ice` and opponent.`a.ice-reflect`
 	  12. If actor.`e.fire` and opponent.`a.fire-reflect`
 	  13. If actor.`e.thunder` and opponent.`a.thunder-reflect`
-	  14. If phase is `LONG` and opponent.`a.ranged-reflect`
-	  15. If phase is `MID` and opponent.`a.magical-reflect`
-      16. If phase is `CLOSE` and opponent.`a.melee-reflect`
+	  14. If `attack_type = ranged` and opponent.`a.ranged-reflect`
+	  15. If `attack_type = magical` and opponent.`a.magical-reflect`
+      16. If `attack_type = melee` and opponent.`a.melee-reflect`
 	  - If multiple conditions are true at the same time, resolve only the first matched condition in the order above.
   - **interrupt**
   - Shock resolve
@@ -594,7 +594,7 @@ If `a.*` with phase = START:
 	      front_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
 	      if front_character != null and front_character.has(a.bulwark):
 	          return front_character
-  - If phase is MID, Gets one ticket from `t.magical_threat_weight_bag`. 
+  - If `attack_type = magical`, Gets one ticket from `t.magical_threat_weight_bag`. 
     - Bag contains numbers [1,2,3,4,5,6]
     - The drawn number corresponds to row index (1–6).
     - The character currently occupying that row is selected as the target.
@@ -625,7 +625,7 @@ If `a.*` with phase = START:
     - If actor.`a.focus`1, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 x 1.2 = 0.0036 → 0.004)
     - If actor.`a.focus`2, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
   - **Terrain effect**
-    - If `terrain.fog` and (actor does not have `a.true-sight`) and (phase is LONG): actor.`f.c_accuracy+v` -= 25
+    - If `terrain.fog` and (actor does not have `a.true-sight`) and (`attack_type = ranged`): actor.`f.c_accuracy+v` -= 25
     - If `terrain.sunny-beach` and (`attack_type = ranged`): actor.`f.c_accuracy+v` += 20
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
