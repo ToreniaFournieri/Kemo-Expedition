@@ -129,8 +129,12 @@ If `a.*` with phase = START:
 ##### 6.1.1.2 Combat phase
 
 **Speed & Turn Order (Rolling Dice Rule)**
-- Each actor generates one normal action for each available attack capability. 
+- At the start of the COMBAT phase, create all eligible normal-action entries.
+- An actor creates one normal-action entry for each attack capability it possesses.
 - At the start of the `COMBAT` phase, determine one initiative value for every eligible normal action. Each action uses the base roll corresponding to its `attack_type`. Resolve all timed abilities and normal actions from timing 49 down to timing 0.
+- After an action entry is resolved or skipped, mark that action entry as acted.
+- An actor is considered to have acted in the battle after at least one of its normal-action entries has been resolved or skipped.
+
 - **Base-roll** determined by attack type.
   - `ranged_attack`, `base-roll` is 3d3. (3-9)
   - `magical_attack`, `base-roll` is  2d3. (2-6)
