@@ -1969,6 +1969,7 @@ type GameAction =
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
+  | { type: 'GRANT_FEEDBACK_REWARD' }
   | { type: 'UNLOCK_MIMORIAN_ENEMY'; enemyId: number }
   | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
@@ -4509,6 +4510,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'GRANT_FEEDBACK_REWARD': {
+      // SpecRef: 8.6 | UI_SETTING | フィードバック
+      return {
+        ...state,
+        global: { ...state.global, prana: state.global.prana + 10 },
+      };
+    }
+
     case 'UNLOCK_MIMORIAN_ENEMY': {
       // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
       const enemy = ENEMIES.find((candidate) => candidate.id === action.enemyId);
@@ -5377,6 +5386,10 @@ export function useGameState() {
 
     sellAllOwned: useCallback(() => {
       dispatch({ type: 'SELL_ALL_OWNED' });
+    }, []),
+
+    grantFeedbackReward: useCallback(() => {
+      dispatch({ type: 'GRANT_FEEDBACK_REWARD' });
     }, []),
 
     unlockMimorianEnemy: useCallback((enemyId: number) => {

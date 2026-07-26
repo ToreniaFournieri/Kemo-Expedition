@@ -107,6 +107,42 @@ function buildStatusTableHtmlFile(rows: string[][], fileName: string, title = 'S
   return new File([html], fileName, { type: 'text/html' });
 }
 
+
+// SpecRef: 8.1.2 | Header | Status table
+// SpecRef: 8.6 | UI_SETTING | フィードバック
+function buildStatusTableRows(parties: Party[], partyIndexes = parties.map((_, index) => index)): string[][] {
+  return partyIndexes.flatMap((partyIndex) => {
+    const party = parties[partyIndex];
+    if (!party) return [];
+    return party.characters.map((member, rowIndex) => {
+      const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
+      const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
+      const computed = computeCharacterStats(member, party.level, rowIndex + 1);
+      const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
+      const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
+      const attackParts: string[] = [];
+      const combatBonuses = getCharacterCombatBonusLevels(member);
+      if (combatBonuses.ranged) attackParts.push(t('home.progressReport.attackSummary.ranged', { attack: formatNumber(computed.rangedAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.rangedNoA) }));
+      if (combatBonuses.magic) attackParts.push(t('home.progressReport.attackSummary.magic', { attack: formatNumber(computed.magicalAttack), multiplier: formatPercent(computed.magicalOffenseMultiplier), count: formatNumber(computed.magicalNoA) }));
+      if (combatBonuses.melee) attackParts.push(t('home.progressReport.attackSummary.melee', { attack: formatNumber(computed.meleeAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.meleeNoA) }));
+      const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
+      const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
+      const race = RACES.find((entry) => entry.id === member.raceId);
+      const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
+      return [
+        `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
+        `**${member.name}, ${build}**`,
+        `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`,
+        `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`,
+        `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`,
+        attackParts.length ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense,
+        `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`,
+        computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-',
+      ];
+    });
+  });
+}
+
 const CHARACTER_CHIBI_IMAGE_MODULES = import.meta.glob('/public/chibi/*.png', { eager: true });
 const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { eager: true });
 
@@ -179,6 +215,7 @@ interface HomeScreenProps {
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
+    grantFeedbackReward: () => void;
     unlockMimorianEnemy: (enemyId: number) => void;
     buyShopItem: (itemId: number, stockItemKey: string) => void;
     buyDebugStoreItem: (itemId: number) => void;
@@ -3289,61 +3326,7 @@ export function HomeScreen({
         latestLog ? formatNumber(latestLog.completedRooms) : '-',
       ];
     });
-    // SpecRef: 8.1.2 | Header | Format of progress data
-    const statusRows = state.parties.flatMap((party, partyIndex) =>
-      party.characters.map((member, rowIndex) => {
-        const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
-        const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
-        const computed = computeCharacterStats(member, party.level, rowIndex + 1);
-        const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
-        const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
-        const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
-        const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
-        const attackParts: string[] = [];
-        const combatBonuses = getCharacterCombatBonusLevels(member);
-        if (combatBonuses.ranged) {
-          attackParts.push(t('home.progressReport.attackSummary.ranged', {
-            attack: formatNumber(computed.rangedAttack),
-            multiplier: formatPercent(computed.physicalOffenseMultiplier),
-            count: formatNumber(computed.rangedNoA),
-          }));
-        }
-        if (combatBonuses.magic) {
-          attackParts.push(t('home.progressReport.attackSummary.magic', {
-            attack: formatNumber(computed.magicalAttack),
-            multiplier: formatPercent(computed.magicalOffenseMultiplier),
-            count: formatNumber(computed.magicalNoA),
-          }));
-        }
-        if (combatBonuses.melee) {
-          attackParts.push(t('home.progressReport.attackSummary.melee', {
-            attack: formatNumber(computed.meleeAttack),
-            multiplier: formatPercent(computed.physicalOffenseMultiplier),
-            count: formatNumber(computed.meleeNoA),
-          }));
-        }
-        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const elementalOffense = computed.elementalOffense === 'none'
-          ? '-'
-          : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-        const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
-        const race = RACES.find((entry) => entry.id === member.raceId);
-        const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
-        const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
-        return [
-          `**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`,
-          `**${member.name}, ${build}**`,
-          defensePhysical,
-          defenseMagical,
-          `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`,
-          attackParts.length > 0
-            ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim()
-            : elementalOffense,
-          elementalDefense,
-          abilityText,
-        ];
-      })
-    );
+    const statusRows = buildStatusTableRows(state.parties);
     const postWebhookWithFiles = async (content: string, files: File[], username: string) => {
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify({ content, username }));
@@ -5629,6 +5612,7 @@ export function HomeScreen({
         onResetGame={handleResetGame}
         onImportGameState={actions.importGameState}
         onAddNotification={actions.addNotification}
+        onGrantFeedbackReward={actions.grantFeedbackReward}
         onResetCommonBags={actions.resetCommonBags}
         onResetUniqueBags={actions.resetUniqueBags}
         onResetSideQuestBag={actions.resetSideQuestBag}
@@ -11902,6 +11886,7 @@ function SettingTab({
   onResetGame,
   onImportGameState,
   onAddNotification,
+  onGrantFeedbackReward,
   onResetCommonBags,
   onResetUniqueBags,
   onResetSideQuestBag,
@@ -11938,6 +11923,7 @@ function SettingTab({
     category?: NotificationCategory,
     isPositive?: boolean
   ) => void;
+  onGrantFeedbackReward: () => void;
   onResetCommonBags: (partyIndex?: number) => void;
   onResetUniqueBags: (partyIndex?: number) => void;
   onResetSideQuestBag: (partyIndex?: number) => void;
@@ -12050,6 +12036,7 @@ function SettingTab({
 
 
   const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackName');
+  const FEEDBACK_SUBMITTED_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackSubmitted');
   const [feedbackName, setFeedbackName] = useState(() => {
     try {
       return localStorage.getItem(FEEDBACK_NAME_STORAGE_KEY) ?? '';
@@ -12058,6 +12045,14 @@ function SettingTab({
     }
   });
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackCategory, setFeedbackCategory] = useState<'Feedback' | 'Question' | 'Feature Request' | 'Bug Report'>('Feedback');
+  const [hasSubmittedFeedback, setHasSubmittedFeedback] = useState(() => {
+    try {
+      return localStorage.getItem(FEEDBACK_SUBMITTED_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
   const [feedbackLatestBattleLogSelection, setFeedbackLatestBattleLogSelection] = useState<'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None'>('PT1');
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
@@ -12131,6 +12126,7 @@ function SettingTab({
   // SpecRef: 8.6 | UI_SETTING | フィードバック
   const handleSendFeedback = async () => {
     if (!FEEDBACK_DISCORD_WEBHOOK_URL) { window.alert(t('setting.feedback.webhookMissing')); return; }
+    if (!feedbackName.trim()) { window.alert(t('setting.feedback.nameRequired')); return; }
     if (!feedbackText.trim()) { window.alert(t('setting.feedback.bodyRequired')); return; }
     setIsSendingFeedback(true);
     try {
@@ -12153,6 +12149,7 @@ function SettingTab({
           `**OS version:** ${osVersion}`,
           `**Resolution:** ${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`,
           `**Name:** ${feedbackName.trim() || '-'}`,
+          `**Category:** ${feedbackCategory}`,
           `**Feedback text:** ${feedbackText.trim()}`,
           `**Latest Battle Log selection:** ${feedbackLatestBattleLogSelection}`
         ].join('\n'),
@@ -12167,27 +12164,7 @@ function SettingTab({
           generatedFiles.push(latestBattleLogFile);
         }
         const partyIndex = Number(feedbackLatestBattleLogSelection.replace('PT', '')) - 1;
-        const party = gameState.parties[partyIndex];
-        const partyStatusRows = party == null ? [] : party.characters.map((member, rowIndex) => {
-          const mainClass = CLASSES.find((entry) => entry.id === member.mainClassId);
-          const subClass = CLASSES.find((entry) => entry.id === member.subClassId);
-          const computed = computeCharacterStats(member, party.level, rowIndex + 1);
-          const formatPercent = (value: number) => `${formatNumber(Math.round(value * 10000) / 100)}%`;
-          const formatSignedScaledBy1000 = (value: number) => `${value >= 0 ? '+' : ''}${formatNumber(Math.round(value * 1000))}`;
-          const defensePhysical = `${formatNumber(computed.physicalDefense)}. ${formatPercent(computed.physicalDefenseAmplifier)}`;
-          const defenseMagical = `${formatNumber(computed.magicalDefense)}. ${formatPercent(computed.magicalDefenseAmplifier)}`;
-          const attackParts: string[] = [];
-          if (computed.rangedAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.ranged', { attack: formatNumber(computed.rangedAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.rangedNoA) }));
-          if (computed.magicalAttack > 0 && computed.magicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.magic', { attack: formatNumber(computed.magicalAttack), multiplier: formatPercent(computed.magicalOffenseMultiplier), count: formatNumber(computed.magicalNoA) }));
-          if (computed.meleeAttack > 0 && computed.physicalOffenseMultiplier > 0) attackParts.push(t('home.progressReport.attackSummary.melee', { attack: formatNumber(computed.meleeAttack), multiplier: formatPercent(computed.physicalOffenseMultiplier), count: formatNumber(computed.meleeNoA) }));
-          const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-          const elementalOffense = computed.elementalOffense === 'none' ? '-' : `${elementalAttributeEmoji[computed.elementalOffense]}(+${formatNumber(Math.max(0, Math.round((computed.elementalOffenseValue - 1) * 100)))}%)`;
-          const elementalDefense = `${formatPercent(computed.elementalDefenseMultipliers.fire)}, ${formatPercent(computed.elementalDefenseMultipliers.ice)}, ${formatPercent(computed.elementalDefenseMultipliers.thunder)}`;
-          const race = RACES.find((entry) => entry.id === member.raceId);
-          const build = `${race?.emoji ?? '-'}${member.gender === 'male' ? t('character.gender.maleShort') : t('character.gender.femaleShort')}${mainClass ? (CLASS_SHORT_NAMES[mainClass.id] ?? mainClass.name) : '-'}${subClass ? (CLASS_SHORT_NAMES[subClass.id] ?? subClass.name) : '-'}${LINEAGE_SHORT_NAME_KEYS[member.lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[member.lineageId]) : member.lineageId}${PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[member.predispositionId]) : member.predispositionId}`;
-          const abilityText = computed.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || '-';
-          return [`**${formatNumber(partyIndex + 1)}-${formatNumber(rowIndex + 1)}**`, `**${member.name}, ${build}**`, defensePhysical, defenseMagical, `${formatSignedScaledBy1000(computed.evasionBonus)}, ${formatPercent(computed.penetMultiplier)}`, attackParts.length > 0 ? `${attackParts.join('/')} ${elementalOffense === '-' ? '' : elementalOffense}`.trim() : elementalOffense, elementalDefense, abilityText];
-        });
+        const partyStatusRows = buildStatusTableRows(gameState.parties, [partyIndex]);
         const now = new Date();
         const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
         const statusTableFile = buildStatusTableHtmlFile(
@@ -12202,6 +12179,11 @@ function SettingTab({
       });
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
+      if (!hasSubmittedFeedback) {
+        localStorage.setItem(FEEDBACK_SUBMITTED_STORAGE_KEY, 'true');
+        setHasSubmittedFeedback(true);
+        onGrantFeedbackReward();
+      }
       onAddNotification(t('setting.feedback.sent'), 'normal', 'item', true);
       setFeedbackText('');
       setFeedbackFiles([]);
@@ -14513,8 +14495,14 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('feedback', t('setting.feedback'))}
         {settingPanelExpanded.feedback && <div className="space-y-3 mt-3">
-          <div className="text-sm text-gray-600">{t('setting.feedback.description')}</div>
-          <input value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.namePlaceholder')} />
+          <div className="text-sm text-gray-600">{t(hasSubmittedFeedback ? 'setting.feedback.description' : 'setting.feedback.descriptionFirst')}</div>
+          <input required value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.namePlaceholder')} />
+          <select value={feedbackCategory} onChange={(e) => setFeedbackCategory(e.target.value as typeof feedbackCategory)} className="w-full rounded border border-gray-300 bg-white px-3 py-2">
+            <option value="Feedback">{t('setting.feedback.category.feedback')}</option>
+            <option value="Question">{t('setting.feedback.category.question')}</option>
+            <option value="Feature Request">{t('setting.feedback.category.featureRequest')}</option>
+            <option value="Bug Report">{t('setting.feedback.category.bugReport')}</option>
+          </select>
           <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} className="w-full min-h-24 rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.bodyPlaceholder')} />
           <div>
             <label className="text-sm font-medium">{t('setting.feedback.latestBattleLog')}</label>
