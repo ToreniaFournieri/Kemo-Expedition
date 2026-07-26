@@ -129,12 +129,13 @@ export function getDeityRewardDrawBonuses(
   name: string,
   totalDonatedGold: number,
 ): { itemChanceTickets: number; superRareChanceTickets: number } {
-  const rankIncreases = Math.max(0, getDeityRank(totalDonatedGold) - MIN_DEITY_RANK);
+  const deityRank = getDeityRank(totalDonatedGold);
+  const rankIncreases = Math.max(0, deityRank - MIN_DEITY_RANK);
   const deityKey = getDeityKey(name);
 
   return {
     itemChanceTickets: deityKey === 'Goddess of Discord' ? rankIncreases : 0,
-    superRareChanceTickets: deityKey === 'God of Oblivion' ? Math.floor(rankIncreases / 2) : 0,
+    superRareChanceTickets: deityKey === 'God of Oblivion' ? Math.floor(deityRank / 2) : 0,
   };
 }
 
