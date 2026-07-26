@@ -44,7 +44,7 @@ export function getAltarLevel(totalVictories: number): number {
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Required Alter Level
 export function getEnemyRequiredAltarLevel(enemy: EnemyDef): number {
-  const tierBase = enemy.type === 'boss' ? 10 : enemy.type === 'elite' ? 5 : 1;
+  const tierBase = enemy.type === 'boss' ? 10 : enemy.type === 'elite' ? 4 : 0;
   const additionalCount = getEnemyIndividualAbilities(enemy.id).length
     + getEnemyIndividualBonuses(enemy.id).length;
   return Math.min(MAX_ALTAR_LEVEL, tierBase + additionalCount);
