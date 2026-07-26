@@ -34,7 +34,7 @@ import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../g
 import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
-import { getEnemyFormPranaCost, getSuperRareItemPrana } from '../game/prana';
+import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getRequiredAltarVictories, MAX_ALTAR_LEVEL, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay';
@@ -5584,6 +5584,7 @@ export function HomeScreen({
           parties={state.parties}
           gold={state.global.gold}
           prana={state.global.prana}
+          enemyBattleStats={state.global.enemyBattleStats}
           unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
           shopPurchases={state.global.shopPurchases}
           debugStorePurchases={state.global.jewelShopPurchases}
@@ -9789,6 +9790,7 @@ function BaseTab({
   parties,
   gold,
   prana,
+  enemyBattleStats,
   unlockedMimorianEnemyIds,
   shopPurchases,
   debugStorePurchases,
@@ -9812,6 +9814,7 @@ function BaseTab({
   parties: Party[];
   gold: number;
   prana: number;
+  enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   unlockedMimorianEnemyIds: number[];
   shopPurchases: Record<string, string[]>;
   debugStorePurchases: Record<string, number>;
@@ -9874,6 +9877,7 @@ function BaseTab({
       ) : activeSubTab === 'altar' ? (
         <AltarTab
           prana={prana}
+          enemyBattleStats={enemyBattleStats}
           unlockedEnemyIds={unlockedMimorianEnemyIds}
           onUnlockEnemy={onUnlockMimorianEnemy}
         />
@@ -9913,10 +9917,12 @@ function mergeEnemyAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbilit
 
 function AltarTab({
   prana,
+  enemyBattleStats,
   unlockedEnemyIds,
   onUnlockEnemy,
 }: {
   prana: number;
+  enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   unlockedEnemyIds: number[];
   onUnlockEnemy: (enemyId: number) => void;
 }) {
@@ -9926,6 +9932,9 @@ function AltarTab({
   const [activeHelp, setActiveHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [activeHelpPosition, setActiveHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const visibleEnemies = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemyType);
+  const altarVictories = getAltarVictoriesForEnemyType(selectedEnemyType, enemyBattleStats);
+  const altarLevel = getAltarLevel(altarVictories);
+  const nextLevelVictories = getRequiredAltarVictories(Math.min(MAX_ALTAR_LEVEL, altarLevel + 1));
 
   const handleHelpToggle = (key: string, title: string, description: string, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -10000,11 +10009,20 @@ function AltarTab({
           );
         })}
       </div>
+      <div className="text-sm font-medium text-gray-700">
+        {t('home.altar.levelProgress', {
+          level: formatNumber(altarLevel),
+          victories: formatNumber(altarVictories),
+          required: formatNumber(nextLevelVictories),
+        })}
+      </div>
       <div className="max-h-[34rem] space-y-2 overflow-y-auto">
         {visibleEnemies.map((enemy) => {
           const cost = getEnemyFormPranaCost(enemy);
           const unlocked = unlockedIds.has(enemy.id);
-          const canUnlock = !unlocked && prana >= cost;
+          const requiredAltarLevel = getEnemyRequiredAltarLevel(enemy);
+          const meetsLevelRequirement = altarLevel >= requiredAltarLevel;
+          const canUnlock = !unlocked && meetsLevelRequirement && prana >= cost;
           const formAbilities = mergeEnemyAbilityDisplayEntries([
             ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
             ...getEnemyIndividualAbilities(enemy.id),
@@ -10055,6 +10073,11 @@ function AltarTab({
                     ? <>{t('home.altar.ability', { abilities: '' })}{renderHelpEntries(abilityEntries)}</>
                     : t('home.altar.ability', { abilities: abilityText })}
                 </div>
+                {!unlocked && !meetsLevelRequirement && (
+                  <div className="font-medium text-accent">
+                    {t('home.altar.requiredLevel', { level: formatNumber(requiredAltarLevel) })}
+                  </div>
+                )}
                 <div className="text-gray-700">
                   {bonusEntries.length > 0
                     ? <>{t('home.altar.bonus', { bonuses: '' })}{renderHelpEntries(bonusEntries)}</>

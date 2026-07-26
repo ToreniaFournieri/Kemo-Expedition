@@ -101,7 +101,7 @@ import {
   getCurrentShopRefreshDate,
 } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
-import { getEnemyFormPranaCost, getSuperRareItemPrana } from '../game/prana';
+import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getSuperRareItemPrana } from '../game/prana';
 import {
   addJewelToInventory,
   createStarterJewelInventory,
@@ -4468,7 +4468,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const enemy = ENEMIES.find((candidate) => candidate.id === action.enemyId);
       if (!enemy || state.global.unlockedMimorianEnemyIds.includes(enemy.id)) return state;
       const cost = getEnemyFormPranaCost(enemy);
-      if (state.global.prana < cost) return state;
+      const altarLevel = getAltarLevel(getAltarVictoriesForEnemyType(enemy.enemyType, state.global.enemyBattleStats));
+      if (state.global.prana < cost || altarLevel < getEnemyRequiredAltarLevel(enemy)) return state;
       return {
         ...state,
         global: {
