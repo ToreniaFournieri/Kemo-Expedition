@@ -239,6 +239,7 @@
 * Mimorian characters may select only enemy forms that have been unlocked at the Altar.
 * The enemy-type dropdown displays only enemy types that contain at least one unlocked enemy.
 * The individual-enemy dropdown displays only unlocked enemies belonging to the selected enemy type.
+* All ability levels are fixed at Lv. 1.
 * Enemy forms that have not been unlocked at the Altar cannot be selected.
 * Locked enemy forms are displayed as disabled entries with their required Prana cost.
 
