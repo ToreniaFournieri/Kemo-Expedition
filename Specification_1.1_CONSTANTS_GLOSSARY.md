@@ -214,7 +214,7 @@
 | `a.boost` | 加速 | 自身の行動順をN増加させる | Lv1: 1, Lv2: 2, Lv3: 3 | START | 3 |
 | `a.slow` | 鈍足 | 自身の行動順をN低下させる | Lv1: -1, Lv2: -2, Lv3: -3 | START | 3 |
 | `a.frostbite` | 凍傷 | 相手の行動順をN低下させる | Lv1: -1 | START | 3 |
-| `a.howl` | 遠吠え | 指定タイミングで、相手がまだ一度も行動していない時に発動する。相手の次の攻撃回数をxN倍にする | Lv1: COMBAT6・x5/7, Lv2: COMBAT2・x4/7, Lv3: COMBAT2・x3/7, Lv4: COMBAT2・x2/7, Lv5: COMBAT2・x1/7 | COMBAT | 6 |
+| `a.howl` | 遠吠え | 指定タイミングで、相手がまだ一度も行動していない時に発動する。相手の次の攻撃回数をxN倍にする | Lv1: COMBAT6・x5/7, Lv2: COMBAT2・x4/7, Lv3: COMBAT2・x3/7, Lv4: COMBAT2・x2/7, Lv5: COMBAT2・x1/7 | COMBAT | X |
 | `a.ranged-confusion` | 遠距離混乱 | 指定タイミングで発動し、遠距離攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする | Lv1: LONG1・1/32, Lv2: LONG1・3/32, Lv3: LONG2・3/32, Lv4: LONG2・5/32, Lv5: LONG2・7/32 | LONG | 1 |
 | `a.magic-confusion` | 魔法混乱 | 指定タイミングで発動し、魔法攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする | Lv1: MID1・1/32, Lv2: MID1・3/32, Lv3: MID2・3/32, Lv4: MID2・5/32, Lv5: MID2・7/32 | MID | 1-2 |
 | `a.melee-confusion` | 近接混乱 | 指定タイミングで発動し、近接攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする | Lv1: CLOSE1・1/32, Lv2: CLOSE1・3/32, Lv3: CLOSE2・3/32, Lv4: CLOSE2・5/32, Lv5: CLOSE2・7/32 | CLOSE | 1-2 |
