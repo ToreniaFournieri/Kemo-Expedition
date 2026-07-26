@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.7 | 6 | 2026/07/26 | Correct Fania's Traditional Chinese enemy-form name to use the traditional character `婭`; retain the other five names whose characters are identical in Simplified and Traditional Chinese. |
+| 0.8.7 | 5 | 2026/07/26 | Add the six form-only enemies from master data to the runtime Altar and Mimorian form selection, with localized Japanese, English, Simplified Chinese, and Traditional Chinese names. |
 | 0.8.7 | 4 | 2026/07/26 | Audit deity rank scaling: count the current rank for Discord reward draws and every per-rank stat, healing, saving, HP, Resonance, and prayer-duration bonus, keeping runtime effects and displayed values aligned. |
 | 0.8.7 | 3 | 2026/07/26 | Correct the God of Oblivion Super Rare reward bonus to increase at ranks 2, 4, and 6, so rank 6 grants the specified +3 draws. |
 | 0.8.7 | 2 | 2026/07/26 | Bypass the non-responsive native share implementation in mobile Quark backup export, open the backup directly in its browser viewer, and retain a download fallback when popup opening is blocked. |
