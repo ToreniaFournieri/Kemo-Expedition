@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 23 | 2026/07/26 | Make unlocked Mimorian enemy forms exclusive to one character at a time, hide Mimorian when no unassigned form is available, and enforce form availability in runtime state updates. |
 | 0.8.6 | 22 | 2026/07/26 | Add category-based Alter victory progression, required Alter levels derived from enemy tier and additional traits, localized Altar progress displays, and server-side unlock enforcement. |
 | 0.8.6 | 21 | 2026/07/25 | Fix Android Quark backup export by using native file sharing when available and a manual browser-save fallback when direct downloads are unsupported. |
 | 0.8.6 | 20 | 2026/07/25 | Allow Altar ability and bonus help bubbles to be dismissed by tapping elsewhere in the Altar, consistent with other floating help bubbles. |

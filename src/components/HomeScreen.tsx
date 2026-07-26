@@ -6288,9 +6288,17 @@ function PartyTab({
 
   const handleRaceChange = (raceId: Character['raceId']) => {
     if (char.isUnique) return;
+    const assignedMimorianEnemyIds = new Set(
+      parties
+        .flatMap((currentParty) => currentParty.characters)
+        .filter((character) => character.id !== char.id && character.raceId === 'mimorian')
+        .map((character) => character.mimorianEnemyId)
+        .filter((enemyId): enemyId is number => enemyId != null)
+    );
     const defaultMimorianEnemy = raceId === 'mimorian'
-      ? ENEMIES.find((enemy) => unlockedMimorianEnemyIds.includes(enemy.id))
+      ? ENEMIES.find((enemy) => unlockedMimorianEnemyIds.includes(enemy.id) && !assignedMimorianEnemyIds.has(enemy.id))
       : undefined;
+    if (raceId === 'mimorian' && !defaultMimorianEnemy) return;
     setPendingEdits((prev) => ({
       ...prev,
       raceId,
@@ -6365,8 +6373,17 @@ function PartyTab({
     { label: t('home.party.filter.omnivore'), raceIds: ['caninian', 'ursan', 'procyonian', 'mimorian'] },
     { label: t('home.party.filter.herbivore'), raceIds: ['leporian', 'cervin', 'murid'] },
   ];
-  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian appears in the race selection field only after the player has unlocked at least one enemy form at the Altar.
-  const hasUnlockedMimorianForm = ENEMIES.some((enemy) => unlockedMimorianEnemyIds.includes(enemy.id));
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian appears only when an Altar form is available.
+  const assignedMimorianEnemyIds = new Set(
+    parties
+      .flatMap((currentParty) => currentParty.characters)
+      .filter((character) => character.id !== char.id && character.raceId === 'mimorian')
+      .map((character) => character.mimorianEnemyId)
+      .filter((enemyId): enemyId is number => enemyId != null)
+  );
+  const hasAvailableMimorianForm = ENEMIES.some((enemy) =>
+    unlockedMimorianEnemyIds.includes(enemy.id) && !assignedMimorianEnemyIds.has(enemy.id)
+  );
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
     { label: t('combat.melee'), classIds: ['duelist', 'samurai', 'sword-saint'] },
     { label: t('combat.ranged'), classIds: ['ranger', 'striker', 'ninja'] },
@@ -7236,7 +7253,7 @@ function PartyTab({
                             <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
                             <div className="flex w-full">
                               {category.raceIds
-                                .filter((raceId) => raceId !== 'mimorian' || hasUnlockedMimorianForm)
+                                .filter((raceId) => raceId !== 'mimorian' || selectedRaceId === 'mimorian' || hasAvailableMimorianForm)
                                 .map((raceId) => {
                                   const raceData = RACES.find((race) => race.id === raceId);
                                   if (!raceData) return null;
@@ -7410,7 +7427,11 @@ function PartyTab({
             </div>
             {previewRaceId === 'mimorian' ? (() => {
               // SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
-              const unlockedEnemies = ENEMIES.filter((enemy) => unlockedMimorianEnemyIds.includes(enemy.id));
+              // A copied enemy form is exclusive to one Mimorian across every party.
+              // Keep this character's current form in the list while excluding forms used by others.
+              const unlockedEnemies = ENEMIES.filter((enemy) =>
+                unlockedMimorianEnemyIds.includes(enemy.id) && !assignedMimorianEnemyIds.has(enemy.id)
+              );
               const enemyTypes = Array.from(new Set(unlockedEnemies.map((enemy) => enemy.enemyType)));
               const selectedEnemy = unlockedEnemies.find((enemy) => enemy.id === previewMimorianEnemyId) ?? unlockedEnemies[0];
               const enemiesForType = unlockedEnemies.filter((enemy) => enemy.enemyType === selectedEnemy?.enemyType);
@@ -7463,7 +7484,7 @@ function PartyTab({
                     <select
                       value={selectedEnemy?.enemyType ?? ''}
                       onChange={(event) => {
-                        const enemy = ENEMIES.find((candidate) => candidate.enemyType === event.target.value);
+                        const enemy = unlockedEnemies.find((candidate) => candidate.enemyType === event.target.value);
                         if (enemy) selectEnemy(enemy);
                       }}
                       className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"
@@ -7480,7 +7501,7 @@ function PartyTab({
                     <select
                       value={selectedEnemy?.id ?? ''}
                       onChange={(event) => {
-                        const enemy = ENEMIES.find((candidate) => candidate.id === Number(event.target.value));
+                        const enemy = unlockedEnemies.find((candidate) => candidate.id === Number(event.target.value));
                         if (enemy) selectEnemy(enemy);
                       }}
                       className="w-full rounded border border-gray-300 bg-white/80 px-2 py-1"

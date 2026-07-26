@@ -4291,6 +4291,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           Object.entries(action.updates).filter(([key]) => !immutableForUnique.has(key as keyof Character))
         ) as Partial<Character>
         : action.updates;
+
+      // SpecRef: 8.2.3 | Character Edit Mode | A Mimorian enemy form can be assigned only once.
+      // Enforce this in the reducer as well as the selector so non-UI callers cannot bypass it.
+      const requestedRaceId = sanitizedUpdates.raceId ?? oldChar.raceId;
+      const requestedMimorianEnemyId = sanitizedUpdates.mimorianEnemyId ?? oldChar.mimorianEnemyId;
+      const isChangingMimorianAssignment = requestedRaceId === 'mimorian'
+        && (oldChar.raceId !== 'mimorian' || requestedMimorianEnemyId !== oldChar.mimorianEnemyId);
+      if (isChangingMimorianAssignment) {
+        const isUnlockedForm = requestedMimorianEnemyId != null
+          && state.global.unlockedMimorianEnemyIds.includes(requestedMimorianEnemyId)
+          && ENEMIES.some((enemy) => enemy.id === requestedMimorianEnemyId);
+        const isAssignedElsewhere = state.parties.some((party) => party.characters.some((character) =>
+          character.id !== oldChar.id
+          && character.raceId === 'mimorian'
+          && character.mimorianEnemyId === requestedMimorianEnemyId
+        ));
+        if (!isUnlockedForm || isAssignedElsewhere) return state;
+      }
       const newCharacters = [...currentParty.characters];
 
       let newInventory = state.global.inventory;
