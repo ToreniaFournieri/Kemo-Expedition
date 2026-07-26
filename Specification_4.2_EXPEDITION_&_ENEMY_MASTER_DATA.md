@@ -334,6 +334,21 @@
 | 387 | 8 | 6 | 4 | 59 | BOSS | `Cervin` | class.ninja.wizard | `i.archery`BD, `i.bolt`BD, `i.wand`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | セルヴァ・レム | `a.shock`1, `a.magic-seal`1 |
 
 
+- Other enemy that for enemy form
+
+
+| `Enemy_ID` | `x.enemy_type` | `x.name` (Japanese) | additional abilities or bonus |
+|---|---|---|---|
+| 13 |`Lupinian` |  | |
+| 14 |`Vulpinian` |  | |
+| 15 |`Felidian` |  | |
+| 16 |`Caninian` |  | |
+| 17 |`Ursan` |  | |
+| 18 |`Procyonian` |  | |
+| 19 |`Leporian` |  | |
+| 20 |`Cervin` |  | |
+| 21 |`Murid` |  | |
+
 
 - prompt example:
 
