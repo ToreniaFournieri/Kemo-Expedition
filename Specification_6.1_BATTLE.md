@@ -3,6 +3,11 @@
 ### 6.1 BATTLE
 - Each encounter consists of one battle
 
+- **Attack capabilities**
+  - A character has `ranged_attack` if it has either `d.ranged_attack` or `d.ranged_NoA`.
+  - A character has `magical_attack` if it has either `d.magical_attack` or `d.magical_NoA`.
+  - A character has `melee_attack` if it has either `d.melee_attack` or `d.melee_NoA`.
+
 - **Attack type**
   - `d.ranged_attack` and `d.ranged_NoA` = `attack_type = ranged`
   - `d.magical_attack` and `d.magical_NoA` = `attack_type = magical`
@@ -223,7 +228,7 @@ If `a.*` with phase = START:
       - Log: `log.null-antagonism` + "(敵対無効化)"
 
   - Eligible target
-    - Has `attack_type` = `ranged` or `magical` or `melee` , and **not has moved yet in the phase**.
+    - Target has `ranged_attack`, `magical_attack` or `melee_attack` capability, and **not has moved yet in the phase**.
   - On activation, roll N/D to apply confusion to a random eligible target.
   - Log:  `log.confusion`
  
@@ -649,7 +654,7 @@ If `a.*` with phase = START:
     - If `attack_type = ranged` : Execute a ranged attack.
     - If `attack_type = melee` : Execute a melee attack.
   - Failure condition:
-    - If actor does not have a valid attack capability for the current phase, the counteraction is skipped.
+    - If actor does not have a valid attack capability for that `attack_type`, the counteraction is skipped.
   - Calculation:
 	- `a.counter`1: actor.`f.NoA` x 0.5, round up
     - `a.counter`2: actor.`f.NoA` x 1.0, round up
