@@ -3150,7 +3150,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
         return state;
       }
-      let currentHp = Math.max(0, Math.min(persistedCurrentHp, partyStats.hp));
+      // SpecRef: 5.1.1 | Party State Machine | state.explore
+      // RUN_EXPEDITION is shared by Online and AFK resolution, so restoring HP
+      // here guarantees that every exploration begins at the party's current MaxHP.
+      let currentHp = partyStats.hp;
       // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
       const difficultyOffsetMax = getDifficultyOffsetMax(dungeon.expLevel);
       const effectiveDifficultyOffset = hasDefeatedDungeonBoss(currentParty, dungeon.id)
