@@ -168,6 +168,10 @@
 
 **3. Alter level**
 * Alter Level Requirement
+  * Required Total Victories = `50 × n × (n + 2)`
+  * `n` is the target Alter Level.
+  * Victories are counted cumulatively for the selected enemy form category.
+  * Maximum Alter Level: 20.
 * Each enemy form requires a minimum **Alter Level** before it can be mimicked.
 
 **Required Alter Level = Tier Base + Number of additional abilities or bonus**
@@ -194,7 +198,8 @@
 **3. Enemy Form List**
 
 * Enemy form category tabs: enemy type short text or race icon. Ex: 猛 飛 虫 …
-  * When an enemy form category is selected, display its current Alter Level and Alter EXP for that category.
+  * When an enemy form category is selected, display its current Alter Level and Alter total victories for that category.
+  * Ex. Alter level: 5 (1,853/ 2,400)
 * The Altar displays a list of enemy forms that can be unlocked.
 * Each entry represents one individual enemy ID.
 * Each entry displays:
