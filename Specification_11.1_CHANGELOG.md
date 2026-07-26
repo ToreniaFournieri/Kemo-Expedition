@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.7 | 9 | 2026/07/26 | Define `attack_type` as the authoritative internal combat discriminator, retain LONG/MID/CLOSE solely as compatible battle-log labels, and clarify attack-type-step eligibility and timing. |
 | 0.8.7 | 8 | 2026/07/26 | Treat boss-specific abilities and bonuses as individual enemy traits so Altar requirements, Mimorian form displays, and copied runtime effects use the same shared path as every other enemy. |
 | 0.8.7 | 7 | 2026/07/26 | Fix every ability copied by a Mimorian enemy form at level 1 in runtime calculations and character-edit displays. |
 | 0.8.7 | 6 | 2026/07/26 | Correct Fania's Traditional Chinese enemy-form name to use the traditional character `婭`; retain the other five names whose characters are identical in Simplified and Traditional Chinese. |

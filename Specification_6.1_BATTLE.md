@@ -127,12 +127,22 @@ If `a.*` with phase = START:
 
 ##### 6.1.1.2 Combat phase
 
+**Internal attack-type contract and battle-log compatibility**
+- Combat rules use `attack_type` as the authoritative discriminator. They must not infer ranged, magical, or melee behavior from a battle-log phase label.
+- The current runtime still resolves one combat phase as three ordered attack-type steps: `ranged` → `magical` → `melee`.
+- `LONG`, `MID`, and `CLOSE` are retained as battle-log phase labels only, so existing player-visible logs remain unchanged:
+  - `attack_type = ranged` is displayed as `LONG`.
+  - `attack_type = magical` is displayed as `MID`.
+  - `attack_type = melee` is displayed as `CLOSE`.
+- The battle-log phase label must be derived from the resolved action's `attack_type`. A caller must pass `attack_type` explicitly to combat-rule functions; a `CLOSE` log label, for example, must never cause an action with `attack_type = magical` to be treated as melee.
+- `START` and `END` remain lifecycle phases and do not represent an `attack_type`.
+
 **Speed & Turn Order (Rolling Dice Rule)**
-- At the start of each phase (`LONG` / `MID` / `CLOSE`), every **eligible actor** (enemy + each party member) rolls initiative.
-- **Eligible actor**:
-  - `attack_type = ranged`: `LONG`
-  - `attack_type = magical`: `MID`
-  - `attack_type = melee`: `CLOSE`
+- At the start of each attack-type step, every **eligible actor** (enemy + each party member) rolls initiative for that step.
+- An actor is eligible when it has the capability matching the current `attack_type`:
+  - `attack_type = ranged`: actor has `ranged_attack`.
+  - `attack_type = magical`: actor has `magical_attack`.
+  - `attack_type = melee`: actor has `melee_attack`.
 - **Initiative roll**
   - If actor has `a.first-strike`:
       - If terrain = `terrain.machine-logic` and actor does not have `a.equation-breaker` : roll **1d3** (1–3)
@@ -161,13 +171,13 @@ If `a.*` with phase = START:
     4. Back-row party member moves
    
 **Order by priority**
-- Each phase is resolved from timing 9 down to timing 0. (0 is only for `Trigger`)
+- Each attack-type step is resolved from timing 9 down to timing 0. (0 is only for `Trigger`)
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
   3. Resolve party member actions from Front-row to Back-row
 
-| phase | timing | action order | Display format |
+| Battle-log phase label | timing | action order | Display format |
 |--|--:|--|--|
 | START | 9 | Trigger | [効] |
 | START | 8 | Trigger | [効] |
@@ -209,7 +219,7 @@ If `a.*` with phase = START:
 
 #### 6.1.2 Timed ability
 - For each actor:
-  - If actor has an ability with matching timing (attack_type: current attack_type, timing: current timing):
+  - If the actor has an ability whose `attack_type` and timing match the current attack-type step and current timing, activate it.
 - Resolve activation order using tie-breaker:
   - Enemy > Front-row party member > Back-row party member
 - Activate abilities in the above order.
@@ -228,7 +238,7 @@ If `a.*` with phase = START:
       - Log: `log.null-antagonism` + "(敵対無効化)"
 
   - Eligible target
-    - Target has `ranged_attack`, `magical_attack` or `melee_attack` capability, and **not has moved yet in the phase**.
+    - Target has the capability matching the current `attack_type` and has **not moved yet in the current attack-type step**.
   - On activation, roll N/D to apply confusion to a random eligible target.
   - Log:  `log.confusion`
  
@@ -927,4 +937,3 @@ left-alinged                                           right-aligned
 - In dark mode: not invert the image.
 - Apply mask above the image to ensure text readability.
 - The image remains static relative to the panel (does not move with internal content changes).
-
