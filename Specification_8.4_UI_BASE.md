@@ -182,8 +182,8 @@
 
 | Enemy Tier | Tier Base |
 | ---------- | --------: |
-| Normal     |         1 |
-| Elite      |         5 |
+| Normal     |         0 |
+| Elite      |         4 |
 | Boss       |        10 |
 
 * **additional abilities or bonus** are the abilities and bonuses defined @Specification_4.2_EXPEDITION_&_ENEMY_MASTER_DATA.md.
