@@ -170,7 +170,11 @@
 * Alter Level Requirement
   * Required Total Victories = `50 × n × (n + 2)`
   * `n` is the target Alter Level.
-  * Victories are counted cumulatively for the selected enemy form category.
+  * Victories are counted only when a Mimorian is assigned an enemy form from the selected enemy form category and the party successfully completes an expedition.
+    * Each successful expedition counts as **1 victory** for the corresponding enemy form category.
+    * Example:
+    * A Mimorian transformed into a **Bat** form completes 10 expeditions → **Bat** enemy form category: **+10 Total Victories**.
+    * If no Mimorian in the party is assigned an enemy form from the **Bat** category, **no victories** are added to the Bat enemy form category.
   * Maximum Alter Level: 20.
 * Each enemy form requires a minimum **Alter Level** before it can be mimicked.
 
