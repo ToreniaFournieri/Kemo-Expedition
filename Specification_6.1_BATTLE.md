@@ -821,7 +821,7 @@ note: If mainClass == subClass: (race, mainClass+M) : example: (合,侍M)
 - `f.battle_logs`
   - icon: 
   - `elemental_offense_attribute` -> `e.fire`:🔥, `e.thunder`:⚡, `e.ice`:❄️
-  - If there is no elemental attribute (`e.none`), LONG phase:🏹, MID phase:🪄 ,CLOSE phase:⚔
+  - If there is no elemental attribute (`e.none`), `attack_type = ranged` :🏹, `attack_type = magical`:🪄 ,`attack_type = melee`:⚔
 
 **Normal Attack Log — Additional Effects**
 - Append effect bonuses inside the parentheses of the action log.
