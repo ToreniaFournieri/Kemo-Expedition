@@ -183,23 +183,17 @@ If `a.*` with phase = START:
 | START | 8 | Trigger | [効] |
 | ... | ... | ... | ... |
 | START | 0 | Trigger | [効] |
-| LONG | 9 | Trigger | [9] |
-| LONG | 9 | Enemy | [9] |
-| LONG | 9 | Party member (Front-row → Back-row) | [9] |
-| LONG | 8 | Trigger | [8] |
-| LONG | 8 | Enemy | [8] |
-| LONG | 8 | Party member (Front-row → Back-row) | [8] |
+| COMBAT | 12 | Trigger | [12] |
+| COMBAT | 12 | Enemy | [12] |
+| COMBAT | 12 | Party member (Front-row → Back-row) | [12] |
+| COMBAT | 11 | Trigger | [11] |
+| COMBAT | 11 | Enemy | [11] |
+| COMBAT | 11 | Party member (Front-row → Back-row) | [11] |
 | ... | ... | ... | ... |
-| LONG | 1 | Trigger | [1] |
-| LONG | 1 | Enemy | [1] |
-| LONG | 1 | Party member (Front-row → Back-row) | [1] |
-| LONG | 0 | Trigger | [0] |
-| MID | 9 | Trigger | [9] |
-| MID | 9 | Enemy | [9] |
-| MID | 9 | Party member (Front-row → Back-row) | [9] |
-| ... | ... | ... | ... |
-| CLOSE | 1 | Party member (Front-row → Back-row) | [1] |
-| CLOSE | 0 | Trigger | [0] |
+| COMBAT | 1 | Trigger | [1] |
+| COMBAT | 1 | Enemy | [1] |
+| COMBAT | 1 | Party member (Front-row → Back-row) | [1] |
+| COMBAT | 0 | Trigger | [0] |
 | END | 9 | Trigger |  [末] |
 | END | 8 | Trigger | [末] |
 | ... | ... | ... | ... |
