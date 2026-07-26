@@ -203,7 +203,7 @@
 
 * Enemy form category tabs: enemy type short text or race icon. Ex: 猛 飛 虫 …
   * When an enemy form category is selected, display its current Alter Level and Alter total victories for that category.
-  * Ex. Alter level: 5 (1,853/ 2,400)
+  * Ex. Alter level: 5 (踏破数: 1,853/ 2,400)
 * The Altar displays a list of enemy forms that can be unlocked.
 * Each entry represents one individual enemy ID.
 * Each entry displays:
