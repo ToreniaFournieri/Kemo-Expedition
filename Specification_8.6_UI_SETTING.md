@@ -314,6 +314,7 @@ HP: 312                 タイプ: 神魔
     - If the player has no previous feedback submissions: "開発チームにフィードバックを送信します。お礼として10プラーナを獲得できます。"
     - If the player has submitted feedback before: "開発チームにフィードバックを送信します。"
     - Reward 10 Prana for the first successful feedback submission only.
+      - "フィードバックを送信しました。(+10プラーナ獲得)"　or "フィードバックを送信しました。"
   - Name field (Required, persist the previously entered value)
   - Category list
     - Feedback: 感想(ゲームバランスなど)
