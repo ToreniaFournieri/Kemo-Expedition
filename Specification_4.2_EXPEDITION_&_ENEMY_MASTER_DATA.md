@@ -344,7 +344,7 @@
 | 15 | Normal |`Caninian` | ミズ | |
 | 16 | Normal |`Procyonian` | 茶々 | |
 | 17 | Normal |`Leporian` | ミリィ | |
-| 18 | Normal |`Cervin` |  | |
+| 18 | Normal |`Cervin` | ファニア | |
 
 
 - prompt example:
