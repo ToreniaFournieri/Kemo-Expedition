@@ -168,7 +168,7 @@ If `a.*` with phase = START:
     4. Back-row party member moves
    
 **Order by priority**
-- Each attack-type step is resolved from timing 49 down to timing 0. (0 is only for `Trigger`)
+- Each attack-type step is resolved from timing 49 down to timing 0. (0 might be used for `Trigger`)
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
@@ -208,9 +208,9 @@ If `a.*` with phase = START:
 - Item got with `c.unlock`:
   - "イタチの解錠 石板の盾 を獲得した！(自動売却対象: 10G)"
 
-#### 6.1.2 Timed ability
+#### 6.1.2 Timed Abilities
 - For each actor:
-  - If the actor has an ability whose `attack_type` and timing match the current attack-type step and current timing, activate it.
+  - Activate each ability whose timing matches the current timing, provided all other activation conditions are satisfied.
 - Resolve activation order using tie-breaker:
   - Enemy > Front-row party member > Back-row party member
 - Activate abilities in the above order.
