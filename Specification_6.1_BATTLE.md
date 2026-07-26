@@ -3,23 +3,19 @@
 ### 6.1 BATTLE
 - Each encounter consists of one battle
 
-**Battle Phase**
+- **Attack type**
+  - `d.ranged_attack` and `d.ranged_NoA` = `attack_type = ranged`
+  - `d.magical_attack` and `d.magical_NoA` = `attack_type = magical`
+  - `d.melee_attack` and `d.melee_NoA` = `attack_type = melee`
+ 
+- **Attack type and relation**
 
-|Phase  | actor | text | Damage type |number of attacks type |Defense type|
-|-----|--------|-------|-----------|-----------|------|
-| START | terrain | [地形] | | | |
-| START | effect | [効] | | | |
-| LONG | separator | (遠距離攻撃フェーズ) | | | |
-| LONG | actor | [N] |`d.ranged_attack` |`d.ranged_NoA` | `d.physical_defense` |
-| LONG | effect | [-] | | | |
-| MID | separator | (魔法攻撃フェーズ) | | | |
-| MID | actor | [N] |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
-| MID | effect | [-] | | | |
-| CLOSE | separator | (近接攻撃フェーズ) | | | |
-| CLOSE | actor | [N] |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
-| CLOSE | effect | [-] | | | |
-| END | effect | [末] | | |
-
+|Attack type  | Damage type |number of attacks type |Defense type|
+|-----|-----------|-----------|------|
+| `ranged` | `d.ranged_attack` | `d.ranged_NoA` | `d.physical_defense` |
+| `magical` | `d.magical_attack` | `d.magical_NoA` | `d.magical_defense` |
+| `melee` | `d.melee_attack` | `d.melee_NoA` | `d.physical_defense` |
+  
 #### 6.1.1 Phase resolution
 
 ##### 6.1.1.1 START phase
@@ -120,22 +116,18 @@ If `a.*` with phase = START:
 	    - If front_row_from_actor_member_has.`a.m-barrier`1: multiply x2/3
      - Exception: If opponent has `a.m-barrier-breaker`, ignore this effect
        Log: "opponentは魔法障壁を打ち破り無効化した(魔法障壁破り)" instead of m-barrier log.
-   
-
-
 
 - Tie-breaker: Enemy > Front-row party member > Back-row party member
 
 
-##### 6.1.1.2 LONG, MID, CLOSE phase
+##### 6.1.1.2 Combat phase
 
 **Speed & Turn Order (Rolling Dice Rule)**
 - At the start of each phase (`LONG` / `MID` / `CLOSE`), every **eligible actor** (enemy + each party member) rolls initiative.
 - **Eligible actor**:
-  - Has both `d.X_attack` and `d.X_NoA`
-  - `X = ranged` for `LONG`
-  - `X = magical` for `MID`
-  - `X = melee` for `CLOSE`
+  - `attack_type = ranged`: `LONG`
+  - `attack_type = magical`: `MID`
+  - `attack_type = melee`: `CLOSE`
 - **Initiative roll**
   - If actor has `a.first-strike`:
       - If terrain = `terrain.machine-logic` and actor does not have `a.equation-breaker` : roll **1d3** (1–3)
