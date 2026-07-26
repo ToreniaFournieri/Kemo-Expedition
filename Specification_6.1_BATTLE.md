@@ -280,7 +280,7 @@ If `a.*` with phase = START:
 
 ##### 6.1.3.1 Actor action
 - Check:
-  - If (phase = MID and `a.magic-seal` is valid, and actor.`f.damage_calculation` > 0 ), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
+  - If (`attack_type = magical` and `a.magic-seal` is valid, and actor.`f.damage_calculation` > 0 ), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
   - When an actor takes an action, if one or more opponents have active `a.howl`, clear `a.howl` on every opponent (not just a single target).
   - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
   - If actor.`incapacitated`:
@@ -350,11 +350,11 @@ If `a.*` with phase = START:
 	- **self-inflicted damage**
       - If `terrain.vine-snare` and (actor doesn't have `a.vine-cutter`): actor.`d.HP` -= 0.01 x actor.current_HP
         - Log: `log.terrain.vine-snare` + (N) :right-aligned 
-      - If `terrain.crystal-zone` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.05 x actor.total_damage
+      - If `terrain.crystal-zone` and (`attack_type = magical`) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.05 x actor.total_damage
         - Log: `log.terrain.crystal-zone` + (N) :right-aligned 
       - If `terrain.conduction` and actor.`e.thunder`:  actor.`d.HP` -= (0.05 x actor.total_damage ) of `e.thunder`
         - Log: `log.terrain.conduction` + (⚡ N)  :right-aligned 
-      - If `terrain.mana-burn` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.02 x actor.max_HP
+      - If `terrain.mana-burn` and (`attack_type = magical`) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.02 x actor.max_HP
         - Log: `log.terrain.mana-burn` + (N) :right-aligned 
       - If `terrain.sacred-judgement` and is first actor of the battle:  actor.`d.HP` -= (0.05 x (ctor.current_HP) of `e.thunder`
         - Log: `log.terrain.sacred-judgement` + (N) :right-aligned
@@ -374,11 +374,10 @@ If `a.*` with phase = START:
   - log `log.reanimate` + (即時蘇生 ✚ heal)
 - Else: opponent is defeated. 
 
-
 **opponent-reactive**
-- If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘
-- If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘.
-- If (phase is LONG) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor has `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
+- If (`attack_type = ranged`) and (opponent.`a.illusion`1) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘
+- If (`attack_type = ranged`) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘.
+- If (`attack_type = ranged`) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor has `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
 
 ##### 6.1.3.2 Reactive ability
 - Priority: On-strike > Counter > Ally-follow-up
@@ -431,13 +430,13 @@ If `a.*` with phase = START:
 **Counter**
 - If opponent.`a.counter` 
   - `f.counter`(actor:actor , opponent:opponent ,phase: )
-- If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
+- If opponent.`a.magical-counter` and (`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
 - **counter-chain**
   - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 
 
 **Ally-follow-up**
-- If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
+- If actor.`a.covering-fire` and the actor's successful hit is only one and (`attack_type = melee`), `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
   - *Note:*  Nth_hit is per action based (not per-target)
 
 - If actor.`e.thunder` and (terrain is `terrain.chain-lightning`):
@@ -456,17 +455,17 @@ If `a.*` with phase = START:
 - `f.NoA`
   - `f.NoA` = `f.NoA` x `f.terrain_NoA_amplifier`
     - If actor has `a.output-stabilizer`: 1.0
-    - Else if `terrain.rough-waves` and (phase is CLOSE): 0.75
-    - Else if `terrain.heavy-wind` and (actor doesn't has `a.wind-rider`) and (phase is LONG): 0.75
-    - Else if `terrain.heavy-wind` and (actor **has** `a.wind-rider`) and (phase is LONG): 0.50
-    - Else if `terrain.burrow` and (phase is LONG): 0.50
+    - Else if `terrain.rough-waves` and (`attack_type = melee`): 0.75
+    - Else if `terrain.heavy-wind` and (actor doesn't has `a.wind-rider`) and (`attack_type = ranged`): 0.75
+    - Else if `terrain.heavy-wind` and (actor **has** `a.wind-rider`) and (`attack_type = ranged`): 0.50
+    - Else if `terrain.burrow` and (`attack_type = ranged`): 0.50
     - Else if `terrain.low-gravity`: 1.3
     - Else if `terrain.gravity`: 0.7
-    - Else if `terrain.limestone-cave` and (phase is MID or CLOSE): 1.5
+    - Else if `terrain.limestone-cave` and (`attack_type = magical` or `attack_type = melee`): 1.5
 
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
-  - If (phase is MID) or (phase is LONG and party.`God of Resonance` and (terrain is not `terrain.gehenna`)),
+  - If (`attack_type = magical`) or (`attack_type = ranged` and party.`God of Resonance` and (terrain is not `terrain.gehenna`)),
   	- If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
   	- If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
   	- If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
@@ -532,11 +531,11 @@ If `a.*` with phase = START:
 	  - "[3] カスミ の攻撃！(6/16回, 相手被ダメN%増) "  (opponent.`a.swarm`)
 
 - `f.terrain_amplifier`
-  - If `terrain.exposure` and (phase is LONG or CLOSE): 1.3
-  - If `terrain.dark-field` and (phase is LONG or CLOSE): 1.45
+  - If `terrain.exposure` and (`attack_type = ranged` or `attack_type = melee`): 1.3
+  - If `terrain.dark-field` and (`attack_type = ranged` or `attack_type = melee`): 1.45
   - If `terrain.frenzy`: 1.25
-  - If `terrain.light-field` and (phase is MID): 1.45
-  - If `terrain.sanctuary` and (phase is MID): 0.67
+  - If `terrain.light-field` and (`attack_type = magical`): 1.45
+  - If `terrain.sanctuary` and (`attack_type = magical`): 0.67
   - If `terrain.fortified` and (actor does't have `a.siege`) and (opponent is enemy): 0.75
 
 -  `f.elemental_offense_attribute_amplifier`
@@ -550,10 +549,10 @@ If `a.*` with phase = START:
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
-	- If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`), return n
-	- If (phase is MID and (actor or opponent) has `a.mutual-magic-restraint`), return n
-	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`, return n
-	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-restraint`, return n
+	- If (`attack_type = magical` and (actor or opponent) has `a.mutual-magic-amplify`), return n
+	- If (`attack_type = magical` and (actor or opponent) has `a.mutual-magic-restraint`), return n
+	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-amplify`, return n
+	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 	
 	- If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
 	- If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
