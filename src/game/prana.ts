@@ -1,4 +1,7 @@
 import { EnemyDef, Item } from '../types';
+import { ENEMIES, getEnemyIndividualAbilities, getEnemyIndividualBonuses } from '../data/enemies';
+
+export const MAX_ALTAR_LEVEL = 20;
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Prana
 export function getSuperRareItemPrana(item: Item): number {
@@ -15,4 +18,36 @@ export function getEnemyFormPranaCost(enemy: EnemyDef): number {
   if (enemy.type === 'boss') return 100;
   if (enemy.type === 'elite') return 50;
   return 10;
+}
+
+// SpecRef: 8.4.5 | Altar (祭壇) | Alter level
+export function getAltarVictoriesForEnemyType(
+  enemyType: string,
+  enemyBattleStats: Record<number, { defeats: number; encounters: number }> = {},
+): number {
+  return ENEMIES
+    .filter((enemy) => enemy.enemyType === enemyType)
+    .reduce((total, enemy) => total + (enemyBattleStats[enemy.id]?.defeats ?? 0), 0);
+}
+
+// SpecRef: 8.4.5 | Altar (祭壇) | Alter level
+export function getRequiredAltarVictories(level: number): number {
+  const normalizedLevel = Math.min(MAX_ALTAR_LEVEL, Math.max(0, Math.floor(level)));
+  return 50 * normalizedLevel * (normalizedLevel + 2);
+}
+
+// SpecRef: 8.4.5 | Altar (祭壇) | Alter level
+export function getAltarLevel(totalVictories: number): number {
+  const victories = Math.max(0, Math.floor(totalVictories));
+  let level = 0;
+  while (level < MAX_ALTAR_LEVEL && victories >= getRequiredAltarVictories(level + 1)) level += 1;
+  return level;
+}
+
+// SpecRef: 8.4.5 | Altar (祭壇) | Required Alter Level
+export function getEnemyRequiredAltarLevel(enemy: EnemyDef): number {
+  const tierBase = enemy.type === 'boss' ? 10 : enemy.type === 'elite' ? 5 : 1;
+  const additionalCount = getEnemyIndividualAbilities(enemy.id).length
+    + getEnemyIndividualBonuses(enemy.id).length;
+  return Math.min(MAX_ALTAR_LEVEL, tierBase + additionalCount);
 }
