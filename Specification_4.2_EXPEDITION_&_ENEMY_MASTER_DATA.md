@@ -339,15 +339,12 @@
 
 | `Enemy_ID` |`x.type` |`x.enemy_type` | `x.name` (Japanese) | additional abilities or bonus |
 |---|---|---|---|---|
-| 13 | Normal | `Lupinian` |  | |
-| 14 | Normal |`Vulpinian` |  | |
-| 15 | Normal |`Felidian` |  | |
-| 16 | Normal |`Caninian` | ミズ | |
-| 17 | Normal |`Ursan` |  | |
-| 18 | Normal |`Procyonian` |  | |
-| 19 | Normal |`Leporian` |  | |
-| 20 | Normal |`Cervin` |  | |
-| 21 | Normal |`Murid` |  | |
+| 13 | Normal | `Lupinian` | リップ | |
+| 14 | Normal |`Vulpinian` | アマネ | |
+| 15 | Normal |`Caninian` | ミズ | |
+| 16 | Normal |`Procyonian` | 茶々 | |
+| 17 | Normal |`Leporian` | ミリィ | |
+| 18 | Normal |`Cervin` |  | |
 
 
 - prompt example:
