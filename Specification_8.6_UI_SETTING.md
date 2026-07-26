@@ -316,7 +316,10 @@ HP: 312                 タイプ: 神魔
     - Reward 10 Prana for the first successful feedback submission only.
   - Name field (Required, persist the previously entered value)
   - Category list
-    - (感想(ゲームバランスなど), 質問, ほしい機能の要望, バグ報告)
+    - Feedback: 感想(ゲームバランスなど)
+    - Question: 質問
+    - Feature Request:　欲しい機能の要望
+    - Bug Report: バグ報告
   - Text input form (Feedback text)
   - Latest Battle Log selection (最終戦闘ログ選択):
     - PT1, PT2, PT3, PT4, PT5, PT6, None
