@@ -651,7 +651,41 @@ function generateEnemies(): EnemyDef[] {
   return enemies;
 }
 
-export const ENEMIES: EnemyDef[] = generateEnemies();
+const ENEMY_FORM_ONLY_ROWS = [
+  { id: 13, enemyType: 'Lupinian', name: 'リップ' },
+  { id: 14, enemyType: 'Vulpinian', name: 'アマネ' },
+  { id: 15, enemyType: 'Caninian', name: 'ミズ' },
+  { id: 16, enemyType: 'Procyonian', name: '茶々' },
+  { id: 17, enemyType: 'Leporian', name: 'ミリィ' },
+  { id: 18, enemyType: 'Cervin', name: 'ファニア' },
+] as const;
+
+function generateEnemyFormOnlyEnemies(): EnemyDef[] {
+  return ENEMY_FORM_ONLY_ROWS.map((row) => {
+    // SpecRef: 4.2.2 | Enemy | Enemy_ID
+    const enemy = createEnemyFromTemplate(
+      row.id,
+      { name: row.name, nameKey: `masterData.enemyName.${row.id}`, hpMod: 1, attackType: 'mixed', attackMod: 1, defenseMod: 1 },
+      1,
+      'normal',
+      0,
+      'duelist',
+      'none',
+      row.enemyType,
+      0,
+      [],
+      Number.MAX_SAFE_INTEGER,
+    );
+
+    // These records exist only as selectable enemy forms. Their unspecified
+    // combat class must not contribute abilities to the copied form.
+    enemy.abilities = getEnemyTypeAbilities(row.enemyType, Number.MAX_SAFE_INTEGER);
+    enemy.dropItemId = null;
+    return enemy;
+  });
+}
+
+export const ENEMIES: EnemyDef[] = [...generateEnemyFormOnlyEnemies(), ...generateEnemies()];
 
 export const getEnemiesByPool = (poolId: number): EnemyDef[] =>
   ENEMIES.filter(e => e.poolId === poolId && e.type === 'normal');
