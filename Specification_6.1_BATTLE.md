@@ -588,9 +588,9 @@ If `a.*` with phase = START:
 **Targeting**
 - `f.targeting`:
   - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
-  - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
+  - If`attack_type = ranged` or `attack_type = melee`, Gets one ticket from `t.physical_threat_weight_bag`.
     - `a.bulwark`1 or `a.bulwark`2 redirect 
-	  if {(`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE))} and (enemy doesn't have `a.bulwark-breaker`):
+	  if {(`a.bulwark`1 and `attack_type = ranged`) or (`a.bulwark`2 and (`attack_type = ranged` or `attack_type = melee`))} and (enemy doesn't have `a.bulwark-breaker`):
 	      front_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
 	      if front_character != null and front_character.has(a.bulwark):
 	          return front_character
@@ -602,8 +602,8 @@ If `a.*` with phase = START:
 - `d.accuracy_potency` 
   - A global accuracy modifier applied to a unit’s hit chance based on their current row position.
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
-  - Row-based `d.accuracy_potency` is applied only during LONG and CLOSE phases.
-  - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
+  - Row-based `d.accuracy_potency` is applied only (`attack_type = ranged` or `attack_type = melee`).
+  - `attack_type = magical` ignores row-based accuracy potency, so has fixed potency (1.0).
 
 - **`d.accuracy_potency`**
   - If character.`a.composure`1, min(1, `d.accuracy_potency` + 0.10)
@@ -621,20 +621,20 @@ If `a.*` with phase = START:
 **Hit Detection**
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - **Ability**
-    - Applies to all phases (LONG, MID, CLOSE).
+    - Applies to all attack type  (`attack_type = ranged` and `attack_type = magical` and `attack_type = melee`).
     - If actor.`a.focus`1, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 x 1.2 = 0.0036 → 0.004)
     - If actor.`a.focus`2, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
   - **Terrain effect**
     - If `terrain.fog` and (actor does not have `a.true-sight`) and (phase is LONG): actor.`f.c_accuracy+v` -= 25
-    - If `terrain.sunny-beach` and (phase is LONG): actor.`f.c_accuracy+v` += 20
+    - If `terrain.sunny-beach` and (`attack_type = ranged`): actor.`f.c_accuracy+v` += 20
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
-  - If opponent has `a.deflection`2 AND phase == LONG: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND phase == LONG: baseChance -= 0.10
+  - If opponent has `a.deflection`2 AND `attack_type = ranged`: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND `attack_type = ranged`: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
     - Note: Nth_hit counts individually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - **Override of terrain effect**
-    - If {`terrain.sniper-domain` and (phase is LONG)} or {`terrain.spell-domain` and (phase is MID)} or {`terrain.duelist-domain` and (phase is CLOSE)}: All hits are treated as successful.
+    - If {`terrain.sniper-domain` and (`attack_type = ranged`)} or {`terrain.spell-domain` and (`attack_type = magical`)} or {`terrain.duelist-domain` and (`attack_type = melee`)}: All hits are treated as successful.
       - Exception: If actor has `a.domain-breaker`, these effects are ignored.
     - If override condition is met: return true (skip calculation below)
   - Roll: Return Random(0, 1.0) <= chance
@@ -644,10 +644,10 @@ If `a.*` with phase = START:
 
 ##### 6.1.4.3 Function of Reactive ability
 
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is LONG or CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, `attack_type = ranged` or `attack_type = melee`) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
   - Attack resolution:
-    - If phase == LONG: Execute a ranged attack.
-    - If phase == CLOSE: Execute a melee attack.
+    - If `attack_type = ranged` : Execute a ranged attack.
+    - If `attack_type = melee` : Execute a melee attack.
   - Failure condition:
     - If actor does not have a valid attack capability for the current phase, the counteraction is skipped.
   - Calculation:
