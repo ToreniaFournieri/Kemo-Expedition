@@ -3941,7 +3941,7 @@ const zhTW = {
   'setting.glossary.tab.terrain': '地',
   'setting.glossary.tab.sideQuests': '求',
   'home.altar.pranaBalance': '普拉納：{prana}',
-  'home.altar.levelProgress': '祭壇等級：{level}（{victories} / {required}）',
+  'home.altar.levelProgress': '祭壇等級：{level}（通關數：{victories} / {required}）',
   'home.altar.requiredLevel': '所需祭壇等級：{level}',
   'home.altar.enemyType': '敵人類型：{type}',
   'home.altar.enemyCategory': '敵人類別：{category}',

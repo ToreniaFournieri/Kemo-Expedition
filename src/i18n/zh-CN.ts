@@ -3946,7 +3946,7 @@ const zhCN = {
   'setting.glossary.tab.terrain': '地',
   'setting.glossary.tab.sideQuests': '求',
   'home.altar.pranaBalance': '普拉纳：{prana}',
-  'home.altar.levelProgress': '祭坛等级：{level}（{victories} / {required}）',
+  'home.altar.levelProgress': '祭坛等级：{level}（通关数：{victories} / {required}）',
   'home.altar.requiredLevel': '所需祭坛等级：{level}',
   'home.altar.enemyType': '敌人类型：{type}',
   'home.altar.enemyCategory': '敌人类别：{category}',
