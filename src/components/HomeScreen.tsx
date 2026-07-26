@@ -12351,13 +12351,14 @@ function SettingTab({
 
   const openBackupFileForManualSave = (file: File) => {
     const url = URL.createObjectURL(file);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener';
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    const backupWindow = window.open(url, '_blank');
+    if (!backupWindow) {
+      // Some Android browsers block blob popups even when they originate from a
+      // button press. Keep a native download attempt as a second escape hatch.
+      downloadBackupFile(file, file.name, file.type);
+    } else {
+      backupWindow.opener = null;
+    }
     // Keep the URL alive while an embedded browser hands the new page to its viewer.
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     window.alert(t('setting.backup.manualSaveInstructions'));
@@ -12402,7 +12403,7 @@ function SettingTab({
       || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
     const isQuark = /Quark/i.test(nav.userAgent);
 
-    if ((isIos || isQuark) && nav.share) {
+    if (isIos && nav.share) {
       const shareData: ShareData = { files: [backupFile] };
       let canShareBackup = !nav.canShare;
       try {
@@ -12412,7 +12413,7 @@ function SettingTab({
       }
       if (canShareBackup) {
         try {
-          // iOS and Quark use their native share sheet, where the player can save the file.
+          // iOS uses its native share sheet, where the player can save the file.
           await nav.share(shareData);
           onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
           return;
@@ -12425,7 +12426,8 @@ function SettingTab({
 
     if (isIos || isQuark) {
       // Embedded iOS browsers and Quark can omit file sharing and ignore the
-      // download attribute. Open the backup so their toolbar can save it.
+      // download attribute. Quark's exposed share method can also remain pending
+      // without opening any UI, so always use its browser viewer instead.
       openBackupFileForManualSave(backupFile);
       return;
     }
