@@ -460,6 +460,7 @@ interface GlobalState {
   jewels: JewelInventory;
   jewelAutoEquipPriorityPartyId?: number | null;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
+  altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];
   language: Language;
 }

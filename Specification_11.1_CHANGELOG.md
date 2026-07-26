@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.6 | 24 | 2026/07/26 | Count Altar victories once per successfully completed expedition for each enemy-form category assigned to a Mimorian, instead of deriving progression from defeated enemies. |
 | 0.8.6 | 23 | 2026/07/26 | Make unlocked Mimorian enemy forms exclusive to one character at a time, hide Mimorian when no unassigned form is available, and enforce form availability in runtime state updates. |
 | 0.8.6 | 22 | 2026/07/26 | Add category-based Alter victory progression, required Alter levels derived from enemy tier and additional traits, localized Altar progress displays, and server-side unlock enforcement. |
 | 0.8.6 | 21 | 2026/07/25 | Fix Android Quark backup export by using native file sharing when available and a manual browser-save fallback when direct downloads are unsupported. |

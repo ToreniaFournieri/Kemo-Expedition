@@ -5584,7 +5584,7 @@ export function HomeScreen({
           parties={state.parties}
           gold={state.global.gold}
           prana={state.global.prana}
-          enemyBattleStats={state.global.enemyBattleStats}
+          altarVictoriesByEnemyType={state.global.altarVictoriesByEnemyType}
           unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
           shopPurchases={state.global.shopPurchases}
           debugStorePurchases={state.global.jewelShopPurchases}
@@ -9811,7 +9811,7 @@ function BaseTab({
   parties,
   gold,
   prana,
-  enemyBattleStats,
+  altarVictoriesByEnemyType,
   unlockedMimorianEnemyIds,
   shopPurchases,
   debugStorePurchases,
@@ -9835,7 +9835,7 @@ function BaseTab({
   parties: Party[];
   gold: number;
   prana: number;
-  enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
+  altarVictoriesByEnemyType?: Record<string, number>;
   unlockedMimorianEnemyIds: number[];
   shopPurchases: Record<string, string[]>;
   debugStorePurchases: Record<string, number>;
@@ -9898,7 +9898,7 @@ function BaseTab({
       ) : activeSubTab === 'altar' ? (
         <AltarTab
           prana={prana}
-          enemyBattleStats={enemyBattleStats}
+          altarVictoriesByEnemyType={altarVictoriesByEnemyType}
           unlockedEnemyIds={unlockedMimorianEnemyIds}
           onUnlockEnemy={onUnlockMimorianEnemy}
         />
@@ -9938,12 +9938,12 @@ function mergeEnemyAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbilit
 
 function AltarTab({
   prana,
-  enemyBattleStats,
+  altarVictoriesByEnemyType,
   unlockedEnemyIds,
   onUnlockEnemy,
 }: {
   prana: number;
-  enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
+  altarVictoriesByEnemyType?: Record<string, number>;
   unlockedEnemyIds: number[];
   onUnlockEnemy: (enemyId: number) => void;
 }) {
@@ -9953,7 +9953,7 @@ function AltarTab({
   const [activeHelp, setActiveHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [activeHelpPosition, setActiveHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const visibleEnemies = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemyType);
-  const altarVictories = getAltarVictoriesForEnemyType(selectedEnemyType, enemyBattleStats);
+  const altarVictories = getAltarVictoriesForEnemyType(selectedEnemyType, altarVictoriesByEnemyType);
   const altarLevel = getAltarLevel(altarVictories);
   const nextLevelVictories = getRequiredAltarVictories(Math.min(MAX_ALTAR_LEVEL, altarLevel + 1));
 
