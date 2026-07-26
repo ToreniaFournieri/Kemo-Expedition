@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.7 | 1 | 2026/07/26 | Release version 0.8.7 and reset the build number to 1. |
 | 0.8.6 | 29 | 2026/07/26 | Fully restore party HP at the beginning of every exploration in both Online and AFK runtime handling. |
 | 0.8.6 | 28 | 2026/07/26 | Label the Altar level progress numbers as category victories in every supported runtime language, including 踏破数 in Japanese. |
 | 0.8.6 | 27 | 2026/07/26 | Update the successful first-feedback runtime notification to explicitly report the awarded 10 Prana in every supported language. |
