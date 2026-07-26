@@ -223,10 +223,7 @@ If `a.*` with phase = START:
       - Log: `log.null-antagonism` + "(敵対無効化)"
 
   - Eligible target
-    - Has both `d.X_attack` and `d.X_NoA`, and **not has moved yet in the phase**.
-    - `X = ranged` for `LONG`
-    - `X = magical` for `MID`
-    - `X = melee` for `CLOSE`
+    - Has `attack_type` = `ranged` or `magical` or `melee` , and **not has moved yet in the phase**.
   - On activation, roll N/D to apply confusion to a random eligible target.
   - Log:  `log.confusion`
  
