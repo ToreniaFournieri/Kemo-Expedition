@@ -1,4 +1,4 @@
-import { BattleActionPhase, BattleLogEntry } from '../types';
+import { AttackType, BattleLogEntry } from '../types';
 import { t } from '../i18n';
 
 const CONFUSION_SUCCESS_LOGS = [
@@ -44,7 +44,7 @@ const CONFUSION_NO_TARGET_LOGS = [
 ] as const;
 
 const ANTAGONISM_LOGS = {
-  long: [
+  ranged: [
     'battleFlavor.inline.1',
     'battleFlavor.inline.2',
     'battleFlavor.inline.3',
@@ -56,7 +56,7 @@ const ANTAGONISM_LOGS = {
     'battleFlavor.inline.9',
     'battleFlavor.inline.10',
   ],
-  mid: [
+  magical: [
     'battleFlavor.inline.11',
     'battleFlavor.inline.12',
     'battleFlavor.inline.13',
@@ -68,7 +68,7 @@ const ANTAGONISM_LOGS = {
     'battleFlavor.inline.19',
     'battleFlavor.inline.20',
   ],
-  close: [
+  melee: [
     'battleFlavor.inline.21',
     'battleFlavor.inline.22',
     'battleFlavor.inline.23',
@@ -80,24 +80,24 @@ const ANTAGONISM_LOGS = {
     'battleFlavor.inline.29',
     'battleFlavor.inline.30',
   ],
-} as const satisfies Record<BattleActionPhase, readonly string[]>;
+} as const satisfies Record<AttackType, readonly string[]>;
 
 const UNSTABLE_CORE_LOGS = {
-  long: [
+  ranged: [
     'battleFlavor.inline.31',
     'battleFlavor.inline.32',
     'battleFlavor.inline.33',
     'battleFlavor.inline.34',
     'battleFlavor.inline.35',
   ],
-  mid: [
+  magical: [
     'battleFlavor.inline.36',
     'battleFlavor.inline.37',
     'battleFlavor.inline.38',
     'battleFlavor.inline.39',
     'battleFlavor.inline.40',
   ],
-} as const satisfies Record<Exclude<BattleActionPhase, 'close'>, readonly string[]>;
+} as const satisfies Record<Exclude<AttackType, 'melee'>, readonly string[]>;
 
 const SOUL_REAP_LOGS = [
   'battleFlavor.soul-reap.1',
@@ -498,7 +498,7 @@ export function buildConfusionAction(actorName: string, targetName: string, succ
 }
 
 export function buildAntagonismAction(
-  phase: BattleActionPhase,
+  phase: AttackType,
   actorName: string,
   targetName: string,
   spellName: string | null,
@@ -511,7 +511,7 @@ export function buildAntagonismAction(
 }
 
 export function buildUnstableCoreAction(
-  phase: Exclude<BattleActionPhase, 'close'>,
+  phase: Exclude<AttackType, 'melee'>,
   actorName: string,
 ): string {
   return pickRandomTranslatedEntry(UNSTABLE_CORE_LOGS[phase]).replace(/\{actor\}/g, actorName);
