@@ -243,7 +243,8 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 ```
 - Exception — Mimorian characters:
   - Mimorian characters do not have Lineage or Predisposition settings.
-  - * Mimorian appears in the race selection field only after the player has unlocked at least one enemy form at the Altar.
+  - Mimorian appears in the race selection list only after the player has unlocked at least one available enemy form at the Altar.
+  - An enemy form can be assigned to only one Mimorian at a time. If it is already assigned to another Mimorian, it is unavailable for selection.
   - Instead, they use two dropdown lists:
     - List 1: Enemy type (display enemy type text)
       - Displaying the enemy type related abilities and bonus
