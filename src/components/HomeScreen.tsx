@@ -9909,13 +9909,15 @@ function BaseTab({
 }
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
-function mergeEnemyAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbility[] {
+function mergeMimorianAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbility[] {
   const merged = new Map<AbilityId, EnemyAbility>();
   abilities.forEach((ability) => {
     const current = merged.get(ability.id);
     if (!current || ability.level > current.level) merged.set(ability.id, ability);
   });
-  return Array.from(merged.values());
+  // Enemy forms are party-member templates in the Altar, so their displayed
+  // ability levels must match the Lv1 values a Mimorian actually receives.
+  return Array.from(merged.values(), (ability) => ({ ...ability, level: 1 }));
 }
 
 function AltarTab({
@@ -10026,7 +10028,7 @@ function AltarTab({
           const requiredAltarLevel = getEnemyRequiredAltarLevel(enemy);
           const meetsLevelRequirement = altarLevel >= requiredAltarLevel;
           const canUnlock = !unlocked && meetsLevelRequirement && prana >= cost;
-          const formAbilities = mergeEnemyAbilityDisplayEntries([
+          const formAbilities = mergeMimorianAbilityDisplayEntries([
             ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
             ...getEnemyIndividualAbilities(enemy.id),
           ]);
