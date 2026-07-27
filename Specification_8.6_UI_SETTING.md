@@ -14,7 +14,7 @@
   - Remove the notification badge when no unread news items remain.
   - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
   - When a new news item is added, display the notification badge again.
-- language: Chinese (zh-CN, zh-TW) 
+- language: zh-CN
   - 冒兽交流群(Telegram Community) (中文) "https://t.me/+exLhrX12vn5iMmI1"
 - language: Others 
   - Official Discord Community (日本語・English) "https://discord.gg/k9VSf2ghM"
