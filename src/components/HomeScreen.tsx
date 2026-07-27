@@ -13271,23 +13271,33 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
         {renderSettingPanelHeader('news', 'News')}
         {settingPanelExpanded.news && (
-          <div className="mt-3 overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
-            {DEVELOPER_NEWS_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onMarkDeveloperNewsRead([item.id])}
-                className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
-              >
-                <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
-                  <span className="font-semibold text-gray-700">{item.version}</span>
-                  <span>{item.date}</span>
-                </div>
-                <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
-                  {getDeveloperNewsContent(item, gameState.global.language)}
-                </p>
-              </button>
-            ))}
+          <div className="mt-3 space-y-3">
+            <a
+              href="https://discord.gg/k9VSf2ghM"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
+            >
+              {t('setting.developerNews.discordCommunity')}
+            </a>
+            <div className="overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
+              {DEVELOPER_NEWS_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onMarkDeveloperNewsRead([item.id])}
+                  className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
+                >
+                  <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
+                    <span className="font-semibold text-gray-700">{item.version}</span>
+                    <span>{item.date}</span>
+                  </div>
+                  <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
+                    {getDeveloperNewsContent(item, gameState.global.language)}
+                  </p>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
