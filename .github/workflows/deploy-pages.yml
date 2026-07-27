@@ -32,8 +32,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global npm@11
 
       - name: Build all environment artifacts
         env:
@@ -65,7 +68,10 @@ jobs:
 
             git worktree add "${worktree_path}" "origin/${target_branch}"
 
-            npm install --prefix "${worktree_path}"
+            # Pages only needs the browser bundle. Avoid downloading Electron's
+            # desktop runtime, which is unused here and makes deployment depend
+            # on an additional large external download.
+            ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci --prefix "${worktree_path}"
             npm run build --prefix "${worktree_path}"
 
             mkdir -p "site/${env_name}"
