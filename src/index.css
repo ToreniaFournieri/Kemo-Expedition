@@ -163,6 +163,21 @@ body.app-dark {
   background-color: rgb(var(--color-sub) / 0.18);
 }
 
+/* SpecRef: 8.6 | UI_SETTING | Official Discord Community (日本語・中文・English) */
+.theme-dark .discord-community-link {
+  background-color: rgb(30 41 59);
+  border-color: rgb(99 102 241 / 0.65);
+  color: rgb(165 180 252);
+  text-decoration-color: rgb(129 140 248);
+}
+
+.theme-dark .discord-community-link:hover,
+.theme-dark .discord-community-link:focus-visible {
+  background-color: rgb(49 46 129 / 0.45);
+  border-color: rgb(129 140 248);
+  color: rgb(199 210 254);
+}
+
 .theme-dark .hover\:bg-gray-100\/70:hover {
   background-color: rgb(51 65 85 / 0.65);
 }
