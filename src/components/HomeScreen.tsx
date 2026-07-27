@@ -36,7 +36,7 @@ import { calculateItemSellPrice } from '../game/pricing';
 import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getRequiredAltarVictories, MAX_ALTAR_LEVEL, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
-import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay';
+import { formatEnemyDefName, formatEnemyFormName, getEnemyTypeShortName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
@@ -472,7 +472,6 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
 
   if (value) {
     const normalizedValue = value.startsWith('x') ? value.slice(1) : value;
-    const normalizedPercentValue = normalizedValue.endsWith('%') ? normalizedValue.slice(0, -1) : normalizedValue;
     const signedPercentValue = normalizedValue.startsWith('+') || normalizedValue.startsWith('-') ? normalizedValue : `+${normalizedValue}`;
     const negativePercentValue = normalizedValue.startsWith('-') ? normalizedValue : `-${normalizedValue.replace(/^\+/, '')}`;
     description = description
@@ -480,7 +479,7 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
       .replace(/-N%/g, negativePercentValue)
       .replace(/N%/g, normalizedValue)
       .replace(/xN/g, value.startsWith('x') ? value : `x${value}`)
-      .replace(/N/g, normalizedPercentValue);
+      .replace(/N/g, normalizedValue);
   }
 
   return description
@@ -9909,13 +9908,15 @@ function BaseTab({
 }
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
-function mergeEnemyAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbility[] {
+function mergeMimorianAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbility[] {
   const merged = new Map<AbilityId, EnemyAbility>();
   abilities.forEach((ability) => {
     const current = merged.get(ability.id);
     if (!current || ability.level > current.level) merged.set(ability.id, ability);
   });
-  return Array.from(merged.values());
+  // Enemy forms are party-member templates in the Altar, so their displayed
+  // ability levels must match the Lv1 values a Mimorian actually receives.
+  return Array.from(merged.values(), (ability) => ({ ...ability, level: 1 }));
 }
 
 function AltarTab({
@@ -10023,10 +10024,11 @@ function AltarTab({
         {visibleEnemies.map((enemy) => {
           const cost = getEnemyFormPranaCost(enemy);
           const unlocked = unlockedIds.has(enemy.id);
+          const enemyFormName = formatEnemyFormName(enemy);
           const requiredAltarLevel = getEnemyRequiredAltarLevel(enemy);
           const meetsLevelRequirement = altarLevel >= requiredAltarLevel;
           const canUnlock = !unlocked && meetsLevelRequirement && prana >= cost;
-          const formAbilities = mergeEnemyAbilityDisplayEntries([
+          const formAbilities = mergeMimorianAbilityDisplayEntries([
             ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
             ...getEnemyIndividualAbilities(enemy.id),
           ]);
@@ -10051,19 +10053,19 @@ function AltarTab({
             <div key={enemy.id} className={`flex items-center gap-3 rounded-lg border bg-pane p-2 shadow-sm ${unlocked ? 'border-sub/40' : 'border-gray-200'}`}>
               <img
                 src={`${import.meta.env.BASE_URL}chibi/C_E_${enemy.id}.png`}
-                alt={formatEnemyDefName(enemy)}
+                alt={enemyFormName}
                 className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24"
               />
               <div className="min-w-0 flex-1 space-y-1 text-xs">
                 <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
                   <div className="min-w-0 text-sm font-semibold">
-                    {renderTextWithRaceIcons(formatEnemyDefName(enemy), 'h-4 w-4')} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
+                    {renderTextWithRaceIcons(enemyFormName, 'h-4 w-4')} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
                   </div>
                   <button
                     type="button"
                     disabled={!canUnlock}
                     onClick={() => {
-                      if (!window.confirm(t('home.altar.unlockConfirm', { enemy: formatEnemyDefName(enemy), prana: formatNumber(cost) }))) return;
+                      if (!window.confirm(t('home.altar.unlockConfirm', { enemy: enemyFormName, prana: formatNumber(cost) }))) return;
                       onUnlockEnemy(enemy.id);
                     }}
                     className={`shrink-0 rounded border px-2 py-1 text-xs ${canUnlock ? 'border-sub text-sub' : 'cursor-not-allowed border-gray-300 text-gray-400'}`}
@@ -13273,7 +13275,9 @@ function SettingTab({
         {settingPanelExpanded.news && (
           <div className="mt-3 space-y-3">
             <a
-              href="https://discord.gg/k9VSf2ghM"
+              href={gameState.global.language === 'zh-CN'
+                ? 'https://t.me/+exLhrX12vn5iMmI1'
+                : 'https://discord.gg/k9VSf2ghM'}
               target="_blank"
               rel="noopener noreferrer"
               className="discord-community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"

@@ -10,6 +10,11 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 6 | 2026/07/27 | Route the single visible community link to the Chinese Telegram group for Simplified Chinese and to the official Japanese-English Discord community for every other language. |
+| 0.8.8 | 5 | 2026/07/27 | Restore the missing `a.life-drain` reactive ability glossary entry from the runtime definition, including its normal-melee healing behavior, seven level values, and on-strike trigger. |
+| 0.8.8 | 4 | 2026/07/27 | Preserve percentage signs when floating ability help bubbles substitute a percentage level value into a plain `N` placeholder. |
+| 0.8.8 | 3 | 2026/07/27 | Remove enemy main-class and sub-class labels from Altar enemy-form list names while retaining each enemy-form category label. |
+| 0.8.8 | 2 | 2026/07/27 | Fix Altar enemy-form ability display (Spec 8.4.5): show every copied Mimorian party-member ability at its fixed Lv1 instead of the original enemy combat level. |
 | 0.8.8 | 1 | 2026/07/27 | Release version 0.8.8 and reset the build number to 1. |
 | 0.8.7 | 15 | 2026/07/27 | Adapt the official Discord Community link with dark-theme background, border, text, and interaction colors. |
 | 0.8.7 | 14 | 2026/07/27 | Localize the official Discord Community hyperlink in Japanese, English, Simplified Chinese, and Traditional Chinese. |

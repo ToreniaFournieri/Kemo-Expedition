@@ -136,8 +136,8 @@ If `a.*` with phase = START:
 - An actor is considered to have acted in the battle after at least one of its normal-action entries has been resolved or skipped.
 
 - **Base-roll** determined by attack type.
-  - `ranged_attack`, `base-roll` is 3d3. (3-9)
-  - `magical_attack`, `base-roll` is  2d3. (2-6)
+  - `ranged_attack`, `base-roll` is 5d3. (5-15)
+  - `magical_attack`, `base-roll` is  3d3. (3-9)
   - `melee_attack`, `base-roll` is  1d3. (1-3)
 - **Initiative roll**
   - Cap at 49. 
@@ -172,7 +172,8 @@ If `a.*` with phase = START:
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
-  3. Resolve party member actions from Front-row to Back-row
+  3. Party member actions, ordered by attack type: ranged → magical → melee.
+  4. Within the same attack type, resolve party members from Front Row to Back Row.
 
 | Battle-log phase label | timing | action order | Display format |
 |--|--:|--|--|
@@ -180,12 +181,12 @@ If `a.*` with phase = START:
 | START | 8 | Trigger | [効] |
 | ... | ... | ... | ... |
 | START | 0 | Trigger | [効] |
-| COMBAT | 12 | Trigger | [12] |
-| COMBAT | 12 | Enemy | [12] |
-| COMBAT | 12 | Party member (Front-row → Back-row) | [12] |
-| COMBAT | 11 | Trigger | [11] |
-| COMBAT | 11 | Enemy | [11] |
-| COMBAT | 11 | Party member (Front-row → Back-row) | [11] |
+| COMBAT | 49 | Trigger | [49] |
+| COMBAT | 49 | Enemy | [49] |
+| COMBAT | 49 | Party member (Front-row → Back-row) | [49] |
+| COMBAT | 48 | Trigger | [49] |
+| COMBAT | 48 | Enemy | [48] |
+| COMBAT | 48 | Party member (Front-row → Back-row) | [48] |
 | ... | ... | ... | ... |
 | COMBAT | 1 | Trigger | [1] |
 | COMBAT | 1 | Enemy | [1] |

@@ -69,3 +69,13 @@ export function formatEnemyDefName(enemy: Pick<EnemyDef, 'name' | 'nameKey' | 'e
   const localizedName = enemy.nameKey ? t(enemy.nameKey) : enemy.name;
   return formatEnemyName(localizedName, enemy.enemyType, enemy.enemyClass, enemy.enemySubClass);
 }
+
+export function formatEnemyFormName(enemy: Pick<EnemyDef, 'name' | 'nameKey' | 'enemyType'>): string {
+  // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
+  const localizedName = enemy.nameKey ? t(enemy.nameKey) : enemy.name;
+  const enemyTypeLabel = ['Caninian', 'Lupinian', 'Vulpinian', 'Ursan', 'Felidian', 'Mustelid', 'Leporian', 'Cervin', 'Procyonian', 'Murid']
+    .includes(enemy.enemyType)
+    ? `icon.${enemy.enemyType}`
+    : getEnemyTypeShortName(enemy.enemyType);
+  return enemyTypeLabel ? `${localizedName}(${enemyTypeLabel})` : localizedName;
+}

@@ -20,7 +20,7 @@ const ja = {
   'save.errorLog': 'エラーログ:',
   'save.loadWarning': 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください',
   'home.developerNews.betaReportBonusFix': '開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。',
-  'setting.developerNews.discordCommunity': '公式Discordコミュニティ（日本語・中国語・英語）',
+  'setting.developerNews.discordCommunity': 'Official Discord Community (日本語・English)',
   'common.yes': 'あり',
   'common.no': 'なし',
   'condition.awful': '絶不調',
