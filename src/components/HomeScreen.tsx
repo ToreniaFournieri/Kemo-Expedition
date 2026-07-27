@@ -13276,7 +13276,7 @@ function SettingTab({
               href="https://discord.gg/k9VSf2ghM"
               target="_blank"
               rel="noopener noreferrer"
-              className="block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
+              className="discord-community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
             >
               {t('setting.developerNews.discordCommunity')}
             </a>
