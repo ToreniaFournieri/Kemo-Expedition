@@ -13274,21 +13274,18 @@ function SettingTab({
         {renderSettingPanelHeader('news', 'News')}
         {settingPanelExpanded.news && (
           <div className="mt-3 space-y-3">
+            {/* SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知) */}
             <a
-              href="https://discord.gg/k9VSf2ghM"
+              href={language === 'zh-CN' || language === 'zh-TW'
+                ? 'https://t.me/+exLhrX12vn5iMmI1'
+                : 'https://discord.gg/k9VSf2ghM'}
               target="_blank"
               rel="noopener noreferrer"
               className="community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
             >
-              {t('setting.developerNews.discordCommunity')}
-            </a>
-            <a
-              href="https://t.me/+exLhrX12vn5iMmI1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
-            >
-              {t('setting.developerNews.telegramCommunity')}
+              {t(language === 'zh-CN' || language === 'zh-TW'
+                ? 'setting.developerNews.telegramCommunity'
+                : 'setting.developerNews.discordCommunity')}
             </a>
             <div className="overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
               {DEVELOPER_NEWS_ITEMS.map((item) => (
