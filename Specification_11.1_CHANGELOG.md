@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.7 | 14 | 2026/07/27 | Localize the official Discord Community hyperlink in Japanese, English, Simplified Chinese, and Traditional Chinese. |
+| 0.8.7 | 13 | 2026/07/27 | Add the official multilingual Discord Community hyperlink before the runtime Developer News list. |
 | 0.8.7 | 12 | 2026/07/27 | Enable the runtime Debug pane and persisted debug controls in the beta environment while retaining its fixed `m.laika` theme and production debug lockout. |
 | 0.8.7 | 11 | 2026/07/27 | Keep Felis's five-item shelf populated for progressed saves by deriving the item-tier cap from defeated-boss records and selecting only generated master items for the rolled tier and rarity. |
 | 0.8.7 | 10 | 2026/07/26 | Unify runtime battle resolution under one combat phase with explicit ranged, magical, and melee attack types while preserving LONG, MID, and CLOSE battle-log labels. |
