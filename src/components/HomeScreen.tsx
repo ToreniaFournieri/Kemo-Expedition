@@ -16,6 +16,7 @@ import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
 import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
+import { getMasterItemCategoriesByRarity } from '../data/masterSpecData';
 import {
   LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES,
   BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -2815,6 +2816,8 @@ type InventoryCategory = ItemCategory | 'jewel';
 const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
+const ITEM_CATEGORY_ORDER: ItemCategory[] = ['armor', 'robe', 'shield', 'sword', 'katana', 'gauntlet', 'arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst'];
+
 type CategoryGroup = typeof CATEGORY_GROUPS[number];
 
 function getCharacterCombatBonusLevels(character: Character): { melee: boolean; ranged: boolean; magic: boolean } {
@@ -10138,8 +10141,11 @@ function ShopTab({
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
   const refreshPrice = getShopRefreshPrice(refreshCount);
   const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
-    const hasBeatenBoss = parties.some((party) => Boolean(party.defeatedBossExpeditions?.[dungeon.id]));
-    return hasBeatenBoss ? Math.max(highestTier, dungeon.tier) : highestTier;
+    const nextDungeonId = dungeon.id + 1;
+    const hasBeatenBoss = parties.some((party) => (
+      isDungeonEntryUnlocked(party, nextDungeonId)
+    ));
+    return hasBeatenBoss ? Math.max(highestTier, dungeon.id) : highestTier;
   }, 1);
   const lineupSeed = getShopLineupSeed(now, refreshCount);
   const stockKey = getShopStockKey(now, refreshCount);
@@ -10174,19 +10180,23 @@ function ShopTab({
 
   const shopItems = rarityPool.map((rarityBase, index) => {
     const tier = seededTierForIndex(index);
-    const targetRarity = getItemRarityById(tier * 1000 + rarityBase + 1);
-    const tierRarityItems = ITEMS.filter((item) => (
-      getDisplayTier(item.id, item.name) === tier && getItemRarityById(item.id) === targetRarity
-    ));
     const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
-    const selectedCategory = rotatedCategories.find((category) => (
-      tierRarityItems.some((item) => item.category === category)
+    const targetRarity = getItemRarityById(tier * 1000 + rarityBase + 1);
+    const categoriesByRarity = new Set<ItemCategory>(
+      targetRarity === 'mythicRare' ? [] : getMasterItemCategoriesByRarity(tier, targetRarity)
+    );
+    const selectedCategory = rotatedCategories.find((category) => categoriesByRarity.has(category));
+    const selectedCategoryIndex = selectedCategory ? ITEM_CATEGORY_ORDER.indexOf(selectedCategory) : -1;
+    const categoryBasedItemId = selectedCategoryIndex >= 0
+      ? tier * 1000 + rarityBase + selectedCategoryIndex + 1
+      : null;
+    const fallbackItem = ITEMS.find((item) => (
+      Math.floor(item.id / 1000) === tier &&
+      getItemRarityById(item.id) === targetRarity
     ));
-    const categoryItems = selectedCategory
-      ? tierRarityItems.filter((item) => item.category === selectedCategory)
-      : tierRarityItems;
-    const selectionSeed = Math.abs(Math.floor(Math.sin(lineupSeed + (index + 1) * 193) * 10000));
-    const baseItem = categoryItems[selectionSeed % categoryItems.length];
+    const baseItem = (categoryBasedItemId !== null
+      ? ITEMS.find((item) => item.id === categoryBasedItemId)
+      : null) ?? fallbackItem;
     if (!baseItem) return null;
     const baseItemId = baseItem.id;
 
