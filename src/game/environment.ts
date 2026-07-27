@@ -22,6 +22,11 @@ export function getEnvLabel(): string {
   return '';
 }
 
+// SpecRef: 9 | Environment | Debug mode
+export function isDebugModeEnabled(): boolean {
+  return getEnvironmentId() !== 'prod';
+}
+
 // SpecRef: 9 | Environment | createEnvironmentStorageKey
 export function createEnvironmentStorageKey(baseKey: string): string {
   return `${baseKey}:${getEnvironmentId()}`;

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.7 | 12 | 2026/07/27 | Enable the runtime Debug pane and persisted debug controls in the beta environment while retaining its fixed `m.laika` theme and production debug lockout. |
 | 0.8.7 | 11 | 2026/07/27 | Keep Felis's five-item shelf populated for progressed saves by deriving the item-tier cap from defeated-boss records and selecting only generated master items for the rolled tier and rarity. |
 | 0.8.7 | 10 | 2026/07/26 | Unify runtime battle resolution under one combat phase with explicit ranged, magical, and melee attack types while preserving LONG, MID, and CLOSE battle-log labels. |
 | 0.8.7 | 9 | 2026/07/26 | Define `attack_type` as the authoritative internal combat discriminator, retain LONG/MID/CLOSE solely as compatible battle-log labels, and clarify attack-type-step eligibility and timing. |
