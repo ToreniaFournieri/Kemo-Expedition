@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 1 | 2026/07/27 | Release version 0.8.8 and reset the build number to 1. |
 | 0.8.7 | 15 | 2026/07/27 | Adapt the official Discord Community link with dark-theme background, border, text, and interaction colors. |
 | 0.8.7 | 14 | 2026/07/27 | Localize the official Discord Community hyperlink in Japanese, English, Simplified Chinese, and Traditional Chinese. |
 | 0.8.7 | 13 | 2026/07/27 | Add the official multilingual Discord Community hyperlink before the runtime Developer News list. |
