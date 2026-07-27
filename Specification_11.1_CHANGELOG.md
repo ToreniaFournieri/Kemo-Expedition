@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 2 | 2026/07/27 | Fix Altar enemy-form ability display (Spec 8.4.5): show every copied Mimorian party-member ability at its fixed Lv1 instead of the original enemy combat level. |
 | 0.8.8 | 1 | 2026/07/27 | Release version 0.8.8 and reset the build number to 1. |
 | 0.8.7 | 15 | 2026/07/27 | Adapt the official Discord Community link with dark-theme background, border, text, and interaction colors. |
 | 0.8.7 | 14 | 2026/07/27 | Localize the official Discord Community hyperlink in Japanese, English, Simplified Chinese, and Traditional Chinese. |
