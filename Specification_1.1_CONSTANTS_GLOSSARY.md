@@ -214,18 +214,18 @@
 | `a.boost` | 加速 | 自身の行動順をN増加させる | Lv1: 1, Lv2: 2, Lv3: 3 | START | 3 |
 | `a.slow` | 鈍足 | 自身の行動順をN低下させる | Lv1: -1, Lv2: -2, Lv3: -3 | START | 3 |
 | `a.frostbite` | 凍傷 | 相手の行動順をN低下させる | Lv1: -1 | START | 3 |
-| `a.howl` | 遠吠え | 指定タイミングで、相手がまだ一度も行動していない時に発動する。相手の次の攻撃回数をxN倍にする | Lv1: COMBAT6・x5/7, Lv2: COMBAT2・x4/7, Lv3: COMBAT2・x3/7, Lv4: COMBAT2・x2/7, Lv5: COMBAT2・x1/7 | COMBAT | X |
-| `a.ranged-confusion` | 遠距離混乱 | 指定タイミングで発動し、遠距離攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする | Lv1: COMBAT1・1/32, Lv2: COMBAT1・3/32, Lv3: COMBAT2・3/32, Lv4: COMBAT2・5/32, Lv5: COMBAT2・7/32 | COMBAT | X |
-| `a.magic-confusion` | 魔法混乱 | 指定タイミングで発動し、魔法攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする | Lv1: COMBAT3・1/32, Lv2: COMBAT3・3/32, Lv3: COMBAT4・3/32, Lv4: COMBAT4・5/32, Lv5: COMBAT4・7/32 | COMBAT | X |
-| `a.melee-confusion` | 近接混乱 | 指定タイミングで発動し、近接攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする | Lv1: COMBAT1・1/32, Lv2: COMBAT1・3/32, Lv3: COMBAT2・3/32, Lv4: COMBAT2・5/32, Lv5: COMBAT2・7/32 | COMBAT | X |
-| `a.unstable-core` | 不安定 | 指定タイミングで発動し、残HPのN%の自傷ダメージを受ける | Lv1: COMBAT3/COMBAT0・30%, Lv2: COMBAT3/COMBAT0・24%, Lv3: COMBAT3/COMBAT0・19%, Lv4: COMBAT3/COMBAT0・15%, Lv5: COMBAT3/COMBAT0・12% | COMBAT | X |
-| `a.soul-reap` | 魂奪 | 指定タイミングで発動し、相手のHPがN%未満なら即死させる(回避・復活不可) | Lv1: 10%, Lv2: 14%, Lv3: 17%, Lv4: 19%, Lv5: 20% | COMBAT | 3 |
-| `a.regeneration` | 再生 | 指定タイミングで発動し、この戦闘で失ったHPのN%を回復する(近接フェーズ前にHP0なら不発) | Lv1: 10%, Lv2: 15%, Lv3: 19%, Lv4: 22%, Lv5: 24% | COMBAT | 3 |
-| `a.flying` | 飛行 | 指定タイミングで発動し、自身の回避を+Nする | Lv1: 40, Lv2: 45, Lv3: 50 | COMBAT | 3 |
-| `a.predator-sense` | 捕食 | 指定タイミングで発動し、相手のHPがN%未満なら命中+40する | Lv1: 30%, Lv2: 38%, Lv3: 44%, Lv4: 48%, Lv5: 50% | COMBAT | 3 |
-| `a.decompose` | 分解 | 指定タイミングで発動し、相手の物理防御力をxN倍にする | Lv1: x6/7, Lv2: x5/7, Lv3: x4/7, Lv4: x3/7, Lv5: x2/7 | COMBAT | 2 |
-| `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: 1/10, Lv2: 3/10, Lv3: 5/10, Lv4: 7/10, Lv5: 100% | COMBAT | 2 |
-| `a.free` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: COMBAT1, Lv2: COMBAT2, Lv3: COMBAT3, Lv4: COMBAT4, Lv5: COMBAT5 | COMBAT | X |
+| `a.howl` | 遠吠え | 指定タイミングで、相手がまだ一度も行動していない時に発動する。相手の次の攻撃回数をxN倍にする | Lv1: COMBAT8・x5/7, Lv2: COMBAT8・x4/7, Lv3: COMBAT8・x3/7, Lv4: COMBAT8・x2/7, Lv5: COMBAT8・x1/7 | COMBAT | 2 |
+| `a.ranged-confusion` | 遠距離混乱 | 指定タイミングで発動し、相手一人の未行動の遠距離行動をNの確率で敵対状態にする | Lv1: COMBAT7・1/32, Lv2: COMBAT7・3/32, Lv3: COMBAT8・3/32, Lv4: COMBAT8・5/32, Lv5: COMBAT8・7/32 | COMBAT | 2 |
+| `a.magic-confusion` | 魔法混乱 | 指定タイミングで発動し、相手一人の未行動の魔法行動をNの確率で敵対状態にする | Lv1: COMBAT4・1/32, Lv2: COMBAT4・3/32, Lv3: COMBAT5・3/32, Lv4: COMBAT5・5/32, Lv5: COMBAT5・7/32 | COMBAT | 2 |
+| `a.melee-confusion` | 近接混乱 | 指定タイミングで発動し、相手一人の未行動の近接行動をNの確率で敵対状態にする | Lv1: COMBAT1・1/32, Lv2: COMBAT1・3/32, Lv3: COMBAT2・3/32, Lv4: COMBAT2・5/32, Lv5: COMBAT2・7/32 | COMBAT | 2 |
+| `a.unstable-core` | 不安定 | 指定タイミングで発動し、残HPのN%の自傷ダメージを受ける | Lv1: COMBAT4/COMBAT0・30%, Lv2: COMBAT4/COMBAT0・24%, Lv3: COMBAT4/COMBAT0・19%, Lv4: COMBAT4/COMBAT0・15%, Lv5: COMBAT4/COMBAT0・12% | COMBAT | 3 |
+| `a.soul-reap` | 魂奪 | 指定タイミングで発動し、相手のHPがN%未満なら即死させる(回避・復活不可) | Lv1: COMBAT2・10%, Lv2: COMBAT2・14%, Lv3: COMBAT2・17%, Lv4: COMBAT2・19%, Lv5: COMBAT2・20% | COMBAT | 3 |
+| `a.regeneration` | 再生 | 指定タイミングで発動し、この戦闘で失ったHPのN%を回復する(近接フェーズ前にHP0なら不発) | Lv1: COMBAT3・10%, Lv2: COMBAT3・15%, Lv3: COMBAT3・19%, Lv4: COMBAT3・22%, Lv5: COMBAT3・24% | COMBAT | 3 |
+| `a.flying` | 飛行 | 指定タイミングで発動し、自身の回避を+Nする | Lv1: COMBAT3・40, Lv2: COMBAT3・45, Lv3: COMBAT3・50 | COMBAT | 3 |
+| `a.predator-sense` | 捕食 | 指定タイミングで発動し、相手のHPがN%未満なら命中+40する | Lv1: COMBAT4・30%, Lv2: COMBAT4・38%, Lv3: COMBAT4・44%, Lv4: COMBAT4・48%, Lv5: COMBAT4・50% | COMBAT | 3 |
+| `a.decompose` | 分解 | 指定タイミングで発動し、相手の物理防御力をxN倍にする | Lv1: COMBAT2・x6/7, Lv2: COMBAT2・x5/7, Lv3: COMBAT2・x4/7, Lv4: COMBAT2・x3/7, Lv5: COMBAT2・x2/7 | COMBAT | 2 |
+| `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: COMBAT2・1/10, Lv2: COMBAT2・3/10, Lv3: COMBAT2・5/10, Lv4: COMBAT2・7/10, Lv5: COMBAT2・100% | COMBAT | 2 |
+| `a.free` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: COMBAT1, Lv2: COMBAT2, Lv3: COMBAT3, Lv4: COMBAT4, Lv5: COMBAT5 | COMBAT | 1 |
 | `a.auriferous` | 含金 | 自身が受けた攻撃回数の累計が10回に達するごとに、ドロップ抽選チケット数を+1する | - | END | 5 |
 | `a.first-aid` | 応急措置 | 各エリート戦後に、自身のHP増加基礎値とアイテムHP増加値のN%を回復する | Lv1: 2%, Lv2: 3%, Lv3: 4%, Lv4: 5%, Lv5: 6%  | END | 4 |
 
