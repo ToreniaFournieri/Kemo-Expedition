@@ -36,7 +36,7 @@ import { calculateItemSellPrice } from '../game/pricing';
 import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getRequiredAltarVictories, MAX_ALTAR_LEVEL, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
-import { formatEnemyDefName, getEnemyTypeShortName } from '../game/enemyDisplay';
+import { formatEnemyDefName, formatEnemyFormName, getEnemyTypeShortName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
@@ -10025,6 +10025,7 @@ function AltarTab({
         {visibleEnemies.map((enemy) => {
           const cost = getEnemyFormPranaCost(enemy);
           const unlocked = unlockedIds.has(enemy.id);
+          const enemyFormName = formatEnemyFormName(enemy);
           const requiredAltarLevel = getEnemyRequiredAltarLevel(enemy);
           const meetsLevelRequirement = altarLevel >= requiredAltarLevel;
           const canUnlock = !unlocked && meetsLevelRequirement && prana >= cost;
@@ -10053,19 +10054,19 @@ function AltarTab({
             <div key={enemy.id} className={`flex items-center gap-3 rounded-lg border bg-pane p-2 shadow-sm ${unlocked ? 'border-sub/40' : 'border-gray-200'}`}>
               <img
                 src={`${import.meta.env.BASE_URL}chibi/C_E_${enemy.id}.png`}
-                alt={formatEnemyDefName(enemy)}
+                alt={enemyFormName}
                 className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24"
               />
               <div className="min-w-0 flex-1 space-y-1 text-xs">
                 <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
                   <div className="min-w-0 text-sm font-semibold">
-                    {renderTextWithRaceIcons(formatEnemyDefName(enemy), 'h-4 w-4')} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
+                    {renderTextWithRaceIcons(enemyFormName, 'h-4 w-4')} <span className="whitespace-nowrap font-normal text-gray-600">{t(`home.altar.category.${enemy.type}`)}</span>
                   </div>
                   <button
                     type="button"
                     disabled={!canUnlock}
                     onClick={() => {
-                      if (!window.confirm(t('home.altar.unlockConfirm', { enemy: formatEnemyDefName(enemy), prana: formatNumber(cost) }))) return;
+                      if (!window.confirm(t('home.altar.unlockConfirm', { enemy: enemyFormName, prana: formatNumber(cost) }))) return;
                       onUnlockEnemy(enemy.id);
                     }}
                     className={`shrink-0 rounded border px-2 py-1 text-xs ${canUnlock ? 'border-sub text-sub' : 'cursor-not-allowed border-gray-300 text-gray-400'}`}
