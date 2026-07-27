@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.8.8 | 6 | 2026/07/27 | Add the localized Chinese Telegram community link to Setting and remove Chinese from the localized official Discord community labels. |
 | 0.8.8 | 5 | 2026/07/27 | Restore the missing `a.life-drain` reactive ability glossary entry from the runtime definition, including its normal-melee healing behavior, seven level values, and on-strike trigger. |
 | 0.8.8 | 4 | 2026/07/27 | Preserve percentage signs when floating ability help bubbles substitute a percentage level value into a plain `N` placeholder. |
 | 0.8.8 | 3 | 2026/07/27 | Remove enemy main-class and sub-class labels from Altar enemy-form list names while retaining each enemy-form category label. |

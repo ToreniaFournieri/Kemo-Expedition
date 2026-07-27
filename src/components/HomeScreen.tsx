@@ -13278,17 +13278,9 @@ function SettingTab({
               href="https://discord.gg/k9VSf2ghM"
               target="_blank"
               rel="noopener noreferrer"
-              className="community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
+              className="discord-community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
             >
               {t('setting.developerNews.discordCommunity')}
-            </a>
-            <a
-              href="https://t.me/+exLhrX12vn5iMmI1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
-            >
-              {t('setting.developerNews.telegramCommunity')}
             </a>
             <div className="overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
               {DEVELOPER_NEWS_ITEMS.map((item) => (
