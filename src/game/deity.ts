@@ -129,12 +129,12 @@ export function getDeityRewardDrawBonuses(
   name: string,
   totalDonatedGold: number,
 ): { itemChanceTickets: number; superRareChanceTickets: number } {
-  const rankIncreases = Math.max(0, getDeityRank(totalDonatedGold) - MIN_DEITY_RANK);
+  const deityRank = getDeityRank(totalDonatedGold);
   const deityKey = getDeityKey(name);
 
   return {
-    itemChanceTickets: deityKey === 'Goddess of Discord' ? rankIncreases : 0,
-    superRareChanceTickets: deityKey === 'God of Oblivion' ? Math.floor(rankIncreases / 2) : 0,
+    itemChanceTickets: deityKey === 'Goddess of Discord' ? deityRank : 0,
+    superRareChanceTickets: deityKey === 'God of Oblivion' ? Math.floor(deityRank / 2) : 0,
   };
 }
 
@@ -151,14 +151,14 @@ export function getNextRankDonationRequirement(totalDonatedGold: number): number
 }
 
 // SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
-function getEffectiveDeityTier(totalDonatedGold: number): number {
-  return Math.min(getDonationTier(totalDonatedGold), MAX_DEITY_RANK);
+function getEffectiveDeityRank(totalDonatedGold: number): number {
+  return getDeityRank(totalDonatedGold);
 }
 
 // SpecRef: 8.6 | UI_SETTING | God scaling
 export function getDeityResonanceUpgradeTiers(name: string, totalDonatedGold = 0): number {
   if (getDeityKey(name) !== 'God of Resonance') return 0;
-  return 1 + Math.floor(getEffectiveDeityTier(totalDonatedGold) / 5);
+  return 1 + Math.floor(getEffectiveDeityRank(totalDonatedGold) / 5);
 }
 
 // SpecRef: 2.1.3 | Religions lists | normalizeDeityName
@@ -186,18 +186,20 @@ export function getDeityKey(name: string): DeityKey | null {
 // SpecRef: 8.6 | UI_SETTING | God scaling
 export function getDeityEffectDescription(name: string, totalDonatedGold = 0): string {
   const deityKey = getDeityKey(name);
-  const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
+  const effectiveRank = getEffectiveDeityRank(totalDonatedGold);
   switch (deityKey) {
     case 'Goddess of Restoration': {
-      const healMissingPct = 0.2 + 0.001 * effectiveTier;
-      return t('deity.effect.GoddessOfRestoration', { healMissingPercent: Math.round(healMissingPct * 100) });
+      const healMissingPct = 0.2 + 0.001 * effectiveRank;
+      return t('deity.effect.GoddessOfRestoration', {
+        healMissingPercent: new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 }).format(healMissingPct * 100),
+      });
     }
     case 'God of Attrition': {
-      const attackMult = 1.2 + 0.01 * effectiveTier;
+      const attackMult = 1.2 + 0.01 * effectiveRank;
       return t('deity.effect.GodOfAttrition', { attackMultiplier: attackMult.toFixed(2) });
     }
     case 'God of Cunning': {
-      const autoSellMultiplier = Math.min(1, 0.5 + 0.01 * effectiveTier);
+      const autoSellMultiplier = Math.min(1, 0.5 + 0.01 * effectiveRank);
       return t('deity.effect.GodOfCunning', { autoSellMultiplier: autoSellMultiplier.toFixed(2) });
     }
     case 'God of Fortification': {
@@ -207,22 +209,25 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
       return t('deity.effect.GoddessOfFertility');
     }
     case 'Goddess of Precision': {
-      const accuracyBonus = 0.015 + 0.001 * effectiveTier;
+      const accuracyBonus = 0.015 + 0.001 * effectiveRank;
       return t('deity.effect.GoddessOfPrecision', { accuracyBonus: (accuracyBonus * 1000).toFixed(0) });
     }
     case 'God of Fate': {
-      return t('deity.effect.GodOfFate');
+      const prayerTimeMultiplier = getDeityStateDurationMultiplier(name, totalDonatedGold, 'pray');
+      return t('deity.effect.GodOfFate', {
+        prayerTimeMultiplier: new Intl.NumberFormat('ja-JP', { minimumFractionDigits: 2 }).format(prayerTimeMultiplier),
+      });
     }
     case 'God of Dusk': {
-      const evasionBonus = 0.015 + 0.001 * effectiveTier;
+      const evasionBonus = 0.015 + 0.001 * effectiveRank;
       return t('deity.effect.GodOfDusk', { evasionBonus: (evasionBonus * 1000).toFixed(0) });
     }
     case 'Goddess of Mirage': {
-      const magicalAttack = 1.2 + 0.01 * effectiveTier;
+      const magicalAttack = 1.2 + 0.01 * effectiveRank;
       return t('deity.effect.GoddessOfMirage', { magicalAttackMultiplier: magicalAttack.toFixed(2) });
     }
     case 'God of Resonance': {
-      const hpMultiplier = 0.9 + 0.002 * effectiveTier;
+      const hpMultiplier = 0.9 + 0.002 * effectiveRank;
       return t('deity.effect.GodOfResonance', { hpMultiplier: hpMultiplier.toFixed(2) });
     }
     case 'God of Oblivion': {
@@ -252,7 +257,7 @@ export function applyDeityCharacterModifiers(
     return characterStats;
   }
 
-  const effectiveTier = getEffectiveDeityTier(party.deityGold ?? 0);
+  const effectiveRank = getEffectiveDeityRank(party.deityGold ?? 0);
 
   return characterStats.map((stats) => {
     switch (deityKey) {
@@ -267,7 +272,7 @@ export function applyDeityCharacterModifiers(
       case 'God of Attrition':
         return {
           ...stats,
-          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (1.2 + 0.01 * effectiveTier) - 1,
+          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (1.2 + 0.01 * effectiveRank) - 1,
         };
       case 'God of Cunning':
         return {
@@ -301,13 +306,13 @@ export function applyDeityCharacterModifiers(
       case 'Goddess of Precision':
         return {
           ...stats,
-          accuracyBonus: stats.accuracyBonus + (0.015 + 0.001 * effectiveTier),
+          accuracyBonus: stats.accuracyBonus + (0.015 + 0.001 * effectiveRank),
           evasionBonus: stats.evasionBonus - 0.005,
         };
       case 'God of Dusk':
         return {
           ...stats,
-          evasionBonus: stats.evasionBonus + (0.015 + 0.001 * effectiveTier),
+          evasionBonus: stats.evasionBonus + (0.015 + 0.001 * effectiveRank),
           deityDefenseAmplifierBonus: {
             physical: stats.deityDefenseAmplifierBonus.physical,
             magical: stats.deityDefenseAmplifierBonus.magical * 1.1,
@@ -335,7 +340,7 @@ export function applyDeityCharacterModifiers(
       case 'Goddess of Mirage':
         return {
           ...stats,
-          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (1.2 + 0.01 * effectiveTier) - 1,
+          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (1.2 + 0.01 * effectiveRank) - 1,
           deityDefenseAmplifierBonus: {
             physical: stats.deityDefenseAmplifierBonus.physical * 1.1,
             magical: stats.deityDefenseAmplifierBonus.magical,
@@ -351,14 +356,15 @@ export function applyDeityCharacterModifiers(
 // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
 export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
-  void totalDonatedGold;
   if (!deityKey) return 1;
 
   if (state === 'rest' && deityKey === 'God of Fortification') return 2;
   if (state === 'sell' && deityKey === 'God of Dusk') return 2;
   if (state === 'free_action' && deityKey === 'Goddess of Fertility') return 2;
   if (state === 'sound_sleep' && deityKey === 'Goddess of Restoration') return 2;
-  if (state === 'pray' && deityKey === 'God of Fate') return 2;
+  if (state === 'pray' && deityKey === 'God of Fate') {
+    return Math.max(1.5, 2 - 0.01 * getEffectiveDeityRank(totalDonatedGold));
+  }
   if (state === 'explore' && deityKey === 'Goddess of Precision') return 1.2;
   return 1;
 }
@@ -367,8 +373,14 @@ export function getDeityStateDurationMultiplier(name: string, totalDonatedGold =
 export function getDeityPartyHpMultiplier(name: string, totalDonatedGold = 0): number {
   const deityKey = getDeityKey(name);
   if (deityKey !== 'God of Resonance') return 1;
-  const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
-  return 0.9 + 0.002 * effectiveTier;
+  const effectiveRank = getEffectiveDeityRank(totalDonatedGold);
+  return 0.9 + 0.002 * effectiveRank;
+}
+
+// SpecRef: 2.1.3 | Religions lists | God of Cunning
+export function getDeityDepositMultiplier(name: string, totalDonatedGold = 0): number {
+  if (getDeityKey(name) !== 'God of Cunning') return 1;
+  return Math.min(1, 0.5 + 0.01 * getEffectiveDeityRank(totalDonatedGold));
 }
 
 // SpecRef: 8.6 | UI_SETTING | God scaling

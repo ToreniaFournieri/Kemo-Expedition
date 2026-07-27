@@ -37,6 +37,8 @@
 
 **Lineup**
 - **Lineup:** 5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
+- Boss completion must be read from the defeated-boss expedition record. Tier X is the defeated dungeon's item `tier`, not its dungeon ID.
+- Each slot must select from the generated item master entries that match its rolled tier and required rarity. The lineup must always render all 5 slots for every valid progression state.
 - Each lineup slot is treated as an individual stock entry; if the same base item appears in multiple slots, buying one slot must not sell out the other slot.
 
 | Intimacy | Lineup |
@@ -239,6 +241,7 @@
 * Mimorian characters may select only enemy forms that have been unlocked at the Altar.
 * The enemy-type dropdown displays only enemy types that contain at least one unlocked enemy.
 * The individual-enemy dropdown displays only unlocked enemies belonging to the selected enemy type.
+* All ability levels are fixed at Lv. 1.
 * Enemy forms that have not been unlocked at the Altar cannot be selected.
 * Locked enemy forms are displayed as disabled entries with their required Prana cost.
 

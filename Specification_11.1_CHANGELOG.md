@@ -10,6 +10,20 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 1 | 2026/07/27 | Release version 0.8.8 and reset the build number to 1. |
+| 0.8.7 | 15 | 2026/07/27 | Adapt the official Discord Community link with dark-theme background, border, text, and interaction colors. |
+| 0.8.7 | 14 | 2026/07/27 | Localize the official Discord Community hyperlink in Japanese, English, Simplified Chinese, and Traditional Chinese. |
+| 0.8.7 | 13 | 2026/07/27 | Add the official multilingual Discord Community hyperlink before the runtime Developer News list. |
+| 0.8.7 | 12 | 2026/07/27 | Enable the runtime Debug pane and persisted debug controls in the beta environment while retaining its fixed `m.laika` theme and production debug lockout. |
+| 0.8.7 | 11 | 2026/07/27 | Keep Felis's five-item shelf populated for progressed saves by deriving the item-tier cap from defeated-boss records and selecting only generated master items for the rolled tier and rarity. |
+| 0.8.7 | 10 | 2026/07/26 | Unify runtime battle resolution under one combat phase with explicit ranged, magical, and melee attack types while preserving LONG, MID, and CLOSE battle-log labels. |
+| 0.8.7 | 9 | 2026/07/26 | Define `attack_type` as the authoritative internal combat discriminator, retain LONG/MID/CLOSE solely as compatible battle-log labels, and clarify attack-type-step eligibility and timing. |
+| 0.8.7 | 8 | 2026/07/26 | Treat boss-specific abilities and bonuses as individual enemy traits so Altar requirements, Mimorian form displays, and copied runtime effects use the same shared path as every other enemy. |
+| 0.8.7 | 7 | 2026/07/26 | Fix every ability copied by a Mimorian enemy form at level 1 in runtime calculations and character-edit displays. |
+| 0.8.7 | 6 | 2026/07/26 | Correct Fania's Traditional Chinese enemy-form name to use the traditional character `婭`; retain the other five names whose characters are identical in Simplified and Traditional Chinese. |
+| 0.8.7 | 5 | 2026/07/26 | Add the six form-only enemies from master data to the runtime Altar and Mimorian form selection, with localized Japanese, English, Simplified Chinese, and Traditional Chinese names. |
+| 0.8.7 | 4 | 2026/07/26 | Audit deity rank scaling: count the current rank for Discord reward draws and every per-rank stat, healing, saving, HP, Resonance, and prayer-duration bonus, keeping runtime effects and displayed values aligned. |
+| 0.8.7 | 3 | 2026/07/26 | Correct the God of Oblivion Super Rare reward bonus to increase at ranks 2, 4, and 6, so rank 6 grants the specified +3 draws. |
 | 0.8.7 | 2 | 2026/07/26 | Bypass the non-responsive native share implementation in mobile Quark backup export, open the backup directly in its browser viewer, and retain a download fallback when popup opening is blocked. |
 | 0.8.7 | 1 | 2026/07/26 | Release version 0.8.7 and reset the build number to 1. |
 | 0.8.6 | 29 | 2026/07/26 | Fully restore party HP at the beginning of every exploration in both Online and AFK runtime handling. |

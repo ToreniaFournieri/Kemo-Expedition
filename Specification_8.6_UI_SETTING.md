@@ -14,7 +14,10 @@
   - Remove the notification badge when no unread news items remain.
   - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
   - When a new news item is added, display the notification badge again.
+- Official Discord Community (日本語・中文・English) "https://discord.gg/k9VSf2ghM"
+  - Localize the hyperlink text for the active language.
 - News list: @Specification_11.2_NEWS.md 
+
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.

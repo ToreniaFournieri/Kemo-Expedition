@@ -3,23 +3,25 @@
 ### 6.1 BATTLE
 - Each encounter consists of one battle
 
-**Battle Phase**
+- **Attack capabilities**
+  - Each attack capability grants one action during a battle. Therefore, a character with two or more attack capabilities may act multiple times in the same battle.
+  - A character has `ranged_attack` if it has either `d.ranged_attack` or `d.ranged_NoA`.
+  - A character has `magical_attack` if it has either `d.magical_attack` or `d.magical_NoA`.
+  - A character has `melee_attack` if it has either `d.melee_attack` or `d.melee_NoA`.
 
-|Phase  | actor | text | Damage type |number of attacks type |Defense type|
-|-----|--------|-------|-----------|-----------|------|
-| START | terrain | [地形] | | | |
-| START | effect | [効] | | | |
-| LONG | separator | (遠距離攻撃フェーズ) | | | |
-| LONG | actor | [N] |`d.ranged_attack` |`d.ranged_NoA` | `d.physical_defense` |
-| LONG | effect | [-] | | | |
-| MID | separator | (魔法攻撃フェーズ) | | | |
-| MID | actor | [N] |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
-| MID | effect | [-] | | | |
-| CLOSE | separator | (近接攻撃フェーズ) | | | |
-| CLOSE | actor | [N] |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
-| CLOSE | effect | [-] | | | |
-| END | effect | [末] | | |
+- **Attack type**
+  - `d.ranged_attack` and `d.ranged_NoA` = `attack_type = ranged`
+  - `d.magical_attack` and `d.magical_NoA` = `attack_type = magical`
+  - `d.melee_attack` and `d.melee_NoA` = `attack_type = melee`
+ 
+- **Attack type and relation**
 
+|Attack type  | Damage type |number of attacks type |Defense type|
+|-----|-----------|-----------|------|
+| `ranged` | `d.ranged_attack` | `d.ranged_NoA` | `d.physical_defense` |
+| `magical` | `d.magical_attack` | `d.magical_NoA` | `d.magical_defense` |
+| `melee` | `d.melee_attack` | `d.melee_NoA` | `d.physical_defense` |
+  
 #### 6.1.1 Phase resolution
 
 ##### 6.1.1.1 START phase
@@ -99,61 +101,63 @@ If `a.*` with phase = START:
 
 
 - actor.`a.command`
-	- party.`f.party.offense_amplifier`(phase: phase):
-	  - If phase is LONG or CLOSE:
+	- party.`f.party.offense_amplifier`(attack_type: attack_type):
+	  - If (`attack_type = ranged` or `attack_type = melee`):
 	    - If front_row_from_actor_member_has.`a.command`3: multiply x2.43
 		- If front_row_from_actor_member_has.`a.command`2: multiply x1.35
 	    - If front_row_from_actor_member_has.`a.command`1: multiply x1.2
 
 - actor.`a.defender` or `a.m-barrier`
-	- party.`f.abilities_defense_amplifier`(phase: phase):
-	  - If phase is LONG or CLOSE:
+	- party.`f.abilities_defense_amplifier`(attack_type: attack_type):
+	  - If (`attack_type = ranged` or `attack_type = melee`):
 	  	- If front_row_from_actor_member_has.`a.defender`3: multiply x1/2
 	  	- If front_row_from_actor_member_has.`a.defender`2: multiply x3/5
 		- If front_row_from_actor_member_has.`a.defender`1: multiply x2/3
 
 - actor.`a.m-barrier`
-	- party.`f.abilities_defense_amplifier`(phase: phase):
-    - If phase is MID:
+	- party.`f.abilities_defense_amplifier`(attack_type: attack_type):
+    - If `attack_type = magical`:
 	    - If front_row_from_actor_member_has.`a.m-barrier`3: multiply x1/2
 	    - If front_row_from_actor_member_has.`a.m-barrier`2: multiply x3/5
 	    - If front_row_from_actor_member_has.`a.m-barrier`1: multiply x2/3
      - Exception: If opponent has `a.m-barrier-breaker`, ignore this effect
        Log: "opponentは魔法障壁を打ち破り無効化した(魔法障壁破り)" instead of m-barrier log.
-   
-
-
 
 - Tie-breaker: Enemy > Front-row party member > Back-row party member
 
 
-##### 6.1.1.2 LONG, MID, CLOSE phase
+##### 6.1.1.2 Combat phase
 
 **Speed & Turn Order (Rolling Dice Rule)**
-- At the start of each phase (`LONG` / `MID` / `CLOSE`), every **eligible actor** (enemy + each party member) rolls initiative.
-- **Eligible actor**:
-  - Has both `d.X_attack` and `d.X_NoA`
-  - `X = ranged` for `LONG`
-  - `X = magical` for `MID`
-  - `X = melee` for `CLOSE`
+- At the start of the COMBAT phase, create all eligible normal-action entries.
+- An actor creates one normal-action entry for each attack capability it possesses.
+- At the start of the `COMBAT` phase, determine one initiative value for every eligible normal action. Each action uses the base roll corresponding to its `attack_type`. Resolve all timed abilities and normal actions from timing 49 down to timing 0.
+- After an action entry is resolved or skipped, mark that action entry as acted.
+- An actor is considered to have acted in the battle after at least one of its normal-action entries has been resolved or skipped.
+
+- **Base-roll** determined by attack type.
+  - `ranged_attack`, `base-roll` is 3d3. (3-9)
+  - `magical_attack`, `base-roll` is  2d3. (2-6)
+  - `melee_attack`, `base-roll` is  1d3. (1-3)
 - **Initiative roll**
+  - Cap at 49. 
   - If actor has `a.first-strike`:
-      - If terrain = `terrain.machine-logic` and actor does not have `a.equation-breaker` : roll **1d3** (1–3)
-      - Else if terrain = `terrain.ash-haze` and actor does not have `a.true-sight`: roll **1d3** (1–3)
-      - Else if `a.first-strike`3: Roll **4d3**(4–12), cap at 9
-      - Else if `a.first-strike`2: Roll **3d3**(3–9)
-      - Else if `a.first-strike`1: Roll **2d3**(2–6)
-      - Otherwise: roll **1d3** (1–3)
+      - If terrain = `terrain.machine-logic` and actor does not have `a.equation-breaker` : roll **`base-roll`**
+      - Else if terrain = `terrain.ash-haze` and actor does not have `a.true-sight`: roll **`base-roll`**
+      - Else if `a.first-strike`3: Roll **`base-roll` +3d3**
+      - Else if `a.first-strike`2: Roll **`base-roll` +2d3**
+      - Else if `a.first-strike`1: Roll **`base-roll` +1d3**
+      - Otherwise: roll **`base-roll`**
 
 - **Modifications**
-  - If party.`Goddess of Fertility` and terrain not in {`terrain.machine-logic`, `terrain.gehenna` }: +1 (cap at 9)
+  - If party.`Goddess of Fertility` and terrain not in {`terrain.machine-logic`, `terrain.gehenna` }: +1
   - If actor.`a.slow`N and terrain != `terrain.machine-logic`: −N (minimum 1)
-  - If actor.`a.boost`N and terrain != `terrain.machine-logic`: +N (cap at 9)
+  - If actor.`a.boost`N and terrain != `terrain.machine-logic`: +N
   - If opponent.`a.frostbite`1 and (actor doesn't have `a.coldproof`) and terrain != `terrain.machine-logic`: -1 (minimum 1)
 
   - **Terrain effects**
-    - If `terrain.tailwind` and (actor doesn't has `a.wind-rider`) and (actor is a party member): +**1d3**, cap at 9
-    - If `terrain.enemy-high-ground` and actor is an enemy: +**1d3**, cap at 9
+    - If `terrain.tailwind` and (actor doesn't has `a.wind-rider`) and (actor is a party member): +**1d3**,
+    - If `terrain.enemy-high-ground` and actor is an enemy: +**1d3**,
 
 - Actions are resolved in descending order of roll result.
 - **Tie-breaker action order**
@@ -164,35 +168,29 @@ If `a.*` with phase = START:
     4. Back-row party member moves
    
 **Order by priority**
-- Each phase is resolved from timing 9 down to timing 0. (0 is only for `Trigger`)
+- Each attack-type step is resolved from timing 49 down to timing 0. (0 might be used for `Trigger`)
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
   3. Resolve party member actions from Front-row to Back-row
 
-| phase | timing | action order | Display format |
+| Battle-log phase label | timing | action order | Display format |
 |--|--:|--|--|
 | START | 9 | Trigger | [効] |
 | START | 8 | Trigger | [効] |
 | ... | ... | ... | ... |
 | START | 0 | Trigger | [効] |
-| LONG | 9 | Trigger | [9] |
-| LONG | 9 | Enemy | [9] |
-| LONG | 9 | Party member (Front-row → Back-row) | [9] |
-| LONG | 8 | Trigger | [8] |
-| LONG | 8 | Enemy | [8] |
-| LONG | 8 | Party member (Front-row → Back-row) | [8] |
+| COMBAT | 12 | Trigger | [12] |
+| COMBAT | 12 | Enemy | [12] |
+| COMBAT | 12 | Party member (Front-row → Back-row) | [12] |
+| COMBAT | 11 | Trigger | [11] |
+| COMBAT | 11 | Enemy | [11] |
+| COMBAT | 11 | Party member (Front-row → Back-row) | [11] |
 | ... | ... | ... | ... |
-| LONG | 1 | Trigger | [1] |
-| LONG | 1 | Enemy | [1] |
-| LONG | 1 | Party member (Front-row → Back-row) | [1] |
-| LONG | 0 | Trigger | [0] |
-| MID | 9 | Trigger | [9] |
-| MID | 9 | Enemy | [9] |
-| MID | 9 | Party member (Front-row → Back-row) | [9] |
-| ... | ... | ... | ... |
-| CLOSE | 1 | Party member (Front-row → Back-row) | [1] |
-| CLOSE | 0 | Trigger | [0] |
+| COMBAT | 1 | Trigger | [1] |
+| COMBAT | 1 | Enemy | [1] |
+| COMBAT | 1 | Party member (Front-row → Back-row) | [1] |
+| COMBAT | 0 | Trigger | [0] |
 | END | 9 | Trigger |  [末] |
 | END | 8 | Trigger | [末] |
 | ... | ... | ... | ... |
@@ -210,9 +208,9 @@ If `a.*` with phase = START:
 - Item got with `c.unlock`:
   - "イタチの解錠 石板の盾 を獲得した！(自動売却対象: 10G)"
 
-#### 6.1.2 Timed ability
+#### 6.1.2 Timed Abilities
 - For each actor:
-  - If actor has an ability with matching timing (phase: current phase, timing: current timing):
+  - Activate each ability whose timing matches the current timing, provided all other activation conditions are satisfied.
 - Resolve activation order using tie-breaker:
   - Enemy > Front-row party member > Back-row party member
 - Activate abilities in the above order.
@@ -231,10 +229,7 @@ If `a.*` with phase = START:
       - Log: `log.null-antagonism` + "(敵対無効化)"
 
   - Eligible target
-    - Has both `d.X_attack` and `d.X_NoA`, and **not has moved yet in the phase**.
-    - `X = ranged` for `LONG`
-    - `X = magical` for `MID`
-    - `X = melee` for `CLOSE`
+    - Target has the capability matching the current `attack_type` and has **not moved yet in the current attack-type step**.
   - On activation, roll N/D to apply confusion to a random eligible target.
   - Log:  `log.confusion`
  
@@ -262,13 +257,13 @@ If `a.*` with phase = START:
 
 - **Decompose**
   - Triggered by `a.decompose`
-  - Use `f.targeting` (phase: CLOSE) for choosing target.
+  - Use `f.targeting` (`attack_type = melee`) for choosing target.
   - target.`d.defense` = N/D x target.`d.defense`
   - Log: `log.decompose` + "(target.name の 防御力 XXX → YYY)"   gray text
 
 - **Self destruct**
   - Triggered by `a.self-destruct`
-  - Use `f.targeting` (phase: CLOSE) for choosing target.
+  - Use `f.targeting` (`attack_type = melee`) for choosing target.
   - opponent.`d.HP` -= N/D x ( actor.remaining_HP - opponent.`d.physical_defense` ) x opponent.`f.defense_amplifier`
   - actor.`d.HP` = 0.
   - Log: `log.self-destruct`
@@ -291,7 +286,7 @@ If `a.*` with phase = START:
 
 ##### 6.1.3.1 Actor action
 - Check:
-  - If (phase = MID and `a.magic-seal` is valid, and actor.`f.damage_calculation` > 0 ), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
+  - If (`attack_type = magical` and `a.magic-seal` is valid, and actor.`f.damage_calculation` > 0 ), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
   - When an actor takes an action, if one or more opponents have active `a.howl`, clear `a.howl` on every opponent (not just a single target).
   - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
   - If actor.`incapacitated`:
@@ -306,19 +301,19 @@ If `a.*` with phase = START:
   	  01. If actor.`e.ice` and opponent.`a.ice-absorb`
 	  02. If actor.`e.fire` and opponent.`a.fire-absorb`
 	  03. If actor.`e.thunder` and opponent.`a.thunder-absorb`
-	  04. If phase is `MID` and opponent.`a.magical-absorb`         
+	  04. If `attack_type = magical` and opponent.`a.magical-absorb`         
 	  05. If actor.`e.ice` and opponent.`a.ice-null`
 	  06. If actor.`e.fire` and opponent.`a.fire-null`
 	  07. If actor.`e.thunder` and opponent.`a.thunder-null`
-	  08. If phase is `LONG` and opponent.`a.ranged-null`
-	  09. If phase is `MID` and opponent.`a.magical-null`
-      10. If phase is `CLOSE` and opponent.`a.melee-null`
+	  08. If `attack_type = ranged` and opponent.`a.ranged-null`
+	  09. If `attack_type = magical` and opponent.`a.magical-null`
+      10. If `attack_type = melee` and opponent.`a.melee-null`
       11. If actor.`e.ice` and opponent.`a.ice-reflect`
 	  12. If actor.`e.fire` and opponent.`a.fire-reflect`
 	  13. If actor.`e.thunder` and opponent.`a.thunder-reflect`
-	  14. If phase is `LONG` and opponent.`a.ranged-reflect`
-	  15. If phase is `MID` and opponent.`a.magical-reflect`
-      16. If phase is `CLOSE` and opponent.`a.melee-reflect`
+	  14. If `attack_type = ranged` and opponent.`a.ranged-reflect`
+	  15. If `attack_type = magical` and opponent.`a.magical-reflect`
+      16. If `attack_type = melee` and opponent.`a.melee-reflect`
 	  - If multiple conditions are true at the same time, resolve only the first matched condition in the order above.
   - **interrupt**
   - Shock resolve
@@ -356,16 +351,16 @@ If `a.*` with phase = START:
 
 	- Null resolve
 	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
-   - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
+   - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, attack_type: attack_type)
 
 	- **self-inflicted damage**
       - If `terrain.vine-snare` and (actor doesn't have `a.vine-cutter`): actor.`d.HP` -= 0.01 x actor.current_HP
         - Log: `log.terrain.vine-snare` + (N) :right-aligned 
-      - If `terrain.crystal-zone` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.05 x actor.total_damage
+      - If `terrain.crystal-zone` and (`attack_type = magical`) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.05 x actor.total_damage
         - Log: `log.terrain.crystal-zone` + (N) :right-aligned 
       - If `terrain.conduction` and actor.`e.thunder`:  actor.`d.HP` -= (0.05 x actor.total_damage ) of `e.thunder`
         - Log: `log.terrain.conduction` + (⚡ N)  :right-aligned 
-      - If `terrain.mana-burn` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.02 x actor.max_HP
+      - If `terrain.mana-burn` and (`attack_type = magical`) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.02 x actor.max_HP
         - Log: `log.terrain.mana-burn` + (N) :right-aligned 
       - If `terrain.sacred-judgement` and is first actor of the battle:  actor.`d.HP` -= (0.05 x (ctor.current_HP) of `e.thunder`
         - Log: `log.terrain.sacred-judgement` + (N) :right-aligned
@@ -385,11 +380,10 @@ If `a.*` with phase = START:
   - log `log.reanimate` + (即時蘇生 ✚ heal)
 - Else: opponent is defeated. 
 
-
 **opponent-reactive**
-- If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘
-- If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘.
-- If (phase is LONG) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor has `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
+- If (`attack_type = ranged`) and (opponent.`a.illusion`1) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘
+- If (`attack_type = ranged`) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘.
+- If (`attack_type = ranged`) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor has `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
 
 ##### 6.1.3.2 Reactive ability
 - Priority: On-strike > Counter > Ally-follow-up
@@ -441,14 +435,14 @@ If `a.*` with phase = START:
 
 **Counter**
 - If opponent.`a.counter` 
-  - `f.counter`(actor:actor , opponent:opponent ,phase: )
-- If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
+  - `f.counter`(actor:actor , opponent:opponent ,attack_type: )
+- If opponent.`a.magical-counter` and (`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,attack_type: )
 - **counter-chain**
-  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
+  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,attack_type: )
 
 
 **Ally-follow-up**
-- If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
+- If actor.`a.covering-fire` and the actor's successful hit is only one and (`attack_type = melee`), `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
   - *Note:*  Nth_hit is per action based (not per-target)
 
 - If actor.`e.thunder` and (terrain is `terrain.chain-lightning`):
@@ -467,17 +461,17 @@ If `a.*` with phase = START:
 - `f.NoA`
   - `f.NoA` = `f.NoA` x `f.terrain_NoA_amplifier`
     - If actor has `a.output-stabilizer`: 1.0
-    - Else if `terrain.rough-waves` and (phase is CLOSE): 0.75
-    - Else if `terrain.heavy-wind` and (actor doesn't has `a.wind-rider`) and (phase is LONG): 0.75
-    - Else if `terrain.heavy-wind` and (actor **has** `a.wind-rider`) and (phase is LONG): 0.50
-    - Else if `terrain.burrow` and (phase is LONG): 0.50
+    - Else if `terrain.rough-waves` and (`attack_type = melee`): 0.75
+    - Else if `terrain.heavy-wind` and (actor doesn't has `a.wind-rider`) and (`attack_type = ranged`): 0.75
+    - Else if `terrain.heavy-wind` and (actor **has** `a.wind-rider`) and (`attack_type = ranged`): 0.50
+    - Else if `terrain.burrow` and (`attack_type = ranged`): 0.50
     - Else if `terrain.low-gravity`: 1.3
     - Else if `terrain.gravity`: 0.7
-    - Else if `terrain.limestone-cave` and (phase is MID or CLOSE): 1.5
+    - Else if `terrain.limestone-cave` and (`attack_type = magical` or `attack_type = melee`): 1.5
 
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
-  - If (phase is MID) or (phase is LONG and party.`God of Resonance` and (terrain is not `terrain.gehenna`)),
+  - If (`attack_type = magical`) or (`attack_type = ranged` and party.`God of Resonance` and (terrain is not `terrain.gehenna`)),
   	- If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
   	- If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
   	- If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
@@ -485,7 +479,7 @@ If `a.*` with phase = START:
   	- If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
     Else, return 1.0.
 
-- `f.damage_calculation`: (actor: , opponent: , phase: )
+- `f.damage_calculation`: (actor: , opponent: , attack_type: )
   - max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )
   - x actor.`f.offense_amplifier`
   - x actor.`f.elemental_offense_attribute`
@@ -543,11 +537,11 @@ If `a.*` with phase = START:
 	  - "[3] カスミ の攻撃！(6/16回, 相手被ダメN%増) "  (opponent.`a.swarm`)
 
 - `f.terrain_amplifier`
-  - If `terrain.exposure` and (phase is LONG or CLOSE): 1.3
-  - If `terrain.dark-field` and (phase is LONG or CLOSE): 1.45
+  - If `terrain.exposure` and (`attack_type = ranged` or `attack_type = melee`): 1.3
+  - If `terrain.dark-field` and (`attack_type = ranged` or `attack_type = melee`): 1.45
   - If `terrain.frenzy`: 1.25
-  - If `terrain.light-field` and (phase is MID): 1.45
-  - If `terrain.sanctuary` and (phase is MID): 0.67
+  - If `terrain.light-field` and (`attack_type = magical`): 1.45
+  - If `terrain.sanctuary` and (`attack_type = magical`): 0.67
   - If `terrain.fortified` and (actor does't have `a.siege`) and (opponent is enemy): 0.75
 
 -  `f.elemental_offense_attribute_amplifier`
@@ -561,10 +555,10 @@ If `a.*` with phase = START:
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
-	- If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`), return n
-	- If (phase is MID and (actor or opponent) has `a.mutual-magic-restraint`), return n
-	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`, return n
-	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-restraint`, return n
+	- If (`attack_type = magical` and (actor or opponent) has `a.mutual-magic-amplify`), return n
+	- If (`attack_type = magical` and (actor or opponent) has `a.mutual-magic-restraint`), return n
+	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-amplify`, return n
+	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 	
 	- If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
 	- If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
@@ -600,13 +594,13 @@ If `a.*` with phase = START:
 **Targeting**
 - `f.targeting`:
   - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
-  - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
+  - If`attack_type = ranged` or `attack_type = melee`, Gets one ticket from `t.physical_threat_weight_bag`.
     - `a.bulwark`1 or `a.bulwark`2 redirect 
-	  if {(`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE))} and (enemy doesn't have `a.bulwark-breaker`):
+	  if {(`a.bulwark`1 and `attack_type = ranged`) or (`a.bulwark`2 and (`attack_type = ranged` or `attack_type = melee`))} and (enemy doesn't have `a.bulwark-breaker`):
 	      front_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
 	      if front_character != null and front_character.has(a.bulwark):
 	          return front_character
-  - If phase is MID, Gets one ticket from `t.magical_threat_weight_bag`. 
+  - If `attack_type = magical`, Gets one ticket from `t.magical_threat_weight_bag`. 
     - Bag contains numbers [1,2,3,4,5,6]
     - The drawn number corresponds to row index (1–6).
     - The character currently occupying that row is selected as the target.
@@ -614,8 +608,8 @@ If `a.*` with phase = START:
 - `d.accuracy_potency` 
   - A global accuracy modifier applied to a unit’s hit chance based on their current row position.
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
-  - Row-based `d.accuracy_potency` is applied only during LONG and CLOSE phases.
-  - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
+  - Row-based `d.accuracy_potency` is applied only (`attack_type = ranged` or `attack_type = melee`).
+  - `attack_type = magical` ignores row-based accuracy potency, so has fixed potency (1.0).
 
 - **`d.accuracy_potency`**
   - If character.`a.composure`1, min(1, `d.accuracy_potency` + 0.10)
@@ -633,20 +627,20 @@ If `a.*` with phase = START:
 **Hit Detection**
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - **Ability**
-    - Applies to all phases (LONG, MID, CLOSE).
+    - Applies to all attack type  (`attack_type = ranged` and `attack_type = magical` and `attack_type = melee`).
     - If actor.`a.focus`1, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 x 1.2 = 0.0036 → 0.004)
     - If actor.`a.focus`2, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
   - **Terrain effect**
-    - If `terrain.fog` and (actor does not have `a.true-sight`) and (phase is LONG): actor.`f.c_accuracy+v` -= 25
-    - If `terrain.sunny-beach` and (phase is LONG): actor.`f.c_accuracy+v` += 20
+    - If `terrain.fog` and (actor does not have `a.true-sight`) and (`attack_type = ranged`): actor.`f.c_accuracy+v` -= 25
+    - If `terrain.sunny-beach` and (`attack_type = ranged`): actor.`f.c_accuracy+v` += 20
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
-  - If opponent has `a.deflection`2 AND phase == LONG: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND phase == LONG: baseChance -= 0.10
+  - If opponent has `a.deflection`2 AND `attack_type = ranged`: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND `attack_type = ranged`: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
     - Note: Nth_hit counts individually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - **Override of terrain effect**
-    - If {`terrain.sniper-domain` and (phase is LONG)} or {`terrain.spell-domain` and (phase is MID)} or {`terrain.duelist-domain` and (phase is CLOSE)}: All hits are treated as successful.
+    - If {`terrain.sniper-domain` and (`attack_type = ranged`)} or {`terrain.spell-domain` and (`attack_type = magical`)} or {`terrain.duelist-domain` and (`attack_type = melee`)}: All hits are treated as successful.
       - Exception: If actor has `a.domain-breaker`, these effects are ignored.
     - If override condition is met: return true (skip calculation below)
   - Roll: Return Random(0, 1.0) <= chance
@@ -656,12 +650,12 @@ If `a.*` with phase = START:
 
 ##### 6.1.4.3 Function of Reactive ability
 
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is LONG or CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+- **`f.counter`(actor: , opponent: ,attack_type: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, `attack_type = ranged` or `attack_type = melee`) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
   - Attack resolution:
-    - If phase == LONG: Execute a ranged attack.
-    - If phase == CLOSE: Execute a melee attack.
+    - If `attack_type = ranged` : Execute a ranged attack.
+    - If `attack_type = melee` : Execute a melee attack.
   - Failure condition:
-    - If actor does not have a valid attack capability for the current phase, the counteraction is skipped.
+    - If actor does not have a valid attack capability for that `attack_type`, the counteraction is skipped.
   - Calculation:
 	- `a.counter`1: actor.`f.NoA` x 0.5, round up
     - `a.counter`2: actor.`f.NoA` x 1.0, round up
@@ -670,7 +664,7 @@ If `a.*` with phase = START:
     - IF actor.`a.counter` and (opponent or opponent.party.character have available `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”. Reduce null-counter counter. (note: `a.null-counter`1 can disable once in battle,  `a.null-counter`2 can disable twice in battle, `a.null-counter`3 can disable three times in battle. if the null-counter is 0, the `a.null-counter` is disable in this battle. )
     - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has available `a.null-counter`, nagete the counter attack.
 
-- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or opponent.party.character have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+- **`f.re-counter`(actor: , opponent: ,attack_type: ) :** IF actor.`a.re-counter` and (opponent or opponent.party.character have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
   	- `a.re-counter`1:   actor.`f.NoA` x 0.5, round up
   	- `a.re-counter`2:   actor.`f.NoA` x 1.0
     - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
@@ -680,7 +674,7 @@ If `a.*` with phase = START:
   	- `a.covering-fire`2:   actor.`f.NoA` x 1.0
     - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
 
-- **`f.magical-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+- **`f.magical-counter`(actor: , opponent: ,attack_type: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
   	- `a.magical-counter`1:   actor.`f.NoA` x 0.5, round up
   	- `a.magical-counter`2:   actor.`f.NoA` x 1.0
     - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
@@ -833,7 +827,7 @@ note: If mainClass == subClass: (race, mainClass+M) : example: (合,侍M)
 - `f.battle_logs`
   - icon: 
   - `elemental_offense_attribute` -> `e.fire`:🔥, `e.thunder`:⚡, `e.ice`:❄️
-  - If there is no elemental attribute (`e.none`), LONG phase:🏹, MID phase:🪄 ,CLOSE phase:⚔
+  - If there is no elemental attribute (`e.none`), `attack_type = ranged` :🏹, `attack_type = magical`:🪄 ,`attack_type = melee`:⚔
 
 **Normal Attack Log — Additional Effects**
 - Append effect bonuses inside the parentheses of the action log.
@@ -857,8 +851,8 @@ note: If mainClass == subClass: (race, mainClass+M) : example: (合,侍M)
 ```
 floor_name 戦闘ログ:
 left-alinged                                           right-aligned
-[距離<roll result>] 敵が　対象　に行動名！(N/M回)    (icon 数値 in dark orange)
-[距離<roll result>] 味方:行動主 の行動名！(N/M回)    (icon 数値　in Blue)
+[<roll result>] 敵が　対象　に行動名！(N/M回)    (icon 数値 in dark orange)
+[<roll result>] 味方:行動主 の行動名！(N/M回)    (icon 数値　in Blue)
 
 [効] イタチの 矢払い！ (敵の遠距離攻撃の命中率を10%低下)
 [効] ウルフの 守護者！　(後列にいる味方への物理ダメージ × 2/3)
@@ -877,17 +871,13 @@ left-alinged                                           right-aligned
 [効] name の魔封！ (この場で最初に唱える魔法は無効化される)
 [効] name が opponent の abilityアビリティを模倣した！
 
-(遠距離攻撃フェーズ)
-[2] ロップ の攻撃！(1/2回)          (🏹 7)
-(魔法攻撃フェーズ)
-[3] 敵がアルカナアローを唱えた！(5/6回, 共鳴+25%)
+(戦闘フェーズ)
+[12] ロップ の攻撃！(1/2回)          (🏹 7)
+[7] 敵がアルカナアローを唱えた！(5/6回, 共鳴+25%)
 [-] ゴン に命中！(2/2回)            (🪄 16)
 [-] セルヴァ に命中！(3/4回)         (🪄 16)
-[1] セルヴァ がフロストニードルを唱えた！(3/3回, 共鳴+33%)     (❄️ 6)
-
-[2] ロップ の氷属性攻撃は反射された！ (10/17回) (❄️ 8,832 →反射 2,944)
-
-(近接攻撃フェーズ)
+[5] セルヴァ がフロストニードルを唱えた！(3/3回, 共鳴+33%)     (❄️ 6)
+[5] ロップ の氷属性攻撃は反射された！ (10/17回) (❄️ 8,832 →反射 2,944)
 [2] ケモ の攻撃！(1/1回)             (⚔ 11)
 [2] ゴン の攻撃！(1/1回)             (⚔ 71)
 (space)
@@ -934,4 +924,3 @@ left-alinged                                           right-aligned
 - In dark mode: not invert the image.
 - Apply mask above the image to ensure text readability.
 - The image remains static relative to the panel (does not move with internal content changes).
-

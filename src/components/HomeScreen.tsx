@@ -16,7 +16,6 @@ import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
 import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
-import { getMasterItemCategoriesByRarity } from '../data/masterSpecData';
 import {
   LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES,
   BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -28,9 +27,9 @@ import { ENEMIES, getEnemyDropCandidates, getEnemyIndividualAbilities, getEnemyI
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
-import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
-import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
+import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId, isDebugModeEnabled } from '../game/environment';
 import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
@@ -2816,8 +2815,6 @@ type InventoryCategory = ItemCategory | 'jewel';
 const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
-const ITEM_CATEGORY_ORDER: ItemCategory[] = ['armor', 'robe', 'shield', 'sword', 'katana', 'gauntlet', 'arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst'];
-
 type CategoryGroup = typeof CATEGORY_GROUPS[number];
 
 function getCharacterCombatBonusLevels(character: Character): { melee: boolean; ranged: boolean; magic: boolean } {
@@ -5241,14 +5238,12 @@ export function HomeScreen({
   };
 
   const getPrayerDepositMultiplier = (party: Party): number => {
-    const deityKey = getDeityKey(party.deity.name);
     const momentumLevel = getPartyAbilityLevel(party, 'momentum');
-    const embezzlementRate =
-      (deityKey === 'God of Cunning' ? 0.5 : 0)
-      + (momentumLevel > 0 ? 0.1 : 0);
+    const deityDonation = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
+    const deityDepositMultiplier = getDeityDepositMultiplier(party.deity.name, deityDonation);
+    const momentumEmbezzlementRate = momentumLevel > 0 ? 0.1 : 0;
 
-    // Embezzlement at pray end: God of Cunning +50%, Momentum (party has at least one) +10%.
-    return Math.max(0, 1 - embezzlementRate);
+    return Math.max(0, deityDepositMultiplier - momentumEmbezzlementRate);
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
@@ -7433,16 +7428,19 @@ function PartyTab({
               const buildEnemyAbilityEntries = (prefix: string, abilities: typeof selectedEnemyTypeAbilities) => abilities
                 .map((ability, index) => buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), {
                   type: 'ability',
-                  value: ability.level,
+                  value: 1,
                   abilityId: ability.id,
-                  abilityLevel: ability.level,
+                  abilityLevel: 1,
                 }, index))
                 .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
               const buildEnemyBonusEntries = (prefix: string, bonuses: Bonus[]) => bonuses
                 .map((bonus, index) => {
-                  const displayBonus = ['fire_offense', 'ice_offense', 'thunder_offense'].includes(bonus.type) && bonus.value > 1
-                    ? { ...bonus, value: bonus.value / 100 }
+                  const mimorianBonus = bonus.type === 'ability'
+                    ? { ...bonus, value: 1, abilityLevel: 1 }
                     : bonus;
+                  const displayBonus = ['fire_offense', 'ice_offense', 'thunder_offense'].includes(mimorianBonus.type) && mimorianBonus.value > 1
+                    ? { ...mimorianBonus, value: mimorianBonus.value / 100 }
+                    : mimorianBonus;
                   return buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), displayBonus, index);
                 })
                 .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
@@ -10140,11 +10138,8 @@ function ShopTab({
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
   const refreshPrice = getShopRefreshPrice(refreshCount);
   const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
-    const nextDungeonId = dungeon.id + 1;
-    const hasBeatenBoss = parties.some((party) => (
-      isDungeonEntryUnlocked(party, nextDungeonId)
-    ));
-    return hasBeatenBoss ? Math.max(highestTier, dungeon.id) : highestTier;
+    const hasBeatenBoss = parties.some((party) => Boolean(party.defeatedBossExpeditions?.[dungeon.id]));
+    return hasBeatenBoss ? Math.max(highestTier, dungeon.tier) : highestTier;
   }, 1);
   const lineupSeed = getShopLineupSeed(now, refreshCount);
   const stockKey = getShopStockKey(now, refreshCount);
@@ -10179,23 +10174,19 @@ function ShopTab({
 
   const shopItems = rarityPool.map((rarityBase, index) => {
     const tier = seededTierForIndex(index);
-    const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
     const targetRarity = getItemRarityById(tier * 1000 + rarityBase + 1);
-    const categoriesByRarity = new Set<ItemCategory>(
-      targetRarity === 'mythicRare' ? [] : getMasterItemCategoriesByRarity(tier, targetRarity)
-    );
-    const selectedCategory = rotatedCategories.find((category) => categoriesByRarity.has(category));
-    const selectedCategoryIndex = selectedCategory ? ITEM_CATEGORY_ORDER.indexOf(selectedCategory) : -1;
-    const categoryBasedItemId = selectedCategoryIndex >= 0
-      ? tier * 1000 + rarityBase + selectedCategoryIndex + 1
-      : null;
-    const fallbackItem = ITEMS.find((item) => (
-      Math.floor(item.id / 1000) === tier &&
-      getItemRarityById(item.id) === targetRarity
+    const tierRarityItems = ITEMS.filter((item) => (
+      getDisplayTier(item.id, item.name) === tier && getItemRarityById(item.id) === targetRarity
     ));
-    const baseItem = (categoryBasedItemId !== null
-      ? ITEMS.find((item) => item.id === categoryBasedItemId)
-      : null) ?? fallbackItem;
+    const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
+    const selectedCategory = rotatedCategories.find((category) => (
+      tierRarityItems.some((item) => item.category === category)
+    ));
+    const categoryItems = selectedCategory
+      ? tierRarityItems.filter((item) => item.category === selectedCategory)
+      : tierRarityItems;
+    const selectionSeed = Math.abs(Math.floor(Math.sin(lineupSeed + (index + 1) * 193) * 10000));
+    const baseItem = categoryItems[selectionSeed % categoryItems.length];
     if (!baseItem) return null;
     const baseItemId = baseItem.id;
 
@@ -12267,7 +12258,7 @@ function SettingTab({
   };
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
-  const isDevEnvironment = currentEnv === 'dev';
+  const debugModeEnabled = isDebugModeEnabled();
   const modeSelectionLocked = isBetaEnvironment;
   useEffect(() => {
     try {
@@ -13280,23 +13271,33 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10" onPointerDown={() => setActiveRosterStatusBubble(null)}>
         {renderSettingPanelHeader('news', 'News')}
         {settingPanelExpanded.news && (
-          <div className="mt-3 overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
-            {DEVELOPER_NEWS_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onMarkDeveloperNewsRead([item.id])}
-                className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
-              >
-                <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
-                  <span className="font-semibold text-gray-700">{item.version}</span>
-                  <span>{item.date}</span>
-                </div>
-                <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
-                  {getDeveloperNewsContent(item, gameState.global.language)}
-                </p>
-              </button>
-            ))}
+          <div className="mt-3 space-y-3">
+            <a
+              href="https://discord.gg/k9VSf2ghM"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="discord-community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
+            >
+              {t('setting.developerNews.discordCommunity')}
+            </a>
+            <div className="overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
+              {DEVELOPER_NEWS_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onMarkDeveloperNewsRead([item.id])}
+                  className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
+                >
+                  <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
+                    <span className="font-semibold text-gray-700">{item.version}</span>
+                    <span>{item.date}</span>
+                  </div>
+                  <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
+                    {getDeveloperNewsContent(item, gameState.global.language)}
+                  </p>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -14471,7 +14472,7 @@ function SettingTab({
       </div>
 
 
-      {isDevEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {debugModeEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('debug', t('setting.debug'))}
         {settingPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
