@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.7 | 12 | 2026/07/27 | Stabilize Pages deployments by using the required Node.js and npm versions, deterministic lockfile installs, and skipping the unused Electron runtime download during browser-only builds. |
 | 0.8.7 | 11 | 2026/07/27 | Restore all five Felis shop shelf entries by selecting the deterministic lineup from actual generated items and deriving the unlocked ceiling from defeated boss tiers. |
 | 0.8.7 | 10 | 2026/07/26 | Unify runtime battle resolution under one combat phase with explicit ranged, magical, and melee attack types while preserving LONG, MID, and CLOSE battle-log labels. |
 | 0.8.7 | 9 | 2026/07/26 | Define `attack_type` as the authoritative internal combat discriminator, retain LONG/MID/CLOSE solely as compatible battle-log labels, and clarify attack-type-step eligibility and timing. |
