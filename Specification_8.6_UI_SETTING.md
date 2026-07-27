@@ -16,8 +16,7 @@
   - When a new news item is added, display the notification badge again.
 - News list: @Specification_11.2_NEWS.md 
 
-- Official Discord Community (日本語・中文)
-- "https://discord.gg/k9VSf2ghM"
+- Official Discord Community (日本語・中文・English) "https://discord.gg/k9VSf2ghM"
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
