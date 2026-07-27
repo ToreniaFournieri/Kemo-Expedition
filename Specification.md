@@ -90,8 +90,8 @@
   - `/dev/`: 開発環境
     - Debug mode: ON
     - Speed of time: x20 hyper 
-  - `/beta/`: βテスト
-    - Debug mode: OFF
+  - `/beta/`: 検証機
+    - Debug mode: ON
     - Theme: `m.laika` (fixed; not user-configurable)
   - `/` : 本番環境
     - Debug mode: OFF
