@@ -1,4 +1,4 @@
-import { createEnvironmentStorageKey, getEnvironmentId } from './environment';
+import { createEnvironmentStorageKey, isDebugModeEnabled } from './environment';
 
 type DebugTimeSpeed = 'realtime' | 'x1_2' | 'x5' | 'x20' | 'x100' | 'unlimited';
 type DebugGodsBattleCondition = 'normal' | 'simple1';
@@ -36,20 +36,8 @@ const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
 };
 
 function enforceEnvironmentDebugPolicy(settings: DebugSettings): DebugSettings {
-  const env = getEnvironmentId();
-  // SpecRef: 9 | Environment | /beta/ Debug mode OFF
-  if (env === 'beta') {
-    // SpecRef: 8.6 | UI_SETTING | Speed of time
-    const betaTimeSpeed: DebugTimeSpeed = settings.timeSpeed === 'x1_2' ? 'x1_2' : 'realtime';
-    return {
-      ...DEFAULT_DEBUG_SETTINGS,
-      timeSpeed: betaTimeSpeed,
-      godsBattleCondition: 'normal',
-      godStrength: 'normal',
-    };
-  }
   // SpecRef: 9 | Environment | / Debug mode OFF
-  if (env === 'prod') {
+  if (!isDebugModeEnabled()) {
     // SpecRef: 8.1.2 | Header | Speed of Time
     // Keep the production Debug pane locked OFF, but preserve the legitimate
     // Speed of Time report reward while its separate duration record is valid.
@@ -120,4 +108,3 @@ export function getTimeSpeedScale(settings: DebugSettings): number {
 export function isUnlimitedTimeSpeed(settings: DebugSettings): boolean {
   return settings.timeSpeed === 'unlimited';
 }
-

@@ -29,7 +29,7 @@ import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
-import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
+import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId, isDebugModeEnabled } from '../game/environment';
 import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
@@ -12258,7 +12258,7 @@ function SettingTab({
   };
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
-  const isDevEnvironment = currentEnv === 'dev';
+  const debugModeEnabled = isDebugModeEnabled();
   const modeSelectionLocked = isBetaEnvironment;
   useEffect(() => {
     try {
@@ -14462,7 +14462,7 @@ function SettingTab({
       </div>
 
 
-      {isDevEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {debugModeEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('debug', t('setting.debug'))}
         {settingPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
