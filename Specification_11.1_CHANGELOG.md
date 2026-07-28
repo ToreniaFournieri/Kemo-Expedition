@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 18 | 2026/07/28 | Align the runtime Origami enemy-type evasion bonus with the specified `c.evasion+0.150` while retaining Thunder Null and 1.5× fire vulnerability. |
 | 0.8.8 | 17 | 2026/07/28 | Align the runtime accuracy-decay clamp with the specified 0.70 minimum while retaining the actor accuracy, opponent evasion, and 0.98 maximum bounds. |
 | 0.8.8 | 16 | 2026/07/28 | Align the runtime accuracy-decay clamp with the specified 0.80 minimum while retaining the actor accuracy, opponent evasion, and 0.98 maximum bounds. |
 | 0.8.8 | 15 | 2026/07/28 | Align the runtime Instant Expedition charge durations after clearing expedition 3 with the specified 6, 12, 24, 48, 96, and 192 minutes. |
