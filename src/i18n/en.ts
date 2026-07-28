@@ -1060,6 +1060,7 @@ const en = {
   'battleLog.phase.terrainShort': 'Terrain',
   'battleLog.phase.effectShort': 'Fx',
   'battleLog.phase.endShort': 'End',
+  'battleLog.phase.combat': 'Combat phase',
   'battleLog.phase.long': 'Ranged attack phase',
   'battleLog.phase.mid': 'Magic attack phase',
   'battleLog.phase.close': 'Melee attack phase',

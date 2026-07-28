@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 8 | 2026/07/28 | Implement the single runtime COMBAT phase presentation, attack-type initiative dice, absolute COMBAT timings for timed abilities, and attack-type-aware battle logs and glossary displays. |
 | 0.8.8 | 7 | 2026/07/28 | Align battle and status-display specifications with the single COMBAT phase by replacing obsolete LONG/MID/CLOSE mechanics with explicit attack types and clarifying timed-confusion eligibility. |
 | 0.8.8 | 6 | 2026/07/27 | Route the single visible community link to the Chinese Telegram group for Simplified Chinese and to the official Japanese-English Discord community for every other language. |
 | 0.8.8 | 5 | 2026/07/27 | Restore the missing `a.life-drain` reactive ability glossary entry from the runtime definition, including its normal-melee healing behavior, seven level values, and on-strike trigger. |

@@ -7,7 +7,7 @@ type BonusAbilityGlossaryEntry = {
   abilityId: AbilityId;
   levelScale: string[];
   subcategory: BonusAbilityGlossarySubcategoryId;
-  phase?: 'START' | 'LONG' | 'MID' | 'CLOSE' | 'END';
+  phase?: 'START' | 'COMBAT' | 'END';
   priority?: number;
 };
 
@@ -74,7 +74,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'stealth', levelScale: ['Lv1: 24%', 'Lv2: 29%'], subcategory: 'reactive' },
   { abilityId: 'illusion', levelScale: ['Lv1', 'Lv2'], subcategory: 'reactive' },
   // SpecRef: 1.1 | CONSTANTS_GLOSSARY | a.flying
-  { abilityId: 'flying', levelScale: ['Lv1: 40', 'Lv2: 45', 'Lv3: 50'], subcategory: 'timed', phase: 'CLOSE', priority: 9 },
+  { abilityId: 'flying', levelScale: ['Lv1: COMBAT3・40', 'Lv2: COMBAT3・45', 'Lv3: COMBAT3・50'], subcategory: 'timed', phase: 'COMBAT', priority: 3 },
   { abilityId: 'bulwark', levelScale: ['Lv1: 遠距離', 'Lv2: 遠距離＋近距離'], subcategory: 'reactive' },
   { abilityId: 'shock', levelScale: [], subcategory: 'reactive' },
   { abilityId: 're_attack', levelScale: ['Lv1: x0.5', 'Lv2: x0.7', 'Lv3: x1.0'], subcategory: 'reactive' },
@@ -124,17 +124,17 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'slow', levelScale: ['Lv1: -1', 'Lv2: -2', 'Lv3: -3'], subcategory: 'timed' },
   { abilityId: 'boost', levelScale: ['Lv1: 1', 'Lv2: 2', 'Lv3: 3'], subcategory: 'timed' },
   { abilityId: 'frostbite', levelScale: ['Lv1: -1'], subcategory: 'timed' },
-  { abilityId: 'howl', levelScale: ['Lv1: LONG2・x5/7', 'Lv2: LONG2・x4/7', 'Lv3: LONG2・x3/7', 'Lv4: LONG2・x2/7', 'Lv5: LONG2・x1/7'], subcategory: 'timed' },
-  { abilityId: 'ranged_confusion', levelScale: ['Lv1: LONG1・1/32', 'Lv2: LONG1・3/32', 'Lv3: LONG2・3/32', 'Lv4: LONG2・5/32', 'Lv5: LONG2・7/32'], subcategory: 'timed' },
-  { abilityId: 'magic_confusion', levelScale: ['Lv1: MID1・1/32', 'Lv2: MID1・3/32', 'Lv3: MID2・3/32', 'Lv4: MID2・5/32', 'Lv5: MID2・7/32'], subcategory: 'timed' },
-  { abilityId: 'melee_confusion', levelScale: ['Lv1: CLOSE1・1/32', 'Lv2: CLOSE1・3/32', 'Lv3: CLOSE2・3/32', 'Lv4: CLOSE2・5/32', 'Lv5: CLOSE2・7/32'], subcategory: 'timed' },
-  { abilityId: 'unstable_core', levelScale: ['Lv1: LONG0/MID0・30%', 'Lv2: LONG0/MID0・24%', 'Lv3: LONG0/MID0・19%', 'Lv4: LONG0/MID0・15%', 'Lv5: LONG0/MID0・12%'], subcategory: 'timed' },
-  { abilityId: 'soul_reap', levelScale: ['Lv1: 10%', 'Lv2: 14%', 'Lv3: 17%', 'Lv4: 19%', 'Lv5: 20%'], subcategory: 'timed' },
-  { abilityId: 'regeneration', levelScale: ['Lv1: 10%', 'Lv2: 15%', 'Lv3: 19%', 'Lv4: 22%', 'Lv5: 24%'], subcategory: 'timed' },
-  { abilityId: 'predator_sense', levelScale: ['Lv1: 30%', 'Lv2: 38%', 'Lv3: 44%', 'Lv4: 48%', 'Lv5: 50%'], subcategory: 'timed' },
-  { abilityId: 'decompose', levelScale: ['Lv1: CLOSE2・x6/7', 'Lv2: CLOSE2・x5/7', 'Lv3: CLOSE2・x4/7', 'Lv4: CLOSE2・x3/7', 'Lv5: CLOSE2・x2/7'], subcategory: 'timed' },
-  { abilityId: 'self_destruct', levelScale: ['Lv1: CLOSE2・1/10', 'Lv2: CLOSE2・3/10', 'Lv3: CLOSE2・5/10', 'Lv4: CLOSE2・7/10', 'Lv5: CLOSE2・100%'], subcategory: 'timed' },
-  { abilityId: 'free', levelScale: ['Lv1: CLOSE1', 'Lv2: CLOSE2', 'Lv3: CLOSE3', 'Lv4: MID1', 'Lv5: MID2'], subcategory: 'timed' },
+  { abilityId: 'howl', levelScale: ['Lv1: COMBAT8・x5/7', 'Lv2: COMBAT8・x4/7', 'Lv3: COMBAT8・x3/7', 'Lv4: COMBAT8・x2/7', 'Lv5: COMBAT8・x1/7'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
+  { abilityId: 'ranged_confusion', levelScale: ['Lv1: COMBAT7・1/32', 'Lv2: COMBAT7・3/32', 'Lv3: COMBAT8・3/32', 'Lv4: COMBAT8・5/32', 'Lv5: COMBAT8・7/32'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
+  { abilityId: 'magic_confusion', levelScale: ['Lv1: COMBAT4・1/32', 'Lv2: COMBAT4・3/32', 'Lv3: COMBAT5・3/32', 'Lv4: COMBAT5・5/32', 'Lv5: COMBAT5・7/32'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
+  { abilityId: 'melee_confusion', levelScale: ['Lv1: COMBAT1・1/32', 'Lv2: COMBAT1・3/32', 'Lv3: COMBAT2・3/32', 'Lv4: COMBAT2・5/32', 'Lv5: COMBAT2・7/32'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
+  { abilityId: 'unstable_core', levelScale: ['Lv1: COMBAT4/COMBAT0・30%', 'Lv2: COMBAT4/COMBAT0・24%', 'Lv3: COMBAT4/COMBAT0・19%', 'Lv4: COMBAT4/COMBAT0・15%', 'Lv5: COMBAT4/COMBAT0・12%'], subcategory: 'timed', phase: 'COMBAT', priority: 3 },
+  { abilityId: 'soul_reap', levelScale: ['Lv1: COMBAT2・10%', 'Lv2: COMBAT2・14%', 'Lv3: COMBAT2・17%', 'Lv4: COMBAT2・19%', 'Lv5: COMBAT2・20%'], subcategory: 'timed', phase: 'COMBAT', priority: 3 },
+  { abilityId: 'regeneration', levelScale: ['Lv1: COMBAT3・10%', 'Lv2: COMBAT3・15%', 'Lv3: COMBAT3・19%', 'Lv4: COMBAT3・22%', 'Lv5: COMBAT3・24%'], subcategory: 'timed', phase: 'COMBAT', priority: 3 },
+  { abilityId: 'predator_sense', levelScale: ['Lv1: COMBAT4・30%', 'Lv2: COMBAT4・38%', 'Lv3: COMBAT4・44%', 'Lv4: COMBAT4・48%', 'Lv5: COMBAT4・50%'], subcategory: 'timed', phase: 'COMBAT', priority: 3 },
+  { abilityId: 'decompose', levelScale: ['Lv1: COMBAT2・x6/7', 'Lv2: COMBAT2・x5/7', 'Lv3: COMBAT2・x4/7', 'Lv4: COMBAT2・x3/7', 'Lv5: COMBAT2・x2/7'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
+  { abilityId: 'self_destruct', levelScale: ['Lv1: COMBAT2・1/10', 'Lv2: COMBAT2・3/10', 'Lv3: COMBAT2・5/10', 'Lv4: COMBAT2・7/10', 'Lv5: COMBAT2・100%'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
+  { abilityId: 'free', levelScale: ['Lv1: COMBAT1', 'Lv2: COMBAT2', 'Lv3: COMBAT3', 'Lv4: COMBAT4', 'Lv5: COMBAT5'], subcategory: 'timed', phase: 'COMBAT', priority: 1 },
   { abilityId: 'auriferous', levelScale: [], subcategory: 'timed' },
   { abilityId: 'first_aid', levelScale: ['Lv1: 2%', 'Lv2: 3%', 'Lv3: 4%', 'Lv4: 5%', 'Lv5: 6%'], subcategory: 'timed', phase: 'END', priority: 4 },
 ];

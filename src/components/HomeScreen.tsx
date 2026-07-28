@@ -372,19 +372,17 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   reactivate: 'expedition.cycle.reactivate',
 };
 
-const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
-  LONG: t('combat.ranged'),
-  MID: t('combat.magic'),
-  CLOSE: t('combat.melee'),
+const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'COMBAT' | 'END', string> = {
+  COMBAT: t('battleLog.phase.combat'),
   END: t('common.end'),
 };
 
 function formatBonusAbilityPhaseDisplay(value: string): string {
-  return value.replace(/LONG|MID|CLOSE|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE' | 'END']);
+  return value.replace(/COMBAT|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'COMBAT' | 'END']);
 }
 
 function isBonusAbilityTimingToken(token: string): boolean {
-  return /^(?:LONG|MID|CLOSE|END)\d(?:\/(?:LONG|MID|CLOSE|END)\d)*$/.test(token);
+  return /^(?:COMBAT|END)\d(?:\/(?:COMBAT|END)\d)*$/.test(token);
 }
 
 function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
@@ -395,7 +393,7 @@ function parseBonusAbilityLevelScale(levelScale: string): { timing: string | nul
 
   const separatorIndex = scaleContent.indexOf('・');
   if (separatorIndex < 0) {
-    const isTimingOnly = /^(LONG|MID|CLOSE|END)\d/.test(scaleContent);
+    const isTimingOnly = /^(COMBAT|END)\d/.test(scaleContent);
     return {
       timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
       value: isTimingOnly ? null : scaleContent,
@@ -1015,7 +1013,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
   logs.forEach((log, index) => {
     if (
       log.actor !== 'triggered'
-      || log.phase !== 'close'
+      || log.attackType !== 'melee'
       || log.effectKind !== 'life_drain'
       || !log.effectSourceName
       || !log.effectTargetName
@@ -9619,28 +9617,22 @@ function ExpeditionTab({
                                 const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
                                 const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
                                 const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
-                                const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'long' || previousLog.phase === 'mid' || previousLog.phase === 'close');
+                                const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                                 const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                                 const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = getBattleLogPhaseLabel(log, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
-                                const phaseHeader = log.phase === 'long'
-                                  ? t('battleLog.phase.long')
-                                  : log.phase === 'mid'
-                                    ? t('battleLog.phase.mid')
-                                    : log.phase === 'close'
-                                      ? t('battleLog.phase.close')
-                                      : '';
+                                const phaseHeader = log.phase === 'combat' ? t('battleLog.phase.combat') : '';
                                 const iconKey: UiIconKey = log.elementalOffense === 'fire'
                                   ? 'fire'
                                   : log.elementalOffense === 'thunder'
                                     ? 'thunder'
                                     : log.elementalOffense === 'ice'
                                       ? 'ice'
-                                      : log.phase === 'long'
+                                      : log.attackType === 'ranged'
                                         ? 'ranged'
-                                        : log.phase === 'mid'
+                                        : log.attackType === 'magical'
                                           ? 'magic'
                                           : 'melee';
                                 const isEnemy = log.actor === 'enemy';
@@ -11706,25 +11698,19 @@ function DiaryTab({
                               const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
                               const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
                               const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
-                              const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'long' || previousLog.phase === 'mid' || previousLog.phase === 'close');
+                              const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                               const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                               const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = getBattleLogPhaseLabel(battleLog, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
-                              const phaseHeader = battleLog.phase === 'long'
-                                ? t('battleLog.phase.long')
-                                : battleLog.phase === 'mid'
-                                  ? t('battleLog.phase.mid')
-                                  : battleLog.phase === 'close'
-                                    ? t('battleLog.phase.close')
-                                    : '';
+                              const phaseHeader = battleLog.phase === 'combat' ? t('battleLog.phase.combat') : '';
                               const getPhaseIcon = (): UiIconKey => {
                                 if (battleLog.elementalOffense === 'fire') return 'fire';
                                 if (battleLog.elementalOffense === 'thunder') return 'thunder';
                                 if (battleLog.elementalOffense === 'ice') return 'ice';
-                                if (battleLog.phase === 'long') return 'ranged';
-                                if (battleLog.phase === 'mid') return 'magic';
+                                if (battleLog.attackType === 'ranged') return 'ranged';
+                                if (battleLog.attackType === 'magical') return 'magic';
                                 return 'melee';
                               };
                               const iconKey = getPhaseIcon();
