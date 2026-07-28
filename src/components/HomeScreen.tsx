@@ -7695,6 +7695,7 @@ function PartyTab({
                     text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.rangedAttack'),
                     helpLines: [
+                      t('home.party.help.rangedAttackSpeed', { range: `${formatNumber(4)}-${formatNumber(12)}`, dice: `${formatNumber(4)}d${formatNumber(3)}` }),
                       t('home.party.help.rangedAttackPower', { value: formatNumber(Math.floor(stats.rangedAttack)) }),
                       t('home.party.help.rangedAttackCount', { value: formatNumber(stats.rangedNoA) }),
                       t('home.party.help.rangedAttackMultiplier', { value: amp.toFixed(2) }),
@@ -7711,6 +7712,7 @@ function PartyTab({
                     text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.magicalAttack'),
                     helpLines: [
+                      t('home.party.help.magicalAttackSpeed', { range: `${formatNumber(3)}-${formatNumber(9)}`, dice: `${formatNumber(3)}d${formatNumber(3)}` }),
                       t('home.party.help.magicalAttackPower', { value: formatNumber(Math.floor(stats.magicalAttack)) }),
                       t('home.party.help.magicalAttackCount', { value: formatNumber(stats.magicalNoA) }),
                       t('home.party.help.magicalAttackMultiplier', { value: amp.toFixed(2) }),
@@ -7727,6 +7729,7 @@ function PartyTab({
                     text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.meleeAttack'),
                     helpLines: [
+                      t('home.party.help.meleeAttackSpeed', { range: `${formatNumber(1)}-${formatNumber(3)}`, dice: `${formatNumber(1)}d${formatNumber(3)}` }),
                       t('home.party.help.meleeAttackPower', { value: formatNumber(Math.floor(stats.meleeAttack)) }),
                       t('home.party.help.meleeAttackCount', { value: formatNumber(stats.meleeNoA) }),
                       t('home.party.help.meleeAttackMultiplier', { value: amp.toFixed(2) }),
