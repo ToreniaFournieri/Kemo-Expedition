@@ -541,10 +541,11 @@ function isStealthActive(
   maxPartyHp: number,
   actorAbilities: AbilityLike[] = [],
 ): boolean {
+  // SpecRef: 6.1.4.1 | Function of attack | a.stealth
   if (hasAbility(actorAbilities, 'pursuit')) return false;
   if (!hasStealth(charStats)) return false;
   if (maxPartyHp <= 0) return false;
-  const threshold = getStealthLevel(charStats) >= 2 ? 0.29 : 0.24;
+  const threshold = getStealthLevel(charStats) >= 2 ? 0.18 : 0.12;
   return (partyHp / maxPartyHp) <= threshold;
 }
 
@@ -561,10 +562,11 @@ function isEnemyStealthActive(
   enemyHp: number,
   attackerAbilities: AbilityLike[] = [],
 ): boolean {
+  // SpecRef: 6.1.4.1 | Function of attack | a.stealth
   if (hasAbility(attackerAbilities, 'pursuit')) return false;
   const stealthLevel = getEnemyAbilityLevel(enemy, 'stealth');
   if (stealthLevel <= 0 || enemy.hp <= 0) return false;
-  const threshold = stealthLevel >= 2 ? 0.29 : 0.24;
+  const threshold = stealthLevel >= 2 ? 0.18 : 0.12;
   return (enemyHp / enemy.hp) <= threshold;
 }
 

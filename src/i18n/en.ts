@@ -3241,7 +3241,7 @@ const en = {
   'data.races.murid.name': 'Murid',
   'data.races.mimorian.name': 'Mimorian',
   'data.races.a_stealth.name': 'Stealth',
-  'data.races.a_stealth.description': 'When below 24% HP, evades all damage to self',
+  'data.races.a_stealth.description': 'When below 12% HP, evades all damage to self',
   'data.races.kemoria.name': 'Kemoria',
   'data.races.orcinian.name': 'Orcinian',
   'data.races.a_execution.name': 'Execution',
