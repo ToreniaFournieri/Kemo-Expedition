@@ -269,8 +269,8 @@
       - `d.melee_attack` += round(`d.ranged_attack` × N%)
       - `d.melee_attack` += round(`d.magical_attack` × M%)   
 
-- character.`f.offense_amplifier` (phase: )
-  - If phase is LONG or CLOSE,
+- character.`f.offense_amplifier` (attack_type: )
+  - If `attack_type = ranged` or `attack_type = melee`,
     - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` or `c.ranged_attack+v`)　x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
       - `a.iaigiri`1: v *= 1.6
       - `a.iaigiri`2: v *= 1.8
@@ -278,31 +278,31 @@
     - Else return 1.0 x sum of ( `c.melee_attack+v`, `c.ranged_attack+v` and `c.physical_attack+v` ) x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
     - If character has `a.heavy-strike`: multiply by N. 
   		- ex. If chracter has `c.physical_offense_multiplier_x1.4` and `c.physical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
-  - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x `c.magical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.intelligence`)
+  - If `attack_type = magical`,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x `c.magical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.intelligence`)
     - If character.`a.arc-magic`: v *= 3.0
     - If character has `a.heavy-strike`: multiply by N. 
     - ex. If chracter has `c.magical_offense_multiplier_x1.4` and `c.magical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
   - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, `c.magical_attack+v`, `c.physical_attack+v`, `c.physical_offense_multiplier_xV` or  `c.magical_offense_multiplier_xV`. Only one single bonuses(c.) of the **exact** same name applies.  
 
-- character.`f.defense` (phase: ):
-  - If phase is LONG or CLOSE:
+- character.`f.defense` (attack_type: ):
+  - If `attack_type = ranged` or `attack_type = melee`:
   	- `d.physical_defense`: Item Bonuses of {(Physical defense x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
-  - If phase is MID:
+  - If `attack_type = magical`:
   	- `d.magical_defense`: Item Bonuses of {(Magical defense x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
 
-- character.`f.defense_amplifier` (phase: )
-  - If phase is LONG or CLOSE
+- character.`f.defense_amplifier` (attack_type: )
+  - If `attack_type = ranged` or `attack_type = melee`
     - return max(0.01, (1.00 - sum of (`c.physical_defense+v`)) x `c.physical_defense_multiplier_xV` x `f.base_multiplier`(base_type: `b.vitality` ) x `c.deity-physical-defense_x2/3` )
-  - Else (phase is MID), return max(0.01, (1.00 - sum of (`c.magical_defense+v` )) x `c.magical_defense_multiplier_xV` x `f.base_multiplier`(base_type: `b.mind` ) x `c.deity-magical-defense_x2/3`)
+  - Else (`attack_type = magical`), return max(0.01, (1.00 - sum of (`c.magical_defense+v` )) x `c.magical_defense_multiplier_xV` x `f.base_multiplier`(base_type: `b.mind` ) x `c.deity-magical-defense_x2/3`)
     - ex. If chracter has`c.physical_defense_multiplier_x1.4` and `c.physical_defense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
 
   - *note: `c.physical_defense+v`, `c.magical_defense+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
 
-- character.`f.accuracy_amplifier` (phase: )
-  - If phase is LONG,  return: `d.accuracy_potency`.
-  - If phase is MID, return: 1.0 (Fixed value)
-  - If phase is CLOSE, return `d.accuracy_potency`.
+- character.`f.accuracy_amplifier` (attack_type: )
+  - If `attack_type = ranged`,  return: `d.accuracy_potency`.
+  - If `attack_type = magical`, return: 1.0 (Fixed value)
+  - If `attack_type = melee`, return `d.accuracy_potency`.
 
 - character.`f.elemental_offense_attribute`
   - Compute the single elemental amplifier used in damage calculation.
@@ -394,7 +394,7 @@ Party.`d.HP` =
 | God of Cunning | 狡猾の神 | Add `c.deity_magical_defense_x2/3` to each party member, abscond (lower saving money by x0.50) | (none) | saving money +0.01 to x0.50 per rank |
 | God of Fortification | 防備の神 |  Add `c.deity_physical_defense_x2/3` to each party member, longer healing 休息中 by x2.0, weak against thunder (x1.5) | `r.thunder_x1.5` | - |
 | Goddess of Fertility | 豊穣の女神 |  Add `c.deity_move_first+1` to each party member, longer fest 宴会中 by 2.0, weak against fire (x1.5) | `r.fire_x1.5` | -  |
-| God of Resonance | 共鳴の神 | Upgrade all `a.resonance` values by +1 tier to each party member, resonance works in MID phase and also in LONG phase with God of Resonance. Add `c.deity_magical_defense_x1.10` to each party member, Add `c.deity_HP_x0.900` to party | (none) | +0.2 to `a.resonance` bonus (round down), +0.002 to `c.deity_HP_x0.900` per rank |
+| God of Resonance | 共鳴の神 | Upgrade all `a.resonance` values by +1 tier to each party member, resonance works in magical and ranged attack with God of Resonance. Add `c.deity_magical_defense_x1.10` to each party member, Add `c.deity_HP_x0.900` to party | (none) | +0.2 to `a.resonance` bonus (round down), +0.002 to `c.deity_HP_x0.900` per rank |
 | Goddess of Precision | 精密の女神 | Add `c.deity_accuracy+0.015`, `c.deity_evasion-0.005` to each party member, longer 探索中 by 1.2 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
 | God of Fate | 運命の神 | alter future, longer praying 祈り中 by 2.0 | (none) | praying time -0.01 to x1.5 per rank |
 | God of Dusk | 黄昏の神 | Add `c.deity_evasion+0.015`,  `c.deity_magical_defense_x1.10` to each party member, longer trading 売却中 by 2.0 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
