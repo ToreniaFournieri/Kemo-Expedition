@@ -3725,7 +3725,7 @@ export function executeBattle(
     }
   };
 
-  const phases: AttackType[] = ['ranged', 'magical', 'melee'];
+  const attackTypeTieBreakPriority: Record<AttackType, number> = { ranged: 0, magical: 1, melee: 2 };
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
     && environment.terrainEffect !== 'terrain.gehenna';
 
@@ -3734,6 +3734,50 @@ export function executeBattle(
     && hasAbility(cs.abilities, 'frostbite')
   ));
   const enemyHasFrostbite = (): boolean => !isEnemyActorAbilitiesSuppressed() && hasAbility(enemy.abilities, 'frostbite');
+
+  // SpecRef: 6.1.1.2 | Combat phase | Unified initiative order
+  // Roll every eligible action before resolution, then order attack-type batches by
+  // their next action. This lets a high magical/melee roll precede a low ranged roll
+  // instead of imposing the historical ranged -> magical -> melee phase barrier.
+  const enemyInitiativeByAttackType = new Map<AttackType, number>();
+  const characterInitiativeByAttackType = new Map<AttackType, Array<{ stats: ComputedCharacterStats; roll: number }>>();
+  for (const attackType of (['ranged', 'magical', 'melee'] as AttackType[])) {
+    if (isEligibleEnemyForPhase(attackType, enemy)) {
+      enemyInitiativeByAttackType.set(attackType, rollInitiative(attackType, getEnemyFirstStrikeLevel(enemy), {
+        terrainEffect: environment.terrainEffect,
+        actorType: 'enemy',
+        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
+        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
+        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
+        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
+        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
+      }));
+    }
+    characterInitiativeByAttackType.set(attackType, characterStats
+      .filter(cs => isEligibleCharacterForPhase(attackType, cs))
+      .map(stats => ({
+        stats,
+        roll: rollInitiative(attackType, getFirstStrikeLevel(stats), {
+          terrainEffect: environment.terrainEffect,
+          actorType: 'party',
+          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
+          slowPenalty: getHighestAbilityLevel(stats.abilities, 'slow'),
+          boostBonus: getHighestAbilityLevel(stats.abilities, 'boost'),
+          frostbitePenalty: enemyHasFrostbite() && !hasAbility(stats.abilities, 'coldproof') ? 1 : 0,
+          actorHasTrueSight: hasAbility(stats.abilities, 'true_sight'),
+          actorHasEquationBreaker: hasAbility(stats.abilities, 'equation_breaker'),
+          actorHasWindRider: hasAbility(stats.abilities, 'wind_rider'),
+        }),
+      })));
+  }
+  const phases = (['ranged', 'magical', 'melee'] as AttackType[]).sort((a, b) => {
+    const highestRoll = (attackType: AttackType): number => Math.max(
+      enemyInitiativeByAttackType.get(attackType) ?? -1,
+      ...(characterInitiativeByAttackType.get(attackType) ?? []).map(entry => entry.roll),
+    );
+    return highestRoll(b) - highestRoll(a) || attackTypeTieBreakPriority[a] - attackTypeTieBreakPriority[b];
+  });
 
   const pushFrostbiteLog = (ownerName: string): void => {
     log.push({
@@ -3983,35 +4027,8 @@ export function executeBattle(
   };
 
   for (const phase of phases) {
-    const enemyIsEligibleActor = isEligibleEnemyForPhase(phase, enemy);
-    const enemyInitiativeRoll = enemyIsEligibleActor
-      ? rollInitiative(phase, getEnemyFirstStrikeLevel(enemy), {
-        terrainEffect: environment.terrainEffect,
-        actorType: 'enemy',
-        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
-        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
-        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
-        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
-        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
-        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
-      })
-      : null;
-    const characterInitiative = characterStats
-      .filter(cs => isEligibleCharacterForPhase(phase, cs))
-      .map(cs => ({
-        stats: cs,
-        roll: rollInitiative(phase, getFirstStrikeLevel(cs), {
-          terrainEffect: environment.terrainEffect,
-          actorType: 'party',
-          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
-          slowPenalty: getHighestAbilityLevel(cs.abilities, 'slow'),
-          boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
-          frostbitePenalty: enemyHasFrostbite() && !hasAbility(cs.abilities, 'coldproof') ? 1 : 0,
-          actorHasTrueSight: hasAbility(cs.abilities, 'true_sight'),
-          actorHasEquationBreaker: hasAbility(cs.abilities, 'equation_breaker'),
-          actorHasWindRider: hasAbility(cs.abilities, 'wind_rider'),
-        }),
-      }));
+    const enemyInitiativeRoll = enemyInitiativeByAttackType.get(phase) ?? null;
+    const characterInitiative = characterInitiativeByAttackType.get(phase) ?? [];
 
     const initiativeByCharacter = new Map<number, number>(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
