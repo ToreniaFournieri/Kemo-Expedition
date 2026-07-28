@@ -3736,8 +3736,8 @@ export function executeBattle(
   const enemyHasFrostbite = (): boolean => !isEnemyActorAbilitiesSuppressed() && hasAbility(enemy.abilities, 'frostbite');
 
   // SpecRef: 6.1.1.2 | Combat phase | Unified initiative order
-  // Roll every eligible action before resolution, then order attack-type batches by
-  // their next action. This lets a high magical/melee roll precede a low ranged roll
+  // Roll every eligible action before resolution. Resolution then walks the shared
+  // timing scale, allowing high magical/melee rolls to precede lower ranged rolls
   // instead of imposing the historical ranged -> magical -> melee phase barrier.
   const enemyInitiativeByAttackType = new Map<AttackType, number>();
   const characterInitiativeByAttackType = new Map<AttackType, Array<{ stats: ComputedCharacterStats; roll: number }>>();
@@ -3771,13 +3771,9 @@ export function executeBattle(
         }),
       })));
   }
-  const phases = (['ranged', 'magical', 'melee'] as AttackType[]).sort((a, b) => {
-    const highestRoll = (attackType: AttackType): number => Math.max(
-      enemyInitiativeByAttackType.get(attackType) ?? -1,
-      ...(characterInitiativeByAttackType.get(attackType) ?? []).map(entry => entry.roll),
-    );
-    return highestRoll(b) - highestRoll(a) || attackTypeTieBreakPriority[a] - attackTypeTieBreakPriority[b];
-  });
+  const phases = (['ranged', 'magical', 'melee'] as AttackType[])
+    .sort((a, b) => attackTypeTieBreakPriority[a] - attackTypeTieBreakPriority[b]);
+  const combatSteps = TRIGGER_TIMINGS_DESC.flatMap(timing => phases.map(phase => ({ phase, timing })));
 
   const pushFrostbiteLog = (ownerName: string): void => {
     log.push({
@@ -4026,7 +4022,13 @@ export function executeBattle(
     // without changing the phase-resolution loop structure.
   };
 
-  for (const phase of phases) {
+  const enemyMovedByAttackType = new Map<AttackType, boolean>();
+  const movedCharacterIdsByAttackType = new Map<AttackType, Set<number>>();
+
+  // SpecRef: 6.1.1.2 | Combat phase | Unified initiative resolution
+  // Walk the absolute timing scale first. Attack type is consulted only as the
+  // same-timing tie-breaker, never as a phase barrier.
+  for (const { phase, timing } of combatSteps) {
     const enemyInitiativeRoll = enemyInitiativeByAttackType.get(phase) ?? null;
     const characterInitiative = characterInitiativeByAttackType.get(phase) ?? [];
 
@@ -4035,8 +4037,9 @@ export function executeBattle(
     );
 
     let hasTriggeredLongPhaseHowl = false;
-    let enemyHasMovedInPhase = false;
-    const movedCharacterIds = new Set<number>();
+    let enemyHasMovedInPhase = enemyMovedByAttackType.get(phase) ?? false;
+    const movedCharacterIds = movedCharacterIdsByAttackType.get(phase) ?? new Set<number>();
+    movedCharacterIdsByAttackType.set(phase, movedCharacterIds);
     const triggeredConfusionTimings = new Set<number>();
     let hasTriggeredDecompose = false;
     let hasTriggeredRegeneration = false;
@@ -4614,7 +4617,7 @@ export function executeBattle(
       return a.stats.row - b.stats.row;
     });
 
-    for (const timing of TRIGGER_TIMINGS_DESC) {
+    {
       if (enemyHp <= 0 || partyHp <= 0) break;
 
       if (phase === 'ranged' && timing === 8) {
@@ -4662,6 +4665,7 @@ export function executeBattle(
 
         if (turn.kind === 'enemy') {
           enemyHasMovedInPhase = true;
+          enemyMovedByAttackType.set(phase, true);
 
         if (enemyIncapacitated) {
           enemyIncapacitated = false;

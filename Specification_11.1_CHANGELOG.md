@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 24 | 2026/07/28 | Resolve combat on the global 49-to-0 timing scale so magical and melee actions execute before every lower-initiative ranged action, including their damage and defeat effects. |
+| 0.8.8 | 23 | 2026/07/28 | Sort unified COMBAT log action blocks by absolute initiative so higher magical and melee actions cannot appear below lower ranged actions. |
 | 0.8.8 | 22 | 2026/07/28 | Roll every eligible combat action before resolution and allow higher magical or melee initiative to overtake lower ranged initiative. |
 | 0.8.8 | 21 | 2026/07/28 | Align the Mimorian race runtime with its specified default Lv1 Mimic ability and one-slot equipment penalty. |
 | 0.8.8 | 20 | 2026/07/28 | Apply the specified 0.7× growth multiplier to Origami enemies at runtime while retaining Thunder Null, +0.100 evasion, and 1.5× fire vulnerability. |
