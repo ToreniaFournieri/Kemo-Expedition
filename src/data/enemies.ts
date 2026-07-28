@@ -240,7 +240,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability1: [{ id: 'thunder_null', level: 1 }],
     ability30: [],
     bonuses: [
-      { type: 'evasion', value: 0.15 },
+      { type: 'evasion', value: 0.1 },
       { type: 'fire_defense_multiplier_xV', value: 1.5 },
     ],
   },
