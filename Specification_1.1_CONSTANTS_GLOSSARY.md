@@ -210,7 +210,7 @@
 | `a.mutual-physical-amplify` | 物理増幅 | 双方の物理ダメージをxN倍にする | Lv1: x1.3, Lv2: x1.5, Lv3: x1.6, Lv4: x1.65, Lv5: x1.68 | START | 3 |
 | `a.mutual-physical-restraint` | 物理抑制 | 双方の物理ダメージをxN倍にする | Lv1: x0.77, Lv2: x0.67, Lv3: x0.63, Lv4: x0.61, Lv5: x0.59 | START | 3 |
 | `a.magic-seal` | 魔封 | 最初の魔法を無力化する(相手・自身・味方を含む) | - | START | 3 |
-| `a.first-strike` | 先制攻撃 | 行動がN速くなる | Lv1: 少し(2~6), Lv2: とても(3~9), Lv3: 極めて(4~9) | START | 3 |
+| `a.first-strike` | 先制攻撃 | 行動がN速くなる | Lv1: 少し(+1~3), Lv2: とても(+2~6), Lv3: 極めて(+3~9) | START | 3 |
 | `a.boost` | 加速 | 自身の行動順をN増加させる | Lv1: 1, Lv2: 2, Lv3: 3 | START | 3 |
 | `a.slow` | 鈍足 | 自身の行動順をN低下させる | Lv1: -1, Lv2: -2, Lv3: -3 | START | 3 |
 | `a.frostbite` | 凍傷 | 相手の行動順をN低下させる | Lv1: -1 | START | 3 |
