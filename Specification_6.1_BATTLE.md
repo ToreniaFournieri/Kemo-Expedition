@@ -168,7 +168,7 @@ If `a.*` with phase = START:
     4. Back-row party member moves
    
 **Order by priority**
-- Each attack-type step is resolved from timing 49 down to timing 0. (0 might be used for `Trigger`)
+- The single COMBAT phase is resolved from timing 49 down to timing 0. (0 might be used for `Trigger`)
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
@@ -230,7 +230,7 @@ If `a.*` with phase = START:
       - Log: `log.null-antagonism` + "(敵対無効化)"
 
   - Eligible target
-    - Target has the capability matching the current `attack_type` and has **not moved yet in the current attack-type step**.
+    - Target has a normal-action entry whose `attack_type` matches the confusion ability (`ranged`, `magical`, or `melee`) and that entry has **not yet been resolved or skipped in the COMBAT phase**.
   - On activation, roll N/D to apply confusion to a random eligible target.
   - Log:  `log.confusion`
  

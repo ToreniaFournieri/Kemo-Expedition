@@ -240,15 +240,15 @@
     - Sub Class. Display `short name` of Class ( `class.duelist` -> `剣`)
     - Lineage. Display `short` of lineage (`sandstorm` -> `砂`)
     - Predisposition. Display `short` of predisposition (`Aggressive` -> `好`)
-  - `物防`: `d.physical_defense`(`f.defense_amplifier` LONG and CLOSE)  ( 1,203. 87% )
-  - `魔防`: `d.magical_defense` (`f.defense_amplifier` MID) ( 1,100. 54% )
+  - `物防`: `d.physical_defense` (`f.defense_amplifier` for `attack_type = ranged` and `attack_type = melee`) ( 1,203. 87% )
+  - `魔防`: `d.magical_defense` (`f.defense_amplifier` for `attack_type = magical`) ( 1,100. 54% )
   - `回避,貫通`: ( +10, 8%)
     - `evasion` display x1000, no percentage.   ( +10 )
     - `f.penet_multiplier` ( 8%)
   - `攻撃`: 
-    - If character has `c.equip_ranged`, 遠`d.ranged_attack`(`f.offense_amplifier` LONG)-`d.ranged_NoA`回 ( 遠2,000. 145%, 3回 )
-    - If character has `c.equip_magic`,  魔`d.magical_attack`(`f.offense_amplifier` MID)-`d.magical_NoA`回 ( 魔2,000. 145%, 12回 )
-    - If character has `c.equip_melee`,  近`d.melee_attack`(`f.offense_amplifier` CLOSE)-`d.ranged_NoA`回 ( 近2,000. 175%, 3回 )
+    - If character has `c.equip_ranged`, 遠`d.ranged_attack`(`f.offense_amplifier` for `attack_type = ranged`)-`d.ranged_NoA`回 ( 遠2,000. 145%, 3回 )
+    - If character has `c.equip_magic`, 魔`d.magical_attack`(`f.offense_amplifier` for `attack_type = magical`)-`d.magical_NoA`回 ( 魔2,000. 145%, 12回 )
+    - If character has `c.equip_melee`, 近`d.melee_attack`(`f.offense_amplifier` for `attack_type = melee`)-`d.melee_NoA`回 ( 近2,000. 175%, 3回 )
     - `f.elemental_offense_attribute`(its value)  ( 🔥(+20%) )
       - ice: ❄
       - thunder: ⚡
