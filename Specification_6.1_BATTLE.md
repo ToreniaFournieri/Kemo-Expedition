@@ -629,7 +629,7 @@ If `a.*` with phase = START:
   - **Terrain effect**
     - If `terrain.fog` and (actor does not have `a.true-sight`) and (`attack_type = ranged`): actor.`f.c_accuracy+v` -= 25
     - If `terrain.sunny-beach` and (`attack_type = ranged`): actor.`f.c_accuracy+v` += 20
-  - decay_of_accuracy: clamp(0.80, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
+  - decay_of_accuracy: clamp(0.70, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
   - If opponent has `a.deflection`2 AND `attack_type = ranged`: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND `attack_type = ranged`: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
