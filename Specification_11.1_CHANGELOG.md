@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.8.8 | 31 | 2026/07/28 | Show localized attack-speed ranges and supplemental base-roll dice at the top of ranged, magical, and melee help bubbles in the Party status pane. |
 | 0.8.8 | 30 | 2026/07/28 | Consolidate elemental glossary content into the Increase Bonuses tab, remove the obsolete Elements tab and duplicate Attack Element entry, and add the three specified elemental bonus definitions. |
 | 0.8.8 | 29 | 2026/07/28 | Localize Mimorian names borrowed from selected enemies when the display language changes, while preserving player-edited custom names. |
 | 0.8.8 | 28 | 2026/07/28 | Prevent non-scalable ability levels from being appended to party ability labels, including Base Stat Cap 15 after Upgrade All Abilities raises its internal level. |
