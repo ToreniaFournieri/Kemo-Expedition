@@ -18,6 +18,7 @@ import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../d
 import { applyDeityCharacterModifiers, getDeityElementalResistanceModifier, getDeityPartyHpMultiplier } from './deity';
 import { getJewelDRankBonus } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
+import { isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -281,24 +282,7 @@ export function computePartyStats(party: Party): {
 }
 
 function getAbilityName(id: AbilityId, level: number): string {
-  if (
-    (
-      id === 'first_strike'
-      || id === 'hunter'
-      || id === 'defender'
-      || id === 'counter'
-      || id === 're_attack'
-      || id === 'iaigiri'
-      || id === 'resonance'
-      || id === 'command'
-      || id === 'm_barrier'
-      || id === 'null_counter'
-      || id === 'resurrect'
-      || id === 'stealth'
-      || id === 'illusion'
-    )
-    && level >= 1
-  ) {
+  if (level >= 1 && isBonusAbilityLevelScalable(id)) {
     return `${ABILITY_BASE_NAMES[id]}${level}`;
   }
   return ABILITY_BASE_NAMES[id];

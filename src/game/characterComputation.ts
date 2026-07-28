@@ -23,6 +23,7 @@ import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { t } from '../i18n';
 import { ENEMIES } from '../data/enemies';
 import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+import { isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -1017,7 +1018,8 @@ export function computeCharacterStats(
 }
 
 export function getAbilityName(id: AbilityId, level: number): string {
-  if (level >= 1) {
+  // SpecRef: 1.1.1 | a. bonus ability | level_scale
+  if (level >= 1 && isBonusAbilityLevelScalable(id)) {
     return `${ABILITY_BASE_NAMES[id]}${level}`;
   }
   return ABILITY_BASE_NAMES[id];

@@ -183,3 +183,7 @@ export const LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES: LocalizedBonusAbilityGlos
 export const BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID = new Map(
   LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => [entry.abilityId, entry]),
 );
+
+export function isBonusAbilityLevelScalable(abilityId: AbilityId): boolean {
+  return (BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId)?.levelScale.length ?? 0) > 1;
+}
