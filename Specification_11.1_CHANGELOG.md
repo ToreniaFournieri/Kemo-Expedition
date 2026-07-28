@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 25 | 2026/07/28 | Align runtime initiative base rolls with the specified 4d3 ranged, 3d3 magical, and 1d3 melee attack-type dice. |
 | 0.8.8 | 24 | 2026/07/28 | Resolve combat on the global 49-to-0 timing scale so magical and melee actions execute before every lower-initiative ranged action, including their damage and defeat effects. |
 | 0.8.8 | 23 | 2026/07/28 | Sort unified COMBAT log action blocks by absolute initiative so higher magical and melee actions cannot appear below lower ranged actions. |
 | 0.8.8 | 22 | 2026/07/28 | Roll every eligible combat action before resolution and allow higher magical or melee initiative to overtake lower ranged initiative. |

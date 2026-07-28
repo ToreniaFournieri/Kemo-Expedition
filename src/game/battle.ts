@@ -1705,7 +1705,7 @@ function rollInitiative(
   const firstStrikeEnabled = (!isMachineLogic || (options?.actorHasEquationBreaker ?? false))
     && (options?.terrainEffect !== 'terrain.ash-haze' || (options?.actorHasTrueSight ?? false));
   const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
-  const baseDiceCount = attackType === 'ranged' ? 5 : attackType === 'magical' ? 3 : 1;
+  const baseDiceCount = attackType === 'ranged' ? 4 : attackType === 'magical' ? 3 : 1;
   const extraDiceCount = effectiveFirstStrikeLevel >= 3 ? 3 : effectiveFirstStrikeLevel;
   const diceCount = baseDiceCount + extraDiceCount;
   let total = 0;
