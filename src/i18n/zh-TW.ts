@@ -3238,7 +3238,7 @@ const zhTW = {
   'data.races.murid.name': '鼠裔',
   'data.races.mimorian.name': '擬形裔',
   'data.races.a_stealth.name': '隱藏斗篷',
-  'data.races.a_stealth.description': 'HP低於24%時，迴避所有對自身的傷害',
+  'data.races.a_stealth.description': 'HP低於12%時，迴避所有對自身的傷害',
   'data.races.kemoria.name': '獸利亞',
   'data.races.orcinian.name': '鯨裔',
   'data.races.a_execution.name': '處決',

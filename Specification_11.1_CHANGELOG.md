@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 9 | 2026/07/28 | Align the runtime `a.stealth` activation thresholds, glossary values, and localized Murid descriptions with the updated Lv1 12% and Lv2 18% specification. |
 | 0.8.8 | 8 | 2026/07/28 | Implement the single runtime COMBAT phase presentation, attack-type initiative dice, absolute COMBAT timings for timed abilities, and attack-type-aware battle logs and glossary displays. |
 | 0.8.8 | 7 | 2026/07/28 | Align battle and status-display specifications with the single COMBAT phase by replacing obsolete LONG/MID/CLOSE mechanics with explicit attack types and clarifying timed-confusion eligibility. |
 | 0.8.8 | 6 | 2026/07/27 | Route the single visible community link to the Chinese Telegram group for Simplified Chinese and to the official Japanese-English Discord community for every other language. |

@@ -3241,7 +3241,7 @@ const ja = {
   'data.races.murid.name': 'ミュリッド',
   'data.races.mimorian.name': 'ミモリアン',
   'data.races.a_stealth.name': '隠れ蓑',
-  'data.races.a_stealth.description': 'HP24%未満の時、自身へのダメージをすべて回避する',
+  'data.races.a_stealth.description': 'HP12%未満の時、自身へのダメージをすべて回避する',
   'data.races.kemoria.name': 'ケモリア',
   'data.races.orcinian.name': 'オルシニアン',
   'data.races.a_execution.name': 'エクセキューション',

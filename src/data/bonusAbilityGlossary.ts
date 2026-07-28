@@ -71,7 +71,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'momentum', levelScale: ['Lv1: -0.5%', 'Lv2: -0.4%'], subcategory: 'reactive' },
   { abilityId: 'no_offense', levelScale: [], subcategory: 'reactive' },
   { abilityId: 'swarm', levelScale: ['Lv1: 失ったHP1%につき0.5%'], subcategory: 'reactive' },
-  { abilityId: 'stealth', levelScale: ['Lv1: 24%', 'Lv2: 29%'], subcategory: 'reactive' },
+  { abilityId: 'stealth', levelScale: ['Lv1: 12%', 'Lv2: 18%'], subcategory: 'reactive' },
   { abilityId: 'illusion', levelScale: ['Lv1', 'Lv2'], subcategory: 'reactive' },
   // SpecRef: 1.1 | CONSTANTS_GLOSSARY | a.flying
   { abilityId: 'flying', levelScale: ['Lv1: COMBAT3・40', 'Lv2: COMBAT3・45', 'Lv3: COMBAT3・50'], subcategory: 'timed', phase: 'COMBAT', priority: 3 },
