@@ -136,7 +136,7 @@ If `a.*` with phase = START:
 - An actor is considered to have acted in the battle after at least one of its normal-action entries has been resolved or skipped.
 
 - **Base-roll** determined by attack type.
-  - `ranged_attack`, `base-roll` is 5d3. (5-15)
+  - `ranged_attack`, `base-roll` is 4d3. (4-12)
   - `magical_attack`, `base-roll` is  3d3. (3-9)
   - `melee_attack`, `base-roll` is  1d3. (1-3)
 - **Initiative roll**
