@@ -561,8 +561,7 @@ If `a.*` with phase = START:
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-amplify`, return n
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 	
-	- If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
-	- If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+	- If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= N and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
 	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
 
 ##### 6.1.4.2 Function of targeting
