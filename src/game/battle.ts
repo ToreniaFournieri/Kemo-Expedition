@@ -3725,7 +3725,7 @@ export function executeBattle(
     }
   };
 
-  const phases: AttackType[] = ['ranged', 'magical', 'melee'];
+  const attackTypeTieBreakPriority: Record<AttackType, number> = { ranged: 0, magical: 1, melee: 2 };
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
     && environment.terrainEffect !== 'terrain.gehenna';
 
@@ -3734,6 +3734,46 @@ export function executeBattle(
     && hasAbility(cs.abilities, 'frostbite')
   ));
   const enemyHasFrostbite = (): boolean => !isEnemyActorAbilitiesSuppressed() && hasAbility(enemy.abilities, 'frostbite');
+
+  // SpecRef: 6.1.1.2 | Combat phase | Unified initiative order
+  // Roll every eligible action before resolution. Resolution then walks the shared
+  // timing scale, allowing high magical/melee rolls to precede lower ranged rolls
+  // instead of imposing the historical ranged -> magical -> melee phase barrier.
+  const enemyInitiativeByAttackType = new Map<AttackType, number>();
+  const characterInitiativeByAttackType = new Map<AttackType, Array<{ stats: ComputedCharacterStats; roll: number }>>();
+  for (const attackType of (['ranged', 'magical', 'melee'] as AttackType[])) {
+    if (isEligibleEnemyForPhase(attackType, enemy)) {
+      enemyInitiativeByAttackType.set(attackType, rollInitiative(attackType, getEnemyFirstStrikeLevel(enemy), {
+        terrainEffect: environment.terrainEffect,
+        actorType: 'enemy',
+        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
+        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
+        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
+        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
+        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
+      }));
+    }
+    characterInitiativeByAttackType.set(attackType, characterStats
+      .filter(cs => isEligibleCharacterForPhase(attackType, cs))
+      .map(stats => ({
+        stats,
+        roll: rollInitiative(attackType, getFirstStrikeLevel(stats), {
+          terrainEffect: environment.terrainEffect,
+          actorType: 'party',
+          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
+          slowPenalty: getHighestAbilityLevel(stats.abilities, 'slow'),
+          boostBonus: getHighestAbilityLevel(stats.abilities, 'boost'),
+          frostbitePenalty: enemyHasFrostbite() && !hasAbility(stats.abilities, 'coldproof') ? 1 : 0,
+          actorHasTrueSight: hasAbility(stats.abilities, 'true_sight'),
+          actorHasEquationBreaker: hasAbility(stats.abilities, 'equation_breaker'),
+          actorHasWindRider: hasAbility(stats.abilities, 'wind_rider'),
+        }),
+      })));
+  }
+  const phases = (['ranged', 'magical', 'melee'] as AttackType[])
+    .sort((a, b) => attackTypeTieBreakPriority[a] - attackTypeTieBreakPriority[b]);
+  const combatSteps = TRIGGER_TIMINGS_DESC.flatMap(timing => phases.map(phase => ({ phase, timing })));
 
   const pushFrostbiteLog = (ownerName: string): void => {
     log.push({
@@ -3982,44 +4022,24 @@ export function executeBattle(
     // without changing the phase-resolution loop structure.
   };
 
-  for (const phase of phases) {
-    const enemyIsEligibleActor = isEligibleEnemyForPhase(phase, enemy);
-    const enemyInitiativeRoll = enemyIsEligibleActor
-      ? rollInitiative(phase, getEnemyFirstStrikeLevel(enemy), {
-        terrainEffect: environment.terrainEffect,
-        actorType: 'enemy',
-        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
-        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
-        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
-        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
-        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
-        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
-      })
-      : null;
-    const characterInitiative = characterStats
-      .filter(cs => isEligibleCharacterForPhase(phase, cs))
-      .map(cs => ({
-        stats: cs,
-        roll: rollInitiative(phase, getFirstStrikeLevel(cs), {
-          terrainEffect: environment.terrainEffect,
-          actorType: 'party',
-          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
-          slowPenalty: getHighestAbilityLevel(cs.abilities, 'slow'),
-          boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
-          frostbitePenalty: enemyHasFrostbite() && !hasAbility(cs.abilities, 'coldproof') ? 1 : 0,
-          actorHasTrueSight: hasAbility(cs.abilities, 'true_sight'),
-          actorHasEquationBreaker: hasAbility(cs.abilities, 'equation_breaker'),
-          actorHasWindRider: hasAbility(cs.abilities, 'wind_rider'),
-        }),
-      }));
+  const enemyMovedByAttackType = new Map<AttackType, boolean>();
+  const movedCharacterIdsByAttackType = new Map<AttackType, Set<number>>();
+
+  // SpecRef: 6.1.1.2 | Combat phase | Unified initiative resolution
+  // Walk the absolute timing scale first. Attack type is consulted only as the
+  // same-timing tie-breaker, never as a phase barrier.
+  for (const { phase, timing } of combatSteps) {
+    const enemyInitiativeRoll = enemyInitiativeByAttackType.get(phase) ?? null;
+    const characterInitiative = characterInitiativeByAttackType.get(phase) ?? [];
 
     const initiativeByCharacter = new Map<number, number>(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
     );
 
     let hasTriggeredLongPhaseHowl = false;
-    let enemyHasMovedInPhase = false;
-    const movedCharacterIds = new Set<number>();
+    let enemyHasMovedInPhase = enemyMovedByAttackType.get(phase) ?? false;
+    const movedCharacterIds = movedCharacterIdsByAttackType.get(phase) ?? new Set<number>();
+    movedCharacterIdsByAttackType.set(phase, movedCharacterIds);
     const triggeredConfusionTimings = new Set<number>();
     let hasTriggeredDecompose = false;
     let hasTriggeredRegeneration = false;
@@ -4597,7 +4617,7 @@ export function executeBattle(
       return a.stats.row - b.stats.row;
     });
 
-    for (const timing of TRIGGER_TIMINGS_DESC) {
+    {
       if (enemyHp <= 0 || partyHp <= 0) break;
 
       if (phase === 'ranged' && timing === 8) {
@@ -4645,6 +4665,7 @@ export function executeBattle(
 
         if (turn.kind === 'enemy') {
           enemyHasMovedInPhase = true;
+          enemyMovedByAttackType.set(phase, true);
 
         if (enemyIncapacitated) {
           enemyIncapacitated = false;
