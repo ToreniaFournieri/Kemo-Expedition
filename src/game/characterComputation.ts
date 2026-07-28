@@ -814,6 +814,14 @@ export function computeCharacterStats(
     }
   }
 
+  // SpecRef: 1.1.1 | a. bonus ability | a.base-status-cap-at-15
+  if ((collection.abilities.get('base_status_cap_at_15') ?? 0) >= 1) {
+    baseStats.vitality = Math.min(baseStats.vitality, 15);
+    baseStats.strength = Math.min(baseStats.strength, 15);
+    baseStats.intelligence = Math.min(baseStats.intelligence, 15);
+    baseStats.mind = Math.min(baseStats.mind, 15);
+  }
+
   const elementalPriority: Array<Exclude<ElementalOffense, 'none'>> = ['thunder', 'ice', 'fire'];
   let selectedElement: ElementalOffense = 'none';
   let selectedElementBonus = 0;

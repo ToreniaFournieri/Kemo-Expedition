@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 27 | 2026/07/28 | Make party HP base-stat calculations honor Base Stat Cap 15 through the character's collected ability instead of hard-coding the Mimorian race. |
+| 0.8.8 | 26 | 2026/07/28 | Implement the specified Mimorian Base Stat Cap 15 passive at runtime, replacing Mimic as its default ability and capping all four base stats after bonuses. |
 | 0.8.8 | 25 | 2026/07/28 | Align runtime initiative base rolls with the specified 4d3 ranged, 3d3 magical, and 1d3 melee attack-type dice. |
 | 0.8.8 | 24 | 2026/07/28 | Resolve combat on the global 49-to-0 timing scale so magical and melee actions execute before every lower-initiative ranged action, including their damage and defeat effects. |
 | 0.8.8 | 23 | 2026/07/28 | Sort unified COMBAT log action blocks by absolute initiative so higher magical and melee actions cannot appear below lower ranged actions. |

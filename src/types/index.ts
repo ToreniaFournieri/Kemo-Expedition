@@ -169,7 +169,7 @@ export type AbilityId =
   | 'domain_breaker' | 'wind_rider' | 'siege' | 'coldproof'
   | 'dryproof' | 'vine_cutter' | 'mana_ward' | 'defiance'
   | 'fire_protect_breaker' | 'ice_protect_breaker' | 'thunder_protect_breaker' | 'm_barrier_breaker'
-  | 'pursuit' | 'illusion_breaker' | 'bulwark_breaker';
+  | 'pursuit' | 'illusion_breaker' | 'bulwark_breaker' | 'base_status_cap_at_15';
 
 export interface Ability {
   id: AbilityId;
