@@ -115,7 +115,6 @@ line2: 桃/腕  ← text over background image
   - Else: no image
 
 **Status pane**
-- Each attack floating help bubble displays its attack speed first as the possible range followed by the base roll as supplemental dice notation: ranged `4-12 (4d3)`, magical `3-9 (3d3)`, and melee `1-3 (1d3)`.
 - If character has `c.equip_melee`, displays 
 近接攻撃:98 x 4回(x1.00)
 - if character has `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(`attack_type = ranged`)).
