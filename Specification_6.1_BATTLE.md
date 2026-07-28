@@ -184,7 +184,7 @@ If `a.*` with phase = START:
 | COMBAT | 49 | Trigger | [49] |
 | COMBAT | 49 | Enemy | [49] |
 | COMBAT | 49 | Party member (Front-row → Back-row) | [49] |
-| COMBAT | 48 | Trigger | [49] |
+| COMBAT | 48 | Trigger | [48] |
 | COMBAT | 48 | Enemy | [48] |
 | COMBAT | 48 | Party member (Front-row → Back-row) | [48] |
 | ... | ... | ... | ... |
@@ -888,8 +888,8 @@ left-alinged                                           right-aligned
 [末] 探索深度に到達した為帰還します
 ```
 
-- note: [効] text always at the beginning of battle log (before the "(遠距離攻撃フェーズ)" part)
-- note: [末] text always at the end of battle log (after the "(近接攻撃フェーズ)" part)
+- note: [効] text always at the beginning of battle log 
+- note: [末] text always at the end of battle log 
 - **Item Retrieval Logic:**
   - Items are stacked by (superRare, enhancement, and base item) and has state
   - *State:`s.sold` Auto-Sell:* If a dropped item matches a rule with state:`s.sold`, it is sold immediately (not added to inventory, gain Gold)
