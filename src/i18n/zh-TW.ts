@@ -1061,6 +1061,7 @@ const zhTW = {
   'battleLog.phase.terrainShort': '地形',
   'battleLog.phase.effectShort': '效',
   'battleLog.phase.endShort': '末',
+  'battleLog.phase.combat': '戰鬥階段',
   'battleLog.phase.long': '遠程攻擊階段',
   'battleLog.phase.mid': '魔法攻擊階段',
   'battleLog.phase.close': '近戰攻擊階段',

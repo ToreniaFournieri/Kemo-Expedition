@@ -573,7 +573,7 @@ export interface Dungeon {
 // Battle Types
 /** The combat rule discriminator. Log distance labels are intentionally separate. */
 export type AttackType = 'ranged' | 'magical' | 'melee';
-export type BattleLogPhase = 'long' | 'mid' | 'close';
+export type BattleLogPhase = 'combat';
 type BattlePhase = 'start' | BattleLogPhase | 'end';
 export type BattleOutcome = 'victory' | 'defeat' | 'draw';
 
@@ -587,6 +587,8 @@ export interface BattleState {
 
 export interface BattleLogEntry {
   phase: BattlePhase;
+  /** Attack capability used by a COMBAT action; phase is no longer a distance discriminator. */
+  attackType?: AttackType;
   initiativeRoll?: number;
   actor: 'party' | 'enemy' | 'character' | 'effect' | 'triggered' | 'deity';
   characterId?: number;

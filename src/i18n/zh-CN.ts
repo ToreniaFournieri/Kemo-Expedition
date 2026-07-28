@@ -1061,6 +1061,7 @@ const zhCN = {
   'battleLog.phase.terrainShort': '地形',
   'battleLog.phase.effectShort': '效',
   'battleLog.phase.endShort': '末',
+  'battleLog.phase.combat': '战斗阶段',
   'battleLog.phase.long': '远程攻击阶段',
   'battleLog.phase.mid': '魔法攻击阶段',
   'battleLog.phase.close': '近战攻击阶段',

@@ -1061,6 +1061,7 @@ const ja = {
   'battleLog.phase.terrainShort': '地形',
   'battleLog.phase.effectShort': '効',
   'battleLog.phase.endShort': '末',
+  'battleLog.phase.combat': '戦闘フェーズ',
   'battleLog.phase.long': '遠距離攻撃フェーズ',
   'battleLog.phase.mid': '魔法攻撃フェーズ',
   'battleLog.phase.close': '近接攻撃フェーズ',
