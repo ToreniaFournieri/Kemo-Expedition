@@ -120,7 +120,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'mutual_physical_amplify', levelScale: ['Lv1: x1.3', 'Lv2: x1.5', 'Lv3: x1.6', 'Lv4: x1.65', 'Lv5: x1.68'], subcategory: 'timed' },
   { abilityId: 'mutual_physical_restraint', levelScale: ['Lv1: x0.77', 'Lv2: x0.67', 'Lv3: x0.63', 'Lv4: x0.61', 'Lv5: x0.59'], subcategory: 'timed' },
   { abilityId: 'magic_seal', levelScale: [], subcategory: 'timed' },
-  { abilityId: 'first_strike', levelScale: ['Lv1: 少し(2~6)', 'Lv2: とても(3~9)', 'Lv3: 極めて(4~9)'], subcategory: 'timed' },
+  { abilityId: 'first_strike', levelScale: ['Lv1: 少し(+1~3)', 'Lv2: とても(+2~6)', 'Lv3: 極めて(+3~9)'], subcategory: 'timed' },
   { abilityId: 'slow', levelScale: ['Lv1: -1', 'Lv2: -2', 'Lv3: -3'], subcategory: 'timed' },
   { abilityId: 'boost', levelScale: ['Lv1: 1', 'Lv2: 2', 'Lv3: 3'], subcategory: 'timed' },
   { abilityId: 'frostbite', levelScale: ['Lv1: -1'], subcategory: 'timed' },
@@ -155,6 +155,13 @@ export function getBonusAbilityDescription(abilityId: AbilityId): string {
 function getBonusAbilityLevelScale(entry: BonusAbilityGlossaryEntry): string[] {
   if (entry.abilityId === 'illusion') {
     return [t('ability.illusion.levelScale.1'), t('ability.illusion.levelScale.2')];
+  }
+  if (entry.abilityId === 'first_strike') {
+    return [
+      t('ability.first_strike.levelScale.1'),
+      t('ability.first_strike.levelScale.2'),
+      t('ability.first_strike.levelScale.3'),
+    ];
   }
   return entry.levelScale;
 }
