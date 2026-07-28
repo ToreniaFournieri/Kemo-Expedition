@@ -182,12 +182,12 @@ HP 2350 / 4680
 
 | Stock Level | initial | After clearing expedition 1 | After clearing expedition 2 | After clearing expedition 3 |
 | --- | -----: | -----: | -----: | -----:|
-| 1st |  1 min |  2 min |  4 min |  8 min |
-| 2nd |  2 min |  4 min |  8 min | 16 min |
-| 3rd |  4 min |  8 min | 15 min | 30 min |
-| 4th | (none) | 15 min | 30 min | 60 min |
-| 5th | (none) | (none) | 60 min |120 min |
-| 6th | (none) | (none) | (none) |240 min |
+| 1st |  1 min |  2 min |  4 min |  6 min |
+| 2nd |  2 min |  4 min |  8 min | 12 min |
+| 3rd |  4 min |  8 min | 15 min | 24 min |
+| 4th | (none) | 15 min | 30 min | 48 min |
+| 5th | (none) | (none) | 60 min | 96 min |
+| 6th | (none) | (none) | (none) |192 min |
 
 
 - **Outcome**
