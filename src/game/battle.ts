@@ -1371,41 +1371,24 @@ function getDefensiveReaction(
   return null;
 }
 
-// SpecRef: 6.1.4.1 | Function of attack | f.resonance_amplifier
-function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
-  if (!resonanceLevel || hitNumber <= 1) {
-    return 1.0;
-  }
-
-  if (resonanceLevel >= 5) {
-    return 1.0 + (0.15 * (hitNumber - 1));
-  }
-
-  if (resonanceLevel === 4) {
-    return 1.0 + (0.13 * (hitNumber - 1));
-  }
-
-  if (resonanceLevel === 3) {
-    return 1.0 + (0.11 * (hitNumber - 1));
-  }
-
-  if (resonanceLevel === 2) {
-    return 1.0 + (0.08 * (hitNumber - 1));
-  }
-
-  return 1.0 + (0.05 * (hitNumber - 1));
-}
+const RESONANCE_BONUS_PERCENT_BY_LEVEL = [4, 7, 9, 11, 12] as const;
 
 function getResonanceBonusPerHit(resonanceLevel: number | undefined): number {
   if (!resonanceLevel) {
     return 0;
   }
 
-  if (resonanceLevel >= 5) return 15;
-  if (resonanceLevel === 4) return 13;
-  if (resonanceLevel === 3) return 11;
-  if (resonanceLevel === 2) return 8;
-  return 5;
+  const levelIndex = Math.min(resonanceLevel, RESONANCE_BONUS_PERCENT_BY_LEVEL.length) - 1;
+  return RESONANCE_BONUS_PERCENT_BY_LEVEL[levelIndex];
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.resonance_amplifier
+function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
+  if (!resonanceLevel || hitNumber <= 1) {
+    return 1.0;
+  }
+
+  return 1.0 + (0.01 * getResonanceBonusPerHit(resonanceLevel) * (hitNumber - 1));
 }
 
 function getResonanceLogText(

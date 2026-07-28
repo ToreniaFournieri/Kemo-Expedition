@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 11 | 2026/07/28 | Align runtime Resonance damage amplification and battle-log bonus values with the glossary's Lv1–Lv5 values of 4%, 7%, 9%, 11%, and 12%. |
 | 0.8.8 | 10 | 2026/07/28 | Align Inquisitor Zahra (enemy 230) with master data by replacing the obsolete Stealth ability with the specified 1.4× growth bonus at runtime. |
 | 0.8.8 | 9 | 2026/07/28 | Align the runtime `a.stealth` activation thresholds, glossary values, and localized Murid descriptions with the updated Lv1 12% and Lv2 18% specification. |
 | 0.8.8 | 8 | 2026/07/28 | Implement the single runtime COMBAT phase presentation, attack-type initiative dice, absolute COMBAT timings for timed abilities, and attack-type-aware battle logs and glossary displays. |
