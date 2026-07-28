@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 21 | 2026/07/28 | Align the Mimorian race runtime with its specified default Lv1 Mimic ability and one-slot equipment penalty. |
 | 0.8.8 | 20 | 2026/07/28 | Apply the specified 0.7× growth multiplier to Origami enemies at runtime while retaining Thunder Null, +0.100 evasion, and 1.5× fire vulnerability. |
 | 0.8.8 | 19 | 2026/07/28 | Align the runtime Origami enemy-type evasion bonus with the specified `c.evasion+0.100` while retaining Thunder Null and 1.5× fire vulnerability. |
 | 0.8.8 | 18 | 2026/07/28 | Align the runtime Origami enemy-type evasion bonus with the specified `c.evasion+0.150` while retaining Thunder Null and 1.5× fire vulnerability. |
