@@ -488,6 +488,14 @@ function translateCharacterName(
   sourceLanguage: Language,
   targetLanguage: Language,
 ): string {
+  // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian default enemy name localization
+  if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
+    const copiedEnemy = ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId);
+    if (copiedEnemy?.nameKey && translate(sourceLanguage, copiedEnemy.nameKey) === character.name) {
+      return translate(targetLanguage, copiedEnemy.nameKey);
+    }
+  }
+
   if (character.isUnique) {
     const uniqueNameKey = UNIQUE_CHARACTER_NAME_KEYS[character.lineageId];
     return uniqueNameKey ? translate(targetLanguage, `character.default.${uniqueNameKey}`) : character.name;
