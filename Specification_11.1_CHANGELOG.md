@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 14 | 2026/07/28 | Localize the corrected First Strike runtime glossary level text in Japanese, English, Simplified Chinese, and Traditional Chinese. |
+| 0.8.8 | 13 | 2026/07/28 | Align the runtime First Strike glossary level text with the specified +1d3, +2d3, and +3d3 initiative bonuses. |
 | 0.8.8 | 12 | 2026/07/28 | Apply copied `a.upgrade-all-abilities` effects to every other ability owned by a Mimorian party member, up to Lv5, in both runtime calculations and status displays. |
 | 0.8.8 | 11 | 2026/07/28 | Align runtime Resonance damage amplification and battle-log bonus values with the glossary's Lv1–Lv5 values of 4%, 7%, 9%, 11%, and 12%. |
 | 0.8.8 | 10 | 2026/07/28 | Align Inquisitor Zahra (enemy 230) with master data by replacing the obsolete Stealth ability with the specified 1.4× growth bonus at runtime. |
