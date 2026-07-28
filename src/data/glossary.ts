@@ -440,14 +440,24 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         get description() { return t('data.glossary.80.description'); }
       },
       {
-        "key": "d.elemental_offense_attribute",
-        get label() { return t('data.glossary.81.label'); },
-        get description() { return t('data.glossary.81.description'); }
-      },
-      {
         "key": "d.elemental_defense_attribute",
         get label() { return t('data.glossary.82.label'); },
         get description() { return t('data.glossary.82.description'); }
+      },
+      {
+        "key": "e.fire+v",
+        get label() { return t('data.glossary.element.fire.label'); },
+        get description() { return t('data.glossary.element.fire.description'); }
+      },
+      {
+        "key": "e.ice+v",
+        get label() { return t('data.glossary.element.ice.label'); },
+        get description() { return t('data.glossary.element.ice.description'); }
+      },
+      {
+        "key": "e.thunder+v",
+        get label() { return t('data.glossary.element.thunder.label'); },
+        get description() { return t('data.glossary.element.thunder.description'); }
       }
     ]
   },

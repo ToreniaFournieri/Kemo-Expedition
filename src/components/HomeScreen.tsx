@@ -11930,19 +11930,18 @@ function SettingTab({
   onNewsPaneExpandedChange: (expanded: boolean) => void;
 }) {
   type SettingPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
-  type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
+  type GlossaryTabKey = '能' | '基' | '固' | '増' | '機' | '信' | '魔' | '地' | '求';
   // SpecRef: 9 | Environment | Save Data Isolation
   const SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
   const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
   const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-tab');
   const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-expanded-entries');
-  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
+  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '機', '信', '魔', '地', '求'];
   const GLOSSARY_TAB_LABELS: Record<GlossaryTabKey, string> = {
     能: t('setting.glossary.tab.abilities'),
     基: t('setting.glossary.tab.baseStats'),
     固: t('setting.glossary.tab.fixedEffects'),
     増: t('setting.glossary.tab.bonuses'),
-    属: t('setting.glossary.tab.elements'),
     機: t('setting.glossary.tab.mechanics'),
     信: t('setting.glossary.tab.faith'),
     魔: t('setting.glossary.tab.magic'),
@@ -12784,7 +12783,6 @@ function SettingTab({
       基: '2-1-2',
       固: '2-1-3',
       増: '2-1-4',
-      属: '2-1-4',
       機: '2-1-6',
       信: '2-1-7',
       魔: '2-1-8',
@@ -13514,16 +13512,9 @@ function SettingTab({
                               return null;
                             }
                             const entryKey = `${section.id}-${entry.key}-${index}`;
-                            const isElementalEntry = entry.key.includes('elemental');
-                            if (glossaryTab === '属' && !isElementalEntry) {
-                              return null;
-                            }
-                            if (glossaryTab === '増' && isElementalEntry) {
-                              return null;
-                            }
                             const isGodGlossarySection = section.id === '2-1-7';
-                            const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
-                            const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
+                            const shouldCollapseEntry = glossaryTab === '増';
+                            const useDefaultGlossaryTextColor = glossaryTab === '増';
                             const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                             const descriptionLines = entry.description.split('\n');
                             const normalizedDescriptionLines = isSideQuestGlossarySection
