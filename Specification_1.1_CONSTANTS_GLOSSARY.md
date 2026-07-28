@@ -154,7 +154,7 @@
 | `a.no-offense` | 受身 | 通常行動を行わなくなる(反撃などは行う) | - | self-state |
 | `a.swarm` | 群れ | 失ったHP割合に応じて、物理与ダメージがN%低下し、物理被ダメージがN%増加する | Lv1: 失ったHP1%につき0.5% | self-state |
 | `a.execution` | エクセキューション | 相手の残HPがN以下である場合、与ダメージがxM倍になる | Lv1:40%・1.5, Lv2:50%・1.8 |
-| `a.stealth` | 隠れ蓑 | HPがN%未満のとき、自身へのダメージをすべて回避する | Lv1: 24%, Lv2: 29% | opponent-reactive |
+| `a.stealth` | 隠れ蓑 | HPがN%未満のとき、自身へのダメージをすべて回避する | Lv1: 12%, Lv2: 18% | opponent-reactive |
 | `a.illusion` | 幻化 | 最初の遠距離攻撃を無効化する(対象範囲:N) | Lv1: 自身に1回, Lv2: 自身+パーティー1名の2回 | opponent-reactive |
 | `a.bulwark` | 壁 | 真後ろの味方への攻撃を肩代わりする(対象:N) | Lv1: 遠距離, Lv2: 遠距離＋近距離 | intercept |
 | `a.shock` | 感電 | 最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる | - | interrupt |
