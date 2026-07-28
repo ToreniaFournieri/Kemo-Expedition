@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 15 | 2026/07/28 | Align the runtime Instant Expedition charge durations after clearing expedition 3 with the specified 6, 12, 24, 48, 96, and 192 minutes. |
 | 0.8.8 | 14 | 2026/07/28 | Localize the corrected First Strike runtime glossary level text in Japanese, English, Simplified Chinese, and Traditional Chinese. |
 | 0.8.8 | 13 | 2026/07/28 | Align the runtime First Strike glossary level text with the specified +1d3, +2d3, and +3d3 initiative bonuses. |
 | 0.8.8 | 12 | 2026/07/28 | Apply copied `a.upgrade-all-abilities` effects to every other ability owned by a Mimorian party member, up to Lv5, in both runtime calculations and status displays. |
