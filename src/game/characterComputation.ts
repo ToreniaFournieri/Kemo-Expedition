@@ -22,6 +22,7 @@ import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { t } from '../i18n';
 import { ENEMIES } from '../data/enemies';
+import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -600,6 +601,14 @@ export function computeCharacterStats(
   for (const item of initialEquippedItems) {
     collectBonuses(getSuperRareBonuses(item.superRare), collection);
   }
+
+  // SpecRef: 4.1.2 | Enemy | Enemy Passive ability
+  // Enemy-form passives still apply when the actor is a Mimorian party member.
+  // Resolve this after every ability source has been collected so
+  // a.upgrade-all-abilities can enhance all other abilities the actor owns.
+  collection.abilities = new Map(resolveEnemyPassiveAbilities(
+    Array.from(collection.abilities, ([id, level]) => ({ id, level })),
+  ).map((ability) => [ability.id, ability.level]));
 
   // Calculate base stats (b.*), including Super Rare additive stat bonuses.
   const baseStats: BaseStats = {
