@@ -1420,7 +1420,7 @@ function mergeAttackBonusLogText(...bonusTexts: string[]): string {
 }
 
 // Hit detection for physical attacks (LONG and CLOSE phases)
-// decay_of_accuracy = clamp(0.86, 0.90 + actor.accuracy - opponent.evasion, 0.98)
+// decay_of_accuracy = clamp(0.80, 0.90 + actor.accuracy - opponent.evasion, 0.98)
 // chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit - 1)
 function roundUpToThirdDecimal(value: number): number {
   return Math.ceil((value + Number.EPSILON) * 1000) / 1000;
@@ -1457,7 +1457,7 @@ function hitDetection(
   } else if (phase === 'ranged' && terrainEffect === 'terrain.sunny-beach') {
     effectiveAccuracyBonus += 20;
   }
-  const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
+  const decayOfAccuracy = Math.max(0.80, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
   let baseChance = actorAccuracyPotency;
   if (phase === 'ranged') {
     if (opponentDeflectionLevel >= 2) {
