@@ -85,46 +85,6 @@ function getCharacterMultiplier(
   return multipliers.reduce((prod, v) => prod * v, 1);
 }
 
-function getCharacterBaseStats(character: { raceId: string; predispositionId: string; lineageId: string; equipment: (Item | null)[] }) {
-  const race = getRaceById(character.raceId);
-  const predisposition = getPredispositionById(character.predispositionId);
-  const lineage = getLineageById(character.lineageId);
-
-  if (!race || !predisposition || !lineage) {
-    return { vitality: 10, strength: 10, intelligence: 10, mind: 10 };
-  }
-
-  let vitality = race.stats.vitality;
-  let strength = race.stats.strength;
-  let intelligence = race.stats.intelligence;
-  let mind = race.stats.mind;
-
-  for (const bonus of [...predisposition.bonuses, ...lineage.bonuses]) {
-    switch (bonus.type) {
-      case 'vitality': vitality += bonus.value; break;
-      case 'strength': strength += bonus.value; break;
-      case 'intelligence': intelligence += bonus.value; break;
-      case 'mind': mind += bonus.value; break;
-    }
-  }
-
-  for (const item of character.equipment) {
-    if (!item) continue;
-    for (const bonus of getSuperRareBonuses(item.superRare)) {
-      if (bonus.type === 'vitality') vitality += bonus.value;
-      if (bonus.type === 'strength') strength += bonus.value;
-      if (bonus.type === 'intelligence') intelligence += bonus.value;
-      if (bonus.type === 'mind') mind += bonus.value;
-    }
-    if (item.vitalityBonus) vitality += item.vitalityBonus;
-    if (item.strengthBonus) strength += item.strengthBonus;
-    if (item.intelligenceBonus) intelligence += item.intelligenceBonus;
-    if (item.mindBonus) mind += item.mindBonus;
-  }
-
-  return { vitality, strength, intelligence, mind };
-}
-
 function getCharacterGrowthMultiplier(
   character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string; equipment: (Item | null)[] }
 ): number {
@@ -189,7 +149,9 @@ export function computeCharacterHpContribution(
   baseHpBonus: number;
   totalHpBonus: number;
 } {
-  const stats = getCharacterBaseStats(character);
+  // Use the canonical character computation so base-stat restrictions are
+  // driven by collected abilities rather than by a particular race.
+  const stats = computeCharacterStats(character, partyLevel, 1).baseStats;
   const statMultiplier = (stats.vitality + stats.mind) / 20;
   const growthMultiplier = getCharacterGrowthMultiplier(character);
   const effectiveLevel = getEffectiveLevel(partyLevel);

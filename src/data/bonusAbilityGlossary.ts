@@ -56,6 +56,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'null_bind', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_requiem', levelScale: [], subcategory: 'passive' },
   { abilityId: 'upgrade_all_abilities', levelScale: ['Lv1: +1', 'Lv2: +2', 'Lv3: +3', 'Lv4: +4'], subcategory: 'passive' },
+  { abilityId: 'base_status_cap_at_15', levelScale: [], subcategory: 'passive' },
 
   { abilityId: 'tithe', levelScale: ['Lv1: +10%', 'Lv2: +15%'], subcategory: 'expedition' },
   { abilityId: 'squander', levelScale: ['Lv1: x1.3', 'Lv2: x1.5'], subcategory: 'expedition' },
