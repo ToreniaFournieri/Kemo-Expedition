@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 29 | 2026/07/28 | Localize Mimorian names borrowed from selected enemies when the display language changes, while preserving player-edited custom names. |
 | 0.8.8 | 28 | 2026/07/28 | Prevent non-scalable ability levels from being appended to party ability labels, including Base Stat Cap 15 after Upgrade All Abilities raises its internal level. |
 | 0.8.8 | 27 | 2026/07/28 | Make party HP base-stat calculations honor Base Stat Cap 15 through the character's collected ability instead of hard-coding the Mimorian race. |
 | 0.8.8 | 26 | 2026/07/28 | Implement the specified Mimorian Base Stat Cap 15 passive at runtime, replacing Mimic as its default ability and capping all four base stats after bonuses. |
