@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.0 | 3 | 2026/07/29 | Add the eight requested Enemy Master ability loadouts to runtime enemies, including Goldtail Chancellor's Squander while retaining its 1.5× growth bonus. |
 | 0.9.0 | 2 | 2026/07/29 | Align all runtime enemy-type abilities and bonuses with the Enemy Master Specification, including level-30 activation and Origami level-gated evasion. |
 | 0.9.0 | 1 | 2026/07/29 | Release version 0.9.0 and reset the build number to 1. |
 | 0.8.8 | 33 | 2026/07/29 | Add localized Party status attack-speed bubbles backed by shared ranged, magical, and melee runtime dice profiles used by battle resolution. |
