@@ -14,6 +14,7 @@ import {
   AbilityId,
   TerrainEffectKey,
 } from '../types';
+import { getAttackRollProfile, rollAttackSpeedDice } from './attackProfile';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
@@ -1705,13 +1706,9 @@ function rollInitiative(
   const firstStrikeEnabled = (!isMachineLogic || (options?.actorHasEquationBreaker ?? false))
     && (options?.terrainEffect !== 'terrain.ash-haze' || (options?.actorHasTrueSight ?? false));
   const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
-  const baseDiceCount = attackType === 'ranged' ? 4 : attackType === 'magical' ? 3 : 1;
+  const attackRollProfile = getAttackRollProfile(attackType);
   const extraDiceCount = effectiveFirstStrikeLevel >= 3 ? 3 : effectiveFirstStrikeLevel;
-  const diceCount = baseDiceCount + extraDiceCount;
-  let total = 0;
-  for (let i = 0; i < diceCount; i++) {
-    total += Math.floor(Math.random() * 3) + 1;
-  }
+  const total = rollAttackSpeedDice(attackRollProfile, Math.random, extraDiceCount);
 
   let result = Math.min(49, total);
 

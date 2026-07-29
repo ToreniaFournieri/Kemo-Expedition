@@ -11,7 +11,8 @@
     "desktop:pack": "npm run build && electron-builder --mac --dir",
     "desktop:build": "npm run build && electron-builder --mac --x64 --arm64 --publish never",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
