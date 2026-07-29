@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 32 | 2026/07/29 | Prevent battle-log enemy actions that already name the acting enemy from receiving a redundant localized enemy prefix and duplicate chibi marker. |
 | 0.8.8 | 31 | 2026/07/29 | Normalize copied enemy elemental-offense percentages before applying them to Mimorian character damage multipliers, so 20% contributes 0.20 instead of 20.0. |
 | 0.8.8 | 30 | 2026/07/28 | Consolidate elemental glossary content into the Increase Bonuses tab, remove the obsolete Elements tab and duplicate Attack Element entry, and add the three specified elemental bonus definitions. |
 | 0.8.8 | 29 | 2026/07/28 | Localize Mimorian names borrowed from selected enemies when the display language changes, while preserving player-edited custom names. |
