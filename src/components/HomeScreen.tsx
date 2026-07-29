@@ -909,6 +909,11 @@ function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): string[] {
   })));
 }
 
+// SpecRef: 6.1.7 | Logs | Chibi images for each character name
+function battleLogActionIncludesEnemyName(action: string, entry: ExpeditionLogEntry): boolean {
+  return getBattleLogEnemyNameCandidates(entry).some((enemyName) => action.includes(enemyName));
+}
+
 function BattleLogInlineChibi({ src, alt }: { src: string; alt: string }) {
   return (
     <span className="relative mx-0.5 inline-block h-[1em] w-[1.35em] align-[-0.125em]">
@@ -9676,7 +9681,11 @@ function ExpeditionTab({
                                   } else if (log.isEnemyTargetHit) {
                                     actionText = allMissed ? t('battleLog.action.targetHitMissed', { action: log.action.replace('命中！', '') }) : log.action;
                                   } else {
-                                    actionText = allMissed ? t('battleLog.action.enemyMissed', { action: log.action.replace('！', '') }) : t('battleLog.action.enemyActed', { action: log.action });
+                                    actionText = allMissed
+                                      ? t('battleLog.action.enemyMissed', { action: log.action.replace('！', '') })
+                                      : battleLogActionIncludesEnemyName(log.action, entry)
+                                        ? log.action
+                                        : t('battleLog.action.enemyActed', { action: log.action });
                                   }
                                 } else {
                                   actionText = allMissed ? t('battleLog.action.partyMissed', { actor: log.action.replace(/ の.*$/, '') }) : log.action;
@@ -11758,6 +11767,8 @@ function DiaryTab({
                                     : battleLog.action;
                                 } else if (allMissed) {
                                   actionText = t('battleLog.action.enemyMissed', { action: battleLog.action.replace('！', '') });
+                                } else if (battleLogActionIncludesEnemyName(battleLog.action, entry)) {
+                                  actionText = battleLog.action;
                                 } else {
                                   actionText = t('battleLog.action.enemyActed', { action: battleLog.action });
                                 }
