@@ -47,6 +47,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { formatAttackSpeedHelp } from '../game/attackProfile';
 import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
@@ -7700,6 +7701,7 @@ function PartyTab({
                     text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.rangedAttack'),
                     helpLines: [
+                      formatAttackSpeedHelp('ranged', t),
                       t('home.party.help.rangedAttackPower', { value: formatNumber(Math.floor(stats.rangedAttack)) }),
                       t('home.party.help.rangedAttackCount', { value: formatNumber(stats.rangedNoA) }),
                       t('home.party.help.rangedAttackMultiplier', { value: amp.toFixed(2) }),
@@ -7716,6 +7718,7 @@ function PartyTab({
                     text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.magicalAttack'),
                     helpLines: [
+                      formatAttackSpeedHelp('magical', t),
                       t('home.party.help.magicalAttackPower', { value: formatNumber(Math.floor(stats.magicalAttack)) }),
                       t('home.party.help.magicalAttackCount', { value: formatNumber(stats.magicalNoA) }),
                       t('home.party.help.magicalAttackMultiplier', { value: amp.toFixed(2) }),
@@ -7732,6 +7735,7 @@ function PartyTab({
                     text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.meleeAttack'),
                     helpLines: [
+                      formatAttackSpeedHelp('melee', t),
                       t('home.party.help.meleeAttackPower', { value: formatNumber(Math.floor(stats.meleeAttack)) }),
                       t('home.party.help.meleeAttackCount', { value: formatNumber(stats.meleeNoA) }),
                       t('home.party.help.meleeAttackMultiplier', { value: amp.toFixed(2) }),

@@ -115,6 +115,11 @@ line2: 桃/腕  ← text over background image
   - Else: no image
 
 **Status pane**
+- Each ranged, magical, or melee attack row can be selected to open the existing Party status floating help bubble. The bubble displays the localized attack-speed label followed by the runtime minimum/maximum roll and dice notation. Dice counts, die size, minimum, and maximum must come from the same shared attack profile used by battle resolution; localization may change only the label and formatting template.
+  - Japanese: `遠距離攻撃速度: 4~12 (4d3)`, `魔法攻撃速度: 3~9 (3d3)`, `近接攻撃速度: 1~3 (1d3)`
+  - English: `Ranged attack speed: 4~12 (4d3)`, `Magical attack speed: 3~9 (3d3)`, `Melee attack speed: 1~3 (1d3)`
+  - Simplified Chinese: `远程攻击速度：4~12 (4d3)`, `魔法攻击速度：3~9 (3d3)`, `近战攻击速度：1~3 (1d3)`
+  - Traditional Chinese: `遠程攻擊速度：4~12 (4d3)`, `魔法攻擊速度：3~9 (3d3)`, `近戰攻擊速度：1~3 (1d3)`
 - If character has `c.equip_melee`, displays 
 近接攻撃:98 x 4回(x1.00)
 - if character has `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(`attack_type = ranged`)).
