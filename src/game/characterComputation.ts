@@ -556,14 +556,11 @@ export function computeCharacterStats(
     const copiedEnemy = ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId);
     if (copiedEnemy) {
       // SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
-      // Mimorians copy every enemy-form ability at level 1, regardless of the
-      // level used by the original enemy form.
-      collectBonuses((copiedEnemy.bonuses ?? []).map((bonus) => bonus.type === 'ability'
-        ? { ...bonus, value: 1, abilityLevel: 1 }
-        : bonus), collection);
+      // Mimorians retain the ability levels defined by the copied enemy form.
+      collectBonuses(copiedEnemy.bonuses ?? [], collection);
       collectBonuses(copiedEnemy.abilities.map((ability) => ({
         type: 'ability' as const,
-        value: 1,
+        value: ability.level,
         abilityId: ability.id,
       })), collection);
     }
