@@ -1,5 +1,5 @@
 import { BonusType, Dungeon, EnemyAbility, EnemyDef, RoomType } from '../types';
-import { getEnemyTypeAbilities } from '../data/enemies';
+import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 import { applyEnemyMeleeConversionAttack, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
@@ -204,6 +204,7 @@ export function applyEnemyEncounterScaling(
 
   return applyEnemyTypeCBonuses({
     ...enemy,
+    bonuses: [...(enemy.bonuses ?? []), ...getEnemyTypeBonuses(enemy.enemyType, effectiveEnemyLevel)],
     abilities: scaledAbilities,
     hp: Math.floor(enemy.hp * finalMultipliers.hp),
     rangedAttack: scaledRangedAttack,
