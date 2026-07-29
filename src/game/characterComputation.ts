@@ -466,12 +466,15 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
       case 'ice_offense':
       case 'thunder_offense':
         {
-          const bonusName = `e.${bonus.type}+${formatCBonusValue(bonus.value)}`;
+          // Enemy master data expresses elemental offense as whole percentages
+          // (for example, 20 means 20%), while character bonuses use fractions.
+          const normalizedValue = bonus.value > 1 ? bonus.value / 100 : bonus.value;
+          const bonusName = `e.${bonus.type}+${formatCBonusValue(normalizedValue)}`;
           if (collection.offenseCBonusNames.has(bonusName)) break;
           collection.offenseCBonusNames.add(bonusName);
-          if (bonus.type === 'fire_offense') collection.elementalOffenseBonuses.fire += bonus.value;
-          if (bonus.type === 'ice_offense') collection.elementalOffenseBonuses.ice += bonus.value;
-          if (bonus.type === 'thunder_offense') collection.elementalOffenseBonuses.thunder += bonus.value;
+          if (bonus.type === 'fire_offense') collection.elementalOffenseBonuses.fire += normalizedValue;
+          if (bonus.type === 'ice_offense') collection.elementalOffenseBonuses.ice += normalizedValue;
+          if (bonus.type === 'thunder_offense') collection.elementalOffenseBonuses.thunder += normalizedValue;
         }
         break;
     }

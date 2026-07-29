@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.8.8 | 31 | 2026/07/29 | Normalize copied enemy elemental-offense percentages before applying them to Mimorian character damage multipliers, so 20% contributes 0.20 instead of 20.0. |
 | 0.8.8 | 30 | 2026/07/28 | Consolidate elemental glossary content into the Increase Bonuses tab, remove the obsolete Elements tab and duplicate Attack Element entry, and add the three specified elemental bonus definitions. |
 | 0.8.8 | 29 | 2026/07/28 | Localize Mimorian names borrowed from selected enemies when the display language changes, while preserving player-edited custom names. |
 | 0.8.8 | 28 | 2026/07/28 | Prevent non-scalable ability levels from being appended to party ability labels, including Base Stat Cap 15 after Upgrade All Abilities raises its internal level. |
