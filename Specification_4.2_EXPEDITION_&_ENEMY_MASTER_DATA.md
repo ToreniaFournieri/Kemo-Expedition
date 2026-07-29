@@ -46,13 +46,13 @@
 |---|---|---:|---|---:|---|---|---|---|---|---|
 | 100 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | たんぽぽめ |
 | 101 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | いしぽん |
-| 102 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | もす |
+| 102 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | もす | `a.dryproof`1 |
 | 103 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`C, `i.robe`C, `i.shield`C | くろーびっと |
 | 104 | 1 | 1 | 3 | 2 | Normal | `Beast` | class.lord | `i.shield`U, `i.katana`U, `i.armor`C, `i.robe`C, `i.shield`C | くるくる |
 | 105 | 1 | 1 | 4 | 4 | Elite | `Beast` | class.duelist | `i.sword`EA, `i.armor`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | わおーん | `a.howl`1 |
 | 106 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.ninja | `i.archery`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | りんりん |
 | 107 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.sage | `i.grimoire`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | こんた |
-| 108 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | きっつん |
+| 108 | 1 | 2 | 1-2 | 2 | Normal | `Beast` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | きっつん | `a.coldproof`1 |
 | 109 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.duelist | `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | シーガル |
 | 110 | 1 | 2 | 3 | 3 | Normal | `Aerial` | class.pilgrim | `i.robe`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | スパロゥ |
 | 111 | 1 | 2 | 4 | 5 | Elite | `Beast` | class.samurai | `i.katana`EA, `i.shield`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | シンディパウ | `a.null-burn`1, `a.burn`1 |
@@ -87,24 +87,24 @@
 | 140 | 2 | 1 | 3 | 8 | Normal | `Frost` | class.lord | `i.shield`U, `i.katana`U, `i.armor`C, `i.robe`C, `i.shield`C | リゼル |
 | 141 | 2 | 1 | 4 | 10 | Elite | `Frost` | class.lord.ranger | `i.shield`EA, `i.katana`EA, `i.arrow`EA, `i.armor`C, `i.robe`C, `i.shield`C | アメル | `a.ice-protect-breaker`1 |
 | 142 | 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.ninja | `i.archery`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | フィナ | `a.howl`3 |
-| 143 | 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.sage | `i.grimoire`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | シエル |
+| 143 | 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.sage | `i.grimoire`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | シエル | `a.first-aid`2 |
 | 144 | 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ネネ | `a.predator-sense`1 |
 | 145 | 2 | 2 | 3 | 9 | Normal | `Golem` | class.duelist | `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ドレープ |
 | 146 | 2 | 2 | 3 | 9 | Normal | `Golem` | class.pilgrim | `i.robe`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | アルカパ |
 | 147 | 2 | 2 | 4 | 11 | Elite | `Frost` | class.samurai.guardian | `i.katana`EA, `i.shield`EA, `i.armor`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | シェリ | `c.physical-defense-multiplier_x0.5` |
-| 148 | 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.alchemist | `i.catalyst`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | スポレラ |
+| 148 | 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.alchemist | `i.catalyst`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | スポレラ | `a.requiem`1 |
 | 149 | 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | カプレット |
 | 150 | 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.sword-saint | `i.gauntlet`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ルメモス |
 | 151 | 2 | 3 | 3 | 10 | Normal | `Frost` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ルミ |
 | 152 | 2 | 3 | 3 | 10 | Normal | `Frost` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | マーニー |
 | 153 | 2 | 3 | 4 | 12 | Elite | `Plant_Fungal` | class.striker.pilgrim | `i.bolt`EC, `i.arrow`EC, `i.robe`EC, `i.arrow`C, `i.bolt`C, `i.archery`C | アマニバン | `a.boost`2 |
-| 154 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | ウールワード |
+| 154 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | ウールワード | `a.bulwark`1 |
 | 155 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | パッチパウ |
 | 156 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | メールホップ |
 | 157 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | パールスポア |
 | 158 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | ウールミ |
 | 159 | 2 | 4 | 4 | 13 | Elite | `Golem` | class.sword-saint.alchemist | `i.gauntlet`EB, `i.sword`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | スティッチリング | `a.ranged-reflect`1 |
-| 160 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | パフキャップ |
+| 160 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | パフキャップ | `a.melee-confusion`1 |
 | 161 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | タリア |
 | 162 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | インクキャップ |
 | 163 | 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | ポルセラ |`c.physical-defense-multiplier_x0.4`|
@@ -144,14 +144,14 @@
 | 197 | 3 | 5 | 1-2 | 18 | Normal | `Orcinian` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 鉄錨のマリナ |
 | 198 | 3 | 5 | 1-2 | 18 | Normal | `Orcinian` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | ニメラ |
 | 199 | 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヴェスパー |
-| 200 | 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セドリック |
+| 200 | 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セドリック | `a.cunning`1 |
 | 201 | 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | class.striker.sword-saint | `i.bolt`EB, `i.arrow`EB, `i.gauntlet`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | ネリア | `a.overwatch`1 |
 | 202 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | なぴ |
 | 203 | 3 | 6 | 1-2 | 19 | Normal | `Fruit` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | みき |
 | 204 | 3 | 6 | 1-2 | 19 | Normal | `Orcinian` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | エヴェリナ |
 | 205 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | イリア |
 | 206 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | ヴェスペラ |
-| 207 | 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | class.wizard.sage | `i.wand`BD, `i.robe`BD, `i.grimoire`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 宰相ゴールドテイル | `a.melee-confusion`1, `c.growth_x1.5` | 
+| 207 | 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | class.wizard.sage | `i.wand`BD, `i.robe`BD, `i.grimoire`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 宰相ゴールドテイル | `a.melee-confusion`1, `c.growth_x1.5`, `a.squander`1 | 
 | 208 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | ポムキャット |
 | 209 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | フワテイル |
 | 210 | 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | コロッチュ |
