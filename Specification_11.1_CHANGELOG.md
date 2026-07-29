@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.0 | 4 | 2026/07/29 | Preserve each enemy form's defined ability levels for Mimorian runtime effects and share that ability source with Altar and Party displays. |
 | 0.9.0 | 3 | 2026/07/29 | Add the eight requested Enemy Master ability loadouts to runtime enemies, including Goldtail Chancellor's Squander while retaining its 1.5× growth bonus. |
 | 0.9.0 | 2 | 2026/07/29 | Align all runtime enemy-type abilities and bonuses with the Enemy Master Specification, including level-30 activation and Origami level-gated evasion. |
 | 0.9.0 | 1 | 2026/07/29 | Release version 0.9.0 and reset the build number to 1. |

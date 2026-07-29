@@ -23,7 +23,7 @@ import {
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemCoreConceptValue, getItemDisplayName, getLocalizedEnhancementTitle, getLocalizedItemName, getLocalizedSuperRareTitle } from '../game/gameState';
-import { ENEMIES, getEnemyDropCandidates, getEnemyIndividualAbilities, getEnemyIndividualBonuses, getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
+import { ENEMIES, getEnemyDropCandidates, getEnemyIndividualAbilities, getEnemyIndividualBonuses, getEnemyTypeAbilities, getEnemyTypeBonuses, getMimorianEnemyAbilities } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
@@ -7431,16 +7431,14 @@ function PartyTab({
               const buildEnemyAbilityEntries = (prefix: string, abilities: typeof selectedEnemyTypeAbilities) => abilities
                 .map((ability, index) => buildInlineBonusEntry(prefix, selectedEnemy?.id.toString(), {
                   type: 'ability',
-                  value: 1,
+                  value: ability.level,
                   abilityId: ability.id,
-                  abilityLevel: 1,
+                  abilityLevel: ability.level,
                 }, index))
                 .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
               const buildEnemyBonusEntries = (prefix: string, bonuses: Bonus[]) => bonuses
                 .map((bonus, index) => {
-                  const mimorianBonus = bonus.type === 'ability'
-                    ? { ...bonus, value: 1, abilityLevel: 1 }
-                    : bonus;
+                  const mimorianBonus = bonus;
                   const displayBonus = ['fire_offense', 'ice_offense', 'thunder_offense'].includes(mimorianBonus.type) && mimorianBonus.value > 1
                     ? { ...mimorianBonus, value: mimorianBonus.value / 100 }
                     : mimorianBonus;
@@ -9913,17 +9911,6 @@ function BaseTab({
 }
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
-function mergeMimorianAbilityDisplayEntries(abilities: EnemyAbility[]): EnemyAbility[] {
-  const merged = new Map<AbilityId, EnemyAbility>();
-  abilities.forEach((ability) => {
-    const current = merged.get(ability.id);
-    if (!current || ability.level > current.level) merged.set(ability.id, ability);
-  });
-  // Enemy forms are party-member templates in the Altar, so their displayed
-  // ability levels must match the Lv1 values a Mimorian actually receives.
-  return Array.from(merged.values(), (ability) => ({ ...ability, level: 1 }));
-}
-
 function AltarTab({
   prana,
   altarVictoriesByEnemyType,
@@ -10033,10 +10020,7 @@ function AltarTab({
           const requiredAltarLevel = getEnemyRequiredAltarLevel(enemy);
           const meetsLevelRequirement = altarLevel >= requiredAltarLevel;
           const canUnlock = !unlocked && meetsLevelRequirement && prana >= cost;
-          const formAbilities = mergeMimorianAbilityDisplayEntries([
-            ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
-            ...getEnemyIndividualAbilities(enemy.id),
-          ]);
+          const formAbilities = getMimorianEnemyAbilities(enemy);
           const formBonuses = [
             ...getEnemyTypeBonuses(enemy.enemyType),
             ...getEnemyIndividualBonuses(enemy.id),

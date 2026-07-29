@@ -21,7 +21,7 @@ import { getBaseMultiplier } from './baseMultiplier';
 import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { t } from '../i18n';
-import { ENEMIES } from '../data/enemies';
+import { ENEMIES, getMimorianEnemyAbilities } from '../data/enemies';
 import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
 
@@ -556,15 +556,12 @@ export function computeCharacterStats(
     const copiedEnemy = ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId);
     if (copiedEnemy) {
       // SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
-      // Mimorians copy every enemy-form ability at level 1, regardless of the
-      // level used by the original enemy form.
-      collectBonuses((copiedEnemy.bonuses ?? []).map((bonus) => bonus.type === 'ability'
-        ? { ...bonus, value: 1, abilityLevel: 1 }
-        : bonus), collection);
-      collectBonuses(copiedEnemy.abilities.map((ability) => ({
+      collectBonuses(copiedEnemy.bonuses ?? [], collection);
+      collectBonuses(getMimorianEnemyAbilities(copiedEnemy).map((ability) => ({
         type: 'ability' as const,
-        value: 1,
+        value: ability.level,
         abilityId: ability.id,
+        abilityLevel: ability.level,
       })), collection);
     }
     // The copied form supplements the Mimorian rather than replacing its

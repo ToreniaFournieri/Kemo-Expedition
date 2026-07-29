@@ -611,6 +611,24 @@ export function getEnemyIndividualBonuses(enemyId: number): Bonus[] {
   return MASTER_ENEMY_BONUS_MODIFIERS[enemyId] ?? [];
 }
 
+// SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
+// This is the authoritative ability set for both Altar previews and the
+// Mimorian form copied into party runtime stats.
+export function getMimorianEnemyAbilities(enemy: Pick<EnemyDef, 'id' | 'enemyType'>): EnemyAbility[] {
+  const merged = new Map<AbilityId, EnemyAbility>();
+  const abilities = [
+    ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
+    ...getEnemyIndividualAbilities(enemy.id),
+  ];
+
+  abilities.forEach((ability) => {
+    const current = merged.get(ability.id);
+    if (!current || ability.level > current.level) merged.set(ability.id, ability);
+  });
+
+  return Array.from(merged.values(), (ability) => ({ ...ability }));
+}
+
 function generateEnemies(): EnemyDef[] {
   const enemies: EnemyDef[] = [];
 
