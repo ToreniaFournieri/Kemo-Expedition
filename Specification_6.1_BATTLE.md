@@ -136,7 +136,7 @@ If `a.*` with phase = START:
 - An actor is considered to have acted in the battle after at least one of its normal-action entries has been resolved or skipped.
 
 - **Base-roll** determined by attack type.
-  - `ranged_attack`, `base-roll` is 5d3. (5-15)
+  - `ranged_attack`, `base-roll` is 4d3. (4-12)
   - `magical_attack`, `base-roll` is  3d3. (3-9)
   - `melee_attack`, `base-roll` is  1d3. (1-3)
 - **Initiative roll**
@@ -168,7 +168,7 @@ If `a.*` with phase = START:
     4. Back-row party member moves
    
 **Order by priority**
-- Each attack-type step is resolved from timing 49 down to timing 0. (0 might be used for `Trigger`)
+- The single COMBAT phase is resolved from timing 49 down to timing 0. (0 might be used for `Trigger`)
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
@@ -184,7 +184,7 @@ If `a.*` with phase = START:
 | COMBAT | 49 | Trigger | [49] |
 | COMBAT | 49 | Enemy | [49] |
 | COMBAT | 49 | Party member (Front-row → Back-row) | [49] |
-| COMBAT | 48 | Trigger | [49] |
+| COMBAT | 48 | Trigger | [48] |
 | COMBAT | 48 | Enemy | [48] |
 | COMBAT | 48 | Party member (Front-row → Back-row) | [48] |
 | ... | ... | ... | ... |
@@ -230,7 +230,7 @@ If `a.*` with phase = START:
       - Log: `log.null-antagonism` + "(敵対無効化)"
 
   - Eligible target
-    - Target has the capability matching the current `attack_type` and has **not moved yet in the current attack-type step**.
+    - Target has a normal-action entry whose `attack_type` matches the confusion ability (`ranged`, `magical`, or `melee`) and that entry has **not yet been resolved or skipped in the COMBAT phase**.
   - On activation, roll N/D to apply confusion to a random eligible target.
   - Log:  `log.confusion`
  
@@ -473,11 +473,7 @@ If `a.*` with phase = START:
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
   - If (`attack_type = magical`) or (`attack_type = ranged` and party.`God of Resonance` and (terrain is not `terrain.gehenna`)),
-  	- If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
-  	- If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
-  	- If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
-  	- If actor.`a.resonance`4, return 1.0 + (0.13 x (n - 1))
-  	- If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
+  	- If actor.`a.resonance`N, return 1.0 + (0.01 x M x (n - 1)) 
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , attack_type: )
@@ -561,8 +557,7 @@ If `a.*` with phase = START:
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-amplify`, return n
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 	
-	- If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
-	- If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+	- If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= N and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
 	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
 
 ##### 6.1.4.2 Function of targeting
@@ -634,7 +629,7 @@ If `a.*` with phase = START:
   - **Terrain effect**
     - If `terrain.fog` and (actor does not have `a.true-sight`) and (`attack_type = ranged`): actor.`f.c_accuracy+v` -= 25
     - If `terrain.sunny-beach` and (`attack_type = ranged`): actor.`f.c_accuracy+v` += 20
-  - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
+  - decay_of_accuracy: clamp(0.70, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
   - If opponent has `a.deflection`2 AND `attack_type = ranged`: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND `attack_type = ranged`: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
@@ -888,8 +883,8 @@ left-alinged                                           right-aligned
 [末] 探索深度に到達した為帰還します
 ```
 
-- note: [効] text always at the beginning of battle log (before the "(遠距離攻撃フェーズ)" part)
-- note: [末] text always at the end of battle log (after the "(近接攻撃フェーズ)" part)
+- note: [効] text always at the beginning of battle log 
+- note: [末] text always at the end of battle log 
 - **Item Retrieval Logic:**
   - Items are stacked by (superRare, enhancement, and base item) and has state
   - *State:`s.sold` Auto-Sell:* If a dropped item matches a rule with state:`s.sold`, it is sold immediately (not added to inventory, gain Gold)

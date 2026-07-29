@@ -47,6 +47,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { formatAttackSpeedHelp } from '../game/attackProfile';
 import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
@@ -372,19 +373,17 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   reactivate: 'expedition.cycle.reactivate',
 };
 
-const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE' | 'END', string> = {
-  LONG: t('combat.ranged'),
-  MID: t('combat.magic'),
-  CLOSE: t('combat.melee'),
+const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'COMBAT' | 'END', string> = {
+  COMBAT: t('battleLog.phase.combat'),
   END: t('common.end'),
 };
 
 function formatBonusAbilityPhaseDisplay(value: string): string {
-  return value.replace(/LONG|MID|CLOSE|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE' | 'END']);
+  return value.replace(/COMBAT|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'COMBAT' | 'END']);
 }
 
 function isBonusAbilityTimingToken(token: string): boolean {
-  return /^(?:LONG|MID|CLOSE|END)\d(?:\/(?:LONG|MID|CLOSE|END)\d)*$/.test(token);
+  return /^(?:COMBAT|END)\d(?:\/(?:COMBAT|END)\d)*$/.test(token);
 }
 
 function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
@@ -395,7 +394,7 @@ function parseBonusAbilityLevelScale(levelScale: string): { timing: string | nul
 
   const separatorIndex = scaleContent.indexOf('・');
   if (separatorIndex < 0) {
-    const isTimingOnly = /^(LONG|MID|CLOSE|END)\d/.test(scaleContent);
+    const isTimingOnly = /^(COMBAT|END)\d/.test(scaleContent);
     return {
       timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
       value: isTimingOnly ? null : scaleContent,
@@ -911,6 +910,11 @@ function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): string[] {
   })));
 }
 
+// SpecRef: 6.1.7 | Logs | Chibi images for each character name
+function battleLogActionIncludesEnemyName(action: string, entry: ExpeditionLogEntry): boolean {
+  return getBattleLogEnemyNameCandidates(entry).some((enemyName) => action.includes(enemyName));
+}
+
 function BattleLogInlineChibi({ src, alt }: { src: string; alt: string }) {
   return (
     <span className="relative mx-0.5 inline-block h-[1em] w-[1.35em] align-[-0.125em]">
@@ -1015,7 +1019,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
   logs.forEach((log, index) => {
     if (
       log.actor !== 'triggered'
-      || log.phase !== 'close'
+      || log.attackType !== 'melee'
       || log.effectKind !== 'life_drain'
       || !log.effectSourceName
       || !log.effectTargetName
@@ -7697,6 +7701,7 @@ function PartyTab({
                     text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.rangedAttack'),
                     helpLines: [
+                      formatAttackSpeedHelp('ranged', t),
                       t('home.party.help.rangedAttackPower', { value: formatNumber(Math.floor(stats.rangedAttack)) }),
                       t('home.party.help.rangedAttackCount', { value: formatNumber(stats.rangedNoA) }),
                       t('home.party.help.rangedAttackMultiplier', { value: amp.toFixed(2) }),
@@ -7713,6 +7718,7 @@ function PartyTab({
                     text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.magicalAttack'),
                     helpLines: [
+                      formatAttackSpeedHelp('magical', t),
                       t('home.party.help.magicalAttackPower', { value: formatNumber(Math.floor(stats.magicalAttack)) }),
                       t('home.party.help.magicalAttackCount', { value: formatNumber(stats.magicalNoA) }),
                       t('home.party.help.magicalAttackMultiplier', { value: amp.toFixed(2) }),
@@ -7729,6 +7735,7 @@ function PartyTab({
                     text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
                     helpTitle: t('combat.meleeAttack'),
                     helpLines: [
+                      formatAttackSpeedHelp('melee', t),
                       t('home.party.help.meleeAttackPower', { value: formatNumber(Math.floor(stats.meleeAttack)) }),
                       t('home.party.help.meleeAttackCount', { value: formatNumber(stats.meleeNoA) }),
                       t('home.party.help.meleeAttackMultiplier', { value: amp.toFixed(2) }),
@@ -9619,28 +9626,22 @@ function ExpeditionTab({
                                 const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
                                 const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
                                 const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
-                                const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'long' || previousLog.phase === 'mid' || previousLog.phase === 'close');
+                                const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                                 const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                                 const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = getBattleLogPhaseLabel(log, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
-                                const phaseHeader = log.phase === 'long'
-                                  ? t('battleLog.phase.long')
-                                  : log.phase === 'mid'
-                                    ? t('battleLog.phase.mid')
-                                    : log.phase === 'close'
-                                      ? t('battleLog.phase.close')
-                                      : '';
+                                const phaseHeader = log.phase === 'combat' ? t('battleLog.phase.combat') : '';
                                 const iconKey: UiIconKey = log.elementalOffense === 'fire'
                                   ? 'fire'
                                   : log.elementalOffense === 'thunder'
                                     ? 'thunder'
                                     : log.elementalOffense === 'ice'
                                       ? 'ice'
-                                      : log.phase === 'long'
+                                      : log.attackType === 'ranged'
                                         ? 'ranged'
-                                        : log.phase === 'mid'
+                                        : log.attackType === 'magical'
                                           ? 'magic'
                                           : 'melee';
                                 const isEnemy = log.actor === 'enemy';
@@ -9684,7 +9685,11 @@ function ExpeditionTab({
                                   } else if (log.isEnemyTargetHit) {
                                     actionText = allMissed ? t('battleLog.action.targetHitMissed', { action: log.action.replace('命中！', '') }) : log.action;
                                   } else {
-                                    actionText = allMissed ? t('battleLog.action.enemyMissed', { action: log.action.replace('！', '') }) : t('battleLog.action.enemyActed', { action: log.action });
+                                    actionText = allMissed
+                                      ? t('battleLog.action.enemyMissed', { action: log.action.replace('！', '') })
+                                      : battleLogActionIncludesEnemyName(log.action, entry)
+                                        ? log.action
+                                        : t('battleLog.action.enemyActed', { action: log.action });
                                   }
                                 } else {
                                   actionText = allMissed ? t('battleLog.action.partyMissed', { actor: log.action.replace(/ の.*$/, '') }) : log.action;
@@ -11706,25 +11711,19 @@ function DiaryTab({
                               const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
                               const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
                               const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
-                              const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'long' || previousLog.phase === 'mid' || previousLog.phase === 'close');
+                              const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                               const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                               const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = getBattleLogPhaseLabel(battleLog, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
-                              const phaseHeader = battleLog.phase === 'long'
-                                ? t('battleLog.phase.long')
-                                : battleLog.phase === 'mid'
-                                  ? t('battleLog.phase.mid')
-                                  : battleLog.phase === 'close'
-                                    ? t('battleLog.phase.close')
-                                    : '';
+                              const phaseHeader = battleLog.phase === 'combat' ? t('battleLog.phase.combat') : '';
                               const getPhaseIcon = (): UiIconKey => {
                                 if (battleLog.elementalOffense === 'fire') return 'fire';
                                 if (battleLog.elementalOffense === 'thunder') return 'thunder';
                                 if (battleLog.elementalOffense === 'ice') return 'ice';
-                                if (battleLog.phase === 'long') return 'ranged';
-                                if (battleLog.phase === 'mid') return 'magic';
+                                if (battleLog.attackType === 'ranged') return 'ranged';
+                                if (battleLog.attackType === 'magical') return 'magic';
                                 return 'melee';
                               };
                               const iconKey = getPhaseIcon();
@@ -11772,6 +11771,8 @@ function DiaryTab({
                                     : battleLog.action;
                                 } else if (allMissed) {
                                   actionText = t('battleLog.action.enemyMissed', { action: battleLog.action.replace('！', '') });
+                                } else if (battleLogActionIncludesEnemyName(battleLog.action, entry)) {
+                                  actionText = battleLog.action;
                                 } else {
                                   actionText = t('battleLog.action.enemyActed', { action: battleLog.action });
                                 }
@@ -11944,19 +11945,18 @@ function SettingTab({
   onNewsPaneExpandedChange: (expanded: boolean) => void;
 }) {
   type SettingPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
-  type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
+  type GlossaryTabKey = '能' | '基' | '固' | '増' | '機' | '信' | '魔' | '地' | '求';
   // SpecRef: 9 | Environment | Save Data Isolation
   const SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
   const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
   const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-tab');
   const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-expanded-entries');
-  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
+  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '機', '信', '魔', '地', '求'];
   const GLOSSARY_TAB_LABELS: Record<GlossaryTabKey, string> = {
     能: t('setting.glossary.tab.abilities'),
     基: t('setting.glossary.tab.baseStats'),
     固: t('setting.glossary.tab.fixedEffects'),
     増: t('setting.glossary.tab.bonuses'),
-    属: t('setting.glossary.tab.elements'),
     機: t('setting.glossary.tab.mechanics'),
     信: t('setting.glossary.tab.faith'),
     魔: t('setting.glossary.tab.magic'),
@@ -12798,7 +12798,6 @@ function SettingTab({
       基: '2-1-2',
       固: '2-1-3',
       増: '2-1-4',
-      属: '2-1-4',
       機: '2-1-6',
       信: '2-1-7',
       魔: '2-1-8',
@@ -13528,16 +13527,9 @@ function SettingTab({
                               return null;
                             }
                             const entryKey = `${section.id}-${entry.key}-${index}`;
-                            const isElementalEntry = entry.key.includes('elemental');
-                            if (glossaryTab === '属' && !isElementalEntry) {
-                              return null;
-                            }
-                            if (glossaryTab === '増' && isElementalEntry) {
-                              return null;
-                            }
                             const isGodGlossarySection = section.id === '2-1-7';
-                            const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
-                            const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
+                            const shouldCollapseEntry = glossaryTab === '増';
+                            const useDefaultGlossaryTextColor = glossaryTab === '増';
                             const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                             const descriptionLines = entry.description.split('\n');
                             const normalizedDescriptionLines = isSideQuestGlossarySection

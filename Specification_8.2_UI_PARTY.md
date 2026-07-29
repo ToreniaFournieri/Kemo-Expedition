@@ -115,19 +115,24 @@ line2: 桃/腕  ← text over background image
   - Else: no image
 
 **Status pane**
+- Each ranged, magical, or melee attack row can be selected to open the existing Party status floating help bubble. The bubble displays the localized attack-speed label followed by the runtime minimum/maximum roll and dice notation. Dice counts, die size, minimum, and maximum must come from the same shared attack profile used by battle resolution; localization may change only the label and formatting template.
+  - Japanese: `遠距離攻撃速度: 4~12 (4d3)`, `魔法攻撃速度: 3~9 (3d3)`, `近接攻撃速度: 1~3 (1d3)`
+  - English: `Ranged attack speed: 4~12 (4d3)`, `Magical attack speed: 3~9 (3d3)`, `Melee attack speed: 1~3 (1d3)`
+  - Simplified Chinese: `远程攻击速度：4~12 (4d3)`, `魔法攻击速度：3~9 (3d3)`, `近战攻击速度：1~3 (1d3)`
+  - Traditional Chinese: `遠程攻擊速度：4~12 (4d3)`, `魔法攻擊速度：3~9 (3d3)`, `近戰攻擊速度：1~3 (1d3)`
 - If character has `c.equip_melee`, displays 
 近接攻撃:98 x 4回(x1.00)
-- if character has  `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
+- if character has `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(`attack_type = ranged`)).
   - ex. 遠距離攻撃:25 x 6回(x1.13)
 - if character has `c.equip_melee` or `c.equip_ranged`, displays 物理命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
   - ex. 物理命中率: 72% (減衰: x0.90)
-- If character has `c.equip_magic`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and 魔法命中率: 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+- If character has `c.equip_magic`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(`attack_type = magical`)). and 魔法命中率: 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
   - ex. 魔法攻撃:36 x 3回(x1.26)
   - ex. 魔法命中率: 100% (減衰: x0.90)
 
 - Accuracy is internally calculated using the unified stats c.accuracy and c.evasion for all attack types.
-- Physical Accuracy and Magical Accuracy are separated for display purposes only, based on battle phase rules.
-- The MID phase ignores row-based d.accuracy_potency and is treated as fixed potency 1.00.
+- Physical Accuracy and Magical Accuracy are separated for display purposes only, based on `attack_type` rules.
+- `attack_type = magical` ignores row-based `d.accuracy_potency` and is treated as fixed potency 1.00.
 
 - *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface. 
 
@@ -256,6 +261,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - Selecting an enemy assigns that enemy’s ID to the character.
   - The Mimorian gains the same abilities and skills as the selected enemy, and remains Mimorian's abilities.
   - By default, the character’s name is set to the selected enemy’s name.
+  - When the display language changes, a Mimorian name that still matches the selected enemy's default name in the previous language changes to that enemy's default name in the new language. A player-edited custom name remains unchanged.
 
 **2. Edit Confirmation Rules:**
 - **Done (完了):**

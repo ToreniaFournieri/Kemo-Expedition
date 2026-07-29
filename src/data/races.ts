@@ -211,10 +211,15 @@ export const RACES: Race[] = [
     emoji: '🦎',
     icon: '/race-icons/Mimorian.png',
     stats: { vitality: 8, strength: 8, intelligence: 8, mind: 8 },
-    defaultAbility: { id: 'none', name: '(none)', description: '(none)' },
+    defaultAbility: {
+      id: 'a.base-status-cap-at-15',
+      get name() { return t('ability.base_status_cap_at_15.label'); },
+      get description() { return t('ability.base_status_cap_at_15.description'); },
+    },
     memo: 'shapeshifter',
     bonuses: [
-      { type: 'equip_slot', value: -2 },
+      { type: 'equip_slot', value: -1 },
+      { type: 'ability', value: 1, abilityId: 'base_status_cap_at_15', abilityLevel: 1 },
     ],
   },
   {

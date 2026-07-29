@@ -10,6 +10,34 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.0 | 1 | 2026/07/29 | Release version 0.9.0 and reset the build number to 1. |
+| 0.8.8 | 33 | 2026/07/29 | Add localized Party status attack-speed bubbles backed by shared ranged, magical, and melee runtime dice profiles used by battle resolution. |
+| 0.8.8 | 32 | 2026/07/29 | Prevent battle-log enemy actions that already name the acting enemy from receiving a redundant localized enemy prefix and duplicate chibi marker. |
+| 0.8.8 | 31 | 2026/07/29 | Normalize copied enemy elemental-offense percentages before applying them to Mimorian character damage multipliers, so 20% contributes 0.20 instead of 20.0. |
+| 0.8.8 | 30 | 2026/07/28 | Consolidate elemental glossary content into the Increase Bonuses tab, remove the obsolete Elements tab and duplicate Attack Element entry, and add the three specified elemental bonus definitions. |
+| 0.8.8 | 29 | 2026/07/28 | Localize Mimorian names borrowed from selected enemies when the display language changes, while preserving player-edited custom names. |
+| 0.8.8 | 28 | 2026/07/28 | Prevent non-scalable ability levels from being appended to party ability labels, including Base Stat Cap 15 after Upgrade All Abilities raises its internal level. |
+| 0.8.8 | 27 | 2026/07/28 | Make party HP base-stat calculations honor Base Stat Cap 15 through the character's collected ability instead of hard-coding the Mimorian race. |
+| 0.8.8 | 26 | 2026/07/28 | Implement the specified Mimorian Base Stat Cap 15 passive at runtime, replacing Mimic as its default ability and capping all four base stats after bonuses. |
+| 0.8.8 | 25 | 2026/07/28 | Align runtime initiative base rolls with the specified 4d3 ranged, 3d3 magical, and 1d3 melee attack-type dice. |
+| 0.8.8 | 24 | 2026/07/28 | Resolve combat on the global 49-to-0 timing scale so magical and melee actions execute before every lower-initiative ranged action, including their damage and defeat effects. |
+| 0.8.8 | 23 | 2026/07/28 | Sort unified COMBAT log action blocks by absolute initiative so higher magical and melee actions cannot appear below lower ranged actions. |
+| 0.8.8 | 22 | 2026/07/28 | Roll every eligible combat action before resolution and allow higher magical or melee initiative to overtake lower ranged initiative. |
+| 0.8.8 | 21 | 2026/07/28 | Align the Mimorian race runtime with its specified default Lv1 Mimic ability and one-slot equipment penalty. |
+| 0.8.8 | 20 | 2026/07/28 | Apply the specified 0.7× growth multiplier to Origami enemies at runtime while retaining Thunder Null, +0.100 evasion, and 1.5× fire vulnerability. |
+| 0.8.8 | 19 | 2026/07/28 | Align the runtime Origami enemy-type evasion bonus with the specified `c.evasion+0.100` while retaining Thunder Null and 1.5× fire vulnerability. |
+| 0.8.8 | 18 | 2026/07/28 | Align the runtime Origami enemy-type evasion bonus with the specified `c.evasion+0.150` while retaining Thunder Null and 1.5× fire vulnerability. |
+| 0.8.8 | 17 | 2026/07/28 | Align the runtime accuracy-decay clamp with the specified 0.70 minimum while retaining the actor accuracy, opponent evasion, and 0.98 maximum bounds. |
+| 0.8.8 | 16 | 2026/07/28 | Align the runtime accuracy-decay clamp with the specified 0.80 minimum while retaining the actor accuracy, opponent evasion, and 0.98 maximum bounds. |
+| 0.8.8 | 15 | 2026/07/28 | Align the runtime Instant Expedition charge durations after clearing expedition 3 with the specified 6, 12, 24, 48, 96, and 192 minutes. |
+| 0.8.8 | 14 | 2026/07/28 | Localize the corrected First Strike runtime glossary level text in Japanese, English, Simplified Chinese, and Traditional Chinese. |
+| 0.8.8 | 13 | 2026/07/28 | Align the runtime First Strike glossary level text with the specified +1d3, +2d3, and +3d3 initiative bonuses. |
+| 0.8.8 | 12 | 2026/07/28 | Apply copied `a.upgrade-all-abilities` effects to every other ability owned by a Mimorian party member, up to Lv5, in both runtime calculations and status displays. |
+| 0.8.8 | 11 | 2026/07/28 | Align runtime Resonance damage amplification and battle-log bonus values with the glossary's Lv1–Lv5 values of 4%, 7%, 9%, 11%, and 12%. |
+| 0.8.8 | 10 | 2026/07/28 | Align Inquisitor Zahra (enemy 230) with master data by replacing the obsolete Stealth ability with the specified 1.4× growth bonus at runtime. |
+| 0.8.8 | 9 | 2026/07/28 | Align the runtime `a.stealth` activation thresholds, glossary values, and localized Murid descriptions with the updated Lv1 12% and Lv2 18% specification. |
+| 0.8.8 | 8 | 2026/07/28 | Implement the single runtime COMBAT phase presentation, attack-type initiative dice, absolute COMBAT timings for timed abilities, and attack-type-aware battle logs and glossary displays. |
+| 0.8.8 | 7 | 2026/07/28 | Align battle and status-display specifications with the single COMBAT phase by replacing obsolete LONG/MID/CLOSE mechanics with explicit attack types and clarifying timed-confusion eligibility. |
 | 0.8.8 | 6 | 2026/07/27 | Route the single visible community link to the Chinese Telegram group for Simplified Chinese and to the official Japanese-English Discord community for every other language. |
 | 0.8.8 | 5 | 2026/07/27 | Restore the missing `a.life-drain` reactive ability glossary entry from the runtime definition, including its normal-melee healing behavior, seven level values, and on-strike trigger. |
 | 0.8.8 | 4 | 2026/07/27 | Preserve percentage signs when floating ability help bubbles substitute a percentage level value into a plain `N` placeholder. |

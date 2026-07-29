@@ -14,28 +14,22 @@ import {
   AbilityId,
   TerrainEffectKey,
 } from '../types';
+import { getAttackRollProfile, rollAttackSpeedDice } from './attackProfile';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
 };
 
 // SpecRef: 6.1.1.2 | Combat phase | Internal attack-type contract and battle-log compatibility
-function toBattleLogPhase(attackType: AttackType): 'long' | 'mid' | 'close' {
-  switch (attackType) {
-    case 'ranged': return 'long';
-    case 'magical': return 'mid';
-    case 'melee': return 'close';
-  }
-}
-
-/** Keeps combat rules attack-type based while preserving the legacy log contract. */
+/** Keeps the single visible phase separate from its attack-type combat rules. */
 class BattleLogBuffer extends Array<BattleLogEntry> {
   push(...entries: CombatLogEntry[]): number {
     return super.push(...entries.map((entry) => ({
       ...entry,
-      phase: entry.phase === 'ranged' || entry.phase === 'magical' || entry.phase === 'melee'
-        ? toBattleLogPhase(entry.phase)
-        : entry.phase,
+      attackType: entry.phase === 'ranged' || entry.phase === 'magical' || entry.phase === 'melee'
+        ? entry.phase
+        : entry.attackType,
+      phase: entry.phase === 'ranged' || entry.phase === 'magical' || entry.phase === 'melee' ? 'combat' : entry.phase,
     })));
   }
 }
@@ -548,10 +542,11 @@ function isStealthActive(
   maxPartyHp: number,
   actorAbilities: AbilityLike[] = [],
 ): boolean {
+  // SpecRef: 6.1.4.1 | Function of attack | a.stealth
   if (hasAbility(actorAbilities, 'pursuit')) return false;
   if (!hasStealth(charStats)) return false;
   if (maxPartyHp <= 0) return false;
-  const threshold = getStealthLevel(charStats) >= 2 ? 0.29 : 0.24;
+  const threshold = getStealthLevel(charStats) >= 2 ? 0.18 : 0.12;
   return (partyHp / maxPartyHp) <= threshold;
 }
 
@@ -568,10 +563,11 @@ function isEnemyStealthActive(
   enemyHp: number,
   attackerAbilities: AbilityLike[] = [],
 ): boolean {
+  // SpecRef: 6.1.4.1 | Function of attack | a.stealth
   if (hasAbility(attackerAbilities, 'pursuit')) return false;
   const stealthLevel = getEnemyAbilityLevel(enemy, 'stealth');
   if (stealthLevel <= 0 || enemy.hp <= 0) return false;
-  const threshold = stealthLevel >= 2 ? 0.29 : 0.24;
+  const threshold = stealthLevel >= 2 ? 0.18 : 0.12;
   return (enemyHp / enemy.hp) <= threshold;
 }
 
@@ -1376,41 +1372,24 @@ function getDefensiveReaction(
   return null;
 }
 
-// SpecRef: 6.1.4.1 | Function of attack | f.resonance_amplifier
-function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
-  if (!resonanceLevel || hitNumber <= 1) {
-    return 1.0;
-  }
-
-  if (resonanceLevel >= 5) {
-    return 1.0 + (0.15 * (hitNumber - 1));
-  }
-
-  if (resonanceLevel === 4) {
-    return 1.0 + (0.13 * (hitNumber - 1));
-  }
-
-  if (resonanceLevel === 3) {
-    return 1.0 + (0.11 * (hitNumber - 1));
-  }
-
-  if (resonanceLevel === 2) {
-    return 1.0 + (0.08 * (hitNumber - 1));
-  }
-
-  return 1.0 + (0.05 * (hitNumber - 1));
-}
+const RESONANCE_BONUS_PERCENT_BY_LEVEL = [4, 7, 9, 11, 12] as const;
 
 function getResonanceBonusPerHit(resonanceLevel: number | undefined): number {
   if (!resonanceLevel) {
     return 0;
   }
 
-  if (resonanceLevel >= 5) return 15;
-  if (resonanceLevel === 4) return 13;
-  if (resonanceLevel === 3) return 11;
-  if (resonanceLevel === 2) return 8;
-  return 5;
+  const levelIndex = Math.min(resonanceLevel, RESONANCE_BONUS_PERCENT_BY_LEVEL.length) - 1;
+  return RESONANCE_BONUS_PERCENT_BY_LEVEL[levelIndex];
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.resonance_amplifier
+function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
+  if (!resonanceLevel || hitNumber <= 1) {
+    return 1.0;
+  }
+
+  return 1.0 + (0.01 * getResonanceBonusPerHit(resonanceLevel) * (hitNumber - 1));
 }
 
 function getResonanceLogText(
@@ -1442,7 +1421,7 @@ function mergeAttackBonusLogText(...bonusTexts: string[]): string {
 }
 
 // Hit detection for physical attacks (LONG and CLOSE phases)
-// decay_of_accuracy = clamp(0.86, 0.90 + actor.accuracy - opponent.evasion, 0.98)
+// decay_of_accuracy = clamp(0.70, 0.90 + actor.accuracy - opponent.evasion, 0.98)
 // chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit - 1)
 function roundUpToThirdDecimal(value: number): number {
   return Math.ceil((value + Number.EPSILON) * 1000) / 1000;
@@ -1479,7 +1458,7 @@ function hitDetection(
   } else if (phase === 'ranged' && terrainEffect === 'terrain.sunny-beach') {
     effectiveAccuracyBonus += 20;
   }
-  const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
+  const decayOfAccuracy = Math.max(0.70, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
   let baseChance = actorAccuracyPotency;
   if (phase === 'ranged') {
     if (opponentDeflectionLevel >= 2) {
@@ -1708,6 +1687,7 @@ function isDomainTerrainEffect(terrainEffect: TerrainEffectKey | null | undefine
 }
 
 function rollInitiative(
+  attackType: AttackType,
   firstStrikeLevel: number,
   options?: {
     terrainEffect?: TerrainEffectKey | null;
@@ -1721,27 +1701,25 @@ function rollInitiative(
     actorHasWindRider?: boolean;
   },
 ): number {
-  // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
+  // SpecRef: 6.1.1.2 | Combat phase | Speed & Turn Order (Rolling Dice Rule)
   const isMachineLogic = options?.terrainEffect === 'terrain.machine-logic';
   const firstStrikeEnabled = (!isMachineLogic || (options?.actorHasEquationBreaker ?? false))
     && (options?.terrainEffect !== 'terrain.ash-haze' || (options?.actorHasTrueSight ?? false));
   const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
-  const diceCount = effectiveFirstStrikeLevel >= 3 ? 4 : effectiveFirstStrikeLevel >= 2 ? 3 : effectiveFirstStrikeLevel === 1 ? 2 : 1;
-  let total = 0;
-  for (let i = 0; i < diceCount; i++) {
-    total += Math.floor(Math.random() * 3) + 1;
-  }
+  const attackRollProfile = getAttackRollProfile(attackType);
+  const extraDiceCount = effectiveFirstStrikeLevel >= 3 ? 3 : effectiveFirstStrikeLevel;
+  const total = rollAttackSpeedDice(attackRollProfile, Math.random, extraDiceCount);
 
-  let result = effectiveFirstStrikeLevel >= 3 ? Math.min(9, total) : total;
+  let result = Math.min(49, total);
 
   if (!isMachineLogic && (options?.fertilityBonus ?? 0) > 0) {
-    result = Math.min(9, result + (options?.fertilityBonus ?? 0));
+    result = Math.min(49, result + (options?.fertilityBonus ?? 0));
   }
   if (!isMachineLogic && (options?.slowPenalty ?? 0) > 0) {
     result = Math.max(1, result - (options?.slowPenalty ?? 0));
   }
   if (!isMachineLogic && (options?.boostBonus ?? 0) > 0) {
-    result = Math.min(9, result + (options?.boostBonus ?? 0));
+    result = Math.min(49, result + (options?.boostBonus ?? 0));
   }
   if (!isMachineLogic && (options?.frostbitePenalty ?? 0) > 0) {
     result = Math.max(1, result - (options?.frostbitePenalty ?? 0));
@@ -1749,11 +1727,11 @@ function rollInitiative(
   if (!isMachineLogic && options?.terrainEffect === 'terrain.tailwind' && options?.actorType === 'party') {
     const tailwindDiceCount = options?.actorHasWindRider ? 2 : 1;
     for (let i = 0; i < tailwindDiceCount; i++) {
-      result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
+      result = Math.min(49, result + (Math.floor(Math.random() * 3) + 1));
     }
   }
   if (!isMachineLogic && options?.terrainEffect === 'terrain.enemy-high-ground' && options?.actorType === 'enemy') {
-    result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
+    result = Math.min(49, result + (Math.floor(Math.random() * 3) + 1));
   }
 
   return result;
@@ -1805,23 +1783,8 @@ function getFlyingNote(level: number): string {
   return t('battle.note.flying', { evasion: Math.round(getFlyingEvasionBonus(level) * 100) });
 }
 
-function getFreeTimingForPhase(
-  phase: AttackType,
-  level: number,
-): number | null {
-  if (phase === 'melee') {
-    if (level >= 3) return 3;
-    if (level === 2) return 2;
-    if (level === 1) return 1;
-    return null;
-  }
-
-  if (phase === 'magical') {
-    if (level >= 5) return 2;
-    if (level === 4) return 1;
-  }
-
-  return null;
+function getFreeTimingForPhase(phase: AttackType, level: number): number | null {
+  return phase === 'melee' && level > 0 ? Math.min(5, level) : null;
 }
 
 function getDecomposeDefenseMultiplier(level: number): number {
@@ -2231,8 +2194,10 @@ function getConfusionChance(level: number): number {
   return level === 1 ? 1 : 0;
 }
 
-function getConfusionTiming(level: number): number | null {
+function getConfusionTiming(abilityId: AbilityId, level: number): number | null {
   if (level <= 0) return null;
+  if (abilityId === 'ranged_confusion') return level <= 2 ? 7 : 8;
+  if (abilityId === 'magic_confusion') return level <= 2 ? 4 : 5;
   return level <= 2 ? 1 : 2;
 }
 
@@ -2381,7 +2346,7 @@ interface BattleEnvironment {
   terrainEffect?: TerrainEffectKey | null;
 }
 
-const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
+const TRIGGER_TIMINGS_DESC = Array.from({ length: 50 }, (_, index) => 49 - index);
 const battleTerrainNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
 const TERRAIN_FLAVOR_LOG_COUNT = 10;
@@ -3757,7 +3722,7 @@ export function executeBattle(
     }
   };
 
-  const phases: AttackType[] = ['ranged', 'magical', 'melee'];
+  const attackTypeTieBreakPriority: Record<AttackType, number> = { ranged: 0, magical: 1, melee: 2 };
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
     && environment.terrainEffect !== 'terrain.gehenna';
 
@@ -3766,6 +3731,46 @@ export function executeBattle(
     && hasAbility(cs.abilities, 'frostbite')
   ));
   const enemyHasFrostbite = (): boolean => !isEnemyActorAbilitiesSuppressed() && hasAbility(enemy.abilities, 'frostbite');
+
+  // SpecRef: 6.1.1.2 | Combat phase | Unified initiative order
+  // Roll every eligible action before resolution. Resolution then walks the shared
+  // timing scale, allowing high magical/melee rolls to precede lower ranged rolls
+  // instead of imposing the historical ranged -> magical -> melee phase barrier.
+  const enemyInitiativeByAttackType = new Map<AttackType, number>();
+  const characterInitiativeByAttackType = new Map<AttackType, Array<{ stats: ComputedCharacterStats; roll: number }>>();
+  for (const attackType of (['ranged', 'magical', 'melee'] as AttackType[])) {
+    if (isEligibleEnemyForPhase(attackType, enemy)) {
+      enemyInitiativeByAttackType.set(attackType, rollInitiative(attackType, getEnemyFirstStrikeLevel(enemy), {
+        terrainEffect: environment.terrainEffect,
+        actorType: 'enemy',
+        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
+        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
+        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
+        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
+        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
+      }));
+    }
+    characterInitiativeByAttackType.set(attackType, characterStats
+      .filter(cs => isEligibleCharacterForPhase(attackType, cs))
+      .map(stats => ({
+        stats,
+        roll: rollInitiative(attackType, getFirstStrikeLevel(stats), {
+          terrainEffect: environment.terrainEffect,
+          actorType: 'party',
+          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
+          slowPenalty: getHighestAbilityLevel(stats.abilities, 'slow'),
+          boostBonus: getHighestAbilityLevel(stats.abilities, 'boost'),
+          frostbitePenalty: enemyHasFrostbite() && !hasAbility(stats.abilities, 'coldproof') ? 1 : 0,
+          actorHasTrueSight: hasAbility(stats.abilities, 'true_sight'),
+          actorHasEquationBreaker: hasAbility(stats.abilities, 'equation_breaker'),
+          actorHasWindRider: hasAbility(stats.abilities, 'wind_rider'),
+        }),
+      })));
+  }
+  const phases = (['ranged', 'magical', 'melee'] as AttackType[])
+    .sort((a, b) => attackTypeTieBreakPriority[a] - attackTypeTieBreakPriority[b]);
+  const combatSteps = TRIGGER_TIMINGS_DESC.flatMap(timing => phases.map(phase => ({ phase, timing })));
 
   const pushFrostbiteLog = (ownerName: string): void => {
     log.push({
@@ -4014,44 +4019,24 @@ export function executeBattle(
     // without changing the phase-resolution loop structure.
   };
 
-  for (const phase of phases) {
-    const enemyIsEligibleActor = isEligibleEnemyForPhase(phase, enemy);
-    const enemyInitiativeRoll = enemyIsEligibleActor
-      ? rollInitiative(getEnemyFirstStrikeLevel(enemy), {
-        terrainEffect: environment.terrainEffect,
-        actorType: 'enemy',
-        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
-        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
-        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
-        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
-        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
-        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
-      })
-      : null;
-    const characterInitiative = characterStats
-      .filter(cs => isEligibleCharacterForPhase(phase, cs))
-      .map(cs => ({
-        stats: cs,
-        roll: rollInitiative(getFirstStrikeLevel(cs), {
-          terrainEffect: environment.terrainEffect,
-          actorType: 'party',
-          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
-          slowPenalty: getHighestAbilityLevel(cs.abilities, 'slow'),
-          boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
-          frostbitePenalty: enemyHasFrostbite() && !hasAbility(cs.abilities, 'coldproof') ? 1 : 0,
-          actorHasTrueSight: hasAbility(cs.abilities, 'true_sight'),
-          actorHasEquationBreaker: hasAbility(cs.abilities, 'equation_breaker'),
-          actorHasWindRider: hasAbility(cs.abilities, 'wind_rider'),
-        }),
-      }));
+  const enemyMovedByAttackType = new Map<AttackType, boolean>();
+  const movedCharacterIdsByAttackType = new Map<AttackType, Set<number>>();
+
+  // SpecRef: 6.1.1.2 | Combat phase | Unified initiative resolution
+  // Walk the absolute timing scale first. Attack type is consulted only as the
+  // same-timing tie-breaker, never as a phase barrier.
+  for (const { phase, timing } of combatSteps) {
+    const enemyInitiativeRoll = enemyInitiativeByAttackType.get(phase) ?? null;
+    const characterInitiative = characterInitiativeByAttackType.get(phase) ?? [];
 
     const initiativeByCharacter = new Map<number, number>(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
     );
 
     let hasTriggeredLongPhaseHowl = false;
-    let enemyHasMovedInPhase = false;
-    const movedCharacterIds = new Set<number>();
+    let enemyHasMovedInPhase = enemyMovedByAttackType.get(phase) ?? false;
+    const movedCharacterIds = movedCharacterIdsByAttackType.get(phase) ?? new Set<number>();
+    movedCharacterIdsByAttackType.set(phase, movedCharacterIds);
     const triggeredConfusionTimings = new Set<number>();
     let hasTriggeredDecompose = false;
     let hasTriggeredRegeneration = false;
@@ -4086,7 +4071,7 @@ export function executeBattle(
       if (enemyHowlLevel > 0 && canEnemyTriggerHowl) {
         log.push({
           phase,
-          initiativeRoll: 2,
+          initiativeRoll: 8,
           actor: 'triggered',
           action: t('battle.action.howl', { actor: enemy.name }),
           note: getHowlNote(enemyHowlLevel),
@@ -4102,7 +4087,7 @@ export function executeBattle(
         });
         log.push({
           phase,
-          initiativeRoll: 2,
+          initiativeRoll: 8,
           actor: 'triggered',
           characterId: entry.stats.characterId,
           action: t('battle.action.howl', { actor: entry.ownerName }),
@@ -4112,7 +4097,7 @@ export function executeBattle(
     };
 
     const triggerPredatorSenseAtTiming = (timing: number): void => {
-      if (phase !== 'melee' || timing !== 9 || hasTriggeredPredatorSense) return;
+      if (phase !== 'melee' || timing !== 4 || hasTriggeredPredatorSense) return;
       hasTriggeredPredatorSense = true;
 
       const enemyPredatorSenseLevel = getEnemyAbilityLevel(enemy, 'predator_sense');
@@ -4157,7 +4142,7 @@ export function executeBattle(
     };
 
     const triggerRegenerationAtTiming = (timing: number): void => {
-      if (phase !== 'melee' || timing !== 9 || hasTriggeredRegeneration) return;
+      if (phase !== 'melee' || timing !== 3 || hasTriggeredRegeneration) return;
       hasTriggeredRegeneration = true;
 
       const enemyRegenerationLevel = getEnemyAbilityLevel(enemy, 'regeneration');
@@ -4216,7 +4201,7 @@ export function executeBattle(
 
     // SpecRef: 6.1.3.1 | Actor action | actor.a.flying
     const triggerFlyingAtTiming = (timing: number): void => {
-      if (phase !== 'melee' || timing !== 9 || hasTriggeredFlying) return;
+      if (phase !== 'melee' || timing !== 3 || hasTriggeredFlying) return;
       hasTriggeredFlying = true;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
@@ -4327,7 +4312,7 @@ export function executeBattle(
       const eligibleEnemyTarget = isEligibleEnemyForPhase(phase, enemy, enemyHasMovedInPhase);
 
       const enemyConfusionLevel = getEnemyAbilityLevel(enemy, confusionAbilityId);
-      if (getConfusionTiming(enemyConfusionLevel) === timing) {
+      if (getConfusionTiming(confusionAbilityId, enemyConfusionLevel) === timing) {
         const eligiblePartyTargets = characterStats.filter((stats) => (
           isEligibleCharacterForPhase(phase, stats, movedCharacterIds.has(stats.characterId))
         ));
@@ -4385,7 +4370,7 @@ export function executeBattle(
           level: getAbilityLevel(stats, confusionAbilityId),
           ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? t('battle.actor.ally'),
         }))
-        .filter((entry) => getConfusionTiming(entry.level) === timing)
+        .filter((entry) => getConfusionTiming(confusionAbilityId, entry.level) === timing)
         .sort((a, b) => a.stats.row - b.stats.row);
 
       for (const entry of partyConfusionEntries) {
@@ -4515,8 +4500,8 @@ export function executeBattle(
     };
 
     // SpecRef: 6.1.2 | Unstable core
-    const triggerUnstableCoreAtEnd = (): void => {
-      if (phase !== 'ranged' && phase !== 'magical') return;
+    const triggerUnstableCoreAtTiming = (timing: number): void => {
+      if (!((phase === 'ranged' && timing === 4) || (phase === 'magical' && timing === 0))) return;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
       const unstablePhase = phase;
@@ -4529,14 +4514,14 @@ export function executeBattle(
         applyEnemyDamage(damage);
         log.push({
           phase,
-          initiativeRoll: 0,
+          initiativeRoll: timing,
           actor: 'triggered',
           action: buildUnstableCoreAction(unstablePhase, enemy.name),
           note: getUnstableCoreNote(enemyUnstableCoreLevel),
           noteTone: 'muted',
           damage,
         });
-        triggerEnemyDefeatRecovery(phase, 0);
+        triggerEnemyDefeatRecovery(phase, timing);
       }
 
       const partyUnstableCoreEntries = characterStats
@@ -4558,7 +4543,7 @@ export function executeBattle(
         applyPartyDamage(damage);
         log.push({
           phase,
-          initiativeRoll: 0,
+          initiativeRoll: timing,
           actor: 'triggered',
           characterId: entry.stats.characterId,
           action: buildUnstableCoreAction(unstablePhase, entry.ownerName),
@@ -4566,7 +4551,7 @@ export function executeBattle(
           noteTone: 'muted',
           damage,
         });
-        triggerPartyDefeatRecovery(entry.stats, phase, 0);
+        triggerPartyDefeatRecovery(entry.stats, phase, timing);
       }
     };
 
@@ -4629,21 +4614,23 @@ export function executeBattle(
       return a.stats.row - b.stats.row;
     });
 
-    for (const timing of TRIGGER_TIMINGS_DESC) {
+    {
       if (enemyHp <= 0 || partyHp <= 0) break;
 
-      if (phase === 'ranged' && timing === 2) {
+      if (phase === 'ranged' && timing === 8) {
         triggerLongPhaseHowl();
       }
-      if (timing === 9) {
-        triggerRegenerationAtTiming(9);
-        triggerPredatorSenseAtTiming(9);
-        triggerFlyingAtTiming(9);
+      if (timing === 4) {
+        triggerPredatorSenseAtTiming(4);
+        triggerUnstableCoreAtTiming(4);
+      }
+      if (timing === 8 || timing === 7 || timing === 5 || timing === 4) triggerConfusionAtTiming(timing);
+      if (timing === 5 || timing === 4 || timing === 3) {
+        if (triggerFreeAtTiming(phase, timing)) return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
       }
       if (timing === 3) {
-        if (triggerFreeAtTiming(phase, 3)) {
-          return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
-        }
+        triggerRegenerationAtTiming(3);
+        triggerFlyingAtTiming(3);
       }
       if (timing === 2) {
         if (triggerFreeAtTiming(phase, 2)) {
@@ -4652,6 +4639,7 @@ export function executeBattle(
         triggerDecomposeAtTiming(2);
         triggerConfusionAtTiming(2);
         triggerSelfDestructAtTiming(2);
+        triggerSoulReapAtEnd();
       }
       if (timing === 1) {
         if (triggerFreeAtTiming(phase, 1)) {
@@ -4660,8 +4648,7 @@ export function executeBattle(
         triggerConfusionAtTiming(1);
       }
       if (timing === 0) {
-        triggerUnstableCoreAtEnd();
-        triggerSoulReapAtEnd();
+        triggerUnstableCoreAtTiming(0);
       }
 
       if (forcedOutcome) {
@@ -4675,6 +4662,7 @@ export function executeBattle(
 
         if (turn.kind === 'enemy') {
           enemyHasMovedInPhase = true;
+          enemyMovedByAttackType.set(phase, true);
 
         if (enemyIncapacitated) {
           enemyIncapacitated = false;

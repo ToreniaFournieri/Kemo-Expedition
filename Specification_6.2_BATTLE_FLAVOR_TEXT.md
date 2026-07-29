@@ -49,51 +49,51 @@
 
 | phase | flavor text |
 |---|---|
-| LONG | {actor} は {target} を敵と誤認し、遠距離攻撃を放った！ |
-| LONG | {actor} は錯乱し、{target} に矢を放ってしまった！ |
-| LONG | {actor} は疑念に囚われ、{target} を狙い撃った！ |
-| LONG | {actor} は味方を敵と見なし、遠距離攻撃を仕掛けた！ |
-| LONG | {actor} の視界は歪み、{target} を撃ち抜いた！ |
-| LONG | {actor} は混乱し、{target} に向けて攻撃を放った！ |
-| LONG | {actor} は仲間を敵と誤認し、遠距離攻撃を行った！ |
-| LONG | {actor} は理性を失い、{target} を射抜いた！ |
-| LONG | {actor} は錯乱し、{target} に攻撃を加えた！ |
-| LONG | {actor} は敵味方の区別を失い、{target} を狙った！ |
-| MID | {actor} は混乱し、{target} に {spell} を放ってしまった！ |
-| MID | {actor} は {target} を敵と誤認し、{spell}を発動した！ |
-| MID | {actor} の魔力は暴走し、{target} に向けて放たれた！ |
-| MID | {actor} は錯乱し、{target} に{spell}を叩き込んだ！ |
-| MID | {actor} は理性を失い、{target} に{spell}を放った！ |
-| MID | {actor} は仲間を敵と誤認し、魔法攻撃を行った！ |
-| MID | {actor} の幻惑は深まり、{target} に魔法を向けた！ |
-| MID | {actor} は敵味方の区別を失い、{target} に{spell}を放った！ |
-| MID | {actor} は混乱し、{target} に{spell}を発動した！ |
-| MID | {actor} の制御を失った魔力が {target} を襲った！ |
-| CLOSE | {actor} は敵対状態！ {target} へ攻撃！ |
-| CLOSE | {actor} は錯乱している！ {target} へ攻撃してしまった！ |
-| CLOSE | {actor} は混乱し、{target} に斬りかかった！ |
-| CLOSE | {actor} は {target} を敵と誤認し、攻撃を仕掛けた！ |
-| CLOSE | {actor} は理性を失い、{target} に襲いかかった！ |
-| CLOSE | {actor} は仲間を敵と見なし、{target} に攻撃した！ |
-| CLOSE | {actor} は見境なく、{target} に牙を剥いた！ |
-| CLOSE | {actor} は敵味方の区別を失い、{target} に攻撃した！ |
-| CLOSE | {actor} は錯乱し、{target} に一撃を加えた！ |
-| CLOSE | {actor} は暴走し、{target} に襲いかかった！ |
+| ranged | {actor} は {target} を敵と誤認し、遠距離攻撃を放った！ |
+| ranged | {actor} は錯乱し、{target} に矢を放ってしまった！ |
+| ranged | {actor} は疑念に囚われ、{target} を狙い撃った！ |
+| ranged | {actor} は味方を敵と見なし、遠距離攻撃を仕掛けた！ |
+| ranged | {actor} の視界は歪み、{target} を撃ち抜いた！ |
+| ranged | {actor} は混乱し、{target} に向けて攻撃を放った！ |
+| ranged | {actor} は仲間を敵と誤認し、遠距離攻撃を行った！ |
+| ranged | {actor} は理性を失い、{target} を射抜いた！ |
+| ranged | {actor} は錯乱し、{target} に攻撃を加えた！ |
+| ranged | {actor} は敵味方の区別を失い、{target} を狙った！ |
+| magical | {actor} は混乱し、{target} に {spell} を放ってしまった！ |
+| magical | {actor} は {target} を敵と誤認し、{spell}を発動した！ |
+| magical | {actor} の魔力は暴走し、{target} に向けて放たれた！ |
+| magical | {actor} は錯乱し、{target} に{spell}を叩き込んだ！ |
+| magical | {actor} は理性を失い、{target} に{spell}を放った！ |
+| magical | {actor} は仲間を敵と誤認し、魔法攻撃を行った！ |
+| magical | {actor} の幻惑は深まり、{target} に魔法を向けた！ |
+| magical | {actor} は敵味方の区別を失い、{target} に{spell}を放った！ |
+| magical | {actor} は混乱し、{target} に{spell}を発動した！ |
+| magical | {actor} の制御を失った魔力が {target} を襲った！ |
+| melee | {actor} は敵対状態！ {target} へ攻撃！ |
+| melee | {actor} は錯乱している！ {target} へ攻撃してしまった！ |
+| melee | {actor} は混乱し、{target} に斬りかかった！ |
+| melee | {actor} は {target} を敵と誤認し、攻撃を仕掛けた！ |
+| melee | {actor} は理性を失い、{target} に襲いかかった！ |
+| melee | {actor} は仲間を敵と見なし、{target} に攻撃した！ |
+| melee | {actor} は見境なく、{target} に牙を剥いた！ |
+| melee | {actor} は敵味方の区別を失い、{target} に攻撃した！ |
+| melee | {actor} は錯乱し、{target} に一撃を加えた！ |
+| melee | {actor} は暴走し、{target} に襲いかかった！ |
 
 `log.unstable-core`
 
 | phase | flavor text |
 |---|---|
-| LONG | {actor} は暴れだし、自らを傷つけた！  |
-| LONG | {actor} は制御を失い、自身を引き裂いた！ |
-| LONG | {actor} は錯乱し、自らに攻撃を加えた！ |
-| LONG | {actor} は苦しみもがき、自傷した！ |
-| LONG | {actor} は狂乱し、己の身を傷つけた！ |
-| MID | {actor} は錯乱し、自らを傷つけた！ |
-| MID | {actor} は暴走し、自身を切り裂いた！ |
-| MID | {actor} は理性を失い、自らに攻撃を加えた！ |
-| MID | {actor} はもがき苦しみ、自傷した！ |
-| MID | {actor} は狂気に呑まれ、自身を傷つけた！ |
+| ranged | {actor} は暴れだし、自らを傷つけた！  |
+| ranged | {actor} は制御を失い、自身を引き裂いた！ |
+| ranged | {actor} は錯乱し、自らに攻撃を加えた！ |
+| ranged | {actor} は苦しみもがき、自傷した！ |
+| ranged | {actor} は狂乱し、己の身を傷つけた！ |
+| magical | {actor} は錯乱し、自らを傷つけた！ |
+| magical | {actor} は暴走し、自身を切り裂いた！ |
+| magical | {actor} は理性を失い、自らに攻撃を加えた！ |
+| magical | {actor} はもがき苦しみ、自傷した！ |
+| magical | {actor} は狂気に呑まれ、自身を傷つけた！ |
 
 
 - `log.soul-reap`

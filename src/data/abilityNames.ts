@@ -60,6 +60,7 @@ export const ABILITY_BASE_NAME_KEYS: Record<AbilityId, string> = {
   oblivion: 'masterData.ability.oblivion.name',
   fading_memory: 'masterData.ability.fading_memory.name',
   mimic: 'masterData.ability.mimic.name',
+  base_status_cap_at_15: 'masterData.ability.base_status_cap_at_15.name',
   magic_seal: 'masterData.ability.magic_seal.name',
   frostbite: 'masterData.ability.frostbite.name',
   slow: 'masterData.ability.slow.name',

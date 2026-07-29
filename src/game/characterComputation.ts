@@ -22,6 +22,8 @@ import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { t } from '../i18n';
 import { ENEMIES } from '../data/enemies';
+import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+import { isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -464,12 +466,15 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
       case 'ice_offense':
       case 'thunder_offense':
         {
-          const bonusName = `e.${bonus.type}+${formatCBonusValue(bonus.value)}`;
+          // Enemy master data expresses elemental offense as whole percentages
+          // (for example, 20 means 20%), while character bonuses use fractions.
+          const normalizedValue = bonus.value > 1 ? bonus.value / 100 : bonus.value;
+          const bonusName = `e.${bonus.type}+${formatCBonusValue(normalizedValue)}`;
           if (collection.offenseCBonusNames.has(bonusName)) break;
           collection.offenseCBonusNames.add(bonusName);
-          if (bonus.type === 'fire_offense') collection.elementalOffenseBonuses.fire += bonus.value;
-          if (bonus.type === 'ice_offense') collection.elementalOffenseBonuses.ice += bonus.value;
-          if (bonus.type === 'thunder_offense') collection.elementalOffenseBonuses.thunder += bonus.value;
+          if (bonus.type === 'fire_offense') collection.elementalOffenseBonuses.fire += normalizedValue;
+          if (bonus.type === 'ice_offense') collection.elementalOffenseBonuses.ice += normalizedValue;
+          if (bonus.type === 'thunder_offense') collection.elementalOffenseBonuses.thunder += normalizedValue;
         }
         break;
     }
@@ -600,6 +605,14 @@ export function computeCharacterStats(
   for (const item of initialEquippedItems) {
     collectBonuses(getSuperRareBonuses(item.superRare), collection);
   }
+
+  // SpecRef: 4.1.2 | Enemy | Enemy Passive ability
+  // Enemy-form passives still apply when the actor is a Mimorian party member.
+  // Resolve this after every ability source has been collected so
+  // a.upgrade-all-abilities can enhance all other abilities the actor owns.
+  collection.abilities = new Map(resolveEnemyPassiveAbilities(
+    Array.from(collection.abilities, ([id, level]) => ({ id, level })),
+  ).map((ability) => [ability.id, ability.level]));
 
   // Calculate base stats (b.*), including Super Rare additive stat bonuses.
   const baseStats: BaseStats = {
@@ -805,6 +818,14 @@ export function computeCharacterStats(
     }
   }
 
+  // SpecRef: 1.1.1 | a. bonus ability | a.base-status-cap-at-15
+  if ((collection.abilities.get('base_status_cap_at_15') ?? 0) >= 1) {
+    baseStats.vitality = Math.min(baseStats.vitality, 15);
+    baseStats.strength = Math.min(baseStats.strength, 15);
+    baseStats.intelligence = Math.min(baseStats.intelligence, 15);
+    baseStats.mind = Math.min(baseStats.mind, 15);
+  }
+
   const elementalPriority: Array<Exclude<ElementalOffense, 'none'>> = ['thunder', 'ice', 'fire'];
   let selectedElement: ElementalOffense = 'none';
   let selectedElementBonus = 0;
@@ -1000,7 +1021,8 @@ export function computeCharacterStats(
 }
 
 export function getAbilityName(id: AbilityId, level: number): string {
-  if (level >= 1) {
+  // SpecRef: 1.1.1 | a. bonus ability | level_scale
+  if (level >= 1 && isBonusAbilityLevelScalable(id)) {
     return `${ABILITY_BASE_NAMES[id]}${level}`;
   }
   return ABILITY_BASE_NAMES[id];
