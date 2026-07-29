@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.0 | 1 | 2026/07/29 | Release version 0.9.0 and reset the build number to 1. |
 | 0.8.8 | 33 | 2026/07/29 | Add localized Party status attack-speed bubbles backed by shared ranged, magical, and melee runtime dice profiles used by battle resolution. |
 | 0.8.8 | 32 | 2026/07/29 | Prevent battle-log enemy actions that already name the acting enemy from receiving a redundant localized enemy prefix and duplicate chibi marker. |
 | 0.8.8 | 31 | 2026/07/29 | Normalize copied enemy elemental-offense percentages before applying them to Mimorian character damage multipliers, so 20% contributes 0.20 instead of 20.0. |
