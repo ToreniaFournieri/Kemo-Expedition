@@ -21,11 +21,7 @@ import { getBaseMultiplier } from './baseMultiplier';
 import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { t } from '../i18n';
-import {
-  ENEMIES,
-  getEnemyIndividualAbilities,
-  getEnemyTypeAbilities,
-} from '../data/enemies';
+import { ENEMIES } from '../data/enemies';
 import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
 
@@ -560,16 +556,9 @@ export function computeCharacterStats(
     const copiedEnemy = ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId);
     if (copiedEnemy) {
       // SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
-      // Enemy forms expose the complete type ability set, including ability30,
-      // independently of the level at which that enemy appears in an expedition.
-      // Copy the same form abilities shown by the Party and Altar UIs rather than
-      // the encounter-level snapshot stored on the enemy definition.
+      // Mimorians retain the ability levels defined by the copied enemy form.
       collectBonuses(copiedEnemy.bonuses ?? [], collection);
-      const copiedFormAbilities = [
-        ...getEnemyTypeAbilities(copiedEnemy.enemyType, Number.MAX_SAFE_INTEGER),
-        ...getEnemyIndividualAbilities(copiedEnemy.id),
-      ];
-      collectBonuses(copiedFormAbilities.map((ability) => ({
+      collectBonuses(copiedEnemy.abilities.map((ability) => ({
         type: 'ability' as const,
         value: ability.level,
         abilityId: ability.id,

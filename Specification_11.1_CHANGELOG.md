@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.9.0 | 5 | 2026/07/29 | Make Mimorian enemy forms copy the complete enemy-type ability set used by Party and Altar displays, so level-gated abilities such as Slime Colony Life Drain Lv3 work in battle. |
 | 0.9.0 | 4 | 2026/07/29 | Preserve each copied enemy-form ability's defined level in Mimorian runtime effects and character-edit and Altar displays instead of forcing level 1. |
 | 0.9.0 | 3 | 2026/07/29 | Add the eight requested Enemy Master ability loadouts to runtime enemies, including Goldtail Chancellor's Squander while retaining its 1.5× growth bonus. |
 | 0.9.0 | 2 | 2026/07/29 | Align all runtime enemy-type abilities and bonuses with the Enemy Master Specification, including level-30 activation and Origami level-gated evasion. |
