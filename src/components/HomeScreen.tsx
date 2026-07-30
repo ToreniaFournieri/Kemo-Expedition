@@ -593,7 +593,8 @@ function getAutoSellStepCount(party: Party): number {
   return Math.max(1, autoSellItemCount);
 }
 
-const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]';
+// SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
+const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');

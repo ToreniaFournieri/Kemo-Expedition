@@ -174,6 +174,7 @@
   - Threshold: 700 width, then two tabs mode.
 
 - Header is always visible; tabs never cause full page reload.
+- Each tab's scrollable content must retain at least `4rem` of bottom clearance plus `env(safe-area-inset-bottom)` so its final content remains visible above the fixed primary navigation and device safe area.
 
 -IF 自動周回 is OFF, display "静止中" in the header (right-aligned: 200G 静止中) with Sub color
  and tap "静止中", then 自動周回 is ON.
@@ -261,4 +262,3 @@
 - Use `/public/app_icon.png` as the Home Screen icon when the web application is added to the iPhone Home Screen.
 - Configure the icon as the Apple Touch Icon in the HTML metadata.
 - The icon should be a square image with no transparency and sufficient padding to remain recognizable at small sizes.
-

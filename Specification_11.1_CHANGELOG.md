@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 4 | 2026/07/30 | Add 4rem of bottom clearance plus the device safe-area inset to every primary tab so final content remains visible above fixed navigation. |
 | 0.9.1 | 3 | 2026/07/30 | Align Expedition 2 boss Rosaria (Enemy_ID 171) with the enemy master specification by changing her runtime subclass from Sword Saint to Duelist. |
 | 0.9.1 | 2 | 2026/07/30 | Localize recognizable default character names when loading a save in another language, preserve custom unique-member names, and create newly unlocked parties in the active language. |
 | 0.9.1 | 1 | 2026/07/30 | Release version 0.9.1 and reset the build number to 1. |
