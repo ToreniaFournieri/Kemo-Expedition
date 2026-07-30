@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 2 | 2026/07/30 | Localize recognizable default character names when loading a save in another language, preserve custom unique-member names, and create newly unlocked parties in the active language. |
 | 0.9.1 | 1 | 2026/07/30 | Release version 0.9.1 and reset the build number to 1. |
 | 0.9.0 | 8 | 2026/07/30 | Add bottom safe-area spacing to the Altar so its final enemy form remains clear of fixed navigation and system overlays. |
 | 0.9.0 | 7 | 2026/07/30 | Limit the expanded News list height and make overflowing news items vertically scrollable. |
