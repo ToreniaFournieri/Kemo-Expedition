@@ -498,7 +498,13 @@ function translateCharacterName(
 
   if (character.isUnique) {
     const uniqueNameKey = UNIQUE_CHARACTER_NAME_KEYS[character.lineageId];
-    return uniqueNameKey ? translate(targetLanguage, `character.default.${uniqueNameKey}`) : character.name;
+    if (uniqueNameKey) {
+      const translationKey = `character.default.${uniqueNameKey}`;
+      return translate(sourceLanguage, translationKey) === character.name
+        ? translate(targetLanguage, translationKey)
+        : character.name;
+    }
+    return character.name;
   }
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Potential Default Name Table
@@ -517,6 +523,21 @@ function translateCharacterName(
     if (translate(sourceLanguage, key) === character.name) return translate(targetLanguage, key);
   }
   return character.name;
+}
+
+function translatePartyCharacterNames(
+  parties: Party[],
+  sourceLanguage: Language,
+  targetLanguage: Language,
+): Party[] {
+  if (sourceLanguage === targetLanguage) return parties;
+  return parties.map((party, partyIndex) => ({
+    ...party,
+    characters: party.characters.map((character) => ({
+      ...character,
+      name: translateCharacterName(character, partyIndex, sourceLanguage, targetLanguage),
+    })),
+  }));
 }
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
@@ -1877,10 +1898,20 @@ function createInitialState(): InitialStateResult {
   // Try to load saved state first
   const savedStateResult = loadSavedState();
   if (savedStateResult.state) {
+    const savedLanguage = normalizeLanguage(savedStateResult.state.global.language);
+    // SpecRef: 2.2.1 | Potential default name for player side characters | Potential Default Name Table
+    // A URL or persisted language preference can differ from the language stored
+    // in the save. Localize recognizable defaults on the first rendered frame.
+    const localizedParties = translatePartyCharacterNames(
+      savedStateResult.state.parties,
+      savedLanguage,
+      initialLanguage,
+    );
     // Update build number in case it changed
     return {
       state: {
         ...savedStateResult.state,
+        parties: localizedParties,
         buildNumber: BUILD_NUMBER,
         global: {
           ...savedStateResult.state.global,
@@ -2995,13 +3026,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const language = normalizeLanguage(action.language);
       persistLanguage(language);
       const sourceLanguage = normalizeLanguage(state.global.language);
-      const parties = sourceLanguage === language ? state.parties : state.parties.map((party, partyIndex) => ({
-        ...party,
-        characters: party.characters.map((character) => ({
-          ...character,
-          name: translateCharacterName(character, partyIndex, sourceLanguage, language),
-        })),
-      }));
+      setActiveLanguage(language);
+      const parties = translatePartyCharacterNames(state.parties, sourceLanguage, language);
       return { ...state, parties, global: { ...state.global, language } };
     }
 
