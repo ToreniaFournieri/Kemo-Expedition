@@ -8,6 +8,7 @@
 **Developer News Notification (通知)**
 - Purpose: Displays announcements and issue-fix notices from the development team.
 - Label: Use `News` as the list title.
+- Keep the expanded news-item list at a maximum height of 24rem and allow it to scroll vertically when its content exceeds that height.
 - Badge behavior:
   - Display a notification badge on both `Setting` and `News` when at least one unread news item exists. Unread news items are displayed in **bold**.
   - When the player taps a news item, mark it as read and change its text style from bold to normal.
@@ -355,6 +356,7 @@ HP: 312                 タイプ: 神魔
 **バックアップ・リセット**
   - 5.1 Backup (Export)
     - Allow the player to export the current save data as a file download.
+    - Quark Browser must download the backup as a file and must not open the backup payload in a blob URL page.
     - File name format: `Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD`
     - Example: `Kemo-Expedition_Backup_v0.2.9_qa_20260220`
 

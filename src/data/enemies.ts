@@ -82,6 +82,7 @@ type EnemyTypeSpec = {
   ability1: EnemyAbility[];
   ability30?: EnemyAbility[];
   bonuses: Bonus[];
+  bonus30?: Bonus[];
 };
 
 const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
@@ -111,7 +112,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Insect_Swarm: {
-    ability1: [{ id: 'swarm', level: 1 }],
+    ability1: [{ id: 'swarm', level: 1 }, { id: 'pursuit', level: 1 }, { id: 'thunder_protect_breaker', level: 1 }],
     ability30: [{ id: 'death_touch', level: 1 }],
     bonuses: [
       { type: 'thunder_offense', value: 20 },
@@ -120,13 +121,13 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Aerial: {
-    ability1: [{ id: 'flying', level: 1 }],
+    ability1: [{ id: 'flying', level: 1 }, { id: 'vine_cutter', level: 1 }],
     ability30: [{ id: 'free', level: 1 }],
     bonuses: [{ type: 'evasion', value: 0.045 }, { type: 'growth_xV', value: 0.7 }],
   },
   Frost: {
-    ability1: [{ id: 'frostbite', level: 1 }],
-    ability30: [{ id: 'ice_reflect', level: 1 }],
+    ability1: [{ id: 'frostbite', level: 1 }, { id: 'null_burn', level: 1 }, { id: 'ice_protect_breaker', level: 1 }],
+    ability30: [{ id: 'ice_reflect', level: 1 }, { id: 'ice_protect_breaker', level: 1 }],
     bonuses: [
       { type: 'ice_offense', value: 20 },
       { type: 'fire_defense_multiplier_xV', value: 1.3 },
@@ -134,21 +135,22 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Fruit: {
-    ability1: [{ id: 'bind', level: 1 }],
+    ability1: [{ id: 'bind', level: 1 }, { id: 'null_antagonism', level: 1 }],
     ability30: [{ id: 'execution', level: 1 }],
-    bonuses: [{ type: 'thunder_defense_multiplier_xV', value: 1.3 }],
+    bonuses: [{ type: 'thunder_defense_multiplier_xV', value: 1.3 }, { type: 'equip_slot', value: 1 }],
   },
   Dragon: {
-    ability1: [{ id: 'burn', level: 1 }],
+    ability1: [{ id: 'burn', level: 1 }, { id: 'command', level: 1 }],
     ability30: [{ id: 'fire_reflect', level: 1 }],
     bonuses: [
       { type: 'fire_offense', value: 25 },
       { type: 'fire_defense_multiplier_xV', value: 1 / 2 },
       { type: 'ice_defense_multiplier_xV', value: 1.3 },
+      { type: 'equip_slot', value: 2 },
     ],
   },
   Voidspawn: {
-    ability1: [{ id: 'null_counter', level: 1 }],
+    ability1: [{ id: 'null_counter', level: 1 }, { id: 'equation_breaker', level: 1 }],
     ability30: [{ id: 'oblivion', level: 1 }],
     bonuses: [
       { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
@@ -168,7 +170,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Ghost: {
-    ability1: [{ id: 'ranged_confusion', level: 1 }],
+    ability1: [{ id: 'ranged_confusion', level: 1 }, { id: 'rage_breaker', level: 1 }],
     ability30: [{ id: 'self_destruct', level: 1 }],
     bonuses: [
       { type: 'evasion', value: 0.02 },
@@ -183,15 +185,16 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
       { type: 'physical_defense_multiplier_xV', value: 1 / 2 },
       { type: 'fire_defense_multiplier_xV', value: 1.5 },
       { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+      { type: 'equip_slot', value: 1 },
     ],
   },
   Golem: {
-    ability1: [{ id: 'auriferous', level: 1 }],
+    ability1: [{ id: 'auriferous', level: 1 }, { id: 'defender', level: 1 }],
     ability30: [{ id: 'magic_seal', level: 1 }],
-    bonuses: [{ type: 'growth_xV', value: 1.3 }, { type: 'thunder_defense_multiplier_xV', value: 1.3 }],
+    bonuses: [{ type: 'growth_xV', value: 1.3 }, { type: 'thunder_defense_multiplier_xV', value: 1.3 }, { type: 'equip_slot', value: 1 }],
   },
   Shadowfang: {
-    ability1: [{ id: 'ambush', level: 1 }],
+    ability1: [{ id: 'ambush', level: 1 }, { id: 'm_barrier_breaker', level: 1 }],
     ability30: [{ id: 'mimic', level: 1 }],
     bonuses: [
       { type: 'fire_offense', value: 20 },
@@ -208,7 +211,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Chiropteran: {
-    ability1: [{ id: 'bulwark_breaker', level: 1 }],
+    ability1: [{ id: 'bulwark_breaker', level: 1 }, { id: 'output_stabilizer', level: 1 }],
     ability30: [{ id: 'mutual_physical_amplify', level: 1 }],
     bonuses: [
       { type: 'growth_xV', value: 1.1 },
@@ -216,7 +219,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Chimera: {
-    ability1: [{ id: 'unstable_core', level: 1 }],
+    ability1: [{ id: 'unstable_core', level: 1 }, { id: 'domain_breaker', level: 1 }, { id: 'momentum_breaker', level: 1 }],
     ability30: [{ id: 'mutual_magic_restraint', level: 1 }],
     bonuses: [
       { type: 'thunder_offense', value: 30 },
@@ -227,23 +230,23 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Titan: {
-    ability1: [{ id: 'colossal', level: 1 }],
+    ability1: [{ id: 'colossal', level: 1 }, { id: 'siege', level: 1 }],
     ability30: [{ id: 'mutual_physical_restraint', level: 1 }],
-    bonuses: [{ type: 'growth_xV', value: 1.5 }],
+    bonuses: [{ type: 'growth_xV', value: 1.5 }, { type: 'equip_slot', value: 2 }],
   },
   Pony: {
-    ability1: [{ id: 'illusion_breaker', level: 1 }],
+    ability1: [{ id: 'illusion_breaker', level: 1 }, { id: 'resonance', level: 1 }],
     ability30: [{ id: 'mutual_magic_amplify', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.2 }],
   },
   Origami: {
-    ability1: [{ id: 'thunder_null', level: 1 }],
+    ability1: [{ id: 'thunder_null', level: 1 }, { id: 'null_death_touch', level: 1 }],
     ability30: [],
     bonuses: [
-      { type: 'evasion', value: 0.1 },
       { type: 'growth_xV', value: 0.7 },
       { type: 'fire_defense_multiplier_xV', value: 1.5 },
     ],
+    bonus30: [{ type: 'evasion', value: 0.1 }],
   },
   Jinma: {
     ability1: [{ id: 'upgrade_all_abilities', level: 1 }],
@@ -313,8 +316,12 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   },
 };
 
-export function getEnemyTypeBonuses(enemyType: string): Bonus[] {
-  return ENEMY_TYPE_SPECS[enemyType]?.bonuses ?? [];
+export function getEnemyTypeBonuses(enemyType: string, enemyTypeLevel = 1): Bonus[] {
+  const enemyTypeSpec = ENEMY_TYPE_SPECS[enemyType];
+  return [
+    ...(enemyTypeSpec?.bonuses ?? []),
+    ...(enemyTypeLevel >= 30 ? (enemyTypeSpec?.bonus30 ?? []) : []),
+  ];
 }
 
 export function getEnemyTypeAbilities(enemyType: string, enemyTypeLevel = 1): EnemyAbility[] {
@@ -515,7 +522,9 @@ function assignCommonDropTokensByClass(dropTokens: string[], enemyClass: EnemyCl
 
 const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+  102: [{ id: 'dryproof', level: 1 }],
   105: [{ id: 'howl', level: 1 }],
+  108: [{ id: 'coldproof', level: 1 }],
   111: [{ id: 'null_burn', level: 1 }, { id: 'burn', level: 1 }],
   114: [{ id: 'bind', level: 1 }],
   116: [{ id: 'null_burn', level: 1 }],
@@ -526,9 +535,13 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   135: [{ id: 'ice_absorb', level: 1 }, { id: 'true_sight', level: 1 }],
   141: [{ id: 'ice_protect_breaker', level: 1 }],
   142: [{ id: 'howl', level: 3 }],
+  143: [{ id: 'first_aid', level: 2 }],
   144: [{ id: 'predator_sense', level: 1 }],
+  148: [{ id: 'requiem', level: 1 }],
   153: [{ id: 'boost', level: 2 }],
+  154: [{ id: 'bulwark', level: 1 }],
   159: [{ id: 'ranged_reflect', level: 1 }],
+  160: [{ id: 'melee_confusion', level: 1 }],
   164: [{ id: 'covering_fire', level: 1 }],
   165: [{ id: 'slow', level: 1 }],
   171: [{ id: 'deflection', level: 2 }, { id: 'life_drain', level: 7 }, { id: 'null_life_drain', level: 1 }],
@@ -536,8 +549,9 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   183: [{ id: 'unforgettable', level: 1 }],
   189: [{ id: 're_attack', level: 1 }],
   195: [{ id: 'resurrect', level: 1 }],
+  200: [{ id: 'cunning', level: 1 }],
   201: [{ id: 'overwatch', level: 1 }],
-  207: [{ id: 'melee_confusion', level: 1 }],
+  207: [{ id: 'melee_confusion', level: 1 }, { id: 'squander', level: 1 }],
   225: [{ id: 're_attack', level: 1 }],
   229: [{ id: 'reanimate', level: 1 }],
   231: [{ id: 'rage', level: 1 }],
@@ -595,6 +609,24 @@ export function getEnemyIndividualAbilities(enemyId: number): EnemyAbility[] {
 // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
 export function getEnemyIndividualBonuses(enemyId: number): Bonus[] {
   return MASTER_ENEMY_BONUS_MODIFIERS[enemyId] ?? [];
+}
+
+// SpecRef: 8.4.5 | Altar (祭壇) | Mimorian Character Edit Mode
+// This is the authoritative ability set for both Altar previews and the
+// Mimorian form copied into party runtime stats.
+export function getMimorianEnemyAbilities(enemy: Pick<EnemyDef, 'id' | 'enemyType'>): EnemyAbility[] {
+  const merged = new Map<AbilityId, EnemyAbility>();
+  const abilities = [
+    ...getEnemyTypeAbilities(enemy.enemyType, Number.MAX_SAFE_INTEGER),
+    ...getEnemyIndividualAbilities(enemy.id),
+  ];
+
+  abilities.forEach((ability) => {
+    const current = merged.get(ability.id);
+    if (!current || ability.level > current.level) merged.set(ability.id, ability);
+  });
+
+  return Array.from(merged.values(), (ability) => ({ ...ability }));
 }
 
 function generateEnemies(): EnemyDef[] {

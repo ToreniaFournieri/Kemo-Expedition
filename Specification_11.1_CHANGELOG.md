@@ -10,6 +10,14 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 1 | 2026/07/30 | Release version 0.9.1 and reset the build number to 1. |
+| 0.9.0 | 8 | 2026/07/30 | Add bottom safe-area spacing to the Altar so its final enemy form remains clear of fixed navigation and system overlays. |
+| 0.9.0 | 7 | 2026/07/30 | Limit the expanded News list height and make overflowing news items vertically scrollable. |
+| 0.9.0 | 6 | 2026/07/30 | Download Quark Browser save-data exports as backup files instead of opening their compressed payload in a blob URL page. |
+| 0.9.0 | 5 | 2026/07/30 | Align runtime enemy class attack modifiers and the Ranger's Hunter ability with the class modifier specification. |
+| 0.9.0 | 4 | 2026/07/29 | Preserve each enemy form's defined ability levels for Mimorian runtime effects and share that ability source with Altar and Party displays. |
+| 0.9.0 | 3 | 2026/07/29 | Add the eight requested Enemy Master ability loadouts to runtime enemies, including Goldtail Chancellor's Squander while retaining its 1.5× growth bonus. |
+| 0.9.0 | 2 | 2026/07/29 | Align all runtime enemy-type abilities and bonuses with the Enemy Master Specification, including level-30 activation and Origami level-gated evasion. |
 | 0.9.0 | 1 | 2026/07/29 | Release version 0.9.0 and reset the build number to 1. |
 | 0.8.8 | 33 | 2026/07/29 | Add localized Party status attack-speed bubbles backed by shared ranged, magical, and melee runtime dice profiles used by battle resolution. |
 | 0.8.8 | 32 | 2026/07/29 | Prevent battle-log enemy actions that already name the acting enemy from receiving a redundant localized enemy prefix and duplicate chibi marker. |

@@ -1,4 +1,4 @@
-# BOKEMO v0.9.0 - SPECIFICATION
+# BOKEMO v0.9.1 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
