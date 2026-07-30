@@ -12378,7 +12378,6 @@ function SettingTab({
     };
     const isIos = /iPad|iPhone|iPod/.test(nav.userAgent)
       || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
-    const isQuark = /Quark/i.test(nav.userAgent);
 
     if (isIos && nav.share) {
       const shareData: ShareData = { files: [backupFile] };
@@ -12401,10 +12400,9 @@ function SettingTab({
       }
     }
 
-    if (isIos || isQuark) {
-      // Embedded iOS browsers and Quark can omit file sharing and ignore the
-      // download attribute. Quark's exposed share method can also remain pending
-      // without opening any UI, so always use its browser viewer instead.
+    if (isIos) {
+      // Embedded iOS browsers can omit file sharing and ignore the download
+      // attribute, so use the browser viewer as a final manual-save fallback.
       openBackupFileForManualSave(backupFile);
       return;
     }
