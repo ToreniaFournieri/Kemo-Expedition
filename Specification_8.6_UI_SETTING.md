@@ -355,6 +355,7 @@ HP: 312                 タイプ: 神魔
 **バックアップ・リセット**
   - 5.1 Backup (Export)
     - Allow the player to export the current save data as a file download.
+    - Quark Browser must download the backup as a file and must not open the backup payload in a blob URL page.
     - File name format: `Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD`
     - Example: `Kemo-Expedition_Backup_v0.2.9_qa_20260220`
 
