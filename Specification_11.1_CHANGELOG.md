@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.0 | 7 | 2026/07/30 | Limit the expanded News list height and make overflowing news items vertically scrollable. |
 | 0.9.0 | 6 | 2026/07/30 | Download Quark Browser save-data exports as backup files instead of opening their compressed payload in a blob URL page. |
 | 0.9.0 | 5 | 2026/07/30 | Align runtime enemy class attack modifiers and the Ranger's Hunter ability with the class modifier specification. |
 | 0.9.0 | 4 | 2026/07/29 | Preserve each enemy form's defined ability levels for Mimorian runtime effects and share that ability source with Altar and Party displays. |

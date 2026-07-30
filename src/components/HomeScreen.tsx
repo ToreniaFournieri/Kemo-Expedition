@@ -13265,7 +13265,7 @@ function SettingTab({
             >
               {t('setting.developerNews.discordCommunity')}
             </a>
-            <div className="overflow-hidden rounded border border-gray-200 bg-white text-sm pane-button-shadow">
+            <div className="max-h-96 overflow-y-auto overscroll-contain rounded border border-gray-200 bg-white text-sm pane-button-shadow">
               {DEVELOPER_NEWS_ITEMS.map((item) => (
                 <button
                   key={item.id}
