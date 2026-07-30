@@ -207,6 +207,7 @@
   * When an enemy form category is selected, display its current Alter Level and Alter total victories for that category.
   * Ex. Alter level: 5 (踏破数: 1,853/ 2,400)
 * The Altar displays a list of enemy forms that can be unlocked.
+* Keep empty space below the Altar content, including the device bottom safe-area inset, so the fixed primary navigation and system gesture indicator do not cover the final enemy form.
 * Each entry represents one individual enemy ID.
 * Each entry displays:
   * Enemy chibi image    

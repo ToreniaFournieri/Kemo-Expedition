@@ -9969,7 +9969,7 @@ function AltarTab({
 
   return (
     <div
-      className="space-y-3"
+      className="space-y-3 pb-[calc(4rem+env(safe-area-inset-bottom))]"
       onPointerDown={() => {
         if (!activeHelp) return;
         setActiveHelp(null);
