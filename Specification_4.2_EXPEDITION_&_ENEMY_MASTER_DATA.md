@@ -334,6 +334,18 @@
 
 | `Enemy_ID` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) | additional abilities or bonus |
 |---|---|---|---|---|---|---|
+| 1 | Divine | `Caninian` | class.pilgrim | `i.grimoire`M3, `i.robe`M3 | セイラン 再生の女神 | `a.resurrect`2 |
+| 2 | Divine | `Lupinian` | class.samurai | `i.katana`M4, `i.shield`M4 | ガーヴ 消耗の神 | `a.rage`2, `a.re-counter`2 |
+| 3 | Divine | `Vulpinian` | class.striker | `i.archery`M5, `i.bolt`M5 | キョウエン 狡猾の神 | `a.momentum`2 |
+| 4 | Divine | `Felidian` | class.sage | `i.sword`M7, `i.catalyst`M7 | ミオラ 豊穣の女神 | `a.firststrike`2 |
+| 5 | Divine | `Ursan` | class.guardian | `i.armor`M6, `i.gauntlet`M6 | ドルヴァ 防備の神 | `a.cyborgization`2 |
+| 6 | Divine | `Procyonian` | class.duelist | `i.sword`M7, `i.gauntlet`M7 | タヌエ 幻影の女神 | |
+| 7 | Divine | `Leporian` | class.ranger | `i.arrow`M8, `i.archery`M8 | リラ 精密の女神 | `a.composure`2 |
+| 8 | Divine | `Cervin` | class.lord | `i.armor`M8, `i.robe`M8 | フォルネ 運命の神 | `a.focus`2 |
+| 9 | Divine | `Murid` | class.ninja | `i.shield`M8, `i.catalyst`M8 | スクヴァ 黄昏の神 | `a.stealth`1 |
+| 10 | Divine | `Mustelid` | class.wizard | `i.wand`M7, `i.arrow`M7 | ロンデル 共鳴の神 | `a.resonance`4 |
+| 11 | Divine | `-` | class.samurai | `i.bolt`M8, `i.katana`M8 | ノクティラ 忘却されし神 | `a.rage`2, `a.firststrike`2 |
+| 12 | Divine | `-` | class.pilgrim | `i.grimoire`M8, `i.wand`M8 | エリス 不和の神 | `a.momentum`2, `a.resonance`4, `a.stealth`1 |
 | 13 | Normal | `Lupinian` | | | リップ | |
 | 14 | Normal |`Vulpinian` | | | アマネ | |
 | 15 | Normal |`Caninian` | | | ミズ | |
