@@ -112,20 +112,20 @@
   - Status calculation: master value is `x.exp_tier`.
   - All of Gods race type is `Jinma`.
 
-| `Enemy_ID` | `x.exp_id` | `x.enemy_level` | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category |
-|-|-|-|-|-|-|-|-|-|-|-|
-| 1 | 1 | 18 | Seiran | Goddess of Restoration | セイラン 再生の女神 | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`|
-| 2 | 2 | 25 | Garv | God of Attrition | ガーヴ 消耗の神 | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` | 
-| 3 | 3 | 32 | Kyōen | God of Cunning | キョウエン 狡猾の神 | class.striker | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` |
-| 4 | 4 | 39 | Miora | Goddess of Fertility | ミオラ 豊穣の女神  | Sage | Felidian | `a.firststrike`2 | 7 | `i.sword`, `i.catalyst` |
-| 5 | 5 | 46 | Dolvar | God of Fortification | ドルヴァ 防備の神 | class.guardian | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` |
-| 6 | 6 | 53 | Tanue | Goddess of Mirage | タヌエ 幻影の女神  | Duelist | Procyonian |  | 7 |  `i.sword`, `i.gauntlet` |
-| 7 | 7 | 60 | Lira | Goddess of Precision | リラ 精密の女神 | Ranger | Leporian | `a.composure`2 | 8 | `i.arrow`, `i.archery` |
-| 8 | 8 | 61 | Forne | God of Fate | フォルネ 運命の神 | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` |
-| 9 | 9 | 62 | Skuva | God of Dusk | スクヴァ 黄昏の神 | Ninja | Murid | `a.stealth`1 | 8 | `i.sheild`,`i.catalyst` |
-| 10 | 10 | 63 | Rondel | God of Resonance | ロンデル 共鳴の神 | Wizard | Mustelid | `a.resonance`4 | 7 | `i.wand`, `i.arrow` |
-| 11 | 11 | 70 | Noctyra | God of Oblivion | ノクティラ 忘却されし神 | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` |
-| 12 | 12 | 71 | Eris | Goddess of discord | エリス 不和の神 | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` |
+| `x.exp_id` | `x.enemy_level` | `Enemy_ID` | Name |
+|---:|---:|---:|---|
+| 1 | 18 | 1 | Seiran |
+| 2 | 25 | 2 | Garv |
+| 3 | 32 | 3 | Kyōen |
+| 4 | 39 | 4 | Miora |
+| 5 | 46 | 5 | Dolvar |
+| 6 | 53 | 6 | Tanue |
+| 7 | 60 | 7 | Lira |
+| 8 | 61 | 8 | Forne |
+| 9 | 62 | 9 | Skuva |
+| 10 | 63 | 10 | Rondel |
+| 11 | 70 | 11 | Noctyra |
+| 12 | 71 | 12 | Eris |
 
 
 #### 4.1.3 Enemy structure (in battle)
