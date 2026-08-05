@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 6 | 2026/08/05 | Apply the Strength of enemy by its level attack multiplier formula at runtime, using `1.4 × growth` for `x.exp_atk_mult`. |
 | 0.9.1 | 5 | 2026/08/04 | Align runtime enemy attack and offense-amplifier level scaling with the updated Strength of enemy by its level formulas. |
 | 0.9.1 | 4 | 2026/07/30 | Add 4rem of bottom clearance plus the device safe-area inset to every primary tab so final content remains visible above fixed navigation. |
 | 0.9.1 | 3 | 2026/07/30 | Align Expedition 2 boss Rosaria (Enemy_ID 171) with the enemy master specification by changing her runtime subclass from Sword Saint to Duelist. |
