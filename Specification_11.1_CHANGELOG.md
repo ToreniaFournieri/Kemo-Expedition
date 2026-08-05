@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 7 | 2026/08/05 | Correct Soul Reap to activate at combat timing 2 and align localized timed-ability descriptions with their specified COMBAT timings. |
 | 0.9.1 | 6 | 2026/08/05 | Apply the Strength of enemy by its level attack multiplier formula at runtime, using `1.4 × growth` for `x.exp_atk_mult`. |
 | 0.9.1 | 5 | 2026/08/04 | Align runtime enemy attack and offense-amplifier level scaling with the updated Strength of enemy by its level formulas. |
 | 0.9.1 | 4 | 2026/07/30 | Add 4rem of bottom clearance plus the device safe-area inset to every primary tab so final content remains visible above fixed navigation. |

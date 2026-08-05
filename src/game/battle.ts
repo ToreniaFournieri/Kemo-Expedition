@@ -4555,9 +4555,11 @@ export function executeBattle(
       }
     };
 
-    // SpecRef: 6.1.2 | Soul reap
-    const triggerSoulReapAtEnd = (): void => {
-      if (phase !== 'magical') return;
+    // SpecRef: 6.1.2 | Timed Abilities | a.soul-reap
+    const triggerSoulReapAtTiming = (timing: number): void => {
+      // Combat timing is shared by all attack types. Resolve once on the first
+      // attack-type step for COMBAT2 instead of treating it as magic phase end.
+      if (phase !== 'ranged' || timing !== 2) return;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
       const enemySoulReapLevel = getEnemyAbilityLevel(enemy, 'soul_reap');
@@ -4566,7 +4568,7 @@ export function executeBattle(
         partyHp = 0;
         log.push({
           phase,
-          initiativeRoll: 0,
+          initiativeRoll: timing,
           actor: 'triggered',
           action: buildSoulReapAction(enemy.name, getRandomPartyMemberName(party)),
           note: getSoulReapNote(enemySoulReapLevel),
@@ -4591,7 +4593,7 @@ export function executeBattle(
         enemyHp = 0;
         log.push({
           phase,
-          initiativeRoll: 0,
+          initiativeRoll: timing,
           actor: 'triggered',
           characterId: entry.stats.characterId,
           action: buildSoulReapAction(entry.ownerName, enemy.name),
@@ -4639,7 +4641,7 @@ export function executeBattle(
         triggerDecomposeAtTiming(2);
         triggerConfusionAtTiming(2);
         triggerSelfDestructAtTiming(2);
-        triggerSoulReapAtEnd();
+        triggerSoulReapAtTiming(2);
       }
       if (timing === 1) {
         if (triggerFreeAtTiming(phase, 1)) {
