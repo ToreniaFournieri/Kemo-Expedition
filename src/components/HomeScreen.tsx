@@ -317,7 +317,7 @@ const renderElementalResistanceInline = (
       <Fragment key={key}>
         {index > 0 ? ',' : ''}
         {renderUiIcon(icon)}
-        {Math.round(Math.max(0.01, multipliers[key] ?? 1) * 100)}%
+        {formatNumber(Math.round(Math.max(0.01, multipliers[key] ?? 1) * 100))}%
       </Fragment>
     ))}
   </>
@@ -815,7 +815,7 @@ function EnemyBestiaryBubble({
   const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
   const hasMagicCasting = hasMagicalAttack
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
-  const decay = `${((0.90 + enemy.accuracyBonus) * 100).toFixed(1)}%`;
+  const decay = `${formatDecimal((0.90 + enemy.accuracyBonus) * 100, 1)}%`;
   const classText = getEnemyClassSummary(enemy).replace('/', ' / ');
   const enemyTypeText = getEnemyTypeShortName(enemy.enemyType);
   const elementalOffenseIcon: UiIconKey | null = enemy.elementalOffense === 'fire'
@@ -826,7 +826,7 @@ function EnemyBestiaryBubble({
         ? 'thunder'
         : null;
   const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ') || t('common.none');
-  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || t('common.none');
+  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || t('common.none');
 
   return (
     <FloatingBubblePortal>
@@ -842,19 +842,19 @@ function EnemyBestiaryBubble({
         <div className="text-sm font-semibold text-gray-800">
           {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
-        <div>ID: {enemy.id}</div>
+        <div>ID: {formatNumber(enemy.id)}</div>
         {bubble.enemyLevel !== null && <div>{t('party.status.level')}: {formatNumber(bubble.enemyLevel)}</div>}
         <div>HP: {formatNumber(enemy.hp)}</div>
         <div>{t('home.enemy.class')}: {classText}</div>
         <div>{t('home.enemy.type')}: {enemyTypeText}</div>
-        {hasRangedAttack && <div>{t('home.enemy.attackLine', { label: t('combat.rangedAttack'), attack: formatNumber(enemy.rangedAttack), count: formatNumber(enemy.rangedNoA), amplifier: enemy.rangedAttackAmplifier.toFixed(2) })}</div>}
-        {hasMeleeAttack && <div>{t('home.enemy.attackLine', { label: t('combat.meleeAttack'), attack: formatNumber(enemy.meleeAttack), count: formatNumber(enemy.meleeNoA), amplifier: enemy.meleeAttackAmplifier.toFixed(2) })}</div>}
+        {hasRangedAttack && <div>{t('home.enemy.attackLine', { label: t('combat.rangedAttack'), attack: formatNumber(enemy.rangedAttack), count: formatNumber(enemy.rangedNoA), amplifier: formatDecimal(enemy.rangedAttackAmplifier, 2) })}</div>}
+        {hasMeleeAttack && <div>{t('home.enemy.attackLine', { label: t('combat.meleeAttack'), attack: formatNumber(enemy.meleeAttack), count: formatNumber(enemy.meleeNoA), amplifier: formatDecimal(enemy.meleeAttackAmplifier, 2) })}</div>}
         {hasPhysicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('combat.physicalAccuracy'), decay })}</div>}
-        {hasMagicalAttack && <div>{t('home.enemy.attackLine', { label: t('combat.magicalAttack'), attack: formatNumber(enemy.magicalAttack), count: formatNumber(enemy.magicalNoA), amplifier: enemy.magicalAttackAmplifier.toFixed(2) })}</div>}
+        {hasMagicalAttack && <div>{t('home.enemy.attackLine', { label: t('combat.magicalAttack'), attack: formatNumber(enemy.magicalAttack), count: formatNumber(enemy.magicalNoA), amplifier: formatDecimal(enemy.magicalAttackAmplifier, 2) })}</div>}
         {hasMagicCasting && <div>{t('home.enemy.castingSpell')}: {getEnemyBestiarySpellName(enemy)}</div>}
-        <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
-        <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
-        <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{formatDecimal(enemy.elementalOffenseValue, 2)})</div>
+        <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({formatDecimal(enemy.physicalDefenseAmplifier * 100, 0)}%)</div>
+        <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({formatDecimal(enemy.magicalDefenseAmplifier * 100, 0)}%)</div>
         {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.enemy.magicalAccuracy'), decay })}</div>}
         <div>{t('combat.evasion')}: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
         <div>{renderElementalResistanceInline(enemy.elementalResistance)}</div>
@@ -1411,9 +1411,16 @@ function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
 }
 
+function formatDecimal(value: number, maximumFractionDigits: number, minimumFractionDigits = maximumFractionDigits): string {
+  return new Intl.NumberFormat('ja-JP', {
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(value);
+}
+
 function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier?: number): string {
   if (autoSellMultiplier && autoSellMultiplier > 1) {
-    return t('home.autoSell.withMultiplier', { multiplier: autoSellMultiplier.toFixed(1), gold: formatNumber(autoSellProfit) });
+    return t('home.autoSell.withMultiplier', { multiplier: formatDecimal(autoSellMultiplier, 1), gold: formatNumber(autoSellProfit) });
   }
   return t('home.autoSell.basic', { gold: formatNumber(autoSellProfit) });
 }
@@ -1919,13 +1926,13 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   );
   const itemUniqueBonuses = item.bonuses ?? [];
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
-  const formatDecimal = (value: number): string => {
+  const formatItemDecimal = (value: number): string => {
     const rounded = Math.round(value * 100) / 100;
-    if (Number.isInteger(rounded)) return `${rounded}`;
-    return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+    if (Number.isInteger(rounded)) return formatNumber(rounded);
+    return formatDecimal(rounded, 2, 0);
   };
   const formatSigned = (value: number, suffix: string = ''): string =>
-    `${value >= 0 ? '+' : ''}${formatDecimal(value)}${suffix}`;
+    `${value >= 0 ? '+' : ''}${formatItemDecimal(value)}${suffix}`;
   const getScaledNoA = (value: number): number => {
     // Positive NoA item bonuses scale with enhancement + super rare multipliers.
     // Penalty style values should remain fixed (same as runtime stat computation).
@@ -2498,8 +2505,8 @@ function getCharacterGrowthMultiplier(character: Character): number {
 
 function formatMultiplierValue(value: number): string {
   const rounded = Math.round(value * 100) / 100;
-  if (Number.isInteger(rounded)) return `${rounded}`;
-  return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+  if (Number.isInteger(rounded)) return formatNumber(rounded);
+  return formatDecimal(rounded, 2, 0);
 }
 
 function formatMultiplierAsFraction(value: number): string {
@@ -2510,7 +2517,7 @@ function formatMultiplierAsFraction(value: number): string {
     { numerator: 1, denominator: 2 },
   ];
   const candidate = fractionCandidates.find(({ numerator, denominator }) => Math.abs(value - (numerator / denominator)) < 0.0001);
-  if (candidate) return `${candidate.numerator}/${candidate.denominator}`;
+  if (candidate) return `${formatNumber(candidate.numerator)}/${formatNumber(candidate.denominator)}`;
   return formatMultiplierValue(value);
 }
 
@@ -2594,9 +2601,9 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'deity_magical_attack_xV') {
       parts.push(t('party.bonusDisplay.deityMagicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'physical_offense_multiplier_xV') {
-      parts.push(t('party.bonusDisplay.physicalOffenseMultiplier', { value: b.value.toFixed(2) }));
+      parts.push(t('party.bonusDisplay.physicalOffenseMultiplier', { value: formatDecimal(b.value, 2) }));
     } else if (b.type === 'magical_offense_multiplier_xV') {
-      parts.push(t('party.bonusDisplay.magicalOffenseMultiplier', { value: b.value.toFixed(2) }));
+      parts.push(t('party.bonusDisplay.magicalOffenseMultiplier', { value: formatDecimal(b.value, 2) }));
     } else if (b.type === 'deity_physical_defense_x2/3') {
       parts.push(t('party.bonusDisplay.deityPhysicalDefenseTwoThirds'));
     } else if (b.type === 'deity_physical_defense_xV' || b.type === 'deity_pysical_defense_xV') {
@@ -2609,31 +2616,31 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.physicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.physicalDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.physicalDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'magical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.magicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.magicalDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.magicalDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'fire_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.fireDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.fireDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.fireDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'ice_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.iceDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.iceDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.iceDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.thunderDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.thunderDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.thunderDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'fire_defense') {
       parts.push(t('party.bonusDisplay.fireDefense', { value: Math.round(b.value) }));
@@ -3610,7 +3617,7 @@ export function HomeScreen({
 
     const formatDefenseBonusPercent = (value: number): string => {
       const percent = Math.round(value * 1000) / 10;
-      return Number.isInteger(percent) ? `${percent}` : `${percent.toFixed(1)}`;
+      return formatDecimal(percent, 1, Number.isInteger(percent) ? 0 : 1);
     };
 
     const ITEM_DIRECT_C_BONUS_TYPES = new Set([
@@ -6095,15 +6102,15 @@ function PartyTab({
       }
       if (combatTotals.meleeAttackAmp !== prev.meleeAttackAmp) {
         const isPositive = combatTotals.meleeAttackAmp > prev.meleeAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.meleeAttackMultiplierLabel', `x${prev.meleeAttackAmp.toFixed(2)}`, `x${combatTotals.meleeAttackAmp.toFixed(2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.help.meleeAttackMultiplierLabel', `x${formatDecimal(prev.meleeAttackAmp, 2)}`, `x${formatDecimal(combatTotals.meleeAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.rangedAttackAmp !== prev.rangedAttackAmp) {
         const isPositive = combatTotals.rangedAttackAmp > prev.rangedAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.rangedAttackMultiplierLabel', `x${prev.rangedAttackAmp.toFixed(2)}`, `x${combatTotals.rangedAttackAmp.toFixed(2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.help.rangedAttackMultiplierLabel', `x${formatDecimal(prev.rangedAttackAmp, 2)}`, `x${formatDecimal(combatTotals.rangedAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
         const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${prev.magicalAttackAmp.toFixed(2)}`, `x${combatTotals.magicalAttackAmp.toFixed(2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
@@ -7631,7 +7638,7 @@ function PartyTab({
                   <div className="space-y-1">
                     {baseStatMultiplierRows.map((row) => (
                       <div key={row.label}>
-                        {row.label}: {formatNumber(row.value)} ({row.note} x{row.ratio.toFixed(2)})
+                        {row.label}: {formatNumber(row.value)} ({row.note} x{formatDecimal(row.ratio, 2)})
                       </div>
                     ))}
                   </div>
@@ -7697,13 +7704,13 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'ranged-attack',
-                    text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
                     helpTitle: t('combat.rangedAttack'),
                     helpLines: [
                       formatAttackSpeedHelp('ranged', t),
                       t('home.party.help.rangedAttackPower', { value: formatNumber(Math.floor(stats.rangedAttack)) }),
                       t('home.party.help.rangedAttackCount', { value: formatNumber(stats.rangedNoA) }),
-                      t('home.party.help.rangedAttackMultiplier', { value: amp.toFixed(2) }),
+                      t('home.party.help.rangedAttackMultiplier', { value: formatDecimal(amp, 2) }),
                     ],
                   });
                 }
@@ -7714,13 +7721,13 @@ function PartyTab({
                   );
                   offenseLines.push({
                     key: 'magical-attack',
-                    text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
                     helpTitle: t('combat.magicalAttack'),
                     helpLines: [
                       formatAttackSpeedHelp('magical', t),
                       t('home.party.help.magicalAttackPower', { value: formatNumber(Math.floor(stats.magicalAttack)) }),
                       t('home.party.help.magicalAttackCount', { value: formatNumber(stats.magicalNoA) }),
-                      t('home.party.help.magicalAttackMultiplier', { value: amp.toFixed(2) }),
+                      t('home.party.help.magicalAttackMultiplier', { value: formatDecimal(amp, 2) }),
                     ],
                   });
                 }
@@ -7731,19 +7738,19 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'melee-attack',
-                    text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
                     helpTitle: t('combat.meleeAttack'),
                     helpLines: [
                       formatAttackSpeedHelp('melee', t),
                       t('home.party.help.meleeAttackPower', { value: formatNumber(Math.floor(stats.meleeAttack)) }),
                       t('home.party.help.meleeAttackCount', { value: formatNumber(stats.meleeNoA) }),
-                      t('home.party.help.meleeAttackMultiplier', { value: amp.toFixed(2) }),
+                      t('home.party.help.meleeAttackMultiplier', { value: formatDecimal(amp, 2) }),
                     ],
                   });
                 }
 
                 const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
-                const decayText = `${(baseDecay * 100).toFixed(1)}%`;
+                const decayText = `${formatDecimal(baseDecay * 100, 1)}%`;
                 const hasPhysicalAttacks = hasRanged || hasMelee;
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
@@ -7817,12 +7824,12 @@ function PartyTab({
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
-                    text: `${t('combat.element')}:${elementIcon ? t('common.yes') : t('common.none')}(x${stats.elementalOffenseValue.toFixed(2)})`,
+                    text: `${t('combat.element')}:${elementIcon ? t('common.yes') : t('common.none')}(x${formatDecimal(stats.elementalOffenseValue, 2)})`,
                     renderedText: (
                       <>
                         {t('combat.element')}:
                         {elementIcon ? renderUiIcon(elementIcon) : t('common.none')}
-                        (x{stats.elementalOffenseValue.toFixed(2)})
+                        (x{formatDecimal(stats.elementalOffenseValue, 2)})
                       </>
                     ),
                     helpTitle: t('home.party.elementalAttackHelpTitle'),
@@ -8067,8 +8074,8 @@ function PartyTab({
                 if (val !== 1) {
                   const effectiveMultiplier = key === 'grimoire' ? val * seekerMultiplier : val;
                   const formattedMultiplier = key === 'grimoire'
-                    ? effectiveMultiplier.toFixed(2)
-                    : effectiveMultiplier.toFixed(1);
+                    ? formatDecimal(effectiveMultiplier, 2)
+                    : formatDecimal(effectiveMultiplier, 1);
                   const label = `${mulNames[key] ?? key}x${formattedMultiplier}`;
                   const templateKey = C_MULTIPLIER_HELP_DESCRIPTION_KEYS[key];
                   pushBonusDisplayEntry({
@@ -8625,7 +8632,7 @@ function PartyTab({
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className={`truncate ${getItemNameFontWeightClass(displayItem.item)}`}>{getItemDisplayName(displayItem.item)}</span>
-                          {!displayItem.isEquipped && <span className="text-xs text-gray-500 shrink-0">x{displayItem.count}</span>}
+                          {!displayItem.isEquipped && <span className="text-xs text-gray-500 shrink-0">x{formatNumber(displayItem.count)}</span>}
                         </div>
                         <div className="text-xs leading-tight text-gray-400 truncate">
                           {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}
@@ -9660,13 +9667,13 @@ function ExpeditionTab({
                                   ? t('battleLog.extra.momentum', { sign: log.momentumBonusPercent >= 0 ? '+' : '', percent: log.momentumBonusPercent })
                                   : '';
                                 const ambushDisplay = typeof log.ambushMultiplier === 'number' && log.ambushMultiplier > 1
-                                  ? t('battleLog.extra.ambush', { multiplier: log.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                  ? t('battleLog.extra.ambush', { multiplier: formatDecimal(log.ambushMultiplier, 2, 0) })
                                   : '';
                                 const overwatchDisplay = typeof log.overwatchMultiplier === 'number' && log.overwatchMultiplier > 1
-                                  ? t('battleLog.extra.overwatch', { multiplier: log.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                  ? t('battleLog.extra.overwatch', { multiplier: formatDecimal(log.overwatchMultiplier, 2, 0) })
                                   : '';
                                 const executionDisplay = typeof log.executionMultiplier === 'number' && log.executionMultiplier > 1
-                                  ? t('battleLog.extra.execution', { multiplier: log.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                  ? t('battleLog.extra.execution', { multiplier: formatDecimal(log.executionMultiplier, 2, 0) })
                                   : '';
                                 const swarmActorDisplay = typeof log.swarmActorPenaltyPercent === 'number' && log.swarmActorPenaltyPercent > 0
                                   ? t('battleLog.extra.powerDown', { percent: log.swarmActorPenaltyPercent })
@@ -11729,13 +11736,13 @@ function DiaryTab({
                                 ? t('battleLog.extra.momentum', { sign: battleLog.momentumBonusPercent >= 0 ? '+' : '', percent: battleLog.momentumBonusPercent })
                                 : '';
                               const ambushDisplay = typeof battleLog.ambushMultiplier === 'number' && battleLog.ambushMultiplier > 1
-                                ? t('battleLog.extra.ambush', { multiplier: battleLog.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                ? t('battleLog.extra.ambush', { multiplier: formatDecimal(battleLog.ambushMultiplier, 2, 0) })
                                 : '';
                               const overwatchDisplay = typeof battleLog.overwatchMultiplier === 'number' && battleLog.overwatchMultiplier > 1
-                                ? t('battleLog.extra.overwatch', { multiplier: battleLog.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                ? t('battleLog.extra.overwatch', { multiplier: formatDecimal(battleLog.overwatchMultiplier, 2, 0) })
                                 : '';
                               const executionDisplay = typeof battleLog.executionMultiplier === 'number' && battleLog.executionMultiplier > 1
-                                ? t('battleLog.extra.execution', { multiplier: battleLog.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                ? t('battleLog.extra.execution', { multiplier: formatDecimal(battleLog.executionMultiplier, 2, 0) })
                                 : '';
                               const swarmActorDisplay = typeof battleLog.swarmActorPenaltyPercent === 'number' && battleLog.swarmActorPenaltyPercent > 0
                                 ? t('battleLog.extra.powerDown', { percent: battleLog.swarmActorPenaltyPercent })
@@ -13008,7 +13015,7 @@ function SettingTab({
     .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
-    t('home.enemy.attackLine', { label, attack: formatNumber(attack), count: formatNumber(noA), amplifier: amplifier.toFixed(2) });
+    t('home.enemy.attackLine', { label, attack: formatNumber(attack), count: formatNumber(noA), amplifier: formatDecimal(amplifier, 2) });
 
   const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
   const hasEnemyMagicCasting = (enemy: EnemyDef) =>
@@ -13016,7 +13023,7 @@ function SettingTab({
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
-    t('home.enemy.defenseLine', { label, defense: formatNumber(defense), percent: percent.toFixed(0) });
+    t('home.enemy.defenseLine', { label, defense: formatNumber(defense), percent: formatDecimal(percent, 0) });
 
   const ENEMY_ELEMENT_ICONS: Record<string, UiIconKey> = {
     fire: 'fire',
@@ -13028,7 +13035,7 @@ function SettingTab({
     const elementIcon = ENEMY_ELEMENT_ICONS[elementalOffense];
     return (
       <>
-        {t('home.enemy.element')}: {elementIcon ? renderUiIcon(elementIcon) : t('home.enemy.noElement')} (x{elementalOffenseValue.toFixed(2)})
+        {t('home.enemy.element')}: {elementIcon ? renderUiIcon(elementIcon) : t('home.enemy.noElement')} (x{formatDecimal(elementalOffenseValue, 2)})
       </>
     );
   };
@@ -13682,7 +13689,7 @@ function SettingTab({
                 </button>
                 {expanded && (
                   <div className="px-3 pb-2 text-xs text-gray-700 space-y-1 border-t border-gray-100 pt-2">
-                    <div>ID: {item.id}</div>
+                    <div>ID: {formatNumber(item.id)}</div>
                   </div>
                 )}
               </div>
@@ -13728,7 +13735,7 @@ function SettingTab({
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
             {gameState.parties.map((party) => (
               <button key={party.id} onClick={() => setCharacterRosterPartyId(party.id)} className={`px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterPartyId === party.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
-                PT{party.id}
+                PT{formatNumber(party.id)}
               </button>
             ))}
           </div>
@@ -13908,7 +13915,7 @@ function SettingTab({
                             const hasMagicalAttack = hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA);
                             const hasMagicCasting = hasEnemyMagicCasting(godRuntimeEnemy);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-                            const decay = `${((0.90 + godRuntimeEnemy.accuracyBonus) * 100).toFixed(1)}%`;
+                            const decay = `${formatDecimal((0.90 + godRuntimeEnemy.accuracyBonus) * 100, 1)}%`;
                             const physicalDefenseAmplifierPercent = godRuntimeEnemy.physicalDefenseAmplifier * 100;
                             const magicalDefenseAmplifierPercent = godRuntimeEnemy.magicalDefenseAmplifier * 100;
 
@@ -13997,7 +14004,7 @@ function SettingTab({
             const hasMagicalAttack = hasEnemyAttack(colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA);
             const hasMagicCasting = hasEnemyMagicCasting(colosseumEnemy);
             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-            const decay = `${((0.90 + colosseumEnemy.accuracyBonus) * 100).toFixed(1)}%`;
+            const decay = `${formatDecimal((0.90 + colosseumEnemy.accuracyBonus) * 100, 1)}%`;
             return (
               <div className="bg-white rounded border border-gray-200 p-2 shadow-sm shadow-slate-900/10">
                 <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
@@ -14015,7 +14022,7 @@ function SettingTab({
                         const classRows = getBestiaryClassRows(colosseumEnemy.enemyClass, colosseumEnemy.enemySubClass);
                         return (
                           <>
-                            <div>ID: {colosseumEnemy.id}</div><div>{t('setting.bestiary.level', { value: formatNumber(colosseumEnemySettings.level) })}</div>
+                            <div>ID: {formatNumber(colosseumEnemy.id)}</div><div>{t('setting.bestiary.level', { value: formatNumber(colosseumEnemySettings.level) })}</div>
                             <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>{t('setting.bestiary.type', { value: ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType })}</div>
                             {classRows.map((row) => row)}
                             {classRows.length === 1 && <div></div>}
@@ -14110,7 +14117,7 @@ function SettingTab({
                           />
                         )}
                         <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-1">
-                          <div>ID: {displayEnemy.id}</div>
+                          <div>ID: {formatNumber(displayEnemy.id)}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
                           <div>{t('setting.bestiary.level', { value: formatNumber(enemyLevelFinal) })}</div>
@@ -14124,7 +14131,7 @@ function SettingTab({
                             const hasMagicalAttack = hasEnemyAttack(displayEnemy.magicalAttack, displayEnemy.magicalNoA);
                             const hasMagicCasting = hasEnemyMagicCasting(displayEnemy);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-                            const decay = `${((0.90 + displayEnemy.accuracyBonus) * 100).toFixed(1)}%`;
+                            const decay = `${formatDecimal((0.90 + displayEnemy.accuracyBonus) * 100, 1)}%`;
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
@@ -14227,7 +14234,7 @@ function SettingTab({
         </button>
         {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
           {/* SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane */}
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {formatNumber(colosseumEnemySettings.level)}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
           <label className="space-y-1">
             <div className="text-xs text-gray-600">Terrain effect</div>
