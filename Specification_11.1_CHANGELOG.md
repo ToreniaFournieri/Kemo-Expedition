@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 11 | 2026/08/08 | Replace public-directory image imports with Vite-injected filename manifests, refresh Browserslist data, and explicitly compact Babel output to eliminate repetitive local-development warnings while preserving image availability checks. |
+| 0.9.1 | 10 | 2026/08/08 | Treat character and chibi image glob matches as public asset URLs while preserving runtime image availability checks. |
 | 0.9.1 | 9 | 2026/08/08 | Format user-visible runtime numbers with `Intl.NumberFormat('ja-JP')` and align the Pages deployment toolchain with the declared Node 22 and npm 11 requirements. |
 | 0.9.1 | 8 | 2026/08/08 | Add the Command special bonus to the tier-5 Ursan boss wand Gunbai in the item specification and runtime. |
 | 0.9.1 | 7 | 2026/08/05 | Correct Soul Reap to activate at combat timing 2 and align localized timed-ability descriptions with their specified COMBAT timings. |

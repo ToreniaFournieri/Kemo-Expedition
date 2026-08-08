@@ -143,8 +143,8 @@ function buildStatusTableRows(parties: Party[], partyIndexes = parties.map((_, i
   });
 }
 
-const CHARACTER_CHIBI_IMAGE_MODULES = import.meta.glob('/public/chibi/*.png', { eager: true });
-const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { eager: true });
+const CHARACTER_CHIBI_IMAGE_FILES = new Set(__PUBLIC_CHIBI_IMAGE_FILES__);
+const CHARACTER_IMAGE_FILES = new Set(__PUBLIC_CHARACTER_IMAGE_FILES__);
 
 // SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
 // SpecRef: 8.4.2 | Inventory(所持品) | Item list
@@ -158,10 +158,10 @@ function getInventoryOwnerCharacterImageSrc(character: Character, partyId: numbe
     : undefined;
   if (uniqueFileName) {
     const chibiFileName = `C_${uniqueFileName}`;
-    if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/${chibiFileName}`]) {
+    if (CHARACTER_CHIBI_IMAGE_FILES.has(chibiFileName)) {
       return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
     }
-    if (CHARACTER_IMAGE_MODULES[`/public/character/${uniqueFileName}`]) {
+    if (CHARACTER_IMAGE_FILES.has(uniqueFileName)) {
       return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
     }
     return null;
@@ -171,10 +171,10 @@ function getInventoryOwnerCharacterImageSrc(character: Character, partyId: numbe
   if (!race) return null;
   const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
   const partyRaceGenderFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
-  if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/C_${partyRaceGenderFileName}`]) {
+  if (CHARACTER_CHIBI_IMAGE_FILES.has(`C_${partyRaceGenderFileName}`)) {
     return `${import.meta.env.BASE_URL}chibi/C_${partyRaceGenderFileName}`;
   }
-  if (CHARACTER_IMAGE_MODULES[`/public/character/${partyRaceGenderFileName}`]) {
+  if (CHARACTER_IMAGE_FILES.has(partyRaceGenderFileName)) {
     return `${import.meta.env.BASE_URL}character/${partyRaceGenderFileName}`;
   }
   return null;
@@ -12642,14 +12642,7 @@ function SettingTab({
   const [characterRosterPartyId, setCharacterRosterPartyId] = useState<number>(1);
   const [characterRosterGenderFilter, setCharacterRosterGenderFilter] = useState<'male' | 'female' | 'unique'>('male');
 
-  const rosterCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
-  const availableRosterImageFiles = useMemo(() => {
-    return new Set(
-      Object.keys(rosterCharacterImageModules)
-        .map((modulePath) => modulePath.split('/').pop())
-        .filter((fileName): fileName is string => typeof fileName === 'string' && fileName.length > 0),
-    );
-  }, [rosterCharacterImageModules]);
+  const availableRosterImageFiles = CHARACTER_IMAGE_FILES;
   const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
     const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
       'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
