@@ -256,7 +256,7 @@
 | 5 | B | `Ursan` | `i.gauntlet`BD | 破壊腕 | `a.bulwark-breaker` |
 | 5 | B | `Ursan` | `i.sword`BD | 三連爪 |
 | 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
-| 5 | B | `Ursan` | `i.wand`BD | 軍配 |
+| 5 | B | `Ursan` | `i.wand`BD | 軍配 | `a.command` |
 | 5 | B | `Ursan` | `i.catalyst`BD | 溶触媒 |
 | 6 | C | none | `i.sword`C | 合金短剣 |
 | 6 | C | none | `i.gauntlet`C | 銅の手甲 |
