@@ -3070,6 +3070,10 @@ export function HomeScreen({
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
   const processedNativeDiaryIdsRef = useRef<Set<string> | null>(null);
   const nativeAfkRecoveryRef = useRef(false);
+  const lastPartyProgressSnapshotHashRef = useRef('');
+  const partyProgressDisclosedLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>(
+    state.parties.map((party) => party.lastExpeditionLog),
+  );
 
   if (processedNativeDiaryIdsRef.current === null) {
     const storedIds = getProcessedDiaryIds();
@@ -4356,6 +4360,136 @@ export function HomeScreen({
       : 0;
   }, [pendingAfkMs]);
 
+  // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | read-only Party Progress snapshot
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop) return;
+
+    const now = Date.now();
+    const parties: DesktopPartyProgressPartySnapshot[] = state.parties.map((party, partyIndex) => {
+      const cycle = partyCycles[partyIndex] ?? { state: 'idle' as PartyCycleState, stateStartedAt: now, durationMs: 1000 };
+      const elapsedMs = Math.max(0, now - cycle.stateStartedAt);
+      const { partyStats } = computePartyStats(party);
+      const maxHp = Math.max(1, Math.floor(partyStats.hp));
+      const expeditionLog = party.lastExpeditionLog;
+      let currentHp = Math.max(0, Math.min(maxHp, Math.floor(party.currentHp)));
+      let progress: DesktopPartyProgressValue = { kind: 'none' };
+      let subProgress: DesktopPartyProgressValue = { kind: 'none' };
+
+      if (cycle.state === 'explore') {
+        const visibleCount = expeditionLog
+          ? getExplorationVisibleRoomCount(elapsedMs, cycle.durationMs, expeditionLog.entries.length)
+          : 0;
+        const visibleEntry = expeditionLog?.entries[Math.max(0, visibleCount - 1)];
+        if (visibleEntry) currentHp = Math.max(0, Math.min(maxHp, Math.floor(visibleEntry.remainingPartyHP)));
+        progress = {
+          kind: 'steps',
+          completed: Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, visibleCount),
+          total: EXPLORING_PROGRESS_TOTAL_STEPS,
+        };
+      } else if (cycle.state === 'rest') {
+        const total = Math.max(1, cycle.restInitialTotalSteps ?? 1);
+        const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(maxHp * REST_HEAL_MAX_HP_RATIO));
+        const remaining = Math.max(0, Math.ceil((maxHp - currentHp) / healPerStep));
+        progress = { kind: 'steps', completed: Math.max(0, Math.min(total, total - remaining)), total };
+      } else if (cycle.state === 'sell') {
+        const total = getAutoSellStepCount(party);
+        progress = {
+          kind: 'steps',
+          completed: Math.min(total, Math.floor((elapsedMs / Math.max(1, cycle.durationMs)) * total)),
+          total,
+        };
+      } else if (cycle.state !== 'idle' && cycle.state !== 'reactivate') {
+        progress = {
+          kind: 'continuous',
+          startedAt: cycle.stateStartedAt,
+          endsAt: cycle.stateStartedAt + Math.max(1, cycle.durationMs),
+        };
+      }
+
+      if (STEP_BASED_STATES.has(cycle.state)) {
+        const stepTotal = cycle.state === 'rest'
+          ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
+          : cycle.state === 'sell'
+            ? getAutoSellStepCount(party)
+            : Math.max(1, expeditionLog?.entries.length ?? 1);
+        const stepDurationMs = cycle.state === 'rest'
+          ? Math.max(1, cycle.durationMs)
+          : Math.max(1, cycle.durationMs / stepTotal);
+        const completedStepCount = Math.floor(elapsedMs / stepDurationMs);
+        const stepStartedAt = cycle.stateStartedAt + completedStepCount * stepDurationMs;
+        subProgress = { kind: 'continuous', startedAt: stepStartedAt, endsAt: stepStartedAt + stepDurationMs };
+      }
+
+      if (cycle.state !== 'explore') {
+        partyProgressDisclosedLogsRef.current[partyIndex] = expeditionLog ?? null;
+      }
+      const disclosedLog = partyProgressDisclosedLogsRef.current[partyIndex] ?? null;
+      const latestDisclosedEntry = disclosedLog?.entries[disclosedLog.entries.length - 1];
+      const headlineFloorName = latestDisclosedEntry?.floor
+        ? getLocalizedExpeditionFloorConcept(disclosedLog!.dungeonId, latestDisclosedEntry.floor)
+          ?? t('expedition.floor', { floor: formatNumber(latestDisclosedEntry.floor) })
+        : disclosedLog?.dungeonName
+          ?? DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId)?.name
+          ?? '-';
+      const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(party, now));
+      const compactProgressItems = getCompactProgressItems(
+        party,
+        getTimeSpeedScale(debugSettings),
+        now,
+        cycle.state,
+      ).map((item) => ({ text: item.compactText, progressRatio: item.progressRatio }));
+
+      return {
+        id: party.id,
+        name: party.name,
+        state: cycle.state,
+        stateLabel: getPartyCycleStateLabel(cycle.state),
+        headlineFloorName,
+        outcomeLabel: disclosedLog ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome) : '',
+        chargeCells: chargeDisplay.cells,
+        chargeTimerText: chargeDisplay.timerText,
+        compactProgressItems,
+        currentHp,
+        maxHp,
+        progress,
+        subProgress,
+      };
+    });
+
+    const snapshotWithoutTimestamp = {
+      schemaVersion: 1 as const,
+      environment: getEnvironmentId(),
+      language: state.global.language,
+      unreadDiaryCount: state.parties.reduce((count, party) => (
+        count + party.diaryLogs.reduce((partyCount, log) => partyCount + (log.isRead ? 0 : 1), 0)
+      ), 0),
+      theme: (
+        gameMode === 'm.laika'
+          ? (isDarkModeEnabled ? 'laika-dark' : 'laika')
+          : gameMode === 'm.luna'
+            ? (isDarkModeEnabled ? 'luna-dark' : 'luna')
+            : isDarkModeEnabled ? 'dark' : 'light'
+      ) as DesktopPartyProgressSnapshot['theme'],
+      parties,
+    };
+    const snapshotHash = JSON.stringify(snapshotWithoutTimestamp);
+    if (snapshotHash === lastPartyProgressSnapshotHashRef.current) return;
+    lastPartyProgressSnapshotHashRef.current = snapshotHash;
+    void desktop.updatePartyProgressPane({
+      ...snapshotWithoutTimestamp,
+      updatedAt: Date.now(),
+    }).then((accepted) => {
+      if (!accepted) {
+        lastPartyProgressSnapshotHashRef.current = '';
+        console.warn('Party Progress pane rejected its latest snapshot.');
+      }
+    }).catch((error) => {
+      lastPartyProgressSnapshotHashRef.current = '';
+      console.error('Failed to publish Party Progress pane snapshot:', error);
+    });
+  }, [gameMode, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
+
   // SpecRef: 9.1.1 | macOS background lifecycle and native notifications | Diary-filtered native notifications
   useEffect(() => {
     const desktop = window.bokemoDesktop;
@@ -4430,6 +4564,17 @@ export function HomeScreen({
       }
     });
   }, [actions, isPartyExpeditionSplitViewEnabled, state.parties, state.selectedPartyIndex]);
+
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop) return;
+    return desktop.onPartyProgressPartyActivated((partyId) => {
+      const partyIndex = state.parties.findIndex((party) => party.id === partyId);
+      if (partyIndex < 0) return;
+      actions.selectParty(partyIndex);
+      setActiveTab('expedition');
+    });
+  }, [actions, state.parties]);
 
   useEffect(() => {
     if (pendingAfkMs > 0) return;

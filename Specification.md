@@ -117,6 +117,21 @@
 - Starting BoKemo at macOS login must be optional and disabled by default. When enabled, BoKemo must launch hidden in the menu bar without opening its main window.
 - If macOS notification permission is denied, local saves, progression, Diary records, and in-application notifications must continue to function normally.
 
+#### 9.1.2 macOS menu-bar Party Progress pane
+- The packaged macOS desktop application must provide a read-only `Party Progress` pane opened from BoKemo's existing menu-bar item. This pane replaces the previously specified native WidgetKit extension and must not depend on WidgetKit, an App Group entitlement, or a separate third-party widget service.
+- The pane must be implemented as a secondary Electron `BrowserWindow` owned by the main process and must use the same packaged application assets and active desktop environment as the main BoKemo window.
+- The pane must be frameless, non-resizable, omitted from the Dock and application switcher, and positioned beneath or adjacent to the BoKemo menu-bar item. It must close or hide when it loses focus, when the menu-bar item is clicked again, or when BoKemo quits.
+- Left-clicking the BoKemo menu-bar item must toggle the Party Progress pane. Right-clicking it must open a context menu containing `Open BoKemo`, the existing launch-at-login control, and `Quit BoKemo`. `Open BoKemo` must restore and focus the main window.
+- The pane must display every unlocked party in a compact list sized so that all six party rows fit within the standard pane without scrolling. Vertical scrolling may remain only as a fallback for accessibility text scaling or reduced available screen space. Each party row must mirror the compact party-pane information defined in section 8.3: the party name exactly once, latest disclosed expedition floor, Instant Expedition charge battery and timer, latest disclosed outcome, compact loot-gate and side-quest summaries, current localized state and primary progress, Step sub-progress placeholder/bar, and current/max HP. The same no-spoiler update timing for latest floor and outcome must apply while `state.explore` is active.
+- The pane must display the total unread Diary count when it is greater than zero and provide an `Open BoKemo` action. Activating a party row must restore BoKemo and select that party without changing its expedition or automation state.
+- State labels, controls, and displayed game data must use the language and visual theme currently selected in BoKemo. Numeric values must follow the formatting rule in section 10.4.
+- Pane progress must follow the progress-bar behavior defined in section 5.1.1: continuous states update smoothly from their persisted start and expected end times, while step-based states display completed Steps against the state's initial total Steps. `state.idle` must display an idle status without a progress bar.
+- The pane is informational except for opening or navigating the main BoKemo window. It must not expose controls that start expeditions, change automation, spend resources, or otherwise mutate game state.
+- The main renderer must share only the minimum display snapshot required by the pane through the context-isolated desktop bridge. The pane renderer must not receive or access BoKemo's complete save data or Node.js APIs; context isolation must be enabled, Node integration disabled, and renderer sandboxing enabled.
+- Pane state must remain isolated between the `dev`, `beta`, and production environments defined in section 9. The pane must display only the data belonging to the environment of its containing desktop process.
+- While BoKemo is running, pane content must update from live runtime state without WidgetKit scheduling limitations. When BoKemo fully quits, the pane must also quit and must not simulate progression independently.
+- Missing, invalid, incompatible, or unavailable snapshot data must show a localized prompt to open the main BoKemo window. These conditions must not affect local saves, progression, Diary records, native notifications, or the browser distribution.
+
 ## 10. Coding Rule: SpecRef Traceability
 - To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.
 

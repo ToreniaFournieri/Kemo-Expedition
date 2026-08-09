@@ -6,9 +6,15 @@ contextBridge.exposeInMainWorld('bokemoDesktop', {
   getLaunchAtLogin: () => ipcRenderer.invoke('desktop:get-launch-at-login'),
   setLaunchAtLogin: (enabled) => ipcRenderer.invoke('desktop:set-launch-at-login', enabled === true),
   showNotification: (payload) => ipcRenderer.invoke('desktop:show-notification', payload),
+  updatePartyProgressPane: (snapshot) => ipcRenderer.invoke('desktop:update-party-progress-pane', snapshot),
   onNotificationActivated: (callback) => {
     const listener = (_event, payload) => callback(payload);
     ipcRenderer.on('desktop:notification-activated', listener);
     return () => ipcRenderer.removeListener('desktop:notification-activated', listener);
+  },
+  onPartyProgressPartyActivated: (callback) => {
+    const listener = (_event, partyId) => callback(partyId);
+    ipcRenderer.on('desktop:party-progress-party-activated', listener);
+    return () => ipcRenderer.removeListener('desktop:party-progress-party-activated', listener);
   },
 });

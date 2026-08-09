@@ -10,6 +10,15 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 27 | 2026/08/09 | Compress the menu-bar Party Progress header, footer, and party rows so all six parties fit in the standard pane without scrolling, retaining overflow only as an accessibility fallback. |
+| 0.9.1 | 26 | 2026/08/09 | Align each menu-bar Party Progress row with the section 8.3 compact expedition format, remove duplicate party labels, and add disclosed floor/outcome, charge, gate/quest summaries, and Step sub-progress. |
+| 0.9.1 | 25 | 2026/08/09 | Move Party Progress pane branding and interface labels into the shared i18n dictionaries and resolve them through the standard translation API. |
+| 0.9.1 | 24 | 2026/08/09 | Localize the Party Progress pane product name, open action, and empty-state prompt as `冒ケモ`, `BoKemo`, `冒兽`, or `冒獸` according to the selected language. |
+| 0.9.1 | 23 | 2026/08/09 | Fix the Electron Party Progress pane snapshot validator to use the active schema constant and retry rejected or failed snapshot publications instead of remaining empty. |
+| 0.9.1 | 22 | 2026/08/09 | Implement the free Electron menu-bar Party Progress pane with live localized party data, secure isolated IPC, theme synchronization, unread Diary status, and main-window party navigation; remove WidgetKit and App Group packaging. |
+| 0.9.1 | 21 | 2026/08/09 | Replace the paid-signing-dependent native WidgetKit specification with a free Electron menu-bar Party Progress pane showing live read-only progress for all unlocked parties. |
+| 0.9.1 | 20 | 2026/08/09 | Implement the read-only macOS 14+ Party Progress widget with configurable parties, small and medium layouts, localized isolated snapshots, timestamp-based progress, and signed desktop packaging integration. |
+| 0.9.1 | 19 | 2026/08/09 | Specify a read-only macOS 14+ Party Progress WidgetKit widget with small and medium layouts, isolated shared snapshots, and best-effort progress updates. |
 | 0.9.1 | 18 | 2026/08/09 | Remove the duplicated party label from macOS Diary notification bodies so they render as `PT1: Dungeon` instead of `PT1 PT1: Dungeon`. |
 | 0.9.1 | 17 | 2026/08/09 | Add explicit dev, beta, and production desktop launch commands that load their specified environment paths with isolated saves and matching debug behavior. |
 | 0.9.1 | 16 | 2026/08/09 | Move the packaged macOS native-notification controls from Backup / Reset to the bottom of the Mode Select settings pane. |

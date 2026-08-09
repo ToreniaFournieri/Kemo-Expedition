@@ -23,6 +23,37 @@ interface DesktopNotificationPayload {
   diaryLogId?: string;
 }
 
+type DesktopPartyProgressValue =
+  | { kind: 'none' }
+  | { kind: 'continuous'; startedAt: number; endsAt: number }
+  | { kind: 'steps'; completed: number; total: number };
+
+interface DesktopPartyProgressPartySnapshot {
+  id: number;
+  name: string;
+  state: string;
+  stateLabel: string;
+  headlineFloorName: string;
+  outcomeLabel: string;
+  chargeCells: string;
+  chargeTimerText: string;
+  compactProgressItems: Array<{ text: string; progressRatio: number | null }>;
+  currentHp: number;
+  maxHp: number;
+  progress: DesktopPartyProgressValue;
+  subProgress: DesktopPartyProgressValue;
+}
+
+interface DesktopPartyProgressSnapshot {
+  schemaVersion: 1;
+  environment: 'dev' | 'beta' | 'prod';
+  language: 'ja' | 'en' | 'zh-CN' | 'zh-TW';
+  updatedAt: number;
+  unreadDiaryCount: number;
+  theme: 'light' | 'dark' | 'laika' | 'laika-dark' | 'luna' | 'luna-dark';
+  parties: DesktopPartyProgressPartySnapshot[];
+}
+
 interface Window {
   bokemoDesktop?: {
     getStatus: () => Promise<{ isMacDesktop: boolean; notificationSupported: boolean }>;
@@ -30,6 +61,14 @@ interface Window {
     getLaunchAtLogin: () => Promise<boolean>;
     setLaunchAtLogin: (enabled: boolean) => Promise<boolean>;
     showNotification: (payload: DesktopNotificationPayload) => Promise<boolean>;
+    updatePartyProgressPane: (snapshot: DesktopPartyProgressSnapshot) => Promise<boolean>;
     onNotificationActivated: (callback: (payload: DesktopNotificationPayload) => void) => () => void;
+    onPartyProgressPartyActivated: (callback: (partyId: number) => void) => () => void;
+  };
+  bokemoPartyProgress?: {
+    getSnapshot: () => Promise<DesktopPartyProgressSnapshot | null>;
+    openMainWindow: () => Promise<boolean>;
+    selectParty: (partyId: number) => Promise<boolean>;
+    onSnapshot: (callback: (snapshot: DesktopPartyProgressSnapshot) => void) => () => void;
   };
 }

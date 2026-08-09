@@ -19,4 +19,12 @@ export default defineConfig({
     __PUBLIC_CHARACTER_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('character')),
     __PUBLIC_CHIBI_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('chibi')),
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        partyProgress: resolve(__dirname, 'party-progress.html'),
+      },
+    },
+  },
 })
