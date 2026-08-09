@@ -132,6 +132,124 @@
 - While BoKemo is running, pane content must update from live runtime state without WidgetKit scheduling limitations. When BoKemo fully quits, the pane must also quit and must not simulate progression independently.
 - Missing, invalid, incompatible, or unavailable snapshot data must show a localized prompt to open the main BoKemo window. These conditions must not affect local saves, progression, Diary records, native notifications, or the browser distribution.
 
+#### 9.1.3 Experimental AI API
+
+**Purpose and availability**
+- The packaged desktop application must provide an experimental localhost HTTP/JSON API for AI-controlled play of the active BoKemo save.
+- The API must be available in the `dev`, `beta`, and production desktop environments, disabled by default, and enabled through an `Experimental AI API` toggle in Settings.
+- The API server must bind only to a loopback address, select an available local port, and require a generated bearer token displayed in Settings.
+- API state and access must follow the environment and save-data isolation rules in section 9. An API running in `/dev/`, `/beta/`, or `/` must access only the active save belonging to that environment.
+- The browser distribution must not expose the localhost API.
+- All endpoints must use JSON and be versioned under `/experimental/v1`.
+
+**Authentication, control, and revision**
+- Except for a minimal unauthenticated status response, every request must include `Authorization: Bearer <token>`.
+- Only one API controller may hold control at a time.
+- `POST /experimental/v1/control/acquire` acquires an exclusive API-control lease. While the lease is held, gameplay remains visible but every state-mutating UI control is disabled.
+- `POST /experimental/v1/control/release` persists the current state, releases the lease, and restores normal UI control.
+- An authenticated heartbeat must renew the lease. Releasing the lease, lease expiry, disabling the API, or quitting the application must end API control safely.
+- Each observation must include a monotonically increasing state `revision`.
+- Every mutating request must include `expectedRevision`. If it does not equal the current revision, reject the request without changing state or advancing simulation.
+- Mutating API operations must be serialized so that API and UI mutations cannot interleave.
+
+**Endpoints**
+- Detailed endpoint contracts are defined in @Specification_9.1.3_API_ENDPOINTS.md. That document is normative and uses an OpenAPI-compatible operation structure.
+- `GET /experimental/v1/status`
+  - Returns public API availability without authentication, or authenticated compatibility, runtime-readiness, revision, and control-lease status fields.
+- `GET /experimental/v1/observation`
+  - Returns the current AI-safe observation and the strategic commands currently legal for each party.
+- `POST /experimental/v1/command`
+  - Applies one non-sortie strategic command without advancing game time.
+- `POST /experimental/v1/sortie`
+  - Synchronously resolves 1 to 100 API-only normal expedition Cycles for one specified party.
+
+**Observation**
+- The observation must include:
+  - schema version, revision, simulated timestamp, and active environment;
+  - currencies and progression unlocks;
+  - each party's HP, level and XP, condition, deity, side quest, loot gates, and Gods Battle readiness;
+  - expedition destination mode and selected dungeon, depth limit, difficulty offset, and auto-run configuration;
+  - character order and builds, computed combat summaries, auto-equipment modes, and equipment locks;
+  - inventory summaries required to understand automatic-equipment decisions;
+  - the latest expedition result and currently legal strategic commands.
+- Stable IDs and raw numeric values are authoritative. Localized strings may be included only as optional display metadata.
+- The observation must not expose future random rolls, bag contents or order, hidden enemies, undisclosed exploration outcomes, the complete save data, or internal renderer fields.
+
+**Strategic commands**
+- The API may expose only the following non-sortie strategic commands, subject to the same availability and validation rules as the UI:
+  - change a character's selectable race, lineage, predisposition, main class, sub class, Mimorian form, or name;
+  - reorder party members;
+  - change a party's deity;
+  - set each character's automatic-equipment mode;
+  - toggle locks on currently equipped items;
+  - select the Jewel Priority Party;
+  - set expedition destination mode or dungeon, depth limit, difficulty offset, and auto-run mode;
+  - initiate one Gods Battle through a separate single-run command when its normal gate and availability rules are satisfied.
+- The API must not expose:
+  - direct combat actions;
+  - direct equipment-slot selection or Jewel attachment;
+  - repeated Gods Battles;
+  - shop purchases, manual selling, Altar unlocks, or Diary management;
+  - debug actions, bag inspection or reset, save import/export/reset, direct currency edits, direct healing, or internal state transitions;
+  - combat formulas or random-roll functions as separately callable operations.
+
+**API batch sortie request**
+- `POST /experimental/v1/sortie` accepts:
+
+```json
+{
+  "expectedRevision": 123,
+  "partyId": 1,
+  "count": 10
+}
+```
+
+- `partyId` must identify one unlocked party.
+- `count` must be an integer from 1 through 100 inclusive.
+- The party's currently selected normal expedition, depth limit, difficulty offset, deity, characters, and automation configuration apply to every Cycle.
+- Gods Battles must not be accepted by the batch sortie endpoint.
+- An invalid party, destination, count, or initial configuration must reject the complete request before any Cycle runs.
+- Once accepted, the engine must complete exactly `count` Cycles unless an unrecoverable internal or save error occurs.
+
+**API batch sortie progression**
+- Each requested sortie resolves one complete immediate Cycle through the authoritative game engine, including:
+  - rest and recovery;
+  - selling and reward finalization;
+  - free action, optional sleep, prayer, donation, and savings;
+  - movement, exploration, battles, return, side quests, loot gates, rewards, XP, unlocks, and automation.
+- Cycle durations and time-dependent effects must be simulated immediately according to the normal Step rules. The API client must never wait for real-world progression.
+- Cycles must execute sequentially so every result affects the following Cycle.
+- A defeat must not truncate an accepted batch. The following Cycle must perform the normal rest and recovery required before its expedition.
+- Loot-gate turn-backs, wounded retreats, draws, and defeats count as completed sortie attempts.
+- API sorties have unlimited charge:
+  - they must never check or consume `instantExpeditionStock`;
+  - they must never start, stop, accelerate, refill, or otherwise modify the visible Instant Expedition charge battery or timer;
+  - they must not grant unlimited charges to UI sorties.
+- The complete accepted batch is one serialized API operation. No other API or UI mutation may interleave with its Cycles.
+- On success, persist once after the complete batch and increment the state revision.
+- On an unexpected resolution or persistence failure, return an error and do not expose or persist a partially committed batch.
+
+**API batch sortie response**
+- A successful batch response must include:
+  - requested and completed counts, which must be equal;
+  - starting and ending revisions;
+  - party ID and dungeon ID;
+  - aggregate `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, and `Defeat` counts;
+  - total XP, Gold, donations, savings, items, auto-sold items, Jewels, and Prana gained;
+  - side quests assigned, completed, cancelled, or expired;
+  - bosses, Gods Battle gates, parties, and other progression unlocked;
+  - concise per-sortie summaries in execution order;
+  - the final party observation and currently legal actions.
+- The response must not return every room or combat-log entry for all Cycles by default. Existing latest-result and Diary retention rules continue to govern detailed logs.
+
+**Errors and implementation boundaries**
+- The API must return stable machine-readable error codes for authentication failure, unavailable or expired lease, validation failure, illegal action, stale revision, save-load failure, and internal failure.
+- The Electron main process owns the authenticated loopback listener. The renderer remains the authoritative owner of game simulation and environment-scoped persistence.
+- Main-process and renderer communication must use narrowly scoped, context-isolated IPC. Renderer code must not receive Node.js access, and auxiliary renderers must not receive complete save data.
+- API commands must be validated through the same unlock, resource, selection, HP, and progression rules used by the UI, except for the explicit unlimited-charge and batch-continuation rules above.
+- If save loading fails, API control must be refused and the protections in section 5.1.4 apply. The existing save must not be overwritten.
+- Implementation entry points for the API listener, IPC bridge, validation, batch resolution, persistence, and UI control lock must use `SpecRef: 9.1.3 | Experimental AI API | <anchor>` comments with the corresponding anchor from this section.
+
 ## 10. Coding Rule: SpecRef Traceability
 - To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.
 

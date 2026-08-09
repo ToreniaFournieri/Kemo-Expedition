@@ -10,6 +10,9 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 31 | 2026/08/10 | Add the Experimental AI API endpoint index and define authenticated atomic control acquisition, lease credentials and timing, paused progression, and structured errors. |
+| 0.9.1 | 30 | 2026/08/10 | Add the normative OpenAPI-compatible endpoint contract and public/authenticated field definitions for the Experimental AI API status endpoint. |
+| 0.9.1 | 29 | 2026/08/10 | Specify the experimental localhost AI API with authenticated exclusive control, revisioned strategic commands, and unlimited-charge batch sorties of up to 100 complete Cycles. |
 | 0.9.1 | 28 | 2026/08/09 | Save backup exports through Safari's native file-sharing sheet on macOS and iOS so WebKit does not try and fail to render the generated blob URL as a page. |
 | 0.9.1 | 27 | 2026/08/09 | Compress the menu-bar Party Progress header, footer, and party rows so all six parties fit in the standard pane without scrolling, retaining overflow only as an accessibility fallback. |
 | 0.9.1 | 26 | 2026/08/09 | Align each menu-bar Party Progress row with the section 8.3 compact expedition format, remove duplicate party labels, and add disclosed floor/outcome, charge, gate/quest summaries, and Step sub-progress. |
