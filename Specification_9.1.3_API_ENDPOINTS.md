@@ -906,7 +906,7 @@ The following non-normative example illustrates the response structure. Empty re
 |-|-|-|-|-|
 | `observation.revision` | integer | Yes | `>= 0` | Authoritative game-state revision to supply as `expectedRevision` in the next mutating request. |
 | `observation.observedAt` | integer | Yes | Unix timestamp in milliseconds | Server wall-clock time at which snapshot construction completed. |
-| `observation.simulatedAt` | integer | Yes | Unix timestamp in milliseconds | Current authoritative in-game timestamp. It remains frozen except for simulation explicitly performed by API operations. |
+| `observation.simulatedAt` | integer | Yes | Unix timestamp in milliseconds | Current authoritative global in-game timestamp. It remains frozen except for API operations that explicitly advance global time. Party-local simulation performed by `/sortie` does not change it. |
 | `observation.environment` | string | Yes | `dev`, `beta`, or `prod` | Active desktop environment and save namespace. |
 | `observation.language` | string | Yes | `ja`, `en`, `zh-CN`, or `zh-TW` | Active display language used for optional display metadata. Stable IDs remain authoritative. |
 
@@ -1723,8 +1723,8 @@ Before consuming randomness or changing staged state, the server MUST validate:
 
 API control can be acquired while a party is partway through a normal Cycle. Before requested Cycle 1 begins:
 
-- If the party is already at the beginning of `state.rest` or is `state.idle`, no settlement is required.
-- Otherwise, resolve the frozen current Cycle from its preserved partial position through the beginning of its next `state.rest` using normal chronological rules.
+- If the party is at the beginning of `state.rest`, no settlement is required. If it is `state.idle`, place the selected party at the beginning of `state.rest` without advancing time or applying recovery before requested Cycle 1 begins.
+- Otherwise, resolve the frozen current Cycle from its preserved partial position through completion of its ending `state.rest` using normal chronological rules.
 - Settlement preserves every result and side effect of the already-started Cycle but does not count toward requested or completed sortie count.
 - If the frozen state contains an already-started Gods Battle, settlement may finish that existing battle. It MUST NOT start another Gods Battle.
 - The response reports settlement separately as `prelude`; it is never merged into a requested run summary.
@@ -1732,7 +1732,7 @@ API control can be acquired while a party is partway through a normal Cycle. Bef
 
 ### Requested Cycle behavior
 
-After settlement, each requested sortie begins at `state.rest` and ends at the beginning of the next `state.rest`.
+After settlement, each requested sortie begins at `state.rest` and finishes after the ending `state.rest` completes, matching the canonical Cycle boundary in section 5.1.
 
 Each Cycle MUST resolve the authoritative sequence and applicable optional/skipped states:
 
@@ -1746,14 +1746,16 @@ Each Cycle MUST resolve the authoritative sequence and applicable optional/skipp
 8. Fully restore HP at the beginning of `state.explore` as specified in section 5.1.1.
 9. Resolve disclosed loot gates, every visited room and battle, rewards, XP, HP persistence, retreat rules, and normal expedition outcome through the configured depth limit.
 10. Resolve `state.return`, side-quest assignment/progress/completion/expiration, condition changes, Diary and notification triggers, and progression unlocks.
-11. End at the beginning of the next `state.rest`.
+11. Enter the ending `state.rest`, resolve its normal recovery Steps completely, and end at the completion of that state.
 
-- Simulate every Step duration and time-dependent effect immediately in chronological order. The client does not wait for real time.
-- `simulatedAt` advances by the actual simulated duration of settlement and every requested Cycle, including modifiers and skipped states.
+- Simulate every Step duration and time-dependent effect for the selected party immediately in chronological order. The client does not wait for real time.
+- Settlement and requested Cycles accumulate party-local simulated elapsed time, including modifiers and skipped states. They MUST NOT advance the authoritative global `simulatedAt` timestamp.
+- Non-target parties remain frozen for the complete operation. Their states, Step progress, HP, side quests, deadlines, charge stock and timers, Diary events, notifications, and automation MUST NOT advance because of the selected party's simulated elapsed time.
+- Shared resources and progression may still change when they are an authoritative result of the selected party's actions; this does not constitute progression of a non-target party.
 - Bag randomization and all other authoritative randomness are consumed sequentially. Results from one Cycle affect all later Cycles.
 - Inventory, equipment, Jewels, Gold, Prana, XP, HP, condition, side quests, loot gates, boss records, Gods Battle readiness, party unlocks, Diary entries, and other results carry forward between Cycles.
 - A `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` result counts as one completed requested sortie.
-- Defeat MUST NOT truncate the batch. The following requested Cycle begins with normal rest/recovery and continues the sequence.
+- Defeat MUST NOT truncate the batch. The following requested Cycle begins with normal rest/recovery and continues through completion of its ending `state.rest`.
 - Once accepted, exactly `count` requested Cycles MUST complete. A gameplay outcome cannot stop the batch early.
 - Global Auto-Run configuration does not add Cycles to the requested count and does not start background progression during the request.
 
@@ -1800,8 +1802,8 @@ The following non-normative example abbreviates `runs` for readability. A confor
     "completedCount": 10,
     "previousRevision": 124,
     "revision": 125,
-    "simulatedStartAt": 1786345200000,
-    "simulatedEndAt": 1786363200000
+    "partyElapsedStartMs": 0,
+    "partyElapsedEndMs": 18000000
   },
   "prelude": null,
   "outcomes": {
@@ -1869,8 +1871,8 @@ The following non-normative example abbreviates `runs` for readability. A confor
 | `sortie.completedCount` | integer | Yes | Must equal `requestedCount`. |
 | `sortie.previousRevision` | integer | Yes | Accepted `expectedRevision`. |
 | `sortie.revision` | integer | Yes | New revision; exactly `previousRevision + 1`. |
-| `sortie.simulatedStartAt` | integer | Yes | In-game timestamp before optional settlement. |
-| `sortie.simulatedEndAt` | integer | Yes | In-game timestamp after the final requested Cycle. |
+| `sortie.partyElapsedStartMs` | integer | Yes | `0`; operation-relative selected-party elapsed time before optional settlement. This is not a global timestamp or persisted clock. |
+| `sortie.partyElapsedEndMs` | integer | Yes | Total operation-relative selected-party elapsed milliseconds after optional settlement and the final requested Cycle, including every ending `state.rest`. This is not a global timestamp or persisted clock. |
 | `prelude` | object or `null` | Yes | Concise settlement summary, or `null` when no settlement occurred. |
 | `outcomes` | object | Yes | Counts for requested Cycles only; values must sum to `completedCount`. |
 | `totals` | object | Yes | Aggregate economic and reward deltas from requested Cycles only. Prelude deltas are reported inside `prelude`. |
@@ -1886,7 +1888,7 @@ The following non-normative example abbreviates `runs` for readability. A confor
 
 ### Prelude summary
 
-When present, `prelude` contains simulated start/end timestamps, starting state, final outcome when an expedition was settled, XP and resource deltas, reward counts, side-quest events, unlocks, and ending HP. It MUST identify whether an already-started Gods Battle was completed. It MUST NOT affect requested counts, `outcomes`, `totals`, or `runs`.
+When present, `prelude` contains operation-relative `partyElapsedStartMs` and `partyElapsedEndMs`, starting state, final outcome when an expedition was settled, XP and resource deltas, reward counts, side-quest events, unlocks, and ending HP after the ending `state.rest` completes. It MUST identify whether an already-started Gods Battle was completed. It MUST NOT affect requested counts, `outcomes`, `totals`, or `runs`, and its elapsed values MUST NOT be represented as global timestamps or persisted clocks.
 
 ### Per-run summary
 
@@ -1896,8 +1898,8 @@ Each `runs` entry contains:
 |-|-|-|-|
 | `index` | integer | Yes | One-based requested Cycle index. |
 | `dungeonId` | integer | Yes | Dungeon resolved in this Cycle. |
-| `simulatedStartAt` | integer | Yes | Cycle start timestamp. |
-| `simulatedEndAt` | integer | Yes | Cycle end timestamp. |
+| `partyElapsedStartMs` | integer | Yes | Operation-relative selected-party elapsed milliseconds at Cycle start. |
+| `partyElapsedEndMs` | integer | Yes | Operation-relative selected-party elapsed milliseconds after the Cycle's ending `state.rest` completes. |
 | `outcome` | string | Yes | `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, or `Defeat`. |
 | `completedRooms` | integer | Yes | Rooms resolved during exploration. |
 | `totalRooms` | integer | Yes | Rooms in the configured complete expedition. |

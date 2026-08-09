@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 41 | 2026/08/10 | Align Experimental AI API sorties with canonical Cycle boundaries, isolate simulated elapsed time to the selected party without advancing global time, and authorize gender in character-build commands. |
 | 0.9.1 | 40 | 2026/08/10 | Remove the Experimental AI API heartbeat endpoint and replace it with five-minute sliding inactivity renewal on successful lease-owned operations plus long-operation pinning. |
 | 0.9.1 | 39 | 2026/08/10 | Define atomic Experimental AI API batch sorties with partial-state settlement, 1–100 sequential full Cycles, unlimited isolated charge, reconciled summaries, and rollback behavior. |
 | 0.9.1 | 38 | 2026/08/10 | Define the complete Experimental AI API command transaction model and discriminator set, and correct Auto-Run observation and control to its global scope. |

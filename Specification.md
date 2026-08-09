@@ -178,7 +178,7 @@
 
 **Strategic commands**
 - The API may expose only the following strategic commands, subject to the same availability and validation rules as the UI and the explicit API exceptions in section 9.1.3:
-  - change a character's selectable race, lineage, predisposition, main class, sub class, Mimorian form, or name;
+  - change a character's selectable race, gender, lineage, predisposition, main class, sub class, Mimorian form, or name; race and gender must satisfy the same paired uniqueness, availability, and Mimorian restrictions as the UI;
   - reorder party members;
   - change a party's deity;
   - set each character's automatic-equipment mode;
@@ -219,7 +219,8 @@
   - selling and reward finalization;
   - free action, optional sleep, prayer, donation, and savings;
   - movement, exploration, battles, return, side quests, loot gates, rewards, XP, unlocks, and automation.
-- Cycle durations and time-dependent effects must be simulated immediately according to the normal Step rules. The API client must never wait for real-world progression.
+- Cycle durations and time-dependent effects must be simulated immediately for the selected party according to the normal Step rules. This uses party-local simulated elapsed time: the API client never waits for real-world progression, the global runtime clock does not advance, and no other party's state, side quest, deadline, charge timer, or automation progresses.
+- Each requested Cycle begins at `state.rest` and finishes after the ending `state.rest` completes, following the canonical Cycle boundary in section 5.1.
 - Cycles must execute sequentially so every result affects the following Cycle.
 - A defeat must not truncate an accepted batch. The following Cycle must perform the normal rest and recovery required before its expedition.
 - Loot-gate turn-backs, wounded retreats, draws, and defeats count as completed sortie attempts.
