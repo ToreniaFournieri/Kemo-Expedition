@@ -147,7 +147,7 @@
 - Only one API controller may hold control at a time.
 - `POST /experimental/v1/control/acquire` acquires an exclusive API-control lease. While the lease is held, gameplay remains visible but every state-mutating UI control is disabled.
 - `POST /experimental/v1/control/release` persists the current state, releases the lease, and restores normal UI control.
-- An authenticated heartbeat must renew the lease. Releasing the lease, lease expiry, disabling the API, or quitting the application must end API control safely.
+- A lease uses a five-minute sliding inactivity timeout. Successful lease-owned observation, build-options, command, and sortie calls renew it; status does not. Releasing the lease, inactivity expiry, disabling the API, or quitting the application must end API control safely.
 - Each observation must include a monotonically increasing state `revision`.
 - Every mutating request must include `expectedRevision`. If it does not equal the current revision, reject the request without changing state or advancing simulation.
 - Mutating API operations must be serialized so that API and UI mutations cannot interleave.
@@ -159,7 +159,7 @@
 - `GET /experimental/v1/observation`
   - Returns the current AI-safe observation and the strategic commands currently legal for each party.
 - `POST /experimental/v1/command`
-  - Applies one non-sortie strategic command without advancing game time.
+  - Applies one strategic command. Configuration commands do not advance game time; the explicitly selected single-run Gods Battle command resolves one immediate Cycle.
 - `POST /experimental/v1/sortie`
   - Synchronously resolves 1 to 100 API-only normal expedition Cycles for one specified party.
 
@@ -168,7 +168,8 @@
   - schema version, revision, simulated timestamp, and active environment;
   - currencies and progression unlocks;
   - each party's HP, level and XP, condition, deity, side quest, loot gates, and Gods Battle readiness;
-  - expedition destination mode and selected dungeon, depth limit, difficulty offset, and auto-run configuration;
+  - each party's expedition destination mode and selected dungeon, depth limit, and difficulty offset;
+  - the global auto-run configuration;
   - character order and builds, computed combat summaries, auto-equipment modes, and equipment locks;
   - inventory summaries required to understand automatic-equipment decisions;
   - the latest expedition result and currently legal strategic commands.
@@ -176,14 +177,15 @@
 - The observation must not expose future random rolls, bag contents or order, hidden enemies, undisclosed exploration outcomes, the complete save data, or internal renderer fields.
 
 **Strategic commands**
-- The API may expose only the following non-sortie strategic commands, subject to the same availability and validation rules as the UI:
+- The API may expose only the following strategic commands, subject to the same availability and validation rules as the UI and the explicit API exceptions in section 9.1.3:
   - change a character's selectable race, lineage, predisposition, main class, sub class, Mimorian form, or name;
   - reorder party members;
   - change a party's deity;
   - set each character's automatic-equipment mode;
   - toggle locks on currently equipped items;
   - select the Jewel Priority Party;
-  - set expedition destination mode or dungeon, depth limit, difficulty offset, and auto-run mode;
+  - set a party's expedition destination mode or dungeon, depth limit, and difficulty offset;
+  - set the global auto-run mode;
   - initiate one Gods Battle through a separate single-run command when its normal gate and availability rules are satisfied.
 - The API must not expose:
   - direct combat actions;

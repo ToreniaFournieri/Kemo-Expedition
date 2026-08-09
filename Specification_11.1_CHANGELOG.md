@@ -10,6 +10,15 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 40 | 2026/08/10 | Remove the Experimental AI API heartbeat endpoint and replace it with five-minute sliding inactivity renewal on successful lease-owned operations plus long-operation pinning. |
+| 0.9.1 | 39 | 2026/08/10 | Define atomic Experimental AI API batch sorties with partial-state settlement, 1–100 sequential full Cycles, unlimited isolated charge, reconciled summaries, and rollback behavior. |
+| 0.9.1 | 38 | 2026/08/10 | Define the complete Experimental AI API command transaction model and discriminator set, and correct Auto-Run observation and control to its global scope. |
+| 0.9.1 | 37 | 2026/08/10 | Make unique-character API immutability explicit: only main and sub class are advertised or accepted as editable build fields. |
+| 0.9.1 | 36 | 2026/08/10 | Add a read-only character build-options endpoint with safe race/gender pairs, selectable domains, Mimorian and unique-character constraints, and hypothetical build validation. |
+| 0.9.1 | 35 | 2026/08/10 | Add explicit character-build observations and define atomic partial build updates with validation, derived-stat and HP recalculation, and immediate mode-aware automatic equipment. |
+| 0.9.1 | 34 | 2026/08/10 | Define the Experimental AI API observation as an atomic revisioned strategic snapshot with resources, catalogs, parties, computed builds, equipment context, progression, and legal actions. |
+| 0.9.1 | 33 | 2026/08/10 | Define Experimental AI API control release, including atomic persistence and UI hand-back, timer re-anchoring, lease invalidation, rollback, and structured errors. |
+| 0.9.1 | 32 | 2026/08/10 | Define Experimental AI API heartbeat authentication, lease renewal and expiry races, pinned-operation behavior, response fields, and recovery errors. |
 | 0.9.1 | 31 | 2026/08/10 | Add the Experimental AI API endpoint index and define authenticated atomic control acquisition, lease credentials and timing, paused progression, and structured errors. |
 | 0.9.1 | 30 | 2026/08/10 | Add the normative OpenAPI-compatible endpoint contract and public/authenticated field definitions for the Experimental AI API status endpoint. |
 | 0.9.1 | 29 | 2026/08/10 | Specify the experimental localhost AI API with authenticated exclusive control, revisioned strategic commands, and unlimited-charge batch sorties of up to 100 complete Cycles. |
