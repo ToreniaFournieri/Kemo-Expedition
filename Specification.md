@@ -97,6 +97,7 @@
     - Debug mode: OFF
     - Speed of time: x1
 **Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/`, `/beta/`, and `/`) and never shared between them.
+- **Desktop launch mapping:** `npm run desktop:dev` must load `/dev/`, `npm run desktop:beta` must load `/beta/`, and `npm run desktop:prod` plus packaged desktop releases must load `/`. The desktop custom protocol must serve the same built assets beneath each environment path without sharing their persisted save data.
 
 ### 9.1 Desktop distribution
 - The production browser bundle must also be distributable as a macOS desktop application without requiring the user to start or manage a local web server.
@@ -105,6 +106,16 @@
 - Releases must retain the complete `bokemo-<version>-browser.zip` artifact and additionally provide Finder-installable DMG and zipped application artifacts for both Apple Silicon and Intel Macs (or one documented universal application).
 - The application bundle must define a stable bundle identifier, application name and version, the macOS icon, and the minimum supported macOS version.
 - Public macOS release artifacts must be code-signed and notarized using CI secrets when release credentials are available. Unsigned packages are development-only and must be documented accordingly.
+
+#### 9.1.1 macOS background lifecycle and native notifications
+- This policy applies only to the packaged macOS desktop application. It must not alter notification or window-lifecycle behavior in the browser distribution.
+- Closing the desktop window may hide it without terminating the renderer so that local progression can continue. While hidden, the application must retain its Dock icon and provide a macOS menu-bar item with explicit `Open BoKemo` and `Quit BoKemo` actions.
+- Local progression and timely native notifications are available only while the Mac is awake and the BoKemo process remains running. No timely delivery is guaranteed while macOS is asleep or after the application has fully quit.
+- Native notifications must use each party's existing Diary notification filters. The player must be able to select either `Hidden only` or `Always` delivery; `Hidden only` is the default.
+- After macOS sleep or a full application restart, AFK catch-up must issue at most one grouped native summary rather than one native notification per recovered event. Event details must remain available in the Diary.
+- Clicking an individual Diary notification must restore BoKemo and open the relevant party and Diary entry. Clicking an AFK summary must restore BoKemo and open the Diary.
+- Starting BoKemo at macOS login must be optional and disabled by default. When enabled, BoKemo must launch hidden in the menu bar without opening its main window.
+- If macOS notification permission is denied, local saves, progression, Diary records, and in-application notifications must continue to function normally.
 
 ## 10. Coding Rule: SpecRef Traceability
 - To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.

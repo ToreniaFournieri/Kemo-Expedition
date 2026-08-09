@@ -35,6 +35,8 @@ import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, g
 import { calculateItemSellPrice } from '../game/pricing';
 import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getRequiredAltarVictories, MAX_ALTAR_LEVEL, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
+import { DesktopNotificationSettings } from './DesktopNotificationSettings';
+import { getDesktopPreferences, getProcessedDiaryIds, saveProcessedDiaryIds } from '../game/desktopNotifications';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { formatEnemyDefName, formatEnemyFormName, getEnemyTypeShortName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
@@ -3066,6 +3068,16 @@ export function HomeScreen({
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
+  const processedNativeDiaryIdsRef = useRef<Set<string> | null>(null);
+  const nativeAfkRecoveryRef = useRef(false);
+
+  if (processedNativeDiaryIdsRef.current === null) {
+    const storedIds = getProcessedDiaryIds();
+    processedNativeDiaryIdsRef.current = storedIds ?? new Set(
+      state.parties.flatMap((party) => party.diaryLogs.map((log) => log.id)),
+    );
+    if (storedIds === null) saveProcessedDiaryIds(processedNativeDiaryIdsRef.current);
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -4343,6 +4355,81 @@ export function HomeScreen({
       ? Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMs)
       : 0;
   }, [pendingAfkMs]);
+
+  // SpecRef: 9.1.1 | macOS background lifecycle and native notifications | Diary-filtered native notifications
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    const processedIds = processedNativeDiaryIdsRef.current;
+    if (!desktop || !processedIds) return;
+    if (pendingAfkMs > 0) {
+      nativeAfkRecoveryRef.current = true;
+      return;
+    }
+
+    const newLogs = state.parties
+      .flatMap((party, partyIndex) => party.diaryLogs.map((log) => ({ party, partyIndex, log })))
+      .filter(({ log }) => !processedIds.has(log.id))
+      .sort((a, b) => a.log.createdAt - b.log.createdAt);
+    if (newLogs.length === 0) {
+      nativeAfkRecoveryRef.current = false;
+      return;
+    }
+
+    newLogs.forEach(({ log }) => processedIds.add(log.id));
+    saveProcessedDiaryIds(processedIds);
+    const wasAfkRecovery = nativeAfkRecoveryRef.current;
+    nativeAfkRecoveryRef.current = false;
+    const preferences = getDesktopPreferences();
+    if (!preferences.nativeNotificationsEnabled) return;
+
+    void desktop.getWindowVisibility().then(async (isVisible) => {
+      if (preferences.nativeNotificationMode === 'hiddenOnly' && isVisible) return;
+      if (wasAfkRecovery) {
+        await desktop.showNotification({
+          id: `afk-${Date.now()}`,
+          title: t('desktopNotification.afkTitle'),
+          body: t('desktopNotification.afkBody', { count: newLogs.length }),
+          kind: 'afkSummary',
+        });
+        return;
+      }
+
+      await Promise.all(newLogs.map(({ party, partyIndex, log }) => {
+        const primaryTrigger = log.triggers[0] ?? 'unlock';
+        return desktop.showNotification({
+          id: log.id,
+          title: t(`desktopNotification.trigger.${primaryTrigger}`),
+          body: t('desktopNotification.diaryBody', {
+            party: `PT${partyIndex + 1}`,
+            dungeon: log.unlockDetail ?? log.sideQuestDetail ?? log.expeditionLog.dungeonName,
+          }),
+          kind: 'diary',
+          partyId: party.id,
+          diaryLogId: log.id,
+        });
+      }));
+    }).catch((error) => console.error('Failed to deliver desktop notification:', error));
+  }, [pendingAfkMs, state.parties]);
+
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop) return;
+    return desktop.onNotificationActivated((payload) => {
+      const partyIndex = payload.partyId === undefined
+        ? state.selectedPartyIndex
+        : state.parties.findIndex((party) => party.id === payload.partyId);
+      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      if (isPartyExpeditionSplitViewEnabled) {
+        setActiveWideModeSecondaryTab('diary');
+      } else {
+        setActiveTab('diary');
+      }
+      if (payload.diaryLogId) {
+        setDiaryExpandedLogs((previous) => ({ ...previous, [payload.diaryLogId!]: true }));
+        actions.markDiaryLogSeen(payload.diaryLogId);
+      }
+    });
+  }, [actions, isPartyExpeditionSplitViewEnabled, state.parties, state.selectedPartyIndex]);
 
   useEffect(() => {
     if (pendingAfkMs > 0) return;
@@ -14447,6 +14534,8 @@ function SettingTab({
                   : t('setting.theme.description.laika')}
             </div>
           </div>
+
+          <DesktopNotificationSettings />
         </div>}
       </div>
 

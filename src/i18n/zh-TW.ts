@@ -3982,6 +3982,27 @@ const zhTW = {
   'home.inventory.sellResultPrana': '獲得了 {prana} 普拉納。',
   'home.inventory.sellResultGold': '獲得了 {gold} 金幣。',
 
+  'setting.desktopNotifications.title': 'macOS通知',
+  'setting.desktopNotifications.enabled': '原生通知',
+  'setting.desktopNotifications.delivery': '通知時機',
+  'setting.desktopNotifications.hiddenOnly': '僅隱藏時',
+  'setting.desktopNotifications.always': '始終通知',
+  'setting.desktopNotifications.launchAtLogin': '登入時啟動BoKemo',
+  'setting.desktopNotifications.help': '關閉視窗後，BoKemo仍會在選單列中運行。通知遵循各隊伍的日記設定。',
+  'setting.desktopNotifications.unsupported': '原生通知無法使用。進度、存檔、日記和應用程式內通知不受影響。',
+  'desktopNotification.afkTitle': '離開期間的事件',
+  'desktopNotification.afkBody': '發生了{count}個重要日記事件。請開啟BoKemo查看詳情。',
+  'desktopNotification.diaryBody': '{party}: {dungeon}',
+  'desktopNotification.trigger.defeat': '隊伍戰敗',
+  'desktopNotification.trigger.draw': '隊伍撤退',
+  'desktopNotification.trigger.eliteRare': '獲得菁英稀有物品',
+  'desktopNotification.trigger.bossRare': '獲得首領稀有物品',
+  'desktopNotification.trigger.mythicRare': '獲得神魔稀有物品',
+  'desktopNotification.trigger.superRare': '獲得超稀有物品',
+  'desktopNotification.trigger.godsBattle': '神魔戰報告',
+  'desktopNotification.trigger.sideQuest': '支線任務報告',
+  'desktopNotification.trigger.unlock': '新內容解鎖',
+
 };
 
 export default zhTW;

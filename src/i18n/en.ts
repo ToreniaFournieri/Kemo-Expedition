@@ -3991,6 +3991,27 @@ const en = {
   'home.inventory.sellResultPrana': 'Received {prana} Prana.',
   'home.inventory.sellResultGold': 'Received {gold} Gold.',
 
+  'setting.desktopNotifications.title': 'macOS notifications',
+  'setting.desktopNotifications.enabled': 'Native notifications',
+  'setting.desktopNotifications.delivery': 'Delivery',
+  'setting.desktopNotifications.hiddenOnly': 'Only while hidden',
+  'setting.desktopNotifications.always': 'Always',
+  'setting.desktopNotifications.launchAtLogin': 'Start BoKemo at login',
+  'setting.desktopNotifications.help': 'Closing the window keeps BoKemo running in the menu bar. Notifications follow each party’s Diary filters.',
+  'setting.desktopNotifications.unsupported': 'Native notifications are unavailable. Progress, saves, Diary records, and in-app notices are unaffected.',
+  'desktopNotification.afkTitle': 'While you were away',
+  'desktopNotification.afkBody': '{count} important Diary events occurred. Open BoKemo for details.',
+  'desktopNotification.diaryBody': '{party}: {dungeon}',
+  'desktopNotification.trigger.defeat': 'Party defeated',
+  'desktopNotification.trigger.draw': 'Party withdrew',
+  'desktopNotification.trigger.eliteRare': 'Elite Rare obtained',
+  'desktopNotification.trigger.bossRare': 'Boss Rare obtained',
+  'desktopNotification.trigger.mythicRare': 'Mythic Rare obtained',
+  'desktopNotification.trigger.superRare': 'Super Rare obtained',
+  'desktopNotification.trigger.godsBattle': 'Gods Battle report',
+  'desktopNotification.trigger.sideQuest': 'Side Quest report',
+  'desktopNotification.trigger.unlock': 'New unlock',
+
 } as const;
 
 export default en;

@@ -10,6 +10,13 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 18 | 2026/08/09 | Remove the duplicated party label from macOS Diary notification bodies so they render as `PT1: Dungeon` instead of `PT1 PT1: Dungeon`. |
+| 0.9.1 | 17 | 2026/08/09 | Add explicit dev, beta, and production desktop launch commands that load their specified environment paths with isolated saves and matching debug behavior. |
+| 0.9.1 | 16 | 2026/08/09 | Move the packaged macOS native-notification controls from Backup / Reset to the bottom of the Mode Select settings pane. |
+| 0.9.1 | 15 | 2026/08/09 | Use the BoKemo application artwork for macOS native notifications and the development Dock identity instead of Electron's default atom icon where supported. |
+| 0.9.1 | 14 | 2026/08/09 | Approve Electron's required npm postinstall script so fresh desktop development installs can provision the Electron binary instead of failing at startup. |
+| 0.9.1 | 13 | 2026/08/09 | Implement packaged macOS background progression with close-to-menu-bar lifecycle, optional hidden login launch, Diary-filtered native notifications, and grouped AFK recovery alerts. |
+| 0.9.1 | 12 | 2026/08/09 | Define the packaged macOS background lifecycle, menu-bar controls, optional login launch, Diary-filtered native notifications, and grouped AFK catch-up notification policy. |
 | 0.9.1 | 11 | 2026/08/08 | Replace public-directory image imports with Vite-injected filename manifests, refresh Browserslist data, and explicitly compact Babel output to eliminate repetitive local-development warnings while preserving image availability checks. |
 | 0.9.1 | 10 | 2026/08/08 | Treat character and chibi image glob matches as public asset URLs while preserving runtime image availability checks. |
 | 0.9.1 | 9 | 2026/08/08 | Format user-visible runtime numbers with `Intl.NumberFormat('ja-JP')` and align the Pages deployment toolchain with the declared Node 22 and npm 11 requirements. |

@@ -3991,6 +3991,27 @@ const ja = {
   'home.inventory.sellResultPrana': '{prana}プラーナを獲得しました。',
   'home.inventory.sellResultGold': '{gold}ゴールドを獲得しました。',
 
+  'setting.desktopNotifications.title': 'macOS通知',
+  'setting.desktopNotifications.enabled': 'ネイティブ通知',
+  'setting.desktopNotifications.delivery': '通知するタイミング',
+  'setting.desktopNotifications.hiddenOnly': '非表示中のみ',
+  'setting.desktopNotifications.always': '常に通知',
+  'setting.desktopNotifications.launchAtLogin': 'ログイン時にBoKemoを起動',
+  'setting.desktopNotifications.help': 'ウィンドウを閉じてもBoKemoはメニューバーで動作を続けます。通知は各パーティのダイアリー設定に従います。',
+  'setting.desktopNotifications.unsupported': 'ネイティブ通知を利用できません。進行、セーブ、ダイアリー、アプリ内通知には影響しません。',
+  'desktopNotification.afkTitle': '留守中の出来事',
+  'desktopNotification.afkBody': '重要なダイアリーイベントが{count}件発生しました。詳細はBoKemoで確認してください。',
+  'desktopNotification.diaryBody': '{party}: {dungeon}',
+  'desktopNotification.trigger.defeat': 'パーティ敗北',
+  'desktopNotification.trigger.draw': 'パーティ撤退',
+  'desktopNotification.trigger.eliteRare': 'エリートレア獲得',
+  'desktopNotification.trigger.bossRare': 'ボスレア獲得',
+  'desktopNotification.trigger.mythicRare': '神魔レア獲得',
+  'desktopNotification.trigger.superRare': '超レア獲得',
+  'desktopNotification.trigger.godsBattle': '神魔戦報告',
+  'desktopNotification.trigger.sideQuest': 'サイドクエスト報告',
+  'desktopNotification.trigger.unlock': '新しい解放',
+
 } as const;
 
 export default ja;
