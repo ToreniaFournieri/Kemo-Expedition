@@ -12618,8 +12618,10 @@ function SettingTab({
     };
     const isIos = /iPad|iPhone|iPod/.test(nav.userAgent)
       || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+    const isSafari = /Safari\//.test(nav.userAgent)
+      && !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)\//.test(nav.userAgent);
 
-    if (isIos && nav.share) {
+    if ((isIos || isSafari) && nav.share) {
       const shareData: ShareData = { files: [backupFile] };
       let canShareBackup = !nav.canShare;
       try {
@@ -12629,7 +12631,8 @@ function SettingTab({
       }
       if (canShareBackup) {
         try {
-          // iOS uses its native share sheet, where the player can save the file.
+          // Safari can ignore an object URL anchor's download attribute and try
+          // to render the backup as a page. Its native share sheet saves the file.
           await nav.share(shareData);
           onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
           return;

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 28 | 2026/08/09 | Save backup exports through Safari's native file-sharing sheet on macOS and iOS so WebKit does not try and fail to render the generated blob URL as a page. |
 | 0.9.1 | 27 | 2026/08/09 | Compress the menu-bar Party Progress header, footer, and party rows so all six parties fit in the standard pane without scrolling, retaining overflow only as an accessibility fallback. |
 | 0.9.1 | 26 | 2026/08/09 | Align each menu-bar Party Progress row with the section 8.3 compact expedition format, remove duplicate party labels, and add disclosed floor/outcome, charge, gate/quest summaries, and Step sub-progress. |
 | 0.9.1 | 25 | 2026/08/09 | Move Party Progress pane branding and interface labels into the shared i18n dictionaries and resolve them through the standard translation API. |
