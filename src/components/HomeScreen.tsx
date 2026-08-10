@@ -36,6 +36,7 @@ import { calculateItemSellPrice } from '../game/pricing';
 import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getRequiredAltarVictories, MAX_ALTAR_LEVEL, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
 import { DesktopNotificationSettings } from './DesktopNotificationSettings';
+import { ExperimentalApiSettings } from './ExperimentalApiSettings';
 import { getDesktopPreferences, getProcessedDiaryIds, saveProcessedDiaryIds } from '../game/desktopNotifications';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { formatEnemyDefName, formatEnemyFormName, getEnemyTypeShortName } from '../game/enemyDisplay';
@@ -53,6 +54,7 @@ import { formatAttackSpeedHelp } from '../game/attackProfile';
 import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
+import { buildExperimentalObservation, deityNameFromId, outcomeFromParty } from '../game/experimentalApi';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -211,10 +213,10 @@ interface HomeScreenProps {
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
-    toggleEquipmentLock: (characterId: number, slotIndex: number) => void;
+    toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
-    updateCharacter: (characterId: number, updates: Partial<Character>) => void;
-    reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
+    updateCharacter: (characterId: number, updates: Partial<Character>, partyIndex?: number) => void;
+    reorderPartyCharacter: (fromIndex: number, toIndex: number, partyIndex?: number) => void;
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
     grantFeedbackReward: () => void;
@@ -230,6 +232,10 @@ interface HomeScreenProps {
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number) => void;
+    runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
+      state: GameState;
+      runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
+    };
     resetGame: () => void;
     importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
@@ -247,6 +253,7 @@ interface HomeScreenProps {
       options?: { rarity?: ItemRarity; isSuperRareItem?: boolean }
     ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
+    flushSave: () => void;
   };
 }
 
@@ -3074,6 +3081,241 @@ export function HomeScreen({
   const partyProgressDisclosedLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>(
     state.parties.map((party) => party.lastExpeditionLog),
   );
+  const [apiControlActive, setApiControlActive] = useState(false);
+  const apiControlActiveRef = useRef(false);
+  const apiRevisionRef = useRef(0);
+  const apiSimulatedAtRef = useRef(Date.now());
+  const apiStateRef = useRef(state);
+  const apiStateVersionRef = useRef(0);
+  const apiActionsRef = useRef(actions);
+  const apiAutoRunRef = useRef(isAutoRepeatEnabled);
+  const apiCyclesRef = useRef(partyCycles);
+  apiStateRef.current = state;
+  apiActionsRef.current = actions;
+  apiAutoRunRef.current = isAutoRepeatEnabled;
+  apiCyclesRef.current = partyCycles;
+
+  useEffect(() => {
+    apiStateVersionRef.current += 1;
+  }, [state]);
+
+  const waitForApiStateUpdate = useCallback((previousVersion: number) => new Promise<void>((resolve, reject) => {
+    const startedAt = Date.now();
+    const check = () => {
+      if (apiStateVersionRef.current > previousVersion) return resolve();
+      if (Date.now() - startedAt > 10_000) return reject(new Error('state_update_timeout'));
+      window.setTimeout(check, 0);
+    };
+    check();
+  }), []);
+
+  const apiFailure = (status: number, code: string, message: string, retryable = false, details?: object) => ({
+    status,
+    error: { code, message, retryable, ...(details ? { details } : {}) },
+  });
+
+  const buildApiObservation = useCallback(() => buildExperimentalObservation(
+    apiStateRef.current,
+    apiRevisionRef.current,
+    apiAutoRunRef.current,
+    apiCyclesRef.current,
+    apiSimulatedAtRef.current,
+  ), []);
+
+  const handleExperimentalApiRequest = useCallback(async (operation: string, rawPayload: unknown) => {
+    const payload = rawPayload && typeof rawPayload === 'object' && !Array.isArray(rawPayload) ? rawPayload as Record<string, unknown> : {};
+    if (operation === 'status') return { status: 'ready', revision: apiRevisionRef.current };
+    if (operation === 'set-control') {
+      const active = payload.active === true;
+      apiControlActiveRef.current = active;
+      setApiControlActive(active);
+      lastCheckpointAtRef.current = Date.now();
+      if (!active) apiActionsRef.current.flushSave();
+      return { status: 'ready', revision: apiRevisionRef.current };
+    }
+    if (operation === 'release') {
+      apiActionsRef.current.flushSave();
+      apiControlActiveRef.current = false;
+      setApiControlActive(false);
+      lastCheckpointAtRef.current = Date.now();
+      return { revision: apiRevisionRef.current };
+    }
+    if (!apiControlActiveRef.current) return apiFailure(409, 'no_active_lease', 'The renderer is not in API-controlled mode.');
+    if (operation === 'observation') return { observation: buildApiObservation() };
+
+    if (operation === 'build-options') {
+      const allowedKeys = new Set(['revision', 'partyId', 'characterId', 'proposedChanges']);
+      if (Object.keys(payload).some((key) => !allowedKeys.has(key)) || !Number.isInteger(payload.revision) || !Number.isInteger(payload.partyId) || !Number.isInteger(payload.characterId)) return apiFailure(400, 'invalid_request', 'The build-options request is invalid.');
+      if (payload.revision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
+      const party = apiStateRef.current.parties.find((entry) => entry.id === payload.partyId);
+      if (!party) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      const character = party.characters.find((entry) => entry.id === payload.characterId);
+      if (!character) return apiFailure(404, 'character_not_found', 'The target character was not found.');
+      const proposed = payload.proposedChanges && typeof payload.proposedChanges === 'object' && !Array.isArray(payload.proposedChanges) ? payload.proposedChanges as Record<string, unknown> : {};
+      const currentBuild = { name: character.name, gender: character.gender, raceId: character.raceId, lineageId: character.raceId === 'mimorian' ? null : character.lineageId, predispositionId: character.raceId === 'mimorian' ? null : character.predispositionId, mainClassId: character.mainClassId, subClassId: character.subClassId, mimorianEnemyId: character.raceId === 'mimorian' ? character.mimorianEnemyId ?? null : null };
+      const candidateBuild = { ...currentBuild, ...proposed };
+      const immutableFields = character.isUnique ? Object.keys(proposed).filter((key) => !['mainClassId', 'subClassId'].includes(key)) : [];
+      const violations = immutableFields.map((field) => ({ code: 'immutable_character_field', field }));
+      const selectableRaceIds = RACES.map((entry) => entry.id);
+      const selectableClassIds = CLASSES.map((entry) => entry.id);
+      const selectableLineageIds = LINEAGES.filter((entry) => entry.selectable).map((entry) => entry.id);
+      const selectablePredispositionIds = PREDISPOSITIONS.filter((entry) => entry.selectable).map((entry) => entry.id);
+      return {
+        revision: apiRevisionRef.current,
+        partyId: party.id,
+        characterId: character.id,
+        currentBuild,
+        candidateBuild,
+        candidateValidation: { valid: violations.length === 0, violations, defaultNameWillBeAssigned: proposed.raceId !== undefined && proposed.raceId !== character.raceId && proposed.name === undefined },
+        options: { raceGenderPairs: selectableRaceIds.flatMap((raceId) => ['male', 'female'].map((gender) => ({ raceId, gender }))), lineageIds: selectableLineageIds, predispositionIds: selectablePredispositionIds, mainClassIds: selectableClassIds, subClassIds: selectableClassIds, mimorianEnemyIds: [...apiStateRef.current.global.unlockedMimorianEnemyIds], editableFields: character.isUnique ? ['mainClassId', 'subClassId'] : ['name', 'gender', 'raceId', 'lineageId', 'predispositionId', 'mainClassId', 'subClassId', 'mimorianEnemyId'] },
+      };
+    }
+
+    if (operation === 'command') {
+      if (Object.keys(payload).some((key) => !['expectedRevision', 'command'].includes(key)) || !Number.isInteger(payload.expectedRevision) || !payload.command || typeof payload.command !== 'object' || Array.isArray(payload.command)) return apiFailure(400, 'invalid_request', 'The command request is invalid.');
+      if (payload.expectedRevision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
+      const command = payload.command as Record<string, unknown>;
+      const type = command.type;
+      if (typeof type !== 'string' || !['update_character_build', 'reorder_character', 'set_deity', 'set_auto_equipment_mode', 'toggle_equipment_lock', 'set_jewel_priority_party', 'set_expedition_destination', 'set_expedition_depth', 'set_expedition_difficulty', 'set_auto_run', 'god_battle'].includes(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
+      const current = apiStateRef.current;
+      const partyIndex = Number.isInteger(command.partyId) ? current.parties.findIndex((entry) => entry.id === command.partyId) : -1;
+      const party = partyIndex >= 0 ? current.parties[partyIndex] : null;
+      if (command.partyId !== undefined && !party) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      const character = party && Number.isInteger(command.characterId) ? party.characters.find((entry) => entry.id === command.characterId) : null;
+      if (command.characterId !== undefined && !character) return apiFailure(404, 'character_not_found', 'The target character was not found.');
+      const previousRevision = apiRevisionRef.current;
+      const previousVersion = apiStateVersionRef.current;
+      let effects: Record<string, unknown> = {};
+      let dispatched = true;
+      if (type === 'update_character_build' && character && party) {
+        const changes = command.changes && typeof command.changes === 'object' && !Array.isArray(command.changes) ? command.changes as Partial<Character> : null;
+        if (!changes || Object.keys(changes).length === 0) return apiFailure(400, 'invalid_request', 'Character changes are required.');
+        if (character.isUnique && Object.keys(changes).some((key) => !['mainClassId', 'subClassId'].includes(key))) return apiFailure(422, 'immutable_character_field', 'A unique-character field is immutable.');
+        apiActionsRef.current.updateCharacter(character.id, changes, partyIndex);
+        effects = { characterId: character.id, changedFields: Object.keys(changes) };
+      } else if (type === 'reorder_character' && character && party) {
+        const from = party.characters.findIndex((entry) => entry.id === character.id);
+        const to = Number(command.targetRow) - 1;
+        if (!Number.isInteger(command.targetRow) || to < 0 || to >= party.characters.length) return apiFailure(400, 'invalid_request', 'targetRow is invalid.');
+        if (from === to) return apiFailure(409, 'no_change', 'The character is already in that row.');
+        apiActionsRef.current.reorderPartyCharacter(from, to, partyIndex);
+        effects = { previousRow: from + 1, targetRow: to + 1 };
+      } else if (type === 'set_deity' && party) {
+        const deityName = typeof command.deityId === 'string' ? deityNameFromId(command.deityId) : null;
+        if (!deityName || !current.global.unlockedDeities.includes(deityName)) return apiFailure(422, 'deity_unavailable', 'The deity is unavailable.');
+        if (getDeityKey(party.deity.name) === deityName) return apiFailure(409, 'no_change', 'The party already follows that deity.');
+        apiActionsRef.current.updatePartyDeity(partyIndex, deityName);
+        effects = { deityId: command.deityId };
+      } else if (type === 'set_auto_equipment_mode' && character) {
+        if (![0, 1, 2].includes(command.mode as number)) return apiFailure(400, 'invalid_request', 'mode is invalid.');
+        if ((character.autoEquipmentMode ?? 0) === command.mode) return apiFailure(409, 'no_change', 'The mode is unchanged.');
+        apiActionsRef.current.updateCharacter(character.id, { autoEquipmentMode: command.mode as 0 | 1 | 2 }, partyIndex);
+        effects = { previousMode: character.autoEquipmentMode ?? 0, mode: command.mode, autoEquipmentTriggered: false };
+      } else if (type === 'toggle_equipment_lock' && character) {
+        const slot = Number(command.slotIndex);
+        if (!Number.isInteger(slot) || !character.equipment[slot]) return apiFailure(404, 'equipment_slot_not_found', 'The equipment slot was not found.');
+        if ((character.autoEquipmentMode ?? 0) !== 2) return apiFailure(422, 'equipment_lock_unavailable', 'Equipment locks require FULL mode.');
+        apiActionsRef.current.toggleEquipmentLock(character.id, slot, partyIndex);
+        effects = { slotIndex: slot, previousLocked: Boolean(character.equipment[slot]?.isLocked), locked: !character.equipment[slot]?.isLocked };
+      } else if (type === 'set_jewel_priority_party') {
+        const target = command.partyId === null ? null : Number(command.partyId);
+        if (target !== null && !current.parties.some((entry) => entry.id === target)) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+        if ((current.global.jewelAutoEquipPriorityPartyId ?? null) === target) return apiFailure(409, 'no_change', 'The Jewel Priority Party is unchanged.');
+        apiActionsRef.current.setJewelAutoEquipPriorityParty(target);
+        effects = { previousPartyId: current.global.jewelAutoEquipPriorityPartyId ?? null, partyId: target, autoJewelEquipmentTriggered: false };
+      } else if (type === 'set_expedition_destination' && party) {
+        if (command.mode !== 'auto' && command.mode !== 'fixed') return apiFailure(400, 'invalid_request', 'mode is invalid.');
+        if (command.mode === 'fixed') {
+          if (!Number.isInteger(command.dungeonId) || !DUNGEONS.some((entry) => entry.id === command.dungeonId && isDungeonEntryUnlocked(party, entry.id))) return apiFailure(422, 'illegal_action', 'The dungeon is unavailable.');
+          apiActionsRef.current.selectDungeon(partyIndex, command.dungeonId as number);
+        }
+        apiActionsRef.current.setExpeditionDestinationMode(partyIndex, command.mode);
+        effects = { mode: command.mode, dungeonId: command.mode === 'fixed' ? command.dungeonId : party.selectedDungeonId };
+      } else if (type === 'set_expedition_depth' && party) {
+        const values: ExpeditionDepthLimit[] = ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'];
+        if (!values.includes(command.depthLimit as ExpeditionDepthLimit)) return apiFailure(400, 'invalid_request', 'depthLimit is invalid.');
+        if (party.expeditionDepthLimit === command.depthLimit) return apiFailure(409, 'no_change', 'The depth limit is unchanged.');
+        apiActionsRef.current.setExpeditionDepthLimit(partyIndex, command.depthLimit as ExpeditionDepthLimit);
+        effects = { previousDepthLimit: party.expeditionDepthLimit, depthLimit: command.depthLimit };
+      } else if (type === 'set_expedition_difficulty' && party) {
+        const maximum = getDifficultyOffsetMax(DUNGEONS.find((entry) => entry.id === party.selectedDungeonId)?.expLevel ?? 1);
+        if (!Number.isInteger(command.difficultyOffset) || Number(command.difficultyOffset) < 0 || Number(command.difficultyOffset) > maximum || Number(command.difficultyOffset) % 2 !== 0) return apiFailure(422, 'difficulty_unavailable', 'The difficulty offset is unavailable.');
+        apiActionsRef.current.setExpeditionDifficultyOffset(partyIndex, Number(command.difficultyOffset));
+        effects = { dungeonId: party.selectedDungeonId, difficultyOffset: command.difficultyOffset };
+      } else if (type === 'set_auto_run') {
+        if (typeof command.enabled !== 'boolean') return apiFailure(400, 'invalid_request', 'enabled must be boolean.');
+        if (apiAutoRunRef.current === command.enabled) return apiFailure(409, 'no_change', 'Auto-Run is unchanged.');
+        setIsAutoRepeatEnabled(command.enabled);
+        apiAutoRunRef.current = command.enabled;
+        dispatched = false;
+        effects = { previousEnabled: !command.enabled, enabled: command.enabled };
+      } else if (type === 'god_battle' && party) {
+        if (!party.defeatedBossExpeditions[party.selectedDungeonId] || (party.instantExpeditionStock ?? 0) <= 0 || apiAutoRunRef.current) return apiFailure(422, 'god_battle_unavailable', 'Gods Battle is unavailable.');
+        apiActionsRef.current.consumeInstantExpeditionStock(partyIndex, apiSimulatedAtRef.current);
+        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current);
+        apiSimulatedAtRef.current += 450_000;
+        effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
+      }
+      if (dispatched) await waitForApiStateUpdate(previousVersion);
+      else await new Promise((resolve) => window.setTimeout(resolve, 0));
+      apiRevisionRef.current += 1;
+      apiActionsRef.current.flushSave();
+      return { command: { type, status: 'applied', previousRevision, revision: apiRevisionRef.current }, effects, observation: buildApiObservation() };
+    }
+
+    if (operation === 'sortie') {
+      if (Object.keys(payload).some((key) => !['expectedRevision', 'partyId', 'count'].includes(key)) || !Number.isInteger(payload.expectedRevision) || !Number.isInteger(payload.partyId) || !Number.isInteger(payload.count) || Number(payload.count) < 1 || Number(payload.count) > 100) return apiFailure(400, 'invalid_request', 'The sortie request is invalid.');
+      if (payload.expectedRevision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
+      const partyIndex = apiStateRef.current.parties.findIndex((entry) => entry.id === payload.partyId);
+      if (partyIndex < 0) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      const initialParty = apiStateRef.current.parties[partyIndex];
+      const dungeonId = initialParty.selectedDungeonId;
+      if (!DUNGEONS.some((entry) => entry.id === dungeonId) || !isDungeonEntryUnlocked(initialParty, dungeonId)) return apiFailure(422, 'normal_sortie_unavailable', 'The selected expedition is unavailable.');
+      if (computePartyStats(initialParty).partyStats.hp <= 0) return apiFailure(422, 'invalid_party', 'The party has no valid maximum HP.');
+      const chargeBefore = { stock: initialParty.instantExpeditionStock ?? 0, chargeStartedAt: initialParty.instantExpeditionChargeStartedAt ?? null };
+      const previousRevision = apiRevisionRef.current;
+      const outcomes = { Clear: 0, Turned_Back: 0, Draw_Retreat: 0, Wounded_Retreat: 0, Defeat: 0 };
+      const totals = { experienceGained: 0, goldGained: 0, goldDonated: 0, goldSaved: 0, itemsObtained: 0, itemsByRarity: { common: 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: 0, autoSellGold: 0, jewelsGained: 0, pranaGained: 0 };
+      const runs: Array<Record<string, unknown>> = [];
+      let elapsed = 0;
+      const beforeVersion = apiStateVersionRef.current;
+      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current);
+      await waitForApiStateUpdate(beforeVersion);
+      for (const [zeroBasedIndex, batchRun] of batch.runs.entries()) {
+        const index = zeroBasedIndex + 1;
+        const beforeState = batchRun.beforeState;
+        const beforeParty = beforeState.parties[partyIndex];
+        const afterState = batchRun.afterState;
+        const afterParty = batchRun.party;
+        const log = batchRun.log;
+        const outcome = outcomeFromParty(afterParty);
+        outcomes[outcome] += 1;
+        const cycleElapsed = Math.max(450_000, (log?.totalRooms ?? 1) * 15_000);
+        const startElapsed = elapsed;
+        elapsed += cycleElapsed;
+        const xp = Math.max(0, afterParty.experience - beforeParty.experience);
+        const gold = Math.max(0, afterState.global.gold - beforeState.global.gold);
+        totals.experienceGained += xp;
+        totals.goldGained += gold;
+        totals.itemsObtained += log?.rewards.length ?? 0;
+        totals.autoSoldItems += log?.autoSellCount ?? 0;
+        totals.autoSellGold += log?.autoSellProfit ?? 0;
+        runs.push({ index, dungeonId, partyElapsedStartMs: startElapsed, partyElapsedEndMs: elapsed, outcome, completedRooms: log?.completedRooms ?? 0, totalRooms: log?.totalRooms ?? 0, latestDisclosedFloor: log?.entries.at(-1)?.floor ?? null, experienceGained: xp, goldGained: gold, goldDonated: 0, goldSaved: gold, itemsByRarity: { common: log?.rewards.length ?? 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: log?.autoSellCount ?? 0, autoSellGold: log?.autoSellProfit ?? 0, jewelsGained: 0, pranaGained: 0, sideQuestEvents: [], unlockedIds: [], endingHp: { current: afterParty.currentHp, maximum: computePartyStats(afterParty).partyStats.hp } });
+      }
+      const finalParty = batch.state.parties[partyIndex];
+      const chargeAfter = { stock: finalParty.instantExpeditionStock ?? 0, chargeStartedAt: finalParty.instantExpeditionChargeStartedAt ?? null };
+      apiRevisionRef.current += 1;
+      apiActionsRef.current.flushSave();
+      return { sortie: { partyId: Number(payload.partyId), dungeonId, requestedCount: Number(payload.count), completedCount: Number(payload.count), previousRevision, revision: apiRevisionRef.current, partyElapsedStartMs: 0, partyElapsedEndMs: elapsed }, prelude: null, outcomes, totals, charge: { before: chargeBefore, after: chargeAfter }, sideQuests: { assigned: 0, completed: 0, cancelled: 0, expired: 0 }, unlocks: { bossDungeonIds: [], godBattleDungeonIds: [], partyIds: [], deityIds: [], otherIds: [] }, runs, observation: buildApiObservation() };
+    }
+    return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
+  }, [buildApiObservation, waitForApiStateUpdate]);
+
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop?.onExperimentalApiRequest) return;
+    return desktop.onExperimentalApiRequest(handleExperimentalApiRequest);
+  }, [handleExperimentalApiRequest]);
 
   if (processedNativeDiaryIdsRef.current === null) {
     const storedIds = getProcessedDiaryIds();
@@ -4832,6 +5074,10 @@ export function HomeScreen({
   }, []);
 
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
+    if (apiControlActiveRef.current) {
+      lastCheckpointAtRef.current = now;
+      return;
+    }
     const parties = latestPartiesRef.current;
     const autoRepeatEnabled = autoRepeatEnabledRef.current;
     const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
@@ -5882,6 +6128,19 @@ export function HomeScreen({
 
   return (
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
+      {apiControlActive && (
+        <div className="fixed inset-0 z-[100] cursor-wait bg-transparent" aria-label="Experimental AI API control active">
+          <button
+            type="button"
+            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-red-300 bg-white px-3 py-2 text-xs text-red-700 shadow"
+            onClick={() => void window.bokemoDesktop?.setExperimentalApiEnabled(false).then((settings) => {
+              window.dispatchEvent(new CustomEvent('bokemo-experimental-api-settings', { detail: settings }));
+            })}
+          >
+            {t('setting.experimentalApi.disableControl')}
+          </button>
+        </div>
+      )}
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
         <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
@@ -14684,6 +14943,7 @@ function SettingTab({
           </div>
 
           <DesktopNotificationSettings />
+          <ExperimentalApiSettings />
         </div>}
       </div>
 

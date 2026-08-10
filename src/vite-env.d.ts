@@ -62,6 +62,9 @@ interface Window {
     setLaunchAtLogin: (enabled: boolean) => Promise<boolean>;
     showNotification: (payload: DesktopNotificationPayload) => Promise<boolean>;
     updatePartyProgressPane: (snapshot: DesktopPartyProgressSnapshot) => Promise<boolean>;
+    getExperimentalApiSettings: () => Promise<DesktopExperimentalApiSettings>;
+    setExperimentalApiEnabled: (enabled: boolean) => Promise<DesktopExperimentalApiSettings>;
+    onExperimentalApiRequest: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
     onNotificationActivated: (callback: (payload: DesktopNotificationPayload) => void) => () => void;
     onPartyProgressPartyActivated: (callback: (partyId: number) => void) => () => void;
   };
@@ -71,4 +74,13 @@ interface Window {
     selectParty: (partyId: number) => Promise<boolean>;
     onSnapshot: (callback: (snapshot: DesktopPartyProgressSnapshot) => void) => () => void;
   };
+}
+
+interface DesktopExperimentalApiSettings {
+  supported: boolean;
+  enabled: boolean;
+  host: string;
+  port: number | null;
+  token: string | null;
+  apiVersion: 'experimental/v1';
 }
