@@ -1420,6 +1420,18 @@ function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
 }
 
+function formatBattleLogHitDisplay(entry: BattleLogEntry): string {
+  const totalAttempts = entry.totalAttempts ?? 0;
+  if (totalAttempts <= 0) return '';
+  const values = {
+    hits: formatNumber(entry.hits ?? 0),
+    total: formatNumber(totalAttempts),
+  };
+  return entry.specialAttack === 'gravity_well'
+    ? t('battleLog.hits.gravityWell', values)
+    : `(${t('battleLog.hits', values)})`;
+}
+
 function formatDecimal(value: number, maximumFractionDigits: number, minimumFractionDigits = maximumFractionDigits): string {
   return new Intl.NumberFormat('ja-JP', {
     minimumFractionDigits,
@@ -2187,7 +2199,7 @@ function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
 
 function getEnemyBestiarySpellName(enemy: EnemyDef): string {
   const magicProfile = resolveMagicProfile({
-    style: hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit',
+    style: enemy.magicStyle ?? (hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit'),
     elementalOffense: enemy.elementalOffense,
     elementalOffenseValue: 1.0,
     magicalNoA: enemy.magicalNoA,
@@ -3510,7 +3522,7 @@ export function HomeScreen({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
+        const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
@@ -10145,7 +10157,7 @@ function ExpeditionTab({
                                 const hits = log.hits ?? 0;
                                 const totalAttempts = log.totalAttempts ?? 0;
                                 const allMissed = totalAttempts > 0 && hits === 0 && !log.wasNegated;
-                                const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
+                                const hitDisplay = formatBattleLogHitDisplay(log);
                                 const trailingEffectMatch = /\(([^()]+)\)$/.exec(log.action);
                                 const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                   .split(',')
@@ -12214,7 +12226,7 @@ function DiaryTab({
                               const hits = battleLog.hits ?? 0;
                               const totalAttempts = battleLog.totalAttempts ?? 0;
                               const allMissed = totalAttempts > 0 && hits === 0 && !battleLog.wasNegated;
-                              const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
+                              const hitDisplay = formatBattleLogHitDisplay(battleLog);
                               const trailingEffectMatch = /\(([^()]+)\)$/.exec(battleLog.action);
                               const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                 .split(',')
@@ -12563,7 +12575,7 @@ function SettingTab({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
+        const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;

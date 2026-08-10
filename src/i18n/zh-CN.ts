@@ -1070,6 +1070,7 @@ const zhCN = {
   'battleLog.phase.mid': '魔法攻击阶段',
   'battleLog.phase.close': '近战攻击阶段',
   'battleLog.hits': '{hits}/{total}次',
+  'battleLog.hits.gravityWell': '（{hits}/{total}次，剩余HP的2/5伤害）',
   'battleLog.hitsWithExtras': '（{hits}/{total}次，{extras}）',
   'battleFlavor.inline.1': '{actor} 误将 {target} 视为敌人，发动了远程攻击！',
   'battleFlavor.inline.2': '{actor} 陷入混乱，向 {target} 射出了箭矢！',

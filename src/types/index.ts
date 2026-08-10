@@ -488,6 +488,8 @@ export type EnemyClassId =
   // legacy ids for compatibility
   | 'fighter' | 'rogue';
 
+export type MagicStyle = 'multi-hit' | 'arc-magic' | 'percentage_damage';
+
 export interface EnemyDef {
   id: number;
   type: EnemyType;
@@ -508,6 +510,7 @@ export interface EnemyDef {
   rangedNoA: number;
   magicalAttack: number;
   magicalNoA: number;
+  magicStyle?: MagicStyle;
   meleeAttack: number;
   meleeNoA: number;
   rangedAttackAmplifier: number;
@@ -610,6 +613,7 @@ export interface BattleLogEntry {
   showZeroDamage?: boolean;
   hits?: number; // Number of successful hits
   totalAttempts?: number; // Total number of attack attempts
+  specialAttack?: 'gravity_well';
   rageBonusPercent?: number; // 闘志 bonus shown in battle log
   momentumBonusPercent?: number; // 気勢 bonus shown in battle log
   ambushMultiplier?: number; // 待ち伏せ bonus shown in battle log

@@ -1,4 +1,4 @@
-import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory, EnemyAbility, Bonus } from '../types';
+import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory, EnemyAbility, Bonus, MagicStyle } from '../types';
 import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemById, getItemsByTierAndRarity } from './items';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
@@ -601,6 +601,11 @@ const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   351: [{ type: 'growth_xV', value: 1.4 }],
 };
 
+const MASTER_ENEMY_MAGIC_STYLES: Partial<Record<number, MagicStyle>> = {
+  // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
+  363: 'percentage_damage',
+};
+
 // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
 export function getEnemyIndividualAbilities(enemyId: number): EnemyAbility[] {
   return MASTER_ENEMY_BONUS_ABILITIES[enemyId] ?? [];
@@ -655,6 +660,8 @@ function generateEnemies(): EnemyDef[] {
       const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.masterDropTokens = assignCommonDropTokensByClass(masterDropTokens, row[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
+      const enemyMagicStyle = MASTER_ENEMY_MAGIC_STYLES[id];
+      if (enemyMagicStyle) enemy.magicStyle = enemyMagicStyle;
       const enemyBonusModifiers = MASTER_ENEMY_BONUS_MODIFIERS[id] ?? [];
       if (enemyBonusModifiers.length > 0) {
         enemy.bonuses = [...(enemy.bonuses ?? []), ...enemyBonusModifiers];

@@ -1,7 +1,5 @@
-import { ElementalOffense } from '../types';
+import { ElementalOffense, MagicStyle } from '../types';
 import { t } from '../i18n';
-
-type MagicStyle = 'multi-hit' | 'arc-magic' | 'percentage_damage';
 
 interface MagicProfile {
   key: string;
