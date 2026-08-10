@@ -1,6 +1,8 @@
 const { app, BrowserWindow, Menu, Notification, Tray, ipcMain, nativeImage, net, protocol, screen, shell } = require('electron');
+const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
+const { createExperimentalApi } = require('./experimental-api.cjs');
 
 const APP_HOST = 'bokemo';
 const APP_ORIGIN = `app://${APP_HOST}`;
@@ -18,7 +20,35 @@ let mainWindow = null;
 let partyProgressWindow = null;
 let tray = null;
 let isQuitting = false;
+let isExperimentalApiShutdownComplete = false;
+let experimentalApiShutdownPromise = null;
 let latestPartyProgressSnapshot = null;
+let experimentalApiRequestId = 0;
+const experimentalApiPendingRequests = new Map();
+const buildNumber = Number.parseInt(fs.readFileSync(path.resolve(__dirname, '..', 'build_number.txt'), 'utf8').trim(), 10);
+
+function invokeExperimentalApiRenderer(operation, payload) {
+  return new Promise((resolve, reject) => {
+    if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isLoadingMainFrame()) {
+      reject(new Error('Renderer unavailable'));
+      return;
+    }
+    const requestId = ++experimentalApiRequestId;
+    const timeout = setTimeout(() => {
+      experimentalApiPendingRequests.delete(requestId);
+      reject(new Error('Renderer request timed out'));
+    }, operation === 'sortie' ? 120_000 : 15_000);
+    experimentalApiPendingRequests.set(requestId, { resolve, reject, timeout });
+    mainWindow.webContents.send('desktop:experimental-api-request', { requestId, operation, payload });
+  });
+}
+
+const experimentalApi = createExperimentalApi({
+  environment: desktopEnvironment,
+  version: app.getVersion(),
+  build: buildNumber,
+  invokeRenderer: invokeExperimentalApiRenderer,
+});
 
 // SpecRef: 9.1 | Desktop distribution | stable application origin and profile
 protocol.registerSchemesAsPrivileged([
@@ -366,6 +396,18 @@ ipcMain.handle('desktop:select-party-from-pane', (_event, partyId) => {
   selectPartyInMainWindow(partyId);
   return true;
 });
+ipcMain.handle('desktop:get-experimental-api-settings', () => experimentalApi.getSettings());
+ipcMain.handle('desktop:set-experimental-api-enabled', async (_event, enabled) => (
+  enabled === true ? experimentalApi.enable() : experimentalApi.disable()
+));
+ipcMain.on('desktop:experimental-api-response', (_event, message) => {
+  if (!message || !Number.isInteger(message.requestId)) return;
+  const pending = experimentalApiPendingRequests.get(message.requestId);
+  if (!pending) return;
+  clearTimeout(pending.timeout);
+  experimentalApiPendingRequests.delete(message.requestId);
+  pending.resolve(message.result);
+});
 
 app.whenReady().then(() => {
   // Serving the packaged Vite output through a standard, secure custom scheme gives
@@ -390,8 +432,16 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('before-quit', () => {
+app.on('before-quit', (event) => {
   isQuitting = true;
+  if (isExperimentalApiShutdownComplete) return;
+  event.preventDefault();
+  if (!experimentalApiShutdownPromise) {
+    experimentalApiShutdownPromise = experimentalApi.shutdown().finally(() => {
+      isExperimentalApiShutdownComplete = true;
+      app.quit();
+    });
+  }
 });
 
 app.on('window-all-closed', () => {

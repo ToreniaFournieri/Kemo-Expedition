@@ -749,7 +749,9 @@ function getEnemyNoA(phase: AttackType, enemy: EnemyDef): number {
   if (heavyStrikeLevel > 0) {
     adjustedNoA = Math.ceil(adjustedNoA / 2);
   }
-  if (phase === 'magical' && hasEnemyArcMagic(enemy)) {
+  // An explicitly assigned spell (such as m.gravity-well) is not replaced by
+  // the Sage class's default Arc Magic conversion.
+  if (phase === 'magical' && enemy.magicStyle === undefined && hasEnemyArcMagic(enemy)) {
     adjustedNoA = Math.ceil(adjustedNoA / 3);
   }
   return adjustedNoA;
@@ -4695,6 +4697,54 @@ export function executeBattle(
 
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
+          const magicStyle = enemy.magicStyle ?? (hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit');
+          const magicProfile = resolveMagicProfile({
+            style: magicStyle,
+            elementalOffense: enemy.elementalOffense,
+            elementalOffenseValue: enemy.elementalOffenseValue,
+            magicalNoA: attempts,
+          });
+
+          // SpecRef: 6.1.4.1 | Special attack | m.gravity-well
+          // The threshold uses the already terrain-adjusted attempts passed into this action.
+          // Once active, this replaces the complete multi-hit attack and bypasses targeting,
+          // hit detection, defense, reactions, and every other normal attack function.
+          if (phase === 'magical' && magicStyle === 'percentage_damage' && attempts >= 20) {
+            if (isMagicSealTargetForEnemy(phase, enemy, attempts) && consumeMagicSeal()) {
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
+                action: buildEnemyMagicSealNegatedAction(enemy.name, `${magicProfile.spellName}${isReAttack ? getBattleReAttackSuffix() : ''}`),
+                damage: 0,
+                showZeroDamage: true,
+                hits: 0,
+                totalAttempts: 1,
+                wasNegated: true,
+                isReAttack: isReAttack || undefined,
+                elementalOffense: 'none',
+              });
+              return;
+            }
+
+            const gravityWellDamage = Math.floor(partyHp * 2 / 5);
+            const appliedDamage = applyPartyDamage(gravityWellDamage);
+            log.push({
+              phase,
+              initiativeRoll: turn.roll,
+              actor: 'enemy',
+              action: buildEnemyMagicAction(`${magicProfile.spellName}${isReAttack ? getBattleReAttackSuffix() : ''}`),
+              damage: appliedDamage,
+              showZeroDamage: appliedDamage === 0 ? true : undefined,
+              hits: 1,
+              totalAttempts: 1,
+              specialAttack: 'gravity_well',
+              isReAttack: isReAttack || undefined,
+              elementalOffense: 'none',
+            });
+            return;
+          }
+
           const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
           const enemyEchoDomainLogText = getEchoDomainLogText(enemy.elementalOffense, enemy.abilities);
 
@@ -4797,12 +4847,6 @@ export function executeBattle(
             }
           }
 
-          const magicProfile = resolveMagicProfile({
-            style: hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit',
-            elementalOffense: enemy.elementalOffense,
-            elementalOffenseValue: enemy.elementalOffenseValue,
-            magicalNoA: attempts,
-          });
           const resonanceActor = enemyResonanceLevel > 0
             ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
             : { abilities: [] };

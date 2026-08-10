@@ -560,6 +560,16 @@ If `a.*` with phase = START:
 	- If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= N and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
 	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
 
+**Special attack**
+- If (actor.`m.magic` is `m.gravity-well`) and (`f.NoA` >= 20):
+  - Check condition after `f.NoA` calculation. (considering terrain modification)
+  - Final damage = opponent.remaining_HP * 2 / 5.
+  - This damage ignores magical defense.
+  - `gravity-well` consumes the entire multi-hit attack.
+  - Combat log treats special format: (N/M回, 残HPの2/5ダメージ)
+  - Skip all normal hit-based functions.
+  - Skip other `Function of attack` procedure.
+
 ##### 6.1.4.2 Function of targeting
 
 **Row-based modifier** 
