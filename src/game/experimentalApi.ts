@@ -30,6 +30,18 @@ export function deityNameFromId(id: string): string | null {
   return DEITY_OPTIONS.find((option) => deityId(option.key) === id)?.key ?? null;
 }
 
+export function getUnlockedDeityKeys(unlockedDeities: string[]): string[] {
+  const unlockedKeys = new Set(unlockedDeities.map(getDeityKey).filter((key): key is NonNullable<ReturnType<typeof getDeityKey>> => key !== null));
+  unlockedKeys.add('None');
+  return DEITY_OPTIONS.map((option) => option.key).filter((key) => unlockedKeys.has(key));
+}
+
+export function getDeityAssignmentConflict(parties: Party[], targetPartyId: number, deityName: string): Party | null {
+  const deityKey = getDeityKey(deityName);
+  if (!deityKey || deityKey === 'None') return null;
+  return parties.find((party) => party.id !== targetPartyId && getDeityKey(party.deity.name) === deityKey) ?? null;
+}
+
 function rarity(item: Item): ItemRarity {
   const suffix = item.id % 100;
   if (suffix >= 81) return 'mythicRare';
@@ -84,7 +96,7 @@ export function buildExperimentalObservation(
   simulatedAt: number,
 ) {
   const unlockedDungeonIds = DUNGEONS.filter((dungeon) => dungeon.id !== 99 && state.parties.some((party) => isDungeonEntryUnlocked(party, dungeon.id))).map((dungeon) => dungeon.id);
-  const unlockedDeityKeys = state.global.unlockedDeities;
+  const unlockedDeityKeys = getUnlockedDeityKeys(state.global.unlockedDeities);
   const inventoryEntries = Object.entries(state.global.inventory).filter(([, variant]) => variant.count > 0 && variant.status === 'owned');
   const equipmentByCategory = Object.fromEntries(itemCategories.map((category) => {
     const candidates = inventoryEntries.filter(([, variant]) => variant.item.category === category);
@@ -100,6 +112,9 @@ export function buildExperimentalObservation(
     const computed = computePartyStats(party);
     const maximumHp = computed.partyStats.hp;
     const maximumDifficultyOffset = getDifficultyOffsetMax(DUNGEONS.find((entry) => entry.id === party.selectedDungeonId)?.expLevel ?? 1);
+    const assignableDeityIds = unlockedDeityKeys
+      .filter((deityKey) => !getDeityAssignmentConflict(state.parties, party.id, deityKey))
+      .map(deityId);
     const characterActions = party.characters.flatMap((character) => [
       { type: 'update_character_build', partyId: party.id, characterId: character.id, constraints: { preflightOperation: '/experimental/v1/build-options', editableFields: character.isUnique ? ['mainClassId', 'subClassId'] : ['name', 'gender', 'raceId', 'lineageId', 'predispositionId', 'mainClassId', 'subClassId', 'mimorianEnemyId'] } },
       { type: 'reorder_character', partyId: party.id, characterId: character.id, constraints: { minimumRow: 1, maximumRow: party.characters.length } },
@@ -145,7 +160,7 @@ export function buildExperimentalObservation(
       latestExpedition: latestExpedition(party),
       _legalActions: [
         ...characterActions,
-        { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: unlockedDeityKeys.map(deityId) } },
+        { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: assignableDeityIds } },
         { type: 'run_auto_equipment', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_jewel_priority_party', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_expedition_destination', partyId: party.id, characterId: null, constraints: { modes: ['auto', 'fixed'], dungeonIds: unlockedDungeonIds } },
@@ -177,7 +192,17 @@ export function buildExperimentalObservation(
       selectableLineageIds: LINEAGES.filter((entry) => entry.selectable).map((entry) => entry.id),
       unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds].sort((a, b) => a - b),
       dungeons: DUNGEONS.filter((entry) => unlockedDungeonIds.includes(entry.id)).map((entry) => ({ id: entry.id, tier: entry.tier, displayName: entry.name })),
-      deities: DEITY_OPTIONS.filter((entry) => unlockedDeityKeys.includes(entry.key)).map((entry) => ({ id: deityId(entry.key), displayName: entry.name })),
+      deities: DEITY_OPTIONS.filter((entry) => unlockedDeityKeys.includes(entry.key)).map((entry) => {
+        const assignedParty = entry.key === 'None'
+          ? null
+          : state.parties.find((party) => getDeityKey(party.deity.name) === entry.key) ?? null;
+        return {
+          id: deityId(entry.key),
+          displayName: entry.name,
+          assignedPartyId: assignedParty?.id ?? null,
+          assignedPartyName: assignedParty?.name ?? null,
+        };
+      }),
     },
     inventory: { equipmentByCategory },
     parties: parties.map(({ _legalActions: _discard, ...party }) => party),

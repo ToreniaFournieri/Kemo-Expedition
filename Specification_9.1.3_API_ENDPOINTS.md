@@ -933,7 +933,8 @@ All resource values MUST be raw JSON numbers without `Intl.NumberFormat` separat
 - `selectableRaceIds`, `selectableClassIds`, `selectablePredispositionIds`, and `selectableLineageIds` contain only values selectable under the current specification.
 - `unlockedMimorianEnemyIds` contains only enemy forms already unlocked at the Altar.
 - `dungeons` contains `id`, `tier`, and optional localized `displayName` for each unlocked dungeon.
-- `deities` contains stable `id` and optional localized `displayName` for each assignable deity.
+- `deities` contains stable `id`, optional localized `displayName`, and nullable `assignedPartyId` and `assignedPartyName` for every unlocked deity, including `none`. A non-null assignment identifies the party currently using that deity; `none` is never exclusive and always reports a null assignment.
+- Each party's `set_deity` legal-action constraint contains only `none`, that party's current deity, and unlocked deities not assigned to another party.
 - Array order MUST be deterministic and follow the corresponding master-data or progression order.
 - Display names are optional metadata. Clients MUST use stable IDs for commands and comparisons.
 
@@ -2010,7 +2011,7 @@ Unless a discriminator defines a more specific error, `/command` uses:
 | `409 Conflict` | `runtime_busy` | `true` | Another command or sortie batch is executing. |
 | `405 Method Not Allowed` | `method_not_allowed` | `false` | The path is requested with a method other than `POST`. The response MUST include `Allow: POST`. |
 | `422 Unprocessable Content` | `illegal_action` | `false` | The structurally valid command is not legal in the current game state. |
-| `422 Unprocessable Content` | `deity_unavailable` | `false` | The deity is locked or assigned to another party. |
+| `422 Unprocessable Content` | `deity_unavailable` | `false` | The deity is locked or assigned to another party. `error.details.reason` MUST be `locked` or `assigned_to_party`. An assignment conflict MUST also include `deityId`, `assignedPartyId`, and `assignedPartyName`, and its message MUST identify the occupying party and advise choosing another deity. |
 | `422 Unprocessable Content` | `equipment_lock_unavailable` | `false` | The character is not in `FULL` mode or the item cannot be locked. |
 | `422 Unprocessable Content` | `difficulty_unavailable` | `false` | Boss completion has not unlocked difficulty adjustment. |
 | `422 Unprocessable Content` | `god_battle_unavailable` | `false` | A normal Gods Battle requirement is not satisfied. |

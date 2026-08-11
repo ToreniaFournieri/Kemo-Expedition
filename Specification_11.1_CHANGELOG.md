@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 4 | 2026/08/11 | Normalize localized unlocked-deity names in the Experimental AI API, restore its deity catalog and no-faith option, expose current party assignments, and identify the occupying party in friendly deity-conflict errors. |
 | 0.9.2 | 3 | 2026/08/11 | Add the revision-guarded `run_auto_equipment` Experimental AI API command for immediate mode-aware automatic equipment across a whole party or one specified character. |
 | 0.9.2 | 2 | 2026/08/11 | Show exact localized full item names in individual macOS native item-drop notification titles, with generic rarity labels retained only as a fallback. |
 | 0.9.2 | 1 | 2026/08/11 | Update the runtime application version to v0.9.2 and reset the build number to 1 for the new version. |

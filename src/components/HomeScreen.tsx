@@ -56,7 +56,7 @@ import { formatAttackSpeedHelp } from '../game/attackProfile';
 import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
-import { buildExperimentalObservation, deityNameFromId, outcomeFromParty } from '../game/experimentalApi';
+import { buildExperimentalObservation, deityNameFromId, getDeityAssignmentConflict, getUnlockedDeityKeys, outcomeFromParty } from '../game/experimentalApi';
 import { buildExperimentalBattleLog, buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import {
   ELITE_GATE_REQUIREMENTS,
@@ -3317,8 +3317,25 @@ export function HomeScreen({
         effects = { previousRow: from + 1, targetRow: to + 1 };
       } else if (type === 'set_deity' && party) {
         const deityName = typeof command.deityId === 'string' ? deityNameFromId(command.deityId) : null;
-        if (!deityName || !current.global.unlockedDeities.includes(deityName)) return apiFailure(422, 'deity_unavailable', 'The deity is unavailable.');
+        if (!deityName || !getUnlockedDeityKeys(current.global.unlockedDeities).includes(deityName)) {
+          return apiFailure(422, 'deity_unavailable', 'This deity is locked. Choose an unlocked deity.', false, {
+            reason: 'locked',
+            deityId: typeof command.deityId === 'string' ? command.deityId : null,
+          });
+        }
         if (getDeityKey(party.deity.name) === deityName) return apiFailure(409, 'no_change', 'The party already follows that deity.');
+        const assignedParty = getDeityAssignmentConflict(current.parties, party.id, deityName);
+        if (assignedParty) {
+          const assignedPartySlot = `PT${assignedParty.id}`;
+          const assignedPartyName = assignedParty.name || assignedPartySlot;
+          const assignedPartyLabel = assignedPartyName === assignedPartySlot ? assignedPartySlot : `${assignedPartySlot}: ${assignedPartyName}`;
+          return apiFailure(422, 'deity_unavailable', `This deity is already used by another party (${assignedPartyLabel}). Choose another deity.`, false, {
+            reason: 'assigned_to_party',
+            deityId: command.deityId,
+            assignedPartyId: assignedParty.id,
+            assignedPartyName,
+          });
+        }
         apiActionsRef.current.updatePartyDeity(partyIndex, deityName);
         effects = { deityId: command.deityId };
       } else if (type === 'set_auto_equipment_mode' && character) {
