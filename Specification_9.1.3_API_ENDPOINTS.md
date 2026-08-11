@@ -8,8 +8,7 @@ This document is the normative endpoint contract referenced by section 9.1.3 of 
 
 ### Contract conventions
 
-- Endpoint descriptions follow the operation structure of OpenAPI Specification 3.2.0: operation identifier, security, parameters and headers, response status, response headers, schema, field definitions, and examples.
-- JSON schemas use the data model and validation vocabulary supported by OpenAPI 3.2.0.
+- Endpoint descriptions follow the operation structure of OpenAPI Specification 3.2.0: 
 - HTTP method, status-code, header, authentication, caching, and content-negotiation behavior follows RFC 9110.
 - The key words `MUST`, `MUST NOT`, `REQUIRED`, `SHOULD`, `SHOULD NOT`, and `MAY` are normative only when capitalized and are interpreted according to BCP 14 (RFC 2119 and RFC 8174).
 - Property names and enum values are case-sensitive.
