@@ -3011,6 +3011,20 @@ function getInitialDarkModeSetting(): DarkModeSetting {
 
 type AutoEquipmentMode = 0 | 1 | 2;
 
+type AutoEquipmentRunSummary = {
+  processedCharacterIds: Array<number | string>;
+  unequippedCount: number;
+  equippedCount: number;
+  upgradedCount: number;
+  jewelAssignmentCount: number;
+};
+
+type AutoEquipmentRunner = (
+  targetPartyIndexes?: number[],
+  targetCharacterIds?: Array<number | string>,
+  options?: { suppressNotifications?: boolean },
+) => AutoEquipmentRunSummary;
+
 const getAutoEquipmentModeLabel = (mode: AutoEquipmentMode): string => t(`party.equipment.autoMode.${mode}`);
 const getAutoEquipmentHelpLines = (): string[] => [0, 1, 2, 3].map((index) => t(`party.equipment.autoHelp.${index}`));
 
@@ -3143,6 +3157,7 @@ export function HomeScreen({
   const apiStateRef = useRef(state);
   const apiStateVersionRef = useRef(0);
   const apiActionsRef = useRef(actions);
+  const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
   const apiAutoRunRef = useRef(isAutoRepeatEnabled);
   const apiCyclesRef = useRef(partyCycles);
   apiStateRef.current = state;
@@ -3270,7 +3285,13 @@ export function HomeScreen({
       if (payload.expectedRevision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
       const command = payload.command as Record<string, unknown>;
       const type = command.type;
-      if (typeof type !== 'string' || !['update_character_build', 'reorder_character', 'set_deity', 'set_auto_equipment_mode', 'toggle_equipment_lock', 'set_jewel_priority_party', 'set_expedition_destination', 'set_expedition_depth', 'set_expedition_difficulty', 'set_auto_run', 'god_battle'].includes(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
+      if (typeof type !== 'string' || !['update_character_build', 'reorder_character', 'set_deity', 'set_auto_equipment_mode', 'run_auto_equipment', 'toggle_equipment_lock', 'set_jewel_priority_party', 'set_expedition_destination', 'set_expedition_depth', 'set_expedition_difficulty', 'set_auto_run', 'god_battle'].includes(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
+      if (type === 'run_auto_equipment') {
+        const allowedKeys = new Set(['type', 'partyId', 'characterId']);
+        if (Object.keys(command).some((key) => !allowedKeys.has(key)) || !Number.isInteger(command.partyId) || (command.characterId !== undefined && !Number.isInteger(command.characterId))) {
+          return apiFailure(400, 'invalid_request', 'The auto-equipment target is invalid.');
+        }
+      }
       const current = apiStateRef.current;
       const partyIndex = Number.isInteger(command.partyId) ? current.parties.findIndex((entry) => entry.id === command.partyId) : -1;
       const party = partyIndex >= 0 ? current.parties[partyIndex] : null;
@@ -3305,6 +3326,22 @@ export function HomeScreen({
         if ((character.autoEquipmentMode ?? 0) === command.mode) return apiFailure(409, 'no_change', 'The mode is unchanged.');
         apiActionsRef.current.updateCharacter(character.id, { autoEquipmentMode: command.mode as 0 | 1 | 2 }, partyIndex);
         effects = { previousMode: character.autoEquipmentMode ?? 0, mode: command.mode, autoEquipmentTriggered: false };
+      } else if (type === 'run_auto_equipment' && party) {
+        const runner = apiAutoEquipmentRunnerRef.current;
+        if (!runner) return apiFailure(503, 'runtime_unavailable', 'Automatic equipment is unavailable.', true);
+        const summary = runner([partyIndex], character ? [character.id] : undefined);
+        const changeCount = summary.unequippedCount + summary.equippedCount + summary.upgradedCount + summary.jewelAssignmentCount;
+        if (changeCount === 0) return apiFailure(409, 'no_change', 'Automatic equipment produced no effective change.');
+        effects = {
+          partyId: party.id,
+          characterId: character?.id ?? null,
+          processedCharacterIds: summary.processedCharacterIds,
+          autoEquipmentTriggered: true,
+          unequippedCount: summary.unequippedCount,
+          equippedCount: summary.equippedCount,
+          upgradedCount: summary.upgradedCount,
+          jewelAssignmentCount: summary.jewelAssignmentCount,
+        };
       } else if (type === 'toggle_equipment_lock' && character) {
         const slot = Number(command.slotIndex);
         if (!Number.isInteger(slot) || !character.equipment[slot]) return apiFailure(404, 'equipment_slot_not_found', 'The equipment slot was not found.');
@@ -3823,7 +3860,14 @@ export function HomeScreen({
     targetPartyIndexes?: number[],
     targetCharacterIds?: Array<number | string>,
     options?: { suppressNotifications?: boolean },
-  ) => {
+  ): AutoEquipmentRunSummary => {
+    const summary: AutoEquipmentRunSummary = {
+      processedCharacterIds: [],
+      unequippedCount: 0,
+      equippedCount: 0,
+      upgradedCount: 0,
+      jewelAssignmentCount: 0,
+    };
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
@@ -4249,6 +4293,7 @@ export function HomeScreen({
 
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
+        summary.processedCharacterIds.push(character.id);
 
         const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);
         if (autoEquipmentMode === 0) {
@@ -4257,6 +4302,7 @@ export function HomeScreen({
             const assignments = planAutoJewelAssignmentsForCharacter(character, state.global.jewels);
             assignments.forEach((assignment) => {
               actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
+              summary.jewelAssignmentCount += 1;
             });
           }
           return;
@@ -4288,6 +4334,7 @@ export function HomeScreen({
             if (equippedItem.superRare > 0) return;
             addItemToSimulatedInventory(equippedItem);
             actions.equipItem(character.id, slotIndex, null, partyIndex);
+            summary.unequippedCount += 1;
             simulatedEquipmentSlots[slotIndex] = null;
           });
         }
@@ -4365,6 +4412,7 @@ export function HomeScreen({
             memoryItemIds.add(variant.item.id);
             getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
             actions.equipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
+            summary.equippedCount += 1;
           });
         }
 
@@ -4384,6 +4432,7 @@ export function HomeScreen({
           simulatedEquipmentSlots[slotIndex] = nextEquippedItem;
 
           actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
+          summary.upgradedCount += 1;
           if (equippedItem.jewel) {
             actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
@@ -4422,6 +4471,7 @@ export function HomeScreen({
             jewelIndex += 1;
             simulatedEquipmentSlots[slotIndex] = { ...item, jewel };
             actions.attachJewel(character.id, slotIndex, jewel.key, jewel.rank, partyIndex);
+            summary.jewelAssignmentCount += 1;
           });
         });
 
@@ -4440,6 +4490,7 @@ export function HomeScreen({
               jewel: { key: assignment.key, rank: assignment.rank },
             };
             actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
+            summary.jewelAssignmentCount += 1;
           });
         }
 
@@ -4485,7 +4536,7 @@ export function HomeScreen({
       || shouldShowAfkSummaryRef.current
       || justCompletedAfkRecoveryRef.current;
 
-    if (shouldSuppressAutoEquipmentNotifications) return;
+    if (shouldSuppressAutoEquipmentNotifications) return summary;
 
     slotNotifications.forEach(({ message }) => {
       actions.addNotification(message, 'normal', 'item', true, {
@@ -4493,7 +4544,10 @@ export function HomeScreen({
         isSuperRareItem: false,
       });
     });
+    return summary;
   }, [actions, state.global.inventory, state.parties]);
+
+  apiAutoEquipmentRunnerRef.current = runAutoEquipment;
 
   useEffect(() => {
     const previousPartyCount = prevPartyCountRef.current;

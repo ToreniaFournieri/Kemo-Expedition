@@ -189,6 +189,7 @@
   - reorder party members;
   - change a party's deity;
   - set each character's automatic-equipment mode;
+  - immediately run configured automatic equipment for every member of one party or for one specified character;
   - toggle locks on currently equipped items;
   - select the Jewel Priority Party;
   - set a party's expedition destination mode or dungeon, depth limit, and difficulty offset;

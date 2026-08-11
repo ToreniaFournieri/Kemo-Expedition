@@ -1575,6 +1575,7 @@ Content-Type: application/json
 | `reorder_character` | Move one member to another combat row. | No | No |
 | `set_deity` | Assign a deity to one party. | No | No |
 | `set_auto_equipment_mode` | Set one character's automation mode. | No | No |
+| `run_auto_equipment` | Immediately run configured automatic equipment for one party or character. | No | Yes, for the selected target |
 | `toggle_equipment_lock` | Toggle one equipped item's automatic-equipment lock. | No | No |
 | `set_jewel_priority_party` | Select the global Jewel Priority Party or manual mode. | No | No |
 | `set_expedition_destination` | Set one party's automatic or fixed destination. | No | No |
@@ -1778,6 +1779,41 @@ In addition to the common authentication, lease, releasing, busy, method, save, 
 - Existing item locks remain stored when leaving `FULL`, although their UI controls and automatic-equipment effect apply only as specified in section 8.2.4.
 - Setting the current mode returns `no_change`.
 - `effects` contains `previousMode`, `mode`, and `autoEquipmentTriggered: false`.
+
+### `run_auto_equipment`
+
+Whole-party example:
+
+```json
+{
+  "type": "run_auto_equipment",
+  "partyId": 1
+}
+```
+
+Single-character example:
+
+```json
+{
+  "type": "run_auto_equipment",
+  "partyId": 1,
+  "characterId": 101
+}
+```
+
+| Field | Type | Required | Constraints | Description |
+|-|-|-|-|-|
+| `partyId` | integer | Yes | Unlocked party ID | Party whose configured automatic-equipment behavior runs. |
+| `characterId` | integer | No | Member of `partyId` | When present, limit the run to this character; when omitted, process every party member in current row order. |
+
+- This command immediately invokes the same authoritative automatic-equipment and automatic-Jewel routine used by the UI and normal Cycle trigger. It does not change any character's `autoEquipmentMode`.
+- Each selected character is processed once using the mode effective at `expectedRevision`: `OFF` performs only normally permitted automatic-Jewel assignment for the Jewel Priority Party, `SEMI` upgrades retained compatible categories without filling empty slots or replacing categories, and `FULL` performs the complete remove, fill, and upgrade flow while preserving locked and Super-Rare exceptions.
+- A whole-party run processes characters in current row order against one shared staged inventory. Equipment and Jewels returned or consumed by an earlier character are reflected when later characters are processed.
+- Automatic Jewel assignment follows section 7.1.3 and is performed only when the selected target belongs to the current Jewel Priority Party.
+- The command does not advance simulated time, state-machine progress, side-quest time, or Instant Expedition charge time, and does not consume random values.
+- Equipment, inventory, Jewels, HP synchronization, derived values, and notifications are committed as one transaction. Any failure rolls back the complete selected target and leaves the revision unchanged.
+- If the run changes no equipment slot, Jewel assignment, inventory ownership, HP value, or other derived state, return `no_change` without saving or incrementing the revision.
+- `effects` contains `partyId`, `characterId` (`null` for a whole-party run), `processedCharacterIds` in processing order, `autoEquipmentTriggered: true`, `unequippedCount`, `equippedCount`, `upgradedCount`, and `jewelAssignmentCount`. Counts summarize committed changes without exposing candidate rankings or hidden comparison data.
 
 ### `toggle_equipment_lock`
 

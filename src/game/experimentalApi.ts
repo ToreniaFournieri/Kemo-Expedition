@@ -104,6 +104,7 @@ export function buildExperimentalObservation(
       { type: 'update_character_build', partyId: party.id, characterId: character.id, constraints: { preflightOperation: '/experimental/v1/build-options', editableFields: character.isUnique ? ['mainClassId', 'subClassId'] : ['name', 'gender', 'raceId', 'lineageId', 'predispositionId', 'mainClassId', 'subClassId', 'mimorianEnemyId'] } },
       { type: 'reorder_character', partyId: party.id, characterId: character.id, constraints: { minimumRow: 1, maximumRow: party.characters.length } },
       { type: 'set_auto_equipment_mode', partyId: party.id, characterId: character.id, constraints: { modes: [0, 1, 2] } },
+      { type: 'run_auto_equipment', partyId: party.id, characterId: character.id, constraints: {} },
     ]);
     return {
       id: party.id,
@@ -145,6 +146,7 @@ export function buildExperimentalObservation(
       _legalActions: [
         ...characterActions,
         { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: unlockedDeityKeys.map(deityId) } },
+        { type: 'run_auto_equipment', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_jewel_priority_party', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_expedition_destination', partyId: party.id, characterId: null, constraints: { modes: ['auto', 'fixed'], dungeonIds: unlockedDungeonIds } },
         { type: 'set_expedition_depth', partyId: party.id, characterId: null, constraints: { depthLimits: ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'] } },
