@@ -143,9 +143,9 @@
 | 3 | E | `Spirit` | `i.grimoire`EC | 誘いの書 |
 | 3 | E | `Spirit` | `i.gauntlet`EC | 霊波の手甲 |
 | 3 | E | `Spirit` | `i.katana`EC | 幽刀 |
-| 3 | E | `Orcinian‎` | `i.wand`ED | シャチの杖 |
-| 3 | E | `Orcinian‎` | `i.archery`ED | 鯨髭の弓 |
-| 3 | E | `Orcinian‎` | `i.robe`ED | 鮫肌 |
+| 3 | E | `Orcinian` | `i.wand`ED | シャチの杖 |
+| 3 | E | `Orcinian` | `i.archery`ED | 鯨髭の弓 |
+| 3 | E | `Orcinian` | `i.robe`ED | 鮫肌 |
 | 3 | E | `Slime_Colony` | `i.arrow`EB | 粘波の矢 |
 | 3 | E | `Slime_Colony` | `i.bolt`EB | 硫酸刺 | `a.corrode` |
 | 3 | E | `Slime_Colony` | `i.archery`EB | 群粘の弓 |
@@ -256,7 +256,7 @@
 | 5 | B | `Ursan` | `i.gauntlet`BD | 破壊腕 | `a.bulwark-breaker` |
 | 5 | B | `Ursan` | `i.sword`BD | 三連爪 |
 | 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
-| 5 | B | `Ursan` | `i.wand`BD | 軍配 |
+| 5 | B | `Ursan` | `i.wand`BD | 軍配 | `a.command` |
 | 5 | B | `Ursan` | `i.catalyst`BD | 溶触媒 |
 | 6 | C | none | `i.sword`C | 合金短剣 |
 | 6 | C | none | `i.gauntlet`C | 銅の手甲 |
@@ -297,7 +297,7 @@
 | 6 | E | `Mech` | `i.bolt`EA | 鉄塊 |
 | 6 | E | `Mech` | `i.shield`EA | シールド |
 | 6 | E | `Mech` | `i.robe`EA | ケージ |
-| 6 | E | `Mech` | `i.sword`EA | 光の剣 |
+| 6 | E | `Mech` | `i.sword`EA | 光の剣 | `a.armor-break` |
 | 6 | E | `Mech` | `i.armor`EA | アーマー |
 | 6 | E | `Mech` | `i.gauntlet`EA | グローブ |
 | 6 | B | `Procyonian` | `i.bolt`BD | 葉の迅撃ボルト |
@@ -347,14 +347,14 @@
 | 7 | E | `Pony` | `i.bolt`EA | 蹄鉄のボルト |
 | 7 | E | `Pony` | `i.katana`EA | 馬駆の太刀 |
 | 7 | E | `Undead` | `i.armor`EB | 冥府の鎧 |
-| 7 | E | `Undead` | `i.catalyst`EB | 冥核 |
+| 7 | E | `Undead` | `i.catalyst`EB | 冥核 | `a.gravity-well` |
 | 7 | E | `Undead` | `i.gauntlet`EB | 冥爪の手甲 |
 | 7 | E | `Undead` | `i.katana`EB | 大鎌 | `a.soul-reap`1, `r.fire_x1.3` |
 | 7 | E | `Undead` | `i.archery`EB | 冥府の弓 |
 | 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 | `c.penet+0.12` |
 | 7 | E | `Undead` | `i.sword`EB | 冥府の剣 | `a.life-drain`1, `r.fire_x1.3` |
 | 7 | B | `Leporian` | `i.sword`BD | ホーリーソード | `a.requiem` |
-| 7 | B | `Leporian` | `i.wand`BD | 月兎の宝杖 |
+| 7 | B | `Leporian` | `i.wand`BD | 月兎の破魔杖 | `a.mana-break` |
 | 7 | B | `Leporian` | `i.armor`BD | アミラの鎧 |
 | 7 | B | `Leporian` | `i.katana`BD | 白妙 | `a.ice-protect-breaker` |
 | 7 | B | `Leporian` | `i.shield`BD | 月兎の聖盾 |

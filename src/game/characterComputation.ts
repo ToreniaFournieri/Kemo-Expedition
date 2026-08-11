@@ -877,7 +877,10 @@ export function computeCharacterStats(
   }
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.a.arc-magic
   // a.arc-magic: reduce magical NoA to 1/3, round up.
-  if (collection.abilities.has('arc_magic')) {
+  const hasSpecialMagic = collection.abilities.has('gravity_well')
+    || collection.abilities.has('armor_break')
+    || collection.abilities.has('mana_break');
+  if (collection.abilities.has('arc_magic') && !hasSpecialMagic) {
     magicalNoA = magicalNoA / 3;
   }
 

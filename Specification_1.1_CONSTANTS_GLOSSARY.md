@@ -131,6 +131,9 @@
 | `a.illusion-breaker`  | 幻術破り | 相手の幻を見破る(幻化アビリティを無効化)  | - |
 | `a.bulwark-breaker` | ウォールブレイカー | 壁を取り壊す(壁アビリティを無効化) | - |
 | `a.base-status-cap-at-15` | 基礎ステ上限15 | 基礎ステータスは15を超えることがなくなる | - |
+| `a.gravity-well` | グラビティウェル習得 | グラビティウェルを習得する。(魔法攻撃回数が20回以上の場合グラビティウェルを唱える。相手の残HPの2/5の固定ダメージ(魔法防御力無視)) | - |
+| `a.armor-break` | アーマーブレイク習得 | アーマーブレイクを習得する。(魔法攻撃回数が12回以上の場合アーマーブレイクを唱える。相手の物理防御を落とす(与物理ダメージがx4/3になる)) | - |
+| `a.mana-break` | マナブレイク習得 | マナブレイクを習得する。(魔法攻撃回数が10回以上の場合マナブレイクを唱える。相手の魔法防御を落とす(与魔法ダメージがx4/3になる)) | - |
 
 - Expedition ability(遠征アビリティ):
 
@@ -394,18 +397,22 @@
 
 | Key | style | element | spell(詠唱魔法) | 効果 |
 |-|-|-|-|-|
-| `arcane-arrows` | `multi-hit` | `e.none` | アルカナアロー | 無属性の基本魔法攻撃 |
-| `fire-lance` | `multi-hit` | `e.fire` < 1.5 | ファイアランス | 火属性基本魔法(火属性50%未満) |
-| `frost-needles` | `multi-hit` | `e.ice` < 1.5 | フロストニードル | 氷属性基本魔法(氷属性50%未満) |
-| `thunder-bolts` | `multi-hit` | `e.thunder` < 1.5 | サンダーボルト | 雷属性基本魔法(雷属性50%未満) |
-| `hellfire-volley` | `multi-hit` | `e.fire` >= 1.5 | ヘルファイア | 火属性上位魔法(火属性50%以上) |
-| `blizzard` | `multi-hit` | `e.ice` >= 1.5 | ブリザード | 氷属性上位魔法(氷属性50%以上) |
-| `lightning-barrage` | `multi-hit` | `e.thunder` >= 1.5 | ライトニングバラージ | 雷属性上位魔法(雷属性50%以上) |
-| `astral-flare` | `arc-magic` | `e.none` | アストラルフレア | 無属性大魔法 |
-| `pyroclasm` | `arc-magic` | `e.fire`  | パイロクラスム | 火属性大魔法 |
-| `glacial-burst` | `arc-magic` | `e.ice`  | グレイシャルバースト | 氷属性大魔法 |
-| `tempest-nova` | `arc-magic` | `e.thunder` | テンペストノヴァ | 雷属性大魔法 |
-| `gravity-well` | `percentage-damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
+| `m.arcane-arrows` | `multi-hit` | `e.none` | アルカナアロー | 無属性の基本魔法攻撃 |
+| `m.fire-lance` | `multi-hit` | `e.fire` < 1.5 | ファイアランス | 火属性基本魔法(火属性50%未満) |
+| `m.frost-needles` | `multi-hit` | `e.ice` < 1.5 | フロストニードル | 氷属性基本魔法(氷属性50%未満) |
+| `m.thunder-bolts` | `multi-hit` | `e.thunder` < 1.5 | サンダーボルト | 雷属性基本魔法(雷属性50%未満) |
+| `m.hellfire-volley` | `multi-hit` | `e.fire` >= 1.5 | ヘルファイア | 火属性上位魔法(火属性50%以上) |
+| `m.blizzard` | `multi-hit` | `e.ice` >= 1.5 | ブリザード | 氷属性上位魔法(氷属性50%以上) |
+| `m.lightning-barrage` | `multi-hit` | `e.thunder` >= 1.5 | ライトニングバラージ | 雷属性上位魔法(雷属性50%以上) |
+| `m.astral-flare` | `arc-magic` | `e.none` | アストラルフレア | 無属性大魔法 |
+| `m.pyroclasm` | `arc-magic` | `e.fire`  | パイロクラスム | 火属性大魔法 |
+| `m.glacial-burst` | `arc-magic` | `e.ice`  | グレイシャルバースト | 氷属性大魔法 |
+| `m.tempest-nova` | `arc-magic` | `e.thunder` | テンペストノヴァ | 雷属性大魔法 |
+| `m.gravity-well` | `percentage-damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
+| `m.gravity-well` | `percentage-damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
+| `m.armor-break` | `debuff` | `e.none` | アーマーブレイク | 相手の物理防御を落とす(与物理ダメージがx4/3になる) |
+| `m.mana-break` | `debuff` | `e.none` | マナブレイク | 相手の魔法防御を落とす(与魔法ダメージがx4/3になる) |
+
 
 #### 1.1.9 q. side quest
 - "求. サイドクエスト (条件達成すると報酬として結晶が手に入る)"

@@ -35,6 +35,9 @@ import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, g
 import { calculateItemSellPrice } from '../game/pricing';
 import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getRequiredAltarVictories, MAX_ALTAR_LEVEL, getSuperRareItemPrana } from '../game/prana';
 import { NotificationToast } from './NotificationToast';
+import { DesktopNotificationSettings } from './DesktopNotificationSettings';
+import { ExperimentalApiSettings } from './ExperimentalApiSettings';
+import { getDesktopPreferences, getProcessedDiaryIds, saveProcessedDiaryIds } from '../game/desktopNotifications';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { formatEnemyDefName, formatEnemyFormName, getEnemyTypeShortName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
@@ -42,15 +45,18 @@ import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelDisplayName, getJewelNameByRank, getJewelOwnedCount, getJewelShortLabel, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
-import { resolveMagicProfile } from '../game/magic';
+import { isSpecialMagicCastable, resolveMagicProfile, resolveSpecialMagicFromAbilities } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { isStandaloneBattleLogName } from '../game/battleLogNameMatch';
 import { formatAttackSpeedHelp } from '../game/attackProfile';
 import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
+import { buildExperimentalObservation, deityNameFromId, outcomeFromParty } from '../game/experimentalApi';
+import { buildExperimentalBattleLog, buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -143,8 +149,8 @@ function buildStatusTableRows(parties: Party[], partyIndexes = parties.map((_, i
   });
 }
 
-const CHARACTER_CHIBI_IMAGE_MODULES = import.meta.glob('/public/chibi/*.png', { eager: true });
-const CHARACTER_IMAGE_MODULES = import.meta.glob('/public/character/*.png', { eager: true });
+const CHARACTER_CHIBI_IMAGE_FILES = new Set(__PUBLIC_CHIBI_IMAGE_FILES__);
+const CHARACTER_IMAGE_FILES = new Set(__PUBLIC_CHARACTER_IMAGE_FILES__);
 
 // SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
 // SpecRef: 8.4.2 | Inventory(所持品) | Item list
@@ -158,10 +164,10 @@ function getInventoryOwnerCharacterImageSrc(character: Character, partyId: numbe
     : undefined;
   if (uniqueFileName) {
     const chibiFileName = `C_${uniqueFileName}`;
-    if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/${chibiFileName}`]) {
+    if (CHARACTER_CHIBI_IMAGE_FILES.has(chibiFileName)) {
       return `${import.meta.env.BASE_URL}chibi/${chibiFileName}`;
     }
-    if (CHARACTER_IMAGE_MODULES[`/public/character/${uniqueFileName}`]) {
+    if (CHARACTER_IMAGE_FILES.has(uniqueFileName)) {
       return `${import.meta.env.BASE_URL}character/${uniqueFileName}`;
     }
     return null;
@@ -171,10 +177,10 @@ function getInventoryOwnerCharacterImageSrc(character: Character, partyId: numbe
   if (!race) return null;
   const genderLabel = character.gender === 'male' ? 'Male' : 'Female';
   const partyRaceGenderFileName = `${partyId}_${race.englishName}_${genderLabel}.png`;
-  if (CHARACTER_CHIBI_IMAGE_MODULES[`/public/chibi/C_${partyRaceGenderFileName}`]) {
+  if (CHARACTER_CHIBI_IMAGE_FILES.has(`C_${partyRaceGenderFileName}`)) {
     return `${import.meta.env.BASE_URL}chibi/C_${partyRaceGenderFileName}`;
   }
-  if (CHARACTER_IMAGE_MODULES[`/public/character/${partyRaceGenderFileName}`]) {
+  if (CHARACTER_IMAGE_FILES.has(partyRaceGenderFileName)) {
     return `${import.meta.env.BASE_URL}character/${partyRaceGenderFileName}`;
   }
   return null;
@@ -209,10 +215,10 @@ interface HomeScreenProps {
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
-    toggleEquipmentLock: (characterId: number, slotIndex: number) => void;
+    toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
-    updateCharacter: (characterId: number, updates: Partial<Character>) => void;
-    reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
+    updateCharacter: (characterId: number, updates: Partial<Character>, partyIndex?: number) => void;
+    reorderPartyCharacter: (fromIndex: number, toIndex: number, partyIndex?: number) => void;
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
     grantFeedbackReward: () => void;
@@ -228,6 +234,10 @@ interface HomeScreenProps {
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number) => void;
+    runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
+      state: GameState;
+      runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
+    };
     resetGame: () => void;
     importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
@@ -245,6 +255,7 @@ interface HomeScreenProps {
       options?: { rarity?: ItemRarity; isSuperRareItem?: boolean }
     ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
+    flushSave: () => void;
   };
 }
 
@@ -317,7 +328,7 @@ const renderElementalResistanceInline = (
       <Fragment key={key}>
         {index > 0 ? ',' : ''}
         {renderUiIcon(icon)}
-        {Math.round(Math.max(0.01, multipliers[key] ?? 1) * 100)}%
+        {formatNumber(Math.round(Math.max(0.01, multipliers[key] ?? 1) * 100))}%
       </Fragment>
     ))}
   </>
@@ -593,7 +604,8 @@ function getAutoSellStepCount(party: Party): number {
   return Math.max(1, autoSellItemCount);
 }
 
-const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]';
+// SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
+const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))]';
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -697,6 +709,29 @@ function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'D
   if (log.entries.length > 0 && log.entries[log.entries.length - 1].outcome === 'draw') return 'Draw_Retreat';
   if (log.finalOutcome === 'Retreat') return 'Wounded_Retreat';
   return 'Clear';
+}
+
+function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): string {
+  const { triggers } = diaryLog;
+  if (triggers.includes('unlock')) {
+    return diaryLog.unlockHeadline
+      ? t('diary.headline.unlockNamed', { party: party.name, headline: diaryLog.unlockHeadline })
+      : t('diary.headline.unlock', { party: party.name });
+  }
+  if (triggers.includes('sideQuest')) {
+    return diaryLog.sideQuestLabel
+      ? t('diary.headline.sideQuestNamed', { party: party.name, quest: diaryLog.sideQuestLabel })
+      : t('diary.headline.sideQuest', { party: party.name });
+  }
+  if (triggers.length === 1 && triggers[0] === 'defeat') return t('diary.headline.defeat', { party: party.name });
+  if (triggers.length === 1 && triggers[0] === 'draw') return t('diary.headline.draw', { party: party.name });
+  const titleKey = triggers.includes('godsBattle') ? 'diary.title.godsBattle'
+    : triggers.includes('superRare') ? 'diary.title.superRare'
+      : triggers.includes('mythicRare') ? 'diary.title.mythicRare'
+        : triggers.includes('bossRare') ? 'diary.title.bossRare'
+          : triggers.includes('eliteRare') ? 'diary.title.eliteRare'
+            : 'diary.title.special';
+  return t('diary.headline.title', { party: party.name, title: t(titleKey) });
 }
 
 function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
@@ -814,7 +849,7 @@ function EnemyBestiaryBubble({
   const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
   const hasMagicCasting = hasMagicalAttack
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
-  const decay = `${((0.90 + enemy.accuracyBonus) * 100).toFixed(1)}%`;
+  const decay = `${formatDecimal((0.90 + enemy.accuracyBonus) * 100, 1)}%`;
   const classText = getEnemyClassSummary(enemy).replace('/', ' / ');
   const enemyTypeText = getEnemyTypeShortName(enemy.enemyType);
   const elementalOffenseIcon: UiIconKey | null = enemy.elementalOffense === 'fire'
@@ -825,7 +860,7 @@ function EnemyBestiaryBubble({
         ? 'thunder'
         : null;
   const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${getLocalizedItemName(item)}`).join(' / ') || t('common.none');
-  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || t('common.none');
+  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${formatNumber(ability.level)}`).join(', ') || t('common.none');
 
   return (
     <FloatingBubblePortal>
@@ -841,19 +876,19 @@ function EnemyBestiaryBubble({
         <div className="text-sm font-semibold text-gray-800">
           {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
-        <div>ID: {enemy.id}</div>
+        <div>ID: {formatNumber(enemy.id)}</div>
         {bubble.enemyLevel !== null && <div>{t('party.status.level')}: {formatNumber(bubble.enemyLevel)}</div>}
         <div>HP: {formatNumber(enemy.hp)}</div>
         <div>{t('home.enemy.class')}: {classText}</div>
         <div>{t('home.enemy.type')}: {enemyTypeText}</div>
-        {hasRangedAttack && <div>{t('home.enemy.attackLine', { label: t('combat.rangedAttack'), attack: formatNumber(enemy.rangedAttack), count: formatNumber(enemy.rangedNoA), amplifier: enemy.rangedAttackAmplifier.toFixed(2) })}</div>}
-        {hasMeleeAttack && <div>{t('home.enemy.attackLine', { label: t('combat.meleeAttack'), attack: formatNumber(enemy.meleeAttack), count: formatNumber(enemy.meleeNoA), amplifier: enemy.meleeAttackAmplifier.toFixed(2) })}</div>}
+        {hasRangedAttack && <div>{t('home.enemy.attackLine', { label: t('combat.rangedAttack'), attack: formatNumber(enemy.rangedAttack), count: formatNumber(enemy.rangedNoA), amplifier: formatDecimal(enemy.rangedAttackAmplifier, 2) })}</div>}
+        {hasMeleeAttack && <div>{t('home.enemy.attackLine', { label: t('combat.meleeAttack'), attack: formatNumber(enemy.meleeAttack), count: formatNumber(enemy.meleeNoA), amplifier: formatDecimal(enemy.meleeAttackAmplifier, 2) })}</div>}
         {hasPhysicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('combat.physicalAccuracy'), decay })}</div>}
-        {hasMagicalAttack && <div>{t('home.enemy.attackLine', { label: t('combat.magicalAttack'), attack: formatNumber(enemy.magicalAttack), count: formatNumber(enemy.magicalNoA), amplifier: enemy.magicalAttackAmplifier.toFixed(2) })}</div>}
+        {hasMagicalAttack && <div>{t('home.enemy.attackLine', { label: t('combat.magicalAttack'), attack: formatNumber(enemy.magicalAttack), count: formatNumber(enemy.magicalNoA), amplifier: formatDecimal(enemy.magicalAttackAmplifier, 2) })}</div>}
         {hasMagicCasting && <div>{t('home.enemy.castingSpell')}: {getEnemyBestiarySpellName(enemy)}</div>}
-        <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
-        <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
-        <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{formatDecimal(enemy.elementalOffenseValue, 2)})</div>
+        <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({formatDecimal(enemy.physicalDefenseAmplifier * 100, 0)}%)</div>
+        <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({formatDecimal(enemy.magicalDefenseAmplifier * 100, 0)}%)</div>
         {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.enemy.magicalAccuracy'), decay })}</div>}
         <div>{t('combat.evasion')}: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
         <div>{renderElementalResistanceInline(enemy.elementalResistance)}</div>
@@ -959,8 +994,9 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(action)) !== null) {
-    if (match.index > lastIndex) nodes.push(action.slice(lastIndex, match.index));
     const label = match[0];
+    if (!isStandaloneBattleLogName(action, match.index, label)) continue;
+    if (match.index > lastIndex) nodes.push(action.slice(lastIndex, match.index));
     const marker = uniqueMarkers.find((candidate) => candidate.label === label);
     if (marker) nodes.push(<BattleLogInlineChibi key={`chibi-${match.index}-${label}`} src={marker.src} alt={marker.alt} />);
     nodes.push(label);
@@ -1410,9 +1446,34 @@ function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
 }
 
+function formatBattleLogHitDisplay(entry: BattleLogEntry): string {
+  if (entry.specialAttack === 'armor_break') {
+    return t('battleLog.hits.armorBreak');
+  }
+  if (entry.specialAttack === 'mana_break') {
+    return t('battleLog.hits.manaBreak');
+  }
+  const totalAttempts = entry.totalAttempts ?? 0;
+  if (totalAttempts <= 0) return '';
+  const values = {
+    hits: formatNumber(entry.hits ?? 0),
+    total: formatNumber(totalAttempts),
+  };
+  return entry.specialAttack === 'gravity_well'
+    ? t('battleLog.hits.gravityWell', values)
+    : `(${t('battleLog.hits', values)})`;
+}
+
+function formatDecimal(value: number, maximumFractionDigits: number, minimumFractionDigits = maximumFractionDigits): string {
+  return new Intl.NumberFormat('ja-JP', {
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(value);
+}
+
 function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier?: number): string {
   if (autoSellMultiplier && autoSellMultiplier > 1) {
-    return t('home.autoSell.withMultiplier', { multiplier: autoSellMultiplier.toFixed(1), gold: formatNumber(autoSellProfit) });
+    return t('home.autoSell.withMultiplier', { multiplier: formatDecimal(autoSellMultiplier, 1), gold: formatNumber(autoSellProfit) });
   }
   return t('home.autoSell.basic', { gold: formatNumber(autoSellProfit) });
 }
@@ -1918,13 +1979,13 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   );
   const itemUniqueBonuses = item.bonuses ?? [];
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
-  const formatDecimal = (value: number): string => {
+  const formatItemDecimal = (value: number): string => {
     const rounded = Math.round(value * 100) / 100;
-    if (Number.isInteger(rounded)) return `${rounded}`;
-    return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+    if (Number.isInteger(rounded)) return formatNumber(rounded);
+    return formatDecimal(rounded, 2, 0);
   };
   const formatSigned = (value: number, suffix: string = ''): string =>
-    `${value >= 0 ? '+' : ''}${formatDecimal(value)}${suffix}`;
+    `${value >= 0 ? '+' : ''}${formatItemDecimal(value)}${suffix}`;
   const getScaledNoA = (value: number): number => {
     // Positive NoA item bonuses scale with enhancement + super rare multipliers.
     // Penalty style values should remain fixed (same as runtime stat computation).
@@ -2169,8 +2230,18 @@ function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
 }
 
 function getEnemyBestiarySpellName(enemy: EnemyDef): string {
+  const specialMagic = enemy.magicStyle === 'percentage_damage'
+    ? (isSpecialMagicCastable('gravity_well', enemy.magicalNoA) ? 'gravity_well' : null)
+    : resolveSpecialMagicFromAbilities(enemy.abilities, enemy.magicalNoA);
   const magicProfile = resolveMagicProfile({
-    style: hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit',
+    style: specialMagic === 'gravity_well'
+      ? 'percentage_damage'
+      : specialMagic
+        ? 'debuff'
+        : enemy.magicStyle === 'percentage_damage'
+          ? 'multi-hit'
+          : enemy.magicStyle ?? (hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit'),
+    specialMagic,
     elementalOffense: enemy.elementalOffense,
     elementalOffenseValue: 1.0,
     magicalNoA: enemy.magicalNoA,
@@ -2497,8 +2568,8 @@ function getCharacterGrowthMultiplier(character: Character): number {
 
 function formatMultiplierValue(value: number): string {
   const rounded = Math.round(value * 100) / 100;
-  if (Number.isInteger(rounded)) return `${rounded}`;
-  return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+  if (Number.isInteger(rounded)) return formatNumber(rounded);
+  return formatDecimal(rounded, 2, 0);
 }
 
 function formatMultiplierAsFraction(value: number): string {
@@ -2509,7 +2580,7 @@ function formatMultiplierAsFraction(value: number): string {
     { numerator: 1, denominator: 2 },
   ];
   const candidate = fractionCandidates.find(({ numerator, denominator }) => Math.abs(value - (numerator / denominator)) < 0.0001);
-  if (candidate) return `${candidate.numerator}/${candidate.denominator}`;
+  if (candidate) return `${formatNumber(candidate.numerator)}/${formatNumber(candidate.denominator)}`;
   return formatMultiplierValue(value);
 }
 
@@ -2593,9 +2664,9 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'deity_magical_attack_xV') {
       parts.push(t('party.bonusDisplay.deityMagicalAttackMultiplier', { value: formatMultiplierValue(b.value) }));
     } else if (b.type === 'physical_offense_multiplier_xV') {
-      parts.push(t('party.bonusDisplay.physicalOffenseMultiplier', { value: b.value.toFixed(2) }));
+      parts.push(t('party.bonusDisplay.physicalOffenseMultiplier', { value: formatDecimal(b.value, 2) }));
     } else if (b.type === 'magical_offense_multiplier_xV') {
-      parts.push(t('party.bonusDisplay.magicalOffenseMultiplier', { value: b.value.toFixed(2) }));
+      parts.push(t('party.bonusDisplay.magicalOffenseMultiplier', { value: formatDecimal(b.value, 2) }));
     } else if (b.type === 'deity_physical_defense_x2/3') {
       parts.push(t('party.bonusDisplay.deityPhysicalDefenseTwoThirds'));
     } else if (b.type === 'deity_physical_defense_xV' || b.type === 'deity_pysical_defense_xV') {
@@ -2608,31 +2679,31 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.physicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.physicalDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.physicalDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'magical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.magicalDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.magicalDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.magicalDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'fire_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.fireDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.fireDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.fireDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'ice_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.iceDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.iceDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.iceDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
           ? t('party.bonusDisplay.thunderDefenseMultiplier', { value: formatMultiplierAsFraction(b.value) })
-          : t('party.bonusDisplay.thunderDefenseMultiplier', { value: b.value.toFixed(2) })
+          : t('party.bonusDisplay.thunderDefenseMultiplier', { value: formatDecimal(b.value, 2) })
       );
     } else if (b.type === 'fire_defense') {
       parts.push(t('party.bonusDisplay.fireDefense', { value: Math.round(b.value) }));
@@ -3058,6 +3129,294 @@ export function HomeScreen({
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
+  const processedNativeDiaryIdsRef = useRef<Set<string> | null>(null);
+  const nativeAfkRecoveryRef = useRef(false);
+  const lastPartyProgressSnapshotHashRef = useRef('');
+  const partyProgressDisclosedLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>(
+    state.parties.map((party) => party.lastExpeditionLog),
+  );
+  const [apiControlActive, setApiControlActive] = useState(false);
+  const apiControlActiveRef = useRef(false);
+  const apiRevisionRef = useRef(0);
+  const apiSimulatedAtRef = useRef(Date.now());
+  const apiStateRef = useRef(state);
+  const apiStateVersionRef = useRef(0);
+  const apiActionsRef = useRef(actions);
+  const apiAutoRunRef = useRef(isAutoRepeatEnabled);
+  const apiCyclesRef = useRef(partyCycles);
+  apiStateRef.current = state;
+  apiActionsRef.current = actions;
+  apiAutoRunRef.current = isAutoRepeatEnabled;
+  apiCyclesRef.current = partyCycles;
+
+  useEffect(() => {
+    apiStateVersionRef.current += 1;
+  }, [state]);
+
+  const waitForApiStateUpdate = useCallback((previousVersion: number) => new Promise<void>((resolve, reject) => {
+    const startedAt = Date.now();
+    const check = () => {
+      if (apiStateVersionRef.current > previousVersion) return resolve();
+      if (Date.now() - startedAt > 10_000) return reject(new Error('state_update_timeout'));
+      window.setTimeout(check, 0);
+    };
+    check();
+  }), []);
+
+  const apiFailure = (status: number, code: string, message: string, retryable = false, details?: object) => ({
+    status,
+    error: { code, message, retryable, ...(details ? { details } : {}) },
+  });
+
+  const buildApiObservation = useCallback(() => buildExperimentalObservation(
+    apiStateRef.current,
+    apiRevisionRef.current,
+    apiAutoRunRef.current,
+    apiCyclesRef.current,
+    apiSimulatedAtRef.current,
+  ), []);
+
+  const handleExperimentalApiRequest = useCallback(async (operation: string, rawPayload: unknown) => {
+    const payload = rawPayload && typeof rawPayload === 'object' && !Array.isArray(rawPayload) ? rawPayload as Record<string, unknown> : {};
+    if (operation === 'status') return { status: 'ready', revision: apiRevisionRef.current };
+    if (operation === 'set-control') {
+      const active = payload.active === true;
+      apiControlActiveRef.current = active;
+      setApiControlActive(active);
+      lastCheckpointAtRef.current = Date.now();
+      if (!active) apiActionsRef.current.flushSave();
+      return { status: 'ready', revision: apiRevisionRef.current };
+    }
+    if (operation === 'release') {
+      apiActionsRef.current.flushSave();
+      apiControlActiveRef.current = false;
+      setApiControlActive(false);
+      lastCheckpointAtRef.current = Date.now();
+      return { revision: apiRevisionRef.current };
+    }
+    if (!apiControlActiveRef.current) return apiFailure(409, 'no_active_lease', 'The renderer is not in API-controlled mode.');
+    if (operation === 'observation') return { observation: buildApiObservation() };
+
+    // SpecRef: 9.1.3 | Experimental AI API | Retained battle-log read model
+    if (operation === 'latest-battle-log') {
+      if (Object.keys(payload).some((key) => key !== 'partyId') || !Number.isSafeInteger(payload.partyId)) {
+        return apiFailure(400, 'invalid_request', 'partyId must be an integer.');
+      }
+      const party = apiStateRef.current.parties.find((entry) => entry.id === payload.partyId);
+      if (!party) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      if (!party.lastExpeditionLog) return apiFailure(404, 'battle_log_not_found', 'The party has no retained battle log.');
+      return buildExperimentalBattleLog(
+        apiRevisionRef.current,
+        party.id,
+        party.lastExpeditionLog,
+        { kind: 'latest', diaryEntryId: null },
+        getItemDisplayName,
+      );
+    }
+
+    if (operation === 'diary-entries') {
+      if (Object.keys(payload).length > 0) return apiFailure(400, 'invalid_request', 'Diary entry listing accepts no input.');
+      return buildExperimentalDiaryEntries(apiStateRef.current.parties, apiRevisionRef.current, getExperimentalDiaryTitle);
+    }
+
+    if (operation === 'diary-battle-log') {
+      if (Object.keys(payload).some((key) => key !== 'diaryEntryId') || typeof payload.diaryEntryId !== 'string' || payload.diaryEntryId.length < 1 || payload.diaryEntryId.length > 200) {
+        return apiFailure(400, 'invalid_request', 'diaryEntryId is invalid.');
+      }
+      const retainedEntry = apiStateRef.current.parties
+        .flatMap((party) => (party.diaryLogs ?? []).map((diaryLog) => ({ party, diaryLog })))
+        .find(({ diaryLog }) => diaryLog.id === payload.diaryEntryId);
+      if (!retainedEntry) return apiFailure(404, 'diary_entry_not_found', 'The Diary entry is not retained.');
+      return buildExperimentalBattleLog(
+        apiRevisionRef.current,
+        retainedEntry.party.id,
+        retainedEntry.diaryLog.expeditionLog,
+        { kind: 'diary', diaryEntryId: retainedEntry.diaryLog.id },
+        getItemDisplayName,
+      );
+    }
+
+    if (operation === 'build-options') {
+      const allowedKeys = new Set(['revision', 'partyId', 'characterId', 'proposedChanges']);
+      if (Object.keys(payload).some((key) => !allowedKeys.has(key)) || !Number.isInteger(payload.revision) || !Number.isInteger(payload.partyId) || !Number.isInteger(payload.characterId)) return apiFailure(400, 'invalid_request', 'The build-options request is invalid.');
+      if (payload.revision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
+      const party = apiStateRef.current.parties.find((entry) => entry.id === payload.partyId);
+      if (!party) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      const character = party.characters.find((entry) => entry.id === payload.characterId);
+      if (!character) return apiFailure(404, 'character_not_found', 'The target character was not found.');
+      const proposed = payload.proposedChanges && typeof payload.proposedChanges === 'object' && !Array.isArray(payload.proposedChanges) ? payload.proposedChanges as Record<string, unknown> : {};
+      const currentBuild = { name: character.name, gender: character.gender, raceId: character.raceId, lineageId: character.raceId === 'mimorian' ? null : character.lineageId, predispositionId: character.raceId === 'mimorian' ? null : character.predispositionId, mainClassId: character.mainClassId, subClassId: character.subClassId, mimorianEnemyId: character.raceId === 'mimorian' ? character.mimorianEnemyId ?? null : null };
+      const candidateBuild = { ...currentBuild, ...proposed };
+      const immutableFields = character.isUnique ? Object.keys(proposed).filter((key) => !['mainClassId', 'subClassId'].includes(key)) : [];
+      const violations = immutableFields.map((field) => ({ code: 'immutable_character_field', field }));
+      const selectableRaceIds = RACES.map((entry) => entry.id);
+      const selectableClassIds = CLASSES.map((entry) => entry.id);
+      const selectableLineageIds = LINEAGES.filter((entry) => entry.selectable).map((entry) => entry.id);
+      const selectablePredispositionIds = PREDISPOSITIONS.filter((entry) => entry.selectable).map((entry) => entry.id);
+      return {
+        revision: apiRevisionRef.current,
+        partyId: party.id,
+        characterId: character.id,
+        currentBuild,
+        candidateBuild,
+        candidateValidation: { valid: violations.length === 0, violations, defaultNameWillBeAssigned: proposed.raceId !== undefined && proposed.raceId !== character.raceId && proposed.name === undefined },
+        options: { raceGenderPairs: selectableRaceIds.flatMap((raceId) => ['male', 'female'].map((gender) => ({ raceId, gender }))), lineageIds: selectableLineageIds, predispositionIds: selectablePredispositionIds, mainClassIds: selectableClassIds, subClassIds: selectableClassIds, mimorianEnemyIds: [...apiStateRef.current.global.unlockedMimorianEnemyIds], editableFields: character.isUnique ? ['mainClassId', 'subClassId'] : ['name', 'gender', 'raceId', 'lineageId', 'predispositionId', 'mainClassId', 'subClassId', 'mimorianEnemyId'] },
+      };
+    }
+
+    if (operation === 'command') {
+      if (Object.keys(payload).some((key) => !['expectedRevision', 'command'].includes(key)) || !Number.isInteger(payload.expectedRevision) || !payload.command || typeof payload.command !== 'object' || Array.isArray(payload.command)) return apiFailure(400, 'invalid_request', 'The command request is invalid.');
+      if (payload.expectedRevision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
+      const command = payload.command as Record<string, unknown>;
+      const type = command.type;
+      if (typeof type !== 'string' || !['update_character_build', 'reorder_character', 'set_deity', 'set_auto_equipment_mode', 'toggle_equipment_lock', 'set_jewel_priority_party', 'set_expedition_destination', 'set_expedition_depth', 'set_expedition_difficulty', 'set_auto_run', 'god_battle'].includes(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
+      const current = apiStateRef.current;
+      const partyIndex = Number.isInteger(command.partyId) ? current.parties.findIndex((entry) => entry.id === command.partyId) : -1;
+      const party = partyIndex >= 0 ? current.parties[partyIndex] : null;
+      if (command.partyId !== undefined && !party) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      const character = party && Number.isInteger(command.characterId) ? party.characters.find((entry) => entry.id === command.characterId) : null;
+      if (command.characterId !== undefined && !character) return apiFailure(404, 'character_not_found', 'The target character was not found.');
+      const previousRevision = apiRevisionRef.current;
+      const previousVersion = apiStateVersionRef.current;
+      let effects: Record<string, unknown> = {};
+      let dispatched = true;
+      if (type === 'update_character_build' && character && party) {
+        const changes = command.changes && typeof command.changes === 'object' && !Array.isArray(command.changes) ? command.changes as Partial<Character> : null;
+        if (!changes || Object.keys(changes).length === 0) return apiFailure(400, 'invalid_request', 'Character changes are required.');
+        if (character.isUnique && Object.keys(changes).some((key) => !['mainClassId', 'subClassId'].includes(key))) return apiFailure(422, 'immutable_character_field', 'A unique-character field is immutable.');
+        apiActionsRef.current.updateCharacter(character.id, changes, partyIndex);
+        effects = { characterId: character.id, changedFields: Object.keys(changes) };
+      } else if (type === 'reorder_character' && character && party) {
+        const from = party.characters.findIndex((entry) => entry.id === character.id);
+        const to = Number(command.targetRow) - 1;
+        if (!Number.isInteger(command.targetRow) || to < 0 || to >= party.characters.length) return apiFailure(400, 'invalid_request', 'targetRow is invalid.');
+        if (from === to) return apiFailure(409, 'no_change', 'The character is already in that row.');
+        apiActionsRef.current.reorderPartyCharacter(from, to, partyIndex);
+        effects = { previousRow: from + 1, targetRow: to + 1 };
+      } else if (type === 'set_deity' && party) {
+        const deityName = typeof command.deityId === 'string' ? deityNameFromId(command.deityId) : null;
+        if (!deityName || !current.global.unlockedDeities.includes(deityName)) return apiFailure(422, 'deity_unavailable', 'The deity is unavailable.');
+        if (getDeityKey(party.deity.name) === deityName) return apiFailure(409, 'no_change', 'The party already follows that deity.');
+        apiActionsRef.current.updatePartyDeity(partyIndex, deityName);
+        effects = { deityId: command.deityId };
+      } else if (type === 'set_auto_equipment_mode' && character) {
+        if (![0, 1, 2].includes(command.mode as number)) return apiFailure(400, 'invalid_request', 'mode is invalid.');
+        if ((character.autoEquipmentMode ?? 0) === command.mode) return apiFailure(409, 'no_change', 'The mode is unchanged.');
+        apiActionsRef.current.updateCharacter(character.id, { autoEquipmentMode: command.mode as 0 | 1 | 2 }, partyIndex);
+        effects = { previousMode: character.autoEquipmentMode ?? 0, mode: command.mode, autoEquipmentTriggered: false };
+      } else if (type === 'toggle_equipment_lock' && character) {
+        const slot = Number(command.slotIndex);
+        if (!Number.isInteger(slot) || !character.equipment[slot]) return apiFailure(404, 'equipment_slot_not_found', 'The equipment slot was not found.');
+        if ((character.autoEquipmentMode ?? 0) !== 2) return apiFailure(422, 'equipment_lock_unavailable', 'Equipment locks require FULL mode.');
+        apiActionsRef.current.toggleEquipmentLock(character.id, slot, partyIndex);
+        effects = { slotIndex: slot, previousLocked: Boolean(character.equipment[slot]?.isLocked), locked: !character.equipment[slot]?.isLocked };
+      } else if (type === 'set_jewel_priority_party') {
+        const target = command.partyId === null ? null : Number(command.partyId);
+        if (target !== null && !current.parties.some((entry) => entry.id === target)) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+        if ((current.global.jewelAutoEquipPriorityPartyId ?? null) === target) return apiFailure(409, 'no_change', 'The Jewel Priority Party is unchanged.');
+        apiActionsRef.current.setJewelAutoEquipPriorityParty(target);
+        effects = { previousPartyId: current.global.jewelAutoEquipPriorityPartyId ?? null, partyId: target, autoJewelEquipmentTriggered: false };
+      } else if (type === 'set_expedition_destination' && party) {
+        if (command.mode !== 'auto' && command.mode !== 'fixed') return apiFailure(400, 'invalid_request', 'mode is invalid.');
+        if (command.mode === 'fixed') {
+          if (!Number.isInteger(command.dungeonId) || !DUNGEONS.some((entry) => entry.id === command.dungeonId && isDungeonEntryUnlocked(party, entry.id))) return apiFailure(422, 'illegal_action', 'The dungeon is unavailable.');
+          apiActionsRef.current.selectDungeon(partyIndex, command.dungeonId as number);
+        }
+        apiActionsRef.current.setExpeditionDestinationMode(partyIndex, command.mode);
+        effects = { mode: command.mode, dungeonId: command.mode === 'fixed' ? command.dungeonId : party.selectedDungeonId };
+      } else if (type === 'set_expedition_depth' && party) {
+        const values: ExpeditionDepthLimit[] = ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'];
+        if (!values.includes(command.depthLimit as ExpeditionDepthLimit)) return apiFailure(400, 'invalid_request', 'depthLimit is invalid.');
+        if (party.expeditionDepthLimit === command.depthLimit) return apiFailure(409, 'no_change', 'The depth limit is unchanged.');
+        apiActionsRef.current.setExpeditionDepthLimit(partyIndex, command.depthLimit as ExpeditionDepthLimit);
+        effects = { previousDepthLimit: party.expeditionDepthLimit, depthLimit: command.depthLimit };
+      } else if (type === 'set_expedition_difficulty' && party) {
+        const maximum = getDifficultyOffsetMax(DUNGEONS.find((entry) => entry.id === party.selectedDungeonId)?.expLevel ?? 1);
+        if (!Number.isInteger(command.difficultyOffset) || Number(command.difficultyOffset) < 0 || Number(command.difficultyOffset) > maximum || Number(command.difficultyOffset) % 2 !== 0) return apiFailure(422, 'difficulty_unavailable', 'The difficulty offset is unavailable.');
+        apiActionsRef.current.setExpeditionDifficultyOffset(partyIndex, Number(command.difficultyOffset));
+        effects = { dungeonId: party.selectedDungeonId, difficultyOffset: command.difficultyOffset };
+      } else if (type === 'set_auto_run') {
+        if (typeof command.enabled !== 'boolean') return apiFailure(400, 'invalid_request', 'enabled must be boolean.');
+        if (apiAutoRunRef.current === command.enabled) return apiFailure(409, 'no_change', 'Auto-Run is unchanged.');
+        setIsAutoRepeatEnabled(command.enabled);
+        apiAutoRunRef.current = command.enabled;
+        dispatched = false;
+        effects = { previousEnabled: !command.enabled, enabled: command.enabled };
+      } else if (type === 'god_battle' && party) {
+        if (!party.defeatedBossExpeditions[party.selectedDungeonId] || (party.instantExpeditionStock ?? 0) <= 0 || apiAutoRunRef.current) return apiFailure(422, 'god_battle_unavailable', 'Gods Battle is unavailable.');
+        apiActionsRef.current.consumeInstantExpeditionStock(partyIndex, apiSimulatedAtRef.current);
+        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current);
+        apiSimulatedAtRef.current += 450_000;
+        effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
+      }
+      if (dispatched) await waitForApiStateUpdate(previousVersion);
+      else await new Promise((resolve) => window.setTimeout(resolve, 0));
+      apiRevisionRef.current += 1;
+      apiActionsRef.current.flushSave();
+      return { command: { type, status: 'applied', previousRevision, revision: apiRevisionRef.current }, effects, observation: buildApiObservation() };
+    }
+
+    if (operation === 'sortie') {
+      if (Object.keys(payload).some((key) => !['expectedRevision', 'partyId', 'count'].includes(key)) || !Number.isInteger(payload.expectedRevision) || !Number.isInteger(payload.partyId) || !Number.isInteger(payload.count) || Number(payload.count) < 1 || Number(payload.count) > 100) return apiFailure(400, 'invalid_request', 'The sortie request is invalid.');
+      if (payload.expectedRevision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
+      const partyIndex = apiStateRef.current.parties.findIndex((entry) => entry.id === payload.partyId);
+      if (partyIndex < 0) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      const initialParty = apiStateRef.current.parties[partyIndex];
+      const dungeonId = initialParty.selectedDungeonId;
+      if (!DUNGEONS.some((entry) => entry.id === dungeonId) || !isDungeonEntryUnlocked(initialParty, dungeonId)) return apiFailure(422, 'normal_sortie_unavailable', 'The selected expedition is unavailable.');
+      if (computePartyStats(initialParty).partyStats.hp <= 0) return apiFailure(422, 'invalid_party', 'The party has no valid maximum HP.');
+      const chargeBefore = { stock: initialParty.instantExpeditionStock ?? 0, chargeStartedAt: initialParty.instantExpeditionChargeStartedAt ?? null };
+      const previousRevision = apiRevisionRef.current;
+      const outcomes = { Clear: 0, Turned_Back: 0, Draw_Retreat: 0, Wounded_Retreat: 0, Defeat: 0 };
+      const totals = { experienceGained: 0, goldGained: 0, goldDonated: 0, goldSaved: 0, itemsObtained: 0, itemsByRarity: { common: 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: 0, autoSellGold: 0, jewelsGained: 0, pranaGained: 0 };
+      const runs: Array<Record<string, unknown>> = [];
+      let elapsed = 0;
+      const beforeVersion = apiStateVersionRef.current;
+      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current);
+      await waitForApiStateUpdate(beforeVersion);
+      for (const [zeroBasedIndex, batchRun] of batch.runs.entries()) {
+        const index = zeroBasedIndex + 1;
+        const beforeState = batchRun.beforeState;
+        const beforeParty = beforeState.parties[partyIndex];
+        const afterState = batchRun.afterState;
+        const afterParty = batchRun.party;
+        const log = batchRun.log;
+        const outcome = outcomeFromParty(afterParty);
+        outcomes[outcome] += 1;
+        const cycleElapsed = Math.max(450_000, (log?.totalRooms ?? 1) * 15_000);
+        const startElapsed = elapsed;
+        elapsed += cycleElapsed;
+        const xp = Math.max(0, afterParty.experience - beforeParty.experience);
+        const gold = Math.max(0, afterState.global.gold - beforeState.global.gold);
+        totals.experienceGained += xp;
+        totals.goldGained += gold;
+        totals.itemsObtained += log?.rewards.length ?? 0;
+        totals.autoSoldItems += log?.autoSellCount ?? 0;
+        totals.autoSellGold += log?.autoSellProfit ?? 0;
+        runs.push({ index, dungeonId, partyElapsedStartMs: startElapsed, partyElapsedEndMs: elapsed, outcome, completedRooms: log?.completedRooms ?? 0, totalRooms: log?.totalRooms ?? 0, latestDisclosedFloor: log?.entries.at(-1)?.floor ?? null, experienceGained: xp, goldGained: gold, goldDonated: 0, goldSaved: gold, itemsByRarity: { common: log?.rewards.length ?? 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: log?.autoSellCount ?? 0, autoSellGold: log?.autoSellProfit ?? 0, jewelsGained: 0, pranaGained: 0, sideQuestEvents: [], unlockedIds: [], endingHp: { current: afterParty.currentHp, maximum: computePartyStats(afterParty).partyStats.hp } });
+      }
+      const finalParty = batch.state.parties[partyIndex];
+      const chargeAfter = { stock: finalParty.instantExpeditionStock ?? 0, chargeStartedAt: finalParty.instantExpeditionChargeStartedAt ?? null };
+      apiRevisionRef.current += 1;
+      apiActionsRef.current.flushSave();
+      return { sortie: { partyId: Number(payload.partyId), dungeonId, requestedCount: Number(payload.count), completedCount: Number(payload.count), previousRevision, revision: apiRevisionRef.current, partyElapsedStartMs: 0, partyElapsedEndMs: elapsed }, prelude: null, outcomes, totals, charge: { before: chargeBefore, after: chargeAfter }, sideQuests: { assigned: 0, completed: 0, cancelled: 0, expired: 0 }, unlocks: { bossDungeonIds: [], godBattleDungeonIds: [], partyIds: [], deityIds: [], otherIds: [] }, runs, observation: buildApiObservation() };
+    }
+    return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
+  }, [buildApiObservation, waitForApiStateUpdate]);
+
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop?.onExperimentalApiRequest) return;
+    return desktop.onExperimentalApiRequest(handleExperimentalApiRequest);
+  }, [handleExperimentalApiRequest]);
+
+  if (processedNativeDiaryIdsRef.current === null) {
+    const storedIds = getProcessedDiaryIds();
+    processedNativeDiaryIdsRef.current = storedIds ?? new Set(
+      state.parties.flatMap((party) => party.diaryLogs.map((log) => log.id)),
+    );
+    if (storedIds === null) saveProcessedDiaryIds(processedNativeDiaryIdsRef.current);
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -3244,7 +3603,7 @@ export function HomeScreen({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
+        const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
@@ -3609,7 +3968,7 @@ export function HomeScreen({
 
     const formatDefenseBonusPercent = (value: number): string => {
       const percent = Math.round(value * 1000) / 10;
-      return Number.isInteger(percent) ? `${percent}` : `${percent.toFixed(1)}`;
+      return formatDecimal(percent, 1, Number.isInteger(percent) ? 0 : 1);
     };
 
     const ITEM_DIRECT_C_BONUS_TYPES = new Set([
@@ -4336,6 +4695,222 @@ export function HomeScreen({
       : 0;
   }, [pendingAfkMs]);
 
+  // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | read-only Party Progress snapshot
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop) return;
+
+    const now = Date.now();
+    const parties: DesktopPartyProgressPartySnapshot[] = state.parties.map((party, partyIndex) => {
+      const cycle = partyCycles[partyIndex] ?? { state: 'idle' as PartyCycleState, stateStartedAt: now, durationMs: 1000 };
+      const elapsedMs = Math.max(0, now - cycle.stateStartedAt);
+      const { partyStats } = computePartyStats(party);
+      const maxHp = Math.max(1, Math.floor(partyStats.hp));
+      const expeditionLog = party.lastExpeditionLog;
+      let currentHp = Math.max(0, Math.min(maxHp, Math.floor(party.currentHp)));
+      let progress: DesktopPartyProgressValue = { kind: 'none' };
+      let subProgress: DesktopPartyProgressValue = { kind: 'none' };
+
+      if (cycle.state === 'explore') {
+        const visibleCount = expeditionLog
+          ? getExplorationVisibleRoomCount(elapsedMs, cycle.durationMs, expeditionLog.entries.length)
+          : 0;
+        const visibleEntry = expeditionLog?.entries[Math.max(0, visibleCount - 1)];
+        if (visibleEntry) currentHp = Math.max(0, Math.min(maxHp, Math.floor(visibleEntry.remainingPartyHP)));
+        progress = {
+          kind: 'steps',
+          completed: Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, visibleCount),
+          total: EXPLORING_PROGRESS_TOTAL_STEPS,
+        };
+      } else if (cycle.state === 'rest') {
+        const total = Math.max(1, cycle.restInitialTotalSteps ?? 1);
+        const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(maxHp * REST_HEAL_MAX_HP_RATIO));
+        const remaining = Math.max(0, Math.ceil((maxHp - currentHp) / healPerStep));
+        progress = { kind: 'steps', completed: Math.max(0, Math.min(total, total - remaining)), total };
+      } else if (cycle.state === 'sell') {
+        const total = getAutoSellStepCount(party);
+        progress = {
+          kind: 'steps',
+          completed: Math.min(total, Math.floor((elapsedMs / Math.max(1, cycle.durationMs)) * total)),
+          total,
+        };
+      } else if (cycle.state !== 'idle' && cycle.state !== 'reactivate') {
+        progress = {
+          kind: 'continuous',
+          startedAt: cycle.stateStartedAt,
+          endsAt: cycle.stateStartedAt + Math.max(1, cycle.durationMs),
+        };
+      }
+
+      if (STEP_BASED_STATES.has(cycle.state)) {
+        const stepTotal = cycle.state === 'rest'
+          ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
+          : cycle.state === 'sell'
+            ? getAutoSellStepCount(party)
+            : Math.max(1, expeditionLog?.entries.length ?? 1);
+        const stepDurationMs = cycle.state === 'rest'
+          ? Math.max(1, cycle.durationMs)
+          : Math.max(1, cycle.durationMs / stepTotal);
+        const completedStepCount = Math.floor(elapsedMs / stepDurationMs);
+        const stepStartedAt = cycle.stateStartedAt + completedStepCount * stepDurationMs;
+        subProgress = { kind: 'continuous', startedAt: stepStartedAt, endsAt: stepStartedAt + stepDurationMs };
+      }
+
+      if (cycle.state !== 'explore') {
+        partyProgressDisclosedLogsRef.current[partyIndex] = expeditionLog ?? null;
+      }
+      const disclosedLog = partyProgressDisclosedLogsRef.current[partyIndex] ?? null;
+      const latestDisclosedEntry = disclosedLog?.entries[disclosedLog.entries.length - 1];
+      const headlineFloorName = latestDisclosedEntry?.floor
+        ? getLocalizedExpeditionFloorConcept(disclosedLog!.dungeonId, latestDisclosedEntry.floor)
+          ?? t('expedition.floor', { floor: formatNumber(latestDisclosedEntry.floor) })
+        : disclosedLog?.dungeonName
+          ?? DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId)?.name
+          ?? '-';
+      const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(party, now));
+      const compactProgressItems = getCompactProgressItems(
+        party,
+        getTimeSpeedScale(debugSettings),
+        now,
+        cycle.state,
+      ).map((item) => ({ text: item.compactText, progressRatio: item.progressRatio }));
+
+      return {
+        id: party.id,
+        name: party.name,
+        state: cycle.state,
+        stateLabel: getPartyCycleStateLabel(cycle.state),
+        headlineFloorName,
+        outcomeLabel: disclosedLog ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome) : '',
+        chargeCells: chargeDisplay.cells,
+        chargeTimerText: chargeDisplay.timerText,
+        compactProgressItems,
+        currentHp,
+        maxHp,
+        progress,
+        subProgress,
+      };
+    });
+
+    const snapshotWithoutTimestamp = {
+      schemaVersion: 1 as const,
+      environment: getEnvironmentId(),
+      language: state.global.language,
+      unreadDiaryCount: state.parties.reduce((count, party) => (
+        count + party.diaryLogs.reduce((partyCount, log) => partyCount + (log.isRead ? 0 : 1), 0)
+      ), 0),
+      theme: (
+        gameMode === 'm.laika'
+          ? (isDarkModeEnabled ? 'laika-dark' : 'laika')
+          : gameMode === 'm.luna'
+            ? (isDarkModeEnabled ? 'luna-dark' : 'luna')
+            : isDarkModeEnabled ? 'dark' : 'light'
+      ) as DesktopPartyProgressSnapshot['theme'],
+      parties,
+    };
+    const snapshotHash = JSON.stringify(snapshotWithoutTimestamp);
+    if (snapshotHash === lastPartyProgressSnapshotHashRef.current) return;
+    lastPartyProgressSnapshotHashRef.current = snapshotHash;
+    void desktop.updatePartyProgressPane({
+      ...snapshotWithoutTimestamp,
+      updatedAt: Date.now(),
+    }).then((accepted) => {
+      if (!accepted) {
+        lastPartyProgressSnapshotHashRef.current = '';
+        console.warn('Party Progress pane rejected its latest snapshot.');
+      }
+    }).catch((error) => {
+      lastPartyProgressSnapshotHashRef.current = '';
+      console.error('Failed to publish Party Progress pane snapshot:', error);
+    });
+  }, [gameMode, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
+
+  // SpecRef: 9.1.1 | macOS background lifecycle and native notifications | Diary-filtered native notifications
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    const processedIds = processedNativeDiaryIdsRef.current;
+    if (!desktop || !processedIds) return;
+    if (pendingAfkMs > 0) {
+      nativeAfkRecoveryRef.current = true;
+      return;
+    }
+
+    const newLogs = state.parties
+      .flatMap((party, partyIndex) => party.diaryLogs.map((log) => ({ party, partyIndex, log })))
+      .filter(({ log }) => !processedIds.has(log.id))
+      .sort((a, b) => a.log.createdAt - b.log.createdAt);
+    if (newLogs.length === 0) {
+      nativeAfkRecoveryRef.current = false;
+      return;
+    }
+
+    newLogs.forEach(({ log }) => processedIds.add(log.id));
+    saveProcessedDiaryIds(processedIds);
+    const wasAfkRecovery = nativeAfkRecoveryRef.current;
+    nativeAfkRecoveryRef.current = false;
+    const preferences = getDesktopPreferences();
+    if (!preferences.nativeNotificationsEnabled) return;
+
+    void desktop.getWindowVisibility().then(async (isVisible) => {
+      if (preferences.nativeNotificationMode === 'hiddenOnly' && isVisible) return;
+      if (wasAfkRecovery) {
+        await desktop.showNotification({
+          id: `afk-${Date.now()}`,
+          title: t('desktopNotification.afkTitle'),
+          body: t('desktopNotification.afkBody', { count: newLogs.length }),
+          kind: 'afkSummary',
+        });
+        return;
+      }
+
+      await Promise.all(newLogs.map(({ party, partyIndex, log }) => {
+        const primaryTrigger = log.triggers[0] ?? 'unlock';
+        return desktop.showNotification({
+          id: log.id,
+          title: t(`desktopNotification.trigger.${primaryTrigger}`),
+          body: t('desktopNotification.diaryBody', {
+            party: `PT${partyIndex + 1}`,
+            dungeon: log.unlockDetail ?? log.sideQuestDetail ?? log.expeditionLog.dungeonName,
+          }),
+          kind: 'diary',
+          partyId: party.id,
+          diaryLogId: log.id,
+        });
+      }));
+    }).catch((error) => console.error('Failed to deliver desktop notification:', error));
+  }, [pendingAfkMs, state.parties]);
+
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop) return;
+    return desktop.onNotificationActivated((payload) => {
+      const partyIndex = payload.partyId === undefined
+        ? state.selectedPartyIndex
+        : state.parties.findIndex((party) => party.id === payload.partyId);
+      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      if (isPartyExpeditionSplitViewEnabled) {
+        setActiveWideModeSecondaryTab('diary');
+      } else {
+        setActiveTab('diary');
+      }
+      if (payload.diaryLogId) {
+        setDiaryExpandedLogs((previous) => ({ ...previous, [payload.diaryLogId!]: true }));
+        actions.markDiaryLogSeen(payload.diaryLogId);
+      }
+    });
+  }, [actions, isPartyExpeditionSplitViewEnabled, state.parties, state.selectedPartyIndex]);
+
+  useEffect(() => {
+    const desktop = window.bokemoDesktop;
+    if (!desktop) return;
+    return desktop.onPartyProgressPartyActivated((partyId) => {
+      const partyIndex = state.parties.findIndex((party) => party.id === partyId);
+      if (partyIndex < 0) return;
+      actions.selectParty(partyIndex);
+      setActiveTab('expedition');
+    });
+  }, [actions, state.parties]);
+
   useEffect(() => {
     if (pendingAfkMs > 0) return;
     if (!shouldShowAfkSummaryRef.current) return;
@@ -4592,6 +5167,10 @@ export function HomeScreen({
   }, []);
 
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
+    if (apiControlActiveRef.current) {
+      lastCheckpointAtRef.current = now;
+      return;
+    }
     const parties = latestPartiesRef.current;
     const autoRepeatEnabled = autoRepeatEnabledRef.current;
     const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
@@ -5642,6 +6221,19 @@ export function HomeScreen({
 
   return (
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
+      {apiControlActive && (
+        <div className="fixed inset-0 z-[100] cursor-wait bg-transparent" aria-label="Experimental AI API control active">
+          <button
+            type="button"
+            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-red-300 bg-white px-3 py-2 text-xs text-red-700 shadow"
+            onClick={() => void window.bokemoDesktop?.setExperimentalApiEnabled(false).then((settings) => {
+              window.dispatchEvent(new CustomEvent('bokemo-experimental-api-settings', { detail: settings }));
+            })}
+          >
+            {t('setting.experimentalApi.disableControl')}
+          </button>
+        </div>
+      )}
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
         <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
@@ -6094,15 +6686,15 @@ function PartyTab({
       }
       if (combatTotals.meleeAttackAmp !== prev.meleeAttackAmp) {
         const isPositive = combatTotals.meleeAttackAmp > prev.meleeAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.meleeAttackMultiplierLabel', `x${prev.meleeAttackAmp.toFixed(2)}`, `x${combatTotals.meleeAttackAmp.toFixed(2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.help.meleeAttackMultiplierLabel', `x${formatDecimal(prev.meleeAttackAmp, 2)}`, `x${formatDecimal(combatTotals.meleeAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.rangedAttackAmp !== prev.rangedAttackAmp) {
         const isPositive = combatTotals.rangedAttackAmp > prev.rangedAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.rangedAttackMultiplierLabel', `x${prev.rangedAttackAmp.toFixed(2)}`, `x${combatTotals.rangedAttackAmp.toFixed(2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.help.rangedAttackMultiplierLabel', `x${formatDecimal(prev.rangedAttackAmp, 2)}`, `x${formatDecimal(combatTotals.rangedAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
         const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${prev.magicalAttackAmp.toFixed(2)}`, `x${combatTotals.magicalAttackAmp.toFixed(2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
@@ -7630,7 +8222,7 @@ function PartyTab({
                   <div className="space-y-1">
                     {baseStatMultiplierRows.map((row) => (
                       <div key={row.label}>
-                        {row.label}: {formatNumber(row.value)} ({row.note} x{row.ratio.toFixed(2)})
+                        {row.label}: {formatNumber(row.value)} ({row.note} x{formatDecimal(row.ratio, 2)})
                       </div>
                     ))}
                   </div>
@@ -7696,13 +8288,13 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'ranged-attack',
-                    text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
                     helpTitle: t('combat.rangedAttack'),
                     helpLines: [
                       formatAttackSpeedHelp('ranged', t),
                       t('home.party.help.rangedAttackPower', { value: formatNumber(Math.floor(stats.rangedAttack)) }),
                       t('home.party.help.rangedAttackCount', { value: formatNumber(stats.rangedNoA) }),
-                      t('home.party.help.rangedAttackMultiplier', { value: amp.toFixed(2) }),
+                      t('home.party.help.rangedAttackMultiplier', { value: formatDecimal(amp, 2) }),
                     ],
                   });
                 }
@@ -7713,13 +8305,13 @@ function PartyTab({
                   );
                   offenseLines.push({
                     key: 'magical-attack',
-                    text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
                     helpTitle: t('combat.magicalAttack'),
                     helpLines: [
                       formatAttackSpeedHelp('magical', t),
                       t('home.party.help.magicalAttackPower', { value: formatNumber(Math.floor(stats.magicalAttack)) }),
                       t('home.party.help.magicalAttackCount', { value: formatNumber(stats.magicalNoA) }),
-                      t('home.party.help.magicalAttackMultiplier', { value: amp.toFixed(2) }),
+                      t('home.party.help.magicalAttackMultiplier', { value: formatDecimal(amp, 2) }),
                     ],
                   });
                 }
@@ -7730,19 +8322,19 @@ function PartyTab({
                   ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'melee-attack',
-                    text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${amp.toFixed(2)})`,
+                    text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
                     helpTitle: t('combat.meleeAttack'),
                     helpLines: [
                       formatAttackSpeedHelp('melee', t),
                       t('home.party.help.meleeAttackPower', { value: formatNumber(Math.floor(stats.meleeAttack)) }),
                       t('home.party.help.meleeAttackCount', { value: formatNumber(stats.meleeNoA) }),
-                      t('home.party.help.meleeAttackMultiplier', { value: amp.toFixed(2) }),
+                      t('home.party.help.meleeAttackMultiplier', { value: formatDecimal(amp, 2) }),
                     ],
                   });
                 }
 
                 const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
-                const decayText = `${(baseDecay * 100).toFixed(1)}%`;
+                const decayText = `${formatDecimal(baseDecay * 100, 1)}%`;
                 const hasPhysicalAttacks = hasRanged || hasMelee;
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
@@ -7769,8 +8361,12 @@ function PartyTab({
                 }
                 if (hasCastableMagic) {
                   const hasArcMagic = stats.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
+                  // The status pane shows the ideal, terrain-independent spell selection.
+                  // Runtime battle selection repeats this check with terrain-adjusted NoA.
+                  const specialMagic = resolveSpecialMagicFromAbilities(stats.abilities, stats.magicalNoA);
                   const magicProfile = resolveMagicProfile({
-                    style: hasArcMagic ? 'arc-magic' : 'multi-hit',
+                    style: specialMagic === 'gravity_well' ? 'percentage_damage' : specialMagic ? 'debuff' : hasArcMagic ? 'arc-magic' : 'multi-hit',
+                    specialMagic,
                     elementalOffense: stats.elementalOffense,
                     elementalOffenseValue: stats.elementalOffenseValue,
                     magicalNoA: stats.magicalNoA,
@@ -7816,12 +8412,12 @@ function PartyTab({
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
-                    text: `${t('combat.element')}:${elementIcon ? t('common.yes') : t('common.none')}(x${stats.elementalOffenseValue.toFixed(2)})`,
+                    text: `${t('combat.element')}:${elementIcon ? t('common.yes') : t('common.none')}(x${formatDecimal(stats.elementalOffenseValue, 2)})`,
                     renderedText: (
                       <>
                         {t('combat.element')}:
                         {elementIcon ? renderUiIcon(elementIcon) : t('common.none')}
-                        (x{stats.elementalOffenseValue.toFixed(2)})
+                        (x{formatDecimal(stats.elementalOffenseValue, 2)})
                       </>
                     ),
                     helpTitle: t('home.party.elementalAttackHelpTitle'),
@@ -8066,8 +8662,8 @@ function PartyTab({
                 if (val !== 1) {
                   const effectiveMultiplier = key === 'grimoire' ? val * seekerMultiplier : val;
                   const formattedMultiplier = key === 'grimoire'
-                    ? effectiveMultiplier.toFixed(2)
-                    : effectiveMultiplier.toFixed(1);
+                    ? formatDecimal(effectiveMultiplier, 2)
+                    : formatDecimal(effectiveMultiplier, 1);
                   const label = `${mulNames[key] ?? key}x${formattedMultiplier}`;
                   const templateKey = C_MULTIPLIER_HELP_DESCRIPTION_KEYS[key];
                   pushBonusDisplayEntry({
@@ -8624,7 +9220,7 @@ function PartyTab({
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className={`truncate ${getItemNameFontWeightClass(displayItem.item)}`}>{getItemDisplayName(displayItem.item)}</span>
-                          {!displayItem.isEquipped && <span className="text-xs text-gray-500 shrink-0">x{displayItem.count}</span>}
+                          {!displayItem.isEquipped && <span className="text-xs text-gray-500 shrink-0">x{formatNumber(displayItem.count)}</span>}
                         </div>
                         <div className="text-xs leading-tight text-gray-400 truncate">
                           {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}
@@ -9646,7 +10242,7 @@ function ExpeditionTab({
                                 const hits = log.hits ?? 0;
                                 const totalAttempts = log.totalAttempts ?? 0;
                                 const allMissed = totalAttempts > 0 && hits === 0 && !log.wasNegated;
-                                const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
+                                const hitDisplay = formatBattleLogHitDisplay(log);
                                 const trailingEffectMatch = /\(([^()]+)\)$/.exec(log.action);
                                 const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                   .split(',')
@@ -9659,13 +10255,13 @@ function ExpeditionTab({
                                   ? t('battleLog.extra.momentum', { sign: log.momentumBonusPercent >= 0 ? '+' : '', percent: log.momentumBonusPercent })
                                   : '';
                                 const ambushDisplay = typeof log.ambushMultiplier === 'number' && log.ambushMultiplier > 1
-                                  ? t('battleLog.extra.ambush', { multiplier: log.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                  ? t('battleLog.extra.ambush', { multiplier: formatDecimal(log.ambushMultiplier, 2, 0) })
                                   : '';
                                 const overwatchDisplay = typeof log.overwatchMultiplier === 'number' && log.overwatchMultiplier > 1
-                                  ? t('battleLog.extra.overwatch', { multiplier: log.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                  ? t('battleLog.extra.overwatch', { multiplier: formatDecimal(log.overwatchMultiplier, 2, 0) })
                                   : '';
                                 const executionDisplay = typeof log.executionMultiplier === 'number' && log.executionMultiplier > 1
-                                  ? t('battleLog.extra.execution', { multiplier: log.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                  ? t('battleLog.extra.execution', { multiplier: formatDecimal(log.executionMultiplier, 2, 0) })
                                   : '';
                                 const swarmActorDisplay = typeof log.swarmActorPenaltyPercent === 'number' && log.swarmActorPenaltyPercent > 0
                                   ? t('battleLog.extra.powerDown', { percent: log.swarmActorPenaltyPercent })
@@ -11715,7 +12311,7 @@ function DiaryTab({
                               const hits = battleLog.hits ?? 0;
                               const totalAttempts = battleLog.totalAttempts ?? 0;
                               const allMissed = totalAttempts > 0 && hits === 0 && !battleLog.wasNegated;
-                              const hitDisplay = totalAttempts > 0 ? `(${t('battleLog.hits', { hits, total: totalAttempts })})` : '';
+                              const hitDisplay = formatBattleLogHitDisplay(battleLog);
                               const trailingEffectMatch = /\(([^()]+)\)$/.exec(battleLog.action);
                               const trailingEffects = (trailingEffectMatch?.[1] ?? '')
                                 .split(',')
@@ -11728,13 +12324,13 @@ function DiaryTab({
                                 ? t('battleLog.extra.momentum', { sign: battleLog.momentumBonusPercent >= 0 ? '+' : '', percent: battleLog.momentumBonusPercent })
                                 : '';
                               const ambushDisplay = typeof battleLog.ambushMultiplier === 'number' && battleLog.ambushMultiplier > 1
-                                ? t('battleLog.extra.ambush', { multiplier: battleLog.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                ? t('battleLog.extra.ambush', { multiplier: formatDecimal(battleLog.ambushMultiplier, 2, 0) })
                                 : '';
                               const overwatchDisplay = typeof battleLog.overwatchMultiplier === 'number' && battleLog.overwatchMultiplier > 1
-                                ? t('battleLog.extra.overwatch', { multiplier: battleLog.overwatchMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                ? t('battleLog.extra.overwatch', { multiplier: formatDecimal(battleLog.overwatchMultiplier, 2, 0) })
                                 : '';
                               const executionDisplay = typeof battleLog.executionMultiplier === 'number' && battleLog.executionMultiplier > 1
-                                ? t('battleLog.extra.execution', { multiplier: battleLog.executionMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') })
+                                ? t('battleLog.extra.execution', { multiplier: formatDecimal(battleLog.executionMultiplier, 2, 0) })
                                 : '';
                               const swarmActorDisplay = typeof battleLog.swarmActorPenaltyPercent === 'number' && battleLog.swarmActorPenaltyPercent > 0
                                 ? t('battleLog.extra.powerDown', { percent: battleLog.swarmActorPenaltyPercent })
@@ -12064,7 +12660,7 @@ function SettingTab({
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
       const detailItems = entry.details.map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = typeof detail.totalAttempts === 'number' && detail.totalAttempts > 0 ? `(${t('battleLog.hits', { hits: formatNumber(detail.hits ?? 0), total: formatNumber(detail.totalAttempts) })})` : '';
+        const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
         const noteDisplay = detail.note ? `(${detail.note})` : '';
         return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
@@ -12378,8 +12974,10 @@ function SettingTab({
     };
     const isIos = /iPad|iPhone|iPod/.test(nav.userAgent)
       || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+    const isSafari = /Safari\//.test(nav.userAgent)
+      && !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)\//.test(nav.userAgent);
 
-    if (isIos && nav.share) {
+    if ((isIos || isSafari) && nav.share) {
       const shareData: ShareData = { files: [backupFile] };
       let canShareBackup = !nav.canShare;
       try {
@@ -12389,7 +12987,8 @@ function SettingTab({
       }
       if (canShareBackup) {
         try {
-          // iOS uses its native share sheet, where the player can save the file.
+          // Safari can ignore an object URL anchor's download attribute and try
+          // to render the backup as a page. Its native share sheet saves the file.
           await nav.share(shareData);
           onAddNotification(t('setting.backup.exported'), 'normal', 'item', true);
           return;
@@ -12634,14 +13233,7 @@ function SettingTab({
   const [characterRosterPartyId, setCharacterRosterPartyId] = useState<number>(1);
   const [characterRosterGenderFilter, setCharacterRosterGenderFilter] = useState<'male' | 'female' | 'unique'>('male');
 
-  const rosterCharacterImageModules = useMemo(() => import.meta.glob('/public/character/*.png', { eager: true }), []);
-  const availableRosterImageFiles = useMemo(() => {
-    return new Set(
-      Object.keys(rosterCharacterImageModules)
-        .map((modulePath) => modulePath.split('/').pop())
-        .filter((fileName): fileName is string => typeof fileName === 'string' && fileName.length > 0),
-    );
-  }, [rosterCharacterImageModules]);
+  const availableRosterImageFiles = CHARACTER_IMAGE_FILES;
   const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
     const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
       'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
@@ -13007,7 +13599,7 @@ function SettingTab({
     .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
-    t('home.enemy.attackLine', { label, attack: formatNumber(attack), count: formatNumber(noA), amplifier: amplifier.toFixed(2) });
+    t('home.enemy.attackLine', { label, attack: formatNumber(attack), count: formatNumber(noA), amplifier: formatDecimal(amplifier, 2) });
 
   const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
   const hasEnemyMagicCasting = (enemy: EnemyDef) =>
@@ -13015,7 +13607,7 @@ function SettingTab({
     || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
-    t('home.enemy.defenseLine', { label, defense: formatNumber(defense), percent: percent.toFixed(0) });
+    t('home.enemy.defenseLine', { label, defense: formatNumber(defense), percent: formatDecimal(percent, 0) });
 
   const ENEMY_ELEMENT_ICONS: Record<string, UiIconKey> = {
     fire: 'fire',
@@ -13027,7 +13619,7 @@ function SettingTab({
     const elementIcon = ENEMY_ELEMENT_ICONS[elementalOffense];
     return (
       <>
-        {t('home.enemy.element')}: {elementIcon ? renderUiIcon(elementIcon) : t('home.enemy.noElement')} (x{elementalOffenseValue.toFixed(2)})
+        {t('home.enemy.element')}: {elementIcon ? renderUiIcon(elementIcon) : t('home.enemy.noElement')} (x{formatDecimal(elementalOffenseValue, 2)})
       </>
     );
   };
@@ -13681,7 +14273,7 @@ function SettingTab({
                 </button>
                 {expanded && (
                   <div className="px-3 pb-2 text-xs text-gray-700 space-y-1 border-t border-gray-100 pt-2">
-                    <div>ID: {item.id}</div>
+                    <div>ID: {formatNumber(item.id)}</div>
                   </div>
                 )}
               </div>
@@ -13727,7 +14319,7 @@ function SettingTab({
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
             {gameState.parties.map((party) => (
               <button key={party.id} onClick={() => setCharacterRosterPartyId(party.id)} className={`px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterPartyId === party.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
-                PT{party.id}
+                PT{formatNumber(party.id)}
               </button>
             ))}
           </div>
@@ -13907,7 +14499,7 @@ function SettingTab({
                             const hasMagicalAttack = hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA);
                             const hasMagicCasting = hasEnemyMagicCasting(godRuntimeEnemy);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-                            const decay = `${((0.90 + godRuntimeEnemy.accuracyBonus) * 100).toFixed(1)}%`;
+                            const decay = `${formatDecimal((0.90 + godRuntimeEnemy.accuracyBonus) * 100, 1)}%`;
                             const physicalDefenseAmplifierPercent = godRuntimeEnemy.physicalDefenseAmplifier * 100;
                             const magicalDefenseAmplifierPercent = godRuntimeEnemy.magicalDefenseAmplifier * 100;
 
@@ -13996,7 +14588,7 @@ function SettingTab({
             const hasMagicalAttack = hasEnemyAttack(colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA);
             const hasMagicCasting = hasEnemyMagicCasting(colosseumEnemy);
             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-            const decay = `${((0.90 + colosseumEnemy.accuracyBonus) * 100).toFixed(1)}%`;
+            const decay = `${formatDecimal((0.90 + colosseumEnemy.accuracyBonus) * 100, 1)}%`;
             return (
               <div className="bg-white rounded border border-gray-200 p-2 shadow-sm shadow-slate-900/10">
                 <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
@@ -14014,7 +14606,7 @@ function SettingTab({
                         const classRows = getBestiaryClassRows(colosseumEnemy.enemyClass, colosseumEnemy.enemySubClass);
                         return (
                           <>
-                            <div>ID: {colosseumEnemy.id}</div><div>{t('setting.bestiary.level', { value: formatNumber(colosseumEnemySettings.level) })}</div>
+                            <div>ID: {formatNumber(colosseumEnemy.id)}</div><div>{t('setting.bestiary.level', { value: formatNumber(colosseumEnemySettings.level) })}</div>
                             <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>{t('setting.bestiary.type', { value: ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType })}</div>
                             {classRows.map((row) => row)}
                             {classRows.length === 1 && <div></div>}
@@ -14109,7 +14701,7 @@ function SettingTab({
                           />
                         )}
                         <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-1">
-                          <div>ID: {displayEnemy.id}</div>
+                          <div>ID: {formatNumber(displayEnemy.id)}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
                           <div>{t('setting.bestiary.level', { value: formatNumber(enemyLevelFinal) })}</div>
@@ -14123,7 +14715,7 @@ function SettingTab({
                             const hasMagicalAttack = hasEnemyAttack(displayEnemy.magicalAttack, displayEnemy.magicalNoA);
                             const hasMagicCasting = hasEnemyMagicCasting(displayEnemy);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-                            const decay = `${((0.90 + displayEnemy.accuracyBonus) * 100).toFixed(1)}%`;
+                            const decay = `${formatDecimal((0.90 + displayEnemy.accuracyBonus) * 100, 1)}%`;
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
@@ -14226,7 +14818,7 @@ function SettingTab({
         </button>
         {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
           {/* SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane */}
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {formatNumber(colosseumEnemySettings.level)}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
           <label className="space-y-1">
             <div className="text-xs text-gray-600">Terrain effect</div>
@@ -14446,6 +15038,9 @@ function SettingTab({
                   : t('setting.theme.description.laika')}
             </div>
           </div>
+
+          <DesktopNotificationSettings />
+          <ExperimentalApiSettings />
         </div>}
       </div>
 

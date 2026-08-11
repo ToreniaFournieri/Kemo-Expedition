@@ -1,0 +1,85 @@
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  background: transparent;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; margin: 0; background: transparent; }
+button { font: inherit; }
+
+.pane-shell {
+  --surface: rgba(21, 27, 38, 0.96);
+  --surface-2: rgba(255, 255, 255, 0.075);
+  --text: #f8fafc;
+  --muted: #aeb8c8;
+  --accent: #c99aeb;
+  --accent-2: #74c7c9;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(24px) saturate(1.25);
+}
+
+body[data-theme="light"] .pane-shell {
+  --surface: rgba(248, 250, 252, 0.97);
+  --surface-2: rgba(15, 23, 42, 0.06);
+  --text: #111827;
+  --muted: #5f6977;
+  --accent: #8d5ab5;
+  --accent-2: #318f91;
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+body[data-theme="laika"] .pane-shell { --surface: rgba(230, 239, 231, 0.97); --surface-2: rgba(27, 72, 48, 0.07); --text: #15241b; --muted: #52675a; --accent: #9a681f; --accent-2: #3f8a60; }
+body[data-theme="laika-dark"] .pane-shell { --surface: rgba(25, 47, 37, 0.97); --accent: #dcba73; --accent-2: #83c6a0; }
+body[data-theme="luna"] .pane-shell { --surface: rgba(246, 239, 226, 0.97); --surface-2: rgba(94, 62, 42, 0.07); --text: #2c211b; --muted: #746257; --accent: #a45d78; --accent-2: #9a6939; }
+body[data-theme="luna-dark"] .pane-shell { --surface: rgba(48, 37, 32, 0.97); --accent: #e2b17c; --accent-2: #d98fa0; }
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.eyebrow { color: var(--accent-2); font-size: 9px; font-weight: 750; letter-spacing: 0.14em; text-transform: uppercase; }
+h1 { margin: 1px 0 0; font-size: 16px; line-height: 1.1; }
+.open-button { border: 1px solid color-mix(in srgb, var(--accent) 62%, transparent); border-radius: 999px; padding: 5px 9px; color: var(--text); background: color-mix(in srgb, var(--accent) 18%, transparent); cursor: pointer; }
+.open-button:hover { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.unread-badge { margin: 5px 9px 0; color: var(--accent); font-size: 10px; font-weight: 700; }
+.party-list { min-height: 0; flex: 1; overflow-y: auto; padding: 6px 7px; }
+.party-card { display: block; width: 100%; margin: 0 0 4px; padding: 5px 7px; border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 8px; color: var(--text); text-align: left; background: var(--surface-2); cursor: pointer; }
+.party-card:hover { border-color: color-mix(in srgb, var(--accent-2) 60%, transparent); background: color-mix(in srgb, var(--accent-2) 12%, var(--surface-2)); }
+.party-first-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px; line-height: 1.15; }
+.party-headline { display: flex; min-width: 0; align-items: baseline; gap: 6px; }
+.party-headline strong { flex: none; font-size: 11px; }
+.party-headline > span { min-width: 0; overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.party-result { display: flex; align-items: baseline; gap: 5px; color: var(--muted); font-size: 9px; white-space: nowrap; }
+.charge { color: var(--text); font-family: ui-monospace, "SFMono-Regular", monospace; }
+.charge i { margin-left: 1px; }
+.compact-items { display: flex; min-height: 12px; align-items: center; gap: 3px; overflow: hidden; margin-top: 1px; }
+.compact-item { position: relative; min-width: 0; max-width: 68%; overflow: hidden; border-radius: 3px; padding: 1px 3px; color: var(--muted); font-size: 8px; line-height: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.compact-item > span:last-child { position: relative; z-index: 1; }
+.compact-fill { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--accent-2) 20%, transparent); }
+.state-progress { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 38px; align-items: center; gap: 5px; margin-top: 2px; }
+.progress-track { height: 5px; overflow: hidden; border-radius: 999px; background: rgba(148, 163, 184, 0.2); }
+.progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 180ms linear; }
+.progress-detail { text-align: right; font-variant-numeric: tabular-nums; }
+.state-label { position: absolute; left: 0; right: 43px; top: -4px; overflow: hidden; color: var(--text); font-size: 8px; text-align: center; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 2px var(--surface); }
+.progress-detail { font-size: 9px; }
+.sub-progress-track { height: 2px; margin-top: 2px; overflow: hidden; border-radius: 999px; background: transparent; }
+.sub-progress-track span { display: block; height: 100%; border-radius: inherit; background: color-mix(in srgb, var(--accent-2) 40%, transparent); transition: width 180ms linear; }
+.hp-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; color: var(--muted); font-size: 8px; line-height: 10px; font-variant-numeric: tabular-nums; }
+.hp-row span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty-state { margin: 36px 18px; color: var(--muted); font-size: 13px; line-height: 1.5; text-align: center; }
+footer { padding: 5px 9px 6px; border-top: 1px solid rgba(148, 163, 184, 0.16); color: var(--muted); font-size: 9px; text-align: right; }

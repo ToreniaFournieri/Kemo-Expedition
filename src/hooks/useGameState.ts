@@ -498,7 +498,13 @@ function translateCharacterName(
 
   if (character.isUnique) {
     const uniqueNameKey = UNIQUE_CHARACTER_NAME_KEYS[character.lineageId];
-    return uniqueNameKey ? translate(targetLanguage, `character.default.${uniqueNameKey}`) : character.name;
+    if (uniqueNameKey) {
+      const translationKey = `character.default.${uniqueNameKey}`;
+      return translate(sourceLanguage, translationKey) === character.name
+        ? translate(targetLanguage, translationKey)
+        : character.name;
+    }
+    return character.name;
   }
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Potential Default Name Table
@@ -517,6 +523,21 @@ function translateCharacterName(
     if (translate(sourceLanguage, key) === character.name) return translate(targetLanguage, key);
   }
   return character.name;
+}
+
+function translatePartyCharacterNames(
+  parties: Party[],
+  sourceLanguage: Language,
+  targetLanguage: Language,
+): Party[] {
+  if (sourceLanguage === targetLanguage) return parties;
+  return parties.map((party, partyIndex) => ({
+    ...party,
+    characters: party.characters.map((character) => ({
+      ...character,
+      name: translateCharacterName(character, partyIndex, sourceLanguage, targetLanguage),
+    })),
+  }));
 }
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
@@ -1877,10 +1898,20 @@ function createInitialState(): InitialStateResult {
   // Try to load saved state first
   const savedStateResult = loadSavedState();
   if (savedStateResult.state) {
+    const savedLanguage = normalizeLanguage(savedStateResult.state.global.language);
+    // SpecRef: 2.2.1 | Potential default name for player side characters | Potential Default Name Table
+    // A URL or persisted language preference can differ from the language stored
+    // in the save. Localize recognizable defaults on the first rendered frame.
+    const localizedParties = translatePartyCharacterNames(
+      savedStateResult.state.parties,
+      savedLanguage,
+      initialLanguage,
+    );
     // Update build number in case it changed
     return {
       state: {
         ...savedStateResult.state,
+        parties: localizedParties,
         buildNumber: BUILD_NUMBER,
         global: {
           ...savedStateResult.state.global,
@@ -1971,10 +2002,10 @@ type GameAction =
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
-  | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number }
+  | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
-  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
-  | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
+  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
+  | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
   | { type: 'GRANT_FEEDBACK_REWARD' }
@@ -1992,6 +2023,7 @@ type GameAction =
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
+  | { type: 'COMMIT_API_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS'; partyIndex?: number }
   | { type: 'RESET_UNIQUE_BAGS'; partyIndex?: number }
   | { type: 'RESET_COMMON_SUPER_RARE_BAG'; partyIndex?: number }
@@ -2995,13 +3027,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const language = normalizeLanguage(action.language);
       persistLanguage(language);
       const sourceLanguage = normalizeLanguage(state.global.language);
-      const parties = sourceLanguage === language ? state.parties : state.parties.map((party, partyIndex) => ({
-        ...party,
-        characters: party.characters.map((character) => ({
-          ...character,
-          name: translateCharacterName(character, partyIndex, sourceLanguage, language),
-        })),
-      }));
+      setActiveLanguage(language);
+      const parties = translatePartyCharacterNames(state.parties, sourceLanguage, language);
       return { ...state, parties, global: { ...state.global, language } };
     }
 
@@ -4239,7 +4266,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'TOGGLE_EQUIPMENT_LOCK': {
-      const currentParty = state.parties[state.selectedPartyIndex];
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[targetPartyIndex];
       if (!currentParty) return state;
       const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
       if (charIndex === -1) return state;
@@ -4253,7 +4281,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, toggledItem);
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = {
+      updatedParties[targetPartyIndex] = {
         ...currentParty,
         characters: newCharacters,
       };
@@ -4319,7 +4347,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'UPDATE_CHARACTER': {
-      const currentParty = state.parties[state.selectedPartyIndex];
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[targetPartyIndex];
       const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
       if (charIndex === -1) return state;
 
@@ -4415,7 +4444,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = { ...oldChar, ...sanitizedUpdates, equipment: newEquipment };
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
+      updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
       });
@@ -4428,7 +4457,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'REORDER_PARTY_CHARACTER': {
-      const currentParty = state.parties[state.selectedPartyIndex];
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[targetPartyIndex];
       const fromIndex = action.fromIndex;
       const toIndex = action.toIndex;
 
@@ -4447,7 +4477,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       reorderedCharacters.splice(toIndex, 0, movedCharacter);
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = {
+      updatedParties[targetPartyIndex] = {
         ...currentParty,
         characters: reorderedCharacters,
       };
@@ -5033,6 +5063,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'COMMIT_API_STATE':
+      return action.state;
+
     case 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY': {
       const normalizedPartyId = normalizeJewelAutoEquipPriorityPartyId(action.partyId, state.parties.length);
       if (state.global.jewelAutoEquipPriorityPartyId === normalizedPartyId) return state;
@@ -5375,20 +5408,20 @@ export function useGameState() {
       dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey, partyIndex });
     }, []),
 
-    toggleEquipmentLock: useCallback((characterId: number, slotIndex: number) => {
-      dispatch({ type: 'TOGGLE_EQUIPMENT_LOCK', characterId, slotIndex });
+    toggleEquipmentLock: useCallback((characterId: number, slotIndex: number, partyIndex?: number) => {
+      dispatch({ type: 'TOGGLE_EQUIPMENT_LOCK', characterId, slotIndex, partyIndex });
     }, []),
 
     attachJewel: useCallback((characterId: number, slotIndex: number, jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number, partyIndex?: number) => {
       dispatch({ type: 'ATTACH_JEWEL', characterId, slotIndex, jewelKey, rank, partyIndex });
     }, []),
 
-    updateCharacter: useCallback((characterId: number, updates: Partial<Character>) => {
-      dispatch({ type: 'UPDATE_CHARACTER', characterId, updates });
+    updateCharacter: useCallback((characterId: number, updates: Partial<Character>, partyIndex?: number) => {
+      dispatch({ type: 'UPDATE_CHARACTER', characterId, updates, partyIndex });
     }, []),
 
-    reorderPartyCharacter: useCallback((fromIndex: number, toIndex: number) => {
-      dispatch({ type: 'REORDER_PARTY_CHARACTER', fromIndex, toIndex });
+    reorderPartyCharacter: useCallback((fromIndex: number, toIndex: number, partyIndex?: number) => {
+      dispatch({ type: 'REORDER_PARTY_CHARACTER', fromIndex, toIndex, partyIndex });
     }, []),
 
     sellStack: useCallback((variantKey: string) => {
@@ -5451,6 +5484,42 @@ export function useGameState() {
       dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale });
     }, []),
 
+    runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {
+      let stagedState = state;
+      const initialParty = stagedState.parties[partyIndex];
+      if (!initialParty) throw new Error('party_not_found');
+      const charge = {
+        instantExpeditionStock: initialParty.instantExpeditionStock,
+        instantExpeditionChargeStartedAt: initialParty.instantExpeditionChargeStartedAt,
+      };
+      const runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> = [];
+      for (let index = 0; index < count; index += 1) {
+        const beforeState = stagedState;
+        const beforeParty = beforeState.parties[partyIndex];
+        const maximumHp = computePartyStats(beforeParty).partyStats.hp;
+        stagedState = gameReducer(stagedState, { type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
+        stagedState = gameReducer(stagedState, {
+          type: 'RESOLVE_INSTANT_EXPEDITION',
+          partyIndex,
+          gameMode,
+          triggerGodsBattle: false,
+          simulatedAt: simulatedAt + index * APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
+        });
+        const afterState = stagedState;
+        const party = afterState.parties[partyIndex];
+        runs.push({ party, log: party.lastExpeditionLog, beforeState, afterState });
+      }
+      const finalParties = [...stagedState.parties];
+      finalParties[partyIndex] = {
+        ...finalParties[partyIndex],
+        instantExpeditionStock: charge.instantExpeditionStock,
+        instantExpeditionChargeStartedAt: charge.instantExpeditionChargeStartedAt,
+      };
+      stagedState = { ...stagedState, parties: finalParties };
+      dispatch({ type: 'COMMIT_API_STATE', state: stagedState });
+      return { state: stagedState, runs };
+    }, [state]),
+
     resetGame: useCallback(() => {
       dispatch({ type: 'RESET_GAME' });
     }, []),
@@ -5491,6 +5560,7 @@ export function useGameState() {
     addStatNotifications,
     dismissNotification,
     dismissAllNotifications,
+    flushSave: flushPendingSave,
   };
 
   const selectedParty = state.parties[state.selectedPartyIndex];

@@ -10,6 +10,59 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 1 | 2026/08/11 | Update the runtime application version to v0.9.2 and reset the build number to 1 for the new version. |
+| 0.9.1 | 53 | 2026/08/11 | Standardize recurring Japanese and Chinese game terminology for Gravity Well, Squander, Ash Haze, Decay, Guardian, Focus, Mint, Myura, and physical and magical defense multipliers. |
+| 0.9.1 | 52 | 2026/08/11 | Keep the BoKemo macOS desktop process in regular application mode, explicitly restore its Dock tile and artwork on launch and window activation, and declare non-accessory bundle metadata for packaged builds. |
+| 0.9.1 | 51 | 2026/08/11 | Implement lease-protected Experimental AI API GET routes for each party's latest retained battle log, the globally retained Diary-entry list, and battle logs embedded in retained Diary entries, with safe serialization and no additional log storage or retention. |
+| 0.9.1 | 50 | 2026/08/11 | Specify lease-protected read-only APIs for each party's latest retained battle log, the globally retained Diary-entry list, and battle logs embedded in retained Diary entries without adding permanent log IDs, storage, or retention. |
+| 0.9.1 | 49 | 2026/08/11 | Fix special-magic spell selection so status panes use ideal magical NoA while battle runtime uses terrain-adjusted NoA, falling back to another eligible special or normal spell below each threshold. |
+| 0.9.1 | 48 | 2026/08/11 | Add dedicated localized Armor Break and Mana Break combat-log formats that report the target's x4/3 physical or magical damage taken without normal hit-count output. |
+| 0.9.1 | 47 | 2026/08/11 | Prevent inline battle-log chibi portraits for short character names from appearing inside attack, spell, or effect names while retaining portraits beside standalone actor and target names. |
+| 0.9.1 | 46 | 2026/08/11 | Implement player and enemy runtime support for Gravity Well, Armor Break, and Mana Break with terrain-adjusted cast thresholds, priority-based spell selection, fixed remaining-HP damage, cumulative physical and magical defense debuffs, localized ability and spell displays, and the specified special bonuses for Light Sword, Underworld Core, and the renamed Moon-Hare Spellbreaker Staff. |
+| 0.9.1 | 45 | 2026/08/10 | Add Gravity Well's dedicated localized combat-log format in Japanese, English, Simplified Chinese, and Traditional Chinese, displaying the resolved hit count together with its 2/5 remaining-HP damage rule in both UI and exported logs. |
+| 0.9.1 | 44 | 2026/08/10 | Implement Gravity Well as Enemy 363 Reiva's explicit percentage-damage spell: after terrain-adjusted NoA reaches 20, consume the attack as one fixed hit for 2/5 of remaining party HP while bypassing defense, targeting, hit-based reactions, and other normal attack functions. |
+| 0.9.1 | 43 | 2026/08/10 | Replace the Experimental AI API Settings guidance with AI-control wording and a localized link to the official GitHub repository while retaining the bearer-token secrecy warning. |
+| 0.9.1 | 42 | 2026/08/10 | Implement the packaged-desktop Experimental AI API with loopback-only HTTP endpoints, bearer authentication, exclusive sliding control leases, revision-guarded strategic commands, observations, build preflight, isolated batch sorties, localized Settings controls, and runtime tests. |
+| 0.9.1 | 41 | 2026/08/10 | Align Experimental AI API sorties with canonical Cycle boundaries, isolate simulated elapsed time to the selected party without advancing global time, and authorize gender in character-build commands. |
+| 0.9.1 | 40 | 2026/08/10 | Remove the Experimental AI API heartbeat endpoint and replace it with five-minute sliding inactivity renewal on successful lease-owned operations plus long-operation pinning. |
+| 0.9.1 | 39 | 2026/08/10 | Define atomic Experimental AI API batch sorties with partial-state settlement, 1–100 sequential full Cycles, unlimited isolated charge, reconciled summaries, and rollback behavior. |
+| 0.9.1 | 38 | 2026/08/10 | Define the complete Experimental AI API command transaction model and discriminator set, and correct Auto-Run observation and control to its global scope. |
+| 0.9.1 | 37 | 2026/08/10 | Make unique-character API immutability explicit: only main and sub class are advertised or accepted as editable build fields. |
+| 0.9.1 | 36 | 2026/08/10 | Add a read-only character build-options endpoint with safe race/gender pairs, selectable domains, Mimorian and unique-character constraints, and hypothetical build validation. |
+| 0.9.1 | 35 | 2026/08/10 | Add explicit character-build observations and define atomic partial build updates with validation, derived-stat and HP recalculation, and immediate mode-aware automatic equipment. |
+| 0.9.1 | 34 | 2026/08/10 | Define the Experimental AI API observation as an atomic revisioned strategic snapshot with resources, catalogs, parties, computed builds, equipment context, progression, and legal actions. |
+| 0.9.1 | 33 | 2026/08/10 | Define Experimental AI API control release, including atomic persistence and UI hand-back, timer re-anchoring, lease invalidation, rollback, and structured errors. |
+| 0.9.1 | 32 | 2026/08/10 | Define Experimental AI API heartbeat authentication, lease renewal and expiry races, pinned-operation behavior, response fields, and recovery errors. |
+| 0.9.1 | 31 | 2026/08/10 | Add the Experimental AI API endpoint index and define authenticated atomic control acquisition, lease credentials and timing, paused progression, and structured errors. |
+| 0.9.1 | 30 | 2026/08/10 | Add the normative OpenAPI-compatible endpoint contract and public/authenticated field definitions for the Experimental AI API status endpoint. |
+| 0.9.1 | 29 | 2026/08/10 | Specify the experimental localhost AI API with authenticated exclusive control, revisioned strategic commands, and unlimited-charge batch sorties of up to 100 complete Cycles. |
+| 0.9.1 | 28 | 2026/08/09 | Save backup exports through Safari's native file-sharing sheet on macOS and iOS so WebKit does not try and fail to render the generated blob URL as a page. |
+| 0.9.1 | 27 | 2026/08/09 | Compress the menu-bar Party Progress header, footer, and party rows so all six parties fit in the standard pane without scrolling, retaining overflow only as an accessibility fallback. |
+| 0.9.1 | 26 | 2026/08/09 | Align each menu-bar Party Progress row with the section 8.3 compact expedition format, remove duplicate party labels, and add disclosed floor/outcome, charge, gate/quest summaries, and Step sub-progress. |
+| 0.9.1 | 25 | 2026/08/09 | Move Party Progress pane branding and interface labels into the shared i18n dictionaries and resolve them through the standard translation API. |
+| 0.9.1 | 24 | 2026/08/09 | Localize the Party Progress pane product name, open action, and empty-state prompt as `冒ケモ`, `BoKemo`, `冒兽`, or `冒獸` according to the selected language. |
+| 0.9.1 | 23 | 2026/08/09 | Fix the Electron Party Progress pane snapshot validator to use the active schema constant and retry rejected or failed snapshot publications instead of remaining empty. |
+| 0.9.1 | 22 | 2026/08/09 | Implement the free Electron menu-bar Party Progress pane with live localized party data, secure isolated IPC, theme synchronization, unread Diary status, and main-window party navigation; remove WidgetKit and App Group packaging. |
+| 0.9.1 | 21 | 2026/08/09 | Replace the paid-signing-dependent native WidgetKit specification with a free Electron menu-bar Party Progress pane showing live read-only progress for all unlocked parties. |
+| 0.9.1 | 20 | 2026/08/09 | Implement the read-only macOS 14+ Party Progress widget with configurable parties, small and medium layouts, localized isolated snapshots, timestamp-based progress, and signed desktop packaging integration. |
+| 0.9.1 | 19 | 2026/08/09 | Specify a read-only macOS 14+ Party Progress WidgetKit widget with small and medium layouts, isolated shared snapshots, and best-effort progress updates. |
+| 0.9.1 | 18 | 2026/08/09 | Remove the duplicated party label from macOS Diary notification bodies so they render as `PT1: Dungeon` instead of `PT1 PT1: Dungeon`. |
+| 0.9.1 | 17 | 2026/08/09 | Add explicit dev, beta, and production desktop launch commands that load their specified environment paths with isolated saves and matching debug behavior. |
+| 0.9.1 | 16 | 2026/08/09 | Move the packaged macOS native-notification controls from Backup / Reset to the bottom of the Mode Select settings pane. |
+| 0.9.1 | 15 | 2026/08/09 | Use the BoKemo application artwork for macOS native notifications and the development Dock identity instead of Electron's default atom icon where supported. |
+| 0.9.1 | 14 | 2026/08/09 | Approve Electron's required npm postinstall script so fresh desktop development installs can provision the Electron binary instead of failing at startup. |
+| 0.9.1 | 13 | 2026/08/09 | Implement packaged macOS background progression with close-to-menu-bar lifecycle, optional hidden login launch, Diary-filtered native notifications, and grouped AFK recovery alerts. |
+| 0.9.1 | 12 | 2026/08/09 | Define the packaged macOS background lifecycle, menu-bar controls, optional login launch, Diary-filtered native notifications, and grouped AFK catch-up notification policy. |
+| 0.9.1 | 11 | 2026/08/08 | Replace public-directory image imports with Vite-injected filename manifests, refresh Browserslist data, and explicitly compact Babel output to eliminate repetitive local-development warnings while preserving image availability checks. |
+| 0.9.1 | 10 | 2026/08/08 | Treat character and chibi image glob matches as public asset URLs while preserving runtime image availability checks. |
+| 0.9.1 | 9 | 2026/08/08 | Format user-visible runtime numbers with `Intl.NumberFormat('ja-JP')` and align the Pages deployment toolchain with the declared Node 22 and npm 11 requirements. |
+| 0.9.1 | 8 | 2026/08/08 | Add the Command special bonus to the tier-5 Ursan boss wand Gunbai in the item specification and runtime. |
+| 0.9.1 | 7 | 2026/08/05 | Correct Soul Reap to activate at combat timing 2 and align localized timed-ability descriptions with their specified COMBAT timings. |
+| 0.9.1 | 6 | 2026/08/05 | Apply the Strength of enemy by its level attack multiplier formula at runtime, using `1.4 × growth` for `x.exp_atk_mult`. |
+| 0.9.1 | 5 | 2026/08/04 | Align runtime enemy attack and offense-amplifier level scaling with the updated Strength of enemy by its level formulas. |
+| 0.9.1 | 4 | 2026/07/30 | Add 4rem of bottom clearance plus the device safe-area inset to every primary tab so final content remains visible above fixed navigation. |
+| 0.9.1 | 3 | 2026/07/30 | Align Expedition 2 boss Rosaria (Enemy_ID 171) with the enemy master specification by changing her runtime subclass from Sword Saint to Duelist. |
+| 0.9.1 | 2 | 2026/07/30 | Localize recognizable default character names when loading a save in another language, preserve custom unique-member names, and create newly unlocked parties in the active language. |
 | 0.9.1 | 1 | 2026/07/30 | Release version 0.9.1 and reset the build number to 1. |
 | 0.9.0 | 8 | 2026/07/30 | Add bottom safe-area spacing to the Altar so its final enemy form remains clear of fixed navigation and system overlays. |
 | 0.9.0 | 7 | 2026/07/30 | Limit the expanded News list height and make overflowing news items vertically scrollable. |

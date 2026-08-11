@@ -39,7 +39,7 @@ import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
-import { resolveMagicProfile } from './magic';
+import { isSpecialMagicCastable, resolveMagicProfile, resolveSpecialMagicFromAbilities } from './magic';
 import { computeCharacterStats, getAbilityDescription, getAbilityName } from './characterComputation';
 import {
   buildAntagonismAction,
@@ -661,6 +661,7 @@ function calculateSingleEnemyAttackDamage(
   terrainEffect?: TerrainEffectKey | null,
   runtimeOffenseMultiplier: number = 1.0,
   echoDomainElementalUsageCount: number = 0,
+  defenseDebuffAmplifier: number = 1.0,
 ): number {
   let attack = 0;
   let amplifier = 1.0;
@@ -723,7 +724,7 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
+  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp, enemy.abilities);
@@ -749,7 +750,9 @@ function getEnemyNoA(phase: AttackType, enemy: EnemyDef): number {
   if (heavyStrikeLevel > 0) {
     adjustedNoA = Math.ceil(adjustedNoA / 2);
   }
-  if (phase === 'magical' && hasEnemyArcMagic(enemy)) {
+  // An explicitly assigned spell (such as m.gravity-well) is not replaced by
+  // the Sage class's default Arc Magic conversion.
+  if (phase === 'magical' && enemy.magicStyle === undefined && hasEnemyArcMagic(enemy)) {
     adjustedNoA = Math.ceil(adjustedNoA / 3);
   }
   return adjustedNoA;
@@ -912,6 +915,7 @@ function calculateCharacterFriendlyFireDamage(
   temporaryAccuracyBonus: number = 0,
   runtimeOffenseMultiplier: number = 1.0,
   echoDomainElementalUsageCount: number = 0,
+  defenseDebuffAmplifier: number = 1.0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -1007,6 +1011,7 @@ function calculateCharacterFriendlyFireDamage(
       * terrainAmplifier
       * elementalOffenseAttributeAmplifier
       * swarmAmplifier
+      * defenseDebuffAmplifier
   ));
   const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, partyStats.hp, attacker.abilities);
 
@@ -1490,6 +1495,7 @@ function calculateCharacterDamage(
   temporaryTargetEvasionBonus: number = 0,
   runtimeOffenseMultiplier: number = 1.0,
   echoDomainElementalUsageCount: number = 0,
+  defenseDebuffAmplifier: number = 1.0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -1622,7 +1628,7 @@ function calculateCharacterDamage(
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier
+    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier
   ));
   const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, enemy.hp, charStats.abilities);
 
@@ -2398,6 +2404,11 @@ export function executeBattle(
   // Use provided HP if available (for HP persistence), otherwise use max HP
   let partyHp = initialPartyHp !== undefined ? initialPartyHp : partyStats.hp;
   let enemyHp = enemy.hp;
+  // SpecRef: 6.1.4.1 | Function of attack | f.debuff_*_defense_amplifier
+  let partyPhysicalDefenseDebuffAmplifier = 1.0;
+  let partyMagicalDefenseDebuffAmplifier = 1.0;
+  let enemyPhysicalDefenseDebuffAmplifier = 1.0;
+  let enemyMagicalDefenseDebuffAmplifier = 1.0;
   let partyDamageTakenInBattle = 0;
   let enemyDamageTakenInBattle = 0;
   let enemyHasAntagonism = false;
@@ -3502,7 +3513,7 @@ export function executeBattle(
     }
 
     const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
-    const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyEchoDomainUsageCount);
+    const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyEchoDomainUsageCount, partyPhysicalDefenseDebuffAmplifier);
     const enemyPhaseAccuracyBonus = phase === 'melee' ? enemyTemporaryAccuracyBonus : 0;
     const attempts = Math.ceil(
       getEnemyNoA(phase, enemy)
@@ -3594,7 +3605,7 @@ export function executeBattle(
     }
 
     const reCounterEchoDomainUsageCount = registerElementalOffenseUsage(targetCharStats.elementalOffense, targetCharStats.abilities);
-    const reCounterResult = calculateCharacterDamage(phase, targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier, phase === 'melee' ? (temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0, phase === 'melee' ? enemyTemporaryEvasionBonus : 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId), reCounterEchoDomainUsageCount);
+    const reCounterResult = calculateCharacterDamage(phase, targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier, phase === 'melee' ? (temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0, phase === 'melee' ? enemyTemporaryEvasionBonus : 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId), reCounterEchoDomainUsageCount, enemyPhysicalDefenseDebuffAmplifier);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -3647,7 +3658,7 @@ export function executeBattle(
       if (!coverChar) continue;
 
       const coveringFireEchoDomainUsageCount = registerElementalOffenseUsage(coverCharStats.elementalOffense, coverCharStats.abilities);
-      const coveringFireResult = calculateCharacterDamage('ranged', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId), coveringFireEchoDomainUsageCount);
+      const coveringFireResult = calculateCharacterDamage('ranged', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId), coveringFireEchoDomainUsageCount, enemyPhysicalDefenseDebuffAmplifier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       const enemyIllusionIsActiveForCoveringFire = isIllusionActive('ranged', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds);
@@ -4555,9 +4566,11 @@ export function executeBattle(
       }
     };
 
-    // SpecRef: 6.1.2 | Soul reap
-    const triggerSoulReapAtEnd = (): void => {
-      if (phase !== 'magical') return;
+    // SpecRef: 6.1.2 | Timed Abilities | a.soul-reap
+    const triggerSoulReapAtTiming = (timing: number): void => {
+      // Combat timing is shared by all attack types. Resolve once on the first
+      // attack-type step for COMBAT2 instead of treating it as magic phase end.
+      if (phase !== 'ranged' || timing !== 2) return;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
       const enemySoulReapLevel = getEnemyAbilityLevel(enemy, 'soul_reap');
@@ -4566,7 +4579,7 @@ export function executeBattle(
         partyHp = 0;
         log.push({
           phase,
-          initiativeRoll: 0,
+          initiativeRoll: timing,
           actor: 'triggered',
           action: buildSoulReapAction(enemy.name, getRandomPartyMemberName(party)),
           note: getSoulReapNote(enemySoulReapLevel),
@@ -4591,7 +4604,7 @@ export function executeBattle(
         enemyHp = 0;
         log.push({
           phase,
-          initiativeRoll: 0,
+          initiativeRoll: timing,
           actor: 'triggered',
           characterId: entry.stats.characterId,
           action: buildSoulReapAction(entry.ownerName, enemy.name),
@@ -4639,7 +4652,7 @@ export function executeBattle(
         triggerDecomposeAtTiming(2);
         triggerConfusionAtTiming(2);
         triggerSelfDestructAtTiming(2);
-        triggerSoulReapAtEnd();
+        triggerSoulReapAtTiming(2);
       }
       if (timing === 1) {
         if (triggerFreeAtTiming(phase, 1)) {
@@ -4693,6 +4706,69 @@ export function executeBattle(
 
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
+          const specialMagic = enemy.magicStyle === 'percentage_damage'
+            ? (isSpecialMagicCastable('gravity_well', attempts) ? 'gravity_well' : null)
+            : resolveSpecialMagicFromAbilities(enemy.abilities, attempts);
+          const magicStyle = specialMagic === 'gravity_well'
+            ? 'percentage_damage'
+            : specialMagic
+              ? 'debuff'
+              : enemy.magicStyle === 'percentage_damage'
+                ? 'multi-hit'
+                : enemy.magicStyle ?? (hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit');
+          const magicProfile = resolveMagicProfile({
+            style: magicStyle,
+            specialMagic,
+            elementalOffense: enemy.elementalOffense,
+            elementalOffenseValue: enemy.elementalOffenseValue,
+            magicalNoA: attempts,
+          });
+
+          // SpecRef: 6.1.4.1 | Special attack | m.gravity-well / m.armor-break / m.mana-break
+          // Thresholds use terrain-adjusted attempts. An activated special consumes the action
+          // before targeting, hit detection, defense, reactions, or normal attack functions.
+          if (phase === 'magical' && specialMagic) {
+            if (isMagicSealTargetForEnemy(phase, enemy, attempts) && consumeMagicSeal()) {
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
+                action: buildEnemyMagicSealNegatedAction(enemy.name, `${magicProfile.spellName}${isReAttack ? getBattleReAttackSuffix() : ''}`),
+                damage: 0,
+                showZeroDamage: true,
+                hits: 0,
+                totalAttempts: 1,
+                wasNegated: true,
+                isReAttack: isReAttack || undefined,
+                elementalOffense: 'none',
+              });
+              return;
+            }
+
+            const appliedDamage = specialMagic === 'gravity_well'
+              ? applyPartyDamage(Math.floor(partyHp * 2 / 5))
+              : 0;
+            if (specialMagic === 'armor_break') {
+              partyPhysicalDefenseDebuffAmplifier *= 4 / 3;
+            } else if (specialMagic === 'mana_break') {
+              partyMagicalDefenseDebuffAmplifier *= 4 / 3;
+            }
+            log.push({
+              phase,
+              initiativeRoll: turn.roll,
+              actor: 'enemy',
+              action: buildEnemyMagicAction(`${magicProfile.spellName}${isReAttack ? getBattleReAttackSuffix() : ''}`),
+              damage: appliedDamage,
+              showZeroDamage: specialMagic === 'gravity_well' && appliedDamage === 0 ? true : undefined,
+              hits: specialMagic === 'gravity_well' ? 1 : undefined,
+              totalAttempts: specialMagic === 'gravity_well' ? 1 : undefined,
+              specialAttack: specialMagic,
+              isReAttack: isReAttack || undefined,
+              elementalOffense: 'none',
+            });
+            return;
+          }
+
           const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
           const enemyEchoDomainLogText = getEchoDomainLogText(enemy.elementalOffense, enemy.abilities);
 
@@ -4782,6 +4858,7 @@ export function executeBattle(
                 environment.terrainEffect,
                 enemyOffenseAmplifierMultiplier * ambushAmplifier * overwatchAmplifier * executionAmplifier,
                 enemyEchoDomainUsageCount,
+                phase === 'magical' ? partyMagicalDefenseDebuffAmplifier : partyPhysicalDefenseDebuffAmplifier,
               );
               targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
             }
@@ -4795,12 +4872,6 @@ export function executeBattle(
             }
           }
 
-          const magicProfile = resolveMagicProfile({
-            style: hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit',
-            elementalOffense: enemy.elementalOffense,
-            elementalOffenseValue: enemy.elementalOffenseValue,
-            magicalNoA: attempts,
-          });
           const resonanceActor = enemyResonanceLevel > 0
             ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
             : { abilities: [] };
@@ -5163,6 +5234,7 @@ export function executeBattle(
               phase === 'melee' ? enemyTemporaryEvasionBonus : 0,
               resolveCharacterOffenseAmplifierMultiplier(charId),
               registerElementalOffenseUsage(attack.charStats.elementalOffense, attack.charStats.abilities),
+              phase === 'magical' ? enemyMagicalDefenseDebuffAmplifier : enemyPhysicalDefenseDebuffAmplifier,
             );
             if (counterResult.totalAttempts <= 0) continue;
 
@@ -5239,7 +5311,7 @@ export function executeBattle(
               const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0), i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
               if (!didHit) continue;
               reCounterHits += 1;
-              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount);
+              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount, phase === 'magical' ? partyMagicalDefenseDebuffAmplifier : partyPhysicalDefenseDebuffAmplifier);
             }
 
             const partyIllusionIsActiveOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
@@ -5369,7 +5441,7 @@ export function executeBattle(
             if (magicalCounterNoAMultiplier <= 0) continue;
 
             const magicalCounterEchoDomainUsageCount = registerElementalOffenseUsage(magicalCounterStats.elementalOffense, magicalCounterStats.abilities);
-            const magicalCounterResult = calculateCharacterDamage('magical', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, magicalCounterNoAMultiplier, 0, 0, resolveCharacterOffenseAmplifierMultiplier(charId), magicalCounterEchoDomainUsageCount);
+            const magicalCounterResult = calculateCharacterDamage('magical', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, magicalCounterNoAMultiplier, 0, 0, resolveCharacterOffenseAmplifierMultiplier(charId), magicalCounterEchoDomainUsageCount, enemyMagicalDefenseDebuffAmplifier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             addEnemyHitsReceived(magicalCounterResult.hits);
@@ -5437,11 +5509,25 @@ export function executeBattle(
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
+        const terrainAdjustedMagicalNoA = Math.ceil(
+          cs.magicalNoA
+          * noAMultiplier
+          * getTerrainNoAAmplifier('magical', environment.terrainEffect, cs.abilities)
+        );
+        const activatedSpecialMagic = phase === 'magical'
+          ? resolveSpecialMagicFromAbilities(cs.abilities, terrainAdjustedMagicalNoA)
+          : null;
+        const magicStyle = activatedSpecialMagic === 'gravity_well'
+          ? 'percentage_damage'
+          : activatedSpecialMagic
+            ? 'debuff'
+            : getAbilityLevel(cs, 'arc_magic') > 0 ? 'arc-magic' : 'multi-hit';
         const magicProfile = resolveMagicProfile({
-          style: getAbilityLevel(cs, 'arc_magic') > 0 ? 'arc-magic' : 'multi-hit',
+          style: magicStyle,
+          specialMagic: activatedSpecialMagic,
           elementalOffense: cs.elementalOffense,
           elementalOffenseValue: cs.elementalOffenseValue,
-          magicalNoA: Math.max(1, Math.ceil(cs.magicalNoA * noAMultiplier)),
+          magicalNoA: Math.max(1, terrainAdjustedMagicalNoA),
         });
         const attackType = isReAttack
           ? (phase === 'magical' ? `${magicProfile.spellName}${getBattleReAttackSuffix()}` : getBattleReAttackActionName())
@@ -5482,6 +5568,39 @@ export function executeBattle(
             hits: 0,
             wasNegatedByMagicSeal: true,
           };
+        }
+
+        // SpecRef: 6.1.4.1 | Special attack | m.gravity-well / m.armor-break / m.mana-break
+        if (activatedSpecialMagic) {
+          let appliedDamage = 0;
+          if (activatedSpecialMagic === 'gravity_well') {
+            appliedDamage = isAntagonism
+              ? applyPartyDamage(Math.floor(partyHp * 2 / 5))
+              : applyEnemyDamage(Math.floor(enemyHp * 2 / 5));
+          } else if (activatedSpecialMagic === 'armor_break') {
+            if (isAntagonism) partyPhysicalDefenseDebuffAmplifier *= 4 / 3;
+            else enemyPhysicalDefenseDebuffAmplifier *= 4 / 3;
+          } else {
+            if (isAntagonism) partyMagicalDefenseDebuffAmplifier *= 4 / 3;
+            else enemyMagicalDefenseDebuffAmplifier *= 4 / 3;
+          }
+
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: buildCharacterNormalAction(char.name, attackType, true),
+            damage: appliedDamage,
+            damageTarget: isAntagonism ? 'party' : 'enemy',
+            showZeroDamage: activatedSpecialMagic === 'gravity_well' && appliedDamage === 0 ? true : undefined,
+            hits: activatedSpecialMagic === 'gravity_well' ? 1 : undefined,
+            totalAttempts: activatedSpecialMagic === 'gravity_well' ? 1 : undefined,
+            specialAttack: activatedSpecialMagic,
+            isReAttack: isReAttack || undefined,
+            elementalOffense: 'none',
+          });
+          return null;
         }
 
         let result: CharacterAttackResult;
@@ -5532,6 +5651,7 @@ export function executeBattle(
             characterPhaseAccuracyBonus,
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier * overwatchMultiplier * executionMultiplier,
             registerElementalOffenseUsage(cs.elementalOffense, cs.abilities),
+            phase === 'magical' ? partyMagicalDefenseDebuffAmplifier : partyPhysicalDefenseDebuffAmplifier,
           );
 
           // SpecRef: 6.1.2 | Function of battle | Shock resolve
@@ -5599,6 +5719,7 @@ export function executeBattle(
             phase === 'melee' ? enemyTemporaryEvasionBonus : 0,
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier * overwatchMultiplier * executionMultiplier,
             registerElementalOffenseUsage(cs.elementalOffense, cs.abilities),
+            phase === 'magical' ? enemyMagicalDefenseDebuffAmplifier : enemyPhysicalDefenseDebuffAmplifier,
           );
           // SpecRef: 6.1.2 | Function of battle | Shock resolve
           shockEffectLog = phase === 'melee' && !isReAttack && isEnemyShockAvailable()
