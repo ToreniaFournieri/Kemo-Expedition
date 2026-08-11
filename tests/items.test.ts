@@ -10,3 +10,9 @@ test('the Ursan boss wand grants Command as its special bonus', () => {
     /'軍配': \[\{ type: 'ability', value: 1, abilityId: 'command', abilityLevel: 1 \}\]/,
   );
 });
+
+test('special spell equipment grants the requested passive abilities', () => {
+  assert.match(source, /'光の剣': \[\{ type: 'ability', value: 1, abilityId: 'armor_break', abilityLevel: 1 \}\]/);
+  assert.match(source, /'冥核': \[\{ type: 'ability', value: 1, abilityId: 'gravity_well', abilityLevel: 1 \}\]/);
+  assert.match(source, /'月兎の破魔杖': \[\{ type: 'ability', value: 1, abilityId: 'mana_break', abilityLevel: 1 \}\]/);
+});

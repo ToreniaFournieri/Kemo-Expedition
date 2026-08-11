@@ -45,7 +45,7 @@ import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelDisplayName, getJewelNameByRank, getJewelOwnedCount, getJewelShortLabel, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
-import { resolveMagicProfile } from '../game/magic';
+import { resolveMagicProfile, resolveSpecialMagicFromAbilities } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
@@ -2198,8 +2198,12 @@ function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
 }
 
 function getEnemyBestiarySpellName(enemy: EnemyDef): string {
+  const specialMagic = enemy.magicStyle === 'percentage_damage'
+    ? 'gravity_well'
+    : resolveSpecialMagicFromAbilities(enemy.abilities);
   const magicProfile = resolveMagicProfile({
-    style: enemy.magicStyle ?? (hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit'),
+    style: specialMagic === 'gravity_well' ? 'percentage_damage' : specialMagic ? 'debuff' : enemy.magicStyle ?? (hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit'),
+    specialMagic,
     elementalOffense: enemy.elementalOffense,
     elementalOffenseValue: 1.0,
     magicalNoA: enemy.magicalNoA,
@@ -8280,8 +8284,10 @@ function PartyTab({
                 }
                 if (hasCastableMagic) {
                   const hasArcMagic = stats.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
+                  const specialMagic = resolveSpecialMagicFromAbilities(stats.abilities);
                   const magicProfile = resolveMagicProfile({
-                    style: hasArcMagic ? 'arc-magic' : 'multi-hit',
+                    style: specialMagic === 'gravity_well' ? 'percentage_damage' : specialMagic ? 'debuff' : hasArcMagic ? 'arc-magic' : 'multi-hit',
+                    specialMagic,
                     elementalOffense: stats.elementalOffense,
                     elementalOffenseValue: stats.elementalOffenseValue,
                     magicalNoA: stats.magicalNoA,

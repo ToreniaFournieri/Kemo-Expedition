@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 46 | 2026/08/11 | Implement player and enemy runtime support for Gravity Well, Armor Break, and Mana Break with terrain-adjusted cast thresholds, priority-based spell selection, fixed remaining-HP damage, cumulative physical and magical defense debuffs, localized ability and spell displays, and the specified special bonuses for Light Sword, Underworld Core, and the renamed Moon-Hare Spellbreaker Staff. |
 | 0.9.1 | 45 | 2026/08/10 | Add Gravity Well's dedicated localized combat-log format in Japanese, English, Simplified Chinese, and Traditional Chinese, displaying the resolved hit count together with its 2/5 remaining-HP damage rule in both UI and exported logs. |
 | 0.9.1 | 44 | 2026/08/10 | Implement Gravity Well as Enemy 363 Reiva's explicit percentage-damage spell: after terrain-adjusted NoA reaches 20, consume the attack as one fixed hit for 2/5 of remaining party HP while bypassing defense, targeting, hit-based reactions, and other normal attack functions. |
 | 0.9.1 | 43 | 2026/08/10 | Replace the Experimental AI API Settings guidance with AI-control wording and a localized link to the official GitHub repository while retaining the bearer-token secrecy warning. |

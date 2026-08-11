@@ -153,6 +153,7 @@ export type AbilityId =
   | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter' | 'momentum' | 'cunning'
   | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter'
   | 'arcane_stability' | 'arc_magic'
+  | 'gravity_well' | 'armor_break' | 'mana_break'
   | 'melee_conversion'
   | 'true_sight' | 'output_stabilizer'
   | 'focus' | 'prophecy' | 'stealth' | 'illusion'
@@ -488,7 +489,7 @@ export type EnemyClassId =
   // legacy ids for compatibility
   | 'fighter' | 'rogue';
 
-export type MagicStyle = 'multi-hit' | 'arc-magic' | 'percentage_damage';
+export type MagicStyle = 'multi-hit' | 'arc-magic' | 'percentage_damage' | 'debuff';
 
 export interface EnemyDef {
   id: number;
@@ -613,7 +614,7 @@ export interface BattleLogEntry {
   showZeroDamage?: boolean;
   hits?: number; // Number of successful hits
   totalAttempts?: number; // Total number of attack attempts
-  specialAttack?: 'gravity_well';
+  specialAttack?: 'gravity_well' | 'armor_break' | 'mana_break';
   rageBonusPercent?: number; // 闘志 bonus shown in battle log
   momentumBonusPercent?: number; // 気勢 bonus shown in battle log
   ambushMultiplier?: number; // 待ち伏せ bonus shown in battle log

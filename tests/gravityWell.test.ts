@@ -15,13 +15,14 @@ test('Enemy 363 is assigned the percentage-damage magic style', () => {
 
 test('Gravity Well checks terrain-adjusted attempts and resolves as one fixed-damage hit', () => {
   assert.match(battleSource, /enemy\.magicStyle === undefined && hasEnemyArcMagic\(enemy\)/);
-  assert.match(battleSource, /phase === 'magical' && magicStyle === 'percentage_damage' && attempts >= 20/);
-  assert.match(battleSource, /Math\.floor\(partyHp \* 2 \/ 5\)/);
-  assert.match(battleSource, /gravityWellDamage[\s\S]*?hits: 1,[\s\S]*?totalAttempts: 1,[\s\S]*?return;/);
+  assert.match(battleSource, /specialMagic === 'gravity_well' \? 20/);
+  assert.match(battleSource, /applyPartyDamage\(Math\.floor\(partyHp \* 2 \/ 5\)\)/);
+  assert.match(battleSource, /applyEnemyDamage\(Math\.floor\(enemyHp \* 2 \/ 5\)\)/);
+  assert.match(battleSource, /hits: .*gravity_well.*\? 1 : undefined,[\s\S]*?totalAttempts: .*gravity_well.*\? 1 : undefined/);
 });
 
 test('Gravity Well uses its localized special combat-log format', () => {
-  assert.match(battleSource, /specialAttack: 'gravity_well'/);
+  assert.match(battleSource, /specialAttack: (?:specialMagic|activatedSpecialMagic)/);
   assert.match(homeScreenSource, /entry\.specialAttack === 'gravity_well'[\s\S]*?battleLog\.hits\.gravityWell/);
   for (const localeSource of localeSources) {
     assert.match(localeSource, /'battleLog\.hits\.gravityWell':/);

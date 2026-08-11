@@ -1,4 +1,4 @@
-import { ElementalOffense, MagicStyle } from '../types';
+import { AbilityId, ElementalOffense, MagicStyle } from '../types';
 import { t } from '../i18n';
 
 interface MagicProfile {
@@ -10,19 +10,33 @@ interface MagicProfile {
 
 interface ResolveMagicProfileParams {
   style?: MagicStyle;
+  specialMagic?: SpecialMagicKey | null;
   elementalOffense: ElementalOffense;
   elementalOffenseValue?: number;
   magicalNoA?: number;
 }
 
+export type SpecialMagicKey = 'gravity_well' | 'armor_break' | 'mana_break';
+
+// SpecRef: 6.1.4.1 | Special attack | Priority
+export function resolveSpecialMagicFromAbilities(
+  abilities: ReadonlyArray<{ id: AbilityId; level: number }>,
+): SpecialMagicKey | null {
+  if (abilities.some((ability) => ability.id === 'gravity_well' && ability.level > 0)) return 'gravity_well';
+  if (abilities.some((ability) => ability.id === 'armor_break' && ability.level > 0)) return 'armor_break';
+  if (abilities.some((ability) => ability.id === 'mana_break' && ability.level > 0)) return 'mana_break';
+  return null;
+}
+
 // SpecRef: 2.1.1.2 | Multiplier and Functions | resolveMagicProfile
 export function resolveMagicProfile({
   style = 'multi-hit',
+  specialMagic = null,
   elementalOffense,
   elementalOffenseValue = 1.0,
   magicalNoA = 0,
 }: ResolveMagicProfileParams): MagicProfile {
-  if (style === 'percentage_damage') {
+  if (specialMagic === 'gravity_well' || style === 'percentage_damage') {
     return {
       key: 'gravity_well',
       style,
@@ -30,6 +44,24 @@ export function resolveMagicProfile({
       description: magicalNoA >= 20
         ? t('auto.jp.42c56b8aae')
         : t('auto.jp.47712a2460'),
+    };
+  }
+
+  if (specialMagic === 'armor_break') {
+    return {
+      key: 'armor_break',
+      style: 'debuff',
+      spellName: t('magic.armorBreak.name'),
+      description: t('magic.armorBreak.description'),
+    };
+  }
+
+  if (specialMagic === 'mana_break') {
+    return {
+      key: 'mana_break',
+      style: 'debuff',
+      spellName: t('magic.manaBreak.name'),
+      description: t('magic.manaBreak.description'),
     };
   }
 
