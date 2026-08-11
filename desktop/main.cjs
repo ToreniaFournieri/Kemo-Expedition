@@ -136,7 +136,20 @@ function createWindow(options = {}) {
   return window;
 }
 
+function ensureDockIconVisible() {
+  if (process.platform !== 'darwin') return;
+  // SpecRef: 9.1.1 | macOS background lifecycle | retain the BoKemo Dock icon
+  // Keep BoKemo as a regular foreground app even though it also owns a menu-bar
+  // pane. Explicitly showing the Dock tile also repairs accessory-only launch
+  // state left behind by login-item or development launches.
+  app.setActivationPolicy('regular');
+  void app.dock?.show().then(() => {
+    app.dock?.setIcon(APP_ICON_PATH);
+  });
+}
+
 function showMainWindow() {
+  ensureDockIconVisible();
   if (!mainWindow || mainWindow.isDestroyed()) {
     createWindow();
   }
@@ -419,9 +432,7 @@ app.whenReady().then(() => {
       : new Response('Not found', { status: 404 });
   });
 
-  if (process.platform === 'darwin') {
-    app.dock?.setIcon(APP_ICON_PATH);
-  }
+  ensureDockIconVisible();
 
   createTray();
   createPartyProgressWindow();
