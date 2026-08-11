@@ -1071,6 +1071,8 @@ const zhTW = {
   'battleLog.phase.close': '近戰攻擊階段',
   'battleLog.hits': '{hits}/{total}次',
   'battleLog.hits.gravityWell': '（{hits}/{total}次，剩餘HP的2/5傷害）',
+  'battleLog.hits.armorBreak': '（對手受到的物理傷害x4/3）',
+  'battleLog.hits.manaBreak': '（對手受到的魔法傷害x4/3）',
   'battleLog.hitsWithExtras': '（{hits}/{total}次，{extras}）',
   'battleFlavor.inline.1': '{actor} 誤將 {target} 視為敵人，發動了遠程攻擊！',
   'battleFlavor.inline.2': '{actor} 陷入混亂，向 {target} 射出了箭矢！',

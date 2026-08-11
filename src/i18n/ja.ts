@@ -1071,6 +1071,8 @@ const ja = {
   'battleLog.phase.close': '近接攻撃フェーズ',
   'battleLog.hits': '{hits}/{total}回',
   'battleLog.hits.gravityWell': '({hits}/{total}回, 残HPの2/5ダメージ)',
+  'battleLog.hits.armorBreak': '(相手の被物理ダメージx4/3)',
+  'battleLog.hits.manaBreak': '(相手の被魔法ダメージx4/3)',
   'battleLog.hitsWithExtras': '({hits}/{total}回, {extras})',
   'battleFlavor.inline.1': '{actor} は {target} を敵と誤認し、遠距離攻撃を放った！',
   'battleFlavor.inline.2': '{actor} は錯乱し、{target} に矢を放ってしまった！',

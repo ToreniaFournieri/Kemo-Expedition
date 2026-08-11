@@ -1423,6 +1423,12 @@ function formatNumber(value: number): string {
 }
 
 function formatBattleLogHitDisplay(entry: BattleLogEntry): string {
+  if (entry.specialAttack === 'armor_break') {
+    return t('battleLog.hits.armorBreak');
+  }
+  if (entry.specialAttack === 'mana_break') {
+    return t('battleLog.hits.manaBreak');
+  }
   const totalAttempts = entry.totalAttempts ?? 0;
   if (totalAttempts <= 0) return '';
   const values = {

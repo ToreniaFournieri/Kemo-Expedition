@@ -1070,6 +1070,8 @@ const en = {
   'battleLog.phase.close': 'Melee attack phase',
   'battleLog.hits': '{hits}/{total} hits',
   'battleLog.hits.gravityWell': '({hits}/{total} hits, 2/5 remaining HP damage)',
+  'battleLog.hits.armorBreak': '(Opponent physical damage taken x4/3)',
+  'battleLog.hits.manaBreak': '(Opponent magical damage taken x4/3)',
   'battleLog.hitsWithExtras': '({hits}/{total} hits, {extras})',
   'battleFlavor.inline.1': '{actor} mistook {target} for an enemy and fired a ranged attack!',
   'battleFlavor.inline.2': '{actor} became delirious and loosed an arrow at {target}!',

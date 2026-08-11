@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 48 | 2026/08/11 | Add dedicated localized Armor Break and Mana Break combat-log formats that report the target's x4/3 physical or magical damage taken without normal hit-count output. |
 | 0.9.1 | 47 | 2026/08/11 | Prevent inline battle-log chibi portraits for short character names from appearing inside attack, spell, or effect names while retaining portraits beside standalone actor and target names. |
 | 0.9.1 | 46 | 2026/08/11 | Implement player and enemy runtime support for Gravity Well, Armor Break, and Mana Break with terrain-adjusted cast thresholds, priority-based spell selection, fixed remaining-HP damage, cumulative physical and magical defense debuffs, localized ability and spell displays, and the specified special bonuses for Light Sword, Underworld Core, and the renamed Moon-Hare Spellbreaker Staff. |
 | 0.9.1 | 45 | 2026/08/10 | Add Gravity Well's dedicated localized combat-log format in Japanese, English, Simplified Chinese, and Traditional Chinese, displaying the resolved hit count together with its 2/5 remaining-HP damage rule in both UI and exported logs. |
