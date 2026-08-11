@@ -1574,7 +1574,7 @@ Content-Type: application/json
 | `update_character_build` | Change one character's build. | No | Yes, for that character |
 | `reorder_character` | Move one member to another combat row. | No | No |
 | `set_deity` | Assign a deity to one party. | No | No |
-| `set_auto_equipment_mode` | Set one character's automation mode. | No | No |
+| `set_auto_equipment_mode` | Set one character's automation mode. Does not immediately trigger auto-equipment. | No | No |
 | `run_auto_equipment` | Immediately run configured automatic equipment for one party or character. | No | Yes, for the selected target |
 | `toggle_equipment_lock` | Toggle one equipped item's automatic-equipment lock. | No | No |
 | `set_jewel_priority_party` | Select the global Jewel Priority Party or manual mode. | No | No |
