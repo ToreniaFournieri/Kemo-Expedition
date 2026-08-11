@@ -147,9 +147,10 @@ function createExperimentalApi(options) {
     return send(response, 200, { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, lease: { token: lease.token, acquiredAt, expiresAt: lease.expiresAt, idleTimeoutMs: LEASE_IDLE_TIMEOUT_MS }, runtime: { status: 'ready', revision: runtime.revision } });
   }
 
-  async function handleOwned(request, response, operation) {
-    if (request.method !== (operation === 'observation' ? 'GET' : 'POST')) {
-      const allow = operation === 'observation' ? 'GET' : 'POST';
+  async function handleOwned(request, response, operation, routePayload = {}) {
+    const isGet = ['observation', 'latest-battle-log', 'diary-entries', 'diary-battle-log'].includes(operation);
+    if (request.method !== (isGet ? 'GET' : 'POST')) {
+      const allow = isGet ? 'GET' : 'POST';
       return send(response, 405, apiError('method_not_allowed', `This endpoint requires ${allow}.`), { Allow: allow });
     }
     if (!authenticate(request)) return send(response, 401, apiError('authentication_failed', 'Bearer authentication is required.'));
@@ -158,14 +159,14 @@ function createExperimentalApi(options) {
     if (busy) return send(response, 409, apiError('runtime_busy', 'Another API operation is executing.', true));
     let body;
     try {
-      body = operation === 'observation' ? undefined : await readJson(request, operation === 'release');
-      if (operation === 'observation' && request.url !== `${API_PREFIX}/observation`) throw new Error('query');
+      body = isGet ? undefined : await readJson(request, operation === 'release');
+      if (isGet && new URL(request.url, 'http://127.0.0.1').search.length > 0) throw new Error('query');
     } catch { return send(response, 400, apiError('invalid_request', 'The request input is invalid.')); }
     if (operation === 'release' && body !== undefined && (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length)) return send(response, 400, apiError('invalid_request', 'Release accepts only an empty object.'));
     busy = true;
     if (operation === 'release') lease.releasing = true;
     try {
-      const result = await rendererCall(operation, body ?? {});
+      const result = await rendererCall(operation, isGet ? routePayload : body ?? {});
       if (result.error) return send(response, result.status ?? 500, result);
       if (operation === 'release') {
         const releasedAt = Date.now();
@@ -193,11 +194,26 @@ function createExperimentalApi(options) {
       [`${API_PREFIX}/control/release`, 'release'],
       [`${API_PREFIX}/build-options`, 'build-options'],
       [`${API_PREFIX}/observation`, 'observation'],
+      [`${API_PREFIX}/diary-entries`, 'diary-entries'],
       [`${API_PREFIX}/command`, 'command'],
       [`${API_PREFIX}/sortie`, 'sortie'],
     ]);
     const operation = routes.get(pathname);
     if (operation) return handleOwned(request, response, operation);
+    // SpecRef: 9.1.3 | Experimental AI API | Retained battle-log read model
+    const latestBattleLogMatch = pathname.match(new RegExp(`^${API_PREFIX}/parties/([^/]*)/battle-log/latest$`));
+    if (latestBattleLogMatch) {
+      const rawPartyId = latestBattleLogMatch[1];
+      const parsedPartyId = /^-?\d+$/.test(rawPartyId) ? Number(rawPartyId) : Number.NaN;
+      const partyId = Number.isSafeInteger(parsedPartyId) ? parsedPartyId : rawPartyId;
+      return handleOwned(request, response, 'latest-battle-log', { partyId });
+    }
+    const diaryBattleLogMatch = pathname.match(new RegExp(`^${API_PREFIX}/diary-entries/([^/]*)/battle-log$`));
+    if (diaryBattleLogMatch) {
+      let diaryEntryId = null;
+      try { diaryEntryId = decodeURIComponent(diaryBattleLogMatch[1]); } catch { /* renderer returns invalid_request after authentication */ }
+      return handleOwned(request, response, 'diary-battle-log', { diaryEntryId });
+    }
     return send(response, 404, apiError('not_found', 'The requested endpoint does not exist.'));
   }
 

@@ -147,7 +147,7 @@
 - Only one API controller may hold control at a time.
 - `POST /experimental/v1/control/acquire` acquires an exclusive API-control lease. While the lease is held, gameplay remains visible but every state-mutating UI control is disabled.
 - `POST /experimental/v1/control/release` persists the current state, releases the lease, and restores normal UI control.
-- A lease uses a five-minute sliding inactivity timeout. Successful lease-owned observation, build-options, command, and sortie calls renew it; status does not. Releasing the lease, inactivity expiry, disabling the API, or quitting the application must end API control safely.
+- A lease uses a five-minute sliding inactivity timeout. Successful lease-owned observation, build-options, retained battle-log, Diary-entry list, command, and sortie calls renew it; status does not. Releasing the lease, inactivity expiry, disabling the API, or quitting the application must end API control safely.
 - Each observation must include a monotonically increasing state `revision`.
 - Every mutating request must include `expectedRevision`. If it does not equal the current revision, reject the request without changing state or advancing simulation.
 - Mutating API operations must be serialized so that API and UI mutations cannot interleave.
@@ -158,6 +158,12 @@
   - Returns public API availability without authentication, or authenticated compatibility, runtime-readiness, revision, and control-lease status fields.
 - `GET /experimental/v1/observation`
   - Returns the current AI-safe observation and the strategic commands currently legal for each party.
+- `GET /experimental/v1/parties/{partyId}/battle-log/latest`
+  - Returns the specified party's latest fully disclosed expedition and battle log already retained by the runtime.
+- `GET /experimental/v1/diary-entries`
+  - Lists metadata and expedition summaries for the globally retained Diary entries without marking them as read.
+- `GET /experimental/v1/diary-entries/{diaryEntryId}/battle-log`
+  - Returns the expedition and battle log embedded in one currently retained Diary entry.
 - `POST /experimental/v1/command`
   - Applies one strategic command. Configuration commands do not advance game time; the explicitly selected single-run Gods Battle command resolves one immediate Cycle.
 - `POST /experimental/v1/sortie`
@@ -194,6 +200,7 @@
   - shop purchases, manual selling, Altar unlocks, or Diary management;
   - debug actions, bag inspection or reset, save import/export/reset, direct currency edits, direct healing, or internal state transitions;
   - combat formulas or random-roll functions as separately callable operations.
+- Listing retained Diary entries and reading their already-retained battle logs through the GET endpoints above is read-only access, not Diary management. The API must not mark entries as read, delete them, change Diary settings, or alter retention.
 
 **API batch sortie request**
 - `POST /experimental/v1/sortie` accepts:

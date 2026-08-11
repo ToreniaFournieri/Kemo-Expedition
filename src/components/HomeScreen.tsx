@@ -45,7 +45,7 @@ import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonRewardBag, createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelDisplayName, getJewelNameByRank, getJewelOwnedCount, getJewelShortLabel, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
-import { resolveMagicProfile, resolveSpecialMagicFromAbilities } from '../game/magic';
+import { isSpecialMagicCastable, resolveMagicProfile, resolveSpecialMagicFromAbilities } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
@@ -56,6 +56,7 @@ import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developerNews';
 import { buildExperimentalObservation, deityNameFromId, outcomeFromParty } from '../game/experimentalApi';
+import { buildExperimentalBattleLog, buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -708,6 +709,29 @@ function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'D
   if (log.entries.length > 0 && log.entries[log.entries.length - 1].outcome === 'draw') return 'Draw_Retreat';
   if (log.finalOutcome === 'Retreat') return 'Wounded_Retreat';
   return 'Clear';
+}
+
+function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): string {
+  const { triggers } = diaryLog;
+  if (triggers.includes('unlock')) {
+    return diaryLog.unlockHeadline
+      ? t('diary.headline.unlockNamed', { party: party.name, headline: diaryLog.unlockHeadline })
+      : t('diary.headline.unlock', { party: party.name });
+  }
+  if (triggers.includes('sideQuest')) {
+    return diaryLog.sideQuestLabel
+      ? t('diary.headline.sideQuestNamed', { party: party.name, quest: diaryLog.sideQuestLabel })
+      : t('diary.headline.sideQuest', { party: party.name });
+  }
+  if (triggers.length === 1 && triggers[0] === 'defeat') return t('diary.headline.defeat', { party: party.name });
+  if (triggers.length === 1 && triggers[0] === 'draw') return t('diary.headline.draw', { party: party.name });
+  const titleKey = triggers.includes('godsBattle') ? 'diary.title.godsBattle'
+    : triggers.includes('superRare') ? 'diary.title.superRare'
+      : triggers.includes('mythicRare') ? 'diary.title.mythicRare'
+        : triggers.includes('bossRare') ? 'diary.title.bossRare'
+          : triggers.includes('eliteRare') ? 'diary.title.eliteRare'
+            : 'diary.title.special';
+  return t('diary.headline.title', { party: party.name, title: t(titleKey) });
 }
 
 function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
@@ -2207,10 +2231,16 @@ function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
 
 function getEnemyBestiarySpellName(enemy: EnemyDef): string {
   const specialMagic = enemy.magicStyle === 'percentage_damage'
-    ? 'gravity_well'
-    : resolveSpecialMagicFromAbilities(enemy.abilities);
+    ? (isSpecialMagicCastable('gravity_well', enemy.magicalNoA) ? 'gravity_well' : null)
+    : resolveSpecialMagicFromAbilities(enemy.abilities, enemy.magicalNoA);
   const magicProfile = resolveMagicProfile({
-    style: specialMagic === 'gravity_well' ? 'percentage_damage' : specialMagic ? 'debuff' : enemy.magicStyle ?? (hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit'),
+    style: specialMagic === 'gravity_well'
+      ? 'percentage_damage'
+      : specialMagic
+        ? 'debuff'
+        : enemy.magicStyle === 'percentage_damage'
+          ? 'multi-hit'
+          : enemy.magicStyle ?? (hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit'),
     specialMagic,
     elementalOffense: enemy.elementalOffense,
     elementalOffenseValue: 1.0,
@@ -3166,6 +3196,45 @@ export function HomeScreen({
     }
     if (!apiControlActiveRef.current) return apiFailure(409, 'no_active_lease', 'The renderer is not in API-controlled mode.');
     if (operation === 'observation') return { observation: buildApiObservation() };
+
+    // SpecRef: 9.1.3 | Experimental AI API | Retained battle-log read model
+    if (operation === 'latest-battle-log') {
+      if (Object.keys(payload).some((key) => key !== 'partyId') || !Number.isSafeInteger(payload.partyId)) {
+        return apiFailure(400, 'invalid_request', 'partyId must be an integer.');
+      }
+      const party = apiStateRef.current.parties.find((entry) => entry.id === payload.partyId);
+      if (!party) return apiFailure(404, 'party_not_found', 'The target party was not found.');
+      if (!party.lastExpeditionLog) return apiFailure(404, 'battle_log_not_found', 'The party has no retained battle log.');
+      return buildExperimentalBattleLog(
+        apiRevisionRef.current,
+        party.id,
+        party.lastExpeditionLog,
+        { kind: 'latest', diaryEntryId: null },
+        getItemDisplayName,
+      );
+    }
+
+    if (operation === 'diary-entries') {
+      if (Object.keys(payload).length > 0) return apiFailure(400, 'invalid_request', 'Diary entry listing accepts no input.');
+      return buildExperimentalDiaryEntries(apiStateRef.current.parties, apiRevisionRef.current, getExperimentalDiaryTitle);
+    }
+
+    if (operation === 'diary-battle-log') {
+      if (Object.keys(payload).some((key) => key !== 'diaryEntryId') || typeof payload.diaryEntryId !== 'string' || payload.diaryEntryId.length < 1 || payload.diaryEntryId.length > 200) {
+        return apiFailure(400, 'invalid_request', 'diaryEntryId is invalid.');
+      }
+      const retainedEntry = apiStateRef.current.parties
+        .flatMap((party) => (party.diaryLogs ?? []).map((diaryLog) => ({ party, diaryLog })))
+        .find(({ diaryLog }) => diaryLog.id === payload.diaryEntryId);
+      if (!retainedEntry) return apiFailure(404, 'diary_entry_not_found', 'The Diary entry is not retained.');
+      return buildExperimentalBattleLog(
+        apiRevisionRef.current,
+        retainedEntry.party.id,
+        retainedEntry.diaryLog.expeditionLog,
+        { kind: 'diary', diaryEntryId: retainedEntry.diaryLog.id },
+        getItemDisplayName,
+      );
+    }
 
     if (operation === 'build-options') {
       const allowedKeys = new Set(['revision', 'partyId', 'characterId', 'proposedChanges']);
@@ -8292,7 +8361,9 @@ function PartyTab({
                 }
                 if (hasCastableMagic) {
                   const hasArcMagic = stats.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
-                  const specialMagic = resolveSpecialMagicFromAbilities(stats.abilities);
+                  // The status pane shows the ideal, terrain-independent spell selection.
+                  // Runtime battle selection repeats this check with terrain-adjusted NoA.
+                  const specialMagic = resolveSpecialMagicFromAbilities(stats.abilities, stats.magicalNoA);
                   const magicProfile = resolveMagicProfile({
                     style: specialMagic === 'gravity_well' ? 'percentage_damage' : specialMagic ? 'debuff' : hasArcMagic ? 'arc-magic' : 'multi-hit',
                     specialMagic,

@@ -10,6 +10,9 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 51 | 2026/08/11 | Implement lease-protected Experimental AI API GET routes for each party's latest retained battle log, the globally retained Diary-entry list, and battle logs embedded in retained Diary entries, with safe serialization and no additional log storage or retention. |
+| 0.9.1 | 50 | 2026/08/11 | Specify lease-protected read-only APIs for each party's latest retained battle log, the globally retained Diary-entry list, and battle logs embedded in retained Diary entries without adding permanent log IDs, storage, or retention. |
+| 0.9.1 | 49 | 2026/08/11 | Fix special-magic spell selection so status panes use ideal magical NoA while battle runtime uses terrain-adjusted NoA, falling back to another eligible special or normal spell below each threshold. |
 | 0.9.1 | 48 | 2026/08/11 | Add dedicated localized Armor Break and Mana Break combat-log formats that report the target's x4/3 physical or magical damage taken without normal hit-count output. |
 | 0.9.1 | 47 | 2026/08/11 | Prevent inline battle-log chibi portraits for short character names from appearing inside attack, spell, or effect names while retaining portraits beside standalone actor and target names. |
 | 0.9.1 | 46 | 2026/08/11 | Implement player and enemy runtime support for Gravity Well, Armor Break, and Mana Break with terrain-adjusted cast thresholds, priority-based spell selection, fixed remaining-HP damage, cumulative physical and magical defense debuffs, localized ability and spell displays, and the specified special bonuses for Light Sword, Underworld Core, and the renamed Moon-Hare Spellbreaker Staff. |

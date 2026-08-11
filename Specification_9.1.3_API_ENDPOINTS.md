@@ -28,6 +28,9 @@ This document is the normative endpoint contract referenced by section 9.1.3 of 
 | `POST` | `/experimental/v1/control/release` | `releaseExperimentalApiControl` | Bearer | Owner required | Persist and return control to the UI. |
 | `POST` | `/experimental/v1/build-options` | `getCharacterBuildOptions` | Bearer | Owner required | Evaluate safe character-build alternatives without mutation. |
 | `GET` | `/experimental/v1/observation` | `getExperimentalApiObservation` | Bearer | Owner required | Read the AI-safe game observation. |
+| `GET` | `/experimental/v1/parties/{partyId}/battle-log/latest` | `getLatestPartyBattleLog` | Bearer | Owner required | Read one party's latest retained and fully disclosed battle log. |
+| `GET` | `/experimental/v1/diary-entries` | `listDiaryEntries` | Bearer | Owner required | List the globally retained Diary entries without changing read state. |
+| `GET` | `/experimental/v1/diary-entries/{diaryEntryId}/battle-log` | `getDiaryEntryBattleLog` | Bearer | Owner required | Read the battle log embedded in one retained Diary entry. |
 | `POST` | `/experimental/v1/command` | `executeExperimentalApiCommand` | Bearer | Owner required | Apply one strategic command. |
 | `POST` | `/experimental/v1/sortie` | `executeExperimentalApiSorties` | Bearer | Owner required | Resolve 1 to 100 normal expedition Cycles. |
 
@@ -325,7 +328,7 @@ The server MUST perform acquisition in this order:
 ### Sliding inactivity renewal
 
 - The initial lease expires five minutes after acquisition unless renewed by activity.
-- A successful lease-owned call to `observation`, `build-options`, `command`, or `sortie` MUST renew the lease by setting `expiresAt` to five minutes after that response is prepared.
+- A successful lease-owned call to `observation`, `build-options`, either retained battle-log endpoint, `diary-entries`, `command`, or `sortie` MUST renew the lease by setting `expiresAt` to five minutes after that response is prepared.
 - `status` MUST NOT renew the lease. `release` ends the lease instead of renewing it.
 - Authentication failures, invalid or stale lease tokens, invalid requests, stale revisions, illegal actions, internal failures, and persistence failures MUST NOT renew the lease.
 - Exception: when a release failure deliberately retains API-controlled mode for safe retry, it MUST grant a new five-minute recovery period so the lease cannot expire immediately after being unpinned.
@@ -458,7 +461,7 @@ The server MUST perform release in this order:
 10. Return the final revision and successful release result.
 
 - Release MUST be atomic from the perspective of API clients and UI actions.
-- Once the lease is marked as releasing, new command, observation, build-options, sortie, and release requests for that lease MUST be rejected with `control_releasing` until release succeeds or rolls back.
+- Once the lease is marked as releasing, new command, observation, build-options, retained battle-log, Diary-entry list, sortie, and release requests for that lease MUST be rejected with `control_releasing` until release succeeds or rolls back.
 - A release request received while a command or sortie batch is executing MUST return `runtime_busy`. It MUST NOT cancel, interrupt, or partially commit that operation.
 - A successful release MUST make the previous lease token permanently invalid.
 - Repeating release with the previous token after success MUST return `no_active_lease`; clients MAY confirm success through the status endpoint.
@@ -1134,6 +1137,349 @@ Each entry contains:
 - If no lease exists, the server returns `no_active_lease` regardless of the supplied lease token.
 - If an active lease exists but the supplied lease token is missing, malformed, or different, the server returns `control_lease_invalid` without identifying its owner or expiration.
 - If the matching lease expired, the server MUST complete lease-expiry cleanup before returning `control_lease_expired`.
+
+## Retained battle-log read model
+
+The latest-party and Diary battle-log endpoints defined below expose read-only projections of logs the game runtime already retains. They MUST NOT create a separate battle-log archive, add a `battleLogId`, maintain an ID-to-log registry, copy a log into additional persisted state, or extend the lifetime of any log.
+
+- Each party's latest endpoint reads that party's existing `lastExpeditionLog`. A later completed expedition may replace it.
+- A Diary battle-log endpoint reads the `expeditionLog` embedded in the matching existing Diary entry and uses the existing `DiaryLog.id` as `diaryEntryId`.
+- Diary retention remains the global 24-entry limit from section 8.5. When an entry is removed by that policy, its historical battle log is no longer available through the API unless the same expedition independently remains that party's current `lastExpeditionLog`.
+- API response serialization is transient and MUST NOT keep a runtime log reachable after normal game-state retention removes or replaces it.
+- These endpoints expose only completed, already disclosed expedition data. They MUST NOT expose a currently unresolved expedition, undisclosed floor or outcome, future reward, random-bag contents or order, or hidden enemy candidate.
+
+### Battle-log response object
+
+Both battle-log endpoints use this top-level response shape:
+
+```json
+{
+  "apiVersion": "experimental/v1",
+  "schemaVersion": 1,
+  "revision": 123,
+  "source": {
+    "kind": "latest",
+    "diaryEntryId": null
+  },
+  "battleLog": {
+    "partyId": 1,
+    "dungeonId": 2,
+    "difficultyOffset": 3,
+    "finalOutcome": "Defeat",
+    "totalExperience": 320,
+    "completedRooms": 4,
+    "totalRooms": 24,
+    "remainingPartyHp": 0,
+    "maximumPartyHp": 4200,
+    "rewards": [],
+    "autoSell": {
+      "count": 0,
+      "gold": 0
+    },
+    "rooms": [
+      {
+        "room": 4,
+        "floor": 1,
+        "roomInFloor": 4,
+        "roomType": "battle_Normal",
+        "enemyId": 27,
+        "enemyDisplayName": "Example Enemy",
+        "enemyMaximumHp": 900,
+        "outcome": "defeat",
+        "damageDealt": 500,
+        "damageTaken": 1400,
+        "startingPartyHp": 1400,
+        "remainingPartyHp": 0,
+        "maximumPartyHp": 4200,
+        "events": [
+          {
+            "index": 1,
+            "phase": "combat",
+            "actor": "character",
+            "characterId": 11,
+            "attackType": "magical",
+            "initiative": 35,
+            "actionText": "Rin cast Fireball!",
+            "noteText": null,
+            "damage": 500,
+            "damageTarget": "enemy",
+            "hits": 2,
+            "attempts": 3
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### Envelope and source fields
+
+| Field | Type | Required | Description |
+|-|-|-|-|
+| `apiVersion` | string | Yes | MUST equal `experimental/v1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `revision` | integer | Yes | Authoritative state revision from which the retained log was read. |
+| `source.kind` | string | Yes | `latest` for the latest-party endpoint or `diary` for the Diary-entry endpoint. |
+| `source.diaryEntryId` | string or `null` | Yes | Existing Diary entry ID for `diary`; otherwise `null`. This is not a battle-log ID. |
+| `battleLog` | object | Yes | One retained, fully disclosed expedition log. |
+
+#### Expedition fields
+
+| Field | Type | Required | Description |
+|-|-|-|-|
+| `battleLog.partyId` | integer | Yes | Stable unlocked party ID that produced the log. |
+| `battleLog.dungeonId` | integer | Yes | Stable dungeon ID. |
+| `battleLog.difficultyOffset` | integer | Yes | Difficulty offset used for the expedition. |
+| `battleLog.finalOutcome` | string | Yes | `Clear`, `Escape`, `Retreat`, or `Defeat`. |
+| `battleLog.totalExperience` | integer | Yes | Total expedition XP recorded by the retained log. |
+| `battleLog.completedRooms` | integer | Yes | Number of resolved rooms. |
+| `battleLog.totalRooms` | integer | Yes | Configured total room count for the expedition. |
+| `battleLog.remainingPartyHp` | integer | Yes | Party HP recorded at expedition completion. |
+| `battleLog.maximumPartyHp` | integer | Yes | Maximum party HP recorded by the log. |
+| `battleLog.rewards` | array | Yes | Retained expedition rewards represented by stable item ID, category, tier, rarity, enhancement value, Super-Rare value, and optional localized `displayName`. It MUST NOT expose internal item fields. |
+| `battleLog.autoSell.count` | integer | Yes | Number of items automatically sold. |
+| `battleLog.autoSell.gold` | integer | Yes | Gold produced by automatic selling. |
+| `battleLog.rooms` | array | Yes | Resolved room entries in ascending room order. |
+
+Numeric fields MUST use raw JSON numbers. Stable IDs and enum values are authoritative; display names and narration are localized metadata using the active language.
+
+#### Room fields
+
+Each `battleLog.rooms` entry contains:
+
+| Field | Type | Required | Description |
+|-|-|-|-|
+| `room` | integer | Yes | One-based expedition room number. |
+| `floor` | integer or `null` | Yes | One-based disclosed floor, or `null` when not applicable. |
+| `roomInFloor` | integer or `null` | Yes | One-based room within the floor, or `null` when not applicable. |
+| `roomType` | string or `null` | Yes | `battle_Normal`, `battle_Elite`, `battle_Boss`, or `null` for a retained legacy entry. |
+| `enemyId` | integer or `null` | Yes | Stable encountered enemy ID, or `null` for a retained legacy entry without one. |
+| `enemyDisplayName` | string or `null` | Yes | Optional localized encountered-enemy name. |
+| `enemyMaximumHp` | integer | Yes | Encountered enemy's recorded starting HP. |
+| `outcome` | string | Yes | `victory`, `defeat`, or `draw`. |
+| `damageDealt` | integer | Yes | Total damage dealt to the enemy in this room. |
+| `damageTaken` | integer | Yes | Total damage taken by the party in this room. |
+| `startingPartyHp` | integer or `null` | Yes | Party HP at room start, or `null` for a retained legacy entry. |
+| `remainingPartyHp` | integer | Yes | Party HP after resolving the room. |
+| `maximumPartyHp` | integer | Yes | Maximum party HP recorded for the room. |
+| `healAmount` | integer or `null` | Yes | Room healing, or `null` when none was recorded. |
+| `attritionAmount` | integer or `null` | Yes | Room attrition damage, or `null` when none was recorded. |
+| `events` | array | Yes | Detailed battle events in original execution order. |
+
+The API MUST NOT expose a retained internal enemy snapshot, reward-roll inputs, or internal renderer references. Room reward items are represented only through the expedition-level `rewards` array.
+
+#### Battle-event fields
+
+Each `events` entry MUST contain `index`, `phase`, `actor`, `actionText`, and `noteText`. It MAY contain the other fields below only when that value exists in the retained event.
+
+| Field | Type | Required | Description |
+|-|-|-|-|
+| `index` | integer | Yes | One-based event position within the room. |
+| `phase` | string | Yes | `start`, `combat`, or `end`. |
+| `actor` | string | Yes | `party`, `enemy`, `character`, `effect`, `triggered`, or `deity`. |
+| `actionText` | string | Yes | Localized retained battle narration. It is display metadata, not a stable control value. |
+| `noteText` | string or `null` | Yes | Localized retained note, or `null`. It is display metadata. |
+| `attackType` | string | No | `ranged`, `magical`, or `melee`. |
+| `initiative` | integer | No | Recorded initiative roll. |
+| `characterId` | integer | No | Stable acting or referenced character ID. |
+| `effectKind` | string | No | `life_drain` or `terrain`. |
+| `effectSourceDisplayName` | string | No | Localized effect-source name. |
+| `effectTargetDisplayName` | string | No | Localized effect-target name. |
+| `effectHealAmount` | integer | No | Healing caused by the effect. |
+| `damage` | integer | No | Direct recorded damage. |
+| `damageTarget` | string | No | `party` or `enemy`. |
+| `reflectedDamage` | integer | No | Recorded reflected damage. |
+| `reflectedSourceDamage` | integer | No | Damage before reflection. |
+| `reflectTarget` | string | No | `party` or `enemy`. |
+| `absorbedDamage` | integer | No | Recorded absorbed damage. |
+| `absorbTarget` | string | No | `party` or `enemy`. |
+| `hits` | integer | No | Successful hits. |
+| `attempts` | integer | No | Total attack attempts. |
+| `specialAttack` | string | No | `gravity_well`, `armor_break`, or `mana_break`. |
+| `elementalOffense` | string | No | Stable recorded elemental-offense value. |
+| `modifiers` | object | No | Present retained combat-display modifiers: rage and momentum percentages; ambush, overwatch, and execution multipliers; swarm actor penalty and opponent bonus percentages; and boolean first-strike, counter, re-attack, negated, and aggregated flags. Absent retained modifiers MUST be omitted. |
+
+The response MUST represent the retained event data without rerunning combat formulas, reconstructing missing values, consuming randomness, or recalculating the battle under current character or master data.
+
+## `GET /experimental/v1/parties/{partyId}/battle-log/latest`
+
+**Operation ID:** `getLatestPartyBattleLog`
+
+**Purpose:** Return the specified unlocked party's current `lastExpeditionLog` as the retained battle-log response object. This endpoint is read-only.
+
+### Security and request
+
+This operation requires bearer authentication and ownership of the active control lease. A successful response renews the sliding inactivity timeout.
+
+```http
+GET /experimental/v1/parties/1/battle-log/latest
+Authorization: Bearer <token>
+X-BoKemo-Control-Lease: <lease-token>
+```
+
+- `partyId` is a required base-10 integer path parameter and MUST identify one unlocked party.
+- The endpoint accepts no request body or query parameters. Unsupported query parameters MUST be rejected as `invalid_request`.
+
+### Success response
+
+**Status:** `200 OK`
+
+- The response MUST use the retained battle-log response object with `source.kind` equal to `latest` and `source.diaryEntryId` equal to `null`.
+- The returned log is the party's latest fully resolved and disclosed expedition retained at the response revision. An expedition currently being explored MUST NOT replace or modify the disclosed response until its normal disclosure point.
+- The operation reads the existing runtime object only. It MUST NOT assign an ID to the log or preserve it when a later expedition replaces it.
+
+### Error responses
+
+| Status | `error.code` | `retryable` | Condition |
+|-|-|-|-|
+| `400 Bad Request` | `invalid_request` | `false` | `partyId` is not a valid integer or the request contains an unsupported query parameter. |
+| `401 Unauthorized` | `authentication_failed` | `false` | Bearer authentication is missing, malformed, or invalid. |
+| `403 Forbidden` | `control_lease_invalid` | `false` | An active lease exists, but the lease header is missing, malformed, or does not match it. |
+| `404 Not Found` | `party_not_found` | `false` | `partyId` does not identify an unlocked party. |
+| `404 Not Found` | `battle_log_not_found` | `false` | The party has no completed retained expedition log. |
+| `409 Conflict` | `no_active_lease` | `false` | No control lease exists. |
+| `409 Conflict` | `control_lease_expired` | `false` | The matching lease expired before the snapshot was read. |
+| `409 Conflict` | `control_releasing` | `true` | The lease is being released. |
+| `409 Conflict` | `runtime_busy` | `true` | A command or sortie batch is executing. |
+| `405 Method Not Allowed` | `method_not_allowed` | `false` | The path is requested with a method other than `GET`. The response MUST include `Allow: GET`. |
+| `503 Service Unavailable` | `save_error` | `false` | Save-load protection from section 5.1.4 is active. |
+| `503 Service Unavailable` | `runtime_unavailable` | `true` | The authoritative renderer cannot provide the retained log. |
+
+## `GET /experimental/v1/diary-entries`
+
+**Operation ID:** `listDiaryEntries`
+
+**Purpose:** List metadata and concise expedition summaries for every Diary entry currently retained under section 8.5. This endpoint is read-only and does not embed detailed room or battle events.
+
+### Security and request
+
+This operation requires bearer authentication and ownership of the active control lease. A successful response renews the sliding inactivity timeout.
+
+```http
+GET /experimental/v1/diary-entries
+Authorization: Bearer <token>
+X-BoKemo-Control-Lease: <lease-token>
+```
+
+- The endpoint accepts no request body, path parameters, or query parameters.
+- Unsupported query parameters MUST be rejected as `invalid_request`.
+- Pagination is not required because the normative global retention limit is 24 entries.
+
+### Success response
+
+**Status:** `200 OK`
+
+```json
+{
+  "apiVersion": "experimental/v1",
+  "schemaVersion": 1,
+  "revision": 123,
+  "entries": [
+    {
+      "id": "1786345100000-ab12cd",
+      "partyId": 1,
+      "partyDisplayName": "PT1",
+      "createdAt": 1786345100000,
+      "isRead": false,
+      "triggers": ["defeat"],
+      "titleText": "[PT1] Defeat record",
+      "detailText": "Caninian Plains",
+      "expedition": {
+        "dungeonId": 1,
+        "difficultyOffset": 0,
+        "finalOutcome": "Defeat",
+        "completedRooms": 4,
+        "totalRooms": 24
+      }
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-|-|-|-|
+| `apiVersion` | string | Yes | MUST equal `experimental/v1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `revision` | integer | Yes | Authoritative state revision from which the list was read. |
+| `entries` | array | Yes | All currently retained Diary entries, newest first; empty when none exist and never longer than 24. |
+| `entries[].id` | string | Yes | Existing opaque `DiaryLog.id`. It is valid only while this Diary entry remains retained. |
+| `entries[].partyId` | integer | Yes | Stable ID of the party that owns the entry. |
+| `entries[].partyDisplayName` | string | Yes | Current localized or user-defined party display name. |
+| `entries[].createdAt` | integer | Yes | Emulated in-game timestamp in Unix milliseconds. |
+| `entries[].isRead` | boolean | Yes | Existing Diary read state. Reading through the API does not change it. |
+| `entries[].triggers` | string array | Yes | Existing triggers in stored order: `defeat`, `draw`, `eliteRare`, `bossRare`, `mythicRare`, `superRare`, `godsBattle`, `sideQuest`, and/or `unlock`. |
+| `entries[].titleText` | string | Yes | Localized Diary title display metadata. |
+| `entries[].detailText` | string or `null` | Yes | Localized Diary detail display metadata, or `null`. |
+| `entries[].expedition` | object | Yes | Concise retained summary containing `dungeonId`, `difficultyOffset`, `finalOutcome`, `completedRooms`, and `totalRooms`. |
+
+- The list MUST be assembled from the current parties' retained `diaryLogs` and sorted by descending `createdAt`, with deterministic party ID and stored-entry-order tie breakers.
+- The response MUST NOT contain detailed rooms, battle events, complete reward items, enemy snapshots, or a copy of the complete Diary `expeditionLog`.
+- This endpoint MUST NOT create Diary entries or identifiers, mark an entry or notification as read, change `hasUnreadDiary`, or extend retention.
+
+### Error responses
+
+| Status | `error.code` | `retryable` | Condition |
+|-|-|-|-|
+| `400 Bad Request` | `invalid_request` | `false` | The request contains an unsupported query parameter. |
+| `401 Unauthorized` | `authentication_failed` | `false` | Bearer authentication is missing, malformed, or invalid. |
+| `403 Forbidden` | `control_lease_invalid` | `false` | An active lease exists, but the lease header is missing, malformed, or does not match it. |
+| `409 Conflict` | `no_active_lease` | `false` | No control lease exists. |
+| `409 Conflict` | `control_lease_expired` | `false` | The matching lease expired before the snapshot was read. |
+| `409 Conflict` | `control_releasing` | `true` | The lease is being released. |
+| `409 Conflict` | `runtime_busy` | `true` | A command or sortie batch is executing. |
+| `405 Method Not Allowed` | `method_not_allowed` | `false` | The path is requested with a method other than `GET`. The response MUST include `Allow: GET`. |
+| `503 Service Unavailable` | `save_error` | `false` | Save-load protection from section 5.1.4 is active. |
+| `503 Service Unavailable` | `runtime_unavailable` | `true` | The authoritative renderer cannot provide the retained Diary list. |
+
+## `GET /experimental/v1/diary-entries/{diaryEntryId}/battle-log`
+
+**Operation ID:** `getDiaryEntryBattleLog`
+
+**Purpose:** Return the expedition and detailed battle log embedded in one currently retained Diary entry. This endpoint is read-only.
+
+### Security and request
+
+This operation requires bearer authentication and ownership of the active control lease. A successful response renews the sliding inactivity timeout.
+
+```http
+GET /experimental/v1/diary-entries/1786345100000-ab12cd/battle-log
+Authorization: Bearer <token>
+X-BoKemo-Control-Lease: <lease-token>
+```
+
+- `diaryEntryId` is the required, percent-decoded opaque ID returned by `listDiaryEntries`. The server MUST compare it for exact equality with existing retained Diary entry IDs and MUST NOT interpret its timestamp-like prefix.
+- The endpoint accepts no request body or query parameters. Unsupported query parameters MUST be rejected as `invalid_request`.
+
+### Success response
+
+**Status:** `200 OK`
+
+- The response MUST use the retained battle-log response object with `source.kind` equal to `diary` and `source.diaryEntryId` equal to the matched Diary entry's ID.
+- `battleLog.partyId` MUST identify the party that owns the matched Diary entry.
+- The renderer MUST serialize the matched entry's existing embedded `expeditionLog`; it MUST NOT resolve the request through a separate battle-log store.
+
+### Error responses
+
+| Status | `error.code` | `retryable` | Condition |
+|-|-|-|-|
+| `400 Bad Request` | `invalid_request` | `false` | `diaryEntryId` is empty or malformed, or the request contains an unsupported query parameter. |
+| `401 Unauthorized` | `authentication_failed` | `false` | Bearer authentication is missing, malformed, or invalid. |
+| `403 Forbidden` | `control_lease_invalid` | `false` | An active lease exists, but the lease header is missing, malformed, or does not match it. |
+| `404 Not Found` | `diary_entry_not_found` | `false` | No currently retained Diary entry has the supplied ID, including when an older entry has been removed by normal retention. |
+| `409 Conflict` | `no_active_lease` | `false` | No control lease exists. |
+| `409 Conflict` | `control_lease_expired` | `false` | The matching lease expired before the snapshot was read. |
+| `409 Conflict` | `control_releasing` | `true` | The lease is being released. |
+| `409 Conflict` | `runtime_busy` | `true` | A command or sortie batch is executing. |
+| `405 Method Not Allowed` | `method_not_allowed` | `false` | The path is requested with a method other than `GET`. The response MUST include `Allow: GET`. |
+| `503 Service Unavailable` | `save_error` | `false` | Save-load protection from section 5.1.4 is active. |
+| `503 Service Unavailable` | `runtime_unavailable` | `true` | The authoritative renderer cannot provide the retained Diary log. |
+
+### Shared read consistency and side effects
+
+All three retained-log GET operations MUST read one immutable snapshot at the reported `revision`. If revision or retention changes before serialization completes, the renderer MUST discard the partial response and retry against the new snapshot.
+
+A successful response renews the owning lease only after complete serialization. Reading retained logs MUST NOT mark Diary entries, items, or notifications as seen; advance simulated time or state-machine progress; run AFK recovery or automation; persist state; increment `revision`; consume randomness; or alter normal latest-log or Diary retention. Bearer authentication and lease ownership MUST be checked before target existence so these endpoints cannot probe active-save identifiers without control.
 
 ## `POST /experimental/v1/command`
 

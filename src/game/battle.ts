@@ -39,7 +39,7 @@ import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
-import { resolveMagicProfile, resolveSpecialMagicFromAbilities } from './magic';
+import { isSpecialMagicCastable, resolveMagicProfile, resolveSpecialMagicFromAbilities } from './magic';
 import { computeCharacterStats, getAbilityDescription, getAbilityName } from './characterComputation';
 import {
   buildAntagonismAction,
@@ -4707,13 +4707,15 @@ export function executeBattle(
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
           const specialMagic = enemy.magicStyle === 'percentage_damage'
-            ? 'gravity_well'
-            : resolveSpecialMagicFromAbilities(enemy.abilities);
+            ? (isSpecialMagicCastable('gravity_well', attempts) ? 'gravity_well' : null)
+            : resolveSpecialMagicFromAbilities(enemy.abilities, attempts);
           const magicStyle = specialMagic === 'gravity_well'
             ? 'percentage_damage'
             : specialMagic
               ? 'debuff'
-              : enemy.magicStyle ?? (hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit');
+              : enemy.magicStyle === 'percentage_damage'
+                ? 'multi-hit'
+                : enemy.magicStyle ?? (hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit');
           const magicProfile = resolveMagicProfile({
             style: magicStyle,
             specialMagic,
@@ -4725,8 +4727,7 @@ export function executeBattle(
           // SpecRef: 6.1.4.1 | Special attack | m.gravity-well / m.armor-break / m.mana-break
           // Thresholds use terrain-adjusted attempts. An activated special consumes the action
           // before targeting, hit detection, defense, reactions, or normal attack functions.
-          const specialThreshold = specialMagic === 'gravity_well' ? 20 : specialMagic === 'armor_break' ? 12 : specialMagic === 'mana_break' ? 10 : Infinity;
-          if (phase === 'magical' && specialMagic && attempts >= specialThreshold) {
+          if (phase === 'magical' && specialMagic) {
             if (isMagicSealTargetForEnemy(phase, enemy, attempts) && consumeMagicSeal()) {
               log.push({
                 phase,
@@ -5508,15 +5509,13 @@ export function executeBattle(
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
-        const specialMagic = resolveSpecialMagicFromAbilities(cs.abilities);
         const terrainAdjustedMagicalNoA = Math.ceil(
           cs.magicalNoA
           * noAMultiplier
           * getTerrainNoAAmplifier('magical', environment.terrainEffect, cs.abilities)
         );
-        const specialThreshold = specialMagic === 'gravity_well' ? 20 : specialMagic === 'armor_break' ? 12 : specialMagic === 'mana_break' ? 10 : Infinity;
-        const activatedSpecialMagic = phase === 'magical' && terrainAdjustedMagicalNoA >= specialThreshold
-          ? specialMagic
+        const activatedSpecialMagic = phase === 'magical'
+          ? resolveSpecialMagicFromAbilities(cs.abilities, terrainAdjustedMagicalNoA)
           : null;
         const magicStyle = activatedSpecialMagic === 'gravity_well'
           ? 'percentage_damage'

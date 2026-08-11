@@ -18,13 +18,27 @@ interface ResolveMagicProfileParams {
 
 export type SpecialMagicKey = 'gravity_well' | 'armor_break' | 'mana_break';
 
+const SPECIAL_MAGIC_THRESHOLDS: Readonly<Record<SpecialMagicKey, number>> = {
+  gravity_well: 20,
+  armor_break: 12,
+  mana_break: 10,
+};
+
+export function isSpecialMagicCastable(specialMagic: SpecialMagicKey, magicalNoA: number): boolean {
+  return magicalNoA >= SPECIAL_MAGIC_THRESHOLDS[specialMagic];
+}
+
 // SpecRef: 6.1.4.1 | Special attack | Priority
 export function resolveSpecialMagicFromAbilities(
   abilities: ReadonlyArray<{ id: AbilityId; level: number }>,
+  magicalNoA: number,
 ): SpecialMagicKey | null {
-  if (abilities.some((ability) => ability.id === 'gravity_well' && ability.level > 0)) return 'gravity_well';
-  if (abilities.some((ability) => ability.id === 'armor_break' && ability.level > 0)) return 'armor_break';
-  if (abilities.some((ability) => ability.id === 'mana_break' && ability.level > 0)) return 'mana_break';
+  if (isSpecialMagicCastable('gravity_well', magicalNoA)
+    && abilities.some((ability) => ability.id === 'gravity_well' && ability.level > 0)) return 'gravity_well';
+  if (isSpecialMagicCastable('armor_break', magicalNoA)
+    && abilities.some((ability) => ability.id === 'armor_break' && ability.level > 0)) return 'armor_break';
+  if (isSpecialMagicCastable('mana_break', magicalNoA)
+    && abilities.some((ability) => ability.id === 'mana_break' && ability.level > 0)) return 'mana_break';
   return null;
 }
 
