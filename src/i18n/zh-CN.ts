@@ -70,7 +70,7 @@ const zhCN = {
 'home.notification.equipment.replaced': '将{previous}重新装备为{item}',
 'home.notification.equipment.characterChanged': '{party}{character} {message}',
 'home.notification.debug.elapsedSincePreviousUpdate': '(Debug)距离上次更新已过{seconds}秒',
-'home.notification.lordSquanderedGold': '{party}君主{lord}挥霍了{gold}G',
+'home.notification.lordSquanderedGold': '{party}君主{lord}浪费了{gold}G',
 'home.notification.partySpentGold': '{party}花费了{gold}G',
 'home.notification.embezzledSuffix': '（侵吞了{gold}G）',
 'home.notification.partySavedGold': '{party}存入了 {gold}G{suffix}',
@@ -130,7 +130,7 @@ const zhCN = {
 'home.floorConcept.fallback': '{floor}层',
 'home.depth.untilFloor': '至{marker}{concept}',
 'home.depth.beforeBoss': '{concept}首领直前',
-'home.sideQuest.squander': '在宴会上挥霍{gold}G',
+'home.sideQuest.squander': '在宴会上浪费{gold}G',
 'home.sideQuest.sleeping': '睡觉{count}次',
 'home.sideQuest.exercise': '行走{minutes}分钟',
 'home.sideQuest.embezzlement': '侵吞{gold}G',
@@ -295,9 +295,9 @@ const zhCN = {
   'jewel.shade.name': '影走结晶',
   'jewel.shade.displayName': '影走',
   'jewel.shade.short': '影',
-  'jewel.focus.name': '精密结晶',
-  'jewel.focus.displayName': '精密',
-  'jewel.focus.short': '精',
+  'jewel.focus.name': '集中结晶',
+  'jewel.focus.displayName': '集中',
+  'jewel.focus.short': '集',
   'jewel.tier.1': '素晶',
   'jewel.tier.2': '良晶',
   'jewel.tier.3': '雅晶',
@@ -444,7 +444,7 @@ const zhCN = {
   'sideQuest.target.gold': '{label}（{value}G）',
   'sideQuest.target.items': '{label}（{value}个）',
   'sideQuest.target.streak': '{label}（{value}连）',
-  'sideQuest.squander.short': '挥霍',
+  'sideQuest.squander.short': '浪费',
   'sideQuest.sleeping.short': '安眠',
   'sideQuest.exercise.short': '运动',
   'sideQuest.embezzlement.short': '侵吞',
@@ -1543,7 +1543,7 @@ const zhCN = {
   'masterData.enemyType.Procyonian.short': '狸裔',
   'masterData.enemyType.Murid.short': '鼠裔',
 
-  'masterData.ability.defender.name': '守护者',
+  'masterData.ability.defender.name': '卫士',
   'masterData.ability.counter.name': '反击',
   'masterData.ability.re_attack.name': '连击',
   'masterData.ability.iaigiri.name': '居合斩',
@@ -1556,7 +1556,7 @@ const zhCN = {
   'masterData.ability.deflection.name': '矢払',
   'masterData.ability.first_strike.name': '先制攻击',
   'masterData.ability.true_sight.name': '真视界',
-  'ability.true_sight.description': '即使在灰霭或雾中也能看清（不再受其负面效果影响）。',
+  'ability.true_sight.description': '即使在灰霾或雾中也能看清（不再受其负面效果影响）。',
   'masterData.ability.output_stabilizer.name': '攻击稳定化',
   'ability.output_stabilizer.description': '始终稳定地进行攻击（攻击次数不再受地形效果的影响）。',
   'masterData.ability.tithe.name': '什一税',
@@ -1575,7 +1575,7 @@ const zhCN = {
   'masterData.ability.magical_counter.name': '魔法反击',
   'masterData.ability.arcane_stability.name': '术式稳定',
   'masterData.ability.arc_magic.name': '大魔法',
-  'masterData.ability.gravity_well.name': '习得重力阱',
+  'masterData.ability.gravity_well.name': '习得重力井',
   'masterData.ability.armor_break.name': '习得破甲术',
   'masterData.ability.mana_break.name': '习得破魔术',
   'masterData.ability.melee_conversion.name': '转换为近战攻击',
@@ -1985,7 +1985,7 @@ const zhCN = {
 'masterData.enemyName.309': '塞拉菲',      // セラフィー
 'masterData.enemyName.310': '菲克西',      // フィクシー
 'masterData.enemyName.311': '卡利帕',      // キャリパー
-'masterData.enemyName.312': '明蒂',        // ミンティ
+'masterData.enemyName.312': '敏特',        // ミント
 'masterData.enemyName.313': '昆西',        // クインシー
 'masterData.enemyName.314': '斯基帕',      // スキッパー
 'masterData.enemyName.315': '天界收割者',  // セレスティアルリーパー
@@ -2031,7 +2031,7 @@ const zhCN = {
 'masterData.enemyName.355': '格雷塔',      // グレタ
 'masterData.enemyName.356': '泽诺亚',      // ゼノア
 'masterData.enemyName.357': '卢卡',        // ルッカ
-'masterData.enemyName.358': '缪拉',        // ミュウラ
+'masterData.enemyName.358': '缪拉',        // ミュラ
 'masterData.enemyName.359': '劳拉',        // ラウラ
 'masterData.enemyName.360': '西格娜',      // シグナ
 'masterData.enemyName.361': '艾珂',        // エコア
@@ -2502,8 +2502,8 @@ const zhCN = {
   'ability.arcane_stability.description': '魔法/物理攻击的命中率不低于 N',
   'ability.arc_magic.label': '大魔法',
   'ability.arc_magic.description': '使用的魔法变为大魔法（魔法攻击次数变为1/3倍，魔法伤害变为N倍）',
-  'ability.gravity_well.label': '习得重力阱',
-  'ability.gravity_well.description': '魔法攻击次数达到20次时咏唱重力阱，无视魔法防御并造成目标剩余HP的2/5固定伤害。',
+  'ability.gravity_well.label': '习得重力井',
+  'ability.gravity_well.description': '魔法攻击次数达到20次时咏唱重力井，无视魔法防御并造成目标剩余HP的2/5固定伤害。',
   'ability.armor_break.label': '习得破甲术',
   'ability.armor_break.description': '魔法攻击次数达到12次时咏唱破甲术，使目标受到的物理伤害变为x4/3。',
   'ability.mana_break.label': '习得破魔术',
@@ -2656,7 +2656,7 @@ const zhCN = {
   'ability.fading_memory.description': '不分敌我随机选择对方1个技能，在此战斗中无效化',
   'ability.mimic.label': '模仿',
   'ability.mimic.description': '随机指定对方1个技能，发动其效果',
-  'ability.defender.label': '守护者',
+  'ability.defender.label': '卫士',
   'ability.defender.description': '对自身后方队友的物理伤害变为 xN倍',
   'ability.command.label': '指挥',
   'ability.command.description': '自身后方队友造成的物理伤害变为 xN倍',
@@ -2793,9 +2793,9 @@ const zhCN = {
   'data.glossary.23.label': '[魔攻击V倍]',
   'data.glossary.23.description': '魔法攻击变为 V倍',
   'data.glossary.24.label': '[物防xV]',
-  'data.glossary.24.description': '物理防御力变为 V倍（越小越耐打）',
+  'data.glossary.24.description': '物理防御倍率变为 V倍（越小越耐打）',
   'data.glossary.25.label': '[魔防xV]',
-  'data.glossary.25.description': '魔法防御力变为 V倍（越小越耐打）',
+  'data.glossary.25.description': '魔法防御倍率变为 V倍（越小越耐打）',
   'data.glossary.26.label': '[天物攻xV]',
   'data.glossary.26.description': '远程攻击·近战攻击伤害变为 V倍',
   'data.glossary.27.label': '[天魔攻xV]',
@@ -3003,8 +3003,8 @@ const zhCN = {
   'data.glossary.2_1_9.subtitle': '求. 支线任务（达成条件可获得结晶作为报酬）',
   'data.glossary.2_1_9.label': '无',
   'data.glossary.2_1_9.description': '无',
-  'data.glossary.125.label': '挥霍',
-  'data.glossary.125.description': '在宴会上挥霍（神魔战中中止）',
+  'data.glossary.125.label': '浪费',
+  'data.glossary.125.description': '在宴会上浪费（神魔战中中止）',
   'data.glossary.126.label': '安眠',
   'data.glossary.126.description': '睡觉（神魔战中中止）',
   'data.glossary.127.label': '运动',
@@ -3042,7 +3042,7 @@ const zhCN = {
   'data.glossary.142.description': '双方附加雷威力×3/2（雷威力提升）',
   'data.glossary.143.label': '寒气',
   'data.glossary.143.description': '房间持续时间变为1.5倍',
-  'data.glossary.144.label': '腐败',
+  'data.glossary.144.label': '崩坏',
   'data.glossary.144.description': '所有回复能力无效化',
   'data.glossary.145.label': '浓雾',
   'data.glossary.145.description': '所有远程攻击命中率 -25',

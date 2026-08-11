@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.1 | 53 | 2026/08/11 | Standardize recurring Japanese and Chinese game terminology for Gravity Well, Squander, Ash Haze, Decay, Guardian, Focus, Mint, Myura, and physical and magical defense multipliers. |
 | 0.9.1 | 52 | 2026/08/11 | Keep the BoKemo macOS desktop process in regular application mode, explicitly restore its Dock tile and artwork on launch and window activation, and declare non-accessory bundle metadata for packaged builds. |
 | 0.9.1 | 51 | 2026/08/11 | Implement lease-protected Experimental AI API GET routes for each party's latest retained battle log, the globally retained Diary-entry list, and battle logs embedded in retained Diary entries, with safe serialization and no additional log storage or retention. |
 | 0.9.1 | 50 | 2026/08/11 | Specify lease-protected read-only APIs for each party's latest retained battle log, the globally retained Diary-entry list, and battle logs embedded in retained Diary entries without adding permanent log IDs, storage, or retention. |
