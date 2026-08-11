@@ -38,6 +38,7 @@ import { NotificationToast } from './NotificationToast';
 import { DesktopNotificationSettings } from './DesktopNotificationSettings';
 import { ExperimentalApiSettings } from './ExperimentalApiSettings';
 import { getDesktopPreferences, getProcessedDiaryIds, saveProcessedDiaryIds } from '../game/desktopNotifications';
+import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { formatEnemyDefName, formatEnemyFormName, getEnemyTypeShortName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
@@ -4865,9 +4866,12 @@ export function HomeScreen({
 
       await Promise.all(newLogs.map(({ party, partyIndex, log }) => {
         const primaryTrigger = log.triggers[0] ?? 'unlock';
+        const droppedItemTitle = getDesktopNotificationRewardItems(log)
+          .map((item) => getItemDisplayName(item))
+          .join('、');
         return desktop.showNotification({
           id: log.id,
-          title: t(`desktopNotification.trigger.${primaryTrigger}`),
+          title: droppedItemTitle || t(`desktopNotification.trigger.${primaryTrigger}`),
           body: t('desktopNotification.diaryBody', {
             party: `PT${partyIndex + 1}`,
             dungeon: log.unlockDetail ?? log.sideQuestDetail ?? log.expeditionLog.dungeonName,

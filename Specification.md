@@ -112,6 +112,7 @@
 - Closing the desktop window may hide it without terminating the renderer so that local progression can continue. While hidden, the application must retain its Dock icon and provide a macOS menu-bar item with explicit `Open BoKemo` and `Quit BoKemo` actions.
 - Local progression and timely native notifications are available only while the Mac is awake and the BoKemo process remains running. No timely delivery is guaranteed while macOS is asleep or after the application has fully quit.
 - Native notifications must use each party's existing Diary notification filters. The player must be able to select either `Hidden only` or `Always` delivery; `Hidden only` is the default.
+- Individual native notifications triggered by an item drop must use the exact localized full display name of every matching dropped item as the notification title, including its Super Rare title, enhancement title, and attached Jewel label. The generic rarity trigger label may be used only when the matching item data is unavailable.
 - After macOS sleep or a full application restart, AFK catch-up must issue at most one grouped native summary rather than one native notification per recovered event. Event details must remain available in the Diary.
 - Clicking an individual Diary notification must restore BoKemo and open the relevant party and Diary entry. Clicking an AFK summary must restore BoKemo and open the Diary.
 - Starting BoKemo at macOS login must be optional and disabled by default. When enabled, BoKemo must launch hidden in the menu bar without opening its main window.

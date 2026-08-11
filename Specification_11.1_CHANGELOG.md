@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 2 | 2026/08/11 | Show exact localized full item names in individual macOS native item-drop notification titles, with generic rarity labels retained only as a fallback. |
 | 0.9.2 | 1 | 2026/08/11 | Update the runtime application version to v0.9.2 and reset the build number to 1 for the new version. |
 | 0.9.1 | 53 | 2026/08/11 | Standardize recurring Japanese and Chinese game terminology for Gravity Well, Squander, Ash Haze, Decay, Guardian, Focus, Mint, Myura, and physical and magical defense multipliers. |
 | 0.9.1 | 52 | 2026/08/11 | Keep the BoKemo macOS desktop process in regular application mode, explicitly restore its Dock tile and artwork on launch and window activation, and declare non-accessory bundle metadata for packaged builds. |
