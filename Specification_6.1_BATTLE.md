@@ -584,11 +584,13 @@ If `a.*` with phase = START:
 
 - If (actor.`m.magic` is `m.armor-break`) and (`f.NoA` >= 12):
   - opponent.`debuff_physical_defense_amplifier` *= 4/3
+  - Combat log treats special format: (相手の被物理ダメージx4/3)
   - Skip all normal hit-based functions.
   - Skip other `Function of attack` procedure.
 
 - If (actor.`m.magic` is `m.mana-break`) and (`f.NoA` >= 10):
   - opponent.`f.debuff_magical_defense_amplifier` *= 4/3
+  - Combat log treats special format: (相手の被魔法ダメージx4/3)
   - Skip all normal hit-based functions.
   - Skip other `Function of attack` procedure.
 

@@ -50,6 +50,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale, isUnlimitedTimeSpeed } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
+import { isStandaloneBattleLogName } from '../game/battleLogNameMatch';
 import { formatAttackSpeedHelp } from '../game/attackProfile';
 import { Language, SUPPORTED_LANGUAGES, setLanguage, t } from '../i18n';
 import { formatInstantExpeditionChargeDisplay, getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -969,8 +970,9 @@ function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(action)) !== null) {
-    if (match.index > lastIndex) nodes.push(action.slice(lastIndex, match.index));
     const label = match[0];
+    if (!isStandaloneBattleLogName(action, match.index, label)) continue;
+    if (match.index > lastIndex) nodes.push(action.slice(lastIndex, match.index));
     const marker = uniqueMarkers.find((candidate) => candidate.label === label);
     if (marker) nodes.push(<BattleLogInlineChibi key={`chibi-${match.index}-${label}`} src={marker.src} alt={marker.alt} />);
     nodes.push(label);
