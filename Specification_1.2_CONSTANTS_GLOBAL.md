@@ -17,8 +17,8 @@
   - party id
   - level
   - experience
-  - lootGateProgress 
-  - lootGateStatus
+  - clearGateProgress
+  - clearGateStatus
   - deity 
   - characters slots
 

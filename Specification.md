@@ -123,7 +123,7 @@
 - The pane must be implemented as a secondary Electron `BrowserWindow` owned by the main process and must use the same packaged application assets and active desktop environment as the main BoKemo window.
 - The pane must be frameless, non-resizable, omitted from the Dock and application switcher, and positioned beneath or adjacent to the BoKemo menu-bar item. It must close or hide when it loses focus, when the menu-bar item is clicked again, or when BoKemo quits.
 - Left-clicking the BoKemo menu-bar item must toggle the Party Progress pane. Right-clicking it must open a context menu containing `Open BoKemo`, the existing launch-at-login control, and `Quit BoKemo`. `Open BoKemo` must restore and focus the main window.
-- The pane must display every unlocked party in a compact list sized so that all six party rows fit within the standard pane without scrolling. Vertical scrolling may remain only as a fallback for accessibility text scaling or reduced available screen space. Each party row must mirror the compact party-pane information defined in section 8.3: the party name exactly once, latest disclosed expedition floor, Instant Expedition charge battery and timer, latest disclosed outcome, compact loot-gate and side-quest summaries, current localized state and primary progress, Step sub-progress placeholder/bar, and current/max HP. The same no-spoiler update timing for latest floor and outcome must apply while `state.explore` is active.
+- The pane must display every unlocked party in a compact list sized so that all six party rows fit within the standard pane without scrolling. Vertical scrolling may remain only as a fallback for accessibility text scaling or reduced available screen space. Each party row must mirror the compact party-pane information defined in section 8.3: the party name exactly once, latest disclosed expedition floor, Instant Expedition charge battery and timer, latest disclosed outcome, compact Clear-Gate and side-quest summaries, current localized state and primary progress, Step sub-progress placeholder/bar, and current/max HP. The same no-spoiler update timing for latest floor and outcome must apply while `state.explore` is active.
 - The pane must display the total unread Diary count when it is greater than zero and provide an `Open BoKemo` action. Activating a party row must restore BoKemo and select that party without changing its expedition or automation state.
 - State labels, controls, and displayed game data must use the language and visual theme currently selected in BoKemo. Numeric values must follow the formatting rule in section 10.4.
 - Pane progress must follow the progress-bar behavior defined in section 5.1.1: continuous states update smoothly from their persisted start and expected end times, while step-based states display completed Steps against the state's initial total Steps. `state.idle` must display an idle status without a progress bar.
@@ -174,7 +174,7 @@
 - The observation must include:
   - schema version, revision, simulated timestamp, and active environment;
   - currencies and progression unlocks;
-  - each party's HP, level and XP, condition, deity, side quest, loot gates, and Gods Battle readiness;
+  - each party's HP, level and XP, condition, deity, side quest, Clear-Gates, and Gods Battle readiness;
   - each party's expedition destination mode and selected dungeon, depth limit, and difficulty offset;
   - the global auto-run configuration;
   - character order and builds, computed combat summaries, auto-equipment modes, and equipment locks;
@@ -227,12 +227,12 @@
   - rest and recovery;
   - selling and reward finalization;
   - free action, optional sleep, prayer, donation, and savings;
-  - movement, exploration, battles, return, side quests, loot gates, rewards, XP, unlocks, and automation.
+  - movement, exploration, battles, return, side quests, Clear-Gates, rewards, XP, unlocks, and automation.
 - Cycle durations and time-dependent effects must be simulated immediately for the selected party according to the normal Step rules. This uses party-local simulated elapsed time: the API client never waits for real-world progression, the global runtime clock does not advance, and no other party's state, side quest, deadline, charge timer, or automation progresses.
 - Each requested Cycle begins at `state.rest` and finishes after the ending `state.rest` completes, following the canonical Cycle boundary in section 5.1.
 - Cycles must execute sequentially so every result affects the following Cycle.
 - A defeat must not truncate an accepted batch. The following Cycle must perform the normal rest and recovery required before its expedition.
-- Loot-gate turn-backs, wounded retreats, draws, and defeats count as completed sortie attempts.
+- Clear-Gate turn-backs, wounded retreats, draws, and defeats count as completed sortie attempts.
 - API sorties have unlimited charge:
   - they must never check or consume `instantExpeditionStock`;
   - they must never start, stop, accelerate, refill, or otherwise modify the visible Instant Expedition charge battery or timer;

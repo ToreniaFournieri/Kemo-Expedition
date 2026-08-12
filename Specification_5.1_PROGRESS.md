@@ -137,7 +137,7 @@
 **Notification**
 - Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
   - Key and label:Clear(踏破) / Turned_Back(帰還) / Draw_Retreat(引分) / Wounded_Retreat(撤退) / Defeat(敗北)
-    - Turned_back: Cannot continue because a requirement (loot gate conditiojn) isn’t met and must return home
+    - Turned_Back: The party successfully returns without clearing the complete dungeon, including return at the selected depth limit or because the next Clear-Gate is still locked. This outcome increments the current consecutive-success count.
     - Draw_Retreat: the last room outcome is Draw
     - Wonded_Retreat: Victory but If the party.`d.HP` <= 30% of max HP, back to home with trophies. (excpetion: the Final Boss room) 
 - If the value is 0, not display its text (if all zero, then no notification)
@@ -153,7 +153,7 @@ PT3: 貯金額: 10G
 **Trigger Condition**
 - Checked at the end of the `state.return`.
 - If the party:
-  - has no active loot gate condition (**excluding** God battle loot gates), and
+  - has no active Clear-Gate condition (**excluding** the Gods Battle gate), and
   - has no active side quest
 - then roll one ticket from `t.side_quest_bag`.
 
@@ -229,6 +229,9 @@ PT3: 貯金額: 10G
 
 * Each progression gate requires **X consecutive successful runs** to unlock. (`Clear`, `Return` outcome)
 * If the party fails a run (`Draw`, `Retreat`, `Defeat`), the current consecutive-success count is reset to 0.
+* Canonical outcome mapping: `Return` = `Turned_Back`, `Draw` = `Draw_Retreat`, and `Retreat` = `Wounded_Retreat`.
+* Evaluate the streak once at the end of each normal expedition. `Clear` or `Turned_Back` increments the next locked Clear-Gate by 1; `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` resets that gate's count to 0.
+* Reaching the required count permanently unlocks that gate. Previously unlocked gates never relock. If the party reaches a still-locked gate during the run that completes its required count, that run ends as `Turned_Back` and the newly unlocked route is available from the next run.
 
 **Examples**
 
@@ -269,4 +272,3 @@ PT3: 貯金額: 10G
 - Do not automatically start the game using incomplete or partially corrupted progress data.
 - Do not overwrite or save the current runtime state.
 - Preserve the existing saved data to prevent accidental data loss.
-

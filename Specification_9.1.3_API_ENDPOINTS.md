@@ -873,7 +873,7 @@ The following non-normative example illustrates the response structure. Empty re
           "normalSortieAvailable": true,
           "godBattleAvailable": false
         },
-        "lootGates": [],
+        "clearGates": [],
         "sideQuest": null,
         "characters": [],
         "latestExpedition": null
@@ -975,7 +975,7 @@ Each entry in `observation.parties` represents one unlocked party. Parties MUST 
 | `state` | object | Yes | Frozen state-machine position at observation time. |
 | `automation.jewelPriority` | boolean | Yes | Whether this party is the current Jewel Priority Party. |
 | `expedition` | object | Yes | Current normal-expedition strategy and availability. |
-| `lootGates` | array | Yes | Currently relevant disclosed loot-gate progress. |
+| `clearGates` | array | Yes | Currently relevant disclosed Clear-Gate and related progression-gate progress. |
 | `sideQuest` | object or `null` | Yes | Active side quest, or `null`. |
 | `characters` | array | Yes | Six characters in combat and automatic-equipment order. |
 | `latestExpedition` | object or `null` | Yes | Latest disclosed expedition summary, or `null`. |
@@ -1010,20 +1010,22 @@ Each entry in `observation.parties` represents one unlocked party. Parties MUST 
 | `normalSortieAvailable` | boolean | Yes | Whether a normal API sortie request is legal for this party now. |
 | `godBattleAvailable` | boolean | Yes | Whether the separate single-run Gods Battle command is legal now. |
 
-### Loot gates and side quest
+### Clear-Gates, related progression gates, and side quest
 
-Each `lootGates` entry contains:
+Each `clearGates` entry contains:
 
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `id` | string | Yes | Stable gate identifier. |
-| `kind` | string | Yes | `entering`, `uncommon`, `eliteRare`, `godBattle`, or `sideQuest`. |
-| `current` | integer | Yes | Disclosed current progress. |
+| `kind` | string | Yes | `entering`, `clear`, `godBattle`, or `sideQuest`. |
+| `current` | integer | Yes | Disclosed current progress. For `clear`, this is the current consecutive-success count. |
 | `required` | integer | Yes | Required progress. |
 | `satisfied` | boolean | Yes | Whether the gate is currently open. |
 | `dungeonId` | integer or `null` | Yes | Related dungeon, when applicable. |
 | `floor` | integer or `null` | Yes | Related disclosed floor, when applicable. |
 | `room` | integer or `null` | Yes | Related room, when applicable. |
+
+For `kind: clear`, `current` MUST increment after a `Clear` or `Turned_Back` normal-expedition outcome and MUST reset to `0` after `Draw_Retreat`, `Wounded_Retreat`, or `Defeat`. Once `satisfied` becomes `true`, that gate remains satisfied permanently.
 
 An active `sideQuest` contains stable `id`, `type`, `target`, `progress`, `rolledTier`, `assignedAt`, and `expiresAt`. It MUST NOT expose future quest-bag order or reward rolls.
 
@@ -1967,7 +1969,7 @@ Automatic destination example:
 
 - This command is legal only when all normal UI Gods Battle requirements are satisfied at `expectedRevision`, including:
   - the selected dungeon and its Boss completion record are valid;
-  - the Gods Battle loot gate is ready or remains retryable after a previous defeat;
+  - the Gods Battle gate is ready or remains retryable after a previous defeat;
   - global Auto-Run is `false`;
   - the party is not already moving to or resolving a Gods Battle;
   - party current and maximum HP are greater than 0;
@@ -2092,11 +2094,11 @@ Before consuming randomness or changing staged state, the server MUST validate:
 - `partyId` existence and unlock status;
 - integer `count` range;
 - selected dungeon existence and availability to the party;
-- normal expedition data, loot-gate data, enemy data, and item-drop data required to simulate the complete batch;
+- normal expedition data, Clear-Gate data, enemy data, and item-drop data required to simulate the complete batch;
 - a valid party with computed maximum HP greater than 0.
 
 - Current HP equal to 0 is not an acceptance failure. The first requested Cycle performs the normal rest/recovery required before departure.
-- An unmet loot gate is not an acceptance failure. Its normal turn-back result counts as a completed requested sortie.
+- An unmet Clear-Gate is not an acceptance failure. Its normal `Turned_Back` result counts as a completed requested sortie and increments the consecutive-success count.
 - Insufficient Instant Expedition stock is not an acceptance failure because this endpoint has unlimited API charge.
 - Gods Battle readiness is ignored. Every requested Cycle is a normal expedition, and the API batch MUST NOT automatically engage a God even when Auto progress logic or party condition would normally do so.
 - If any acceptance check fails, reject the request before staging, random draws, simulation, notifications, or persistence.
@@ -2126,7 +2128,7 @@ Each Cycle MUST resolve the authoritative sequence and applicable optional/skipp
 6. Resolve `state.pray`, donation, embezzlement, and savings.
 7. Resolve `state.move`.
 8. Fully restore HP at the beginning of `state.explore` as specified in section 5.1.1.
-9. Resolve disclosed loot gates, every visited room and battle, rewards, XP, HP persistence, retreat rules, and normal expedition outcome through the configured depth limit.
+9. Resolve disclosed Clear-Gates, every visited room and battle, rewards, XP, HP persistence, retreat rules, and normal expedition outcome through the configured depth limit.
 10. Resolve `state.return`, side-quest assignment/progress/completion/expiration, condition changes, Diary and notification triggers, and progression unlocks.
 11. Enter the ending `state.rest`, resolve its normal recovery Steps completely, and end at the completion of that state.
 
@@ -2135,7 +2137,7 @@ Each Cycle MUST resolve the authoritative sequence and applicable optional/skipp
 - Non-target parties remain frozen for the complete operation. Their states, Step progress, HP, side quests, deadlines, charge stock and timers, Diary events, notifications, and automation MUST NOT advance because of the selected party's simulated elapsed time.
 - Shared resources and progression may still change when they are an authoritative result of the selected party's actions; this does not constitute progression of a non-target party.
 - Bag randomization and all other authoritative randomness are consumed sequentially. Results from one Cycle affect all later Cycles.
-- Inventory, equipment, Jewels, Gold, Prana, XP, HP, condition, side quests, loot gates, boss records, Gods Battle readiness, party unlocks, Diary entries, and other results carry forward between Cycles.
+- Inventory, equipment, Jewels, Gold, Prana, XP, HP, condition, side quests, Clear-Gates, boss records, Gods Battle readiness, party unlocks, Diary entries, and other results carry forward between Cycles.
 - A `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` result counts as one completed requested sortie.
 - Defeat MUST NOT truncate the batch. The following requested Cycle begins with normal rest/recovery and continues through completion of its ending `state.rest`.
 - Once accepted, exactly `count` requested Cycles MUST complete. A gameplay outcome cannot stop the batch early.

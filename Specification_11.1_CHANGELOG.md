@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 5 | 2026/08/12 | Align all specifications with the Clear-Gate progression system by replacing normal item-collection gates with eight consecutive successful runs, defining outcome/reset behavior, and updating shared state, battle flow, UI, AI API, and Turned_Back flavor text terminology. |
 | 0.9.2 | 4 | 2026/08/11 | Normalize localized unlocked-deity names in the Experimental AI API, restore its deity catalog and no-faith option, expose current party assignments, and identify the occupying party in friendly deity-conflict errors. |
 | 0.9.2 | 3 | 2026/08/11 | Add the revision-guarded `run_auto_equipment` Experimental AI API command for immediate mode-aware automatic equipment across a whole party or one specified character. |
 | 0.9.2 | 2 | 2026/08/11 | Show exact localized full item names in individual macOS native item-drop notification titles, with generic rarity labels retained only as a fallback. |
