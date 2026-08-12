@@ -19,6 +19,7 @@ const zhTW = {
   'loading.mare': '瑪蕾假裝普通的樣子',
   'save.errorLog': '錯誤日誌：',
   'save.loadWarning': '載入失敗。請截取此螢幕畫面並向開發者回報。',
+  'save.writeWarning': '儲存失敗。最新進度仍在等待儲存，BoKemo 將自動重試。',
   'home.developerNews.betaReportBonusFix': '修復了在開放β測試環境中，向開發回報進度時獎勵無效的問題。',
   'setting.developerNews.discordCommunity': 'Official Discord Community (日本語・English)',
   'common.yes': '有',

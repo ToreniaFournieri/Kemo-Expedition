@@ -44,7 +44,9 @@ function getInitialDarkModeEnabled() {
 }
 
 export default function App() {
-  const { state, actions, bags, notifications, saveLoadWarning } = useGameState();
+  const { state, actions, bags, notifications, saveLoadWarning, saveWriteWarning } = useGameState();
+  const saveWriteWarningMessage = saveWriteWarning?.message;
+  const saveWriteErrorLog = saveWriteWarning?.errorLog;
   const [isLoading, setIsLoading] = useState(true);
   setLanguage(state.global.language);
   const [loadingMessage, setLoadingMessage] = useState(() => getRandomLoadingMessage());
@@ -124,6 +126,12 @@ export default function App() {
     if (!saveLoadWarning) return;
     window.alert(`${saveLoadWarning.message}\n\n${saveLoadWarning.errorLog}`);
   }, [saveLoadWarning]);
+
+  useEffect(() => {
+    // A failed write must remain pending for retry and be visible to the player.
+    if (!saveWriteWarningMessage || !saveWriteErrorLog) return;
+    window.alert(`${saveWriteWarningMessage}\n\n${saveWriteErrorLog}`);
+  }, [saveWriteWarningMessage, saveWriteErrorLog]);
 
   if (isLoading) {
     return (

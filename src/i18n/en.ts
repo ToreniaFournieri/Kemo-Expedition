@@ -19,6 +19,7 @@ const en = {
   'loading.mare': 'Mare pretends to be normal',
   'save.errorLog': 'Error log:',
   'save.loadWarning': 'Failed to load save data. Please screenshot this screen and report it to the developer.',
+  'save.writeWarning': 'Saving failed. Your latest progress is still pending and BoKemo will retry automatically.',
   'home.developerNews.betaReportBonusFix': 'Fixed an issue where the bonus for reporting progress to development was not active in the open beta environment.',
   'setting.developerNews.discordCommunity': 'Official Discord Community (日本語・English)',
   'common.yes': 'Yes',

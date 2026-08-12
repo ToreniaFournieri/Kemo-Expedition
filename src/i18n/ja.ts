@@ -19,6 +19,7 @@ const ja = {
   'loading.mare': 'マーレは普通のふりをする',
   'save.errorLog': 'エラーログ:',
   'save.loadWarning': 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください',
+  'save.writeWarning': '保存に失敗しました。最新の進捗は保留されており、冒ケモが自動的に再試行します。',
   'home.developerNews.betaReportBonusFix': '開発へ進捗を報告した際のボーナスがオープンβテスト環境では有効でない問題の修正。',
   'setting.developerNews.discordCommunity': 'Official Discord Community (日本語・English)',
   'common.yes': 'あり',

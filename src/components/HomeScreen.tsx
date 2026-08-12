@@ -240,7 +240,7 @@ interface HomeScreenProps {
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
     };
     resetGame: () => void;
-    importGameState: (state: GameState) => void;
+    importGameState: (state: GameState) => { state: GameState | null; errorLog: string | null };
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetCommonSuperRareBag: () => void;
@@ -556,6 +556,19 @@ interface PartyCycleRuntime {
   wasLowHpAtRestStart?: boolean;
 }
 
+interface PersistedRuntimeSnapshot {
+  schemaVersion: 1;
+  checkpointAt: number;
+  autoRepeatEnabled: boolean;
+  partyCycles: Record<number, PartyCycleRuntime>;
+  pendingAfkMs: number;
+  afkRecoveryTotalMs: number;
+  afkRecoveryCompletedMs: number;
+  afkSimulationAnchor: number | null;
+  afkSummaryBaseline: AfkSummaryStats[] | null;
+  shouldShowAfkSummary: boolean;
+}
+
 
 function rollPercentInclusive(min: number, max: number): number {
   return min + Math.random() * (max - min + Number.EPSILON);
@@ -577,6 +590,74 @@ const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
 const REDUCER_CATCHUP_THRESHOLD_MS = 15000;
+
+function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: number = Date.now()): PersistedRuntimeSnapshot | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const parsed = raw as Partial<PersistedRuntimeSnapshot>;
+  // Existing local runtime records predate the explicit schema marker.
+  if (typeof parsed.schemaVersion !== 'undefined' && parsed.schemaVersion !== 1) return null;
+
+  const normalizedPartyCount = Math.max(0, Math.min(6, Math.floor(partyCount)));
+  const partyCycles: Record<number, PartyCycleRuntime> = {};
+  if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
+    Object.entries(parsed.partyCycles).forEach(([key, value]) => {
+      const partyIndex = Number(key);
+      if (!Number.isInteger(partyIndex) || partyIndex < 0 || partyIndex >= normalizedPartyCount || !value || typeof value !== 'object') return;
+      const runtime = value as Partial<PartyCycleRuntime> & { elapsedMs?: number };
+      const rawStartedAt = Number.isFinite(runtime.stateStartedAt)
+        ? Number(runtime.stateStartedAt)
+        : now - Math.max(0, Number(runtime.elapsedMs) || 0);
+      partyCycles[partyIndex] = {
+        state: toPartyCycleState(runtime.state),
+        stateStartedAt: Math.max(now - AFK_MAX_ELAPSED_MS, Math.min(now, rawStartedAt)),
+        durationMs: Number.isFinite(runtime.durationMs)
+          ? Math.max(1, Math.min(AFK_MAX_ELAPSED_MS, Math.floor(Number(runtime.durationMs))))
+          : 1000,
+        restInitialTotalSteps: Number.isFinite(runtime.restInitialTotalSteps)
+          ? Math.max(1, Math.floor(Number(runtime.restInitialTotalSteps)))
+          : undefined,
+        sortieSourceState: runtime.sortieSourceState === 'rest'
+          || runtime.sortieSourceState === 'free_action'
+          || runtime.sortieSourceState === 'sleep'
+          || runtime.sortieSourceState === 'return'
+          ? runtime.sortieSourceState
+          : undefined,
+        sortieEmbezzlementGold: Number.isFinite(runtime.sortieEmbezzlementGold)
+          ? Math.max(0, Math.floor(Number(runtime.sortieEmbezzlementGold)))
+          : undefined,
+        isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
+        wasLowHpAtRestStart: runtime.wasLowHpAtRestStart === true,
+      };
+    });
+  }
+
+  const pendingAfkMs = Number.isFinite(parsed.pendingAfkMs)
+    ? Math.max(0, Math.min(AFK_MAX_ELAPSED_MS, Math.floor(Number(parsed.pendingAfkMs))))
+    : 0;
+  const recoveryTotal = Number.isFinite(parsed.afkRecoveryTotalMs)
+    ? Math.max(pendingAfkMs, Math.min(AFK_MAX_ELAPSED_MS, Math.floor(Number(parsed.afkRecoveryTotalMs))))
+    : pendingAfkMs;
+  const baseline = Array.isArray(parsed.afkSummaryBaseline)
+    ? parsed.afkSummaryBaseline.map(normalizeAfkSummaryStats).filter((value): value is AfkSummaryStats => value !== null).slice(0, normalizedPartyCount)
+    : null;
+
+  return {
+    schemaVersion: 1,
+    checkpointAt: Number.isFinite(parsed.checkpointAt) ? Math.max(now - AFK_MAX_ELAPSED_MS, Math.min(now, Number(parsed.checkpointAt))) : now,
+    autoRepeatEnabled: parsed.autoRepeatEnabled !== false,
+    partyCycles,
+    pendingAfkMs,
+    afkRecoveryTotalMs: recoveryTotal,
+    afkRecoveryCompletedMs: Number.isFinite(parsed.afkRecoveryCompletedMs)
+      ? Math.max(0, Math.min(recoveryTotal, Math.floor(Number(parsed.afkRecoveryCompletedMs))))
+      : Math.max(0, recoveryTotal - pendingAfkMs),
+    afkSimulationAnchor: Number.isFinite(parsed.afkSimulationAnchor)
+      ? Math.max(now - AFK_MAX_ELAPSED_MS, Math.min(now, Number(parsed.afkSimulationAnchor)))
+      : null,
+    afkSummaryBaseline: baseline && baseline.length > 0 ? baseline : null,
+    shouldShowAfkSummary: parsed.shouldShowAfkSummary !== false,
+  };
+}
 
 
 function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedSeconds: number; remainderMs: number } {
@@ -4692,77 +4773,29 @@ export function HomeScreen({
       const savedRuntime = localStorage.getItem(AFK_RUNTIME_STORAGE_KEY);
       if (!savedRuntime) return;
 
-      const parsed = JSON.parse(savedRuntime) as {
-        checkpointAt?: number;
-        autoRepeatEnabled?: boolean;
-        partyCycles?: Record<number, PartyCycleRuntime>;
-        pendingAfkMs?: number;
-        afkRecoveryTotalMs?: number;
-        afkRecoveryCompletedMs?: number;
-        afkSimulationAnchor?: number | null;
-        afkSummaryBaseline?: unknown;
-        shouldShowAfkSummary?: boolean;
-      };
+      const parsed = normalizeRuntimeSnapshot(JSON.parse(savedRuntime), latestPartiesRef.current.length);
+      if (!parsed) throw new Error('Invalid AFK runtime snapshot.');
 
-      const checkpointAt = typeof parsed.checkpointAt === 'number' ? parsed.checkpointAt : Date.now();
-      const elapsedMs = Math.max(0, Math.min(Date.now() - checkpointAt, AFK_MAX_ELAPSED_MS));
+      const elapsedMs = Math.max(0, Math.min(Date.now() - parsed.checkpointAt, AFK_MAX_ELAPSED_MS));
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
-      setAutoRepeatEnabled(parsed.autoRepeatEnabled !== false);
-      const restoredPendingAfkMs = typeof parsed.pendingAfkMs === 'number'
-        ? Math.max(0, Math.min(parsed.pendingAfkMs, AFK_MAX_ELAPSED_MS))
-        : 0;
+      setAutoRepeatEnabled(parsed.autoRepeatEnabled);
+      const restoredPendingAfkMs = parsed.pendingAfkMs;
       if (restoredPendingAfkMs > 0) {
         setPendingAfkMs(restoredPendingAfkMs);
         // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
         // Reset `state.reactivate` main-progress on refresh and resume counting from 0.
         afkRecoveryTotalMsRef.current = restoredPendingAfkMs;
         afkRecoveryCompletedMsRef.current = 0;
-        afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
-          ? parsed.afkSimulationAnchor
-          : Date.now();
-        const restoredSummaryBaseline = Array.isArray(parsed.afkSummaryBaseline)
-          ? parsed.afkSummaryBaseline.map(normalizeAfkSummaryStats)
-          : [];
-        afkSummaryBaselineRef.current = restoredSummaryBaseline.some((stats): stats is AfkSummaryStats => stats !== null)
+        afkSimulationAnchorRef.current = parsed.afkSimulationAnchor ?? Date.now();
+        const restoredSummaryBaseline = parsed.afkSummaryBaseline ?? [];
+        afkSummaryBaselineRef.current = restoredSummaryBaseline.length > 0
           ? latestPartiesRef.current.map((party, index) => restoredSummaryBaseline[index] ?? { ...party.expeditionStats })
           : latestPartiesRef.current.map((party) => ({ ...party.expeditionStats }));
-        shouldShowAfkSummaryRef.current = parsed.shouldShowAfkSummary !== false;
+        shouldShowAfkSummaryRef.current = parsed.shouldShowAfkSummary;
         shouldRebuildPartyCyclesAfterAfkRef.current = true;
       }
-      if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
-        const restoredCycles: Record<number, PartyCycleRuntime> = {};
-        Object.entries(parsed.partyCycles).forEach(([key, value]) => {
-          if (!value || typeof value !== 'object') return;
-          const runtime = value as Partial<PartyCycleRuntime> & { elapsedMs?: number };
-          const stateStartedAt = typeof runtime.stateStartedAt === 'number'
-            ? runtime.stateStartedAt
-            : Date.now() - Math.max(0, runtime.elapsedMs ?? 0);
-          restoredCycles[Number(key)] = {
-            state: toPartyCycleState(runtime.state),
-            stateStartedAt,
-            durationMs: typeof runtime.durationMs === 'number' ? runtime.durationMs : 1000,
-            restInitialTotalSteps:
-              typeof runtime.restInitialTotalSteps === 'number'
-              ? Math.max(1, Math.floor(runtime.restInitialTotalSteps))
-              : undefined,
-            sortieSourceState:
-              runtime.sortieSourceState === 'rest'
-              || runtime.sortieSourceState === 'free_action'
-              || runtime.sortieSourceState === 'sleep'
-              || runtime.sortieSourceState === 'return'
-                ? runtime.sortieSourceState
-                : undefined,
-            sortieEmbezzlementGold:
-              typeof runtime.sortieEmbezzlementGold === 'number'
-              ? Math.max(0, Math.floor(runtime.sortieEmbezzlementGold))
-              : undefined,
-            isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
-            wasLowHpAtRestStart: runtime.wasLowHpAtRestStart === true,
-          };
-        });
-        setPartyCycles(restoredCycles);
-      }
+      setPartyCycles(parsed.partyCycles);
     } catch (error) {
       console.error('Failed to restore AFK runtime state:', error);
     } finally {
@@ -5219,28 +5252,65 @@ export function HomeScreen({
     partyCyclesRef.current = partyCycles;
   }, [partyCycles]);
 
+  const getRuntimeSnapshot = useCallback((checkpointAt: number = Date.now()): PersistedRuntimeSnapshot => ({
+    schemaVersion: 1,
+    checkpointAt,
+    autoRepeatEnabled: autoRepeatEnabledRef.current,
+    partyCycles: partyCyclesRef.current,
+    pendingAfkMs: pendingAfkMsRef.current,
+    afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
+    afkRecoveryCompletedMs: Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMsRef.current),
+    afkSimulationAnchor: afkSimulationAnchorRef.current,
+    afkSummaryBaseline: afkSummaryBaselineRef.current,
+    shouldShowAfkSummary: shouldShowAfkSummaryRef.current,
+  }), []);
+
   const persistAfkRuntimeState = useCallback((checkpointAt: number = lastCheckpointAtRef.current) => {
     if (pendingAfkSimulationRef.current) return;
 
     try {
       localStorage.setItem(
         AFK_RUNTIME_STORAGE_KEY,
-        JSON.stringify({
-          checkpointAt,
-          autoRepeatEnabled: autoRepeatEnabledRef.current,
-          partyCycles: partyCyclesRef.current,
-          pendingAfkMs: pendingAfkMsRef.current,
-          afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
-          afkRecoveryCompletedMs: Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMsRef.current),
-          afkSimulationAnchor: afkSimulationAnchorRef.current,
-          afkSummaryBaseline: afkSummaryBaselineRef.current,
-          shouldShowAfkSummary: shouldShowAfkSummaryRef.current,
-        })
+        JSON.stringify(getRuntimeSnapshot(checkpointAt))
       );
     } catch (error) {
       console.error('Failed to persist AFK runtime state:', error);
     }
-  }, []);
+  }, [getRuntimeSnapshot]);
+
+  const handleImportGameState = useCallback((nextState: GameState, rawRuntimeSnapshot?: unknown) => {
+    const result = actions.importGameState(nextState);
+    if (!result.state) return result;
+
+    const importedRuntime = normalizeRuntimeSnapshot(rawRuntimeSnapshot, result.state.parties.length);
+    const now = Date.now();
+    const nextAutoRepeatEnabled = importedRuntime?.autoRepeatEnabled ?? true;
+    const nextCycles = importedRuntime?.partyCycles ?? {};
+    autoRepeatEnabledRef.current = nextAutoRepeatEnabled;
+    setIsAutoRepeatEnabled(nextAutoRepeatEnabled);
+    setPartyCycles(nextCycles);
+    partyCyclesRef.current = nextCycles;
+    pendingAfkSimulationRef.current = false;
+    const nextPendingAfkMs = importedRuntime?.pendingAfkMs ?? 0;
+    setPendingAfkMs(nextPendingAfkMs);
+    pendingAfkMsRef.current = nextPendingAfkMs;
+    afkRecoveryTotalMsRef.current = importedRuntime?.afkRecoveryTotalMs ?? 0;
+    afkRecoveryCompletedMsRef.current = importedRuntime?.afkRecoveryCompletedMs ?? 0;
+    afkSimulationAnchorRef.current = importedRuntime?.afkSimulationAnchor ?? null;
+    afkSummaryBaselineRef.current = importedRuntime?.afkSummaryBaseline ?? null;
+    shouldShowAfkSummaryRef.current = importedRuntime?.shouldShowAfkSummary ?? false;
+    shouldRebuildPartyCyclesAfterAfkRef.current = nextPendingAfkMs > 0;
+    lastCheckpointAtRef.current = importedRuntime?.checkpointAt ?? now;
+
+    const nextRuntimeSnapshot = importedRuntime ?? getRuntimeSnapshot(now);
+    try {
+      localStorage.setItem(AFK_RUNTIME_STORAGE_KEY, JSON.stringify(nextRuntimeSnapshot));
+    } catch (error) {
+      console.error('Failed to replace AFK runtime state during import:', error);
+      window.alert(`${t('save.writeWarning')}\n\n${error instanceof Error ? error.message : String(error)}`);
+    }
+    return result;
+  }, [actions, getRuntimeSnapshot]);
 
   useEffect(() => {
     persistAfkRuntimeState();
@@ -6278,7 +6348,8 @@ export function HomeScreen({
         gameState={state}
         deityDonations={state.global.deityDonations}
         onResetGame={handleResetGame}
-        onImportGameState={actions.importGameState}
+        onImportGameState={handleImportGameState}
+        getRuntimeSnapshot={getRuntimeSnapshot}
         onAddNotification={actions.addNotification}
         onGrantFeedbackReward={actions.grantFeedbackReward}
         onResetCommonBags={actions.resetCommonBags}
@@ -12633,6 +12704,7 @@ function SettingTab({
   deityDonations,
   onResetGame,
   onImportGameState,
+  getRuntimeSnapshot,
   onAddNotification,
   onGrantFeedbackReward,
   onResetCommonBags,
@@ -12664,7 +12736,8 @@ function SettingTab({
   gameState: GameState;
   deityDonations: Record<string, number>;
   onResetGame: () => void;
-  onImportGameState: (state: GameState) => void;
+  onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => { state: GameState | null; errorLog: string | null };
+  getRuntimeSnapshot: () => PersistedRuntimeSnapshot;
   onAddNotification: (
     message: string,
     style?: NotificationStyle,
@@ -12866,6 +12939,7 @@ function SettingTab({
         format: 'compressed-v1',
       },
       saveDataCompressed: encodePersistedState(JSON.stringify(serializeGameState(gameState))),
+      runtimeSnapshot: getRuntimeSnapshot(),
     };
     return new File([JSON.stringify(payload)], getBackupFileName('compressed'), { type: 'application/json' });
   };
@@ -13228,10 +13302,20 @@ function SettingTab({
           issues.push(t('setting.import.issue.envMismatch', { current: currentEnv, file: meta.env }));
         }
         if (meta?.format === 'compressed-v1') {
-          const canonicalImported = serializeGameState(hydrateGameState(saveData as GameState));
-          if (JSON.stringify(canonicalImported) !== JSON.stringify(saveData)) {
+          try {
+            const canonicalImported = serializeGameState(hydrateGameState(saveData as GameState));
+            if (JSON.stringify(canonicalImported) !== JSON.stringify(saveData)) {
+              issues.push(t('setting.import.issue.formatMismatch'));
+            }
+          } catch {
             issues.push(t('setting.import.issue.formatMismatch'));
           }
+        }
+        if ('runtimeSnapshot' in parsed && !normalizeRuntimeSnapshot(
+          (parsed as { runtimeSnapshot?: unknown }).runtimeSnapshot,
+          Array.isArray(saveData.parties) ? saveData.parties.length : 0,
+        )) {
+          issues.push(t('setting.import.issue.formatMismatch'));
         }
       }
 
@@ -13247,7 +13331,14 @@ function SettingTab({
       );
       if (!shouldImport) return;
 
-      onImportGameState(saveData as GameState);
+      const runtimeSnapshot = parsed && typeof parsed === 'object' && 'runtimeSnapshot' in parsed
+        ? (parsed as { runtimeSnapshot?: unknown }).runtimeSnapshot
+        : undefined;
+      const importResult = onImportGameState(saveData as GameState, runtimeSnapshot);
+      if (!importResult.state) {
+        window.alert(`${t('setting.import.invalidFormat')}\n\n${importResult.errorLog ?? ''}`);
+        return;
+      }
       onAddNotification(t('setting.import.imported'), 'normal', 'item', true);
     } catch (error) {
       console.error(error);

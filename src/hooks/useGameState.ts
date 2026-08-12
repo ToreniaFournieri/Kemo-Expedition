@@ -1081,9 +1081,9 @@ type LoadSavedStateResult = {
   errorLog: string | null;
 };
 
-function loadSavedState(): LoadSavedStateResult {
+function loadSavedState(encodedState?: string): LoadSavedStateResult {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = encodedState ?? localStorage.getItem(STORAGE_KEY);
     if (!saved) {
       return { state: null, errorLog: null };
     }
@@ -1371,13 +1371,16 @@ function loadSavedState(): LoadSavedStateResult {
   return { state: null, errorLog: null };
 }
 
-function saveState(state: GameState): void {
+type SaveStateResult = { ok: true } | { ok: false; errorLog: string };
+
+function saveState(state: GameState): SaveStateResult {
   try {
     const payload = JSON.stringify(serializeGameState(state));
     localStorage.setItem(STORAGE_KEY, encodePersistedState(payload));
-
+    return { ok: true };
   } catch (e) {
     console.error('Failed to save state:', e);
+    return { ok: false, errorLog: formatLoadErrorLog(e) };
   }
 }
 
@@ -5189,19 +5192,31 @@ export function useGameState() {
   }
   const [state, dispatch] = useReducer(gameReducer, initialStateRef.current.state);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
+  const [saveErrorLog, setSaveErrorLog] = useState<string | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSaveStateRef = useRef<GameState | null>(null);
   const lastSavedAtRef = useRef(0);
   const loadErrorLog = initialStateRef.current.loadErrorLog;
   const isSaveBlockedByLoadFailure = loadErrorLog !== null;
 
-  const flushPendingSave = useCallback(() => {
+  const flushPendingSave = useCallback(function flushPendingSaveAttempt() {
     // SpecRef: 5.1.4 | Save and load | Do not overwrite or save the current runtime state.
     if (isSaveBlockedByLoadFailure) return;
     if (!pendingSaveStateRef.current) return;
-    saveState(pendingSaveStateRef.current);
+    const result = saveState(pendingSaveStateRef.current);
+    if (!result.ok) {
+      setSaveErrorLog(result.errorLog);
+      if (!saveTimeoutRef.current) {
+        saveTimeoutRef.current = setTimeout(() => {
+          saveTimeoutRef.current = null;
+          flushPendingSaveAttempt();
+        }, STATE_SAVE_THROTTLE_MS);
+      }
+      return;
+    }
     pendingSaveStateRef.current = null;
     lastSavedAtRef.current = Date.now();
+    setSaveErrorLog(null);
   }, [isSaveBlockedByLoadFailure]);
 
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
@@ -5519,8 +5534,22 @@ export function useGameState() {
       dispatch({ type: 'RESET_GAME' });
     }, []),
 
-    importGameState: useCallback((nextState: GameState) => {
-      dispatch({ type: 'IMPORT_GAME_STATE', state: nextState });
+    importGameState: useCallback((nextState: GameState): LoadSavedStateResult => {
+      try {
+        const imported = loadSavedState(encodePersistedState(JSON.stringify(nextState)));
+        if (!imported.state) return imported;
+        const normalizedState = gameReducer(imported.state, { type: 'IMPORT_GAME_STATE', state: imported.state });
+        const persisted = saveState(normalizedState);
+        if (!persisted.ok) {
+          setSaveErrorLog(persisted.errorLog);
+          return { state: null, errorLog: persisted.errorLog };
+        }
+        dispatch({ type: 'COMMIT_API_STATE', state: normalizedState });
+        setSaveErrorLog(null);
+        return { state: normalizedState, errorLog: null };
+      } catch (error) {
+        return { state: null, errorLog: formatLoadErrorLog(error) };
+      }
     }, []),
 
     resetCommonBags: useCallback((partyIndex?: number) => {
@@ -5568,6 +5597,12 @@ export function useGameState() {
       ? {
           message: t(SAVE_LOAD_WARNING_KEY),
           errorLog: loadErrorLog,
+        }
+      : null,
+    saveWriteWarning: saveErrorLog
+      ? {
+          message: t('save.writeWarning'),
+          errorLog: saveErrorLog,
         }
       : null,
   };

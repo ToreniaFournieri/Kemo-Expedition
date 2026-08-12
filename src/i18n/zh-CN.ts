@@ -19,6 +19,7 @@ const zhCN = {
 'loading.mare': '玛蕾假装普通的样子',
 'save.errorLog': '错误日志：',
 'save.loadWarning': '加载失败。请截取此屏幕画面并向开发者报告。',
+'save.writeWarning': '保存失败。最新进度仍在等待保存，BoKemo 将自动重试。',
 'home.developerNews.betaReportBonusFix': '修复了在开放β测试环境中，向开发报告进度时奖励无效的问题。',
 'setting.developerNews.discordCommunity': '冒兽交流群(Telegram Community) (中文)',
 'common.yes': '有',
