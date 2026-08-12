@@ -225,7 +225,7 @@ const ja = {
   'diary.settings.bossRareNotification': 'ボスレア通知',
   'diary.settings.godsBattleNotification': '神魔戦通知',
   'diary.settings.mythicRareNotification': '神魔レア通知',
-  'diary.settings.defeatNotification': '敗北通知',
+  'diary.settings.defeatNotification': '一般通知',
   'diary.settings.sideQuestNotification': 'サイドクエスト獲得通知',
   'diary.empty': '記録された日誌はありません',
   'diary.specialRewards': '特別獲得',

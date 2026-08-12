@@ -224,7 +224,7 @@ const en = {
   'diary.settings.bossRareNotification': 'Boss Rare notifications',
   'diary.settings.godsBattleNotification': 'Gods Battle notifications',
   'diary.settings.mythicRareNotification': 'Mythic Rare notifications',
-  'diary.settings.defeatNotification': 'Defeat notifications',
+  'diary.settings.defeatNotification': 'General notifications',
   'diary.settings.sideQuestNotification': 'Side Quest reward notifications',
   'diary.empty': 'No diary entries recorded',
   'diary.specialRewards': 'Special rewards',

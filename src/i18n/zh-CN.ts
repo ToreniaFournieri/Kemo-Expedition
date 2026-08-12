@@ -225,7 +225,7 @@ const zhCN = {
 'diary.settings.bossRareNotification': '首领稀有通知',
 'diary.settings.godsBattleNotification': '神魔战通知',
 'diary.settings.mythicRareNotification': '神魔稀有通知',
-'diary.settings.defeatNotification': '败北通知',
+'diary.settings.defeatNotification': '一般通知',
 'diary.settings.sideQuestNotification': '支线任务获得通知',
 'diary.empty': '没有记录的日志',
 'diary.specialRewards': '特别获得',

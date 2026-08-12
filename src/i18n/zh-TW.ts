@@ -225,7 +225,7 @@ const zhTW = {
   'diary.settings.bossRareNotification': '首領稀有通知',
   'diary.settings.godsBattleNotification': '神魔戰通知',
   'diary.settings.mythicRareNotification': '神魔稀有通知',
-  'diary.settings.defeatNotification': '敗北通知',
+  'diary.settings.defeatNotification': '一般通知',
   'diary.settings.sideQuestNotification': '支線任務獲得通知',
   'diary.empty': '沒有記錄的日誌',
   'diary.specialRewards': '特別獲得',
