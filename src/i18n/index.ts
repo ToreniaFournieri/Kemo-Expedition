@@ -3,6 +3,7 @@ import en from './en';
 import zhCN from './zh-CN';
 import zhTW from './zh-TW';
 import { createEnvironmentStorageKey } from '../game/environment';
+import { resolveSystemLanguage, selectInitialLanguage } from './languageDetection';
 
 export type Language = 'ja' | 'en' | 'zh-CN' | 'zh-TW';
 export type TranslationParams = Record<string, string | number>;
@@ -33,14 +34,23 @@ function getBrowserLanguageSources(): { urlLanguage: Language | null; savedLangu
   return { urlLanguage, savedLanguage };
 }
 
+function getSystemLanguage(): Language | null {
+  if (typeof navigator === 'undefined') return null;
+  const languages = Array.isArray(navigator.languages) ? [...navigator.languages] : [];
+  if (navigator.language && !languages.includes(navigator.language)) languages.push(navigator.language);
+  return resolveSystemLanguage(languages);
+}
+
+export { normalizeSystemLanguage, resolveSystemLanguage } from './languageDetection';
+
 function normalizeOptionalLanguage(value: unknown): Language | null {
   return value === 'en' || value === 'ja' || value === 'zh-CN' || value === 'zh-TW' ? value : null;
 }
 
 export function resolveInitialLanguage(): Language {
-  // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Language URL parameter
+  // SpecRef: 8.6 | UI_SETTING | Mode select (モード切替) initial language priority
   const { urlLanguage, savedLanguage } = getBrowserLanguageSources();
-  return urlLanguage ?? savedLanguage ?? DEFAULT_LANGUAGE;
+  return selectInitialLanguage(urlLanguage, savedLanguage, getSystemLanguage());
 }
 
 export function persistLanguage(language: Language): void {

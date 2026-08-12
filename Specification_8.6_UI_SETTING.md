@@ -287,8 +287,18 @@ HP: 312                 タイプ: 神魔
 
 - Language (言語)
   - Options: 日本語 / English / 简体中文 / 繁體中文
-  - The language is determined by the lang URL parameter:
-    - Default → 日本語 
+  - Determine the initial language in this priority order:
+    1. A supported `lang` URL parameter.
+    2. The player's previously persisted language selection.
+    3. For a new player with no persisted language selection, the first supported language in the system/browser language preference list.
+    4. Japanese when system/browser language information is unavailable or none of the reported languages is supported.
+  - Normalize supported system/browser language tags case-insensitively, including regional subtags:
+    - `ja` and `ja-*` → 日本語
+    - `en` and `en-*` → English
+    - `zh-CN`, `zh-SG`, `zh-Hans`, and equivalent Simplified Chinese tags → 简体中文
+    - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`, and equivalent Traditional Chinese tags → 繁體中文
+    - A generic `zh` tag without a script or region → 简体中文
+  - The `lang` URL parameter accepts:
     - `lang=ja` → 日本語
     - `lang=en` → English
     - `lang=zh-CN` (or `lang=zh`) → 简体中文 
