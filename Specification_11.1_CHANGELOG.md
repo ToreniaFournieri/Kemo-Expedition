@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 20 | 2026/08/13 | Replace symbolic enemy drop selectors in Spec 4.2.2 with explicit numeric `x.item_ids` references while preserving item order and duplicate entries. |
 | 0.9.2 | 19 | 2026/08/13 | Sort the item master data by ascending `x.item_id`. |
 | 0.9.2 | 18 | 2026/08/13 | Add explicit item IDs to the regular and Mythic item master tables, restore all specification items to the runtime catalog, preserve every existing runtime item ID across catalog repair, retain exact Elite source variants in stats and drop resolution, and generate every Boss variant within repeated categories. |
 | 0.9.2 | 17 | 2026/08/12 | Harden save persistence by retaining and retrying failed writes with a visible warning, including schema-validated party-cycle and AFK runtime state in backups, routing imports through the startup migration pipeline, and replacing or safely re-anchoring runtime state during import. |
