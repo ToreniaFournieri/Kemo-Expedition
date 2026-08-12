@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 24 | 2026/08/13 | Implement the floor-specific Clear-Gate streak requirements in runtime: 9, 8, 7, 6, and 5 successful runs for Elite gates 1 through 5, and 4 for the Boss gate, including gate checks, permanent unlock progression, localized UI summaries, and Experimental AI API observations. |
 | 0.9.2 | 23 | 2026/08/13 | Align the Specification 4.2 Japanese names for enemies 312 and 358 with their localized runtime names, `ミント` and `ミュラ`. |
 | 0.9.2 | 22 | 2026/08/13 | Replace symbolic and category-derived enemy drop resolution with exact ordered numeric `x.item_ids`, including direct Divine drops, duplicate reward rolls, complete specification-parity validation, and removal of runtime fallback selection. |
 | 0.9.2 | 21 | 2026/08/13 | Export the complete runtime enemy list and resolved numeric item-drop IDs to JSON and CSV files in `temp/`. |

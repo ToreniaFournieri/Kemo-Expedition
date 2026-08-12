@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { Item, Party } from '../src/types/index.ts';
 import {
-  CLEAR_GATE_REQUIRED,
+  BOSS_GATE_REQUIRED,
+  ELITE_GATE_REQUIREMENTS,
   addRecoveredBossRaresToGodsBattleProgress,
   applyClearGateOutcome,
   getBossGateKey,
   getClearGateProgress,
+  getClearGateRequired,
   getEliteGateKey,
   getGodsBattleProgress,
   isClearGateUnlocked,
@@ -24,11 +26,19 @@ function gateParty(overrides: Partial<GateParty> = {}): GateParty {
   };
 }
 
-test('eight consecutive successful returns unlock the next Clear-Gate permanently', () => {
+test('each Clear-Gate uses its floor-specific consecutive-success requirement', () => {
+  for (let floor = 1; floor <= 5; floor += 1) {
+    assert.equal(getClearGateRequired(getEliteGateKey(1, floor)), ELITE_GATE_REQUIREMENTS[floor]);
+  }
+  assert.equal(getClearGateRequired(getBossGateKey(1)), BOSS_GATE_REQUIRED);
+});
+
+test('nine consecutive successful returns unlock the first Clear-Gate permanently', () => {
   const gateKey = getEliteGateKey(1, 1);
+  const required = getClearGateRequired(gateKey);
   let party = gateParty();
 
-  for (let run = 1; run <= CLEAR_GATE_REQUIRED; run += 1) {
+  for (let run = 1; run <= required; run += 1) {
     const result = applyClearGateOutcome(party, 1, 'Turned_Back');
     party = { ...party, clearGateProgress: result.progress, clearGateStatus: result.status };
     assert.equal(getClearGateProgress(party, gateKey), run);
@@ -37,19 +47,20 @@ test('eight consecutive successful returns unlock the next Clear-Gate permanentl
   assert.equal(isClearGateUnlocked(party, gateKey), true);
   const failureAfterUnlock = applyClearGateOutcome(party, 1, 'Defeat');
   assert.equal(failureAfterUnlock.status[gateKey], true);
-  assert.equal(failureAfterUnlock.progress[String(gateKey)], CLEAR_GATE_REQUIRED);
+  assert.equal(failureAfterUnlock.progress[String(gateKey)], required);
 });
 
 test('a failed run resets only the active next-gate streak', () => {
   const firstGate = getEliteGateKey(1, 1);
   const secondGate = getEliteGateKey(1, 2);
+  const firstRequired = getClearGateRequired(firstGate);
   const party = gateParty({
-    clearGateProgress: { [String(firstGate)]: CLEAR_GATE_REQUIRED, [String(secondGate)]: 5 },
+    clearGateProgress: { [String(firstGate)]: firstRequired, [String(secondGate)]: 5 },
     clearGateStatus: { [firstGate]: true },
   });
 
   const result = applyClearGateOutcome(party, 1, 'Wounded_Retreat');
-  assert.equal(result.progress[String(firstGate)], CLEAR_GATE_REQUIRED);
+  assert.equal(result.progress[String(firstGate)], firstRequired);
   assert.equal(result.progress[String(secondGate)], 0);
   assert.equal(result.status[firstGate], true);
 });

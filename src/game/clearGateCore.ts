@@ -2,7 +2,14 @@ import type { Item, Party } from '../types/index.ts';
 
 export type ClearGateOutcome = 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat';
 
-export const CLEAR_GATE_REQUIRED = 8;
+export const ELITE_GATE_REQUIREMENTS: Readonly<Record<number, number>> = {
+  1: 9,
+  2: 8,
+  3: 7,
+  4: 6,
+  5: 5,
+};
+export const BOSS_GATE_REQUIRED = 4;
 
 const LEGACY_ELITE_GATE_REQUIREMENTS: Record<number, number> = {
   1: 2,
@@ -23,6 +30,13 @@ export function getEliteGateKey(dungeonId: number, floorNumber: number): number 
 
 export function getBossGateKey(dungeonId: number): number {
   return dungeonId * 1000 + 604;
+}
+
+export function getClearGateRequired(gateKey: number): number {
+  const gatePosition = gateKey % 1000;
+  if (gatePosition === 604) return BOSS_GATE_REQUIRED;
+  const floorNumber = Math.floor(gatePosition / 10);
+  return ELITE_GATE_REQUIREMENTS[floorNumber] ?? BOSS_GATE_REQUIRED;
 }
 
 export function getGodsBattleProgressKey(dungeonId: number): string {
@@ -47,7 +61,8 @@ export function isClearGateUnlocked(
   party: Pick<Party, 'clearGateStatus' | 'clearGateProgress'>,
   gateKey: number,
 ): boolean {
-  return Boolean(party.clearGateStatus?.[gateKey]) || getClearGateProgress(party, gateKey) >= CLEAR_GATE_REQUIRED;
+  return Boolean(party.clearGateStatus?.[gateKey])
+    || getClearGateProgress(party, gateKey) >= getClearGateRequired(gateKey);
 }
 
 export function getNextLockedClearGateKey(
@@ -75,10 +90,11 @@ export function applyClearGateOutcome(
   if (gateKey === null) return { progress, status, gateKey };
 
   const key = String(gateKey);
+  const required = getClearGateRequired(gateKey);
   if (outcome === 'Clear' || outcome === 'Turned_Back') {
-    const nextCount = Math.min(CLEAR_GATE_REQUIRED, getClearGateProgress(party, gateKey) + 1);
+    const nextCount = Math.min(required, getClearGateProgress(party, gateKey) + 1);
     progress[key] = nextCount;
-    if (nextCount >= CLEAR_GATE_REQUIRED) status[gateKey] = true;
+    if (nextCount >= required) status[gateKey] = true;
   } else {
     progress[key] = 0;
   }

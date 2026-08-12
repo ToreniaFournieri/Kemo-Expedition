@@ -2,8 +2,8 @@ import { Party } from '../types';
 import { t } from '../i18n';
 import { getDebugSettings } from './debugSettings';
 import {
-  CLEAR_GATE_REQUIRED,
   getBossGateKey,
+  getClearGateRequired,
   getClearGateProgress,
   getEliteGateKey,
   isClearGateUnlocked,
@@ -85,7 +85,7 @@ export function checkClearGateRequirement(params: {
 
   return {
     blocked: true,
-    required: CLEAR_GATE_REQUIRED,
+    required: getClearGateRequired(gateKey),
     current: getClearGateProgress(party, gateKey),
     label: t('home.gate.consecutiveSuccesses'),
   };

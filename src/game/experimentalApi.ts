@@ -9,8 +9,8 @@ import { getXpToNextLevel } from './partyLevel';
 import { getDifficultyOffsetMax } from './difficultyOffset';
 import { getDeityKey, DEITY_OPTIONS } from './deity';
 import {
-  CLEAR_GATE_REQUIRED,
   getBossGateKey,
+  getClearGateRequired,
   getClearGateProgress,
   getEliteGateKey,
   getGodsBattleProgress,
@@ -142,7 +142,7 @@ export function buildExperimentalObservation(
               id: String(gateKey),
               kind: 'clear',
               current: getClearGateProgress(party, gateKey),
-              required: CLEAR_GATE_REQUIRED,
+              required: getClearGateRequired(gateKey),
               satisfied: isClearGateUnlocked(party, gateKey),
               dungeonId: party.selectedDungeonId,
               floor,
@@ -155,7 +155,7 @@ export function buildExperimentalObservation(
               id: String(gateKey),
               kind: 'clear',
               current: getClearGateProgress(party, gateKey),
-              required: CLEAR_GATE_REQUIRED,
+              required: getClearGateRequired(gateKey),
               satisfied: isClearGateUnlocked(party, gateKey),
               dungeonId: party.selectedDungeonId,
               floor: 6,

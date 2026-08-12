@@ -59,11 +59,11 @@ import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developer
 import { buildExperimentalObservation, deityNameFromId, getDeityAssignmentConflict, getUnlockedDeityKeys, outcomeFromParty } from '../game/experimentalApi';
 import { buildExperimentalBattleLog, buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import {
-  CLEAR_GATE_REQUIRED,
   ENTRY_GATE_REQUIRED,
   getGodsBattleRequired,
   getGodsBattleProgress,
   getClearGateProgress,
+  getClearGateRequired,
   getEliteGateKey,
   getBossGateKey,
   hasDefeatedDungeonBoss,
@@ -1851,8 +1851,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   for (const floor of currentDungeon.floors) {
     const hasEliteGate = floor.floorNumber < 6;
     if (!hasEliteGate) continue;
-    const required = CLEAR_GATE_REQUIRED;
     const gateKey = getEliteGateKey(currentDungeon.id, floor.floorNumber);
+    const required = getClearGateRequired(gateKey);
     const current = getClearGateProgress(displayedParty, gateKey);
     const unlocked = isClearGateUnlocked(displayedParty, gateKey);
     if (!unlocked) {
@@ -1871,13 +1871,14 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   if (items.length === 0) {
     const bossGateKey = getBossGateKey(currentDungeon.id);
     if (!isClearGateUnlocked(displayedParty, bossGateKey)) {
+      const required = getClearGateRequired(bossGateKey);
       const current = getClearGateProgress(displayedParty, bossGateKey);
-      const normalizedCurrent = Math.max(0, Math.min(current, CLEAR_GATE_REQUIRED));
+      const normalizedCurrent = Math.max(0, Math.min(current, required));
       pushUniqueProgressItem({
         key: `boss-gate:${currentDungeon.id}`,
-        compactText: t('home.progress.bossClearCompact', { current: formatNumber(current), required: formatNumber(CLEAR_GATE_REQUIRED) }),
-        bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(current), required: formatNumber(CLEAR_GATE_REQUIRED) }),
-        progressRatio: normalizedCurrent / CLEAR_GATE_REQUIRED,
+        compactText: t('home.progress.bossClearCompact', { current: formatNumber(current), required: formatNumber(required) }),
+        bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(current), required: formatNumber(required) }),
+        progressRatio: normalizedCurrent / required,
       });
     }
   }
