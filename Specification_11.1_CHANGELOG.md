@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 16 | 2026/08/12 | Display the Diary Party subcategory tabs with their specified `PT1` through `PT6` labels while retaining the default and previously selected tab behavior. |
 | 0.9.2 | 15 | 2026/08/12 | Implement UI_DIARY unread badges with an aggregate red main-tab count capped at `99+`, red per-party counts capped at 24, and party-scoped read clearing when switching Party Diary tabs or leaving Diary. |
 | 0.9.2 | 14 | 2026/08/12 | Specify per-party numeric unread badges on Diary subcategory tabs, retain the aggregate main Diary badge, and mark only the departed Party Diary as read when switching party tabs or leaving Diary. |
 | 0.9.2 | 13 | 2026/08/12 | Implement the complete UI_DIARY General notifications setting with `Defeats only`, `Defeats and draws`, `Defeats, draws, and retreats`, `All`, and `None` modes; add distinct Diary records for wounded retreats and successful returns; preserve the specified default and existing save compatibility; and localize the runtime options and native notification titles in all supported languages. |

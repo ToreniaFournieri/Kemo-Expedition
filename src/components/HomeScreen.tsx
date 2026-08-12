@@ -11783,7 +11783,8 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
             index === selectedIndex ? 'bg-sub text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
           }`}
         >
-          {index + 1}
+          {/* SpecRef: 8.5 | UI_DIARY | The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. */}
+          {`PT${index + 1}`}
           {(() => {
             const unreadCount = party.diaryLogs.filter((log) => !log.isRead).length;
             if (unreadCount === 0) return null;
