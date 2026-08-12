@@ -1302,6 +1302,7 @@ const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold
 const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; labelKey: string }> = [
   { value: 'defeatOnly', labelKey: 'home.defeatNotification.defeatOnly' },
   { value: 'defeatAndDraw', labelKey: 'home.defeatNotification.defeatAndDraw' },
+  { value: 'defeatDrawRetreat', labelKey: 'home.defeatNotification.defeatDrawRetreat' },
   { value: 'all', labelKey: 'home.defeatNotification.all' },
   { value: 'none', labelKey: 'common.none' },
 ];
@@ -11884,8 +11885,10 @@ function DiaryTab({
 
   const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
     if (triggers.includes('victory') && triggers.length === 1) return t('diary.title.victory');
+    if (triggers.includes('return') && triggers.length === 1) return t('diary.title.return');
     if (triggers.includes('defeat') && triggers.length === 1) return t('diary.title.defeat');
     if (triggers.includes('draw') && triggers.length === 1) return t('diary.title.draw');
+    if (triggers.includes('retreat') && triggers.length === 1) return t('diary.title.retreat');
     if (triggers.includes('unlock')) return t('diary.title.unlock');
     if (triggers.includes('sideQuest')) return t('diary.title.sideQuest');
     if (triggers.includes('godsBattle')) return t('diary.title.godsBattle');
@@ -11962,6 +11965,14 @@ function DiaryTab({
 
     if (triggers.includes('draw') && triggers.length === 1) {
       return t('diary.headline.draw', { party: partyName });
+    }
+
+    if (triggers.includes('retreat') && triggers.length === 1) {
+      return t('diary.headline.retreat', { party: partyName });
+    }
+
+    if (triggers.includes('return') && triggers.length === 1) {
+      return t('diary.headline.return', { party: partyName });
     }
 
     if (triggers.includes('victory') && triggers.length === 1) {

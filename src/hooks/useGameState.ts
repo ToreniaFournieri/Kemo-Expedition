@@ -752,7 +752,7 @@ function normalizeDiaryDefeatNotificationMode(
   value: unknown,
   legacyNotifyDefeat: unknown,
 ): DiaryDefeatNotificationMode {
-  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'all' || value === 'none') return value;
+  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'defeatDrawRetreat' || value === 'all' || value === 'none') return value;
   if (legacyNotifyDefeat === false) return 'none';
   return 'defeatOnly';
 }

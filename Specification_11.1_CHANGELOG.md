@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 13 | 2026/08/12 | Implement the complete UI_DIARY General notifications setting with `Defeats only`, `Defeats and draws`, `Defeats, draws, and retreats`, `All`, and `None` modes; add distinct Diary records for wounded retreats and successful returns; preserve the specified default and existing save compatibility; and localize the runtime options and native notification titles in all supported languages. |
 | 0.9.2 | 12 | 2026/08/12 | Select a new player's initial language from the first supported system/browser preference, preserving URL and saved-language priority and falling back to Japanese when detection is unavailable or unsupported. |
 | 0.9.2 | 11 | 2026/08/12 | Rename the Diary outcome setting from Defeat notifications to General notifications in every supported runtime language, retaining all four specified outcome modes, their default, and save compatibility. |
 | 0.9.2 | 10 | 2026/08/12 | Rename the Diary defeat-notification All option to explicitly list defeats, draws, and victories in every supported runtime language while preserving the compatible saved setting value. |
