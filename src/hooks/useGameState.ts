@@ -34,7 +34,7 @@ import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseu
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
-import { getGodMythicDropIds, getGodProfileForDungeon } from '../data/dropTables';
+import { getGodProfileForDungeon } from '../data/dropTables';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import { formatEnemyDefName } from '../game/enemyDisplay';
@@ -2113,7 +2113,7 @@ function createGodEnemy(
     };
   }
 
-  const godDropItemIds = getGodMythicDropIds(godProfile.name);
+  const godItemIds = godProfile.itemIds;
 
   const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, difficultyOffset);
 
@@ -2124,10 +2124,8 @@ function createGodEnemy(
       nameKey: undefined,
       enemyClass: godProfile.enemyClass,
       abilities: godProfile.abilities,
-      dropItemId: godDropItemIds[0],
+      itemIds: godItemIds,
       isGodEnemy: true,
-      godDropItemCategories: godProfile.dropItemCategories,
-      godDropItemIds,
     };
   }
 
@@ -2139,10 +2137,8 @@ function createGodEnemy(
     spawnTier: enemy.spawnTier,
     spawnPool: enemy.spawnPool,
     poolId: enemy.poolId,
-    dropItemId: godDropItemIds[0],
+    itemIds: godItemIds,
     isGodEnemy: true,
-    godDropItemCategories: godProfile.dropItemCategories,
-    godDropItemIds,
   };
 }
 
@@ -2360,10 +2356,7 @@ function resolveEnemyRewards(
   let hasSuperRareReward = false;
 
   const dropCandidates = getEnemyDropCandidates(enemy);
-  const fallbackItem = enemy.dropItemId ? getItemById(enemy.dropItemId) : undefined;
-  const baseDropItems = dropCandidates.length > 0
-    ? dropCandidates
-    : (fallbackItem ? [fallbackItem] : []);
+  const baseDropItems = dropCandidates;
 
   for (const baseItem of baseDropItems) {
     const baseRarity = getItemRarityById(baseItem.id);
@@ -3311,9 +3304,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             getEnemyDropCandidates(enemy).forEach((item) => {
               revealedItemCompendiumItemIds.add(item.id);
             });
-            if (enemy.dropItemId) {
-              revealedItemCompendiumItemIds.add(enemy.dropItemId);
-            }
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;

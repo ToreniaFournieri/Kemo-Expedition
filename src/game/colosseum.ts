@@ -188,6 +188,6 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings): EnemyDef 
     physicalDefenseAmplifier: multipliers.defenseAmplifier * (hasColossal ? 2 : 1),
     magicalDefenseAmplifier: multipliers.defenseAmplifier,
     experience: 0,
-    dropItemId: null,
+    itemIds: [],
   });
 }

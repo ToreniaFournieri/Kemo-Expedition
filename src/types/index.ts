@@ -525,11 +525,8 @@ export interface EnemyDef {
   physicalDefenseAmplifier: number;
   magicalDefenseAmplifier: number;
   experience: number;
-  dropItemId: number | null;
-  masterDropTokens?: string[];
+  itemIds: readonly number[];
   isGodEnemy?: boolean;
-  godDropItemCategories?: [ItemCategory, ItemCategory];
-  godDropItemIds?: [number, number];
   image_path?: string;
 }
 
