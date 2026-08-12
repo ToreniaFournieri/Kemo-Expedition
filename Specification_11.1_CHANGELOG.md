@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 18 | 2026/08/13 | Add explicit item IDs to the regular and Mythic item master tables, restore all specification items to the runtime catalog, preserve every existing runtime item ID across catalog repair, retain exact Elite source variants in stats and drop resolution, and generate every Boss variant within repeated categories. |
 | 0.9.2 | 17 | 2026/08/12 | Harden save persistence by retaining and retrying failed writes with a visible warning, including schema-validated party-cycle and AFK runtime state in backups, routing imports through the startup migration pipeline, and replacing or safely re-anchoring runtime state during import. |
 | 0.9.2 | 16 | 2026/08/12 | Display the Diary Party subcategory tabs with their specified `PT1` through `PT6` labels while retaining the default and previously selected tab behavior. |
 | 0.9.2 | 15 | 2026/08/12 | Implement UI_DIARY unread badges with an aggregate red main-tab count capped at `99+`, red per-party counts capped at 24, and party-scoped read clearing when switching Party Diary tabs or leaving Diary. |

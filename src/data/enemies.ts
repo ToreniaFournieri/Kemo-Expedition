@@ -1,7 +1,7 @@
 import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory, EnemyAbility, Bonus, MagicStyle } from '../types';
 import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemById, getItemsByTierAndRarity } from './items';
-import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
+import { getMasterItemEliteSource, MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from '../game/enemyPassiveAbilities';
 import { buildEnemyClassMasterStats } from './enemyClasses';
 import { t } from '../i18n';
@@ -445,7 +445,14 @@ function createEnemyFromTemplate(
 // ============================================================
 type MasterDropRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare';
 
-function parseMasterDropToken(token: string): { category: ItemCategory; rarity: MasterDropRarity; variantIndex?: number } | null {
+type ParsedMasterDrop = {
+  category: ItemCategory;
+  rarity: MasterDropRarity;
+  variantIndex?: number;
+  sourceCode?: 'A' | 'B' | 'C' | 'D';
+};
+
+function parseMasterDropToken(token: string): ParsedMasterDrop | null {
   const match = token.match(/i\.([a-z_]+)`?([A-Z]+)$/);
   if (!match) return null;
 
@@ -464,7 +471,12 @@ function parseMasterDropToken(token: string): { category: ItemCategory; rarity: 
     const variantIndex = sourceCode.length > 0
       ? Math.max(0, sourceCode.charCodeAt(0) - 'A'.charCodeAt(0))
       : 0;
-    return { category, rarity: 'eliteRare', variantIndex };
+    return {
+      category,
+      rarity: 'eliteRare',
+      variantIndex,
+      sourceCode: /^[A-D]$/.test(sourceCode) ? sourceCode as ParsedMasterDrop['sourceCode'] : undefined,
+    };
   }
 
   if (rarityCode.startsWith('B')) {
@@ -478,16 +490,29 @@ function parseMasterDropToken(token: string): { category: ItemCategory; rarity: 
   return null;
 }
 
+function selectMasterDropItem(tier: number, token: string, parsed: ParsedMasterDrop): ItemDef | undefined {
+  const pool = getItemsByTierAndRarity(tier, parsed.rarity)
+    .filter((item) => item.category === parsed.category);
+  if (pool.length === 0) return undefined;
+
+  if (parsed.rarity === 'eliteRare' && parsed.sourceCode) {
+    const exactSourceItem = pool.find((item) =>
+      getMasterItemEliteSource(tier, item.category, item.name) === parsed.sourceCode
+    );
+    if (exactSourceItem) return exactSourceItem;
+  }
+
+  const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
+  const isOutOfRangeEliteD = token.endsWith('ED') && variantIndex >= pool.length;
+  return isOutOfRangeEliteD ? pool[pool.length - 1] : (pool[variantIndex] ?? pool[0]);
+}
+
 function getDropItemIdFromMaster(tier: number, drops: string[]): number {
   for (const drop of drops) {
     const parsed = parseMasterDropToken(drop);
     if (!parsed) continue;
-    const pool = getItemsByTierAndRarity(tier, parsed.rarity).filter((item) => item.category === parsed.category);
-    if (pool.length > 0) {
-      const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
-      const isOutOfRangeOrcinianEliteD = drop.endsWith('ED') && variantIndex >= pool.length;
-      return (isOutOfRangeOrcinianEliteD ? pool[pool.length - 1] : (pool[variantIndex] ?? pool[0])).id;
-    }
+    const item = selectMasterDropItem(tier, drop, parsed);
+    if (item) return item.id;
   }
 
   const fallback = getItemsByTierAndRarity(tier, 'uncommon')[0];
@@ -750,14 +775,10 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   if (enemy.masterDropTokens && enemy.masterDropTokens.length > 0) {
     const exactDrops = enemy.masterDropTokens
       .map((token) => parseMasterDropToken(token))
-      .filter((parsed): parsed is { category: ItemCategory; rarity: MasterDropRarity; variantIndex?: number } => parsed !== null)
+      .filter((parsed): parsed is ParsedMasterDrop => parsed !== null)
       .map((parsed, index) => {
-        const pool = getItemsByTierAndRarity(enemy.spawnTier || getTierFromEnemy(enemy.id), parsed.rarity)
-          .filter((item) => item.category === parsed.category);
-        if (pool.length === 0) return undefined;
-        const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
-        const isOutOfRangeEliteD = enemy.masterDropTokens?.[index]?.endsWith('ED') && variantIndex >= pool.length;
-        return isOutOfRangeEliteD ? pool[pool.length - 1] : (pool[variantIndex] ?? pool[0]);
+        const token = enemy.masterDropTokens?.[index] ?? '';
+        return selectMasterDropItem(enemy.spawnTier || getTierFromEnemy(enemy.id), token, parsed);
       })
       .filter((item): item is ItemDef => item !== undefined);
 

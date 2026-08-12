@@ -1,6 +1,11 @@
 import { ItemDef, EnhancementTitle, SuperRareTitle, ItemCategory, ElementalOffense, Bonus } from '../types';
 import { GOD_MYTHIC_DROPS } from './dropTables';
-import { getMasterItemCategoriesByRarity, getMasterItemNames } from './masterSpecData';
+import {
+  getMasterItemCategoriesByRarity,
+  getMasterItemEliteSource,
+  getMasterItemId,
+  getMasterItemNames,
+} from './masterSpecData';
 
 const GOD_MYTHIC_DROP_TIER_BY_ID = new Map<number, number>();
 
@@ -111,7 +116,7 @@ export function getSuperRareBonuses(value: number): Bonus[] {
 // Item generation types
 // ============================================================
 type Rarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
-type EliteSource = 'A' | 'B' | 'C';
+type EliteSource = 'A' | 'B' | 'C' | 'D';
 
 type ItemVariantMod = {
   partyHP?: number;
@@ -718,46 +723,57 @@ function generateItems(): ItemDef[] {
     // Common items (12 per tier - one of each type)
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
-      const id = tier * 1000 + 100 + i + 1; // T1CC format: 1101-1112 for tier 1 common
-      const item = createItem(id, tier, 'common', template);
+      const name = getMasterItemNames(tier, 'common', template.category)[0];
+      if (!name) continue;
+      const id = getMasterItemId(tier, 'common', template.category, name);
+      const item = createItem(id, tier, 'common', template, 0, name);
       if (item) items.push(item);
     }
 
     // Uncommon items (24 per tier - two of each type)
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
+      const names = getMasterItemNames(tier, 'uncommon', template.category);
       // Variant 1
-      const id1 = tier * 1000 + 200 + i * 2 + 1; // T2CC format
-      const item1 = createItem(id1, tier, 'uncommon', template, 0);
-      if (item1) items.push(item1);
+      const name1 = names[0];
+      if (name1) {
+        const id1 = getMasterItemId(tier, 'uncommon', template.category, name1);
+        const item1 = createItem(id1, tier, 'uncommon', template, 0, name1);
+        if (item1) items.push(item1);
+      }
       // Variant 2
-      const id2 = tier * 1000 + 200 + i * 2 + 2;
-      const item2 = createItem(id2, tier, 'uncommon', template, 1);
-      if (item2) items.push(item2);
+      const name2 = names[1];
+      if (name2) {
+        const id2 = getMasterItemId(tier, 'uncommon', template.category, name2);
+        const item2 = createItem(id2, tier, 'uncommon', template, 1, name2);
+        if (item2) items.push(item2);
+      }
     }
 
     // Elite rare items (master-spec driven variants per category)
-    let eliteRareOffset = 1;
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
       const names = getMasterItemNames(tier, 'eliteRare', template.category);
       for (let variantIndex = 0; variantIndex < names.length; variantIndex++) {
-        const id = tier * 1000 + 300 + eliteRareOffset; // T3CC format
-        const eliteSource = (['A', 'B', 'C'][variantIndex] ?? 'C') as EliteSource;
-        const item = createItem(id, tier, 'eliteRare', template, variantIndex, undefined, eliteSource);
+        const name = names[variantIndex];
+        const id = getMasterItemId(tier, 'eliteRare', template.category, name);
+        const eliteSource = getMasterItemEliteSource(tier, template.category, name);
+        const item = createItem(id, tier, 'eliteRare', template, variantIndex, name, eliteSource);
         if (item) items.push(item);
-        eliteRareOffset += 1;
       }
     }
 
     // Boss rare items (master-spec driven categories per tier)
     const bossRareCategories = getMasterItemCategoriesByRarity(tier, 'bossRare');
-    bossRareCategories.forEach((category, index) => {
+    bossRareCategories.forEach((category) => {
       const template = ITEM_TEMPLATE_BY_CATEGORY[category];
       if (!template) return;
-      const id = tier * 1000 + 400 + index + 1; // T4CC format
-      const item = createItem(id, tier, 'bossRare', template);
-      if (item) items.push(item);
+      const names = getMasterItemNames(tier, 'bossRare', category);
+      names.forEach((name, variantIndex) => {
+        const id = getMasterItemId(tier, 'bossRare', category, name);
+        const item = createItem(id, tier, 'bossRare', template, variantIndex, name);
+        if (item) items.push(item);
+      });
     });
   }
 
