@@ -230,7 +230,7 @@ interface HomeScreenProps {
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
-    markAllDiaryLogsSeen: () => void;
+    markPartyDiaryLogsSeen: (partyIndex: number) => void;
     markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
@@ -6087,10 +6087,14 @@ export function HomeScreen({
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
     : activeTab === 'diary';
+  const selectedDiaryPartyIndexRef = useRef(0);
+  const handleSelectedDiaryPartyIndexChange = useCallback((partyIndex: number) => {
+    selectedDiaryPartyIndexRef.current = partyIndex;
+  }, []);
   const prevDiaryTabVisibleRef = useRef(isDiaryTabVisible);
   useEffect(() => {
     if (prevDiaryTabVisibleRef.current && !isDiaryTabVisible) {
-      actions.markAllDiaryLogsSeen();
+      actions.markPartyDiaryLogsSeen(selectedDiaryPartyIndexRef.current);
     }
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
   }, [isDiaryTabVisible, actions]);
@@ -6144,7 +6148,7 @@ export function HomeScreen({
     count + party.diaryLogs.filter((log) => !log.isRead).length
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
-  const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
+  const unreadDiaryBadgeLabel = unreadDiaryCount >= 99 ? '99+' : `${unreadDiaryCount}`;
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   const hasUnreadDeveloperNews = DEVELOPER_NEWS_ITEMS.some((item) => !(state.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const envLabel = getEnvLabel();
@@ -6255,6 +6259,8 @@ export function HomeScreen({
         <DiaryTab
           parties={state.parties}
           onOpenDiaryLog={actions.markDiaryLogSeen}
+          onMarkPartyDiaryLogsSeen={actions.markPartyDiaryLogsSeen}
+          onSelectedPartyIndexChange={handleSelectedDiaryPartyIndexChange}
           onUpdateDiarySettings={actions.updateDiarySettings}
           expandedLogs={diaryExpandedLogs}
           onSetExpandedLogs={setDiaryExpandedLogs}
@@ -6407,7 +6413,7 @@ export function HomeScreen({
               >
                 <span className="relative z-10">{tab.label}</span>
                 {tab.id === 'diary' && hasUnreadDiary && (
-                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
+                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] leading-none text-white">
                     {unreadDiaryBadgeLabel}
                   </span>
                 )}
@@ -11772,12 +11778,21 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
           aria-selected={index === selectedIndex}
           aria-label={t('diary.partyTabs.party', { number: index + 1 })}
           onClick={() => onSelect(index)}
-          className={`rounded-md px-2 py-1.5 text-sm font-semibold transition-colors ${
+          className={`relative rounded-md px-2 py-1.5 text-sm font-semibold transition-colors ${
             // SpecRef: 8.5 | UI_DIARY | The selected tab is highlighted using the sub-theme color.
             index === selectedIndex ? 'bg-sub text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
           }`}
         >
           {index + 1}
+          {(() => {
+            const unreadCount = party.diaryLogs.filter((log) => !log.isRead).length;
+            if (unreadCount === 0) return null;
+            return (
+              <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 py-0.5 text-[9px] leading-none text-white">
+                {Math.min(unreadCount, DIARY_LOG_RETENTION_LIMIT)}
+              </span>
+            );
+          })()}
         </button>
       ))}
     </div>
@@ -11787,6 +11802,8 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
 function DiaryTab({
   parties,
   onOpenDiaryLog,
+  onMarkPartyDiaryLogsSeen,
+  onSelectedPartyIndexChange,
   onUpdateDiarySettings,
   expandedLogs,
   onSetExpandedLogs,
@@ -11798,6 +11815,8 @@ function DiaryTab({
 }: {
   parties: Party[];
   onOpenDiaryLog: (logId: string) => void;
+  onMarkPartyDiaryLogsSeen: (partyIndex: number) => void;
+  onSelectedPartyIndexChange: (partyIndex: number) => void;
   onUpdateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
   expandedLogs: Record<string, boolean>;
   onSetExpandedLogs: Dispatch<SetStateAction<Record<string, boolean>>>;
@@ -11819,7 +11838,15 @@ function DiaryTab({
   useEffect(() => {
     if (selectedDiaryPartyIndex !== safeDiaryPartyIndex) setSelectedDiaryPartyIndex(safeDiaryPartyIndex);
     window.localStorage.setItem(diaryPartyStorageKey, String(safeDiaryPartyIndex));
-  }, [diaryPartyStorageKey, safeDiaryPartyIndex, selectedDiaryPartyIndex]);
+    onSelectedPartyIndexChange(safeDiaryPartyIndex);
+  }, [diaryPartyStorageKey, onSelectedPartyIndexChange, safeDiaryPartyIndex, selectedDiaryPartyIndex]);
+
+  const selectDiaryParty = (partyIndex: number) => {
+    if (partyIndex === safeDiaryPartyIndex) return;
+    onMarkPartyDiaryLogsSeen(safeDiaryPartyIndex);
+    onSelectedPartyIndexChange(partyIndex);
+    setSelectedDiaryPartyIndex(partyIndex);
+  };
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
     enemy: EnemyDef;
@@ -12169,7 +12196,7 @@ function DiaryTab({
             </div>
           </FloatingBubblePortal>
         )}
-        <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={(index) => setSelectedDiaryPartyIndex(index)} />
+        <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
         {renderDiarySettings()}
         <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">{t('diary.empty')}</div>
       </div>
@@ -12200,7 +12227,7 @@ function DiaryTab({
           </div>
         </FloatingBubblePortal>
       )}
-      <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={(index) => setSelectedDiaryPartyIndex(index)} />
+      <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');

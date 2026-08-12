@@ -1997,7 +1997,7 @@ type GameAction =
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
-  | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
+  | { type: 'MARK_PARTY_DIARY_LOGS_SEEN'; partyIndex: number }
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
@@ -4740,8 +4740,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'MARK_ALL_DIARY_LOGS_SEEN': {
-      const updatedParties = state.parties.map((party) => {
+    case 'MARK_PARTY_DIARY_LOGS_SEEN': {
+      const updatedParties = state.parties.map((party, partyIndex) => {
+        if (partyIndex !== action.partyIndex) return party;
         const nextDiaryLogs = party.diaryLogs.map((diaryLog) => ({
           ...diaryLog,
           isRead: true,
@@ -5458,8 +5459,8 @@ export function useGameState() {
       dispatch({ type: 'MARK_DIARY_LOG_SEEN', logId });
     }, []),
 
-    markAllDiaryLogsSeen: useCallback(() => {
-      dispatch({ type: 'MARK_ALL_DIARY_LOGS_SEEN' });
+    markPartyDiaryLogsSeen: useCallback((partyIndex: number) => {
+      dispatch({ type: 'MARK_PARTY_DIARY_LOGS_SEEN', partyIndex });
     }, []),
 
     markDeveloperNewsRead: useCallback((itemIds: string[]) => {
