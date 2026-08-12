@@ -1,14 +1,7 @@
 ## 8. UI
 
 ### 8.5 UI_DIARY
-- The Diary has six subcategory tabs: 1, 2, 3, 4, 5, 6. (Default selected tab: `1`, or the last selected tab if previously selected.)
-- Each tab corresponds to a Party:
-  - 1 = PT1
-  - 2 = PT2
-  - 3 = PT3
-  - 4 = PT4
-  - 5 = PT5
-  - 6 = PT6
+- The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. (Default selected tab: `PT1`, or the last selected tab if previously selected.)
 - A Party tab becomes visible only when the corresponding Party is unlocked.
 - The selected tab is highlighted using the sub-theme color.
 - If only one Party is unlocked, the subcategory tabs are hidden.
