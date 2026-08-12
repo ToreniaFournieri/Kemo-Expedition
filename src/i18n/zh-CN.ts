@@ -125,7 +125,7 @@ const zhCN = {
 'home.sideQuestThreshold.rank7Plus': '7金晶以上',
 'home.sideQuestThreshold.rank8Only': '仅8王晶',
 'home.defeatNotification.defeatOnly': '仅败北',
-'home.defeatNotification.all': '全部',
+'home.defeatNotification.all': '败北、平局与胜利',
 'home.defeatNotification.defeatAndDraw': '败北与平局',
 'home.floorConcept.fallback': '{floor}层',
 'home.depth.untilFloor': '至{marker}{concept}',

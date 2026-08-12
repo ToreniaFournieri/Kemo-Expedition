@@ -125,7 +125,7 @@ const ja = {
   'home.sideQuestThreshold.rank7Plus': '7金晶以上',
   'home.sideQuestThreshold.rank8Only': '8王晶のみ',
   'home.defeatNotification.defeatOnly': '敗北のみ',
-  'home.defeatNotification.all': '全て',
+  'home.defeatNotification.all': '敗北と引分と勝利',
   'home.defeatNotification.defeatAndDraw': '敗北と引分',
   'home.floorConcept.fallback': '{floor}階層',
   'home.depth.untilFloor': '{marker} {concept}まで',

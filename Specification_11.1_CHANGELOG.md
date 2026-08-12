@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 10 | 2026/08/12 | Rename the Diary defeat-notification All option to explicitly list defeats, draws, and victories in every supported runtime language while preserving the compatible saved setting value. |
 | 0.9.2 | 9 | 2026/08/12 | Hide the Party subcategory tab strip when only one party is unlocked while preserving its reserved layout area, and remove the hidden control from pointer and keyboard interaction. |
 | 0.9.2 | 8 | 2026/08/12 | Highlight the selected Diary party tab with the active sub-theme color and hide the Diary subcategory tab strip when only one party is unlocked. |
 | 0.9.2 | 7 | 2026/08/12 | Give each unlocked party an independent, persistent numbered Diary tab with 24-entry retention, and expand defeat notifications with the specified All mode for victory, defeat, and draw records. |

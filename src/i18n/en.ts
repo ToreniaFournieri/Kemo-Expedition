@@ -125,7 +125,7 @@ const en = {
   'home.sideQuestThreshold.rank7Plus': '7 Gold Jewel or higher',
   'home.sideQuestThreshold.rank8Only': '8 Royal Jewel only',
   'home.defeatNotification.defeatOnly': 'Defeats only',
-  'home.defeatNotification.all': 'All outcomes',
+  'home.defeatNotification.all': 'Defeats, draws, and victories',
   'home.defeatNotification.defeatAndDraw': 'Defeats and draws',
   'home.floorConcept.fallback': 'Floor {floor}',
   'home.depth.untilFloor': 'Until {marker} {concept}',
