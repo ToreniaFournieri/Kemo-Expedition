@@ -1302,6 +1302,7 @@ const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold
 const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotificationMode; labelKey: string }> = [
   { value: 'defeatOnly', labelKey: 'home.defeatNotification.defeatOnly' },
   { value: 'defeatAndDraw', labelKey: 'home.defeatNotification.defeatAndDraw' },
+  { value: 'all', labelKey: 'home.defeatNotification.all' },
   { value: 'none', labelKey: 'common.none' },
 ];
 
@@ -11748,6 +11749,32 @@ function InventoryTab({
 
 // SpecRef: 8.5 | UI_DIARY | Diary
 // SpecRef: 8.5 | UI_DIARY | Setting.
+function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
+  parties: Party[];
+  selectedIndex: number;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <div className="grid grid-cols-6 gap-1 rounded-lg bg-pane p-1 shadow-md shadow-slate-900/10" role="tablist" aria-label={t('diary.partyTabs.label')}>
+      {parties.map((party, index) => (
+        <button
+          key={party.id}
+          type="button"
+          role="tab"
+          aria-selected={index === selectedIndex}
+          aria-label={t('diary.partyTabs.party', { number: index + 1 })}
+          onClick={() => onSelect(index)}
+          className={`rounded-md px-2 py-1.5 text-sm font-semibold transition-colors ${
+            index === selectedIndex ? 'bg-accent text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+          }`}
+        >
+          {index + 1}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function DiaryTab({
   parties,
   onOpenDiaryLog,
@@ -11771,6 +11798,19 @@ function DiaryTab({
   onSetIsSettingsExpanded: Dispatch<SetStateAction<boolean>>;
   isDarkModeEnabled: boolean;
 }) {
+  const availableParties = parties;
+  const diaryPartyStorageKey = `bokemo:${window.location.pathname}:selected-diary-party`;
+  const [selectedDiaryPartyIndex, setSelectedDiaryPartyIndex] = useState(() => {
+    const stored = Number.parseInt(window.localStorage.getItem(diaryPartyStorageKey) ?? '0', 10);
+    return Number.isInteger(stored) && stored >= 0 ? Math.min(stored, availableParties.length - 1) : 0;
+  });
+  const safeDiaryPartyIndex = Math.min(selectedDiaryPartyIndex, availableParties.length - 1);
+  const selectedDiaryParty = availableParties[safeDiaryPartyIndex];
+
+  useEffect(() => {
+    if (selectedDiaryPartyIndex !== safeDiaryPartyIndex) setSelectedDiaryPartyIndex(safeDiaryPartyIndex);
+    window.localStorage.setItem(diaryPartyStorageKey, String(safeDiaryPartyIndex));
+  }, [diaryPartyStorageKey, safeDiaryPartyIndex, selectedDiaryPartyIndex]);
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
     enemy: EnemyDef;
@@ -11829,17 +11869,13 @@ function DiaryTab({
     });
   };
 
-  const diaryLogs = parties
-    .flatMap((party) =>
-      (party.diaryLogs ?? []).map((diaryLog) => ({
-        partyName: party.name,
-        ...diaryLog,
-      }))
-    )
+  const diaryLogs = (selectedDiaryParty?.diaryLogs ?? [])
+    .map((diaryLog) => ({ partyName: selectedDiaryParty.name, ...diaryLog }))
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
   const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
+    if (triggers.includes('victory') && triggers.length === 1) return t('diary.title.victory');
     if (triggers.includes('defeat') && triggers.length === 1) return t('diary.title.defeat');
     if (triggers.includes('draw') && triggers.length === 1) return t('diary.title.draw');
     if (triggers.includes('unlock')) return t('diary.title.unlock');
@@ -11920,6 +11956,10 @@ function DiaryTab({
       return t('diary.headline.draw', { party: partyName });
     }
 
+    if (triggers.includes('victory') && triggers.length === 1) {
+      return t('diary.headline.victory', { party: partyName });
+    }
+
     if (triggers.includes('superRare') || triggers.includes('mythicRare') || triggers.includes('bossRare')) {
       const rewardNames = rewards
         .filter((item) => {
@@ -11984,7 +12024,9 @@ function DiaryTab({
 
       {isSettingsExpanded && (
         <div className="mt-3 space-y-3">
-          {parties.map((party, partyIndex) => {
+          {selectedDiaryParty && (() => {
+            const partyIndex = safeDiaryPartyIndex;
+            const party = selectedDiaryParty;
             const settings = party.diarySettings;
             return (
               <div key={party.id} className="rounded border border-gray-200 p-2.5">
@@ -12077,7 +12119,7 @@ function DiaryTab({
                 </div>
               </div>
             );
-          })}
+          })()}
         </div>
       )}
     </div>
@@ -12108,6 +12150,7 @@ function DiaryTab({
             </div>
           </FloatingBubblePortal>
         )}
+        <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={(index) => setSelectedDiaryPartyIndex(index)} />
         {renderDiarySettings()}
         <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">{t('diary.empty')}</div>
       </div>
@@ -12138,6 +12181,7 @@ function DiaryTab({
           </div>
         </FloatingBubblePortal>
       )}
+      <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={(index) => setSelectedDiaryPartyIndex(index)} />
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');

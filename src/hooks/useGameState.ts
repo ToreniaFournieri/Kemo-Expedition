@@ -88,7 +88,7 @@ import {
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
-import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
+import { DIARY_LOG_RETENTION_LIMIT, getDiaryOutcomeTrigger } from '../game/diary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopItemPrice,
@@ -338,30 +338,15 @@ function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialPartySlots: n
   return { unlockedPartySlots };
 }
 
-// SpecRef: 8.5 | UI_DIARY | It keeps 24 entries
+// SpecRef: 8.5 | UI_DIARY | Each Party has an independent 24-entry Diary.
 function enforceGlobalDiaryLogRetention(parties: Party[]): Party[] {
-  const allDiaryLogRefs = parties.flatMap((party, partyIndex) =>
-    (party.diaryLogs ?? []).map((log, logIndex) => ({
-      partyIndex,
-      logIndex,
-      createdAt: typeof log.createdAt === 'number' ? log.createdAt : 0,
-    }))
-  );
-
-  if (allDiaryLogRefs.length <= DIARY_LOG_RETENTION_LIMIT) {
-    return parties;
-  }
-
-  const keepKeys = new Set(
-    allDiaryLogRefs
-      .sort((a, b) => b.createdAt - a.createdAt || a.partyIndex - b.partyIndex || a.logIndex - b.logIndex)
-      .slice(0, DIARY_LOG_RETENTION_LIMIT)
-      .map(({ partyIndex, logIndex }) => `${partyIndex}:${logIndex}`)
-  );
-
-  return parties.map((party, partyIndex) => {
-    const nextDiaryLogs = (party.diaryLogs ?? []).filter((_, logIndex) => keepKeys.has(`${partyIndex}:${logIndex}`));
-    if (nextDiaryLogs.length === (party.diaryLogs ?? []).length) {
+  return parties.map((party) => {
+    const diaryLogs = party.diaryLogs ?? [];
+    const nextDiaryLogs = diaryLogs
+      .slice()
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, DIARY_LOG_RETENTION_LIMIT);
+    if (nextDiaryLogs.length === diaryLogs.length && nextDiaryLogs.every((log, index) => log === diaryLogs[index])) {
       return party;
     }
     return {
@@ -767,7 +752,7 @@ function normalizeDiaryDefeatNotificationMode(
   value: unknown,
   legacyNotifyDefeat: unknown,
 ): DiaryDefeatNotificationMode {
-  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'none') return value;
+  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'all' || value === 'none') return value;
   if (legacyNotifyDefeat === false) return 'none';
   return 'defeatOnly';
 }
@@ -3742,8 +3727,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const diaryTriggers: DiaryLog['triggers'] = [];
       // SpecRef: 8.5 | UI_DIARY | Setting.
-      if (finalOutcome === 'Defeat' && diarySettings.defeatNotificationMode !== 'none') diaryTriggers.push('defeat');
-      if (finalOutcome === 'Retreat' && endedWithDrawRetreat && diarySettings.defeatNotificationMode === 'defeatAndDraw') diaryTriggers.push('draw');
+      const outcomeTrigger = getDiaryOutcomeTrigger(finalOutcome, endedWithDrawRetreat, diarySettings.defeatNotificationMode);
+      if (outcomeTrigger) diaryTriggers.push(outcomeTrigger);
       // SpecRef: 8.5 | UI_DIARY | Setting.
       if (isGodsBattle && diarySettings.notifyGodsBattle) diaryTriggers.push('godsBattle');
 

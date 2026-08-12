@@ -407,8 +407,8 @@ export type ExpeditionDepthLimit =
   | 'beforeBoss'
   | 'all';
 
-export type DiaryTrigger = 'defeat' | 'draw' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
-export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'none';
+export type DiaryTrigger = 'victory' | 'defeat' | 'draw' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
+export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'all' | 'none';
 
 export interface DiaryLog {
   id: string;
