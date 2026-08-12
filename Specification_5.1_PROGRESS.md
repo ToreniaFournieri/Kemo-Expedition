@@ -224,20 +224,27 @@ PT3: 貯金額: 10G
   - If party.character.`a.cunning`, multiplier x1.2.
   - If party.character.`a.cunning`, multiplier x1.3.
 
-##### 5.1.3.1 "Loot-Gate" progression system
-- If the party fails to meet the entry requirements, the expedition ends before the Gate Room and they are returned to Home.
 
-| title | Gate `x.floor`,`x.room` | condition | text example |
-|----|----|----|----|
-| Entering | 1,1 | defeat the boss from previous expedition ( `x.expedition` -1 ), except for the first expedition. | ボス撃破 でヴァルンの樹林帯 開放 |
-| 1st Elite gate | 1,4 | correct 2 uncommon items from this `x.expedition` | アンコモンアイテム 0/2持ち帰りで 1F-4解放 |
-| 2nd Elite gate | 2,4 | correct 6 uncommon items from this `x.expedition`  | アンコモンアイテム 0/6持ち帰りで 2F-4解放 |
-| 3rd Elite gate | 3,4 | correct 12 uncommon items from this x.expedition` | アンコモンアイテム 0/12持ち帰りで 3F-4解放 | |
-| 4th Elite gate | 4,4 | correct 20 uncommon items from this `x.expedition`  | アンコモンアイテム 0/20持ち帰りで 4F-4解放 | |
-| 5th Elite gate | 5,4 | correct 30 uncommon items from this `x.expedition`  | アンコモンアイテム 0/30持ち帰りで 5F-4解放 | |
-| Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` | エリートレアアイテム 0/3持ち帰りで ボス戦解放 | |
-| Gods battle gate | - | Collect at least 3 Boss Rare items from dungeons, and defeat the dungeon boss at least once (lifetime, party-wide)) | If party has defeated the dungeon boss:"ボスレアアイテム 1/3 で神魔キョウエン戦", Else: "ボスを撃破せよ"|
-| Side quest gate | - | it depends on side quest `q.` condition | |
+##### 5.1.3.1 "Clear-Gate" progression system specification
+
+* Each progression gate requires **X consecutive successful runs** to unlock. (`Clear`, `Return` outcome)
+* If the party fails a run (`Draw`, `Retreat`, `Defeat`), the current consecutive-success count is reset to 0.
+
+**Examples**
+
+| title            | Gate `x.floor`,`x.room` | condition                                                                                           | text example         |
+| ---------------- | ----------------------- | --------------------------------------------------------------------------------------------------- | -------------------- |
+| Entering         | 1,1                     | Defeat the boss from the previous expedition (`x.expedition - 1`), except for the first expedition. | ボス撃破でヴァルンの樹林帯 開放     |
+| 1st Elite gate   | 1,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 1F-4解放 |
+| 2nd Elite gate   | 2,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 2F-4解放 |
+| 3rd Elite gate   | 3,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 3F-4解放 |
+| 4th Elite gate   | 4,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 4F-4解放 |
+| 5th Elite gate   | 5,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 5F-4解放 |
+| Boss gate        | 6,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で ボス戦解放  |
+| Gods battle gate | -                       | Defeat the dungeon boss at least once and satisfy the Gods Battle-specific condition.               | ボスを撃破せよ              |
+| Side quest gate  | -                       | Depends on the side quest `q.` condition. |             |
+
+
 
 ##### 5.1.3.2 Unlock party
 - Party unlock condition: Defeating corresponding boss.

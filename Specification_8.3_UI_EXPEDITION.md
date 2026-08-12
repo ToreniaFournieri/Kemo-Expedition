@@ -32,7 +32,7 @@ and {condition ≥ 230}
 
 - 固定 (Fixed)
   - The party remains at the player-selected Destination.
- - Manual Destination Selection
+- Manual Destination Selection
   - If the player manually selects an expedition from the Destination pull-down list:
   - The mode is automatically changed to 固定(Fixed).
 
