@@ -1,13 +1,24 @@
 ## 8. UI
 
 ### 8.5 UI_DIARY
+- The Diary has six subcategory tabs: 1, 2, 3, 4, 5, 6. (Default selected tab: `1`, or the last selected tab if previously selected.)
+- Each tab corresponds to a Party:
+  - 1 = PT1
+  - 2 = PT2
+  - 3 = PT3
+  - 4 = PT4
+  - 5 = PT5
+  - 6 = PT6
+- A Party tab becomes visible only when the corresponding Party is unlocked.
+- Each Party has its own independent Diary.
+- Each Party Diary keeps a maximum of 24 entries.
 - The diary is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
   - A Gods Battle occurs.
   - The party obtains a Super Rare item.
   - The party defeats an expedition boss for the first time and unlock a new party
-- It keeps 24 entries. First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
+- First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
 - Use the emulated in-game timestamp rather than the device or system timestamp.
 
@@ -20,7 +31,7 @@
 ボスレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
 神魔戦通知 (pull down list) あり/なし
 神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-敗北通知 敗北のみ/敗北と引分/なし (Default: 敗北のみ)
+敗北通知 敗北のみ/敗北と引分/全て/なし (Default: 敗北のみ)
 サイドクエスト獲得通知 全て, 2良晶以上, 3雅晶以上, 4煌晶以上, 5碧晶以上, 6紫晶以上, 7金晶以上, 8王晶のみ, なし (Default: 全て)
 ```
 
