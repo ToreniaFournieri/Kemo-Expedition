@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 23 | 2026/08/13 | Align the Specification 4.2 Japanese names for enemies 312 and 358 with their localized runtime names, `ミント` and `ミュラ`. |
 | 0.9.2 | 22 | 2026/08/13 | Replace symbolic and category-derived enemy drop resolution with exact ordered numeric `x.item_ids`, including direct Divine drops, duplicate reward rolls, complete specification-parity validation, and removal of runtime fallback selection. |
 | 0.9.2 | 21 | 2026/08/13 | Export the complete runtime enemy list and resolved numeric item-drop IDs to JSON and CSV files in `temp/`. |
 | 0.9.2 | 20 | 2026/08/13 | Replace symbolic enemy drop selectors in Spec 4.2.2 with explicit numeric `x.item_ids` references while preserving item order and duplicate entries. |

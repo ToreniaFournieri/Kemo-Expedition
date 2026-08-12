@@ -566,7 +566,7 @@
 | 309 | Elite | `Chiropteran` | class.ninja.sage | 6314, 6312, 6317, 6107, 6108, 6109 | セラフィー | `a.ranged-confusion`1 |
 | 310 | Normal | `Mech` | class.duelist.striker | 6207, 6201, 6215, 6104, 6105, 6106 | フィクシー | |
 | 311 | Normal | `Mech` | class.pilgrim.sage | 6203, 6221, 6221, 6101, 6102, 6103 | キャリパー | |
-| 312 | Normal | `Mech` | class.sword-saint.striker | 6211, 6207, 6215, 6104, 6105, 6106 | ミンティ | |
+| 312 | Normal | `Mech` | class.sword-saint.striker | 6211, 6207, 6215, 6104, 6105, 6106 | ミント | |
 | 313 | Elite | `Procyonian` | class.ranger.duelist | 6403, 6401, 6107, 6108, 6109 | クインシー | `c.growth_x1.5` |
 | 314 | Elite | `Procyonian` | class.samurai.ranger | 6408, 6407, 6104, 6105, 6106 | スキッパー | `c.growth_x1.5` |
 | 315 | BOSS | `Procyonian` | class.sage.lord | 6406, 6405, 6408, 6110, 6111, 6112 | セレスティアルリーパー | `a.soul-reap`3, `c.growth_x1.5` |
@@ -612,7 +612,7 @@
 | 355 | Normal | `Voidspawn` | class.guardian.guardian | 8201, 8211, 8201, 8101, 8102, 8103 | グレタ | |
 | 356 | Normal | `Voidspawn` | class.lord.lord | 8205, 8209, 8205, 8101, 8102, 8103 | ゼノア | |
 | 357 | Elite | `Voidspawn` | class.guardian.pilgrim | 8301, 8311, 8303, 8101, 8102, 8103 | ルッカ | |
-| 358 | Normal | `Voidspawn` | class.ninja.ninja | 8217, 8215, 8217, 8107, 8108, 8109 | ミュウラ | |
+| 358 | Normal | `Voidspawn` | class.ninja.ninja | 8217, 8215, 8217, 8107, 8108, 8109 | ミュラ | |
 | 359 | Normal | `Voidspawn` | class.sage.sage | 8221, 8223, 8221, 8110, 8111, 8112 | ラウラ | |
 | 360 | Normal | `Voidspawn` | class.samurai.samurai | 8209, 8205, 8209, 8104, 8105, 8106 | シグナ | |
 | 361 | Normal | `Ghost` | class.duelist.duelist | 8207, 8201, 8207, 8104, 8105, 8106 | エコア | |
