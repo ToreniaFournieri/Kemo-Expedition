@@ -24,7 +24,7 @@
 - Up to 6 parties can exist.
 - Locked parties are not displayed.
 - All unlocked parties are displayed normally and can be selected.
-- If only one Party is unlocked, the Party List is still visible (only one party shown).
+- If only one Party is unlocked, the Party subcategory tabs are hidden, but the reserved tab area remains unchanged.
 - The Party List becomes visible only when two or more parties are unlocked.
 
 **PT selection pane**

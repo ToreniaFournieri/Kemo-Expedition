@@ -7454,13 +7454,17 @@ function PartyTab({
         )}
         <div className="relative z-20">
       {parties.length >= 1 && (
-        // SpecRef: 8.2.1 | Displays | Party List
-        <div className="liquid-glass-segmented party-pt-segmented mb-4 flex gap-1 rounded-2xl p-1">
+        // SpecRef: 8.2.1 | Displays | Hide a single Party tab while preserving its reserved area.
+        <div
+          className={`liquid-glass-segmented party-pt-segmented mb-4 flex gap-1 rounded-2xl p-1 ${parties.length <= 1 ? 'invisible pointer-events-none' : ''}`}
+          aria-hidden={parties.length <= 1}
+        >
           {parties.map((partyEntry, partyIndex) => {
             const isSelected = partyIndex === selectedPartyIndex;
             return (
               <button
                 key={partyEntry.id}
+                tabIndex={parties.length <= 1 ? -1 : 0}
                 onClick={() => {
                   onSelectParty(partyIndex);
                   setEditingDeity(false);
