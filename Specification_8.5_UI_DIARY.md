@@ -13,13 +13,10 @@
 - The selected tab is highlighted using the sub-theme color.
 - If only one Party is unlocked, the subcategory tabs are hidden.
 - Diary unread badges:
-  - Every visible Party subcategory tab with unread entries displays a red numeric badge containing that Party Diary's unread-entry count. Display `10+` when the count is 11 or greater.
-  - The main `Diary` navigation tab continues to display a red numeric badge containing the total unread-entry count across all Party Diaries. Display `10+` when the total is 11 or greater.
-  - A newly created Diary entry is unread. Its Party-tab badge and the aggregate main-tab badge update immediately and the read/unread state persists in save data.
-  - Selecting or viewing a Party subcategory tab does not immediately mark its entries as read; its badge remains visible while that tab is selected.
-  - When the player leaves the currently selected Party subcategory tab, mark all entries currently retained in that Party Diary as read. Leaving occurs either by selecting another Party subcategory tab or by navigating away from the main `Diary` tab.
-  - Leaving one Party subcategory tab must not mark entries belonging to any other Party as read. Update both the departed Party's badge and the aggregate main-tab badge immediately; remove each badge when its unread count reaches zero.
-  - If only one Party is unlocked and the subcategory tab strip is hidden, navigating away from the main `Diary` tab counts as leaving that Party subcategory tab and marks that Party Diary as read.
+  - The main Diary tab displays a red unread badge, showing up to 99 unread entries. (Display `99+` when the count is 99 or greater.)
+  - Each Party subcategory tab also displays its own red unread badge, showing up to 24 unread entries for that Party.
+  - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
+  - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
 - Each Party has its own independent Diary.
 - Each Party Diary keeps a maximum of 24 entries.
 - The diary is updated when any of the following events occur:
