@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 6 | 2026/08/12 | Implement Clear-Gate runtime progression with eight consecutive successful normal expeditions, active-streak resets on failed outcomes, permanent gate unlocks, legacy Loot-Gate save migration, localized UI and battle-log updates, desktop party-pane summaries, and structured Experimental AI API `clearGates` output while preserving the separate Gods Battle Boss Rare condition. |
 | 0.9.2 | 5 | 2026/08/12 | Align all specifications with the Clear-Gate progression system by replacing normal item-collection gates with eight consecutive successful runs, defining outcome/reset behavior, and updating shared state, battle flow, UI, AI API, and Turned_Back flavor text terminology. |
 | 0.9.2 | 4 | 2026/08/11 | Normalize localized unlocked-deity names in the Experimental AI API, restore its deity catalog and no-faith option, expose current party assignments, and identify the occupying party in friendly deity-conflict errors. |
 | 0.9.2 | 3 | 2026/08/11 | Add the revision-guarded `run_auto_equipment` Experimental AI API command for immediate mode-aware automatic equipment across a whole party or one specified character. |

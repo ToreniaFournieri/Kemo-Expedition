@@ -73,20 +73,18 @@ import { LINEAGES } from '../data/lineages';
 import { BONUS_ABILITY_GLOSSARY_ENTRIES } from '../data/bonusAbilityGlossary';
 import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../data/glossary';
 import {
-  ELITE_GATE_REQUIREMENTS,
-  BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
-  getLootCollectionCount,
-  getLootCollectionKey,
+  getGodsBattleProgress,
+  getGodsBattleProgressKey,
   getEliteGateKey,
   getBossGateKey,
-  isLootGateUnlocked,
-  checkLootGateRequirement,
-  addRecoveredItemsToLootProgress,
+  isClearGateUnlocked,
+  checkClearGateRequirement,
+  addRecoveredBossRaresToGodsBattleProgress,
+  applyClearGateOutcome,
   hasDefeatedDungeonBoss,
   isDungeonEntryUnlocked,
-  unlockAvailableLootGates,
-} from '../game/lootGate';
+} from '../game/clearGate';
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
@@ -556,8 +554,8 @@ const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalys
 
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired()
+  // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Gods battle gate
+  return getGodsBattleProgress(party, dungeonId) >= getGodsBattleRequired()
     && hasDefeatedDungeonBoss(party, dungeonId);
 }
 
@@ -1251,8 +1249,6 @@ function loadSavedState(): LoadSavedStateResult {
           if (typeof party.level !== 'number') party.level = 1;
           if (typeof party.experience !== 'number') party.experience = 0;
           if (!party.defeatedBossExpeditions) party.defeatedBossExpeditions = {};
-          if (!party.lootGateStatus) party.lootGateStatus = {};
-          if (!party.lootGateProgress) party.lootGateProgress = {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.pendingDiaryLog === 'undefined') party.pendingDiaryLog = null;
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
@@ -1550,8 +1546,8 @@ function createInitialParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('Goddess of Restoration'),
     characters,
     selectedDungeonId: 1,
@@ -1610,8 +1606,8 @@ function createSecondParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('God of Cunning'),
     characters,
     selectedDungeonId: 1,
@@ -1670,8 +1666,8 @@ function createThirdParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('Goddess of Fertility'),
     characters,
     selectedDungeonId: 1,
@@ -1730,8 +1726,8 @@ function createFourthParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('God of Fortification'),
     characters,
     selectedDungeonId: 1,
@@ -1790,8 +1786,8 @@ function createFifthParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('God of Resonance'),
     characters,
     selectedDungeonId: 1,
@@ -1851,8 +1847,8 @@ function createSixthParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('Goddess of Precision'),
     characters,
     selectedDungeonId: 1,
@@ -2290,23 +2286,17 @@ function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDuratio
   return sideQuest.assignedAt + Math.floor(deadlineWindowMs * safeScale);
 }
 
-function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
+function hasActiveNonGodBattleClearGateCondition(party: Party): boolean {
   // SpecRef: 5.1.2 | Side Quest | Trigger Condition
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
 
-  const tier = currentDungeon.enemyPoolIds[0];
   for (const floor of currentDungeon.floors) {
     if (floor.floorNumber >= 6) continue;
-    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-    const collected = getLootCollectionCount(party, tier, 'uncommon');
-    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
-    if (!unlocked) return true;
+    if (!isClearGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber))) return true;
   }
 
-  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
-  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
-  if (!bossUnlocked) return true;
+  if (!isClearGateUnlocked(party, getBossGateKey(currentDungeon.id))) return true;
 
   const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
   if (!nextDungeon) return false;
@@ -3233,14 +3223,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const roomDef = floor.rooms[roomIndex];
             roomCounter++;
 
-            const tier = dungeon.enemyPoolIds[0]; // dungeon tier
-            // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gate `x.floor`,`x.room`
-            const gateCheck = checkLootGateRequirement({
+            // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Gate `x.floor`,`x.room`
+            const gateCheck = checkClearGateRequirement({
               dungeonId: dungeon.id,
               floorNumber: floor.floorNumber,
               roomInFloor: roomIndex + 1,
               roomType: roomDef.type,
-              tier,
               party: currentParty,
             });
             if (gateCheck.blocked) {
@@ -3266,10 +3254,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 maxPartyHP: partyStats.hp,
                 details: [],
                 gateInfo: roomDef.type === 'battle_Boss'
-                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required })
+                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required })
                   : roomIndex === 0
-                    ? t('game.log.gateInfo.dungeon', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required, dungeon: dungeon.name })
-                    : t('game.log.gateInfo.floor', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required, floor: floor.floorNumber }),
+                    ? t('game.log.gateInfo.dungeon', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required, dungeon: dungeon.name })
+                    : t('game.log.gateInfo.floor', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required, floor: floor.floorNumber }),
               };
               entries.push(gateEntry);
               finalOutcome = 'Escape';
@@ -3679,12 +3667,39 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalGold = isDefeat ? state.global.gold : (currentGold - finalAutoSellProfit);
       const finalAutoSellItems = isDefeat ? [] : totalAutoSellItems;
 
-      const nextLootGateProgressBase = isDefeat
-        ? currentParty.lootGateProgress
-        : addRecoveredItemsToLootProgress(currentParty.lootGateProgress ?? {}, recoveredItems);
-      const nextLootGateProgress = { ...(nextLootGateProgressBase ?? {}) };
+      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
+      const canonicalGateOutcome = finalOutcome === 'Clear'
+        ? 'Clear'
+        : finalOutcome === 'Escape'
+          ? 'Turned_Back'
+          : finalOutcome === 'Defeat'
+            ? 'Defeat'
+            : endedWithDrawRetreat
+              ? 'Draw_Retreat'
+              : 'Wounded_Retreat';
+      const progressWithGodsBattleItems = isDefeat
+        ? { ...(currentParty.clearGateProgress ?? {}) }
+        : addRecoveredBossRaresToGodsBattleProgress(
+            currentParty.clearGateProgress ?? {},
+            dungeon.id,
+            recoveredItems,
+          );
+      const clearGateOutcomeState = isGodsBattle
+        ? {
+            progress: progressWithGodsBattleItems,
+            status: { ...(currentParty.clearGateStatus ?? {}) },
+          }
+        : applyClearGateOutcome(
+            {
+              clearGateProgress: progressWithGodsBattleItems,
+              clearGateStatus: currentParty.clearGateStatus ?? {},
+            },
+            dungeon.id,
+            canonicalGateOutcome,
+          );
+      const nextClearGateProgress = { ...clearGateOutcomeState.progress };
       if (isGodsBattle && finalOutcome === 'Clear') {
-        nextLootGateProgress[getLootCollectionKey(dungeon.id, 'bossRare')] = 0;
+        nextClearGateProgress[getGodsBattleProgressKey(dungeon.id)] = 0;
       }
       const nextDefeatedBossExpeditions = {
         ...(currentParty.defeatedBossExpeditions ?? {}),
@@ -3692,12 +3707,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!isGodsBattle && finalOutcome === 'Clear') {
         nextDefeatedBossExpeditions[dungeon.id] = true;
       }
-      const nextLootGateStatus = unlockAvailableLootGates(
-        currentParty.lootGateStatus ?? {},
-        nextLootGateProgress,
-        nextDefeatedBossExpeditions,
-        DUNGEONS.length
-      );
+      const nextClearGateStatus = clearGateOutcomeState.status;
 
       const totalExpGain = Math.ceil(totalExp);
 
@@ -3730,7 +3740,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const hasMythicMatch = finalRewards.some((item) => getItemRarityCode(item) === 'mythicRare' && matchesDiaryThreshold(item, diarySettings.mythicThreshold));
       const hasRareMatch = finalRewards.some((item) => getItemRarityCode(item) === 'eliteRare' && matchesDiaryThreshold(item, diarySettings.rareThreshold));
 
-      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
       const diaryTriggers: DiaryLog['triggers'] = [];
       // SpecRef: 8.5 | UI_DIARY | Setting.
       if (finalOutcome === 'Defeat' && diarySettings.defeatNotificationMode !== 'none') diaryTriggers.push('defeat');
@@ -3777,14 +3786,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...currentParty,
         bags,
         expeditionRewardsPending: true,
-        pendingLootGateSnapshot: {
-          progress: { ...(currentParty.lootGateProgress ?? {}) },
-          status: { ...(currentParty.lootGateStatus ?? {}) },
+        pendingClearGateSnapshot: {
+          progress: { ...(currentParty.clearGateProgress ?? {}) },
+          status: { ...(currentParty.clearGateStatus ?? {}) },
           defeatedBossExpeditions: { ...(currentParty.defeatedBossExpeditions ?? {}) },
         },
         defeatedBossExpeditions: nextDefeatedBossExpeditions,
-        lootGateProgress: nextLootGateProgress,
-        lootGateStatus: nextLootGateStatus,
+        clearGateProgress: nextClearGateProgress,
+        clearGateStatus: nextClearGateStatus,
         lastExpeditionLog: log,
         pendingDiaryLog,
         currentHp: finalRemainingPartyHP,
@@ -3892,7 +3901,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         experience: nextExperience,
         condition: nextCondition,
         expeditionRewardsPending: false,
-        pendingLootGateSnapshot: null,
+        pendingClearGateSnapshot: null,
         pendingDiaryLog: null,
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
@@ -4888,7 +4897,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
           }
 
-          if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleLootGateCondition(postCycleParty)) {
+          if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleClearGateCondition(postCycleParty)) {
             workingState = gameReducer(workingState, {
               type: 'ROLL_SIDE_QUEST',
               partyIndex,

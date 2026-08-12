@@ -332,9 +332,9 @@ export interface Party {
   level: number;
   experience: number;
   defeatedBossExpeditions: Record<number, boolean>;
-  lootGateProgress: Record<string, number>;
-  lootGateStatus: Record<number, boolean>;
-  pendingLootGateSnapshot?: {
+  clearGateProgress: Record<string, number>;
+  clearGateStatus: Record<number, boolean>;
+  pendingClearGateSnapshot?: {
     progress: Record<string, number>;
     status: Record<number, boolean>;
     defeatedBossExpeditions: Record<number, boolean>;

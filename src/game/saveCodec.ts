@@ -2,6 +2,7 @@ import { getItemById } from '../data/items';
 import { getInstantExpeditionChargeState } from './instantExpedition';
 import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, Party, RandomBag, WeightedBagEntry } from '../types';
 import { normalizeLanguage } from '../i18n';
+import { migrateLegacyGateState } from './clearGateCore';
 
 type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel' | 'isLocked'>;
 type CompactBagEntry = [number, number];
@@ -124,6 +125,45 @@ function migrateObsoleteClassId(classId: string): ClassId {
   return classId as ClassId;
 }
 
+type LegacyPartyGateFields = {
+  lootGateProgress?: Record<string, number>;
+  lootGateStatus?: Record<number, boolean>;
+  pendingLootGateSnapshot?: {
+    progress: Record<string, number>;
+    status: Record<number, boolean>;
+    defeatedBossExpeditions: Record<number, boolean>;
+  } | null;
+};
+
+// SpecRef: 5.1.4 | Save and load | Loot-Gate to Clear-Gate migration
+function normalizePartyClearGates(party: Party): Party {
+  const legacyParty = party as Party & LegacyPartyGateFields;
+  const migrated = migrateLegacyGateState(legacyParty);
+  const legacyPending = legacyParty.pendingLootGateSnapshot;
+  const migratedPending = legacyPending
+    ? migrateLegacyGateState({
+        lootGateProgress: legacyPending.progress,
+        lootGateStatus: legacyPending.status,
+      })
+    : null;
+  const {
+    lootGateProgress: _lootGateProgress,
+    lootGateStatus: _lootGateStatus,
+    pendingLootGateSnapshot: _pendingLootGateSnapshot,
+    ...canonicalParty
+  } = legacyParty;
+  return {
+    ...canonicalParty,
+    clearGateProgress: migrated.progress,
+    clearGateStatus: migrated.status,
+    pendingClearGateSnapshot: party.pendingClearGateSnapshot ?? (legacyPending ? {
+      progress: migratedPending?.progress ?? {},
+      status: migratedPending?.status ?? {},
+      defeatedBossExpeditions: { ...(legacyPending.defeatedBossExpeditions ?? {}) },
+    } : null),
+  };
+}
+
 // SpecRef: 9 | Environment | serializeGameState
 export function serializeGameState(state: GameState): GameState {
   const compactInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
@@ -142,7 +182,7 @@ export function serializeGameState(state: GameState): GameState {
       inventory: compactInventory,
     },
     parties: state.parties.map((party) => {
-      const normalizedParty = normalizePartyInstantExpeditionCharge(party);
+      const normalizedParty = normalizePartyInstantExpeditionCharge(normalizePartyClearGates(party));
       const partyBags = normalizedParty.bags ?? state.bags;
       return {
         ...normalizedParty,
@@ -177,7 +217,7 @@ export function hydrateGameState(state: GameState): GameState {
       language: normalizeLanguage(state.global.language),
     },
     parties: state.parties.map((party) => {
-      const normalizedParty = normalizePartyInstantExpeditionCharge(party);
+      const normalizedParty = normalizePartyInstantExpeditionCharge(normalizePartyClearGates(party));
       const partyBags = normalizedParty.bags ?? state.bags;
       return {
         ...normalizedParty,

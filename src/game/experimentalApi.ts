@@ -8,7 +8,16 @@ import { computePartyStats } from './partyComputation';
 import { getXpToNextLevel } from './partyLevel';
 import { getDifficultyOffsetMax } from './difficultyOffset';
 import { getDeityKey, DEITY_OPTIONS } from './deity';
-import { isDungeonEntryUnlocked } from './lootGate';
+import {
+  CLEAR_GATE_REQUIRED,
+  getBossGateKey,
+  getClearGateProgress,
+  getEliteGateKey,
+  getGodsBattleProgress,
+  getGodsBattleRequired,
+  isClearGateUnlocked,
+  isDungeonEntryUnlocked,
+} from './clearGate';
 import { getEnvironmentId } from './environment';
 
 export type ExperimentalPartyCycle = {
@@ -111,7 +120,62 @@ export function buildExperimentalObservation(
   const parties = state.parties.slice().sort((a, b) => a.id - b.id).map((party, partyIndex) => {
     const computed = computePartyStats(party);
     const maximumHp = computed.partyStats.hp;
-    const maximumDifficultyOffset = getDifficultyOffsetMax(DUNGEONS.find((entry) => entry.id === party.selectedDungeonId)?.expLevel ?? 1);
+    const selectedDungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
+    const maximumDifficultyOffset = getDifficultyOffsetMax(selectedDungeon?.expLevel ?? 1);
+    const clearGates = selectedDungeon?.id === 99
+      ? []
+      : [
+          ...(party.selectedDungeonId > 1 ? [{
+            id: `entry:${party.selectedDungeonId}`,
+            kind: 'entering',
+            current: party.defeatedBossExpeditions[party.selectedDungeonId - 1] ? 1 : 0,
+            required: 1,
+            satisfied: isDungeonEntryUnlocked(party, party.selectedDungeonId),
+            dungeonId: party.selectedDungeonId,
+            floor: 1,
+            room: 1,
+          }] : []),
+          ...Array.from({ length: 5 }, (_, index) => {
+            const floor = index + 1;
+            const gateKey = getEliteGateKey(party.selectedDungeonId, floor);
+            return {
+              id: String(gateKey),
+              kind: 'clear',
+              current: getClearGateProgress(party, gateKey),
+              required: CLEAR_GATE_REQUIRED,
+              satisfied: isClearGateUnlocked(party, gateKey),
+              dungeonId: party.selectedDungeonId,
+              floor,
+              room: 4,
+            };
+          }),
+          (() => {
+            const gateKey = getBossGateKey(party.selectedDungeonId);
+            return {
+              id: String(gateKey),
+              kind: 'clear',
+              current: getClearGateProgress(party, gateKey),
+              required: CLEAR_GATE_REQUIRED,
+              satisfied: isClearGateUnlocked(party, gateKey),
+              dungeonId: party.selectedDungeonId,
+              floor: 6,
+              room: 4,
+            };
+          })(),
+          {
+            id: `godBattle:${party.selectedDungeonId}`,
+            kind: 'godBattle',
+            current: getGodsBattleProgress(party, party.selectedDungeonId),
+            required: getGodsBattleRequired(),
+            satisfied: Boolean(
+              party.defeatedBossExpeditions[party.selectedDungeonId]
+              && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
+            ),
+            dungeonId: party.selectedDungeonId,
+            floor: null,
+            room: null,
+          },
+        ];
     const assignableDeityIds = unlockedDeityKeys
       .filter((deityKey) => !getDeityAssignmentConflict(state.parties, party.id, deityKey))
       .map(deityId);
@@ -141,9 +205,14 @@ export function buildExperimentalObservation(
         instantExpeditionStock: party.instantExpeditionStock ?? 0,
         instantExpeditionChargeStartedAt: party.instantExpeditionChargeStartedAt ?? null,
         normalSortieAvailable: unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0,
-        godBattleAvailable: Boolean(party.defeatedBossExpeditions[party.selectedDungeonId] && (party.instantExpeditionStock ?? 0) > 0 && !autoRun),
+        godBattleAvailable: Boolean(
+          party.defeatedBossExpeditions[party.selectedDungeonId]
+          && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
+          && (party.instantExpeditionStock ?? 0) > 0
+          && !autoRun
+        ),
       },
-      lootGates: Object.entries(party.lootGateProgress).sort(([a], [b]) => a.localeCompare(b)).map(([id, current]) => ({ id, kind: id.includes('god') ? 'godBattle' : id.includes('side') ? 'sideQuest' : 'entering', current, required: 1, satisfied: Boolean(party.lootGateStatus[party.selectedDungeonId]), dungeonId: party.selectedDungeonId, floor: null, room: null })),
+      clearGates,
       sideQuest: party.sideQuest ? { ...party.sideQuest } : null,
       characters: party.characters.map((character, row) => {
         const stats = computed.characterStats[row];
@@ -168,7 +237,14 @@ export function buildExperimentalObservation(
         { type: 'set_expedition_difficulty', partyId: party.id, characterId: null, constraints: { minimum: 0, maximum: maximumDifficultyOffset, step: 2 } },
         ...(party.characters.flatMap((character) => character.equipment.flatMap((item, slotIndex) => item && (character.autoEquipmentMode ?? 0) === 2 ? [{ type: 'toggle_equipment_lock', partyId: party.id, characterId: character.id, constraints: { slotIndex } }] : []))),
         ...(unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0 ? [{ type: 'sortie', partyId: party.id, characterId: null, constraints: { minimumCount: 1, maximumCount: 100 } }] : []),
-        ...(party.defeatedBossExpeditions[party.selectedDungeonId] && (party.instantExpeditionStock ?? 0) > 0 && !autoRun ? [{ type: 'god_battle', partyId: party.id, characterId: null, constraints: {} }] : []),
+        ...(
+          party.defeatedBossExpeditions[party.selectedDungeonId]
+          && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
+          && (party.instantExpeditionStock ?? 0) > 0
+          && !autoRun
+            ? [{ type: 'god_battle', partyId: party.id, characterId: null, constraints: {} }]
+            : []
+        ),
       ],
     };
   });

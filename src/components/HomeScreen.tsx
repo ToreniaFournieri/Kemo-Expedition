@@ -59,17 +59,17 @@ import { DEVELOPER_NEWS_ITEMS, getDeveloperNewsContent } from '../data/developer
 import { buildExperimentalObservation, deityNameFromId, getDeityAssignmentConflict, getUnlockedDeityKeys, outcomeFromParty } from '../game/experimentalApi';
 import { buildExperimentalBattleLog, buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import {
-  ELITE_GATE_REQUIREMENTS,
+  CLEAR_GATE_REQUIRED,
   ENTRY_GATE_REQUIRED,
-  BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
+  getGodsBattleProgress,
+  getClearGateProgress,
   getEliteGateKey,
   getBossGateKey,
-  getLootCollectionCount,
   hasDefeatedDungeonBoss,
   isDungeonEntryUnlocked,
-  isLootGateUnlocked,
-} from '../game/lootGate';
+  isClearGateUnlocked,
+} from '../game/clearGate';
 
 function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -1749,17 +1749,16 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return [];
 
   // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
-  // Rewards affect loot gates only after the party has completed its return. Keep
+  // Clear-Gate outcomes become visible only after the party has completed its return. Keep
   // the compact indicator aligned with the gate text in the active expedition log.
-  const displayedParty = party.expeditionRewardsPending && party.pendingLootGateSnapshot
+  const displayedParty = party.expeditionRewardsPending && party.pendingClearGateSnapshot
     ? {
         ...party,
-        lootGateProgress: party.pendingLootGateSnapshot.progress,
-        lootGateStatus: party.pendingLootGateSnapshot.status,
-        defeatedBossExpeditions: party.pendingLootGateSnapshot.defeatedBossExpeditions,
+        clearGateProgress: party.pendingClearGateSnapshot.progress,
+        clearGateStatus: party.pendingClearGateSnapshot.status,
+        defeatedBossExpeditions: party.pendingClearGateSnapshot.defeatedBossExpeditions,
       }
     : party;
-  const tier = currentDungeon.enemyPoolIds[0];
   const items: ProgressItemDisplay[] = [];
   const pushUniqueProgressItem = (item: ProgressItemDisplay) => {
     if (items.some((existingItem) => existingItem.compactText === item.compactText)) return;
@@ -1769,19 +1768,34 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   for (const floor of currentDungeon.floors) {
     const hasEliteGate = floor.floorNumber < 6;
     if (!hasEliteGate) continue;
-    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-    const collected = getLootCollectionCount(displayedParty, tier, 'uncommon');
-    const unlocked = isLootGateUnlocked(displayedParty, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+    const required = CLEAR_GATE_REQUIRED;
+    const gateKey = getEliteGateKey(currentDungeon.id, floor.floorNumber);
+    const current = getClearGateProgress(displayedParty, gateKey);
+    const unlocked = isClearGateUnlocked(displayedParty, gateKey);
     if (!unlocked) {
       const safeRequired = Math.max(1, required);
-      const normalizedCollected = Math.max(0, Math.min(collected, safeRequired));
+      const normalizedCurrent = Math.max(0, Math.min(current, safeRequired));
       pushUniqueProgressItem({
         key: `elite-gate:${currentDungeon.id}:${floor.floorNumber}`,
-        compactText: t('home.progress.eliteCompact', { collected: formatNumber(collected), required: formatNumber(required), floor: floor.floorNumber }),
-        bubbleText: t('home.progress.eliteBubble', { collected: formatNumber(collected), required: formatNumber(required), floor: floor.floorNumber }),
-        progressRatio: normalizedCollected / safeRequired,
+        compactText: t('home.progress.eliteCompact', { current: formatNumber(current), required: formatNumber(required), floor: floor.floorNumber }),
+        bubbleText: t('home.progress.eliteBubble', { current: formatNumber(current), required: formatNumber(required), floor: floor.floorNumber }),
+        progressRatio: normalizedCurrent / safeRequired,
       });
       break;
+    }
+  }
+
+  if (items.length === 0) {
+    const bossGateKey = getBossGateKey(currentDungeon.id);
+    if (!isClearGateUnlocked(displayedParty, bossGateKey)) {
+      const current = getClearGateProgress(displayedParty, bossGateKey);
+      const normalizedCurrent = Math.max(0, Math.min(current, CLEAR_GATE_REQUIRED));
+      pushUniqueProgressItem({
+        key: `boss-gate:${currentDungeon.id}`,
+        compactText: t('home.progress.bossClearCompact', { current: formatNumber(current), required: formatNumber(CLEAR_GATE_REQUIRED) }),
+        bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(current), required: formatNumber(CLEAR_GATE_REQUIRED) }),
+        progressRatio: normalizedCurrent / CLEAR_GATE_REQUIRED,
+      });
     }
   }
 
@@ -1800,7 +1814,7 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     }
 
     const godsRequired = getGodsBattleRequired();
-    const bossRareCollected = getLootCollectionCount(displayedParty, currentDungeon.id, 'bossRare');
+    const bossRareCollected = getGodsBattleProgress(displayedParty, currentDungeon.id);
     const hasBossDefeat = hasDefeatedDungeonBoss(displayedParty, currentDungeon.id);
     const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
     if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
@@ -1831,8 +1845,8 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired()
+  // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Gods battle gate
+  return getGodsBattleProgress(party, dungeonId) >= getGodsBattleRequired()
     && hasDefeatedDungeonBoss(party, dungeonId);
 }
 
@@ -1876,23 +1890,17 @@ function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycleState)
 }
 
 
-function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
+function hasActiveNonGodBattleClearGateCondition(party: Party): boolean {
   // SpecRef: 5.1.2 | Side Quest | Trigger Condition
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
 
-  const tier = currentDungeon.enemyPoolIds[0];
   for (const floor of currentDungeon.floors) {
     if (floor.floorNumber >= 6) continue;
-    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-    const collected = getLootCollectionCount(party, tier, 'uncommon');
-    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
-    if (!unlocked) return true;
+    if (!isClearGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber))) return true;
   }
 
-  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
-  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
-  if (!bossUnlocked) return true;
+  if (!isClearGateUnlocked(party, getBossGateKey(currentDungeon.id))) return true;
 
   const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
   if (!nextDungeon) return false;
@@ -5557,7 +5565,7 @@ export function HomeScreen({
               updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === 'return') {
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
-              if (!party.sideQuest && !hasActiveNonGodBattleLootGateCondition(party)) {
+              if (!party.sideQuest && !hasActiveNonGodBattleClearGateCondition(party)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId, simulationNow);
               }
               actions.rollPartySleepiness(partyIndex);
