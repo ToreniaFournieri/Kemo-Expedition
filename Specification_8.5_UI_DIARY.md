@@ -10,6 +10,8 @@
   - 5 = PT5
   - 6 = PT6
 - A Party tab becomes visible only when the corresponding Party is unlocked.
+- The selected tab is highlighted using the sub-theme color.
+- If only one Party is unlocked, the subcategory tabs are hidden.
 - Each Party has its own independent Diary.
 - Each Party Diary keeps a maximum of 24 entries.
 - The diary is updated when any of the following events occur:
