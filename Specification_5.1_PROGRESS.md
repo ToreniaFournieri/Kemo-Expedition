@@ -238,12 +238,12 @@ PT3: 貯金額: 10G
 | title            | Gate `x.floor`,`x.room` | condition                                                                                           | text example         |
 | ---------------- | ----------------------- | --------------------------------------------------------------------------------------------------- | -------------------- |
 | Entering         | 1,1                     | Defeat the boss from the previous expedition (`x.expedition - 1`), except for the first expedition. | ボス撃破でヴァルンの樹林帯 開放     |
-| 1st Elite gate   | 1,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 1F-4解放 |
+| 1st Elite gate   | 1,4                     | Complete 9 consecutive successful runs | 連続攻略成功 0/9 で 1F-4解放 |
 | 2nd Elite gate   | 2,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 2F-4解放 |
-| 3rd Elite gate   | 3,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 3F-4解放 |
-| 4th Elite gate   | 4,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 4F-4解放 |
-| 5th Elite gate   | 5,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で 5F-4解放 |
-| Boss gate        | 6,4                     | Complete 8 consecutive successful runs | 連続攻略成功 0/8 で ボス戦解放  |
+| 3rd Elite gate   | 3,4                     | Complete 7 consecutive successful runs | 連続攻略成功 0/7 で 3F-4解放 |
+| 4th Elite gate   | 4,4                     | Complete 6 consecutive successful runs | 連続攻略成功 0/6 で 4F-4解放 |
+| 5th Elite gate   | 5,4                     | Complete 5 consecutive successful runs | 連続攻略成功 0/5 で 5F-4解放 |
+| Boss gate        | 6,4                     | Complete 4 consecutive successful runs | 連続攻略成功 0/4 で ボス戦解放  |
 | Gods battle gate | -                       | Defeat the dungeon boss at least once and satisfy the Gods Battle-specific condition.               | ボスを撃破せよ              |
 | Side quest gate  | -                       | Depends on the side quest `q.` condition. |             |
 
