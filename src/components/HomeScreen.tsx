@@ -11754,6 +11754,9 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
   selectedIndex: number;
   onSelect: (index: number) => void;
 }) {
+  // SpecRef: 8.5 | UI_DIARY | If only one Party is unlocked, the subcategory tabs are hidden.
+  if (parties.length <= 1) return null;
+
   return (
     <div className="grid grid-cols-6 gap-1 rounded-lg bg-pane p-1 shadow-md shadow-slate-900/10" role="tablist" aria-label={t('diary.partyTabs.label')}>
       {parties.map((party, index) => (
@@ -11765,7 +11768,8 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
           aria-label={t('diary.partyTabs.party', { number: index + 1 })}
           onClick={() => onSelect(index)}
           className={`rounded-md px-2 py-1.5 text-sm font-semibold transition-colors ${
-            index === selectedIndex ? 'bg-accent text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+            // SpecRef: 8.5 | UI_DIARY | The selected tab is highlighted using the sub-theme color.
+            index === selectedIndex ? 'bg-sub text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
           }`}
         >
           {index + 1}
