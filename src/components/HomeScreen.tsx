@@ -23,6 +23,7 @@ createAfkChunkPlan,
 createAfkSchedulerProfile,
 getAdaptiveAfkOperationCount,
 getAfkBatchBudgetMs,
+observeAfkRecoveryBacklog,
 recordAfkSchedulerBatch,
 type AfkSchedulerProfile,
 type PersistedAfkChunkCursor,
@@ -209,6 +210,7 @@ export function HomeScreen({
   const afkLastBatchCommittedAtRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
+  const hasObservedActiveAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
   const processedNativeDiaryIdsRef = useRef<Set<string> | null>(null);
   const nativeAfkRecoveryRef = useRef(false);
@@ -1675,6 +1677,9 @@ export function HomeScreen({
     setPartyCycles({});
     pendingAfkSimulationRef.current = false;
     setPendingAfkMs(0);
+    pendingAfkMsRef.current = 0;
+    hasObservedActiveAfkRecoveryRef.current = false;
+    shouldRebuildPartyCyclesAfterAfkRef.current = false;
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
     afkChunkCursorRef.current = null;
@@ -1758,6 +1763,7 @@ export function HomeScreen({
       setAutoRepeatEnabled(parsed.autoRepeatEnabled);
       const restoredPendingAfkMs = parsed.pendingAfkMs;
       if (restoredPendingAfkMs > 0) {
+        pendingAfkMsRef.current = restoredPendingAfkMs;
         setPendingAfkMs(restoredPendingAfkMs);
         afkSchedulerProfileRef.current = {
           ...createAfkSchedulerProfile(),
@@ -1787,6 +1793,15 @@ export function HomeScreen({
   }, [setAutoRepeatEnabled]);
 
   useEffect(() => {
+    // Hydration schedules the restored backlog for the next render. Preserve the
+    // synchronously restored ref (and active recovery profile) until that positive
+    // backlog has actually been observed by React.
+    if (
+      pendingAfkMs === 0
+      && pendingAfkMsRef.current > 0
+      && !hasObservedActiveAfkRecoveryRef.current
+    ) return;
+
     pendingAfkMsRef.current = pendingAfkMs;
     afkRecoveryCompletedMsRef.current = pendingAfkMs > 0
       ? Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMs)
@@ -2173,10 +2188,16 @@ export function HomeScreen({
   }, [actions, debugSettings, gameMode, pendingAfkMs, state]);
 
   useEffect(() => {
-    if (pendingAfkMs > 0) return;
+    const backlogObservation = observeAfkRecoveryBacklog(
+      pendingAfkMs,
+      hasObservedActiveAfkRecoveryRef.current,
+    );
+    hasObservedActiveAfkRecoveryRef.current = backlogObservation.hasObservedActiveRecovery;
+    if (!backlogObservation.didCompleteRecovery) return;
 
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
-      const now = Date.now();
+      const runtimeNow = Date.now();
+      const emulatedNow = afkSimulationAnchorRef.current ?? runtimeNow;
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
       const recoveredAfkMs = Math.max(0, afkRecoveryTotalMsRef.current);
       const partialCycleSideEffects: Array<{ partyIndex: number; shouldFinalizeDiary: boolean; simulatedAt: number }> = [];
@@ -2192,7 +2213,7 @@ export function HomeScreen({
         if (needsRest) {
           nextCycles[partyIndex] = {
             state: 'rest',
-            stateStartedAt: now,
+            stateStartedAt: runtimeNow,
             durationMs: getStateDurationMs(party, 'rest'),
             restInitialTotalSteps: getRestInitialTotalSteps(party.currentHp, partyStats.hp),
             isCurrentExpeditionGodsBattle: false,
@@ -2204,7 +2225,7 @@ export function HomeScreen({
         if (!autoRepeatEnabled) {
           nextCycles[partyIndex] = {
             state: 'idle',
-            stateStartedAt: now,
+            stateStartedAt: runtimeNow,
             durationMs: 1000,
             isCurrentExpeditionGodsBattle: false,
             wasLowHpAtRestStart: false,
@@ -2231,7 +2252,7 @@ export function HomeScreen({
         if (partialOnlineMs < moveDurationMs) {
           nextCycles[partyIndex] = {
             state: 'move',
-            stateStartedAt: now - partialOnlineMs,
+            stateStartedAt: runtimeNow - partialOnlineMs,
             durationMs: moveDurationMs,
             isCurrentExpeditionGodsBattle: false,
             wasLowHpAtRestStart: false,
@@ -2241,17 +2262,18 @@ export function HomeScreen({
 
         const exploreElapsedMs = partialOnlineMs - moveDurationMs;
         const shouldTriggerGodsBattle = shouldAutoTriggerGodsBattle(party);
-        const expeditionStartedAt = now - exploreElapsedMs;
+        const runtimeExpeditionStartedAt = runtimeNow - exploreElapsedMs;
+        const simulatedExpeditionStartedAt = emulatedNow - exploreElapsedMs;
         partialCycleSideEffects.push({
           partyIndex,
           shouldFinalizeDiary: exploreElapsedMs >= exploreDurationMs,
-          simulatedAt: expeditionStartedAt,
+          simulatedAt: simulatedExpeditionStartedAt,
         });
 
         if (exploreElapsedMs < exploreDurationMs) {
           nextCycles[partyIndex] = {
             state: 'explore',
-            stateStartedAt: now - exploreElapsedMs,
+            stateStartedAt: runtimeExpeditionStartedAt,
             durationMs: exploreDurationMs,
             isCurrentExpeditionGodsBattle: shouldTriggerGodsBattle,
             wasLowHpAtRestStart: false,
@@ -2262,7 +2284,7 @@ export function HomeScreen({
         const returnElapsedMs = Math.min(returnDurationMs - 1, exploreElapsedMs - exploreDurationMs);
         nextCycles[partyIndex] = {
           state: 'return',
-          stateStartedAt: now - returnElapsedMs,
+          stateStartedAt: runtimeNow - returnElapsedMs,
           durationMs: returnDurationMs,
           isCurrentExpeditionGodsBattle: false,
           wasLowHpAtRestStart: false,
@@ -2379,6 +2401,7 @@ export function HomeScreen({
     const nextPendingAfkMs = importedRuntime?.pendingAfkMs ?? 0;
     setPendingAfkMs(nextPendingAfkMs);
     pendingAfkMsRef.current = nextPendingAfkMs;
+    hasObservedActiveAfkRecoveryRef.current = false;
     afkRecoveryTotalMsRef.current = importedRuntime?.afkRecoveryTotalMs ?? 0;
     afkRecoveryCompletedMsRef.current = importedRuntime?.afkRecoveryCompletedMs ?? 0;
     afkSimulationAnchorRef.current = importedRuntime?.afkSimulationAnchor ?? null;
