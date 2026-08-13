@@ -34,6 +34,13 @@ export interface AfkRecoveryBacklogObservation {
   didCompleteRecovery: boolean;
 }
 
+export interface AfkOnlineProgressLockState {
+  isHydrating: boolean;
+  pendingAfkMs: number;
+  hasChunkCursor: boolean;
+  shouldRebuildAfterRecovery: boolean;
+}
+
 export interface AfkSchedulerProfile {
   startedAt: number;
   completedAt: number | null;
@@ -65,6 +72,18 @@ export function observeAfkRecoveryBacklog(
     hasObservedActiveRecovery: false,
     didCompleteRecovery: hasPreviouslyObservedActiveRecovery,
   };
+}
+
+export function shouldPauseOnlineProgressForAfk({
+  isHydrating,
+  pendingAfkMs,
+  hasChunkCursor,
+  shouldRebuildAfterRecovery,
+}: AfkOnlineProgressLockState): boolean {
+  return isHydrating
+    || pendingAfkMs > 0
+    || hasChunkCursor
+    || shouldRebuildAfterRecovery;
 }
 
 export function getAfkOperationWindow(

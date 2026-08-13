@@ -9,6 +9,7 @@ import {
   normalizePersistedAfkChunkCursor,
   observeAfkRecoveryBacklog,
   recordAfkSchedulerBatch,
+  shouldPauseOnlineProgressForAfk,
 } from '../src/game/afkSchedulerCore.ts';
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
@@ -91,6 +92,20 @@ test('AFK reconstruction requires an observed positive backlog followed by zero'
   assert.equal(settled.didCompleteRecovery, false);
 });
 
+test('online progression stays paused for every active AFK recovery boundary', () => {
+  const unlocked = {
+    isHydrating: false,
+    pendingAfkMs: 0,
+    hasChunkCursor: false,
+    shouldRebuildAfterRecovery: false,
+  };
+  assert.equal(shouldPauseOnlineProgressForAfk(unlocked), false);
+  assert.equal(shouldPauseOnlineProgressForAfk({ ...unlocked, isHydrating: true }), true);
+  assert.equal(shouldPauseOnlineProgressForAfk({ ...unlocked, pendingAfkMs: 1 }), true);
+  assert.equal(shouldPauseOnlineProgressForAfk({ ...unlocked, hasChunkCursor: true }), true);
+  assert.equal(shouldPauseOnlineProgressForAfk({ ...unlocked, shouldRebuildAfterRecovery: true }), true);
+});
+
 test('profiling aggregates batches in memory without per-Cycle output', () => {
   const initial = createAfkSchedulerProfile(100);
   const first = recordAfkSchedulerBatch(initial, 12, 4, 3);
@@ -116,4 +131,8 @@ test('AFK-to-online reconstruction uses the emulated anchor for Diary timestamps
   assert.match(homeSource, /const simulatedExpeditionStartedAt = emulatedNow - exploreElapsedMs/);
   assert.match(homeSource, /simulatedAt: simulatedExpeditionStartedAt/);
   assert.match(homeSource, /stateStartedAt: runtimeExpeditionStartedAt/);
+});
+
+test('the online checkpoint timer cannot mutate gameplay during AFK recovery', () => {
+  assert.match(homeSource, /if \(shouldPauseOnlineProgressForAfk\(\{[\s\S]*pendingAfkMs: pendingAfkMsRef\.current[\s\S]*shouldRebuildAfterRecovery: shouldRebuildPartyCyclesAfterAfkRef\.current[\s\S]*lastCheckpointAtRef\.current = now;[\s\S]*return;/);
 });
