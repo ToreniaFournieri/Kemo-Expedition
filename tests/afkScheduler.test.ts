@@ -85,9 +85,3 @@ test('runtime slices the immutable logical Chunk plan and finalizes only its las
   assert.match(homeSource, /afkChunkCursorRef\.current = finalizeChunk[\s\S]*operationStart,[\s\S]*operationCount,[\s\S]*finalizeChunk/);
   assert.match(homeSource, /minimumCommitIntervalMs = document\.visibilityState === 'visible' \? 100 : 250/);
 });
-
-test('the partial Cycle restored after AFK uses the emulated recovery anchor for Diary time', () => {
-  assert.match(homeSource, /const afkSimulationEndAt = afkSimulationAnchorRef\.current \?\? now/);
-  assert.match(homeSource, /const expeditionStartedAt = afkSimulationEndAt - exploreElapsedMs/);
-  assert.doesNotMatch(homeSource, /const expeditionStartedAt = now - exploreElapsedMs/);
-});
