@@ -34,7 +34,7 @@ import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseu
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
-import { getGodMythicDropIds, getGodProfileForDungeon } from '../data/dropTables';
+import { getGodProfileForDungeon } from '../data/dropTables';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import { formatEnemyDefName } from '../game/enemyDisplay';
@@ -65,7 +65,7 @@ import { getItemById } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -73,24 +73,23 @@ import { LINEAGES } from '../data/lineages';
 import { BONUS_ABILITY_GLOSSARY_ENTRIES } from '../data/bonusAbilityGlossary';
 import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../data/glossary';
 import {
-  ELITE_GATE_REQUIREMENTS,
-  BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
-  getLootCollectionCount,
-  getLootCollectionKey,
+  getGodsBattleProgress,
+  getGodsBattleProgressKey,
   getEliteGateKey,
   getBossGateKey,
-  isLootGateUnlocked,
-  checkLootGateRequirement,
-  addRecoveredItemsToLootProgress,
+  getClearGateRequired,
+  isClearGateUnlocked,
+  checkClearGateRequirement,
+  addRecoveredBossRaresToGodsBattleProgress,
+  applyClearGateOutcome,
   hasDefeatedDungeonBoss,
   isDungeonEntryUnlocked,
-  unlockAvailableLootGates,
-} from '../game/lootGate';
+} from '../game/clearGate';
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
-import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
+import { DIARY_LOG_RETENTION_LIMIT, getDiaryOutcomeTrigger } from '../game/diary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopItemPrice,
@@ -112,6 +111,7 @@ import {
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
+import { getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -340,30 +340,15 @@ function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialPartySlots: n
   return { unlockedPartySlots };
 }
 
-// SpecRef: 8.5 | UI_DIARY | It keeps 24 entries
+// SpecRef: 8.5 | UI_DIARY | Each Party has an independent 24-entry Diary.
 function enforceGlobalDiaryLogRetention(parties: Party[]): Party[] {
-  const allDiaryLogRefs = parties.flatMap((party, partyIndex) =>
-    (party.diaryLogs ?? []).map((log, logIndex) => ({
-      partyIndex,
-      logIndex,
-      createdAt: typeof log.createdAt === 'number' ? log.createdAt : 0,
-    }))
-  );
-
-  if (allDiaryLogRefs.length <= DIARY_LOG_RETENTION_LIMIT) {
-    return parties;
-  }
-
-  const keepKeys = new Set(
-    allDiaryLogRefs
-      .sort((a, b) => b.createdAt - a.createdAt || a.partyIndex - b.partyIndex || a.logIndex - b.logIndex)
-      .slice(0, DIARY_LOG_RETENTION_LIMIT)
-      .map(({ partyIndex, logIndex }) => `${partyIndex}:${logIndex}`)
-  );
-
-  return parties.map((party, partyIndex) => {
-    const nextDiaryLogs = (party.diaryLogs ?? []).filter((_, logIndex) => keepKeys.has(`${partyIndex}:${logIndex}`));
-    if (nextDiaryLogs.length === (party.diaryLogs ?? []).length) {
+  return parties.map((party) => {
+    const diaryLogs = party.diaryLogs ?? [];
+    const nextDiaryLogs = diaryLogs
+      .slice()
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, DIARY_LOG_RETENTION_LIMIT);
+    if (nextDiaryLogs.length === diaryLogs.length && nextDiaryLogs.every((log, index) => log === diaryLogs[index])) {
       return party;
     }
     return {
@@ -556,8 +541,8 @@ const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalys
 
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired()
+  // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Gods battle gate
+  return getGodsBattleProgress(party, dungeonId) >= getGodsBattleRequired()
     && hasDefeatedDungeonBoss(party, dungeonId);
 }
 
@@ -769,7 +754,7 @@ function normalizeDiaryDefeatNotificationMode(
   value: unknown,
   legacyNotifyDefeat: unknown,
 ): DiaryDefeatNotificationMode {
-  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'none') return value;
+  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'defeatDrawRetreat' || value === 'all' || value === 'none') return value;
   if (legacyNotifyDefeat === false) return 'none';
   return 'defeatOnly';
 }
@@ -1098,9 +1083,9 @@ type LoadSavedStateResult = {
   errorLog: string | null;
 };
 
-function loadSavedState(): LoadSavedStateResult {
+function loadSavedState(encodedState?: string): LoadSavedStateResult {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = encodedState ?? localStorage.getItem(STORAGE_KEY);
     if (!saved) {
       return { state: null, errorLog: null };
     }
@@ -1251,8 +1236,6 @@ function loadSavedState(): LoadSavedStateResult {
           if (typeof party.level !== 'number') party.level = 1;
           if (typeof party.experience !== 'number') party.experience = 0;
           if (!party.defeatedBossExpeditions) party.defeatedBossExpeditions = {};
-          if (!party.lootGateStatus) party.lootGateStatus = {};
-          if (!party.lootGateProgress) party.lootGateProgress = {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.pendingDiaryLog === 'undefined') party.pendingDiaryLog = null;
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
@@ -1390,13 +1373,16 @@ function loadSavedState(): LoadSavedStateResult {
   return { state: null, errorLog: null };
 }
 
-function saveState(state: GameState): void {
+type SaveStateResult = { ok: true } | { ok: false; errorLog: string };
+
+function saveState(state: GameState): SaveStateResult {
   try {
     const payload = JSON.stringify(serializeGameState(state));
     localStorage.setItem(STORAGE_KEY, encodePersistedState(payload));
-
+    return { ok: true };
   } catch (e) {
     console.error('Failed to save state:', e);
+    return { ok: false, errorLog: formatLoadErrorLog(e) };
   }
 }
 
@@ -1550,8 +1536,8 @@ function createInitialParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('Goddess of Restoration'),
     characters,
     selectedDungeonId: 1,
@@ -1610,8 +1596,8 @@ function createSecondParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('God of Cunning'),
     characters,
     selectedDungeonId: 1,
@@ -1670,8 +1656,8 @@ function createThirdParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('Goddess of Fertility'),
     characters,
     selectedDungeonId: 1,
@@ -1730,8 +1716,8 @@ function createFourthParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('God of Fortification'),
     characters,
     selectedDungeonId: 1,
@@ -1790,8 +1776,8 @@ function createFifthParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('God of Resonance'),
     characters,
     selectedDungeonId: 1,
@@ -1851,8 +1837,8 @@ function createSixthParty() {
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
+    clearGateProgress: {},
+    clearGateStatus: {},
     deity: createInitialDeity('Goddess of Precision'),
     characters,
     selectedDungeonId: 1,
@@ -2016,11 +2002,11 @@ type GameAction =
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
-  | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
+  | { type: 'MARK_PARTY_DIARY_LOGS_SEEN'; partyIndex: number }
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'COMMIT_API_STATE'; state: GameState }
@@ -2129,7 +2115,7 @@ function createGodEnemy(
     };
   }
 
-  const godDropItemIds = getGodMythicDropIds(godProfile.name);
+  const godItemIds = godProfile.itemIds;
 
   const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, difficultyOffset);
 
@@ -2140,10 +2126,8 @@ function createGodEnemy(
       nameKey: undefined,
       enemyClass: godProfile.enemyClass,
       abilities: godProfile.abilities,
-      dropItemId: godDropItemIds[0],
+      itemIds: godItemIds,
       isGodEnemy: true,
-      godDropItemCategories: godProfile.dropItemCategories,
-      godDropItemIds,
     };
   }
 
@@ -2155,10 +2139,8 @@ function createGodEnemy(
     spawnTier: enemy.spawnTier,
     spawnPool: enemy.spawnPool,
     poolId: enemy.poolId,
-    dropItemId: godDropItemIds[0],
+    itemIds: godItemIds,
     isGodEnemy: true,
-    godDropItemCategories: godProfile.dropItemCategories,
-    godDropItemIds,
   };
 }
 
@@ -2209,45 +2191,6 @@ function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, si
 }
 
 
-function getExploreTerrainDurationMultiplierForAfk(party: Party): number {
-  // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
-  if (!dungeon) return 1;
-
-  const getFloorTerrainRoomMultiplier = (terrainEffect?: string): number => {
-    if (terrainEffect === 'terrain.chill') return 2;
-    if (terrainEffect === 'terrain.looping-path') return 2;
-    return 1;
-  };
-
-  const floorByNumber = new Map(dungeon.floors.map((floor) => [floor.floorNumber, floor]));
-  const loggedRooms = party.lastExpeditionLog?.dungeonId === dungeon.id
-    ? party.lastExpeditionLog.entries
-    : [];
-
-  if (loggedRooms.length > 0) {
-    const weightedRoomMultiplierTotal = loggedRooms.reduce((total, room) => {
-      const floor = typeof room.floor === 'number' ? floorByNumber.get(room.floor) : undefined;
-      return total + getFloorTerrainRoomMultiplier(floor?.terrainEffect);
-    }, 0);
-    return weightedRoomMultiplierTotal / loggedRooms.length;
-  }
-
-  const fullDungeonRoomMultiplierTotal = dungeon.floors.reduce((total, floor) => (
-    total + (4 * getFloorTerrainRoomMultiplier(floor.terrainEffect))
-  ), 0);
-  const fullDungeonRoomCount = dungeon.floors.length * 4;
-  return fullDungeonRoomCount > 0 ? (fullDungeonRoomMultiplierTotal / fullDungeonRoomCount) : 1;
-}
-
-function getApproxAfkCycleDurationMs(party: Party, cycleDurationScale: number): number {
-  const safeScale = Math.max(0.001, cycleDurationScale);
-  const baseCycleDurationMs = BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * safeScale;
-  const deityGold = party.deityGold ?? 0;
-  const exploreDeityDurationMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, 'explore');
-  const exploreTerrainDurationMultiplier = getExploreTerrainDurationMultiplierForAfk(party);
-  return Math.max(1, Math.ceil(baseCycleDurationMs * exploreDeityDurationMultiplier * exploreTerrainDurationMultiplier));
-}
 function getApproxAfkTimeQuestProgressPerCycle(
   party: Party,
   approxCycleDurationMs: number,
@@ -2290,23 +2233,17 @@ function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDuratio
   return sideQuest.assignedAt + Math.floor(deadlineWindowMs * safeScale);
 }
 
-function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
+function hasActiveNonGodBattleClearGateCondition(party: Party): boolean {
   // SpecRef: 5.1.2 | Side Quest | Trigger Condition
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
 
-  const tier = currentDungeon.enemyPoolIds[0];
   for (const floor of currentDungeon.floors) {
     if (floor.floorNumber >= 6) continue;
-    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-    const collected = getLootCollectionCount(party, tier, 'uncommon');
-    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
-    if (!unlocked) return true;
+    if (!isClearGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber))) return true;
   }
 
-  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
-  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
-  if (!bossUnlocked) return true;
+  if (!isClearGateUnlocked(party, getBossGateKey(currentDungeon.id))) return true;
 
   const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
   if (!nextDungeon) return false;
@@ -2382,10 +2319,7 @@ function resolveEnemyRewards(
   let hasSuperRareReward = false;
 
   const dropCandidates = getEnemyDropCandidates(enemy);
-  const fallbackItem = enemy.dropItemId ? getItemById(enemy.dropItemId) : undefined;
-  const baseDropItems = dropCandidates.length > 0
-    ? dropCandidates
-    : (fallbackItem ? [fallbackItem] : []);
+  const baseDropItems = dropCandidates;
 
   for (const baseItem of baseDropItems) {
     const baseRarity = getItemRarityById(baseItem.id);
@@ -3233,14 +3167,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const roomDef = floor.rooms[roomIndex];
             roomCounter++;
 
-            const tier = dungeon.enemyPoolIds[0]; // dungeon tier
-            // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gate `x.floor`,`x.room`
-            const gateCheck = checkLootGateRequirement({
+            // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Gate `x.floor`,`x.room`
+            const gateCheck = checkClearGateRequirement({
               dungeonId: dungeon.id,
               floorNumber: floor.floorNumber,
               roomInFloor: roomIndex + 1,
               roomType: roomDef.type,
-              tier,
               party: currentParty,
             });
             if (gateCheck.blocked) {
@@ -3266,10 +3198,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 maxPartyHP: partyStats.hp,
                 details: [],
                 gateInfo: roomDef.type === 'battle_Boss'
-                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required })
+                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, required: gateCheck.required })
                   : roomIndex === 0
-                    ? t('game.log.gateInfo.dungeon', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required, dungeon: dungeon.name })
-                    : t('game.log.gateInfo.floor', { label: gateCheck.label, collected: gateCheck.collected, required: gateCheck.required, floor: floor.floorNumber }),
+                    ? t('game.log.gateInfo.dungeon', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required, dungeon: dungeon.name })
+                    : t('game.log.gateInfo.floor', { label: gateCheck.label, required: gateCheck.required, floor: floor.floorNumber }),
               };
               entries.push(gateEntry);
               finalOutcome = 'Escape';
@@ -3335,9 +3267,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             getEnemyDropCandidates(enemy).forEach((item) => {
               revealedItemCompendiumItemIds.add(item.id);
             });
-            if (enemy.dropItemId) {
-              revealedItemCompendiumItemIds.add(enemy.dropItemId);
-            }
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;
@@ -3679,12 +3608,40 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalGold = isDefeat ? state.global.gold : (currentGold - finalAutoSellProfit);
       const finalAutoSellItems = isDefeat ? [] : totalAutoSellItems;
 
-      const nextLootGateProgressBase = isDefeat
-        ? currentParty.lootGateProgress
-        : addRecoveredItemsToLootProgress(currentParty.lootGateProgress ?? {}, recoveredItems);
-      const nextLootGateProgress = { ...(nextLootGateProgressBase ?? {}) };
+      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
+      const canonicalGateOutcome = finalOutcome === 'Clear'
+        ? 'Clear'
+        : finalOutcome === 'Escape'
+          ? 'Turned_Back'
+          : finalOutcome === 'Defeat'
+            ? 'Defeat'
+            : endedWithDrawRetreat
+              ? 'Draw_Retreat'
+              : 'Wounded_Retreat';
+      const progressWithGodsBattleItems = isDefeat
+        ? { ...(currentParty.clearGateProgress ?? {}) }
+        : addRecoveredBossRaresToGodsBattleProgress(
+            currentParty.clearGateProgress ?? {},
+            dungeon.id,
+            recoveredItems,
+          );
+      const clearGateOutcomeState = isGodsBattle
+        ? {
+            progress: progressWithGodsBattleItems,
+            status: { ...(currentParty.clearGateStatus ?? {}) },
+            gateKey: null,
+          }
+        : applyClearGateOutcome(
+            {
+              clearGateProgress: progressWithGodsBattleItems,
+              clearGateStatus: currentParty.clearGateStatus ?? {},
+            },
+            dungeon.id,
+            canonicalGateOutcome,
+          );
+      const nextClearGateProgress = { ...clearGateOutcomeState.progress };
       if (isGodsBattle && finalOutcome === 'Clear') {
-        nextLootGateProgress[getLootCollectionKey(dungeon.id, 'bossRare')] = 0;
+        nextClearGateProgress[getGodsBattleProgressKey(dungeon.id)] = 0;
       }
       const nextDefeatedBossExpeditions = {
         ...(currentParty.defeatedBossExpeditions ?? {}),
@@ -3692,12 +3649,42 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!isGodsBattle && finalOutcome === 'Clear') {
         nextDefeatedBossExpeditions[dungeon.id] = true;
       }
-      const nextLootGateStatus = unlockAvailableLootGates(
-        currentParty.lootGateStatus ?? {},
-        nextLootGateProgress,
-        nextDefeatedBossExpeditions,
-        DUNGEONS.length
-      );
+      const nextClearGateStatus = clearGateOutcomeState.status;
+
+      // SpecRef: 5.1.3.1 | A gate completed by this turned-back run remains
+      // unreachable until the next expedition, but its retained locked-room text
+      // must immediately disclose that the route has now been unlocked.
+      const clearedGateKey = clearGateOutcomeState.gateKey;
+      if (
+        clearedGateKey !== null
+        && !isClearGateUnlocked(currentParty, clearedGateKey)
+        && isClearGateUnlocked(
+          {
+            clearGateProgress: nextClearGateProgress,
+            clearGateStatus: nextClearGateStatus,
+          },
+          clearedGateKey,
+        )
+      ) {
+        const gatePosition = clearedGateKey % 1000;
+        const clearedBossGate = gatePosition === 604;
+        const clearedFloor = clearedBossGate ? 6 : Math.floor(gatePosition / 10);
+        for (let entryIndex = entries.length - 1; entryIndex >= 0; entryIndex -= 1) {
+          const entry = entries[entryIndex];
+          if (!entry.gateInfo || entry.floor !== clearedFloor || entry.roomInFloor !== 4) continue;
+          entry.gateInfo = clearedBossGate
+            ? t('game.log.gateInfo.bossCleared', {
+                label: t('home.gate.consecutiveSuccesses'),
+                required: getClearGateRequired(clearedGateKey),
+              })
+            : t('game.log.gateInfo.floorCleared', {
+                label: t('home.gate.consecutiveSuccesses'),
+                required: getClearGateRequired(clearedGateKey),
+                floor: clearedFloor,
+              });
+          break;
+        }
+      }
 
       const totalExpGain = Math.ceil(totalExp);
 
@@ -3730,11 +3717,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const hasMythicMatch = finalRewards.some((item) => getItemRarityCode(item) === 'mythicRare' && matchesDiaryThreshold(item, diarySettings.mythicThreshold));
       const hasRareMatch = finalRewards.some((item) => getItemRarityCode(item) === 'eliteRare' && matchesDiaryThreshold(item, diarySettings.rareThreshold));
 
-      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
       const diaryTriggers: DiaryLog['triggers'] = [];
       // SpecRef: 8.5 | UI_DIARY | Setting.
-      if (finalOutcome === 'Defeat' && diarySettings.defeatNotificationMode !== 'none') diaryTriggers.push('defeat');
-      if (finalOutcome === 'Retreat' && endedWithDrawRetreat && diarySettings.defeatNotificationMode === 'defeatAndDraw') diaryTriggers.push('draw');
+      const outcomeTrigger = getDiaryOutcomeTrigger(finalOutcome, endedWithDrawRetreat, diarySettings.defeatNotificationMode);
+      if (outcomeTrigger) diaryTriggers.push(outcomeTrigger);
       // SpecRef: 8.5 | UI_DIARY | Setting.
       if (isGodsBattle && diarySettings.notifyGodsBattle) diaryTriggers.push('godsBattle');
 
@@ -3777,14 +3763,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...currentParty,
         bags,
         expeditionRewardsPending: true,
-        pendingLootGateSnapshot: {
-          progress: { ...(currentParty.lootGateProgress ?? {}) },
-          status: { ...(currentParty.lootGateStatus ?? {}) },
+        pendingClearGateSnapshot: {
+          progress: { ...(currentParty.clearGateProgress ?? {}) },
+          status: { ...(currentParty.clearGateStatus ?? {}) },
           defeatedBossExpeditions: { ...(currentParty.defeatedBossExpeditions ?? {}) },
         },
         defeatedBossExpeditions: nextDefeatedBossExpeditions,
-        lootGateProgress: nextLootGateProgress,
-        lootGateStatus: nextLootGateStatus,
+        clearGateProgress: nextClearGateProgress,
+        clearGateStatus: nextClearGateStatus,
         lastExpeditionLog: log,
         pendingDiaryLog,
         currentHp: finalRemainingPartyHP,
@@ -3892,7 +3878,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         experience: nextExperience,
         condition: nextCondition,
         expeditionRewardsPending: false,
-        pendingLootGateSnapshot: null,
+        pendingClearGateSnapshot: null,
         pendingDiaryLog: null,
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
@@ -4746,8 +4732,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'MARK_ALL_DIARY_LOGS_SEEN': {
-      const updatedParties = state.parties.map((party) => {
+    case 'MARK_PARTY_DIARY_LOGS_SEEN': {
+      const updatedParties = state.parties.map((party, partyIndex) => {
+        if (partyIndex !== action.partyIndex) return party;
         const nextDiaryLogs = party.diaryLogs.map((diaryLog) => ({
           ...diaryLog,
           isRead: true,
@@ -4793,20 +4780,31 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (cappedElapsedMs < 1000) return state;
 
       const resolvedCycleDurationScale = Math.max(0.001, action.cycleDurationScale ?? getCycleDurationScale());
-      const cycleDurationByParty = state.parties.map((party) => getApproxAfkCycleDurationMs(party, resolvedCycleDurationScale));
+      const cycleDurationByParty = action.cycleDurationByParty?.length === state.parties.length
+        ? action.cycleDurationByParty.map((durationMs) => Math.max(1, Math.floor(durationMs)))
+        : state.parties.map((party) => getApproxAfkCycleDurationMs(party, resolvedCycleDurationScale));
       const runCountByParty = cycleDurationByParty.map((durationMs) => Math.max(0, Math.floor(cappedElapsedMs / durationMs)));
       const runCount = runCountByParty.reduce((maxRuns, count) => Math.max(maxRuns, count), 0);
       if (runCount <= 0) return state;
+
+      const totalOperationCount = runCountByParty.reduce((total, count) => total + count, 0);
+      const operationStart = Math.max(0, Math.min(totalOperationCount, Math.floor(action.operationStart ?? 0)));
+      const requestedOperationCount = Math.max(0, Math.floor(action.operationCount ?? totalOperationCount));
+      const operationEnd = Math.min(totalOperationCount, operationStart + requestedOperationCount);
+      if (operationEnd <= operationStart) return state;
 
       let workingState = state;
       const simulationEndAt = action.simulatedEndAt ?? Date.now();
       const simulationStartAt = simulationEndAt - cappedElapsedMs;
       const partyTimestampStepMs = 1_000;
 
-      for (let runIndex = 0; runIndex < runCount; runIndex++) {
-        for (let partyIndex = 0; partyIndex < workingState.parties.length; partyIndex++) {
-          const partyCycleDurationMs = cycleDurationByParty[partyIndex] ?? 1;
-          if (runIndex >= (runCountByParty[partyIndex] ?? 0)) continue;
+      const operationWindow = getAfkOperationWindow(
+        cycleDurationByParty,
+        cappedElapsedMs,
+        operationStart,
+        requestedOperationCount,
+      );
+      for (const { runIndex, partyIndex, partyCycleDurationMs } of operationWindow) {
           const cycleCompletedAt = simulationStartAt + ((runIndex + 1) * partyCycleDurationMs);
           const simulatedAt = Math.min(
             simulationEndAt,
@@ -4888,7 +4886,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
           }
 
-          if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleLootGateCondition(postCycleParty)) {
+          if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleClearGateCondition(postCycleParty)) {
             workingState = gameReducer(workingState, {
               type: 'ROLL_SIDE_QUEST',
               partyIndex,
@@ -4905,19 +4903,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ) {
             workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex });
           }
-        }
       }
 
-      const clampedParties = workingState.parties.map((party) => ({
-        ...party,
-        // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
-        condition: normalizePartyCondition(party.condition),
-      }));
+      if (action.finalizeChunk !== false || operationEnd >= totalOperationCount) {
+        const clampedParties = workingState.parties.map((party) => ({
+          ...party,
+          // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
+          condition: normalizePartyCondition(party.condition),
+        }));
 
-      workingState = {
-        ...workingState,
-        parties: clampedParties,
-      };
+        workingState = {
+          ...workingState,
+          parties: clampedParties,
+        };
+      }
 
       return workingState;
     }
@@ -5194,19 +5193,31 @@ export function useGameState() {
   }
   const [state, dispatch] = useReducer(gameReducer, initialStateRef.current.state);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
+  const [saveErrorLog, setSaveErrorLog] = useState<string | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSaveStateRef = useRef<GameState | null>(null);
   const lastSavedAtRef = useRef(0);
   const loadErrorLog = initialStateRef.current.loadErrorLog;
   const isSaveBlockedByLoadFailure = loadErrorLog !== null;
 
-  const flushPendingSave = useCallback(() => {
+  const flushPendingSave = useCallback(function flushPendingSaveAttempt() {
     // SpecRef: 5.1.4 | Save and load | Do not overwrite or save the current runtime state.
     if (isSaveBlockedByLoadFailure) return;
     if (!pendingSaveStateRef.current) return;
-    saveState(pendingSaveStateRef.current);
+    const result = saveState(pendingSaveStateRef.current);
+    if (!result.ok) {
+      setSaveErrorLog(result.errorLog);
+      if (!saveTimeoutRef.current) {
+        saveTimeoutRef.current = setTimeout(() => {
+          saveTimeoutRef.current = null;
+          flushPendingSaveAttempt();
+        }, STATE_SAVE_THROTTLE_MS);
+      }
+      return;
+    }
     pendingSaveStateRef.current = null;
     lastSavedAtRef.current = Date.now();
+    setSaveErrorLog(null);
   }, [isSaveBlockedByLoadFailure]);
 
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
@@ -5464,8 +5475,8 @@ export function useGameState() {
       dispatch({ type: 'MARK_DIARY_LOG_SEEN', logId });
     }, []),
 
-    markAllDiaryLogsSeen: useCallback(() => {
-      dispatch({ type: 'MARK_ALL_DIARY_LOGS_SEEN' });
+    markPartyDiaryLogsSeen: useCallback((partyIndex: number) => {
+      dispatch({ type: 'MARK_PARTY_DIARY_LOGS_SEEN', partyIndex });
     }, []),
 
     markDeveloperNewsRead: useCallback((itemIds: string[]) => {
@@ -5480,8 +5491,8 @@ export function useGameState() {
       dispatch({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId });
     }, []),
 
-    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number) => {
-      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale });
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale, ...batchSlice });
     }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {
@@ -5524,8 +5535,22 @@ export function useGameState() {
       dispatch({ type: 'RESET_GAME' });
     }, []),
 
-    importGameState: useCallback((nextState: GameState) => {
-      dispatch({ type: 'IMPORT_GAME_STATE', state: nextState });
+    importGameState: useCallback((nextState: GameState): LoadSavedStateResult => {
+      try {
+        const imported = loadSavedState(encodePersistedState(JSON.stringify(nextState)));
+        if (!imported.state) return imported;
+        const normalizedState = gameReducer(imported.state, { type: 'IMPORT_GAME_STATE', state: imported.state });
+        const persisted = saveState(normalizedState);
+        if (!persisted.ok) {
+          setSaveErrorLog(persisted.errorLog);
+          return { state: null, errorLog: persisted.errorLog };
+        }
+        dispatch({ type: 'COMMIT_API_STATE', state: normalizedState });
+        setSaveErrorLog(null);
+        return { state: normalizedState, errorLog: null };
+      } catch (error) {
+        return { state: null, errorLog: formatLoadErrorLog(error) };
+      }
     }, []),
 
     resetCommonBags: useCallback((partyIndex?: number) => {
@@ -5573,6 +5598,12 @@ export function useGameState() {
       ? {
           message: t(SAVE_LOAD_WARNING_KEY),
           errorLog: loadErrorLog,
+        }
+      : null,
+    saveWriteWarning: saveErrorLog
+      ? {
+          message: t('save.writeWarning'),
+          errorLog: saveErrorLog,
         }
       : null,
   };

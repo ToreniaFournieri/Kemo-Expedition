@@ -8,8 +8,7 @@ This document is the normative endpoint contract referenced by section 9.1.3 of 
 
 ### Contract conventions
 
-- Endpoint descriptions follow the operation structure of OpenAPI Specification 3.2.0: operation identifier, security, parameters and headers, response status, response headers, schema, field definitions, and examples.
-- JSON schemas use the data model and validation vocabulary supported by OpenAPI 3.2.0.
+- Endpoint descriptions follow the operation structure of OpenAPI Specification 3.2.0: 
 - HTTP method, status-code, header, authentication, caching, and content-negotiation behavior follows RFC 9110.
 - The key words `MUST`, `MUST NOT`, `REQUIRED`, `SHOULD`, `SHOULD NOT`, and `MAY` are normative only when capitalized and are interpreted according to BCP 14 (RFC 2119 and RFC 8174).
 - Property names and enum values are case-sensitive.
@@ -874,7 +873,7 @@ The following non-normative example illustrates the response structure. Empty re
           "normalSortieAvailable": true,
           "godBattleAvailable": false
         },
-        "lootGates": [],
+        "clearGates": [],
         "sideQuest": null,
         "characters": [],
         "latestExpedition": null
@@ -933,7 +932,8 @@ All resource values MUST be raw JSON numbers without `Intl.NumberFormat` separat
 - `selectableRaceIds`, `selectableClassIds`, `selectablePredispositionIds`, and `selectableLineageIds` contain only values selectable under the current specification.
 - `unlockedMimorianEnemyIds` contains only enemy forms already unlocked at the Altar.
 - `dungeons` contains `id`, `tier`, and optional localized `displayName` for each unlocked dungeon.
-- `deities` contains stable `id` and optional localized `displayName` for each assignable deity.
+- `deities` contains stable `id`, optional localized `displayName`, and nullable `assignedPartyId` and `assignedPartyName` for every unlocked deity, including `none`. A non-null assignment identifies the party currently using that deity; `none` is never exclusive and always reports a null assignment.
+- Each party's `set_deity` legal-action constraint contains only `none`, that party's current deity, and unlocked deities not assigned to another party.
 - Array order MUST be deterministic and follow the corresponding master-data or progression order.
 - Display names are optional metadata. Clients MUST use stable IDs for commands and comparisons.
 
@@ -975,7 +975,7 @@ Each entry in `observation.parties` represents one unlocked party. Parties MUST 
 | `state` | object | Yes | Frozen state-machine position at observation time. |
 | `automation.jewelPriority` | boolean | Yes | Whether this party is the current Jewel Priority Party. |
 | `expedition` | object | Yes | Current normal-expedition strategy and availability. |
-| `lootGates` | array | Yes | Currently relevant disclosed loot-gate progress. |
+| `clearGates` | array | Yes | Currently relevant disclosed Clear-Gate and related progression-gate progress. |
 | `sideQuest` | object or `null` | Yes | Active side quest, or `null`. |
 | `characters` | array | Yes | Six characters in combat and automatic-equipment order. |
 | `latestExpedition` | object or `null` | Yes | Latest disclosed expedition summary, or `null`. |
@@ -1010,20 +1010,22 @@ Each entry in `observation.parties` represents one unlocked party. Parties MUST 
 | `normalSortieAvailable` | boolean | Yes | Whether a normal API sortie request is legal for this party now. |
 | `godBattleAvailable` | boolean | Yes | Whether the separate single-run Gods Battle command is legal now. |
 
-### Loot gates and side quest
+### Clear-Gates, related progression gates, and side quest
 
-Each `lootGates` entry contains:
+Each `clearGates` entry contains:
 
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `id` | string | Yes | Stable gate identifier. |
-| `kind` | string | Yes | `entering`, `uncommon`, `eliteRare`, `godBattle`, or `sideQuest`. |
-| `current` | integer | Yes | Disclosed current progress. |
+| `kind` | string | Yes | `entering`, `clear`, `godBattle`, or `sideQuest`. |
+| `current` | integer | Yes | Disclosed current progress. For `clear`, this is the current consecutive-success count. |
 | `required` | integer | Yes | Required progress. |
 | `satisfied` | boolean | Yes | Whether the gate is currently open. |
 | `dungeonId` | integer or `null` | Yes | Related dungeon, when applicable. |
 | `floor` | integer or `null` | Yes | Related disclosed floor, when applicable. |
 | `room` | integer or `null` | Yes | Related room, when applicable. |
+
+For `kind: clear`, `current` MUST increment after a `Clear` or `Turned_Back` normal-expedition outcome and MUST reset to `0` after `Draw_Retreat`, `Wounded_Retreat`, or `Defeat`. Once `satisfied` becomes `true`, that gate remains satisfied permanently.
 
 An active `sideQuest` contains stable `id`, `type`, `target`, `progress`, `rolledTier`, `assignedAt`, and `expiresAt`. It MUST NOT expose future quest-bag order or reward rolls.
 
@@ -1574,7 +1576,8 @@ Content-Type: application/json
 | `update_character_build` | Change one character's build. | No | Yes, for that character |
 | `reorder_character` | Move one member to another combat row. | No | No |
 | `set_deity` | Assign a deity to one party. | No | No |
-| `set_auto_equipment_mode` | Set one character's automation mode. | No | No |
+| `set_auto_equipment_mode` | Set one character's automation mode. Does not immediately trigger auto-equipment. | No | No |
+| `run_auto_equipment` | Immediately run configured automatic equipment for one party or character. | No | Yes, for the selected target |
 | `toggle_equipment_lock` | Toggle one equipped item's automatic-equipment lock. | No | No |
 | `set_jewel_priority_party` | Select the global Jewel Priority Party or manual mode. | No | No |
 | `set_expedition_destination` | Set one party's automatic or fixed destination. | No | No |
@@ -1779,6 +1782,41 @@ In addition to the common authentication, lease, releasing, busy, method, save, 
 - Setting the current mode returns `no_change`.
 - `effects` contains `previousMode`, `mode`, and `autoEquipmentTriggered: false`.
 
+### `run_auto_equipment`
+
+Whole-party example:
+
+```json
+{
+  "type": "run_auto_equipment",
+  "partyId": 1
+}
+```
+
+Single-character example:
+
+```json
+{
+  "type": "run_auto_equipment",
+  "partyId": 1,
+  "characterId": 101
+}
+```
+
+| Field | Type | Required | Constraints | Description |
+|-|-|-|-|-|
+| `partyId` | integer | Yes | Unlocked party ID | Party whose configured automatic-equipment behavior runs. |
+| `characterId` | integer | No | Member of `partyId` | When present, limit the run to this character; when omitted, process every party member in current row order. |
+
+- This command immediately invokes the same authoritative automatic-equipment and automatic-Jewel routine used by the UI and normal Cycle trigger. It does not change any character's `autoEquipmentMode`.
+- Each selected character is processed once using the mode effective at `expectedRevision`: `OFF` performs only normally permitted automatic-Jewel assignment for the Jewel Priority Party, `SEMI` upgrades retained compatible categories without filling empty slots or replacing categories, and `FULL` performs the complete remove, fill, and upgrade flow while preserving locked and Super-Rare exceptions.
+- A whole-party run processes characters in current row order against one shared staged inventory. Equipment and Jewels returned or consumed by an earlier character are reflected when later characters are processed.
+- Automatic Jewel assignment follows section 7.1.3 and is performed only when the selected target belongs to the current Jewel Priority Party.
+- The command does not advance simulated time, state-machine progress, side-quest time, or Instant Expedition charge time, and does not consume random values.
+- Equipment, inventory, Jewels, HP synchronization, derived values, and notifications are committed as one transaction. Any failure rolls back the complete selected target and leaves the revision unchanged.
+- If the run changes no equipment slot, Jewel assignment, inventory ownership, HP value, or other derived state, return `no_change` without saving or incrementing the revision.
+- `effects` contains `partyId`, `characterId` (`null` for a whole-party run), `processedCharacterIds` in processing order, `autoEquipmentTriggered: true`, `unequippedCount`, `equippedCount`, `upgradedCount`, and `jewelAssignmentCount`. Counts summarize committed changes without exposing candidate rankings or hidden comparison data.
+
 ### `toggle_equipment_lock`
 
 ```json
@@ -1931,7 +1969,7 @@ Automatic destination example:
 
 - This command is legal only when all normal UI Gods Battle requirements are satisfied at `expectedRevision`, including:
   - the selected dungeon and its Boss completion record are valid;
-  - the Gods Battle loot gate is ready or remains retryable after a previous defeat;
+  - the Gods Battle gate is ready or remains retryable after a previous defeat;
   - global Auto-Run is `false`;
   - the party is not already moving to or resolving a Gods Battle;
   - party current and maximum HP are greater than 0;
@@ -1974,7 +2012,7 @@ Unless a discriminator defines a more specific error, `/command` uses:
 | `409 Conflict` | `runtime_busy` | `true` | Another command or sortie batch is executing. |
 | `405 Method Not Allowed` | `method_not_allowed` | `false` | The path is requested with a method other than `POST`. The response MUST include `Allow: POST`. |
 | `422 Unprocessable Content` | `illegal_action` | `false` | The structurally valid command is not legal in the current game state. |
-| `422 Unprocessable Content` | `deity_unavailable` | `false` | The deity is locked or assigned to another party. |
+| `422 Unprocessable Content` | `deity_unavailable` | `false` | The deity is locked or assigned to another party. `error.details.reason` MUST be `locked` or `assigned_to_party`. An assignment conflict MUST also include `deityId`, `assignedPartyId`, and `assignedPartyName`, and its message MUST identify the occupying party and advise choosing another deity. |
 | `422 Unprocessable Content` | `equipment_lock_unavailable` | `false` | The character is not in `FULL` mode or the item cannot be locked. |
 | `422 Unprocessable Content` | `difficulty_unavailable` | `false` | Boss completion has not unlocked difficulty adjustment. |
 | `422 Unprocessable Content` | `god_battle_unavailable` | `false` | A normal Gods Battle requirement is not satisfied. |
@@ -2056,11 +2094,11 @@ Before consuming randomness or changing staged state, the server MUST validate:
 - `partyId` existence and unlock status;
 - integer `count` range;
 - selected dungeon existence and availability to the party;
-- normal expedition data, loot-gate data, enemy data, and item-drop data required to simulate the complete batch;
+- normal expedition data, Clear-Gate data, enemy data, and item-drop data required to simulate the complete batch;
 - a valid party with computed maximum HP greater than 0.
 
 - Current HP equal to 0 is not an acceptance failure. The first requested Cycle performs the normal rest/recovery required before departure.
-- An unmet loot gate is not an acceptance failure. Its normal turn-back result counts as a completed requested sortie.
+- An unmet Clear-Gate is not an acceptance failure. Its normal `Turned_Back` result counts as a completed requested sortie and increments the consecutive-success count.
 - Insufficient Instant Expedition stock is not an acceptance failure because this endpoint has unlimited API charge.
 - Gods Battle readiness is ignored. Every requested Cycle is a normal expedition, and the API batch MUST NOT automatically engage a God even when Auto progress logic or party condition would normally do so.
 - If any acceptance check fails, reject the request before staging, random draws, simulation, notifications, or persistence.
@@ -2090,7 +2128,7 @@ Each Cycle MUST resolve the authoritative sequence and applicable optional/skipp
 6. Resolve `state.pray`, donation, embezzlement, and savings.
 7. Resolve `state.move`.
 8. Fully restore HP at the beginning of `state.explore` as specified in section 5.1.1.
-9. Resolve disclosed loot gates, every visited room and battle, rewards, XP, HP persistence, retreat rules, and normal expedition outcome through the configured depth limit.
+9. Resolve disclosed Clear-Gates, every visited room and battle, rewards, XP, HP persistence, retreat rules, and normal expedition outcome through the configured depth limit.
 10. Resolve `state.return`, side-quest assignment/progress/completion/expiration, condition changes, Diary and notification triggers, and progression unlocks.
 11. Enter the ending `state.rest`, resolve its normal recovery Steps completely, and end at the completion of that state.
 
@@ -2099,7 +2137,7 @@ Each Cycle MUST resolve the authoritative sequence and applicable optional/skipp
 - Non-target parties remain frozen for the complete operation. Their states, Step progress, HP, side quests, deadlines, charge stock and timers, Diary events, notifications, and automation MUST NOT advance because of the selected party's simulated elapsed time.
 - Shared resources and progression may still change when they are an authoritative result of the selected party's actions; this does not constitute progression of a non-target party.
 - Bag randomization and all other authoritative randomness are consumed sequentially. Results from one Cycle affect all later Cycles.
-- Inventory, equipment, Jewels, Gold, Prana, XP, HP, condition, side quests, loot gates, boss records, Gods Battle readiness, party unlocks, Diary entries, and other results carry forward between Cycles.
+- Inventory, equipment, Jewels, Gold, Prana, XP, HP, condition, side quests, Clear-Gates, boss records, Gods Battle readiness, party unlocks, Diary entries, and other results carry forward between Cycles.
 - A `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` result counts as one completed requested sortie.
 - Defeat MUST NOT truncate the batch. The following requested Cycle begins with normal rest/recovery and continues through completion of its ending `state.rest`.
 - Once accepted, exactly `count` requested Cycles MUST complete. A gameplay outcome cannot stop the batch early.

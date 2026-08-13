@@ -332,9 +332,9 @@ export interface Party {
   level: number;
   experience: number;
   defeatedBossExpeditions: Record<number, boolean>;
-  lootGateProgress: Record<string, number>;
-  lootGateStatus: Record<number, boolean>;
-  pendingLootGateSnapshot?: {
+  clearGateProgress: Record<string, number>;
+  clearGateStatus: Record<number, boolean>;
+  pendingClearGateSnapshot?: {
     progress: Record<string, number>;
     status: Record<number, boolean>;
     defeatedBossExpeditions: Record<number, boolean>;
@@ -407,8 +407,8 @@ export type ExpeditionDepthLimit =
   | 'beforeBoss'
   | 'all';
 
-export type DiaryTrigger = 'defeat' | 'draw' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
-export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'none';
+export type DiaryTrigger = 'victory' | 'return' | 'defeat' | 'draw' | 'retreat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
+export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'defeatDrawRetreat' | 'all' | 'none';
 
 export interface DiaryLog {
   id: string;
@@ -525,11 +525,8 @@ export interface EnemyDef {
   physicalDefenseAmplifier: number;
   magicalDefenseAmplifier: number;
   experience: number;
-  dropItemId: number | null;
-  masterDropTokens?: string[];
+  itemIds: readonly number[];
   isGodEnemy?: boolean;
-  godDropItemCategories?: [ItemCategory, ItemCategory];
-  godDropItemIds?: [number, number];
   image_path?: string;
 }
 

@@ -12,7 +12,7 @@
 - Togglr Mode Behavior
   - 一任 (Auto)
     - At the end of `state.rest`, automatically evaluate whether the party should move to the next expedition.
-    - Destination is automatically updated when this condition is satisfied. During AFK emulated mode, check at the end of each check. 
+    - Destination is automatically updated when this condition is satisfied. During AFK emulated mode, check at the end of each logical Chunk defined in Spec 5.1; an AFK scheduler yield is not a check boundary.
     - Condition for automatic progression:
 
 ```text
@@ -32,7 +32,7 @@ and {condition ≥ 230}
 
 - 固定 (Fixed)
   - The party remains at the player-selected Destination.
- - Manual Destination Selection
+- Manual Destination Selection
   - If the player manually selects an expedition from the Destination pull-down list:
   - The mode is automatically changed to 固定(Fixed).
 
@@ -102,7 +102,7 @@ HP 2350 / 4680
 
 
 - **Sub progress bar:**
-| Normal Loot-gate condition | 🗃️0/2 1F-4解放 | アンコモンアイテム 0/2で 1F-4解放 |
+| Normal Clear-Gate condition | 🚪0/9 1F-4解放 | 連続攻略成功 0/9 で 1F-4解放 |
     - Displayed only when `state` is `Step-based`. (example: `state.rest`, `state.sell`, or `state.explore`)
     - For all other states, render an empty placeholder to preserve layout height.
   - Represents elapsed time within the current `Step`.
@@ -131,21 +131,23 @@ HP 2350 / 4680
 
 | Type | Compact display | Floating bubble text |
 |---|---|---|
-| Entry Loot-gate condition | 🗺️ボス撃破せよ| ボス撃破 でヴァルンの樹林帯 開放 |
-| Normal Loot-gate condition | 🗃️0/3 1F-4解放 | アンコモンアイテム 0/3で 1F-4解放 |
-| God battle Loot-gate condition | 🗃️2/3 神魔解放 | ボスレアアイテム 2/3 で神魔タヌエ戦 |
+| Entry gate condition | 🗺️ボス撃破せよ| ボス撃破 でヴァルンの樹林帯 開放 |
+| Normal Clear-Gate condition | 🚪0/9 1F-4解放 | 連続攻略成功 0/9 で 1F-4解放 |
+| Gods Battle gate condition | 🗃️2/3 神魔解放 | ボスレアアイテム 2/3 で神魔タヌエ戦 |
 | Side quest | 📜 660分治療を受ける 🕘 | 660分治療を受ける（9%, 63分, 残り9時間） |
 
 - The thin line progress bar is displayed under the text.
 - Each progress item uses `current / total` progress.
+- A locked Clear-Gate's compact display, progress bar, and floating bubble show `current / total` progress.
+- Normal Clear-Gate progress updates after the normal expedition outcome is finalized. A `Clear` or `Turned_Back` increments it, while `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` displays the reset value, such as `0/9` for the first Elite gate.
 
 **Progress calculation:**
 
 | Type | Progress |
 |---|---|
-| Entry Loot-gate condition |  none |
-| Normal Loot-gate condition | `current / total`|
-| God battle Loot-gate condition | `current / total`|
+| Entry gate condition |  none |
+| Normal Clear-Gate condition | `current / total` consecutive successful runs |
+| Gods Battle gate condition | `current / total`|
 | Side quest | `current / total` |
 
 **Remaining time icon:**
@@ -231,8 +233,8 @@ PT2...
 
     - note: prompt of images ""Style is minimal, atmospheric, and readable: - Portrait,  - no soft shading, - no fine texture noise, - only gray tones + halftone dots (30 pxiel), - include all of terrain concepts"
 
-  - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
-  - List of available dungeons with Loot-Gate conditions
+  - Currently selected dungeon with Clear-Gate conditions (example: the 2nd Elite Gate is locked with 2/8 consecutive successful runs.)
+  - List of available dungeons with their Clear-Gate conditions
 
   - **OBSOLETED: REMOVE THIS FROM THE RUNTIME PROGRAM**
 	- **Flavor text**
@@ -277,10 +279,10 @@ HP: 16,035
 アビリティ:先制攻撃1, 含金1, 魔封1
 ドロップ候補: [6E]継ぎ獣導杖 / [6E]合成獣秘録 / [6E]継核触媒 / [6U]落雷の杖 / [6C]駆動コア片
 ```
-  - 次の目標: show next Loot-Gate condition. 
+  - 次の目標: show the next Clear-Gate condition.
 
 - **Gods Battle (神魔戦)**
-  - Loot Gate Condition: Collect X Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
+  - Gods Battle gate condition: Collect X Boss Rare items in dungeons after defeating the dungeon boss at least once. If the Gods Battle condition is `Simple`, require 1 Boss Rare item instead.
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
     - When the condition is met, adding「神魔戦」(Gods Battle) next to 「出撃」 button. (神魔戦, 出撃 button order) 
@@ -291,7 +293,7 @@ HP: 16,035
   - Outcome Handling:
     - **On Victory**
       - The button reverts from 「神魔戦」 → 「出撃」.
-      - The Loot Gate counter resets to 0 Boss items collected.
+      - The Gods Battle gate counter resets to 0 Boss Rare items collected.
       - The player can repeat the cycle.
     - **On Defeat**
       - The 「神魔戦」 button remains available.

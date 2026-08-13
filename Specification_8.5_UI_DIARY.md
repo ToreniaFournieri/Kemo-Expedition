@@ -1,13 +1,24 @@
 ## 8. UI
 
 ### 8.5 UI_DIARY
+- The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. (Default selected tab: `PT1`, or the last selected tab if previously selected.)
+- A Party tab becomes visible only when the corresponding Party is unlocked.
+- The selected tab is highlighted using the sub-theme color.
+- If only one Party is unlocked, the subcategory tabs are hidden.
+- Diary unread badges:
+  - The main Diary tab displays a red unread badge, showing up to 99 unread entries. (Display `99+` when the count is 99 or greater.)
+  - Each Party subcategory tab also displays its own red unread badge, showing up to 24 unread entries for that Party.
+  - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
+  - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
+- Each Party has its own independent Diary.
+- Each Party Diary keeps a maximum of 24 entries.
 - The diary is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
   - A Gods Battle occurs.
   - The party obtains a Super Rare item.
   - The party defeats an expedition boss for the first time and unlock a new party
-- It keeps 24 entries. First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
+- First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
 - Use the emulated in-game timestamp rather than the device or system timestamp.
 
@@ -20,7 +31,7 @@
 ボスレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
 神魔戦通知 (pull down list) あり/なし
 神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-敗北通知 敗北のみ/敗北と引分/なし (Default: 敗北のみ)
+一般通知 敗北のみ/敗北と引分/敗北と引分と撤退/全て/なし (Default: 敗北のみ)
 サイドクエスト獲得通知 全て, 2良晶以上, 3雅晶以上, 4煌晶以上, 5碧晶以上, 6紫晶以上, 7金晶以上, 8王晶のみ, なし (Default: 全て)
 ```
 

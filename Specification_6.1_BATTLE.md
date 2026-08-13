@@ -747,7 +747,8 @@ If `a.*` with phase = START:
     - If the party.`d.HP` <= 30% of max HP, back to home with trophies.   -> `Wonded_Retreat`
 
   - Normal Rooms (`x.room`:1–2): Proceed to the next `x.room`.
-  - Gate Rooms (`x.room`: 3 check): At the end of Room 3, the "Loot-Gate" check occurs. If passed, proceed to `x.room`:4 (Elite/Boss).
+  - Gate Rooms (`x.room`: 3 check): At the end of Room 3, check the applicable Clear-Gate. If it was already unlocked before the run, proceed to `x.room`:4 (Elite/Boss). Otherwise, end the reachable route as `Turned_Back`; this successful run increments the consecutive-success count, and reaching the required count permanently unlocks the gate for later runs. The gated-room condition text displays only the required count, not the current streak (for example, `連続攻略成功 9回 で 1F-4解放`).
+  - At normal-expedition outcome finalization, `Clear` or `Turned_Back` increments the next locked Clear-Gate's consecutive-success count, including a successful return at the selected depth limit. `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` resets that count to 0. Gates already unlocked remain unlocked.
   - Elite Rooms (`x.floor`:1-5, `x.room`:4): Proceed to the next floor: `x.floor` +1 , `x.room`:1.
   - Final Boss Room (`x.floor`:6, `x.room`:4): Expedition Clear! Return Home with all trophies.
 
@@ -800,7 +801,7 @@ If `a.*` with phase = START:
 - `f.quick_summary`:
   - `p.outcome_of_expedition`: 
     - 踏破: victory and complete the whole dungeons 
-    - 帰還: victory but not fulfill loot-gate condition 
+    - 帰還: successful return without clearing the complete dungeon, including return at the selected depth limit or while the next Clear-Gate remains locked
     - 撤退: draw 
     - 敗北: defeat
   - `p.remaining_HP`: remaining party HP/ max party HP : `340/ 1000`

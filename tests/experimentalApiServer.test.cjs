@@ -20,6 +20,7 @@ test('Experimental AI API enforces authentication and an exclusive lease', async
       if (operation === 'latest-battle-log') return { revision: 7, source: { kind: 'latest', diaryEntryId: null }, battleLog: { partyId: payload.partyId } };
       if (operation === 'diary-entries') return { revision: 7, entries: [{ id: '123-abc123' }] };
       if (operation === 'diary-battle-log') return { revision: 7, source: { kind: 'diary', diaryEntryId: payload.diaryEntryId }, battleLog: { partyId: 1 } };
+      if (operation === 'command') return { command: { type: payload.command.type, status: 'applied', previousRevision: payload.expectedRevision, revision: payload.expectedRevision + 1 }, effects: {}, observation: { revision: payload.expectedRevision + 1 } };
       if (operation === 'release') {
         controlled = false;
         return { revision: 7 };
@@ -79,6 +80,16 @@ test('Experimental AI API enforces authentication and an exclusive lease', async
   const wrongMethod = await fetch(`${origin}/experimental/v1/diary-entries`, { method: 'POST', headers: leaseHeaders });
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get('allow'), 'GET');
+
+  const wholePartyAutoEquipment = { expectedRevision: 7, command: { type: 'run_auto_equipment', partyId: 1 } };
+  const wholePartyResponse = await fetch(`${origin}/experimental/v1/command`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(wholePartyAutoEquipment) });
+  assert.equal(wholePartyResponse.status, 200);
+  assert.deepEqual(rendererRequests.at(-1), { operation: 'command', payload: wholePartyAutoEquipment });
+
+  const characterAutoEquipment = { expectedRevision: 8, command: { type: 'run_auto_equipment', partyId: 1, characterId: 101 } };
+  const characterResponse = await fetch(`${origin}/experimental/v1/command`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(characterAutoEquipment) });
+  assert.equal(characterResponse.status, 200);
+  assert.deepEqual(rendererRequests.at(-1), { operation: 'command', payload: characterAutoEquipment });
 
   const released = await fetch(`${origin}/experimental/v1/control/release`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(released.status, 200);

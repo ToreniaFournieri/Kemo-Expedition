@@ -12,6 +12,7 @@
 - Badge behavior:
   - Display a notification badge on both `Setting` and `News` when at least one unread news item exists. Unread news items are displayed in **bold**.
   - When the player taps a news item, mark it as read and change its text style from bold to normal.
+  - When the player closes the expanded `News` pane, mark every currently unread news item as read.
   - Remove the notification badge when no unread news items remain.
   - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
   - When a new news item is added, display the notification badge again.
@@ -287,8 +288,18 @@ HP: 312                 タイプ: 神魔
 
 - Language (言語)
   - Options: 日本語 / English / 简体中文 / 繁體中文
-  - The language is determined by the lang URL parameter:
-    - Default → 日本語 
+  - Determine the initial language in this priority order:
+    1. A supported `lang` URL parameter.
+    2. The player's previously persisted language selection.
+    3. For a new player with no persisted language selection, the first supported language in the system/browser language preference list.
+    4. Japanese when system/browser language information is unavailable or none of the reported languages is supported.
+  - Normalize supported system/browser language tags case-insensitively, including regional subtags:
+    - `ja` and `ja-*` → 日本語
+    - `en` and `en-*` → English
+    - `zh-CN`, `zh-SG`, `zh-Hans`, and equivalent Simplified Chinese tags → 简体中文
+    - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`, and equivalent Traditional Chinese tags → 繁體中文
+    - A generic `zh` tag without a script or region → 简体中文
+  - The `lang` URL parameter accepts:
     - `lang=ja` → 日本語
     - `lang=en` → English
     - `lang=zh-CN` (or `lang=zh`) → 简体中文 

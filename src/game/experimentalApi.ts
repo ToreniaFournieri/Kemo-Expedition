@@ -8,7 +8,16 @@ import { computePartyStats } from './partyComputation';
 import { getXpToNextLevel } from './partyLevel';
 import { getDifficultyOffsetMax } from './difficultyOffset';
 import { getDeityKey, DEITY_OPTIONS } from './deity';
-import { isDungeonEntryUnlocked } from './lootGate';
+import {
+  getBossGateKey,
+  getClearGateRequired,
+  getClearGateProgress,
+  getEliteGateKey,
+  getGodsBattleProgress,
+  getGodsBattleRequired,
+  isClearGateUnlocked,
+  isDungeonEntryUnlocked,
+} from './clearGate';
 import { getEnvironmentId } from './environment';
 
 export type ExperimentalPartyCycle = {
@@ -28,6 +37,18 @@ export function deityId(name: string): string {
 
 export function deityNameFromId(id: string): string | null {
   return DEITY_OPTIONS.find((option) => deityId(option.key) === id)?.key ?? null;
+}
+
+export function getUnlockedDeityKeys(unlockedDeities: string[]): string[] {
+  const unlockedKeys = new Set(unlockedDeities.map(getDeityKey).filter((key): key is NonNullable<ReturnType<typeof getDeityKey>> => key !== null));
+  unlockedKeys.add('None');
+  return DEITY_OPTIONS.map((option) => option.key).filter((key) => unlockedKeys.has(key));
+}
+
+export function getDeityAssignmentConflict(parties: Party[], targetPartyId: number, deityName: string): Party | null {
+  const deityKey = getDeityKey(deityName);
+  if (!deityKey || deityKey === 'None') return null;
+  return parties.find((party) => party.id !== targetPartyId && getDeityKey(party.deity.name) === deityKey) ?? null;
 }
 
 function rarity(item: Item): ItemRarity {
@@ -84,7 +105,7 @@ export function buildExperimentalObservation(
   simulatedAt: number,
 ) {
   const unlockedDungeonIds = DUNGEONS.filter((dungeon) => dungeon.id !== 99 && state.parties.some((party) => isDungeonEntryUnlocked(party, dungeon.id))).map((dungeon) => dungeon.id);
-  const unlockedDeityKeys = state.global.unlockedDeities;
+  const unlockedDeityKeys = getUnlockedDeityKeys(state.global.unlockedDeities);
   const inventoryEntries = Object.entries(state.global.inventory).filter(([, variant]) => variant.count > 0 && variant.status === 'owned');
   const equipmentByCategory = Object.fromEntries(itemCategories.map((category) => {
     const candidates = inventoryEntries.filter(([, variant]) => variant.item.category === category);
@@ -99,11 +120,70 @@ export function buildExperimentalObservation(
   const parties = state.parties.slice().sort((a, b) => a.id - b.id).map((party, partyIndex) => {
     const computed = computePartyStats(party);
     const maximumHp = computed.partyStats.hp;
-    const maximumDifficultyOffset = getDifficultyOffsetMax(DUNGEONS.find((entry) => entry.id === party.selectedDungeonId)?.expLevel ?? 1);
+    const selectedDungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
+    const maximumDifficultyOffset = getDifficultyOffsetMax(selectedDungeon?.expLevel ?? 1);
+    const clearGates = selectedDungeon?.id === 99
+      ? []
+      : [
+          ...(party.selectedDungeonId > 1 ? [{
+            id: `entry:${party.selectedDungeonId}`,
+            kind: 'entering',
+            current: party.defeatedBossExpeditions[party.selectedDungeonId - 1] ? 1 : 0,
+            required: 1,
+            satisfied: isDungeonEntryUnlocked(party, party.selectedDungeonId),
+            dungeonId: party.selectedDungeonId,
+            floor: 1,
+            room: 1,
+          }] : []),
+          ...Array.from({ length: 5 }, (_, index) => {
+            const floor = index + 1;
+            const gateKey = getEliteGateKey(party.selectedDungeonId, floor);
+            return {
+              id: String(gateKey),
+              kind: 'clear',
+              current: getClearGateProgress(party, gateKey),
+              required: getClearGateRequired(gateKey),
+              satisfied: isClearGateUnlocked(party, gateKey),
+              dungeonId: party.selectedDungeonId,
+              floor,
+              room: 4,
+            };
+          }),
+          (() => {
+            const gateKey = getBossGateKey(party.selectedDungeonId);
+            return {
+              id: String(gateKey),
+              kind: 'clear',
+              current: getClearGateProgress(party, gateKey),
+              required: getClearGateRequired(gateKey),
+              satisfied: isClearGateUnlocked(party, gateKey),
+              dungeonId: party.selectedDungeonId,
+              floor: 6,
+              room: 4,
+            };
+          })(),
+          {
+            id: `godBattle:${party.selectedDungeonId}`,
+            kind: 'godBattle',
+            current: getGodsBattleProgress(party, party.selectedDungeonId),
+            required: getGodsBattleRequired(),
+            satisfied: Boolean(
+              party.defeatedBossExpeditions[party.selectedDungeonId]
+              && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
+            ),
+            dungeonId: party.selectedDungeonId,
+            floor: null,
+            room: null,
+          },
+        ];
+    const assignableDeityIds = unlockedDeityKeys
+      .filter((deityKey) => !getDeityAssignmentConflict(state.parties, party.id, deityKey))
+      .map(deityId);
     const characterActions = party.characters.flatMap((character) => [
       { type: 'update_character_build', partyId: party.id, characterId: character.id, constraints: { preflightOperation: '/experimental/v1/build-options', editableFields: character.isUnique ? ['mainClassId', 'subClassId'] : ['name', 'gender', 'raceId', 'lineageId', 'predispositionId', 'mainClassId', 'subClassId', 'mimorianEnemyId'] } },
       { type: 'reorder_character', partyId: party.id, characterId: character.id, constraints: { minimumRow: 1, maximumRow: party.characters.length } },
       { type: 'set_auto_equipment_mode', partyId: party.id, characterId: character.id, constraints: { modes: [0, 1, 2] } },
+      { type: 'run_auto_equipment', partyId: party.id, characterId: character.id, constraints: {} },
     ]);
     return {
       id: party.id,
@@ -125,9 +205,14 @@ export function buildExperimentalObservation(
         instantExpeditionStock: party.instantExpeditionStock ?? 0,
         instantExpeditionChargeStartedAt: party.instantExpeditionChargeStartedAt ?? null,
         normalSortieAvailable: unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0,
-        godBattleAvailable: Boolean(party.defeatedBossExpeditions[party.selectedDungeonId] && (party.instantExpeditionStock ?? 0) > 0 && !autoRun),
+        godBattleAvailable: Boolean(
+          party.defeatedBossExpeditions[party.selectedDungeonId]
+          && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
+          && (party.instantExpeditionStock ?? 0) > 0
+          && !autoRun
+        ),
       },
-      lootGates: Object.entries(party.lootGateProgress).sort(([a], [b]) => a.localeCompare(b)).map(([id, current]) => ({ id, kind: id.includes('god') ? 'godBattle' : id.includes('side') ? 'sideQuest' : 'entering', current, required: 1, satisfied: Boolean(party.lootGateStatus[party.selectedDungeonId]), dungeonId: party.selectedDungeonId, floor: null, room: null })),
+      clearGates,
       sideQuest: party.sideQuest ? { ...party.sideQuest } : null,
       characters: party.characters.map((character, row) => {
         const stats = computed.characterStats[row];
@@ -144,14 +229,22 @@ export function buildExperimentalObservation(
       latestExpedition: latestExpedition(party),
       _legalActions: [
         ...characterActions,
-        { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: unlockedDeityKeys.map(deityId) } },
+        { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: assignableDeityIds } },
+        { type: 'run_auto_equipment', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_jewel_priority_party', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_expedition_destination', partyId: party.id, characterId: null, constraints: { modes: ['auto', 'fixed'], dungeonIds: unlockedDungeonIds } },
         { type: 'set_expedition_depth', partyId: party.id, characterId: null, constraints: { depthLimits: ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'] } },
         { type: 'set_expedition_difficulty', partyId: party.id, characterId: null, constraints: { minimum: 0, maximum: maximumDifficultyOffset, step: 2 } },
         ...(party.characters.flatMap((character) => character.equipment.flatMap((item, slotIndex) => item && (character.autoEquipmentMode ?? 0) === 2 ? [{ type: 'toggle_equipment_lock', partyId: party.id, characterId: character.id, constraints: { slotIndex } }] : []))),
         ...(unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0 ? [{ type: 'sortie', partyId: party.id, characterId: null, constraints: { minimumCount: 1, maximumCount: 100 } }] : []),
-        ...(party.defeatedBossExpeditions[party.selectedDungeonId] && (party.instantExpeditionStock ?? 0) > 0 && !autoRun ? [{ type: 'god_battle', partyId: party.id, characterId: null, constraints: {} }] : []),
+        ...(
+          party.defeatedBossExpeditions[party.selectedDungeonId]
+          && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
+          && (party.instantExpeditionStock ?? 0) > 0
+          && !autoRun
+            ? [{ type: 'god_battle', partyId: party.id, characterId: null, constraints: {} }]
+            : []
+        ),
       ],
     };
   });
@@ -175,7 +268,17 @@ export function buildExperimentalObservation(
       selectableLineageIds: LINEAGES.filter((entry) => entry.selectable).map((entry) => entry.id),
       unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds].sort((a, b) => a - b),
       dungeons: DUNGEONS.filter((entry) => unlockedDungeonIds.includes(entry.id)).map((entry) => ({ id: entry.id, tier: entry.tier, displayName: entry.name })),
-      deities: DEITY_OPTIONS.filter((entry) => unlockedDeityKeys.includes(entry.key)).map((entry) => ({ id: deityId(entry.key), displayName: entry.name })),
+      deities: DEITY_OPTIONS.filter((entry) => unlockedDeityKeys.includes(entry.key)).map((entry) => {
+        const assignedParty = entry.key === 'None'
+          ? null
+          : state.parties.find((party) => getDeityKey(party.deity.name) === entry.key) ?? null;
+        return {
+          id: deityId(entry.key),
+          displayName: entry.name,
+          assignedPartyId: assignedParty?.id ?? null,
+          assignedPartyName: assignedParty?.name ?? null,
+        };
+      }),
     },
     inventory: { equipmentByCategory },
     parties: parties.map(({ _legalActions: _discard, ...party }) => party),

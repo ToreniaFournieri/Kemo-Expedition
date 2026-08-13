@@ -24,7 +24,7 @@
 - Up to 6 parties can exist.
 - Locked parties are not displayed.
 - All unlocked parties are displayed normally and can be selected.
-- If only one Party is unlocked, the Party List is still visible (only one party shown).
+- If only one Party is unlocked, the Party subcategory tabs are hidden, but the reserved tab area remains unchanged.
 - The Party List becomes visible only when two or more parties are unlocked.
 
 **PT selection pane**
@@ -227,6 +227,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 ```
   - Displays selected class name and unique bonus (main bonus and main/sub bonuses)
     - If Main Class == Sub Class, then show master bonus instead of main bonus.
+    - When the master bonus is shown, display each master-bonus entry in bold to distinguish it from the shared main/sub bonuses.
 - Sub Class selection: "**サブクラス**: 魔法使い | 魔法装備, 杖x1.4, 共鳴Lv1"
   - Display the selected sub class summary as a single-line header above the selector buttons.
   - category tab is same format that of main class
