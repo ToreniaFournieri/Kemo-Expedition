@@ -12,6 +12,7 @@
 - Badge behavior:
   - Display a notification badge on both `Setting` and `News` when at least one unread news item exists. Unread news items are displayed in **bold**.
   - When the player taps a news item, mark it as read and change its text style from bold to normal.
+  - When the player closes the expanded `News` pane, mark every currently unread news item as read.
   - Remove the notification badge when no unread news items remain.
   - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
   - When a new news item is added, display the notification badge again.

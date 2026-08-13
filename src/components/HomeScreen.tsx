@@ -1,6 +1,7 @@
 import { lazy,Profiler,Suspense,useCallback,useEffect,useMemo,useRef,useState } from 'react';
 import { CLASSES } from '../data/classes';
 import { DEVELOPER_NEWS_ITEMS } from '../data/developerNews';
+import { shouldMarkDeveloperNewsReadOnPaneChange } from '../game/developerNewsReadState';
 import {
 DUNGEONS,
 getLocalizedExpeditionFloorConcept
@@ -3291,9 +3292,13 @@ export function HomeScreen({
     : activeTab === 'setting';
   const prevSettingTabVisibleRef = useRef(isSettingTabVisible);
   const isDeveloperNewsPaneExpandedRef = useRef(false);
+  // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   const handleDeveloperNewsPaneExpandedChange = useCallback((expanded: boolean) => {
+    if (shouldMarkDeveloperNewsReadOnPaneChange(isDeveloperNewsPaneExpandedRef.current, expanded)) {
+      actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+    }
     isDeveloperNewsPaneExpandedRef.current = expanded;
-  }, []);
+  }, [actions]);
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   useEffect(() => {
     if (prevSettingTabVisibleRef.current && !isSettingTabVisible && isDeveloperNewsPaneExpandedRef.current) {
