@@ -7,6 +7,7 @@ import {
   getAfkBatchBudgetMs,
   getAfkOperationWindow,
   normalizePersistedAfkChunkCursor,
+  observeAfkRecoveryBacklog,
   recordAfkSchedulerBatch,
 } from '../src/game/afkSchedulerCore.ts';
 
@@ -67,6 +68,29 @@ test('persisted mid-Chunk cursors are normalized without advancing their operati
   assert.equal(normalizePersistedAfkChunkCursor({ operationCursor: 1 }, 2), null);
 });
 
+test('AFK reconstruction requires an observed positive backlog followed by zero', () => {
+  const initialZero = observeAfkRecoveryBacklog(0, false);
+  assert.deepEqual(initialZero, {
+    hasObservedActiveRecovery: false,
+    didCompleteRecovery: false,
+  });
+
+  const active = observeAfkRecoveryBacklog(5_400_000, initialZero.hasObservedActiveRecovery);
+  assert.deepEqual(active, {
+    hasObservedActiveRecovery: true,
+    didCompleteRecovery: false,
+  });
+
+  const completed = observeAfkRecoveryBacklog(0, active.hasObservedActiveRecovery);
+  assert.deepEqual(completed, {
+    hasObservedActiveRecovery: false,
+    didCompleteRecovery: true,
+  });
+
+  const settled = observeAfkRecoveryBacklog(0, completed.hasObservedActiveRecovery);
+  assert.equal(settled.didCompleteRecovery, false);
+});
+
 test('profiling aggregates batches in memory without per-Cycle output', () => {
   const initial = createAfkSchedulerProfile(100);
   const first = recordAfkSchedulerBatch(initial, 12, 4, 3);
@@ -84,4 +108,12 @@ test('runtime slices the immutable logical Chunk plan and finalizes only its las
   assert.match(hookSource, /if \(action\.finalizeChunk !== false \|\| operationEnd >= totalOperationCount\)/);
   assert.match(homeSource, /afkChunkCursorRef\.current = finalizeChunk[\s\S]*operationStart,[\s\S]*operationCount,[\s\S]*finalizeChunk/);
   assert.match(homeSource, /minimumCommitIntervalMs = document\.visibilityState === 'visible' \? 100 : 250/);
+});
+
+test('AFK-to-online reconstruction uses the emulated anchor for Diary timestamps', () => {
+  assert.match(homeSource, /pendingAfkMsRef\.current > 0[\s\S]*!hasObservedActiveAfkRecoveryRef\.current/);
+  assert.match(homeSource, /const emulatedNow = afkSimulationAnchorRef\.current \?\? runtimeNow/);
+  assert.match(homeSource, /const simulatedExpeditionStartedAt = emulatedNow - exploreElapsedMs/);
+  assert.match(homeSource, /simulatedAt: simulatedExpeditionStartedAt/);
+  assert.match(homeSource, /stateStartedAt: runtimeExpeditionStartedAt/);
 });
