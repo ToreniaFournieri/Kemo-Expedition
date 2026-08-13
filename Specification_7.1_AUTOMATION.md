@@ -330,7 +330,8 @@
 
 - AFK (during `state.reactivate`)
   - Process AFK progression as completed expedition-cycle chunks only.
-  - At the end of each chunk:
+  - Here, `chunk` means the logical 12-Cycle gameplay Chunk defined in Spec 5.1. Scheduler batches may yield within a Chunk for responsiveness, but a scheduler yield is not a Chunk boundary and must not trigger the rules below.
+  - At the end of each logical Chunk:
   - 1. Update `condition`:
     - Recalculate `condition` once at the end of the chunk.
     - Clamp the result within its minimum and maximum limits.

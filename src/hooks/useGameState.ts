@@ -65,7 +65,7 @@ import { getItemById } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -111,6 +111,7 @@ import {
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
+import { getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -2005,7 +2006,7 @@ type GameAction =
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'COMMIT_API_STATE'; state: GameState }
@@ -2190,45 +2191,6 @@ function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, si
 }
 
 
-function getExploreTerrainDurationMultiplierForAfk(party: Party): number {
-  // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
-  if (!dungeon) return 1;
-
-  const getFloorTerrainRoomMultiplier = (terrainEffect?: string): number => {
-    if (terrainEffect === 'terrain.chill') return 2;
-    if (terrainEffect === 'terrain.looping-path') return 2;
-    return 1;
-  };
-
-  const floorByNumber = new Map(dungeon.floors.map((floor) => [floor.floorNumber, floor]));
-  const loggedRooms = party.lastExpeditionLog?.dungeonId === dungeon.id
-    ? party.lastExpeditionLog.entries
-    : [];
-
-  if (loggedRooms.length > 0) {
-    const weightedRoomMultiplierTotal = loggedRooms.reduce((total, room) => {
-      const floor = typeof room.floor === 'number' ? floorByNumber.get(room.floor) : undefined;
-      return total + getFloorTerrainRoomMultiplier(floor?.terrainEffect);
-    }, 0);
-    return weightedRoomMultiplierTotal / loggedRooms.length;
-  }
-
-  const fullDungeonRoomMultiplierTotal = dungeon.floors.reduce((total, floor) => (
-    total + (4 * getFloorTerrainRoomMultiplier(floor.terrainEffect))
-  ), 0);
-  const fullDungeonRoomCount = dungeon.floors.length * 4;
-  return fullDungeonRoomCount > 0 ? (fullDungeonRoomMultiplierTotal / fullDungeonRoomCount) : 1;
-}
-
-function getApproxAfkCycleDurationMs(party: Party, cycleDurationScale: number): number {
-  const safeScale = Math.max(0.001, cycleDurationScale);
-  const baseCycleDurationMs = BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * safeScale;
-  const deityGold = party.deityGold ?? 0;
-  const exploreDeityDurationMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, 'explore');
-  const exploreTerrainDurationMultiplier = getExploreTerrainDurationMultiplierForAfk(party);
-  return Math.max(1, Math.ceil(baseCycleDurationMs * exploreDeityDurationMultiplier * exploreTerrainDurationMultiplier));
-}
 function getApproxAfkTimeQuestProgressPerCycle(
   party: Party,
   approxCycleDurationMs: number,
@@ -4818,20 +4780,31 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (cappedElapsedMs < 1000) return state;
 
       const resolvedCycleDurationScale = Math.max(0.001, action.cycleDurationScale ?? getCycleDurationScale());
-      const cycleDurationByParty = state.parties.map((party) => getApproxAfkCycleDurationMs(party, resolvedCycleDurationScale));
+      const cycleDurationByParty = action.cycleDurationByParty?.length === state.parties.length
+        ? action.cycleDurationByParty.map((durationMs) => Math.max(1, Math.floor(durationMs)))
+        : state.parties.map((party) => getApproxAfkCycleDurationMs(party, resolvedCycleDurationScale));
       const runCountByParty = cycleDurationByParty.map((durationMs) => Math.max(0, Math.floor(cappedElapsedMs / durationMs)));
       const runCount = runCountByParty.reduce((maxRuns, count) => Math.max(maxRuns, count), 0);
       if (runCount <= 0) return state;
+
+      const totalOperationCount = runCountByParty.reduce((total, count) => total + count, 0);
+      const operationStart = Math.max(0, Math.min(totalOperationCount, Math.floor(action.operationStart ?? 0)));
+      const requestedOperationCount = Math.max(0, Math.floor(action.operationCount ?? totalOperationCount));
+      const operationEnd = Math.min(totalOperationCount, operationStart + requestedOperationCount);
+      if (operationEnd <= operationStart) return state;
 
       let workingState = state;
       const simulationEndAt = action.simulatedEndAt ?? Date.now();
       const simulationStartAt = simulationEndAt - cappedElapsedMs;
       const partyTimestampStepMs = 1_000;
 
-      for (let runIndex = 0; runIndex < runCount; runIndex++) {
-        for (let partyIndex = 0; partyIndex < workingState.parties.length; partyIndex++) {
-          const partyCycleDurationMs = cycleDurationByParty[partyIndex] ?? 1;
-          if (runIndex >= (runCountByParty[partyIndex] ?? 0)) continue;
+      const operationWindow = getAfkOperationWindow(
+        cycleDurationByParty,
+        cappedElapsedMs,
+        operationStart,
+        requestedOperationCount,
+      );
+      for (const { runIndex, partyIndex, partyCycleDurationMs } of operationWindow) {
           const cycleCompletedAt = simulationStartAt + ((runIndex + 1) * partyCycleDurationMs);
           const simulatedAt = Math.min(
             simulationEndAt,
@@ -4930,19 +4903,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ) {
             workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex });
           }
-        }
       }
 
-      const clampedParties = workingState.parties.map((party) => ({
-        ...party,
-        // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
-        condition: normalizePartyCondition(party.condition),
-      }));
+      if (action.finalizeChunk !== false || operationEnd >= totalOperationCount) {
+        const clampedParties = workingState.parties.map((party) => ({
+          ...party,
+          // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
+          condition: normalizePartyCondition(party.condition),
+        }));
 
-      workingState = {
-        ...workingState,
-        parties: clampedParties,
-      };
+        workingState = {
+          ...workingState,
+          parties: clampedParties,
+        };
+      }
 
       return workingState;
     }
@@ -5517,8 +5491,8 @@ export function useGameState() {
       dispatch({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId });
     }, []),
 
-    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number) => {
-      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale });
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale, ...batchSlice });
     }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {

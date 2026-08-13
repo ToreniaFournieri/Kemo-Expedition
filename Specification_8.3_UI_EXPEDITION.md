@@ -12,7 +12,7 @@
 - Togglr Mode Behavior
   - 一任 (Auto)
     - At the end of `state.rest`, automatically evaluate whether the party should move to the next expedition.
-    - Destination is automatically updated when this condition is satisfied. During AFK emulated mode, check at the end of each check. 
+    - Destination is automatically updated when this condition is satisfied. During AFK emulated mode, check at the end of each logical Chunk defined in Spec 5.1; an AFK scheduler yield is not a check boundary.
     - Condition for automatic progression:
 
 ```text

@@ -10,6 +10,9 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 36 | 2026/08/13 | Implement adaptive time-budgeted AFK recovery with resumable Cycle-party operation slices, immutable logical-Chunk plans, 10 Hz foreground and 4 Hz background commit limits, exact mid-Chunk cursor persistence, serialized recovery controls, reducer-only AFK side effects, in-memory profiling, and scheduler regression tests. |
+| 0.9.2 | 35 | 2026/08/13 | Reconcile AFK performance requirements with existing progression rules by distinguishing fixed 12-Cycle gameplay Chunks from adaptive scheduler batches, preserving exact mid-Chunk recovery checkpoints, serializing gameplay mutations, constraining optional worker ownership, and aligning Automation and Expedition checks to logical Chunk boundaries. |
+| 0.9.2 | 34 | 2026/08/13 | Define deterministic, time-budgeted AFK recovery performance requirements covering adaptive batching, React render isolation, durable checkpoints, responsiveness, linear scaling, profiling metrics, production benchmarks, and final-state equivalence verification. |
 | 0.9.2 | 33 | 2026/08/13 | Translate the revised Spec 1.2.2 loading messages for Laika, Sogaha, Hagakure, Leonard, and Nox across English, Simplified Chinese, and Traditional Chinese runtime locales. |
 | 0.9.2 | 32 | 2026/08/13 | Align the Japanese runtime loading-message pool exactly with Spec 1.2.2 for Laika, Sogaha, Hagakure, Leonard, and Nox while preserving random selection whenever the loading screen is displayed. |
 | 0.9.2 | 31 | 2026/08/13 | Split the monolithic HomeScreen into lazy-loaded Party, Expedition, Base, Diary, and Settings feature modules, centralize shared home UI helpers, update source-level regression tests for the new module boundaries, and configure stable vendor, locale, and game-domain chunks so production builds remain below Vite's large-chunk warning threshold. |

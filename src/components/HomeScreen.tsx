@@ -1,4 +1,4 @@
-import { lazy,Suspense,useCallback,useEffect,useMemo,useRef,useState } from 'react';
+import { lazy,Profiler,Suspense,useCallback,useEffect,useMemo,useRef,useState } from 'react';
 import { CLASSES } from '../data/classes';
 import { DEVELOPER_NEWS_ITEMS } from '../data/developerNews';
 import {
@@ -17,6 +17,15 @@ import { DebugSettings,getDebugSettings,getTimeSpeedScale,isUnlimitedTimeSpeed,s
 import { getDeityDepositMultiplier,getDeityKey,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
+import {
+createAfkChunkPlan,
+createAfkSchedulerProfile,
+getAdaptiveAfkOperationCount,
+getAfkBatchBudgetMs,
+recordAfkSchedulerBatch,
+type AfkSchedulerProfile,
+type PersistedAfkChunkCursor,
+} from '../game/afkScheduler';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
@@ -188,6 +197,15 @@ export function HomeScreen({
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
   const afkRecoveryCompletedMsRef = useRef(0);
+  const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
+  const afkAverageOperationDurationMsRef = useRef<number | null>(null);
+  const afkSchedulerProfileRef = useRef<AfkSchedulerProfile | null>(null);
+  const afkBatchMeasurementRef = useRef<{
+    startedAt: number;
+    scheduledAt: number;
+    operationCount: number;
+  } | null>(null);
+  const afkLastBatchCommittedAtRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
@@ -1658,6 +1676,7 @@ export function HomeScreen({
     setPendingAfkMs(0);
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
+    afkChunkCursorRef.current = null;
     try {
       localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
     } catch (error) {
@@ -1739,6 +1758,12 @@ export function HomeScreen({
       const restoredPendingAfkMs = parsed.pendingAfkMs;
       if (restoredPendingAfkMs > 0) {
         setPendingAfkMs(restoredPendingAfkMs);
+        afkSchedulerProfileRef.current = {
+          ...createAfkSchedulerProfile(),
+          recoveredElapsedMs: restoredPendingAfkMs,
+          activePartyCount: latestPartiesRef.current.length,
+        };
+        afkAverageOperationDurationMsRef.current = null;
         // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
         // Reset `state.reactivate` main-progress on refresh and resume counting from 0.
         afkRecoveryTotalMsRef.current = restoredPendingAfkMs;
@@ -1749,6 +1774,7 @@ export function HomeScreen({
           ? latestPartiesRef.current.map((party, index) => restoredSummaryBaseline[index] ?? { ...party.expeditionStats })
           : latestPartiesRef.current.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = parsed.shouldShowAfkSummary;
+        afkChunkCursorRef.current = parsed.afkChunkCursor;
         shouldRebuildPartyCyclesAfterAfkRef.current = true;
       }
       setPartyCycles(parsed.partyCycles);
@@ -1764,6 +1790,17 @@ export function HomeScreen({
     afkRecoveryCompletedMsRef.current = pendingAfkMs > 0
       ? Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMs)
       : 0;
+    if (pendingAfkMs === 0 && afkSchedulerProfileRef.current?.completedAt === null) {
+      const completedAt = performance.now();
+      afkSchedulerProfileRef.current = {
+        ...afkSchedulerProfileRef.current,
+        completedAt,
+        totalRecoveryDurationMs: Math.max(0, completedAt - afkSchedulerProfileRef.current.startedAt),
+      };
+      if (import.meta.env.DEV) {
+        (window as Window & { __BOKEMO_AFK_PROFILE__?: AfkSchedulerProfile }).__BOKEMO_AFK_PROFILE__ = afkSchedulerProfileRef.current;
+      }
+    }
   }, [pendingAfkMs]);
 
   // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | read-only Party Progress snapshot
@@ -2016,33 +2053,123 @@ export function HomeScreen({
   }, [actions, pendingAfkMs, state.parties]);
 
   useEffect(() => {
-    if (pendingAfkMs <= 0) return;
+    const measurement = afkBatchMeasurementRef.current;
+    if (!measurement) return;
+    afkBatchMeasurementRef.current = null;
 
+    const committedAt = performance.now();
+    const durationMs = Math.max(0, committedAt - measurement.startedAt);
+    const durationPerOperationMs = durationMs / Math.max(1, measurement.operationCount);
+    const previousAverage = afkAverageOperationDurationMsRef.current;
+    afkAverageOperationDurationMsRef.current = previousAverage === null
+      ? durationPerOperationMs
+      : (previousAverage * 0.7) + (durationPerOperationMs * 0.3);
+    afkLastBatchCommittedAtRef.current = committedAt;
+
+    const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile(measurement.startedAt);
+    afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
+      profile,
+      durationMs,
+      measurement.operationCount,
+      Math.max(0, measurement.startedAt - measurement.scheduledAt),
+    );
+    if (import.meta.env.DEV) {
+      (window as Window & { __BOKEMO_AFK_PROFILE__?: AfkSchedulerProfile }).__BOKEMO_AFK_PROFILE__ = afkSchedulerProfileRef.current;
+    }
+  }, [state]);
+
+  useEffect(() => {
+    if (pendingAfkMs <= 0 || afkBatchMeasurementRef.current) return;
+
+    const minimumCommitIntervalMs = document.visibilityState === 'visible' ? 100 : 250;
+    const now = performance.now();
+    const delayMs = Math.max(0, minimumCommitIntervalMs - (now - afkLastBatchCommittedAtRef.current));
+    const scheduledAt = now + delayMs;
     const timerId = window.setTimeout(() => {
-      const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
-      // Catch-up is processed in fixed-size chunks (12 cycles), scaled by debug speed.
-      const catchupChunkMs = Math.max(
-        PARTY_CYCLE_TICK_MS,
-        Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * Math.max(0.001, getTimeSpeedScale(debugSettings))),
-      );
-      const chunkElapsedMs = Math.min(pendingAfkMs, catchupChunkMs);
-      const anchor = afkSimulationAnchorRef.current ?? Date.now();
-      const simulatedEndAt = anchor - pendingAfkMs + chunkElapsedMs;
-      actions.simulateAfk(
-        chunkElapsedMs,
-        autoRepeatEnabled,
-        gameMode,
-        simulatedEndAt,
-        getTimeSpeedScale(debugSettings),
-      );
-      setPendingAfkMs((prev) => Math.max(0, prev - chunkElapsedMs));
-    }, 0);
+      const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+      let cursor = afkChunkCursorRef.current;
 
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [actions, debugSettings, gameMode, pendingAfkMs]);
+      if (!autoRepeatEnabledRef.current) {
+        const catchupChunkMs = Math.max(
+          PARTY_CYCLE_TICK_MS,
+          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * durationScale),
+        );
+        const skippedElapsedMs = cursor?.elapsedMs ?? Math.min(pendingAfkMsRef.current, catchupChunkMs);
+        afkChunkCursorRef.current = null;
+        setPendingAfkMs((previous) => Math.max(0, previous - skippedElapsedMs));
+        return;
+      }
+
+      if (!cursor) {
+        // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Adaptive batching
+        // Build the complete logical 12-Cycle Chunk once. Scheduler batches only slice
+        // this immutable operation plan, preserving party order, timestamps, and RNG order.
+        const catchupChunkMs = Math.max(
+          PARTY_CYCLE_TICK_MS,
+          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * durationScale),
+        );
+        const elapsedMs = Math.min(pendingAfkMsRef.current, catchupChunkMs);
+        const anchor = afkSimulationAnchorRef.current ?? Date.now();
+        const plan = createAfkChunkPlan(
+          state.parties,
+          elapsedMs,
+          anchor - pendingAfkMsRef.current + elapsedMs,
+          durationScale,
+        );
+        cursor = { ...plan, operationCursor: 0 };
+        afkChunkCursorRef.current = cursor;
+      }
+
+      if (cursor.operationCount <= 0) {
+        const completedElapsedMs = cursor.elapsedMs;
+        afkChunkCursorRef.current = null;
+        setPendingAfkMs((previous) => Math.max(0, previous - completedElapsedMs));
+        return;
+      }
+
+      const remainingOperations = cursor.operationCount - cursor.operationCursor;
+      const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+      const budgetMs = getAfkBatchBudgetMs({
+        isMobile: window.matchMedia('(pointer: coarse)').matches,
+        hardwareConcurrency: navigator.hardwareConcurrency,
+        saveData: connection?.saveData === true,
+      });
+      const operationCount = getAdaptiveAfkOperationCount(
+        remainingOperations,
+        afkAverageOperationDurationMsRef.current,
+        budgetMs,
+      );
+      const operationStart = cursor.operationCursor;
+      const nextOperationCursor = operationStart + operationCount;
+      const finalizeChunk = nextOperationCursor >= cursor.operationCount;
+      const startedAt = performance.now();
+
+      afkBatchMeasurementRef.current = { startedAt, scheduledAt, operationCount };
+      afkChunkCursorRef.current = finalizeChunk
+        ? null
+        : { ...cursor, operationCursor: nextOperationCursor };
+
+      actions.simulateAfk(
+        cursor.elapsedMs,
+        autoRepeatEnabledRef.current,
+        gameMode,
+        cursor.simulatedEndAt,
+        cursor.cycleDurationScale,
+        {
+          cycleDurationByParty: cursor.cycleDurationByParty,
+          operationStart,
+          operationCount,
+          finalizeChunk,
+        },
+      );
+
+      if (finalizeChunk) {
+        setPendingAfkMs((previous) => Math.max(0, previous - cursor.elapsedMs));
+      }
+    }, delayMs);
+
+    return () => window.clearTimeout(timerId);
+  }, [actions, debugSettings, gameMode, pendingAfkMs, state]);
 
   useEffect(() => {
     if (pendingAfkMs > 0) return;
@@ -2219,6 +2346,7 @@ export function HomeScreen({
     afkSimulationAnchor: afkSimulationAnchorRef.current,
     afkSummaryBaseline: afkSummaryBaselineRef.current,
     shouldShowAfkSummary: shouldShowAfkSummaryRef.current,
+    afkChunkCursor: afkChunkCursorRef.current,
   }), []);
 
   const persistAfkRuntimeState = useCallback((checkpointAt: number = lastCheckpointAtRef.current) => {
@@ -2255,6 +2383,7 @@ export function HomeScreen({
     afkSimulationAnchorRef.current = importedRuntime?.afkSimulationAnchor ?? null;
     afkSummaryBaselineRef.current = importedRuntime?.afkSummaryBaseline ?? null;
     shouldShowAfkSummaryRef.current = importedRuntime?.shouldShowAfkSummary ?? false;
+    afkChunkCursorRef.current = importedRuntime?.afkChunkCursor ?? null;
     shouldRebuildPartyCyclesAfterAfkRef.current = nextPendingAfkMs > 0;
     lastCheckpointAtRef.current = importedRuntime?.checkpointAt ?? now;
 
@@ -2298,6 +2427,21 @@ export function HomeScreen({
       if (pendingAfkMsRef.current <= 0) {
         afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = true;
+        afkSchedulerProfileRef.current = {
+          ...createAfkSchedulerProfile(),
+          recoveredElapsedMs: elapsedMs,
+          activePartyCount: parties.length,
+        };
+        afkAverageOperationDurationMsRef.current = null;
+      } else if (afkSchedulerProfileRef.current) {
+        afkSchedulerProfileRef.current = {
+          ...afkSchedulerProfileRef.current,
+          recoveredElapsedMs: Math.min(
+            AFK_MAX_ELAPSED_MS,
+            afkSchedulerProfileRef.current.recoveredElapsedMs + elapsedMs,
+          ),
+          activePartyCount: parties.length,
+        };
       }
       afkSimulationAnchorRef.current = now;
       const nextPendingAfkMs = Math.min(AFK_MAX_ELAPSED_MS, pendingAfkMsRef.current + elapsedMs);
@@ -2309,6 +2453,7 @@ export function HomeScreen({
       setPendingAfkMs(nextPendingAfkMs);
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;
+      actions.flushSave();
       persistAfkRuntimeState(now);
       return;
     }
@@ -2637,11 +2782,14 @@ export function HomeScreen({
 
   useEffect(() => {
     const id = window.setInterval(() => {
+      // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Saving and persistence
+      // Flush authoritative game state before writing the matching AFK cursor checkpoint.
+      if (pendingAfkMsRef.current > 0) actions.flushSave();
       persistAfkRuntimeState();
     }, 5000);
 
     return () => window.clearInterval(id);
-  }, [persistAfkRuntimeState]);
+  }, [actions.flushSave, persistAfkRuntimeState]);
 
   useEffect(() => {
     const handleFocus = () => {
@@ -2665,6 +2813,7 @@ export function HomeScreen({
     const persistLatestCheckpoint = () => {
       const now = Date.now();
       lastCheckpointAtRef.current = now;
+      actions.flushSave();
       persistAfkRuntimeState(now);
     };
 
@@ -2683,11 +2832,23 @@ export function HomeScreen({
       window.removeEventListener('pagehide', persistLatestCheckpoint);
       document.removeEventListener('visibilitychange', handleVisibilityPersist);
     };
-  }, [persistAfkRuntimeState]);
+  }, [actions.flushSave, persistAfkRuntimeState]);
 
   // Item gain notifications after selling phase
   useEffect(() => {
     // SpecRef: 8.1.1 | Notification Logic & Display | notification while AFK mode
+    if (suppressNotificationsForAfkEmulation) {
+      // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Functional correctness
+      // AFK reducer slices are authoritative. React observation effects must not replay
+      // side-quest progress, level notifications, or reward presentation per slice.
+      notifiedRewardLogRef.current = state.parties.map((party) => party.lastExpeditionLog);
+      prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
+      prevPartyLevelsRef.current = state.parties.map((party) => party.level);
+      prevPartyCycleStateRef.current = state.parties.map((_, index) => partyCycles[index]?.state ?? null);
+      justCompletedAfkRecoveryRef.current = false;
+      return;
+    }
+
     state.parties.forEach((party, index) => {
       const previousLog = prevPartyLogsRef.current[index] ?? null;
       const previousLevel = prevPartyLevelsRef.current[index] ?? party.level;
@@ -3339,7 +3500,44 @@ export function HomeScreen({
 
   return (
     <Suspense fallback={null}>
-    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
+    <Profiler
+      id="AFK recovery"
+      onRender={(_id, _phase, actualDuration) => {
+        const profile = afkSchedulerProfileRef.current;
+        if (!import.meta.env.DEV || !profile || profile.completedAt !== null || pendingAfkMsRef.current <= 0) return;
+        afkSchedulerProfileRef.current = {
+          ...profile,
+          reactCommitCount: profile.reactCommitCount + 1,
+          totalReactRenderDurationMs: profile.totalReactRenderDurationMs + Math.max(0, actualDuration),
+          longestReactCommitDurationMs: Math.max(profile.longestReactCommitDurationMs, actualDuration),
+        };
+      }}
+    >
+    <div
+      className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}
+      aria-busy={pendingAfkMs > 0}
+      onClickCapture={(event) => {
+        if (pendingAfkMs <= 0) return;
+        const target = event.target instanceof Element
+          ? event.target.closest('button, input, select, textarea, a, [role="button"]')
+          : null;
+        if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
+        // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Responsiveness
+        // Navigation and scrolling remain live, while state mutations cannot interleave
+        // with an immutable logical-Chunk recovery plan.
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onKeyDownCapture={(event) => {
+        if (pendingAfkMs <= 0 || (event.key !== 'Enter' && event.key !== ' ')) return;
+        const target = event.target instanceof Element
+          ? event.target.closest('button, input, select, textarea, a, [role="button"]')
+          : null;
+        if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+    >
       {apiControlActive && (
         <div className="fixed inset-0 z-[100] cursor-wait bg-transparent" aria-label="Experimental AI API control active">
           <button
@@ -3505,6 +3703,7 @@ export function HomeScreen({
         onDismissAll={onDismissAllNotifications}
       />
     </div>
+    </Profiler>
     </Suspense>
   );
 }

@@ -36,6 +36,7 @@ isDungeonEntryUnlocked,
 import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDisplay';
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
+import { normalizePersistedAfkChunkCursor, type AfkSimulationBatchSlice, type PersistedAfkChunkCursor } from '../../game/afkScheduler';
 import { getItemDisplayName,getLocalizedItemName } from '../../game/gameState';
 import { JEWEL_DEFS,getJewelCBonusValue,getJewelDRankValue,getJewelShortLabel } from '../../game/jewel';
 import { isSpecialMagicCastable,resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../game/magic';
@@ -205,7 +206,7 @@ export interface HomeScreenProps {
     markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
-    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => void;
     runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
       state: GameState;
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
@@ -538,6 +539,7 @@ export interface PersistedRuntimeSnapshot {
   afkSimulationAnchor: number | null;
   afkSummaryBaseline: AfkSummaryStats[] | null;
   shouldShowAfkSummary: boolean;
+  afkChunkCursor: PersistedAfkChunkCursor | null;
 }
 
 
@@ -627,6 +629,7 @@ export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: 
       : null,
     afkSummaryBaseline: baseline && baseline.length > 0 ? baseline : null,
     shouldShowAfkSummary: parsed.shouldShowAfkSummary !== false,
+    afkChunkCursor: normalizePersistedAfkChunkCursor(parsed.afkChunkCursor, normalizedPartyCount),
   };
 }
 
