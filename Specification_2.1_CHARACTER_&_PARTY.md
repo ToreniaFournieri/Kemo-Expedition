@@ -71,18 +71,18 @@
 
 | key | Japanese | short name | main/sub bonuses | main bonus | master bonus |
 |-----|----------|------------|------------------|------------|--------------|
-| class.duelist | 剣士 | 剣 | `c.equip_melee`, `c.sword_x1.4`, `c.bolt_x1.1` | `a.counter`1 | `a.counter`2 |
+| class.duelist | 剣士 | 剣 | `c.equip_melee`, `c.sword_x1.4`, `c.bolt_x1.1` | `a.counter`1 | `a.counter`2, `c.sword_x1.2` |
 | class.samurai | 侍 | 侍 | `c.equip_melee`, `c.katana_x1.4`, `c.archery_x1.2` | `a.iaigiri`1 | `a.iaigiri`2 |
-| class.sword-saint | 剣聖 | 聖 | `c.equip_melee`, `c.gauntlet_x1.4`, `c.grimoire_x1.1`, `c.equip_slot+1` | `a.re-attack`1 | `a.re-attack`2 |
-| class.ranger | 狩人 | 狩 | `c.equip_ranged`, `c.arrow_x1.4`, `c.sword_x1.1` | `a.hunter`1 | `a.hunter`2 |
-| class.striker | 弩手 | 弩 | `c.equip_ranged`, `c.bolt_x1.4`, `c.katana_x1.1` | `a.heavy-strike`1 | `a.heavy-strike`2 |
-| class.ninja | 忍者 | 忍 | `c.equip_ranged`, `c.archery_x1.4`, `c.wand_x1.1`, `c.equip_slot+1` | `a.first-strike`1 | `a.first-strike`2 |
-| class.wizard | 魔法使い | 魔 | `c.equip_magic`, `c.wand_x1.4`, `c.bolt_x1.1` | `a.resonance`1 | `a.resonance`2 |
-| class.sage | 賢者 | 賢 | `c.equip_magic`, `c.grimoire_x1.4`, `c.sword_x1.2` | `a.arc-magic`1 | `a.arc-magic`2 |
-| class.alchemist | 錬金術師 | 錬 | `c.equip_magic`, `c.catalyst_x1.4`, `c.robe_x1.1`, `c.equip_slot+1` | `a.arcane-stability`1 | `a.arcane-stability`2 |
-| class.guardian | 防人 | 防 | `c.armor_x1.4`, `c.equip_slot+2` | `a.defender`1 | `a.defender`2 |
-| class.pilgrim | 巡礼者 | 巡 | `c.robe_x1.4`, `c.equip_slot+2` | `a.m-barrier`1, `a.tithe`1 | `a.m-barrier`2, `a.tithe`1 |
-| class.lord | 君主 | 君 | `c.shield_x1.4`, `c.equip_slot+2` | `a.command`1, `a.squander`1 | `a.command`2, `a.squander`1 |
+| class.sword-saint | 剣聖 | 聖 | `c.equip_melee`, `c.gauntlet_x1.4`, `c.grimoire_x1.1`, `c.equip_slot+1` | `a.re-attack`1 | `a.re-attack`2, `c.katana_x1.2` |
+| class.ranger | 狩人 | 狩 | `c.equip_ranged`, `c.arrow_x1.4`, `c.sword_x1.1` | `a.hunter`1 | `a.hunter`2, `c.arrow_x1.2` |
+| class.striker | 弩手 | 弩 | `c.equip_ranged`, `c.bolt_x1.4`, `c.katana_x1.1` | `a.heavy-strike`1 | `a.heavy-strike`2, `c.bolt_x1.2` |
+| class.ninja | 忍者 | 忍 | `c.equip_ranged`, `c.archery_x1.4`, `c.wand_x1.1`, `c.equip_slot+1` | `a.first-strike`1 | `a.first-strike`2, `c.archery_x1.2` |
+| class.wizard | 魔法使い | 魔 | `c.equip_magic`, `c.wand_x1.4`, `c.bolt_x1.1` | `a.resonance`1 | `a.resonance`2, `c.wand_x1.2` |
+| class.sage | 賢者 | 賢 | `c.equip_magic`, `c.grimoire_x1.4`, `c.sword_x1.2` | `a.arc-magic`1 | `a.arc-magic`2, `c.grimoire_x1.2` |
+| class.alchemist | 錬金術師 | 錬 | `c.equip_magic`, `c.catalyst_x1.4`, `c.robe_x1.1`, `c.equip_slot+1` | `a.arcane-stability`1 | `a.arcane-stability`2, `c.catalyst_x1.2` |
+| class.guardian | 防人 | 防 | `c.armor_x1.4`, `c.equip_slot+2` | `a.defender`1 | `a.defender`2, `c.armor_x1.2` |
+| class.pilgrim | 巡礼者 | 巡 | `c.robe_x1.4`, `c.equip_slot+2` | `a.m-barrier`1, `a.tithe`1 | `a.m-barrier`2, `a.tithe`1, `c.robe_x1.2` |
+| class.lord | 君主 | 君 | `c.shield_x1.4`, `c.equip_slot+2` | `a.command`1, `a.squander`1 | `a.command`2, `a.squander`1, `c.shield_x1.2` |
 
 **lineage(系譜):**
 
