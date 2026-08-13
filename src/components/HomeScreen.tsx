@@ -2172,7 +2172,10 @@ export function HomeScreen({
   }, [actions, debugSettings, gameMode, pendingAfkMs, state]);
 
   useEffect(() => {
-    if (pendingAfkMs > 0) return;
+    // Hydration and background recovery update the ref synchronously before React
+    // commits `pendingAfkMs`. Do not let this effect's stale zero-valued render
+    // clear the fixed recovery denominator while that state update is pending.
+    if (pendingAfkMs > 0 || pendingAfkMsRef.current > 0) return;
 
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const now = Date.now();
