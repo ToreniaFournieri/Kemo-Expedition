@@ -2177,6 +2177,7 @@ export function HomeScreen({
 
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const now = Date.now();
+      const afkSimulationEndAt = afkSimulationAnchorRef.current ?? now;
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
       const recoveredAfkMs = Math.max(0, afkRecoveryTotalMsRef.current);
       const partialCycleSideEffects: Array<{ partyIndex: number; shouldFinalizeDiary: boolean; simulatedAt: number }> = [];
@@ -2241,7 +2242,10 @@ export function HomeScreen({
 
         const exploreElapsedMs = partialOnlineMs - moveDurationMs;
         const shouldTriggerGodsBattle = shouldAutoTriggerGodsBattle(party);
-        const expeditionStartedAt = now - exploreElapsedMs;
+        // Keep the recovered partial Cycle on the same emulated timeline as the
+        // completed AFK Chunks. Recovery itself can take measurable wall-clock
+        // time, which must not leak into Diary timestamps.
+        const expeditionStartedAt = afkSimulationEndAt - exploreElapsedMs;
         partialCycleSideEffects.push({
           partyIndex,
           shouldFinalizeDiary: exploreElapsedMs >= exploreDurationMs,
