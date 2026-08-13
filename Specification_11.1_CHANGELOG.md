@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 1 | 2026/08/13 | Update the runtime version to v0.9.3 and reset the build number to 1 for the new version. |
 | 0.9.2 | 37 | 2026/08/13 | Mark every unread Developer News article as read when the player closes the expanded News pane, while preserving individual article reads and persisted badge state. |
 | 0.9.2 | 36 | 2026/08/13 | Implement adaptive time-budgeted AFK recovery with resumable Cycle-party operation slices, immutable logical-Chunk plans, 10 Hz foreground and 4 Hz background commit limits, exact mid-Chunk cursor persistence, serialized recovery controls, reducer-only AFK side effects, in-memory profiling, and scheduler regression tests. |
 | 0.9.2 | 35 | 2026/08/13 | Reconcile AFK performance requirements with existing progression rules by distinguishing fixed 12-Cycle gameplay Chunks from adaptive scheduler batches, preserving exact mid-Chunk recovery checkpoints, serializing gameplay mutations, constraining optional worker ownership, and aligning Automation and Expedition checks to logical Chunk boundaries. |
