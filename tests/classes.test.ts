@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const source = readFileSync(new URL('../src/data/classes.ts', import.meta.url), 'utf8');
-const homeScreenSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
+const partyTabSource = readFileSync(new URL('../src/components/home/tabs/PartyTab.tsx', import.meta.url), 'utf8');
 
 function classBlock(classId: string): string {
   const start = source.indexOf(`    id: '${classId}',`);
@@ -39,9 +39,9 @@ test('class master bonuses match the specification', () => {
 
 test('character editing emphasizes only master-exclusive class bonuses', () => {
   assert.match(
-    homeScreenSource,
+    partyTabSource,
     /isMasterBonus: selectedMainClassIsMaster && index >= selectedMainSubBonuses\.length/,
   );
-  assert.match(homeScreenSource, /entry\.isMasterBonus \? 'font-bold' : ''/);
-  assert.match(homeScreenSource, /entry\.isMasterBonus \? 'font-bold' : undefined/);
+  assert.match(partyTabSource, /entry\.isMasterBonus \? 'font-bold' : ''/);
+  assert.match(partyTabSource, /entry\.isMasterBonus \? 'font-bold' : undefined/);
 });

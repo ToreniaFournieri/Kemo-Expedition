@@ -25,6 +25,18 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         partyProgress: resolve(__dirname, 'party-progress.html'),
       },
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.replaceAll('\\', '/');
+          if (normalizedId.includes('/node_modules/')) return 'vendor';
+          if (normalizedId.includes('/src/i18n/ja.ts')) return 'locale-ja';
+          if (normalizedId.includes('/src/i18n/en.ts')) return 'locale-en';
+          if (normalizedId.includes('/src/i18n/zh-CN.ts')) return 'locale-zh-CN';
+          if (normalizedId.includes('/src/i18n/zh-TW.ts')) return 'locale-zh-TW';
+          if (normalizedId.includes('/src/game/') || normalizedId.includes('/src/data/')) return 'game-domain';
+          return undefined;
+        },
+      },
     },
   },
 })

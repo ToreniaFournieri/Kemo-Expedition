@@ -5,6 +5,8 @@ import { decodePersistedState } from '../src/game/storageCompression.ts';
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
+const homeSharedSource = readFileSync(new URL('../src/components/home/homeShared.tsx', import.meta.url), 'utf8');
+const settingTabSource = readFileSync(new URL('../src/components/home/tabs/SettingTab.tsx', import.meta.url), 'utf8');
 
 test('failed game-state writes remain pending and schedule an automatic retry', () => {
   assert.match(hookSource, /const result = saveState\(pendingSaveStateRef\.current\);[\s\S]*if \(!result\.ok\)[\s\S]*flushPendingSaveAttempt\(\)/);
@@ -18,8 +20,8 @@ test('imports use the startup migration pipeline before they are persisted and c
 });
 
 test('backup payloads include a schema-marked runtime snapshot and imports replace it', () => {
-  assert.match(homeSource, /interface PersistedRuntimeSnapshot \{[\s\S]*schemaVersion: 1/);
-  assert.match(homeSource, /saveDataCompressed:[\s\S]*runtimeSnapshot: getRuntimeSnapshot\(\)/);
+  assert.match(homeSharedSource, /interface PersistedRuntimeSnapshot \{[\s\S]*schemaVersion: 1/);
+  assert.match(settingTabSource, /saveDataCompressed:[\s\S]*runtimeSnapshot: getRuntimeSnapshot\(\)/);
   assert.match(homeSource, /normalizeRuntimeSnapshot\(rawRuntimeSnapshot, result\.state\.parties\.length\)/);
   assert.match(homeSource, /localStorage\.setItem\(AFK_RUNTIME_STORAGE_KEY, JSON\.stringify\(nextRuntimeSnapshot\)\)/);
 });
