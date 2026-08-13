@@ -3385,7 +3385,7 @@ const en = {
   'home.equipment.lockAria': 'Lock equipment',
   'home.bonus.descriptionMissing': 'No description is configured for this bonus.',
   'home.nav.expeditionIcon': 'Bo',
-  'home.party.reorderLongPressHint': 'Long-press a character icon to reorder the formation',
+  'home.party.reorderDragDropHint': 'Drag and drop a character icon to reorder the formation',
   'common.stat.vitality.short': 'Vit',
   'common.stat.strength.short': 'Str',
   'common.stat.intelligence.short': 'Int',

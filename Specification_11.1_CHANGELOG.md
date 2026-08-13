@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 4 | 2026/08/13 | Correct the party formation hint in Japanese, English, Simplified Chinese, and Traditional Chinese to describe drag-and-drop reordering instead of long-pressing a character icon. |
 | 0.9.3 | 4 | 2026/08/13 | Prevent normal online party progression from running concurrently with AFK recovery across hydration, active backlog, mid-Chunk cursor, and final reconstruction boundaries, eliminating current-time Diary entries during historical catch-up. |
 | 0.9.3 | 3 | 2026/08/13 | Prevent restored AFK recovery from prematurely rebuilding an online partial Cycle by requiring an observed positive-to-zero backlog transition, preserving synchronized hydration state, and timestamping reconstructed Diary entries from the emulated AFK anchor. |
 | 0.9.3 | 2 | 2026/08/13 | Add theme-aware readability masks to expanded Bestiary artwork and keep every enemy detail above the image layer. |
