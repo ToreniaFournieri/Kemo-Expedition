@@ -25,6 +25,7 @@ getAdaptiveAfkOperationCount,
 getAfkBatchBudgetMs,
 observeAfkRecoveryBacklog,
 recordAfkSchedulerBatch,
+shouldPauseOnlineProgressForAfk,
 type AfkSchedulerProfile,
 type PersistedAfkChunkCursor,
 } from '../game/afkScheduler';
@@ -2432,6 +2433,19 @@ export function HomeScreen({
 
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
     if (apiControlActiveRef.current) {
+      lastCheckpointAtRef.current = now;
+      return;
+    }
+    // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Gameplay mutations
+    // AFK recovery is the sole gameplay writer until its backlog is exhausted and
+    // the final partial online Cycle has been reconstructed. Keep the online clock
+    // anchored so recovery wall time does not become a second catch-up interval.
+    if (shouldPauseOnlineProgressForAfk({
+      isHydrating: pendingAfkSimulationRef.current,
+      pendingAfkMs: pendingAfkMsRef.current,
+      hasChunkCursor: afkChunkCursorRef.current !== null,
+      shouldRebuildAfterRecovery: shouldRebuildPartyCyclesAfterAfkRef.current,
+    })) {
       lastCheckpointAtRef.current = now;
       return;
     }
