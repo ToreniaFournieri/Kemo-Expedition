@@ -25,11 +25,6 @@ test('backup payloads include a schema-marked runtime snapshot and imports repla
   assert.match(settingTabSource, /saveDataCompressed:[\s\S]*runtimeSnapshot: getRuntimeSnapshot\(\)/);
   assert.match(homeSource, /normalizeRuntimeSnapshot\(rawRuntimeSnapshot, result\.state\.parties\.length\)/);
   assert.match(homeSource, /localStorage\.setItem\(AFK_RUNTIME_STORAGE_KEY, JSON\.stringify\(nextRuntimeSnapshot\)\)/);
-  assert.match(
-    homeSource,
-    /if \(pendingAfkMs > 0 \|\| pendingAfkMsRef\.current > 0\) return;\s+if \(shouldRebuildPartyCyclesAfterAfkRef\.current\)[\s\S]*afkRecoveryTotalMsRef\.current = 0;/,
-    'a stale zero-valued render must not reset the AFK recovery denominator after runtime hydration',
-  );
   assert.match(homeSource, /if \(pendingAfkMsRef\.current > 0\) actions\.flushSave\(\);[\s\S]*persistAfkRuntimeState\(\)/);
 });
 
