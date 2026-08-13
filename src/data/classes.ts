@@ -43,6 +43,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'defender', abilityLevel: 2 },
+      { type: 'armor_multiplier', value: 1.2 },
     ],
   },
   {
@@ -58,6 +59,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'counter', abilityLevel: 2 },
+      { type: 'sword_multiplier', value: 1.2 },
     ],
   },
   {
@@ -89,6 +91,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 're_attack', abilityLevel: 2 },
+      { type: 'katana_multiplier', value: 1.2 },
     ],
   },
   {
@@ -104,6 +107,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 2 },
+      { type: 'arrow_multiplier', value: 1.2 },
     ],
   },
   {
@@ -119,6 +123,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'heavy_strike', abilityLevel: 2 },
+      { type: 'bolt_multiplier', value: 1.2 },
     ],
   },
   {
@@ -135,6 +140,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 2 },
+      { type: 'archery_multiplier', value: 1.2 },
     ],
   },
   {
@@ -150,6 +156,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 2 },
+      { type: 'wand_multiplier', value: 1.2 },
     ],
   },
   {
@@ -165,6 +172,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'arc_magic', abilityLevel: 2 },
+      { type: 'grimoire_multiplier', value: 1.2 },
     ],
   },
   {
@@ -181,6 +189,7 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'arcane_stability', abilityLevel: 2 },
+      { type: 'catalyst_multiplier', value: 1.2 },
     ],
   },
   {
@@ -197,6 +206,7 @@ export const CLASSES: ClassDef[] = [
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'm_barrier', abilityLevel: 2 },
       { type: 'ability', value: 1, abilityId: 'tithe', abilityLevel: 1 },
+      { type: 'robe_multiplier', value: 1.2 },
     ],
   },
   {
@@ -213,6 +223,7 @@ export const CLASSES: ClassDef[] = [
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'command', abilityLevel: 2 },
       { type: 'ability', value: 1, abilityId: 'squander', abilityLevel: 1 },
+      { type: 'shield_multiplier', value: 1.2 },
     ],
   },
 ];
