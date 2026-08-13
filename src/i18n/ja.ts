@@ -3385,7 +3385,7 @@ const ja = {
   'home.equipment.lockAria': '装備ロック',
   'home.bonus.descriptionMissing': 'このボーナスの説明は未設定です。',
   'home.nav.expeditionIcon': '冒',
-  'home.party.reorderLongPressHint': 'キャラクターアイコン長押しで隊列変更',
+  'home.party.reorderDragDropHint': 'キャラクターアイコンをドラック&ドロップで隊列変更',
   'common.stat.vitality.short': '体',
   'common.stat.strength.short': '力',
   'common.stat.intelligence.short': '知',
