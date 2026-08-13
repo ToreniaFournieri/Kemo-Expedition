@@ -53,6 +53,30 @@ test('gated-room text shows only the required streak while floating bubbles reta
   }
 });
 
+test('a newly cleared gated room discloses that progression starts on the next run', () => {
+  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW };
+  const render = (template: string, params: Record<string, string | number>) =>
+    template.replace(/\{(\w+)\}/g, (match, key: string) => String(params[key] ?? match));
+
+  for (const [language, dictionary] of Object.entries(dictionaries)) {
+    const params = { label: dictionary['home.gate.consecutiveSuccesses'], required: 9, floor: 1 };
+    const clearedText = render(dictionary['game.log.gateInfo.floorCleared'], params);
+
+    assert.equal(clearedText.includes('9'), true, language);
+    assert.equal(clearedText.includes('1F-4'), true, language);
+    assert.notEqual(clearedText, render(dictionary['game.log.gateInfo.floor'], params), language);
+  }
+
+  assert.equal(
+    render(ja['game.log.gateInfo.floorCleared'], {
+      label: ja['home.gate.consecutiveSuccesses'],
+      required: 9,
+      floor: 1,
+    }),
+    '連続攻略成功 9回 で 1F-4 解放達成（次回から先に進める）',
+  );
+});
+
 test('nine consecutive successful returns unlock the first Clear-Gate permanently', () => {
   const gateKey = getEliteGateKey(1, 1);
   const required = getClearGateRequired(gateKey);

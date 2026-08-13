@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 28 | 2026/08/13 | Change the retained locked-room Clear-Gate text on a streak-completing expedition to a localized cleared message that states the newly unlocked route becomes traversable from the next run, including Elite and Boss gates. |
 | 0.9.2 | 27 | 2026/08/13 | Move required-run-only Clear-Gate wording to the orange gated-room condition in all supported languages, including Elite and Boss rooms, and restore `current / total` progress in the floating party-pane bubble. |
 | 0.9.2 | 26 | 2026/08/13 | Apply required-run-only locked Clear-Gate detail text consistently across Japanese, English, Simplified Chinese, and Traditional Chinese for both Elite and Boss gates, while retaining `current / total` in compact summaries and progress bars. |
 | 0.9.2 | 25 | 2026/08/13 | Correct the Japanese locked Elite Clear-Gate detail text to show the required number of successful runs, such as `連続攻略成功 9回 で 1F-4解放`, while retaining current progress in the compact summary and progress bar. |

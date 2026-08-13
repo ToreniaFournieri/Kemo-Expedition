@@ -78,6 +78,7 @@ import {
   getGodsBattleProgressKey,
   getEliteGateKey,
   getBossGateKey,
+  getClearGateRequired,
   isClearGateUnlocked,
   checkClearGateRequirement,
   addRecoveredBossRaresToGodsBattleProgress,
@@ -3666,6 +3667,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ? {
             progress: progressWithGodsBattleItems,
             status: { ...(currentParty.clearGateStatus ?? {}) },
+            gateKey: null,
           }
         : applyClearGateOutcome(
             {
@@ -3686,6 +3688,41 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         nextDefeatedBossExpeditions[dungeon.id] = true;
       }
       const nextClearGateStatus = clearGateOutcomeState.status;
+
+      // SpecRef: 5.1.3.1 | A gate completed by this turned-back run remains
+      // unreachable until the next expedition, but its retained locked-room text
+      // must immediately disclose that the route has now been unlocked.
+      const clearedGateKey = clearGateOutcomeState.gateKey;
+      if (
+        clearedGateKey !== null
+        && !isClearGateUnlocked(currentParty, clearedGateKey)
+        && isClearGateUnlocked(
+          {
+            clearGateProgress: nextClearGateProgress,
+            clearGateStatus: nextClearGateStatus,
+          },
+          clearedGateKey,
+        )
+      ) {
+        const gatePosition = clearedGateKey % 1000;
+        const clearedBossGate = gatePosition === 604;
+        const clearedFloor = clearedBossGate ? 6 : Math.floor(gatePosition / 10);
+        for (let entryIndex = entries.length - 1; entryIndex >= 0; entryIndex -= 1) {
+          const entry = entries[entryIndex];
+          if (!entry.gateInfo || entry.floor !== clearedFloor || entry.roomInFloor !== 4) continue;
+          entry.gateInfo = clearedBossGate
+            ? t('game.log.gateInfo.bossCleared', {
+                label: t('home.gate.consecutiveSuccesses'),
+                required: getClearGateRequired(clearedGateKey),
+              })
+            : t('game.log.gateInfo.floorCleared', {
+                label: t('home.gate.consecutiveSuccesses'),
+                required: getClearGateRequired(clearedGateKey),
+                floor: clearedFloor,
+              });
+          break;
+        }
+      }
 
       const totalExpGain = Math.ceil(totalExp);
 
