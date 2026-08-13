@@ -232,6 +232,8 @@ PT3: 貯金額: 10G
 * Canonical outcome mapping: `Return` = `Turned_Back`, `Draw` = `Draw_Retreat`, and `Retreat` = `Wounded_Retreat`.
 * Evaluate the streak once at the end of each normal expedition. `Clear` or `Turned_Back` increments the next locked Clear-Gate by 1; `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` resets that gate's count to 0.
 * Reaching the required count permanently unlocks that gate. Previously unlocked gates never relock. If the party reaches a still-locked gate during the run that completes its required count, that run ends as `Turned_Back` and the newly unlocked route is available from the next run.
+* When the expedition meets the Clear-Gate condition, the locked-area text changes to indicate that the gate has been cleared::
+連続攻略成功 9回 で 1F-4 解放達成（次回から先に進める）
 
 **Examples**
 
