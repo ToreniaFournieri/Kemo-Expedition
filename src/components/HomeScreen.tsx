@@ -8015,15 +8015,21 @@ function PartyTab({
                 const selectedSubClassId = pendingEdits?.subClassId ?? char.subClassId;
                 const selectedMainClass = classById.get(selectedMainClassId);
                 const selectedMainClassIsMaster = selectedMainClassId === selectedSubClassId;
+                const selectedMainSubBonuses = (selectedMainClass?.mainSubBonuses ?? []) as Bonus[];
                 const selectedMainBonusList = [
-                  ...((selectedMainClass?.mainSubBonuses ?? []) as Bonus[]),
+                  ...selectedMainSubBonuses,
                   ...(selectedMainClassIsMaster
                     ? ((selectedMainClass?.masterBonuses ?? []) as Bonus[])
                     : ((selectedMainClass?.mainBonuses ?? []) as Bonus[])),
                 ];
                 const selectedMainBonusEntries = selectedMainBonusList
-                  .map((bonus, index) => buildInlineBonusEntry('main-class-bonus', selectedMainClassId, bonus, index))
-                  .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+                  .map((bonus, index) => {
+                    const entry = buildInlineBonusEntry('main-class-bonus', selectedMainClassId, bonus, index);
+                    return entry
+                      ? { ...entry, isMasterBonus: selectedMainClassIsMaster && index >= selectedMainSubBonuses.length }
+                      : null;
+                  })
+                  .filter((entry): entry is { key: string; label: string; description: string | null; isMasterBonus: boolean } => entry !== null);
 
                 return (
                   <>
@@ -8041,12 +8047,12 @@ function PartyTab({
                                   if (!entry.description) return;
                                   handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
                                 }}
-                                className="text-left hover:underline"
+                                className={`text-left hover:underline ${entry.isMasterBonus ? 'font-bold' : ''}`}
                               >
                                 {entry.label}
                               </button>
                             ) : (
-                              <span>{entry.label}</span>
+                              <span className={entry.isMasterBonus ? 'font-bold' : undefined}>{entry.label}</span>
                             )}
                           </Fragment>
                         ))}

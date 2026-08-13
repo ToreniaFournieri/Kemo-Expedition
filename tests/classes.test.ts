@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const source = readFileSync(new URL('../src/data/classes.ts', import.meta.url), 'utf8');
+const homeScreenSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
 
 function classBlock(classId: string): string {
   const start = source.indexOf(`    id: '${classId}',`);
@@ -34,4 +35,13 @@ test('class master bonuses match the specification', () => {
   }
 
   assert.doesNotMatch(classBlock('samurai'), /masterBonuses: \[[\s\S]*_multiplier'/);
+});
+
+test('character editing emphasizes only master-exclusive class bonuses', () => {
+  assert.match(
+    homeScreenSource,
+    /isMasterBonus: selectedMainClassIsMaster && index >= selectedMainSubBonuses\.length/,
+  );
+  assert.match(homeScreenSource, /entry\.isMasterBonus \? 'font-bold' : ''/);
+  assert.match(homeScreenSource, /entry\.isMasterBonus \? 'font-bold' : undefined/);
 });

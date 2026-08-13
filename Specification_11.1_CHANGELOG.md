@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 30 | 2026/08/13 | Display master-exclusive bonuses in bold within the Main Class selection summary, distinguishing them from the shared main/sub class bonuses. |
 | 0.9.2 | 29 | 2026/08/13 | Align runtime class master bonuses with Spec 2.1 by adding the specified x1.2 equipment multipliers for Duelist, Sword Saint, Ranger, Striker, Ninja, Wizard, Sage, Alchemist, Guardian, Pilgrim, and Lord; Samurai remains ability-only. |
 | 0.9.2 | 28 | 2026/08/13 | Change the retained locked-room Clear-Gate text on a streak-completing expedition to a localized cleared message that states the newly unlocked route becomes traversable from the next run, including Elite and Boss gates. |
 | 0.9.2 | 27 | 2026/08/13 | Move required-run-only Clear-Gate wording to the orange gated-room condition in all supported languages, including Elite and Boss rooms, and restore `current / total` progress in the floating party-pane bubble. |
