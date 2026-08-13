@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.2 | 33 | 2026/08/13 | Translate the revised Spec 1.2.2 loading messages for Laika, Sogaha, Hagakure, Leonard, and Nox across English, Simplified Chinese, and Traditional Chinese runtime locales. |
+| 0.9.2 | 32 | 2026/08/13 | Align the Japanese runtime loading-message pool exactly with Spec 1.2.2 for Laika, Sogaha, Hagakure, Leonard, and Nox while preserving random selection whenever the loading screen is displayed. |
 | 0.9.2 | 31 | 2026/08/13 | Split the monolithic HomeScreen into lazy-loaded Party, Expedition, Base, Diary, and Settings feature modules, centralize shared home UI helpers, update source-level regression tests for the new module boundaries, and configure stable vendor, locale, and game-domain chunks so production builds remain below Vite's large-chunk warning threshold. |
 | 0.9.2 | 30 | 2026/08/13 | Display master-exclusive bonuses in bold within the Main Class selection summary, distinguishing them from the shared main/sub class bonuses. |
 | 0.9.2 | 29 | 2026/08/13 | Align runtime class master bonuses with Spec 2.1 by adding the specified x1.2 equipment multipliers for Duelist, Sword Saint, Ranger, Striker, Ninja, Wizard, Sage, Alchemist, Guardian, Pilgrim, and Lord; Samurai remains ability-only. |
