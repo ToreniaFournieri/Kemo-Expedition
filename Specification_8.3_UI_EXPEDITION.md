@@ -102,7 +102,7 @@ HP 2350 / 4680
 
 
 - **Sub progress bar:**
-| Normal Clear-Gate condition | 🚪0/9 1F-4解放 | 連続攻略成功 9回 で 1F-4解放 |
+| Normal Clear-Gate condition | 🚪0/9 1F-4解放 | 連続攻略成功 0/9 で 1F-4解放 |
     - Displayed only when `state` is `Step-based`. (example: `state.rest`, `state.sell`, or `state.explore`)
     - For all other states, render an empty placeholder to preserve layout height.
   - Represents elapsed time within the current `Step`.
@@ -132,13 +132,13 @@ HP 2350 / 4680
 | Type | Compact display | Floating bubble text |
 |---|---|---|
 | Entry gate condition | 🗺️ボス撃破せよ| ボス撃破 でヴァルンの樹林帯 開放 |
-| Normal Clear-Gate condition | 🚪0/9 1F-4解放 | 連続攻略成功 9回 で 1F-4解放 |
+| Normal Clear-Gate condition | 🚪0/9 1F-4解放 | 連続攻略成功 0/9 で 1F-4解放 |
 | Gods Battle gate condition | 🗃️2/3 神魔解放 | ボスレアアイテム 2/3 で神魔タヌエ戦 |
 | Side quest | 📜 660分治療を受ける 🕘 | 660分治療を受ける（9%, 63分, 残り9時間） |
 
 - The thin line progress bar is displayed under the text.
 - Each progress item uses `current / total` progress.
-- A locked Clear-Gate's compact display and progress bar show `current / total`, while its floating bubble states only the total number of consecutive successful runs required to unlock the gate.
+- A locked Clear-Gate's compact display, progress bar, and floating bubble show `current / total` progress.
 - Normal Clear-Gate progress updates after the normal expedition outcome is finalized. A `Clear` or `Turned_Back` increments it, while `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` displays the reset value, such as `0/9` for the first Elite gate.
 
 **Progress calculation:**

@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { Item, Party } from '../src/types/index.ts';
+import en from '../src/i18n/en.ts';
+import ja from '../src/i18n/ja.ts';
+import zhCN from '../src/i18n/zh-CN.ts';
+import zhTW from '../src/i18n/zh-TW.ts';
 import {
   BOSS_GATE_REQUIRED,
   ELITE_GATE_REQUIREMENTS,
@@ -31,6 +35,22 @@ test('each Clear-Gate uses its floor-specific consecutive-success requirement', 
     assert.equal(getClearGateRequired(getEliteGateKey(1, floor)), ELITE_GATE_REQUIREMENTS[floor]);
   }
   assert.equal(getClearGateRequired(getBossGateKey(1)), BOSS_GATE_REQUIRED);
+});
+
+test('gated-room text shows only the required streak while floating bubbles retain progress', () => {
+  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW };
+  const render = (template: string, params: Record<string, string | number>) =>
+    template.replace(/\{(\w+)\}/g, (match, key: string) => String(params[key] ?? match));
+
+  for (const [language, dictionary] of Object.entries(dictionaries)) {
+    const params = { label: dictionary['home.gate.consecutiveSuccesses'], current: 0, required: 9, floor: 1 };
+    const gatedRoomText = render(dictionary['game.log.gateInfo.floor'], params);
+    const floatingBubbleText = render(dictionary['home.progress.eliteBubble'], params);
+
+    assert.equal(gatedRoomText.includes('0/9'), false, language);
+    assert.equal(gatedRoomText.includes('9'), true, language);
+    assert.equal(floatingBubbleText.includes('0/9'), true, language);
+  }
 });
 
 test('nine consecutive successful returns unlock the first Clear-Gate permanently', () => {

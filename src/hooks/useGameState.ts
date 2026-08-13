@@ -3235,10 +3235,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 maxPartyHP: partyStats.hp,
                 details: [],
                 gateInfo: roomDef.type === 'battle_Boss'
-                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required })
+                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, required: gateCheck.required })
                   : roomIndex === 0
                     ? t('game.log.gateInfo.dungeon', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required, dungeon: dungeon.name })
-                    : t('game.log.gateInfo.floor', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required, floor: floor.floorNumber }),
+                    : t('game.log.gateInfo.floor', { label: gateCheck.label, required: gateCheck.required, floor: floor.floorNumber }),
               };
               entries.push(gateEntry);
               finalOutcome = 'Escape';
