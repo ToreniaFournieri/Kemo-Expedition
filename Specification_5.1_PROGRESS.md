@@ -143,6 +143,11 @@
 
 AFK recovery must preserve all existing gameplay rules and deterministic behavior while avoiding prolonged main-thread blocking and unnecessary UI updates.
 
+While AFK recovery is pending, user input remains accepted. If a user interaction targets a
+state-mutating control, the scheduler pauses before starting the next AFK batch, allows the
+normal UI mutation to commit, and then resumes from the persisted AFK operation cursor. AFK
+simulation operations and UI mutations must not interleave within one scheduler batch.
+
 **Functional correctness**
 
 AFK optimization must not change the result of the simulation.

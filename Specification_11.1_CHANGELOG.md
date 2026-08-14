@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 5 | 2026/08/14 | Allow user input during AFK emulated recovery by pausing the next scheduler batch at a safe boundary, committing the normal UI mutation, and resuming from the AFK operation cursor. |
 | 0.9.3 | 4 | 2026/08/13 | Correct the party formation hint in Japanese, English, Simplified Chinese, and Traditional Chinese to describe drag-and-drop reordering instead of long-pressing a character icon. |
 | 0.9.3 | 4 | 2026/08/13 | Prevent normal online party progression from running concurrently with AFK recovery across hydration, active backlog, mid-Chunk cursor, and final reconstruction boundaries, eliminating current-time Diary entries during historical catch-up. |
 | 0.9.3 | 3 | 2026/08/13 | Prevent restored AFK recovery from prematurely rebuilding an online partial Cycle by requiring an observed positive-to-zero backlog transition, preserving synchronized hydration state, and timestamping reconstructed Diary entries from the emulated AFK anchor. |

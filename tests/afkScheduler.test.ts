@@ -125,6 +125,14 @@ test('runtime slices the immutable logical Chunk plan and finalizes only its las
   assert.match(homeSource, /minimumCommitIntervalMs = document\.visibilityState === 'visible' \? 100 : 250/);
 });
 
+test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
+  assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
+  assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkBatchMeasurementRef\.current \|\| afkInteractionPausedRef\.current\) return/);
+  assert.match(homeSource, /setTimeout\(\(\) => \{\s*if \(afkInteractionPausedRef\.current\) return;/);
+  assert.match(homeSource, /afkInteractionPausedRef\.current = false/);
+  assert.doesNotMatch(homeSource, /event\.preventDefault\(\);\s*event\.stopPropagation\(\);/);
+});
+
 test('AFK-to-online reconstruction uses the emulated anchor for Diary timestamps', () => {
   assert.match(homeSource, /pendingAfkMsRef\.current > 0[\s\S]*!hasObservedActiveAfkRecoveryRef\.current/);
   assert.match(homeSource, /const emulatedNow = afkSimulationAnchorRef\.current \?\? runtimeNow/);

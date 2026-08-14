@@ -195,8 +195,11 @@ export function HomeScreen({
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
+  const [afkInteractionPauseVersion, setAfkInteractionPauseVersion] = useState(0);
 
   const pendingAfkMsRef = useRef(0);
+  const afkInteractionPausedRef = useRef(false);
+  const afkInteractionPauseTimerRef = useRef<number | null>(null);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
   const afkRecoveryCompletedMsRef = useRef(0);
@@ -2096,13 +2099,14 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
-    if (pendingAfkMs <= 0 || afkBatchMeasurementRef.current) return;
+    if (pendingAfkMs <= 0 || afkBatchMeasurementRef.current || afkInteractionPausedRef.current) return;
 
     const minimumCommitIntervalMs = document.visibilityState === 'visible' ? 100 : 250;
     const now = performance.now();
     const delayMs = Math.max(0, minimumCommitIntervalMs - (now - afkLastBatchCommittedAtRef.current));
     const scheduledAt = now + delayMs;
     const timerId = window.setTimeout(() => {
+      if (afkInteractionPausedRef.current) return;
       const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
       let cursor = afkChunkCursorRef.current;
 
@@ -2186,7 +2190,7 @@ export function HomeScreen({
     }, delayMs);
 
     return () => window.clearTimeout(timerId);
-  }, [actions, debugSettings, gameMode, pendingAfkMs, state]);
+  }, [actions, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
 
   useEffect(() => {
     const backlogObservation = observeAfkRecoveryBacklog(
@@ -3565,10 +3569,15 @@ export function HomeScreen({
           : null;
         if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
         // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Responsiveness
-        // Navigation and scrolling remain live, while state mutations cannot interleave
-        // with an immutable logical-Chunk recovery plan.
-        event.preventDefault();
-        event.stopPropagation();
+        // Pause before the next scheduler slice, but leave the event live so the
+        // normal UI mutation can commit at a safe boundary.
+        afkInteractionPausedRef.current = true;
+        if (afkInteractionPauseTimerRef.current !== null) window.clearTimeout(afkInteractionPauseTimerRef.current);
+        afkInteractionPauseTimerRef.current = window.setTimeout(() => {
+          afkInteractionPauseTimerRef.current = null;
+          afkInteractionPausedRef.current = false;
+          setAfkInteractionPauseVersion((version) => version + 1);
+        }, 0);
       }}
       onKeyDownCapture={(event) => {
         if (pendingAfkMs <= 0 || (event.key !== 'Enter' && event.key !== ' ')) return;
@@ -3576,8 +3585,13 @@ export function HomeScreen({
           ? event.target.closest('button, input, select, textarea, a, [role="button"]')
           : null;
         if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
-        event.preventDefault();
-        event.stopPropagation();
+        afkInteractionPausedRef.current = true;
+        if (afkInteractionPauseTimerRef.current !== null) window.clearTimeout(afkInteractionPauseTimerRef.current);
+        afkInteractionPauseTimerRef.current = window.setTimeout(() => {
+          afkInteractionPauseTimerRef.current = null;
+          afkInteractionPausedRef.current = false;
+          setAfkInteractionPauseVersion((version) => version + 1);
+        }, 0);
       }}
     >
       {apiControlActive && (
