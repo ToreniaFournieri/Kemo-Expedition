@@ -1160,7 +1160,7 @@ export default function PartyTab({
 
       {hasUnlockedReligions && editingDeity && (
         <div className="mb-3 text-xs text-gray-500">
-          {t('home.party.reorderLongPressHint')}
+          {t('home.party.reorderDragDropHint')}
         </div>
       )}
 

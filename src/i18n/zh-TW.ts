@@ -3382,7 +3382,7 @@ const zhTW = {
   'home.equipment.lockAria': '鎖定裝備',
   'home.bonus.descriptionMissing': '未設定此加成的說明。',
   'home.nav.expeditionIcon': '冒',
-  'home.party.reorderLongPressHint': '長按角色圖示變更佇列',
+  'home.party.reorderDragDropHint': '拖放角色圖示以變更佇列',
   'common.stat.vitality.short': '體',
   'common.stat.strength.short': '力',
   'common.stat.intelligence.short': '知',

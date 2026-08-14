@@ -2126,12 +2126,13 @@ export default function SettingTab({
                           src={godImageSrc}
                           alt=""
                           aria-hidden="true"
-                          className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
+                          className="pointer-events-none select-none absolute left-[80%] top-0 z-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
                           style={{
                             width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
                             maxWidth: 'none',
                           }}
                         />
+                        <div className="bestiary-image-mask pointer-events-none absolute inset-0 z-[1]" aria-hidden="true" />
                       </>
                     )}
                     <div className="relative z-10 space-y-1">
@@ -2339,21 +2340,25 @@ export default function SettingTab({
                     {enemyExpanded && (
                       <div className="relative overflow-hidden px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                         {bestiaryEnemyImagePath && (
-                          <img
-                            src={bestiaryEnemyImagePath}
-                            alt=""
-                            aria-hidden="true"
-                            className="pointer-events-none select-none absolute left-[80%] top-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
-                            style={{
-                              width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
-                              maxWidth: 'none',
-                            }}
-                            onError={(event) => {
-                              event.currentTarget.style.display = 'none';
-                            }}
-                          />
+                          <>
+                            <img
+                              src={bestiaryEnemyImagePath}
+                              alt=""
+                              aria-hidden="true"
+                              className="pointer-events-none select-none absolute left-[80%] top-0 z-0 h-auto -translate-x-1/2 object-contain object-top opacity-50"
+                              style={{
+                                width: 'clamp(120%, calc(270% - 0.3 * 100vw), 150%)',
+                                maxWidth: 'none',
+                              }}
+                              onError={(event) => {
+                                event.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            <div className="bestiary-image-mask pointer-events-none absolute inset-0 z-[1]" aria-hidden="true" />
+                          </>
                         )}
-                        <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div className="relative z-10 space-y-1">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>ID: {formatNumber(displayEnemy.id)}</div>
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
@@ -2416,7 +2421,7 @@ export default function SettingTab({
                               <div key={`def-${index}`}>{defenseRows[index] ?? ''}</div>,
                             ]);
                           })()}
-                        </div>
+                          </div>
                         <div>{renderEnemyElementalResistanceLine(displayEnemy)}</div>
                         {(() => {
                           const bonusText = getEnemyTypeCBonusText(displayEnemy);
@@ -2449,6 +2454,7 @@ export default function SettingTab({
                           const battleStats = getBestiaryEnemyBattleStats(displayEnemy.id);
                           return <div>{t('setting.bestiary.battleStats', { defeats: formatNumber(battleStats.defeats), encounters: formatNumber(battleStats.encounters) })}</div>;
                         })()}
+                        </div>
                       </div>
                     )}
                   </div>

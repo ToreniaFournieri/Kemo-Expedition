@@ -210,6 +210,15 @@ body.app-dark {
   color: rgb(148 163 184);
 }
 
+/* SpecRef: 8.6 | UI_SETTING | Enemy Image Big (Expanded State) */
+.bestiary-image-mask {
+  background: rgb(255 255 255 / 0.55);
+}
+
+.theme-dark .bestiary-image-mask {
+  background: rgb(15 23 42 / 0.55);
+}
+
 .theme-dark .border-gray-300,
 .theme-dark .border-gray-200,
 .theme-dark .border-gray-100 {

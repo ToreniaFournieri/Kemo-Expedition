@@ -3384,7 +3384,7 @@ const zhCN = {
   'home.equipment.lockAria': '锁定装备',
   'home.bonus.descriptionMissing': '未设定此加成的说明。',
   'home.nav.expeditionIcon': '冒',
-  'home.party.reorderLongPressHint': '长按角色图标变更队列',
+  'home.party.reorderDragDropHint': '拖放角色图标以变更队列',
   'common.stat.vitality.short': '体',
   'common.stat.strength.short': '力',
   'common.stat.intelligence.short': '知',
