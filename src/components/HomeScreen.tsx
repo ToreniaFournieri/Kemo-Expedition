@@ -32,6 +32,7 @@ type PersistedAfkChunkCursor,
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
+import { isExperimentalApiCommandType } from '../game/experimentalApiContracts';
 import { buildExperimentalBattleLog,buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -357,7 +358,7 @@ export function HomeScreen({
       if (payload.expectedRevision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
       const command = payload.command as Record<string, unknown>;
       const type = command.type;
-      if (typeof type !== 'string' || !['update_character_build', 'reorder_character', 'set_deity', 'set_auto_equipment_mode', 'run_auto_equipment', 'toggle_equipment_lock', 'set_jewel_priority_party', 'set_expedition_destination', 'set_expedition_depth', 'set_expedition_difficulty', 'set_auto_run', 'god_battle'].includes(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
+      if (!isExperimentalApiCommandType(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
       if (type === 'run_auto_equipment') {
         const allowedKeys = new Set(['type', 'partyId', 'characterId']);
         if (Object.keys(command).some((key) => !allowedKeys.has(key)) || !Number.isInteger(command.partyId) || (command.characterId !== undefined && !Number.isInteger(command.characterId))) {

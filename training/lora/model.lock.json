@@ -1,0 +1,9 @@
+{
+  "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+  "revision": "7494131",
+  "base_model": "Qwen/Qwen3-4B-Instruct-2507",
+  "base_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "thinking": false,
+  "quantization_bits": 4,
+  "license": "Apache-2.0"
+}

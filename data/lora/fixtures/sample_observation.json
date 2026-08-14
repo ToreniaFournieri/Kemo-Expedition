@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "source": "sample_savedata/Kemo-Expedition_Backup_v0.9.2_dev_20260812.kemoz",
+  "source_version": "v0.9.2",
+  "environment": "dev",
+  "parties": [
+    {
+      "id": 1,
+      "level": 3,
+      "selectedDungeonId": 1,
+      "characters": [
+        {
+          "id": 1,
+          "raceId": "kemoria",
+          "mainClassId": "guardian",
+          "subClassId": "samurai"
+        },
+        {
+          "id": 2,
+          "raceId": "vulpinian",
+          "mainClassId": "duelist",
+          "subClassId": "pilgrim"
+        },
+        {
+          "id": 3,
+          "raceId": "leporian",
+          "mainClassId": "ranger",
+          "subClassId": "ninja"
+        },
+        {
+          "id": 4,
+          "raceId": "procyonian",
+          "mainClassId": "ninja",
+          "subClassId": "striker"
+        },
+        {
+          "id": 5,
+          "raceId": "cervin",
+          "mainClassId": "wizard",
+          "subClassId": "alchemist"
+        },
+        {
+          "id": 6,
+          "raceId": "caninian",
+          "mainClassId": "sage",
+          "subClassId": "alchemist"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "level": 1,
+      "selectedDungeonId": 1,
+      "characters": [
+        {
+          "id": 101,
+          "raceId": "vulpinian",
+          "mainClassId": "duelist",
+          "subClassId": "lord"
+        },
+        {
+          "id": 102,
+          "raceId": "orcinian",
+          "mainClassId": "samurai",
+          "subClassId": "sword-saint"
+        },
+        {
+          "id": 103,
+          "raceId": "procyonian",
+          "mainClassId": "ranger",
+          "subClassId": "ranger"
+        },
+        {
+          "id": 104,
+          "raceId": "cervin",
+          "mainClassId": "wizard",
+          "subClassId": "alchemist"
+        },
+        {
+          "id": 105,
+          "raceId": "felidian",
+          "mainClassId": "alchemist",
+          "subClassId": "wizard"
+        },
+        {
+          "id": 106,
+          "raceId": "lupinian",
+          "mainClassId": "ninja",
+          "subClassId": "wizard"
+        }
+      ]
+    }
+  ]
+}

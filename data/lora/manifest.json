@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "dataset": "BoKemo Gameplay-Assistant LoRA",
+  "source_snapshot": {
+    "version": "0.9.3",
+    "build": 7
+  },
+  "generated_at": "deterministic",
+  "generation_seed": 903007,
+  "model": {
+    "id": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+    "revision": "7494131",
+    "base": "Qwen/Qwen3-4B-Instruct-2507",
+    "thinking": false
+  },
+  "counts": {
+    "records": 4096,
+    "families": 1024,
+    "by_locale": {
+      "en": 1024,
+      "ja": 1024,
+      "zh-CN": 1024,
+      "zh-TW": 1024
+    },
+    "by_category": {
+      "api_action": 640,
+      "authoritative": 1440,
+      "calculation": 640,
+      "safety": 256,
+      "strategy": 1120
+    },
+    "by_split": {
+      "test": 408,
+      "train": 3280,
+      "valid": 408
+    }
+  },
+  "source_hashes": {
+    "Specification.md": "7239e99490b0d0d026aa01618ec35dbc183ae77959f7009b1d5012e44bd408f0",
+    "Specification_2.1_CHARACTER_&_PARTY.md": "d6cdc06c95fa56f21661a575f4fc2198ee3e46d36bcea6e4fef9adc9c7037d1e",
+    "Specification_3.1_ITEM.md": "893fc0812108a1faad0cd76f556690fef2908d60341eb642378d7898a577211c",
+    "Specification_4.1_EXPEDITION_&_ENEMY.md": "e5fb6ed154ac2185c196afa18c837229eb1ed9651f6d52206148b0078dd70aa1",
+    "Specification_5.1_PROGRESS.md": "f3d36c2c1950d697549ccb81b91dc5d1c15479e19d06ffffe209a934d69af525",
+    "Specification_6.1_BATTLE.md": "70f2484e5d61fcd33abda7a8aed1a0835dea810ef9e623d381c054795188e977",
+    "Specification_7.1_AUTOMATION.md": "9f82418edc005ea690d4d80442b40ddf3332e1c098c8281227c5936c41564603",
+    "Specification_9.1.3_API_ENDPOINTS.md": "0d40ec6e6924a536ee20196458f7da15dfb1164b88f20d798febc343e7a30620",
+    "src/data/classes.ts": "92a2d2752ca8baecd6ae3ee044a4fc1cc39cef22ad82ffc1a765a0ae5ebe0ef8",
+    "src/data/dungeons.ts": "c6142557467a514bf1c2cde07c9bf73986fb32e944733022082b66a862cd8341",
+    "src/data/lineages.ts": "4134e6e364ff8e2b442e767ab368f56da8fa55ec71b08d5adb92adb1ea5c9fbb",
+    "src/data/predispositions.ts": "55b694bd72930e018077b6a70ce580545d9e08eacb9da2f86ed8cee24c93a308",
+    "src/data/races.ts": "69de5c385e834d51f034e6d9af2c9062720bbf5f57b12b069b7be98085508aed",
+    "src/game/experimentalApi.ts": "22e0469e895ca51f718fa54e5eda916762489ecc77ca99f2c53e3ebfba3f19de",
+    "src/game/experimentalApiContracts.ts": "72e06fea23aefc46f0fd09bd92e2d2b80ccca797001e4c3aadbbcd1ffd06c3d2",
+    "src/game/partyComputation.ts": "5ae6af6b5b2835a01f5519f1a7b9ea5d5fcc4b970a58b02b0c8fd955eef95d9b",
+    "sample_savedata/Kemo-Expedition_Backup_v0.9.2_dev_20260812.kemoz": "e47776dbe7bb00464c196cc16bcbeb0bed230de340989ccc8c1bb7b26adc8a72",
+    "data/lora/fixtures/sample_observation.json": "35a4d2ac624394230e71799247bcd50428e9d248d128b14cfd0ca05e126c8a2f",
+    "data/lora/seed_v1.jsonl": "6bffbb77027053ba1ef1690d814b772f862820d721be2f3feff198f7a4741237",
+    "scripts/lora/extract-safe-fixture.mjs": "d33d827cc8cdf993fdafb875d269f6cd656bd35d7df0cf09c4568ef8d2837e38",
+    "scripts/lora/generate.mjs": "5053fa4287a23ef9a9087b967455d052ffa8988542724b30189c172f1e41ea70",
+    "scripts/lora/lib.mjs": "55e1485610e8f74ae2702996ee288de0fa17123f92a8bc5ed1d5f2e76425e91f",
+    "scripts/lora/validate.mjs": "cf046fccd2ebe96c7809d9cef8aeb6efe58e6b865f8e23912b12a360c87459ba",
+    "training/lora/model.lock.json": "2707594ea1e7ab2339caceae6ae601c63e83f5e5a44cb1acd4aec4c7144523be",
+    "training/lora/qwen3_4b_qlora.yaml": "3dbf4c3b45c7b1d18c46aa7d57c4e2ce469d98af95a1df425de585956a441bdd",
+    "build_number.txt": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+    "src/i18n/ja.ts": "289c5a089c25d20fabc9f0e5625376f246e7497e492d54c51d2c3f5c3d758eef",
+    "src/i18n/en.ts": "91cfe7bc4a6a70c02538087619f1ed0c89263195de73b10c4347087f9022c829",
+    "src/i18n/zh-CN.ts": "671c626dff463124ec97f2640f3d3fa116f3b8a930f8fb6e720634a304eadafa",
+    "src/i18n/zh-TW.ts": "73a84a93d5bd2c06bdf19def043b0122a6a40e5b8baaa81188d17856f06d7c5d"
+  },
+  "split_hashes": {
+    "train": "947a0c8211c9eaaa5e4e1cbdbd8b40bd4cbb754b2c7a049457462b54949dadf6",
+    "valid": "97b88045866f947869a68171c96f2215ab6135c044d99ebdb081674a6a2802dd",
+    "test": "71fba1f1190db8db4d33331a9ddf7542ad30024f680cfce996f7b893a0072516"
+  },
+  "corpus_sha256": "affe4b1361912eafa244bfb00db781d9afcd979de441df8c87db5f10523244b3"
+}

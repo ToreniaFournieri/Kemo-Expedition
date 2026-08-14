@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 7 | 2026/08/14 | Expand the BoKemo gameplay-assistant LoRA seed into a deterministic 4,096-record four-locale corpus with group-isolated MLX splits, shared AI API action contracts, hard validation and evaluation tooling, and a pinned Apple Silicon QLoRA training workflow. |
+| 0.9.3 | 6 | 2026/08/14 | Add a multilingual LoRA training dataset seed and documentation covering authoritative game knowledge, aligned localization, AI-control contracts, and explicitly labeled equipment-strategy heuristics and examples. |
 | 0.9.3 | 5 | 2026/08/14 | Allow user input during AFK emulated recovery by pausing the next scheduler batch at a safe boundary, committing the normal UI mutation, and resuming from the AFK operation cursor. |
 | 0.9.3 | 4 | 2026/08/13 | Correct the party formation hint in Japanese, English, Simplified Chinese, and Traditional Chinese to describe drag-and-drop reordering instead of long-pressing a character icon. |
 | 0.9.3 | 4 | 2026/08/13 | Prevent normal online party progression from running concurrently with AFK recovery across hydration, active backlog, mid-Chunk cursor, and final reconstruction boundaries, eliminating current-time Diary entries during historical catch-up. |

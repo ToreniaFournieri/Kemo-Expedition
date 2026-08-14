@@ -26,5 +26,12 @@ dist-ssr
 # Generated desktop builds
 release/
 
+# Local LoRA weights, model caches, and run reports
+adapters/
+fused_model/
+training/runs/
+.huggingface/
+__pycache__/
+
 # Generated desktop builds
 release/
