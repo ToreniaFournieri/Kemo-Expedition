@@ -7,6 +7,7 @@ const MAX_OPERATIONS_PER_BATCH = 64;
 export interface AfkChunkPlan {
   elapsedMs: number;
   simulatedEndAt: number;
+  randomSeed: number;
   cycleDurationScale: number;
   cycleDurationByParty: number[];
   operationCount: number;
@@ -55,6 +56,18 @@ export interface AfkSchedulerProfile {
   reactCommitCount: number;
   totalReactRenderDurationMs: number;
   longestReactCommitDurationMs: number;
+}
+
+export function createAfkReplaySeed(
+  elapsedMs: number,
+  simulatedEndAt: number,
+  operationCount: number,
+): number {
+  return (
+    Math.floor(simulatedEndAt)
+    ^ Math.max(0, Math.floor(elapsedMs))
+    ^ Math.imul(Math.max(0, Math.floor(operationCount)) + 1, 0x9E3779B1)
+  ) >>> 0;
 }
 
 export function observeAfkRecoveryBacklog(
@@ -134,9 +147,15 @@ export function normalizePersistedAfkChunkCursor(
   if (durations.length !== partyCount) return null;
 
   const operationCount = Math.max(0, Math.floor(Number(raw.operationCount)));
+  const derivedLegacySeed = (
+    Math.floor(Number(raw.simulatedEndAt))
+    ^ Math.floor(Number(raw.elapsedMs))
+    ^ operationCount
+  ) >>> 0;
   return {
     elapsedMs: Math.max(0, Math.floor(Number(raw.elapsedMs))),
     simulatedEndAt: Number(raw.simulatedEndAt),
+    randomSeed: Number.isFinite(raw.randomSeed) ? Math.floor(Number(raw.randomSeed)) >>> 0 : derivedLegacySeed,
     cycleDurationScale: Math.max(0.001, Number(raw.cycleDurationScale)),
     cycleDurationByParty: durations,
     operationCount,

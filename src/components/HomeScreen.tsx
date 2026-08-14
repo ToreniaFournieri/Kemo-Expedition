@@ -7,6 +7,7 @@ DUNGEONS,
 getLocalizedExpeditionFloorConcept
 } from '../data/dungeons';
 import { getSuperRareBonuses,ITEMS } from '../data/items';
+import { getColosseumEnemySettings } from '../game/colosseum';
 import { LINEAGES } from '../data/lineages';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { RACES } from '../data/races';
@@ -29,6 +30,7 @@ shouldPauseOnlineProgressForAfk,
 type AfkSchedulerProfile,
 type PersistedAfkChunkCursor,
 } from '../game/afkScheduler';
+import { isMatchingAfkWorkerSuccess,type AfkWorkerChunkRequest,type AfkWorkerChunkResponse } from '../game/afkWorkerProtocol';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
@@ -197,6 +199,8 @@ export function HomeScreen({
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
   const [afkInteractionPauseVersion, setAfkInteractionPauseVersion] = useState(0);
+  const [afkWorkerStatus, setAfkWorkerStatus] = useState<'initializing' | 'ready' | 'unavailable'>('initializing');
+  const [afkWorkerSettledVersion, setAfkWorkerSettledVersion] = useState(0);
 
   const pendingAfkMsRef = useRef(0);
   const afkInteractionPausedRef = useRef(false);
@@ -212,7 +216,13 @@ export function HomeScreen({
     scheduledAt: number;
     operationCount: number;
   } | null>(null);
-  const afkLastBatchCommittedAtRef = useRef(0);
+  const afkWorkerRef = useRef<Worker | null>(null);
+  const afkWorkerBusyRef = useRef(false);
+  const afkWorkerRequestIdRef = useRef(0);
+  const afkWorkerPendingRequestsRef = useRef(new Map<number, {
+    resolve: (response: AfkWorkerChunkResponse) => void;
+    reject: (error: Error) => void;
+  }>());
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
   const hasObservedActiveAfkRecoveryRef = useRef(false);
@@ -237,6 +247,71 @@ export function HomeScreen({
   apiActionsRef.current = actions;
   apiAutoRunRef.current = isAutoRepeatEnabled;
   apiCyclesRef.current = partyCycles;
+
+  useEffect(() => {
+    if (typeof Worker === 'undefined') {
+      setAfkWorkerStatus('unavailable');
+      return;
+    }
+
+    let worker: Worker;
+    try {
+      worker = new Worker(new URL('../workers/afkSimulation.worker.ts', import.meta.url), { type: 'module' });
+    } catch (error) {
+      console.error('Failed to initialize AFK simulation worker:', error);
+      setAfkWorkerStatus('unavailable');
+      return;
+    }
+
+    afkWorkerRef.current = worker;
+    const rejectPendingRequests = (error: Error) => {
+      afkWorkerBusyRef.current = false;
+      afkWorkerPendingRequestsRef.current.forEach(({ reject }) => reject(error));
+      afkWorkerPendingRequestsRef.current.clear();
+    };
+    const handleMessage = (event: MessageEvent<AfkWorkerChunkResponse>) => {
+      const pending = afkWorkerPendingRequestsRef.current.get(event.data.requestId);
+      if (!pending) return;
+      afkWorkerPendingRequestsRef.current.delete(event.data.requestId);
+      afkWorkerBusyRef.current = false;
+      pending.resolve(event.data);
+    };
+    const handleError = (event: ErrorEvent) => {
+      const error = new Error(event.message || 'AFK simulation worker failed.');
+      console.error('AFK simulation worker failed:', error);
+      rejectPendingRequests(error);
+      setAfkWorkerStatus('unavailable');
+    };
+    worker.addEventListener('message', handleMessage);
+    worker.addEventListener('error', handleError);
+    setAfkWorkerStatus('ready');
+
+    return () => {
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      worker.terminate();
+      if (afkWorkerRef.current === worker) afkWorkerRef.current = null;
+      rejectPendingRequests(new Error('AFK simulation worker stopped.'));
+    };
+  }, []);
+
+  const runAfkWorkerChunk = useCallback((request: AfkWorkerChunkRequest): Promise<AfkWorkerChunkResponse> => {
+    const worker = afkWorkerRef.current;
+    if (!worker || afkWorkerStatus !== 'ready') {
+      return Promise.reject(new Error('AFK simulation worker is unavailable.'));
+    }
+    afkWorkerBusyRef.current = true;
+    return new Promise((resolve, reject) => {
+      afkWorkerPendingRequestsRef.current.set(request.requestId, { resolve, reject });
+      try {
+        worker.postMessage(request);
+      } catch (error) {
+        afkWorkerPendingRequestsRef.current.delete(request.requestId);
+        afkWorkerBusyRef.current = false;
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+  }, [afkWorkerStatus]);
 
   useEffect(() => {
     apiStateVersionRef.current += 1;
@@ -2085,8 +2160,6 @@ export function HomeScreen({
     afkAverageOperationDurationMsRef.current = previousAverage === null
       ? durationPerOperationMs
       : (previousAverage * 0.7) + (durationPerOperationMs * 0.3);
-    afkLastBatchCommittedAtRef.current = committedAt;
-
     const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile(measurement.startedAt);
     afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
       profile,
@@ -2100,12 +2173,16 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
-    if (pendingAfkMs <= 0 || afkBatchMeasurementRef.current || afkInteractionPausedRef.current) return;
+    if (
+      pendingAfkMs <= 0
+      || afkBatchMeasurementRef.current
+      || afkWorkerBusyRef.current
+      || afkInteractionPausedRef.current
+      || afkWorkerStatus === 'initializing'
+    ) return;
 
-    const minimumCommitIntervalMs = document.visibilityState === 'visible' ? 100 : 250;
-    const now = performance.now();
-    const delayMs = Math.max(0, minimumCommitIntervalMs - (now - afkLastBatchCommittedAtRef.current));
-    const scheduledAt = now + delayMs;
+    let cancelled = false;
+    const scheduledAt = performance.now();
     const timerId = window.setTimeout(() => {
       if (afkInteractionPausedRef.current) return;
       const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
@@ -2123,9 +2200,9 @@ export function HomeScreen({
       }
 
       if (!cursor) {
-        // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Adaptive batching
-        // Build the complete logical 12-Cycle Chunk once. Scheduler batches only slice
-        // this immutable operation plan, preserving party order, timestamps, and RNG order.
+        // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Worker ownership
+        // Build one immutable, replayable logical Chunk. Its deterministic seed is derived
+        // from the emulated boundary, so an uncommitted job can restart after refresh.
         const catchupChunkMs = Math.max(
           PARTY_CYCLE_TICK_MS,
           Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * durationScale),
@@ -2150,18 +2227,74 @@ export function HomeScreen({
       }
 
       const remainingOperations = cursor.operationCount - cursor.operationCursor;
+      const operationStart = cursor.operationCursor;
+
+      if (afkWorkerStatus === 'ready') {
+        const requestId = afkWorkerRequestIdRef.current + 1;
+        afkWorkerRequestIdRef.current = requestId;
+        const request: AfkWorkerChunkRequest = {
+          schemaVersion: 1,
+          requestId,
+          state,
+          language: state.global.language,
+          gameMode,
+          elapsedMs: cursor.elapsedMs,
+          simulatedEndAt: cursor.simulatedEndAt,
+          cycleDurationScale: cursor.cycleDurationScale,
+          cycleDurationByParty: cursor.cycleDurationByParty,
+          operationStart,
+          operationCount: remainingOperations,
+          totalOperationCount: cursor.operationCount,
+          randomSeed: cursor.randomSeed,
+          colosseumSettings: getColosseumEnemySettings(),
+        };
+        const startedAt = performance.now();
+
+        void runAfkWorkerChunk(request).then((response) => {
+          if (cancelled) {
+            setAfkWorkerSettledVersion((version) => version + 1);
+            return;
+          }
+          if (!isMatchingAfkWorkerSuccess(response, request)) {
+            console.error('Rejected invalid AFK simulation worker result:', response);
+            setAfkWorkerStatus('unavailable');
+            setAfkWorkerSettledVersion((version) => version + 1);
+            return;
+          }
+
+          afkBatchMeasurementRef.current = {
+            startedAt,
+            scheduledAt,
+            operationCount: remainingOperations,
+          };
+          afkChunkCursorRef.current = null;
+          actions.commitAfkChunk(response.state);
+          setPendingAfkMs((previous) => Math.max(0, previous - cursor.elapsedMs));
+        }).catch((error) => {
+          if (!cancelled) console.error('AFK simulation worker request failed:', error);
+          setAfkWorkerStatus('unavailable');
+          setAfkWorkerSettledVersion((version) => version + 1);
+        });
+        return;
+      }
+
+      // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Worker fallback
+      // Retain the exact legacy cursor if Worker construction or execution is unavailable.
       const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
       const budgetMs = getAfkBatchBudgetMs({
         isMobile: window.matchMedia('(pointer: coarse)').matches,
         hardwareConcurrency: navigator.hardwareConcurrency,
         saveData: connection?.saveData === true,
       });
-      const operationCount = getAdaptiveAfkOperationCount(
+      const adaptiveOperationCount = getAdaptiveAfkOperationCount(
         remainingOperations,
         afkAverageOperationDurationMsRef.current,
         budgetMs,
       );
-      const operationStart = cursor.operationCursor;
+      const operationCount = Math.min(
+        remainingOperations,
+        Math.max(Math.min(2, remainingOperations), adaptiveOperationCount),
+      );
       const nextOperationCursor = operationStart + operationCount;
       const finalizeChunk = nextOperationCursor >= cursor.operationCount;
       const startedAt = performance.now();
@@ -2188,10 +2321,23 @@ export function HomeScreen({
       if (finalizeChunk) {
         setPendingAfkMs((previous) => Math.max(0, previous - cursor.elapsedMs));
       }
-    }, delayMs);
+    }, 0);
 
-    return () => window.clearTimeout(timerId);
-  }, [actions, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timerId);
+    };
+  }, [
+    actions,
+    afkInteractionPauseVersion,
+    afkWorkerSettledVersion,
+    afkWorkerStatus,
+    debugSettings,
+    gameMode,
+    pendingAfkMs,
+    runAfkWorkerChunk,
+    state,
+  ]);
 
   useEffect(() => {
     const backlogObservation = observeAfkRecoveryBacklog(

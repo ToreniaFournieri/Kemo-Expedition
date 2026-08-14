@@ -1964,9 +1964,9 @@ function createInitialState(): InitialStateResult {
   };
 }
 
-type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
+export type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
-type GameAction =
+export type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number; selectionMode?: 'manual' | 'auto' }
   | { type: 'SET_EXPEDITION_DESTINATION_MODE'; partyIndex: number; mode: ExpeditionDestinationMode }
@@ -2010,6 +2010,7 @@ type GameAction =
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'COMMIT_API_STATE'; state: GameState }
+  | { type: 'COMMIT_AFK_CHUNK'; state: GameState }
   | { type: 'RESET_COMMON_BAGS'; partyIndex?: number }
   | { type: 'RESET_UNIQUE_BAGS'; partyIndex?: number }
   | { type: 'RESET_COMMON_SUPER_RARE_BAG'; partyIndex?: number }
@@ -2953,7 +2954,7 @@ function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Par
   };
 }
 
-function gameReducer(state: GameState, action: GameAction): GameState {
+export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_LANGUAGE': {
       // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
@@ -5063,6 +5064,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'COMMIT_API_STATE':
+    case 'COMMIT_AFK_CHUNK':
       return action.state;
 
     case 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY': {
@@ -5493,6 +5495,10 @@ export function useGameState() {
 
     simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => {
       dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale, ...batchSlice });
+    }, []),
+
+    commitAfkChunk: useCallback((state: GameState) => {
+      dispatch({ type: 'COMMIT_AFK_CHUNK', state });
     }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {

@@ -17,10 +17,11 @@
 - **`Chunk`**: A higher-level processing unit used for bulk progression. 
   - **1 Chunk = 12 Cycles**.
   - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
-- **`AFK scheduler batch`**: One time-budgeted execution slice used to keep AFK recovery responsive.
-  - It is not a gameplay unit and has no fixed Cycle count.
-  - One scheduler batch may process part of one Chunk, exactly one Chunk, or portions of multiple Chunks.
-  - Ending or yielding a scheduler batch must not create a gameplay boundary, consume randomness, or trigger Chunk-end rules.
+- **`AFK worker job`**: One renderer-requested background simulation job for a logical Chunk.
+  - A normal worker job processes exactly one complete 12-Cycle Chunk, or the persisted remaining operations of one legacy mid-Chunk cursor.
+  - It is an execution boundary, not a new gameplay unit. Chunk-end rules still run only after the twelfth Cycle completes.
+  - The worker result is speculative until the renderer validates and commits it.
+  - The renderer must produce no intermediate React game-state commits while a worker job is running.
 
 #### 5.1.1 Party State Machine
 
@@ -115,11 +116,11 @@
 
 **Time-Based Progress Handling (Online + AFK)**
 - The party state machine is purely `Step`-based: persist state and `state_started_at`, then on each update tick calculate elapsed = `current_step` - `state_started_at`.
-- Catch-up gameplay progression must be resolved in logical Chunks, while its execution must be divided into time-budgeted AFK scheduler batches as defined in section 5.1.1.1.
+- Catch-up gameplay progression must be resolved as renderer-owned logical Chunks executed by the AFK simulation worker defined in section 5.1.1.1.
 - `simulated_elapsed` = min(elapsed, 1,800 minutes)
 - Process `simulated_elapsed` sequentially in chunks.
 - For each chunk, resolve all completed state transitions in chronological order until no further transition is completed within that chunk.
-- A scheduler yield inside a logical Chunk must preserve the exact Cycle offset and simulation state. Resuming must continue that same Chunk without repeating or skipping any gameplay event, and Chunk-end rules must wait until its twelfth Cycle completes.
+- A persisted legacy cursor inside a logical Chunk must preserve the exact Cycle offset and simulation state. Resuming must continue that same Chunk without repeating or skipping any gameplay event, and Chunk-end rules must wait until its twelfth Cycle completes.
 - 'state_started_at' must be updated only when the party state changes (at each transition boundary), never on a plain tick without transition.
 - If a transition completes exactly at a chunk boundary, treat it as completed in that chunk and carry remaining time (if any) into the next state/chunk.
 - Multiple state transitions within a single update tick are valid and must be applied deterministically in order.
@@ -143,10 +144,11 @@
 
 AFK recovery must preserve all existing gameplay rules and deterministic behavior while avoiding prolonged main-thread blocking and unnecessary UI updates.
 
-While AFK recovery is pending, user input remains accepted. If a user interaction targets a
-state-mutating control, the scheduler pauses before starting the next AFK batch, allows the
-normal UI mutation to commit, and then resumes from the persisted AFK operation cursor. AFK
-simulation operations and UI mutations must not interleave within one scheduler batch.
+While AFK recovery is pending, user input remains accepted. A state-mutating UI action commits
+only to the authoritative renderer state. If an AFK worker job is already in flight, its result
+must be discarded rather than overwriting or merging with the UI mutation. Recovery then
+restarts the same uncommitted Chunk from the newly committed renderer state. AFK simulation
+operations and UI mutations must never interleave in authoritative state.
 
 **Functional correctness**
 
@@ -174,56 +176,47 @@ the optimized recovery must produce the same gameplay result as the authoritativ
 
 Performance improvements may reduce intermediate UI updates and defer presentation work, but must not skip authoritative gameplay events.
 
-**Main-thread execution budget**
+**Worker execution and main-thread budget**
 
-A single AFK recovery batch must not occupy the main thread for longer than 50 milliseconds under normal supported conditions.
+Normal AFK emulation must execute outside the renderer main thread in a renderer-owned Web
+Worker. One worker job processes one logical Chunk sequentially. The renderer remains responsive
+while that job runs and may commit the returned game state only between Chunks.
 
-The preferred batch execution budget is:
+Renderer work used to validate, commit, persist, and present one completed Chunk must not occupy
+the main thread for longer than 50 milliseconds under normal supported conditions. Repeated
+renderer delays of 50 milliseconds or longer remain performance warnings, and delays of 100
+milliseconds or longer remain performance defects.
 
-- Desktop: approximately 12–20 ms.
-- Mobile and lower-powered devices: approximately 8–12 ms.
-- Very constrained or low-power modes: approximately 2–8 ms.
+The renderer must not add an artificial 100 ms or 250 ms delay before starting the next Chunk.
+Foreground/background frequency limits apply to presentation-only progress, not to simulation
+throughput.
 
-Batch size must be determined by elapsed execution time rather than by a fixed number of Cycles alone.
+If Web Workers are unavailable or fail to initialize, the correctness fallback may execute on the
+renderer using adaptive time-budgeted slices. The fallback must preserve the exact operation
+cursor, yield before 50 milliseconds, and must not render once per Cycle. The fallback is not the
+normal supported performance path.
 
-The scheduler should continue processing Cycles only while its current time budget remains available:
+**Worker ownership, validation, and deterministic replay**
 
-```ts
-const deadline = performance.now() + batchBudgetMs;
-
-while (hasPendingCycles() && performance.now() < deadline) {
-  simulateNextCycle();
-}
-
-yieldToMainThread();
-```
-
-The 50 ms requirement applies to game-controlled main-thread work. Delays caused exclusively by browser suspension, operating-system scheduling, debugging tools, or background-tab throttling are not considered simulation batch violations.
-
-If one indivisible simulation operation itself takes longer than 50 ms, it must be identified through profiling and considered a performance defect.
-
-**Adaptive batching**
-
-The implementation must not assume that a fixed Cycle count has similar cost on every device or for every party configuration.
-
-Batch scheduling must adapt to:
-
-- device performance;
-- number of active parties;
-- destination and battle complexity;
-- reward volume;
-- Diary processing;
-- side-quest and automation activity.
-
-A fast device may process many Cycles within one time budget. A slower device must process fewer Cycles and yield earlier.
-
-The scheduler may use recent batch measurements to estimate the number of Cycles likely to fit within the next time budget. It must still verify elapsed time while processing.
-
-A scheduler batch may yield between Cycles within a logical Chunk. Such a yield is execution-only: it must preserve the current Chunk index and Cycle offset, must not apply Chunk-end automation early, and must not change random-bag consumption or any other gameplay result.
+- The renderer is the sole authoritative owner of game state, persistence, pending AFK backlog,
+  and the logical-Chunk cursor.
+- The worker receives only the simulation snapshot and immutable Chunk plan required for one job.
+- Each request and result must carry a unique request ID plus the Chunk operation range. The
+  renderer must reject stale, malformed, mismatched, or incompatible results.
+- A Chunk request must carry the random seed or RNG state required to replay that uncommitted
+  Chunk after refresh, worker failure, or an intervening UI mutation.
+- The worker must not access local storage, desktop bridges, network APIs, call React APIs, or
+  access complete runtime state outside the supplied simulation snapshot.
+- A worker failure must leave renderer state and the pending Chunk cursor unchanged so recovery
+  can retry without duplicated rewards, skipped Cycles, Diary duplication, or RNG drift.
+- A completed worker result is committed to React exactly once. Only after that commit may the
+  renderer remove the corresponding elapsed time from the pending AFK backlog and start the next
+  Chunk.
 
 **React update frequency**
 
-Internal simulation Cycles must not each produce a React state update.
+Internal simulation Cycles must not each produce a React state update. Normal AFK recovery must
+produce at most one full React game-state commit per completed logical Chunk.
 
 AFK progress should normally be committed to React no more than 5–10 times per second. Progress updates may be less frequent when:
 
@@ -240,7 +233,7 @@ The following events may cause an immediate UI update regardless of the normal p
 - a durable recovery checkpoint;
 - a state transition requiring user attention.
 
-React progress updates are presentation updates. Reducing their frequency must not reduce the number of simulated gameplay events.
+React progress updates are presentation updates. Reducing their frequency must not reduce the number of simulated gameplay events. Background presentation may coalesce completed-Chunk progress changes, but authoritative Chunk results must still be validated and committed in order.
 
 **Render isolation**
 
@@ -262,7 +255,7 @@ Memoization and state splitting should be introduced only where profiling demons
 
 **Saving and persistence**
 
-Save serialization and persistent-storage writes must not occur after every AFK batch.
+Save serialization and persistent-storage writes must not occur after every Cycle or speculative worker job.
 
 Persistence should occur at controlled durable checkpoints, such as:
 
@@ -282,7 +275,12 @@ A checkpoint must contain enough information to resume recovery without:
 - changing RNG or random-bag order;
 - losing already committed progress.
 
-When a checkpoint occurs inside a logical Chunk, it must persist the pending AFK backlog, current Chunk index and Cycle offset, authoritative simulation state, timing anchors, and RNG or random-bag state required to resume at the exact next gameplay operation. The visible `state.reactivate` progress bar may reset after refresh as defined above, but that presentation reset must not reset or alter the authoritative recovery position.
+An in-flight worker job is not a durable checkpoint. Until its result commits, persistence retains
+the authoritative state and cursor from the beginning of that uncommitted Chunk. After refresh,
+the complete job may safely replay from that boundary. A legacy checkpoint inside a logical Chunk
+must retain its Cycle offset and resume the remaining operations. The visible `state.reactivate`
+progress bar may reset after refresh as defined above, but that presentation reset must not reset
+or alter the authoritative recovery position.
 
 The application should avoid writing identical serialized state repeatedly.
 
@@ -303,7 +301,9 @@ Gameplay mutations must not interleave with AFK simulation. A state-mutating act
 
 Repeated frame or event-loop delays of 50 ms or longer should be treated as a performance warning. Delays of 100 ms or longer caused by the game should be treated as a performance defect.
 
-Moving simulation to a renderer-owned Web Worker is recommended if time-budgeted main-thread execution cannot provide acceptable responsiveness. The renderer must remain the authoritative owner of game state and persistence: worker results must be validated and committed through the renderer, and the worker must not access persistent storage directly.
+AFK worker execution must not block scrolling, navigation, accessibility interaction, or unrelated
+animations. State-mutating input received during a worker job invalidates the speculative result;
+the user mutation commits first, and recovery retries the same Chunk from that authoritative state.
 
 **Performance scaling**
 
@@ -322,7 +322,7 @@ Significantly super-linear scaling must be investigated. Possible causes include
 - cloning increasingly large state collections;
 - recalculating unchanged party statistics;
 - processing previous results again;
-- serializing the entire save after each batch.
+- serializing the entire save after each Cycle or speculative worker job.
 
 Performance tests should record both total recovery time and normalized time per Cycle-party.
 
@@ -361,8 +361,8 @@ Development profiling must be capable of reporting:
 - total Cycle-party operations;
 - average time per Cycle;
 - average time per Cycle-party;
-- maximum batch duration;
-- number of batches;
+- maximum worker-job duration;
+- number of worker jobs;
 - React commit count;
 - total React render duration;
 - maximum React commit duration;
@@ -403,7 +403,7 @@ Reports should include:
 - median total duration;
 - slowest total duration;
 - average time per Cycle-party;
-- longest batch;
+- longest worker job;
 - React commit count;
 - longest React commit;
 - largest event-loop or frame delay.
@@ -433,11 +433,11 @@ Performance work must not be accepted if it improves speed but changes determini
 2. Create deterministic benchmark saves.
 3. Establish baseline results for one-hour, ten-hour, and maximum-duration recovery.
 4. Separate internal simulation progress from React-visible progress.
-5. Replace fixed Cycle-count batches with time-budgeted batches.
-6. Prevent save serialization and writes from running per batch.
-7. Reduce unnecessary rerenders and expensive effects.
-8. Profile simulation phases and reduce excessive allocations.
-9. Move the isolated simulator to a Web Worker if main-thread responsiveness remains inadequate.
+5. Execute one immutable logical Chunk per renderer-owned worker job.
+6. Validate and commit one authoritative React game-state update per completed Chunk.
+7. Prevent save serialization and writes from running per Cycle or speculative worker job.
+8. Reduce unnecessary rerenders, repeated state cloning, full-collection scans, and expensive effects.
+9. Profile simulation phases and retain the main-thread sliced path only as a correctness fallback.
 10. Run deterministic equivalence tests and record final benchmark results.
 
 
@@ -509,7 +509,7 @@ PT3: 貯金額: 10G
 - Side quest progress continues during AFK (`state.reactivate`).
 - Side quest respects speed modifiers (sleep 40 minutes -> use emulated time speed)
 - Deadline timing respects speed modifiers (e.g., Debug mode).
-- Deadline checks are performed once at the end of each logical Chunk, not at an AFK scheduler yield.
+- Deadline checks are performed once at the end of each logical Chunk, after its worker result commits.
 
 **Cancellation**
 - If a **神魔戦 (God Battle)** begins, the current side quest is **cancelled**.

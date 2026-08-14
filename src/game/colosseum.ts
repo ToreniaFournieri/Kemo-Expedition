@@ -31,6 +31,12 @@ const DEFAULT_COLOSSEUM_ENEMY_SETTINGS: ColosseumEnemySettings = {
   abilities: [],
 };
 
+let simulationSettingsOverride: ColosseumEnemySettings | null = null;
+
+export function setColosseumSimulationSettingsOverride(settings: ColosseumEnemySettings | null): void {
+  simulationSettingsOverride = settings ? normalizeColosseumEnemySettings(settings) : null;
+}
+
 const isEnemyClassId = (value: unknown): value is EnemyClassId => typeof value === 'string' && [
   'guardian', 'duelist', 'samurai', 'sword-saint',
   'ranger', 'striker', 'ninja',
@@ -90,6 +96,7 @@ export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySet
 }
 
 export function getColosseumEnemySettings(): ColosseumEnemySettings {
+  if (simulationSettingsOverride) return simulationSettingsOverride;
   if (!canUseStorage()) return DEFAULT_COLOSSEUM_ENEMY_SETTINGS;
   try {
     const saved = window.localStorage.getItem(COLOSSEUM_STORAGE_KEY);
