@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
-  createAfkReplaySeed,
   createAfkSchedulerProfile,
   getAdaptiveAfkOperationCount,
   getAfkBatchBudgetMs,
@@ -15,8 +14,6 @@ import {
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
-const workerSource = readFileSync(new URL('../src/workers/afkSimulation.worker.ts', import.meta.url), 'utf8');
-const workerSimulationSource = readFileSync(new URL('../src/game/afkWorkerSimulation.ts', import.meta.url), 'utf8');
 
 test('a logical AFK Chunk retains twelve Cycles per equal-duration party', () => {
   const durationMs = 450_000;
@@ -60,7 +57,6 @@ test('persisted mid-Chunk cursors are normalized without advancing their operati
   const cursor = normalizePersistedAfkChunkCursor({
     elapsedMs: 5_400_000,
     simulatedEndAt: 10_000_000,
-    randomSeed: 123456,
     cycleDurationScale: 1,
     cycleDurationByParty: [450_000, 900_000],
     operationCount: 18,
@@ -70,15 +66,7 @@ test('persisted mid-Chunk cursors are normalized without advancing their operati
   assert.ok(cursor);
   assert.equal(cursor.operationCursor, 7);
   assert.equal(cursor.operationCount, 18);
-  assert.equal(cursor.randomSeed, 123456);
   assert.equal(normalizePersistedAfkChunkCursor({ operationCursor: 1 }, 2), null);
-});
-
-test('logical Chunk plans derive a replayable seed from their immutable boundary', () => {
-  const first = createAfkReplaySeed(5_400_000, 10_000_000, 12);
-  const replay = createAfkReplaySeed(5_400_000, 10_000_000, 12);
-  assert.equal(first, replay);
-  assert.notEqual(first, createAfkReplaySeed(5_400_000, 10_000_001, 12));
 });
 
 test('AFK reconstruction requires an observed positive backlog followed by zero', () => {
@@ -130,24 +118,19 @@ test('profiling aggregates batches in memory without per-Cycle output', () => {
   assert.equal(second.longestEventLoopDelayMs, 7);
 });
 
-test('runtime sends one immutable logical Chunk to the worker and commits one result', () => {
+test('runtime slices the immutable logical Chunk plan and finalizes only its last batch', () => {
   assert.match(hookSource, /getAfkOperationWindow\([\s\S]*operationStart,[\s\S]*requestedOperationCount/);
   assert.match(hookSource, /if \(action\.finalizeChunk !== false \|\| operationEnd >= totalOperationCount\)/);
-  assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkSimulation\.worker\.ts'/);
-  assert.match(homeSource, /operationCount: remainingOperations[\s\S]*runAfkWorkerChunk\(request\)/);
-  assert.match(homeSource, /isMatchingAfkWorkerSuccess\(response, request\)[\s\S]*actions\.commitAfkChunk\(response\.state\)/);
-  assert.doesNotMatch(homeSource, /minimumCommitIntervalMs/);
-  assert.match(workerSource, /simulateAfkWorkerChunk\(request\)/);
-  assert.match(workerSimulationSource, /Math\.random = createSeededRandom\(request\.randomSeed\)/);
-  assert.match(workerSimulationSource, /operationCount: request\.operationCount[\s\S]*finalizeChunk:/);
+  assert.match(homeSource, /afkChunkCursorRef\.current = finalizeChunk[\s\S]*operationStart,[\s\S]*operationCount,[\s\S]*finalizeChunk/);
+  assert.match(homeSource, /minimumCommitIntervalMs = document\.visibilityState === 'visible' \? 100 : 250/);
 });
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
   assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
-  assert.match(homeSource, /afkWorkerBusyRef\.current[\s\S]*afkInteractionPausedRef\.current/);
+  assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkBatchMeasurementRef\.current \|\| afkInteractionPausedRef\.current\) return/);
   assert.match(homeSource, /setTimeout\(\(\) => \{\s*if \(afkInteractionPausedRef\.current\) return;/);
   assert.match(homeSource, /afkInteractionPausedRef\.current = false/);
-  assert.match(homeSource, /if \(cancelled\)[\s\S]*setAfkWorkerSettledVersion/);
+  assert.doesNotMatch(homeSource, /event\.preventDefault\(\);\s*event\.stopPropagation\(\);/);
 });
 
 test('AFK-to-online reconstruction uses the emulated anchor for Diary timestamps', () => {

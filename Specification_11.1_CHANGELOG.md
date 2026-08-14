@@ -10,7 +10,6 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
-| 0.9.3 | 8 | 2026/08/15 | Move normal AFK emulation to replayable one-Chunk Web Worker jobs with renderer validation, one React game-state commit per completed Chunk, stale-result rejection for live UI mutations, deterministic retry seeds, and an adaptive main-thread fallback. |
 | 0.9.3 | 7 | 2026/08/14 | Expand the BoKemo gameplay-assistant LoRA seed into a deterministic 4,096-record four-locale corpus with group-isolated MLX splits, shared AI API action contracts, hard validation and evaluation tooling, and a pinned Apple Silicon QLoRA training workflow. |
 | 0.9.3 | 6 | 2026/08/14 | Add a multilingual LoRA training dataset seed and documentation covering authoritative game knowledge, aligned localization, AI-control contracts, and explicitly labeled equipment-strategy heuristics and examples. |
 | 0.9.3 | 5 | 2026/08/14 | Allow user input during AFK emulated recovery by pausing the next scheduler batch at a safe boundary, committing the normal UI mutation, and resuming from the AFK operation cursor. |

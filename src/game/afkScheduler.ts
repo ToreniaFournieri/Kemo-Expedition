@@ -1,7 +1,7 @@
 import { DUNGEONS } from '../data/dungeons';
 import type { Party } from '../types';
 import { getDeityStateDurationMultiplier } from './deity';
-import { createAfkReplaySeed, type AfkChunkPlan } from './afkSchedulerCore';
+import type { AfkChunkPlan } from './afkSchedulerCore';
 export * from './afkSchedulerCore';
 
 const BASE_STEP_DURATION_MS = 15_000;
@@ -45,7 +45,6 @@ export function createAfkChunkPlan(
   elapsedMs: number,
   simulatedEndAt: number,
   cycleDurationScale: number,
-  randomSeed?: number,
 ): AfkChunkPlan {
   const normalizedElapsedMs = Math.max(0, Math.floor(elapsedMs));
   const normalizedScale = Math.max(0.001, cycleDurationScale);
@@ -53,12 +52,10 @@ export function createAfkChunkPlan(
   const operationCount = cycleDurationByParty.reduce((total, durationMs) => (
     total + Math.max(0, Math.floor(normalizedElapsedMs / durationMs))
   ), 0);
-  const derivedRandomSeed = createAfkReplaySeed(normalizedElapsedMs, simulatedEndAt, operationCount);
 
   return {
     elapsedMs: normalizedElapsedMs,
     simulatedEndAt,
-    randomSeed: Number.isFinite(randomSeed) ? Math.floor(Number(randomSeed)) >>> 0 : derivedRandomSeed,
     cycleDurationScale: normalizedScale,
     cycleDurationByParty,
     operationCount,
