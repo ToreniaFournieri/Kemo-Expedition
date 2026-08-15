@@ -93,6 +93,9 @@
 	- Logic: 伝説のショートソード triggers the rareStyle.
   	- Animation: animate-bounce (once) + animate-pulse (continuous).
 
+- Cycle event
+  - Profit usuage, praying, sortie notification. (5.1.1 Party State Machine @Specification_5.1_PROGRESS.md)
+
 - Status Changes
 	- When equipping/unequipping, it compares the old value to the new value.
     - Multi-line Trigger: If an equipment change affects multiple stats, each stat change generates its own notification block. Same clculatuon and display logic of status.  
