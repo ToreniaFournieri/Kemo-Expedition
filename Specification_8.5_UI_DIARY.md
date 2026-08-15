@@ -40,7 +40,7 @@
 * アイテム獲得通知 あり/なし (Default:あり) Item Drops
 * 自動装備通知 あり/なし (Default:あり)  Auto equipment
 * サイドクエスト(受領・失敗・獲得)通知 あり/なし (Default:あり)  Side quest
- (Ref: 8.1.1 Notification Logic & Display @Specification_8.1_UI_FOUNDATIONS.md)
+ (Ref: 8.1.1 Popup Notification Logic & Display @Specification_8.1_UI_FOUNDATIONS.md)
 ```
 
 - Title of dirary 

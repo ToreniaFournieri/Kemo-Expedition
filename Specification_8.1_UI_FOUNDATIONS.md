@@ -75,7 +75,7 @@
   - Icon assets must visually match the semantic meaning of the original emoji.
 
 
-#### 8.1.1 Notification Logic & Display
+#### 8.1.1 Popup Notification Logic & Display
 **Visual & Overlay (Toast)**
 - Position: left side, anchored above the fixed bottom primary navigation tab bar so notifications never cover the tabs.
 - Layout:
@@ -86,7 +86,7 @@
     - With Super Rare titled item, override to BOLD Dark orenge. White translucent background, no border color.
 - Behavior: Auto-dismiss after 5000ms. Manual dismiss **all of notification** on onClick. Status update dismisses previous status changes notification. (display only latest status changes)
 
-**Notification Logic**
+**Popup Notification Logic**
 - Item Drops
 	- When an item drops (exclude auto-sell items), it triggers the notification with Normal style. If the item is Super Rare, The style switchs to Rare style. No notification is displayed when the inventory count of that item is greater than 20.
     - displays party number like. ex: "PT1:名工の銅の籠手を入手"
