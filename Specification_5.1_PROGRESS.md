@@ -4,12 +4,12 @@
 **Definition of time scale.**
 - **`Step`**: The smallest unit of progression. 
   - Steps are processed **globally**, meaning all parties update their progress simultaneously at each Step. 
-  - Base duration: **15 seconds per Step**.
+  - Base duration: **30 seconds per Step**.
   - Duration modifier: **round up** after all multipliers are applied.
   - **Debug Scaling** (applies multiplicatively to Step duration):  
-    - `x5 boost` → Step × **0.2** (3 seconds)  
-    - `x20 boost` → Step × **0.05** (0.75 seconds)  
-    - `x100 boost` → Step × **0.01** (0.15 seconds)
+    - `x5 boost` → Step × **0.2** (6 seconds)  
+    - `x20 boost` → Step × **0.05** (1.5 seconds)  
+    - `x100 boost` → Step × **0.01** (0.3 seconds)
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
@@ -50,7 +50,7 @@
 |-------|-------|-------|-------|
 | `state.rest` | 休息中 | heal max(400, +6% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
-| `state.free_action` | 自由行動中 | 40 `Step` + round(`condition` / 10), using the party `condition` defined in section 7.1.2 AUTO progress logic | Continuous |
+| `state.free_action` | 自由行動中 | 40 `Step` + round(`condition` / 10) | Continuous |
 | `state.sound_sleep` | 熟睡中 | 16 `Step` | Continuous |
 | `state.pray` | 祈り中 | 4 `Step` | Continuous |
 | `state.idle` | 待機中 | - | - |
