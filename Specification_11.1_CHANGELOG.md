@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 10 | 2026/08/16 | Implement per-party Diary popup settings for Cycle events, item drops, automatic equipment, and Side Quest events, enabled by default with legacy-save migration, localized controls, runtime filtering, and regression coverage. |
 | 0.9.3 | 9 | 2026/08/15 | Keep flat physical and magical defense projections separate from percentage defense bonuses in the equipment list, with localized stat matching and regression coverage. |
 | 0.9.3 | 8 | 2026/08/15 | Align runtime Clear-Gate progression with Spec 5.1.3.1 by requiring 7, 6, 5, 4, and 3 consecutive successful runs for Elite gates 1 through 5, and 2 for the Boss gate, including updated regression coverage and localized dynamic gate text. |
 | 0.9.3 | 7 | 2026/08/14 | Expand the BoKemo gameplay-assistant LoRA seed into a deterministic 4,096-record four-locale corpus with group-isolated MLX splits, shared AI API action contracts, hard validation and evaluation tooling, and a pinned Apple Silicon QLoRA training workflow. |

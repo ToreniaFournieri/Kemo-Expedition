@@ -533,6 +533,10 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   sideQuestThreshold: 'all',
   notifyGodsBattle: true,
   defeatNotificationMode: 'defeatOnly',
+  notifyCyclePopup: true,
+  notifyItemDropPopup: true,
+  notifyAutoEquipmentPopup: true,
+  notifySideQuestPopup: true,
 };
 
 const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
@@ -766,6 +770,10 @@ function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined)
     ...DEFAULT_DIARY_SETTINGS,
     ...(value ?? {}),
     defeatNotificationMode: normalizeDiaryDefeatNotificationMode(raw?.defeatNotificationMode, raw?.notifyDefeat),
+    notifyCyclePopup: typeof raw?.notifyCyclePopup === 'boolean' ? raw.notifyCyclePopup : true,
+    notifyItemDropPopup: typeof raw?.notifyItemDropPopup === 'boolean' ? raw.notifyItemDropPopup : true,
+    notifyAutoEquipmentPopup: typeof raw?.notifyAutoEquipmentPopup === 'boolean' ? raw.notifyAutoEquipmentPopup : true,
+    notifySideQuestPopup: typeof raw?.notifySideQuestPopup === 'boolean' ? raw.notifySideQuestPopup : true,
   };
 }
 

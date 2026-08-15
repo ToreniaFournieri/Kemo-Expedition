@@ -433,6 +433,10 @@ export interface DiarySettings {
   sideQuestThreshold: DiarySideQuestThreshold;
   notifyGodsBattle: boolean;
   defeatNotificationMode: DiaryDefeatNotificationMode;
+  notifyCyclePopup: boolean;
+  notifyItemDropPopup: boolean;
+  notifyAutoEquipmentPopup: boolean;
+  notifySideQuestPopup: boolean;
   notifyDefeat?: boolean;
 }
 

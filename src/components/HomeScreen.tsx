@@ -961,7 +961,7 @@ export function HomeScreen({
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
-    const slotNotifications = new Map<string, { message: string; startedFromEmpty: boolean }>();
+    const slotNotifications = new Map<string, { message: string; partyIndex: number; startedFromEmpty: boolean }>();
     const setSlotNotification = (
       partyName: string,
       characterName: string,
@@ -979,6 +979,7 @@ export function HomeScreen({
         : t('home.notification.equipment.replaced', { previous: getItemDisplayName(previousItem!), item: getItemDisplayName(item) });
       slotNotifications.set(notificationKey, {
         message: t('home.notification.equipment.characterChanged', { party: partyName, character: characterName, message }),
+        partyIndex,
         startedFromEmpty,
       });
     };
@@ -1628,7 +1629,8 @@ export function HomeScreen({
 
     if (shouldSuppressAutoEquipmentNotifications) return summary;
 
-    slotNotifications.forEach(({ message }) => {
+    slotNotifications.forEach(({ message, partyIndex }) => {
+      if (state.parties[partyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) return;
       actions.addNotification(message, 'normal', 'item', true, {
         rarity: 'common',
         isSuperRareItem: false,
@@ -2069,7 +2071,9 @@ export function HomeScreen({
       const body = buildAfkSummaryNotification(stats);
       if (!body) return;
 
-      actions.addNotification(`PT${partyIndex + 1}: ${body}`);
+      if (party.diarySettings.notifyCyclePopup) {
+        actions.addNotification(`PT${partyIndex + 1}: ${body}`);
+      }
     });
   }, [actions, pendingAfkMs, state.parties]);
 
@@ -2568,7 +2572,7 @@ export function HomeScreen({
         // SpecRef: 5.1.2 | Side Quest | Expiration
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
           actions.cancelSideQuest(partyIndex);
-          if (!suppressCycleNotificationsForAfk) {
+          if (!suppressCycleNotificationsForAfk && party.diarySettings.notifySideQuestPopup) {
             actions.addNotification(t('home.notification.sideQuestFailed', { party: party.name, quest: resolveSideQuestShortText(party.sideQuest) }));
           }
           next[partyIndex] = updated;
@@ -2684,7 +2688,7 @@ export function HomeScreen({
               const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
               const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
               if (spend > 0) {
-                if (!suppressCycleNotificationsForAfk) {
+                if (!suppressCycleNotificationsForAfk && party.diarySettings.notifyCyclePopup) {
                   if (squanderLevel > 0) {
                     const lordName = getPartyAbilityOwnerName(party, 'squander') ?? t('common.unnamed');
                     actions.addNotification(t('home.notification.lordSquanderedGold', { party: party.name, lord: lordName, gold: formatNumber(spend) }));
@@ -2727,7 +2731,7 @@ export function HomeScreen({
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
                 const embezzledText = embezzled > 0 ? t('home.notification.embezzledSuffix', { gold: formatNumber(embezzled) }) : '';
-                if (!suppressCycleNotificationsForAfk) {
+                if (!suppressCycleNotificationsForAfk && party.diarySettings.notifyCyclePopup) {
                   if (isNoFaith) {
                     actions.addNotification(t('home.notification.partySavedGold', { party: party.name, gold: formatNumber(deposit), suffix: embezzledText }));
                   } else if (titheLevel > 0) {
@@ -2761,7 +2765,7 @@ export function HomeScreen({
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               if (triggerGodsBattle && party.sideQuest) {
                 actions.cancelSideQuest(partyIndex);
-                if (!suppressCycleNotificationsForAfk) {
+                if (!suppressCycleNotificationsForAfk && party.diarySettings.notifySideQuestPopup) {
                   actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
                 }
               }
@@ -2923,7 +2927,7 @@ export function HomeScreen({
       }
       const hasLevelUp = party.level > previousLevel;
 
-      if (hasLevelUp) {
+      if (hasLevelUp && party.diarySettings.notifyCyclePopup) {
         const representativeCharacter = party.characters[0];
         const equipSlotIncrease = representativeCharacter
           ? Math.max(
@@ -2956,17 +2960,21 @@ export function HomeScreen({
           return;
         }
 
-        for (const item of currentLog.rewards) {
-          const isSuperRare = item.superRare > 0;
-          const itemName = getItemDisplayName(item);
-          const rarity = getItemRarityById(item.id);
-          actions.addNotification(
-            t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-            rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
-            'item',
-            undefined,
-            { rarity, isSuperRareItem: isSuperRare }
-          );
+        if (party.diarySettings.notifyItemDropPopup) {
+          for (const item of currentLog.rewards) {
+            const inventoryCount = state.global.inventory[getVariantKey(item)]?.count ?? 0;
+            if (inventoryCount > 20) continue;
+            const isSuperRare = item.superRare > 0;
+            const itemName = getItemDisplayName(item);
+            const rarity = getItemRarityById(item.id);
+            actions.addNotification(
+              t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
+              rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+              'item',
+              undefined,
+              { rarity, isSuperRareItem: isSuperRare }
+            );
+          }
         }
         notifiedRewardLogRef.current[index] = currentLog;
         instantSortieRewardNotificationPendingRef.current[index] = false;
@@ -2988,10 +2996,10 @@ export function HomeScreen({
     state.parties.forEach((party, index) => {
       const prevQuest = prevSideQuestRef.current[index] ?? null;
       const nextQuest = party.sideQuest ?? null;
-      if (!prevQuest && nextQuest && !suppressNotificationsForAfkEmulation) {
+      if (!prevQuest && nextQuest && !suppressNotificationsForAfkEmulation && party.diarySettings.notifySideQuestPopup) {
         actions.addNotification(getSideQuestAssignMessage(party.name, resolveSideQuestShortText(nextQuest)));
       }
-      if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation) {
+      if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation && party.diarySettings.notifySideQuestPopup) {
         const latestDiary = party.diaryLogs?.[0];
         if (latestDiary?.triggers?.includes('sideQuest')) {
           const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
@@ -3222,21 +3230,23 @@ export function HomeScreen({
     if (!currentLog || currentLog.rewards.length <= 0) return;
     if (notifiedRewardLogRef.current[partyIndex] === currentLog) return;
 
-    for (const item of currentLog.rewards) {
-      const variantKey = getVariantKey(item);
-      const inventoryCount = state.global.inventory[variantKey]?.count ?? 0;
-      if (inventoryCount > 20) continue;
+    if (party.diarySettings.notifyItemDropPopup) {
+      for (const item of currentLog.rewards) {
+        const variantKey = getVariantKey(item);
+        const inventoryCount = state.global.inventory[variantKey]?.count ?? 0;
+        if (inventoryCount > 20) continue;
 
-      const isSuperRare = item.superRare > 0;
-      const itemName = getItemDisplayName(item);
-      const rarity = getItemRarityById(item.id);
-      actions.addNotification(
-        t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-        rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
-        'item',
-        undefined,
-        { rarity, isSuperRareItem: isSuperRare }
-      );
+        const isSuperRare = item.superRare > 0;
+        const itemName = getItemDisplayName(item);
+        const rarity = getItemRarityById(item.id);
+        actions.addNotification(
+          t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
+          rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+          'item',
+          undefined,
+          { rarity, isSuperRareItem: isSuperRare }
+        );
+      }
     }
 
     notifiedRewardLogRef.current[partyIndex] = currentLog;
@@ -3255,26 +3265,26 @@ export function HomeScreen({
 
     if (!isColosseumSortie && (party.currentHp <= 0 || partyStats.hp <= 0)) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
-      actions.addNotification(t('home.notification.characterRefusedExpedition', { character: refusingCharacter }));
+      if (party.diarySettings.notifyCyclePopup) actions.addNotification(t('home.notification.characterRefusedExpedition', { character: refusingCharacter }));
       return;
     }
 
     // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
     if (triggerGodsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) {
-      actions.addNotification(t('home.notification.partyAlreadyMovingToGodBattle', { party: party.name }));
+      if (party.diarySettings.notifyCyclePopup) actions.addNotification(t('home.notification.partyAlreadyMovingToGodBattle', { party: party.name }));
       return;
     }
     // SpecRef: 8.3 | UI_EXPEDITION | Charge
     if (!isColosseumSortie && instantChargeState.stock <= 0) {
-      actions.addNotification(t('home.notification.instantExpeditionChargeInsufficient', { party: party.name }));
+      if (party.diarySettings.notifyCyclePopup) actions.addNotification(t('home.notification.instantExpeditionChargeInsufficient', { party: party.name }));
       return;
     }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
-    if (stolenProfit > 0) {
+    if (party.diarySettings.notifyCyclePopup && stolenProfit > 0) {
       actions.addNotification(t('home.notification.instantExpeditionWithStolenGold', { party: party.name, gold: formatNumber(stolenProfit) }));
-    } else {
+    } else if (party.diarySettings.notifyCyclePopup) {
       actions.addNotification(t('home.notification.instantExpeditionStarted', { party: party.name }));
     }
 
@@ -3282,7 +3292,7 @@ export function HomeScreen({
 
     if (triggerGodsBattle && party.sideQuest) {
       actions.cancelSideQuest(partyIndex);
-      actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
+      if (party.diarySettings.notifySideQuestPopup) actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
     }
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
