@@ -3,13 +3,13 @@ import type { Item, Party } from '../types/index.ts';
 export type ClearGateOutcome = 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat';
 
 export const ELITE_GATE_REQUIREMENTS: Readonly<Record<number, number>> = {
-  1: 9,
-  2: 8,
-  3: 7,
-  4: 6,
-  5: 5,
+  1: 7,
+  2: 6,
+  3: 5,
+  4: 4,
+  5: 3,
 };
-export const BOSS_GATE_REQUIRED = 4;
+export const BOSS_GATE_REQUIRED = 2;
 
 const LEGACY_ELITE_GATE_REQUIREMENTS: Record<number, number> = {
   1: 2,

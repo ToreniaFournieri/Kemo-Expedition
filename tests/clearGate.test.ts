@@ -31,10 +31,12 @@ function gateParty(overrides: Partial<GateParty> = {}): GateParty {
 }
 
 test('each Clear-Gate uses its floor-specific consecutive-success requirement', () => {
+  assert.deepEqual(ELITE_GATE_REQUIREMENTS, { 1: 7, 2: 6, 3: 5, 4: 4, 5: 3 });
   for (let floor = 1; floor <= 5; floor += 1) {
     assert.equal(getClearGateRequired(getEliteGateKey(1, floor)), ELITE_GATE_REQUIREMENTS[floor]);
   }
-  assert.equal(getClearGateRequired(getBossGateKey(1)), BOSS_GATE_REQUIRED);
+  assert.equal(BOSS_GATE_REQUIRED, 2);
+  assert.equal(getClearGateRequired(getBossGateKey(1)), 2);
 });
 
 test('gated-room text shows only the required streak while floating bubbles retain progress', () => {
@@ -43,13 +45,13 @@ test('gated-room text shows only the required streak while floating bubbles reta
     template.replace(/\{(\w+)\}/g, (match, key: string) => String(params[key] ?? match));
 
   for (const [language, dictionary] of Object.entries(dictionaries)) {
-    const params = { label: dictionary['home.gate.consecutiveSuccesses'], current: 0, required: 9, floor: 1 };
+    const params = { label: dictionary['home.gate.consecutiveSuccesses'], current: 0, required: 7, floor: 1 };
     const gatedRoomText = render(dictionary['game.log.gateInfo.floor'], params);
     const floatingBubbleText = render(dictionary['home.progress.eliteBubble'], params);
 
-    assert.equal(gatedRoomText.includes('0/9'), false, language);
-    assert.equal(gatedRoomText.includes('9'), true, language);
-    assert.equal(floatingBubbleText.includes('0/9'), true, language);
+    assert.equal(gatedRoomText.includes('0/7'), false, language);
+    assert.equal(gatedRoomText.includes('7'), true, language);
+    assert.equal(floatingBubbleText.includes('0/7'), true, language);
   }
 });
 
@@ -59,10 +61,10 @@ test('a newly cleared gated room discloses that progression starts on the next r
     template.replace(/\{(\w+)\}/g, (match, key: string) => String(params[key] ?? match));
 
   for (const [language, dictionary] of Object.entries(dictionaries)) {
-    const params = { label: dictionary['home.gate.consecutiveSuccesses'], required: 9, floor: 1 };
+    const params = { label: dictionary['home.gate.consecutiveSuccesses'], required: 7, floor: 1 };
     const clearedText = render(dictionary['game.log.gateInfo.floorCleared'], params);
 
-    assert.equal(clearedText.includes('9'), true, language);
+    assert.equal(clearedText.includes('7'), true, language);
     assert.equal(clearedText.includes('1F-4'), true, language);
     assert.notEqual(clearedText, render(dictionary['game.log.gateInfo.floor'], params), language);
   }
@@ -70,14 +72,14 @@ test('a newly cleared gated room discloses that progression starts on the next r
   assert.equal(
     render(ja['game.log.gateInfo.floorCleared'], {
       label: ja['home.gate.consecutiveSuccesses'],
-      required: 9,
+      required: 7,
       floor: 1,
     }),
-    '連続攻略成功 9回 で 1F-4 解放達成（次回から先に進める）',
+    '連続攻略成功 7回 で 1F-4 解放達成（次回から先に進める）',
   );
 });
 
-test('nine consecutive successful returns unlock the first Clear-Gate permanently', () => {
+test('seven consecutive successful returns unlock the first Clear-Gate permanently', () => {
   const gateKey = getEliteGateKey(1, 1);
   const required = getClearGateRequired(gateKey);
   let party = gateParty();
