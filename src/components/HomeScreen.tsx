@@ -39,6 +39,7 @@ import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } 
 import { JEWELS_BY_ITEM_CATEGORY,planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { computePartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
+import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { setLanguage,t } from '../i18n';
 import { Bonus,Character,ExpeditionDepthLimit,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
@@ -74,7 +75,6 @@ EXPLORING_PROGRESS_TOTAL_STEPS,
 formatBattleLogHitDisplay,
 formatDecimal,
 formatNumber,
-FREE_ACTION_STEP_COUNT,
 GAME_MODE_STORAGE_KEY,
 GameMode,
 getAutoSellStepCount,
@@ -3200,7 +3200,7 @@ export function HomeScreen({
       : cycleState === 'sell'
         ? getAutoSellStepCount(party)
         : cycleState === 'free_action'
-          ? FREE_ACTION_STEP_COUNT
+          ? getFreeActionStepCount(party.condition)
           : cycleState === 'sound_sleep'
             ? SOUND_SLEEP_STEP_COUNT
             : PRAY_STEP_COUNT;

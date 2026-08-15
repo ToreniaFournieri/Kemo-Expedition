@@ -553,7 +553,6 @@ export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 export const REST_HEAL_MIN_HP = 400;
 export const REST_HEAL_MAX_HP_RATIO = 0.06;
-export const FREE_ACTION_STEP_COUNT = 30;
 export const SOUND_SLEEP_STEP_COUNT = 16;
 export const PRAY_STEP_COUNT = 4;
 export const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
