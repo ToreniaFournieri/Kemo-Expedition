@@ -141,38 +141,12 @@
 
 ##### 5.1.1.1 AFK Recovery Performance Requirements
 
-AFK recovery must preserve all existing gameplay rules and deterministic behavior while avoiding prolonged main-thread blocking and unnecessary UI updates.
+- AFK recovery must preserve all existing gameplay rules and deterministic behavior while avoiding prolonged main-thread blocking and unnecessary UI updates.
 
-While AFK recovery is pending, user input remains accepted. If a user interaction targets a
+- While AFK recovery is pending, user input remains accepted. If a user interaction targets a
 state-mutating control, the scheduler pauses before starting the next AFK batch, allows the
 normal UI mutation to commit, and then resumes from the persisted AFK operation cursor. AFK
 simulation operations and UI mutations must not interleave within one scheduler batch.
-
-**Functional correctness**
-
-AFK optimization must not change the result of the simulation.
-
-Given the same:
-
-- initial save state;
-- elapsed AFK duration;
-- random-bag or RNG state;
-- game-data version;
-- active parties and destinations;
-
-the optimized recovery must produce the same gameplay result as the authoritative chronological AFK simulation defined in section 5.1.1, including its completed-Cycle, logical-Chunk, and AFK-to-Online transition rules. Equivalent results include:
-
-- battle outcomes;
-- rewards and inventory changes;
-- character and party HP;
-- progression and Clear-Gates;
-- destination advancement;
-- side-quest outcomes;
-- Diary records;
-- automation behavior;
-- final RNG or random-bag state.
-
-Performance improvements may reduce intermediate UI updates and defer presentation work, but must not skip authoritative gameplay events.
 
 **Main-thread execution budget**
 
@@ -242,24 +216,6 @@ The following events may cause an immediate UI update regardless of the normal p
 
 React progress updates are presentation updates. Reducing their frequency must not reduce the number of simulated gameplay events.
 
-**Render isolation**
-
-AFK progress changes must not cause the complete application to rerender.
-
-Frequently changing recovery state—such as percentage, Cycles completed, and estimated time remaining—should be isolated from stable game state.
-
-Components that are not visible or do not depend on changed data should not rerender because an AFK progress update occurred. In particular, the following areas should be checked:
-
-- inventory;
-- Diary;
-- party configuration;
-- equipment;
-- destination selection;
-- settings;
-- inactive screens and dialogs.
-
-Memoization and state splitting should be introduced only where profiling demonstrates that they reduce meaningful render work.
-
 **Saving and persistence**
 
 Save serialization and persistent-storage writes must not occur after every AFK batch.
@@ -274,171 +230,9 @@ Persistence should occur at controlled durable checkpoints, such as:
 
 Progress-only React updates must not trigger complete save serialization.
 
-A checkpoint must contain enough information to resume recovery without:
-
-- duplicating rewards;
-- skipping Cycles;
-- duplicating Diary entries;
-- changing RNG or random-bag order;
-- losing already committed progress.
-
-When a checkpoint occurs inside a logical Chunk, it must persist the pending AFK backlog, current Chunk index and Cycle offset, authoritative simulation state, timing anchors, and RNG or random-bag state required to resume at the exact next gameplay operation. The visible `state.reactivate` progress bar may reset after refresh as defined above, but that presentation reset must not reset or alter the authoritative recovery position.
-
-The application should avoid writing identical serialized state repeatedly.
-
 **Responsiveness**
 
 The application must remain interactive during AFK recovery.
-
-While recovery is active:
-
-- visible screens must remain scrollable;
-- navigation and non-mutating controls must respond;
-- progress indicators must continue updating;
-- cancellation or interruption controls must remain usable, if provided;
-- accessibility interaction must remain functional;
-- animations should not freeze for prolonged periods.
-
-Gameplay mutations must not interleave with AFK simulation. A state-mutating action may execute only after recovery completes or after an explicit cancellation or interruption has reached and durably persisted a deterministic recovery boundary.
-
-Repeated frame or event-loop delays of 50 ms or longer should be treated as a performance warning. Delays of 100 ms or longer caused by the game should be treated as a performance defect.
-
-Moving simulation to a renderer-owned Web Worker is recommended if time-budgeted main-thread execution cannot provide acceptable responsiveness. The renderer must remain the authoritative owner of game state and persistence: worker results must be validated and committed through the renderer, and the worker must not access persistent storage directly.
-
-**Performance scaling**
-
-Recovery cost should scale approximately linearly with:
-
-```text
-recovered Cycles × active parties
-```
-
-Doubling the recovered Cycle count should produce approximately twice the simulation work when other conditions are equal. Doubling the active party count should also produce approximately proportional work.
-
-Significantly super-linear scaling must be investigated. Possible causes include:
-
-- repeatedly scanning an expanding Diary;
-- repeatedly sorting the complete inventory;
-- cloning increasingly large state collections;
-- recalculating unchanged party statistics;
-- processing previous results again;
-- serializing the entire save after each batch.
-
-Performance tests should record both total recovery time and normalized time per Cycle-party.
-
-**Ten-hour recovery target**
-
-A representative ten-hour AFK recovery must complete in seconds rather than minutes on supported reference hardware.
-
-The representative test must define:
-
-- hardware or device class;
-- browser or application build;
-- production build configuration;
-- number of active parties;
-- representative inventory size;
-- representative Diary size;
-- destinations and battle complexity;
-- side-quest and automation configuration.
-
-Until device-specific targets are established, the acceptance requirement is:
-
-```text
-Total recovery duration < 60 seconds
-```
-
-The preferred target should be substantially lower and established from measured production-build results.
-
-This requirement does not permit the simulation to omit events or produce a different final state.
-
-**Required profiling metrics**
-
-Development profiling must be capable of reporting:
-
-- total AFK recovery duration;
-- recovered Cycles;
-- active parties;
-- total Cycle-party operations;
-- average time per Cycle;
-- average time per Cycle-party;
-- maximum batch duration;
-- number of batches;
-- React commit count;
-- total React render duration;
-- maximum React commit duration;
-- save serialization count and duration;
-- persistent-storage write count and duration;
-- maximum observed frame or event-loop delay.
-
-Where practical, simulation time should be divided into:
-
-- expedition and battle resolution;
-- rewards and inventory;
-- HP and party state;
-- Diary finalization;
-- destination advancement;
-- side quests;
-- automation;
-- state copying and finalization.
-
-Profiling must aggregate measurements in memory. It must not emit console output or browser performance entries for every individual Cycle, because the profiling mechanism itself could materially slow recovery.
-
-**Benchmark scenarios**
-
-At minimum, performance testing should cover:
-
-1. One active party with one hour of recovery.
-2. All supported parties with one hour of recovery.
-3. All supported parties with ten hours of recovery.
-4. All supported parties at the maximum allowed AFK duration of 1,800 minutes (30 hours).
-5. A nearly full inventory.
-6. A large retained Diary.
-7. Active side quests and automatic destination changes.
-8. Frequent battle failures or party defeats.
-
-Each benchmark must use a fixed initial save and deterministic RNG state. After a warm-up run, the scenario should be measured multiple times using a production build.
-
-Reports should include:
-
-- median total duration;
-- slowest total duration;
-- average time per Cycle-party;
-- longest batch;
-- React commit count;
-- longest React commit;
-- largest event-loop or frame delay.
-
-**Correctness verification**
-
-Every optimized benchmark must be compared with the existing authoritative implementation.
-
-The comparison should verify the complete meaningful final state, including:
-
-- currencies;
-- inventory;
-- party and character state;
-- progression;
-- destination state;
-- side quests;
-- Diary outcomes;
-- statistics;
-- RNG or random-bag state;
-- remaining AFK backlog.
-
-Performance work must not be accepted if it improves speed but changes deterministic results.
-
-**Recommended implementation order**
-
-1. Add development-only AFK timing and React commit instrumentation.
-2. Create deterministic benchmark saves.
-3. Establish baseline results for one-hour, ten-hour, and maximum-duration recovery.
-4. Separate internal simulation progress from React-visible progress.
-5. Replace fixed Cycle-count batches with time-budgeted batches.
-6. Prevent save serialization and writes from running per batch.
-7. Reduce unnecessary rerenders and expensive effects.
-8. Profile simulation phases and reduce excessive allocations.
-9. Move the isolated simulator to a Web Worker if main-thread responsiveness remains inadequate.
-10. Run deterministic equivalence tests and record final benchmark results.
 
 
 **Notification**
