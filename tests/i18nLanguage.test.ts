@@ -56,3 +56,18 @@ test('AFK emulation efficiency is available in the runtime glossary in every lan
     assert.match(description, /108–162h \| x1\/9/);
   });
 });
+
+test('condition is available in the runtime glossary in every language', () => {
+  assert.match(glossarySource, /"key": "f\.condition"/);
+
+  const localizedGlossary = [
+    { dictionary: ja, label: '調子' },
+    { dictionary: en, label: 'Condition' },
+    { dictionary: zhCN, label: '状态' },
+    { dictionary: zhTW, label: '狀態' },
+  ] as const;
+  localizedGlossary.forEach(({ dictionary, label }) => {
+    assert.equal(dictionary['data.glossary.condition.label'], label);
+    assert.ok(dictionary['data.glossary.condition.description'].length > 0);
+  });
+});

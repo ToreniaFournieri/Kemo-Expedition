@@ -2970,6 +2970,8 @@ const zhCN = {
   'data.glossary.99.description': '附加超稀有称号时，基础性能再提升2倍。同时赋予各自独特的加成。',
   'data.glossary.100.label': '挂机效率',
   'data.glossary.100.description': '挂机时间越长，队伍成员就越会开始偷懒。\n| 挂机时间 | 效率 |\n|------:|---:|\n| 0–9h | x1 |\n| 9–18h | x2/3 |\n| 18–30h | x1/2 |\n| 30–48h | x1/3 |\n| 48–72h | x1/4 |\n| 72–108h | x1/6 |\n| 108–162h | x1/9 |',
+  'data.glossary.condition.label': '状态',
+  'data.glossary.condition.description': '状态越好，队伍成员越会开始尝试更具挑战性的事情（前往下一个地下城或挑战神魔战），也会享受更长的自由时间。状态较差时，自由时间会变得非常短。',
   'data.glossary.2_1_7.subtitle': '信. 神明、信仰',
   'data.glossary.2_1_7.label': '再生女神',
   'data.glossary.2_1_7.description': '效果：每4个房间恢复减少HP的20+α%。睡眠时间2倍。弱冰（1.5倍伤害增加）\n生，即是反复的修正。',

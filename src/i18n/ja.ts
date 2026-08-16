@@ -2971,6 +2971,8 @@ const ja = {
   'data.glossary.99.description': '超レア称号が付くと、さらにその基礎性能が2倍される。また、それぞれ独自のボーナスが付与される。',
   'data.glossary.100.label': '放置効率',
   'data.glossary.100.description': '放置時間が長くなるとパーティメンバはサボり出す。\n| 放置時間 | 効率 |\n|------:|---:|\n| 0–9h | x1 |\n| 9–18h | x2/3 |\n| 18–30h | x1/2 |\n| 30–48h | x1/3 |\n| 48–72h | x1/4 |\n| 72–108h | x1/6 |\n| 108–162h | x1/9 |',
+  'data.glossary.condition.label': '調子',
+  'data.glossary.condition.description': '調子が良くなるとパーティメンバは挑戦的なことをしだす(次のダンジョンに進む・神魔戦に挑む)。また、自由時間をより長く謳歌するようになる。調子が悪いと自由時間はとても短くなる。',
   'data.glossary.2_1_7.subtitle': '信. 神、信仰',
   'data.glossary.2_1_7.label': '再生の女神',
   'data.glossary.2_1_7.description': '効果:4部屋毎に減少HPの20+α%を回復する。睡眠時間2倍。氷属性に弱い(1.5倍ダメージ増)\n生とは、繰り返される修正である。',
