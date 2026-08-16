@@ -1499,7 +1499,7 @@ export function parseDiarySideQuestThreshold(value: string): DiarySideQuestThres
 }
 
 export const numberFormatter = new Intl.NumberFormat('ja-JP');
-export const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
+export const SPEED_OF_TIME_BONUS_DURATION_MS = (24 * 60 + 45) * 60 * 1000;
 export const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 export const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 export const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;

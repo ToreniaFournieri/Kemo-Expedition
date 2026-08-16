@@ -154,7 +154,7 @@
       - `/`: PROD_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
       - Set Speed of Time to x1.2. and the text is `▶︎`
-      - The boost effect lasts for 24 hours.
+      - The boost effect lasts for 24 hours 45 minites.
     - If the webhook request fails:
       - Do not apply the boost effect.
       - Keep Speed of Time at its current value.
