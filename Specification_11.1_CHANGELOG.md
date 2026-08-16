@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 20 | 2026/08/16 | Increase the base Step duration from 20 seconds to 30 seconds across the specification, shared runtime timing, and regression coverage. |
 | 0.9.3 | 19 | 2026/08/16 | Extend the runtime Speed of Time report reward from 24 hours to 24 hours 45 minutes while retaining the existing user-facing one-day description. |
 | 0.9.3 | 18 | 2026/08/16 | Add the AFK emulation efficiency entry and its seven-band efficiency table to the runtime function glossary in Japanese, English, Simplified Chinese, and Traditional Chinese. |
 | 0.9.3 | 17 | 2026/08/16 | Implement progressive AFK emulation efficiency across the specified seven elapsed-time bands, cap each catch-up at 162 real hours, and convert that absence into at most 45 effective simulation hours with regression coverage. |
