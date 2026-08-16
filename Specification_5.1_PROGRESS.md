@@ -22,6 +22,24 @@
   - One scheduler batch may process part of one Chunk, exactly one Chunk, or portions of multiple Chunks.
   - Ending or yielding a scheduler batch must not create a gameplay boundary, consume randomness, or trigger Chunk-end rules.
 
+- **AFK Emulation Efficiency**
+  - AFK emulation efficiency gradually decreases during extended absence, representing reduced party discipline and efficiency without player supervision.
+  - Returning to the game resets AFK emulation efficiency to 100%.
+  - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
+
+**f.afk-emulation-efficiency**
+
+| Elapsed AFK Time | Emulation Speed | Effective Time |
+| ---------------: | --------------: | -------------: |
+|             0–9h |              1× |             9h |
+|            9–18h |            2/3× |             6h |
+|           18–30h |            1/2× |             6h |
+|           30–48h |            1/3× |             6h |
+|           48–72h |            1/4× |             6h |
+|          72–108h |            1/6× |             6h |
+|         108–162h |            1/9× |             6h |
+
+
 #### 5.1.1 Party State Machine
 
 - Use one state per party. Every party ticks independently.
@@ -123,7 +141,7 @@
 - 'state_started_at' must be updated only when the party state changes (at each transition boundary), never on a plain tick without transition.
 - If a transition completes exactly at a chunk boundary, treat it as completed in that chunk and carry remaining time (if any) into the next state/chunk.
 - Multiple state transitions within a single update tick are valid and must be applied deterministically in order.
-- Limit: maximum 1,800 minutes (30 hours) per catch-up simulation in the current version; elapsed time beyond this cap is ignored for that tick.
+
 
 **AFK → Online Transition Handling**
 - **Simplified AFK emulation:**
