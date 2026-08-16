@@ -18,6 +18,7 @@
 | 6 | 6 | 29 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
 | 7 | 7 | 34 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type |
 | 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
+| 9 | 1 | 46 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - |
 | 0 | 0 | 0 | 闘技場 (Colosseum) | 闘 | Debug-only area. Displayed only when Colosseum is enabled. |
 
 - Floor of each expedition
@@ -75,6 +76,12 @@
 | 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
 | 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 | `terrain.suppression` |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 | `terrain.sanctuary` |
+| 9 | 1 | Across the trenches | 塹壕の先 | `terrain.duelist-domain` |
+| 9 | 2 | Military Road | 軍道 | `terrain.heavy-wind` |
+| 9 | 3 | Darden Field | ダーデン原野 | `terrain.sniper-domain` |
+| 9 | 4 | Federation Encampment | 連邦軍野営地 | `terrain.enemy-high-ground` |
+| 9 | 5 | Defensive line | 帝都防衛線 | `terrain.predation` |
+| 9 | 6 | Caninian Capital | ケイナイアンの帝都 | `terrain.rejuvenation` |
 
 #### 4.1.2 Enemy
 
