@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 25 | 2026/08/16 | Make `a.domain-breaker` on either the actor or opponent suppress floor-domain and cap-domain damage overrides plus sniper-domain, spell-domain, and duelist-domain guaranteed hits, with regression coverage. |
 | 0.9.3 | 24 | 2026/08/16 | Align the Expedition 9 runtime enemy level with the updated master specification by changing Darsen Field - Reminiscence from level 46 to level 44, with updated regression coverage. |
 | 0.9.3 | 23 | 2026/08/16 | Add Expedition 9, Darsen Field - Reminiscence, to runtime progression with six localized floor concepts and terrain effects, temporary Enemy IDs 100–135, automatic destination advancement, Clear-Gate migration coverage, and the Skuva Gods Battle association. |
 | 0.9.3 | 22 | 2026/08/16 | Add the `f.condition` entry to the runtime function glossary in Japanese, English, Simplified Chinese, and Traditional Chinese, describing its effects on challenge selection and free-action duration. |

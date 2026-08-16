@@ -15,6 +15,7 @@ import {
   TerrainEffectKey,
 } from '../types';
 import { getAttackRollProfile, rollAttackSpeedDice } from './attackProfile';
+import { applyDomainTerrainDamageOverride, isDomainTerrainGuaranteedHit } from './domainTerrain';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
@@ -727,7 +728,13 @@ function calculateSingleEnemyAttackDamage(
   const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
-  return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp, enemy.abilities);
+  return applyDomainTerrainDamageOverride(
+    Math.floor(totalDamage),
+    terrainEffect,
+    maxPartyHp,
+    enemy.abilities,
+    targetCharStats.abilities,
+  );
 }
 
 function getEnemyBaseNoA(phase: AttackType, enemy: EnemyDef): number {
@@ -881,26 +888,6 @@ function getTerrainNoAAmplifier(
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
-function applyTerrainDamageOverride(
-  perHitDamage: number,
-  terrainEffect: TerrainEffectKey | null | undefined,
-  opponentMaxHp: number,
-  actorAbilities: AbilityLike[] = [],
-): number {
-  // SpecRef: 6.1.4.1 | Function of attack | a.domain-breaker
-  if (hasAbility(actorAbilities, 'domain_breaker')) return perHitDamage;
-  if (terrainEffect === 'terrain.floor-domain') {
-    return Math.max(Math.floor(opponentMaxHp * 0.01), perHitDamage);
-  }
-
-  if (terrainEffect === 'terrain.cap-domain') {
-    return Math.min(Math.floor(opponentMaxHp * 0.05), perHitDamage);
-  }
-
-  return perHitDamage;
-}
-
-// SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 // SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function calculateCharacterFriendlyFireDamage(
   phase: AttackType,
@@ -1013,7 +1000,13 @@ function calculateCharacterFriendlyFireDamage(
       * swarmAmplifier
       * defenseDebuffAmplifier
   ));
-  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, partyStats.hp, attacker.abilities);
+  const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
+    basePerHitDamage,
+    terrainEffect,
+    partyStats.hp,
+    attacker.abilities,
+    target.abilities,
+  );
 
   const actorAccuracyPotency = phase === 'magical' ? 1.0 : attacker.accuracyPotency;
   const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
@@ -1037,6 +1030,7 @@ function calculateCharacterFriendlyFireDamage(
       attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
       hasAbility(attacker.abilities, 'true_sight'),
       hasAbility(attacker.abilities, 'domain_breaker'),
+      hasAbility(target.abilities, 'domain_breaker'),
     )) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
@@ -1445,11 +1439,13 @@ function hitDetection(
   actorArcaneStabilityLevel: number = 0,
   actorHasTrueSight: boolean = false,
   actorHasDomainBreaker: boolean = false,
+  opponentHasDomainBreaker: boolean = false,
 ): boolean {
-  if (!actorHasDomainBreaker && (
-    (phase === 'ranged' && terrainEffect === 'terrain.sniper-domain')
-    || (phase === 'magical' && terrainEffect === 'terrain.spell-domain')
-    || (phase === 'melee' && terrainEffect === 'terrain.duelist-domain')
+  if (isDomainTerrainGuaranteedHit(
+    phase,
+    terrainEffect,
+    actorHasDomainBreaker,
+    opponentHasDomainBreaker,
   )) {
     return true;
   }
@@ -1630,7 +1626,13 @@ function calculateCharacterDamage(
     (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
     elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier
   ));
-  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, enemy.hp, charStats.abilities);
+  const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
+    basePerHitDamage,
+    terrainEffect,
+    enemy.hp,
+    charStats.abilities,
+    enemy.abilities,
+  );
 
   // All phases now use hit detection.
   // MID phase ignores row-based accuracy potency and uses fixed potency (1.0).
@@ -1655,6 +1657,7 @@ function calculateCharacterDamage(
       charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
       hasAbility(charStats.abilities, 'true_sight'),
       hasAbility(charStats.abilities, 'domain_breaker'),
+      hasAbility(enemy.abilities, 'domain_breaker'),
     )) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
@@ -3525,7 +3528,7 @@ export function executeBattle(
     }
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0), i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0), i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'), hasAbility(targetCharStats.abilities, 'domain_breaker'));
       if (didHit) {
         hits += 1;
       }
@@ -4808,6 +4811,7 @@ export function executeBattle(
               0,
               hasAbility(enemy.abilities, 'true_sight'),
               hasAbility(enemy.abilities, 'domain_breaker'),
+              hasAbility(targetCharStats.abilities, 'domain_breaker'),
             );
             enemyHitIndex += 1;
 
@@ -5308,7 +5312,7 @@ export function executeBattle(
             let reCounterHits = 0;
             const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0), i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
+              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0), i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'), hasAbility(attack.charStats.abilities, 'domain_breaker'));
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount, phase === 'magical' ? partyMagicalDefenseDebuffAmplifier : partyPhysicalDefenseDebuffAmplifier);

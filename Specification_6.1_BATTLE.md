@@ -500,9 +500,9 @@ If `a.*` with phase = START:
  
   - **Override**
   - If `terrain.floor-domain`: final `f.damage_calculation` = max(1% of opponent.max_HP, `f.damage_calculation`)
-    - Exception: If actor has `a.domain-breaker`, this effect is ignored.
+    - Exception: If actor or **opponent** has `a.domain-breaker`, this effect is ignored.
   - If `terrain.cap-domain` :final `f.damage_calculation` = min(5% of opponent.max_HP, `f.damage_calculation`)
-    - Exception: If actor has `a.domain-breaker`, this effect is ignored.
+    - Exception: If actor or **opponent** has `a.domain-breaker`, this effect is ignored.
 
 - `f.rage_amplifier`:
   - If actor has `a.rage`1 and (opponent doesn't have `a.rage-breaker`), return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
@@ -672,7 +672,7 @@ If `a.*` with phase = START:
     - Note: Nth_hit counts individually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - **Override of terrain effect**
     - If {`terrain.sniper-domain` and (`attack_type = ranged`)} or {`terrain.spell-domain` and (`attack_type = magical`)} or {`terrain.duelist-domain` and (`attack_type = melee`)}: All hits are treated as successful.
-      - Exception: If actor has `a.domain-breaker`, these effects are ignored.
+      - Exception: If actor or **opponent** has `a.domain-breaker`, these effects are ignored.
     - If override condition is met: return true (skip calculation below)
   - Roll: Return Random(0, 1.0) <= chance
 
