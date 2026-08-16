@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 14 | 2026/08/16 | Align all runtime Step timing with the specified 20-second base duration through the shared timing constant, including updated regression coverage. |
 | 0.9.3 | 13 | 2026/08/16 | Align the Goddess of Fertility runtime effect with the glossary by changing its legacy feast-time multiplier to a 1.2x `state.free_action` duration multiplier, updating localized effect text, and adding regression coverage. |
 | 0.9.3 | 12 | 2026/08/16 | Align all runtime Step timing with the 30-second base duration, including live progression, AFK estimation, side-quest timing, Experimental AI API simulation, and catch-up detection, with a shared timing constant and regression coverage. |
 | 0.9.3 | 11 | 2026/08/16 | Align `state.free_action` runtime duration with Step Progress by using 40 Steps plus the party's rounded AUTO-progress `condition / 10`, with bounded condition handling and regression coverage. |

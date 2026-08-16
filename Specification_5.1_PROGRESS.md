@@ -4,7 +4,7 @@
 **Definition of time scale.**
 - **`Step`**: The smallest unit of progression. 
   - Steps are processed **globally**, meaning all parties update their progress simultaneously at each Step. 
-  - Base duration: **30 seconds per Step**.
+  - Base duration: **20 seconds per Step**.
   - Duration modifier: **round up** after all multipliers are applied.
   - **Debug Scaling** (applies multiplicatively to Step duration):  
     - `x5 boost` → Step × **0.2** (6 seconds)  
