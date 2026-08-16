@@ -2966,6 +2966,8 @@ const zhTW = {
   'data.glossary.98.description': '根據稀有度等級的基礎性能補正。\n| 稀有度 | 增倍率 |\n|------|--------|\n| 普通 | x1.0 |\n| 非普通 | x1.2 |\n| 精英稀有 | x1.6 |\n| 首領稀有 | x2.4 |\n| 神魔稀有 | x3.6 |',
   'data.glossary.99.label': '超稀有的性能提升',
   'data.glossary.99.description': '附加超稀有稱號時，基礎性能再提升2倍。同時賦予各自獨特的加成。',
+  'data.glossary.100.label': '放置效率',
+  'data.glossary.100.description': '放置時間越長，隊伍成員就越會開始偷懶。\n| 放置時間 | 效率 |\n|------:|---:|\n| 0–9h | x1 |\n| 9–18h | x2/3 |\n| 18–30h | x1/2 |\n| 30–48h | x1/3 |\n| 48–72h | x1/4 |\n| 72–108h | x1/6 |\n| 108–162h | x1/9 |',
   'data.glossary.2_1_7.subtitle': '信. 神明、信仰',
   'data.glossary.2_1_7.label': '再生女神',
   'data.glossary.2_1_7.description': '效果：每4個房間恢復減少HP的20+α%。睡眠時間2倍。弱冰（1.5倍傷害增加）\n生，即是反覆的修正。',

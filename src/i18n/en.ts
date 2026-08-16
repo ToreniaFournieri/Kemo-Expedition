@@ -2969,6 +2969,8 @@ const en = {
   'data.glossary.98.description': 'Base performance modifier by rarity tier.\n| Rarity | Multiplier |\n|------|--------|\n| Common | x1.0 |\n| Uncommon | x1.2 |\n| Elite Rare | x1.6 |\n| Boss Rare | x2.4 |\n| Mythic Rare | x3.6 |',
   'data.glossary.99.label': 'Super Rare Performance Boost',
   'data.glossary.99.description': 'When a Super Rare title is added, base performance is doubled again and a unique bonus is granted.',
+  'data.glossary.100.label': 'AFK Efficiency',
+  'data.glossary.100.description': 'Party members start slacking off as AFK time grows.\n| AFK Time | Efficiency |\n|------:|---:|\n| 0–9h | x1 |\n| 9–18h | x2/3 |\n| 18–30h | x1/2 |\n| 30–48h | x1/3 |\n| 48–72h | x1/4 |\n| 72–108h | x1/6 |\n| 108–162h | x1/9 |',
   'data.glossary.2_1_7.subtitle': 'Faith. Gods and Faith',
   'data.glossary.2_1_7.label': 'Goddess of Restoration',
   'data.glossary.2_1_7.description': 'Effect: Restores 20+α% of missing HP every 4 rooms. Sleep time x2. Weak to ice (1.5x damage).\nLife is a cycle of repeated restoration.',
