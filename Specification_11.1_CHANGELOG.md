@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 16 | 2026/08/16 | Use the active sub-theme color for the macOS Party Progress Open button and translucent weak sub-theme fills for compact quest, gate, and secondary progress indicators. |
 | 0.9.3 | 15 | 2026/08/16 | Align the macOS Party Progress pane with the UI foundation themes by using exact Kemo, Luna, and Laika sub/accent colors on flat neutral page and card surfaces. |
 | 0.9.3 | 14 | 2026/08/16 | Align all runtime Step timing with the specified 20-second base duration through the shared timing constant, including updated regression coverage. |
 | 0.9.3 | 13 | 2026/08/16 | Align the Goddess of Fertility runtime effect with the glossary by changing its legacy feast-time multiplier to a 1.2x `state.free_action` duration multiplier, updating localized effect text, and adding regression coverage. |
