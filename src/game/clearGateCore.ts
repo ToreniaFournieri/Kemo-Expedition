@@ -128,7 +128,7 @@ export type LegacyGateState = {
 };
 
 // SpecRef: 5.1.4 | Save and load | Loot-Gate to Clear-Gate migration
-export function migrateLegacyGateState(source: LegacyGateState, maxDungeonId = 8): {
+export function migrateLegacyGateState(source: LegacyGateState, maxDungeonId = 9): {
   progress: Record<string, number>;
   status: Record<number, boolean>;
 } {

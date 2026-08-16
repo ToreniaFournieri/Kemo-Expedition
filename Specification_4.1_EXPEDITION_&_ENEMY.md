@@ -2,7 +2,6 @@
 
 ### 4.1 EXPEDITION_&_ENEMY
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
-- There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
 #### 4.1.1 Expedition Definitions
 

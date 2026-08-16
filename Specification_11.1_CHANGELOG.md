@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 23 | 2026/08/16 | Add Expedition 9, Darsen Field - Reminiscence, to runtime progression with six localized floor concepts and terrain effects, temporary Enemy IDs 100–135, automatic destination advancement, Clear-Gate migration coverage, and the Skuva Gods Battle association. |
 | 0.9.3 | 22 | 2026/08/16 | Add the `f.condition` entry to the runtime function glossary in Japanese, English, Simplified Chinese, and Traditional Chinese, describing its effects on challenge selection and free-action duration. |
 | 0.9.3 | 21 | 2026/08/16 | Align runtime `state.rest` recovery with Spec 5.1.1 by healing max(200, 2% MaxHP) per Step and calculating the initial step-based progress total from the same rule, with regression coverage. |
 | 0.9.3 | 20 | 2026/08/16 | Increase the base Step duration from 20 seconds to 30 seconds across the specification, shared runtime timing, and regression coverage. |

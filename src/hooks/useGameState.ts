@@ -565,7 +565,7 @@ function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: 
     return { shouldAdvance: false, nextDungeonId: null };
   }
 
-  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 9);
   if (!nextDungeon) {
     return { shouldAdvance: false, nextDungeonId: null };
   }

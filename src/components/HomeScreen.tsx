@@ -2627,7 +2627,7 @@ export function HomeScreen({
           if (projectedHp >= partyRuntimeStats.hp && (!startedRestAtFullHp || hasCompletedRestStep)) {
             // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
             if (party.expeditionDestinationMode === 'auto') {
-              const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
+              const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 9);
               const selectedDifficultyOffset = party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId]
                 ?? party.expeditionDifficultyOffset
                 ?? 0;

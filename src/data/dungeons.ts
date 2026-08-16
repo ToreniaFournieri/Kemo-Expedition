@@ -107,6 +107,7 @@ const EXPEDITION_FLOOR_CONCEPTS: Record<number, string[]> = {
   6: ['Steam-driven Burrow', 'K9 Interstellar Spaceship Wreckage', 'Forbidden Research Facility', 'Heartless Machines', 'Masterless Bridge', 'Altar of Resonance'],
   7: ['Giant Wreckage Ring', 'Transfer Device Sector', 'Realm of Light', 'Realm of Darkness', 'Abyss', 'Moon Palace'],
   8: ['Void-scar Canyon Gate', 'Subworld', 'Another People', 'Gehenna', 'Selvin Document Archive District', 'Clairvoyant Sanctuary'],
+  9: ['Across the trenches', 'Military Road', 'Darden Field', 'Federation Encampment', 'Defensive line', 'Caninian Capital'],
 };
 
 const EXPEDITION_FLOOR_TERRAIN_EFFECTS: Record<number, TerrainEffectKey[]> = {
@@ -118,6 +119,7 @@ const EXPEDITION_FLOOR_TERRAIN_EFFECTS: Record<number, TerrainEffectKey[]> = {
   6: ['terrain.burrow', 'terrain.leakage', 'terrain.deletion', 'terrain.machine-logic', 'terrain.cap-domain', 'terrain.echo-domain'],
   7: ['terrain.decay', 'terrain.chain-lightning', 'terrain.light-field', 'terrain.dark-field', 'terrain.dark-field', 'terrain.low-gravity'],
   8: ['terrain.mana-burn', 'terrain.gravity', 'terrain.transcendence', 'terrain.gehenna', 'terrain.suppression', 'terrain.sanctuary'],
+  9: ['terrain.duelist-domain', 'terrain.heavy-wind', 'terrain.sniper-domain', 'terrain.enemy-high-ground', 'terrain.predation', 'terrain.rejuvenation'],
 };
 
 export function getExpeditionFloorConcept(expeditionId: number, floorNumber: number): string | null {
@@ -141,7 +143,9 @@ type RoomIdKey = `${number}-${number}`;
 
 function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[]> {
   const lookup: Record<RoomIdKey, number[]> = {};
-  const rows = MASTER_EXPEDITION_ENEMIES_PACKED[poolId] ?? [];
+  // Expedition 9 temporarily reuses Expedition 1's enemy assignments and IDs.
+  const sourcePoolId = poolId === 9 ? 1 : poolId;
+  const rows = MASTER_EXPEDITION_ENEMIES_PACKED[sourcePoolId] ?? [];
   const append = (floorNumber: number, roomNumber: number, enemyId: number): void => {
     const key: RoomIdKey = `${floorNumber}-${roomNumber}`;
     if (!lookup[key]) {
@@ -153,7 +157,7 @@ function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[
   rows.forEach((row, rowIndex) => {
     const [floorNumber, roomCode] = row;
     // SpecRef: 4.2.2 | Enemy | Enemy_ID
-    const enemyId = 100 + (poolId - 1) * 36 + rowIndex;
+    const enemyId = 100 + (sourcePoolId - 1) * 36 + rowIndex;
     const roomNumbers = roomCode === '1-2' ? [1, 2] : [Number(roomCode)];
     roomNumbers.forEach((roomNumber) => append(floorNumber, roomNumber, enemyId));
   });
@@ -162,7 +166,7 @@ function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[
 }
 
 const MASTER_ROOM_ENEMY_ID_LOOKUP: Record<number, Record<RoomIdKey, number[]>> = Object.fromEntries(
-  Array.from({ length: 8 }, (_, index) => {
+  Array.from({ length: 9 }, (_, index) => {
     const poolId = index + 1;
     return [poolId, buildMasterRoomEnemyIdLookup(poolId)];
   })
@@ -197,7 +201,7 @@ function createFloors(poolId: number, bossId: number): FloorDef[] {
 }
 
 // Expedition definitions with lore
-// 8 expeditions following the world progression
+// Expeditions following the world progression
 export const DUNGEONS: Dungeon[] = [
   // Tier 1: Caninian Plains
   {
@@ -293,6 +297,18 @@ export const DUNGEONS: Dungeon[] = [
     bossId: 387,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[7],
     floors: createFloors(8, 387),
+  },
+
+  // Tier 1: Darsen Field - Reminiscence
+  {
+    id: 9,
+    tier: 1,
+    expLevel: 46,
+    get name() { return t('data.dungeons.9.name'); },
+    enemyPoolIds: [9],
+    bossId: 135,
+    enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[0],
+    floors: createFloors(9, 135),
   },
 
   {
