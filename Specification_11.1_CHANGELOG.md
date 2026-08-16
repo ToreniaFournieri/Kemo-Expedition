@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 12 | 2026/08/16 | Align all runtime Step timing with the 30-second base duration, including live progression, AFK estimation, side-quest timing, Experimental AI API simulation, and catch-up detection, with a shared timing constant and regression coverage. |
 | 0.9.3 | 11 | 2026/08/16 | Align `state.free_action` runtime duration with Step Progress by using 40 Steps plus the party's rounded AUTO-progress `condition / 10`, with bounded condition handling and regression coverage. |
 | 0.9.3 | 10 | 2026/08/16 | Implement per-party Diary popup settings for Cycle events, item drops, automatic equipment, and Side Quest events, enabled by default with legacy-save migration, localized controls, runtime filtering, and regression coverage. |
 | 0.9.3 | 9 | 2026/08/15 | Keep flat physical and magical defense projections separate from percentage defense bonuses in the equipment list, with localized stat matching and regression coverage. |

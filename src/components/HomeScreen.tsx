@@ -474,7 +474,7 @@ export function HomeScreen({
         if (!party.defeatedBossExpeditions[party.selectedDungeonId] || (party.instantExpeditionStock ?? 0) <= 0 || apiAutoRunRef.current) return apiFailure(422, 'god_battle_unavailable', 'Gods Battle is unavailable.');
         apiActionsRef.current.consumeInstantExpeditionStock(partyIndex, apiSimulatedAtRef.current);
         apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current);
-        apiSimulatedAtRef.current += 450_000;
+        apiSimulatedAtRef.current += APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS;
         effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
       }
       if (dispatched) await waitForApiStateUpdate(previousVersion);
@@ -511,7 +511,10 @@ export function HomeScreen({
         const log = batchRun.log;
         const outcome = outcomeFromParty(afterParty);
         outcomes[outcome] += 1;
-        const cycleElapsed = Math.max(450_000, (log?.totalRooms ?? 1) * 15_000);
+        const cycleElapsed = Math.max(
+          APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
+          (log?.totalRooms ?? 1) * BASE_STEP_DURATION_MS,
+        );
         const startElapsed = elapsed;
         elapsed += cycleElapsed;
         const xp = Math.max(0, afterParty.experience - beforeParty.experience);

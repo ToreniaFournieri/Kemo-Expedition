@@ -40,6 +40,7 @@ import { normalizePersistedAfkChunkCursor, type AfkSimulationBatchSlice, type Pe
 import { getItemDisplayName,getLocalizedItemName } from '../../game/gameState';
 import { JEWEL_DEFS,getJewelCBonusValue,getJewelDRankValue,getJewelShortLabel } from '../../game/jewel';
 import { isSpecialMagicCastable,resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../game/magic';
+import { BASE_STEP_DURATION_MS } from '../../game/progressTiming';
 import { Language,t } from '../../i18n';
 import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
 
@@ -548,7 +549,7 @@ export function rollPercentInclusive(min: number, max: number): number {
 }
 
 export const PARTY_CYCLE_TICK_MS = 100;
-export const BASE_STEP_DURATION_MS = 15000;
+export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 export const REST_HEAL_MIN_HP = 400;
@@ -561,7 +562,7 @@ export const CHUNK_CYCLE_COUNT = 12;
 export const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 export const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 export const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
-export const REDUCER_CATCHUP_THRESHOLD_MS = 15000;
+export const REDUCER_CATCHUP_THRESHOLD_MS = BASE_STEP_DURATION_MS;
 
 export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: number = Date.now()): PersistedRuntimeSnapshot | null {
   if (!raw || typeof raw !== 'object') return null;

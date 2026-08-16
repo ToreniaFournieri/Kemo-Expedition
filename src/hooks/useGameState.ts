@@ -112,6 +112,7 @@ import {
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
+import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -120,8 +121,6 @@ const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.05;
 const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
-const BASE_STEP_DURATION_MS = 15_000;
-
 function generateUserId(): string {
   // SpecRef: 1.2 | CONSTANTS_GLOBAL | User ID (UUID)
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
