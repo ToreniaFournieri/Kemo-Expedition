@@ -47,6 +47,11 @@ import { getItemDisplayName,getLocalizedItemName } from '../../game/gameState';
 import { JEWEL_DEFS,getJewelCBonusValue,getJewelDRankValue,getJewelShortLabel } from '../../game/jewel';
 import { isSpecialMagicCastable,resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../game/magic';
 import { BASE_STEP_DURATION_MS } from '../../game/progressTiming';
+export {
+getRestInitialTotalSteps,
+REST_HEAL_MAX_HP_RATIO,
+REST_HEAL_MIN_HP,
+} from '../../game/restHealing';
 import { Language,t } from '../../i18n';
 import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
 
@@ -558,8 +563,6 @@ export const PARTY_CYCLE_TICK_MS = 100;
 export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
-export const REST_HEAL_MIN_HP = 400;
-export const REST_HEAL_MAX_HP_RATIO = 0.06;
 export const SOUND_SLEEP_STEP_COUNT = 16;
 export const PRAY_STEP_COUNT = 4;
 export const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
@@ -646,16 +649,6 @@ export function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { 
     gainedSeconds: Math.floor(totalMs / 1000),
     remainderMs: totalMs % 1000,
   };
-}
-
-// SpecRef: 5.1 | PROGRESS | state.rest
-export function getRestInitialTotalSteps(currentHp: number, maxHp: number): number {
-  const normalizedMaxHp = Math.max(1, Math.floor(maxHp));
-  const normalizedCurrentHp = Math.max(0, Math.floor(currentHp));
-  const missingHp = Math.max(0, normalizedMaxHp - normalizedCurrentHp);
-  if (missingHp <= 0) return 1;
-  const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(normalizedMaxHp * REST_HEAL_MAX_HP_RATIO));
-  return Math.max(1, Math.ceil(missingHp / healPerStep));
 }
 
 // SpecRef: 5.1.1 | Party State Machine | state.sell

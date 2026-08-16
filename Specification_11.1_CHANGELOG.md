@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 21 | 2026/08/16 | Align runtime `state.rest` recovery with Spec 5.1.1 by healing max(200, 2% MaxHP) per Step and calculating the initial step-based progress total from the same rule, with regression coverage. |
 | 0.9.3 | 20 | 2026/08/16 | Increase the base Step duration from 20 seconds to 30 seconds across the specification, shared runtime timing, and regression coverage. |
 | 0.9.3 | 19 | 2026/08/16 | Extend the runtime Speed of Time report reward from 24 hours to 24 hours 45 minutes while retaining the existing user-facing one-day description. |
 | 0.9.3 | 18 | 2026/08/16 | Add the AFK emulation efficiency entry and its seven-band efficiency table to the runtime function glossary in Japanese, English, Simplified Chinese, and Traditional Chinese. |
