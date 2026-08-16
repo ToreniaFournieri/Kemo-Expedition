@@ -360,7 +360,7 @@ export function getDeityStateDurationMultiplier(name: string, totalDonatedGold =
 
   if (state === 'rest' && deityKey === 'God of Fortification') return 2;
   if (state === 'sell' && deityKey === 'God of Dusk') return 2;
-  if (state === 'free_action' && deityKey === 'Goddess of Fertility') return 2;
+  if (state === 'free_action' && deityKey === 'Goddess of Fertility') return 1.2;
   if (state === 'sound_sleep' && deityKey === 'Goddess of Restoration') return 2;
   if (state === 'pray' && deityKey === 'God of Fate') {
     return Math.max(1.5, 2 - 0.01 * getEffectiveDeityRank(totalDonatedGold));
