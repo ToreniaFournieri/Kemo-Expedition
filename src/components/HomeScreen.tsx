@@ -21,8 +21,10 @@ import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from
 import {
 createAfkChunkPlan,
 createAfkSchedulerProfile,
+AFK_MAX_EFFECTIVE_ELAPSED_MS,
 getAdaptiveAfkOperationCount,
 getAfkBatchBudgetMs,
+getEffectiveAfkElapsedMs,
 observeAfkRecoveryBacklog,
 recordAfkSchedulerBatch,
 shouldPauseOnlineProgressForAfk,
@@ -2474,12 +2476,16 @@ export function HomeScreen({
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= REDUCER_CATCHUP_THRESHOLD_MS) {
+      // SpecRef: 5.1 | AFK Emulation Efficiency
+      // A returning player starts each catch-up at 100% efficiency. Convert this
+      // absence once into effective simulation time using the progressive bands.
+      const effectiveElapsedMs = getEffectiveAfkElapsedMs(elapsedMs);
       if (pendingAfkMsRef.current <= 0) {
         afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = true;
         afkSchedulerProfileRef.current = {
           ...createAfkSchedulerProfile(),
-          recoveredElapsedMs: elapsedMs,
+          recoveredElapsedMs: effectiveElapsedMs,
           activePartyCount: parties.length,
         };
         afkAverageOperationDurationMsRef.current = null;
@@ -2488,13 +2494,16 @@ export function HomeScreen({
           ...afkSchedulerProfileRef.current,
           recoveredElapsedMs: Math.min(
             AFK_MAX_ELAPSED_MS,
-            afkSchedulerProfileRef.current.recoveredElapsedMs + elapsedMs,
+            afkSchedulerProfileRef.current.recoveredElapsedMs + effectiveElapsedMs,
           ),
           activePartyCount: parties.length,
         };
       }
       afkSimulationAnchorRef.current = now;
-      const nextPendingAfkMs = Math.min(AFK_MAX_ELAPSED_MS, pendingAfkMsRef.current + elapsedMs);
+      const nextPendingAfkMs = Math.min(
+        AFK_MAX_EFFECTIVE_ELAPSED_MS,
+        pendingAfkMsRef.current + effectiveElapsedMs,
+      );
       // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
       // Update AFK recovery refs synchronously before persistence so refresh restores the same x/y progress baseline.
       afkRecoveryTotalMsRef.current = Math.max(afkRecoveryTotalMsRef.current, nextPendingAfkMs);

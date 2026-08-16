@@ -36,7 +36,13 @@ isDungeonEntryUnlocked,
 import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDisplay';
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
-import { normalizePersistedAfkChunkCursor, type AfkSimulationBatchSlice, type PersistedAfkChunkCursor } from '../../game/afkScheduler';
+import {
+AFK_MAX_EFFECTIVE_ELAPSED_MS,
+AFK_MAX_REAL_ELAPSED_MS,
+normalizePersistedAfkChunkCursor,
+type AfkSimulationBatchSlice,
+type PersistedAfkChunkCursor
+} from '../../game/afkScheduler';
 import { getItemDisplayName,getLocalizedItemName } from '../../game/gameState';
 import { JEWEL_DEFS,getJewelCBonusValue,getJewelDRankValue,getJewelShortLabel } from '../../game/jewel';
 import { isSpecialMagicCastable,resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../game/magic';
@@ -561,7 +567,7 @@ export const APPROX_CYCLE_STEP_COUNT = 30;
 export const CHUNK_CYCLE_COUNT = 12;
 export const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 export const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
-export const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
+export const AFK_MAX_ELAPSED_MS = AFK_MAX_REAL_ELAPSED_MS;
 export const REDUCER_CATCHUP_THRESHOLD_MS = BASE_STEP_DURATION_MS;
 
 export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: number = Date.now()): PersistedRuntimeSnapshot | null {
@@ -605,10 +611,10 @@ export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: 
   }
 
   const pendingAfkMs = Number.isFinite(parsed.pendingAfkMs)
-    ? Math.max(0, Math.min(AFK_MAX_ELAPSED_MS, Math.floor(Number(parsed.pendingAfkMs))))
+    ? Math.max(0, Math.min(AFK_MAX_EFFECTIVE_ELAPSED_MS, Math.floor(Number(parsed.pendingAfkMs))))
     : 0;
   const recoveryTotal = Number.isFinite(parsed.afkRecoveryTotalMs)
-    ? Math.max(pendingAfkMs, Math.min(AFK_MAX_ELAPSED_MS, Math.floor(Number(parsed.afkRecoveryTotalMs))))
+    ? Math.max(pendingAfkMs, Math.min(AFK_MAX_EFFECTIVE_ELAPSED_MS, Math.floor(Number(parsed.afkRecoveryTotalMs))))
     : pendingAfkMs;
   const baseline = Array.isArray(parsed.afkSummaryBaseline)
     ? parsed.afkSummaryBaseline.map(normalizeAfkSummaryStats).filter((value): value is AfkSummaryStats => value !== null).slice(0, normalizedPartyCount)

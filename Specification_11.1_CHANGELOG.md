@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 17 | 2026/08/16 | Implement progressive AFK emulation efficiency across the specified seven elapsed-time bands, cap each catch-up at 162 real hours, and convert that absence into at most 45 effective simulation hours with regression coverage. |
 | 0.9.3 | 16 | 2026/08/16 | Use the active sub-theme color for the macOS Party Progress Open button and translucent weak sub-theme fills for compact quest, gate, and secondary progress indicators. |
 | 0.9.3 | 15 | 2026/08/16 | Align the macOS Party Progress pane with the UI foundation themes by using exact Kemo, Luna, and Laika sub/accent colors on flat neutral page and card surfaces. |
 | 0.9.3 | 14 | 2026/08/16 | Align all runtime Step timing with the specified 20-second base duration through the shared timing constant, including updated regression coverage. |

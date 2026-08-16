@@ -111,12 +111,12 @@ import {
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
-import { getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
+import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
-const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
+const AFK_MAX_SIMULATION_MS = AFK_MAX_EFFECTIVE_ELAPSED_MS;
 const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.05;
 const ITEM_MAX_STACK = 99;
