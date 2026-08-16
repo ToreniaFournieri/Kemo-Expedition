@@ -303,7 +303,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 9,
     tier: 1,
-    expLevel: 46,
+    expLevel: 44,
     get name() { return t('data.dungeons.9.name'); },
     enemyPoolIds: [9],
     bossId: 135,

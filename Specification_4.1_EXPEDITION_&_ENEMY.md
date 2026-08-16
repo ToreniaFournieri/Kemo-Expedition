@@ -17,7 +17,7 @@
 | 6 | 6 | 29 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
 | 7 | 7 | 34 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type |
 | 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
-| 9 | 1 | 46 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - |
+| 9 | 1 | 44 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - |
 | 0 | 0 | 0 | 闘技場 (Colosseum) | 闘 | Debug-only area. Displayed only when Colosseum is enabled. |
 
 - Floor of each expedition
