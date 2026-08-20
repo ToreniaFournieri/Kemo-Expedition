@@ -1,4 +1,5 @@
 import type { Language } from '../i18n';
+import type { ExpeditionDeployStatus } from '../game/expeditionDeployment';
 
 // Elemental Types
 export type ElementalOffense = 'none' | 'fire' | 'thunder' | 'ice';
@@ -568,6 +569,7 @@ export interface Dungeon {
   id: number;
   tier: number;
   expLevel: number;
+  deployStatus: ExpeditionDeployStatus;
   name: string;
   enemyPoolIds: number[];
   bossId: number;

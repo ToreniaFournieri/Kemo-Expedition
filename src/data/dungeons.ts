@@ -1,5 +1,7 @@
 import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType, TerrainEffectKey } from '../types';
 import { t } from '../i18n';
+import { EnvironmentId, getEnvironmentId } from '../game/environment';
+import { getDeployedExpeditions } from '../game/expeditionDeployment';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 
 type CombatMultipliers = {
@@ -202,12 +204,13 @@ function createFloors(poolId: number, bossId: number): FloorDef[] {
 
 // Expedition definitions with lore
 // Expeditions following the world progression
-export const DUNGEONS: Dungeon[] = [
+const DUNGEON_DEFINITIONS: Dungeon[] = [
   // Tier 1: Caninian Plains
   {
     id: 1,
     tier: 1,
     expLevel: 1,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.1.name'); },
     enemyPoolIds: [1],
     bossId: 135,
@@ -220,6 +223,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 2,
     tier: 2,
     expLevel: 10,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.2.name'); },
     enemyPoolIds: [2],
     bossId: 171,
@@ -232,6 +236,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 3,
     tier: 3,
     expLevel: 16,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.3.name'); },
     enemyPoolIds: [3],
     bossId: 207,
@@ -244,6 +249,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 4,
     tier: 4,
     expLevel: 21,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.4.name'); },
     enemyPoolIds: [4],
     bossId: 243,
@@ -256,6 +262,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 5,
     tier: 5,
     expLevel: 24,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.5.name'); },
     enemyPoolIds: [5],
     bossId: 279,
@@ -268,6 +275,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 6,
     tier: 6,
     expLevel: 29,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.6.name'); },
     enemyPoolIds: [6],
     bossId: 315,
@@ -280,6 +288,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 7,
     tier: 7,
     expLevel: 34,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.7.name'); },
     enemyPoolIds: [7],
     bossId: 351,
@@ -292,6 +301,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 8,
     tier: 8,
     expLevel: 40,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.8.name'); },
     enemyPoolIds: [8],
     bossId: 387,
@@ -304,6 +314,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 9,
     tier: 1,
     expLevel: 44,
+    deployStatus: 'test',
     get name() { return t('data.dungeons.9.name'); },
     enemyPoolIds: [9],
     bossId: 135,
@@ -315,6 +326,7 @@ export const DUNGEONS: Dungeon[] = [
     id: 99,
     tier: 1,
     expLevel: 1,
+    deployStatus: 'prod',
     get name() { return t('data.dungeons.99.name'); },
     enemyPoolIds: [99],
     bossId: 9901,
@@ -328,6 +340,12 @@ export const DUNGEONS: Dungeon[] = [
     ],
   },
 ];
+
+export function getDungeonsForEnvironment(environment: EnvironmentId): Dungeon[] {
+  return getDeployedExpeditions(DUNGEON_DEFINITIONS, environment);
+}
+
+export const DUNGEONS: Dungeon[] = getDungeonsForEnvironment(getEnvironmentId());
 
 export const getDungeonById = (id: number): Dungeon | undefined =>
   DUNGEONS.find(d => d.id === id);
