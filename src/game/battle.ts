@@ -14,13 +14,17 @@ import {
   AbilityId,
   TerrainEffectKey,
 } from '../types';
-import { applyDomainTerrainDamageOverride, isDomainTerrainGuaranteedHit } from './domainTerrain';
-import { calculateHitChance, calculatePerHitDamage, resolveHitSequence } from './battleKernel.ts';
+import { resolveHitSequence } from './battleKernel.ts';
 import {
   prepareBattleInitiative,
   transformBattleAbilitiesForTerrain,
   type BattleSetupCombatant,
 } from './battleSetup.ts';
+import {
+  resolveNormalActionDamage,
+  resolveNormalActionSpecialMagic,
+  resolveNormalActionTarget,
+} from './battleNormalAction.ts';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
@@ -44,7 +48,7 @@ import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
-import { isSpecialMagicCastable, resolveMagicProfile, resolveSpecialMagicFromAbilities } from './magic';
+import { resolveMagicProfile } from './magic';
 import { computeCharacterStats, getAbilityDescription, getAbilityName } from './characterComputation';
 import {
   buildAntagonismAction,
@@ -549,10 +553,6 @@ function isStealthActive(
   return (partyHp / maxPartyHp) <= threshold;
 }
 
-function hasBulwark(charStats: ComputedCharacterStats): boolean {
-  return charStats.abilities.some(a => a.id === 'bulwark');
-}
-
 function getBulwarkLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'bulwark')?.level ?? 0;
 }
@@ -576,29 +576,25 @@ function resolveEnemyTarget(
   characterStats: ComputedCharacterStats[],
   phase: AttackType,
   actorAbilities: AbilityLike[] = [],
+  fallbackToRandomCandidate = false,
 ): ComputedCharacterStats | null {
-  const selectedTarget = characterStats.find(cs => cs.row === targetRow);
-  if (!selectedTarget) return null;
-
-  const allowsBulwarkRedirect = phase === 'ranged' || phase === 'melee';
-  if (!allowsBulwarkRedirect || hasAbility(actorAbilities, 'bulwark_breaker')) {
-    return selectedTarget;
-  }
-
-  const frontCharacter = characterStats.find(cs => cs.row === selectedTarget.row - 1);
-  const frontBulwarkLevel = frontCharacter ? getBulwarkLevel(frontCharacter) : 0;
-  if (
-    frontCharacter
-    && hasBulwark(frontCharacter)
-    && (
-      phase === 'ranged'
-      || (phase === 'melee' && frontBulwarkLevel >= 2)
-    )
-  ) {
-    return frontCharacter;
-  }
-
-  return selectedTarget;
+  const resolution = resolveNormalActionTarget(
+    targetRow,
+    characterStats.map((stats) => ({
+      id: stats.characterId,
+      row: stats.row,
+      bulwarkLevel: getBulwarkLevel(stats),
+    })),
+    {
+      attackType: phase,
+      actorHasBulwarkBreaker: hasAbility(actorAbilities, 'bulwark_breaker'),
+      fallbackToRandomCandidate,
+      random: Math.random,
+    },
+  );
+  return resolution.targetId === null
+    ? null
+    : characterStats.find((stats) => stats.characterId === resolution.targetId) ?? null;
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.momentum_amplifer
@@ -645,6 +641,45 @@ function getTargetRow(ctx: BattleContext, phase: AttackType): { row: number; new
   };
 
   return { row: ticket, newCtx };
+}
+
+function resolveNormalActionBattleTarget(
+  ctx: BattleContext,
+  phase: AttackType,
+  candidates: ComputedCharacterStats[],
+  actorAbilities: AbilityLike[],
+  fallbackToRandomCandidate = false,
+): { target: ComputedCharacterStats | null; newCtx: BattleContext } {
+  const isPhysical = phase === 'ranged' || phase === 'melee';
+  let bag = isPhysical ? ctx.physicalThreatBag : ctx.magicalThreatBag;
+  if (getBagTicketTotal(bag) === 0) {
+    bag = isPhysical ? createPhysicalThreatBag() : createMagicalThreatBag();
+  }
+  const resolution = resolveNormalActionTarget(
+    0,
+    candidates.map((stats) => ({
+      id: stats.characterId,
+      row: stats.row,
+      bulwarkLevel: getBulwarkLevel(stats),
+    })),
+    {
+      attackType: phase,
+      actorHasBulwarkBreaker: hasAbility(actorAbilities, 'bulwark_breaker'),
+      fallbackToRandomCandidate,
+      threatBag: bag.entries,
+      random: Math.random,
+    },
+  );
+  const nextBag = { entries: resolution.threatBag };
+  return {
+    target: resolution.targetId === null
+      ? null
+      : candidates.find((stats) => stats.characterId === resolution.targetId) ?? null,
+    newCtx: {
+      ...ctx,
+      ...(isPhysical ? { physicalThreatBag: nextBag } : { magicalThreatBag: nextBag }),
+    },
+  };
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
@@ -723,8 +758,12 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  return applyDomainTerrainDamageOverride(
-    calculatePerHitDamage(attack, effectiveDefense, [
+  return resolveNormalActionDamage({
+    attackType: phase,
+    attempts: 0,
+    attack,
+    effectiveDefense,
+    multipliers: [
       amplifier,
       runtimeOffenseMultiplier,
       enemy.elementalOffenseValue,
@@ -738,12 +777,25 @@ function calculateSingleEnemyAttackDamage(
       elementalOffenseAttributeAmplifier,
       swarmAmplifier,
       defenseDebuffAmplifier,
-    ]),
+    ],
+    opponentMaxHp: maxPartyHp,
+    actorAccuracyPotency: 1,
+    actorAccuracyBonus: 0,
+    opponentEvasionBonus: 0,
+    opponentDeflectionLevel: 0,
+    actorFocusLevel: 0,
+    actorArcaneStabilityLevel: 0,
+    elementalOffense: enemy.elementalOffense,
+    elementalOffenseValue: enemy.elementalOffenseValue,
+    elementalResistance: enemy.elementalOffense === 'none'
+      ? 1
+      : targetCharStats.elementalDefenseMultipliers[enemy.elementalOffense] ?? 1,
+    echoDomainElementalUsageCount,
+    actorHasDryproof: hasAbility(enemy.abilities, 'dryproof'),
     terrainEffect,
-    maxPartyHp,
-    enemy.abilities,
-    targetCharStats.abilities,
-  );
+    actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
+    opponentHasDomainBreaker: hasAbility(targetCharStats.abilities, 'domain_breaker'),
+  }).perHitDamage;
 }
 
 function getEnemyBaseNoA(phase: AttackType, enemy: EnemyDef): number {
@@ -993,7 +1045,7 @@ function calculateCharacterFriendlyFireDamage(
   );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
-  const basePerHitDamage = calculatePerHitDamage(attack, effectiveDefenseWithHeavyStrike, [
+  const damageMultipliers = [
     offenseAmplifier,
     runtimeOffenseMultiplier,
     attacker.elementalOffenseValue,
@@ -1007,14 +1059,7 @@ function calculateCharacterFriendlyFireDamage(
     elementalOffenseAttributeAmplifier,
     swarmAmplifier,
     defenseDebuffAmplifier,
-  ]);
-  const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
-    basePerHitDamage,
-    terrainEffect,
-    partyStats.hp,
-    attacker.abilities,
-    target.abilities,
-  );
+  ] as const;
 
   const actorAccuracyPotency = phase === 'magical' ? 1.0 : attacker.accuracyPotency;
   const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
@@ -1023,31 +1068,32 @@ function calculateCharacterFriendlyFireDamage(
   const canApplyResonance = phase === 'magical'
     || (phase === 'ranged' && partyDeityKey === 'God of Resonance' && terrainEffect !== 'terrain.gehenna');
 
-  let hits = 0;
-  let damage = 0;
-  const hitSequence = resolveHitSequence({
+  const resolved = resolveNormalActionDamage({
+    attackType: phase,
+    attempts: noA,
+    attack,
+    effectiveDefense: effectiveDefenseWithHeavyStrike,
+    multipliers: damageMultipliers,
+    opponentMaxHp: partyStats.hp,
     actorAccuracyPotency,
     actorAccuracyBonus: attacker.accuracyBonus + temporaryAccuracyBonus,
     opponentEvasionBonus: target.evasionBonus,
-    nthHit: 1,
-    phase,
     opponentDeflectionLevel: targetDeflectionLevel,
     actorFocusLevel,
     actorArcaneStabilityLevel: attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+    resonanceLevel: canApplyResonance ? resonance?.level ?? 0 : 0,
+    elementalOffense: attacker.elementalOffense,
+    elementalOffenseValue: attacker.elementalOffenseValue,
+    elementalResistance: elementalMultiplier,
+    echoDomainElementalUsageCount,
+    actorHasDryproof: hasAbility(attacker.abilities, 'dryproof'),
     terrainEffect,
     actorHasTrueSight: hasAbility(attacker.abilities, 'true_sight'),
     actorHasDomainBreaker: hasAbility(attacker.abilities, 'domain_breaker'),
     opponentHasDomainBreaker: hasAbility(target.abilities, 'domain_breaker'),
-  }, noA);
-  for (let i = 1; i <= noA; i++) {
-    if (hitSequence[i - 1] === 1) {
-      hits += 1;
-      const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
-      damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
-    }
-  }
+  });
 
-  return { damage, totalAttempts: noA, hits };
+  return { damage: resolved.damage, totalAttempts: resolved.totalAttempts, hits: resolved.hits };
 }
 
 
@@ -1428,48 +1474,6 @@ function mergeAttackBonusLogText(...bonusTexts: string[]): string {
   return `(${normalized.join(', ')})`;
 }
 
-// Hit detection for physical attacks (LONG and CLOSE phases)
-// decay_of_accuracy = clamp(0.70, 0.90 + actor.accuracy - opponent.evasion, 0.98)
-// chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit - 1)
-// SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
-function hitDetection(
-  actorAccuracyPotency: number,
-  actorAccuracyBonus: number,
-  opponentEvasionBonus: number,
-  nthHit: number, // 1-indexed
-  phase: AttackType,
-  opponentDeflectionLevel: number,
-  actorFocusLevel: number,
-  terrainEffect?: TerrainEffectKey | null,
-  actorArcaneStabilityLevel: number = 0,
-  actorHasTrueSight: boolean = false,
-  actorHasDomainBreaker: boolean = false,
-  opponentHasDomainBreaker: boolean = false,
-): boolean {
-  if (isDomainTerrainGuaranteedHit(
-    phase,
-    terrainEffect,
-    actorHasDomainBreaker,
-    opponentHasDomainBreaker,
-  )) {
-    return true;
-  }
-
-  const chance = calculateHitChance({
-    actorAccuracyPotency,
-    actorAccuracyBonus,
-    opponentEvasionBonus,
-    nthHit,
-    phase,
-    opponentDeflectionLevel,
-    actorFocusLevel,
-    actorArcaneStabilityLevel,
-    terrainEffect,
-    actorHasTrueSight,
-  });
-  return Math.random() <= chance;
-}
-
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 // SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function calculateCharacterDamage(
@@ -1619,8 +1623,7 @@ function calculateCharacterDamage(
   );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
-  // C++ kernel multiplier tail remains: swarmAmplifier * defenseDebuffAmplifier.
-  const basePerHitDamage = calculatePerHitDamage(attack, effectiveDefense, [
+  const damageMultipliers = [
     offenseAmplifier,
     runtimeOffenseMultiplier,
     charStats.elementalOffenseValue,
@@ -1634,14 +1637,7 @@ function calculateCharacterDamage(
     elementalOffenseAttributeAmplifier,
     swarmAmplifier,
     defenseDebuffAmplifier,
-  ]);
-  const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
-    basePerHitDamage,
-    terrainEffect,
-    enemy.hp,
-    charStats.abilities,
-    enemy.abilities,
-  );
+  ] as const;
 
   // All phases now use hit detection.
   // MID phase ignores row-based accuracy potency and uses fixed potency (1.0).
@@ -1651,31 +1647,32 @@ function calculateCharacterDamage(
   const actorFocusLevel = charStats.abilities.find(a => a.id === 'focus')?.level ?? 0;
   const enemyDeflectionLevel = getEnemyAbilityLevel(enemy, 'deflection');
 
-  let hits = 0;
-  let damage = 0;
-  const hitSequence = resolveHitSequence({
+  const resolved = resolveNormalActionDamage({
+    attackType: phase,
+    attempts: noA,
+    attack,
+    effectiveDefense,
+    multipliers: damageMultipliers,
+    opponentMaxHp: enemy.hp,
     actorAccuracyPotency,
     actorAccuracyBonus: charStats.accuracyBonus + temporaryAccuracyBonus,
     opponentEvasionBonus: enemyEvasion,
-    nthHit: 1,
-    phase,
     opponentDeflectionLevel: enemyDeflectionLevel,
     actorFocusLevel,
     actorArcaneStabilityLevel: charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+    resonanceLevel: canApplyResonance ? resonance?.level ?? 0 : 0,
+    elementalOffense: charStats.elementalOffense,
+    elementalOffenseValue: charStats.elementalOffenseValue,
+    elementalResistance: elementalMultiplier,
+    echoDomainElementalUsageCount,
+    actorHasDryproof: hasAbility(charStats.abilities, 'dryproof'),
     terrainEffect,
     actorHasTrueSight: hasAbility(charStats.abilities, 'true_sight'),
     actorHasDomainBreaker: hasAbility(charStats.abilities, 'domain_breaker'),
     opponentHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
-  }, noA);
-  for (let i = 1; i <= noA; i++) {
-    if (hitSequence[i - 1] === 1) {
-      hits++;
-      const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
-      damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
-    }
-  }
+  });
 
-  return { damage, totalAttempts: noA, hits };
+  return { damage: resolved.damage, totalAttempts: resolved.totalAttempts, hits: resolved.hits };
 }
 
 function hasAbility(abilities: AbilityLike[], abilityId: AbilityId): boolean {
@@ -4656,9 +4653,13 @@ export function executeBattle(
 
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
-          const specialMagic = enemy.magicStyle === 'percentage_damage'
-            ? (isSpecialMagicCastable('gravity_well', attempts) ? 'gravity_well' : null)
-            : resolveSpecialMagicFromAbilities(enemy.abilities, attempts);
+          const specialResolution = resolveNormalActionSpecialMagic(
+            enemy.abilities,
+            attempts,
+            partyHp,
+            enemy.magicStyle === 'percentage_damage',
+          );
+          const specialMagic = specialResolution.specialMagic;
           const magicStyle = specialMagic === 'gravity_well'
             ? 'percentage_damage'
             : specialMagic
@@ -4696,12 +4697,12 @@ export function executeBattle(
             }
 
             const appliedDamage = specialMagic === 'gravity_well'
-              ? applyPartyDamage(Math.floor(partyHp * 2 / 5))
+              ? applyPartyDamage(specialResolution.damage)
               : 0;
             if (specialMagic === 'armor_break') {
-              partyPhysicalDefenseDebuffAmplifier *= 4 / 3;
+              partyPhysicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
             } else if (specialMagic === 'mana_break') {
-              partyMagicalDefenseDebuffAmplifier *= 4 / 3;
+              partyMagicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
             }
             log.push({
               phase,
@@ -4737,29 +4738,41 @@ export function executeBattle(
           let enemySuccessfulHits = 0;
 
           for (let i = 0; i < attempts; i++) {
-            const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
+            const { target: targetCharStats, newCtx } = resolveNormalActionBattleTarget(
+              ctx,
+              phase,
+              characterStats,
+              enemy.abilities,
+            );
             ctx = newCtx;
-            const targetCharStats = resolveEnemyTarget(targetRow, characterStats, phase, enemy.abilities);
             if (!targetCharStats) {
               enemyHitIndex += 1;
               continue;
             }
 
             const existing = attacksByTarget.get(targetCharStats.characterId);
-            const didHit = hitDetection(
-              enemyAccuracyPotency,
-              enemyAccuracyBonus,
-              targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
-              enemyHitIndex,
-              phase,
-              getDeflectionLevel(targetCharStats),
-              getEnemyFocusLevel(enemy),
-              environment.terrainEffect,
-              0,
-              hasAbility(enemy.abilities, 'true_sight'),
-              hasAbility(enemy.abilities, 'domain_breaker'),
-              hasAbility(targetCharStats.abilities, 'domain_breaker'),
-            );
+            const didHit = resolveNormalActionDamage({
+              attackType: phase,
+              attempts: 1,
+              firstHit: enemyHitIndex,
+              attack: 1,
+              effectiveDefense: 0,
+              multipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              opponentMaxHp: 1,
+              actorAccuracyPotency: enemyAccuracyPotency,
+              actorAccuracyBonus: enemyAccuracyBonus,
+              opponentEvasionBonus: targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
+              opponentDeflectionLevel: getDeflectionLevel(targetCharStats),
+              actorFocusLevel: getEnemyFocusLevel(enemy),
+              actorArcaneStabilityLevel: 0,
+              elementalOffense: 'none',
+              elementalOffenseValue: 1,
+              elementalResistance: 1,
+              terrainEffect: environment.terrainEffect,
+              actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+              actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
+              opponentHasDomainBreaker: hasAbility(targetCharStats.abilities, 'domain_breaker'),
+            }).hits === 1;
             enemyHitIndex += 1;
 
             const targetAttack = existing ?? {
@@ -5478,9 +5491,14 @@ export function executeBattle(
           * noAMultiplier
           * getTerrainNoAAmplifier('magical', environment.terrainEffect, cs.abilities)
         );
-        const activatedSpecialMagic = phase === 'magical'
-          ? resolveSpecialMagicFromAbilities(cs.abilities, terrainAdjustedMagicalNoA)
-          : null;
+        const specialResolution = phase === 'magical'
+          ? resolveNormalActionSpecialMagic(
+              cs.abilities,
+              terrainAdjustedMagicalNoA,
+              isAntagonism ? partyHp : enemyHp,
+            )
+          : { specialMagic: null, damage: 0, defenseMultiplier: 1 };
+        const activatedSpecialMagic = specialResolution.specialMagic;
         const magicStyle = activatedSpecialMagic === 'gravity_well'
           ? 'percentage_damage'
           : activatedSpecialMagic
@@ -5539,14 +5557,14 @@ export function executeBattle(
           let appliedDamage = 0;
           if (activatedSpecialMagic === 'gravity_well') {
             appliedDamage = isAntagonism
-              ? applyPartyDamage(Math.floor(partyHp * 2 / 5))
-              : applyEnemyDamage(Math.floor(enemyHp * 2 / 5));
+              ? applyPartyDamage(specialResolution.damage)
+              : applyEnemyDamage(specialResolution.damage);
           } else if (activatedSpecialMagic === 'armor_break') {
-            if (isAntagonism) partyPhysicalDefenseDebuffAmplifier *= 4 / 3;
-            else enemyPhysicalDefenseDebuffAmplifier *= 4 / 3;
+            if (isAntagonism) partyPhysicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
+            else enemyPhysicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
           } else {
-            if (isAntagonism) partyMagicalDefenseDebuffAmplifier *= 4 / 3;
-            else enemyMagicalDefenseDebuffAmplifier *= 4 / 3;
+            if (isAntagonism) partyMagicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
+            else enemyMagicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
           }
 
           log.push({
@@ -5578,9 +5596,15 @@ export function executeBattle(
         if (isAntagonism) {
           const candidates = characterStats.filter(target => target.characterId !== cs.characterId);
           if (candidates.length === 0) return null;
-          const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
+          const { target: selected, newCtx } = resolveNormalActionBattleTarget(
+            ctx,
+            phase,
+            candidates,
+            enemy.abilities,
+            true,
+          );
           ctx = newCtx;
-          const selected = resolveEnemyTarget(targetRow, candidates, phase, enemy.abilities) ?? candidates[Math.floor(Math.random() * candidates.length)];
+          if (!selected) return null;
           antagonismTarget = selected;
           antagonismTargetName = party.characters.find(c => c.id === selected.characterId)?.name ?? '???';
           ambushMultiplier = getAmbushAmplifier(

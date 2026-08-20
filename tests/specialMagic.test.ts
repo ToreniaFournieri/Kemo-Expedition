@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 const battleSource = readFileSync(new URL('../src/game/battle.ts', import.meta.url), 'utf8');
 const magicSource = readFileSync(new URL('../src/game/magic.ts', import.meta.url), 'utf8');
+const normalActionSource = readFileSync(new URL('../src/game/battleNormalAction.ts', import.meta.url), 'utf8');
+const kernelSource = readFileSync(new URL('../native/battle_kernel.cpp', import.meta.url), 'utf8');
 const homeSharedSource = readFileSync(new URL('../src/components/home/homeShared.tsx', import.meta.url), 'utf8');
 const partyTabSource = readFileSync(new URL('../src/components/home/tabs/PartyTab.tsx', import.meta.url), 'utf8');
 const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW'].map(locale => (
@@ -15,13 +17,17 @@ test('special magic ability selection follows Gravity Well, Armor Break, Mana Br
 });
 
 test('defense break spells use terrain-adjusted thresholds and persistent battle amplifiers', () => {
-  assert.match(battleSource, /resolveSpecialMagicFromAbilities\(cs\.abilities, terrainAdjustedMagicalNoA\)/);
-  assert.match(battleSource, /resolveSpecialMagicFromAbilities\(enemy\.abilities, attempts\)/);
-  assert.match(battleSource, /enemyPhysicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /enemyMagicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /partyPhysicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /partyMagicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /swarmAmplifier \* defenseDebuffAmplifier/);
+  assert.match(battleSource, /resolveNormalActionSpecialMagic\([\s\S]*?terrainAdjustedMagicalNoA/);
+  assert.match(battleSource, /resolveNormalActionSpecialMagic\([\s\S]*?attempts/);
+  assert.match(normalActionSource, /has\('armor_break'\)[\s\S]*?has\('mana_break'\)/);
+  assert.match(kernelSource, /special_mask & 2[\s\S]*?magical_noa >= 12/);
+  assert.match(kernelSource, /special_mask & 4[\s\S]*?magical_noa >= 10/);
+  assert.match(kernelSource, /special == 2 \|\| special == 3[\s\S]*?4\.0 \/ 3\.0/);
+  assert.match(battleSource, /enemyPhysicalDefenseDebuffAmplifier \*= specialResolution\.defenseMultiplier/);
+  assert.match(battleSource, /enemyMagicalDefenseDebuffAmplifier \*= specialResolution\.defenseMultiplier/);
+  assert.match(battleSource, /partyPhysicalDefenseDebuffAmplifier \*= specialResolution\.defenseMultiplier/);
+  assert.match(battleSource, /partyMagicalDefenseDebuffAmplifier \*= specialResolution\.defenseMultiplier/);
+  assert.match(battleSource, /swarmAmplifier,\s*defenseDebuffAmplifier,/);
 });
 
 test('status spell selection checks ideal magical NoA independently of runtime terrain modifiers', () => {
