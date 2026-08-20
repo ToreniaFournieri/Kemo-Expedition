@@ -20,7 +20,7 @@ unsigned int normal_action_bag_ids[kNormalActionTargetCapacity];
 unsigned int normal_action_bag_tickets[kNormalActionTargetCapacity];
 
 int battle_kernel_abi_version() {
-  return 4;
+  return 5;
 }
 
 double battle_calculate_per_hit_damage(
@@ -323,6 +323,159 @@ int battle_resolve_normal_action() {
     normal_action_output[5] = special;
     if (special == 1) normal_action_output[1] = __builtin_floor(normal_action_input[31] * 2.0 / 5.0);
     if (special == 2 || special == 3) normal_action_output[8] = 4.0 / 3.0;
+    return 0;
+  }
+
+  // Mode 4: defensive reaction priority. Ability levels occupy slots 43-58;
+  // output[5] is absorb/nullify/reflect (1/2/3), output[6] identifies the
+  // selected ability, and output[8] is its amplifier.
+  if (mode == 4) {
+    const int flags = static_cast<int>(normal_action_input[1]);
+    const int attack_type = static_cast<int>(normal_action_input[2]);
+    const int elemental = static_cast<int>(normal_action_input[38]);
+    const auto level = [](double value) { return static_cast<int>(value); };
+    int reaction = 0;
+    int ability = 0;
+    int ability_level = 0;
+    const bool elemental_allowed =
+        (elemental == 1 && (flags & 2) == 0) ||
+        (elemental == 2 && (flags & 4) == 0) ||
+        (elemental == 3 && (flags & 1) == 0);
+
+    // Absorption has first priority.
+    if (elemental_allowed && elemental == 3 && level(normal_action_input[43]) > 0) { reaction = 1; ability = 1; ability_level = level(normal_action_input[43]); }
+    else if (elemental_allowed && elemental == 1 && level(normal_action_input[44]) > 0) { reaction = 1; ability = 2; ability_level = level(normal_action_input[44]); }
+    else if (elemental_allowed && elemental == 2 && level(normal_action_input[45]) > 0) { reaction = 1; ability = 3; ability_level = level(normal_action_input[45]); }
+    else if (attack_type == 1 && (flags & 8) == 0 && level(normal_action_input[46]) > 0) { reaction = 1; ability = 4; ability_level = level(normal_action_input[46]); }
+
+    // Nullification has second priority and is not disabled by protect breakers.
+    if (reaction == 0) {
+      if (elemental == 3 && level(normal_action_input[47]) > 0) { reaction = 2; ability = 5; }
+      else if (elemental == 1 && level(normal_action_input[48]) > 0) { reaction = 2; ability = 6; }
+      else if (elemental == 2 && level(normal_action_input[49]) > 0) { reaction = 2; ability = 7; }
+      else if (attack_type == 0 && level(normal_action_input[50]) > 0) { reaction = 2; ability = 8; }
+      else if (attack_type == 1 && level(normal_action_input[51]) > 0) { reaction = 2; ability = 9; }
+      else if (attack_type == 2 && level(normal_action_input[52]) > 0) { reaction = 2; ability = 10; }
+    }
+
+    // Reflection has last priority.
+    if (reaction == 0) {
+      if (elemental_allowed && elemental == 3 && level(normal_action_input[53]) > 0) { reaction = 3; ability = 11; ability_level = level(normal_action_input[53]); }
+      else if (elemental_allowed && elemental == 1 && level(normal_action_input[54]) > 0) { reaction = 3; ability = 12; ability_level = level(normal_action_input[54]); }
+      else if (elemental_allowed && elemental == 2 && level(normal_action_input[55]) > 0) { reaction = 3; ability = 13; ability_level = level(normal_action_input[55]); }
+      else if (attack_type == 0 && level(normal_action_input[56]) > 0) { reaction = 3; ability = 14; ability_level = level(normal_action_input[56]); }
+      else if (attack_type == 1 && (flags & 8) == 0 && level(normal_action_input[57]) > 0) { reaction = 3; ability = 15; ability_level = level(normal_action_input[57]); }
+      else if (attack_type == 2 && level(normal_action_input[58]) > 0) { reaction = 3; ability = 16; ability_level = level(normal_action_input[58]); }
+    }
+
+    double amplifier = 0.0;
+    if (reaction == 1) {
+      amplifier = ability_level >= 5 ? 1.0 : ability_level == 4 ? 0.7 : ability_level == 3 ? 0.5 : ability_level == 2 ? 0.3 : 0.1;
+    } else if (reaction == 3) {
+      amplifier = ability_level >= 5 ? 0.5 : ability_level == 4 ? 0.35 : ability_level == 3 ? 0.2 : ability_level == 2 ? 0.1 : 0.05;
+    }
+    normal_action_output[5] = reaction;
+    normal_action_output[6] = ability;
+    normal_action_output[8] = amplifier;
+    return 0;
+  }
+
+  // Mode 5: apply a selected defensive reaction to one damage unit.
+  if (mode == 5) {
+    const int reaction = static_cast<int>(normal_action_input[1]);
+    const double source = normal_action_input[5];
+    const double amplifier = normal_action_input[8];
+    if (reaction == 1) {
+      normal_action_output[3] = source > 0.0 ? __builtin_floor(source * amplifier) : 0.0;
+      if (source > 0.0 && normal_action_output[3] < 1.0) normal_action_output[3] = 1.0;
+    } else if (reaction == 2) {
+      normal_action_output[1] = 0.0;
+    } else if (reaction == 3) {
+      double reflected = __builtin_floor(source * amplifier * normal_action_input[11] * normal_action_input[12]);
+      if (source > 0.0 && reflected < 1.0) reflected = 1.0;
+      normal_action_output[1] = __builtin_floor(source * (1.0 - amplifier));
+      if (normal_action_output[1] < 0.0) normal_action_output[1] = 0.0;
+      normal_action_output[2] = reflected;
+    } else {
+      normal_action_output[1] = source;
+    }
+    return 0;
+  }
+
+  // Mode 6: close-range reactive effects (life drain, burn, bind).
+  if (mode == 6) {
+    const int flags = static_cast<int>(normal_action_input[1]);
+    const int hits = static_cast<int>(normal_action_input[3]);
+    const double damage = normal_action_input[5];
+    const int life_level = static_cast<int>(normal_action_input[43]);
+    const int burn_level = static_cast<int>(normal_action_input[44]);
+    const int bind_level = static_cast<int>(normal_action_input[45]);
+    constexpr double life[7] = {0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0};
+    constexpr double burn[5] = {0.5, 0.9, 1.2, 1.4, 1.5};
+    constexpr int bind[5] = {2, 3, 4, 5, 6};
+    if (life_level > 0 && (flags & 16) == 0 && damage > 0.0) {
+      const int index = life_level > 7 ? 6 : life_level - 1;
+      normal_action_output[1] = __builtin_floor(damage * life[index]);
+      normal_action_output[8] = life[index];
+    }
+    if (burn_level > 0 && (flags & 32) == 0 && hits > 0) {
+      const int index = burn_level > 5 ? 4 : burn_level - 1;
+      normal_action_output[2] = __builtin_floor(normal_action_input[20] * hits * (burn[index] / 100.0) * normal_action_input[39]);
+    }
+    if (bind_level > 0 && (flags & 64) == 0 && hits > 0) {
+      const int index = bind_level > 5 ? 4 : bind_level - 1;
+      double chance = static_cast<double>(hits * bind[index]) / 64.0;
+      if (chance > 1.0) chance = 1.0;
+      normal_action_output[7] = chance;
+      normal_action_output[4] = 1;
+      normal_action_output[5] = hit_random_rolls[0] < chance ? 1.0 : 0.0;
+    }
+    return 0;
+  }
+
+  // Mode 7: Shock interruption and once-per-battle consumption signal.
+  if (mode == 7) {
+    const bool available = (static_cast<int>(normal_action_input[1]) & 1) != 0;
+    const bool nullified = (static_cast<int>(normal_action_input[1]) & 2) != 0;
+    const int hits = static_cast<int>(normal_action_input[3]);
+    const double damage = normal_action_input[5];
+    normal_action_output[1] = available && !nullified && hits > 1 && damage > 0.0
+        ? __builtin_floor(damage / hits) : damage;
+    normal_action_output[2] = available && !nullified && hits > 1 ? 1 : hits;
+    normal_action_output[5] = available ? 1 : 0;
+    return 0;
+  }
+
+  // Mode 8: counter, re-counter, covering-fire, and re-attack profiles.
+  if (mode == 8) {
+    const int kind = static_cast<int>(normal_action_input[44]);
+    const int level = static_cast<int>(normal_action_input[43]);
+    double multiplier = 0.0;
+    int count = 0;
+    if (kind == 1 && level > 0) multiplier = level >= 3 ? 2.0 : level == 2 ? 1.0 : 0.5;
+    else if (kind == 2 && level > 0) multiplier = level >= 2 ? 1.0 : 0.5;
+    else if (kind == 3 && level > 0) { multiplier = level >= 3 ? 1.0 : level == 2 ? 0.7 : 0.5; count = 1; }
+    normal_action_output[3] = count;
+    normal_action_output[8] = multiplier;
+    return 0;
+  }
+
+  // Mode 9: defeat recovery priority and healing delta.
+  if (mode == 9) {
+    const int flags = static_cast<int>(normal_action_input[1]);
+    const int resurrect_level = static_cast<int>(normal_action_input[43]);
+    const int reanimate_level = static_cast<int>(normal_action_input[44]);
+    const double max_hp = normal_action_input[20];
+    if (resurrect_level > 0 && (flags & 1) == 0) {
+      normal_action_output[5] = 1;
+      normal_action_output[1] = resurrect_level >= 2 ? __builtin_ceil(max_hp * 0.01) : 1.0;
+    } else if (reanimate_level > 0 && (flags & 2) == 0) {
+      constexpr int percents[5] = {20, 26, 31, 35, 38};
+      const int index = reanimate_level > 5 ? 4 : reanimate_level - 1;
+      normal_action_output[5] = 2;
+      normal_action_output[1] = __builtin_ceil(max_hp * percents[index] / 100.0);
+    }
+    if (normal_action_output[5] != 0 && normal_action_output[1] < 1.0) normal_action_output[1] = 1.0;
     return 0;
   }
 

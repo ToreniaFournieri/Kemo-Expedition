@@ -3,7 +3,7 @@ import type { AttackType, TerrainEffectKey } from '../types';
 import { decodeBattleProtocolOutput, type BattleProtocolOutput } from './battleProtocol.ts';
 import { BATTLE_PROTOCOL_VERSION } from './generated/battleProtocol.generated.ts';
 
-const ABI_VERSION = 4;
+const ABI_VERSION = 5;
 
 type KernelExports = WebAssembly.Exports & {
   memory: WebAssembly.Memory;

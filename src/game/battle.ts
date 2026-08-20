@@ -14,7 +14,6 @@ import {
   AbilityId,
   TerrainEffectKey,
 } from '../types';
-import { resolveHitSequence } from './battleKernel.ts';
 import {
   prepareBattleInitiative,
   transformBattleAbilitiesForTerrain,
@@ -25,6 +24,15 @@ import {
   resolveNormalActionSpecialMagic,
   resolveNormalActionTarget,
 } from './battleNormalAction.ts';
+import {
+  applyDefensiveReactionKernel,
+  resolveCloseReactiveEffects,
+  resolveDefeatRecoveryKernel,
+  resolveDefensiveReactionKernel,
+  resolveReactiveHitCount,
+  resolveReactiveProfile,
+  resolveShockKernel,
+} from './battleReactive.ts';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
@@ -325,16 +333,6 @@ const CORRODE_MULTIPLIERS: Record<number, number> = {
   5: 2 / 7,
 };
 
-const LIFE_DRAIN_MULTIPLIERS: Record<number, number> = {
-  1: 1 / 1000,
-  2: 3 / 1000,
-  3: 10 / 1000,
-  4: 30 / 1000,
-  5: 100 / 1000,
-  6: 300 / 1000,
-  7: 1.0,
-};
-
 const AMBUSH_MULTIPLIERS: Record<number, number> = {
   1: 1.3,
   2: 1.5,
@@ -352,22 +350,6 @@ const OVERWATCH_MULTIPLIERS: Record<number, number> = {
 };
 
 const DEATH_TOUCH_NUMERATORS: Record<number, number> = {
-  1: 2,
-  2: 3,
-  3: 4,
-  4: 5,
-  5: 6,
-};
-
-const BURN_PERCENTS: Record<number, number> = {
-  1: 0.5,
-  2: 0.9,
-  3: 1.2,
-  4: 1.4,
-  5: 1.5,
-};
-
-const BIND_NUMERATORS: Record<number, number> = {
   1: 2,
   2: 3,
   3: 4,
@@ -1408,22 +1390,30 @@ function getDefensiveReaction(
   // SpecRef: 6.1.2 | Function of battle | a.ice-protect-breaker
   // SpecRef: 6.1.2 | Function of battle | a.thunder-protect-breaker
   // SpecRef: 6.1.2 | Function of battle | a.m-barrier-breaker
-  const absorb = getAbsorbDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
-  if (absorb) {
-    return { type: 'absorb', descriptor: absorb };
-  }
+  const selected = resolveDefensiveReactionKernel(
+    phase,
+    elementalOffense,
+    defenderAbilities,
+    attackerAbilities,
+  );
+  if (!selected) return null;
 
-  const nullify = getNullDescriptor(phase, elementalOffense, defenderAbilities);
-  if (nullify) {
-    return { type: 'nullify', descriptor: nullify };
+  // C++ owns priority and breaker handling; TypeScript only supplies localized
+  // descriptor text for the selected protocol ability.
+  if (selected.type === 'absorb') {
+    const descriptor = getAbsorbDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
+    return descriptor?.abilityId === selected.abilityId
+      ? { type: 'absorb', descriptor: { ...descriptor, amplifier: selected.amplifier } }
+      : null;
   }
-
-  const reflect = getReflectDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
-  if (reflect) {
-    return { type: 'reflect', descriptor: reflect };
+  if (selected.type === 'nullify') {
+    const descriptor = getNullDescriptor(phase, elementalOffense, defenderAbilities);
+    return descriptor?.abilityId === selected.abilityId ? { type: 'nullify', descriptor } : null;
   }
-
-  return null;
+  const descriptor = getReflectDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
+  return descriptor?.abilityId === selected.abilityId
+    ? { type: 'reflect', descriptor: { ...descriptor, amplifier: selected.amplifier } }
+    : null;
 }
 
 const RESONANCE_BONUS_PERCENT_BY_LEVEL = [4, 7, 9, 11, 12] as const;
@@ -1760,10 +1750,6 @@ function getCorrodeMultiplier(level: number): number {
   return CORRODE_MULTIPLIERS[Math.min(5, Math.max(1, level))] ?? 1.0;
 }
 
-function getLifeDrainMultiplier(level: number): number {
-  return LIFE_DRAIN_MULTIPLIERS[Math.min(7, Math.max(1, level))] ?? 0;
-}
-
 function formatLifeDrainMultiplierLabel(level: number): string {
   const clampedLevel = Math.min(7, Math.max(1, level));
   const percentByLevel: Record<number, string> = {
@@ -1788,15 +1774,6 @@ function formatDeathTouchProbabilityNote(level: number, hits: number): string {
   const successfulHits = Math.max(0, hits);
   const probabilityNumerator = Math.min(256, successfulHits * numerator);
   return t('battle.note.deathTouch', { probabilityNumerator });
-}
-
-function getBindChance(level: number, hits: number): number {
-  const numerator = BIND_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
-  return Math.max(0, Math.min(1, (hits * numerator) / 64));
-}
-
-function getBurnPercent(level: number): number {
-  return BURN_PERCENTS[Math.min(5, Math.max(1, level))] ?? 0;
 }
 
 function formatMultiplierAsFraction(multiplier: number): string {
@@ -1912,15 +1889,11 @@ function isMagicSealTargetForEnemy(
 }
 
 function getCounterNoAMultiplierForLevel(level: number): number {
-  if (level <= 0) return 0;
-  if (level >= 3) return 2.0;
-  if (level === 2) return 1.0;
-  return 0.5;
+  return resolveReactiveProfile('counter', level).noAMultiplier;
 }
 
 function getTierTwoNoAMultiplierForLevel(level: number): number {
-  if (level <= 0) return 0;
-  return level >= 2 ? 1.0 : 0.5;
+  return resolveReactiveProfile('tier-two', level).noAMultiplier;
 }
 
 function createNullCounterPool(characterStats: ComputedCharacterStats[]): Map<number, number> {
@@ -1959,11 +1932,7 @@ function enemyHasReAttack(enemy: EnemyDef): boolean {
 }
 
 function getEnemyReAttackNoAMultiplier(enemy: EnemyDef): number {
-  const level = getEnemyAbilityLevel(enemy, 're_attack');
-  if (level <= 0) return 0;
-  if (level >= 3) return 1.0;
-  if (level === 2) return 0.7;
-  return 0.5;
+  return resolveReactiveProfile('re-attack', getEnemyAbilityLevel(enemy, 're_attack')).noAMultiplier;
 }
 
 function hasNoOffense(charStats: ComputedCharacterStats): boolean {
@@ -2038,24 +2007,8 @@ function getResurrectLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'resurrect')?.level ?? 0;
 }
 
-function hasResurrect(charStats: ComputedCharacterStats): boolean {
-  return getResurrectLevel(charStats) > 0;
-}
-
-const REANIMATE_HP_PERCENTS: Record<number, number> = {
-  1: 20,
-  2: 26,
-  3: 31,
-  4: 35,
-  5: 38,
-};
-
 function getReanimateLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'reanimate')?.level ?? 0;
-}
-
-function hasReanimate(charStats: ComputedCharacterStats): boolean {
-  return getReanimateLevel(charStats) > 0;
 }
 
 function hasRequiem(charStats: ComputedCharacterStats): boolean {
@@ -2074,20 +2027,12 @@ function enemyHasNullRequiem(enemy: EnemyDef): boolean {
   return getEnemyAbilityLevel(enemy, 'null_requiem') > 0;
 }
 
-function getReanimateHpPercent(level: number): number {
-  return REANIMATE_HP_PERCENTS[level] ?? REANIMATE_HP_PERCENTS[5];
-}
-
 function getAbilityLevel(charStats: ComputedCharacterStats, abilityId: AbilityId): number {
   return getAbilityLevelFromList(charStats.abilities, abilityId);
 }
 
 function getReAttackProfile(charStats: ComputedCharacterStats): { count: number; noAMultiplier: number } {
-  const ability = charStats.abilities.find(a => a.id === 're_attack');
-  if (!ability) return { count: 0, noAMultiplier: 0.5 };
-  if (ability.level >= 3) return { count: 1, noAMultiplier: 1.0 };
-  if (ability.level === 2) return { count: 1, noAMultiplier: 0.7 };
-  return { count: 1, noAMultiplier: 0.5 };
+  return resolveReactiveProfile('re-attack', getAbilityLevel(charStats, 're_attack'));
 }
 
 function getReCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
@@ -2175,11 +2120,6 @@ function getSoulReapThresholdPercent(level: number): number {
 
 function getUnstableCoreNote(level: number): string {
   return t('battle.note.unstableCore', { percent: getUnstableCoreDamagePercent(level) });
-}
-
-function getShockAdjustedDamage(damage: number, hits: number): number {
-  if (hits <= 1 || damage <= 0) return damage;
-  return Math.floor(damage / hits);
 }
 
 function getRandomPartyMemberName(party: Party): string {
@@ -2746,11 +2686,15 @@ export function executeBattle(
     if (partyHp > 0) return false;
 
     const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
-    if (hasResurrect(targetStats) && !consumedResurrectCharacterIds.has(targetStats.characterId)) {
-      const resurrectLevel = getResurrectLevel(targetStats);
-      const healAmount = resurrectLevel >= 2
-        ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
-        : 1;
+    const recovery = resolveDefeatRecoveryKernel({
+      maxHp: partyStats.hp,
+      resurrectLevel: getResurrectLevel(targetStats),
+      reanimateLevel: getReanimateLevel(targetStats),
+      resurrectConsumed: consumedResurrectCharacterIds.has(targetStats.characterId),
+      reanimateConsumed: consumedReanimateCharacterIds.has(targetStats.characterId),
+    });
+    if (recovery?.type === 'resurrect') {
+      const healAmount = recovery.healAmount;
       healParty(healAmount);
       consumedResurrectCharacterIds.add(targetStats.characterId);
       log.push({
@@ -2767,9 +2711,8 @@ export function executeBattle(
       return true;
     }
 
-    if (hasReanimate(targetStats) && !consumedReanimateCharacterIds.has(targetStats.characterId)) {
-      const reanimateLevel = getReanimateLevel(targetStats);
-      const healAmount = Math.max(1, Math.ceil((partyStats.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+    if (recovery?.type === 'reanimate') {
+      const healAmount = recovery.healAmount;
       healParty(healAmount);
       consumedReanimateCharacterIds.add(targetStats.characterId);
       log.push({
@@ -2795,11 +2738,15 @@ export function executeBattle(
   ): boolean => {
     if (enemyHp > 0) return false;
 
-    const resurrectLevel = getEnemyAbilityLevel(enemy, 'resurrect');
-    if (resurrectLevel > 0 && !consumedEnemyResurrect) {
-      const healAmount = resurrectLevel >= 2
-        ? Math.max(1, Math.ceil(enemy.hp * 0.01))
-        : 1;
+    const recovery = resolveDefeatRecoveryKernel({
+      maxHp: enemy.hp,
+      resurrectLevel: getEnemyAbilityLevel(enemy, 'resurrect'),
+      reanimateLevel: getEnemyAbilityLevel(enemy, 'reanimate'),
+      resurrectConsumed: consumedEnemyResurrect,
+      reanimateConsumed: consumedEnemyReanimate,
+    });
+    if (recovery?.type === 'resurrect') {
+      const healAmount = recovery.healAmount;
       healEnemy(healAmount);
       consumedEnemyResurrect = true;
       log.push({
@@ -2814,9 +2761,8 @@ export function executeBattle(
       return true;
     }
 
-    const reanimateLevel = getEnemyAbilityLevel(enemy, 'reanimate');
-    if (reanimateLevel > 0 && !consumedEnemyReanimate) {
-      const healAmount = Math.max(1, Math.ceil((enemy.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+    if (recovery?.type === 'reanimate') {
+      const healAmount = recovery.healAmount;
       healEnemy(healAmount);
       consumedEnemyReanimate = true;
       log.push({
@@ -3033,9 +2979,16 @@ export function executeBattle(
 
     const lifeDrainLevel = getAbilityLevel(actorStats, 'life_drain');
     if (lifeDrainLevel > 0 && result.damage > 0) {
-      const drainMultiplier = getLifeDrainMultiplier(lifeDrainLevel);
       const targetNullLifeDrain = enemyHasNullLifeDrain(enemy);
-      const healAmount = targetNullLifeDrain ? 0 : healParty(Math.floor(result.damage * drainMultiplier));
+      const reactive = resolveCloseReactiveEffects({
+        hits: result.hits,
+        damage: result.damage,
+        actorMaxHp: partyStats.hp,
+        fireResistance: 1,
+        lifeDrainLevel,
+        targetHasNullLifeDrain: targetNullLifeDrain,
+      });
+      const healAmount = healParty(reactive.lifeDrainHeal);
       log.push({
         phase: 'melee',
         initiativeRoll,
@@ -3087,12 +3040,14 @@ export function executeBattle(
     const burnLevel = getEnemyAbilityLevel(enemy, 'burn');
     if (burnLevel > 0) {
       const actorNullBurn = hasNullBurn(actorStats);
-      const reflectedDamage = actorNullBurn ? 0 : Math.floor(
-        partyStats.hp
-        * result.hits
-        * (getBurnPercent(burnLevel) / 100)
-        * (actorStats.elementalDefenseMultipliers.fire ?? 1.0),
-      );
+      const reflectedDamage = resolveCloseReactiveEffects({
+        hits: result.hits,
+        damage: result.damage,
+        actorMaxHp: partyStats.hp,
+        fireResistance: actorStats.elementalDefenseMultipliers.fire ?? 1.0,
+        burnLevel,
+        targetHasNullBurn: actorNullBurn,
+      }).burnDamage;
       if (reflectedDamage > 0 || actorNullBurn) {
         if (reflectedDamage > 0) {
           applyPartyDamage(reflectedDamage);
@@ -3131,7 +3086,13 @@ export function executeBattle(
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
-      } else if (Math.random() < getBindChance(bindLevel, result.hits)) {
+      } else if (resolveCloseReactiveEffects({
+        hits: result.hits,
+        damage: result.damage,
+        actorMaxHp: partyStats.hp,
+        fireResistance: 1,
+        bindLevel,
+      }).bindTriggered) {
         enemyIncapacitated = true;
         log.push({
           phase: 'melee',
@@ -3183,9 +3144,16 @@ export function executeBattle(
 
     const enemyLifeDrainLevel = getEnemyAbilityLevel(enemy, 'life_drain');
     if (enemyLifeDrainLevel > 0 && appliedDamage > 0) {
-      const drainMultiplier = getLifeDrainMultiplier(enemyLifeDrainLevel);
       const targetNullLifeDrain = hasNullLifeDrain(targetStats);
-      const healAmount = targetNullLifeDrain ? 0 : healEnemy(Math.floor(appliedDamage * drainMultiplier));
+      const reactive = resolveCloseReactiveEffects({
+        hits: appliedHits,
+        damage: appliedDamage,
+        actorMaxHp: enemy.hp,
+        fireResistance: 1,
+        lifeDrainLevel: enemyLifeDrainLevel,
+        targetHasNullLifeDrain: targetNullLifeDrain,
+      });
+      const healAmount = healEnemy(reactive.lifeDrainHeal);
       log.push({
         phase: 'melee',
         initiativeRoll,
@@ -3234,12 +3202,14 @@ export function executeBattle(
     const burnLevel = getAbilityLevel(targetStats, 'burn');
     if (burnLevel > 0 && enemyHp > 0) {
       const actorNullBurn = enemyHasNullBurn(enemy);
-      const reflectedDamage = actorNullBurn ? 0 : Math.floor(
-        enemy.hp
-        * appliedHits
-        * (getBurnPercent(burnLevel) / 100)
-        * (enemy.elementalResistance.fire ?? 1.0),
-      );
+      const reflectedDamage = resolveCloseReactiveEffects({
+        hits: appliedHits,
+        damage: appliedDamage,
+        actorMaxHp: enemy.hp,
+        fireResistance: enemy.elementalResistance.fire ?? 1.0,
+        burnLevel,
+        targetHasNullBurn: actorNullBurn,
+      }).burnDamage;
       if (reflectedDamage > 0 || actorNullBurn) {
         if (reflectedDamage > 0) {
           applyEnemyDamage(reflectedDamage);
@@ -3277,7 +3247,13 @@ export function executeBattle(
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
-      } else if (Math.random() < getBindChance(enemyBindLevel, appliedHits)) {
+      } else if (resolveCloseReactiveEffects({
+        hits: appliedHits,
+        damage: appliedDamage,
+        actorMaxHp: enemy.hp,
+        fireResistance: 1,
+        bindLevel: enemyBindLevel,
+      }).bindTriggered) {
         incapacitatedCharacterIds.add(targetStats.characterId);
         log.push({
           phase: 'melee',
@@ -3481,21 +3457,19 @@ export function executeBattle(
     if (attempts <= 0) {
       return;
     }
-    const counterHitSequence = resolveHitSequence({
+    const hits = resolveReactiveHitCount({
+      attempts,
+      attackType: phase,
       actorAccuracyPotency: 1.0,
       actorAccuracyBonus: enemy.accuracyBonus + enemyPhaseAccuracyBonus,
       opponentEvasionBonus: targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
-      nthHit: 1,
-      phase,
       opponentDeflectionLevel: getDeflectionLevel(targetCharStats),
       actorFocusLevel: getEnemyFocusLevel(enemy),
-      actorArcaneStabilityLevel: 0,
       terrainEffect: environment.terrainEffect,
       actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
       actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
       opponentHasDomainBreaker: hasAbility(targetCharStats.abilities, 'domain_breaker'),
-    }, attempts);
-    const hits = counterHitSequence.reduce((total, didHit) => total + didHit, 0);
+    });
 
     const targetName = targetChar?.name ?? '???';
     let damage = 0;
@@ -4912,7 +4886,13 @@ export function executeBattle(
             const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
             const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
             // SpecRef: 6.1.2 | Function of battle | Shock resolve
-            const shouldTriggerShock = !isReAttack && phase === 'melee' && isCharacterShockAvailable(attack.charStats);
+            const shockResolution = resolveShockKernel(
+              attack.hitDamages.reduce((sum, damage) => sum + damage, 0),
+              attack.hitDamages.length,
+              !isReAttack && phase === 'melee' && isCharacterShockAvailable(attack.charStats),
+              enemyHasNullShock(enemy),
+            );
+            const shouldTriggerShock = shockResolution.consumed;
             const actorIsNullShock = enemyHasNullShock(enemy);
             const hitDamagesToApply = shouldTriggerShock && !actorIsNullShock && attack.hitDamages.length > 1
               ? attack.hitDamages.slice(0, 1)
@@ -4945,13 +4925,15 @@ export function executeBattle(
                 appliedHits += 1;
                 if (reflect) {
                   // SpecRef: 6.1.3.1 | Actor action | Reflect damage
-                  const reflectedHitDamage = Math.max(1, Math.floor(
-                    hitDamage
-                    * reflect.amplifier
-                    * getEnemyReflectDefenseAmplifier(phase, enemy)
-                    * getEnemyReflectElementalResistance(enemy),
-                  ));
-                  const remainingHitDamage = Math.max(0, Math.floor(hitDamage * (1 - reflect.amplifier)));
+                  const reactionDamage = applyDefensiveReactionKernel(
+                    hitDamage,
+                    'reflect',
+                    reflect.amplifier,
+                    getEnemyReflectDefenseAmplifier(phase, enemy),
+                    getEnemyReflectElementalResistance(enemy),
+                  );
+                  const reflectedHitDamage = reactionDamage.reflectedDamage;
+                  const remainingHitDamage = reactionDamage.remainingDamage;
                   reflectedSourceDamage += hitDamage;
                   reflectedDamage += reflectedHitDamage;
                   appliedDamage += remainingHitDamage;
@@ -4960,7 +4942,11 @@ export function executeBattle(
                 }
 
                 if (absorb) {
-                  const absorbedHitDamage = Math.max(1, Math.floor(hitDamage * absorb.amplifier));
+                  const absorbedHitDamage = applyDefensiveReactionKernel(
+                    hitDamage,
+                    'absorb',
+                    absorb.amplifier,
+                  ).absorbedDamage;
                   absorbedDamage += absorbedHitDamage;
                   partyHp = Math.min(partyStats.hp, partyHp + absorbedHitDamage);
                   continue;
@@ -5271,22 +5257,20 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
-            const reCounterHitSequence = resolveHitSequence({
+            const reCounterHitsBeforeAvoidance = resolveReactiveHitCount({
+              attempts: reCounterAttempts,
+              attackType: phase,
               actorAccuracyPotency: 1.0,
               actorAccuracyBonus: enemy.accuracyBonus + enemyPhaseAccuracyBonus,
               opponentEvasionBonus: attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0),
-              nthHit: 1,
-              phase,
               opponentDeflectionLevel: getDeflectionLevel(attack.charStats),
               actorFocusLevel: getEnemyFocusLevel(enemy),
-              actorArcaneStabilityLevel: 0,
               terrainEffect: environment.terrainEffect,
               actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
               actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
               opponentHasDomainBreaker: hasAbility(attack.charStats.abilities, 'domain_breaker'),
-            }, reCounterAttempts);
-            for (let i = 1; i <= reCounterAttempts; i++) {
-              if (reCounterHitSequence[i - 1] !== 1) continue;
+            });
+            for (let i = 0; i < reCounterHitsBeforeAvoidance; i++) {
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount, phase === 'magical' ? partyMagicalDefenseDebuffAmplifier : partyPhysicalDefenseDebuffAmplifier);
             }
@@ -5646,10 +5630,9 @@ export function executeBattle(
           shockEffectLog = phase === 'melee' && !isReAttack && isCharacterShockAvailable(selected)
             ? (() => {
                 const actorIsNullShock = hasNullShock(cs);
-                if (!actorIsNullShock && result.hits > 1) {
-                  result.damage = getShockAdjustedDamage(result.damage, result.hits);
-                  result.hits = 1;
-                }
+                const shock = resolveShockKernel(result.damage, result.hits, true, actorIsNullShock);
+                result.damage = shock.damage;
+                result.hits = shock.hits;
                 consumeCharacterShock(selected.characterId);
                 return {
                   phase,
@@ -5713,10 +5696,9 @@ export function executeBattle(
           shockEffectLog = phase === 'melee' && !isReAttack && isEnemyShockAvailable()
             ? (() => {
                 const actorIsNullShock = hasNullShock(cs);
-                if (!actorIsNullShock && result.hits > 1) {
-                  result.damage = getShockAdjustedDamage(result.damage, result.hits);
-                  result.hits = 1;
-                }
+                const shock = resolveShockKernel(result.damage, result.hits, true, actorIsNullShock);
+                result.damage = shock.damage;
+                result.hits = shock.hits;
                 consumeEnemyShock();
                 return {
                   phase,
@@ -5767,17 +5749,23 @@ export function executeBattle(
           if (result.damage > 0 && reflect) {
             const reflectedSourceDamage = result.damage;
             // SpecRef: 6.1.3.1 | Actor action | Reflect damage
-            result.reflectedDamage = Math.max(1, Math.floor(
-              result.damage
-              * reflect.amplifier
-              * getCharacterReflectDefenseAmplifier(phase, cs)
-              * getCharacterReflectElementalResistance(cs),
-            ));
+            const reactionDamage = applyDefensiveReactionKernel(
+              result.damage,
+              'reflect',
+              reflect.amplifier,
+              getCharacterReflectDefenseAmplifier(phase, cs),
+              getCharacterReflectElementalResistance(cs),
+            );
+            result.reflectedDamage = reactionDamage.reflectedDamage;
             result.reflectedSourceDamage = reflectedSourceDamage;
             applyPartyDamage(result.reflectedDamage);
-            result.damage = Math.max(0, Math.floor(reflectedSourceDamage * (1 - reflect.amplifier)));
+            result.damage = reactionDamage.remainingDamage;
           } else if (result.damage > 0 && absorb) {
-            result.absorbedDamage = Math.max(1, Math.floor(result.damage * absorb.amplifier));
+            result.absorbedDamage = applyDefensiveReactionKernel(
+              result.damage,
+              'absorb',
+              absorb.amplifier,
+            ).absorbedDamage;
             result.absorbedBy = absorb;
             enemyHp = Math.min(enemy.hp, enemyHp + result.absorbedDamage);
             result.damage = 0;
