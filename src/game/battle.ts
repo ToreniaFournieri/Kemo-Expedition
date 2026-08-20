@@ -14,9 +14,13 @@ import {
   AbilityId,
   TerrainEffectKey,
 } from '../types';
-import { getAttackRollProfile, rollAttackSpeedDice } from './attackProfile';
 import { applyDomainTerrainDamageOverride, isDomainTerrainGuaranteedHit } from './domainTerrain';
 import { calculateHitChance, calculatePerHitDamage, resolveHitSequence } from './battleKernel.ts';
+import {
+  prepareBattleInitiative,
+  transformBattleAbilitiesForTerrain,
+  type BattleSetupCombatant,
+} from './battleSetup.ts';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
@@ -36,7 +40,6 @@ class BattleLogBuffer extends Array<BattleLogEntry> {
   }
 }
 import { getTerrainEffectGlossaryEntry } from '../data/glossary';
-import { TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS } from '../data/abilityNames';
 import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
@@ -1675,10 +1678,6 @@ function calculateCharacterDamage(
   return { damage, totalAttempts: noA, hits };
 }
 
-function getFirstStrikeLevel(charStats: ComputedCharacterStats): number {
-  return charStats.abilities.find(a => a.id === 'first_strike')?.level ?? 0;
-}
-
 function hasAbility(abilities: AbilityLike[], abilityId: AbilityId): boolean {
   return abilities.some(ability => ability.id === abilityId && ability.level > 0);
 }
@@ -1700,61 +1699,6 @@ function isDomainTerrainEffect(terrainEffect: TerrainEffectKey | null | undefine
     || terrainEffect === 'terrain.duelist-domain'
     || terrainEffect === 'terrain.sniper-domain'
     || terrainEffect === 'terrain.spell-domain';
-}
-
-function rollInitiative(
-  attackType: AttackType,
-  firstStrikeLevel: number,
-  options?: {
-    terrainEffect?: TerrainEffectKey | null;
-    actorType?: 'enemy' | 'party';
-    fertilityBonus?: number;
-    slowPenalty?: number;
-    boostBonus?: number;
-    frostbitePenalty?: number;
-    actorHasTrueSight?: boolean;
-    actorHasEquationBreaker?: boolean;
-    actorHasWindRider?: boolean;
-  },
-): number {
-  // SpecRef: 6.1.1.2 | Combat phase | Speed & Turn Order (Rolling Dice Rule)
-  const isMachineLogic = options?.terrainEffect === 'terrain.machine-logic';
-  const firstStrikeEnabled = (!isMachineLogic || (options?.actorHasEquationBreaker ?? false))
-    && (options?.terrainEffect !== 'terrain.ash-haze' || (options?.actorHasTrueSight ?? false));
-  const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
-  const attackRollProfile = getAttackRollProfile(attackType);
-  const extraDiceCount = effectiveFirstStrikeLevel >= 3 ? 3 : effectiveFirstStrikeLevel;
-  const total = rollAttackSpeedDice(attackRollProfile, Math.random, extraDiceCount);
-
-  let result = Math.min(49, total);
-
-  if (!isMachineLogic && (options?.fertilityBonus ?? 0) > 0) {
-    result = Math.min(49, result + (options?.fertilityBonus ?? 0));
-  }
-  if (!isMachineLogic && (options?.slowPenalty ?? 0) > 0) {
-    result = Math.max(1, result - (options?.slowPenalty ?? 0));
-  }
-  if (!isMachineLogic && (options?.boostBonus ?? 0) > 0) {
-    result = Math.min(49, result + (options?.boostBonus ?? 0));
-  }
-  if (!isMachineLogic && (options?.frostbitePenalty ?? 0) > 0) {
-    result = Math.max(1, result - (options?.frostbitePenalty ?? 0));
-  }
-  if (!isMachineLogic && options?.terrainEffect === 'terrain.tailwind' && options?.actorType === 'party') {
-    const tailwindDiceCount = options?.actorHasWindRider ? 2 : 1;
-    for (let i = 0; i < tailwindDiceCount; i++) {
-      result = Math.min(49, result + (Math.floor(Math.random() * 3) + 1));
-    }
-  }
-  if (!isMachineLogic && options?.terrainEffect === 'terrain.enemy-high-ground' && options?.actorType === 'enemy') {
-    result = Math.min(49, result + (Math.floor(Math.random() * 3) + 1));
-  }
-
-  return result;
-}
-
-function getEnemyFirstStrikeLevel(enemy: EnemyDef): number {
-  return getEnemyAbilityLevel(enemy, 'first_strike');
 }
 
 function getDeflectionLevel(charStats: ComputedCharacterStats): number {
@@ -1873,8 +1817,6 @@ function formatMultiplierAsFraction(multiplier: number): string {
 }
 
 type AbilityLike = { id: AbilityId; level: number };
-const TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS = new Set<AbilityId>(TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS);
-
 function formatAbilityLabel(ability: AbilityLike): string {
   return t('battle.abilityLabel', { name: getAbilityName(ability.id, ability.level) });
 }
@@ -1909,24 +1851,6 @@ function grantEnemyAbility(enemy: EnemyDef, ability: AbilityLike): void {
     id: ability.id,
     level: ability.level,
   });
-}
-
-function adjustCharacterAbilityLevel(
-  charStats: ComputedCharacterStats,
-  abilityId: AbilityId,
-  delta: number,
-): void {
-  const ability = charStats.abilities.find((ownedAbility) => ownedAbility.id === abilityId);
-  if (!ability || ability.level <= 0) return;
-  ability.level = Math.max(1, Math.min(5, ability.level + delta));
-  ability.name = getAbilityName(ability.id, ability.level);
-  ability.description = getAbilityDescription(ability.id, ability.level);
-}
-
-function adjustEnemyAbilityLevel(enemy: EnemyDef, abilityId: AbilityId, delta: number): void {
-  const ability = enemy.abilities.find((ownedAbility) => ownedAbility.id === abilityId);
-  if (!ability || ability.level <= 0) return;
-  ability.level = Math.max(1, Math.min(5, ability.level + delta));
 }
 
 function getAbilityLevelFromList(abilities: AbilityLike[], abilityId: AbilityId): number {
@@ -2431,6 +2355,32 @@ export function executeBattle(
 
   const partyDeityKey = getDeityKey(party.deity.name);
   const terrainEntry = environment.terrainEffect ? getTerrainEffectGlossaryEntry(environment.terrainEffect) : undefined;
+  const buildSetupCombatants = (): BattleSetupCombatant[] => [
+    {
+      id: enemy.id,
+      kind: 'enemy',
+      row: 0,
+      rangedAttack: enemy.rangedAttack,
+      magicalAttack: enemy.magicalAttack,
+      meleeAttack: enemy.meleeAttack,
+      rangedNoA: enemy.rangedNoA,
+      magicalNoA: enemy.magicalNoA,
+      meleeNoA: enemy.meleeNoA,
+      abilities: enemy.abilities.map(({ id, level }) => ({ id, level })),
+    },
+    ...characterStats.map((stats) => ({
+      id: stats.characterId,
+      kind: 'character' as const,
+      row: stats.row,
+      rangedAttack: stats.rangedAttack,
+      magicalAttack: stats.magicalAttack,
+      meleeAttack: stats.meleeAttack,
+      rangedNoA: stats.rangedNoA,
+      magicalNoA: stats.magicalNoA,
+      meleeNoA: stats.meleeNoA,
+      abilities: stats.abilities.map(({ id, level }) => ({ id, level })),
+    })),
+  ];
 
   if (terrainEntry && environment.terrainEffect) {
     const terrainLabel = t(`terrainEffect.${environment.terrainEffect}.label`);
@@ -2536,22 +2486,23 @@ export function executeBattle(
       }
     }
   } else if (environment.terrainEffect === 'terrain.transcendence' || environment.terrainEffect === 'terrain.suppression') {
-    const isSuppression = environment.terrainEffect === 'terrain.suppression';
-    const delta = isSuppression ? -1 : 1;
-
-    for (const stats of characterStats) {
-      // SpecRef: 6.1.1.1 | START phase | terrain.suppression
-      if (isSuppression && hasAbility(stats.abilities, 'defiance')) continue;
-      for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
-        adjustCharacterAbilityLevel(stats, abilityId, delta);
-      }
-    }
-    // SpecRef: 6.1.1.1 | START phase | terrain.suppression
-    if (isSuppression && hasAbility(enemy.abilities, 'defiance')) {
-      // a.defiance ignores suppression effect.
-    } else {
-      for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
-        adjustEnemyAbilityLevel(enemy, abilityId, delta);
+    // SpecRef: 6.1.1.1 | START phase | terrain.transcendence / terrain.suppression
+    for (const transformation of transformBattleAbilitiesForTerrain(
+      buildSetupCombatants(),
+      environment.terrainEffect,
+    )) {
+      if (transformation.combatantKind === 'enemy') {
+        const ability = enemy.abilities.find((entry) => entry.id === transformation.abilityId);
+        if (!ability) throw new Error(`C++ battle setup transformed a missing enemy ability: ${transformation.abilityId}`);
+        ability.level = transformation.nextLevel;
+      } else {
+        const ability = characterStats
+          .find((stats) => stats.characterId === transformation.combatantId)
+          ?.abilities.find((entry) => entry.id === transformation.abilityId);
+        if (!ability) throw new Error(`C++ battle setup transformed a missing character ability: ${transformation.abilityId}`);
+        ability.level = transformation.nextLevel;
+        ability.name = getAbilityName(ability.id, ability.level);
+        ability.description = getAbilityDescription(ability.id, ability.level);
       }
     }
   } else if (environment.terrainEffect === 'terrain.silence-field') {
@@ -3751,7 +3702,6 @@ export function executeBattle(
     }
   };
 
-  const attackTypeTieBreakPriority: Record<AttackType, number> = { ranged: 0, magical: 1, melee: 2 };
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
     && environment.terrainEffect !== 'terrain.gehenna';
 
@@ -3767,38 +3717,31 @@ export function executeBattle(
   // instead of imposing the historical ranged -> magical -> melee phase barrier.
   const enemyInitiativeByAttackType = new Map<AttackType, number>();
   const characterInitiativeByAttackType = new Map<AttackType, Array<{ stats: ComputedCharacterStats; roll: number }>>();
-  for (const attackType of (['ranged', 'magical', 'melee'] as AttackType[])) {
-    if (isEligibleEnemyForPhase(attackType, enemy)) {
-      enemyInitiativeByAttackType.set(attackType, rollInitiative(attackType, getEnemyFirstStrikeLevel(enemy), {
-        terrainEffect: environment.terrainEffect,
-        actorType: 'enemy',
-        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
-        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
-        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
-        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
-        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
-        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
-      }));
+  type PreparedTurn = { kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats };
+  const preparedTurnOrderByAttackType = new Map<AttackType, PreparedTurn[]>([
+    ['ranged', []],
+    ['magical', []],
+    ['melee', []],
+  ]);
+  const preparedInitiative = prepareBattleInitiative(buildSetupCombatants(), {
+    terrainEffect: environment.terrainEffect,
+    fertilityInitiative: hasFertilityInitiativeBonus,
+    random: Math.random,
+  });
+  for (const action of preparedInitiative.actions) {
+    if (action.combatantKind === 'enemy') {
+      enemyInitiativeByAttackType.set(action.attackType, action.initiative);
+      preparedTurnOrderByAttackType.get(action.attackType)?.push({ kind: 'enemy', roll: action.initiative });
+      continue;
     }
-    characterInitiativeByAttackType.set(attackType, characterStats
-      .filter(cs => isEligibleCharacterForPhase(attackType, cs))
-      .map(stats => ({
-        stats,
-        roll: rollInitiative(attackType, getFirstStrikeLevel(stats), {
-          terrainEffect: environment.terrainEffect,
-          actorType: 'party',
-          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
-          slowPenalty: getHighestAbilityLevel(stats.abilities, 'slow'),
-          boostBonus: getHighestAbilityLevel(stats.abilities, 'boost'),
-          frostbitePenalty: enemyHasFrostbite() && !hasAbility(stats.abilities, 'coldproof') ? 1 : 0,
-          actorHasTrueSight: hasAbility(stats.abilities, 'true_sight'),
-          actorHasEquationBreaker: hasAbility(stats.abilities, 'equation_breaker'),
-          actorHasWindRider: hasAbility(stats.abilities, 'wind_rider'),
-        }),
-      })));
+    const stats = characterStats.find((candidate) => candidate.characterId === action.combatantId);
+    if (!stats) throw new Error(`C++ battle setup returned missing character ${action.combatantId}`);
+    const characterInitiative = characterInitiativeByAttackType.get(action.attackType) ?? [];
+    characterInitiative.push({ stats, roll: action.initiative });
+    characterInitiativeByAttackType.set(action.attackType, characterInitiative);
+    preparedTurnOrderByAttackType.get(action.attackType)?.push({ kind: 'character', roll: action.initiative, stats });
   }
-  const phases = (['ranged', 'magical', 'melee'] as AttackType[])
-    .sort((a, b) => attackTypeTieBreakPriority[a] - attackTypeTieBreakPriority[b]);
+  const phases = ['ranged', 'magical', 'melee'] as AttackType[];
   const combatSteps = TRIGGER_TIMINGS_DESC.flatMap(timing => phases.map(phase => ({ phase, timing })));
 
   const pushFrostbiteLog = (ownerName: string): void => {
@@ -4631,19 +4574,8 @@ export function executeBattle(
       }
     };
 
-    const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
-      ...(enemyInitiativeRoll !== null ? [{ kind: 'enemy' as const, roll: enemyInitiativeRoll }] : []),
-      ...characterInitiative.map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats })),
-    ].sort((a, b) => {
-      if (b.roll !== a.roll) return b.roll - a.roll;
-      if (a.kind !== b.kind) return a.kind === 'enemy' ? -1 : 1;
-      if (a.kind === 'enemy' && b.kind === 'enemy') return 0;
-      if (!('stats' in a) || !('stats' in b)) return 0;
-      const aFront = a.stats.row <= 3;
-      const bFront = b.stats.row <= 3;
-      if (aFront !== bFront) return aFront ? -1 : 1;
-      return a.stats.row - b.stats.row;
-    });
+    // C++ emits each attack type in deterministic roll/enemy/front-row/back-row order.
+    const turnOrder = preparedTurnOrderByAttackType.get(phase) ?? [];
 
     {
       if (enemyHp <= 0 || partyHp <= 0) break;

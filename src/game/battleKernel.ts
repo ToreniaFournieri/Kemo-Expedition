@@ -3,7 +3,7 @@ import type { AttackType, TerrainEffectKey } from '../types';
 import { decodeBattleProtocolOutput, type BattleProtocolOutput } from './battleProtocol.ts';
 import { BATTLE_PROTOCOL_VERSION } from './generated/battleProtocol.generated.ts';
 
-const ABI_VERSION = 2;
+const ABI_VERSION = 3;
 
 type KernelExports = WebAssembly.Exports & {
   memory: WebAssembly.Memory;
@@ -20,6 +20,9 @@ type KernelExports = WebAssembly.Exports & {
   battle_protocol_version(): number;
   battle_protocol_validate_input(byteLength: number): number;
   battle_protocol_probe(byteLength: number): number;
+  battle_protocol_transform_abilities(byteLength: number): number;
+  battle_protocol_initiative_random_count(byteLength: number): number;
+  battle_protocol_prepare_initiative(byteLength: number): number;
 };
 
 const module = new WebAssembly.Module(BATTLE_KERNEL_WASM);
@@ -162,15 +165,41 @@ export function getBattleProtocolArenaInfo(): {
 }
 
 export function probeBattleProtocol(input: Uint8Array): BattleProtocolOutput {
+  return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_probe(byteLength));
+}
+
+function invokeBattleProtocol(
+  input: Uint8Array,
+  operation: (byteLength: number) => number,
+): BattleProtocolOutput {
   const arena = getBattleProtocolArenaInfo();
   if (input.byteLength > arena.capacity) {
     throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
   }
   new Uint8Array(kernel.memory.buffer, arena.inputPointer, input.byteLength).set(input);
-  const outputByteLength = kernel.battle_protocol_probe(input.byteLength);
+  const outputByteLength = operation(input.byteLength);
   if (outputByteLength < 0) throw new Error(`C++ battle protocol rejected input (${outputByteLength})`);
   if (outputByteLength > arena.capacity) throw new Error('C++ battle protocol returned an oversized output');
   const output = new Uint8Array(outputByteLength);
   output.set(new Uint8Array(kernel.memory.buffer, arena.outputPointer, outputByteLength));
   return decodeBattleProtocolOutput(output);
+}
+
+export function transformBattleProtocolAbilities(input: Uint8Array): BattleProtocolOutput {
+  return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_transform_abilities(byteLength));
+}
+
+export function getBattleProtocolInitiativeRandomCount(input: Uint8Array): number {
+  const arena = getBattleProtocolArenaInfo();
+  if (input.byteLength > arena.capacity) {
+    throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
+  }
+  new Uint8Array(kernel.memory.buffer, arena.inputPointer, input.byteLength).set(input);
+  const count = kernel.battle_protocol_initiative_random_count(input.byteLength);
+  if (count < 0) throw new Error(`C++ battle protocol rejected initiative input (${count})`);
+  return count;
+}
+
+export function prepareBattleProtocolInitiative(input: Uint8Array): BattleProtocolOutput {
+  return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_prepare_initiative(byteLength));
 }

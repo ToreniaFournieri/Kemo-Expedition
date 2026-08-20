@@ -36,6 +36,9 @@ execFileSync(resolve(llvmRoot, 'clang++'), [
   '-Wl,--export=battle_protocol_version',
   '-Wl,--export=battle_protocol_validate_input',
   '-Wl,--export=battle_protocol_probe',
+  '-Wl,--export=battle_protocol_transform_abilities',
+  '-Wl,--export=battle_protocol_initiative_random_count',
+  '-Wl,--export=battle_protocol_prepare_initiative',
   '-o', wasm,
 ], {
   stdio: 'inherit',

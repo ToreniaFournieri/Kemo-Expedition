@@ -124,6 +124,201 @@ bool span_is_valid(u32 offset, u32 count, u32 record_size, u32 total_size) {
   const u64 end = static_cast<u64>(offset) + static_cast<u64>(count) * record_size;
   return offset >= protocol::kInputHeaderSize && end <= total_size;
 }
+
+constexpr u32 kInputFlagFertilityInitiative = 1u << 0;
+constexpr u32 kInputFlagAbilitiesPrepared = 1u << 1;
+
+bool is_terrain_timed_or_reactive(protocol::AbilityId id) {
+  switch (id) {
+    case protocol::AbilityId::Resonance:
+    case protocol::AbilityId::Ambush:
+    case protocol::AbilityId::Overwatch:
+    case protocol::AbilityId::Execution:
+    case protocol::AbilityId::AntiAmbush:
+    case protocol::AbilityId::AntiOverwatch:
+    case protocol::AbilityId::RageBreaker:
+    case protocol::AbilityId::MomentumBreaker:
+    case protocol::AbilityId::ExecutionNull:
+    case protocol::AbilityId::Rage:
+    case protocol::AbilityId::Momentum:
+    case protocol::AbilityId::NoOffense:
+    case protocol::AbilityId::Swarm:
+    case protocol::AbilityId::Stealth:
+    case protocol::AbilityId::Illusion:
+    case protocol::AbilityId::Bulwark:
+    case protocol::AbilityId::Shock:
+    case protocol::AbilityId::ReAttack:
+    case protocol::AbilityId::Corrode:
+    case protocol::AbilityId::LifeDrain:
+    case protocol::AbilityId::DeathTouch:
+    case protocol::AbilityId::Burn:
+    case protocol::AbilityId::Bind:
+    case protocol::AbilityId::Counter:
+    case protocol::AbilityId::MagicalCounter:
+    case protocol::AbilityId::Resurrect:
+    case protocol::AbilityId::Reanimate:
+    case protocol::AbilityId::Requiem:
+    case protocol::AbilityId::ReCounter:
+    case protocol::AbilityId::NullCounter:
+    case protocol::AbilityId::CoveringFire:
+    case protocol::AbilityId::Oblivion:
+    case protocol::AbilityId::FadingMemory:
+    case protocol::AbilityId::Mimic:
+    case protocol::AbilityId::Defender:
+    case protocol::AbilityId::Command:
+    case protocol::AbilityId::MBarrier:
+    case protocol::AbilityId::IceAbsorb:
+    case protocol::AbilityId::FireAbsorb:
+    case protocol::AbilityId::ThunderAbsorb:
+    case protocol::AbilityId::MagicalAbsorb:
+    case protocol::AbilityId::IceNull:
+    case protocol::AbilityId::FireNull:
+    case protocol::AbilityId::ThunderNull:
+    case protocol::AbilityId::MagicalNull:
+    case protocol::AbilityId::RangedNull:
+    case protocol::AbilityId::MeleeNull:
+    case protocol::AbilityId::IceReflect:
+    case protocol::AbilityId::FireReflect:
+    case protocol::AbilityId::ThunderReflect:
+    case protocol::AbilityId::MagicalReflect:
+    case protocol::AbilityId::RangedReflect:
+    case protocol::AbilityId::MeleeReflect:
+    case protocol::AbilityId::Deflection:
+    case protocol::AbilityId::MagicSeal:
+    case protocol::AbilityId::FirstStrike:
+    case protocol::AbilityId::Slow:
+    case protocol::AbilityId::Boost:
+    case protocol::AbilityId::Frostbite:
+    case protocol::AbilityId::Howl:
+    case protocol::AbilityId::RangedConfusion:
+    case protocol::AbilityId::MagicConfusion:
+    case protocol::AbilityId::MeleeConfusion:
+    case protocol::AbilityId::UnstableCore:
+    case protocol::AbilityId::SoulReap:
+    case protocol::AbilityId::Regeneration:
+    case protocol::AbilityId::Flying:
+    case protocol::AbilityId::PredatorSense:
+    case protocol::AbilityId::Decompose:
+    case protocol::AbilityId::SelfDestruct:
+    case protocol::AbilityId::Free:
+    case protocol::AbilityId::Auriferous:
+    case protocol::AbilityId::FirstAid:
+      return true;
+    default:
+      return false;
+  }
+}
+
+u8 raw_ability_level(
+    const CombatantRecord& combatant,
+    const AbilityRecord* abilities,
+    protocol::AbilityId id) {
+  for (u32 index = combatant.ability_start; index < combatant.ability_start + combatant.ability_count; ++index) {
+    if (abilities[index].id == static_cast<u16>(id)) return abilities[index].level;
+  }
+  return 0;
+}
+
+u8 prepared_ability_level(
+    const InputHeader& input,
+    const CombatantRecord& combatant,
+    const AbilityRecord* abilities,
+    protocol::AbilityId id) {
+  const u8 level = raw_ability_level(combatant, abilities, id);
+  if ((input.flags & kInputFlagAbilitiesPrepared) != 0 || level == 0 || !is_terrain_timed_or_reactive(id)) return level;
+  if (input.terrain_id == static_cast<u16>(protocol::TerrainId::Transcendence)) {
+    return level >= 5 ? 5 : level + 1;
+  }
+  if (input.terrain_id == static_cast<u16>(protocol::TerrainId::Suppression) &&
+      raw_ability_level(combatant, abilities, protocol::AbilityId::Defiance) == 0) {
+    return level <= 1 ? 1 : level - 1;
+  }
+  return level;
+}
+
+bool abilities_suppressed(
+    const InputHeader& input,
+    const CombatantRecord& combatant,
+    const AbilityRecord* abilities) {
+  return input.terrain_id == static_cast<u16>(protocol::TerrainId::SilenceField) &&
+      prepared_ability_level(input, combatant, abilities, protocol::AbilityId::EquationBreaker) == 0 &&
+      prepared_ability_level(input, combatant, abilities, protocol::AbilityId::DomainBreaker) == 0;
+}
+
+double combatant_attack(const CombatantRecord& combatant, u8 attack_type) {
+  return attack_type == 1 ? combatant.ranged_attack
+      : attack_type == 2 ? combatant.magical_attack : combatant.melee_attack;
+}
+
+double combatant_noa(const CombatantRecord& combatant, u8 attack_type) {
+  return attack_type == 1 ? combatant.ranged_noa
+      : attack_type == 2 ? combatant.magical_noa : combatant.melee_noa;
+}
+
+u32 initiative_dice_count(
+    const InputHeader& input,
+    const CombatantRecord& combatant,
+    const AbilityRecord* abilities,
+    u8 attack_type) {
+  const bool machine_logic = input.terrain_id == static_cast<u16>(protocol::TerrainId::MachineLogic);
+  const bool first_strike_enabled =
+      (!machine_logic || prepared_ability_level(input, combatant, abilities, protocol::AbilityId::EquationBreaker) > 0) &&
+      (input.terrain_id != static_cast<u16>(protocol::TerrainId::AshHaze) ||
+       prepared_ability_level(input, combatant, abilities, protocol::AbilityId::TrueSight) > 0);
+  const u8 first_strike = first_strike_enabled
+      ? prepared_ability_level(input, combatant, abilities, protocol::AbilityId::FirstStrike)
+      : 0;
+  const u32 base_dice = attack_type == 1 ? 4 : attack_type == 2 ? 3 : 1;
+  const u32 extra_dice = first_strike >= 3 ? 3 : first_strike;
+  u32 terrain_dice = 0;
+  if (!machine_logic && input.terrain_id == static_cast<u16>(protocol::TerrainId::Tailwind) && combatant.kind == 1) {
+    terrain_dice = prepared_ability_level(input, combatant, abilities, protocol::AbilityId::WindRider) > 0 ? 2 : 1;
+  }
+  if (!machine_logic && input.terrain_id == static_cast<u16>(protocol::TerrainId::EnemyHighGround) && combatant.kind == 2) {
+    terrain_dice = 1;
+  }
+  return base_dice + extra_dice + terrain_dice;
+}
+
+u32 count_initiative_randoms(
+    const InputHeader& input,
+    const CombatantRecord* combatants,
+    const AbilityRecord* abilities) {
+  u32 count = 0;
+  for (u8 attack_type = 1; attack_type <= 3; ++attack_type) {
+    for (u32 index = 0; index < input.combatant_count; ++index) {
+      if (combatant_attack(combatants[index], attack_type) > 0 && combatant_noa(combatants[index], attack_type) > 0) {
+        count += initiative_dice_count(input, combatants[index], abilities, attack_type);
+      }
+    }
+  }
+  return count;
+}
+
+void initialize_output(const InputHeader& input, OutputHeader* output, u32 event_count, u32 random_consumed) {
+  *output = {};
+  output->magic = protocol::kOutputMagic;
+  output->version = protocol::kVersion;
+  output->header_size = sizeof(OutputHeader);
+  output->total_size = sizeof(OutputHeader) + event_count * sizeof(EventRecord);
+  output->event_count = event_count;
+  output->events_offset = sizeof(OutputHeader);
+  output->random_consumed = random_consumed;
+  output->party_hp = input.party_hp;
+  output->enemy_hp = input.enemy_hp;
+}
+
+bool initiative_event_precedes(const EventRecord& left, const EventRecord& right) {
+  if (left.timing != right.timing) return left.timing > right.timing;
+  if (left.attack_type != right.attack_type) return left.attack_type < right.attack_type;
+  if (left.actor_kind != right.actor_kind) return left.actor_kind == 2;
+  if (left.actor_kind == 2) return left.aux1 < right.aux1;
+  const bool left_front = left.aux2 <= 3;
+  const bool right_front = right.aux2 <= 3;
+  if (left_front != right_front) return left_front;
+  if (left.aux2 != right.aux2) return left.aux2 < right.aux2;
+  return left.aux1 < right.aux1;
+}
 }  // namespace
 
 extern "C" {
@@ -207,6 +402,134 @@ int battle_protocol_probe(u32 byte_length) {
   event->opcode = static_cast<u16>(protocol::EventOpcode::ProtocolReady);
   for (u32 index = 0; index < input->physical_bag_count; ++index) output_physical_bag[index] = input_physical_bag[index];
   for (u32 index = 0; index < input->magical_bag_count; ++index) output_magical_bag[index] = input_magical_bag[index];
+  return static_cast<int>(output->total_size);
+}
+
+int battle_protocol_transform_abilities(u32 byte_length) {
+  const int validation = battle_protocol_validate_input(byte_length);
+  if (validation != 0) return validation;
+  const auto* input = reinterpret_cast<const InputHeader*>(input_arena);
+  const auto* combatants = reinterpret_cast<const CombatantRecord*>(input_arena + input->combatants_offset);
+  const auto* abilities = reinterpret_cast<const AbilityRecord*>(input_arena + input->abilities_offset);
+  auto* output = reinterpret_cast<OutputHeader*>(output_arena);
+  auto* events = reinterpret_cast<EventRecord*>(output_arena + sizeof(OutputHeader));
+  u32 event_count = 0;
+  for (u32 combatant_index = 0; combatant_index < input->combatant_count; ++combatant_index) {
+    const auto& combatant = combatants[combatant_index];
+    for (u32 ability_index = combatant.ability_start; ability_index < combatant.ability_start + combatant.ability_count; ++ability_index) {
+      const auto& ability = abilities[ability_index];
+      const auto id = static_cast<protocol::AbilityId>(ability.id);
+      const u8 prepared_level = prepared_ability_level(*input, combatant, abilities, id);
+      if (prepared_level == ability.level) continue;
+      if (sizeof(OutputHeader) + (event_count + 1) * sizeof(EventRecord) > protocol::kArenaCapacity) return -14;
+      auto& event = events[event_count++];
+      event = {};
+      event.opcode = static_cast<u16>(protocol::EventOpcode::AbilityActivated);
+      event.phase = 1;
+      event.actor_kind = combatant.kind;
+      event.actor_id = combatant.id;
+      event.ability_id = ability.id;
+      event.flags = 1;
+      event.value0 = ability.level;
+      event.value1 = prepared_level;
+    }
+  }
+  initialize_output(*input, output, event_count, 0);
+  return static_cast<int>(output->total_size);
+}
+
+int battle_protocol_initiative_random_count(u32 byte_length) {
+  const int validation = battle_protocol_validate_input(byte_length);
+  if (validation != 0) return validation;
+  const auto* input = reinterpret_cast<const InputHeader*>(input_arena);
+  const auto* combatants = reinterpret_cast<const CombatantRecord*>(input_arena + input->combatants_offset);
+  const auto* abilities = reinterpret_cast<const AbilityRecord*>(input_arena + input->abilities_offset);
+  return static_cast<int>(count_initiative_randoms(*input, combatants, abilities));
+}
+
+int battle_protocol_prepare_initiative(u32 byte_length) {
+  const int validation = battle_protocol_validate_input(byte_length);
+  if (validation != 0) return validation;
+  const auto* input = reinterpret_cast<const InputHeader*>(input_arena);
+  const auto* combatants = reinterpret_cast<const CombatantRecord*>(input_arena + input->combatants_offset);
+  const auto* abilities = reinterpret_cast<const AbilityRecord*>(input_arena + input->abilities_offset);
+  const auto* random_values = reinterpret_cast<const double*>(input_arena + input->random_offset);
+  const u32 required_randoms = count_initiative_randoms(*input, combatants, abilities);
+  if (input->random_count != required_randoms) return -16;
+
+  u32 action_count = 0;
+  for (u8 attack_type = 1; attack_type <= 3; ++attack_type) {
+    for (u32 index = 0; index < input->combatant_count; ++index) {
+      if (combatant_attack(combatants[index], attack_type) > 0 && combatant_noa(combatants[index], attack_type) > 0) ++action_count;
+    }
+  }
+  if (sizeof(OutputHeader) + action_count * sizeof(EventRecord) > protocol::kArenaCapacity) return -14;
+  auto* output = reinterpret_cast<OutputHeader*>(output_arena);
+  auto* events = reinterpret_cast<EventRecord*>(output_arena + sizeof(OutputHeader));
+  u32 random_cursor = 0;
+  u32 event_cursor = 0;
+
+  bool party_has_frostbite = false;
+  bool enemy_has_frostbite = false;
+  for (u32 index = 0; index < input->combatant_count; ++index) {
+    if (abilities_suppressed(*input, combatants[index], abilities)) continue;
+    if (prepared_ability_level(*input, combatants[index], abilities, protocol::AbilityId::Frostbite) == 0) continue;
+    if (combatants[index].kind == 1) party_has_frostbite = true;
+    if (combatants[index].kind == 2) enemy_has_frostbite = true;
+  }
+
+  for (u8 attack_type = 1; attack_type <= 3; ++attack_type) {
+    for (u32 index = 0; index < input->combatant_count; ++index) {
+      const auto& combatant = combatants[index];
+      if (combatant_attack(combatant, attack_type) <= 0 || combatant_noa(combatant, attack_type) <= 0) continue;
+      const bool machine_logic = input->terrain_id == static_cast<u16>(protocol::TerrainId::MachineLogic);
+      const u32 dice_count = initiative_dice_count(*input, combatant, abilities, attack_type);
+      const u32 terrain_dice = !machine_logic && input->terrain_id == static_cast<u16>(protocol::TerrainId::Tailwind) && combatant.kind == 1
+          ? (prepared_ability_level(*input, combatant, abilities, protocol::AbilityId::WindRider) > 0 ? 2 : 1)
+          : !machine_logic && input->terrain_id == static_cast<u16>(protocol::TerrainId::EnemyHighGround) && combatant.kind == 2 ? 1 : 0;
+      int result = 0;
+      for (u32 die = 0; die < dice_count - terrain_dice; ++die) {
+        result += static_cast<int>(random_values[random_cursor++] * 3.0) + 1;
+      }
+      if (result > 49) result = 49;
+      if (!machine_logic && combatant.kind == 1 && (input->flags & kInputFlagFertilityInitiative) != 0 &&
+          input->terrain_id != static_cast<u16>(protocol::TerrainId::Gehenna)) result = result + 1 > 49 ? 49 : result + 1;
+      const int slow = prepared_ability_level(*input, combatant, abilities, protocol::AbilityId::Slow);
+      const int boost = prepared_ability_level(*input, combatant, abilities, protocol::AbilityId::Boost);
+      if (!machine_logic && slow > 0) result = result - slow < 1 ? 1 : result - slow;
+      if (!machine_logic && boost > 0) result = result + boost > 49 ? 49 : result + boost;
+      const bool coldproof = prepared_ability_level(*input, combatant, abilities, protocol::AbilityId::Coldproof) > 0;
+      const bool frostbite_penalty = combatant.kind == 1 ? enemy_has_frostbite : party_has_frostbite;
+      if (!machine_logic && frostbite_penalty && !coldproof) result = result - 1 < 1 ? 1 : result - 1;
+      for (u32 die = 0; die < terrain_dice; ++die) {
+        result += static_cast<int>(random_values[random_cursor++] * 3.0) + 1;
+        if (result > 49) result = 49;
+      }
+
+      auto& event = events[event_cursor++];
+      event = {};
+      event.opcode = static_cast<u16>(protocol::EventOpcode::Initiative);
+      event.phase = 2;
+      event.actor_kind = combatant.kind;
+      event.actor_id = combatant.id;
+      event.attack_type = attack_type;
+      event.timing = result;
+      event.aux1 = index;
+      event.aux2 = combatant.row;
+    }
+  }
+
+  for (u32 index = 1; index < action_count; ++index) {
+    const EventRecord current = events[index];
+    u32 cursor = index;
+    while (cursor > 0 && initiative_event_precedes(current, events[cursor - 1])) {
+      events[cursor] = events[cursor - 1];
+      --cursor;
+    }
+    events[cursor] = current;
+  }
+  for (u32 index = 0; index < action_count; ++index) events[index].aux0 = index;
+  initialize_output(*input, output, action_count, random_cursor);
   return static_cast<int>(output->total_size);
 }
 
