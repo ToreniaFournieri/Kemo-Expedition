@@ -3,6 +3,6 @@ import test from 'node:test';
 
 import { BASE_STEP_DURATION_MS } from '../src/game/progressTiming.ts';
 
-test('the base runtime Step lasts 30 seconds', () => {
-  assert.equal(BASE_STEP_DURATION_MS, 30_000);
+test('the base runtime Step lasts 15 seconds', () => {
+  assert.equal(BASE_STEP_DURATION_MS, 15_000);
 });
