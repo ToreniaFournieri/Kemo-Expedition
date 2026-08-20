@@ -22,9 +22,11 @@ test('imports use the startup migration pipeline before they are persisted and c
 test('backup payloads include a schema-marked runtime snapshot and imports replace it', () => {
   assert.match(homeSharedSource, /interface PersistedRuntimeSnapshot \{[\s\S]*schemaVersion: 1/);
   assert.match(homeSharedSource, /afkChunkCursor: PersistedAfkChunkCursor \| null/);
+  assert.match(homeSharedSource, /afkRemainingMsByParty\?: Record<number, number>/);
   assert.match(settingTabSource, /saveDataCompressed:[\s\S]*runtimeSnapshot: getRuntimeSnapshot\(\)/);
   assert.match(homeSource, /normalizeRuntimeSnapshot\(rawRuntimeSnapshot, result\.state\.parties\.length\)/);
   assert.match(homeSource, /localStorage\.setItem\(AFK_RUNTIME_STORAGE_KEY, JSON\.stringify\(nextRuntimeSnapshot\)\)/);
+  assert.match(homeSource, /afkRemainingMsByParty: afkRemainingMsByPartyRef\.current/);
   assert.match(homeSource, /if \(pendingAfkMsRef\.current > 0\) actions\.flushSave\(\);[\s\S]*persistAfkRuntimeState\(\)/);
 });
 

@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
+  AFK_MAX_EFFECTIVE_ELAPSED_MS,
+  AFK_MAX_REAL_ELAPSED_MS,
   createAfkSchedulerProfile,
   getAdaptiveAfkOperationCount,
   getAfkBatchBudgetMs,
+  getEffectiveAfkElapsedMs,
   getAfkOperationWindow,
   normalizePersistedAfkChunkCursor,
   observeAfkRecoveryBacklog,
@@ -14,6 +17,33 @@ import {
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
+const HOUR_MS = 60 * 60 * 1000;
+
+test('AFK elapsed time uses the specified progressive efficiency bands', () => {
+  const cases = [
+    [0, 0],
+    [9, 9],
+    [18, 15],
+    [30, 21],
+    [48, 27],
+    [72, 33],
+    [108, 39],
+    [162, 45],
+  ] as const;
+
+  cases.forEach(([elapsedHours, effectiveHours]) => {
+    assert.equal(getEffectiveAfkElapsedMs(elapsedHours * HOUR_MS), effectiveHours * HOUR_MS);
+  });
+  assert.equal(AFK_MAX_REAL_ELAPSED_MS, 162 * HOUR_MS);
+  assert.equal(AFK_MAX_EFFECTIVE_ELAPSED_MS, 45 * HOUR_MS);
+});
+
+test('AFK efficiency is continuous inside bands and ignores time beyond 162 hours', () => {
+  assert.equal(getEffectiveAfkElapsedMs(12 * HOUR_MS), 11 * HOUR_MS);
+  assert.equal(getEffectiveAfkElapsedMs(24 * HOUR_MS), 18 * HOUR_MS);
+  assert.equal(getEffectiveAfkElapsedMs(200 * HOUR_MS), 45 * HOUR_MS);
+  assert.equal(getEffectiveAfkElapsedMs(Number.POSITIVE_INFINITY), 0);
+});
 
 test('a logical AFK Chunk retains twelve Cycles per equal-duration party', () => {
   const durationMs = 450_000;
@@ -118,11 +148,21 @@ test('profiling aggregates batches in memory without per-Cycle output', () => {
   assert.equal(second.longestEventLoopDelayMs, 7);
 });
 
-test('runtime slices the immutable logical Chunk plan and finalizes only its last batch', () => {
-  assert.match(hookSource, /getAfkOperationWindow\([\s\S]*operationStart,[\s\S]*requestedOperationCount/);
-  assert.match(hookSource, /if \(action\.finalizeChunk !== false \|\| operationEnd >= totalOperationCount\)/);
-  assert.match(homeSource, /afkChunkCursorRef\.current = finalizeChunk[\s\S]*operationStart,[\s\S]*operationCount,[\s\S]*finalizeChunk/);
-  assert.match(homeSource, /minimumCommitIntervalMs = document\.visibilityState === 'visible' \? 100 : 250/);
+test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () => {
+  assert.match(hookSource, /cycleDurationMs \* AFK_CHUNK_CYCLE_COUNT/);
+  assert.match(hookSource, /partyIndex === options\.partyIndex \? cycleDurationMs : inactiveDurationMs/);
+  assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
+  assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
+  assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
+  assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
+});
+
+test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
+  assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
+  assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkInteractionPausedRef\.current\) return/);
+  assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
+  assert.match(homeSource, /afkInteractionPausedRef\.current = false/);
+  assert.doesNotMatch(homeSource, /event\.preventDefault\(\);\s*event\.stopPropagation\(\);/);
 });
 
 test('AFK-to-online reconstruction uses the emulated anchor for Diary timestamps', () => {

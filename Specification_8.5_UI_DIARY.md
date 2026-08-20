@@ -26,13 +26,21 @@
 ```
 日誌記録設定                 ▼
 
-超レア通知 (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-エリートレア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
-ボスレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-神魔戦通知 (pull down list) あり/なし
-神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-一般通知 敗北のみ/敗北と引分/敗北と引分と撤退/全て/なし (Default: 敗北のみ)
-サイドクエスト獲得通知 全て, 2良晶以上, 3雅晶以上, 4煌晶以上, 5碧晶以上, 6紫晶以上, 7金晶以上, 8王晶のみ, なし (Default: 全て)
+**日誌更新**
+* 超レア通知 (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+* エリートレア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
+* ボスレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+* 神魔戦通知 (pull down list) あり/なし
+* 神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+* 一般通知 敗北のみ/敗北と引分/敗北と引分と撤退/全て/なし (Default: 敗北のみ)
+* サイドクエスト獲得通知 全て, 2良晶以上, 3雅晶以上, 4煌晶以上, 5碧晶以上, 6紫晶以上, 7金晶以上, 8王晶のみ, なし (Default: 全て)
+
+**ポップアップ通知**
+* 日常通知 あり/なし (Default:あり) Cycle event
+* アイテム獲得通知 あり/なし (Default:あり) Item Drops
+* 自動装備通知 あり/なし (Default:あり)  Auto equipment
+* サイドクエスト(受領・失敗・獲得)通知 あり/なし (Default:あり)  Side quest
+ (Ref: 8.1.1 Popup Notification Logic & Display @Specification_8.1_UI_FOUNDATIONS.md)
 ```
 
 - Title of dirary 

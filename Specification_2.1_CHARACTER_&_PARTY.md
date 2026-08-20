@@ -393,7 +393,7 @@ Party.`d.HP` =
 | God of Attrition | 消耗の神 |  Add `c.deity_physical_attack_x1.20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.| | +0.01 to `c.diety+attack_x1.20` per rank |
 | God of Cunning | 狡猾の神 | Add `c.deity_magical_defense_x2/3` to each party member, abscond (lower saving money by x0.50) | (none) | saving money +0.01 to x0.50 per rank |
 | God of Fortification | 防備の神 |  Add `c.deity_physical_defense_x2/3` to each party member, longer healing 休息中 by x2.0, weak against thunder (x1.5) | `r.thunder_x1.5` | - |
-| Goddess of Fertility | 豊穣の女神 |  Add `c.deity_move_first+1` to each party member, longer fest 宴会中 by 2.0, weak against fire (x1.5) | `r.fire_x1.5` | -  |
+| Goddess of Fertility | 豊穣の女神 | Add `c.deity_move_first+1` to each party member, multiply `state.free_action` duration by 1.2, weak against fire (x1.5) | `r.fire_x1.5` | -  |
 | God of Resonance | 共鳴の神 | Upgrade all `a.resonance` values by +1 tier to each party member, resonance works in magical and ranged attack with God of Resonance. Add `c.deity_magical_defense_x1.10` to each party member, Add `c.deity_HP_x0.900` to party | (none) | +0.2 to `a.resonance` bonus (round down), +0.002 to `c.deity_HP_x0.900` per rank |
 | Goddess of Precision | 精密の女神 | Add `c.deity_accuracy+0.015`, `c.deity_evasion-0.005` to each party member, longer 探索中 by 1.2 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
 | God of Fate | 運命の神 | alter future, longer praying 祈り中 by 2.0 | (none) | praying time -0.01 to x1.5 per rank |
@@ -493,4 +493,3 @@ Party.`d.HP` =
 | 5 | **マーレ** | Female | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
 | 6 | サム | Male | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
   
-

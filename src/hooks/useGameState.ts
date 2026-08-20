@@ -111,17 +111,17 @@ import {
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
-import { getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
+import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
+import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
+import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
-const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
+const AFK_MAX_SIMULATION_MS = AFK_MAX_EFFECTIVE_ELAPSED_MS;
 const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.05;
 const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
-const BASE_STEP_DURATION_MS = 15_000;
-
 function generateUserId(): string {
   // SpecRef: 1.2 | CONSTANTS_GLOBAL | User ID (UUID)
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -533,6 +533,10 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   sideQuestThreshold: 'all',
   notifyGodsBattle: true,
   defeatNotificationMode: 'defeatOnly',
+  notifyCyclePopup: true,
+  notifyItemDropPopup: true,
+  notifyAutoEquipmentPopup: true,
+  notifySideQuestPopup: true,
 };
 
 const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
@@ -562,7 +566,7 @@ function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: 
     return { shouldAdvance: false, nextDungeonId: null };
   }
 
-  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 9);
   if (!nextDungeon) {
     return { shouldAdvance: false, nextDungeonId: null };
   }
@@ -766,6 +770,10 @@ function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined)
     ...DEFAULT_DIARY_SETTINGS,
     ...(value ?? {}),
     defeatNotificationMode: normalizeDiaryDefeatNotificationMode(raw?.defeatNotificationMode, raw?.notifyDefeat),
+    notifyCyclePopup: typeof raw?.notifyCyclePopup === 'boolean' ? raw.notifyCyclePopup : true,
+    notifyItemDropPopup: typeof raw?.notifyItemDropPopup === 'boolean' ? raw.notifyItemDropPopup : true,
+    notifyAutoEquipmentPopup: typeof raw?.notifyAutoEquipmentPopup === 'boolean' ? raw.notifyAutoEquipmentPopup : true,
+    notifySideQuestPopup: typeof raw?.notifySideQuestPopup === 'boolean' ? raw.notifySideQuestPopup : true,
   };
 }
 
@@ -1966,6 +1974,14 @@ function createInitialState(): InitialStateResult {
 
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
+export type AfkBatchTestOptions = AfkSimulationBatchSlice & {
+  elapsedMs: number;
+  isAutoRepeatEnabled: boolean;
+  gameMode?: GameMode;
+  simulatedEndAt?: number;
+  cycleDurationScale?: number;
+};
+
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number; selectionMode?: 'manual' | 'auto' }
@@ -2007,6 +2023,7 @@ type GameAction =
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean }
+  | { type: 'COMMIT_AFK_PARTY_CHUNK'; result: AfkPartyChunkResult }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'COMMIT_API_STATE'; state: GameState }
@@ -4921,6 +4938,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return workingState;
     }
 
+    case 'COMMIT_AFK_PARTY_CHUNK':
+      return commitAfkPartyChunk(state, action.result);
+
     case 'MARK_ITEMS_SEEN': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const newInventory: InventoryRecord = {};
@@ -5183,6 +5203,52 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     default:
       return state;
   }
+}
+
+/**
+ * Runs the same reducer action used by the UI AFK scheduler without requiring a
+ * mounted React tree. This deliberately narrow entry point lets save-backed
+ * performance tests exercise authoritative expedition, reward, Diary, quest,
+ * and automation work instead of substituting a synthetic workload.
+ */
+export function simulateAfkBatchForTesting(
+  state: GameState,
+  options: AfkBatchTestOptions,
+): GameState {
+  return gameReducer(state, { type: 'SIMULATE_AFK', ...options });
+}
+
+export function simulateAfkPartyChunkForWorker(
+  state: GameState,
+  options: {
+    partyIndex: number;
+    cycleDurationMs: number;
+    simulatedCompletedAt: number;
+    cycleDurationScale: number;
+    gameMode?: GameMode;
+  },
+): GameState {
+  const party = state.parties[options.partyIndex];
+  if (!party) return state;
+  setActiveLanguage(state.global.language);
+  const cycleDurationMs = Math.max(1, Math.floor(options.cycleDurationMs));
+  const elapsedMs = cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+  const inactiveDurationMs = elapsedMs + 1;
+  const cycleDurationByParty = state.parties.map((_, partyIndex) => (
+    partyIndex === options.partyIndex ? cycleDurationMs : inactiveDurationMs
+  ));
+  return gameReducer(state, {
+    type: 'SIMULATE_AFK',
+    elapsedMs,
+    isAutoRepeatEnabled: true,
+    gameMode: options.gameMode,
+    simulatedEndAt: options.simulatedCompletedAt,
+    cycleDurationScale: options.cycleDurationScale,
+    cycleDurationByParty,
+    operationStart: 0,
+    operationCount: AFK_CHUNK_CYCLE_COUNT,
+    finalizeChunk: true,
+  });
 }
 
 // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
@@ -5493,6 +5559,10 @@ export function useGameState() {
 
     simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => {
       dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale, ...batchSlice });
+    }, []),
+
+    commitAfkPartyChunk: useCallback((result: AfkPartyChunkResult) => {
+      dispatch({ type: 'COMMIT_AFK_PARTY_CHUNK', result });
     }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {

@@ -318,7 +318,7 @@
 | -349 ~ -250 | `condition.poor` | 不調 |
 | -249 ~ -150 | `condition.low` | 低調 |
 | -149 ~ -50 | `condition.cautious` | 慎重 |
-| -50 ~ 50 | `condition.normal` | 平常 |
+| -49 ~ 50 | `condition.normal` | 平常 |
 | 51 ~ 150 | `condition.steady` | 順調 |
 | 151 ~ 250 | `condition.good` | 快調 |
 | 251 ~ 350 | `condition.great` | 好調 |

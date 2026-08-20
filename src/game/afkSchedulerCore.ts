@@ -3,6 +3,38 @@ const MOBILE_BATCH_BUDGET_MS = 10;
 const CONSTRAINED_BATCH_BUDGET_MS = 6;
 const MAX_BATCH_BUDGET_MS = 20;
 const MAX_OPERATIONS_PER_BATCH = 64;
+const HOUR_MS = 60 * 60 * 1000;
+
+export const AFK_MAX_REAL_ELAPSED_MS = 162 * HOUR_MS;
+export const AFK_MAX_EFFECTIVE_ELAPSED_MS = 45 * HOUR_MS;
+
+const AFK_EFFICIENCY_BANDS = [
+  { endHour: 9, speed: 1 },
+  { endHour: 18, speed: 2 / 3 },
+  { endHour: 30, speed: 1 / 2 },
+  { endHour: 48, speed: 1 / 3 },
+  { endHour: 72, speed: 1 / 4 },
+  { endHour: 108, speed: 1 / 6 },
+  { endHour: 162, speed: 1 / 9 },
+] as const;
+
+export function getEffectiveAfkElapsedMs(elapsedMs: number): number {
+  if (!Number.isFinite(elapsedMs) || elapsedMs <= 0) return 0;
+
+  const cappedElapsedMs = Math.min(elapsedMs, AFK_MAX_REAL_ELAPSED_MS);
+  let previousEndMs = 0;
+  let effectiveMs = 0;
+
+  for (const band of AFK_EFFICIENCY_BANDS) {
+    const bandEndMs = band.endHour * HOUR_MS;
+    const elapsedInBandMs = Math.max(0, Math.min(cappedElapsedMs, bandEndMs) - previousEndMs);
+    effectiveMs += elapsedInBandMs * band.speed;
+    if (cappedElapsedMs <= bandEndMs) break;
+    previousEndMs = bandEndMs;
+  }
+
+  return Math.min(AFK_MAX_EFFECTIVE_ELAPSED_MS, Math.floor(effectiveMs));
+}
 
 export interface AfkChunkPlan {
   elapsedMs: number;

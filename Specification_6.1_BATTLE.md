@@ -500,9 +500,9 @@ If `a.*` with phase = START:
  
   - **Override**
   - If `terrain.floor-domain`: final `f.damage_calculation` = max(1% of opponent.max_HP, `f.damage_calculation`)
-    - Exception: If actor has `a.domain-breaker`, this effect is ignored.
+    - Exception: If actor or **opponent** has `a.domain-breaker`, this effect is ignored.
   - If `terrain.cap-domain` :final `f.damage_calculation` = min(5% of opponent.max_HP, `f.damage_calculation`)
-    - Exception: If actor has `a.domain-breaker`, this effect is ignored.
+    - Exception: If actor or **opponent** has `a.domain-breaker`, this effect is ignored.
 
 - `f.rage_amplifier`:
   - If actor has `a.rage`1 and (opponent doesn't have `a.rage-breaker`), return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
@@ -672,7 +672,7 @@ If `a.*` with phase = START:
     - Note: Nth_hit counts individually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - **Override of terrain effect**
     - If {`terrain.sniper-domain` and (`attack_type = ranged`)} or {`terrain.spell-domain` and (`attack_type = magical`)} or {`terrain.duelist-domain` and (`attack_type = melee`)}: All hits are treated as successful.
-      - Exception: If actor has `a.domain-breaker`, these effects are ignored.
+      - Exception: If actor or **opponent** has `a.domain-breaker`, these effects are ignored.
     - If override condition is met: return true (skip calculation below)
   - Roll: Return Random(0, 1.0) <= chance
 
@@ -956,3 +956,20 @@ left-alinged                                           right-aligned
 - In dark mode: not invert the image.
 - Apply mask above the image to ensure text readability.
 - The image remains static relative to the panel (does not move with internal content changes).
+
+#### 6.1.8 Universal C++ battle kernel
+
+- Performance-sensitive numerical battle resolution must use the checked-in C++ battle kernel compiled to WebAssembly.
+- The same WebAssembly module and ABI must be used by online play, AFK module workers, and Experimental AI API sorties. No mode-specific battle formula or native-only implementation is permitted.
+- The TypeScript battle coordinator may project game objects, own localized battle-log narration, and call the C++ kernel, but it must not maintain an alternate numerical formula for C++-owned operations.
+- JavaScript supplies random values in canonical resolution order. Moving a calculation into C++ must not add, remove, reorder, or prefetch random draws.
+- The kernel must initialize synchronously from the bundled application assets, require no network access, and run in both browser and context-isolated Electron renderers.
+- The C++ ABI must be versioned. A mismatched ABI must fail explicitly rather than silently fall back to a second implementation.
+- C++/WebAssembly parity coverage must include standard values, minimum-damage clamping, domain damage overrides, hit-probability modifiers, and values above the signed 32-bit range.
+- Full-engine migration stages must pass a record/replay differential harness that supplies the same ordered random-value tape to the reference and candidate engines and rejects missing, additional, or reordered consumption.
+- Golden coverage must hash the complete canonical battle result, including ordered battle logs and returned threat bags, and must include victory, draw, defeat, normal, Elite, terrain, and complex ability-resolution scenarios.
+- The TypeScript/C++ boundary must use a versioned little-endian binary protocol. Runtime battle input and output must not use JSON serialization.
+- Ability IDs, terrain IDs, and semantic event opcodes must be defined in one explicitly numbered, append-only registry and generated into matching TypeScript and C++ definitions. Existing numeric IDs must never be reordered, reused, or renumbered.
+- Protocol v1 input must include aggregate party/enemy HP, combatant records, grouped ability records, the ordered random tape, and physical and magical threat bags. Protocol output must include outcome, aggregate HP, enemy hits received, consumed-random count, updated threat bags, and ordered language-neutral event records.
+- The Wasm module must expose reusable, non-overlapping input and output arenas. Each arena is 512 KiB in protocol v1; repeated battles must reuse these arenas rather than allocate or serialize a new Wasm transport object.
+- C++ must validate magic values, protocol and header versions, exact section offsets and sizes, record IDs, combatant ability ownership, and arena bounds before reading an input payload.

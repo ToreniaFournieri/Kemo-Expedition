@@ -36,10 +36,23 @@ isDungeonEntryUnlocked,
 import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDisplay';
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
-import { normalizePersistedAfkChunkCursor, type AfkSimulationBatchSlice, type PersistedAfkChunkCursor } from '../../game/afkScheduler';
+import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
+import {
+AFK_MAX_EFFECTIVE_ELAPSED_MS,
+AFK_MAX_REAL_ELAPSED_MS,
+normalizePersistedAfkChunkCursor,
+type AfkSimulationBatchSlice,
+type PersistedAfkChunkCursor
+} from '../../game/afkScheduler';
 import { getItemDisplayName,getLocalizedItemName } from '../../game/gameState';
 import { JEWEL_DEFS,getJewelCBonusValue,getJewelDRankValue,getJewelShortLabel } from '../../game/jewel';
 import { isSpecialMagicCastable,resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../game/magic';
+import { BASE_STEP_DURATION_MS } from '../../game/progressTiming';
+export {
+getRestInitialTotalSteps,
+REST_HEAL_MAX_HP_RATIO,
+REST_HEAL_MIN_HP,
+} from '../../game/restHealing';
 import { Language,t } from '../../i18n';
 import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
 
@@ -207,6 +220,7 @@ export interface HomeScreenProps {
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => void;
+    commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
     runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
       state: GameState;
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
@@ -540,6 +554,7 @@ export interface PersistedRuntimeSnapshot {
   afkSummaryBaseline: AfkSummaryStats[] | null;
   shouldShowAfkSummary: boolean;
   afkChunkCursor: PersistedAfkChunkCursor | null;
+  afkRemainingMsByParty?: Record<number, number>;
 }
 
 
@@ -548,12 +563,9 @@ export function rollPercentInclusive(min: number, max: number): number {
 }
 
 export const PARTY_CYCLE_TICK_MS = 100;
-export const BASE_STEP_DURATION_MS = 15000;
+export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
-export const REST_HEAL_MIN_HP = 400;
-export const REST_HEAL_MAX_HP_RATIO = 0.06;
-export const FREE_ACTION_STEP_COUNT = 30;
 export const SOUND_SLEEP_STEP_COUNT = 16;
 export const PRAY_STEP_COUNT = 4;
 export const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
@@ -561,8 +573,8 @@ export const APPROX_CYCLE_STEP_COUNT = 30;
 export const CHUNK_CYCLE_COUNT = 12;
 export const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 export const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
-export const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
-export const REDUCER_CATCHUP_THRESHOLD_MS = 15000;
+export const AFK_MAX_ELAPSED_MS = AFK_MAX_REAL_ELAPSED_MS;
+export const REDUCER_CATCHUP_THRESHOLD_MS = BASE_STEP_DURATION_MS;
 
 export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: number = Date.now()): PersistedRuntimeSnapshot | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -605,10 +617,10 @@ export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: 
   }
 
   const pendingAfkMs = Number.isFinite(parsed.pendingAfkMs)
-    ? Math.max(0, Math.min(AFK_MAX_ELAPSED_MS, Math.floor(Number(parsed.pendingAfkMs))))
+    ? Math.max(0, Math.min(AFK_MAX_EFFECTIVE_ELAPSED_MS, Math.floor(Number(parsed.pendingAfkMs))))
     : 0;
   const recoveryTotal = Number.isFinite(parsed.afkRecoveryTotalMs)
-    ? Math.max(pendingAfkMs, Math.min(AFK_MAX_ELAPSED_MS, Math.floor(Number(parsed.afkRecoveryTotalMs))))
+    ? Math.max(pendingAfkMs, Math.min(AFK_MAX_EFFECTIVE_ELAPSED_MS, Math.floor(Number(parsed.afkRecoveryTotalMs))))
     : pendingAfkMs;
   const baseline = Array.isArray(parsed.afkSummaryBaseline)
     ? parsed.afkSummaryBaseline.map(normalizeAfkSummaryStats).filter((value): value is AfkSummaryStats => value !== null).slice(0, normalizedPartyCount)
@@ -630,6 +642,11 @@ export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: 
     afkSummaryBaseline: baseline && baseline.length > 0 ? baseline : null,
     shouldShowAfkSummary: parsed.shouldShowAfkSummary !== false,
     afkChunkCursor: normalizePersistedAfkChunkCursor(parsed.afkChunkCursor, normalizedPartyCount),
+    afkRemainingMsByParty: parsed.afkRemainingMsByParty && typeof parsed.afkRemainingMsByParty === 'object'
+      ? Object.fromEntries(Object.entries(parsed.afkRemainingMsByParty)
+          .map(([key, value]) => [Number(key), Math.max(0, Math.min(AFK_MAX_EFFECTIVE_ELAPSED_MS, Math.floor(Number(value))))])
+          .filter(([key, value]) => Number.isInteger(key) && key >= 0 && key < normalizedPartyCount && Number.isFinite(value)))
+      : undefined,
   };
 }
 
@@ -640,16 +657,6 @@ export function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { 
     gainedSeconds: Math.floor(totalMs / 1000),
     remainderMs: totalMs % 1000,
   };
-}
-
-// SpecRef: 5.1 | PROGRESS | state.rest
-export function getRestInitialTotalSteps(currentHp: number, maxHp: number): number {
-  const normalizedMaxHp = Math.max(1, Math.floor(maxHp));
-  const normalizedCurrentHp = Math.max(0, Math.floor(currentHp));
-  const missingHp = Math.max(0, normalizedMaxHp - normalizedCurrentHp);
-  if (missingHp <= 0) return 1;
-  const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(normalizedMaxHp * REST_HEAL_MAX_HP_RATIO));
-  return Math.max(1, Math.ceil(missingHp / healPerStep));
 }
 
 // SpecRef: 5.1.1 | Party State Machine | state.sell
@@ -1493,7 +1500,7 @@ export function parseDiarySideQuestThreshold(value: string): DiarySideQuestThres
 }
 
 export const numberFormatter = new Intl.NumberFormat('ja-JP');
-export const SPEED_OF_TIME_BONUS_DURATION_MS = 24 * 60 * 60 * 1000;
+export const SPEED_OF_TIME_BONUS_DURATION_MS = (24 * 60 + 45) * 60 * 1000;
 export const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 export const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 export const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;

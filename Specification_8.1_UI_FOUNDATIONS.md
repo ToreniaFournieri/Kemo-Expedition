@@ -75,7 +75,7 @@
   - Icon assets must visually match the semantic meaning of the original emoji.
 
 
-#### 8.1.1 Notification Logic & Display
+#### 8.1.1 Popup Notification Logic & Display
 **Visual & Overlay (Toast)**
 - Position: left side, anchored above the fixed bottom primary navigation tab bar so notifications never cover the tabs.
 - Layout:
@@ -86,12 +86,15 @@
     - With Super Rare titled item, override to BOLD Dark orenge. White translucent background, no border color.
 - Behavior: Auto-dismiss after 5000ms. Manual dismiss **all of notification** on onClick. Status update dismisses previous status changes notification. (display only latest status changes)
 
-**Notification Logic**
+**Popup Notification Logic**
 - Item Drops
 	- When an item drops (exclude auto-sell items), it triggers the notification with Normal style. If the item is Super Rare, The style switchs to Rare style. No notification is displayed when the inventory count of that item is greater than 20.
     - displays party number like. ex: "PT1:名工の銅の籠手を入手"
 	- Logic: 伝説のショートソード triggers the rareStyle.
   	- Animation: animate-bounce (once) + animate-pulse (continuous).
+
+- Cycle event
+  - Profit usuage, praying, sortie notification. (5.1.1 Party State Machine @Specification_5.1_PROGRESS.md)
 
 - Status Changes
 	- When equipping/unequipping, it compares the old value to the new value.
@@ -151,7 +154,7 @@
       - `/`: PROD_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
       - Set Speed of Time to x1.2. and the text is `▶︎`
-      - The boost effect lasts for 24 hours.
+      - The boost effect lasts for 24 hours 45 minites.
     - If the webhook request fails:
       - Do not apply the boost effect.
       - Keep Speed of Time at its current value.

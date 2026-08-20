@@ -4,23 +4,51 @@
 **Definition of time scale.**
 - **`Step`**: The smallest unit of progression. 
   - Steps are processed **globally**, meaning all parties update their progress simultaneously at each Step. 
-  - Base duration: **15 seconds per Step**.
+  - Base duration: **30 seconds per Step**.
   - Duration modifier: **round up** after all multipliers are applied.
-  - **Debug Scaling** (applies multiplicatively to Step duration):  
-    - `x5 boost` → Step × **0.2** (3 seconds)  
-    - `x20 boost` → Step × **0.05** (0.75 seconds)  
-    - `x100 boost` → Step × **0.01** (0.15 seconds)
+  - **Debug Scaling** (applies multiplicatively to Step duration):
+    - `x5 boost` → Step × **0.2** (6 seconds)
+    - `x20 boost` → Step × **0.05** (1.5 seconds)
+    - `x100 boost` → Step × **0.01** (0.3 seconds)
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
   - A full Cycle always **ends at the end of `state.rest`**.
-- **`Chunk`**: A higher-level processing unit used for bulk progression. 
+- **`Chunk`**: A higher-level processing unit used for bulk AFK progression.
+  - Each AFK worker process handles exactly one Chunk for one party.
+  - A party may have only one active or queued Chunk at a time.
   - **1 Chunk = 12 Cycles**.
   - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
+  - Each Chunk continues using the party and global parameters captured when it begins.
+  - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
+  - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
+  - **Party Setting Updates**
+    - User PT setting changes are queued immediately but take effect only at the next Chunk.
+    - The current Chunk continues using its initial settings.
+    - At the Chunk boundary, pending user changes are applied after the completed Chunk result and override Chunk-generated equipment or setting changes.
+
 - **`AFK scheduler batch`**: One time-budgeted execution slice used to keep AFK recovery responsive.
   - It is not a gameplay unit and has no fixed Cycle count.
   - One scheduler batch may process part of one Chunk, exactly one Chunk, or portions of multiple Chunks.
   - Ending or yielding a scheduler batch must not create a gameplay boundary, consume randomness, or trigger Chunk-end rules.
+
+- **AFK Emulation Efficiency**
+  - AFK emulation efficiency gradually decreases during extended absence, representing reduced party discipline and efficiency without player supervision.
+  - Returning to the game resets AFK emulation efficiency to 100%.
+  - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
+
+**f.afk-emulation-efficiency**
+
+| Elapsed AFK Time | Emulation Speed | Effective Time |
+| ---------------: | --------------: | -------------: |
+|             0–9h |              1× |             9h |
+|            9–18h |            2/3× |             6h |
+|           18–30h |            1/2× |             6h |
+|           30–48h |            1/3× |             6h |
+|           48–72h |            1/4× |             6h |
+|          72–108h |            1/6× |             6h |
+|         108–162h |            1/9× |             6h |
+
 
 #### 5.1.1 Party State Machine
 
@@ -48,9 +76,9 @@
 
 | State | Japanese label | Duration | Progress bar behavior |
 |-------|-------|-------|-------|
-| `state.rest` | 休息中 | heal max(400, +6% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
+| `state.rest` | 休息中 | heal max(200, +2% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
-| `state.free_action` | 自由行動中 | 30 `Step`  | Continuous |
+| `state.free_action` | 自由行動中 | 40 `Step` + round(`condition` / 10) | Continuous |
 | `state.sound_sleep` | 熟睡中 | 16 `Step` | Continuous |
 | `state.pray` | 祈り中 | 4 `Step` | Continuous |
 | `state.idle` | 待機中 | - | - |
@@ -123,7 +151,7 @@
 - 'state_started_at' must be updated only when the party state changes (at each transition boundary), never on a plain tick without transition.
 - If a transition completes exactly at a chunk boundary, treat it as completed in that chunk and carry remaining time (if any) into the next state/chunk.
 - Multiple state transitions within a single update tick are valid and must be applied deterministically in order.
-- Limit: maximum 1,800 minutes (30 hours) per catch-up simulation in the current version; elapsed time beyond this cap is ignored for that tick.
+
 
 **AFK → Online Transition Handling**
 - **Simplified AFK emulation:**
@@ -141,33 +169,12 @@
 
 ##### 5.1.1.1 AFK Recovery Performance Requirements
 
-AFK recovery must preserve all existing gameplay rules and deterministic behavior while avoiding prolonged main-thread blocking and unnecessary UI updates.
+- AFK recovery must preserve all existing gameplay rules and deterministic behavior while avoiding prolonged main-thread blocking and unnecessary UI updates.
 
-**Functional correctness**
-
-AFK optimization must not change the result of the simulation.
-
-Given the same:
-
-- initial save state;
-- elapsed AFK duration;
-- random-bag or RNG state;
-- game-data version;
-- active parties and destinations;
-
-the optimized recovery must produce the same gameplay result as the authoritative chronological AFK simulation defined in section 5.1.1, including its completed-Cycle, logical-Chunk, and AFK-to-Online transition rules. Equivalent results include:
-
-- battle outcomes;
-- rewards and inventory changes;
-- character and party HP;
-- progression and Clear-Gates;
-- destination advancement;
-- side-quest outcomes;
-- Diary records;
-- automation behavior;
-- final RNG or random-bag state.
-
-Performance improvements may reduce intermediate UI updates and defer presentation work, but must not skip authoritative gameplay events.
+- While AFK recovery is pending, user input remains accepted. If a user interaction targets a
+state-mutating control, the scheduler pauses before starting the next AFK batch, allows the
+normal UI mutation to commit, and then resumes from the persisted AFK operation cursor. AFK
+simulation operations and UI mutations must not interleave within one scheduler batch.
 
 **Main-thread execution budget**
 
@@ -237,24 +244,6 @@ The following events may cause an immediate UI update regardless of the normal p
 
 React progress updates are presentation updates. Reducing their frequency must not reduce the number of simulated gameplay events.
 
-**Render isolation**
-
-AFK progress changes must not cause the complete application to rerender.
-
-Frequently changing recovery state—such as percentage, Cycles completed, and estimated time remaining—should be isolated from stable game state.
-
-Components that are not visible or do not depend on changed data should not rerender because an AFK progress update occurred. In particular, the following areas should be checked:
-
-- inventory;
-- Diary;
-- party configuration;
-- equipment;
-- destination selection;
-- settings;
-- inactive screens and dialogs.
-
-Memoization and state splitting should be introduced only where profiling demonstrates that they reduce meaningful render work.
-
 **Saving and persistence**
 
 Save serialization and persistent-storage writes must not occur after every AFK batch.
@@ -269,171 +258,9 @@ Persistence should occur at controlled durable checkpoints, such as:
 
 Progress-only React updates must not trigger complete save serialization.
 
-A checkpoint must contain enough information to resume recovery without:
-
-- duplicating rewards;
-- skipping Cycles;
-- duplicating Diary entries;
-- changing RNG or random-bag order;
-- losing already committed progress.
-
-When a checkpoint occurs inside a logical Chunk, it must persist the pending AFK backlog, current Chunk index and Cycle offset, authoritative simulation state, timing anchors, and RNG or random-bag state required to resume at the exact next gameplay operation. The visible `state.reactivate` progress bar may reset after refresh as defined above, but that presentation reset must not reset or alter the authoritative recovery position.
-
-The application should avoid writing identical serialized state repeatedly.
-
 **Responsiveness**
 
 The application must remain interactive during AFK recovery.
-
-While recovery is active:
-
-- visible screens must remain scrollable;
-- navigation and non-mutating controls must respond;
-- progress indicators must continue updating;
-- cancellation or interruption controls must remain usable, if provided;
-- accessibility interaction must remain functional;
-- animations should not freeze for prolonged periods.
-
-Gameplay mutations must not interleave with AFK simulation. A state-mutating action may execute only after recovery completes or after an explicit cancellation or interruption has reached and durably persisted a deterministic recovery boundary.
-
-Repeated frame or event-loop delays of 50 ms or longer should be treated as a performance warning. Delays of 100 ms or longer caused by the game should be treated as a performance defect.
-
-Moving simulation to a renderer-owned Web Worker is recommended if time-budgeted main-thread execution cannot provide acceptable responsiveness. The renderer must remain the authoritative owner of game state and persistence: worker results must be validated and committed through the renderer, and the worker must not access persistent storage directly.
-
-**Performance scaling**
-
-Recovery cost should scale approximately linearly with:
-
-```text
-recovered Cycles × active parties
-```
-
-Doubling the recovered Cycle count should produce approximately twice the simulation work when other conditions are equal. Doubling the active party count should also produce approximately proportional work.
-
-Significantly super-linear scaling must be investigated. Possible causes include:
-
-- repeatedly scanning an expanding Diary;
-- repeatedly sorting the complete inventory;
-- cloning increasingly large state collections;
-- recalculating unchanged party statistics;
-- processing previous results again;
-- serializing the entire save after each batch.
-
-Performance tests should record both total recovery time and normalized time per Cycle-party.
-
-**Ten-hour recovery target**
-
-A representative ten-hour AFK recovery must complete in seconds rather than minutes on supported reference hardware.
-
-The representative test must define:
-
-- hardware or device class;
-- browser or application build;
-- production build configuration;
-- number of active parties;
-- representative inventory size;
-- representative Diary size;
-- destinations and battle complexity;
-- side-quest and automation configuration.
-
-Until device-specific targets are established, the acceptance requirement is:
-
-```text
-Total recovery duration < 60 seconds
-```
-
-The preferred target should be substantially lower and established from measured production-build results.
-
-This requirement does not permit the simulation to omit events or produce a different final state.
-
-**Required profiling metrics**
-
-Development profiling must be capable of reporting:
-
-- total AFK recovery duration;
-- recovered Cycles;
-- active parties;
-- total Cycle-party operations;
-- average time per Cycle;
-- average time per Cycle-party;
-- maximum batch duration;
-- number of batches;
-- React commit count;
-- total React render duration;
-- maximum React commit duration;
-- save serialization count and duration;
-- persistent-storage write count and duration;
-- maximum observed frame or event-loop delay.
-
-Where practical, simulation time should be divided into:
-
-- expedition and battle resolution;
-- rewards and inventory;
-- HP and party state;
-- Diary finalization;
-- destination advancement;
-- side quests;
-- automation;
-- state copying and finalization.
-
-Profiling must aggregate measurements in memory. It must not emit console output or browser performance entries for every individual Cycle, because the profiling mechanism itself could materially slow recovery.
-
-**Benchmark scenarios**
-
-At minimum, performance testing should cover:
-
-1. One active party with one hour of recovery.
-2. All supported parties with one hour of recovery.
-3. All supported parties with ten hours of recovery.
-4. All supported parties at the maximum allowed AFK duration of 1,800 minutes (30 hours).
-5. A nearly full inventory.
-6. A large retained Diary.
-7. Active side quests and automatic destination changes.
-8. Frequent battle failures or party defeats.
-
-Each benchmark must use a fixed initial save and deterministic RNG state. After a warm-up run, the scenario should be measured multiple times using a production build.
-
-Reports should include:
-
-- median total duration;
-- slowest total duration;
-- average time per Cycle-party;
-- longest batch;
-- React commit count;
-- longest React commit;
-- largest event-loop or frame delay.
-
-**Correctness verification**
-
-Every optimized benchmark must be compared with the existing authoritative implementation.
-
-The comparison should verify the complete meaningful final state, including:
-
-- currencies;
-- inventory;
-- party and character state;
-- progression;
-- destination state;
-- side quests;
-- Diary outcomes;
-- statistics;
-- RNG or random-bag state;
-- remaining AFK backlog.
-
-Performance work must not be accepted if it improves speed but changes deterministic results.
-
-**Recommended implementation order**
-
-1. Add development-only AFK timing and React commit instrumentation.
-2. Create deterministic benchmark saves.
-3. Establish baseline results for one-hour, ten-hour, and maximum-duration recovery.
-4. Separate internal simulation progress from React-visible progress.
-5. Replace fixed Cycle-count batches with time-budgeted batches.
-6. Prevent save serialization and writes from running per batch.
-7. Reduce unnecessary rerenders and expensive effects.
-8. Profile simulation phases and reduce excessive allocations.
-9. Move the isolated simulator to a Web Worker if main-thread responsiveness remains inadequate.
-10. Run deterministic equivalence tests and record final benchmark results.
 
 
 **Notification**
@@ -542,12 +369,12 @@ PT3: 貯金額: 10G
 | title            | Gate `x.floor`,`x.room` | condition                                                                                           | text example         |
 | ---------------- | ----------------------- | --------------------------------------------------------------------------------------------------- | -------------------- |
 | Entering         | 1,1                     | Defeat the boss from the previous expedition (`x.expedition - 1`), except for the first expedition. | ボス撃破でヴァルンの樹林帯 開放     |
-| 1st Elite gate   | 1,4                     | Complete 9 consecutive successful runs | 連続攻略成功 9回 で 1F-4解放 |
-| 2nd Elite gate   | 2,4                     | Complete 8 consecutive successful runs | 連続攻略成功 8回 で 2F-4解放 |
-| 3rd Elite gate   | 3,4                     | Complete 7 consecutive successful runs | 連続攻略成功 7回 で 3F-4解放 |
-| 4th Elite gate   | 4,4                     | Complete 6 consecutive successful runs | 連続攻略成功 6回 で 4F-4解放 |
-| 5th Elite gate   | 5,4                     | Complete 5 consecutive successful runs | 連続攻略成功 5回 で 5F-4解放 |
-| Boss gate        | 6,4                     | Complete 4 consecutive successful runs | 連続攻略成功 4回 で ボス戦解放  |
+| 1st Elite gate   | 1,4                     | Complete 7 consecutive successful runs | 連続攻略成功 7回 で 1F-4解放 |
+| 2nd Elite gate   | 2,4                     | Complete 6 consecutive successful runs | 連続攻略成功 6回 で 2F-4解放 |
+| 3rd Elite gate   | 3,4                     | Complete 5 consecutive successful runs | 連続攻略成功 5回 で 3F-4解放 |
+| 4th Elite gate   | 4,4                     | Complete 4 consecutive successful runs | 連続攻略成功 4回 で 4F-4解放 |
+| 5th Elite gate   | 5,4                     | Complete 3 consecutive successful runs | 連続攻略成功 3回 で 5F-4解放 |
+| Boss gate        | 6,4                     | Complete 2 consecutive successful runs | 連続攻略成功 2回 で ボス戦解放  |
 | Gods battle gate | -                       | Defeat the dungeon boss at least once and satisfy the Gods Battle-specific condition.               | ボスを撃破せよ              |
 | Side quest gate  | -                       | Depends on the side quest `q.` condition. |             |
 

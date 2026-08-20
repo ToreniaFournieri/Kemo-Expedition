@@ -53,6 +53,7 @@ function PartyProgressPane() {
 
   useEffect(() => {
     document.documentElement.lang = language;
+    document.documentElement.style.colorScheme = theme === 'dark' || theme.endsWith('-dark') ? 'dark' : 'light';
     document.body.dataset.theme = theme;
   }, [language, theme]);
 

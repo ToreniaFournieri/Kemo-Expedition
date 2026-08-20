@@ -19,5 +19,9 @@ The ZIP is a complete portable browser build, including the images and generated
 
 The macOS package includes an Electron menu-bar Party Progress pane. Left-click the BoKemo menu-bar icon to view live read-only progress for every unlocked party; right-click it for application controls. Run `npm run desktop:pack` for a local unpacked application or `npm run desktop:build` for distributable DMG and ZIP artifacts.
 
+## C++ battle kernel
+
+The browser, desktop renderer, AFK workers, and Experimental AI API sorties share the same C++ battle kernel compiled to WebAssembly. The generated module is checked in, so normal `npm run build` does not require a native toolchain. Stable wire IDs live in `native/battle_protocol.def`; entries are append-only and explicitly numbered. Run `npm run battle:protocol` after changing the protocol registry, or `npm run battle:protocol:check` to verify generated TypeScript/C++ definitions. After changing C++ kernel or protocol code, install Emscripten and run `npm run battle:cxx`, then commit the refreshed generated definitions, `src/game/battleKernel.wasm`, and `src/game/battleKernelBinary.ts` outputs.
+
 
 - 記事 [冒ケモ オープンβテスト開始のお知らせ](https://note.com/fournieri/n/n0edb2cf72299?app_launch=false)

@@ -550,6 +550,16 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "f.super-rare-scaling",
         get label() { return t('data.glossary.99.label'); },
         get description() { return t('data.glossary.99.description'); }
+      },
+      {
+        "key": "f.afk-emulation-efficiency",
+        get label() { return t('data.glossary.100.label'); },
+        get description() { return t('data.glossary.100.description'); }
+      },
+      {
+        "key": "f.condition",
+        get label() { return t('data.glossary.condition.label'); },
+        get description() { return t('data.glossary.condition.description'); }
       }
     ]
   },

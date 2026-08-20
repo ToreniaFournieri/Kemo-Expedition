@@ -106,7 +106,7 @@ HP 2350 / 4680
     - Displayed only when `state` is `Step-based`. (example: `state.rest`, `state.sell`, or `state.explore`)
     - For all other states, render an empty placeholder to preserve layout height.
   - Represents elapsed time within the current `Step`.
-  - Fills **continuously** from 0% → 100% during a single `Step` (e.g., 15 seconds).
+  - Fills **continuously** from 0% → 100% during a single `Step`.
   - **Synchronization:**
     - The mini progress bar is strictly synchronized with real-time `Step` duration (including debug time scaling).
   - Style:

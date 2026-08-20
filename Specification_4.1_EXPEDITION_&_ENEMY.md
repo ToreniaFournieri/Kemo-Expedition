@@ -2,23 +2,28 @@
 
 ### 4.1 EXPEDITION_&_ENEMY
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
-- There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
 #### 4.1.1 Expedition Definitions
 
+- **deploy status**
+  - `prod` = all env (prod, beta, dev, etc)
+  - `test` = dev env only
+  - `no` = nowhere
+
 - Expedition
 
-| `x.exp_id` | `x.item_tier` | `x.enemy_level` | `x.expedition` | short name | item concept |
-|---|-----|-----|-----|-----|-----|
-| 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | C:primitive |
-| 2 | 2 | 10 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  |
-| 3 | 3 | 16 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type |
-| 4 | 4 | 21 | フェリディ砂漠(Felidian Desert) | 砂 | C:Bone , U:Desert, E:enemy_type B:enemy_type |
-| 5 | 5 | 24 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type |
-| 6 | 6 | 29 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
-| 7 | 7 | 34 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type |
-| 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
-| 0 | 0 | 0 | 闘技場 (Colosseum) | 闘 | Debug-only area. Displayed only when Colosseum is enabled. |
+| `x.exp_id` | `x.item_tier` | `x.enemy_level` | `x.expedition` | short name | item concept | deploy status |
+|---|-----|-----|-----|-----|-----|-----|
+| 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | C:primitive | `prod` |
+| 2 | 2 | 10 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | C:fur, U:icy, E:enemy_type B:fur  | `prod` |
+| 3 | 3 | 16 | ヴァルンの海洋(Vulpinian Ocean) | 海 | C:shell, U:fruit, E:enemy_type B:enemy_type | `prod` |
+| 4 | 4 | 21 | フェリディ砂漠(Felidian Desert) | 砂 | C:Bone , U:Desert, E:enemy_type B:enemy_type | `prod` |
+| 5 | 5 | 24 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type | `prod` |
+| 6 | 6 | 29 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type | `prod` |
+| 7 | 7 | 34 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type | `prod` |
+| 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type | `prod` |
+| 9 | 1 | 44 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - | `test` |
+| 99 | 0 | 0 | 闘技場 (Colosseum) | 闘 | Debug-only area. Displayed only when Colosseum is enabled. | `prod` |
 
 - Floor of each expedition
 
@@ -75,6 +80,12 @@
 | 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
 | 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 | `terrain.suppression` |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 | `terrain.sanctuary` |
+| 9 | 1 | Across the trenches | 塹壕の先 | `terrain.duelist-domain` |
+| 9 | 2 | Military Road | 軍道 | `terrain.heavy-wind` |
+| 9 | 3 | Darden Field | ダーデン原野 | `terrain.sniper-domain` |
+| 9 | 4 | Federation Encampment | 連邦軍野営地 | `terrain.enemy-high-ground` |
+| 9 | 5 | Defensive line | 帝都防衛線 | `terrain.predation` |
+| 9 | 6 | Caninian Capital | ケイナイアンの帝都 | `terrain.rejuvenation` |
 
 #### 4.1.2 Enemy
 

@@ -362,6 +362,7 @@ export default function DiaryTab({
             return (
               <div key={party.id} className="rounded border border-gray-200 p-2.5">
                 <div className="mb-2 text-xs text-gray-500">{party.name}</div>
+                <div className="mb-2 text-xs font-semibold text-gray-600">{t('diary.settings.diaryUpdates')}</div>
                 <div className="grid gap-2 text-sm sm:grid-cols-2">
                   <label className="flex items-center justify-between gap-2">
                     <span>{t('diary.settings.superRareNotification')}</span>
@@ -447,6 +448,29 @@ export default function DiaryTab({
                       ))}
                     </select>
                   </label>
+                </div>
+                <div className="mb-2 mt-4 border-t border-gray-200 pt-3 text-xs font-semibold text-gray-600">
+                  {t('diary.settings.popupNotifications')}
+                </div>
+                <div className="grid gap-2 text-sm sm:grid-cols-2">
+                  {([
+                    ['notifyCyclePopup', 'diary.settings.cyclePopupNotification'],
+                    ['notifyItemDropPopup', 'diary.settings.itemDropPopupNotification'],
+                    ['notifyAutoEquipmentPopup', 'diary.settings.autoEquipmentPopupNotification'],
+                    ['notifySideQuestPopup', 'diary.settings.sideQuestPopupNotification'],
+                  ] as const).map(([settingKey, labelKey]) => (
+                    <label key={settingKey} className="flex items-center justify-between gap-2">
+                      <span>{t(labelKey)}</span>
+                      <select
+                        value={settings[settingKey] ? 'yes' : 'no'}
+                        onChange={(event) => onUpdateDiarySettings(partyIndex, { [settingKey]: event.target.value === 'yes' })}
+                        className="rounded border border-gray-300 bg-white px-2 py-1"
+                      >
+                        <option value="yes">{t('common.yes')}</option>
+                        <option value="no">{t('common.no')}</option>
+                      </select>
+                    </label>
+                  ))}
                 </div>
               </div>
             );

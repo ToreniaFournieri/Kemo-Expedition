@@ -12,6 +12,7 @@ import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
+import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
 import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
@@ -2781,10 +2782,20 @@ export default function PartyTab({
 
           let nextStatsText = statsText;
           if (displayedPhysicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${displayedPhysicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayedPhysicalDefenseDelta)}`);
+            const label = t('combat.physicalDefenseShort');
+            nextStatsText = replaceFlatItemStat(
+              nextStatsText,
+              label,
+              `${label}${displayedPhysicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayedPhysicalDefenseDelta)}`,
+            );
           }
           if (displayedMagicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${displayedMagicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayedMagicalDefenseDelta)}`);
+            const label = t('combat.magicalDefenseShort');
+            nextStatsText = replaceFlatItemStat(
+              nextStatsText,
+              label,
+              `${label}${displayedMagicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayedMagicalDefenseDelta)}`,
+            );
           }
           return nextStatsText;
         };

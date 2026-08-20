@@ -12,6 +12,11 @@ import { PREDISPOSITIONS } from '../data/predispositions';
 import { RACES } from '../data/races';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
+selectBestAutoEquipmentFillCandidate,
+selectBestAutoEquipmentUpgradeCandidate,
+type EquipmentRankingCandidate,
+} from '../game/battleKernel';
+import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
 import { DebugSettings,getDebugSettings,getTimeSpeedScale,isUnlimitedTimeSpeed,saveDebugSettings } from '../game/debugSettings';
@@ -19,25 +24,33 @@ import { getDeityDepositMultiplier,getDeityKey,getDeityStateDurationMultiplier,i
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
 import {
-createAfkChunkPlan,
 createAfkSchedulerProfile,
-getAdaptiveAfkOperationCount,
-getAfkBatchBudgetMs,
+AFK_MAX_EFFECTIVE_ELAPSED_MS,
+getEffectiveAfkElapsedMs,
+getApproxAfkCycleDurationMs,
 observeAfkRecoveryBacklog,
 recordAfkSchedulerBatch,
 shouldPauseOnlineProgressForAfk,
 type AfkSchedulerProfile,
 type PersistedAfkChunkCursor,
 } from '../game/afkScheduler';
+import {
+AFK_CHUNK_CYCLE_COUNT,
+compareAfkChunkResults,
+type AfkPartyChunkJob,
+type AfkPartyChunkResult,
+} from '../game/afkChunkCoordinator';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
+import { isExperimentalApiCommandType } from '../game/experimentalApiContracts';
 import { buildExperimentalBattleLog,buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { JEWELS_BY_ITEM_CATEGORY,planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { computePartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
+import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { setLanguage,t } from '../i18n';
 import { Bonus,Character,ExpeditionDepthLimit,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
@@ -63,7 +76,6 @@ buildAfkSummaryNotification,
 buildStatusTableHtmlFile,
 buildStatusTableRows,
 CHROME_CONTENT_PADDING_CLASS,
-CHUNK_CYCLE_COUNT,
 DARK_MODE_STORAGE_KEY,
 DarkModeSetting,
 DEV_DISCORD_WEBHOOK_URL,
@@ -73,7 +85,6 @@ EXPLORING_PROGRESS_TOTAL_STEPS,
 formatBattleLogHitDisplay,
 formatDecimal,
 formatNumber,
-FREE_ACTION_STEP_COUNT,
 GAME_MODE_STORAGE_KEY,
 GameMode,
 getAutoSellStepCount,
@@ -195,12 +206,20 @@ export function HomeScreen({
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
+  const [afkInteractionPauseVersion, setAfkInteractionPauseVersion] = useState(0);
 
   const pendingAfkMsRef = useRef(0);
+  const afkInteractionPausedRef = useRef(false);
+  const afkInteractionPauseTimerRef = useRef<number | null>(null);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
+  const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
+  const afkActiveChunkJobsRef = useRef(new Map<number, { job: AfkPartyChunkJob; worker: Worker }>());
+  const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
+  const afkWorkerJobSequenceRef = useRef(0);
+  const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
   const afkSchedulerProfileRef = useRef<AfkSchedulerProfile | null>(null);
   const afkBatchMeasurementRef = useRef<{
@@ -354,7 +373,7 @@ export function HomeScreen({
       if (payload.expectedRevision !== apiRevisionRef.current) return apiFailure(409, 'stale_revision', 'The supplied revision is stale.', true, { currentRevision: apiRevisionRef.current });
       const command = payload.command as Record<string, unknown>;
       const type = command.type;
-      if (typeof type !== 'string' || !['update_character_build', 'reorder_character', 'set_deity', 'set_auto_equipment_mode', 'run_auto_equipment', 'toggle_equipment_lock', 'set_jewel_priority_party', 'set_expedition_destination', 'set_expedition_depth', 'set_expedition_difficulty', 'set_auto_run', 'god_battle'].includes(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
+      if (!isExperimentalApiCommandType(type)) return apiFailure(400, 'unsupported_command', 'The command discriminator is not supported.');
       if (type === 'run_auto_equipment') {
         const allowedKeys = new Set(['type', 'partyId', 'characterId']);
         if (Object.keys(command).some((key) => !allowedKeys.has(key)) || !Number.isInteger(command.partyId) || (command.characterId !== undefined && !Number.isInteger(command.characterId))) {
@@ -470,7 +489,7 @@ export function HomeScreen({
         if (!party.defeatedBossExpeditions[party.selectedDungeonId] || (party.instantExpeditionStock ?? 0) <= 0 || apiAutoRunRef.current) return apiFailure(422, 'god_battle_unavailable', 'Gods Battle is unavailable.');
         apiActionsRef.current.consumeInstantExpeditionStock(partyIndex, apiSimulatedAtRef.current);
         apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current);
-        apiSimulatedAtRef.current += 450_000;
+        apiSimulatedAtRef.current += APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS;
         effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
       }
       if (dispatched) await waitForApiStateUpdate(previousVersion);
@@ -507,7 +526,10 @@ export function HomeScreen({
         const log = batchRun.log;
         const outcome = outcomeFromParty(afterParty);
         outcomes[outcome] += 1;
-        const cycleElapsed = Math.max(450_000, (log?.totalRooms ?? 1) * 15_000);
+        const cycleElapsed = Math.max(
+          APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
+          (log?.totalRooms ?? 1) * BASE_STEP_DURATION_MS,
+        );
         const startElapsed = elapsed;
         elapsed += cycleElapsed;
         const xp = Math.max(0, afterParty.experience - beforeParty.experience);
@@ -957,7 +979,7 @@ export function HomeScreen({
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
-    const slotNotifications = new Map<string, { message: string; startedFromEmpty: boolean }>();
+    const slotNotifications = new Map<string, { message: string; partyIndex: number; startedFromEmpty: boolean }>();
     const setSlotNotification = (
       partyName: string,
       characterName: string,
@@ -975,6 +997,7 @@ export function HomeScreen({
         : t('home.notification.equipment.replaced', { previous: getItemDisplayName(previousItem!), item: getItemDisplayName(item) });
       slotNotifications.set(notificationKey, {
         message: t('home.notification.equipment.characterChanged', { party: partyName, character: characterName, message }),
+        partyIndex,
         startedFromEmpty,
       });
     };
@@ -1289,65 +1312,69 @@ export function HomeScreen({
       memoryCBonusNames: Set<string>,
     ): string | null => {
       // SpecRef: 7.1.1.2 | Equipping into empty slots | Search for a candidate item
-      const options = Object.entries(simulatedInventory)
-        .filter(([, variant]) => {
+      const optionKeys: string[] = [];
+      const candidates: EquipmentRankingCandidate[] = [];
+      Object.entries(simulatedInventory)
+        .forEach(([key, variant]) => {
           if (
             variant.status !== 'owned'
             || variant.count <= 0
             || !targetCategories.includes(variant.item.category)
           ) {
-            return false;
+            return;
           }
 
-          if (memoryItemIds.has(variant.item.id)) return false;
+          if (memoryItemIds.has(variant.item.id)) return;
           const hasAntagonismBonus = [
             ...(variant.item.bonuses ?? []),
             ...getSuperRareBonuses(variant.item.superRare),
           ].some((bonus) => bonus.type === 'antagonism');
-          if (hasAntagonismBonus) return false;
+          if (hasAntagonismBonus) return;
 
           const cBonusNames = getItemCBonusSignatures(variant.item);
           for (const bonusName of cBonusNames) {
-            if (memoryCBonusNames.has(bonusName)) return false;
+            if (memoryCBonusNames.has(bonusName)) return;
           }
 
-          return true;
-        })
-        .sort(([, a], [, b]) => {
-          const selectionValueDiff = getAutoEquipmentSelectionValueForCharacter(character, b.item)
-            - getAutoEquipmentSelectionValueForCharacter(character, a.item);
-          if (selectionValueDiff !== 0) return selectionValueDiff;
-
-          return compareItemsByTierAndEnhancement(b.item, a.item);
+          optionKeys.push(key);
+          candidates.push({
+            index: optionKeys.length - 1,
+            tier: getItemTier(variant.item),
+            enhancement: variant.item.enhancement,
+            coreConcept: getItemCoreConceptValue(variant.item),
+            superRare: variant.item.superRare,
+            itemId: variant.item.id,
+            selectionValue: getAutoEquipmentSelectionValueForCharacter(character, variant.item),
+          });
         });
 
-      return options[0]?.[0] ?? null;
+      const selectedIndex = selectBestAutoEquipmentFillCandidate(candidates);
+      return selectedIndex == null ? null : optionKeys[selectedIndex] ?? null;
     };
 
     const getBestUpgradeVariantKeyForItem = (equippedItem: Item): string | null => {
       if (equippedItem.superRare > 0) return null;
 
-      const options = Object.entries(simulatedInventory)
-        .filter(([, variant]) => {
-          if (variant.status !== 'owned' || variant.count <= 0) return false;
-          if (variant.item.id !== equippedItem.id) return false;
-          if (variant.item.superRare > 0) return false;
-          return variant.item.enhancement > equippedItem.enhancement;
-        })
-        .sort(([, a], [, b]) => {
-          const enhancementDiff = b.item.enhancement - a.item.enhancement;
-          if (enhancementDiff !== 0) return enhancementDiff;
-
-          const coreConceptDiff = getItemCoreConceptValue(b.item) - getItemCoreConceptValue(a.item);
-          if (coreConceptDiff !== 0) return coreConceptDiff;
-
-          const superRareDiff = b.item.superRare - a.item.superRare;
-          if (superRareDiff !== 0) return superRareDiff;
-
-          return compareItemsByTierAndEnhancement(b.item, a.item);
+      const optionKeys: string[] = [];
+      const candidates: EquipmentRankingCandidate[] = [];
+      Object.entries(simulatedInventory).forEach(([key, variant]) => {
+          if (variant.status !== 'owned' || variant.count <= 0) return;
+          if (variant.item.id !== equippedItem.id) return;
+          if (variant.item.superRare > 0) return;
+          if (variant.item.enhancement <= equippedItem.enhancement) return;
+          optionKeys.push(key);
+          candidates.push({
+            index: optionKeys.length - 1,
+            tier: getItemTier(variant.item),
+            enhancement: variant.item.enhancement,
+            coreConcept: getItemCoreConceptValue(variant.item),
+            superRare: variant.item.superRare,
+            itemId: variant.item.id,
+          });
         });
 
-      return options[0]?.[0] ?? null;
+      const selectedIndex = selectBestAutoEquipmentUpgradeCandidate(candidates);
+      return selectedIndex == null ? null : optionKeys[selectedIndex] ?? null;
     };
 
     const compareMemoryCJewelPriority = (
@@ -1624,7 +1651,8 @@ export function HomeScreen({
 
     if (shouldSuppressAutoEquipmentNotifications) return summary;
 
-    slotNotifications.forEach(({ message }) => {
+    slotNotifications.forEach(({ message, partyIndex }) => {
+      if (state.parties[partyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) return;
       actions.addNotification(message, 'normal', 'item', true, {
         rarity: 'common',
         isSuperRareItem: false,
@@ -1684,6 +1712,10 @@ export function HomeScreen({
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
     afkChunkCursorRef.current = null;
+    afkRemainingMsByPartyRef.current = {};
+    afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
+    afkActiveChunkJobsRef.current.clear();
+    afkCompletedChunkResultsRef.current.clear();
     try {
       localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
     } catch (error) {
@@ -1783,6 +1815,8 @@ export function HomeScreen({
           : latestPartiesRef.current.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = parsed.shouldShowAfkSummary;
         afkChunkCursorRef.current = parsed.afkChunkCursor;
+        afkRemainingMsByPartyRef.current = parsed.afkRemainingMsByParty
+          ?? Object.fromEntries(latestPartiesRef.current.map((_, partyIndex) => [partyIndex, restoredPendingAfkMs]));
         shouldRebuildPartyCyclesAfterAfkRef.current = true;
       }
       setPartyCycles(parsed.partyCycles);
@@ -2065,7 +2099,9 @@ export function HomeScreen({
       const body = buildAfkSummaryNotification(stats);
       if (!body) return;
 
-      actions.addNotification(`PT${partyIndex + 1}: ${body}`);
+      if (party.diarySettings.notifyCyclePopup) {
+        actions.addNotification(`PT${partyIndex + 1}: ${body}`);
+      }
     });
   }, [actions, pendingAfkMs, state.parties]);
 
@@ -2096,97 +2132,108 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
-    if (pendingAfkMs <= 0 || afkBatchMeasurementRef.current) return;
+    if (pendingAfkMs <= 0 || afkInteractionPausedRef.current) return;
+    // v0.9.2 persisted a cross-party operation cursor. Party-scoped workers
+    // restart only the uncommitted legacy slice from its durable game-state save.
+    afkChunkCursorRef.current = null;
 
-    const minimumCommitIntervalMs = document.visibilityState === 'visible' ? 100 : 250;
-    const now = performance.now();
-    const delayMs = Math.max(0, minimumCommitIntervalMs - (now - afkLastBatchCommittedAtRef.current));
-    const scheduledAt = now + delayMs;
-    const timerId = window.setTimeout(() => {
-      const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
-      let cursor = afkChunkCursorRef.current;
+    if (!autoRepeatEnabledRef.current) {
+      afkRemainingMsByPartyRef.current = {};
+      setPendingAfkMs(0);
+      return;
+    }
 
-      if (!autoRepeatEnabledRef.current) {
-        const catchupChunkMs = Math.max(
-          PARTY_CYCLE_TICK_MS,
-          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * durationScale),
-        );
-        const skippedElapsedMs = cursor?.elapsedMs ?? Math.min(pendingAfkMsRef.current, catchupChunkMs);
-        afkChunkCursorRef.current = null;
-        setPendingAfkMs((previous) => Math.max(0, previous - skippedElapsedMs));
-        return;
-      }
-
-      if (!cursor) {
-        // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Adaptive batching
-        // Build the complete logical 12-Cycle Chunk once. Scheduler batches only slice
-        // this immutable operation plan, preserving party order, timestamps, and RNG order.
-        const catchupChunkMs = Math.max(
-          PARTY_CYCLE_TICK_MS,
-          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * durationScale),
-        );
-        const elapsedMs = Math.min(pendingAfkMsRef.current, catchupChunkMs);
-        const anchor = afkSimulationAnchorRef.current ?? Date.now();
-        const plan = createAfkChunkPlan(
-          state.parties,
-          elapsedMs,
-          anchor - pendingAfkMsRef.current + elapsedMs,
-          durationScale,
-        );
-        cursor = { ...plan, operationCursor: 0 };
-        afkChunkCursorRef.current = cursor;
-      }
-
-      if (cursor.operationCount <= 0) {
-        const completedElapsedMs = cursor.elapsedMs;
-        afkChunkCursorRef.current = null;
-        setPendingAfkMs((previous) => Math.max(0, previous - completedElapsedMs));
-        return;
-      }
-
-      const remainingOperations = cursor.operationCount - cursor.operationCursor;
-      const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-      const budgetMs = getAfkBatchBudgetMs({
-        isMobile: window.matchMedia('(pointer: coarse)').matches,
-        hardwareConcurrency: navigator.hardwareConcurrency,
-        saveData: connection?.saveData === true,
-      });
-      const operationCount = getAdaptiveAfkOperationCount(
-        remainingOperations,
-        afkAverageOperationDurationMsRef.current,
-        budgetMs,
+    if (Object.keys(afkRemainingMsByPartyRef.current).length === 0) {
+      afkRemainingMsByPartyRef.current = Object.fromEntries(
+        state.parties.map((_, partyIndex) => [partyIndex, pendingAfkMsRef.current]),
       );
-      const operationStart = cursor.operationCursor;
-      const nextOperationCursor = operationStart + operationCount;
-      const finalizeChunk = nextOperationCursor >= cursor.operationCount;
-      const startedAt = performance.now();
+    }
 
-      afkBatchMeasurementRef.current = { startedAt, scheduledAt, operationCount };
-      afkChunkCursorRef.current = finalizeChunk
-        ? null
-        : { ...cursor, operationCursor: nextOperationCursor };
+    const activeJobs = Array.from(afkActiveChunkJobsRef.current.values()).map(({ job }) => job);
+    if (activeJobs.length > 0) {
+      const nextCanonicalJob = [...activeJobs].sort((left, right) => compareAfkChunkResults(left, right))[0];
+      const completedResult = afkCompletedChunkResultsRef.current.get(nextCanonicalJob.jobId);
+      if (completedResult) {
+        const active = afkActiveChunkJobsRef.current.get(completedResult.partyIndex);
+        active?.worker.terminate();
+        afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
+        afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
+        const chunkElapsedMs = completedResult.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+        afkRemainingMsByPartyRef.current[completedResult.partyIndex] = Math.max(
+          0,
+          (afkRemainingMsByPartyRef.current[completedResult.partyIndex] ?? 0) - chunkElapsedMs,
+        );
+        afkLastBatchCommittedAtRef.current = performance.now();
+        const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile();
+        afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
+          profile,
+          completedResult.durationMs,
+          AFK_CHUNK_CYCLE_COUNT,
+        );
+        actions.commitAfkPartyChunk(completedResult);
+        const remaining = Object.values(afkRemainingMsByPartyRef.current);
+        pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
+        setPendingAfkMs(pendingAfkMsRef.current);
+        return;
+      }
+    }
 
-      actions.simulateAfk(
-        cursor.elapsedMs,
-        autoRepeatEnabledRef.current,
+    const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    const anchor = afkSimulationAnchorRef.current ?? Date.now();
+    let startedJob = false;
+
+    state.parties.forEach((party, partyIndex) => {
+      if (afkActiveChunkJobsRef.current.has(partyIndex)) return;
+      const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale);
+      const chunkElapsedMs = cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+      const remainingMs = afkRemainingMsByPartyRef.current[partyIndex] ?? 0;
+      if (remainingMs < chunkElapsedMs) return;
+
+      const simulatedStartedAt = anchor - remainingMs;
+      const job: AfkPartyChunkJob = {
+        jobId: `afk-${party.id}-${++afkWorkerJobSequenceRef.current}`,
+        partyIndex,
+        partyId: party.id,
+        simulatedStartedAt,
+        simulatedCompletedAt: simulatedStartedAt + chunkElapsedMs,
+        cycleDurationMs,
+        baseState: state,
         gameMode,
-        cursor.simulatedEndAt,
-        cursor.cycleDurationScale,
-        {
-          cycleDurationByParty: cursor.cycleDurationByParty,
-          operationStart,
-          operationCount,
-          finalizeChunk,
-        },
-      );
+        cycleDurationScale: durationScale,
+      };
+      const worker = new Worker(new URL('../workers/afkChunkWorker.ts', import.meta.url), { type: 'module' });
+      worker.onmessage = (event: MessageEvent<{ type: 'complete'; result: AfkPartyChunkResult } | { type: 'error'; jobId: string; message: string }>) => {
+        if (event.data.type === 'complete') {
+          afkCompletedChunkResultsRef.current.set(event.data.result.jobId, event.data.result);
+        } else {
+          console.error(`AFK worker ${event.data.jobId} failed:`, event.data.message);
+          afkActiveChunkJobsRef.current.get(partyIndex)?.worker.terminate();
+          afkActiveChunkJobsRef.current.delete(partyIndex);
+        }
+        setAfkCoordinatorVersion((version) => version + 1);
+      };
+      worker.onerror = (event) => {
+        console.error(`AFK worker ${job.jobId} failed:`, event.message);
+        worker.terminate();
+        afkActiveChunkJobsRef.current.delete(partyIndex);
+        setAfkCoordinatorVersion((version) => version + 1);
+      };
+      afkActiveChunkJobsRef.current.set(partyIndex, { job, worker });
+      worker.postMessage(job);
+      startedJob = true;
+    });
 
-      if (finalizeChunk) {
-        setPendingAfkMs((previous) => Math.max(0, previous - cursor.elapsedMs));
-      }
-    }, delayMs);
+    if (!startedJob && afkActiveChunkJobsRef.current.size === 0) {
+      afkRemainingMsByPartyRef.current = {};
+      pendingAfkMsRef.current = 0;
+      setPendingAfkMs(0);
+    }
+  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
 
-    return () => window.clearTimeout(timerId);
-  }, [actions, debugSettings, gameMode, pendingAfkMs, state]);
+  useEffect(() => () => {
+    afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
+    afkActiveChunkJobsRef.current.clear();
+  }, []);
 
   useEffect(() => {
     const backlogObservation = observeAfkRecoveryBacklog(
@@ -2371,6 +2418,7 @@ export function HomeScreen({
     afkSummaryBaseline: afkSummaryBaselineRef.current,
     shouldShowAfkSummary: shouldShowAfkSummaryRef.current,
     afkChunkCursor: afkChunkCursorRef.current,
+    afkRemainingMsByParty: afkRemainingMsByPartyRef.current,
   }), []);
 
   const persistAfkRuntimeState = useCallback((checkpointAt: number = lastCheckpointAtRef.current) => {
@@ -2409,6 +2457,8 @@ export function HomeScreen({
     afkSummaryBaselineRef.current = importedRuntime?.afkSummaryBaseline ?? null;
     shouldShowAfkSummaryRef.current = importedRuntime?.shouldShowAfkSummary ?? false;
     afkChunkCursorRef.current = importedRuntime?.afkChunkCursor ?? null;
+    afkRemainingMsByPartyRef.current = importedRuntime?.afkRemainingMsByParty
+      ?? Object.fromEntries(result.state.parties.map((_, partyIndex) => [partyIndex, nextPendingAfkMs]));
     shouldRebuildPartyCyclesAfterAfkRef.current = nextPendingAfkMs > 0;
     lastCheckpointAtRef.current = importedRuntime?.checkpointAt ?? now;
 
@@ -2462,12 +2512,16 @@ export function HomeScreen({
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= REDUCER_CATCHUP_THRESHOLD_MS) {
+      // SpecRef: 5.1 | AFK Emulation Efficiency
+      // A returning player starts each catch-up at 100% efficiency. Convert this
+      // absence once into effective simulation time using the progressive bands.
+      const effectiveElapsedMs = getEffectiveAfkElapsedMs(elapsedMs);
       if (pendingAfkMsRef.current <= 0) {
         afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = true;
         afkSchedulerProfileRef.current = {
           ...createAfkSchedulerProfile(),
-          recoveredElapsedMs: elapsedMs,
+          recoveredElapsedMs: effectiveElapsedMs,
           activePartyCount: parties.length,
         };
         afkAverageOperationDurationMsRef.current = null;
@@ -2476,18 +2530,30 @@ export function HomeScreen({
           ...afkSchedulerProfileRef.current,
           recoveredElapsedMs: Math.min(
             AFK_MAX_ELAPSED_MS,
-            afkSchedulerProfileRef.current.recoveredElapsedMs + elapsedMs,
+            afkSchedulerProfileRef.current.recoveredElapsedMs + effectiveElapsedMs,
           ),
           activePartyCount: parties.length,
         };
       }
       afkSimulationAnchorRef.current = now;
-      const nextPendingAfkMs = Math.min(AFK_MAX_ELAPSED_MS, pendingAfkMsRef.current + elapsedMs);
+      const nextPendingAfkMs = Math.min(
+        AFK_MAX_EFFECTIVE_ELAPSED_MS,
+        pendingAfkMsRef.current + effectiveElapsedMs,
+      );
+      const previousPendingAfkMs = pendingAfkMsRef.current;
       // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
       // Update AFK recovery refs synchronously before persistence so refresh restores the same x/y progress baseline.
       afkRecoveryTotalMsRef.current = Math.max(afkRecoveryTotalMsRef.current, nextPendingAfkMs);
       afkRecoveryCompletedMsRef.current = Math.max(0, afkRecoveryTotalMsRef.current - nextPendingAfkMs);
       pendingAfkMsRef.current = nextPendingAfkMs;
+      afkRemainingMsByPartyRef.current = Object.fromEntries(
+        parties.map((_, partyIndex) => [partyIndex, Math.min(
+          AFK_MAX_EFFECTIVE_ELAPSED_MS,
+          previousPendingAfkMs > 0
+            ? (afkRemainingMsByPartyRef.current[partyIndex] ?? previousPendingAfkMs) + effectiveElapsedMs
+            : effectiveElapsedMs,
+        )]),
+      );
       setPendingAfkMs(nextPendingAfkMs);
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;
@@ -2563,7 +2629,7 @@ export function HomeScreen({
         // SpecRef: 5.1.2 | Side Quest | Expiration
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
           actions.cancelSideQuest(partyIndex);
-          if (!suppressCycleNotificationsForAfk) {
+          if (!suppressCycleNotificationsForAfk && party.diarySettings.notifySideQuestPopup) {
             actions.addNotification(t('home.notification.sideQuestFailed', { party: party.name, quest: resolveSideQuestShortText(party.sideQuest) }));
           }
           next[partyIndex] = updated;
@@ -2606,7 +2672,7 @@ export function HomeScreen({
           if (projectedHp >= partyRuntimeStats.hp && (!startedRestAtFullHp || hasCompletedRestStep)) {
             // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
             if (party.expeditionDestinationMode === 'auto') {
-              const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
+              const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 9);
               const selectedDifficultyOffset = party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId]
                 ?? party.expeditionDifficultyOffset
                 ?? 0;
@@ -2679,7 +2745,7 @@ export function HomeScreen({
               const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
               const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
               if (spend > 0) {
-                if (!suppressCycleNotificationsForAfk) {
+                if (!suppressCycleNotificationsForAfk && party.diarySettings.notifyCyclePopup) {
                   if (squanderLevel > 0) {
                     const lordName = getPartyAbilityOwnerName(party, 'squander') ?? t('common.unnamed');
                     actions.addNotification(t('home.notification.lordSquanderedGold', { party: party.name, lord: lordName, gold: formatNumber(spend) }));
@@ -2722,7 +2788,7 @@ export function HomeScreen({
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
                 const embezzledText = embezzled > 0 ? t('home.notification.embezzledSuffix', { gold: formatNumber(embezzled) }) : '';
-                if (!suppressCycleNotificationsForAfk) {
+                if (!suppressCycleNotificationsForAfk && party.diarySettings.notifyCyclePopup) {
                   if (isNoFaith) {
                     actions.addNotification(t('home.notification.partySavedGold', { party: party.name, gold: formatNumber(deposit), suffix: embezzledText }));
                   } else if (titheLevel > 0) {
@@ -2756,7 +2822,7 @@ export function HomeScreen({
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               if (triggerGodsBattle && party.sideQuest) {
                 actions.cancelSideQuest(partyIndex);
-                if (!suppressCycleNotificationsForAfk) {
+                if (!suppressCycleNotificationsForAfk && party.diarySettings.notifySideQuestPopup) {
                   actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
                 }
               }
@@ -2918,7 +2984,7 @@ export function HomeScreen({
       }
       const hasLevelUp = party.level > previousLevel;
 
-      if (hasLevelUp) {
+      if (hasLevelUp && party.diarySettings.notifyCyclePopup) {
         const representativeCharacter = party.characters[0];
         const equipSlotIncrease = representativeCharacter
           ? Math.max(
@@ -2951,17 +3017,21 @@ export function HomeScreen({
           return;
         }
 
-        for (const item of currentLog.rewards) {
-          const isSuperRare = item.superRare > 0;
-          const itemName = getItemDisplayName(item);
-          const rarity = getItemRarityById(item.id);
-          actions.addNotification(
-            t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-            rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
-            'item',
-            undefined,
-            { rarity, isSuperRareItem: isSuperRare }
-          );
+        if (party.diarySettings.notifyItemDropPopup) {
+          for (const item of currentLog.rewards) {
+            const inventoryCount = state.global.inventory[getVariantKey(item)]?.count ?? 0;
+            if (inventoryCount > 20) continue;
+            const isSuperRare = item.superRare > 0;
+            const itemName = getItemDisplayName(item);
+            const rarity = getItemRarityById(item.id);
+            actions.addNotification(
+              t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
+              rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+              'item',
+              undefined,
+              { rarity, isSuperRareItem: isSuperRare }
+            );
+          }
         }
         notifiedRewardLogRef.current[index] = currentLog;
         instantSortieRewardNotificationPendingRef.current[index] = false;
@@ -2983,10 +3053,10 @@ export function HomeScreen({
     state.parties.forEach((party, index) => {
       const prevQuest = prevSideQuestRef.current[index] ?? null;
       const nextQuest = party.sideQuest ?? null;
-      if (!prevQuest && nextQuest && !suppressNotificationsForAfkEmulation) {
+      if (!prevQuest && nextQuest && !suppressNotificationsForAfkEmulation && party.diarySettings.notifySideQuestPopup) {
         actions.addNotification(getSideQuestAssignMessage(party.name, resolveSideQuestShortText(nextQuest)));
       }
-      if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation) {
+      if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation && party.diarySettings.notifySideQuestPopup) {
         const latestDiary = party.diaryLogs?.[0];
         if (latestDiary?.triggers?.includes('sideQuest')) {
           const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
@@ -3187,7 +3257,7 @@ export function HomeScreen({
       : cycleState === 'sell'
         ? getAutoSellStepCount(party)
         : cycleState === 'free_action'
-          ? FREE_ACTION_STEP_COUNT
+          ? getFreeActionStepCount(party.condition)
           : cycleState === 'sound_sleep'
             ? SOUND_SLEEP_STEP_COUNT
             : PRAY_STEP_COUNT;
@@ -3217,21 +3287,23 @@ export function HomeScreen({
     if (!currentLog || currentLog.rewards.length <= 0) return;
     if (notifiedRewardLogRef.current[partyIndex] === currentLog) return;
 
-    for (const item of currentLog.rewards) {
-      const variantKey = getVariantKey(item);
-      const inventoryCount = state.global.inventory[variantKey]?.count ?? 0;
-      if (inventoryCount > 20) continue;
+    if (party.diarySettings.notifyItemDropPopup) {
+      for (const item of currentLog.rewards) {
+        const variantKey = getVariantKey(item);
+        const inventoryCount = state.global.inventory[variantKey]?.count ?? 0;
+        if (inventoryCount > 20) continue;
 
-      const isSuperRare = item.superRare > 0;
-      const itemName = getItemDisplayName(item);
-      const rarity = getItemRarityById(item.id);
-      actions.addNotification(
-        t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-        rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
-        'item',
-        undefined,
-        { rarity, isSuperRareItem: isSuperRare }
-      );
+        const isSuperRare = item.superRare > 0;
+        const itemName = getItemDisplayName(item);
+        const rarity = getItemRarityById(item.id);
+        actions.addNotification(
+          t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
+          rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+          'item',
+          undefined,
+          { rarity, isSuperRareItem: isSuperRare }
+        );
+      }
     }
 
     notifiedRewardLogRef.current[partyIndex] = currentLog;
@@ -3250,26 +3322,26 @@ export function HomeScreen({
 
     if (!isColosseumSortie && (party.currentHp <= 0 || partyStats.hp <= 0)) {
       const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
-      actions.addNotification(t('home.notification.characterRefusedExpedition', { character: refusingCharacter }));
+      if (party.diarySettings.notifyCyclePopup) actions.addNotification(t('home.notification.characterRefusedExpedition', { character: refusingCharacter }));
       return;
     }
 
     // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
     if (triggerGodsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) {
-      actions.addNotification(t('home.notification.partyAlreadyMovingToGodBattle', { party: party.name }));
+      if (party.diarySettings.notifyCyclePopup) actions.addNotification(t('home.notification.partyAlreadyMovingToGodBattle', { party: party.name }));
       return;
     }
     // SpecRef: 8.3 | UI_EXPEDITION | Charge
     if (!isColosseumSortie && instantChargeState.stock <= 0) {
-      actions.addNotification(t('home.notification.instantExpeditionChargeInsufficient', { party: party.name }));
+      if (party.diarySettings.notifyCyclePopup) actions.addNotification(t('home.notification.instantExpeditionChargeInsufficient', { party: party.name }));
       return;
     }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
-    if (stolenProfit > 0) {
+    if (party.diarySettings.notifyCyclePopup && stolenProfit > 0) {
       actions.addNotification(t('home.notification.instantExpeditionWithStolenGold', { party: party.name, gold: formatNumber(stolenProfit) }));
-    } else {
+    } else if (party.diarySettings.notifyCyclePopup) {
       actions.addNotification(t('home.notification.instantExpeditionStarted', { party: party.name }));
     }
 
@@ -3277,7 +3349,7 @@ export function HomeScreen({
 
     if (triggerGodsBattle && party.sideQuest) {
       actions.cancelSideQuest(partyIndex);
-      actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
+      if (party.diarySettings.notifySideQuestPopup) actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
     }
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
@@ -3565,10 +3637,15 @@ export function HomeScreen({
           : null;
         if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
         // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Responsiveness
-        // Navigation and scrolling remain live, while state mutations cannot interleave
-        // with an immutable logical-Chunk recovery plan.
-        event.preventDefault();
-        event.stopPropagation();
+        // Pause before the next scheduler slice, but leave the event live so the
+        // normal UI mutation can commit at a safe boundary.
+        afkInteractionPausedRef.current = true;
+        if (afkInteractionPauseTimerRef.current !== null) window.clearTimeout(afkInteractionPauseTimerRef.current);
+        afkInteractionPauseTimerRef.current = window.setTimeout(() => {
+          afkInteractionPauseTimerRef.current = null;
+          afkInteractionPausedRef.current = false;
+          setAfkInteractionPauseVersion((version) => version + 1);
+        }, 0);
       }}
       onKeyDownCapture={(event) => {
         if (pendingAfkMs <= 0 || (event.key !== 'Enter' && event.key !== ' ')) return;
@@ -3576,8 +3653,13 @@ export function HomeScreen({
           ? event.target.closest('button, input, select, textarea, a, [role="button"]')
           : null;
         if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
-        event.preventDefault();
-        event.stopPropagation();
+        afkInteractionPausedRef.current = true;
+        if (afkInteractionPauseTimerRef.current !== null) window.clearTimeout(afkInteractionPauseTimerRef.current);
+        afkInteractionPauseTimerRef.current = window.setTimeout(() => {
+          afkInteractionPauseTimerRef.current = null;
+          afkInteractionPausedRef.current = false;
+          setAfkInteractionPauseVersion((version) => version + 1);
+        }, 0);
       }}
     >
       {apiControlActive && (

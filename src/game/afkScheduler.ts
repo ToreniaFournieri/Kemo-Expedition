@@ -2,9 +2,9 @@ import { DUNGEONS } from '../data/dungeons';
 import type { Party } from '../types';
 import { getDeityStateDurationMultiplier } from './deity';
 import type { AfkChunkPlan } from './afkSchedulerCore';
+import { BASE_STEP_DURATION_MS } from './progressTiming';
 export * from './afkSchedulerCore';
 
-const BASE_STEP_DURATION_MS = 15_000;
 const APPROX_CYCLE_STEP_COUNT = 30;
 function getExploreTerrainDurationMultiplier(party: Party): number {
   const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
