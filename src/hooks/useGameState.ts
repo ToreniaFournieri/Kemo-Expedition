@@ -29,6 +29,7 @@ import {
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
+import { resolvePeriodicDeityHpEffectKernel } from '../game/battleTimed';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
@@ -2581,39 +2582,23 @@ function applyPeriodicDeityHpEffect(
   const isEliteRoom = floorNumber >= 1 && floorNumber <= 5
     && roomInFloor === 4
     && roomType === 'battle_Elite';
-  if (!isEliteRoom) {
-    return { hp: currentHp };
-  }
-
   const deityKey = getDeityKey(deityName);
-  if (terrainEffect === 'terrain.gehenna') {
-    return { hp: currentHp };
-  }
-  const isHealingBlockedByTerrain = terrainEffect === 'terrain.rotwood';
-  if (deityKey === 'Goddess of Restoration') {
-    if (isHealingBlockedByTerrain) {
-      return { hp: currentHp };
-    }
-    const missingHp = maxHp - currentHp;
-    const healRate = 0.2 + 0.001 * getDeityRank(totalDonatedGold);
-    const healAmount = Math.floor(missingHp * healRate);
-    return {
-      hp: Math.min(maxHp, currentHp + healAmount),
-      healAmount: healAmount > 0 ? healAmount : undefined,
-    };
-  }
-
-  if (deityKey === 'God of Attrition') {
-    const hpLossPct = 0.05;
-    const nextHp = Math.max(1, Math.floor(currentHp * (1 - hpLossPct)));
-    const attritionAmount = Math.max(0, currentHp - nextHp);
-    return {
-      hp: nextHp,
-      attritionAmount: attritionAmount > 0 ? attritionAmount : undefined,
-    };
-  }
-
-  return { hp: currentHp };
+  const resolved = resolvePeriodicDeityHpEffectKernel({
+    deity: deityKey === 'Goddess of Restoration'
+      ? 'restoration'
+      : deityKey === 'God of Attrition' ? 'attrition' : null,
+    isEliteFourthRoom: isEliteRoom,
+    isGehenna: terrainEffect === 'terrain.gehenna',
+    isRotwood: terrainEffect === 'terrain.rotwood',
+    currentHp,
+    maxHp,
+    deityRank: getDeityRank(totalDonatedGold),
+  });
+  return {
+    hp: resolved.hp,
+    healAmount: resolved.healAmount > 0 ? resolved.healAmount : undefined,
+    attritionAmount: resolved.attritionAmount > 0 ? resolved.attritionAmount : undefined,
+  };
 }
 
 function buildDeityEffectLogEntry(

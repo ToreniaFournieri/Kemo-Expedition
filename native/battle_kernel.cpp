@@ -20,7 +20,7 @@ unsigned int normal_action_bag_ids[kNormalActionTargetCapacity];
 unsigned int normal_action_bag_tickets[kNormalActionTargetCapacity];
 
 int battle_kernel_abi_version() {
-  return 5;
+  return 6;
 }
 
 double battle_calculate_per_hit_damage(
@@ -476,6 +476,147 @@ int battle_resolve_normal_action() {
       normal_action_output[1] = __builtin_ceil(max_hp * percents[index] / 100.0);
     }
     if (normal_action_output[5] != 0 && normal_action_output[1] < 1.0) normal_action_output[1] = 1.0;
+    return 0;
+  }
+
+  // Mode 10: deterministic uniform selection for START/END/timed effects.
+  if (mode == 10) {
+    const int count = static_cast<int>(normal_action_input[33]);
+    if (count < 0) return -8;
+    if (count == 0) return 0;
+    int selected = static_cast<int>(hit_random_rolls[0] * count);
+    if (selected >= count) selected = count - 1;
+    normal_action_output[4] = 1;
+    normal_action_output[6] = selected + 1;
+    return 0;
+  }
+
+  // Mode 11: confusion timing, target selection, and probability roll.
+  if (mode == 11) {
+    const int flags = static_cast<int>(normal_action_input[1]);
+    const int attack_type = static_cast<int>(normal_action_input[2]);
+    const int level = static_cast<int>(normal_action_input[43]);
+    const int target_count = static_cast<int>(normal_action_input[33]);
+    if (level <= 0) return 0;
+    const int timing = attack_type == 0 ? (level <= 2 ? 7 : 8)
+        : attack_type == 1 ? (level <= 2 ? 4 : 5)
+        : (level <= 2 ? 1 : 2);
+    const int numerator = level >= 5 ? 7 : level == 4 ? 5 : level >= 2 ? 3 : 1;
+    normal_action_output[7] = static_cast<double>(numerator) / 32.0;
+    normal_action_output[9] = timing;
+    if (target_count <= 0) return 0;
+    if ((flags & 1) != 0) {
+      normal_action_output[6] = 1;
+      normal_action_output[5] = hit_random_rolls[0] < normal_action_output[7] ? 1 : 0;
+      normal_action_output[4] = 1;
+      return 0;
+    }
+    int selected = static_cast<int>(hit_random_rolls[0] * target_count);
+    if (selected >= target_count) selected = target_count - 1;
+    normal_action_output[6] = selected + 1;
+    normal_action_output[5] = hit_random_rolls[1] < normal_action_output[7] ? 1 : 0;
+    normal_action_output[4] = 2;
+    return 0;
+  }
+
+  // Mode 12: level-based timed ability formulas and state deltas.
+  if (mode == 12) {
+    const int kind = static_cast<int>(normal_action_input[44]);
+    const int level = static_cast<int>(normal_action_input[43]);
+    const double current_hp = normal_action_input[31];
+    const double max_hp = normal_action_input[20];
+    double value = 0.0;
+    if (kind == 1) value = level >= 5 ? 50 : level == 4 ? 48 : level == 3 ? 44 : level == 2 ? 38 : level == 1 ? 30 : 0;
+    else if (kind == 2) {
+      value = level >= 5 ? 24 : level == 4 ? 22 : level == 3 ? 19 : level == 2 ? 15 : level == 1 ? 10 : 0;
+      double heal = __builtin_floor(normal_action_input[5] * value / 100.0);
+      const double missing = max_hp - current_hp;
+      normal_action_output[1] = heal < missing ? heal : missing;
+      if (normal_action_output[1] < 0.0) normal_action_output[1] = 0.0;
+    } else if (kind == 3) value = level >= 3 ? 0.50 : level == 2 ? 0.45 : level == 1 ? 0.40 : 0;
+    else if (kind == 4) value = level >= 5 ? 2.0 / 7.0 : level == 4 ? 3.0 / 7.0 : level == 3 ? 4.0 / 7.0 : level == 2 ? 5.0 / 7.0 : level == 1 ? 6.0 / 7.0 : 1.0;
+    else if (kind == 5) {
+      value = level >= 5 ? 12 : level == 4 ? 15 : level == 3 ? 19 : level == 2 ? 24 : level == 1 ? 30 : 0;
+      normal_action_output[1] = __builtin_ceil(current_hp * value / 100.0);
+      if (normal_action_output[1] > current_hp) normal_action_output[1] = current_hp;
+    } else if (kind == 6) {
+      value = level >= 5 ? 20 : level == 4 ? 19 : level == 3 ? 17 : level == 2 ? 14 : level == 1 ? 10 : 0;
+      normal_action_output[5] = value > 0.0 && current_hp < max_hp * value / 100.0 ? 1 : 0;
+    } else if (kind == 7) value = level <= 0 ? 1.0 : level >= 5 ? 1.0 / 7.0 : level == 4 ? 2.0 / 7.0 : level == 3 ? 3.0 / 7.0 : level == 2 ? 4.0 / 7.0 : 5.0 / 7.0;
+    else if (kind == 8) value = level > 0 ? (level > 5 ? 5 : level) : -1;
+    else if (kind == 9) {
+      const double ratio = level >= 5 ? 1.0 : level == 4 ? 0.7 : level == 3 ? 0.5 : level == 2 ? 0.3 : level == 1 ? 0.1 : 0.0;
+      const double base = current_hp - normal_action_input[6];
+      normal_action_output[1] = base > 0.0 ? __builtin_floor(ratio * base * (normal_action_input[11] < 0.01 ? 0.01 : normal_action_input[11])) : 0.0;
+    }
+    normal_action_output[8] = value;
+    return 0;
+  }
+
+  // Mode 13: authoritative phase/timing slots for timed abilities.
+  if (mode == 13) {
+    const int event = static_cast<int>(normal_action_input[43]);
+    const int phase = static_cast<int>(normal_action_input[2]); // 0/1/2 combat, 3 START, 4 END
+    const int timing = static_cast<int>(normal_action_input[3]);
+    bool active = false;
+    if (event == 1) active = phase == 3 && timing == 9; // Oblivion
+    else if (event == 2) active = phase == 3 && timing == 8; // Fading Memory / Mimic
+    else if (event == 3) active = phase == 3 && timing == 7; // party effects
+    else if (event == 4) active = phase == 3 && timing == 3; // seals/frostbite/mutual
+    else if (event == 5) active = phase == 0 && timing == 8; // Howl
+    else if (event == 6) active = phase == 2 && timing == 4; // Predator Sense
+    else if (event == 7) active = phase == 2 && timing == 3; // Regeneration
+    else if (event == 8) active = phase == 2 && timing == 3; // Flying
+    else if (event == 9) active = phase == 2 && timing == 2; // Decompose
+    else if (event == 10) active = phase == 2 && timing == 2; // Self Destruct
+    else if (event == 11) active = (phase == 0 && timing == 4) || (phase == 1 && timing == 0); // Unstable Core
+    else if (event == 12) active = phase == 0 && timing == 2; // Soul Reap
+    normal_action_output[5] = active ? 1 : 0;
+    return 0;
+  }
+
+  // Mode 14: action-timed terrain HP effects.
+  if (mode == 14) {
+    const int flags = static_cast<int>(normal_action_input[1]);
+    const int attack_type = static_cast<int>(normal_action_input[2]);
+    const int elemental = static_cast<int>(normal_action_input[38]);
+    const int terrain = static_cast<int>(normal_action_input[41]);
+    const double current_hp = normal_action_input[31];
+    const double max_hp = normal_action_input[20];
+    const double total_damage = normal_action_input[5];
+    int effect = 0;
+    double damage = 0.0;
+    if (terrain == static_cast<int>(bokemo::battle_protocol::TerrainId::VineSnare) && (flags & 1) == 0) { effect = 1; damage = __builtin_floor(current_hp * 0.01); }
+    else if (terrain == static_cast<int>(bokemo::battle_protocol::TerrainId::CrystalZone) && attack_type == 1 && (flags & 2) == 0) { effect = 2; damage = __builtin_floor(total_damage * 0.05); }
+    else if (terrain == static_cast<int>(bokemo::battle_protocol::TerrainId::Conduction) && elemental == 2) { effect = 3; damage = __builtin_floor(total_damage * 0.05); }
+    else if (terrain == static_cast<int>(bokemo::battle_protocol::TerrainId::ManaBurn) && attack_type == 1 && (flags & 2) == 0) { effect = 4; damage = __builtin_floor(max_hp * 0.02); }
+    else if (terrain == static_cast<int>(bokemo::battle_protocol::TerrainId::SacredJudgement) && (flags & 4) != 0 && (flags & 8) == 0) { effect = 5; damage = __builtin_floor(current_hp * 0.05); }
+    normal_action_output[1] = damage;
+    normal_action_output[5] = effect;
+    if (terrain == static_cast<int>(bokemo::battle_protocol::TerrainId::ChainLightning) && elemental == 2) {
+      normal_action_output[2] = __builtin_floor(total_damage * 0.30);
+    }
+    return 0;
+  }
+
+  // Mode 15: END-phase periodic deity HP effects.
+  if (mode == 15) {
+    const int flags = static_cast<int>(normal_action_input[1]);
+    const int deity = static_cast<int>(normal_action_input[43]); // 1 restoration, 2 attrition
+    const double current_hp = normal_action_input[31];
+    const double max_hp = normal_action_input[20];
+    normal_action_output[9] = current_hp;
+    if ((flags & 1) == 0 || (flags & 2) != 0) return 0; // not Elite-fourth or Gehenna
+    if (deity == 1 && (flags & 4) == 0) {
+      const double heal = __builtin_floor((max_hp - current_hp) * (0.2 + 0.001 * normal_action_input[44]));
+      normal_action_output[1] = heal > 0.0 ? heal : 0.0;
+      normal_action_output[9] = current_hp + normal_action_output[1] > max_hp ? max_hp : current_hp + normal_action_output[1];
+    } else if (deity == 2) {
+      double next = __builtin_floor(current_hp * 0.95);
+      if (next < 1.0) next = 1.0;
+      normal_action_output[2] = current_hp > next ? current_hp - next : 0.0;
+      normal_action_output[9] = next;
+    }
     return 0;
   }
 
