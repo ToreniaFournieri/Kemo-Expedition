@@ -10,6 +10,7 @@
     "battle:cxx": "node scripts/build-battle-kernel.mjs",
     "battle:protocol": "node scripts/generate-battle-protocol.mjs",
     "battle:protocol:check": "node scripts/generate-battle-protocol.mjs --check",
+    "battle:benchmark": "node --test tests/battlePerformance.test.cjs",
     "desktop:dev": "BATTLE_SHADOW_MODE=1 npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",
     "desktop:prod": "npm run build && electron . --environment=prod",
