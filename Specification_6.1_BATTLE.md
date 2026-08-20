@@ -956,3 +956,13 @@ left-alinged                                           right-aligned
 - In dark mode: not invert the image.
 - Apply mask above the image to ensure text readability.
 - The image remains static relative to the panel (does not move with internal content changes).
+
+#### 6.1.8 Universal C++ battle kernel
+
+- Performance-sensitive numerical battle resolution must use the checked-in C++ battle kernel compiled to WebAssembly.
+- The same WebAssembly module and ABI must be used by online play, AFK module workers, and Experimental AI API sorties. No mode-specific battle formula or native-only implementation is permitted.
+- The TypeScript battle coordinator may project game objects, own localized battle-log narration, and call the C++ kernel, but it must not maintain an alternate numerical formula for C++-owned operations.
+- JavaScript supplies random values in canonical resolution order. Moving a calculation into C++ must not add, remove, reorder, or prefetch random draws.
+- The kernel must initialize synchronously from the bundled application assets, require no network access, and run in both browser and context-isolated Electron renderers.
+- The C++ ABI must be versioned. A mismatched ABI must fail explicitly rather than silently fall back to a second implementation.
+- C++/WebAssembly parity coverage must include standard values, minimum-damage clamping, domain damage overrides, hit-probability modifiers, and values above the signed 32-bit range.

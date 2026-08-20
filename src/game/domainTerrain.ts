@@ -1,3 +1,5 @@
+import { applyDomainDamageOverride } from './battleKernel.ts';
+
 type DomainTerrainAbility = { id: string };
 
 type DomainAttackType = 'ranged' | 'magical' | 'melee';
@@ -21,17 +23,12 @@ export function applyDomainTerrainDamageOverride(
   actorAbilities: DomainTerrainAbility[] = [],
   opponentAbilities: DomainTerrainAbility[] = [],
 ): number {
-  if (domainTerrainIsIgnored(actorAbilities, opponentAbilities)) return perHitDamage;
-
-  if (terrainEffect === 'terrain.floor-domain') {
-    return Math.max(Math.floor(opponentMaxHp * 0.01), perHitDamage);
-  }
-
-  if (terrainEffect === 'terrain.cap-domain') {
-    return Math.min(Math.floor(opponentMaxHp * 0.05), perHitDamage);
-  }
-
-  return perHitDamage;
+  return applyDomainDamageOverride(
+    perHitDamage,
+    terrainEffect,
+    opponentMaxHp,
+    domainTerrainIsIgnored(actorAbilities, opponentAbilities),
+  );
 }
 
 // SpecRef: 6.1.4.2 | Function of targeting | domain terrain hit override

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 30 | 2026/08/20 | Introduce a versioned C++/WebAssembly battle-resolution kernel shared synchronously by online play, AFK workers, and Experimental AI API sorties; route per-hit damage, hit probability with batched fixed-target resolution, and domain damage bounds through the portable kernel; retain canonical JavaScript random-draw ordering; and add numerical, chunk-boundary, and large-value parity coverage. |
 | 0.9.3 | 29 | 2026/08/20 | Run each party's 12-Cycle AFK Chunks in parallel module workers, commit completed results sequentially by simulated time and party ID, preserve pending PT settings at Chunk boundaries, persist per-party recovery backlogs, and add coordinator and save-backed performance coverage. |
 | 0.9.3 | 28 | 2026/08/20 | Restore the base Step duration from 15 seconds to 30 seconds across the specification and shared runtime timing, including debug-scale examples and regression coverage. |
 | 0.9.3 | 27 | 2026/08/20 | Reduce the base Step duration from 30 seconds to 15 seconds across the specification and shared runtime timing, update debug-scale examples and regression coverage, and re-profile the Expedition 8 AFK workload. |

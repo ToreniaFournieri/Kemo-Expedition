@@ -16,6 +16,7 @@ import {
 } from '../types';
 import { getAttackRollProfile, rollAttackSpeedDice } from './attackProfile';
 import { applyDomainTerrainDamageOverride, isDomainTerrainGuaranteedHit } from './domainTerrain';
+import { calculateHitChance, calculatePerHitDamage, resolveHitSequence } from './battleKernel.ts';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
@@ -101,12 +102,6 @@ interface PendingHowlEffect {
 function getHeavyStrikePenetPerNoA(level: number): number {
   if (level >= 2) return 0.015;
   if (level >= 1) return 0.01;
-  return 0;
-}
-
-function getArcaneStabilityHitFloor(level: number): number {
-  if (level >= 2) return 0.60;
-  if (level >= 1) return 0.55;
   return 0;
 }
 
@@ -725,11 +720,22 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier;
-  const totalDamage = Math.max(1, rawDamage);
-
   return applyDomainTerrainDamageOverride(
-    Math.floor(totalDamage),
+    calculatePerHitDamage(attack, effectiveDefense, [
+      amplifier,
+      runtimeOffenseMultiplier,
+      enemy.elementalOffenseValue,
+      elementalMultiplier,
+      defenseAmplifier,
+      partyDefenseAbilityAmplifier,
+      rageAmplifier,
+      momentumAmplifier,
+      mutualAmplifier,
+      terrainAmplifier,
+      elementalOffenseAttributeAmplifier,
+      swarmAmplifier,
+      defenseDebuffAmplifier,
+    ]),
     terrainEffect,
     maxPartyHp,
     enemy.abilities,
@@ -984,22 +990,21 @@ function calculateCharacterFriendlyFireDamage(
   );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
-  const basePerHitDamage = Math.max(1, Math.floor(
-    (attack - effectiveDefenseWithHeavyStrike)
-      * offenseAmplifier
-      * runtimeOffenseMultiplier
-      * attacker.elementalOffenseValue
-      * elementalMultiplier
-      * defenseAmplifier
-      * partyOffenseAmplifier
-      * rageAmplifier
-      * momentumAmplifier
-      * mutualAmplifier
-      * terrainAmplifier
-      * elementalOffenseAttributeAmplifier
-      * swarmAmplifier
-      * defenseDebuffAmplifier
-  ));
+  const basePerHitDamage = calculatePerHitDamage(attack, effectiveDefenseWithHeavyStrike, [
+    offenseAmplifier,
+    runtimeOffenseMultiplier,
+    attacker.elementalOffenseValue,
+    elementalMultiplier,
+    defenseAmplifier,
+    partyOffenseAmplifier,
+    rageAmplifier,
+    momentumAmplifier,
+    mutualAmplifier,
+    terrainAmplifier,
+    elementalOffenseAttributeAmplifier,
+    swarmAmplifier,
+    defenseDebuffAmplifier,
+  ]);
   const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
     basePerHitDamage,
     terrainEffect,
@@ -1017,21 +1022,22 @@ function calculateCharacterFriendlyFireDamage(
 
   let hits = 0;
   let damage = 0;
+  const hitSequence = resolveHitSequence({
+    actorAccuracyPotency,
+    actorAccuracyBonus: attacker.accuracyBonus + temporaryAccuracyBonus,
+    opponentEvasionBonus: target.evasionBonus,
+    nthHit: 1,
+    phase,
+    opponentDeflectionLevel: targetDeflectionLevel,
+    actorFocusLevel,
+    actorArcaneStabilityLevel: attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+    terrainEffect,
+    actorHasTrueSight: hasAbility(attacker.abilities, 'true_sight'),
+    actorHasDomainBreaker: hasAbility(attacker.abilities, 'domain_breaker'),
+    opponentHasDomainBreaker: hasAbility(target.abilities, 'domain_breaker'),
+  }, noA);
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(
-      actorAccuracyPotency,
-      attacker.accuracyBonus + temporaryAccuracyBonus,
-      target.evasionBonus,
-      i,
-      phase,
-      targetDeflectionLevel,
-      actorFocusLevel,
-      terrainEffect,
-      attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
-      hasAbility(attacker.abilities, 'true_sight'),
-      hasAbility(attacker.abilities, 'domain_breaker'),
-      hasAbility(target.abilities, 'domain_breaker'),
-    )) {
+    if (hitSequence[i - 1] === 1) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
@@ -1422,10 +1428,6 @@ function mergeAttackBonusLogText(...bonusTexts: string[]): string {
 // Hit detection for physical attacks (LONG and CLOSE phases)
 // decay_of_accuracy = clamp(0.70, 0.90 + actor.accuracy - opponent.evasion, 0.98)
 // chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit - 1)
-function roundUpToThirdDecimal(value: number): number {
-  return Math.ceil((value + Number.EPSILON) * 1000) / 1000;
-}
-
 // SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function hitDetection(
   actorAccuracyPotency: number,
@@ -1450,27 +1452,19 @@ function hitDetection(
     return true;
   }
 
-  const focusMultiplier = actorFocusLevel >= 2 ? 1.3 : actorFocusLevel >= 1 ? 1.2 : 1.0;
-  let effectiveAccuracyBonus = actorFocusLevel > 0
-    ? roundUpToThirdDecimal(actorAccuracyBonus * focusMultiplier)
-    : actorAccuracyBonus;
-  if (phase === 'ranged' && terrainEffect === 'terrain.fog' && !actorHasTrueSight) {
-    effectiveAccuracyBonus -= 25;
-  } else if (phase === 'ranged' && terrainEffect === 'terrain.sunny-beach') {
-    effectiveAccuracyBonus += 20;
-  }
-  const decayOfAccuracy = Math.max(0.70, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
-  let baseChance = actorAccuracyPotency;
-  if (phase === 'ranged') {
-    if (opponentDeflectionLevel >= 2) {
-      baseChance -= 0.15;
-    } else if (opponentDeflectionLevel >= 1) {
-      baseChance -= 0.10;
-    }
-  }
-  const chance = Math.max(0.0, Math.min(1.0, baseChance)) * Math.pow(decayOfAccuracy, nthHit - 1);
-  const minChanceByArcaneStability = getArcaneStabilityHitFloor(actorArcaneStabilityLevel);
-  return Math.random() <= Math.max(chance, minChanceByArcaneStability);
+  const chance = calculateHitChance({
+    actorAccuracyPotency,
+    actorAccuracyBonus,
+    opponentEvasionBonus,
+    nthHit,
+    phase,
+    opponentDeflectionLevel,
+    actorFocusLevel,
+    actorArcaneStabilityLevel,
+    terrainEffect,
+    actorHasTrueSight,
+  });
+  return Math.random() <= chance;
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
@@ -1622,10 +1616,22 @@ function calculateCharacterDamage(
   );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
-  const basePerHitDamage = Math.max(1, Math.floor(
-    (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier
-  ));
+  // C++ kernel multiplier tail remains: swarmAmplifier * defenseDebuffAmplifier.
+  const basePerHitDamage = calculatePerHitDamage(attack, effectiveDefense, [
+    offenseAmplifier,
+    runtimeOffenseMultiplier,
+    charStats.elementalOffenseValue,
+    elementalMultiplier,
+    defenseAmplifier,
+    partyOffenseAmplifier,
+    rageAmplifier,
+    momentumAmplifier,
+    mutualAmplifier,
+    terrainAmplifier,
+    elementalOffenseAttributeAmplifier,
+    swarmAmplifier,
+    defenseDebuffAmplifier,
+  ]);
   const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
     basePerHitDamage,
     terrainEffect,
@@ -1644,21 +1650,22 @@ function calculateCharacterDamage(
 
   let hits = 0;
   let damage = 0;
+  const hitSequence = resolveHitSequence({
+    actorAccuracyPotency,
+    actorAccuracyBonus: charStats.accuracyBonus + temporaryAccuracyBonus,
+    opponentEvasionBonus: enemyEvasion,
+    nthHit: 1,
+    phase,
+    opponentDeflectionLevel: enemyDeflectionLevel,
+    actorFocusLevel,
+    actorArcaneStabilityLevel: charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+    terrainEffect,
+    actorHasTrueSight: hasAbility(charStats.abilities, 'true_sight'),
+    actorHasDomainBreaker: hasAbility(charStats.abilities, 'domain_breaker'),
+    opponentHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
+  }, noA);
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(
-      actorAccuracyPotency,
-      charStats.accuracyBonus + temporaryAccuracyBonus,
-      enemyEvasion,
-      i,
-      phase,
-      enemyDeflectionLevel,
-      actorFocusLevel,
-      terrainEffect,
-      charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
-      hasAbility(charStats.abilities, 'true_sight'),
-      hasAbility(charStats.abilities, 'domain_breaker'),
-      hasAbility(enemy.abilities, 'domain_breaker'),
-    )) {
+    if (hitSequence[i - 1] === 1) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
@@ -3526,13 +3533,21 @@ export function executeBattle(
     if (attempts <= 0) {
       return;
     }
-    let hits = 0;
-    for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0), i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'), hasAbility(targetCharStats.abilities, 'domain_breaker'));
-      if (didHit) {
-        hits += 1;
-      }
-    }
+    const counterHitSequence = resolveHitSequence({
+      actorAccuracyPotency: 1.0,
+      actorAccuracyBonus: enemy.accuracyBonus + enemyPhaseAccuracyBonus,
+      opponentEvasionBonus: targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
+      nthHit: 1,
+      phase,
+      opponentDeflectionLevel: getDeflectionLevel(targetCharStats),
+      actorFocusLevel: getEnemyFocusLevel(enemy),
+      actorArcaneStabilityLevel: 0,
+      terrainEffect: environment.terrainEffect,
+      actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+      actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
+      opponentHasDomainBreaker: hasAbility(targetCharStats.abilities, 'domain_breaker'),
+    }, attempts);
+    const hits = counterHitSequence.reduce((total, didHit) => total + didHit, 0);
 
     const targetName = targetChar?.name ?? '???';
     let damage = 0;
@@ -5311,9 +5326,22 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
+            const reCounterHitSequence = resolveHitSequence({
+              actorAccuracyPotency: 1.0,
+              actorAccuracyBonus: enemy.accuracyBonus + enemyPhaseAccuracyBonus,
+              opponentEvasionBonus: attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0),
+              nthHit: 1,
+              phase,
+              opponentDeflectionLevel: getDeflectionLevel(attack.charStats),
+              actorFocusLevel: getEnemyFocusLevel(enemy),
+              actorArcaneStabilityLevel: 0,
+              terrainEffect: environment.terrainEffect,
+              actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+              actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
+              opponentHasDomainBreaker: hasAbility(attack.charStats.abilities, 'domain_breaker'),
+            }, reCounterAttempts);
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0), i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'), hasAbility(attack.charStats.abilities, 'domain_breaker'));
-              if (!didHit) continue;
+              if (reCounterHitSequence[i - 1] !== 1) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount, phase === 'magical' ? partyMagicalDefenseDebuffAmplifier : partyPhysicalDefenseDebuffAmplifier);
             }
