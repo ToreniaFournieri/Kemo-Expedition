@@ -1973,6 +1973,14 @@ function createInitialState(): InitialStateResult {
 
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
+export type AfkBatchTestOptions = AfkSimulationBatchSlice & {
+  elapsedMs: number;
+  isAutoRepeatEnabled: boolean;
+  gameMode?: GameMode;
+  simulatedEndAt?: number;
+  cycleDurationScale?: number;
+};
+
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number; selectionMode?: 'manual' | 'auto' }
@@ -5190,6 +5198,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     default:
       return state;
   }
+}
+
+/**
+ * Runs the same reducer action used by the UI AFK scheduler without requiring a
+ * mounted React tree. This deliberately narrow entry point lets save-backed
+ * performance tests exercise authoritative expedition, reward, Diary, quest,
+ * and automation work instead of substituting a synthetic workload.
+ */
+export function simulateAfkBatchForTesting(
+  state: GameState,
+  options: AfkBatchTestOptions,
+): GameState {
+  return gameReducer(state, { type: 'SIMULATE_AFK', ...options });
 }
 
 // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)

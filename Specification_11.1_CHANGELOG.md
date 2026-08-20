@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 27 | 2026/08/20 | Reduce the base Step duration from 30 seconds to 15 seconds across the specification and shared runtime timing, update debug-scale examples and regression coverage, and re-profile the Expedition 8 AFK workload. |
+| 0.9.3 | 26 | 2026/08/20 | Add a save-backed AFK performance profile using the six-party Expedition 8 sample to report every efficiency period, projected reducer duration, adaptive batch timing, and 50 ms ceiling compliance. |
 | 0.9.3 | 25 | 2026/08/16 | Make `a.domain-breaker` on either the actor or opponent suppress floor-domain and cap-domain damage overrides plus sniper-domain, spell-domain, and duelist-domain guaranteed hits, with regression coverage. |
 | 0.9.3 | 24 | 2026/08/16 | Align the Expedition 9 runtime enemy level with the updated master specification by changing Darsen Field - Reminiscence from level 46 to level 44, with updated regression coverage. |
 | 0.9.3 | 23 | 2026/08/16 | Add Expedition 9, Darsen Field - Reminiscence, to runtime progression with six localized floor concepts and terrain effects, temporary Enemy IDs 100–135, automatic destination advancement, Clear-Gate migration coverage, and the Skuva Gods Battle association. |
