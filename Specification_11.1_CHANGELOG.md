@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 31 | 2026/08/20 | Add the first full-battle C++ migration gate with seeded random record/replay, exact random-consumption enforcement, canonical complete-result hashing, self-tests for output and draw drift, and five save-backed golden scenarios covering victory, draw, defeat, normal and Elite combat, terrain, counters, re-counters, Oblivion, Reanimate, Mimic, Resonance, and values above signed 32-bit range. |
 | 0.9.3 | 30 | 2026/08/20 | Introduce a versioned C++/WebAssembly battle-resolution kernel shared synchronously by online play, AFK workers, and Experimental AI API sorties; route per-hit damage, hit probability with batched fixed-target resolution, and domain damage bounds through the portable kernel; retain canonical JavaScript random-draw ordering; and add numerical, chunk-boundary, and large-value parity coverage. |
 | 0.9.3 | 29 | 2026/08/20 | Run each party's 12-Cycle AFK Chunks in parallel module workers, commit completed results sequentially by simulated time and party ID, preserve pending PT settings at Chunk boundaries, persist per-party recovery backlogs, and add coordinator and save-backed performance coverage. |
 | 0.9.3 | 28 | 2026/08/20 | Restore the base Step duration from 15 seconds to 30 seconds across the specification and shared runtime timing, including debug-scale examples and regression coverage. |

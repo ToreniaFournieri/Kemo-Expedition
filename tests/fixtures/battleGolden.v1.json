@@ -1,0 +1,42 @@
+{
+  "normal-domain-breaker-counter": {
+    "digest": "9a1747bd857cc2927fd904e078cb3e9ddc51e296b98d36de02ce9f1a2ec35005",
+    "randomDrawCount": 99,
+    "outcome": "victory",
+    "partyHp": 34205,
+    "enemyHp": 0,
+    "logCount": 9
+  },
+  "elite-counter-recounter": {
+    "digest": "c3ca6ae52d9254445cf8f147614df0b0e3130159f082b9ff792684cd26833473",
+    "randomDrawCount": 113,
+    "outcome": "victory",
+    "partyHp": 25297,
+    "enemyHp": 0,
+    "logCount": 6
+  },
+  "oblivion-and-reanimate": {
+    "digest": "1f482a124cf426ac6dffee805985a9fc67a71de60e98415ba8f112a7e92761c0",
+    "randomDrawCount": 165,
+    "outcome": "draw",
+    "partyHp": 21556,
+    "enemyHp": 14992,
+    "logCount": 26
+  },
+  "mimic-and-resonance": {
+    "digest": "02c7329960ab115414168279182e51a8b011225a5bdeafd3bbf8b546e236be2e",
+    "randomDrawCount": 65,
+    "outcome": "victory",
+    "partyHp": 11955,
+    "enemyHp": 0,
+    "logCount": 6
+  },
+  "first-strike-defeat": {
+    "digest": "3a62425779eb88976943c67144c384b1b730effa68f5488062cd78161228da1c",
+    "randomDrawCount": 44,
+    "outcome": "defeat",
+    "partyHp": 0,
+    "enemyHp": 1000000000000,
+    "logCount": 4
+  }
+}

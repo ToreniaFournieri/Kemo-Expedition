@@ -966,3 +966,5 @@ left-alinged                                           right-aligned
 - The kernel must initialize synchronously from the bundled application assets, require no network access, and run in both browser and context-isolated Electron renderers.
 - The C++ ABI must be versioned. A mismatched ABI must fail explicitly rather than silently fall back to a second implementation.
 - C++/WebAssembly parity coverage must include standard values, minimum-damage clamping, domain damage overrides, hit-probability modifiers, and values above the signed 32-bit range.
+- Full-engine migration stages must pass a record/replay differential harness that supplies the same ordered random-value tape to the reference and candidate engines and rejects missing, additional, or reordered consumption.
+- Golden coverage must hash the complete canonical battle result, including ordered battle logs and returned threat bags, and must include victory, draw, defeat, normal, Elite, terrain, and complex ability-resolution scenarios.
