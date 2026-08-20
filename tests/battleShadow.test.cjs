@@ -5,10 +5,10 @@ const { resolve } = require('node:path');
 const test = require('node:test');
 const { buildSync } = require('esbuild');
 
-test('save-backed AFK duration and scheduler performance profile', () => {
-  const outputPath = resolve(tmpdir(), `bokemo-afk-save-performance-${process.pid}.mjs`);
+test('development battle shadow mismatch categories', () => {
+  const outputPath = resolve(tmpdir(), `bokemo-battle-shadow-${process.pid}.mjs`);
   buildSync({
-    entryPoints: [resolve(process.cwd(), 'tests/support/afkSavePerformance.profile.ts')],
+    entryPoints: [resolve(process.cwd(), 'tests/support/battleShadow.profile.ts')],
     outfile: outputPath,
     bundle: true,
     platform: 'node',
@@ -20,7 +20,6 @@ test('save-backed AFK duration and scheduler performance profile', () => {
     },
     logLevel: 'silent',
   });
-
   const { NODE_TEST_CONTEXT: _nodeTestContext, ...childEnv } = process.env;
   const result = spawnSync(process.execPath, ['--test', outputPath], {
     cwd: process.cwd(),
@@ -29,5 +28,5 @@ test('save-backed AFK duration and scheduler performance profile', () => {
   });
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);
-  assert.equal(result.status, 0, `Bundled AFK profile failed with status ${result.status}`);
+  assert.equal(result.status, 0, `Bundled battle shadow profile failed with status ${result.status}`);
 });

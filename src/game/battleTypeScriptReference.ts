@@ -14,32 +14,8 @@ import {
   AbilityId,
   TerrainEffectKey,
 } from '../types';
-import {
-  prepareBattleInitiative,
-  transformBattleAbilitiesForTerrain,
-  type BattleSetupCombatant,
-} from './battleSetup.ts';
-import {
-  resolveNormalActionDamage,
-  resolveNormalActionSpecialMagic,
-  resolveNormalActionTarget,
-} from './battleNormalAction.ts';
-import {
-  applyDefensiveReactionKernel,
-  resolveCloseReactiveEffects,
-  resolveDefeatRecoveryKernel,
-  resolveDefensiveReactionKernel,
-  resolveReactiveHitCount,
-  resolveReactiveProfile,
-  resolveShockKernel,
-} from './battleReactive.ts';
-import {
-  isTimedTriggerSlot,
-  resolveTimedConfusion,
-  resolveTimedFormula,
-  resolveTimedTerrainEffect,
-  selectTimedIndex,
-} from './battleTimed.ts';
+import { getAttackRollProfile, rollAttackSpeedDice } from './attackProfile';
+import { applyDomainTerrainDamageOverride, isDomainTerrainGuaranteedHit } from './domainTerrain';
 
 type CombatLogEntry = Omit<BattleLogEntry, 'phase'> & {
   phase: BattleLogEntry['phase'] | AttackType;
@@ -59,11 +35,12 @@ class BattleLogBuffer extends Array<BattleLogEntry> {
   }
 }
 import { getTerrainEffectGlossaryEntry } from '../data/glossary';
+import { TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS } from '../data/abilityNames';
 import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
-import { resolveMagicProfile } from './magic';
+import { isSpecialMagicCastable, resolveMagicProfile, resolveSpecialMagicFromAbilities } from './magic';
 import { computeCharacterStats, getAbilityDescription, getAbilityName } from './characterComputation';
 import {
   buildAntagonismAction,
@@ -124,6 +101,12 @@ interface PendingHowlEffect {
 function getHeavyStrikePenetPerNoA(level: number): number {
   if (level >= 2) return 0.015;
   if (level >= 1) return 0.01;
+  return 0;
+}
+
+function getArcaneStabilityHitFloor(level: number): number {
+  if (level >= 2) return 0.60;
+  if (level >= 1) return 0.55;
   return 0;
 }
 
@@ -340,6 +323,16 @@ const CORRODE_MULTIPLIERS: Record<number, number> = {
   5: 2 / 7,
 };
 
+const LIFE_DRAIN_MULTIPLIERS: Record<number, number> = {
+  1: 1 / 1000,
+  2: 3 / 1000,
+  3: 10 / 1000,
+  4: 30 / 1000,
+  5: 100 / 1000,
+  6: 300 / 1000,
+  7: 1.0,
+};
+
 const AMBUSH_MULTIPLIERS: Record<number, number> = {
   1: 1.3,
   2: 1.5,
@@ -357,6 +350,22 @@ const OVERWATCH_MULTIPLIERS: Record<number, number> = {
 };
 
 const DEATH_TOUCH_NUMERATORS: Record<number, number> = {
+  1: 2,
+  2: 3,
+  3: 4,
+  4: 5,
+  5: 6,
+};
+
+const BURN_PERCENTS: Record<number, number> = {
+  1: 0.5,
+  2: 0.9,
+  3: 1.2,
+  4: 1.4,
+  5: 1.5,
+};
+
+const BIND_NUMERATORS: Record<number, number> = {
   1: 2,
   2: 3,
   3: 4,
@@ -542,6 +551,10 @@ function isStealthActive(
   return (partyHp / maxPartyHp) <= threshold;
 }
 
+function hasBulwark(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'bulwark');
+}
+
 function getBulwarkLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'bulwark')?.level ?? 0;
 }
@@ -565,25 +578,29 @@ function resolveEnemyTarget(
   characterStats: ComputedCharacterStats[],
   phase: AttackType,
   actorAbilities: AbilityLike[] = [],
-  fallbackToRandomCandidate = false,
 ): ComputedCharacterStats | null {
-  const resolution = resolveNormalActionTarget(
-    targetRow,
-    characterStats.map((stats) => ({
-      id: stats.characterId,
-      row: stats.row,
-      bulwarkLevel: getBulwarkLevel(stats),
-    })),
-    {
-      attackType: phase,
-      actorHasBulwarkBreaker: hasAbility(actorAbilities, 'bulwark_breaker'),
-      fallbackToRandomCandidate,
-      random: Math.random,
-    },
-  );
-  return resolution.targetId === null
-    ? null
-    : characterStats.find((stats) => stats.characterId === resolution.targetId) ?? null;
+  const selectedTarget = characterStats.find(cs => cs.row === targetRow);
+  if (!selectedTarget) return null;
+
+  const allowsBulwarkRedirect = phase === 'ranged' || phase === 'melee';
+  if (!allowsBulwarkRedirect || hasAbility(actorAbilities, 'bulwark_breaker')) {
+    return selectedTarget;
+  }
+
+  const frontCharacter = characterStats.find(cs => cs.row === selectedTarget.row - 1);
+  const frontBulwarkLevel = frontCharacter ? getBulwarkLevel(frontCharacter) : 0;
+  if (
+    frontCharacter
+    && hasBulwark(frontCharacter)
+    && (
+      phase === 'ranged'
+      || (phase === 'melee' && frontBulwarkLevel >= 2)
+    )
+  ) {
+    return frontCharacter;
+  }
+
+  return selectedTarget;
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.momentum_amplifer
@@ -630,45 +647,6 @@ function getTargetRow(ctx: BattleContext, phase: AttackType): { row: number; new
   };
 
   return { row: ticket, newCtx };
-}
-
-function resolveNormalActionBattleTarget(
-  ctx: BattleContext,
-  phase: AttackType,
-  candidates: ComputedCharacterStats[],
-  actorAbilities: AbilityLike[],
-  fallbackToRandomCandidate = false,
-): { target: ComputedCharacterStats | null; newCtx: BattleContext } {
-  const isPhysical = phase === 'ranged' || phase === 'melee';
-  let bag = isPhysical ? ctx.physicalThreatBag : ctx.magicalThreatBag;
-  if (getBagTicketTotal(bag) === 0) {
-    bag = isPhysical ? createPhysicalThreatBag() : createMagicalThreatBag();
-  }
-  const resolution = resolveNormalActionTarget(
-    0,
-    candidates.map((stats) => ({
-      id: stats.characterId,
-      row: stats.row,
-      bulwarkLevel: getBulwarkLevel(stats),
-    })),
-    {
-      attackType: phase,
-      actorHasBulwarkBreaker: hasAbility(actorAbilities, 'bulwark_breaker'),
-      fallbackToRandomCandidate,
-      threatBag: bag.entries,
-      random: Math.random,
-    },
-  );
-  const nextBag = { entries: resolution.threatBag };
-  return {
-    target: resolution.targetId === null
-      ? null
-      : candidates.find((stats) => stats.characterId === resolution.targetId) ?? null,
-    newCtx: {
-      ...ctx,
-      ...(isPhysical ? { physicalThreatBag: nextBag } : { magicalThreatBag: nextBag }),
-    },
-  };
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
@@ -747,44 +725,16 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  return resolveNormalActionDamage({
-    attackType: phase,
-    attempts: 0,
-    attack,
-    effectiveDefense,
-    multipliers: [
-      amplifier,
-      runtimeOffenseMultiplier,
-      enemy.elementalOffenseValue,
-      elementalMultiplier,
-      defenseAmplifier,
-      partyDefenseAbilityAmplifier,
-      rageAmplifier,
-      momentumAmplifier,
-      mutualAmplifier,
-      terrainAmplifier,
-      elementalOffenseAttributeAmplifier,
-      swarmAmplifier,
-      defenseDebuffAmplifier,
-    ],
-    opponentMaxHp: maxPartyHp,
-    actorAccuracyPotency: 1,
-    actorAccuracyBonus: 0,
-    opponentEvasionBonus: 0,
-    opponentDeflectionLevel: 0,
-    actorFocusLevel: 0,
-    actorArcaneStabilityLevel: 0,
-    elementalOffense: enemy.elementalOffense,
-    elementalOffenseValue: enemy.elementalOffenseValue,
-    elementalResistance: enemy.elementalOffense === 'none'
-      ? 1
-      : targetCharStats.elementalDefenseMultipliers[enemy.elementalOffense] ?? 1,
-    echoDomainElementalUsageCount,
-    actorHasDryproof: hasAbility(enemy.abilities, 'dryproof'),
+  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier;
+  const totalDamage = Math.max(1, rawDamage);
+
+  return applyDomainTerrainDamageOverride(
+    Math.floor(totalDamage),
     terrainEffect,
-    actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
-    opponentHasDomainBreaker: hasAbility(targetCharStats.abilities, 'domain_breaker'),
-  }).perHitDamage;
+    maxPartyHp,
+    enemy.abilities,
+    targetCharStats.abilities,
+  );
 }
 
 function getEnemyBaseNoA(phase: AttackType, enemy: EnemyDef): number {
@@ -1034,21 +984,29 @@ function calculateCharacterFriendlyFireDamage(
   );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
-  const damageMultipliers = [
-    offenseAmplifier,
-    runtimeOffenseMultiplier,
-    attacker.elementalOffenseValue,
-    elementalMultiplier,
-    defenseAmplifier,
-    partyOffenseAmplifier,
-    rageAmplifier,
-    momentumAmplifier,
-    mutualAmplifier,
-    terrainAmplifier,
-    elementalOffenseAttributeAmplifier,
-    swarmAmplifier,
-    defenseDebuffAmplifier,
-  ] as const;
+  const basePerHitDamage = Math.max(1, Math.floor(
+    (attack - effectiveDefenseWithHeavyStrike)
+      * offenseAmplifier
+      * runtimeOffenseMultiplier
+      * attacker.elementalOffenseValue
+      * elementalMultiplier
+      * defenseAmplifier
+      * partyOffenseAmplifier
+      * rageAmplifier
+      * momentumAmplifier
+      * mutualAmplifier
+      * terrainAmplifier
+      * elementalOffenseAttributeAmplifier
+      * swarmAmplifier
+      * defenseDebuffAmplifier
+  ));
+  const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
+    basePerHitDamage,
+    terrainEffect,
+    partyStats.hp,
+    attacker.abilities,
+    target.abilities,
+  );
 
   const actorAccuracyPotency = phase === 'magical' ? 1.0 : attacker.accuracyPotency;
   const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
@@ -1057,32 +1015,30 @@ function calculateCharacterFriendlyFireDamage(
   const canApplyResonance = phase === 'magical'
     || (phase === 'ranged' && partyDeityKey === 'God of Resonance' && terrainEffect !== 'terrain.gehenna');
 
-  const resolved = resolveNormalActionDamage({
-    attackType: phase,
-    attempts: noA,
-    attack,
-    effectiveDefense: effectiveDefenseWithHeavyStrike,
-    multipliers: damageMultipliers,
-    opponentMaxHp: partyStats.hp,
-    actorAccuracyPotency,
-    actorAccuracyBonus: attacker.accuracyBonus + temporaryAccuracyBonus,
-    opponentEvasionBonus: target.evasionBonus,
-    opponentDeflectionLevel: targetDeflectionLevel,
-    actorFocusLevel,
-    actorArcaneStabilityLevel: attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
-    resonanceLevel: canApplyResonance ? resonance?.level ?? 0 : 0,
-    elementalOffense: attacker.elementalOffense,
-    elementalOffenseValue: attacker.elementalOffenseValue,
-    elementalResistance: elementalMultiplier,
-    echoDomainElementalUsageCount,
-    actorHasDryproof: hasAbility(attacker.abilities, 'dryproof'),
-    terrainEffect,
-    actorHasTrueSight: hasAbility(attacker.abilities, 'true_sight'),
-    actorHasDomainBreaker: hasAbility(attacker.abilities, 'domain_breaker'),
-    opponentHasDomainBreaker: hasAbility(target.abilities, 'domain_breaker'),
-  });
+  let hits = 0;
+  let damage = 0;
+  for (let i = 1; i <= noA; i++) {
+    if (hitDetection(
+      actorAccuracyPotency,
+      attacker.accuracyBonus + temporaryAccuracyBonus,
+      target.evasionBonus,
+      i,
+      phase,
+      targetDeflectionLevel,
+      actorFocusLevel,
+      terrainEffect,
+      attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+      hasAbility(attacker.abilities, 'true_sight'),
+      hasAbility(attacker.abilities, 'domain_breaker'),
+      hasAbility(target.abilities, 'domain_breaker'),
+    )) {
+      hits += 1;
+      const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
+      damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
+    }
+  }
 
-  return { damage: resolved.damage, totalAttempts: resolved.totalAttempts, hits: resolved.hits };
+  return { damage, totalAttempts: noA, hits };
 }
 
 
@@ -1397,30 +1353,22 @@ function getDefensiveReaction(
   // SpecRef: 6.1.2 | Function of battle | a.ice-protect-breaker
   // SpecRef: 6.1.2 | Function of battle | a.thunder-protect-breaker
   // SpecRef: 6.1.2 | Function of battle | a.m-barrier-breaker
-  const selected = resolveDefensiveReactionKernel(
-    phase,
-    elementalOffense,
-    defenderAbilities,
-    attackerAbilities,
-  );
-  if (!selected) return null;
+  const absorb = getAbsorbDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
+  if (absorb) {
+    return { type: 'absorb', descriptor: absorb };
+  }
 
-  // C++ owns priority and breaker handling; TypeScript only supplies localized
-  // descriptor text for the selected protocol ability.
-  if (selected.type === 'absorb') {
-    const descriptor = getAbsorbDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
-    return descriptor?.abilityId === selected.abilityId
-      ? { type: 'absorb', descriptor: { ...descriptor, amplifier: selected.amplifier } }
-      : null;
+  const nullify = getNullDescriptor(phase, elementalOffense, defenderAbilities);
+  if (nullify) {
+    return { type: 'nullify', descriptor: nullify };
   }
-  if (selected.type === 'nullify') {
-    const descriptor = getNullDescriptor(phase, elementalOffense, defenderAbilities);
-    return descriptor?.abilityId === selected.abilityId ? { type: 'nullify', descriptor } : null;
+
+  const reflect = getReflectDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
+  if (reflect) {
+    return { type: 'reflect', descriptor: reflect };
   }
-  const descriptor = getReflectDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
-  return descriptor?.abilityId === selected.abilityId
-    ? { type: 'reflect', descriptor: { ...descriptor, amplifier: selected.amplifier } }
-    : null;
+
+  return null;
 }
 
 const RESONANCE_BONUS_PERCENT_BY_LEVEL = [4, 7, 9, 11, 12] as const;
@@ -1469,6 +1417,60 @@ function mergeAttackBonusLogText(...bonusTexts: string[]): string {
 
   if (normalized.length === 0) return '';
   return `(${normalized.join(', ')})`;
+}
+
+// Hit detection for physical attacks (LONG and CLOSE phases)
+// decay_of_accuracy = clamp(0.70, 0.90 + actor.accuracy - opponent.evasion, 0.98)
+// chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit - 1)
+function roundUpToThirdDecimal(value: number): number {
+  return Math.ceil((value + Number.EPSILON) * 1000) / 1000;
+}
+
+// SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
+function hitDetection(
+  actorAccuracyPotency: number,
+  actorAccuracyBonus: number,
+  opponentEvasionBonus: number,
+  nthHit: number, // 1-indexed
+  phase: AttackType,
+  opponentDeflectionLevel: number,
+  actorFocusLevel: number,
+  terrainEffect?: TerrainEffectKey | null,
+  actorArcaneStabilityLevel: number = 0,
+  actorHasTrueSight: boolean = false,
+  actorHasDomainBreaker: boolean = false,
+  opponentHasDomainBreaker: boolean = false,
+): boolean {
+  if (isDomainTerrainGuaranteedHit(
+    phase,
+    terrainEffect,
+    actorHasDomainBreaker,
+    opponentHasDomainBreaker,
+  )) {
+    return true;
+  }
+
+  const focusMultiplier = actorFocusLevel >= 2 ? 1.3 : actorFocusLevel >= 1 ? 1.2 : 1.0;
+  let effectiveAccuracyBonus = actorFocusLevel > 0
+    ? roundUpToThirdDecimal(actorAccuracyBonus * focusMultiplier)
+    : actorAccuracyBonus;
+  if (phase === 'ranged' && terrainEffect === 'terrain.fog' && !actorHasTrueSight) {
+    effectiveAccuracyBonus -= 25;
+  } else if (phase === 'ranged' && terrainEffect === 'terrain.sunny-beach') {
+    effectiveAccuracyBonus += 20;
+  }
+  const decayOfAccuracy = Math.max(0.70, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
+  let baseChance = actorAccuracyPotency;
+  if (phase === 'ranged') {
+    if (opponentDeflectionLevel >= 2) {
+      baseChance -= 0.15;
+    } else if (opponentDeflectionLevel >= 1) {
+      baseChance -= 0.10;
+    }
+  }
+  const chance = Math.max(0.0, Math.min(1.0, baseChance)) * Math.pow(decayOfAccuracy, nthHit - 1);
+  const minChanceByArcaneStability = getArcaneStabilityHitFloor(actorArcaneStabilityLevel);
+  return Math.random() <= Math.max(chance, minChanceByArcaneStability);
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
@@ -1620,21 +1622,17 @@ function calculateCharacterDamage(
   );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
-  const damageMultipliers = [
-    offenseAmplifier,
-    runtimeOffenseMultiplier,
-    charStats.elementalOffenseValue,
-    elementalMultiplier,
-    defenseAmplifier,
-    partyOffenseAmplifier,
-    rageAmplifier,
-    momentumAmplifier,
-    mutualAmplifier,
-    terrainAmplifier,
-    elementalOffenseAttributeAmplifier,
-    swarmAmplifier,
-    defenseDebuffAmplifier,
-  ] as const;
+  const basePerHitDamage = Math.max(1, Math.floor(
+    (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
+    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier * defenseDebuffAmplifier
+  ));
+  const terrainAdjustedPerHitDamage = applyDomainTerrainDamageOverride(
+    basePerHitDamage,
+    terrainEffect,
+    enemy.hp,
+    charStats.abilities,
+    enemy.abilities,
+  );
 
   // All phases now use hit detection.
   // MID phase ignores row-based accuracy potency and uses fixed potency (1.0).
@@ -1644,32 +1642,34 @@ function calculateCharacterDamage(
   const actorFocusLevel = charStats.abilities.find(a => a.id === 'focus')?.level ?? 0;
   const enemyDeflectionLevel = getEnemyAbilityLevel(enemy, 'deflection');
 
-  const resolved = resolveNormalActionDamage({
-    attackType: phase,
-    attempts: noA,
-    attack,
-    effectiveDefense,
-    multipliers: damageMultipliers,
-    opponentMaxHp: enemy.hp,
-    actorAccuracyPotency,
-    actorAccuracyBonus: charStats.accuracyBonus + temporaryAccuracyBonus,
-    opponentEvasionBonus: enemyEvasion,
-    opponentDeflectionLevel: enemyDeflectionLevel,
-    actorFocusLevel,
-    actorArcaneStabilityLevel: charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
-    resonanceLevel: canApplyResonance ? resonance?.level ?? 0 : 0,
-    elementalOffense: charStats.elementalOffense,
-    elementalOffenseValue: charStats.elementalOffenseValue,
-    elementalResistance: elementalMultiplier,
-    echoDomainElementalUsageCount,
-    actorHasDryproof: hasAbility(charStats.abilities, 'dryproof'),
-    terrainEffect,
-    actorHasTrueSight: hasAbility(charStats.abilities, 'true_sight'),
-    actorHasDomainBreaker: hasAbility(charStats.abilities, 'domain_breaker'),
-    opponentHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
-  });
+  let hits = 0;
+  let damage = 0;
+  for (let i = 1; i <= noA; i++) {
+    if (hitDetection(
+      actorAccuracyPotency,
+      charStats.accuracyBonus + temporaryAccuracyBonus,
+      enemyEvasion,
+      i,
+      phase,
+      enemyDeflectionLevel,
+      actorFocusLevel,
+      terrainEffect,
+      charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+      hasAbility(charStats.abilities, 'true_sight'),
+      hasAbility(charStats.abilities, 'domain_breaker'),
+      hasAbility(enemy.abilities, 'domain_breaker'),
+    )) {
+      hits++;
+      const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
+      damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
+    }
+  }
 
-  return { damage: resolved.damage, totalAttempts: resolved.totalAttempts, hits: resolved.hits };
+  return { damage, totalAttempts: noA, hits };
+}
+
+function getFirstStrikeLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'first_strike')?.level ?? 0;
 }
 
 function hasAbility(abilities: AbilityLike[], abilityId: AbilityId): boolean {
@@ -1695,6 +1695,61 @@ function isDomainTerrainEffect(terrainEffect: TerrainEffectKey | null | undefine
     || terrainEffect === 'terrain.spell-domain';
 }
 
+function rollInitiative(
+  attackType: AttackType,
+  firstStrikeLevel: number,
+  options?: {
+    terrainEffect?: TerrainEffectKey | null;
+    actorType?: 'enemy' | 'party';
+    fertilityBonus?: number;
+    slowPenalty?: number;
+    boostBonus?: number;
+    frostbitePenalty?: number;
+    actorHasTrueSight?: boolean;
+    actorHasEquationBreaker?: boolean;
+    actorHasWindRider?: boolean;
+  },
+): number {
+  // SpecRef: 6.1.1.2 | Combat phase | Speed & Turn Order (Rolling Dice Rule)
+  const isMachineLogic = options?.terrainEffect === 'terrain.machine-logic';
+  const firstStrikeEnabled = (!isMachineLogic || (options?.actorHasEquationBreaker ?? false))
+    && (options?.terrainEffect !== 'terrain.ash-haze' || (options?.actorHasTrueSight ?? false));
+  const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
+  const attackRollProfile = getAttackRollProfile(attackType);
+  const extraDiceCount = effectiveFirstStrikeLevel >= 3 ? 3 : effectiveFirstStrikeLevel;
+  const total = rollAttackSpeedDice(attackRollProfile, Math.random, extraDiceCount);
+
+  let result = Math.min(49, total);
+
+  if (!isMachineLogic && (options?.fertilityBonus ?? 0) > 0) {
+    result = Math.min(49, result + (options?.fertilityBonus ?? 0));
+  }
+  if (!isMachineLogic && (options?.slowPenalty ?? 0) > 0) {
+    result = Math.max(1, result - (options?.slowPenalty ?? 0));
+  }
+  if (!isMachineLogic && (options?.boostBonus ?? 0) > 0) {
+    result = Math.min(49, result + (options?.boostBonus ?? 0));
+  }
+  if (!isMachineLogic && (options?.frostbitePenalty ?? 0) > 0) {
+    result = Math.max(1, result - (options?.frostbitePenalty ?? 0));
+  }
+  if (!isMachineLogic && options?.terrainEffect === 'terrain.tailwind' && options?.actorType === 'party') {
+    const tailwindDiceCount = options?.actorHasWindRider ? 2 : 1;
+    for (let i = 0; i < tailwindDiceCount; i++) {
+      result = Math.min(49, result + (Math.floor(Math.random() * 3) + 1));
+    }
+  }
+  if (!isMachineLogic && options?.terrainEffect === 'terrain.enemy-high-ground' && options?.actorType === 'enemy') {
+    result = Math.min(49, result + (Math.floor(Math.random() * 3) + 1));
+  }
+
+  return result;
+}
+
+function getEnemyFirstStrikeLevel(enemy: EnemyDef): number {
+  return getEnemyAbilityLevel(enemy, 'first_strike');
+}
+
 function getDeflectionLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'deflection')?.level ?? 0;
 }
@@ -1704,7 +1759,12 @@ function getEnemyFocusLevel(enemy: EnemyDef): number {
 }
 
 function getPredatorSenseThresholdPercent(level: number): number {
-  return resolveTimedFormula({ kind: 'predator-sense', level }).value;
+  if (level >= 5) return 50;
+  if (level === 4) return 48;
+  if (level === 3) return 44;
+  if (level === 2) return 38;
+  if (level === 1) return 30;
+  return 0;
 }
 
 function getPredatorSenseNote(level: number): string {
@@ -1713,11 +1773,19 @@ function getPredatorSenseNote(level: number): string {
 }
 
 function getRegenerationPercent(level: number): number {
-  return resolveTimedFormula({ kind: 'regeneration', level }).value;
+  if (level >= 5) return 24;
+  if (level === 4) return 22;
+  if (level === 3) return 19;
+  if (level === 2) return 15;
+  if (level === 1) return 10;
+  return 0;
 }
 
 function getFlyingEvasionBonus(level: number): number {
-  return resolveTimedFormula({ kind: 'flying', level }).value;
+  if (level >= 3) return 0.50;
+  if (level === 2) return 0.45;
+  if (level === 1) return 0.40;
+  return 0;
 }
 
 function getFlyingNote(level: number): string {
@@ -1725,13 +1793,15 @@ function getFlyingNote(level: number): string {
 }
 
 function getFreeTimingForPhase(phase: AttackType, level: number): number | null {
-  if (phase !== 'melee') return null;
-  const timing = resolveTimedFormula({ kind: 'free', level }).value;
-  return timing >= 0 ? timing : null;
+  return phase === 'melee' && level > 0 ? Math.min(5, level) : null;
 }
 
 function getDecomposeDefenseMultiplier(level: number): number {
-  return resolveTimedFormula({ kind: 'decompose', level }).value;
+  if (level >= 5) return 2 / 7;
+  if (level === 4) return 3 / 7;
+  if (level === 3) return 4 / 7;
+  if (level === 2) return 5 / 7;
+  return level >= 1 ? 6 / 7 : 1.0;
 }
 
 function roundDecomposeDefenseValue(value: number): number {
@@ -1740,6 +1810,10 @@ function roundDecomposeDefenseValue(value: number): number {
 
 function getCorrodeMultiplier(level: number): number {
   return CORRODE_MULTIPLIERS[Math.min(5, Math.max(1, level))] ?? 1.0;
+}
+
+function getLifeDrainMultiplier(level: number): number {
+  return LIFE_DRAIN_MULTIPLIERS[Math.min(7, Math.max(1, level))] ?? 0;
 }
 
 function formatLifeDrainMultiplierLabel(level: number): string {
@@ -1768,6 +1842,15 @@ function formatDeathTouchProbabilityNote(level: number, hits: number): string {
   return t('battle.note.deathTouch', { probabilityNumerator });
 }
 
+function getBindChance(level: number, hits: number): number {
+  const numerator = BIND_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
+  return Math.max(0, Math.min(1, (hits * numerator) / 64));
+}
+
+function getBurnPercent(level: number): number {
+  return BURN_PERCENTS[Math.min(5, Math.max(1, level))] ?? 0;
+}
+
 function formatMultiplierAsFraction(multiplier: number): string {
   const seventhFractions = [2 / 7, 3 / 7, 4 / 7, 5 / 7, 6 / 7];
   const matched = seventhFractions.find((candidate) => Math.abs(candidate - multiplier) < 1e-6);
@@ -1783,6 +1866,8 @@ function formatMultiplierAsFraction(multiplier: number): string {
 }
 
 type AbilityLike = { id: AbilityId; level: number };
+const TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS = new Set<AbilityId>(TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS);
+
 function formatAbilityLabel(ability: AbilityLike): string {
   return t('battle.abilityLabel', { name: getAbilityName(ability.id, ability.level) });
 }
@@ -1817,6 +1902,24 @@ function grantEnemyAbility(enemy: EnemyDef, ability: AbilityLike): void {
     id: ability.id,
     level: ability.level,
   });
+}
+
+function adjustCharacterAbilityLevel(
+  charStats: ComputedCharacterStats,
+  abilityId: AbilityId,
+  delta: number,
+): void {
+  const ability = charStats.abilities.find((ownedAbility) => ownedAbility.id === abilityId);
+  if (!ability || ability.level <= 0) return;
+  ability.level = Math.max(1, Math.min(5, ability.level + delta));
+  ability.name = getAbilityName(ability.id, ability.level);
+  ability.description = getAbilityDescription(ability.id, ability.level);
+}
+
+function adjustEnemyAbilityLevel(enemy: EnemyDef, abilityId: AbilityId, delta: number): void {
+  const ability = enemy.abilities.find((ownedAbility) => ownedAbility.id === abilityId);
+  if (!ability || ability.level <= 0) return;
+  ability.level = Math.max(1, Math.min(5, ability.level + delta));
 }
 
 function getAbilityLevelFromList(abilities: AbilityLike[], abilityId: AbilityId): number {
@@ -1881,11 +1984,15 @@ function isMagicSealTargetForEnemy(
 }
 
 function getCounterNoAMultiplierForLevel(level: number): number {
-  return resolveReactiveProfile('counter', level).noAMultiplier;
+  if (level <= 0) return 0;
+  if (level >= 3) return 2.0;
+  if (level === 2) return 1.0;
+  return 0.5;
 }
 
 function getTierTwoNoAMultiplierForLevel(level: number): number {
-  return resolveReactiveProfile('tier-two', level).noAMultiplier;
+  if (level <= 0) return 0;
+  return level >= 2 ? 1.0 : 0.5;
 }
 
 function createNullCounterPool(characterStats: ComputedCharacterStats[]): Map<number, number> {
@@ -1924,7 +2031,11 @@ function enemyHasReAttack(enemy: EnemyDef): boolean {
 }
 
 function getEnemyReAttackNoAMultiplier(enemy: EnemyDef): number {
-  return resolveReactiveProfile('re-attack', getEnemyAbilityLevel(enemy, 're_attack')).noAMultiplier;
+  const level = getEnemyAbilityLevel(enemy, 're_attack');
+  if (level <= 0) return 0;
+  if (level >= 3) return 1.0;
+  if (level === 2) return 0.7;
+  return 0.5;
 }
 
 function hasNoOffense(charStats: ComputedCharacterStats): boolean {
@@ -1999,8 +2110,24 @@ function getResurrectLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'resurrect')?.level ?? 0;
 }
 
+function hasResurrect(charStats: ComputedCharacterStats): boolean {
+  return getResurrectLevel(charStats) > 0;
+}
+
+const REANIMATE_HP_PERCENTS: Record<number, number> = {
+  1: 20,
+  2: 26,
+  3: 31,
+  4: 35,
+  5: 38,
+};
+
 function getReanimateLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'reanimate')?.level ?? 0;
+}
+
+function hasReanimate(charStats: ComputedCharacterStats): boolean {
+  return getReanimateLevel(charStats) > 0;
 }
 
 function hasRequiem(charStats: ComputedCharacterStats): boolean {
@@ -2019,12 +2146,20 @@ function enemyHasNullRequiem(enemy: EnemyDef): boolean {
   return getEnemyAbilityLevel(enemy, 'null_requiem') > 0;
 }
 
+function getReanimateHpPercent(level: number): number {
+  return REANIMATE_HP_PERCENTS[level] ?? REANIMATE_HP_PERCENTS[5];
+}
+
 function getAbilityLevel(charStats: ComputedCharacterStats, abilityId: AbilityId): number {
   return getAbilityLevelFromList(charStats.abilities, abilityId);
 }
 
 function getReAttackProfile(charStats: ComputedCharacterStats): { count: number; noAMultiplier: number } {
-  return resolveReactiveProfile('re-attack', getAbilityLevel(charStats, 're_attack'));
+  const ability = charStats.abilities.find(a => a.id === 're_attack');
+  if (!ability) return { count: 0, noAMultiplier: 0.5 };
+  if (ability.level >= 3) return { count: 1, noAMultiplier: 1.0 };
+  if (ability.level === 2) return { count: 1, noAMultiplier: 0.7 };
+  return { count: 1, noAMultiplier: 0.5 };
 }
 
 function getReCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
@@ -2048,7 +2183,12 @@ function getEnemyReCounterNoAMultiplier(enemy: EnemyDef): number {
 }
 
 function getHowlNoAMultiplier(level: number): number {
-  return resolveTimedFormula({ kind: 'howl', level }).value;
+  if (level <= 0) return 1.0;
+  if (level >= 5) return 1 / 7;
+  if (level === 4) return 2 / 7;
+  if (level === 3) return 3 / 7;
+  if (level === 2) return 4 / 7;
+  return 5 / 7;
 }
 
 function getHowlNote(level: number): string {
@@ -2057,12 +2197,17 @@ function getHowlNote(level: number): string {
 }
 
 function getConfusionChance(level: number): number {
-  return resolveTimedConfusion({ attackType: 'melee', level, targetCount: 0 }).chance * 32;
+  if (level >= 5) return 7;
+  if (level === 4) return 5;
+  if (level >= 2) return 3;
+  return level === 1 ? 1 : 0;
 }
 
 function getConfusionTiming(abilityId: AbilityId, level: number): number | null {
-  const attackType = abilityId === 'ranged_confusion' ? 'ranged' : abilityId === 'magic_confusion' ? 'magical' : 'melee';
-  return resolveTimedConfusion({ attackType, level, targetCount: 0 }).timing;
+  if (level <= 0) return null;
+  if (abilityId === 'ranged_confusion') return level <= 2 ? 7 : 8;
+  if (abilityId === 'magic_confusion') return level <= 2 ? 4 : 5;
+  return level <= 2 ? 1 : 2;
 }
 
 function getConfusionAbilityIdForPhase(phase: AttackType): AbilityId {
@@ -2085,25 +2230,47 @@ function getNullAntagonismNote(): string {
 }
 
 function getUnstableCoreDamagePercent(level: number): number {
-  return resolveTimedFormula({ kind: 'unstable-core', level }).value;
+  if (level >= 5) return 12;
+  if (level === 4) return 15;
+  if (level === 3) return 19;
+  if (level === 2) return 24;
+  return level >= 1 ? 30 : 0;
 }
 
 function getSoulReapThresholdPercent(level: number): number {
-  return resolveTimedFormula({ kind: 'soul-reap', level }).value;
+  if (level >= 5) return 20;
+  if (level === 4) return 19;
+  if (level === 3) return 17;
+  if (level === 2) return 14;
+  return level >= 1 ? 10 : 0;
 }
 
 function getUnstableCoreNote(level: number): string {
   return t('battle.note.unstableCore', { percent: getUnstableCoreDamagePercent(level) });
 }
 
+function getShockAdjustedDamage(damage: number, hits: number): number {
+  if (hits <= 1 || damage <= 0) return damage;
+  return Math.floor(damage / hits);
+}
+
 function getRandomPartyMemberName(party: Party): string {
   if (party.characters.length === 0) return party.name;
-  const targetIndex = selectTimedIndex(party.characters.length).index ?? 0;
+  const targetIndex = Math.floor(Math.random() * party.characters.length);
   return party.characters[targetIndex].name;
 }
 
 function getSoulReapNote(level: number): string {
   return t('battle.note.soulReap', { percent: getSoulReapThresholdPercent(level) });
+}
+
+function getSelfDestructRatio(level: number): { numerator: number; denominator: number } | null {
+  if (level <= 0) return null;
+  if (level >= 5) return { numerator: 1, denominator: 1 };
+  if (level === 4) return { numerator: 7, denominator: 10 };
+  if (level === 3) return { numerator: 5, denominator: 10 };
+  if (level === 2) return { numerator: 3, denominator: 10 };
+  return { numerator: 1, denominator: 10 };
 }
 
 function calculateSelfDestructDamage(
@@ -2112,13 +2279,16 @@ function calculateSelfDestructDamage(
   targetPhysicalDefense: number,
   targetDefenseAmplifier: number,
 ): number {
-  return resolveTimedFormula({
-    kind: 'self-destruct',
-    level,
-    currentHp: actorRemainingHp,
-    targetDefense: targetPhysicalDefense,
-    targetDefenseAmplifier,
-  }).amount;
+  const ratio = getSelfDestructRatio(level);
+  if (!ratio) return 0;
+
+  const baseDamage = actorRemainingHp - targetPhysicalDefense;
+  if (baseDamage <= 0) return 0;
+
+  return Math.max(
+    0,
+    Math.floor((ratio.numerator / ratio.denominator) * baseDamage * Math.max(0.01, targetDefenseAmplifier)),
+  );
 }
 
 function getCharacterNoAForPhase(phase: AttackType, charStats: ComputedCharacterStats): number {
@@ -2258,32 +2428,6 @@ export function executeBattle(
 
   const partyDeityKey = getDeityKey(party.deity.name);
   const terrainEntry = environment.terrainEffect ? getTerrainEffectGlossaryEntry(environment.terrainEffect) : undefined;
-  const buildSetupCombatants = (): BattleSetupCombatant[] => [
-    {
-      id: enemy.id,
-      kind: 'enemy',
-      row: 0,
-      rangedAttack: enemy.rangedAttack,
-      magicalAttack: enemy.magicalAttack,
-      meleeAttack: enemy.meleeAttack,
-      rangedNoA: enemy.rangedNoA,
-      magicalNoA: enemy.magicalNoA,
-      meleeNoA: enemy.meleeNoA,
-      abilities: enemy.abilities.map(({ id, level }) => ({ id, level })),
-    },
-    ...characterStats.map((stats) => ({
-      id: stats.characterId,
-      kind: 'character' as const,
-      row: stats.row,
-      rangedAttack: stats.rangedAttack,
-      magicalAttack: stats.magicalAttack,
-      meleeAttack: stats.meleeAttack,
-      rangedNoA: stats.rangedNoA,
-      magicalNoA: stats.magicalNoA,
-      meleeNoA: stats.meleeNoA,
-      abilities: stats.abilities.map(({ id, level }) => ({ id, level })),
-    })),
-  ];
 
   if (terrainEntry && environment.terrainEffect) {
     const terrainLabel = t(`terrainEffect.${environment.terrainEffect}.label`);
@@ -2341,7 +2485,7 @@ export function executeBattle(
       })),
     ];
 
-    const target = terrainDeletionTargets[selectTimedIndex(terrainDeletionTargets.length).index ?? -1];
+    const target = terrainDeletionTargets[Math.floor(Math.random() * terrainDeletionTargets.length)];
     if (target) {
       // SpecRef: 6.1.1.1 | START phase | a.unforgettable
       const targetHasUnforgettable = target.kind === 'enemy'
@@ -2364,7 +2508,7 @@ export function executeBattle(
         });
       } else {
         const validAbilities = target.abilities.filter((ability) => ability.level > 0);
-        const selectedAbility = validAbilities[selectTimedIndex(validAbilities.length).index ?? -1];
+        const selectedAbility = validAbilities[Math.floor(Math.random() * validAbilities.length)];
         if (selectedAbility) {
           const selectedIndex = target.abilities.findIndex(
             (ability) => ability.id === selectedAbility.id && ability.level === selectedAbility.level,
@@ -2389,23 +2533,22 @@ export function executeBattle(
       }
     }
   } else if (environment.terrainEffect === 'terrain.transcendence' || environment.terrainEffect === 'terrain.suppression') {
-    // SpecRef: 6.1.1.1 | START phase | terrain.transcendence / terrain.suppression
-    for (const transformation of transformBattleAbilitiesForTerrain(
-      buildSetupCombatants(),
-      environment.terrainEffect,
-    )) {
-      if (transformation.combatantKind === 'enemy') {
-        const ability = enemy.abilities.find((entry) => entry.id === transformation.abilityId);
-        if (!ability) throw new Error(`C++ battle setup transformed a missing enemy ability: ${transformation.abilityId}`);
-        ability.level = transformation.nextLevel;
-      } else {
-        const ability = characterStats
-          .find((stats) => stats.characterId === transformation.combatantId)
-          ?.abilities.find((entry) => entry.id === transformation.abilityId);
-        if (!ability) throw new Error(`C++ battle setup transformed a missing character ability: ${transformation.abilityId}`);
-        ability.level = transformation.nextLevel;
-        ability.name = getAbilityName(ability.id, ability.level);
-        ability.description = getAbilityDescription(ability.id, ability.level);
+    const isSuppression = environment.terrainEffect === 'terrain.suppression';
+    const delta = isSuppression ? -1 : 1;
+
+    for (const stats of characterStats) {
+      // SpecRef: 6.1.1.1 | START phase | terrain.suppression
+      if (isSuppression && hasAbility(stats.abilities, 'defiance')) continue;
+      for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
+        adjustCharacterAbilityLevel(stats, abilityId, delta);
+      }
+    }
+    // SpecRef: 6.1.1.1 | START phase | terrain.suppression
+    if (isSuppression && hasAbility(enemy.abilities, 'defiance')) {
+      // a.defiance ignores suppression effect.
+    } else {
+      for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
+        adjustEnemyAbilityLevel(enemy, abilityId, delta);
       }
     }
   } else if (environment.terrainEffect === 'terrain.silence-field') {
@@ -2457,7 +2600,7 @@ export function executeBattle(
 
   // SpecRef: 6.1.1.1 | START phase | Deity effects
   if (partyDeityKey === 'Goddess of Discord' && environment.terrainEffect !== 'terrain.gehenna' && characterStats.length > 0) {
-    const targetIndex = selectTimedIndex(characterStats.length).index ?? 0;
+    const targetIndex = Math.floor(Math.random() * characterStats.length);
     const targetStats = characterStats[targetIndex];
     const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
     const hasNullAntagonism = getAbilityLevel(targetStats, 'null_antagonism') >= 1;
@@ -2493,7 +2636,7 @@ export function executeBattle(
 
   // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
   if (partyDeityKey === 'God of Oblivion' && environment.terrainEffect !== 'terrain.gehenna' && characterStats.length > 0) {
-    const targetStats = characterStats[selectTimedIndex(characterStats.length).index ?? 0];
+    const targetStats = characterStats[Math.floor(Math.random() * characterStats.length)];
     grantCharacterAbility(targetStats, { id: 'fading_memory', level: 1 });
   }
 
@@ -2652,15 +2795,11 @@ export function executeBattle(
     if (partyHp > 0) return false;
 
     const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
-    const recovery = resolveDefeatRecoveryKernel({
-      maxHp: partyStats.hp,
-      resurrectLevel: getResurrectLevel(targetStats),
-      reanimateLevel: getReanimateLevel(targetStats),
-      resurrectConsumed: consumedResurrectCharacterIds.has(targetStats.characterId),
-      reanimateConsumed: consumedReanimateCharacterIds.has(targetStats.characterId),
-    });
-    if (recovery?.type === 'resurrect') {
-      const healAmount = recovery.healAmount;
+    if (hasResurrect(targetStats) && !consumedResurrectCharacterIds.has(targetStats.characterId)) {
+      const resurrectLevel = getResurrectLevel(targetStats);
+      const healAmount = resurrectLevel >= 2
+        ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
+        : 1;
       healParty(healAmount);
       consumedResurrectCharacterIds.add(targetStats.characterId);
       log.push({
@@ -2677,8 +2816,9 @@ export function executeBattle(
       return true;
     }
 
-    if (recovery?.type === 'reanimate') {
-      const healAmount = recovery.healAmount;
+    if (hasReanimate(targetStats) && !consumedReanimateCharacterIds.has(targetStats.characterId)) {
+      const reanimateLevel = getReanimateLevel(targetStats);
+      const healAmount = Math.max(1, Math.ceil((partyStats.hp * getReanimateHpPercent(reanimateLevel)) / 100));
       healParty(healAmount);
       consumedReanimateCharacterIds.add(targetStats.characterId);
       log.push({
@@ -2704,15 +2844,11 @@ export function executeBattle(
   ): boolean => {
     if (enemyHp > 0) return false;
 
-    const recovery = resolveDefeatRecoveryKernel({
-      maxHp: enemy.hp,
-      resurrectLevel: getEnemyAbilityLevel(enemy, 'resurrect'),
-      reanimateLevel: getEnemyAbilityLevel(enemy, 'reanimate'),
-      resurrectConsumed: consumedEnemyResurrect,
-      reanimateConsumed: consumedEnemyReanimate,
-    });
-    if (recovery?.type === 'resurrect') {
-      const healAmount = recovery.healAmount;
+    const resurrectLevel = getEnemyAbilityLevel(enemy, 'resurrect');
+    if (resurrectLevel > 0 && !consumedEnemyResurrect) {
+      const healAmount = resurrectLevel >= 2
+        ? Math.max(1, Math.ceil(enemy.hp * 0.01))
+        : 1;
       healEnemy(healAmount);
       consumedEnemyResurrect = true;
       log.push({
@@ -2727,8 +2863,9 @@ export function executeBattle(
       return true;
     }
 
-    if (recovery?.type === 'reanimate') {
-      const healAmount = recovery.healAmount;
+    const reanimateLevel = getEnemyAbilityLevel(enemy, 'reanimate');
+    if (reanimateLevel > 0 && !consumedEnemyReanimate) {
+      const healAmount = Math.max(1, Math.ceil((enemy.hp * getReanimateHpPercent(reanimateLevel)) / 100));
       healEnemy(healAmount);
       consumedEnemyReanimate = true;
       log.push({
@@ -2762,55 +2899,52 @@ export function executeBattle(
       actor.kind === 'enemy' ? applyEnemyDamage(amount) : applyPartyDamage(amount)
     );
 
-    const actorAbilities = actor.kind === 'enemy' ? enemy.abilities : actor.stats.abilities;
-    const sacredJudgementEligible = (
-      (actor.kind === 'enemy' && firstActorInBattle === 'enemy')
-      || (actor.kind === 'character' && firstActorInBattle === actor.stats.characterId)
-    );
-    const terrainResolution = resolveTimedTerrainEffect({
-      terrainEffect,
-      attackType: phase,
-      elementalOffense,
-      currentHp,
-      maxHp,
-      totalDamage,
-      hasVineCutter: hasAbility(actorAbilities, 'vine_cutter'),
-      hasManaWard: hasAbility(actorAbilities, 'mana_ward'),
-      sacredJudgementEligible,
-      sacredJudgementConsumed: sacredJudgementTriggered,
-    });
-    let selfDamage = terrainResolution.damage;
+    let selfDamage = 0;
     let actionText = '';
     let noteTextTemplate = '';
     let elementalTag: ElementalOffense | undefined;
+    const actorAbilities = actor.kind === 'enemy' ? enemy.abilities : actor.stats.abilities;
+
     // SpecRef: 6.1.3.1 | Actor action | a.vine-cutter
-    if (terrainResolution.effect === 'vine-snare') {
+    if (terrainEffect === 'terrain.vine-snare' && !hasAbility(actorAbilities, 'vine_cutter')) {
+      selfDamage = Math.floor(currentHp * 0.01);
       actionText = pickRandomTerrainFlavorText(
         'battleFlavor.environment.vineSnare',
         { actor: actor.name },
       );
       noteTextTemplate = t('battle.note.hpLossTemplate');
     // SpecRef: 6.1.3.1 | Actor action | a.mana-ward
-    } else if (terrainResolution.effect === 'crystal-zone') {
+    } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'magical' && !hasAbility(actorAbilities, 'mana_ward')) {
+      selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
         'battleFlavor.environment.crystalZone',
         { actor: actor.name },
       );
       noteTextTemplate = t('battle.note.hpLossTemplate');
-    } else if (terrainResolution.effect === 'conduction') {
+    } else if (terrainEffect === 'terrain.conduction' && elementalOffense === 'thunder') {
+      selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
         'battleFlavor.environment.conduction',
         { actor: actor.name },
       );
       noteTextTemplate = t('battle.note.hpLossThunderTemplate');
       elementalTag = 'thunder';
-    } else if (terrainResolution.effect === 'mana-burn') {
+    } else if (terrainEffect === 'terrain.mana-burn' && phase === 'magical' && !hasAbility(actorAbilities, 'mana_ward')) {
+      selfDamage = Math.floor(maxHp * 0.02);
       actionText = pickRandomTerrainFlavorText(
         'battleFlavor.environment.manaBurn',
         { actor: actor.name },
       );
       noteTextTemplate = t('battle.note.hpLossTemplate');
-    } else if (terrainResolution.effect === 'sacred-judgement') {
+    } else if (
+      terrainEffect === 'terrain.sacred-judgement'
+      && !sacredJudgementTriggered
+      && (
+        (actor.kind === 'enemy' && firstActorInBattle === 'enemy')
+        || (actor.kind === 'character' && firstActorInBattle === actor.stats.characterId)
+      )
+    ) {
+      selfDamage = Math.floor(currentHp * 0.05);
       actionText = pickRandomTerrainFlavorText(
         'battleFlavor.environment.sacredJudgement',
         { actor: actor.name },
@@ -2852,14 +2986,7 @@ export function executeBattle(
     if (environment.terrainEffect !== 'terrain.chain-lightning') return;
     if (thunderDamage <= 0) return;
 
-    const chainDamage = resolveTimedTerrainEffect({
-      terrainEffect: environment.terrainEffect,
-      attackType: phase,
-      elementalOffense: 'thunder',
-      currentHp: actor.kind === 'enemy' ? enemyHp : partyHp,
-      maxHp: actor.kind === 'enemy' ? enemy.hp : partyStats.hp,
-      totalDamage: thunderDamage,
-    }).chainDamage;
+    const chainDamage = Math.floor(thunderDamage * 0.30);
     if (chainDamage <= 0) return;
 
     if (actor.kind === 'character') {
@@ -2883,7 +3010,7 @@ export function executeBattle(
     }
 
     const chainTargetCandidates = characterStats.filter(stats => stats.characterId !== excludedPartyMemberId);
-    const chainTarget = chainTargetCandidates[selectTimedIndex(chainTargetCandidates.length).index ?? -1] ?? characterStats[0];
+    const chainTarget = chainTargetCandidates[Math.floor(Math.random() * chainTargetCandidates.length)] ?? characterStats[0];
     if (!chainTarget) return;
     const chainTargetName = party.characters.find((c) => c.id === chainTarget.characterId)?.name ?? t('battle.actor.ally');
 
@@ -2964,16 +3091,9 @@ export function executeBattle(
 
     const lifeDrainLevel = getAbilityLevel(actorStats, 'life_drain');
     if (lifeDrainLevel > 0 && result.damage > 0) {
+      const drainMultiplier = getLifeDrainMultiplier(lifeDrainLevel);
       const targetNullLifeDrain = enemyHasNullLifeDrain(enemy);
-      const reactive = resolveCloseReactiveEffects({
-        hits: result.hits,
-        damage: result.damage,
-        actorMaxHp: partyStats.hp,
-        fireResistance: 1,
-        lifeDrainLevel,
-        targetHasNullLifeDrain: targetNullLifeDrain,
-      });
-      const healAmount = healParty(reactive.lifeDrainHeal);
+      const healAmount = targetNullLifeDrain ? 0 : healParty(Math.floor(result.damage * drainMultiplier));
       log.push({
         phase: 'melee',
         initiativeRoll,
@@ -3025,14 +3145,12 @@ export function executeBattle(
     const burnLevel = getEnemyAbilityLevel(enemy, 'burn');
     if (burnLevel > 0) {
       const actorNullBurn = hasNullBurn(actorStats);
-      const reflectedDamage = resolveCloseReactiveEffects({
-        hits: result.hits,
-        damage: result.damage,
-        actorMaxHp: partyStats.hp,
-        fireResistance: actorStats.elementalDefenseMultipliers.fire ?? 1.0,
-        burnLevel,
-        targetHasNullBurn: actorNullBurn,
-      }).burnDamage;
+      const reflectedDamage = actorNullBurn ? 0 : Math.floor(
+        partyStats.hp
+        * result.hits
+        * (getBurnPercent(burnLevel) / 100)
+        * (actorStats.elementalDefenseMultipliers.fire ?? 1.0),
+      );
       if (reflectedDamage > 0 || actorNullBurn) {
         if (reflectedDamage > 0) {
           applyPartyDamage(reflectedDamage);
@@ -3071,13 +3189,7 @@ export function executeBattle(
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
-      } else if (resolveCloseReactiveEffects({
-        hits: result.hits,
-        damage: result.damage,
-        actorMaxHp: partyStats.hp,
-        fireResistance: 1,
-        bindLevel,
-      }).bindTriggered) {
+      } else if (Math.random() < getBindChance(bindLevel, result.hits)) {
         enemyIncapacitated = true;
         log.push({
           phase: 'melee',
@@ -3129,16 +3241,9 @@ export function executeBattle(
 
     const enemyLifeDrainLevel = getEnemyAbilityLevel(enemy, 'life_drain');
     if (enemyLifeDrainLevel > 0 && appliedDamage > 0) {
+      const drainMultiplier = getLifeDrainMultiplier(enemyLifeDrainLevel);
       const targetNullLifeDrain = hasNullLifeDrain(targetStats);
-      const reactive = resolveCloseReactiveEffects({
-        hits: appliedHits,
-        damage: appliedDamage,
-        actorMaxHp: enemy.hp,
-        fireResistance: 1,
-        lifeDrainLevel: enemyLifeDrainLevel,
-        targetHasNullLifeDrain: targetNullLifeDrain,
-      });
-      const healAmount = healEnemy(reactive.lifeDrainHeal);
+      const healAmount = targetNullLifeDrain ? 0 : healEnemy(Math.floor(appliedDamage * drainMultiplier));
       log.push({
         phase: 'melee',
         initiativeRoll,
@@ -3187,14 +3292,12 @@ export function executeBattle(
     const burnLevel = getAbilityLevel(targetStats, 'burn');
     if (burnLevel > 0 && enemyHp > 0) {
       const actorNullBurn = enemyHasNullBurn(enemy);
-      const reflectedDamage = resolveCloseReactiveEffects({
-        hits: appliedHits,
-        damage: appliedDamage,
-        actorMaxHp: enemy.hp,
-        fireResistance: enemy.elementalResistance.fire ?? 1.0,
-        burnLevel,
-        targetHasNullBurn: actorNullBurn,
-      }).burnDamage;
+      const reflectedDamage = actorNullBurn ? 0 : Math.floor(
+        enemy.hp
+        * appliedHits
+        * (getBurnPercent(burnLevel) / 100)
+        * (enemy.elementalResistance.fire ?? 1.0),
+      );
       if (reflectedDamage > 0 || actorNullBurn) {
         if (reflectedDamage > 0) {
           applyEnemyDamage(reflectedDamage);
@@ -3232,13 +3335,7 @@ export function executeBattle(
           noteTone: 'muted',
           hideInitiativeLabel: true,
         });
-      } else if (resolveCloseReactiveEffects({
-        hits: appliedHits,
-        damage: appliedDamage,
-        actorMaxHp: enemy.hp,
-        fireResistance: 1,
-        bindLevel: enemyBindLevel,
-      }).bindTriggered) {
+      } else if (Math.random() < getBindChance(enemyBindLevel, appliedHits)) {
         incapacitatedCharacterIds.add(targetStats.characterId);
         log.push({
           phase: 'melee',
@@ -3442,19 +3539,13 @@ export function executeBattle(
     if (attempts <= 0) {
       return;
     }
-    const hits = resolveReactiveHitCount({
-      attempts,
-      attackType: phase,
-      actorAccuracyPotency: 1.0,
-      actorAccuracyBonus: enemy.accuracyBonus + enemyPhaseAccuracyBonus,
-      opponentEvasionBonus: targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
-      opponentDeflectionLevel: getDeflectionLevel(targetCharStats),
-      actorFocusLevel: getEnemyFocusLevel(enemy),
-      terrainEffect: environment.terrainEffect,
-      actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
-      actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
-      opponentHasDomainBreaker: hasAbility(targetCharStats.abilities, 'domain_breaker'),
-    });
+    let hits = 0;
+    for (let i = 1; i <= attempts; i++) {
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0), i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'), hasAbility(targetCharStats.abilities, 'domain_breaker'));
+      if (didHit) {
+        hits += 1;
+      }
+    }
 
     const targetName = targetChar?.name ?? '???';
     let damage = 0;
@@ -3658,6 +3749,7 @@ export function executeBattle(
     }
   };
 
+  const attackTypeTieBreakPriority: Record<AttackType, number> = { ranged: 0, magical: 1, melee: 2 };
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
     && environment.terrainEffect !== 'terrain.gehenna';
 
@@ -3673,31 +3765,38 @@ export function executeBattle(
   // instead of imposing the historical ranged -> magical -> melee phase barrier.
   const enemyInitiativeByAttackType = new Map<AttackType, number>();
   const characterInitiativeByAttackType = new Map<AttackType, Array<{ stats: ComputedCharacterStats; roll: number }>>();
-  type PreparedTurn = { kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats };
-  const preparedTurnOrderByAttackType = new Map<AttackType, PreparedTurn[]>([
-    ['ranged', []],
-    ['magical', []],
-    ['melee', []],
-  ]);
-  const preparedInitiative = prepareBattleInitiative(buildSetupCombatants(), {
-    terrainEffect: environment.terrainEffect,
-    fertilityInitiative: hasFertilityInitiativeBonus,
-    random: Math.random,
-  });
-  for (const action of preparedInitiative.actions) {
-    if (action.combatantKind === 'enemy') {
-      enemyInitiativeByAttackType.set(action.attackType, action.initiative);
-      preparedTurnOrderByAttackType.get(action.attackType)?.push({ kind: 'enemy', roll: action.initiative });
-      continue;
+  for (const attackType of (['ranged', 'magical', 'melee'] as AttackType[])) {
+    if (isEligibleEnemyForPhase(attackType, enemy)) {
+      enemyInitiativeByAttackType.set(attackType, rollInitiative(attackType, getEnemyFirstStrikeLevel(enemy), {
+        terrainEffect: environment.terrainEffect,
+        actorType: 'enemy',
+        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
+        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
+        frostbitePenalty: partyHasFrostbite() && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
+        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
+        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
+      }));
     }
-    const stats = characterStats.find((candidate) => candidate.characterId === action.combatantId);
-    if (!stats) throw new Error(`C++ battle setup returned missing character ${action.combatantId}`);
-    const characterInitiative = characterInitiativeByAttackType.get(action.attackType) ?? [];
-    characterInitiative.push({ stats, roll: action.initiative });
-    characterInitiativeByAttackType.set(action.attackType, characterInitiative);
-    preparedTurnOrderByAttackType.get(action.attackType)?.push({ kind: 'character', roll: action.initiative, stats });
+    characterInitiativeByAttackType.set(attackType, characterStats
+      .filter(cs => isEligibleCharacterForPhase(attackType, cs))
+      .map(stats => ({
+        stats,
+        roll: rollInitiative(attackType, getFirstStrikeLevel(stats), {
+          terrainEffect: environment.terrainEffect,
+          actorType: 'party',
+          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
+          slowPenalty: getHighestAbilityLevel(stats.abilities, 'slow'),
+          boostBonus: getHighestAbilityLevel(stats.abilities, 'boost'),
+          frostbitePenalty: enemyHasFrostbite() && !hasAbility(stats.abilities, 'coldproof') ? 1 : 0,
+          actorHasTrueSight: hasAbility(stats.abilities, 'true_sight'),
+          actorHasEquationBreaker: hasAbility(stats.abilities, 'equation_breaker'),
+          actorHasWindRider: hasAbility(stats.abilities, 'wind_rider'),
+        }),
+      })));
   }
-  const phases = ['ranged', 'magical', 'melee'] as AttackType[];
+  const phases = (['ranged', 'magical', 'melee'] as AttackType[])
+    .sort((a, b) => attackTypeTieBreakPriority[a] - attackTypeTieBreakPriority[b]);
   const combatSteps = TRIGGER_TIMINGS_DESC.flatMap(timing => phases.map(phase => ({ phase, timing })));
 
   const pushFrostbiteLog = (ownerName: string): void => {
@@ -3740,7 +3839,7 @@ export function executeBattle(
       })),
     ];
 
-    const target = targets[selectTimedIndex(targets.length).index ?? -1];
+    const target = targets[Math.floor(Math.random() * targets.length)];
     if (!target) return;
 
     const targetHasUnforgettable = target.kind === 'enemy'
@@ -3761,7 +3860,7 @@ export function executeBattle(
     const validAbilities = target.abilities.filter((ability) => ability.level > 0);
     if (validAbilities.length === 0) return;
 
-    const selectedAbility = validAbilities[selectTimedIndex(validAbilities.length).index ?? -1];
+    const selectedAbility = validAbilities[Math.floor(Math.random() * validAbilities.length)];
     const selectedAbilityIndex = target.abilities.findIndex(
       (ability) => ability.id === selectedAbility.id && ability.level === selectedAbility.level,
     );
@@ -3779,9 +3878,9 @@ export function executeBattle(
   };
 
   const resolveStartPhaseTriggerTiming = (timing: number): void => {
-    if (isTimedTriggerSlot('oblivion', 'start', timing)) {
+    if (timing === 9) {
       if (enemyHasOblivion() && characterStats.length > 0) {
-        const targetIndex = selectTimedIndex(characterStats.length).index ?? 0;
+        const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
         const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally');
         const targetHasUnforgettable = getAbilityLevel(target, 'unforgettable') >= 1;
@@ -3798,7 +3897,7 @@ export function executeBattle(
         const targetValidAbilities = target.abilities.filter((ability) => ability.level > 0);
 
         if (!targetHasUnforgettable && targetValidAbilities.length > 0) {
-          const selectedTargetAbility = targetValidAbilities[selectTimedIndex(targetValidAbilities.length).index ?? 0];
+          const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
           const selectedTargetAbilityIndex = target.abilities.findIndex(
             (ability) => ability.id === selectedTargetAbility.id && ability.level === selectedTargetAbility.level,
           );
@@ -3831,7 +3930,7 @@ export function executeBattle(
         const enemyValidAbilities = enemy.abilities.filter((ability) => ability.level > 0);
         if (enemyValidAbilities.length === 0) continue;
 
-        const selectedEnemyAbility = enemyValidAbilities[selectTimedIndex(enemyValidAbilities.length).index ?? 0];
+        const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
         const selectedEnemyAbilityIndex = enemy.abilities.findIndex(
           (ability) => ability.id === selectedEnemyAbility.id && ability.level === selectedEnemyAbility.level,
         );
@@ -3848,7 +3947,7 @@ export function executeBattle(
       }
     }
 
-    if (isTimedTriggerSlot('memory-mimic', 'start', timing)) {
+    if (timing === 8) {
       if (enemyHasFadingMemory()) {
         resolveFadingMemory(enemy.name);
       }
@@ -3858,7 +3957,7 @@ export function executeBattle(
       }
 
       if (enemyHasMimic() && characterStats.length > 0) {
-        const targetIndex = selectTimedIndex(characterStats.length).index ?? 0;
+        const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
         const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? t('battle.actor.ally');
         const targetValidAbilities = target.abilities.filter(
@@ -3866,7 +3965,7 @@ export function executeBattle(
         );
 
         if (targetValidAbilities.length > 0) {
-          const selectedTargetAbility = targetValidAbilities[selectTimedIndex(targetValidAbilities.length).index ?? 0];
+          const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
           grantEnemyAbility(enemy, selectedTargetAbility);
 
           log.push({
@@ -3883,7 +3982,7 @@ export function executeBattle(
         );
         if (enemyValidAbilities.length === 0) continue;
 
-        const selectedEnemyAbility = enemyValidAbilities[selectTimedIndex(enemyValidAbilities.length).index ?? 0];
+        const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
         grantCharacterAbility(owner.stats, selectedEnemyAbility);
 
         log.push({
@@ -3894,7 +3993,7 @@ export function executeBattle(
       }
     }
 
-    if (isTimedTriggerSlot('party-effects', 'start', timing)) {
+    if (timing === 7) {
       for (const partyEffect of partyEffects) {
         if (partyEffect) {
           log.push(partyEffect);
@@ -3902,7 +4001,7 @@ export function executeBattle(
       }
     }
 
-    if (isTimedTriggerSlot('start-effects', 'start', timing)) {
+    if (timing === 3) {
       activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
 
       for (const ownerName of activeMagicSealQueue) {
@@ -3971,7 +4070,7 @@ export function executeBattle(
     let hasTriggeredPredatorSense = false;
     let hasTriggeredFlying = false;
     const triggerLongPhaseHowl = (): void => {
-      if (!isTimedTriggerSlot('howl', phase, 8) || hasTriggeredLongPhaseHowl) return;
+      if (phase !== 'ranged' || hasTriggeredLongPhaseHowl) return;
       hasTriggeredLongPhaseHowl = true;
 
       // SpecRef: 1.1 | CONSTANTS_GLOSSARY | a.howl
@@ -4025,7 +4124,7 @@ export function executeBattle(
     };
 
     const triggerPredatorSenseAtTiming = (timing: number): void => {
-      if (!isTimedTriggerSlot('predator-sense', phase, timing) || hasTriggeredPredatorSense) return;
+      if (phase !== 'melee' || timing !== 4 || hasTriggeredPredatorSense) return;
       hasTriggeredPredatorSense = true;
 
       const enemyPredatorSenseLevel = getEnemyAbilityLevel(enemy, 'predator_sense');
@@ -4070,16 +4169,16 @@ export function executeBattle(
     };
 
     const triggerRegenerationAtTiming = (timing: number): void => {
-      if (!isTimedTriggerSlot('regeneration', phase, timing) || hasTriggeredRegeneration) return;
+      if (phase !== 'melee' || timing !== 3 || hasTriggeredRegeneration) return;
       hasTriggeredRegeneration = true;
 
       const enemyRegenerationLevel = getEnemyAbilityLevel(enemy, 'regeneration');
       const enemyRegenerationPercent = getRegenerationPercent(enemyRegenerationLevel);
       if (enemyHp > 0 && enemyRegenerationPercent > 0 && enemyDamageTakenInBattle > 0) {
-        const healAmount = resolveTimedFormula({
-          kind: 'regeneration', level: enemyRegenerationLevel,
-          currentHp: enemyHp, maxHp: enemy.hp, damageTaken: enemyDamageTakenInBattle,
-        }).amount;
+        const healAmount = Math.min(
+          enemy.hp - enemyHp,
+          Math.floor((enemyDamageTakenInBattle * enemyRegenerationPercent) / 100),
+        );
         if (healAmount > 0) {
           enemyHp = Math.min(enemy.hp, enemyHp + healAmount);
           log.push({
@@ -4106,10 +4205,10 @@ export function executeBattle(
           continue;
         }
 
-        const healAmount = resolveTimedFormula({
-          kind: 'regeneration', level: entry.level,
-          currentHp: partyHp, maxHp: partyStats.hp, damageTaken: partyDamageTakenInBattle,
-        }).amount;
+        const healAmount = Math.min(
+          partyStats.hp - partyHp,
+          Math.floor((partyDamageTakenInBattle * getRegenerationPercent(entry.level)) / 100),
+        );
 
         if (healAmount <= 0) {
           continue;
@@ -4129,7 +4228,7 @@ export function executeBattle(
 
     // SpecRef: 6.1.3.1 | Actor action | actor.a.flying
     const triggerFlyingAtTiming = (timing: number): void => {
-      if (!isTimedTriggerSlot('flying', phase, timing) || hasTriggeredFlying) return;
+      if (phase !== 'melee' || timing !== 3 || hasTriggeredFlying) return;
       hasTriggeredFlying = true;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
@@ -4171,7 +4270,7 @@ export function executeBattle(
     };
 
     const triggerDecomposeAtTiming = (timing: number): void => {
-      if (!isTimedTriggerSlot('decompose', phase, timing) || hasTriggeredDecompose) return;
+      if (phase !== 'melee' || timing !== 2 || hasTriggeredDecompose) return;
       hasTriggeredDecompose = true;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
@@ -4244,12 +4343,9 @@ export function executeBattle(
         const eligiblePartyTargets = characterStats.filter((stats) => (
           isEligibleCharacterForPhase(phase, stats, movedCharacterIds.has(stats.characterId))
         ));
-        const confusion = resolveTimedConfusion({
-          attackType: phase,
-          level: enemyConfusionLevel,
-          targetCount: eligiblePartyTargets.length,
-        });
-        const target = confusion.targetIndex === null ? null : eligiblePartyTargets[confusion.targetIndex] ?? null;
+        const target = eligiblePartyTargets.length > 0
+          ? eligiblePartyTargets[Math.floor(Math.random() * eligiblePartyTargets.length)]
+          : null;
 
         if (!target) {
           const noTargetLog = getConfusionNoTargetLog(enemy.name);
@@ -4261,7 +4357,7 @@ export function executeBattle(
             note: noTargetLog.note,
           });
         } else {
-          const success = confusion.success;
+          const success = Math.random() < (getConfusionChance(enemyConfusionLevel) / 32);
           let nullAntagonismBlocked = false;
           if (success) {
             const hasNullAntagonism = getAbilityLevel(target, 'null_antagonism') >= 1;
@@ -4317,12 +4413,7 @@ export function executeBattle(
           });
           continue;
         }
-        const success = resolveTimedConfusion({
-          attackType: phase,
-          level: entry.level,
-          targetCount: 1,
-          fixedTarget: true,
-        }).success;
+        const success = Math.random() < (getConfusionChance(entry.level) / 32);
         let nullAntagonismBlocked = false;
         if (success) {
           const hasNullAntagonism = getEnemyAbilityLevel(enemy, 'null_antagonism') >= 1;
@@ -4350,7 +4441,7 @@ export function executeBattle(
 
     // SpecRef: 6.1.2 | Self destruct
     const triggerSelfDestructAtTiming = (timing: number): void => {
-      if (!isTimedTriggerSlot('self-destruct', phase, timing)) return;
+      if (phase !== 'melee' || timing !== 2) return;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
       const enemySelfDestructLevel = getEnemyAbilityLevel(enemy, 'self_destruct');
@@ -4358,7 +4449,7 @@ export function executeBattle(
         const { row: targetRow, newCtx } = getTargetRow(ctx, 'melee');
         ctx = newCtx;
         const target = resolveEnemyTarget(targetRow, characterStats, 'melee', enemy.abilities)
-          ?? characterStats[selectTimedIndex(characterStats.length).index ?? -1]
+          ?? characterStats[Math.floor(Math.random() * characterStats.length)]
           ?? null;
 
         const targetName = target
@@ -4437,16 +4528,16 @@ export function executeBattle(
 
     // SpecRef: 6.1.2 | Unstable core
     const triggerUnstableCoreAtTiming = (timing: number): void => {
-      if (!isTimedTriggerSlot('unstable-core', phase, timing)) return;
+      if (!((phase === 'ranged' && timing === 4) || (phase === 'magical' && timing === 0))) return;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
-      const unstablePhase = phase === 'ranged' ? 'ranged' : 'magical';
+      const unstablePhase = phase;
       const enemyUnstableCoreLevel = getEnemyAbilityLevel(enemy, 'unstable_core');
       if (enemyUnstableCoreLevel > 0) {
-        const damage = resolveTimedFormula({
-          kind: 'unstable-core', level: enemyUnstableCoreLevel,
-          currentHp: enemyHp, maxHp: enemy.hp,
-        }).amount;
+        const damage = Math.min(
+          enemyHp,
+          Math.ceil((enemyHp * getUnstableCoreDamagePercent(enemyUnstableCoreLevel)) / 100),
+        );
         applyEnemyDamage(damage);
         log.push({
           phase,
@@ -4472,10 +4563,10 @@ export function executeBattle(
       for (const entry of partyUnstableCoreEntries) {
         if (partyHp <= 0 || enemyHp <= 0) break;
 
-        const damage = resolveTimedFormula({
-          kind: 'unstable-core', level: entry.level,
-          currentHp: partyHp, maxHp: partyStats.hp,
-        }).amount;
+        const damage = Math.min(
+          partyHp,
+          Math.ceil((partyHp * getUnstableCoreDamagePercent(entry.level)) / 100),
+        );
         applyPartyDamage(damage);
         log.push({
           phase,
@@ -4495,11 +4586,12 @@ export function executeBattle(
     const triggerSoulReapAtTiming = (timing: number): void => {
       // Combat timing is shared by all attack types. Resolve once on the first
       // attack-type step for COMBAT2 instead of treating it as magic phase end.
-      if (!isTimedTriggerSlot('soul-reap', phase, timing)) return;
+      if (phase !== 'ranged' || timing !== 2) return;
       if (enemyHp <= 0 || partyHp <= 0) return;
 
       const enemySoulReapLevel = getEnemyAbilityLevel(enemy, 'soul_reap');
-      if (resolveTimedFormula({ kind: 'soul-reap', level: enemySoulReapLevel, currentHp: partyHp, maxHp: partyStats.hp }).triggered) {
+      const enemySoulReapThreshold = getSoulReapThresholdPercent(enemySoulReapLevel);
+      if (enemySoulReapThreshold > 0 && partyHp < (partyStats.hp * enemySoulReapThreshold) / 100) {
         partyHp = 0;
         log.push({
           phase,
@@ -4522,7 +4614,8 @@ export function executeBattle(
       for (const entry of partySoulReapEntries) {
         if (enemyHp <= 0 || partyHp <= 0) break;
 
-        if (!resolveTimedFormula({ kind: 'soul-reap', level: entry.level, currentHp: enemyHp, maxHp: enemy.hp }).triggered) continue;
+        const threshold = getSoulReapThresholdPercent(entry.level);
+        if (enemyHp >= (enemy.hp * threshold) / 100) continue;
 
         enemyHp = 0;
         log.push({
@@ -4536,8 +4629,19 @@ export function executeBattle(
       }
     };
 
-    // C++ emits each attack type in deterministic roll/enemy/front-row/back-row order.
-    const turnOrder = preparedTurnOrderByAttackType.get(phase) ?? [];
+    const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
+      ...(enemyInitiativeRoll !== null ? [{ kind: 'enemy' as const, roll: enemyInitiativeRoll }] : []),
+      ...characterInitiative.map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats })),
+    ].sort((a, b) => {
+      if (b.roll !== a.roll) return b.roll - a.roll;
+      if (a.kind !== b.kind) return a.kind === 'enemy' ? -1 : 1;
+      if (a.kind === 'enemy' && b.kind === 'enemy') return 0;
+      if (!('stats' in a) || !('stats' in b)) return 0;
+      const aFront = a.stats.row <= 3;
+      const bFront = b.stats.row <= 3;
+      if (aFront !== bFront) return aFront ? -1 : 1;
+      return a.stats.row - b.stats.row;
+    });
 
     {
       if (enemyHp <= 0 || partyHp <= 0) break;
@@ -4618,13 +4722,9 @@ export function executeBattle(
 
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
-          const specialResolution = resolveNormalActionSpecialMagic(
-            enemy.abilities,
-            attempts,
-            partyHp,
-            enemy.magicStyle === 'percentage_damage',
-          );
-          const specialMagic = specialResolution.specialMagic;
+          const specialMagic = enemy.magicStyle === 'percentage_damage'
+            ? (isSpecialMagicCastable('gravity_well', attempts) ? 'gravity_well' : null)
+            : resolveSpecialMagicFromAbilities(enemy.abilities, attempts);
           const magicStyle = specialMagic === 'gravity_well'
             ? 'percentage_damage'
             : specialMagic
@@ -4662,12 +4762,12 @@ export function executeBattle(
             }
 
             const appliedDamage = specialMagic === 'gravity_well'
-              ? applyPartyDamage(specialResolution.damage)
+              ? applyPartyDamage(Math.floor(partyHp * 2 / 5))
               : 0;
             if (specialMagic === 'armor_break') {
-              partyPhysicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
+              partyPhysicalDefenseDebuffAmplifier *= 4 / 3;
             } else if (specialMagic === 'mana_break') {
-              partyMagicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
+              partyMagicalDefenseDebuffAmplifier *= 4 / 3;
             }
             log.push({
               phase,
@@ -4703,41 +4803,29 @@ export function executeBattle(
           let enemySuccessfulHits = 0;
 
           for (let i = 0; i < attempts; i++) {
-            const { target: targetCharStats, newCtx } = resolveNormalActionBattleTarget(
-              ctx,
-              phase,
-              characterStats,
-              enemy.abilities,
-            );
+            const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
             ctx = newCtx;
+            const targetCharStats = resolveEnemyTarget(targetRow, characterStats, phase, enemy.abilities);
             if (!targetCharStats) {
               enemyHitIndex += 1;
               continue;
             }
 
             const existing = attacksByTarget.get(targetCharStats.characterId);
-            const didHit = resolveNormalActionDamage({
-              attackType: phase,
-              attempts: 1,
-              firstHit: enemyHitIndex,
-              attack: 1,
-              effectiveDefense: 0,
-              multipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-              opponentMaxHp: 1,
-              actorAccuracyPotency: enemyAccuracyPotency,
-              actorAccuracyBonus: enemyAccuracyBonus,
-              opponentEvasionBonus: targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
-              opponentDeflectionLevel: getDeflectionLevel(targetCharStats),
-              actorFocusLevel: getEnemyFocusLevel(enemy),
-              actorArcaneStabilityLevel: 0,
-              elementalOffense: 'none',
-              elementalOffenseValue: 1,
-              elementalResistance: 1,
-              terrainEffect: environment.terrainEffect,
-              actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
-              actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
-              opponentHasDomainBreaker: hasAbility(targetCharStats.abilities, 'domain_breaker'),
-            }).hits === 1;
+            const didHit = hitDetection(
+              enemyAccuracyPotency,
+              enemyAccuracyBonus,
+              targetCharStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
+              enemyHitIndex,
+              phase,
+              getDeflectionLevel(targetCharStats),
+              getEnemyFocusLevel(enemy),
+              environment.terrainEffect,
+              0,
+              hasAbility(enemy.abilities, 'true_sight'),
+              hasAbility(enemy.abilities, 'domain_breaker'),
+              hasAbility(targetCharStats.abilities, 'domain_breaker'),
+            );
             enemyHitIndex += 1;
 
             const targetAttack = existing ?? {
@@ -4877,13 +4965,7 @@ export function executeBattle(
             const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
             const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
             // SpecRef: 6.1.2 | Function of battle | Shock resolve
-            const shockResolution = resolveShockKernel(
-              attack.hitDamages.reduce((sum, damage) => sum + damage, 0),
-              attack.hitDamages.length,
-              !isReAttack && phase === 'melee' && isCharacterShockAvailable(attack.charStats),
-              enemyHasNullShock(enemy),
-            );
-            const shouldTriggerShock = shockResolution.consumed;
+            const shouldTriggerShock = !isReAttack && phase === 'melee' && isCharacterShockAvailable(attack.charStats);
             const actorIsNullShock = enemyHasNullShock(enemy);
             const hitDamagesToApply = shouldTriggerShock && !actorIsNullShock && attack.hitDamages.length > 1
               ? attack.hitDamages.slice(0, 1)
@@ -4916,15 +4998,13 @@ export function executeBattle(
                 appliedHits += 1;
                 if (reflect) {
                   // SpecRef: 6.1.3.1 | Actor action | Reflect damage
-                  const reactionDamage = applyDefensiveReactionKernel(
-                    hitDamage,
-                    'reflect',
-                    reflect.amplifier,
-                    getEnemyReflectDefenseAmplifier(phase, enemy),
-                    getEnemyReflectElementalResistance(enemy),
-                  );
-                  const reflectedHitDamage = reactionDamage.reflectedDamage;
-                  const remainingHitDamage = reactionDamage.remainingDamage;
+                  const reflectedHitDamage = Math.max(1, Math.floor(
+                    hitDamage
+                    * reflect.amplifier
+                    * getEnemyReflectDefenseAmplifier(phase, enemy)
+                    * getEnemyReflectElementalResistance(enemy),
+                  ));
+                  const remainingHitDamage = Math.max(0, Math.floor(hitDamage * (1 - reflect.amplifier)));
                   reflectedSourceDamage += hitDamage;
                   reflectedDamage += reflectedHitDamage;
                   appliedDamage += remainingHitDamage;
@@ -4933,11 +5013,7 @@ export function executeBattle(
                 }
 
                 if (absorb) {
-                  const absorbedHitDamage = applyDefensiveReactionKernel(
-                    hitDamage,
-                    'absorb',
-                    absorb.amplifier,
-                  ).absorbedDamage;
+                  const absorbedHitDamage = Math.max(1, Math.floor(hitDamage * absorb.amplifier));
                   absorbedDamage += absorbedHitDamage;
                   partyHp = Math.min(partyStats.hp, partyHp + absorbedHitDamage);
                   continue;
@@ -5248,20 +5324,9 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
-            const reCounterHitsBeforeAvoidance = resolveReactiveHitCount({
-              attempts: reCounterAttempts,
-              attackType: phase,
-              actorAccuracyPotency: 1.0,
-              actorAccuracyBonus: enemy.accuracyBonus + enemyPhaseAccuracyBonus,
-              opponentEvasionBonus: attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0),
-              opponentDeflectionLevel: getDeflectionLevel(attack.charStats),
-              actorFocusLevel: getEnemyFocusLevel(enemy),
-              terrainEffect: environment.terrainEffect,
-              actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
-              actorHasDomainBreaker: hasAbility(enemy.abilities, 'domain_breaker'),
-              opponentHasDomainBreaker: hasAbility(attack.charStats.abilities, 'domain_breaker'),
-            });
-            for (let i = 0; i < reCounterHitsBeforeAvoidance; i++) {
+            for (let i = 1; i <= reCounterAttempts; i++) {
+              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus + (phase === 'melee' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0), i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'), hasAbility(attack.charStats.abilities, 'domain_breaker'));
+              if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount, phase === 'magical' ? partyMagicalDefenseDebuffAmplifier : partyPhysicalDefenseDebuffAmplifier);
             }
@@ -5466,14 +5531,9 @@ export function executeBattle(
           * noAMultiplier
           * getTerrainNoAAmplifier('magical', environment.terrainEffect, cs.abilities)
         );
-        const specialResolution = phase === 'magical'
-          ? resolveNormalActionSpecialMagic(
-              cs.abilities,
-              terrainAdjustedMagicalNoA,
-              isAntagonism ? partyHp : enemyHp,
-            )
-          : { specialMagic: null, damage: 0, defenseMultiplier: 1 };
-        const activatedSpecialMagic = specialResolution.specialMagic;
+        const activatedSpecialMagic = phase === 'magical'
+          ? resolveSpecialMagicFromAbilities(cs.abilities, terrainAdjustedMagicalNoA)
+          : null;
         const magicStyle = activatedSpecialMagic === 'gravity_well'
           ? 'percentage_damage'
           : activatedSpecialMagic
@@ -5532,14 +5592,14 @@ export function executeBattle(
           let appliedDamage = 0;
           if (activatedSpecialMagic === 'gravity_well') {
             appliedDamage = isAntagonism
-              ? applyPartyDamage(specialResolution.damage)
-              : applyEnemyDamage(specialResolution.damage);
+              ? applyPartyDamage(Math.floor(partyHp * 2 / 5))
+              : applyEnemyDamage(Math.floor(enemyHp * 2 / 5));
           } else if (activatedSpecialMagic === 'armor_break') {
-            if (isAntagonism) partyPhysicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
-            else enemyPhysicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
+            if (isAntagonism) partyPhysicalDefenseDebuffAmplifier *= 4 / 3;
+            else enemyPhysicalDefenseDebuffAmplifier *= 4 / 3;
           } else {
-            if (isAntagonism) partyMagicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
-            else enemyMagicalDefenseDebuffAmplifier *= specialResolution.defenseMultiplier;
+            if (isAntagonism) partyMagicalDefenseDebuffAmplifier *= 4 / 3;
+            else enemyMagicalDefenseDebuffAmplifier *= 4 / 3;
           }
 
           log.push({
@@ -5571,15 +5631,9 @@ export function executeBattle(
         if (isAntagonism) {
           const candidates = characterStats.filter(target => target.characterId !== cs.characterId);
           if (candidates.length === 0) return null;
-          const { target: selected, newCtx } = resolveNormalActionBattleTarget(
-            ctx,
-            phase,
-            candidates,
-            enemy.abilities,
-            true,
-          );
+          const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
           ctx = newCtx;
-          if (!selected) return null;
+          const selected = resolveEnemyTarget(targetRow, candidates, phase, enemy.abilities) ?? candidates[Math.floor(Math.random() * candidates.length)];
           antagonismTarget = selected;
           antagonismTargetName = party.characters.find(c => c.id === selected.characterId)?.name ?? '???';
           ambushMultiplier = getAmbushAmplifier(
@@ -5621,9 +5675,10 @@ export function executeBattle(
           shockEffectLog = phase === 'melee' && !isReAttack && isCharacterShockAvailable(selected)
             ? (() => {
                 const actorIsNullShock = hasNullShock(cs);
-                const shock = resolveShockKernel(result.damage, result.hits, true, actorIsNullShock);
-                result.damage = shock.damage;
-                result.hits = shock.hits;
+                if (!actorIsNullShock && result.hits > 1) {
+                  result.damage = getShockAdjustedDamage(result.damage, result.hits);
+                  result.hits = 1;
+                }
                 consumeCharacterShock(selected.characterId);
                 return {
                   phase,
@@ -5687,9 +5742,10 @@ export function executeBattle(
           shockEffectLog = phase === 'melee' && !isReAttack && isEnemyShockAvailable()
             ? (() => {
                 const actorIsNullShock = hasNullShock(cs);
-                const shock = resolveShockKernel(result.damage, result.hits, true, actorIsNullShock);
-                result.damage = shock.damage;
-                result.hits = shock.hits;
+                if (!actorIsNullShock && result.hits > 1) {
+                  result.damage = getShockAdjustedDamage(result.damage, result.hits);
+                  result.hits = 1;
+                }
                 consumeEnemyShock();
                 return {
                   phase,
@@ -5740,23 +5796,17 @@ export function executeBattle(
           if (result.damage > 0 && reflect) {
             const reflectedSourceDamage = result.damage;
             // SpecRef: 6.1.3.1 | Actor action | Reflect damage
-            const reactionDamage = applyDefensiveReactionKernel(
-              result.damage,
-              'reflect',
-              reflect.amplifier,
-              getCharacterReflectDefenseAmplifier(phase, cs),
-              getCharacterReflectElementalResistance(cs),
-            );
-            result.reflectedDamage = reactionDamage.reflectedDamage;
+            result.reflectedDamage = Math.max(1, Math.floor(
+              result.damage
+              * reflect.amplifier
+              * getCharacterReflectDefenseAmplifier(phase, cs)
+              * getCharacterReflectElementalResistance(cs),
+            ));
             result.reflectedSourceDamage = reflectedSourceDamage;
             applyPartyDamage(result.reflectedDamage);
-            result.damage = reactionDamage.remainingDamage;
+            result.damage = Math.max(0, Math.floor(reflectedSourceDamage * (1 - reflect.amplifier)));
           } else if (result.damage > 0 && absorb) {
-            result.absorbedDamage = applyDefensiveReactionKernel(
-              result.damage,
-              'absorb',
-              absorb.amplifier,
-            ).absorbedDamage;
+            result.absorbedDamage = Math.max(1, Math.floor(result.damage * absorb.amplifier));
             result.absorbedBy = absorb;
             enemyHp = Math.min(enemy.hp, enemyHp + result.absorbedDamage);
             result.damage = 0;

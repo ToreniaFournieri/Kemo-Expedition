@@ -29,6 +29,7 @@ import {
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
+import { executeBattleWithDevelopmentShadow } from '../game/battleShadow';
 import { resolvePeriodicDeityHpEffectKernel } from '../game/battleTimed';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
@@ -3279,7 +3280,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (terrainEffect) {
               revealedTerrainKeys.add(terrainEffect);
             }
-            const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp, { terrainEffect });
+            const battleResult = import.meta.env.DEV || __BATTLE_SHADOW_MODE__
+              ? executeBattleWithDevelopmentShadow(currentParty, enemy, bags, roomStartHp, { terrainEffect })
+              : executeBattle(currentParty, enemy, bags, roomStartHp, { terrainEffect });
 
             // Update threat bags from battle result
             bags = {

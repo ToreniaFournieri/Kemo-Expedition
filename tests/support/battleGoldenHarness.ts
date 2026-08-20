@@ -42,7 +42,7 @@ function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
-function createSeededRandom(seed: number): () => number {
+export function createSeededRandom(seed: number): () => number {
   let state = seed >>> 0;
   if (state === 0) state = 0x9e3779b9;
   return () => {

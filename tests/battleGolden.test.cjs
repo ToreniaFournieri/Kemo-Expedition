@@ -16,6 +16,7 @@ test('battle migration golden and differential harness', () => {
     define: {
       'import.meta.env.DEV': 'false',
       __BUILD_NUMBER__: '0',
+      __BATTLE_SHADOW_MODE__: 'false',
     },
     logLevel: 'silent',
   });
