@@ -9,7 +9,7 @@ import {
 } from '../src/game/battleKernel.ts';
 
 test('the checked-in C++ battle kernel exposes the expected ABI', () => {
-  assert.equal(getBattleKernelAbiVersion(), 1);
+  assert.equal(getBattleKernelAbiVersion(), 2);
 });
 
 test('C++ per-hit damage preserves the prior JavaScript formula', () => {

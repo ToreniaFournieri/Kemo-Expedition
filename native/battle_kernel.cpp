@@ -9,7 +9,7 @@ double hit_random_rolls[kHitBufferCapacity];
 unsigned char hit_results[kHitBufferCapacity];
 
 int battle_kernel_abi_version() {
-  return 1;
+  return 2;
 }
 
 double battle_calculate_per_hit_damage(

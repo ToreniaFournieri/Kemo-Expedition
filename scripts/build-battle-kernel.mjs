@@ -6,12 +6,16 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const cpp = resolve(root, 'native/battle_kernel.cpp');
+const protocolCpp = resolve(root, 'native/battle_protocol.cpp');
 const wasm = resolve(root, 'src/game/battleKernel.wasm');
 const generated = resolve(root, 'src/game/battleKernelBinary.ts');
 const llvmRoot = execFileSync('em-config', ['LLVM_ROOT'], { encoding: 'utf8' }).trim();
 
+execFileSync(process.execPath, [resolve(root, 'scripts/generate-battle-protocol.mjs')], { stdio: 'inherit' });
+
 execFileSync(resolve(llvmRoot, 'clang++'), [
   cpp,
+  protocolCpp,
   '--target=wasm32',
   '-std=c++20',
   '-O3',
@@ -26,6 +30,12 @@ execFileSync(resolve(llvmRoot, 'clang++'), [
   '-Wl,--export=battle_hit_result_buffer',
   '-Wl,--export=battle_resolve_hit_sequence',
   '-Wl,--export=battle_apply_domain_damage_override',
+  '-Wl,--export=battle_protocol_input_arena',
+  '-Wl,--export=battle_protocol_output_arena',
+  '-Wl,--export=battle_protocol_arena_capacity',
+  '-Wl,--export=battle_protocol_version',
+  '-Wl,--export=battle_protocol_validate_input',
+  '-Wl,--export=battle_protocol_probe',
   '-o', wasm,
 ], {
   stdio: 'inherit',

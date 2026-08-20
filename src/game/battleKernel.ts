@@ -1,7 +1,9 @@
 import { BATTLE_KERNEL_WASM } from './battleKernelBinary.ts';
 import type { AttackType, TerrainEffectKey } from '../types';
+import { decodeBattleProtocolOutput, type BattleProtocolOutput } from './battleProtocol.ts';
+import { BATTLE_PROTOCOL_VERSION } from './generated/battleProtocol.generated.ts';
 
-const ABI_VERSION = 1;
+const ABI_VERSION = 2;
 
 type KernelExports = WebAssembly.Exports & {
   memory: WebAssembly.Memory;
@@ -12,12 +14,21 @@ type KernelExports = WebAssembly.Exports & {
   battle_hit_result_buffer(): number;
   battle_resolve_hit_sequence(...values: number[]): number;
   battle_apply_domain_damage_override(...values: number[]): number;
+  battle_protocol_input_arena(): number;
+  battle_protocol_output_arena(): number;
+  battle_protocol_arena_capacity(): number;
+  battle_protocol_version(): number;
+  battle_protocol_validate_input(byteLength: number): number;
+  battle_protocol_probe(byteLength: number): number;
 };
 
 const module = new WebAssembly.Module(BATTLE_KERNEL_WASM);
 const kernel = new WebAssembly.Instance(module, {}).exports as KernelExports;
 if (kernel.battle_kernel_abi_version() !== ABI_VERSION) {
   throw new Error('Unsupported C++ battle kernel ABI');
+}
+if (kernel.battle_protocol_version() !== BATTLE_PROTOCOL_VERSION) {
+  throw new Error('Unsupported C++ battle protocol version');
 }
 
 export function calculatePerHitDamage(
@@ -136,4 +147,30 @@ export function applyDomainDamageOverride(
 
 export function getBattleKernelAbiVersion(): number {
   return kernel.battle_kernel_abi_version();
+}
+
+export function getBattleProtocolArenaInfo(): {
+  inputPointer: number;
+  outputPointer: number;
+  capacity: number;
+} {
+  return {
+    inputPointer: kernel.battle_protocol_input_arena(),
+    outputPointer: kernel.battle_protocol_output_arena(),
+    capacity: kernel.battle_protocol_arena_capacity(),
+  };
+}
+
+export function probeBattleProtocol(input: Uint8Array): BattleProtocolOutput {
+  const arena = getBattleProtocolArenaInfo();
+  if (input.byteLength > arena.capacity) {
+    throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
+  }
+  new Uint8Array(kernel.memory.buffer, arena.inputPointer, input.byteLength).set(input);
+  const outputByteLength = kernel.battle_protocol_probe(input.byteLength);
+  if (outputByteLength < 0) throw new Error(`C++ battle protocol rejected input (${outputByteLength})`);
+  if (outputByteLength > arena.capacity) throw new Error('C++ battle protocol returned an oversized output');
+  const output = new Uint8Array(outputByteLength);
+  output.set(new Uint8Array(kernel.memory.buffer, arena.outputPointer, outputByteLength));
+  return decodeBattleProtocolOutput(output);
 }

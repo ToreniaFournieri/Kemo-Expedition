@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "battle:cxx": "node scripts/build-battle-kernel.mjs",
+    "battle:protocol": "node scripts/generate-battle-protocol.mjs",
+    "battle:protocol:check": "node scripts/generate-battle-protocol.mjs --check",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",
     "desktop:prod": "npm run build && electron . --environment=prod",
