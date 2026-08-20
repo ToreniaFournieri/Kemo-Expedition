@@ -148,17 +148,19 @@ test('profiling aggregates batches in memory without per-Cycle output', () => {
   assert.equal(second.longestEventLoopDelayMs, 7);
 });
 
-test('runtime slices the immutable logical Chunk plan and finalizes only its last batch', () => {
-  assert.match(hookSource, /getAfkOperationWindow\([\s\S]*operationStart,[\s\S]*requestedOperationCount/);
-  assert.match(hookSource, /if \(action\.finalizeChunk !== false \|\| operationEnd >= totalOperationCount\)/);
-  assert.match(homeSource, /afkChunkCursorRef\.current = finalizeChunk[\s\S]*operationStart,[\s\S]*operationCount,[\s\S]*finalizeChunk/);
-  assert.match(homeSource, /minimumCommitIntervalMs = document\.visibilityState === 'visible' \? 100 : 250/);
+test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () => {
+  assert.match(hookSource, /cycleDurationMs \* AFK_CHUNK_CYCLE_COUNT/);
+  assert.match(hookSource, /partyIndex === options\.partyIndex \? cycleDurationMs : inactiveDurationMs/);
+  assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
+  assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
+  assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
+  assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
 });
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
   assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
-  assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkBatchMeasurementRef\.current \|\| afkInteractionPausedRef\.current\) return/);
-  assert.match(homeSource, /setTimeout\(\(\) => \{\s*if \(afkInteractionPausedRef\.current\) return;/);
+  assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkInteractionPausedRef\.current\) return/);
+  assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /afkInteractionPausedRef\.current = false/);
   assert.doesNotMatch(homeSource, /event\.preventDefault\(\);\s*event\.stopPropagation\(\);/);
 });

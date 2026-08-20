@@ -3,14 +3,18 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import {
-  createAfkChunkPlan,
-  getAdaptiveAfkOperationCount,
   getEffectiveAfkElapsedMs,
+  getApproxAfkCycleDurationMs,
 } from '../../src/game/afkScheduler.ts';
-import { BASE_STEP_DURATION_MS } from '../../src/game/progressTiming.ts';
+import {
+  AFK_CHUNK_CYCLE_COUNT,
+  commitAfkPartyChunk,
+  compareAfkChunkResults,
+  type AfkPartyChunkResult,
+} from '../../src/game/afkChunkCoordinator.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
-import { simulateAfkBatchForTesting } from '../../src/hooks/useGameState.ts';
+import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
 import type { GameState } from '../../src/types.ts';
 
 const SAMPLE_SAVE_PATH = resolve(
@@ -18,13 +22,8 @@ const SAMPLE_SAVE_PATH = resolve(
   'sample_savedata/ALL_Exp8_v0.9.3_dev_20260816.kemoz',
 );
 const HOUR_MS = 60 * 60 * 1000;
-const DESKTOP_BATCH_BUDGET_MS = 16;
 const MAX_BATCH_DURATION_MS = 50;
 const DEV_CYCLE_DURATION_SCALE = 0.05;
-const APPROX_CYCLE_STEP_COUNT = 30;
-const CHUNK_CYCLE_COUNT = 12;
-const VISIBLE_COMMIT_INTERVAL_MS = 100;
-const HIDDEN_COMMIT_INTERVAL_MS = 250;
 const AFK_PERIODS = [
   [9, 9],
   [18, 15],
@@ -55,13 +54,11 @@ function getDurationPeriodReport(state: GameState) {
   return AFK_PERIODS.map(([realHours, effectiveHours]) => {
     const elapsedMs = getEffectiveAfkElapsedMs(realHours * HOUR_MS);
     assert.equal(elapsedMs, effectiveHours * HOUR_MS);
-    const plan = createAfkChunkPlan(
-      state.parties,
-      elapsedMs,
-      Date.UTC(2026, 7, 16),
-      DEV_CYCLE_DURATION_SCALE,
-    );
-    return { realHours, effectiveHours, cyclePartyOperations: plan.operationCount };
+    const cyclePartyOperations = state.parties.reduce((total, party) => {
+      const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
+      return total + Math.floor(elapsedMs / (cycleDurationMs * AFK_CHUNK_CYCLE_COUNT)) * AFK_CHUNK_CYCLE_COUNT;
+    }, 0);
+    return { realHours, effectiveHours, cyclePartyOperations };
   });
 }
 
@@ -72,82 +69,53 @@ test('Expedition 8 sample save covers every AFK efficiency duration period', () 
   console.info('AFK_DURATION_PERIOD_REPORT', JSON.stringify(getDurationPeriodReport(state)));
 });
 
-test('Expedition 8 sample save reports AFK reducer batch duration and compliance', () => {
-  let state = loadSampleState();
-  const chunkElapsedMs = BASE_STEP_DURATION_MS
-    * APPROX_CYCLE_STEP_COUNT
-    * CHUNK_CYCLE_COUNT
-    * DEV_CYCLE_DURATION_SCALE;
+test('Expedition 8 sample save reports worker and coordinator duration compliance', () => {
+  const baseState = loadSampleState();
+  let state = baseState;
   const simulatedEndAt = Date.UTC(2026, 7, 16);
-  const plan = createAfkChunkPlan(
-    state.parties,
-    chunkElapsedMs,
-    simulatedEndAt,
-    DEV_CYCLE_DURATION_SCALE,
-  );
-  assert.ok(plan.operationCount > 0);
-
-  let operationCursor = 0;
-  let averageOperationDurationMs: number | null = null;
-  const batchDurationsMs: number[] = [];
-  const batchOperationCounts: number[] = [];
-
-  while (operationCursor < plan.operationCount) {
-    const remainingOperations = plan.operationCount - operationCursor;
-    const operationCount = getAdaptiveAfkOperationCount(
-      remainingOperations,
-      averageOperationDurationMs,
-      DESKTOP_BATCH_BUDGET_MS,
-    );
+  const workerDurationsMs: number[] = [];
+  const results: AfkPartyChunkResult[] = baseState.parties.map((party, partyIndex) => {
+    const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
     const startedAt = performance.now();
-    state = simulateAfkBatchForTesting(state, {
-      elapsedMs: plan.elapsedMs,
-      isAutoRepeatEnabled: true,
+    const resultState = simulateAfkPartyChunkForWorker(baseState, {
+      partyIndex,
+      cycleDurationMs,
+      simulatedCompletedAt: simulatedEndAt,
+      cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
       gameMode: 'm.kemo',
-      simulatedEndAt,
-      cycleDurationScale: plan.cycleDurationScale,
-      cycleDurationByParty: plan.cycleDurationByParty,
-      operationStart: operationCursor,
-      operationCount,
-      finalizeChunk: operationCursor + operationCount >= plan.operationCount,
     });
     const durationMs = performance.now() - startedAt;
-    const durationPerOperationMs = durationMs / operationCount;
-    averageOperationDurationMs = averageOperationDurationMs === null
-      ? durationPerOperationMs
-      : (averageOperationDurationMs * 0.7) + (durationPerOperationMs * 0.3);
-    batchDurationsMs.push(durationMs);
-    batchOperationCounts.push(operationCount);
-    operationCursor += operationCount;
-  }
+    workerDurationsMs.push(durationMs);
+    return {
+      jobId: `profile-${party.id}`,
+      partyIndex,
+      partyId: party.id,
+      simulatedCompletedAt: simulatedEndAt,
+      cycleDurationMs,
+      baseState,
+      resultState,
+      durationMs,
+    };
+  }).sort(compareAfkChunkResults);
 
-  const totalDurationMs = batchDurationsMs.reduce((total, duration) => total + duration, 0);
+  const coordinatorDurationsMs: number[] = [];
+  results.forEach((result) => {
+    const startedAt = performance.now();
+    state = commitAfkPartyChunk(state, result);
+    coordinatorDurationsMs.push(performance.now() - startedAt);
+  });
+
   const report = {
-    effectiveChunkMinutes: chunkElapsedMs / 60_000,
     parties: state.parties.length,
-    cyclePartyOperations: plan.operationCount,
-    batches: batchDurationsMs.length,
-    minimumOperationsPerBatch: Math.min(...batchOperationCounts),
-    maximumOperationsPerBatch: Math.max(...batchOperationCounts),
-    totalDurationMs,
-    averageBatchDurationMs: totalDurationMs / batchDurationsMs.length,
-    p95BatchDurationMs: percentile(batchDurationsMs, 0.95),
-    longestBatchDurationMs: Math.max(...batchDurationsMs),
-    within50msCeiling: Math.max(...batchDurationsMs) < MAX_BATCH_DURATION_MS,
+    cyclesPerWorkerChunk: AFK_CHUNK_CYCLE_COUNT,
+    totalWorkerDurationMs: workerDurationsMs.reduce((total, duration) => total + duration, 0),
+    projectedParallelWorkerDurationMs: Math.max(...workerDurationsMs),
+    p95CoordinatorCommitDurationMs: percentile(coordinatorDurationsMs, 0.95),
+    longestCoordinatorCommitDurationMs: Math.max(...coordinatorDurationsMs),
+    coordinatorWithin50msCeiling: Math.max(...coordinatorDurationsMs) < MAX_BATCH_DURATION_MS,
   };
-  console.info('AFK_BATCH_DURATION_REPORT', JSON.stringify(report));
-  console.info('AFK_PROJECTED_REDUCER_DURATION_REPORT', JSON.stringify(
-    getDurationPeriodReport(loadSampleState()).map((period) => ({
-      ...period,
-      projectedReducerDurationMs:
-        period.cyclePartyOperations * (totalDurationMs / plan.operationCount),
-      projectedVisibleSchedulerDurationMs:
-        period.cyclePartyOperations * VISIBLE_COMMIT_INTERVAL_MS,
-      projectedHiddenSchedulerDurationMs:
-        period.cyclePartyOperations * HIDDEN_COMMIT_INTERVAL_MS,
-    })),
-  ));
+  console.info('AFK_WORKER_COORDINATOR_DURATION_REPORT', JSON.stringify(report));
 
-  assert.equal(operationCursor, plan.operationCount);
-  assert.ok(Number.isFinite(report.longestBatchDurationMs));
+  assert.ok(Number.isFinite(report.longestCoordinatorCommitDurationMs));
+  assert.equal(report.coordinatorWithin50msCeiling, true);
 });

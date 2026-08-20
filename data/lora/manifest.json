@@ -3,7 +3,7 @@
   "dataset": "BoKemo Gameplay-Assistant LoRA",
   "source_snapshot": {
     "version": "0.9.3",
-    "build": 7
+    "build": 29
   },
   "generated_at": "deterministic",
   "generation_seed": 903007,
@@ -37,15 +37,15 @@
   },
   "source_hashes": {
     "Specification.md": "7239e99490b0d0d026aa01618ec35dbc183ae77959f7009b1d5012e44bd408f0",
-    "Specification_2.1_CHARACTER_&_PARTY.md": "d6cdc06c95fa56f21661a575f4fc2198ee3e46d36bcea6e4fef9adc9c7037d1e",
+    "Specification_2.1_CHARACTER_&_PARTY.md": "bc492041535928f25411e0440eeb3e15601129f9df6e2e777b87c9288f522072",
     "Specification_3.1_ITEM.md": "893fc0812108a1faad0cd76f556690fef2908d60341eb642378d7898a577211c",
-    "Specification_4.1_EXPEDITION_&_ENEMY.md": "e5fb6ed154ac2185c196afa18c837229eb1ed9651f6d52206148b0078dd70aa1",
-    "Specification_5.1_PROGRESS.md": "f3d36c2c1950d697549ccb81b91dc5d1c15479e19d06ffffe209a934d69af525",
-    "Specification_6.1_BATTLE.md": "70f2484e5d61fcd33abda7a8aed1a0835dea810ef9e623d381c054795188e977",
-    "Specification_7.1_AUTOMATION.md": "9f82418edc005ea690d4d80442b40ddf3332e1c098c8281227c5936c41564603",
+    "Specification_4.1_EXPEDITION_&_ENEMY.md": "9bafd6a4318886c6455d2c5a98a0d85fc8f514d51626c8c3ebfe08e10c8f505e",
+    "Specification_5.1_PROGRESS.md": "0ec52292a115908b3cc15aaa41ea62282c0035967c8b4e794f314b3196f14bf2",
+    "Specification_6.1_BATTLE.md": "2bc0e699dccfa7e11c3941112079bb0830fdbce3fbcd0126a8618cca1b796aa5",
+    "Specification_7.1_AUTOMATION.md": "01012d5afce1894077c395ad98e79b888eff59b3760f217f4e4492be9106fc4e",
     "Specification_9.1.3_API_ENDPOINTS.md": "0d40ec6e6924a536ee20196458f7da15dfb1164b88f20d798febc343e7a30620",
     "src/data/classes.ts": "92a2d2752ca8baecd6ae3ee044a4fc1cc39cef22ad82ffc1a765a0ae5ebe0ef8",
-    "src/data/dungeons.ts": "c6142557467a514bf1c2cde07c9bf73986fb32e944733022082b66a862cd8341",
+    "src/data/dungeons.ts": "3810aa2e986835041b8e0d0bcfca1f607f807080af9585858ee318f0437b8802",
     "src/data/lineages.ts": "4134e6e364ff8e2b442e767ab368f56da8fa55ec71b08d5adb92adb1ea5c9fbb",
     "src/data/predispositions.ts": "55b694bd72930e018077b6a70ce580545d9e08eacb9da2f86ed8cee24c93a308",
     "src/data/races.ts": "69de5c385e834d51f034e6d9af2c9062720bbf5f57b12b069b7be98085508aed",
@@ -61,16 +61,16 @@
     "scripts/lora/validate.mjs": "cf046fccd2ebe96c7809d9cef8aeb6efe58e6b865f8e23912b12a360c87459ba",
     "training/lora/model.lock.json": "2707594ea1e7ab2339caceae6ae601c63e83f5e5a44cb1acd4aec4c7144523be",
     "training/lora/qwen3_4b_qlora.yaml": "3dbf4c3b45c7b1d18c46aa7d57c4e2ce469d98af95a1df425de585956a441bdd",
-    "build_number.txt": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
-    "src/i18n/ja.ts": "289c5a089c25d20fabc9f0e5625376f246e7497e492d54c51d2c3f5c3d758eef",
-    "src/i18n/en.ts": "91cfe7bc4a6a70c02538087619f1ed0c89263195de73b10c4347087f9022c829",
-    "src/i18n/zh-CN.ts": "671c626dff463124ec97f2640f3d3fa116f3b8a930f8fb6e720634a304eadafa",
-    "src/i18n/zh-TW.ts": "73a84a93d5bd2c06bdf19def043b0122a6a40e5b8baaa81188d17856f06d7c5d"
+    "build_number.txt": "3840bc236ee03aacbb1ef7d5108ddfa347c59f10b68d4174affbb53140f31273",
+    "src/i18n/ja.ts": "d25877e1ff7076ab34a1a7dd79058d9ee2eaa3d2d15d8be1ef931f29aa3d89dd",
+    "src/i18n/en.ts": "b62dbe3f6b99bb0a1d34d39410f013681709707e4ca30a8b6edc6a452879c9ff",
+    "src/i18n/zh-CN.ts": "4edbf368845783708cf53c2b5e8a53ffd3d68d4e420bfed54f0167f10a7288d5",
+    "src/i18n/zh-TW.ts": "dee9038e9ac6fc80c4bb063ff6d59621c06889fc3c40c9d55a2d2c9777ccd23b"
   },
   "split_hashes": {
-    "train": "947a0c8211c9eaaa5e4e1cbdbd8b40bd4cbb754b2c7a049457462b54949dadf6",
-    "valid": "97b88045866f947869a68171c96f2215ab6135c044d99ebdb081674a6a2802dd",
-    "test": "71fba1f1190db8db4d33331a9ddf7542ad30024f680cfce996f7b893a0072516"
+    "train": "0c516032c5bfabc1cf9e47e99fa3c87110b32c2c8212bd5cc8cc92e741733917",
+    "valid": "684c07ac34f13ce21d3465cd9c1da3716dc349d51d7e0f5afa617a1a643585a7",
+    "test": "a49e484bf87f331560c6ada05c1be6737dd7b785d3d5aa87e8aa55bc6ab0d36d"
   },
-  "corpus_sha256": "affe4b1361912eafa244bfb00db781d9afcd979de441df8c87db5f10523244b3"
+  "corpus_sha256": "83fa176bdc91343f663f59867117883fd435781845dee4b8f58ae33397437f00"
 }

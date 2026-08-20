@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.3 | 29 | 2026/08/20 | Run each party's 12-Cycle AFK Chunks in parallel module workers, commit completed results sequentially by simulated time and party ID, preserve pending PT settings at Chunk boundaries, persist per-party recovery backlogs, and add coordinator and save-backed performance coverage. |
 | 0.9.3 | 28 | 2026/08/20 | Restore the base Step duration from 15 seconds to 30 seconds across the specification and shared runtime timing, including debug-scale examples and regression coverage. |
 | 0.9.3 | 27 | 2026/08/20 | Reduce the base Step duration from 30 seconds to 15 seconds across the specification and shared runtime timing, update debug-scale examples and regression coverage, and re-profile the Expedition 8 AFK workload. |
 | 0.9.3 | 26 | 2026/08/20 | Add a save-backed AFK performance profile using the six-party Expedition 8 sample to report every efficiency period, projected reducer duration, adaptive batch timing, and 50 ms ceiling compliance. |

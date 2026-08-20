@@ -19,18 +19,22 @@ import { getDeityDepositMultiplier,getDeityKey,getDeityStateDurationMultiplier,i
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
 import {
-createAfkChunkPlan,
 createAfkSchedulerProfile,
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
-getAdaptiveAfkOperationCount,
-getAfkBatchBudgetMs,
 getEffectiveAfkElapsedMs,
+getApproxAfkCycleDurationMs,
 observeAfkRecoveryBacklog,
 recordAfkSchedulerBatch,
 shouldPauseOnlineProgressForAfk,
 type AfkSchedulerProfile,
 type PersistedAfkChunkCursor,
 } from '../game/afkScheduler';
+import {
+AFK_CHUNK_CYCLE_COUNT,
+compareAfkChunkResults,
+type AfkPartyChunkJob,
+type AfkPartyChunkResult,
+} from '../game/afkChunkCoordinator';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
@@ -67,7 +71,6 @@ buildAfkSummaryNotification,
 buildStatusTableHtmlFile,
 buildStatusTableRows,
 CHROME_CONTENT_PADDING_CLASS,
-CHUNK_CYCLE_COUNT,
 DARK_MODE_STORAGE_KEY,
 DarkModeSetting,
 DEV_DISCORD_WEBHOOK_URL,
@@ -207,6 +210,11 @@ export function HomeScreen({
   const afkRecoveryTotalMsRef = useRef(0);
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
+  const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
+  const afkActiveChunkJobsRef = useRef(new Map<number, { job: AfkPartyChunkJob; worker: Worker }>());
+  const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
+  const afkWorkerJobSequenceRef = useRef(0);
+  const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
   const afkSchedulerProfileRef = useRef<AfkSchedulerProfile | null>(null);
   const afkBatchMeasurementRef = useRef<{
@@ -1695,6 +1703,10 @@ export function HomeScreen({
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
     afkChunkCursorRef.current = null;
+    afkRemainingMsByPartyRef.current = {};
+    afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
+    afkActiveChunkJobsRef.current.clear();
+    afkCompletedChunkResultsRef.current.clear();
     try {
       localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
     } catch (error) {
@@ -1794,6 +1806,8 @@ export function HomeScreen({
           : latestPartiesRef.current.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = parsed.shouldShowAfkSummary;
         afkChunkCursorRef.current = parsed.afkChunkCursor;
+        afkRemainingMsByPartyRef.current = parsed.afkRemainingMsByParty
+          ?? Object.fromEntries(latestPartiesRef.current.map((_, partyIndex) => [partyIndex, restoredPendingAfkMs]));
         shouldRebuildPartyCyclesAfterAfkRef.current = true;
       }
       setPartyCycles(parsed.partyCycles);
@@ -2109,98 +2123,108 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
-    if (pendingAfkMs <= 0 || afkBatchMeasurementRef.current || afkInteractionPausedRef.current) return;
+    if (pendingAfkMs <= 0 || afkInteractionPausedRef.current) return;
+    // v0.9.2 persisted a cross-party operation cursor. Party-scoped workers
+    // restart only the uncommitted legacy slice from its durable game-state save.
+    afkChunkCursorRef.current = null;
 
-    const minimumCommitIntervalMs = document.visibilityState === 'visible' ? 100 : 250;
-    const now = performance.now();
-    const delayMs = Math.max(0, minimumCommitIntervalMs - (now - afkLastBatchCommittedAtRef.current));
-    const scheduledAt = now + delayMs;
-    const timerId = window.setTimeout(() => {
-      if (afkInteractionPausedRef.current) return;
-      const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
-      let cursor = afkChunkCursorRef.current;
+    if (!autoRepeatEnabledRef.current) {
+      afkRemainingMsByPartyRef.current = {};
+      setPendingAfkMs(0);
+      return;
+    }
 
-      if (!autoRepeatEnabledRef.current) {
-        const catchupChunkMs = Math.max(
-          PARTY_CYCLE_TICK_MS,
-          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * durationScale),
-        );
-        const skippedElapsedMs = cursor?.elapsedMs ?? Math.min(pendingAfkMsRef.current, catchupChunkMs);
-        afkChunkCursorRef.current = null;
-        setPendingAfkMs((previous) => Math.max(0, previous - skippedElapsedMs));
-        return;
-      }
-
-      if (!cursor) {
-        // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Adaptive batching
-        // Build the complete logical 12-Cycle Chunk once. Scheduler batches only slice
-        // this immutable operation plan, preserving party order, timestamps, and RNG order.
-        const catchupChunkMs = Math.max(
-          PARTY_CYCLE_TICK_MS,
-          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * durationScale),
-        );
-        const elapsedMs = Math.min(pendingAfkMsRef.current, catchupChunkMs);
-        const anchor = afkSimulationAnchorRef.current ?? Date.now();
-        const plan = createAfkChunkPlan(
-          state.parties,
-          elapsedMs,
-          anchor - pendingAfkMsRef.current + elapsedMs,
-          durationScale,
-        );
-        cursor = { ...plan, operationCursor: 0 };
-        afkChunkCursorRef.current = cursor;
-      }
-
-      if (cursor.operationCount <= 0) {
-        const completedElapsedMs = cursor.elapsedMs;
-        afkChunkCursorRef.current = null;
-        setPendingAfkMs((previous) => Math.max(0, previous - completedElapsedMs));
-        return;
-      }
-
-      const remainingOperations = cursor.operationCount - cursor.operationCursor;
-      const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-      const budgetMs = getAfkBatchBudgetMs({
-        isMobile: window.matchMedia('(pointer: coarse)').matches,
-        hardwareConcurrency: navigator.hardwareConcurrency,
-        saveData: connection?.saveData === true,
-      });
-      const operationCount = getAdaptiveAfkOperationCount(
-        remainingOperations,
-        afkAverageOperationDurationMsRef.current,
-        budgetMs,
+    if (Object.keys(afkRemainingMsByPartyRef.current).length === 0) {
+      afkRemainingMsByPartyRef.current = Object.fromEntries(
+        state.parties.map((_, partyIndex) => [partyIndex, pendingAfkMsRef.current]),
       );
-      const operationStart = cursor.operationCursor;
-      const nextOperationCursor = operationStart + operationCount;
-      const finalizeChunk = nextOperationCursor >= cursor.operationCount;
-      const startedAt = performance.now();
+    }
 
-      afkBatchMeasurementRef.current = { startedAt, scheduledAt, operationCount };
-      afkChunkCursorRef.current = finalizeChunk
-        ? null
-        : { ...cursor, operationCursor: nextOperationCursor };
+    const activeJobs = Array.from(afkActiveChunkJobsRef.current.values()).map(({ job }) => job);
+    if (activeJobs.length > 0) {
+      const nextCanonicalJob = [...activeJobs].sort((left, right) => compareAfkChunkResults(left, right))[0];
+      const completedResult = afkCompletedChunkResultsRef.current.get(nextCanonicalJob.jobId);
+      if (completedResult) {
+        const active = afkActiveChunkJobsRef.current.get(completedResult.partyIndex);
+        active?.worker.terminate();
+        afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
+        afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
+        const chunkElapsedMs = completedResult.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+        afkRemainingMsByPartyRef.current[completedResult.partyIndex] = Math.max(
+          0,
+          (afkRemainingMsByPartyRef.current[completedResult.partyIndex] ?? 0) - chunkElapsedMs,
+        );
+        afkLastBatchCommittedAtRef.current = performance.now();
+        const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile();
+        afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
+          profile,
+          completedResult.durationMs,
+          AFK_CHUNK_CYCLE_COUNT,
+        );
+        actions.commitAfkPartyChunk(completedResult);
+        const remaining = Object.values(afkRemainingMsByPartyRef.current);
+        pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
+        setPendingAfkMs(pendingAfkMsRef.current);
+        return;
+      }
+    }
 
-      actions.simulateAfk(
-        cursor.elapsedMs,
-        autoRepeatEnabledRef.current,
+    const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    const anchor = afkSimulationAnchorRef.current ?? Date.now();
+    let startedJob = false;
+
+    state.parties.forEach((party, partyIndex) => {
+      if (afkActiveChunkJobsRef.current.has(partyIndex)) return;
+      const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale);
+      const chunkElapsedMs = cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+      const remainingMs = afkRemainingMsByPartyRef.current[partyIndex] ?? 0;
+      if (remainingMs < chunkElapsedMs) return;
+
+      const simulatedStartedAt = anchor - remainingMs;
+      const job: AfkPartyChunkJob = {
+        jobId: `afk-${party.id}-${++afkWorkerJobSequenceRef.current}`,
+        partyIndex,
+        partyId: party.id,
+        simulatedStartedAt,
+        simulatedCompletedAt: simulatedStartedAt + chunkElapsedMs,
+        cycleDurationMs,
+        baseState: state,
         gameMode,
-        cursor.simulatedEndAt,
-        cursor.cycleDurationScale,
-        {
-          cycleDurationByParty: cursor.cycleDurationByParty,
-          operationStart,
-          operationCount,
-          finalizeChunk,
-        },
-      );
+        cycleDurationScale: durationScale,
+      };
+      const worker = new Worker(new URL('../workers/afkChunkWorker.ts', import.meta.url), { type: 'module' });
+      worker.onmessage = (event: MessageEvent<{ type: 'complete'; result: AfkPartyChunkResult } | { type: 'error'; jobId: string; message: string }>) => {
+        if (event.data.type === 'complete') {
+          afkCompletedChunkResultsRef.current.set(event.data.result.jobId, event.data.result);
+        } else {
+          console.error(`AFK worker ${event.data.jobId} failed:`, event.data.message);
+          afkActiveChunkJobsRef.current.get(partyIndex)?.worker.terminate();
+          afkActiveChunkJobsRef.current.delete(partyIndex);
+        }
+        setAfkCoordinatorVersion((version) => version + 1);
+      };
+      worker.onerror = (event) => {
+        console.error(`AFK worker ${job.jobId} failed:`, event.message);
+        worker.terminate();
+        afkActiveChunkJobsRef.current.delete(partyIndex);
+        setAfkCoordinatorVersion((version) => version + 1);
+      };
+      afkActiveChunkJobsRef.current.set(partyIndex, { job, worker });
+      worker.postMessage(job);
+      startedJob = true;
+    });
 
-      if (finalizeChunk) {
-        setPendingAfkMs((previous) => Math.max(0, previous - cursor.elapsedMs));
-      }
-    }, delayMs);
+    if (!startedJob && afkActiveChunkJobsRef.current.size === 0) {
+      afkRemainingMsByPartyRef.current = {};
+      pendingAfkMsRef.current = 0;
+      setPendingAfkMs(0);
+    }
+  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
 
-    return () => window.clearTimeout(timerId);
-  }, [actions, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
+  useEffect(() => () => {
+    afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
+    afkActiveChunkJobsRef.current.clear();
+  }, []);
 
   useEffect(() => {
     const backlogObservation = observeAfkRecoveryBacklog(
@@ -2385,6 +2409,7 @@ export function HomeScreen({
     afkSummaryBaseline: afkSummaryBaselineRef.current,
     shouldShowAfkSummary: shouldShowAfkSummaryRef.current,
     afkChunkCursor: afkChunkCursorRef.current,
+    afkRemainingMsByParty: afkRemainingMsByPartyRef.current,
   }), []);
 
   const persistAfkRuntimeState = useCallback((checkpointAt: number = lastCheckpointAtRef.current) => {
@@ -2423,6 +2448,8 @@ export function HomeScreen({
     afkSummaryBaselineRef.current = importedRuntime?.afkSummaryBaseline ?? null;
     shouldShowAfkSummaryRef.current = importedRuntime?.shouldShowAfkSummary ?? false;
     afkChunkCursorRef.current = importedRuntime?.afkChunkCursor ?? null;
+    afkRemainingMsByPartyRef.current = importedRuntime?.afkRemainingMsByParty
+      ?? Object.fromEntries(result.state.parties.map((_, partyIndex) => [partyIndex, nextPendingAfkMs]));
     shouldRebuildPartyCyclesAfterAfkRef.current = nextPendingAfkMs > 0;
     lastCheckpointAtRef.current = importedRuntime?.checkpointAt ?? now;
 
@@ -2504,11 +2531,20 @@ export function HomeScreen({
         AFK_MAX_EFFECTIVE_ELAPSED_MS,
         pendingAfkMsRef.current + effectiveElapsedMs,
       );
+      const previousPendingAfkMs = pendingAfkMsRef.current;
       // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
       // Update AFK recovery refs synchronously before persistence so refresh restores the same x/y progress baseline.
       afkRecoveryTotalMsRef.current = Math.max(afkRecoveryTotalMsRef.current, nextPendingAfkMs);
       afkRecoveryCompletedMsRef.current = Math.max(0, afkRecoveryTotalMsRef.current - nextPendingAfkMs);
       pendingAfkMsRef.current = nextPendingAfkMs;
+      afkRemainingMsByPartyRef.current = Object.fromEntries(
+        parties.map((_, partyIndex) => [partyIndex, Math.min(
+          AFK_MAX_EFFECTIVE_ELAPSED_MS,
+          previousPendingAfkMs > 0
+            ? (afkRemainingMsByPartyRef.current[partyIndex] ?? previousPendingAfkMs) + effectiveElapsedMs
+            : effectiveElapsedMs,
+        )]),
+      );
       setPendingAfkMs(nextPendingAfkMs);
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;

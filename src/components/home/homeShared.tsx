@@ -36,6 +36,7 @@ isDungeonEntryUnlocked,
 import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDisplay';
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
+import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
 import {
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 AFK_MAX_REAL_ELAPSED_MS,
@@ -219,6 +220,7 @@ export interface HomeScreenProps {
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => void;
+    commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
     runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
       state: GameState;
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
@@ -552,6 +554,7 @@ export interface PersistedRuntimeSnapshot {
   afkSummaryBaseline: AfkSummaryStats[] | null;
   shouldShowAfkSummary: boolean;
   afkChunkCursor: PersistedAfkChunkCursor | null;
+  afkRemainingMsByParty?: Record<number, number>;
 }
 
 
@@ -639,6 +642,11 @@ export function normalizeRuntimeSnapshot(raw: unknown, partyCount: number, now: 
     afkSummaryBaseline: baseline && baseline.length > 0 ? baseline : null,
     shouldShowAfkSummary: parsed.shouldShowAfkSummary !== false,
     afkChunkCursor: normalizePersistedAfkChunkCursor(parsed.afkChunkCursor, normalizedPartyCount),
+    afkRemainingMsByParty: parsed.afkRemainingMsByParty && typeof parsed.afkRemainingMsByParty === 'object'
+      ? Object.fromEntries(Object.entries(parsed.afkRemainingMsByParty)
+          .map(([key, value]) => [Number(key), Math.max(0, Math.min(AFK_MAX_EFFECTIVE_ELAPSED_MS, Math.floor(Number(value))))])
+          .filter(([key, value]) => Number.isInteger(key) && key >= 0 && key < normalizedPartyCount && Number.isFinite(value)))
+      : undefined,
   };
 }
 

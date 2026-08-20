@@ -14,9 +14,19 @@
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
   - A full Cycle always **ends at the end of `state.rest`**.
-- **`Chunk`**: A higher-level processing unit used for bulk progression. 
+- **`Chunk`**: A higher-level processing unit used for bulk AFK progression.
+  - Each AFK worker process handles exactly one Chunk for one party.
+  - A party may have only one active or queued Chunk at a time.
   - **1 Chunk = 12 Cycles**.
   - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
+  - Each Chunk continues using the party and global parameters captured when it begins.
+  - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
+  - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
+  - **Party Setting Updates**
+    - User PT setting changes are queued immediately but take effect only at the next Chunk.
+    - The current Chunk continues using its initial settings.
+    - At the Chunk boundary, pending user changes are applied after the completed Chunk result and override Chunk-generated equipment or setting changes.
+
 - **`AFK scheduler batch`**: One time-budgeted execution slice used to keep AFK recovery responsive.
   - It is not a gameplay unit and has no fixed Cycle count.
   - One scheduler batch may process part of one Chunk, exactly one Chunk, or portions of multiple Chunks.
