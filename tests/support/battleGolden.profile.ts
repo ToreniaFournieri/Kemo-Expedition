@@ -5,7 +5,6 @@ import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { executeBattle } from '../../src/game/battle.ts';
-import { executeBattleWithDevelopmentShadow } from '../../src/game/battleShadow.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -13,7 +12,6 @@ import { setLanguage } from '../../src/i18n/index.ts';
 import type { EnemyDef, GameState, Party, RoomType, TerrainEffectKey } from '../../src/types/index.ts';
 import {
   assertBattleRunnerParity,
-  createSeededRandom,
   digestBattleGolden,
   recordBattleGolden,
   type BattleGoldenCase,
@@ -190,17 +188,4 @@ test('record/replay detects candidate output and random-consumption drift', () =
     ),
     /candidate battle result differs/,
   );
-});
-
-test('development shadow mode keeps the TypeScript oracle and C++ engine identical', () => {
-  for (const fixture of createGoldenCases()) {
-    executeBattleWithDevelopmentShadow(
-      fixture.party,
-      fixture.enemy,
-      fixture.bags,
-      fixture.initialPartyHp,
-      fixture.environment,
-      { random: createSeededRandom(fixture.seed) },
-    );
-  }
 });

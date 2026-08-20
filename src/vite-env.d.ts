@@ -2,7 +2,6 @@
 
 declare const __APP_VERSION__: string;
 declare const __BUILD_NUMBER__: number;
-declare const __BATTLE_SHADOW_MODE__: boolean;
 declare const __PUBLIC_CHARACTER_IMAGE_FILES__: readonly string[];
 declare const __PUBLIC_CHIBI_IMAGE_FILES__: readonly string[];
 

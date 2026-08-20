@@ -16,7 +16,6 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0'),
     __BUILD_NUMBER__: JSON.stringify(Number.isFinite(buildNumber) ? buildNumber : 0),
-    __BATTLE_SHADOW_MODE__: JSON.stringify(process.env.BATTLE_SHADOW_MODE === '1'),
     __PUBLIC_CHARACTER_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('character')),
     __PUBLIC_CHIBI_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('chibi')),
   },
