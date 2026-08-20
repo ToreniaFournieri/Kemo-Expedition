@@ -38,5 +38,53 @@
     "partyHp": 0,
     "enemyHp": 1000000000000,
     "logCount": 4
+  },
+  "saved-party-1-expedition-8-boss": {
+    "digest": "fe37424295d037e50e8a6a9045b0f6479f26bd4007b7218595ff585ebdefae3b",
+    "randomDrawCount": 232,
+    "outcome": "victory",
+    "partyHp": 24798,
+    "enemyHp": 0,
+    "logCount": 18
+  },
+  "saved-party-2-expedition-7-boss": {
+    "digest": "586a3f942203d70d556d039c063f7a63cb14948293a9a32e8065474355fb1865",
+    "randomDrawCount": 190,
+    "outcome": "victory",
+    "partyHp": 30582,
+    "enemyHp": 0,
+    "logCount": 13
+  },
+  "saved-party-3-expedition-6-boss": {
+    "digest": "c66af91a4d82ed6bb26a8e23bd80d25aeee7457a2749f053df448f4fd36a6b32",
+    "randomDrawCount": 100,
+    "outcome": "victory",
+    "partyHp": 20057,
+    "enemyHp": 0,
+    "logCount": 10
+  },
+  "saved-party-4-expedition-5-boss": {
+    "digest": "6d29154d24958b0dc0841a14c268fa2cd943af226ad69fc3271b19783e98f577",
+    "randomDrawCount": 31,
+    "outcome": "victory",
+    "partyHp": 15757,
+    "enemyHp": 0,
+    "logCount": 3
+  },
+  "saved-party-5-expedition-4-boss": {
+    "digest": "9bf5d99500e80320b1e418cfb43e28bc4dc9e3af67ef52f8c3bb0c035dfab6d2",
+    "randomDrawCount": 63,
+    "outcome": "victory",
+    "partyHp": 1048,
+    "enemyHp": 0,
+    "logCount": 9
+  },
+  "saved-party-6-expedition-3-boss": {
+    "digest": "bdec992594c88992992202849466a10b449e14318835297eb7abb415f69b7bd3",
+    "randomDrawCount": 41,
+    "outcome": "victory",
+    "partyHp": 15001,
+    "enemyHp": 0,
+    "logCount": 5
   }
 }
