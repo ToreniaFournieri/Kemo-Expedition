@@ -12,6 +12,11 @@ import { PREDISPOSITIONS } from '../data/predispositions';
 import { RACES } from '../data/races';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
+selectBestAutoEquipmentFillCandidate,
+selectBestAutoEquipmentUpgradeCandidate,
+type EquipmentRankingCandidate,
+} from '../game/battleKernel';
+import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
 import { DebugSettings,getDebugSettings,getTimeSpeedScale,isUnlimitedTimeSpeed,saveDebugSettings } from '../game/debugSettings';
@@ -1307,65 +1312,69 @@ export function HomeScreen({
       memoryCBonusNames: Set<string>,
     ): string | null => {
       // SpecRef: 7.1.1.2 | Equipping into empty slots | Search for a candidate item
-      const options = Object.entries(simulatedInventory)
-        .filter(([, variant]) => {
+      const optionKeys: string[] = [];
+      const candidates: EquipmentRankingCandidate[] = [];
+      Object.entries(simulatedInventory)
+        .forEach(([key, variant]) => {
           if (
             variant.status !== 'owned'
             || variant.count <= 0
             || !targetCategories.includes(variant.item.category)
           ) {
-            return false;
+            return;
           }
 
-          if (memoryItemIds.has(variant.item.id)) return false;
+          if (memoryItemIds.has(variant.item.id)) return;
           const hasAntagonismBonus = [
             ...(variant.item.bonuses ?? []),
             ...getSuperRareBonuses(variant.item.superRare),
           ].some((bonus) => bonus.type === 'antagonism');
-          if (hasAntagonismBonus) return false;
+          if (hasAntagonismBonus) return;
 
           const cBonusNames = getItemCBonusSignatures(variant.item);
           for (const bonusName of cBonusNames) {
-            if (memoryCBonusNames.has(bonusName)) return false;
+            if (memoryCBonusNames.has(bonusName)) return;
           }
 
-          return true;
-        })
-        .sort(([, a], [, b]) => {
-          const selectionValueDiff = getAutoEquipmentSelectionValueForCharacter(character, b.item)
-            - getAutoEquipmentSelectionValueForCharacter(character, a.item);
-          if (selectionValueDiff !== 0) return selectionValueDiff;
-
-          return compareItemsByTierAndEnhancement(b.item, a.item);
+          optionKeys.push(key);
+          candidates.push({
+            index: optionKeys.length - 1,
+            tier: getItemTier(variant.item),
+            enhancement: variant.item.enhancement,
+            coreConcept: getItemCoreConceptValue(variant.item),
+            superRare: variant.item.superRare,
+            itemId: variant.item.id,
+            selectionValue: getAutoEquipmentSelectionValueForCharacter(character, variant.item),
+          });
         });
 
-      return options[0]?.[0] ?? null;
+      const selectedIndex = selectBestAutoEquipmentFillCandidate(candidates);
+      return selectedIndex == null ? null : optionKeys[selectedIndex] ?? null;
     };
 
     const getBestUpgradeVariantKeyForItem = (equippedItem: Item): string | null => {
       if (equippedItem.superRare > 0) return null;
 
-      const options = Object.entries(simulatedInventory)
-        .filter(([, variant]) => {
-          if (variant.status !== 'owned' || variant.count <= 0) return false;
-          if (variant.item.id !== equippedItem.id) return false;
-          if (variant.item.superRare > 0) return false;
-          return variant.item.enhancement > equippedItem.enhancement;
-        })
-        .sort(([, a], [, b]) => {
-          const enhancementDiff = b.item.enhancement - a.item.enhancement;
-          if (enhancementDiff !== 0) return enhancementDiff;
-
-          const coreConceptDiff = getItemCoreConceptValue(b.item) - getItemCoreConceptValue(a.item);
-          if (coreConceptDiff !== 0) return coreConceptDiff;
-
-          const superRareDiff = b.item.superRare - a.item.superRare;
-          if (superRareDiff !== 0) return superRareDiff;
-
-          return compareItemsByTierAndEnhancement(b.item, a.item);
+      const optionKeys: string[] = [];
+      const candidates: EquipmentRankingCandidate[] = [];
+      Object.entries(simulatedInventory).forEach(([key, variant]) => {
+          if (variant.status !== 'owned' || variant.count <= 0) return;
+          if (variant.item.id !== equippedItem.id) return;
+          if (variant.item.superRare > 0) return;
+          if (variant.item.enhancement <= equippedItem.enhancement) return;
+          optionKeys.push(key);
+          candidates.push({
+            index: optionKeys.length - 1,
+            tier: getItemTier(variant.item),
+            enhancement: variant.item.enhancement,
+            coreConcept: getItemCoreConceptValue(variant.item),
+            superRare: variant.item.superRare,
+            itemId: variant.item.id,
+          });
         });
 
-      return options[0]?.[0] ?? null;
+      const selectedIndex = selectBestAutoEquipmentUpgradeCandidate(candidates);
+      return selectedIndex == null ? null : optionKeys[selectedIndex] ?? null;
     };
 
     const compareMemoryCJewelPriority = (

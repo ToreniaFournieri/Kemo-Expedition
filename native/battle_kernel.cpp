@@ -8,8 +8,100 @@ constexpr int kHitBufferCapacity = 4096;
 double hit_random_rolls[kHitBufferCapacity];
 unsigned char hit_results[kHitBufferCapacity];
 
+// Auto-equipment candidate ranking shares the battle WebAssembly module so the
+// browser, Electron renderer, AFK workers, and API runtime all use one native
+// implementation. JavaScript supplies already-eligible candidates; C++ performs
+// the repeated hot-path ranking without allocating or sorting temporary arrays.
+constexpr int kEquipmentCandidateCapacity = 16384;
+constexpr int kEquipmentCandidateStride = 6;
+int equipment_candidate_values[kEquipmentCandidateCapacity * kEquipmentCandidateStride];
+double equipment_candidate_scores[kEquipmentCandidateCapacity];
+
 int battle_kernel_abi_version() {
-  return 3;
+  return 4;
+}
+
+int* equipment_candidate_int_buffer() {
+  return equipment_candidate_values;
+}
+
+double* equipment_candidate_score_buffer() {
+  return equipment_candidate_scores;
+}
+
+int equipment_candidate_capacity() {
+  return kEquipmentCandidateCapacity;
+}
+
+// Candidate integer record: caller index, tier, enhancement, core concept,
+// Super Rare id, item id. This intentionally preserves the former stable JS
+// sort order by retaining the first candidate when every key ties.
+int equipment_select_best_fill_candidate(int candidate_count) {
+  if (candidate_count < 0 || candidate_count > kEquipmentCandidateCapacity) return -2;
+  if (candidate_count == 0) return -1;
+
+  int best = 0;
+  for (int index = 1; index < candidate_count; ++index) {
+    const int current_offset = index * kEquipmentCandidateStride;
+    const int best_offset = best * kEquipmentCandidateStride;
+    const double current_score = equipment_candidate_scores[index];
+    const double best_score = equipment_candidate_scores[best];
+    bool is_better = current_score > best_score;
+    if (current_score == best_score) {
+      const int current_tier = equipment_candidate_values[current_offset + 1];
+      const int best_tier = equipment_candidate_values[best_offset + 1];
+      is_better = current_tier < best_tier;
+      if (current_tier == best_tier) {
+        const int current_enhancement = equipment_candidate_values[current_offset + 2];
+        const int best_enhancement = equipment_candidate_values[best_offset + 2];
+        is_better = current_enhancement < best_enhancement;
+        if (current_enhancement == best_enhancement) {
+          is_better = equipment_candidate_values[current_offset + 5]
+              < equipment_candidate_values[best_offset + 5];
+        }
+      }
+    }
+    if (is_better) best = index;
+  }
+  return equipment_candidate_values[best * kEquipmentCandidateStride];
+}
+
+int equipment_select_best_upgrade_candidate(int candidate_count) {
+  if (candidate_count < 0 || candidate_count > kEquipmentCandidateCapacity) return -2;
+  if (candidate_count == 0) return -1;
+
+  int best = 0;
+  for (int index = 1; index < candidate_count; ++index) {
+    const int current_offset = index * kEquipmentCandidateStride;
+    const int best_offset = best * kEquipmentCandidateStride;
+    const int current_enhancement = equipment_candidate_values[current_offset + 2];
+    const int best_enhancement = equipment_candidate_values[best_offset + 2];
+    bool is_better = current_enhancement > best_enhancement;
+    if (current_enhancement == best_enhancement) {
+      const int current_core = equipment_candidate_values[current_offset + 3];
+      const int best_core = equipment_candidate_values[best_offset + 3];
+      is_better = current_core > best_core;
+      if (current_core == best_core) {
+        const int current_super_rare = equipment_candidate_values[current_offset + 4];
+        const int best_super_rare = equipment_candidate_values[best_offset + 4];
+        is_better = current_super_rare > best_super_rare;
+        if (current_super_rare == best_super_rare) {
+          const int current_tier = equipment_candidate_values[current_offset + 1];
+          const int best_tier = equipment_candidate_values[best_offset + 1];
+          is_better = current_tier < best_tier;
+          if (current_tier == best_tier) {
+            is_better = current_enhancement < best_enhancement;
+            if (current_enhancement == best_enhancement) {
+              is_better = equipment_candidate_values[current_offset + 5]
+                  < equipment_candidate_values[best_offset + 5];
+            }
+          }
+        }
+      }
+    }
+    if (is_better) best = index;
+  }
+  return equipment_candidate_values[best * kEquipmentCandidateStride];
 }
 
 double battle_calculate_per_hit_damage(

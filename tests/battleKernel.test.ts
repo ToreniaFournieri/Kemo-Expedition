@@ -6,10 +6,33 @@ import {
   calculatePerHitDamage,
   getBattleKernelAbiVersion,
   resolveHitSequence,
+  selectBestAutoEquipmentFillCandidate,
+  selectBestAutoEquipmentUpgradeCandidate,
 } from '../src/game/battleKernel.ts';
 
 test('the checked-in C++ battle kernel exposes the expected ABI', () => {
-  assert.equal(getBattleKernelAbiVersion(), 3);
+  assert.equal(getBattleKernelAbiVersion(), 4);
+});
+
+test('C++ auto-equipment fill ranking preserves score and legacy tie-break order', () => {
+  const selected = selectBestAutoEquipmentFillCandidate([
+    { index: 10, tier: 4, enhancement: 6, coreConcept: 900, superRare: 4, itemId: 4002, selectionValue: 100 },
+    { index: 11, tier: 3, enhancement: 5, coreConcept: 800, superRare: 0, itemId: 3002, selectionValue: 101 },
+    { index: 12, tier: 2, enhancement: 3, coreConcept: 700, superRare: 0, itemId: 2002, selectionValue: 101 },
+    { index: 13, tier: 2, enhancement: 2, coreConcept: 600, superRare: 0, itemId: 2001, selectionValue: 101 },
+  ]);
+  assert.equal(selected, 13);
+  assert.equal(selectBestAutoEquipmentFillCandidate([]), null);
+});
+
+test('C++ auto-equipment upgrade ranking preserves enhancement and core priority', () => {
+  const selected = selectBestAutoEquipmentUpgradeCandidate([
+    { index: 20, tier: 2, enhancement: 4, coreConcept: 900, superRare: 0, itemId: 2001 },
+    { index: 21, tier: 5, enhancement: 5, coreConcept: 700, superRare: 0, itemId: 5001 },
+    { index: 22, tier: 4, enhancement: 5, coreConcept: 800, superRare: 0, itemId: 4001 },
+  ]);
+  assert.equal(selected, 22);
+  assert.equal(selectBestAutoEquipmentUpgradeCandidate([]), null);
 });
 
 test('C++ per-hit damage preserves the prior JavaScript formula', () => {

@@ -3,11 +3,16 @@ import type { AttackType, TerrainEffectKey } from '../types';
 import { decodeBattleProtocolOutput, type BattleProtocolOutput } from './battleProtocol.ts';
 import { BATTLE_PROTOCOL_VERSION } from './generated/battleProtocol.generated.ts';
 
-const ABI_VERSION = 3;
+const ABI_VERSION = 4;
 
 type KernelExports = WebAssembly.Exports & {
   memory: WebAssembly.Memory;
   battle_kernel_abi_version(): number;
+  equipment_candidate_int_buffer(): number;
+  equipment_candidate_score_buffer(): number;
+  equipment_candidate_capacity(): number;
+  equipment_select_best_fill_candidate(candidateCount: number): number;
+  equipment_select_best_upgrade_candidate(candidateCount: number): number;
   battle_calculate_per_hit_damage(...values: number[]): number;
   battle_hit_chance(...values: number[]): number;
   battle_hit_random_buffer(): number;
@@ -150,6 +155,73 @@ export function applyDomainDamageOverride(
 
 export function getBattleKernelAbiVersion(): number {
   return kernel.battle_kernel_abi_version();
+}
+
+export type EquipmentRankingCandidate = {
+  index: number;
+  tier: number;
+  enhancement: number;
+  coreConcept: number;
+  superRare: number;
+  itemId: number;
+  selectionValue?: number;
+};
+
+const EQUIPMENT_CANDIDATE_STRIDE = 6;
+
+function selectBestEquipmentCandidate(
+  candidates: readonly EquipmentRankingCandidate[],
+  operation: (candidateCount: number) => number,
+): number | null {
+  if (candidates.length === 0) return null;
+  const capacity = kernel.equipment_candidate_capacity();
+  if (candidates.length > capacity) {
+    throw new RangeError(`Auto-equipment candidate count exceeds the C++ kernel capacity of ${capacity}`);
+  }
+
+  const integerValues = new Int32Array(
+    kernel.memory.buffer,
+    kernel.equipment_candidate_int_buffer(),
+    candidates.length * EQUIPMENT_CANDIDATE_STRIDE,
+  );
+  const scores = new Float64Array(
+    kernel.memory.buffer,
+    kernel.equipment_candidate_score_buffer(),
+    candidates.length,
+  );
+  candidates.forEach((candidate, candidateIndex) => {
+    const offset = candidateIndex * EQUIPMENT_CANDIDATE_STRIDE;
+    integerValues[offset] = candidate.index;
+    integerValues[offset + 1] = candidate.tier;
+    integerValues[offset + 2] = candidate.enhancement;
+    integerValues[offset + 3] = candidate.coreConcept;
+    integerValues[offset + 4] = candidate.superRare;
+    integerValues[offset + 5] = candidate.itemId;
+    scores[candidateIndex] = candidate.selectionValue ?? 0;
+  });
+
+  const selectedIndex = operation(candidates.length);
+  if (selectedIndex === -1) return null;
+  if (selectedIndex < -1) throw new Error(`C++ auto-equipment kernel rejected candidate input (${selectedIndex})`);
+  return selectedIndex;
+}
+
+export function selectBestAutoEquipmentFillCandidate(
+  candidates: readonly EquipmentRankingCandidate[],
+): number | null {
+  return selectBestEquipmentCandidate(
+    candidates,
+    (candidateCount) => kernel.equipment_select_best_fill_candidate(candidateCount),
+  );
+}
+
+export function selectBestAutoEquipmentUpgradeCandidate(
+  candidates: readonly EquipmentRankingCandidate[],
+): number | null {
+  return selectBestEquipmentCandidate(
+    candidates,
+    (candidateCount) => kernel.equipment_select_best_upgrade_candidate(candidateCount),
+  );
 }
 
 export function getBattleProtocolArenaInfo(): {
