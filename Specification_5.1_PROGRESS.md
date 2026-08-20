@@ -4,12 +4,12 @@
 **Definition of time scale.**
 - **`Step`**: The smallest unit of progression. 
   - Steps are processed **globally**, meaning all parties update their progress simultaneously at each Step. 
-  - Base duration: **30 seconds per Step**.
+  - Base duration: **15 seconds per Step**.
   - Duration modifier: **round up** after all multipliers are applied.
   - **Debug Scaling** (applies multiplicatively to Step duration):
-    - `x5 boost` → Step × **0.2** (6 seconds)
-    - `x20 boost` → Step × **0.05** (1.5 seconds)
-    - `x100 boost` → Step × **0.01** (0.3 seconds)
+    - `x5 boost` → Step × **0.2** (3 seconds)
+    - `x20 boost` → Step × **0.05** (0.75 seconds)
+    - `x100 boost` → Step × **0.01** (0.15 seconds)
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
