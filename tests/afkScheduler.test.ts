@@ -158,6 +158,10 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
   assert.match(homeSource, /phase: 'chunk-committed'/);
   assert.match(homeSource, /runAutoEquipment\(\s*\[coordinatorCommit\.result\.partyIndex\]/);
   assert.match(homeSource, /phase: 'auto-equipment-submitted'/);
+  assert.match(
+    homeSource,
+    /actions\.commitAfkPartyChunk\(completedResult\);\s*\/\/ Wake the next phase[\s\S]*setAfkCoordinatorVersion/,
+  );
 });
 
 test('AFK auto equipment is restricted to complete Chunk commits', () => {
@@ -170,6 +174,13 @@ test('AFK auto equipment is restricted to complete Chunk commits', () => {
     /const chunkElapsedMs = completedResult\.cycleDurationMs \* AFK_CHUNK_CYCLE_COUNT/,
   );
   assert.match(homeSource, /if \(remainingMs < chunkElapsedMs\) return;/);
+});
+
+test('AFK recovery restarts stalled uncommitted workers', () => {
+  assert.match(homeSource, /AFK_WORKER_STALL_TIMEOUT_MS = 30_000/);
+  assert.match(homeSource, /workerNow - active\.startedAt < AFK_WORKER_STALL_TIMEOUT_MS/);
+  assert.match(homeSource, /active\.worker\.terminate\(\)/);
+  assert.match(homeSource, /AFK_WORKER_WATCHDOG_INTERVAL_MS/);
 });
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
