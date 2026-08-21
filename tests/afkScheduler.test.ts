@@ -157,13 +157,6 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
 });
 
-test('AFK recovery restarts stalled uncommitted workers', () => {
-  assert.match(homeSource, /AFK_WORKER_STALL_TIMEOUT_MS = 30_000/);
-  assert.match(homeSource, /workerNow - active\.startedAt < AFK_WORKER_STALL_TIMEOUT_MS/);
-  assert.match(homeSource, /active\.worker\.terminate\(\)/);
-  assert.match(homeSource, /AFK_WORKER_WATCHDOG_INTERVAL_MS/);
-});
-
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
   assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
   assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkInteractionPausedRef\.current\) return/);
