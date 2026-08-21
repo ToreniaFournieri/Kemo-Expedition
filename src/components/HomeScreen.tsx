@@ -150,6 +150,9 @@ const BaseTab = lazy(loadBaseTab);
 const DiaryTab = lazy(loadDiaryTab);
 const SettingTab = lazy(loadSettingTab);
 
+const AFK_WORKER_WATCHDOG_INTERVAL_MS = 5_000;
+const AFK_WORKER_STALL_TIMEOUT_MS = 30_000;
+
 /** Load every split tab chunk while the startup screen is still visible. */
 export function preloadHomeTabs() {
   return Promise.all([
@@ -233,7 +236,11 @@ export function HomeScreen({
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
   const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
-  const afkActiveChunkJobsRef = useRef(new Map<number, { job: AfkPartyChunkJob; worker: Worker }>());
+  const afkActiveChunkJobsRef = useRef(new Map<number, {
+    job: AfkPartyChunkJob;
+    worker: Worker;
+    startedAt: number;
+  }>());
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
   const afkWorkerJobSequenceRef = useRef(0);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
@@ -1869,6 +1876,7 @@ export function HomeScreen({
         (window as Window & { __BOKEMO_AFK_PROFILE__?: AfkSchedulerProfile }).__BOKEMO_AFK_PROFILE__ = afkSchedulerProfileRef.current;
       }
     }
+
   }, [pendingAfkMs]);
 
   // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | read-only Party Progress snapshot
@@ -2195,6 +2203,15 @@ export function HomeScreen({
       }
     }
 
+    const workerNow = performance.now();
+    afkActiveChunkJobsRef.current.forEach((active, partyIndex) => {
+      if (afkCompletedChunkResultsRef.current.has(active.job.jobId)) return;
+      if (workerNow - active.startedAt < AFK_WORKER_STALL_TIMEOUT_MS) return;
+      console.error(`AFK worker ${active.job.jobId} stalled; restarting its uncommitted Chunk.`);
+      active.worker.terminate();
+      afkActiveChunkJobsRef.current.delete(partyIndex);
+    });
+
     const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
     const anchor = afkSimulationAnchorRef.current ?? Date.now();
     let startedJob = false;
@@ -2235,7 +2252,11 @@ export function HomeScreen({
         afkActiveChunkJobsRef.current.delete(partyIndex);
         setAfkCoordinatorVersion((version) => version + 1);
       };
-      afkActiveChunkJobsRef.current.set(partyIndex, { job, worker });
+      afkActiveChunkJobsRef.current.set(partyIndex, {
+        job,
+        worker,
+        startedAt: performance.now(),
+      });
       worker.postMessage(job);
       startedJob = true;
     });
@@ -2246,6 +2267,16 @@ export function HomeScreen({
       setPendingAfkMs(0);
     }
   }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
+
+  useEffect(() => {
+    if (pendingAfkMs <= 0) return;
+    if (afkCoordinatorCommitRef.current) return;
+    if (afkActiveChunkJobsRef.current.size === 0) return;
+    const watchdog = window.setTimeout(() => {
+      setAfkCoordinatorVersion((version) => version + 1);
+    }, AFK_WORKER_WATCHDOG_INTERVAL_MS);
+    return () => window.clearTimeout(watchdog);
+  }, [afkCoordinatorVersion, pendingAfkMs]);
 
   useEffect(() => () => {
     afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
@@ -2454,6 +2485,13 @@ export function HomeScreen({
   const handleImportGameState = useCallback((nextState: GameState, rawRuntimeSnapshot?: unknown) => {
     const result = actions.importGameState(nextState);
     if (!result.state) return result;
+
+    // Imported state invalidates every captured worker snapshot. Discard only
+    // uncommitted in-memory work so recovery restarts from the imported cursor.
+    afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
+    afkActiveChunkJobsRef.current.clear();
+    afkCompletedChunkResultsRef.current.clear();
+    afkCoordinatorCommitRef.current = null;
 
     const importedRuntime = normalizeRuntimeSnapshot(rawRuntimeSnapshot, result.state.parties.length);
     const now = Date.now();
