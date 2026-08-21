@@ -1874,6 +1874,7 @@ export function HomeScreen({
         (window as Window & { __BOKEMO_AFK_PROFILE__?: AfkSchedulerProfile }).__BOKEMO_AFK_PROFILE__ = afkSchedulerProfileRef.current;
       }
     }
+
   }, [pendingAfkMs]);
 
   // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | read-only Party Progress snapshot
@@ -2418,6 +2419,7 @@ export function HomeScreen({
     } else if (pendingAfkMs > 0) {
       justCompletedAfkRecoveryRef.current = false;
     }
+
   }, [pendingAfkMs]);
 
   const suppressNotificationsForAfkEmulation = pendingAfkMs > 0

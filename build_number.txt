@@ -1,1 +1,5 @@
-5
+<<<<<<< HEAD
+4
+=======
+2
+>>>>>>> 4b0b77ba (Coordinate AFK auto-equipment after complete Chunk commits)
