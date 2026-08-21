@@ -12,6 +12,7 @@
   - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
 - Each Party has its own independent Diary.
 - Each Party Diary keeps a maximum of 24 entries.
+- Existing Diary entries remain unchanged until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 24-entry maximum; opening, loading, or saving the game must not remove entries.
 - The diary is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.

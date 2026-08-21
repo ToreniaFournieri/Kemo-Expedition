@@ -89,7 +89,7 @@ import {
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
-import { DIARY_LOG_RETENTION_LIMIT, getDiaryOutcomeTrigger } from '../game/diary';
+import { addDiaryLogs, getDiaryOutcomeTrigger } from '../game/diary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopItemPrice,
@@ -339,26 +339,6 @@ function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialPartySlots: n
 
   return { unlockedPartySlots };
 }
-
-// SpecRef: 8.5 | UI_DIARY | Each Party has an independent 24-entry Diary.
-function enforceGlobalDiaryLogRetention(parties: Party[]): Party[] {
-  return parties.map((party) => {
-    const diaryLogs = party.diaryLogs ?? [];
-    const nextDiaryLogs = diaryLogs
-      .slice()
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, DIARY_LOG_RETENTION_LIMIT);
-    if (nextDiaryLogs.length === diaryLogs.length && nextDiaryLogs.every((log, index) => log === diaryLogs[index])) {
-      return party;
-    }
-    return {
-      ...party,
-      diaryLogs: nextDiaryLogs,
-      hasUnreadDiary: nextDiaryLogs.some((log) => !log.isRead),
-    };
-  });
-}
-
 
 // SpecRef: 5.1.3.2 | Unlock party | Party unlock condition
 function getUnlockDiaryLog(
@@ -1363,7 +1343,6 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           parsed.parties.push(nextDefaultParty);
         }
         parsed.parties = parsed.parties.slice(0, unlockedPartySlots);
-        parsed.parties = enforceGlobalDiaryLogRetention(parsed.parties);
         parsed.global.jewelAutoEquipPriorityPartyId = normalizeJewelAutoEquipPriorityPartyId(
           parsed.global.jewelAutoEquipPriorityPartyId,
           parsed.parties.length,
@@ -3853,11 +3832,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             createdAtBase + 1,
           )
         : null;
-      const nextDiaryLogs = [
+      const nextDiaryLogs = addDiaryLogs(party.diaryLogs ?? [], [
         ...(unlockDiaryLog ? [unlockDiaryLog] : []),
         ...(pendingDiaryLog ? [pendingDiaryLog] : []),
-        ...(party.diaryLogs ?? []),
-      ].slice(0, DIARY_LOG_RETENTION_LIMIT);
+      ]);
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
@@ -3936,11 +3914,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
-      const trimmedParties = enforceGlobalDiaryLogRetention(updatedParties);
-
       return {
         ...state,
-        parties: trimmedParties,
+        parties: updatedParties,
         global: nextGlobal,
       };
     }
@@ -4119,20 +4095,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             isRead: false,
           }
         : null;
-      const nextDiaryLogs: DiaryLog[] = [
+      const nextDiaryLogs: DiaryLog[] = addDiaryLogs(currentParty.diaryLogs ?? [], [
         ...(sideQuestDiaryLog ? [sideQuestDiaryLog] : []),
-        ...(currentParty.diaryLogs ?? []),
-      ].slice(0, DIARY_LOG_RETENTION_LIMIT);
+      ]);
       updatedParties[action.partyIndex] = {
         ...currentParty,
         sideQuest: null,
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: sideQuestDiaryLog ? true : currentParty.hasUnreadDiary,
       };
-      const trimmedParties = enforceGlobalDiaryLogRetention(updatedParties);
       return {
         ...state,
-        parties: trimmedParties,
+        parties: updatedParties,
         global: {
           ...state.global,
           jewels: addJewelToInventory(state.global.jewels, key, rewardRank),
