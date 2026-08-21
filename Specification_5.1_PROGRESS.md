@@ -20,12 +20,8 @@
   - **1 Chunk = 12 Cycles**.
   - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
   - Each Chunk continues using the party and global parameters captured when it begins.
-  - **Process:** At the end of a Chunk, the worker checks whether the coordinator is available.
-    - If available, the worker submits the Chunk results to the coordinator-managed global commit queue.
-    - The worker waits until the coordinator finishes processing the submitted results.
-    - The worker then performs **auto equipment** based on the committed state and submits the updated result back to the coordinator.
-    - After the update is committed, the coordinator becomes available for the next worker.
-    - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
+  - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
+  - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
   - **Party Setting Updates**
     - User PT setting changes are queued immediately but take effect only at the next Chunk.
     - The current Chunk continues using its initial settings.
@@ -40,10 +36,6 @@
   - AFK emulation efficiency gradually decreases during extended absence, representing reduced party discipline and efficiency without player supervision.
   - Returning to the game resets AFK emulation efficiency to 100%.
   - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
-  - **Auto equipment behavior:** `7.1.1 AUTO equipment logic` in @Specification_5.1_PROGRESS.md
-    - During AFK emulation, auto-equipment logic runs only at the end of a complete Chunk (12 Cycles).
-    - Ending Sound Sleep does not trigger auto-equipment logic.
-    - A partial Chunk (<12 Cycles) does not trigger auto-equipment logic.
 
 **f.afk-emulation-efficiency**
 

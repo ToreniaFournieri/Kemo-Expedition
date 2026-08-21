@@ -155,25 +155,6 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
   assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
   assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
-  assert.match(homeSource, /phase: 'chunk-committed'/);
-  assert.match(homeSource, /runAutoEquipment\(\s*\[coordinatorCommit\.result\.partyIndex\]/);
-  assert.match(homeSource, /phase: 'auto-equipment-submitted'/);
-  assert.match(
-    homeSource,
-    /actions\.commitAfkPartyChunk\(completedResult\);\s*\/\/ Wake the next phase[\s\S]*setAfkCoordinatorVersion/,
-  );
-});
-
-test('AFK auto equipment is restricted to complete Chunk commits', () => {
-  assert.doesNotMatch(
-    homeSource,
-    /if \(previousPendingAfkMs <= pendingAfkMs\) return;[\s\S]*runAutoEquipment\(undefined/,
-  );
-  assert.match(
-    homeSource,
-    /const chunkElapsedMs = completedResult\.cycleDurationMs \* AFK_CHUNK_CYCLE_COUNT/,
-  );
-  assert.match(homeSource, /if \(remainingMs < chunkElapsedMs\) return;/);
 });
 
 test('AFK recovery restarts stalled uncommitted workers', () => {
@@ -185,7 +166,7 @@ test('AFK recovery restarts stalled uncommitted workers', () => {
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
   assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
-  assert.match(homeSource, /if \(afkInteractionPausedRef\.current && !coordinatorCommit\) return/);
+  assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkInteractionPausedRef\.current\) return/);
   assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /afkInteractionPausedRef\.current = false/);
   assert.doesNotMatch(homeSource, /event\.preventDefault\(\);\s*event\.stopPropagation\(\);/);

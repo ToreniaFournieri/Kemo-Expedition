@@ -242,10 +242,6 @@ export function HomeScreen({
     startedAt: number;
   }>());
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
-  const afkCoordinatorCommitRef = useRef<{
-    result: AfkPartyChunkResult;
-    phase: 'chunk-committed' | 'auto-equipment-submitted';
-  } | null>(null);
   const afkWorkerJobSequenceRef = useRef(0);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
@@ -1744,7 +1740,6 @@ export function HomeScreen({
     afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
     afkActiveChunkJobsRef.current.clear();
     afkCompletedChunkResultsRef.current.clear();
-    afkCoordinatorCommitRef.current = null;
     try {
       localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
     } catch (error) {
@@ -2162,60 +2157,10 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
-    if (pendingAfkMs <= 0) return;
-    const coordinatorCommit = afkCoordinatorCommitRef.current;
-    if (afkInteractionPausedRef.current && !coordinatorCommit) return;
+    if (pendingAfkMs <= 0 || afkInteractionPausedRef.current) return;
     // v0.9.2 persisted a cross-party operation cursor. Party-scoped workers
     // restart only the uncommitted legacy slice from its durable game-state save.
     afkChunkCursorRef.current = null;
-
-    if (Object.keys(afkRemainingMsByPartyRef.current).length === 0) {
-      afkRemainingMsByPartyRef.current = Object.fromEntries(
-        state.parties.map((_, partyIndex) => [partyIndex, pendingAfkMsRef.current]),
-      );
-    }
-
-    if (coordinatorCommit?.phase === 'chunk-committed') {
-      // SpecRef: 5.1 | Chunk Process; AFK Emulation Efficiency
-      // Hold the coordinator until the authoritative auto-equipment routine has
-      // observed the committed Chunk state and submitted its equipment updates.
-      runAutoEquipment(
-        [coordinatorCommit.result.partyIndex],
-        undefined,
-        { suppressNotifications: true },
-      );
-      afkCoordinatorCommitRef.current = {
-        ...coordinatorCommit,
-        phase: 'auto-equipment-submitted',
-      };
-      setAfkCoordinatorVersion((version) => version + 1);
-      return;
-    }
-
-    if (coordinatorCommit?.phase === 'auto-equipment-submitted') {
-      const completedResult = coordinatorCommit.result;
-      const active = afkActiveChunkJobsRef.current.get(completedResult.partyIndex);
-      active?.worker.terminate();
-      afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
-      afkCoordinatorCommitRef.current = null;
-
-      const chunkElapsedMs = completedResult.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
-      afkRemainingMsByPartyRef.current[completedResult.partyIndex] = Math.max(
-        0,
-        (afkRemainingMsByPartyRef.current[completedResult.partyIndex] ?? 0) - chunkElapsedMs,
-      );
-      afkLastBatchCommittedAtRef.current = performance.now();
-      const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile();
-      afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
-        profile,
-        completedResult.durationMs,
-        AFK_CHUNK_CYCLE_COUNT,
-      );
-      const remaining = Object.values(afkRemainingMsByPartyRef.current);
-      pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
-      setPendingAfkMs(pendingAfkMsRef.current);
-      return;
-    }
 
     if (!autoRepeatEnabledRef.current) {
       afkRemainingMsByPartyRef.current = {};
@@ -2223,20 +2168,37 @@ export function HomeScreen({
       return;
     }
 
+    if (Object.keys(afkRemainingMsByPartyRef.current).length === 0) {
+      afkRemainingMsByPartyRef.current = Object.fromEntries(
+        state.parties.map((_, partyIndex) => [partyIndex, pendingAfkMsRef.current]),
+      );
+    }
+
     const activeJobs = Array.from(afkActiveChunkJobsRef.current.values()).map(({ job }) => job);
     if (activeJobs.length > 0) {
       const nextCanonicalJob = [...activeJobs].sort((left, right) => compareAfkChunkResults(left, right))[0];
       const completedResult = afkCompletedChunkResultsRef.current.get(nextCanonicalJob.jobId);
       if (completedResult) {
+        const active = afkActiveChunkJobsRef.current.get(completedResult.partyIndex);
+        active?.worker.terminate();
+        afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
         afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
-        afkCoordinatorCommitRef.current = {
-          result: completedResult,
-          phase: 'chunk-committed',
-        };
+        const chunkElapsedMs = completedResult.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+        afkRemainingMsByPartyRef.current[completedResult.partyIndex] = Math.max(
+          0,
+          (afkRemainingMsByPartyRef.current[completedResult.partyIndex] ?? 0) - chunkElapsedMs,
+        );
+        afkLastBatchCommittedAtRef.current = performance.now();
+        const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile();
+        afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
+          profile,
+          completedResult.durationMs,
+          AFK_CHUNK_CYCLE_COUNT,
+        );
         actions.commitAfkPartyChunk(completedResult);
-        // Wake the next phase even when the reducer legitimately returns the
-        // existing state and React would otherwise skip a render.
-        setAfkCoordinatorVersion((version) => version + 1);
+        const remaining = Object.values(afkRemainingMsByPartyRef.current);
+        pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
+        setPendingAfkMs(pendingAfkMsRef.current);
         return;
       }
     }
@@ -2304,7 +2266,7 @@ export function HomeScreen({
       pendingAfkMsRef.current = 0;
       setPendingAfkMs(0);
     }
-  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, runAutoEquipment, state]);
+  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
 
   useEffect(() => {
     if (pendingAfkMs <= 0) return;
@@ -2453,7 +2415,10 @@ export function HomeScreen({
       justCompletedAfkRecoveryRef.current = false;
     }
 
-  }, [pendingAfkMs]);
+    if (previousPendingAfkMs <= pendingAfkMs) return;
+
+    runAutoEquipment(undefined, undefined, { suppressNotifications: true });
+  }, [pendingAfkMs, runAutoEquipment]);
 
   const suppressNotificationsForAfkEmulation = pendingAfkMs > 0
     || shouldShowAfkSummaryRef.current
