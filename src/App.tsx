@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGameState } from './hooks/useGameState';
-import { HomeScreen } from './components/HomeScreen';
+import { HomeScreen, preloadHomeTabs } from './components/HomeScreen';
 import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
 import { setLanguage, t } from './i18n';
 
@@ -112,6 +112,12 @@ export default function App() {
   }, [isLoading, state.global.language]);
 
   useEffect(() => {
+    // Fetch every lazy tab behind the startup screen so the first tab change does
+    // not suspend the whole HomeScreen while its JavaScript chunk is downloaded.
+    void preloadHomeTabs().catch((error) => {
+      console.warn('Unable to preload home tabs:', error);
+    });
+
     const timer = window.setTimeout(() => {
       setIsLoading(false);
     }, 1200);
