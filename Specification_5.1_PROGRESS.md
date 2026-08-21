@@ -24,14 +24,36 @@
   - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
   - **Process:** At the end of a Chunk, the worker (representative of each PT) submits the Chunk results to the coordinator-managed global commit queue. The coordinator processes queued workers sequentially.
     - For each worker, the coordinator:
+    - Captures the pending setting changes for the worker's PT at the start of the transaction. This defines the transaction cutoff.
     - Commits the Chunk results and returns the committed state to that worker.
-    - If there are no pending setting changes for the worker's PT, the worker performs **auto equipment** for its own PT using the committed state and returns the resulting update to the coordinator.
+    - If no setting changes were captured at the cutoff, the worker performs **auto equipment** for its own PT using the committed state and returns the resulting update to the coordinator.
     - If auto equipment was performed, the coordinator commits the auto-equipment update.
-    - If there are pending user setting changes for the worker's PT, the coordinator applies and commits those changes.
+    - If setting changes were captured at the cutoff, the coordinator applies and commits those changes after the Chunk result.
     - The worker's commit transaction is complete, and the coordinator proceeds to the next queued worker.
-Once a worker's transaction begins, it retains its coordinator processing slot until all required commits are complete. The worker does not re-enter or re-check the global commit queue during the transaction.
+    - Once a worker's transaction begins, it retains its coordinator processing slot until all required commits are complete. The worker does not re-enter or re-check the global commit queue during the transaction.
+
+```
+PT1 transaction begins
+        │
+        ├─ Capture pending PT1 changes ← coordinator (CUTOFF)
+        │
+        ├─ Commit Chunk results ← coordinator
+        │
+        ├─ If captured changes exist:
+        │      skip auto equipment
+        │      apply and commit captured user changes ← coordinator
+        │
+        ├─ Otherwise:
+        │      run auto equipment ← PT1 worker
+        │      commit auto-equipment update ← coordinator
+        │
+        └─ PT1 transaction ends
+               coordinator task for PT1 is complete
+               coordinator proceeds to next queued worker         
+```
+
   - **Party Setting Updates**
-    - User PT setting changes are queued immediately but take effect only at the next Chunk boundary.
+    - User PT setting changes are queued immediately (as a pending setting change) but take effect only at the next Chunk boundary.
     - The current Chunk continues using the settings captured at its start.
     - At the Chunk boundary, pending user changes are applied after the completed Chunk result and take precedence over Chunk-generated equipment or setting changes.
     - If pending setting changes for that PT exist, **auto equipment** is skipped for that Chunk boundary.
