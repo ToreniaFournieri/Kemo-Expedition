@@ -22,20 +22,32 @@
   - Each Chunk continues using the party and global parameters captured when it begins.
   - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
   - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
+  - **Process:** At the end of a Chunk, the worker (representative of each PT) submits the Chunk results to the coordinator-managed global commit queue. The coordinator processes queued workers sequentially.
+    - For each worker, the coordinator:
+    - Commits the Chunk results and returns the committed state to that worker.
+    - If there are no pending setting changes for the worker's PT, the worker performs **auto equipment** for its own PT using the committed state and returns the resulting update to the coordinator.
+    - If auto equipment was performed, the coordinator commits the auto-equipment update.
+    - If there are pending user setting changes for the worker's PT, the coordinator applies and commits those changes.
+    - The worker's commit transaction is complete, and the coordinator proceeds to the next queued worker.
+Once a worker's transaction begins, it retains its coordinator processing slot until all required commits are complete. The worker does not re-enter or re-check the global commit queue during the transaction.
   - **Party Setting Updates**
-    - User PT setting changes are queued immediately but take effect only at the next Chunk.
-    - The current Chunk continues using its initial settings.
-    - At the Chunk boundary, pending user changes are applied after the completed Chunk result and override Chunk-generated equipment or setting changes.
+    - User PT setting changes are queued immediately but take effect only at the next Chunk boundary.
+    - The current Chunk continues using the settings captured at its start.
+    - At the Chunk boundary, pending user changes are applied after the completed Chunk result and take precedence over Chunk-generated equipment or setting changes.
+    - If pending setting changes for that PT exist, **auto equipment** is skipped for that Chunk boundary.
 
 - **`AFK scheduler batch`**: One time-budgeted execution slice used to keep AFK recovery responsive.
   - It is not a gameplay unit and has no fixed Cycle count.
   - One scheduler batch may process part of one Chunk, exactly one Chunk, or portions of multiple Chunks.
   - Ending or yielding a scheduler batch must not create a gameplay boundary, consume randomness, or trigger Chunk-end rules.
-
 - **AFK Emulation Efficiency**
   - AFK emulation efficiency gradually decreases during extended absence, representing reduced party discipline and efficiency without player supervision.
   - Returning to the game resets AFK emulation efficiency to 100%.
   - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
+  - **Auto equipment behavior:** `7.1.1 AUTO equipment logic` in @Specification_7.1_AUTOMATION.md
+    - During AFK emulation, auto-equipment logic runs only at the end of a complete Chunk (12 Cycles).
+    - Ending Sound Sleep does not trigger auto-equipment logic.
+    - A partial Chunk (<12 Cycles) does not trigger auto-equipment logic. 
 
 **f.afk-emulation-efficiency**
 
@@ -61,7 +73,7 @@
 | `state.rest`  | - | sell or feast | `God of Fortification` |
 | `state.sell` | Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | `state.free_action` | `God of Dusk` |
 | `state.free_action` | - | Check `t.sleepiness_of_party_bag`. If it is sound_sleep, `state.sound_sleep`, otherwise `state.pray`. | `Goddess of Fertility` |
-| `state.sound_sleep` | At the end of this state, equipping items. | `state.pray` | `Goddess of Restoration` |
+| `state.sound_sleep` | At the end of this state, equipping items. (except for AFK emulation mode) | `state.pray` | `Goddess of Restoration` |
 | `state.idle` | Only when 自動周回 = OFF (idle state) | - |
 | `state.pray` | Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
 | `state.move` | If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
