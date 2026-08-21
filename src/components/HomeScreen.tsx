@@ -138,11 +138,28 @@ WIDE_MODE_DEFAULT_SECONDARY_TAB,
 WideModeSecondaryTab
 } from './home/homeShared';
 
-const PartyTab = lazy(() => import('./home/tabs/PartyTab'));
-const ExpeditionTab = lazy(() => import('./home/tabs/ExpeditionTab'));
-const BaseTab = lazy(() => import('./home/tabs/BaseTab'));
-const DiaryTab = lazy(() => import('./home/tabs/DiaryTab'));
-const SettingTab = lazy(() => import('./home/tabs/SettingTab'));
+const loadPartyTab = () => import('./home/tabs/PartyTab');
+const loadExpeditionTab = () => import('./home/tabs/ExpeditionTab');
+const loadBaseTab = () => import('./home/tabs/BaseTab');
+const loadDiaryTab = () => import('./home/tabs/DiaryTab');
+const loadSettingTab = () => import('./home/tabs/SettingTab');
+
+const PartyTab = lazy(loadPartyTab);
+const ExpeditionTab = lazy(loadExpeditionTab);
+const BaseTab = lazy(loadBaseTab);
+const DiaryTab = lazy(loadDiaryTab);
+const SettingTab = lazy(loadSettingTab);
+
+/** Load every split tab chunk while the startup screen is still visible. */
+export function preloadHomeTabs() {
+  return Promise.all([
+    loadPartyTab(),
+    loadExpeditionTab(),
+    loadBaseTab(),
+    loadDiaryTab(),
+    loadSettingTab(),
+  ]);
+}
 
 export function HomeScreen({
   state,
