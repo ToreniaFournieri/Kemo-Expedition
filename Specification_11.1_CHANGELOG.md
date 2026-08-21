@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.4 | 3 | 2026/08/21 | Preserve each Party's existing Diary entries across game opening, loading, and saving; enforce the 24-entry limit only when that Party creates a new entry, removing the oldest entries first, with regression coverage. |
 | 0.9.4 | 2 | 2026/08/20 | Reduce the base Step duration from 30 seconds to 15 seconds across the specification and shared runtime timing, including debug-scale examples and regression coverage. |
 | 0.9.4 | 1 | 2026/08/21 | Update the runtime version to v0.9.4 and reset the build number to 1 for the new version. |
 | 0.9.3 | 37 | 2026/08/21 | Implement expedition deploy statuses in runtime definitions, expose `prod` expeditions in every environment, restrict `test` expeditions such as Expedition 9 to dev, exclude `no` expeditions everywhere, and preserve the active environment inside AFK Web Workers with regression coverage. |
