@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.4 | 5 | 2026/08/21 | Run automatic equipment only after each complete 12-Cycle AFK Chunk has committed, keep the coordinator occupied until the existing party-scoped auto-equipment updates commit, and remove backlog-decrease triggers so Sound Sleep endings and partial Chunks do not run automatic equipment. |
 | 0.9.4 | 4 | 2026/08/21 | Preload every lazy-loaded main-tab module behind the startup screen so each tab opens immediately on its first selection instead of briefly blanking the HomeScreen while its split JavaScript chunk downloads. |
 | 0.9.4 | 3 | 2026/08/21 | Preserve each Party's existing Diary entries across game opening, loading, and saving; enforce the 24-entry limit only when that Party creates a new entry, removing the oldest entries first, with regression coverage. |
 | 0.9.4 | 2 | 2026/08/20 | Reduce the base Step duration from 30 seconds to 15 seconds across the specification and shared runtime timing, including debug-scale examples and regression coverage. |
