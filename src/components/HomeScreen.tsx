@@ -556,7 +556,8 @@ export function HomeScreen({
         totals.itemsObtained += log?.rewards.length ?? 0;
         totals.autoSoldItems += log?.autoSellCount ?? 0;
         totals.autoSellGold += log?.autoSellProfit ?? 0;
-        runs.push({ index, dungeonId, partyElapsedStartMs: startElapsed, partyElapsedEndMs: elapsed, outcome, completedRooms: log?.completedRooms ?? 0, totalRooms: log?.totalRooms ?? 0, latestDisclosedFloor: log?.entries.at(-1)?.floor ?? null, experienceGained: xp, goldGained: gold, goldDonated: 0, goldSaved: gold, itemsByRarity: { common: log?.rewards.length ?? 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: log?.autoSellCount ?? 0, autoSellGold: log?.autoSellProfit ?? 0, jewelsGained: 0, pranaGained: 0, sideQuestEvents: [], unlockedIds: [], endingHp: { current: afterParty.currentHp, maximum: computePartyStats(afterParty).partyStats.hp } });
+        const latestDisclosedFloor = log?.entries[log.entries.length - 1]?.floor ?? null;
+        runs.push({ index, dungeonId, partyElapsedStartMs: startElapsed, partyElapsedEndMs: elapsed, outcome, completedRooms: log?.completedRooms ?? 0, totalRooms: log?.totalRooms ?? 0, latestDisclosedFloor, experienceGained: xp, goldGained: gold, goldDonated: 0, goldSaved: gold, itemsByRarity: { common: log?.rewards.length ?? 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: log?.autoSellCount ?? 0, autoSellGold: log?.autoSellProfit ?? 0, jewelsGained: 0, pranaGained: 0, sideQuestEvents: [], unlockedIds: [], endingHp: { current: afterParty.currentHp, maximum: computePartyStats(afterParty).partyStats.hp } });
       }
       const finalParty = batch.state.parties[partyIndex];
       const chargeAfter = { stock: finalParty.instantExpeditionStock ?? 0, chargeStartedAt: finalParty.instantExpeditionChargeStartedAt ?? null };

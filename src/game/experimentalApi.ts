@@ -84,7 +84,7 @@ function latestExpedition(party: Party) {
     autoSellProfit: log.autoSellProfit,
     remainingHp: log.remainingPartyHP,
     maximumHp: log.maxPartyHP,
-    completedAt: party.pendingDiaryLog?.createdAt ?? party.diaryLogs.at(-1)?.createdAt ?? null,
+    completedAt: party.pendingDiaryLog?.createdAt ?? party.diaryLogs[party.diaryLogs.length - 1]?.createdAt ?? null,
   };
 }
 
@@ -291,6 +291,6 @@ export function outcomeFromParty(party: Party): 'Clear' | 'Turned_Back' | 'Draw_
   if (!log) return 'Turned_Back';
   if (log.finalOutcome === 'Clear') return 'Clear';
   if (log.finalOutcome === 'Defeat') return 'Defeat';
-  if (log.entries.at(-1)?.outcome === 'draw') return 'Draw_Retreat';
+  if (log.entries[log.entries.length - 1]?.outcome === 'draw') return 'Draw_Retreat';
   return log.completedRooms === 0 ? 'Turned_Back' : 'Wounded_Retreat';
 }
