@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.4 | 9 | 2026/08/22 | Implement the UI_EXPEDITION 100-run asynchronous simulation forecast using isolated authoritative expedition resolutions, display live completion progress and localized aggregate Clear/Return, Draw, Retreat, and Defeat percentages, and keep rewards, progression, Diary notifications, and persisted game state unchanged. |
 | 0.9.4 | 8 | 2026/08/22 | Grant 10 Prana for successful feedback submissions when the player has never submitted or the prior successful submission was at least 168 hours ago, persist an environment-scoped submission timestamp and restart the cooldown after every successful send, update eligibility and success messaging, and grant legacy feedback submitters one migration reward. |
 | 0.9.4 | 7 | 2026/08/22 | Serialize each AFK worker's Chunk commit and optional PT-scoped automatic-equipment commit as one coordinator transaction, capture pending PT settings at the transaction cutoff, skip automatic equipment when captured settings exist, and remove backlog-wide repeated equipment runs that could duplicate items across parallel worker commits. |
 | 0.9.4 | 6 | 2026/08/21 | Replace ES2022-only `Array.prototype.at()` calls in production source with ES2020-compatible last-element indexing so editor and clean TypeScript project checks agree with the configured compiler library. |

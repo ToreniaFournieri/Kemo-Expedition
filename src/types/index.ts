@@ -723,6 +723,15 @@ export interface ExpeditionLog {
   maxPartyHP: number;
 }
 
+export interface ExpeditionSimulationResult {
+  Clear: number;
+  Turned_Back: number;
+  Draw_Retreat: number;
+  Wounded_Retreat: number;
+  Defeat: number;
+  total: number;
+}
+
 // Game State
 type GameScene = 'home';
 

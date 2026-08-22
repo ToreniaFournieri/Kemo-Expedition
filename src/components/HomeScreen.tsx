@@ -3580,6 +3580,7 @@ export function HomeScreen({
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
           onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
           onResetExpeditionStats={actions.resetExpeditionStats}
+          onSimulateExpedition={(partyIndex, onProgress) => actions.simulateExpedition(partyIndex, gameModeRef.current, onProgress)}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}

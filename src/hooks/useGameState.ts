@@ -26,6 +26,7 @@ import {
   EnemyDef,
   ExpeditionDepthLimit,
   ExpeditionDestinationMode,
+  ExpeditionSimulationResult,
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
@@ -5225,6 +5226,80 @@ export function simulateAfkPartyChunkForWorker(
   });
 }
 
+const yieldToExpeditionSimulationUi = () => new Promise<void>((resolve) => {
+  setTimeout(resolve, 0);
+});
+
+/**
+ * SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
+ *
+ * Resolve forecast expeditions only against private clones. Each run starts from
+ * the same current configuration and full HP, matching a normal post-rest
+ * expedition without committing rewards, progression, Diary entries, or state.
+ */
+export async function simulateExpeditionRuns(
+  state: GameState,
+  partyIndex: number,
+  gameMode: GameMode = 'm.kemo',
+  count = 100,
+  onProgress?: (completed: number, total: number) => void,
+): Promise<ExpeditionSimulationResult> {
+  const total = Math.max(1, Math.floor(count));
+  const sourceParty = state.parties[partyIndex];
+  if (!sourceParty) throw new Error('party_not_found');
+
+  const baseline = structuredClone(state);
+  const baselineParty = baseline.parties[partyIndex];
+  const maximumHp = computePartyStats(baselineParty).partyStats.hp;
+  baseline.parties[partyIndex] = {
+    ...baselineParty,
+    currentHp: maximumHp,
+    lastExpeditionLog: null,
+    pendingDiaryLog: null,
+  };
+
+  const result: ExpeditionSimulationResult = {
+    Clear: 0,
+    Turned_Back: 0,
+    Draw_Retreat: 0,
+    Wounded_Retreat: 0,
+    Defeat: 0,
+    total,
+  };
+
+  for (let index = 0; index < total; index += 1) {
+    const runState = structuredClone(baseline);
+    const resolvedState = gameReducer(runState, {
+      type: 'RUN_EXPEDITION',
+      partyIndex,
+      gameMode,
+      triggerGodsBattle: false,
+    });
+    const log = resolvedState.parties[partyIndex]?.lastExpeditionLog;
+    if (!log) throw new Error('simulation_failed');
+
+    if (log.finalOutcome === 'Clear') {
+      result.Clear += 1;
+    } else if (log.finalOutcome === 'Escape') {
+      result.Turned_Back += 1;
+    } else if (log.finalOutcome === 'Defeat') {
+      result.Defeat += 1;
+    } else {
+      const finalEntry = log.entries[log.entries.length - 1];
+      if (finalEntry?.outcome === 'draw') result.Draw_Retreat += 1;
+      else result.Wounded_Retreat += 1;
+    }
+
+    const completed = index + 1;
+    onProgress?.(completed, total);
+    if (completed < total && completed % 5 === 0) {
+      await yieldToExpeditionSimulationUi();
+    }
+  }
+
+  return result;
+}
+
 // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
 export function useGameState() {
   const initialStateRef = useRef<InitialStateResult | null>(null);
@@ -5398,6 +5473,10 @@ export function useGameState() {
     resetExpeditionStats: useCallback((partyIndex: number) => {
       dispatch({ type: 'RESET_EXPEDITION_STATS', partyIndex });
     }, []),
+
+    simulateExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', onProgress?: (completed: number, total: number) => void) => (
+      simulateExpeditionRuns(state, partyIndex, gameMode, 100, onProgress)
+    ), [state]),
 
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });

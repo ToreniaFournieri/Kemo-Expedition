@@ -1,4 +1,4 @@
-import { Fragment,useEffect,useState,type Dispatch,type SetStateAction } from 'react';
+import { Fragment,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
 import {
 DUNGEONS,
 getEffectiveEnemyLevel,
@@ -13,7 +13,7 @@ import { getItemDisplayName } from '../../../game/gameState';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
 import { computePartyStats } from '../../../game/partyComputation';
 import { t } from '../../../i18n';
-import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,GameState,Item,Party } from '../../../types';
+import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item,Party } from '../../../types';
 
 
 import {
@@ -71,6 +71,7 @@ export default function ExpeditionTab({
   onSetExpeditionDepthLimit,
   onSetExpeditionDifficultyOffset,
   onResetExpeditionStats,
+  onSimulateExpedition,
   isExpeditionStatsDisplayEnabled,
   partyCycles,
   afkRecoveryProgressPercent,
@@ -91,6 +92,7 @@ export default function ExpeditionTab({
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onSetExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
+  onSimulateExpedition: (partyIndex: number, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
   isExpeditionStatsDisplayEnabled: boolean;
   partyCycles: Record<number, PartyCycleRuntime>;
   afkRecoveryProgressPercent: number | null;
@@ -112,6 +114,13 @@ export default function ExpeditionTab({
     width: number;
   } | null>(null);
   const [activeRewardItemBubble, setActiveRewardItemBubble] = useState<RewardItemBubble | null>(null);
+  const [simulationByParty, setSimulationByParty] = useState<Record<number, {
+    status: 'running' | 'complete' | 'error';
+    completed: number;
+    total: number;
+    result?: ExpeditionSimulationResult;
+  }>>({});
+  const simulationRequestIdByParty = useRef<Record<number, number>>({});
   const [activeProgressBubble, setActiveProgressBubble] = useState<{
     key: string;
     text: string;
@@ -258,6 +267,46 @@ export default function ExpeditionTab({
       text: getItemInventoryDetailText(item),
       ...getRewardItemBubblePosition(targetElement),
     });
+  };
+
+  const clearPartySimulation = (partyIndex: number) => {
+    simulationRequestIdByParty.current[partyIndex] = (simulationRequestIdByParty.current[partyIndex] ?? 0) + 1;
+    setSimulationByParty((current) => {
+      if (!current[partyIndex]) return current;
+      const next = { ...current };
+      delete next[partyIndex];
+      return next;
+    });
+  };
+
+  const handleSimulationRun = async (partyIndex: number) => {
+    const requestId = (simulationRequestIdByParty.current[partyIndex] ?? 0) + 1;
+    simulationRequestIdByParty.current[partyIndex] = requestId;
+    setSimulationByParty((current) => ({
+      ...current,
+      [partyIndex]: { status: 'running', completed: 0, total: 100 },
+    }));
+
+    try {
+      const result = await onSimulateExpedition(partyIndex, (completed, total) => {
+        if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
+        setSimulationByParty((current) => ({
+          ...current,
+          [partyIndex]: { status: 'running', completed, total },
+        }));
+      });
+      if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
+      setSimulationByParty((current) => ({
+        ...current,
+        [partyIndex]: { status: 'complete', completed: result.total, total: result.total, result },
+      }));
+    } catch {
+      if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
+      setSimulationByParty((current) => ({
+        ...current,
+        [partyIndex]: { status: 'error', completed: 0, total: 100 },
+      }));
+    }
   };
 
   return (
@@ -740,7 +789,10 @@ export default function ExpeditionTab({
                   </button>
                   <select
                     value={party.selectedDungeonId}
-                    onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
+                    onChange={(e) => {
+                      clearPartySimulation(partyIndex);
+                      onSelectDungeon(partyIndex, Number(e.target.value));
+                    }}
                     className="min-w-0 w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {DUNGEONS.filter((dungeon) => debugSettings.colosseumEnabled || dungeon.id !== 99).map(dungeon => {
@@ -752,7 +804,10 @@ export default function ExpeditionTab({
                   </select>
                   <select
                     value={party.expeditionDepthLimit}
-                    onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
+                    onChange={(e) => {
+                      clearPartySimulation(partyIndex);
+                      onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit);
+                    }}
                     className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {getExpeditionDepthOptions(party.selectedDungeonId).map((option) => (
@@ -784,7 +839,10 @@ export default function ExpeditionTab({
                         type="button"
                         disabled={selectedDifficultyOffset <= 0}
                         aria-label={t('party.expedition.difficultyDecrease')}
-                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset - 2)}
+                        onClick={() => {
+                          clearPartySimulation(partyIndex);
+                          onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset - 2);
+                        }}
                         className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
                       >
                         −
@@ -797,6 +855,7 @@ export default function ExpeditionTab({
                         value={selectedDifficultyOffset}
                         onChange={(e) => {
                           const nextOffset = Number(e.target.value);
+                          clearPartySimulation(partyIndex);
                           onSetExpeditionDifficultyOffset(partyIndex, nextOffset);
                         }}
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
@@ -806,7 +865,10 @@ export default function ExpeditionTab({
                         type="button"
                         disabled={selectedDifficultyOffset >= difficultyOffsetMax}
                         aria-label={t('party.expedition.difficultyIncrease')}
-                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset + 2)}
+                        onClick={() => {
+                          clearPartySimulation(partyIndex);
+                          onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset + 2);
+                        }}
                         className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
                       >
                         +
@@ -834,6 +896,37 @@ export default function ExpeditionTab({
                     </div>
                   </div>
                 )}
+                <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                  <button
+                    type="button"
+                    disabled={simulationByParty[partyIndex]?.status === 'running'}
+                    onClick={() => void handleSimulationRun(partyIndex)}
+                    className={`${IOS_GLASS_BUTTON_CLASS} shrink-0 px-2.5 py-1.5 font-medium disabled:cursor-wait disabled:opacity-60`}
+                  >
+                    {t('party.expedition.simulationRun')}
+                  </button>
+                  <span className="min-w-0 text-right tabular-nums">
+                    {simulationByParty[partyIndex]?.status === 'running'
+                      ? t('party.expedition.simulationRunning', {
+                        completed: formatNumber(simulationByParty[partyIndex].completed),
+                        total: formatNumber(simulationByParty[partyIndex].total),
+                      })
+                      : simulationByParty[partyIndex]?.status === 'complete' && simulationByParty[partyIndex].result
+                      ? t(party.expeditionDepthLimit === 'all'
+                        ? 'party.expedition.simulationResult.clear'
+                        : 'party.expedition.simulationResult.return', {
+                        success: formatNumber(party.expeditionDepthLimit === 'all'
+                          ? simulationByParty[partyIndex].result.Clear
+                          : simulationByParty[partyIndex].result.Turned_Back),
+                        draw: formatNumber(simulationByParty[partyIndex].result.Draw_Retreat),
+                        retreat: formatNumber(simulationByParty[partyIndex].result.Wounded_Retreat),
+                        defeat: formatNumber(simulationByParty[partyIndex].result.Defeat),
+                      })
+                      : simulationByParty[partyIndex]?.status === 'error'
+                      ? t('party.expedition.simulationError')
+                      : null}
+                  </span>
+                </div>
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
