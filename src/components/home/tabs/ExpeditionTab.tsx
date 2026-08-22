@@ -121,6 +121,13 @@ export default function ExpeditionTab({
     result?: ExpeditionSimulationResult;
   }>>({});
   const simulationRequestIdByParty = useRef<Record<number, number>>({});
+  const [activeSimulationResultBubble, setActiveSimulationResultBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    maxWidth: number;
+  } | null>(null);
   const [activeProgressBubble, setActiveProgressBubble] = useState<{
     key: string;
     text: string;
@@ -271,6 +278,7 @@ export default function ExpeditionTab({
 
   const clearPartySimulation = (partyIndex: number) => {
     simulationRequestIdByParty.current[partyIndex] = (simulationRequestIdByParty.current[partyIndex] ?? 0) + 1;
+    setActiveSimulationResultBubble((current) => current?.key === `simulation:${partyIndex}` ? null : current);
     setSimulationByParty((current) => {
       if (!current[partyIndex]) return current;
       const next = { ...current };
@@ -282,6 +290,7 @@ export default function ExpeditionTab({
   const handleSimulationRun = async (partyIndex: number) => {
     const requestId = (simulationRequestIdByParty.current[partyIndex] ?? 0) + 1;
     simulationRequestIdByParty.current[partyIndex] = requestId;
+    setActiveSimulationResultBubble((current) => current?.key === `simulation:${partyIndex}` ? null : current);
     setSimulationByParty((current) => ({
       ...current,
       [partyIndex]: { status: 'running', completed: 0, total: 100 },
@@ -313,6 +322,9 @@ export default function ExpeditionTab({
     <div
       className="space-y-1.5"
       onPointerDown={() => {
+        if (activeSimulationResultBubble) {
+          setActiveSimulationResultBubble(null);
+        }
         if (activeProgressBubble) {
           setActiveProgressBubble(null);
         }
@@ -340,6 +352,24 @@ export default function ExpeditionTab({
             onPointerDown={(event) => event.stopPropagation()}
           >
             {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+          </div>
+        </FloatingBubblePortal>
+      ) : null}
+      {activeSimulationResultBubble ? (
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane pointer-events-none fixed z-30 -translate-y-full rounded-lg p-2"
+            style={{
+              top: activeSimulationResultBubble.top,
+              left: activeSimulationResultBubble.left,
+              width: 'max-content',
+              maxWidth: activeSimulationResultBubble.maxWidth,
+            }}
+            role="tooltip"
+          >
+            <div className="whitespace-nowrap text-xs leading-snug text-gray-700">
+              {activeSimulationResultBubble.text}
+            </div>
           </div>
         </FloatingBubblePortal>
       ) : null}
@@ -433,6 +463,25 @@ export default function ExpeditionTab({
           ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
           : getPartyCycleStateLabel(cycle.state);
         const conditionLabel = getConditionLabel(party.condition, true);
+        const simulation = simulationByParty[partyIndex];
+        // A locked Clear-Gate can turn a nominal "all" run back early, so use
+        // the authoritative aggregate outcome instead of inferring the label
+        // from the configured depth selector alone.
+        const simulationUsesClearLabel = simulation?.result
+          ? simulation.result.Turned_Back === 0
+          : party.expeditionDepthLimit === 'all';
+        const simulationResultText = simulation?.status === 'complete' && simulation.result
+          ? t(simulationUsesClearLabel
+            ? 'party.expedition.simulationResult.clear'
+            : 'party.expedition.simulationResult.return', {
+            success: formatNumber(simulationUsesClearLabel
+              ? simulation.result.Clear
+              : simulation.result.Turned_Back),
+            draw: formatNumber(simulation.result.Draw_Retreat),
+            retreat: formatNumber(simulation.result.Wounded_Retreat),
+            defeat: formatNumber(simulation.result.Defeat),
+          })
+          : null;
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
@@ -899,34 +948,82 @@ export default function ExpeditionTab({
                 <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                   <button
                     type="button"
-                    disabled={simulationByParty[partyIndex]?.status === 'running'}
+                    disabled={simulation?.status === 'running'}
                     onClick={() => void handleSimulationRun(partyIndex)}
                     className={`${IOS_GLASS_BUTTON_CLASS} shrink-0 px-2.5 py-1.5 font-medium disabled:cursor-wait disabled:opacity-60`}
                   >
                     {t('party.expedition.simulationRun')}
                   </button>
                   <span className="min-w-0 text-right tabular-nums">
-                    {simulationByParty[partyIndex]?.status === 'running'
+                    {simulation?.status === 'running'
                       ? t('party.expedition.simulationRunning', {
-                        completed: formatNumber(simulationByParty[partyIndex].completed),
-                        total: formatNumber(simulationByParty[partyIndex].total),
+                        completed: formatNumber(simulation.completed),
+                        total: formatNumber(simulation.total),
                       })
-                      : simulationByParty[partyIndex]?.status === 'complete' && simulationByParty[partyIndex].result
-                      ? t(party.expeditionDepthLimit === 'all'
-                        ? 'party.expedition.simulationResult.clear'
-                        : 'party.expedition.simulationResult.return', {
-                        success: formatNumber(party.expeditionDepthLimit === 'all'
-                          ? simulationByParty[partyIndex].result.Clear
-                          : simulationByParty[partyIndex].result.Turned_Back),
-                        draw: formatNumber(simulationByParty[partyIndex].result.Draw_Retreat),
-                        retreat: formatNumber(simulationByParty[partyIndex].result.Wounded_Retreat),
-                        defeat: formatNumber(simulationByParty[partyIndex].result.Defeat),
-                      })
-                      : simulationByParty[partyIndex]?.status === 'error'
+                      : simulationResultText
+                      ?? (simulation?.status === 'error'
                       ? t('party.expedition.simulationError')
-                      : null}
+                      : null)}
                   </span>
                 </div>
+                {simulation?.status === 'complete' && simulation.result && simulationResultText ? (
+                  <button
+                    type="button"
+                    className="block h-3 w-full overflow-visible rounded-full bg-gray-200/70 focus:outline-none focus:ring-2 focus:ring-sub/60 focus:ring-offset-1"
+                    aria-label={simulationResultText}
+                    title={simulationResultText}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      const key = `simulation:${partyIndex}`;
+                      if (activeSimulationResultBubble?.key === key) {
+                        setActiveSimulationResultBubble(null);
+                        return;
+                      }
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      const viewportPadding = 12;
+                      const maxWidth = Math.min(420, window.innerWidth - viewportPadding * 2);
+                      setActiveSimulationResultBubble({
+                        key,
+                        text: simulationResultText,
+                        top: rect.top - 8,
+                        left: Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - viewportPadding - maxWidth),
+                        maxWidth,
+                      });
+                    }}
+                  >
+                    <span className="flex h-full w-full overflow-hidden rounded-full" aria-hidden="true">
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${((simulationUsesClearLabel ? simulation.result.Clear : simulation.result.Turned_Back) / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 80%, white)',
+                        }}
+                      />
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${(simulation.result.Draw_Retreat / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 50%, white)',
+                        }}
+                      />
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${(simulation.result.Wounded_Retreat / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 50%, white)',
+                        }}
+                      />
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${(simulation.result.Defeat / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 80%, white)',
+                        }}
+                      />
+                    </span>
+                  </button>
+                ) : null}
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
