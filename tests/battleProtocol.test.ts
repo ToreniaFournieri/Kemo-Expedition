@@ -593,6 +593,61 @@ test('timed COMBAT flag is exclusive, accepts externally-owned First Aid, and re
   assert.ok(timed >= 0 && timed < attack);
 });
 
+test('timed COMBAT gates Unstable Core to ranged 4 and magical 0', () => {
+  const base = combatTimedInput({
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, rangedAttack: 0, magicalAttack: 0, meleeAttack: 0,
+        abilities: [{ id: 'unstable_core', level: 1 }] }
+      : { ...combatant, rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 }),
+    randomValues: [],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(base));
+  assert.equal(output.protocolError, 0);
+  const cores = output.events.filter((event) => event.abilityId === 'unstable_core');
+  assert.deepEqual(cores.map((event) => [event.attackType, event.timing]), [['ranged', 4], ['magical', 0]]);
+  assert.equal(cores.some((event) => event.attackType === 'melee'), false);
+});
+
+test('timed COMBAT Soul Reap draws exactly one party target and party Soul Reap draws none', () => {
+  const enemyOutput = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    partyHp: 1,
+    partyMaxHp: 100,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'soul_reap', level: 1 }], rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 }
+      : { ...combatant, row: 1, hp: 1, maxHp: 100 }),
+    randomValues: [0.75],
+  })));
+  assert.equal(enemyOutput.protocolError, 0);
+  assert.equal(enemyOutput.randomConsumed, 1);
+  assert.equal(enemyOutput.events.find((event) => event.abilityId === 'soul_reap')?.targetId, 1);
+  const partyOutput = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    enemyHp: 9,
+    enemyMaxHp: 100,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, hp: 9, maxHp: 100 }
+      : { ...combatant, abilities: [{ id: 'soul_reap', level: 1 }], rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 }),
+    randomValues: [],
+  })));
+  assert.equal(partyOutput.protocolError, 0);
+  assert.equal(partyOutput.randomConsumed, 0);
+});
+
+test('timed Self Destruct clamps semantic damage at zero below target defense', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    enemyHp: 10,
+    enemyMaxHp: 10,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, physicalDefense: 100, meleeAttack: 0, rangedAttack: 0, magicalAttack: 0 }
+      : { ...combatant, abilities: [{ id: 'self_destruct', level: 5 }], meleeAttack: 0, rangedAttack: 0, magicalAttack: 0 }),
+    physicalThreatBag: [{ id: 1, tickets: 1 }],
+    randomValues: [0],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.events.find((event) => event.abilityId === 'self_destruct')?.value0, 0);
+});
+
 test('reactive COMBAT flag is exclusive and preflights timed and Mimic-copyable mechanics before draws', () => {
   for (const flags of [
     BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT | BATTLE_ENGINE_FLAG_START_CHECKPOINT,

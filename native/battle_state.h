@@ -133,6 +133,10 @@ struct BattleStateCore {
   unsigned int action_count = 0;
   double party_hp = 0.0;
   double party_max_hp = 0.0;
+  // Party HP is intentionally aggregate in the protocol.  Timed regeneration
+  // therefore consumes this aggregate ledger rather than an owning row's
+  // local damage ledger.
+  double party_damage_taken = 0.0;
   double enemy_hp = 0.0;
   double enemy_max_hp = 0.0;
   ThreatBagEntry physical_bag[kMaxThreatBagEntries]{};
