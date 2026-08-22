@@ -61,7 +61,13 @@ and {condition ≥ 230}
   - When all 100 runs are complete, display the aggregated result:
     - If the run reaches the expedition completion condition: `Example: 踏破45% / 引分10% / 撤退35% / 敗北10%`
     - If the run reaches the configured return depth limit: `Example: 帰還45% / 引分10% / 撤退35% / 敗北10%`
-
+  - UI visual: 100% stacked horizontal bar
+    - 踏破 or 帰還: Sub color, 20% lighter
+    - 引分: Sub color, 50% lighter
+    - 撤退: Accent color, 50% lighter
+    - 敗北: Accent color, 20% lighter
+    - Segment widths correspond to their respective outcome percentages.
+    - Display a floating tooltip/bubble over the bar with the full result, e.g. `踏破45% / 引分10% / 撤退35% / 敗北10%`
 
 
 ```
