@@ -51,7 +51,7 @@ and {condition ≥ 230}
     - Example: 2F-3 捕食者の縄張りまで, 2F-4 捕食者の縄張りまで, 3F-3 群生の巣盆地まで
 
 - **Simulation Run (シミュレーション実行)**
-  - Pressing the `シミュレーション実行` button triggers 100 simulated expedition runs.
+  - Pressing the `予測実行` button triggers 100 simulated expedition runs.
   - Simulation runs have no effect on actual game progress or state:
     - No EXP is gained.
     - No items are obtained.
@@ -222,7 +222,7 @@ HP 2350 / 4680
 
 一任 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
 難易度: (Slider) +10
-シミュレーション実行   踏破45%/引分10%/撤退30%/敗北10%
+予測実行   踏破45%/引分10%/撤退30%/敗北10%
 (Left-Aligned)                           (Right-Aligned)
 踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
 EXP: L489 | 自動売却額: 134G
