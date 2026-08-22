@@ -3,7 +3,7 @@ import type { AttackType, TerrainEffectKey } from '../types';
 import { decodeBattleProtocolOutput, type BattleProtocolOutput } from './battleProtocol.ts';
 import { BATTLE_PROTOCOL_VERSION } from './generated/battleProtocol.generated.ts';
 
-const ABI_VERSION = 6;
+const ABI_VERSION = 7;
 const RNG_VERSION = 1;
 
 type KernelExports = WebAssembly.Exports & {
@@ -30,6 +30,10 @@ type KernelExports = WebAssembly.Exports & {
   battle_normal_action_value_capacity(): number;
   battle_normal_action_target_capacity(): number;
   battle_resolve_normal_action(): number;
+  battle_state_test_input_buffer(): number;
+  battle_state_test_output_buffer(): number;
+  battle_state_test_operation_capacity(): number;
+  battle_run_state_test_operations(operationCount: number): number;
   battle_rng_version(): number;
   battle_rng_seed(seedLow: number, seedHigh: number): void;
   battle_rng_next_u64(): bigint;
@@ -300,6 +304,24 @@ export function runNormalActionKernel(
 
 export function getBattleKernelAbiVersion(): number {
   return kernel.battle_kernel_abi_version();
+}
+
+/** Test-only grouped access to the internal C++ mutable battle-state core. */
+export function runBattleStateTestOperations(
+  operations: readonly (readonly number[])[],
+): Float64Array {
+  const capacity = kernel.battle_state_test_operation_capacity();
+  if (operations.length > capacity) throw new RangeError('C++ battle-state test operation list is too large');
+  const stride = 8;
+  const input = new Float64Array(kernel.memory.buffer, kernel.battle_state_test_input_buffer(), capacity * stride);
+  input.fill(0);
+  operations.forEach((operation, index) => {
+    if (operation.length > stride) throw new RangeError('C++ battle-state test operation is too large');
+    input.set(operation, index * stride);
+  });
+  const status = kernel.battle_run_state_test_operations(operations.length);
+  if (status !== 0) throw new Error(`C++ battle-state test core rejected input (${status})`);
+  return new Float64Array(new Float64Array(kernel.memory.buffer, kernel.battle_state_test_output_buffer(), operations.length * 5));
 }
 
 export type EquipmentRankingCandidate = {

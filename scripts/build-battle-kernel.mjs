@@ -9,6 +9,7 @@ const cpp = resolve(root, 'native/battle_kernel.cpp');
 const protocolCpp = resolve(root, 'native/battle_protocol.cpp');
 const rngCpp = resolve(root, 'native/battle_rng.cpp');
 const rulesCpp = resolve(root, 'native/battle_rules.cpp');
+const stateCpp = resolve(root, 'native/battle_state.cpp');
 const wasm = resolve(root, 'src/game/battleKernel.wasm');
 const generated = resolve(root, 'src/game/battleKernelBinary.ts');
 const llvmRoot = execFileSync('em-config', ['LLVM_ROOT'], { encoding: 'utf8' }).trim();
@@ -20,6 +21,7 @@ execFileSync(resolve(llvmRoot, 'clang++'), [
   protocolCpp,
   rngCpp,
   rulesCpp,
+  stateCpp,
   '--target=wasm32',
   '-std=c++20',
   '-O3',
@@ -53,6 +55,10 @@ execFileSync(resolve(llvmRoot, 'clang++'), [
   '-Wl,--export=battle_normal_action_value_capacity',
   '-Wl,--export=battle_normal_action_target_capacity',
   '-Wl,--export=battle_resolve_normal_action',
+  '-Wl,--export=battle_state_test_input_buffer',
+  '-Wl,--export=battle_state_test_output_buffer',
+  '-Wl,--export=battle_state_test_operation_capacity',
+  '-Wl,--export=battle_run_state_test_operations',
   '-Wl,--export=battle_protocol_input_arena',
   '-Wl,--export=battle_protocol_output_arena',
   '-Wl,--export=battle_protocol_arena_capacity',

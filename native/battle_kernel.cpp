@@ -1,3 +1,5 @@
+#include "battle_state.h"
+
 // The battle coordinator deliberately supplies random rolls from JavaScript.
 // This keeps the canonical Math.random() draw order unchanged across browser,
 // Electron, AFK workers, and Experimental API sorties.
@@ -7,6 +9,76 @@ extern "C" {
 constexpr int kHitBufferCapacity = 4096;
 double hit_random_rolls[kHitBufferCapacity];
 unsigned char hit_results[kHitBufferCapacity];
+
+// This grouped entry point is intentionally test-only. It exercises the
+// internal mutable-state core without adding production WebAssembly crossings.
+constexpr int kBattleStateTestOperationCapacity = 128;
+constexpr int kBattleStateTestOperationStride = 8;
+double battle_state_test_input[kBattleStateTestOperationCapacity * kBattleStateTestOperationStride];
+double battle_state_test_output[kBattleStateTestOperationCapacity * 5];
+bokemo::battle_state::BattleStateCore battle_state_test_core;
+
+double* battle_state_test_input_buffer() { return battle_state_test_input; }
+double* battle_state_test_output_buffer() { return battle_state_test_output; }
+int battle_state_test_operation_capacity() { return kBattleStateTestOperationCapacity; }
+
+int battle_run_state_test_operations(int operation_count) {
+  using namespace bokemo::battle_state;
+  if (operation_count < 0 || operation_count > kBattleStateTestOperationCapacity) return -1;
+  BattleStateCore& state = battle_state_test_core;
+  reset(state);
+  for (int index = 0; index < operation_count * 5; ++index) battle_state_test_output[index] = 0.0;
+  for (int index = 0; index < operation_count; ++index) {
+    const double* input = &battle_state_test_input[index * kBattleStateTestOperationStride];
+    double* output = &battle_state_test_output[index * 5];
+    const int operation = static_cast<int>(input[0]);
+    CombatantState* target = find(state, static_cast<unsigned int>(input[1]));
+    if (operation == 1) reset(state);
+    else if (operation == 2) output[0] = add_combatant(state, static_cast<unsigned int>(input[1]), input[2] == 0.0 ? Side::Party : Side::Enemy, static_cast<unsigned int>(input[3]), input[4], input[5]) ? 1.0 : 0.0;
+    else if (operation == 3 && target) output[0] = apply_damage(state, *target, input[2], input[3] != 0.0);
+    else if (operation == 4 && target) output[0] = apply_healing(*target, input[2]);
+    else if (operation == 5 && target) output[0] = set_ability(*target, static_cast<unsigned int>(input[2]), static_cast<int>(input[3])) ? 1.0 : 0.0;
+    else if (operation == 6 && target) output[0] = remove_ability(*target, static_cast<unsigned int>(input[2])) ? 1.0 : 0.0;
+    else if (operation == 7 && target) output[0] = upgrade_ability(*target, static_cast<unsigned int>(input[2]), static_cast<int>(input[3]), static_cast<int>(input[4]));
+    else if (operation == 8 && target) output[0] = consume_one_shot(*target, static_cast<unsigned int>(input[2])) ? 1.0 : 0.0;
+    else if (operation == 9 && target) apply_temporary_modifiers(*target, input[2], input[3], input[4], input[5]);
+    else if (operation == 10 && target) reset_temporary_modifiers(*target);
+    else if (operation == 11 && target) output[0] = recover_on_defeat(*target, static_cast<unsigned int>(input[2]), static_cast<unsigned int>(input[3])) ? 1.0 : 0.0;
+    else if (operation == 12 && target) target->acted = input[2] != 0.0;
+    else if (operation == 13) { state.scheduler.first_actor_id = static_cast<unsigned int>(input[1]); state.scheduler.next_timing = static_cast<int>(input[2]); state.scheduler.phase = static_cast<int>(input[3]); state.scheduler.action_cursor = static_cast<unsigned int>(input[4]); }
+    else if (operation == 14) output[0] = append_random(state, input[2]) ? 1.0 : 0.0;
+    else if (operation == 15) { double value = 0.0; output[0] = consume_random(state, value) ? value : -1.0; }
+    else if (operation == 16) output[0] = append_event(state, static_cast<unsigned int>(input[1]), static_cast<unsigned int>(input[2]), static_cast<unsigned int>(input[3]), input[4]) ? 1.0 : 0.0;
+    else if (operation == 17 && target) {
+      const int selector = static_cast<int>(input[2]);
+      if (selector == 1) output[0] = target->temporary.accuracy;
+      else if (selector == 2) output[0] = target->temporary.evasion;
+      else if (selector == 3) output[0] = target->temporary.physical_defense_debuff;
+      else if (selector == 4) output[0] = target->temporary.magical_defense_debuff;
+      else if (selector == 5) { const MutableAbility* ability = find_ability(*target, static_cast<unsigned int>(input[3])); output[0] = ability ? ability->level : 0.0; }
+      else if (selector == 6) output[0] = target->acted ? 1.0 : 0.0;
+    }
+    else if (operation == 18) {
+      const int selector = static_cast<int>(input[1]);
+      if (selector == 1) output[0] = static_cast<double>(state.random_cursor);
+      else if (selector == 2) output[0] = static_cast<double>(state.random_count);
+      else if (selector == 3) output[0] = static_cast<double>(state.event_count);
+      else if (selector == 4) output[0] = static_cast<double>(state.scheduler.first_actor_id);
+      else if (selector == 5) output[0] = static_cast<double>(state.scheduler.next_timing);
+      else if (selector == 6) output[0] = static_cast<double>(state.scheduler.action_cursor);
+      else if (selector == 7 && state.event_count > 0) output[0] = static_cast<double>(state.events[0].opcode);
+      else if (selector == 8 && state.event_count > 1) output[0] = static_cast<double>(state.events[1].opcode);
+    }
+    else if (operation != 1) return -2;
+    if (target) {
+      output[1] = target->hp;
+      output[2] = target->damage_taken;
+      output[3] = static_cast<double>(target->enemy_hits_received);
+      output[4] = is_lethal(*target) ? 1.0 : 0.0;
+    }
+  }
+  return 0;
+}
 
 // Auto-equipment candidate ranking shares the battle WebAssembly module so the
 // browser, Electron renderer, AFK workers, and API runtime all use one native
@@ -18,7 +90,7 @@ int equipment_candidate_values[kEquipmentCandidateCapacity * kEquipmentCandidate
 double equipment_candidate_scores[kEquipmentCandidateCapacity];
 
 int battle_kernel_abi_version() {
-  return 6;
+  return 7;
 }
 
 int* equipment_candidate_int_buffer() {

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.4 | 18 | 2026/08/22 | Close D3 native-rule coverage gaps and add the D4 internal C++ mutable battle-state core for HP, combatants, abilities, temporary effects, scheduler, random tape, semantic events, recovery, and invariant-tested state transitions while retaining TypeScript battle authority and the one-call production interface. |
 | 0.9.4 | 17 | 2026/08/22 | Add the explicit seeded runBattle validation API, unsigned-64-bit Web Crypto seed generation, fixed replay-seed formatting, C++ RNG-backed reproducibility, and protocol/RNG/draw-count result metadata without changing production battle randomness. |
 | 0.9.4 | 16 | 2026/08/22 | Cut the deterministic battle coordinator over to the tape-driven C++ rule adapters and retain the previous TypeScript coordinator only as a test reference, with full-result and exact random-tape differential parity enforced by battleGolden. |
 | 0.9.4 | 15 | 2026/08/22 | Restore modular tape-driven C++ rule adapters for complete hit/damage resolution, targeting and threat bags, special magic, defensive reactions, reactive profiles, timed formulas, terrain effects, and periodic deity HP effects with focused regression coverage. |

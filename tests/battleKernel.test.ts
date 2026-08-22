@@ -9,12 +9,13 @@ import {
   getBattleRngSequence,
   getBattleRngVersion,
   resolveHitSequence,
+  runBattleStateTestOperations,
   selectBestAutoEquipmentFillCandidate,
   selectBestAutoEquipmentUpgradeCandidate,
 } from '../src/game/battleKernel.ts';
 
 test('the checked-in C++ battle kernel exposes the expected ABI', () => {
-  assert.equal(getBattleKernelAbiVersion(), 6);
+  assert.equal(getBattleKernelAbiVersion(), 7);
   assert.equal(getBattleRngVersion(), 1);
 });
 
@@ -157,4 +158,92 @@ test('guaranteed-hit domains do not consume random draws', () => {
   });
   assert.equal(draws, 0);
   assert.deepEqual([...sequence], Array(12).fill(1));
+});
+
+test('internal mutable battle state clamps zero, nonlethal, exact-lethal, and excessive damage without i32 truncation', () => {
+  const output = runBattleStateTestOperations([
+    [2, 1, 1, 1, 9_000_000_000, 9_000_000_000],
+    [3, 1, 0, 1],
+    [3, 1, 4, 1],
+    [3, 1, 8_999_999_996, 1],
+    [3, 1, 1, 1],
+  ]);
+  assert.deepEqual([...output.slice(5, 10)], [0, 9_000_000_000, 0, 0, 0]);
+  assert.deepEqual([...output.slice(10, 15)], [4, 8_999_999_996, 4, 1, 0]);
+  assert.deepEqual([...output.slice(15, 20)], [8_999_999_996, 0, 9_000_000_000, 2, 1]);
+  assert.deepEqual([...output.slice(20, 25)], [0, 0, 9_000_000_000, 2, 1]);
+});
+
+test('internal mutable battle state bounds healing and counts enemy hits only for applied positive damage', () => {
+  const output = runBattleStateTestOperations([
+    [2, 1, 1, 1, 4, 10],
+    [3, 1, 3, 1],
+    [4, 1, 20],
+    [3, 1, -2, 1],
+  ]);
+  assert.equal(output[5], 3);
+  assert.equal(output[10], 9);
+  assert.equal(output[11], 10);
+  assert.equal(output[18], 1);
+});
+
+test('internal mutable battle state handles ability caps, removal, and idempotent one-shot consumption', () => {
+  const output = runBattleStateTestOperations([
+    [2, 1, 0, 2, 10, 10],
+    [5, 1, 41, 2],
+    [7, 1, 41, 9, 5],
+    [17, 1, 5, 41],
+    [6, 1, 41],
+    [7, 1, 41, 1, 5],
+    [8, 1, 0],
+    [8, 1, 0],
+  ]);
+  assert.equal(output[15], 5);
+  assert.equal(output[20], 1);
+  assert.equal(output[25], 0);
+  assert.equal(output[30], 1);
+  assert.equal(output[35], 0);
+});
+
+test('internal mutable battle state resets temporary modifiers and preserves scheduler, tape, and semantic-event order', () => {
+  const output = runBattleStateTestOperations([
+    [2, 1, 0, 3, 10, 10],
+    [9, 1, 0.04, 0.07, 4 / 3, 5 / 4],
+    [17, 1, 1],
+    [17, 1, 3],
+    [10, 1],
+    [17, 1, 1],
+    [17, 1, 3],
+    [13, 1, 12, 2, 7],
+    [14, 0, 0.25],
+    [14, 0, 0.75],
+    [15],
+    [16, 91, 1, 2, 3],
+    [16, 92, 2, 1, 4],
+    [18, 1], [18, 2], [18, 3], [18, 4], [18, 5], [18, 6], [18, 7], [18, 8],
+  ]);
+  assert.equal(output[10], 0.04);
+  assert.equal(output[15], 4 / 3);
+  assert.equal(output[25], 0);
+  assert.equal(output[30], 1);
+  assert.equal(output[50], 0.25);
+  assert.deepEqual([...output.slice(65, 105).filter((_, index) => index % 5 === 0)], [1, 2, 2, 1, 12, 7, 91, 92]);
+});
+
+test('internal mutable battle state applies repeated and competing defeat recovery in priority order', () => {
+  const output = runBattleStateTestOperations([
+    [2, 1, 1, 1, 0, 200],
+    [5, 1, 1, 2],
+    [5, 1, 2, 3],
+    [11, 1, 1, 2],
+    [3, 1, 2, 0],
+    [11, 1, 1, 2],
+    [3, 1, 62, 0],
+    [11, 1, 1, 2],
+  ]);
+  assert.equal(output[15], 1);
+  assert.equal(output[16], 2);
+  assert.equal(output[25], 1);
+  assert.equal(output[26], 62);
+  assert.equal(output[35], 0);
 });
