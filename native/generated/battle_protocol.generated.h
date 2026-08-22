@@ -17,6 +17,7 @@ inline constexpr unsigned short kEventOpcodeCount = 26;
 inline constexpr unsigned short kDeityCount = 12;
 inline constexpr unsigned short kActionCount = 15;
 inline constexpr unsigned int kEngineFlagStartCheckpoint = 1u << 0;
+inline constexpr unsigned int kEngineFlagCombatBaseCheckpoint = 1u << 1;
 
 enum class ProtocolError : unsigned int {
   None = 0,
@@ -26,6 +27,7 @@ enum class ProtocolError : unsigned int {
   ActionCapacity = 4,
   OutputCapacity = 5,
   TapeExhausted = 6,
+  UnsupportedCombatFeature = 7,
 };
 
 enum class AbilityId : unsigned short {

@@ -410,6 +410,11 @@ using bokemo::battle_state::MutableAbility;
 using bokemo::battle_state::NormalActionEntry;
 using bokemo::battle_state::Side;
 
+extern "C" double battle_calculate_per_hit_damage(
+    double, double, double, double, double, double, double, double,
+    double, double, double, double, double, double, double);
+extern "C" double battle_hit_chance(double, double, double, int, int, int, int, int, int);
+
 int active_ability_level(const CombatantState& combatant, protocol::AbilityId id) {
   for (int index = 0; index < combatant.ability_count; ++index) {
     const auto& ability = combatant.abilities[index];
@@ -862,6 +867,219 @@ StartResult resolve_start_checkpoint(const InputHeader& input, BattleStateCore& 
   if (!emit_state_event(state, protocol::EventOpcode::PhaseEnded, 1, 0, 0, 0, 0, 0)) return StartResult::EventCapacity;
   return StartResult::Ok;
 }
+
+bool base_combat_domain_is_supported(
+    const InputHeader& input, const CombatantRecord* combatants,
+    const BagRecord* physical_bag, const BagRecord* magical_bag) {
+  if ((input.engine_flags & ~(protocol::kEngineFlagStartCheckpoint | protocol::kEngineFlagCombatBaseCheckpoint)) != 0 ||
+      (input.engine_flags & protocol::kEngineFlagStartCheckpoint) != 0 || input.flags != 0 ||
+      input.terrain_id != 0 || input.deity_id != 0 || input.ability_count != 0) return false;
+  u32 enemy_count = 0;
+  u32 party_count = 0;
+  bool party_rows[bokemo::battle_state::kMaxCombatants]{};
+  for (u32 index = 0; index < input.combatant_count; ++index) {
+    const auto& combatant = combatants[index];
+    if (combatant.flags != 0) return false;
+    if (combatant.kind == 2) {
+      ++enemy_count;
+      if (combatant.magic_style != 0) return false;
+    } else {
+      ++party_count;
+      if (combatant.row == 0 || combatant.row >= bokemo::battle_state::kMaxCombatants || party_rows[combatant.row]) return false;
+      party_rows[combatant.row] = true;
+    }
+    const double noas[] = {combatant.ranged_noa, combatant.magical_noa, combatant.melee_noa};
+    const double attacks[] = {combatant.ranged_attack, combatant.magical_attack, combatant.melee_attack};
+    for (int attack = 0; attack < 3; ++attack) {
+      if (noas[attack] < 0.0 || attacks[attack] < 0.0) return false;
+    }
+  }
+  if (enemy_count != 1 || party_count == 0 || party_count > 7) return false;
+  auto bag_is_valid = [&](const BagRecord* bag, u32 count) {
+    if (count == 0) return false;
+    u64 total = 0;
+    for (u32 index = 0; index < count; ++index) {
+      if (bag[index].id <= 0 || bag[index].id >= bokemo::battle_state::kMaxCombatants ||
+          !party_rows[bag[index].id] || bag[index].tickets == 0) return false;
+      for (u32 previous = 0; previous < index; ++previous) if (bag[previous].id == bag[index].id) return false;
+      total += bag[index].tickets;
+    }
+    return total > 0 && total <= 0xffff'ffffull;
+  };
+  return bag_is_valid(physical_bag, input.physical_bag_count) &&
+      bag_is_valid(magical_bag, input.magical_bag_count);
+}
+
+enum class CombatResult { Ok, TapeExhausted, EventCapacity };
+
+double attack_value(const CombatantState& actor, u32 profile_index) {
+  return profile_index == 0 ? actor.attacks.ranged : profile_index == 1 ? actor.attacks.magical : actor.attacks.melee;
+}
+
+double action_noa(const CombatantState& actor, u32 profile_index) {
+  return profile_index == 0 ? actor.attacks.ranged_noa : profile_index == 1 ? actor.attacks.magical_noa : actor.attacks.melee_noa;
+}
+
+double elemental_resistance(const CombatantState& target, u8 elemental_offense) {
+  return elemental_offense == 0 ? 1.0 : target.profile.elemental_resistance[elemental_offense - 1];
+}
+
+double base_per_hit_damage(const CombatantState& actor, const CombatantState& target, u32 profile_index) {
+  const bool magical = profile_index == 1;
+  const u32 family = magical ? 1 : 0;
+  const double defense = magical ? target.profile.magical_defense : target.profile.physical_defense;
+  const double effective_defense = actor.side == Side::Party
+      ? defense * (1.0 - actor.profile.penetration[family])
+      : defense;
+  const double offense = actor.side == Side::Party
+      ? ((1.0 + actor.profile.attack_bonus[profile_index] + actor.profile.phase_bonus[1]) *
+          actor.profile.offense_amplifier[family] + actor.profile.deity_bonus[0])
+      : actor.profile.enemy_attack_amplifier[profile_index];
+  double defense_amplifier = target.profile.defense_amplifier[family];
+  if (target.side == Side::Party) defense_amplifier *= target.profile.deity_bonus[magical ? 2 : 1];
+  if (defense_amplifier < 0.01) defense_amplifier = 0.01;
+  return battle_calculate_per_hit_damage(
+      attack_value(actor, profile_index), effective_defense, offense, 1.0,
+      actor.profile.elemental_offense_value, elemental_resistance(target, actor.profile.elemental_offense),
+      defense_amplifier, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+}
+
+CombatantState* draw_threat_target(BattleStateCore& state, bool magical) {
+  auto* bag = magical ? state.magical_bag : state.physical_bag;
+  const u32 count = magical ? state.magical_bag_count : state.physical_bag_count;
+  u64 total = 0;
+  for (u32 index = 0; index < count; ++index) total += bag[index].tickets;
+  if (total == 0) return nullptr;
+  double random = 0.0;
+  if (!bokemo::battle_state::consume_random(state, random)) return nullptr;
+  const u64 roll = static_cast<u64>(random * static_cast<double>(total)) + 1;
+  u64 cumulative = 0;
+  i32 previous_id = -0x7fff'ffff;
+  for (u32 sorted = 0; sorted < count; ++sorted) {
+    u32 selected = count;
+    i32 selected_id = 0x7fff'ffff;
+    for (u32 index = 0; index < count; ++index) {
+      if (bag[index].id > previous_id && bag[index].id < selected_id) { selected = index; selected_id = bag[index].id; }
+    }
+    if (selected == count) break;
+    previous_id = selected_id;
+    cumulative += bag[selected].tickets;
+    if (bag[selected].tickets > 0 && roll <= cumulative) {
+      --bag[selected].tickets;
+      for (int index = 0; index < state.combatant_count; ++index) {
+        auto& candidate = state.combatants[index];
+        if (candidate.side == Side::Party && candidate.row == static_cast<u32>(selected_id)) return &candidate;
+      }
+      return nullptr;
+    }
+  }
+  return nullptr;
+}
+
+CombatResult resolve_base_combat(BattleStateCore& state) {
+  constexpr u32 kCombatPhase = 2;
+  constexpr u32 kNormalAction = 1;
+  if (!emit_state_event(state, protocol::EventOpcode::PhaseStarted, kCombatPhase, 0, 0, 0, 0, 49)) return CombatResult::EventCapacity;
+  CombatantState* enemy = nullptr;
+  for (int index = 0; index < state.combatant_count; ++index) if (state.combatants[index].side == Side::Enemy) enemy = &state.combatants[index];
+  if (!enemy) return CombatResult::TapeExhausted;
+
+  for (int timing = 49; timing >= 0 && state.party_hp > 0.0 && state.enemy_hp > 0.0; --timing) {
+    state.scheduler.next_timing = timing;
+    for (u32 action_index = 0; action_index < state.action_count && state.party_hp > 0.0 && state.enemy_hp > 0.0; ++action_index) {
+      auto& action = state.actions[action_index];
+      if (action.acted || action.timing != timing) continue;
+      action.acted = true;
+      CombatantState* actor = bokemo::battle_state::find(state, action.actor_id);
+      if (!actor) return CombatResult::TapeExhausted;
+      actor->acted = true;
+      const u32 profile_index = action.attack_type - 1;
+      const double raw_attempts = __builtin_ceil(action_noa(*actor, profile_index));
+      if (raw_attempts <= 0.0) continue;
+      const u64 attempts64 = static_cast<u64>(raw_attempts);
+      if (attempts64 > 0xffff'ffffull) return CombatResult::TapeExhausted;
+      const u32 attempts = static_cast<u32>(attempts64);
+
+      if (actor->side == Side::Enemy) {
+        struct Group { CombatantState* target; u32 attempts; u32 hits; double damage; };
+        Group groups[7]{};
+        u32 group_count = 0;
+        for (u32 attempt = 0; attempt < attempts; ++attempt) {
+          CombatantState* target = draw_threat_target(state, profile_index == 1);
+          if (!target) return CombatResult::TapeExhausted;
+          if (!emit_state_event(state, protocol::EventOpcode::TargetSelected, kCombatPhase,
+              actor->id, target->id, 0, action.attack_type, timing, 0, 0.0, 0.0, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+          state.events[state.event_count - 1].attempts = 1;
+          double hit_random = 0.0;
+          if (!bokemo::battle_state::consume_random(state, hit_random)) return CombatResult::TapeExhausted;
+          u32 group = 0;
+          while (group < group_count && groups[group].target != target) ++group;
+          if (group == group_count) groups[group_count++] = {target, 0, 0, 0.0};
+          ++groups[group].attempts;
+          const double chance = battle_hit_chance(
+              actor->profile.accuracy_potency[profile_index],
+              actor->profile.accuracy_bonus + actor->profile.deity_bonus[3], target->profile.evasion_bonus,
+              static_cast<int>(attempt + 1), static_cast<int>(profile_index), 0, 0, 0, 0);
+          if (hit_random <= chance) {
+            ++groups[group].hits;
+            groups[group].damage += base_per_hit_damage(*actor, *target, profile_index);
+          }
+        }
+        for (u32 group = 0; group < group_count; ++group) {
+          auto& result = groups[group];
+          const double applied = result.damage > state.party_hp ? state.party_hp : result.damage;
+          state.party_hp -= applied;
+          if (!emit_state_event(state, protocol::EventOpcode::Attack, kCombatPhase, actor->id, result.target->id,
+              0, action.attack_type, timing, 0, applied, result.damage, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+          state.events[state.event_count - 1].attempts = result.attempts;
+          state.events[state.event_count - 1].hits = result.hits;
+          if (!emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, actor->id, result.target->id,
+              0, action.attack_type, timing, 0, applied, result.damage, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+          state.events[state.event_count - 1].attempts = result.attempts;
+          state.events[state.event_count - 1].hits = result.hits;
+        }
+      } else {
+        if (!emit_state_event(state, protocol::EventOpcode::TargetSelected, kCombatPhase,
+            actor->id, enemy->id, 0, action.attack_type, timing, 0, 0.0, 0.0, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 1].attempts = attempts;
+        const double per_hit = base_per_hit_damage(*actor, *enemy, profile_index);
+        u32 hits = 0;
+        u32 applied_hits = 0;
+        double total_damage = 0.0;
+        double applied_damage = 0.0;
+        for (u32 attempt = 0; attempt < attempts; ++attempt) {
+          double hit_random = 0.0;
+          if (!bokemo::battle_state::consume_random(state, hit_random)) return CombatResult::TapeExhausted;
+          const double potency = profile_index == 1 ? 1.0 : actor->profile.accuracy_potency[profile_index];
+          const double chance = battle_hit_chance(
+              potency, actor->profile.accuracy_bonus + actor->profile.deity_bonus[3], enemy->profile.evasion_bonus,
+              static_cast<int>(attempt + 1), static_cast<int>(profile_index), 0, 0, 0, 0);
+          if (hit_random > chance) continue;
+          ++hits;
+          total_damage += per_hit;
+          if (state.enemy_hp > 0.0) {
+            const double applied = per_hit > state.enemy_hp ? state.enemy_hp : per_hit;
+            state.enemy_hp -= applied;
+            applied_damage += applied;
+            if (applied > 0.0) ++applied_hits;
+          }
+        }
+        enemy->hp = state.enemy_hp;
+        enemy->enemy_hits_received += applied_hits;
+        if (!emit_state_event(state, protocol::EventOpcode::Attack, kCombatPhase, actor->id, enemy->id,
+            0, action.attack_type, timing, 0, applied_damage, total_damage, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 1].attempts = attempts;
+        state.events[state.event_count - 1].hits = hits;
+        if (!emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, actor->id, enemy->id,
+            0, action.attack_type, timing, 0, applied_damage, total_damage, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 1].attempts = attempts;
+        state.events[state.event_count - 1].hits = applied_hits;
+      }
+    }
+  }
+  if (!emit_state_event(state, protocol::EventOpcode::PhaseEnded, kCombatPhase, 0, 0, 0, 0, 0)) return CombatResult::EventCapacity;
+  return CombatResult::Ok;
+}
 }  // namespace
 
 extern "C" {
@@ -1103,6 +1321,14 @@ int battle_protocol_execute(u32 byte_length) {
   const auto* random_values = reinterpret_cast<const double*>(input_arena + input->random_offset);
   const auto* physical_bag = reinterpret_cast<const BagRecord*>(input_arena + input->physical_bag_offset);
   const auto* magical_bag = reinterpret_cast<const BagRecord*>(input_arena + input->magical_bag_offset);
+  const bool start_checkpoint = (input->engine_flags & protocol::kEngineFlagStartCheckpoint) != 0;
+  const bool combat_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatBaseCheckpoint) != 0;
+  if (start_checkpoint && combat_checkpoint) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
+  if (combat_checkpoint && !base_combat_domain_is_supported(*input, records, physical_bag, magical_bag)) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
   alignas(BattleStateCore) static unsigned char state_storage[sizeof(BattleStateCore)];
   BattleStateCore& state = *reinterpret_cast<BattleStateCore*>(state_storage);
   reset(state);
@@ -1114,6 +1340,18 @@ int battle_protocol_execute(u32 byte_length) {
   state.magical_bag_count = input->magical_bag_count;
   for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};
   for (u32 index = 0; index < input->magical_bag_count; ++index) state.magical_bag[index] = {magical_bag[index].id, magical_bag[index].tickets};
+  if (combat_checkpoint) {
+    auto sort_bag = [](ThreatBagEntry* bag, u32 count) {
+      for (u32 index = 1; index < count; ++index) {
+        const ThreatBagEntry current = bag[index];
+        u32 cursor = index;
+        while (cursor > 0 && current.id < bag[cursor - 1].id) { bag[cursor] = bag[cursor - 1]; --cursor; }
+        bag[cursor] = current;
+      }
+    };
+    sort_bag(state.physical_bag, state.physical_bag_count);
+    sort_bag(state.magical_bag, state.magical_bag_count);
+  }
   for (u32 index = 0; index < input->random_count; ++index) if (!append_random(state, random_values[index])) return initialize_error_output(*input, protocol::ProtocolError::RandomCapacity);
 
   for (u32 index = 0; index < input->combatant_count; ++index) {
@@ -1169,7 +1407,7 @@ int battle_protocol_execute(u32 byte_length) {
     event.hits = hits; event.attempts = attempts; event.value1 = value1; event.value2 = value2;
     return true;
   };
-  if ((input->engine_flags & protocol::kEngineFlagStartCheckpoint) != 0) {
+  if (start_checkpoint || combat_checkpoint) {
     const StartResult start_result = resolve_start_checkpoint(*input, state);
     if (start_result != StartResult::Ok) {
       const protocol::ProtocolError error = start_result == StartResult::TapeExhausted ? protocol::ProtocolError::TapeExhausted
@@ -1178,15 +1416,28 @@ int battle_protocol_execute(u32 byte_length) {
           : protocol::ProtocolError::EventCapacity;
       return initialize_error_output_at_cursor(*input, error, state.random_cursor);
     }
+    if (combat_checkpoint) {
+      const CombatResult combat_result = resolve_base_combat(state);
+      if (combat_result != CombatResult::Ok) {
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+            ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
+        return initialize_error_output_at_cursor(*input, error, state.random_cursor);
+      }
+    }
     const u64 output_size = sizeof(OutputHeader) + static_cast<u64>(state.event_count) * sizeof(EventRecord) +
         static_cast<u64>(state.physical_bag_count + state.magical_bag_count) * sizeof(BagRecord);
     if (output_size > protocol::kArenaCapacity) return initialize_error_output(*input, protocol::ProtocolError::OutputCapacity);
     auto* output = reinterpret_cast<OutputHeader*>(output_arena);
     initialize_output(*input, output, state.event_count, state.random_cursor);
     output->total_size = static_cast<u32>(output_size);
-    output->outcome = 0;
+    output->outcome = state.enemy_hp <= 0.0 ? 1 : state.party_hp <= 0.0 ? 2 : 0;
     output->party_hp = state.party_hp;
     output->enemy_hp = state.enemy_hp;
+    const CombatantState* resolved_enemy = nullptr;
+    for (int index = 0; index < state.combatant_count; ++index) {
+      if (state.combatants[index].side == Side::Enemy) { resolved_enemy = &state.combatants[index]; break; }
+    }
+    output->enemy_hits_received = resolved_enemy ? resolved_enemy->enemy_hits_received : 0;
     auto* output_events = reinterpret_cast<EventRecord*>(output_arena + sizeof(OutputHeader));
     for (u32 index = 0; index < state.event_count; ++index) {
       const SemanticEvent& source = state.events[index];

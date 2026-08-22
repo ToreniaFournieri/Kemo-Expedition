@@ -5,12 +5,19 @@ import {
   getBattleProtocolTerrainName,
   type BattleProtocolInput,
 } from '../src/game/battleProtocol.ts';
-import { executeBattleProtocol, getBattleProtocolArenaInfo, probeBattleProtocol } from '../src/game/battleKernel.ts';
+import {
+  beginBattleKernelMeasurement,
+  endBattleKernelMeasurement,
+  executeBattleProtocol,
+  getBattleProtocolArenaInfo,
+  probeBattleProtocol,
+} from '../src/game/battleKernel.ts';
 import { BATTLE_KERNEL_WASM } from '../src/game/battleKernelBinary.ts';
 import {
   BATTLE_ABILITY_IDS,
   BATTLE_ACTION_IDS,
   BATTLE_DEITY_IDS,
+  BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
@@ -90,6 +97,9 @@ test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_DEITY_IDS.goddess_of_discord, 12);
   assert.equal(BATTLE_ACTION_IDS.normal_attack, 1);
   assert.equal(BATTLE_ACTION_IDS.timed_ability, 15);
+  assert.equal(BATTLE_ENGINE_FLAG_START_CHECKPOINT, 1 << 0);
+  assert.equal(BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT, 1 << 1);
+  assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature, 7);
   assert.equal(getBattleProtocolTerrainName(BATTLE_TERRAIN_IDS['terrain.echo-domain']), 'terrain.echo-domain');
 });
 
@@ -456,4 +466,208 @@ test('checked-in full-battle Wasm has no imports and exports the v3 executor', (
   const module = new WebAssembly.Module(BATTLE_KERNEL_WASM);
   assert.deepEqual(WebAssembly.Module.imports(module), []);
   assert.ok(WebAssembly.Module.exports(module).some((entry) => entry.name === 'battle_protocol_execute' && entry.kind === 'function'));
+});
+
+function combatBaseInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
+  const base = checkpointInput();
+  return {
+    ...base,
+    engineFlags: BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
+    physicalThreatBag: [{ id: 1, tickets: 8 }, { id: 2, tickets: 8 }],
+    magicalThreatBag: [{ id: 1, tickets: 8 }, { id: 2, tickets: 8 }],
+    combatants: [
+      {
+        ...base.combatants[0]!,
+        rangedAccuracyPotency: 1,
+        magicalAccuracyPotency: 1,
+        meleeAccuracyPotency: 1,
+        physicalPenetration: 0,
+        magicalPenetration: 0,
+        physicalOffenseAmplifier: 1,
+        magicalOffenseAmplifier: 1,
+        physicalDefenseAmplifier: 1,
+        magicalDefenseAmplifier: 1,
+        deityPhysicalDefenseBonus: 1,
+        deityMagicalDefenseBonus: 1,
+        enemyRangedAmplifier: 1,
+        enemyMagicalAmplifier: 1,
+        enemyMeleeAmplifier: 1,
+      },
+      {
+        ...base.combatants[1]!,
+        rangedAccuracyPotency: 1,
+        magicalAccuracyPotency: 1,
+        meleeAccuracyPotency: 1,
+        physicalPenetration: 0,
+        magicalPenetration: 0,
+        physicalOffenseAmplifier: 1,
+        magicalOffenseAmplifier: 1,
+        physicalDefenseAmplifier: 1,
+        magicalDefenseAmplifier: 1,
+        deityPhysicalDefenseBonus: 1,
+        deityMagicalDefenseBonus: 1,
+      },
+      {
+        ...base.combatants[1]!, id: 2, row: 2,
+        rangedAccuracyPotency: 1,
+        magicalAccuracyPotency: 1,
+        meleeAccuracyPotency: 1,
+        physicalPenetration: 0,
+        magicalPenetration: 0,
+        physicalOffenseAmplifier: 1,
+        magicalOffenseAmplifier: 1,
+        physicalDefenseAmplifier: 1,
+        magicalDefenseAmplifier: 1,
+        deityPhysicalDefenseBonus: 1,
+        deityMagicalDefenseBonus: 1,
+      },
+    ],
+    ...overrides,
+  };
+}
+
+test('base COMBAT rejects unsupported features and mutually exclusive flags before drawing', () => {
+  for (const input of [
+    combatBaseInput({ terrainEffect: 'terrain.fog', randomValues: [0.5] }),
+    combatBaseInput({ deityId: 1, randomValues: [0.5] }),
+    combatBaseInput({ flags: 1, randomValues: [0.5] }),
+    combatBaseInput({ engineFlags: BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT | BATTLE_ENGINE_FLAG_START_CHECKPOINT, randomValues: [0.5] }),
+    combatBaseInput({ combatants: combatBaseInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, abilities: [{ id: 'focus', level: 1 }] } : combatant), randomValues: [0.5] }),
+  ]) {
+    const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+    assert.equal(output.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+    assert.equal(output.randomConsumed, 0);
+    assert.equal(output.diagnosticDrawCount, 0);
+    assert.deepEqual(output.events, []);
+    assert.deepEqual(output.physicalThreatBag, []);
+    assert.deepEqual(output.magicalThreatBag, []);
+  }
+});
+
+test('base COMBAT reuses START initiative and resolves enemy target-before-hit in first-target group order', () => {
+  const input = combatBaseInput({
+    enemyHp: 1_000,
+    enemyMaxHp: 1_000,
+    partyHp: 1_000,
+    partyMaxHp: 1_000,
+    physicalThreatBag: [{ id: 2, tickets: 1 }, { id: 1, tickets: 1 }],
+    combatants: combatBaseInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, rangedAttack: 10, rangedNoA: 2, physicalDefense: 5, enemyRangedAmplifier: 2 }
+      : index === 1
+        ? {
+            ...combatant, rangedAttack: 20, rangedNoA: 2, physicalDefense: 2,
+            physicalPenetration: 0.2, physicalOffenseAmplifier: 2, rangedAttackBonus: 0.5,
+            elementalOffense: 'fire', elementalOffenseValue: 1.5,
+          }
+        : { ...combatant, physicalDefense: 4 }),
+    randomValues: [
+      0, 0, 0, 0, // enemy ranged initiative = 4
+      0, 0, 0, 0, // party ranged initiative = 4; enemy wins the tie
+      0, 0,        // enemy target row 1, then hit
+      0.99, 0,     // remaining row 2, then hit
+      0, 0.99,     // party hit then miss
+    ],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'unresolved');
+  assert.equal(output.randomConsumed, input.randomValues.length);
+  assert.equal(output.diagnosticDrawCount, input.randomValues.length);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'initiative').map((event) => [event.actorId, event.timing]),
+    [[900, 4], [1, 4]],
+  );
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'target_selected').map((event) => event.targetId),
+    [1, 2, 900],
+  );
+  const groupedEnemy = output.events.filter((event) => event.opcode === 'attack' && event.actorId === 900);
+  assert.deepEqual(groupedEnemy.map((event) => [event.targetId, event.attempts, event.hits]), [[1, 1, 1], [2, 1, 1]]);
+  assert.deepEqual(output.physicalThreatBag, [{ id: 1, tickets: 0 }, { id: 2, tickets: 0 }]);
+  assert.equal(output.partyHp, 972);
+  assert.equal(output.enemyHp, 928);
+  assert.equal(output.enemyHitsReceived, 1);
+  assert.equal(output.events.at(-1)?.opcode, 'phase_ended');
+});
+
+test('base COMBAT applies minimum damage, large finite values, lethal scheduling, and exact cursor', () => {
+  const large = 5_000_000_000;
+  const input = combatBaseInput({
+    enemyHp: 1,
+    enemyMaxHp: large,
+    partyHp: large,
+    partyMaxHp: large,
+    combatants: combatBaseInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, rangedAttack: large, rangedNoA: 1, physicalPenetration: 0, physicalOffenseAmplifier: 1 }
+      : index === 0 ? { ...combatant, physicalDefense: large * 2 } : combatant),
+    randomValues: [0, 0, 0, 0, 0, 0.75],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'victory');
+  assert.equal(output.enemyHp, 0);
+  assert.equal(output.enemyHitsReceived, 1);
+  assert.equal(output.randomConsumed, 5);
+  assert.equal(output.randomConsumed < input.randomValues.length, true, 'unused tape must remain untouched');
+
+  const exhausted = executeBattleProtocol(encodeBattleProtocolInput({ ...input, randomValues: input.randomValues.slice(0, 4) }));
+  assert.equal(exhausted.protocolError, BATTLE_PROTOCOL_ERROR_CODES.tapeExhausted);
+  assert.deepEqual(exhausted.events, []);
+  assert.deepEqual(exhausted.physicalThreatBag, []);
+  assert.deepEqual(exhausted.magicalThreatBag, []);
+});
+
+test('base COMBAT selects the magical bag and applies elemental and defense amplifiers', () => {
+  const input = combatBaseInput({
+    physicalThreatBag: [{ id: 1, tickets: 3 }, { id: 2, tickets: 3 }],
+    magicalThreatBag: [{ id: 1, tickets: 1 }, { id: 2, tickets: 1 }],
+    combatants: combatBaseInput().combatants.map((combatant, index) => index === 0
+      ? {
+          ...combatant, magicalAttack: 10, magicalNoA: 1, magicalAccuracyPotency: 0.5,
+          enemyMagicalAmplifier: 2, elementalOffense: 'thunder', elementalOffenseValue: 2,
+        }
+      : index === 1
+        ? { ...combatant, magicalDefense: 4, thunderResistance: 0.5, magicalDefenseAmplifier: 0.5, deityMagicalDefenseBonus: 0.5 }
+        : combatant),
+    randomValues: [0, 0, 0, 0, 0.5],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.partyHp, 97);
+  assert.deepEqual(output.physicalThreatBag, input.physicalThreatBag);
+  assert.deepEqual(output.magicalThreatBag, [{ id: 1, tickets: 0 }, { id: 2, tickets: 1 }]);
+  const attack = output.events.find((event) => event.opcode === 'attack');
+  assert.deepEqual([attack?.attackType, attack?.attempts, attack?.hits, attack?.value0], ['magical', 1, 1, 3]);
+});
+
+test('base COMBAT lethal damage prevents later scheduled actions without draining their tape', () => {
+  const input = combatBaseInput({
+    enemyHp: 1,
+    enemyMaxHp: 100,
+    combatants: combatBaseInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, meleeAttack: 100, meleeNoA: 1 }
+      : index === 1 ? { ...combatant, rangedAttack: 100, rangedNoA: 1 } : combatant),
+    randomValues: [0.999, 0.999, 0.999, 0.999, 0, 0, 0.25, 0.75],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.outcome, 'victory');
+  assert.equal(output.randomConsumed, 6);
+  assert.deepEqual(output.events.filter((event) => event.opcode === 'attack').map((event) => event.actorId), [1]);
+});
+
+test('base COMBAT resets native state and uses one measured Wasm call', () => {
+  beginBattleKernelMeasurement();
+  const first = executeBattleProtocol(encodeBattleProtocolInput(combatBaseInput()));
+  const measurement = endBattleKernelMeasurement();
+  assert.equal(first.protocolError, 0);
+  assert.equal(measurement.calls, 1);
+
+  const second = executeBattleProtocol(encodeBattleProtocolInput(combatBaseInput({ partyHp: 77, partyMaxHp: 77, enemyHp: 88, enemyMaxHp: 88 })));
+  assert.equal(second.partyHp, 77);
+  assert.equal(second.enemyHp, 88);
+  assert.equal(second.randomConsumed, 0);
+  assert.deepEqual(second.events.map((event) => event.opcode), [
+    'battle_started', 'phase_started', 'phase_ended', 'phase_started', 'phase_ended',
+  ]);
 });

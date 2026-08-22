@@ -58,6 +58,7 @@ inline constexpr unsigned short kEventOpcodeCount = ${groups.EVENT.length};
 inline constexpr unsigned short kDeityCount = ${groups.DEITY.length};
 inline constexpr unsigned short kActionCount = ${groups.ACTION.length};
 inline constexpr unsigned int kEngineFlagStartCheckpoint = 1u << 0;
+inline constexpr unsigned int kEngineFlagCombatBaseCheckpoint = 1u << 1;
 
 enum class ProtocolError : unsigned int {
   None = 0,
@@ -67,6 +68,7 @@ enum class ProtocolError : unsigned int {
   ActionCapacity = 4,
   OutputCapacity = 5,
   TapeExhausted = 6,
+  UnsupportedCombatFeature = 7,
 };
 
 ${cppEnum('AbilityId', groups.ABILITY)}
@@ -103,8 +105,10 @@ export const BATTLE_PROTOCOL_ERROR_CODES = {
   actionCapacity: 4,
   outputCapacity: 5,
   tapeExhausted: 6,
+  unsupportedCombatFeature: 7,
 } as const;
 export const BATTLE_ENGINE_FLAG_START_CHECKPOINT = 1 << 0;
+export const BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT = 1 << 1;
 
 ${tsMap('BATTLE_ABILITY_IDS', groups.ABILITY)}
 ${tsReverse('BATTLE_ABILITY_NAMES', 'BATTLE_ABILITY_IDS')}

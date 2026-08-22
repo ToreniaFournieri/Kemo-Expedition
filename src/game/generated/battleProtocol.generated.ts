@@ -17,8 +17,10 @@ export const BATTLE_PROTOCOL_ERROR_CODES = {
   actionCapacity: 4,
   outputCapacity: 5,
   tapeExhausted: 6,
+  unsupportedCombatFeature: 7,
 } as const;
 export const BATTLE_ENGINE_FLAG_START_CHECKPOINT = 1 << 0;
+export const BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT = 1 << 1;
 
 export const BATTLE_ABILITY_IDS = {
   "defender": 1,
