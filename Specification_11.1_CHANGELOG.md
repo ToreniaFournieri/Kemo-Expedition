@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.4 | 7 | 2026/08/22 | Serialize each AFK worker's Chunk commit and optional PT-scoped automatic-equipment commit as one coordinator transaction, capture pending PT settings at the transaction cutoff, skip automatic equipment when captured settings exist, and remove backlog-wide repeated equipment runs that could duplicate items across parallel worker commits. |
 | 0.9.4 | 6 | 2026/08/21 | Replace ES2022-only `Array.prototype.at()` calls in production source with ES2020-compatible last-element indexing so editor and clean TypeScript project checks agree with the configured compiler library. |
 | 0.9.4 | 5 | 2026/08/21 | Roll back all changes made after the merge of PR #2887, restoring the v0.9.4 build 4 tab-preloading baseline while retaining the required build and changelog bookkeeping. |
 | 0.9.4 | 4 | 2026/08/21 | Preload every lazy-loaded main-tab module behind the startup screen so each tab opens immediately on its first selection instead of briefly blanking the HomeScreen while its split JavaScript chunk downloads. |

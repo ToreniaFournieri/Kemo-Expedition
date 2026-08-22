@@ -154,7 +154,12 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
   assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
   assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
+  assert.match(homeSource, /afkActiveCommitTransactionRef\.current = \{/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
+  assert.match(homeSource, /transaction\.phase = 'awaiting-auto-equipment-commit'/);
+  assert.match(homeSource, /runAutoEquipment\(\s*\[transaction\.result\.partyIndex\]/);
+  assert.match(homeSource, /completeAfkCommitTransaction\(transaction\.result\)/);
+  assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
 });
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {

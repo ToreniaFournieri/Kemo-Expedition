@@ -55,8 +55,7 @@ PT1 transaction begins
   - **Party Setting Updates**
     - User PT setting changes are queued immediately (as a pending setting change) but take effect only at the next Chunk boundary.
     - The current Chunk continues using the settings captured at its start.
-    - At the Chunk boundary, pending user changes are applied after the completed Chunk result and take precedence over Chunk-generated equipment or setting changes.
-    - If pending setting changes for that PT exist, **auto equipment** is skipped for that Chunk boundary.
+    - If setting changes were captured for that PT at the transaction cutoff, auto equipment is skipped for that Chunk boundary.
 
 - **`AFK scheduler batch`**: One time-budgeted execution slice used to keep AFK recovery responsive.
   - It is not a gameplay unit and has no fixed Cycle count.
@@ -178,7 +177,7 @@ PT1 transaction begins
 **Time-Based Progress Handling (Online + AFK)**
 - The party state machine is purely `Step`-based: persist state and `state_started_at`, then on each update tick calculate elapsed = `current_step` - `state_started_at`.
 - Catch-up gameplay progression must be resolved in logical Chunks, while its execution must be divided into time-budgeted AFK scheduler batches as defined in section 5.1.1.1.
-- `simulated_elapsed` = min(elapsed, 1,800 minutes)
+- `simulated_elapsed` = min(elapsed, maximum X hours per catch-up simulation)
 - Process `simulated_elapsed` sequentially in chunks.
 - For each chunk, resolve all completed state transitions in chronological order until no further transition is completed within that chunk.
 - A scheduler yield inside a logical Chunk must preserve the exact Cycle offset and simulation state. Resuming must continue that same Chunk without repeating or skipping any gameplay event, and Chunk-end rules must wait until its twelfth Cycle completes.
@@ -255,7 +254,6 @@ A fast device may process many Cycles within one time budget. A slower device mu
 
 The scheduler may use recent batch measurements to estimate the number of Cycles likely to fit within the next time budget. It must still verify elapsed time while processing.
 
-A scheduler batch may yield between Cycles within a logical Chunk. Such a yield is execution-only: it must preserve the current Chunk index and Cycle offset, must not apply Chunk-end automation early, and must not change random-bag consumption or any other gameplay result.
 
 **React update frequency**
 

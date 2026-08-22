@@ -4,6 +4,7 @@ import {
   AFK_CHUNK_CYCLE_COUNT,
   commitAfkPartyChunk,
   compareAfkChunkResults,
+  hasPendingPartySettingChanges,
   type AfkPartyChunkResult,
 } from '../src/game/afkChunkCoordinator.ts';
 import type { GameState, Party } from '../src/types/index.ts';
@@ -115,4 +116,14 @@ test('coordinator merges stale global deltas and lets pending PT settings win', 
   assert.equal(committed.parties[0].level, 2);
   assert.equal(committed.parties[0].selectedDungeonId, 9);
   assert.equal(committed.parties[0].characters[0].name, 'Pending name');
+});
+
+test('transaction cutoff detects PT settings without treating Chunk progress as pending input', () => {
+  const baseParty = makeParty();
+  assert.equal(hasPendingPartySettingChanges(baseParty, makeParty()), false);
+  assert.equal(hasPendingPartySettingChanges(baseParty, makeParty({ level: 2, experience: 10 })), false);
+  assert.equal(hasPendingPartySettingChanges(baseParty, makeParty({ selectedDungeonId: 2 })), true);
+  assert.equal(hasPendingPartySettingChanges(baseParty, makeParty({
+    characters: [{ ...baseParty.characters[0], autoEquipmentMode: 1 }],
+  })), true);
 });

@@ -125,6 +125,16 @@ const PARTY_SETTING_KEYS = [
   'diarySettings',
 ] as const satisfies ReadonlyArray<keyof Party>;
 
+/**
+ * Captures whether this PT has live changes that were made after its worker
+ * snapshot. The coordinator calls this once, before committing the Chunk, so
+ * later changes cannot alter the auto-equipment decision for this boundary.
+ */
+export function hasPendingPartySettingChanges(base: Party, live: Party): boolean {
+  return PARTY_SETTING_KEYS.some((key) => !jsonEqual(base[key], live[key]))
+    || !jsonEqual(base.characters, live.characters);
+}
+
 export function overlayPendingPartySettings(base: Party, result: Party, live: Party): Party {
   const next = { ...result };
   PARTY_SETTING_KEYS.forEach((key) => {
