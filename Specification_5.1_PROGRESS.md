@@ -22,20 +22,53 @@
   - Each Chunk continues using the party and global parameters captured when it begins.
   - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
   - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
+  - **Process:** At the end of a Chunk, the worker (representative of each PT) submits the Chunk results to the coordinator-managed global commit queue. The coordinator processes queued workers sequentially.
+    - For each worker, the coordinator:
+    - Captures the pending setting changes for the worker's PT at the start of the transaction. This defines the transaction cutoff.
+    - Commits the Chunk results and returns the committed state to that worker.
+    - If no setting changes were captured at the cutoff, the worker performs **auto equipment** for its own PT using the committed state and returns the resulting update to the coordinator.
+    - If auto equipment was performed, the coordinator commits the auto-equipment update.
+    - If setting changes were captured at the cutoff, the coordinator applies and commits those changes after the Chunk result.
+    - The worker's commit transaction is complete, and the coordinator proceeds to the next queued worker.
+    - Once a worker's transaction begins, it retains its coordinator processing slot until all required commits are complete. The worker does not re-enter or re-check the global commit queue during the transaction.
+
+```
+PT1 transaction begins
+        │
+        ├─ Capture pending PT1 changes ← coordinator (CUTOFF)
+        │
+        ├─ Commit Chunk results ← coordinator
+        │
+        ├─ If captured changes exist:
+        │      skip auto equipment
+        │      apply and commit captured user changes ← coordinator
+        │
+        ├─ Otherwise:
+        │      run auto equipment ← PT1 worker
+        │      commit auto-equipment update ← coordinator
+        │
+        └─ PT1 transaction ends
+               coordinator task for PT1 is complete
+               coordinator proceeds to next queued worker         
+```
+
   - **Party Setting Updates**
-    - User PT setting changes are queued immediately but take effect only at the next Chunk.
-    - The current Chunk continues using its initial settings.
-    - At the Chunk boundary, pending user changes are applied after the completed Chunk result and override Chunk-generated equipment or setting changes.
+    - User PT setting changes are queued immediately (as a pending setting change) but take effect only at the next Chunk boundary.
+    - The current Chunk continues using the settings captured at its start.
+    - If setting changes were captured for that PT at the transaction cutoff, auto equipment is skipped for that Chunk boundary.
 
 - **`AFK scheduler batch`**: One time-budgeted execution slice used to keep AFK recovery responsive.
   - It is not a gameplay unit and has no fixed Cycle count.
   - One scheduler batch may process part of one Chunk, exactly one Chunk, or portions of multiple Chunks.
   - Ending or yielding a scheduler batch must not create a gameplay boundary, consume randomness, or trigger Chunk-end rules.
-
 - **AFK Emulation Efficiency**
   - AFK emulation efficiency gradually decreases during extended absence, representing reduced party discipline and efficiency without player supervision.
   - Returning to the game resets AFK emulation efficiency to 100%.
   - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
+  - **Auto equipment behavior:** `7.1.1 AUTO equipment logic` in @Specification_7.1_AUTOMATION.md
+    - During AFK emulation, auto-equipment logic runs only at the end of a complete Chunk (12 Cycles).
+    - Ending Sound Sleep does not trigger auto-equipment logic.
+    - A partial Chunk (<12 Cycles) does not trigger auto-equipment logic. 
 
 **f.afk-emulation-efficiency**
 
@@ -61,7 +94,7 @@
 | `state.rest`  | - | sell or feast | `God of Fortification` |
 | `state.sell` | Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | `state.free_action` | `God of Dusk` |
 | `state.free_action` | - | Check `t.sleepiness_of_party_bag`. If it is sound_sleep, `state.sound_sleep`, otherwise `state.pray`. | `Goddess of Fertility` |
-| `state.sound_sleep` | At the end of this state, equipping items. | `state.pray` | `Goddess of Restoration` |
+| `state.sound_sleep` | At the end of this state, equipping items. (except for AFK emulation mode) | `state.pray` | `Goddess of Restoration` |
 | `state.idle` | Only when 自動周回 = OFF (idle state) | - |
 | `state.pray` | Party members donate money to their deity. | if party's cuttent HP is not 100%, `state.rest`. othetwise, `state.idle` or `state.move` |
 | `state.move` | If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
@@ -144,7 +177,7 @@
 **Time-Based Progress Handling (Online + AFK)**
 - The party state machine is purely `Step`-based: persist state and `state_started_at`, then on each update tick calculate elapsed = `current_step` - `state_started_at`.
 - Catch-up gameplay progression must be resolved in logical Chunks, while its execution must be divided into time-budgeted AFK scheduler batches as defined in section 5.1.1.1.
-- `simulated_elapsed` = min(elapsed, 1,800 minutes)
+- `simulated_elapsed` = min(elapsed, maximum X hours per catch-up simulation)
 - Process `simulated_elapsed` sequentially in chunks.
 - For each chunk, resolve all completed state transitions in chronological order until no further transition is completed within that chunk.
 - A scheduler yield inside a logical Chunk must preserve the exact Cycle offset and simulation state. Resuming must continue that same Chunk without repeating or skipping any gameplay event, and Chunk-end rules must wait until its twelfth Cycle completes.
@@ -221,7 +254,6 @@ A fast device may process many Cycles within one time budget. A slower device mu
 
 The scheduler may use recent batch measurements to estimate the number of Cycles likely to fit within the next time budget. It must still verify elapsed time while processing.
 
-A scheduler batch may yield between Cycles within a logical Chunk. Such a yield is execution-only: it must preserve the current Chunk index and Cycle offset, must not apply Chunk-end automation early, and must not change random-bag consumption or any other gameplay result.
 
 **React update frequency**
 

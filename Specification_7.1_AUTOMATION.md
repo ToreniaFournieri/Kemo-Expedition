@@ -3,7 +3,7 @@
 ### 7.1 AUTOMATION
 
 #### 7.1.1 AUTO equipment logic
-- The behavior of automatic equipment is controlled by `m.auto_equipment`,  and upgrades their equipment at the end of **outfit** state.
+- The behavior of automatic equipment is controlled by `m.auto_equipment`.
  
 | Mode     | Description                                                                                                                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------- |

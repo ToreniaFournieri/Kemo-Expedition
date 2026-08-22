@@ -29,6 +29,7 @@ import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeit
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
+import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewardEligibility,parseFeedbackSubmissionTimestamp,type FeedbackRewardState } from '../../../game/feedbackRewards';
 import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRareTitle } from '../../../game/gameState';
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
 import { computePartyStats } from '../../../game/partyComputation';
@@ -245,6 +246,7 @@ export default function SettingTab({
 
   const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackName');
   const FEEDBACK_SUBMITTED_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackSubmitted');
+  const FEEDBACK_LAST_SUBMITTED_AT_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackLastSubmittedAt');
   const [feedbackName, setFeedbackName] = useState(() => {
     try {
       return localStorage.getItem(FEEDBACK_NAME_STORAGE_KEY) ?? '';
@@ -254,13 +256,19 @@ export default function SettingTab({
   });
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackCategory, setFeedbackCategory] = useState<'Feedback' | 'Question' | 'Feature Request' | 'Bug Report'>('Feedback');
-  const [hasSubmittedFeedback, setHasSubmittedFeedback] = useState(() => {
+  const [feedbackRewardState, setFeedbackRewardState] = useState<FeedbackRewardState>(() => {
     try {
-      return localStorage.getItem(FEEDBACK_SUBMITTED_STORAGE_KEY) === 'true';
+      return {
+        hasLegacySubmission: localStorage.getItem(FEEDBACK_SUBMITTED_STORAGE_KEY) === 'true',
+        lastSuccessfulSubmissionAt: parseFeedbackSubmissionTimestamp(localStorage.getItem(FEEDBACK_LAST_SUBMITTED_AT_STORAGE_KEY)),
+      };
     } catch {
-      return false;
+      return { hasLegacySubmission: false, lastSuccessfulSubmissionAt: null };
     }
   });
+  const [feedbackEligibilityNow, setFeedbackEligibilityNow] = useState(() => Date.now());
+  const feedbackRewardEligibility = getFeedbackRewardEligibility(feedbackRewardState, feedbackEligibilityNow);
+  const feedbackRewardEligible = feedbackRewardEligibility !== 'cooldown';
   const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
   const [feedbackLatestBattleLogSelection, setFeedbackLatestBattleLogSelection] = useState<'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' | 'None'>('PT1');
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
@@ -273,6 +281,16 @@ export default function SettingTab({
       console.error('Failed to persist feedback name:', error);
     }
   }, [feedbackName, FEEDBACK_NAME_STORAGE_KEY]);
+
+  useEffect(() => {
+    if (feedbackRewardState.lastSuccessfulSubmissionAt === null || feedbackRewardEligible) return;
+    const eligibleAt = feedbackRewardState.lastSuccessfulSubmissionAt + FEEDBACK_REWARD_COOLDOWN_MS;
+    const timeoutId = window.setTimeout(
+      () => setFeedbackEligibilityNow(Date.now()),
+      Math.max(0, eligibleAt - Date.now()) + 50,
+    );
+    return () => window.clearTimeout(timeoutId);
+  }, [feedbackRewardEligible, feedbackRewardState.lastSuccessfulSubmissionAt]);
 
   const formatFeedbackTimestamp = (): string => {
     const now = new Date();
@@ -388,14 +406,17 @@ export default function SettingTab({
       });
       const response = await fetch(FEEDBACK_DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
       if (!response.ok) throw new Error(`Webhook request failed: ${response.status}`);
-      const isFirstSuccessfulSubmission = !hasSubmittedFeedback;
-      if (isFirstSuccessfulSubmission) {
-        localStorage.setItem(FEEDBACK_SUBMITTED_STORAGE_KEY, 'true');
-        setHasSubmittedFeedback(true);
+      const submittedAt = Date.now();
+      const { shouldGrantReward, nextState } = completeFeedbackSubmission(feedbackRewardState, submittedAt);
+      localStorage.setItem(FEEDBACK_SUBMITTED_STORAGE_KEY, 'true');
+      localStorage.setItem(FEEDBACK_LAST_SUBMITTED_AT_STORAGE_KEY, String(submittedAt));
+      setFeedbackRewardState(nextState);
+      setFeedbackEligibilityNow(submittedAt);
+      if (shouldGrantReward) {
         onGrantFeedbackReward();
       }
       onAddNotification(
-        t(isFirstSuccessfulSubmission ? 'setting.feedback.sentFirst' : 'setting.feedback.sent'),
+        t(shouldGrantReward ? 'setting.feedback.sentFirst' : 'setting.feedback.sent'),
         'normal',
         'item',
         true,
@@ -2736,7 +2757,7 @@ export default function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('feedback', t('setting.feedback'))}
         {settingPanelExpanded.feedback && <div className="space-y-3 mt-3">
-          <div className="text-sm text-gray-600">{t(hasSubmittedFeedback ? 'setting.feedback.description' : 'setting.feedback.descriptionFirst')}</div>
+          <div className="text-sm text-gray-600">{t(feedbackRewardEligible ? 'setting.feedback.descriptionFirst' : 'setting.feedback.description')}</div>
           <input required value={feedbackName} onChange={(e) => setFeedbackName(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-3 py-2" placeholder={t('setting.feedback.namePlaceholder')} />
           <select value={feedbackCategory} onChange={(e) => setFeedbackCategory(e.target.value as typeof feedbackCategory)} className="w-full rounded border border-gray-300 bg-white px-3 py-2">
             <option value="Feedback">{t('setting.feedback.category.feedback')}</option>

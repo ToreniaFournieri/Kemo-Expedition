@@ -37,6 +37,7 @@ type PersistedAfkChunkCursor,
 import {
 AFK_CHUNK_CYCLE_COUNT,
 compareAfkChunkResults,
+hasPendingPartySettingChanges,
 type AfkPartyChunkJob,
 type AfkPartyChunkResult,
 } from '../game/afkChunkCoordinator';
@@ -235,6 +236,11 @@ export function HomeScreen({
   const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
   const afkActiveChunkJobsRef = useRef(new Map<number, { job: AfkPartyChunkJob; worker: Worker }>());
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
+  const afkActiveCommitTransactionRef = useRef<{
+    result: AfkPartyChunkResult;
+    capturedSettingChanges: boolean;
+    phase: 'awaiting-chunk-commit' | 'awaiting-auto-equipment-commit';
+  } | null>(null);
   const afkWorkerJobSequenceRef = useRef(0);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
@@ -556,7 +562,8 @@ export function HomeScreen({
         totals.itemsObtained += log?.rewards.length ?? 0;
         totals.autoSoldItems += log?.autoSellCount ?? 0;
         totals.autoSellGold += log?.autoSellProfit ?? 0;
-        runs.push({ index, dungeonId, partyElapsedStartMs: startElapsed, partyElapsedEndMs: elapsed, outcome, completedRooms: log?.completedRooms ?? 0, totalRooms: log?.totalRooms ?? 0, latestDisclosedFloor: log?.entries.at(-1)?.floor ?? null, experienceGained: xp, goldGained: gold, goldDonated: 0, goldSaved: gold, itemsByRarity: { common: log?.rewards.length ?? 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: log?.autoSellCount ?? 0, autoSellGold: log?.autoSellProfit ?? 0, jewelsGained: 0, pranaGained: 0, sideQuestEvents: [], unlockedIds: [], endingHp: { current: afterParty.currentHp, maximum: computePartyStats(afterParty).partyStats.hp } });
+        const latestDisclosedFloor = log?.entries[log.entries.length - 1]?.floor ?? null;
+        runs.push({ index, dungeonId, partyElapsedStartMs: startElapsed, partyElapsedEndMs: elapsed, outcome, completedRooms: log?.completedRooms ?? 0, totalRooms: log?.totalRooms ?? 0, latestDisclosedFloor, experienceGained: xp, goldGained: gold, goldDonated: 0, goldSaved: gold, itemsByRarity: { common: log?.rewards.length ?? 0, uncommon: 0, eliteRare: 0, bossRare: 0, mythicRare: 0 }, autoSoldItems: log?.autoSellCount ?? 0, autoSellGold: log?.autoSellProfit ?? 0, jewelsGained: 0, pranaGained: 0, sideQuestEvents: [], unlockedIds: [], endingHp: { current: afterParty.currentHp, maximum: computePartyStats(afterParty).partyStats.hp } });
       }
       const finalParty = batch.state.parties[partyIndex];
       const chargeAfter = { stock: finalParty.instantExpeditionStock ?? 0, chargeStartedAt: finalParty.instantExpeditionChargeStartedAt ?? null };
@@ -1680,6 +1687,19 @@ export function HomeScreen({
 
   apiAutoEquipmentRunnerRef.current = runAutoEquipment;
 
+  const completeAfkCommitTransaction = useCallback((result: AfkPartyChunkResult) => {
+    const chunkElapsedMs = result.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+    afkRemainingMsByPartyRef.current[result.partyIndex] = Math.max(
+      0,
+      (afkRemainingMsByPartyRef.current[result.partyIndex] ?? 0) - chunkElapsedMs,
+    );
+    afkActiveCommitTransactionRef.current = null;
+    const remaining = Object.values(afkRemainingMsByPartyRef.current);
+    pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
+    setPendingAfkMs(pendingAfkMsRef.current);
+    setAfkCoordinatorVersion((version) => version + 1);
+  }, []);
+
   useEffect(() => {
     const previousPartyCount = prevPartyCountRef.current;
     prevPartyCountRef.current = state.parties.length;
@@ -2149,7 +2169,39 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
+    const transaction = afkActiveCommitTransactionRef.current;
+    if (!transaction) return;
+
+    if (transaction.phase === 'awaiting-chunk-commit') {
+      if (transaction.capturedSettingChanges) {
+        completeAfkCommitTransaction(transaction.result);
+        return;
+      }
+
+      // The worker's PT now sees the coordinator-committed Chunk state. Keep
+      // ownership of the coordinator slot until its equipment mutations have
+      // committed, preventing another stale worker result from duplicating an
+      // inventory item between the inventory and an equipment slot.
+      transaction.phase = 'awaiting-auto-equipment-commit';
+      const summary = runAutoEquipment(
+        [transaction.result.partyIndex],
+        undefined,
+        { suppressNotifications: true },
+      );
+      const mutationCount = summary.unequippedCount
+        + summary.equippedCount
+        + summary.upgradedCount
+        + summary.jewelAssignmentCount;
+      if (mutationCount === 0) completeAfkCommitTransaction(transaction.result);
+      return;
+    }
+
+    completeAfkCommitTransaction(transaction.result);
+  }, [completeAfkCommitTransaction, runAutoEquipment, state]);
+
+  useEffect(() => {
     if (pendingAfkMs <= 0 || afkInteractionPausedRef.current) return;
+    if (afkActiveCommitTransactionRef.current) return;
     // v0.9.2 persisted a cross-party operation cursor. Party-scoped workers
     // restart only the uncommitted legacy slice from its durable game-state save.
     afkChunkCursorRef.current = null;
@@ -2175,11 +2227,6 @@ export function HomeScreen({
         active?.worker.terminate();
         afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
         afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
-        const chunkElapsedMs = completedResult.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
-        afkRemainingMsByPartyRef.current[completedResult.partyIndex] = Math.max(
-          0,
-          (afkRemainingMsByPartyRef.current[completedResult.partyIndex] ?? 0) - chunkElapsedMs,
-        );
         afkLastBatchCommittedAtRef.current = performance.now();
         const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile();
         afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
@@ -2187,10 +2234,20 @@ export function HomeScreen({
           completedResult.durationMs,
           AFK_CHUNK_CYCLE_COUNT,
         );
+        const baseParty = completedResult.baseState.parties[completedResult.partyIndex];
+        const liveParty = state.parties.find((party) => party.id === completedResult.partyId)
+          ?? state.parties[completedResult.partyIndex];
+        const capturedSettingChanges = Boolean(
+          baseParty
+          && liveParty
+          && hasPendingPartySettingChanges(baseParty, liveParty),
+        );
+        afkActiveCommitTransactionRef.current = {
+          result: completedResult,
+          capturedSettingChanges,
+          phase: 'awaiting-chunk-commit',
+        };
         actions.commitAfkPartyChunk(completedResult);
-        const remaining = Object.values(afkRemainingMsByPartyRef.current);
-        pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
-        setPendingAfkMs(pendingAfkMsRef.current);
         return;
       }
     }
@@ -2383,11 +2440,7 @@ export function HomeScreen({
     } else if (pendingAfkMs > 0) {
       justCompletedAfkRecoveryRef.current = false;
     }
-
-    if (previousPendingAfkMs <= pendingAfkMs) return;
-
-    runAutoEquipment(undefined, undefined, { suppressNotifications: true });
-  }, [pendingAfkMs, runAutoEquipment]);
+  }, [pendingAfkMs]);
 
   const suppressNotificationsForAfkEmulation = pendingAfkMs > 0
     || shouldShowAfkSummaryRef.current
