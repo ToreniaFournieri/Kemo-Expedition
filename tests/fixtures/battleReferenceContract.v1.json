@@ -1,0 +1,35 @@
+{
+  "contractVersion": 1,
+  "randomnessMode": "typescript-ordered-tape",
+  "referenceRunner": "src/game/battleTypeScriptReference.ts",
+  "referenceSha256": "de13ff1bec298ac9f076229497d9716ea789358856bd7391ceb81fea5b9ba322",
+  "goldenFixture": "tests/fixtures/battleGolden.v1.json",
+  "goldenSha256": "e71f11bf791f52315ea20febabfc31cf881e7a72a4154ee95fa5806aa6df8bf0",
+  "goldenCaseIds": [
+    "normal-domain-breaker-counter",
+    "elite-counter-recounter",
+    "oblivion-and-reanimate",
+    "mimic-and-resonance",
+    "first-strike-defeat",
+    "saved-party-1-expedition-8-boss",
+    "saved-party-2-expedition-7-boss",
+    "saved-party-3-expedition-6-boss",
+    "saved-party-4-expedition-5-boss",
+    "saved-party-5-expedition-4-boss",
+    "saved-party-6-expedition-3-boss"
+  ],
+  "requiredOutcomes": [
+    "victory",
+    "draw",
+    "defeat"
+  ],
+  "canonicalResultFields": [
+    "phase",
+    "partyHp",
+    "enemyHp",
+    "log",
+    "outcome",
+    "updatedBags",
+    "enemyHitsReceived"
+  ]
+}

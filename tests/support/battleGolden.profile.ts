@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
@@ -26,6 +27,19 @@ const MULTI_EXPEDITION_SAVE_PATH = resolve(
   'sample_savedata/Exp8,7,6,5,4,3_set_for_test_v0.9.3_dev_20260820.kemoz',
 );
 const GOLDEN_PATH = resolve(ROOT, 'tests/fixtures/battleGolden.v1.json');
+const REFERENCE_CONTRACT_PATH = resolve(ROOT, 'tests/fixtures/battleReferenceContract.v1.json');
+
+type BattleReferenceContract = {
+  contractVersion: number;
+  randomnessMode: string;
+  referenceRunner: string;
+  referenceSha256: string;
+  goldenFixture: string;
+  goldenSha256: string;
+  goldenCaseIds: string[];
+  requiredOutcomes: string[];
+  canonicalResultFields: string[];
+};
 
 type SaveEnvelope = { saveDataCompressed: string };
 
@@ -145,13 +159,46 @@ function createGoldenCases(): BattleGoldenCase[] {
 }
 
 const expected = JSON.parse(readFileSync(GOLDEN_PATH, 'utf8')) as Record<string, BattleGoldenDigest>;
+const referenceContract = JSON.parse(
+  readFileSync(REFERENCE_CONTRACT_PATH, 'utf8'),
+) as BattleReferenceContract;
 const capture = process.env.BATTLE_GOLDEN_CAPTURE === '1';
 
+function sha256(path: string): string {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+test('battle reference source and golden fixture match the frozen contract', () => {
+  assert.equal(referenceContract.contractVersion, 1);
+  assert.equal(referenceContract.randomnessMode, 'typescript-ordered-tape');
+  assert.equal(
+    sha256(resolve(ROOT, referenceContract.referenceRunner)),
+    referenceContract.referenceSha256,
+    'The TypeScript battle reference changed without an explicit contract revision',
+  );
+  assert.equal(
+    sha256(resolve(ROOT, referenceContract.goldenFixture)),
+    referenceContract.goldenSha256,
+    'The battle golden fixture changed during deterministic migration',
+  );
+  assert.deepEqual(Object.keys(expected), referenceContract.goldenCaseIds);
+});
+
 test('battle golden fixtures lock complete results and random consumption', () => {
-  const actual = Object.fromEntries(createGoldenCases().map((fixture) => {
+  const fixtures = createGoldenCases();
+  assert.deepEqual(fixtures.map((fixture) => fixture.id), referenceContract.goldenCaseIds);
+  const recordings = fixtures.map((fixture) => {
     const recording = recordBattleGolden(executeBattle, fixture);
-    return [fixture.id, digestBattleGolden(recording.snapshot)];
-  }));
+    const result = recording.snapshot.result as Record<string, unknown>;
+    assert.deepEqual(Object.keys(result), referenceContract.canonicalResultFields, `${fixture.id}: result shape drifted`);
+    return [fixture.id, digestBattleGolden(recording.snapshot)] as const;
+  });
+  const actual = Object.fromEntries(recordings);
+  assert.deepEqual(
+    [...new Set(recordings.map(([, digest]) => digest.outcome))].sort(),
+    [...referenceContract.requiredOutcomes].sort(),
+    'The frozen golden inventory must retain victory, draw, and defeat coverage',
+  );
 
   if (capture) {
     console.info('BATTLE_GOLDEN_CAPTURE', JSON.stringify(actual, null, 2));
@@ -177,6 +224,58 @@ test('record/replay detects candidate output and random-consumption drift', () =
       fixture,
     ),
     /unexpected random draw|recorded random draws/,
+  );
+  assert.throws(
+    () => assertBattleRunnerParity(
+      executeBattle,
+      (...args) => {
+        const recordedRandom = Math.random;
+        let reversedTape: number[] | undefined;
+        let cursor = 0;
+        Math.random = () => {
+          if (!reversedTape) {
+            reversedTape = Array.from(
+              { length: expected[fixture.id]!.randomDrawCount },
+              () => recordedRandom(),
+            ).reverse();
+          }
+          const value = reversedTape[cursor];
+          if (value === undefined) return recordedRandom();
+          cursor += 1;
+          return value;
+        };
+        try {
+          return executeBattle(...args);
+        } finally {
+          Math.random = recordedRandom;
+        }
+      },
+      fixture,
+    ),
+    /unexpected random draw|recorded random draws|candidate battle result differs/,
+  );
+  assert.throws(
+    () => assertBattleRunnerParity(
+      executeBattle,
+      (...args) => {
+        const recordedRandom = Math.random;
+        let skipped = false;
+        Math.random = () => {
+          if (!skipped) {
+            skipped = true;
+            return 0.5;
+          }
+          return recordedRandom();
+        };
+        try {
+          return executeBattle(...args);
+        } finally {
+          Math.random = recordedRandom;
+        }
+      },
+      fixture,
+    ),
+    /recorded random draws|candidate battle result differs/,
   );
   assert.throws(
     () => assertBattleRunnerParity(
