@@ -33,7 +33,8 @@ function gateParty(overrides: Partial<GateParty> = {}): GateParty {
 test('each Clear-Gate uses its floor-specific consecutive-success requirement', () => {
   assert.deepEqual(ELITE_GATE_REQUIREMENTS, { 1: 7, 2: 6, 3: 5, 4: 4, 5: 3 });
   for (let floor = 1; floor <= 5; floor += 1) {
-    assert.equal(getClearGateRequired(getEliteGateKey(1, floor)), ELITE_GATE_REQUIREMENTS[floor]);
+    const eliteFloor = floor as keyof typeof ELITE_GATE_REQUIREMENTS;
+    assert.equal(getClearGateRequired(getEliteGateKey(1, floor)), ELITE_GATE_REQUIREMENTS[eliteFloor]);
   }
   assert.equal(BOSS_GATE_REQUIRED, 2);
   assert.equal(getClearGateRequired(getBossGateKey(1)), 2);

@@ -69,7 +69,7 @@ test('C++ per-hit damage preserves the prior JavaScript formula', () => {
 
   for (const [attack, defense, multipliers] of cases) {
     const expected = Math.max(1, Math.floor(
-      (attack - defense) * multipliers.reduce((product, value) => product * value, 1),
+      (attack - defense) * multipliers.reduce<number>((product, value) => product * value, 1),
     ));
     assert.equal(calculatePerHitDamage(attack, defense, multipliers), expected);
   }
