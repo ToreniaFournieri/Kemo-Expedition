@@ -147,8 +147,57 @@ Semantic events are language-neutral. `target_selected` identifies every actual 
 ## Part 1.7 native timed-COMBAT checkpoint
 
 - The append-only `BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT` / `kEngineFlagCombatTimedCheckpoint` bit (`1 << 4`) selects START, prepared initiative, timed COMBAT slots, normal actions, reactive chains, and defeat recovery in one native protocol execution. It is shadow/test-only, mutually exclusive with every earlier checkpoint, and stops before END.
-- Timed traversal is phase-aware: for every absolute timing it resolves `ranged`, `magical`, then `melee` triggers and that phase's normal actions. One explicit dispatcher mirrors the frozen source positions: ranged 8 resolves Howl then applicable Confusion; timing 4 resolves Predator Sense, eligible Unstable Core, applicable Confusion, then melee Free; timing 5 resolves applicable Confusion then melee Free; melee 3 resolves Free, Regeneration, then Flying; timing 2 resolves melee Free, Decompose, applicable Confusion, Self Destruct, then ranged Soul Reap; melee 1 resolves Free then applicable Confusion; and magical 0 resolves Unstable Core. A forced result stops only later source positions.
+- Timed traversal is phase-aware: every absolute timing resolves `ranged`, then `magical`, then `melee`, including that phase's timed triggers before its normal actions. The effective timing-4 cross-phase order is ranged Unstable Core, magical Confusion when eligible, then melee Predator Sense and Free; within the melee timing-2 step the source order is Free, Decompose, melee Confusion, then Self Destruct, while ranged Soul Reap has already resolved in the earlier ranged timing-2 step. Ranged timing 8 resolves Howl before ranged Confusion; magical timing 5 resolves eligible Confusion before the later melee Free step; melee timing 3 resolves Free, Regeneration, then Flying; melee timing 1 resolves Free then Confusion; and magical timing 0 resolves Unstable Core. A forced result stops only later phase/source positions.
 - Physical and magical threat draws now share one canonical native refill path. A zero-total bag is replaced by the frozen six-row defaults (`16/8/4/2/1/1` physical or `2/2/2/2/2/2` magical), exactly one weighted row draw is consumed, the decremented refill is retained in native state and returned in ascending row order, and Bulwark/Bulwark Breaker is applied after the row draw. Decompose does not invent a missing-row fallback; Self Destruct retains the frozen conditional party-member fallback.
 - Conditional tape consumption follows the frozen coordinator: enemy Soul Reap selects and emits its random party target; Confusion draws a target before its success roll and draws nothing when no target exists; Decompose row selection precedes Confusion target/success selection at melee timing 2; and consecutive Decompose/Self Destruct draws refill between source positions when the first draw exhausts the bag. Howl selects the last pending party effect and applies it to the next normal action only, never its Re-attack. Regeneration uses the aggregate party damage ledger for every party owner.
 - Focused parity coverage proves timing-4 and timing-2 event order, actor/target attribution, exact random cursors, physical and magical empty-bag refill outputs, consecutive exhaustion/refill, Decompose and Self Destruct Bulwark redirection, Bulwark Breaker bypass, and transactional failure on a missing refill or later conditional draw. Existing Howl, Re-attack, Regeneration, terrain ledger, Confusion, Free/Pursuit, Soul Reap, Self Destruct, reactive-chain, frozen-contract, and golden tests remain green.
 - First Aid remains `external_post_battle`, accepted as a no-op, emits no battle fact, and consumes no draw. Expedition-level TypeScript orchestration remains responsible for applying First Aid after qualifying Elite battles. END/finalization, narration comparison, native RNG ownership, full differential parity, and production/AFK/API cutover remain out of scope.
+
+## Forward migration roadmap
+
+The target remains one synchronous TypeScript-to-Wasm execution call per battle: TypeScript projects the input and supplies the deterministic random tape, C++ resolves the complete battle, and TypeScript reconstructs localized narration from returned semantic events. Each stage below is an independent acceptance gate. Later-stage work must not be pulled into an earlier checkpoint merely because the protocol has room for it.
+
+### Part 1.8 native END and finalization checkpoint
+
+- Add one append-only, mutually exclusive shadow/test checkpoint that executes the completed START and COMBAT coordinator and then enters the frozen END timing traversal and finalization exactly once.
+- Mirror the frozen coordinator's reserved END timing traversal and terminal precedence, final outcome selection, enemy-hit totals, final HP, and returned threat bags without changing random-tape order. Room/outcome orchestration that is not part of the frozen `executeBattle` result—including qualifying Elite-room deity effects, terrain room-end HP effects, rewards, unlocks, and First Aid—remains external and must not be pulled into this checkpoint.
+- Emit every language-neutral END/finalization fact needed for later TypeScript narration. Do not add localized names or prose to the Wasm payload.
+- Keep TypeScript as the random-tape owner, leave the frozen reference and golden fixture unchanged, and do not cut over production, AFK workers, or Experimental API sorties in this checkpoint.
+
+Acceptance gate: focused END tests prove exact event/state/tape order, transactional failure behavior, and terminal precedence; every earlier checkpoint test remains green; and the candidate completes START, COMBAT, and END in one native execution while remaining shadow-only.
+
+### Part 1.9 complete-result differential parity and narration
+
+- Connect the complete tape-driven native result to the existing record/replay differential harness without falling back to the TypeScript numerical coordinator.
+- Reconstruct the complete localized `BattleLogEntry[]` and canonical battle result from semantic events while keeping names, localization, and display formatting in TypeScript.
+- Compare outcome, HP, ordered logs, random consumption, enemy-hit totals, updated threat bags, and complete result shape for every frozen golden case plus pathological capacity and ordering cases.
+- Close semantic-event schema gaps explicitly. Increment protocol or ABI versions only for an actual incompatible wire-layout change.
+
+Acceptance gate: the native candidate is JSON-level identical to the frozen TypeScript reference for the complete golden inventory, consumes the exact tape without an extra draw, makes exactly one measured Wasm execution call per battle, and leaves all frozen hashes unchanged.
+
+### Part 1.10 deterministic production cutover and stabilization
+
+- Route production `executeBattle`, AFK workers, and Experimental API sorties through the same complete one-call tape-driven native coordinator.
+- Reduce TypeScript battle code to projection, deterministic tape supply, semantic narration, and external expedition orchestration such as qualifying post-battle First Aid.
+- Remove production numerical micro-crossings and prevent production fallback to the TypeScript numerical coordinator. Retain the frozen reference only as a temporary stabilization oracle until cutover evidence is complete.
+- Measure online, AFK-worker, and API behavior, including arena capacity, serialization/reentrancy, output volume, and browser/Electron/worker consistency.
+
+Acceptance gate: all runtime entry points use the same Wasm protocol/ABI, every battle makes one execution crossing, no TypeScript-owned numerical battle formula remains on a production path, and performance/capacity regressions are within documented limits.
+
+### Part 2 native seeded RNG ownership
+
+- Begin only after the tape-driven production engine has complete parity and has stabilized.
+- Move a battle-local xoshiro256** RNG into native battle state, initialized by the protocol's unsigned 64-bit seed and supported RNG version; route every random decision through explicit native helpers while preserving canonical decision order.
+- Remove the production random tape, retain seed/version/draw-count replay metadata, reject unsupported RNG versions, and prove independent worker instances do not share RNG state.
+- After seeded parity and invariant review, revise the frozen contract and regenerate golden data exactly once as an intentional RNG contract migration rather than an incidental hash update.
+
+Acceptance gate: identical input and seed reproduce identical complete results across browser, Electron, workers, and API sorties; different seeds exercise valid paths; all random indices/doubles remain in bounds; and recorded seed metadata replays exactly.
+
+### Part 3 single-crossing optimization and cleanup
+
+- Encode directly into reusable Wasm input memory where safe, cache arena pointers/capacities, decode the contiguous semantic output before the next invocation, and reuse typed-array views without introducing reentrancy.
+- Preserve one Wasm invocation per encounter rather than batching an entire multi-cycle sortie into one oversized call. Serialize battles per JavaScript realm and let each AFK worker own its Wasm instance.
+- Establish tested event/output capacity ceilings, return explicit overflow errors without truncation, keep synchronous online latency within the UI budget, and keep large AFK/API workloads in workers or yielding between battles.
+- Remove obsolete checkpoint-only adapters, the temporary no-flag placeholder path, unused micro-kernel production APIs, and the duplicate TypeScript numerical engine only after their replacement gates are proven.
+
+Acceptance gate: the optimized boundary preserves the complete seeded result and semantic event stream, retains deterministic replay, meets measured latency/capacity targets, and leaves a single authoritative production battle engine.
