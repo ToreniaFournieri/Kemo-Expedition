@@ -3,6 +3,7 @@ import {
   BATTLE_DEITY_IDS,
   BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
 } from './generated/battleProtocol.generated.ts';
 import { computeCharacterStats } from './characterComputation.ts';
@@ -247,6 +248,19 @@ export function executeBattleCombatNormalCheckpoint(
 ): BattleProtocolOutput {
   return executeBattleCandidateProtocol(projectBattleProtocolInput(
     party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+  ));
+}
+
+export function executeBattleCombatReactiveCheckpoint(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  randomValues: readonly number[],
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): BattleProtocolOutput {
+  return executeBattleCandidateProtocol(projectBattleProtocolInput(
+    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   ));
 }
 

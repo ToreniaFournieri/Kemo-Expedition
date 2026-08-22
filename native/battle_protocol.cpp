@@ -1044,6 +1044,56 @@ bool normal_combat_domain_is_supported(
   return bag_is_valid(physical_bag, input.physical_bag_count) && bag_is_valid(magical_bag, input.magical_bag_count);
 }
 
+bool reactive_combat_domain_is_supported(
+    const InputHeader& input, const CombatantRecord* combatants, const AbilityRecord* abilities,
+    const BagRecord* physical_bag, const BagRecord* magical_bag) {
+  const u32 known_flags = protocol::kEngineFlagStartCheckpoint |
+      protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint |
+      protocol::kEngineFlagCombatReactiveCheckpoint;
+  if ((input.engine_flags & ~known_flags) != 0 ||
+      (input.engine_flags & protocol::kEngineFlagCombatReactiveCheckpoint) == 0 ||
+      (input.engine_flags & (protocol::kEngineFlagStartCheckpoint |
+          protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint)) != 0 ||
+      (input.flags & ~(kInputFlagFertilityInitiative | kInputFlagAbilitiesPrepared)) != 0) return false;
+  u32 enemy_count = 0;
+  u32 party_count = 0;
+  bool party_rows[bokemo::battle_state::kMaxCombatants]{};
+  for (u32 index = 0; index < input.combatant_count; ++index) {
+    const auto& combatant = combatants[index];
+    if ((combatant.flags & ~1u) != 0) return false;
+    if (combatant.kind == 2) ++enemy_count;
+    else {
+      ++party_count;
+      if (combatant.row == 0 || combatant.row >= bokemo::battle_state::kMaxCombatants || party_rows[combatant.row]) return false;
+      party_rows[combatant.row] = true;
+    }
+    const double noas[] = {combatant.ranged_noa, combatant.magical_noa, combatant.melee_noa,
+        combatant.original_ranged_noa, combatant.original_magical_noa, combatant.original_melee_noa};
+    const double attacks[] = {combatant.ranged_attack, combatant.magical_attack, combatant.melee_attack};
+    for (double noa : noas) if (noa < 0.0) return false;
+    for (double attack : attacks) if (attack < 0.0) return false;
+  }
+  if (enemy_count != 1 || party_count == 0 || party_count > 7) return false;
+  // Raw preflight is deliberately stricter than post-START inspection: Mimic
+  // cannot legally select a timed trigger because such an input never starts.
+  for (u32 index = 0; index < input.ability_count; ++index) {
+    const auto ownership = ability_ownership(static_cast<protocol::AbilityId>(abilities[index].id));
+    if (ownership == AbilityOwnership::Unclassified || ownership == AbilityOwnership::TimedTrigger) return false;
+  }
+  auto bag_is_valid = [&](const BagRecord* bag, u32 count) {
+    if (count == 0) return false;
+    u64 total = 0;
+    for (u32 index = 0; index < count; ++index) {
+      if (bag[index].id <= 0 || bag[index].id >= bokemo::battle_state::kMaxCombatants ||
+          !party_rows[bag[index].id] || bag[index].tickets == 0) return false;
+      for (u32 previous = 0; previous < index; ++previous) if (bag[previous].id == bag[index].id) return false;
+      total += bag[index].tickets;
+    }
+    return total > 0 && total <= 0xffff'ffffull;
+  };
+  return bag_is_valid(physical_bag, input.physical_bag_count) && bag_is_valid(magical_bag, input.magical_bag_count);
+}
+
 enum class CombatResult { Ok, TapeExhausted, EventCapacity };
 
 double attack_value(const CombatantState& actor, u32 profile_index) {
@@ -1295,6 +1345,7 @@ double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
       ? ((1.0 + actor.profile.attack_bonus[profile_index] + actor.profile.phase_bonus[1]) *
           actor.profile.offense_amplifier[family] + actor.profile.deity_bonus[0])
       : actor.profile.enemy_attack_amplifier[profile_index];
+  offense *= actor.offense_multiplier;
   const int iaigiri = active_ability_level(actor, protocol::AbilityId::Iaigiri);
   if (!magical && iaigiri > 0) offense *= iaigiri >= 3 ? 2.0 : iaigiri == 2 ? 1.8 : 1.6;
   if (heavy > 0) offense *= 1.4;
@@ -1425,7 +1476,8 @@ Reaction defensive_reaction(const CombatantState& actor, const CombatantState& t
 
 CombatResult emit_immediate_terrain(const InputHeader& input, BattleStateCore& state,
                                     CombatantState& actor, u32 profile_index, int timing,
-                                    double calculated_damage, CombatantState* original_target) {
+                                    double calculated_damage, CombatantState* original_target,
+                                    CombatantState** lethal_target_out = nullptr) {
   const auto terrain = static_cast<protocol::TerrainId>(input.terrain_id);
   double current = actor.side == Side::Party ? state.party_hp : state.enemy_hp;
   const double maximum = actor.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
@@ -1440,6 +1492,8 @@ CombatResult emit_immediate_terrain(const InputHeader& input, BattleStateCore& s
     const double applied = damage > current ? current : damage;
     if (actor.side == Side::Party) state.party_hp -= applied; else state.enemy_hp -= applied;
     actor.hp = actor.side == Side::Party ? state.party_hp : state.enemy_hp;
+    actor.damage_taken += applied;
+    if (lethal_target_out && actor.hp <= 0.0) *lethal_target_out = &actor;
     u32 flavor = 0;
     if (!draw_index(state, 10, flavor)) return CombatResult::TapeExhausted;
     if (!emit_state_event(state, protocol::EventOpcode::TerrainEffect, 2, actor.id, actor.id, 0, profile_index + 1, timing,
@@ -1471,6 +1525,8 @@ CombatResult emit_immediate_terrain(const InputHeader& input, BattleStateCore& s
       double& hp = target->side == Side::Party ? state.party_hp : state.enemy_hp;
       const double applied = chain > hp ? hp : chain;
       hp -= applied; target->hp = hp;
+      target->damage_taken += applied;
+      if (lethal_target_out && target->hp <= 0.0) *lethal_target_out = target;
       u32 flavor = 0;
       if (!draw_index(state, 10, flavor)) return CombatResult::TapeExhausted;
       if (!emit_state_event(state, protocol::EventOpcode::RandomFlavor, 2, actor.id, target->id, 0, profile_index + 1, timing,
@@ -1713,6 +1769,511 @@ CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& st
       }
       const auto terrain_result = emit_immediate_terrain(input, state, *actor, profile_index, timing, action_effect_damage, terrain_target);
       if (terrain_result != CombatResult::Ok) return terrain_result;
+    }
+  }
+  if (!emit_state_event(state, protocol::EventOpcode::PhaseEnded, kCombatPhase, 0, 0, 0, 0, 0)) return CombatResult::EventCapacity;
+  return CombatResult::Ok;
+}
+
+struct ReactiveStrikeResult {
+  u32 attempts = 0;
+  u32 hits = 0;
+  double calculated = 0.0;
+  double applied = 0.0;
+};
+
+double reactive_profile_multiplier(int level, int kind) {
+  if (level <= 0) return 0.0;
+  if (kind == 1) return level >= 3 ? 1.0 : level == 2 ? 0.7 : 0.5; // re-attack
+  if (kind == 2) return level >= 3 ? 2.0 : level == 2 ? 1.0 : 0.5; // counter
+  return level >= 2 ? 1.0 : 0.5; // re-counter / magical counter / covering fire
+}
+
+double apply_checkpoint_damage(BattleStateCore& state, CombatantState& target, double amount) {
+  double& hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+  const double applied = amount > hp ? hp : amount > 0.0 ? amount : 0.0;
+  hp -= applied;
+  target.hp = hp;
+  target.damage_taken += applied;
+  return applied;
+}
+
+double apply_checkpoint_heal(BattleStateCore& state, CombatantState& target, double amount) {
+  double& hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+  const double maximum = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+  const double applied = amount > maximum - hp ? maximum - hp : amount > 0.0 ? amount : 0.0;
+  hp += applied;
+  target.hp = hp;
+  target.damage_taken = target.damage_taken > applied ? target.damage_taken - applied : 0.0;
+  return applied;
+}
+
+CombatResult recover_checkpoint_target(BattleStateCore& state, CombatantState& target,
+                                       u32 attack_type, int timing, u32 action_id) {
+  double& hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+  if (hp > 0.0) return CombatResult::Ok;
+  if (!emit_state_event(state, protocol::EventOpcode::Death, 2, 0, target.id, 0,
+      attack_type, timing, 0, 0.0, 0.0, 0.0, action_id)) return CombatResult::EventCapacity;
+  const int resurrect = active_ability_level(target, protocol::AbilityId::Resurrect);
+  const int reanimate = active_ability_level(target, protocol::AbilityId::Reanimate);
+  protocol::EventOpcode opcode = protocol::EventOpcode::None;
+  protocol::AbilityId ability = protocol::AbilityId::None;
+  double amount = 0.0;
+  if (resurrect > 0 && !target.recovery.resurrect_consumed) {
+    target.recovery.resurrect_consumed = true;
+    opcode = protocol::EventOpcode::Resurrected;
+    ability = protocol::AbilityId::Resurrect;
+    const double maximum = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+    amount = resurrect >= 2 ? __builtin_ceil(maximum * 0.01) : 1.0;
+  } else if (reanimate > 0 && !target.recovery.reanimate_consumed) {
+    target.recovery.reanimate_consumed = true;
+    opcode = protocol::EventOpcode::Reanimated;
+    ability = protocol::AbilityId::Reanimate;
+    constexpr int percent[5] = {20, 26, 31, 35, 38};
+    const double maximum = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+    amount = __builtin_ceil(maximum * percent[reanimate >= 5 ? 4 : reanimate - 1] / 100.0);
+  }
+  if (opcode == protocol::EventOpcode::None) return CombatResult::Ok;
+  if (amount < 1.0) amount = 1.0;
+  const double healed = apply_checkpoint_heal(state, target, amount);
+  if (!emit_state_event(state, opcode, 2, target.id, target.id, static_cast<u32>(ability),
+      attack_type, timing, 0, healed, 0.0, 0.0, action_id) ||
+      !emit_state_event(state, protocol::EventOpcode::Heal, 2, target.id, target.id,
+      static_cast<u32>(ability), attack_type, timing, 0, healed, amount, 0.0, action_id)) {
+    return CombatResult::EventCapacity;
+  }
+  return CombatResult::Ok;
+}
+
+CombatantState* available_party_null_counter(BattleStateCore& state) {
+  CombatantState* selected = nullptr;
+  for (int index = 0; index < state.combatant_count; ++index) {
+    auto& candidate = state.combatants[index];
+    if (candidate.side != Side::Party || candidate.counters == 0) continue;
+    if (!selected || candidate.row < selected->row) selected = &candidate;
+  }
+  return selected;
+}
+
+CombatResult emit_counter_nullification(BattleStateCore& state, CombatantState& owner,
+                                        CombatantState& target, protocol::AbilityId ability,
+                                        u32 attack_type, int timing, u32 action_id) {
+  if (owner.side == Side::Party && owner.counters > 0) --owner.counters;
+  return emit_state_event(state, protocol::EventOpcode::Nullified, 2, owner.id, target.id,
+      static_cast<u32>(ability), attack_type, timing, 1, 0.0, 0.0, 0.0, action_id)
+      ? CombatResult::Ok : CombatResult::EventCapacity;
+}
+
+ReactiveStrikeResult roll_reactive_strike(const InputHeader& input, BattleStateCore& state,
+                                          CombatantState& actor, CombatantState& target,
+                                          u32 profile_index, double multiplier) {
+  ReactiveStrikeResult result{};
+  const double raw = __builtin_ceil(action_noa(actor, profile_index) * multiplier *
+      terrain_noa_multiplier(input, actor, profile_index));
+  if (raw <= 0.0 || raw > 0xffff'ffffull) return result;
+  result.attempts = static_cast<u32>(raw);
+  const double per_hit = advanced_per_hit_damage(input, state, actor, target, profile_index, false);
+  const bool guaranteed = domain_guarantees_hit(input, actor, target, profile_index);
+  const int deflection = active_ability_level(target, protocol::AbilityId::Deflection);
+  const int focus = active_ability_level(actor, protocol::AbilityId::Focus);
+  const int stability = active_ability_level(actor, protocol::AbilityId::ArcaneStability);
+  int terrain_modifier = 0;
+  if (profile_index == 0 && input.terrain_id == static_cast<u16>(protocol::TerrainId::Fog) &&
+      active_ability_level(actor, protocol::AbilityId::TrueSight) == 0) terrain_modifier = -25;
+  if (profile_index == 0 && input.terrain_id == static_cast<u16>(protocol::TerrainId::SunnyBeach)) terrain_modifier = 20;
+  for (u32 attempt = 0; attempt < result.attempts; ++attempt) {
+    bool hit = guaranteed;
+    if (!guaranteed) {
+      double random = 0.0;
+      if (!bokemo::battle_state::consume_random(state, random)) { result.attempts = 0xffff'ffffu; return result; }
+      const double potency = actor.side == Side::Party && profile_index == 1 ? 1.0 : actor.profile.accuracy_potency[profile_index];
+      const double chance = battle_hit_chance(potency, actor.profile.accuracy_bonus + actor.profile.deity_bonus[3],
+          target.profile.evasion_bonus + target.temporary.evasion, static_cast<int>(attempt + 1),
+          static_cast<int>(profile_index), deflection, focus, stability, terrain_modifier);
+      hit = random <= chance;
+    }
+    if (!hit) continue;
+    ++result.hits;
+    double resonance = 1.0;
+    const int level = active_ability_level(actor, protocol::AbilityId::Resonance);
+    if (level > 0 && (profile_index == 1 || (profile_index == 0 &&
+        input.deity_id == static_cast<u16>(protocol::DeityId::GodOfResonance) &&
+        input.terrain_id != static_cast<u16>(protocol::TerrainId::Gehenna)))) {
+      constexpr int bonus[5] = {4, 7, 9, 11, 12};
+      resonance += 0.01 * bonus[level >= 5 ? 4 : level - 1] * (result.hits - 1);
+    }
+    const double damage = __builtin_floor(per_hit * resonance);
+    result.calculated += damage < 1.0 ? 1.0 : damage;
+  }
+  return result;
+}
+
+CombatResult emit_reactive_strike(BattleStateCore& state, CombatantState& actor,
+                                  CombatantState& target, u32 attack_type, int timing,
+                                  u32 action_id, protocol::AbilityId ability,
+                                  ReactiveStrikeResult& result) {
+  if (result.attempts == 0xffff'ffffu) return CombatResult::TapeExhausted;
+  result.applied = apply_checkpoint_damage(state, target, result.calculated);
+  if (target.side == Side::Enemy && result.applied > 0.0) target.enemy_hits_received += result.hits;
+  if (!emit_state_event(state, protocol::EventOpcode::AbilityActivated, 2, actor.id, target.id,
+      static_cast<u32>(ability), attack_type, timing, 0, result.attempts, result.hits, 0.0, action_id) ||
+      !emit_state_event(state, protocol::EventOpcode::Attack, 2, actor.id, target.id,
+      static_cast<u32>(ability), attack_type, timing, 0, result.applied, result.calculated, 0.0, action_id) ||
+      !emit_state_event(state, protocol::EventOpcode::Damage, 2, actor.id, target.id,
+      static_cast<u32>(ability), attack_type, timing, 0, result.applied, result.calculated, 0.0, action_id)) {
+    return CombatResult::EventCapacity;
+  }
+  state.events[state.event_count - 2].attempts = result.attempts;
+  state.events[state.event_count - 2].hits = result.hits;
+  state.events[state.event_count - 1].attempts = result.attempts;
+  state.events[state.event_count - 1].hits = result.hits;
+  return recover_checkpoint_target(state, target, attack_type, timing, action_id);
+}
+
+CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
+                                    CombatantState& actor, CombatantState& target,
+                                    ReactiveStrikeResult& result, u32 attack_type, int timing,
+                                    u32 action_id) {
+  if (result.hits == 0) return CombatResult::Ok;
+  constexpr double corrode[5] = {6.0/7.0, 5.0/7.0, 4.0/7.0, 3.0/7.0, 2.0/7.0};
+  constexpr double drain[7] = {0.001, 0.003, 0.01, 0.03, 0.10, 0.30, 1.0};
+  constexpr int death_numerator[5] = {2, 3, 4, 5, 6};
+  constexpr double burn[5] = {0.5, 0.9, 1.2, 1.4, 1.5};
+  constexpr int bind_numerator[5] = {2, 3, 4, 5, 6};
+  const int corrode_level = active_ability_level(actor, protocol::AbilityId::Corrode);
+  if (corrode_level > 0 && result.hits >= 3) {
+    const bool blocked = active_ability_level(target, protocol::AbilityId::NullCorrode) > 0;
+    if (!emit_state_event(state, blocked ? protocol::EventOpcode::Nullified : protocol::EventOpcode::StatusApplied,
+        2, actor.id, target.id, static_cast<u32>(blocked ? protocol::AbilityId::NullCorrode : protocol::AbilityId::Corrode),
+        attack_type, timing, blocked ? 1u : 0u, blocked ? 0.0 : corrode[corrode_level >= 5 ? 4 : corrode_level - 1],
+        0.0, 0.0, action_id)) return CombatResult::EventCapacity;
+    if (!blocked) target.offense_multiplier *= corrode[corrode_level >= 5 ? 4 : corrode_level - 1];
+  }
+  const int drain_level = active_ability_level(actor, protocol::AbilityId::LifeDrain);
+  if (drain_level > 0 && result.applied > 0.0) {
+    const bool blocked = active_ability_level(target, protocol::AbilityId::NullLifeDrain) > 0;
+    if (blocked) {
+      if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, actor.id, target.id,
+          static_cast<u32>(protocol::AbilityId::NullLifeDrain), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+    } else {
+      const double healed = apply_checkpoint_heal(state, actor, __builtin_floor(result.applied * drain[drain_level >= 7 ? 6 : drain_level - 1]));
+      if (!emit_state_event(state, protocol::EventOpcode::Heal, 2, actor.id, actor.id,
+          static_cast<u32>(protocol::AbilityId::LifeDrain), attack_type, timing, 0, healed, result.applied, 0, action_id)) return CombatResult::EventCapacity;
+    }
+  }
+  const int death_level = active_ability_level(actor, protocol::AbilityId::DeathTouch);
+  double& target_hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+  if (death_level > 0 && target_hp > 0.0) {
+    if (active_ability_level(target, protocol::AbilityId::NullDeathTouch) > 0) {
+      if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, actor.id, target.id,
+          static_cast<u32>(protocol::AbilityId::NullDeathTouch), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+    } else {
+      double random = 0.0; if (!bokemo::battle_state::consume_random(state, random)) return CombatResult::TapeExhausted;
+      const double chance = result.hits * death_numerator[death_level >= 5 ? 4 : death_level - 1] / 256.0;
+      if (random < (chance > 1.0 ? 1.0 : chance)) {
+        const double lethal = target_hp; apply_checkpoint_damage(state, target, lethal);
+        if (!emit_state_event(state, protocol::EventOpcode::Damage, 2, actor.id, target.id,
+            static_cast<u32>(protocol::AbilityId::DeathTouch), attack_type, timing, 0, lethal, lethal, 0, action_id)) return CombatResult::EventCapacity;
+        const auto recovered = recover_checkpoint_target(state, target, attack_type, timing, action_id);
+        if (recovered != CombatResult::Ok) return recovered;
+      }
+    }
+  }
+  const int burn_level = active_ability_level(target, protocol::AbilityId::Burn);
+  double& actor_hp = actor.side == Side::Party ? state.party_hp : state.enemy_hp;
+  if (burn_level > 0 && actor_hp > 0.0) {
+    if (active_ability_level(actor, protocol::AbilityId::NullBurn) > 0) {
+      if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, target.id, actor.id,
+          static_cast<u32>(protocol::AbilityId::NullBurn), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+    } else {
+      const double maximum = actor.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+      const double fire_resistance = actor.profile.elemental_resistance[0];
+      const double calculated = __builtin_floor(maximum * result.hits * burn[burn_level >= 5 ? 4 : burn_level - 1] / 100.0 * fire_resistance);
+      const double applied = apply_checkpoint_damage(state, actor, calculated);
+      if (calculated > 0.0 && !emit_state_event(state, protocol::EventOpcode::Damage, 2, target.id, actor.id,
+          static_cast<u32>(protocol::AbilityId::Burn), attack_type, timing, 0, applied, calculated, 0, action_id)) return CombatResult::EventCapacity;
+      const auto recovered = recover_checkpoint_target(state, actor, attack_type, timing, action_id);
+      if (recovered != CombatResult::Ok) return recovered;
+    }
+  }
+  const int bind_level = active_ability_level(actor, protocol::AbilityId::Bind);
+  if (bind_level > 0 && target_hp > 0.0) {
+    if (active_ability_level(target, protocol::AbilityId::NullBind) > 0) {
+      if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, actor.id, target.id,
+          static_cast<u32>(protocol::AbilityId::NullBind), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+    } else {
+      double random = 0.0; if (!bokemo::battle_state::consume_random(state, random)) return CombatResult::TapeExhausted;
+      const double chance = result.hits * bind_numerator[bind_level >= 5 ? 4 : bind_level - 1] / 64.0;
+      if (random < (chance > 1.0 ? 1.0 : chance)) {
+        target.incapacitated = true;
+        if (!emit_state_event(state, protocol::EventOpcode::StatusApplied, 2, actor.id, target.id,
+            static_cast<u32>(protocol::AbilityId::Bind), attack_type, timing, 0, 1, 0, 0, action_id)) return CombatResult::EventCapacity;
+      }
+    }
+  }
+  return CombatResult::Ok;
+}
+
+CombatResult resolve_counter_checkpoint(const InputHeader& input, BattleStateCore& state,
+                                        CombatantState& attacker, CombatantState& target,
+                                        u32 profile_index, double applied_damage, int timing) {
+  if (applied_damage <= 0.0 || (profile_index != 0 && profile_index != 2)) return CombatResult::Ok;
+  const int counter_level = active_ability_level(target, protocol::AbilityId::Counter);
+  if (counter_level <= 0) return CombatResult::Ok;
+  if (target.side == Side::Enemy) {
+    if (auto* nullifier = available_party_null_counter(state)) {
+      return emit_counter_nullification(state, *nullifier, target, protocol::AbilityId::NullCounter,
+          profile_index + 1, timing, static_cast<u32>(protocol::ActionId::Counter));
+    }
+  } else if (active_ability_level(attacker, protocol::AbilityId::NullCounter) > 0) {
+    return emit_counter_nullification(state, attacker, target, protocol::AbilityId::NullCounter,
+        profile_index + 1, timing, static_cast<u32>(protocol::ActionId::Counter));
+  }
+  auto counter = roll_reactive_strike(input, state, target, attacker, profile_index,
+      reactive_profile_multiplier(counter_level, 2));
+  auto status = emit_reactive_strike(state, target, attacker, profile_index + 1, timing,
+      static_cast<u32>(protocol::ActionId::Counter), protocol::AbilityId::Counter, counter);
+  if (status != CombatResult::Ok || (attacker.side == Side::Party ? state.party_hp : state.enemy_hp) <= 0.0) return status;
+  const int re_counter_level = active_ability_level(attacker, protocol::AbilityId::ReCounter);
+  if (re_counter_level <= 0) return CombatResult::Ok;
+  if (attacker.side == Side::Enemy) {
+    if (auto* nullifier = available_party_null_counter(state)) {
+      return emit_counter_nullification(state, *nullifier, attacker, protocol::AbilityId::NullCounter,
+          profile_index + 1, timing, static_cast<u32>(protocol::ActionId::ReCounter));
+    }
+  } else if (active_ability_level(target, protocol::AbilityId::NullCounter) > 0) {
+    return emit_counter_nullification(state, target, attacker, protocol::AbilityId::NullCounter,
+        profile_index + 1, timing, static_cast<u32>(protocol::ActionId::ReCounter));
+  }
+  auto re_counter = roll_reactive_strike(input, state, attacker, target, profile_index,
+      reactive_profile_multiplier(re_counter_level, 3));
+  return emit_reactive_strike(state, attacker, target, profile_index + 1, timing,
+      static_cast<u32>(protocol::ActionId::ReCounter), protocol::AbilityId::ReCounter, re_counter);
+}
+
+// SpecRef: 6.1.3.2 | Chain move trigger | Re-attack, Counter, Re-counter,
+// Magical counter, and Covering fire
+// SpecRef: 6.1.2 | Function of battle | close-range reactive resolution
+// SpecRef: 6.1.3.1 | Actor action | Resurrect and Reanimate recovery
+CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& state) {
+  constexpr u32 kCombatPhase = 2;
+  constexpr u32 kPrevented = 1;
+  if (!emit_state_event(state, protocol::EventOpcode::PhaseStarted, kCombatPhase, 0, 0, 0, 0, 49)) return CombatResult::EventCapacity;
+  CombatantState* enemy = nullptr;
+  CombatantState* parties[7]{}; u32 party_count = 0;
+  for (int index = 0; index < state.combatant_count; ++index) {
+    auto& combatant = state.combatants[index];
+    if (combatant.side == Side::Enemy) enemy = &combatant;
+    else parties[party_count++] = &combatant;
+    const int null_counter = active_ability_level(combatant, protocol::AbilityId::NullCounter);
+    combatant.counters = combatant.side == Side::Party && null_counter > 0
+        ? static_cast<u32>(null_counter > 3 ? 3 : null_counter) : 0;
+  }
+  for (u32 index = 1; index < party_count; ++index) {
+    auto* current = parties[index]; u32 cursor = index;
+    while (cursor > 0 && current->row < parties[cursor - 1]->row) { parties[cursor] = parties[cursor - 1]; --cursor; }
+    parties[cursor] = current;
+  }
+  if (!enemy) return CombatResult::TapeExhausted;
+
+  auto apply_main_result = [&](CombatantState& actor, CombatantState& target, u32 profile_index,
+                               int timing, u32 action_id, bool re_attack,
+                               ReactiveStrikeResult& result) -> CombatResult {
+    if (result.attempts == 0xffff'ffffu) return CombatResult::TapeExhausted;
+    if (!emit_state_event(state, protocol::EventOpcode::TargetSelected, kCombatPhase, actor.id, target.id,
+        0, profile_index + 1, timing, 0, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+    state.events[state.event_count - 1].attempts = result.attempts;
+    if (profile_index == 2 && !re_attack &&
+        active_ability_level(target, protocol::AbilityId::Shock) > 0 && !target.shock_consumed) {
+      target.shock_consumed = true;
+      const bool blocked = active_ability_level(actor, protocol::AbilityId::NullShock) > 0;
+      if (!blocked && result.hits > 1) { result.calculated = __builtin_floor(result.calculated / result.hits); result.hits = 1; }
+      if (!emit_state_event(state, blocked ? protocol::EventOpcode::Nullified : protocol::EventOpcode::StatusApplied,
+          kCombatPhase, target.id, actor.id, static_cast<u32>(blocked ? protocol::AbilityId::NullShock : protocol::AbilityId::Shock),
+          profile_index + 1, timing, blocked ? 1u : 0u, result.hits, result.calculated, 0, action_id)) return CombatResult::EventCapacity;
+    }
+    const Reaction reaction = defensive_reaction(actor, target, profile_index);
+    double remaining = result.calculated, absorbed = 0.0, reflected = 0.0;
+    if (reaction.kind == 1) { absorbed = result.calculated > 0.0 ? __builtin_floor(result.calculated * reaction.amplifier) : 0.0; if (result.calculated > 0.0 && absorbed < 1.0) absorbed = 1.0; remaining = 0.0; }
+    else if (reaction.kind == 2) remaining = 0.0;
+    else if (reaction.kind == 3) {
+      remaining = __builtin_floor(result.calculated * (1.0 - reaction.amplifier));
+      const u32 family = profile_index == 1 ? 1 : 0;
+      double defense = actor.profile.defense_amplifier[family]; if (defense < 0.01) defense = 0.01;
+      reflected = __builtin_floor(result.calculated * reaction.amplifier * defense * elemental_resistance(actor, actor.profile.elemental_offense));
+      if (result.calculated > 0.0 && reflected < 1.0) reflected = 1.0;
+    }
+    result.applied = apply_checkpoint_damage(state, target, remaining);
+    if (target.side == Side::Enemy && result.applied > 0.0) target.enemy_hits_received += result.hits;
+    if (absorbed > 0.0) {
+      const double healed = apply_checkpoint_heal(state, target, absorbed);
+      if (!emit_state_event(state, protocol::EventOpcode::Absorbed, kCombatPhase, target.id, actor.id,
+          static_cast<u32>(reaction.ability), profile_index + 1, timing, 0, absorbed, result.calculated, healed, action_id) ||
+          !emit_state_event(state, protocol::EventOpcode::Heal, kCombatPhase, target.id, target.id,
+          static_cast<u32>(reaction.ability), profile_index + 1, timing, 0, healed, absorbed, 0, action_id)) return CombatResult::EventCapacity;
+    } else if (reaction.kind == 2) {
+      if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target.id, actor.id,
+          static_cast<u32>(reaction.ability), profile_index + 1, timing, kPrevented, 0, result.calculated, 0, action_id)) return CombatResult::EventCapacity;
+    } else if (reaction.kind == 3) {
+      const double reflected_applied = apply_checkpoint_damage(state, actor, reflected);
+      if (!emit_state_event(state, protocol::EventOpcode::Reflected, kCombatPhase, target.id, actor.id,
+          static_cast<u32>(reaction.ability), profile_index + 1, timing, 0, reflected_applied, result.calculated, remaining, action_id) ||
+          !emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, target.id, actor.id,
+          static_cast<u32>(reaction.ability), profile_index + 1, timing, 0, reflected_applied, reflected, 0, action_id)) return CombatResult::EventCapacity;
+      const auto recovered = recover_checkpoint_target(state, actor, profile_index + 1, timing, action_id);
+      if (recovered != CombatResult::Ok) return recovered;
+    }
+    if (!emit_state_event(state, protocol::EventOpcode::Attack, kCombatPhase, actor.id, target.id, 0,
+        profile_index + 1, timing, reaction.kind ? kPrevented : 0, result.applied, result.calculated, absorbed, action_id) ||
+        !emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, actor.id, target.id, 0,
+        profile_index + 1, timing, reaction.kind ? kPrevented : 0, result.applied, result.calculated, 0, action_id)) return CombatResult::EventCapacity;
+    state.events[state.event_count - 2].attempts = result.attempts; state.events[state.event_count - 2].hits = result.hits;
+    state.events[state.event_count - 1].attempts = result.attempts; state.events[state.event_count - 1].hits = result.hits;
+    auto recovered = recover_checkpoint_target(state, target, profile_index + 1, timing, action_id);
+    if (recovered != CombatResult::Ok) return recovered;
+    if (result.hits > 0 && target.recovery.reanimate_consumed &&
+        active_ability_level(actor, protocol::AbilityId::Requiem) > 0 &&
+        (target.side == Side::Party ? state.party_hp : state.enemy_hp) > 0.0) {
+      const bool blocked = active_ability_level(target, protocol::AbilityId::NullRequiem) > 0;
+      if (!emit_state_event(state, blocked ? protocol::EventOpcode::Nullified : protocol::EventOpcode::AbilityActivated,
+          kCombatPhase, actor.id, target.id, static_cast<u32>(blocked ? protocol::AbilityId::NullRequiem : protocol::AbilityId::Requiem),
+          profile_index + 1, timing, blocked ? 1u : 0u, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+      if (!blocked) {
+        const double lethal = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+        apply_checkpoint_damage(state, target, lethal);
+        if (!emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, actor.id, target.id,
+            static_cast<u32>(protocol::AbilityId::Requiem), profile_index + 1, timing, 0, lethal, lethal, 0, action_id)) return CombatResult::EventCapacity;
+      }
+    }
+    if (profile_index == 2) {
+      recovered = apply_close_checkpoint(input, state, actor, target, result, profile_index + 1, timing, action_id);
+      if (recovered != CombatResult::Ok) return recovered;
+    }
+    return resolve_counter_checkpoint(input, state, actor, target, profile_index, result.applied, timing);
+  };
+
+  for (int timing = 49; timing >= 0 && state.party_hp > 0.0 && state.enemy_hp > 0.0; --timing) {
+    state.scheduler.next_timing = timing;
+    for (u32 action_index = 0; action_index < state.action_count && state.party_hp > 0.0 && state.enemy_hp > 0.0; ++action_index) {
+      auto& action = state.actions[action_index];
+      if (action.acted || action.timing != timing) continue;
+      action.acted = true;
+      auto* actor = bokemo::battle_state::find(state, action.actor_id);
+      if (!actor) return CombatResult::TapeExhausted;
+      if (state.scheduler.first_actor_id == 0) state.scheduler.first_actor_id = actor->id;
+      if (actor->incapacitated) {
+        actor->incapacitated = false; actor->acted = true;
+        if (!emit_state_event(state, protocol::EventOpcode::ActionSkipped, kCombatPhase, actor->id, actor->id,
+            static_cast<u32>(protocol::AbilityId::Bind), action.attack_type, timing, kPrevented, 0, 0, 0,
+            static_cast<u32>(protocol::ActionId::NormalAttack))) return CombatResult::EventCapacity;
+        continue;
+      }
+      if (active_ability_level(*actor, protocol::AbilityId::NoOffense) > 0) { actor->acted = true; continue; }
+      actor->acted = true;
+      const u32 profile_index = action.attack_type - 1;
+      if (input.terrain_id == static_cast<u16>(protocol::TerrainId::EchoDomain) && actor->profile.elemental_offense != 0 &&
+          active_ability_level(*actor, protocol::AbilityId::DomainBreaker) == 0) ++state.echo_elemental_use[actor->profile.elemental_offense];
+      const int re_level = active_ability_level(*actor, protocol::AbilityId::ReAttack);
+      const u32 repeats = re_level > 0 ? 2 : 1;
+      CombatantState* magical_counter_targets[7]{}; u32 magical_counter_count = 0;
+      for (u32 repeat = 0; repeat < repeats && state.party_hp > 0.0 && state.enemy_hp > 0.0; ++repeat) {
+        const bool re_attack = repeat > 0;
+        const double multiplier = re_attack ? reactive_profile_multiplier(re_level, 1) : 1.0;
+        const u32 action_id = re_attack ? static_cast<u32>(protocol::ActionId::ReAttack)
+            : static_cast<u32>(protocol::ActionId::NormalAttack);
+        if (profile_index == 1 && state.magic_seal_cursor < state.magic_seal_count) {
+          const u32 owner = state.magic_seal_owners[state.magic_seal_cursor++];
+          if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, owner, actor->id,
+              static_cast<u32>(protocol::AbilityId::MagicSeal), action.attack_type, timing, kPrevented, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+          continue;
+        }
+        if (actor->side == Side::Party) {
+          auto result = roll_reactive_strike(input, state, *actor, *enemy, profile_index, multiplier);
+          auto status = apply_main_result(*actor, *enemy, profile_index, timing, action_id, re_attack, result);
+          if (status != CombatResult::Ok) return status;
+          CombatantState* lethal_terrain_target = nullptr;
+          status = emit_immediate_terrain(input, state, *actor, profile_index, timing,
+              result.applied, enemy, &lethal_terrain_target);
+          if (status != CombatResult::Ok) return status;
+          if (lethal_terrain_target) {
+            status = recover_checkpoint_target(state, *lethal_terrain_target, profile_index + 1,
+                timing, static_cast<u32>(protocol::ActionId::TerrainDamage));
+            if (status != CombatResult::Ok) return status;
+          }
+          if (profile_index == 2 && result.hits == 1 && state.party_hp > 0.0 && state.enemy_hp > 0.0) {
+            for (u32 owner_index = 0; owner_index < party_count && state.enemy_hp > 0.0; ++owner_index) {
+              auto* owner = parties[owner_index];
+              if (owner->id == actor->id) continue;
+              const int level = active_ability_level(*owner, protocol::AbilityId::CoveringFire);
+              if (level <= 0) continue;
+              auto covering = roll_reactive_strike(input, state, *owner, *enemy, 0, reactive_profile_multiplier(level, 3));
+              status = emit_reactive_strike(state, *owner, *enemy, 1, timing,
+                  static_cast<u32>(protocol::ActionId::CoveringFire), protocol::AbilityId::CoveringFire, covering);
+              if (status != CombatResult::Ok) return status;
+            }
+          }
+        } else {
+          const double raw = __builtin_ceil(action_noa(*actor, profile_index) * multiplier * terrain_noa_multiplier(input, *actor, profile_index));
+          if (raw <= 0.0) continue;
+          if (raw > 0xffff'ffffull) return CombatResult::TapeExhausted;
+          struct Group { CombatantState* target = nullptr; ReactiveStrikeResult result{}; } groups[7]{};
+          u32 group_count = 0;
+          for (u32 attempt = 0; attempt < static_cast<u32>(raw); ++attempt) {
+            auto* bag = profile_index == 1 ? state.magical_bag : state.physical_bag;
+            const u32 count = profile_index == 1 ? state.magical_bag_count : state.physical_bag_count;
+            u64 total = 0; for (u32 index = 0; index < count; ++index) total += bag[index].tickets;
+            double random = 0.0; if (!bokemo::battle_state::consume_random(state, random)) return CombatResult::TapeExhausted;
+            const u64 roll = static_cast<u64>(random * total) + 1; u64 cumulative = 0; u32 row = 0;
+            for (u32 index = 0; index < count; ++index) { cumulative += bag[index].tickets; if (bag[index].tickets > 0 && roll <= cumulative) { row = bag[index].id; --bag[index].tickets; break; } }
+            bool fallback = false; auto* target = row_target(state, row, profile_index, *actor, false, fallback);
+            if (!target) return CombatResult::TapeExhausted;
+            if (!emit_state_event(state, protocol::EventOpcode::TargetSelected, kCombatPhase, actor->id, target->id,
+                0, profile_index + 1, timing, 0, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+            state.events[state.event_count - 1].attempts = 1;
+            u32 group = 0; while (group < group_count && groups[group].target != target) ++group;
+            if (group == group_count) groups[group_count++].target = target;
+            auto one = roll_reactive_strike(input, state, *actor, *target, profile_index,
+                1.0 / (action_noa(*actor, profile_index) * terrain_noa_multiplier(input, *actor, profile_index)));
+            if (one.attempts == 0xffff'ffffu) return CombatResult::TapeExhausted;
+            groups[group].result.attempts += 1;
+            groups[group].result.hits += one.hits;
+            groups[group].result.calculated += one.calculated;
+          }
+          double repeat_damage = 0.0;
+          CombatantState* first_target = group_count > 0 ? groups[0].target : nullptr;
+          for (u32 group = 0; group < group_count && state.party_hp > 0.0 && state.enemy_hp > 0.0; ++group) {
+            auto status = apply_main_result(*actor, *groups[group].target, profile_index, timing, action_id, re_attack, groups[group].result);
+            if (status != CombatResult::Ok) return status;
+            repeat_damage += groups[group].result.applied;
+            if (profile_index == 1 && groups[group].result.applied > 0.0 &&
+                active_ability_level(*groups[group].target, protocol::AbilityId::MagicalCounter) > 0) {
+              bool present = false; for (u32 index = 0; index < magical_counter_count; ++index) if (magical_counter_targets[index] == groups[group].target) present = true;
+              if (!present) magical_counter_targets[magical_counter_count++] = groups[group].target;
+            }
+          }
+          CombatantState* lethal_terrain_target = nullptr;
+          auto terrain_status = emit_immediate_terrain(input, state, *actor, profile_index, timing,
+              repeat_damage, first_target, &lethal_terrain_target);
+          if (terrain_status != CombatResult::Ok) return terrain_status;
+          if (lethal_terrain_target) {
+            terrain_status = recover_checkpoint_target(state, *lethal_terrain_target, profile_index + 1,
+                timing, static_cast<u32>(protocol::ActionId::TerrainDamage));
+            if (terrain_status != CombatResult::Ok) return terrain_status;
+          }
+        }
+      }
+      if (actor->side == Side::Enemy && profile_index == 1 && active_ability_level(*enemy, protocol::AbilityId::NullCounter) == 0) {
+        for (u32 owner_index = 0; owner_index < party_count && state.enemy_hp > 0.0 && state.party_hp > 0.0; ++owner_index) {
+          auto* owner = parties[owner_index];
+          bool eligible = false; for (u32 index = 0; index < magical_counter_count; ++index) if (magical_counter_targets[index] == owner) eligible = true;
+          if (!eligible) continue;
+          const int level = active_ability_level(*owner, protocol::AbilityId::MagicalCounter);
+          auto counter = roll_reactive_strike(input, state, *owner, *enemy, 1, reactive_profile_multiplier(level, 3));
+          const auto status = emit_reactive_strike(state, *owner, *enemy, 2, timing,
+              static_cast<u32>(protocol::ActionId::MagicalCounter), protocol::AbilityId::MagicalCounter, counter);
+          if (status != CombatResult::Ok) return status;
+        }
+      }
     }
   }
   if (!emit_state_event(state, protocol::EventOpcode::PhaseEnded, kCombatPhase, 0, 0, 0, 0, 0)) return CombatResult::EventCapacity;
@@ -1962,13 +2523,18 @@ int battle_protocol_execute(u32 byte_length) {
   const bool start_checkpoint = (input->engine_flags & protocol::kEngineFlagStartCheckpoint) != 0;
   const bool combat_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatBaseCheckpoint) != 0;
   const bool normal_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatNormalCheckpoint) != 0;
-  if ((start_checkpoint ? 1 : 0) + (combat_checkpoint ? 1 : 0) + (normal_checkpoint ? 1 : 0) > 1) {
+  const bool reactive_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatReactiveCheckpoint) != 0;
+  if ((start_checkpoint ? 1 : 0) + (combat_checkpoint ? 1 : 0) + (normal_checkpoint ? 1 : 0) +
+      (reactive_checkpoint ? 1 : 0) > 1) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if (combat_checkpoint && !base_combat_domain_is_supported(*input, records, physical_bag, magical_bag)) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if (normal_checkpoint && !normal_combat_domain_is_supported(*input, records, abilities, physical_bag, magical_bag)) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
+  if (reactive_checkpoint && !reactive_combat_domain_is_supported(*input, records, abilities, physical_bag, magical_bag)) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   alignas(BattleStateCore) static unsigned char state_storage[sizeof(BattleStateCore)];
@@ -1982,7 +2548,7 @@ int battle_protocol_execute(u32 byte_length) {
   state.magical_bag_count = input->magical_bag_count;
   for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};
   for (u32 index = 0; index < input->magical_bag_count; ++index) state.magical_bag[index] = {magical_bag[index].id, magical_bag[index].tickets};
-  if (combat_checkpoint || normal_checkpoint) {
+  if (combat_checkpoint || normal_checkpoint || reactive_checkpoint) {
     auto sort_bag = [](ThreatBagEntry* bag, u32 count) {
       for (u32 index = 1; index < count; ++index) {
         const ThreatBagEntry current = bag[index];
@@ -2049,7 +2615,7 @@ int battle_protocol_execute(u32 byte_length) {
     event.hits = hits; event.attempts = attempts; event.value1 = value1; event.value2 = value2;
     return true;
   };
-  if (start_checkpoint || combat_checkpoint || normal_checkpoint) {
+  if (start_checkpoint || combat_checkpoint || normal_checkpoint || reactive_checkpoint) {
     const StartResult start_result = resolve_start_checkpoint(*input, state);
     if (start_result != StartResult::Ok) {
       const protocol::ProtocolError error = start_result == StartResult::TapeExhausted ? protocol::ProtocolError::TapeExhausted
@@ -2068,6 +2634,14 @@ int battle_protocol_execute(u32 byte_length) {
     }
     if (normal_checkpoint) {
       const CombatResult combat_result = resolve_normal_combat(*input, state);
+      if (combat_result != CombatResult::Ok) {
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+            ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
+        return initialize_error_output_at_cursor(*input, error, state.random_cursor);
+      }
+    }
+    if (reactive_checkpoint) {
+      const CombatResult combat_result = resolve_reactive_combat(*input, state);
       if (combat_result != CombatResult::Ok) {
         const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
             ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;

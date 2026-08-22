@@ -4,6 +4,7 @@ import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import {
   executeBattleStartCheckpoint,
+  executeBattleCombatReactiveCheckpoint,
   projectBattleCombatants,
   projectBattleProtocolInput,
 } from '../../src/game/battleCandidate.ts';
@@ -74,4 +75,15 @@ test('START checkpoint uses one measured Wasm invocation', () => {
   assert.equal(output.protocolError, 0);
   assert.equal(output.outcome, 'unresolved');
   assert.equal(measurement.calls, 1);
+});
+
+test('reactive COMBAT candidate helper uses exactly one native invocation and never falls back', () => {
+  const state = sampleState();
+  const party = state.parties[0]!;
+  const enemy = { ...structuredClone(ENEMIES[0]!), rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 };
+  beginBattleKernelMeasurement();
+  const output = executeBattleCombatReactiveCheckpoint(party, enemy, state.bags, Array(4_096).fill(0), party.currentHp, {});
+  const measurement = endBattleKernelMeasurement();
+  assert.equal(measurement.calls, 1);
+  assert.ok(output.protocolError === 0 || output.protocolError === 7);
 });

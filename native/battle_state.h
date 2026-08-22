@@ -79,6 +79,8 @@ struct CombatantState {
   bool consumed = false;
   bool one_shot_consumed = false;
   bool illusion_consumed = false;
+  bool shock_consumed = false;
+  double offense_multiplier = 1.0;
   TemporaryModifiers temporary{};
   unsigned int counters = 0;
   bool sealed = false;

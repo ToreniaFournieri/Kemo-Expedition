@@ -19,6 +19,7 @@ inline constexpr unsigned short kActionCount = 15;
 inline constexpr unsigned int kEngineFlagStartCheckpoint = 1u << 0;
 inline constexpr unsigned int kEngineFlagCombatBaseCheckpoint = 1u << 1;
 inline constexpr unsigned int kEngineFlagCombatNormalCheckpoint = 1u << 2;
+inline constexpr unsigned int kEngineFlagCombatReactiveCheckpoint = 1u << 3;
 
 enum class ProtocolError : unsigned int {
   None = 0,

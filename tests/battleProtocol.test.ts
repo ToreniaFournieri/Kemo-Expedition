@@ -19,6 +19,7 @@ import {
   BATTLE_DEITY_IDS,
   BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
@@ -102,6 +103,7 @@ test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_ENGINE_FLAG_START_CHECKPOINT, 1 << 0);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT, 1 << 1);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT, 1 << 2);
+  assert.equal(BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT, 1 << 3);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature, 7);
   assert.equal(getBattleProtocolTerrainName(BATTLE_TERRAIN_IDS['terrain.echo-domain']), 'terrain.echo-domain');
 });
@@ -551,6 +553,270 @@ function combatNormalInput(overrides: Partial<BattleProtocolInput> = {}): Battle
     ...overrides,
   };
 }
+
+function combatReactiveInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
+  return {
+    ...combatNormalInput(),
+    engineFlags: BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
+    ...overrides,
+  };
+}
+
+test('reactive COMBAT flag is exclusive and preflights timed and Mimic-copyable mechanics before draws', () => {
+  for (const flags of [
+    BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT | BATTLE_ENGINE_FLAG_START_CHECKPOINT,
+    BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT | BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
+    BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT | BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+  ]) {
+    const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({ engineFlags: flags, randomValues: [0.5] })));
+    assert.equal(output.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+    assert.equal(output.randomConsumed, 0);
+    assert.deepEqual(output.events, []);
+  }
+  const timed = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    randomValues: [0.5],
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'howl', level: 1 }] }
+      : { ...combatant, abilities: [{ id: 'mimic', level: 1 }] }),
+  })));
+  assert.equal(timed.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+  assert.equal(timed.randomConsumed, 0);
+  assert.deepEqual(timed.physicalThreatBag, []);
+});
+
+test('reactive COMBAT executes re-attacks without another initiative roll and preserves action identity', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    enemyHp: 1_000,
+    enemyMaxHp: 1_000,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1 ? {
+      ...combatant, rangedAttack: 10, rangedNoA: 2, abilities: [{ id: 're_attack', level: 2 }],
+    } : combatant),
+    randomValues: [0, 0, 0, 0, 0, 0, 0, 0, 0.75],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.events.filter((event) => event.opcode === 'initiative').length, 1);
+  const attacks = output.events.filter((event) => event.opcode === 'attack');
+  assert.deepEqual(attacks.map((event) => [event.aux0, event.attempts]), [
+    [BATTLE_ACTION_IDS.normal_attack, 2],
+    [BATTLE_ACTION_IDS.re_attack, 2],
+  ]);
+  assert.equal(output.randomConsumed, 8);
+  assert.equal(output.randomConsumed < 9, true);
+});
+
+test('reactive COMBAT resolves counter, Null Counter exhaustion, and one terminating re-counter', () => {
+  const input = combatReactiveInput({
+    partyHp: 1_000, partyMaxHp: 1_000, enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 0 ? {
+      ...combatant, rangedAttack: 10, rangedNoA: 1,
+      abilities: [{ id: 'counter', level: 1 }, { id: 're_counter', level: 1 }],
+    } : {
+      ...combatant, rangedAttack: 10, rangedNoA: 1,
+      abilities: [{ id: 'counter', level: 2 }, { id: 're_counter', level: 2 }],
+    }),
+    randomValues: Array(32).fill(0),
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.ok(output.events.some((event) => event.aux0 === BATTLE_ACTION_IDS.counter && event.opcode === 'attack'));
+  assert.ok(output.events.some((event) => event.aux0 === BATTLE_ACTION_IDS.re_counter && event.opcode === 'attack'));
+  assert.equal(output.events.filter((event) => event.aux0 === BATTLE_ACTION_IDS.re_counter && event.opcode === 'attack').length <= 2, true);
+
+  const nullified = executeBattleProtocol(encodeBattleProtocolInput({
+    ...input,
+    combatants: input.combatants.map((combatant, index) => index === 1
+      ? { ...combatant, abilities: [...combatant.abilities, { id: 'null_counter', level: 1 }] }
+      : combatant),
+  }));
+  assert.ok(nullified.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'null_counter'));
+});
+
+test('reactive COMBAT applies close nullifiers without draws and recovery priority with bookkeeping events', () => {
+  const nullified = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1 ? {
+      ...combatant, meleeAttack: 10, meleeNoA: 3,
+      abilities: [{ id: 'corrode', level: 1 }, { id: 'life_drain', level: 7 },
+        { id: 'death_touch', level: 5 }, { id: 'bind', level: 5 }],
+    } : {
+      ...combatant, abilities: [{ id: 'null_corrode', level: 1 }, { id: 'null_life_drain', level: 1 },
+        { id: 'null_death_touch', level: 1 }, { id: 'null_bind', level: 1 }],
+    }),
+    randomValues: [0, 0, 0, 0, 0, 0, 0.75],
+  })));
+  assert.equal(nullified.protocolError, 0);
+  assert.equal(nullified.randomConsumed, 4, 'melee initiative plus hits; paired nullifiers add no draws');
+  for (const ability of ['null_corrode', 'null_life_drain', 'null_death_touch', 'null_bind'] as const) {
+    assert.ok(nullified.events.some((event) => event.opcode === 'nullified' && event.abilityId === ability));
+  }
+
+  const recovered = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    enemyHp: 5, enemyMaxHp: 1_001,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, meleeAttack: 20, meleeNoA: 1 }
+      : { ...combatant, maxHp: 1_001, abilities: [{ id: 'resurrect', level: 2 }, { id: 'reanimate', level: 5 }] }),
+    randomValues: [0, 0, 0, 0, 0, 0.75],
+  })));
+  assert.equal(recovered.protocolError, 0);
+  assert.ok(recovered.events.some((event) => event.opcode === 'resurrected' && event.value0 === 11));
+  assert.equal(recovered.events.some((event) => event.opcode === 'reanimated'), false);
+  assert.ok(recovered.events.some((event) => event.opcode === 'heal' && event.abilityId === 'resurrect'));
+});
+
+test('reactive COMBAT delays magical counters until the enemy re-attack completes and uses party row order', () => {
+  const base = combatBaseInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    partyHp: 1_000, partyMaxHp: 1_000, enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: [
+      { ...base.combatants[0]!, magicalAttack: 5, magicalNoA: 1, abilities: [{ id: 're_attack', level: 1 }] },
+      { ...base.combatants[1]!, magicalAttack: 5, magicalNoA: 1, abilities: [{ id: 'magical_counter', level: 1 }] },
+      { ...base.combatants[2]!, magicalAttack: 5, magicalNoA: 1, abilities: [{ id: 'magical_counter', level: 2 }] },
+    ],
+    physicalThreatBag: [{ id: 1, tickets: 32 }, { id: 2, tickets: 32 }],
+    magicalThreatBag: [{ id: 1, tickets: 32 }, { id: 2, tickets: 32 }],
+    randomValues: [...Array(9).fill(0), 0, 0, 0.99, 0, ...Array(52).fill(0)],
+  })));
+  assert.equal(output.protocolError, 0);
+  const actions = output.events.filter((event) => event.opcode === 'attack').map((event) => [event.aux0, event.actorId]);
+  const reAttackIndex = actions.reduce((last, [action], index) => action === BATTLE_ACTION_IDS.re_attack ? index : last, -1);
+  const magicalCounters = actions.map(([action], index) => ({ action, index, actor: actions[index]?.[1] }))
+    .filter(({ action }) => action === BATTLE_ACTION_IDS.magical_counter);
+  assert.ok(magicalCounters.every(({ index }) => index > reAttackIndex));
+  assert.deepEqual(magicalCounters.map(({ actor }) => actor), [1, 2]);
+});
+
+test('reactive COMBAT executes every qualifying covering-fire owner front-to-back after one melee hit', () => {
+  const base = combatBaseInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: [
+      base.combatants[0]!,
+      { ...base.combatants[1]!, meleeAttack: 5, meleeNoA: 1 },
+      { ...base.combatants[2]!, rangedAttack: 5, rangedNoA: 1, abilities: [{ id: 'covering_fire', level: 1 }] },
+      { ...base.combatants[2]!, id: 3, row: 3, rangedAttack: 5, rangedNoA: 1, abilities: [{ id: 'covering_fire', level: 2 }] },
+    ],
+    physicalThreatBag: [{ id: 1, tickets: 32 }, { id: 2, tickets: 32 }, { id: 3, tickets: 32 }],
+    magicalThreatBag: [{ id: 1, tickets: 32 }, { id: 2, tickets: 32 }, { id: 3, tickets: 32 }],
+    randomValues: Array(64).fill(0),
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'attack' && event.aux0 === BATTLE_ACTION_IDS.covering_fire)
+      .map((event) => event.actorId).slice(0, 2),
+    [2, 3],
+  );
+});
+
+test('reactive COMBAT consumes Shock once, preserves Null Shock, and applies Burn recovery', () => {
+  const shockBase = combatReactiveInput({
+    enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'shock', level: 1 }] }
+      : { ...combatant, meleeAttack: 10, meleeNoA: 3, abilities: [{ id: 're_attack', level: 3 }] }),
+    randomValues: Array(32).fill(0),
+  });
+  const shocked = executeBattleProtocol(encodeBattleProtocolInput(shockBase));
+  assert.equal(shocked.events.filter((event) => event.abilityId === 'shock').length, 1);
+  assert.equal(shocked.events.find((event) => event.opcode === 'attack' && event.aux0 === BATTLE_ACTION_IDS.normal_attack)?.hits, 1);
+  assert.equal(shocked.events.find((event) => event.opcode === 'attack' && event.aux0 === BATTLE_ACTION_IDS.re_attack)?.hits, 3);
+
+  const nullShock = executeBattleProtocol(encodeBattleProtocolInput({
+    ...shockBase,
+    combatants: shockBase.combatants.map((combatant, index) => index === 1
+      ? { ...combatant, abilities: [...combatant.abilities, { id: 'null_shock', level: 1 }] }
+      : combatant),
+  }));
+  assert.ok(nullShock.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'null_shock'));
+  assert.equal(nullShock.events.find((event) => event.opcode === 'attack' && event.aux0 === BATTLE_ACTION_IDS.normal_attack)?.hits, 3);
+
+  const burn = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    partyHp: 2, partyMaxHp: 100, enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'burn', level: 5 }] }
+      : { ...combatant, meleeAttack: 5, meleeNoA: 2, abilities: [{ id: 'resurrect', level: 1 }] }),
+    randomValues: Array(16).fill(0),
+  })));
+  assert.ok(burn.events.some((event) => event.opcode === 'damage' && event.abilityId === 'burn'));
+  assert.ok(burn.events.some((event) => event.opcode === 'resurrected'));
+  assert.equal(burn.partyHp, 1);
+});
+
+test('reactive COMBAT applies Requiem only after consumed Reanimate and honors Null Requiem', () => {
+  const input = combatReactiveInput({
+    enemyHp: 5, enemyMaxHp: 100,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'reanimate', level: 1 }] }
+      : { ...combatant, meleeAttack: 10, meleeNoA: 1, abilities: [{ id: 'requiem', level: 1 }] }),
+    randomValues: Array(16).fill(0),
+  });
+  const requiem = executeBattleProtocol(encodeBattleProtocolInput(input));
+  const reanimatedIndex = requiem.events.findIndex((event) => event.opcode === 'reanimated');
+  const requiemIndex = requiem.events.findIndex((event) => event.abilityId === 'requiem');
+  assert.ok(reanimatedIndex >= 0 && requiemIndex > reanimatedIndex);
+  assert.equal(requiem.enemyHp, 0);
+
+  const blocked = executeBattleProtocol(encodeBattleProtocolInput({
+    ...input,
+    combatants: input.combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [...combatant.abilities, { id: 'null_requiem', level: 1 }] }
+      : combatant),
+  }));
+  assert.ok(blocked.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'null_requiem'));
+  assert.equal(blocked.enemyHp, 20);
+});
+
+test('reactive COMBAT recovers from lethal immediate terrain and fails transactionally on an exhausted conditional draw', () => {
+  const terrain = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    terrainEffect: 'terrain.mana-burn', partyHp: 1, partyMaxHp: 100, enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, magicalAttack: 5, magicalNoA: 1, abilities: [{ id: 'resurrect', level: 1 }] }
+      : combatant),
+    randomValues: [0, 0, 0, 0, 0.4],
+  })));
+  assert.equal(terrain.protocolError, 0);
+  assert.ok(terrain.events.some((event) => event.opcode === 'damage' && (event.flags & 8) !== 0));
+  assert.ok(terrain.events.some((event) => event.opcode === 'resurrected'));
+  assert.equal(terrain.partyHp, 1);
+
+  const exhausted = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    enemyHp: 100, enemyMaxHp: 100,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, meleeAttack: 5, meleeNoA: 1, abilities: [{ id: 'death_touch', level: 1 }] }
+      : combatant),
+    randomValues: [0, 0],
+  })));
+  assert.equal(exhausted.protocolError, BATTLE_PROTOCOL_ERROR_CODES.tapeExhausted);
+  assert.deepEqual(exhausted.events, []);
+  assert.deepEqual(exhausted.physicalThreatBag, []);
+  assert.deepEqual(exhausted.magicalThreatBag, []);
+});
+
+test('reactive COMBAT supports a seven-member multi-owner covering-fire chain with deterministic capacity', () => {
+  const base = combatBaseInput();
+  const party = Array.from({ length: 7 }, (_, index) => ({
+    ...base.combatants[1]!,
+    id: index + 1,
+    row: index + 1,
+    rangedAttack: index === 0 ? 0 : 2,
+    rangedNoA: index === 0 ? 0 : 1,
+    meleeAttack: index === 0 ? 2 : 0,
+    meleeNoA: index === 0 ? 1 : 0,
+    abilities: index === 0 ? [] : [{ id: 'covering_fire' as const, level: index % 2 + 1 }],
+  }));
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    enemyHp: 100_000, enemyMaxHp: 100_000,
+    combatants: [base.combatants[0]!, ...party],
+    physicalThreatBag: party.map(({ row }) => ({ id: row, tickets: 64 })),
+    magicalThreatBag: party.map(({ row }) => ({ id: row, tickets: 64 })),
+    randomValues: Array(256).fill(0),
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'attack' && event.aux0 === BATTLE_ACTION_IDS.covering_fire)
+      .map((event) => event.actorId).slice(0, 6),
+    [2, 3, 4, 5, 6, 7],
+  );
+  assert.ok(output.events.length < 4_096);
+});
 
 test('advanced COMBAT rejects deferred abilities and every mixed checkpoint flag before drawing', () => {
   for (const ability of ['counter', 'howl', 'resurrect'] as const) {
