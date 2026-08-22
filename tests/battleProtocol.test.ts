@@ -18,6 +18,7 @@ import {
   BATTLE_ACTION_IDS,
   BATTLE_DEITY_IDS,
   BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
@@ -29,6 +30,7 @@ import {
   BATTLE_PROTOCOL_VERSION,
   BATTLE_TERRAIN_IDS,
 } from '../src/game/generated/battleProtocol.generated.ts';
+import { BATTLE_ABILITY_OWNERSHIP, BATTLE_ABILITY_OWNERSHIP_IDS } from '../src/game/battleAbilityOwnership.ts';
 
 const protocolInput: BattleProtocolInput = {
   flags: 5,
@@ -99,8 +101,20 @@ test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_ACTION_IDS.timed_ability, 15);
   assert.equal(BATTLE_ENGINE_FLAG_START_CHECKPOINT, 1 << 0);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT, 1 << 1);
+  assert.equal(BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT, 1 << 2);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature, 7);
   assert.equal(getBattleProtocolTerrainName(BATTLE_TERRAIN_IDS['terrain.echo-domain']), 'terrain.echo-domain');
+});
+
+test('advanced COMBAT ownership matrix classifies every append-only ability exactly once', () => {
+  const classified = Object.values(BATTLE_ABILITY_OWNERSHIP_IDS).flat();
+  assert.equal(classified.length, Object.keys(BATTLE_ABILITY_IDS).length);
+  assert.equal(new Set(classified).size, classified.length);
+  assert.deepEqual([...classified].sort(), Object.keys(BATTLE_ABILITY_IDS).sort());
+  assert.equal(Object.keys(BATTLE_ABILITY_OWNERSHIP).length, classified.length);
+  assert.equal(BATTLE_ABILITY_OWNERSHIP.counter, 'reactive_chain');
+  assert.equal(BATTLE_ABILITY_OWNERSHIP.resurrect, 'defeat_recovery');
+  assert.equal(BATTLE_ABILITY_OWNERSHIP.gravity_well, 'normal_action');
 });
 
 test('TypeScript encoder and C++ decoder share one binary input layout', () => {
@@ -525,6 +539,169 @@ function combatBaseInput(overrides: Partial<BattleProtocolInput> = {}): BattlePr
     ...overrides,
   };
 }
+
+function combatNormalInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
+  const base = combatBaseInput();
+  return {
+    ...base,
+    engineFlags: BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+    combatants: base.combatants.slice(0, 2),
+    physicalThreatBag: [{ id: 1, tickets: 32 }],
+    magicalThreatBag: [{ id: 1, tickets: 32 }],
+    ...overrides,
+  };
+}
+
+test('advanced COMBAT rejects deferred abilities and every mixed checkpoint flag before drawing', () => {
+  for (const ability of ['counter', 'howl', 'resurrect'] as const) {
+    const input = combatNormalInput({
+      randomValues: [0.5],
+      combatants: combatNormalInput().combatants.map((combatant, index) => index === 1
+        ? { ...combatant, abilities: [{ id: ability, level: 1 }] } : combatant),
+    });
+    const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+    assert.equal(output.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+    assert.equal(output.randomConsumed, 0);
+    assert.deepEqual(output.events, []);
+    assert.deepEqual(output.physicalThreatBag, []);
+  }
+  for (const other of [BATTLE_ENGINE_FLAG_START_CHECKPOINT, BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT]) {
+    const output = executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
+      engineFlags: BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT | other,
+      randomValues: [0.5],
+    })));
+    assert.equal(output.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+    assert.equal(output.randomConsumed, 0);
+  }
+});
+
+test('advanced COMBAT reuses START initiative and owns terrain NoA, guaranteed hits, and exact undrained cursor', () => {
+  const input = combatNormalInput({
+    terrainEffect: 'terrain.sniper-domain',
+    partyHp: 100,
+    partyMaxHp: 100,
+    enemyHp: 10,
+    enemyMaxHp: 10,
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 1 ? {
+      ...combatant,
+      rangedAttack: 10,
+      rangedNoA: 2,
+      originalRangedNoA: 4,
+      abilities: [{ id: 'heavy_strike', level: 1 }, { id: 'focus', level: 1 }],
+    } : combatant),
+    randomValues: [0, 0, 0, 0, 0.875],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'victory');
+  assert.equal(output.randomConsumed, 4, 'guaranteed hits and terminal scheduling leave the tail untouched');
+  assert.equal(output.diagnosticDrawCount, 4);
+  const attack = output.events.find((event) => event.opcode === 'attack');
+  assert.equal(attack?.attempts, 2);
+  assert.equal(attack?.hits, 2);
+  assert.equal(output.events.at(-1)?.opcode, 'phase_ended');
+});
+
+test('advanced COMBAT preserves target-before-hit and defensive absorb values', () => {
+  const input = combatNormalInput({
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    partyHp: 50,
+    partyMaxHp: 100,
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 0 ? {
+      ...combatant, rangedAttack: 20, rangedNoA: 1, elementalOffense: 'fire',
+    } : {
+      ...combatant, abilities: [{ id: 'fire_absorb', level: 5 }],
+    }),
+    randomValues: [0, 0, 0, 0, 0, 0],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  const selected = output.events.findIndex((event) => event.opcode === 'target_selected');
+  const attack = output.events.findIndex((event) => event.opcode === 'attack');
+  assert.ok(selected >= 0 && selected < attack);
+  const absorbed = output.events.find((event) => event.opcode === 'absorbed');
+  assert.equal(absorbed?.abilityId, 'fire_absorb');
+  assert.ok((absorbed?.value0 ?? 0) > 0);
+  assert.equal(output.partyHp, 70);
+});
+
+test('advanced COMBAT preflights Mimic copies and consumes Magic Seal in START owner order', () => {
+  const unsafe = executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
+    randomValues: [0.5],
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'counter', level: 1 }] }
+      : { ...combatant, abilities: [{ id: 'mimic', level: 1 }] }),
+  })));
+  assert.equal(unsafe.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+  assert.equal(unsafe.randomConsumed, 0);
+
+  const input = combatNormalInput({
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 0 ? {
+      ...combatant, magicalAttack: 10, magicalNoA: 1, abilities: [{ id: 'magic_seal', level: 1 }],
+    } : {
+      ...combatant, magicalAttack: 10, magicalNoA: 1, abilities: [{ id: 'magic_seal', level: 1 }],
+    }),
+    randomValues: [0, 0, 0, 0, 0, 0],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'nullified' && event.abilityId === 'magic_seal')
+      .map((event) => [event.actorId, event.targetId]),
+    [[1, 900], [900, 1]],
+  );
+  assert.equal(output.randomConsumed, 6);
+});
+
+test('advanced COMBAT owns Illusion consumption, reflected lethality, and immediate terrain flavor draws', () => {
+  const illusionInput = combatNormalInput({
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, rangedAttack: 10, rangedNoA: 1 }
+      : { ...combatant, abilities: [{ id: 'illusion', level: 1 }] }),
+    randomValues: [0, 0, 0, 0, 0.9],
+  });
+  const illusion = executeBattleProtocol(encodeBattleProtocolInput(illusionInput));
+  assert.equal(illusion.protocolError, 0);
+  assert.equal(illusion.randomConsumed, 4, 'Illusion prevents the hit draw and leaves its tape suffix untouched');
+  assert.ok(illusion.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'illusion'));
+
+  const reflected = executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
+    partyHp: 1,
+    partyMaxHp: 100,
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, rangedAttack: 20, rangedNoA: 1 }
+      : { ...combatant, abilities: [{ id: 'ranged_reflect', level: 5 }] }),
+    randomValues: [0, 0, 0, 0, 0, 0.75],
+  })));
+  assert.equal(reflected.outcome, 'defeat');
+  assert.equal(reflected.partyHp, 0);
+  assert.ok(reflected.events.some((event) => event.opcode === 'reflected' && event.value0 === 1));
+  assert.equal(reflected.randomConsumed, 5);
+
+  const terrain = executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
+    terrainEffect: 'terrain.vine-snare',
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, rangedAttack: 2, rangedNoA: 1 } : combatant),
+    randomValues: [0, 0, 0, 0, 0, 0.6],
+  })));
+  assert.equal(terrain.protocolError, 0);
+  assert.equal(terrain.partyHp, 99);
+  assert.equal(terrain.randomConsumed, 6);
+  assert.equal(terrain.events.find((event) => event.opcode === 'random_flavor')?.aux0, 6);
+});
+
+test('advanced COMBAT resets native state and uses one measured Wasm invocation', () => {
+  beginBattleKernelMeasurement();
+  const first = executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput()));
+  const measurement = endBattleKernelMeasurement();
+  assert.equal(first.protocolError, 0);
+  assert.equal(measurement.calls, 1);
+  const second = executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({ partyHp: 71, partyMaxHp: 71, enemyHp: 83, enemyMaxHp: 83 })));
+  assert.equal(second.partyHp, 71);
+  assert.equal(second.enemyHp, 83);
+  assert.equal(second.randomConsumed, 0);
+});
 
 test('base COMBAT rejects unsupported features and mutually exclusive flags before drawing', () => {
   for (const input of [

@@ -78,6 +78,7 @@ struct CombatantState {
   bool incapacitated = false;
   bool consumed = false;
   bool one_shot_consumed = false;
+  bool illusion_consumed = false;
   TemporaryModifiers temporary{};
   unsigned int counters = 0;
   bool sealed = false;
@@ -140,6 +141,12 @@ struct BattleStateCore {
   unsigned int random_count = 0;
   SemanticEvent events[kMaxSemanticEvents]{};
   unsigned int event_count = 0;
+  unsigned int magic_seal_owners[kMaxCombatants]{};
+  unsigned int magic_seal_count = 0;
+  unsigned int magic_seal_cursor = 0;
+  unsigned int echo_elemental_use[4]{};
+  bool sacred_judgement_consumed = false;
+  bool party_illusion_consumed = false;
 };
 
 void reset(BattleStateCore& state);

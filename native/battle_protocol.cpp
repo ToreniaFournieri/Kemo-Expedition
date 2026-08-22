@@ -194,6 +194,84 @@ bool combatant_numbers_are_valid(const CombatantRecord& value) {
 constexpr u32 kInputFlagFertilityInitiative = 1u << 0;
 constexpr u32 kInputFlagAbilitiesPrepared = 1u << 1;
 
+enum class AbilityOwnership : u8 { Unclassified, StartSetup, NormalAction, TimedTrigger, ReactiveChain, DefeatRecovery, InertMetadata };
+
+AbilityOwnership ability_ownership(protocol::AbilityId id) {
+  switch (id) {
+    case protocol::AbilityId::FirstStrike: case protocol::AbilityId::Oblivion:
+    case protocol::AbilityId::FadingMemory: case protocol::AbilityId::Mimic:
+    case protocol::AbilityId::Frostbite: case protocol::AbilityId::Slow:
+    case protocol::AbilityId::Boost: case protocol::AbilityId::EquationBreaker:
+    case protocol::AbilityId::DomainBreaker: case protocol::AbilityId::WindRider:
+    case protocol::AbilityId::Coldproof: case protocol::AbilityId::Defiance:
+    case protocol::AbilityId::Unforgettable:
+      return AbilityOwnership::StartSetup;
+    case protocol::AbilityId::Defender: case protocol::AbilityId::Iaigiri:
+    case protocol::AbilityId::HeavyStrike: case protocol::AbilityId::Command:
+    case protocol::AbilityId::Resonance: case protocol::AbilityId::MBarrier:
+    case protocol::AbilityId::Deflection: case protocol::AbilityId::TrueSight:
+    case protocol::AbilityId::OutputStabilizer: case protocol::AbilityId::Rage:
+    case protocol::AbilityId::Momentum: case protocol::AbilityId::Bulwark:
+    case protocol::AbilityId::ArcaneStability: case protocol::AbilityId::ArcMagic:
+    case protocol::AbilityId::GravityWell: case protocol::AbilityId::ArmorBreak:
+    case protocol::AbilityId::ManaBreak: case protocol::AbilityId::Focus:
+    case protocol::AbilityId::Stealth: case protocol::AbilityId::Illusion:
+    case protocol::AbilityId::IceAbsorb: case protocol::AbilityId::FireAbsorb:
+    case protocol::AbilityId::ThunderAbsorb: case protocol::AbilityId::MagicalAbsorb:
+    case protocol::AbilityId::IceNull: case protocol::AbilityId::FireNull:
+    case protocol::AbilityId::ThunderNull: case protocol::AbilityId::MagicalNull:
+    case protocol::AbilityId::RangedNull: case protocol::AbilityId::MeleeNull:
+    case protocol::AbilityId::IceReflect: case protocol::AbilityId::FireReflect:
+    case protocol::AbilityId::ThunderReflect: case protocol::AbilityId::MagicalReflect:
+    case protocol::AbilityId::RangedReflect: case protocol::AbilityId::MeleeReflect:
+    case protocol::AbilityId::MutualMagicAmplify: case protocol::AbilityId::MutualMagicRestraint:
+    case protocol::AbilityId::MutualPhysicalAmplify: case protocol::AbilityId::MutualPhysicalRestraint:
+    case protocol::AbilityId::MagicSeal: case protocol::AbilityId::NoOffense:
+    case protocol::AbilityId::Swarm: case protocol::AbilityId::Ambush:
+    case protocol::AbilityId::Overwatch: case protocol::AbilityId::Execution:
+    case protocol::AbilityId::AntiAmbush: case protocol::AbilityId::AntiOverwatch:
+    case protocol::AbilityId::RageBreaker: case protocol::AbilityId::MomentumBreaker:
+    case protocol::AbilityId::ExecutionNull: case protocol::AbilityId::NullAntagonism:
+    case protocol::AbilityId::Siege: case protocol::AbilityId::Dryproof:
+    case protocol::AbilityId::VineCutter: case protocol::AbilityId::ManaWard:
+    case protocol::AbilityId::FireProtectBreaker: case protocol::AbilityId::IceProtectBreaker:
+    case protocol::AbilityId::ThunderProtectBreaker: case protocol::AbilityId::MBarrierBreaker:
+    case protocol::AbilityId::IllusionBreaker: case protocol::AbilityId::BulwarkBreaker:
+      return AbilityOwnership::NormalAction;
+    case protocol::AbilityId::Howl: case protocol::AbilityId::RangedConfusion:
+    case protocol::AbilityId::MagicConfusion: case protocol::AbilityId::MeleeConfusion:
+    case protocol::AbilityId::UnstableCore: case protocol::AbilityId::SoulReap:
+    case protocol::AbilityId::Regeneration: case protocol::AbilityId::PredatorSense:
+    case protocol::AbilityId::Decompose: case protocol::AbilityId::SelfDestruct:
+    case protocol::AbilityId::Free: case protocol::AbilityId::FirstAid:
+    case protocol::AbilityId::Flying: case protocol::AbilityId::Pursuit:
+      return AbilityOwnership::TimedTrigger;
+    case protocol::AbilityId::Counter: case protocol::AbilityId::ReAttack:
+    case protocol::AbilityId::NullCounter: case protocol::AbilityId::ReCounter:
+    case protocol::AbilityId::CoveringFire: case protocol::AbilityId::MagicalCounter:
+    case protocol::AbilityId::Requiem: case protocol::AbilityId::NullRequiem:
+    case protocol::AbilityId::Shock: case protocol::AbilityId::NullShock:
+    case protocol::AbilityId::Corrode: case protocol::AbilityId::NullCorrode:
+    case protocol::AbilityId::LifeDrain: case protocol::AbilityId::NullLifeDrain:
+    case protocol::AbilityId::DeathTouch: case protocol::AbilityId::NullDeathTouch:
+    case protocol::AbilityId::Burn: case protocol::AbilityId::NullBurn:
+    case protocol::AbilityId::Bind: case protocol::AbilityId::NullBind:
+      return AbilityOwnership::ReactiveChain;
+    case protocol::AbilityId::Resurrect: case protocol::AbilityId::Reanimate:
+      return AbilityOwnership::DefeatRecovery;
+    case protocol::AbilityId::Squander: case protocol::AbilityId::Hunter:
+    case protocol::AbilityId::Tithe: case protocol::AbilityId::Seeker:
+    case protocol::AbilityId::Cunning: case protocol::AbilityId::Cyborgization:
+    case protocol::AbilityId::Peddler: case protocol::AbilityId::Composure:
+    case protocol::AbilityId::MeleeConversion: case protocol::AbilityId::Prophecy:
+    case protocol::AbilityId::BaseStatusCapAt15: case protocol::AbilityId::Auriferous:
+    case protocol::AbilityId::Colossal: case protocol::AbilityId::UpgradeAllAbilities:
+    case protocol::AbilityId::Unlock:
+      return AbilityOwnership::InertMetadata;
+    default: return AbilityOwnership::Unclassified;
+  }
+}
+
 bool is_terrain_timed_or_reactive(protocol::AbilityId id) {
   switch (id) {
     case protocol::AbilityId::Resonance:
@@ -414,6 +492,7 @@ extern "C" double battle_calculate_per_hit_damage(
     double, double, double, double, double, double, double, double,
     double, double, double, double, double, double, double);
 extern "C" double battle_hit_chance(double, double, double, int, int, int, int, int, int);
+extern "C" double battle_apply_domain_damage_override(double, int, double, int);
 
 int active_ability_level(const CombatantState& combatant, protocol::AbilityId id) {
   for (int index = 0; index < combatant.ability_count; ++index) {
@@ -837,10 +916,18 @@ StartResult resolve_start_checkpoint(const InputHeader& input, BattleStateCore& 
     if (!state_abilities_suppressed(input, owner) && active_ability_level(owner, protocol::AbilityId::MagicSeal) > 0 &&
         !emit(protocol::EventOpcode::AbilityActivated, owner.id, 0, static_cast<u32>(protocol::AbilityId::MagicSeal), 3,
             0, active_ability_level(owner, protocol::AbilityId::MagicSeal), 0, 15)) return StartResult::EventCapacity;
+    if (!state_abilities_suppressed(input, owner) && active_ability_level(owner, protocol::AbilityId::MagicSeal) > 0) {
+      if (state.magic_seal_count >= bokemo::battle_state::kMaxCombatants) return StartResult::AbilityCapacity;
+      state.magic_seal_owners[state.magic_seal_count++] = owner.id;
+    }
   }
   if (enemy && !state_abilities_suppressed(input, *enemy) && active_ability_level(*enemy, protocol::AbilityId::MagicSeal) > 0 &&
       !emit(protocol::EventOpcode::AbilityActivated, enemy->id, 0, static_cast<u32>(protocol::AbilityId::MagicSeal), 3,
           0, active_ability_level(*enemy, protocol::AbilityId::MagicSeal), 0, 15)) return StartResult::EventCapacity;
+  if (enemy && !state_abilities_suppressed(input, *enemy) && active_ability_level(*enemy, protocol::AbilityId::MagicSeal) > 0) {
+    if (state.magic_seal_count >= bokemo::battle_state::kMaxCombatants) return StartResult::AbilityCapacity;
+    state.magic_seal_owners[state.magic_seal_count++] = enemy->id;
+  }
   for (u32 index = 0; index < party_count; ++index) {
     auto& owner = *parties[index];
     if (!state_abilities_suppressed(input, owner) && active_ability_level(owner, protocol::AbilityId::Frostbite) > 0) {
@@ -908,6 +995,53 @@ bool base_combat_domain_is_supported(
   };
   return bag_is_valid(physical_bag, input.physical_bag_count) &&
       bag_is_valid(magical_bag, input.magical_bag_count);
+}
+
+bool normal_combat_domain_is_supported(
+    const InputHeader& input, const CombatantRecord* combatants, const AbilityRecord* abilities,
+    const BagRecord* physical_bag, const BagRecord* magical_bag) {
+  const u32 known_flags = protocol::kEngineFlagStartCheckpoint |
+      protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint;
+  if ((input.engine_flags & ~known_flags) != 0 ||
+      (input.engine_flags & protocol::kEngineFlagCombatNormalCheckpoint) == 0 ||
+      (input.engine_flags & (protocol::kEngineFlagStartCheckpoint | protocol::kEngineFlagCombatBaseCheckpoint)) != 0 ||
+      (input.flags & ~(kInputFlagFertilityInitiative | kInputFlagAbilitiesPrepared)) != 0) return false;
+  u32 enemy_count = 0;
+  u32 party_count = 0;
+  bool party_rows[bokemo::battle_state::kMaxCombatants]{};
+  for (u32 index = 0; index < input.combatant_count; ++index) {
+    const auto& combatant = combatants[index];
+    if ((combatant.flags & ~1u) != 0) return false;
+    if (combatant.kind == 2) ++enemy_count;
+    else {
+      ++party_count;
+      if (combatant.row == 0 || combatant.row >= bokemo::battle_state::kMaxCombatants || party_rows[combatant.row]) return false;
+      party_rows[combatant.row] = true;
+    }
+    const double noas[] = {combatant.ranged_noa, combatant.magical_noa, combatant.melee_noa,
+        combatant.original_ranged_noa, combatant.original_magical_noa, combatant.original_melee_noa};
+    const double attacks[] = {combatant.ranged_attack, combatant.magical_attack, combatant.melee_attack};
+    for (double noa : noas) if (noa < 0.0) return false;
+    for (double attack : attacks) if (attack < 0.0) return false;
+  }
+  if (enemy_count != 1 || party_count == 0 || party_count > 7) return false;
+  for (u32 index = 0; index < input.ability_count; ++index) {
+    const auto ownership = ability_ownership(static_cast<protocol::AbilityId>(abilities[index].id));
+    if (ownership == AbilityOwnership::Unclassified || ownership == AbilityOwnership::TimedTrigger ||
+        ownership == AbilityOwnership::ReactiveChain || ownership == AbilityOwnership::DefeatRecovery) return false;
+  }
+  auto bag_is_valid = [&](const BagRecord* bag, u32 count) {
+    if (count == 0) return false;
+    u64 total = 0;
+    for (u32 index = 0; index < count; ++index) {
+      if (bag[index].id <= 0 || bag[index].id >= bokemo::battle_state::kMaxCombatants ||
+          !party_rows[bag[index].id] || bag[index].tickets == 0) return false;
+      for (u32 previous = 0; previous < index; ++previous) if (bag[previous].id == bag[index].id) return false;
+      total += bag[index].tickets;
+    }
+    return total > 0 && total <= 0xffff'ffffull;
+  };
+  return bag_is_valid(physical_bag, input.physical_bag_count) && bag_is_valid(magical_bag, input.magical_bag_count);
 }
 
 enum class CombatResult { Ok, TapeExhausted, EventCapacity };
@@ -1075,6 +1209,510 @@ CombatResult resolve_base_combat(BattleStateCore& state) {
         state.events[state.event_count - 1].attempts = attempts;
         state.events[state.event_count - 1].hits = applied_hits;
       }
+    }
+  }
+  if (!emit_state_event(state, protocol::EventOpcode::PhaseEnded, kCombatPhase, 0, 0, 0, 0, 0)) return CombatResult::EventCapacity;
+  return CombatResult::Ok;
+}
+
+double level_multiplier(int level, const double (&values)[5]) {
+  return level <= 0 ? 1.0 : values[level >= 5 ? 4 : level - 1];
+}
+
+double terrain_noa_multiplier(const InputHeader& input, const CombatantState& actor, u32 profile_index) {
+  if (active_ability_level(actor, protocol::AbilityId::OutputStabilizer) > 0) return 1.0;
+  const auto terrain = static_cast<protocol::TerrainId>(input.terrain_id);
+  if (profile_index == 2 && terrain == protocol::TerrainId::RoughWaves) return 0.75;
+  if (profile_index == 0 && terrain == protocol::TerrainId::HeavyWind) {
+    return active_ability_level(actor, protocol::AbilityId::WindRider) > 0 ? 0.5 : 0.75;
+  }
+  if (profile_index == 0 && terrain == protocol::TerrainId::Burrow) return 0.5;
+  if (terrain == protocol::TerrainId::LowGravity) return 1.3;
+  if (terrain == protocol::TerrainId::Gravity) return 0.7;
+  if ((profile_index == 1 || profile_index == 2) && terrain == protocol::TerrainId::LimestoneCave) return 1.5;
+  return 1.0;
+}
+
+bool domain_guarantees_hit(const InputHeader& input, const CombatantState& actor,
+                           const CombatantState& target, u32 profile_index) {
+  if (active_ability_level(actor, protocol::AbilityId::DomainBreaker) > 0 ||
+      active_ability_level(target, protocol::AbilityId::DomainBreaker) > 0) return false;
+  const auto terrain = static_cast<protocol::TerrainId>(input.terrain_id);
+  return (profile_index == 0 && terrain == protocol::TerrainId::SniperDomain) ||
+      (profile_index == 1 && terrain == protocol::TerrainId::SpellDomain) ||
+      (profile_index == 2 && terrain == protocol::TerrainId::DuelistDomain);
+}
+
+double mutual_multiplier(const CombatantState& actor, const CombatantState& target, bool magical) {
+  constexpr double amplify[5] = {1.3, 1.5, 1.6, 1.65, 1.68};
+  constexpr double restrain[5] = {0.77, 0.67, 0.63, 0.61, 0.59};
+  const auto amp_id = magical ? protocol::AbilityId::MutualMagicAmplify : protocol::AbilityId::MutualPhysicalAmplify;
+  const auto restraint_id = magical ? protocol::AbilityId::MutualMagicRestraint : protocol::AbilityId::MutualPhysicalRestraint;
+  const int amp = active_ability_level(actor, amp_id) > active_ability_level(target, amp_id)
+      ? active_ability_level(actor, amp_id) : active_ability_level(target, amp_id);
+  if (amp > 0) return level_multiplier(amp, amplify);
+  const int restraint = active_ability_level(actor, restraint_id) > active_ability_level(target, restraint_id)
+      ? active_ability_level(actor, restraint_id) : active_ability_level(target, restraint_id);
+  return restraint > 0 ? level_multiplier(restraint, restrain) : 1.0;
+}
+
+double hp_ratio(double hp, double max_hp) {
+  if (max_hp <= 0.0) return 1.0;
+  const double ratio = hp / max_hp;
+  return ratio < 0.0 ? 0.0 : ratio > 1.0 ? 1.0 : ratio;
+}
+
+double party_row_multiplier(const BattleStateCore& state, const CombatantState& target,
+                            protocol::AbilityId ability_id) {
+  int best = 0;
+  for (int index = 0; index < state.combatant_count; ++index) {
+    const auto& candidate = state.combatants[index];
+    if (candidate.side != Side::Party || candidate.row >= target.row) continue;
+    const int level = active_ability_level(candidate, ability_id);
+    if (level > best) best = level;
+  }
+  if (ability_id == protocol::AbilityId::Command) return best >= 3 ? 1.6 : best == 2 ? 1.5 : best == 1 ? 1.4 : 1.0;
+  return best >= 3 ? 0.5 : best == 2 ? 0.6 : best == 1 ? 2.0 / 3.0 : 1.0;
+}
+
+double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
+                               const CombatantState& actor, const CombatantState& target,
+                               u32 profile_index, bool friendly_fire) {
+  const bool magical = profile_index == 1;
+  const u32 family = magical ? 1 : 0;
+  double defense = magical ? target.profile.magical_defense : target.profile.physical_defense;
+  const double debuff = magical ? target.temporary.magical_defense_debuff : target.temporary.physical_defense_debuff;
+  double penetration = actor.side == Side::Party ? actor.profile.penetration[family] : 0.0;
+  const int heavy = active_ability_level(actor, protocol::AbilityId::HeavyStrike);
+  if (heavy > 0) {
+    const double original = profile_index == 0 ? actor.attacks.original_ranged_noa
+        : profile_index == 1 ? actor.attacks.original_magical_noa : actor.attacks.original_melee_noa;
+    const double current = action_noa(actor, profile_index);
+    penetration += (original > current ? original - current : 0.0) * (heavy >= 2 ? 0.015 : 0.01);
+  }
+  const double effective_defense = actor.side == Side::Party ? defense * (1.0 - penetration) : defense;
+  double offense = actor.side == Side::Party
+      ? ((1.0 + actor.profile.attack_bonus[profile_index] + actor.profile.phase_bonus[1]) *
+          actor.profile.offense_amplifier[family] + actor.profile.deity_bonus[0])
+      : actor.profile.enemy_attack_amplifier[profile_index];
+  const int iaigiri = active_ability_level(actor, protocol::AbilityId::Iaigiri);
+  if (!magical && iaigiri > 0) offense *= iaigiri >= 3 ? 2.0 : iaigiri == 2 ? 1.8 : 1.6;
+  if (heavy > 0) offense *= 1.4;
+  if (magical) {
+    const int arc = active_ability_level(actor, protocol::AbilityId::ArcMagic);
+    if (arc > 0) offense *= arc >= 3 ? 4.2 : arc == 2 ? 3.6 : 3.0;
+  }
+  double defense_amp = target.profile.defense_amplifier[family];
+  if (target.side == Side::Party) defense_amp *= target.profile.deity_bonus[magical ? 2 : 1];
+  if (defense_amp < 0.01) defense_amp = 0.01;
+  double party_ability = 1.0;
+  if (actor.side == Side::Party && !friendly_fire && !magical) party_ability = party_row_multiplier(state, actor, protocol::AbilityId::Command);
+  if (target.side == Side::Party) {
+    if (magical && active_ability_level(actor, protocol::AbilityId::MBarrierBreaker) == 0)
+      party_ability *= party_row_multiplier(state, target, protocol::AbilityId::MBarrier);
+    else if (!magical) party_ability *= party_row_multiplier(state, target, protocol::AbilityId::Defender);
+  }
+  const double actor_hp = actor.side == Side::Party ? state.party_hp : state.enemy_hp;
+  const double actor_max = actor.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+  const double target_hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+  const double target_max = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+  double rage = 1.0;
+  const int rage_level = active_ability_level(actor, protocol::AbilityId::Rage);
+  if (rage_level > 0 && active_ability_level(target, protocol::AbilityId::RageBreaker) == 0)
+    rage = 1.0 + (rage_level >= 2 ? 0.6 : 0.5) * (1.0 - hp_ratio(actor_hp, actor_max));
+  double momentum = 1.0;
+  const int momentum_level = active_ability_level(actor, protocol::AbilityId::Momentum);
+  if (momentum_level > 0 && active_ability_level(target, protocol::AbilityId::MomentumBreaker) == 0)
+    momentum = 1.25 - (1.0 - hp_ratio(actor_hp, actor_max)) * (momentum_level >= 2 ? 0.4 : 0.5);
+  double swarm = 1.0;
+  if (active_ability_level(actor, protocol::AbilityId::Swarm) > 0) swarm *= 1.0 - (1.0 - hp_ratio(actor_hp, actor_max)) * 0.5;
+  if (active_ability_level(target, protocol::AbilityId::Swarm) > 0) swarm *= 1.0 + (1.0 - hp_ratio(target_hp, target_max)) * 0.5;
+  double terrain = 1.0;
+  const auto terrain_id = static_cast<protocol::TerrainId>(input.terrain_id);
+  if (!magical && (terrain_id == protocol::TerrainId::Exposure)) terrain = 1.3;
+  if (!magical && terrain_id == protocol::TerrainId::DarkField) terrain = 1.45;
+  if (terrain_id == protocol::TerrainId::Frenzy) terrain = 1.25;
+  if (magical && terrain_id == protocol::TerrainId::LightField) terrain = 1.45;
+  if (magical && terrain_id == protocol::TerrainId::Sanctuary) terrain = 0.67;
+  if (target.side == Side::Enemy && terrain_id == protocol::TerrainId::Fortified && active_ability_level(actor, protocol::AbilityId::Siege) == 0) terrain = 0.75;
+  double elemental_attribute = 1.0;
+  if (terrain_id == protocol::TerrainId::Thunderstorm && actor.profile.elemental_offense == 2) elemental_attribute = 1.5;
+  else if (terrain_id == protocol::TerrainId::Dry && actor.profile.elemental_offense == 3 && active_ability_level(actor, protocol::AbilityId::Dryproof) == 0) elemental_attribute = 0.5;
+  else if (terrain_id == protocol::TerrainId::EchoDomain && actor.profile.elemental_offense != 0 && active_ability_level(actor, protocol::AbilityId::DomainBreaker) == 0) {
+    const u32 count = state.echo_elemental_use[actor.profile.elemental_offense];
+    elemental_attribute = 1.0 + 0.1 * (count > 1 ? count - 1 : 0);
+  }
+  double runtime = 1.0;
+  constexpr double action_amplify[5] = {1.3, 1.5, 1.6, 1.65, 1.68};
+  const bool opponent_acted = target.acted;
+  const int ambush = active_ability_level(actor, protocol::AbilityId::Ambush);
+  if (!opponent_acted && ambush > 0 && active_ability_level(target, protocol::AbilityId::AntiAmbush) == 0) runtime *= level_multiplier(ambush, action_amplify);
+  bool ally_acted = false;
+  for (int index = 0; index < state.combatant_count; ++index) {
+    const auto& ally = state.combatants[index];
+    if (ally.side == actor.side && ally.id != actor.id && ally.acted) ally_acted = true;
+  }
+  const int overwatch = active_ability_level(actor, protocol::AbilityId::Overwatch);
+  if (!opponent_acted && !ally_acted && overwatch > 0 && active_ability_level(target, protocol::AbilityId::AntiOverwatch) == 0) runtime *= level_multiplier(overwatch, action_amplify);
+  const int execution = active_ability_level(actor, protocol::AbilityId::Execution);
+  if (execution > 0 && active_ability_level(target, protocol::AbilityId::ExecutionNull) == 0 && target_max > 0.0 &&
+      target_hp <= target_max * (execution >= 2 ? 0.5 : 0.4)) runtime *= execution >= 2 ? 1.8 : 1.5;
+  double per_hit = battle_calculate_per_hit_damage(
+      attack_value(actor, profile_index), effective_defense, offense, runtime,
+      actor.profile.elemental_offense_value, elemental_resistance(target, actor.profile.elemental_offense),
+      defense_amp, party_ability, rage, momentum, mutual_multiplier(actor, target, magical), terrain,
+      elemental_attribute, swarm, debuff);
+  const bool domain_broken = active_ability_level(actor, protocol::AbilityId::DomainBreaker) > 0 ||
+      active_ability_level(target, protocol::AbilityId::DomainBreaker) > 0;
+  const int domain_mode = terrain_id == protocol::TerrainId::FloorDomain ? 1 : terrain_id == protocol::TerrainId::CapDomain ? 2 : 0;
+  return battle_apply_domain_damage_override(per_hit, domain_mode, target_max, domain_broken ? 1 : 0);
+}
+
+CombatantState* row_target(BattleStateCore& state, u32 row, u32 profile_index,
+                           const CombatantState& actor, bool antagonism, bool& fallback_draw) {
+  CombatantState* candidates[7]{};
+  u32 count = 0;
+  for (int index = 0; index < state.combatant_count; ++index) {
+    auto& candidate = state.combatants[index];
+    if (candidate.side != Side::Party || (antagonism && candidate.id == actor.id)) continue;
+    candidates[count++] = &candidate;
+  }
+  CombatantState* selected = nullptr;
+  for (u32 index = 0; index < count; ++index) if (candidates[index]->row == row) { selected = candidates[index]; break; }
+  if (!selected && antagonism && count > 0) {
+    u32 index = 0;
+    if (!draw_index(state, count, index)) return nullptr;
+    fallback_draw = true;
+    selected = candidates[index];
+  }
+  if (!selected || profile_index == 1 || active_ability_level(actor, protocol::AbilityId::BulwarkBreaker) > 0) return selected;
+  const u32 front = selected->row - 1;
+  for (u32 index = 0; index < count; ++index) {
+    if (candidates[index]->row != front) continue;
+    const int bulwark = active_ability_level(*candidates[index], protocol::AbilityId::Bulwark);
+    if (bulwark > 0 && (profile_index == 0 || bulwark >= 2)) return candidates[index];
+  }
+  return selected;
+}
+
+struct Reaction { int kind = 0; protocol::AbilityId ability = protocol::AbilityId::None; double amplifier = 0.0; };
+
+Reaction defensive_reaction(const CombatantState& actor, const CombatantState& target, u32 profile_index) {
+  const u8 element = actor.profile.elemental_offense;
+  const bool elemental_broken = (element == 1 && active_ability_level(actor, protocol::AbilityId::FireProtectBreaker) > 0) ||
+      (element == 2 && active_ability_level(actor, protocol::AbilityId::ThunderProtectBreaker) > 0) ||
+      (element == 3 && active_ability_level(actor, protocol::AbilityId::IceProtectBreaker) > 0);
+  const bool magic_broken = profile_index == 1 && active_ability_level(actor, protocol::AbilityId::MBarrierBreaker) > 0;
+  auto amp = [](int level, bool reflect) { return reflect
+      ? (level >= 5 ? 0.5 : level == 4 ? 0.35 : level == 3 ? 0.2 : level == 2 ? 0.1 : 0.05)
+      : (level >= 5 ? 1.0 : level == 4 ? 0.7 : level == 3 ? 0.5 : level == 2 ? 0.3 : 0.1); };
+  protocol::AbilityId absorb = element == 3 ? protocol::AbilityId::IceAbsorb : element == 1 ? protocol::AbilityId::FireAbsorb : element == 2 ? protocol::AbilityId::ThunderAbsorb : protocol::AbilityId::None;
+  int level = absorb == protocol::AbilityId::None ? 0 : active_ability_level(target, absorb);
+  if (!elemental_broken && level > 0) return {1, absorb, amp(level, false)};
+  level = profile_index == 1 && !magic_broken ? active_ability_level(target, protocol::AbilityId::MagicalAbsorb) : 0;
+  if (level > 0) return {1, protocol::AbilityId::MagicalAbsorb, amp(level, false)};
+  protocol::AbilityId null_id = element == 3 ? protocol::AbilityId::IceNull : element == 1 ? protocol::AbilityId::FireNull : element == 2 ? protocol::AbilityId::ThunderNull
+      : profile_index == 0 ? protocol::AbilityId::RangedNull : profile_index == 1 ? protocol::AbilityId::MagicalNull : protocol::AbilityId::MeleeNull;
+  if (active_ability_level(target, null_id) > 0) return {2, null_id, 0.0};
+  protocol::AbilityId reflect = element == 3 ? protocol::AbilityId::IceReflect : element == 1 ? protocol::AbilityId::FireReflect : element == 2 ? protocol::AbilityId::ThunderReflect : protocol::AbilityId::None;
+  level = reflect == protocol::AbilityId::None ? 0 : active_ability_level(target, reflect);
+  if (!elemental_broken && level > 0) return {3, reflect, amp(level, true)};
+  reflect = profile_index == 0 ? protocol::AbilityId::RangedReflect : profile_index == 1 ? protocol::AbilityId::MagicalReflect : protocol::AbilityId::MeleeReflect;
+  level = active_ability_level(target, reflect);
+  if ((!magic_broken || profile_index != 1) && level > 0) return {3, reflect, amp(level, true)};
+  return {};
+}
+
+CombatResult emit_immediate_terrain(const InputHeader& input, BattleStateCore& state,
+                                    CombatantState& actor, u32 profile_index, int timing,
+                                    double calculated_damage, CombatantState* original_target) {
+  const auto terrain = static_cast<protocol::TerrainId>(input.terrain_id);
+  double current = actor.side == Side::Party ? state.party_hp : state.enemy_hp;
+  const double maximum = actor.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+  double damage = 0.0;
+  bool triggered = false;
+  if (terrain == protocol::TerrainId::VineSnare && active_ability_level(actor, protocol::AbilityId::VineCutter) == 0) { damage = __builtin_floor(current * 0.01); triggered = true; }
+  else if (terrain == protocol::TerrainId::CrystalZone && profile_index == 1 && active_ability_level(actor, protocol::AbilityId::ManaWard) == 0) { damage = __builtin_floor(calculated_damage * 0.05); triggered = true; }
+  else if (terrain == protocol::TerrainId::Conduction && actor.profile.elemental_offense == 2) { damage = __builtin_floor(calculated_damage * 0.05); triggered = true; }
+  else if (terrain == protocol::TerrainId::ManaBurn && profile_index == 1 && active_ability_level(actor, protocol::AbilityId::ManaWard) == 0) { damage = __builtin_floor(maximum * 0.02); triggered = true; }
+  else if (terrain == protocol::TerrainId::SacredJudgement && state.scheduler.first_actor_id == actor.id && !state.sacred_judgement_consumed) { damage = __builtin_floor(current * 0.05); triggered = true; state.sacred_judgement_consumed = true; }
+  if (triggered && damage > 0.0) {
+    const double applied = damage > current ? current : damage;
+    if (actor.side == Side::Party) state.party_hp -= applied; else state.enemy_hp -= applied;
+    actor.hp = actor.side == Side::Party ? state.party_hp : state.enemy_hp;
+    u32 flavor = 0;
+    if (!draw_index(state, 10, flavor)) return CombatResult::TapeExhausted;
+    if (!emit_state_event(state, protocol::EventOpcode::TerrainEffect, 2, actor.id, actor.id, 0, profile_index + 1, timing,
+        8, applied, damage, 0.0, static_cast<u32>(input.terrain_id))) return CombatResult::EventCapacity;
+    if (!emit_state_event(state, protocol::EventOpcode::RandomFlavor, 2, actor.id, actor.id, 0, profile_index + 1, timing,
+        8, flavor, 0.0, 0.0, flavor, static_cast<u32>(input.terrain_id))) return CombatResult::EventCapacity;
+    if (!emit_state_event(state, protocol::EventOpcode::Damage, 2, actor.id, actor.id, 0, profile_index + 1, timing,
+        8, applied, damage, 0.0, static_cast<u32>(input.terrain_id))) return CombatResult::EventCapacity;
+  }
+  if (terrain == protocol::TerrainId::ChainLightning && actor.profile.elemental_offense == 2 && calculated_damage > 0.0) {
+    CombatantState* target = original_target;
+    if (actor.side == Side::Enemy) {
+      CombatantState* candidates[7]{}; u32 count = 0;
+      for (int index = 0; index < state.combatant_count; ++index) {
+        auto& candidate = state.combatants[index];
+        if (candidate.side == Side::Party && (!original_target || candidate.id != original_target->id)) candidates[count++] = &candidate;
+      }
+      if (count == 0) for (int index = 0; index < state.combatant_count; ++index) if (state.combatants[index].side == Side::Party) candidates[count++] = &state.combatants[index];
+      u32 selected = 0;
+      if (!draw_index(state, count, selected)) return CombatResult::TapeExhausted;
+      target = count > 0 ? candidates[selected] : nullptr;
+    } else {
+      for (int index = 0; index < state.combatant_count; ++index) if (state.combatants[index].side == Side::Enemy) target = &state.combatants[index];
+    }
+    if (target) {
+      if (!emit_state_event(state, protocol::EventOpcode::TargetSelected, 2, actor.id, target->id, 0, profile_index + 1, timing,
+          8, 0.0, 0.0, 0.0, static_cast<u32>(input.terrain_id))) return CombatResult::EventCapacity;
+      const double chain = __builtin_floor(calculated_damage * 0.30);
+      double& hp = target->side == Side::Party ? state.party_hp : state.enemy_hp;
+      const double applied = chain > hp ? hp : chain;
+      hp -= applied; target->hp = hp;
+      u32 flavor = 0;
+      if (!draw_index(state, 10, flavor)) return CombatResult::TapeExhausted;
+      if (!emit_state_event(state, protocol::EventOpcode::RandomFlavor, 2, actor.id, target->id, 0, profile_index + 1, timing,
+          8, flavor, 0.0, 0.0, flavor, static_cast<u32>(input.terrain_id)) ||
+          !emit_state_event(state, protocol::EventOpcode::Damage, 2, actor.id, target->id, 0, profile_index + 1, timing,
+          8, applied, chain, 0.0, static_cast<u32>(input.terrain_id))) return CombatResult::EventCapacity;
+    }
+  }
+  return CombatResult::Ok;
+}
+
+CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& state) {
+  constexpr u32 kCombatPhase = 2;
+  constexpr u32 kNormalAction = 1;
+  constexpr u32 kPrevented = 1;
+  constexpr u32 kBroken = 64;
+  if (!emit_state_event(state, protocol::EventOpcode::PhaseStarted, kCombatPhase, 0, 0, 0, 0, 49)) return CombatResult::EventCapacity;
+  CombatantState* enemy = nullptr;
+  for (int index = 0; index < state.combatant_count; ++index) if (state.combatants[index].side == Side::Enemy) enemy = &state.combatants[index];
+  if (!enemy) return CombatResult::TapeExhausted;
+  for (int timing = 49; timing >= 0 && state.party_hp > 0.0 && state.enemy_hp > 0.0; --timing) {
+    state.scheduler.next_timing = timing;
+    for (u32 action_index = 0; action_index < state.action_count && state.party_hp > 0.0 && state.enemy_hp > 0.0; ++action_index) {
+      auto& action = state.actions[action_index];
+      if (action.acted || action.timing != timing) continue;
+      action.acted = true;
+      CombatantState* actor = bokemo::battle_state::find(state, action.actor_id);
+      if (!actor) return CombatResult::TapeExhausted;
+      if (state.scheduler.first_actor_id == 0) state.scheduler.first_actor_id = actor->id;
+      const u32 profile_index = action.attack_type - 1;
+      if (active_ability_level(*actor, protocol::AbilityId::NoOffense) > 0) {
+        actor->acted = true;
+        if (!emit_state_event(state, protocol::EventOpcode::ActionSkipped, kCombatPhase, actor->id, 0,
+            static_cast<u32>(protocol::AbilityId::NoOffense), action.attack_type, timing, kPrevented, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
+        continue;
+      }
+      const double raw_attempts = __builtin_ceil(action_noa(*actor, profile_index) * terrain_noa_multiplier(input, *actor, profile_index));
+      if (raw_attempts <= 0.0) { actor->acted = true; continue; }
+      if (raw_attempts > 0xffff'ffffull) return CombatResult::TapeExhausted;
+      const u32 attempts = static_cast<u32>(raw_attempts);
+      const bool antagonism = actor->side == Side::Party && (actor->status_flags & 1u) != 0 &&
+          active_ability_level(*actor, protocol::AbilityId::NullAntagonism) == 0;
+      if (actor->side == Side::Party && (actor->status_flags & 1u) != 0 && !antagonism) {
+        actor->status_flags &= ~1u;
+        if (!emit_state_event(state, protocol::EventOpcode::StatusRemoved, kCombatPhase, actor->id, actor->id,
+            static_cast<u32>(protocol::AbilityId::NullAntagonism), action.attack_type, timing, kPrevented, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
+      }
+      actor->acted = true;
+      if (input.terrain_id == static_cast<u16>(protocol::TerrainId::EchoDomain) && actor->profile.elemental_offense != 0 &&
+          active_ability_level(*actor, protocol::AbilityId::DomainBreaker) == 0) ++state.echo_elemental_use[actor->profile.elemental_offense];
+
+      if (profile_index == 1 && state.magic_seal_cursor < state.magic_seal_count) {
+        const u32 seal_owner = state.magic_seal_owners[state.magic_seal_cursor++];
+        if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, seal_owner, actor->id,
+            static_cast<u32>(protocol::AbilityId::MagicSeal), action.attack_type, timing, kPrevented,
+            0.0, 0.0, 0.0, kNormalAction) ||
+            !emit_state_event(state, protocol::EventOpcode::Attack, kCombatPhase, actor->id, 0,
+            static_cast<u32>(protocol::AbilityId::MagicSeal), action.attack_type, timing, kPrevented,
+            0.0, 0.0, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 1].attempts = attempts;
+        const auto terrain_result = emit_immediate_terrain(input, state, *actor, profile_index, timing, 0.0, nullptr);
+        if (terrain_result != CombatResult::Ok) return terrain_result;
+        continue;
+      }
+
+      protocol::AbilityId special = protocol::AbilityId::None;
+      if (profile_index == 1) {
+        if (active_ability_level(*actor, protocol::AbilityId::GravityWell) > 0 && attempts >= 20) special = protocol::AbilityId::GravityWell;
+        else if (active_ability_level(*actor, protocol::AbilityId::ArmorBreak) > 0 && attempts >= 12) special = protocol::AbilityId::ArmorBreak;
+        else if (active_ability_level(*actor, protocol::AbilityId::ManaBreak) > 0 && attempts >= 10) special = protocol::AbilityId::ManaBreak;
+      }
+      CombatantState* target = antagonism ? nullptr : enemy;
+      if (actor->side == Side::Enemy) target = nullptr;
+      if (special != protocol::AbilityId::None) {
+        target = antagonism ? actor : (actor->side == Side::Party ? enemy : nullptr);
+        if (actor->side == Side::Enemy) {
+          for (int index = 0; index < state.combatant_count; ++index) if (state.combatants[index].side == Side::Party) { target = &state.combatants[index]; break; }
+        }
+        double calculated = 0.0, applied = 0.0;
+        if (special == protocol::AbilityId::GravityWell) {
+          double& hp = target && target->side == Side::Enemy ? state.enemy_hp : state.party_hp;
+          calculated = __builtin_floor(hp * 0.4); applied = calculated > hp ? hp : calculated; hp -= applied;
+          if (target) target->hp = hp;
+        } else if (target) {
+          for (int index = 0; index < state.combatant_count; ++index) {
+            auto& affected = state.combatants[index];
+            if (affected.side != target->side) continue;
+            if (special == protocol::AbilityId::ArmorBreak) affected.temporary.physical_defense_debuff *= 4.0 / 3.0;
+            else affected.temporary.magical_defense_debuff *= 4.0 / 3.0;
+          }
+        }
+        if (!emit_state_event(state, protocol::EventOpcode::AbilityActivated, kCombatPhase, actor->id, target ? target->id : 0,
+            static_cast<u32>(special), action.attack_type, timing, 0, calculated, applied, 0.0, kNormalAction) ||
+            !emit_state_event(state, protocol::EventOpcode::Attack, kCombatPhase, actor->id, target ? target->id : 0,
+            static_cast<u32>(special), action.attack_type, timing, 0, applied, calculated, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 1].attempts = special == protocol::AbilityId::GravityWell ? 1 : attempts;
+        state.events[state.event_count - 1].hits = special == protocol::AbilityId::GravityWell ? 1 : 0;
+        if (applied > 0.0 && !emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, actor->id, target ? target->id : 0,
+            static_cast<u32>(special), action.attack_type, timing, 0, applied, calculated, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        const auto terrain_result = emit_immediate_terrain(input, state, *actor, profile_index, timing, calculated, target);
+        if (terrain_result != CombatResult::Ok) return terrain_result;
+        continue;
+      }
+
+      struct Group { CombatantState* target = nullptr; u32 attempts = 0; u32 hits = 0; double calculated = 0.0; };
+      Group groups[7]{}; u32 group_count = 0;
+      u32 action_successful_hits = 0;
+      const u32 loop_count = actor->side == Side::Enemy ? attempts : 1;
+      for (u32 target_attempt = 0; target_attempt < loop_count; ++target_attempt) {
+        if (actor->side == Side::Enemy || antagonism) {
+          auto* bag = profile_index == 1 ? state.magical_bag : state.physical_bag;
+          const u32 bag_count = profile_index == 1 ? state.magical_bag_count : state.physical_bag_count;
+          u64 total = 0; for (u32 index = 0; index < bag_count; ++index) total += bag[index].tickets;
+          double random = 0.0; if (!bokemo::battle_state::consume_random(state, random)) return CombatResult::TapeExhausted;
+          const u64 roll = static_cast<u64>(random * total) + 1; u64 cumulative = 0; u32 row = 0;
+          for (u32 index = 0; index < bag_count; ++index) { cumulative += bag[index].tickets; if (bag[index].tickets > 0 && roll <= cumulative) { row = bag[index].id; --bag[index].tickets; break; } }
+          bool fallback = false; target = row_target(state, row, profile_index, *actor, antagonism, fallback);
+          if (!target) return CombatResult::TapeExhausted;
+        }
+        if (!target) continue;
+        if (!emit_state_event(state, protocol::EventOpcode::TargetSelected, kCombatPhase, actor->id, target->id,
+            antagonism ? static_cast<u32>(protocol::AbilityId::NullAntagonism) : 0, action.attack_type, timing,
+            antagonism ? 32u : 0u, 0.0, 0.0, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 1].attempts = actor->side == Side::Enemy ? 1 : attempts;
+        u32 group = 0; while (group < group_count && groups[group].target != target) ++group;
+        if (group == group_count) groups[group_count++].target = target;
+        Group& result = groups[group];
+        const u32 hit_attempts = actor->side == Side::Enemy ? 1 : attempts;
+        bool illusion_negated = false;
+        bool party_illusion_active = false;
+        if (profile_index == 0 && actor->side == Side::Enemy && !state.party_illusion_consumed) {
+          for (int index = 0; index < state.combatant_count; ++index) {
+            const auto& candidate = state.combatants[index];
+            if (candidate.side == Side::Party && active_ability_level(candidate, protocol::AbilityId::Illusion) >= 2) party_illusion_active = true;
+          }
+        }
+        const bool personal_illusion_active = profile_index == 0 && active_ability_level(*target, protocol::AbilityId::Illusion) > 0 && !target->illusion_consumed;
+        if (party_illusion_active || personal_illusion_active) {
+          if (active_ability_level(*actor, protocol::AbilityId::IllusionBreaker) > 0) {
+            if (party_illusion_active) state.party_illusion_consumed = true;
+            if (personal_illusion_active) target->illusion_consumed = true;
+            if (!emit_state_event(state, protocol::EventOpcode::AbilityActivated, kCombatPhase, actor->id, target->id,
+                static_cast<u32>(protocol::AbilityId::IllusionBreaker), action.attack_type, timing, kBroken, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
+          } else {
+            if (party_illusion_active) state.party_illusion_consumed = true;
+            else target->illusion_consumed = true;
+            illusion_negated = true;
+            if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target->id, actor->id,
+                static_cast<u32>(protocol::AbilityId::Illusion), action.attack_type, timing, kPrevented, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
+          }
+        }
+        const int stealth = active_ability_level(*target, protocol::AbilityId::Stealth);
+        const double target_hp = target->side == Side::Party ? state.party_hp : state.enemy_hp;
+        const double target_max = target->side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+        const bool stealth_negated = !illusion_negated && stealth > 0 && target_max > 0.0 && target_hp / target_max <= (stealth >= 2 ? 0.18 : 0.12);
+        result.attempts += hit_attempts;
+        if (illusion_negated || stealth_negated) {
+          if (stealth_negated && !emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target->id, actor->id,
+              static_cast<u32>(protocol::AbilityId::Stealth), action.attack_type, timing, kPrevented, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
+          continue;
+        }
+        const double per_hit = advanced_per_hit_damage(input, state, *actor, *target, profile_index, antagonism);
+        const bool guaranteed = domain_guarantees_hit(input, *actor, *target, profile_index);
+        const int deflection = active_ability_level(*target, protocol::AbilityId::Deflection);
+        const int focus = active_ability_level(*actor, protocol::AbilityId::Focus);
+        const int stability = active_ability_level(*actor, protocol::AbilityId::ArcaneStability);
+        int terrain_modifier = 0;
+        if (profile_index == 0 && input.terrain_id == static_cast<u16>(protocol::TerrainId::Fog) && active_ability_level(*actor, protocol::AbilityId::TrueSight) == 0) terrain_modifier = -25;
+        if (profile_index == 0 && input.terrain_id == static_cast<u16>(protocol::TerrainId::SunnyBeach)) terrain_modifier = 20;
+        u32 local_hits = 0;
+        for (u32 hit = 0; hit < hit_attempts; ++hit) {
+          bool did_hit = guaranteed;
+          if (!guaranteed) {
+            double random = 0.0; if (!bokemo::battle_state::consume_random(state, random)) return CombatResult::TapeExhausted;
+            const double potency = actor->side == Side::Party && profile_index == 1 ? 1.0 : actor->profile.accuracy_potency[profile_index];
+            const u32 nth_hit = actor->side == Side::Enemy ? target_attempt + 1 : hit + 1;
+            const double chance = battle_hit_chance(potency, actor->profile.accuracy_bonus + actor->profile.deity_bonus[3],
+                target->profile.evasion_bonus, static_cast<int>(nth_hit), static_cast<int>(profile_index), deflection, focus, stability, terrain_modifier);
+            did_hit = random <= chance;
+          }
+          if (!did_hit) continue;
+          ++local_hits; ++result.hits; ++action_successful_hits;
+          double resonance = 1.0;
+          const int resonance_level = active_ability_level(*actor, protocol::AbilityId::Resonance);
+          if (resonance_level > 0 && (profile_index == 1 || (profile_index == 0 && input.deity_id == static_cast<u16>(protocol::DeityId::GodOfResonance) && input.terrain_id != static_cast<u16>(protocol::TerrainId::Gehenna)))) {
+            constexpr int bonus[5] = {4, 7, 9, 11, 12};
+            resonance += 0.01 * bonus[resonance_level >= 5 ? 4 : resonance_level - 1] * (action_successful_hits - 1);
+          }
+          const double hit_damage = __builtin_floor(per_hit * resonance);
+          result.calculated += hit_damage < 1.0 ? 1.0 : hit_damage;
+        }
+      }
+
+      double action_effect_damage = 0.0;
+      CombatantState* terrain_target = nullptr;
+      for (u32 group = 0; group < group_count; ++group) {
+        auto& result = groups[group]; if (!result.target) continue;
+        terrain_target = result.target;
+        const Reaction reaction = defensive_reaction(*actor, *result.target, profile_index);
+        double remaining = result.calculated, absorbed = 0.0, reflected_source = 0.0, reflected = 0.0;
+        if (reaction.kind == 1) { absorbed = result.calculated > 0.0 ? __builtin_floor(result.calculated * reaction.amplifier) : 0.0; if (result.calculated > 0.0 && absorbed < 1.0) absorbed = 1.0; remaining = 0.0; }
+        else if (reaction.kind == 2) remaining = 0.0;
+        else if (reaction.kind == 3) {
+          reflected_source = result.calculated;
+          remaining = __builtin_floor(result.calculated * (1.0 - reaction.amplifier));
+          const u32 family = profile_index == 1 ? 1 : 0;
+          double reflection_defense = actor->profile.defense_amplifier[family]; if (reflection_defense < 0.01) reflection_defense = 0.01;
+          reflected = __builtin_floor(result.calculated * reaction.amplifier * reflection_defense * elemental_resistance(*actor, actor->profile.elemental_offense));
+          if (result.calculated > 0.0 && reflected < 1.0) reflected = 1.0;
+        }
+        action_effect_damage += remaining;
+        double& target_hp = result.target->side == Side::Party ? state.party_hp : state.enemy_hp;
+        const double applied = remaining > target_hp ? target_hp : remaining; target_hp -= applied; result.target->hp = target_hp;
+        if (result.target->side == Side::Enemy && applied > 0.0) enemy->enemy_hits_received += result.hits;
+        if (absorbed > 0.0) {
+          const double maximum = result.target->side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+          const double heal = absorbed > maximum - target_hp ? maximum - target_hp : absorbed; target_hp += heal; result.target->hp = target_hp;
+          if (!emit_state_event(state, protocol::EventOpcode::Absorbed, kCombatPhase, result.target->id, actor->id,
+              static_cast<u32>(reaction.ability), action.attack_type, timing, 0, absorbed, result.calculated, heal, kNormalAction) ||
+              !emit_state_event(state, protocol::EventOpcode::Heal, kCombatPhase, result.target->id, result.target->id,
+              static_cast<u32>(reaction.ability), action.attack_type, timing, 0, heal, absorbed, 0, kNormalAction)) return CombatResult::EventCapacity;
+        } else if (reaction.kind == 2) {
+          if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, result.target->id, actor->id,
+              static_cast<u32>(reaction.ability), action.attack_type, timing, kPrevented, 0.0, result.calculated, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        } else if (reaction.kind == 3) {
+          double& actor_hp = actor->side == Side::Party ? state.party_hp : state.enemy_hp;
+          const double reflected_applied = reflected > actor_hp ? actor_hp : reflected; actor_hp -= reflected_applied; actor->hp = actor_hp;
+          if (!emit_state_event(state, protocol::EventOpcode::Reflected, kCombatPhase, result.target->id, actor->id,
+              static_cast<u32>(reaction.ability), action.attack_type, timing, 0, reflected_applied, reflected_source, remaining, kNormalAction) ||
+              !emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, result.target->id, actor->id,
+              static_cast<u32>(reaction.ability), action.attack_type, timing, 0, reflected_applied, reflected, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        }
+        if (!emit_state_event(state, protocol::EventOpcode::Attack, kCombatPhase, actor->id, result.target->id,
+            0, action.attack_type, timing, reaction.kind ? kPrevented : 0, applied, result.calculated, absorbed, kNormalAction) ||
+            !emit_state_event(state, protocol::EventOpcode::Damage, kCombatPhase, actor->id, result.target->id,
+            0, action.attack_type, timing, reaction.kind ? kPrevented : 0, applied, result.calculated, 0.0, kNormalAction)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 2].attempts = result.attempts; state.events[state.event_count - 2].hits = result.hits;
+        state.events[state.event_count - 1].attempts = result.attempts; state.events[state.event_count - 1].hits = result.hits;
+        if (state.party_hp <= 0.0 || state.enemy_hp <= 0.0) break;
+      }
+      const auto terrain_result = emit_immediate_terrain(input, state, *actor, profile_index, timing, action_effect_damage, terrain_target);
+      if (terrain_result != CombatResult::Ok) return terrain_result;
     }
   }
   if (!emit_state_event(state, protocol::EventOpcode::PhaseEnded, kCombatPhase, 0, 0, 0, 0, 0)) return CombatResult::EventCapacity;
@@ -1323,10 +1961,14 @@ int battle_protocol_execute(u32 byte_length) {
   const auto* magical_bag = reinterpret_cast<const BagRecord*>(input_arena + input->magical_bag_offset);
   const bool start_checkpoint = (input->engine_flags & protocol::kEngineFlagStartCheckpoint) != 0;
   const bool combat_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatBaseCheckpoint) != 0;
-  if (start_checkpoint && combat_checkpoint) {
+  const bool normal_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatNormalCheckpoint) != 0;
+  if ((start_checkpoint ? 1 : 0) + (combat_checkpoint ? 1 : 0) + (normal_checkpoint ? 1 : 0) > 1) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if (combat_checkpoint && !base_combat_domain_is_supported(*input, records, physical_bag, magical_bag)) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
+  if (normal_checkpoint && !normal_combat_domain_is_supported(*input, records, abilities, physical_bag, magical_bag)) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   alignas(BattleStateCore) static unsigned char state_storage[sizeof(BattleStateCore)];
@@ -1340,7 +1982,7 @@ int battle_protocol_execute(u32 byte_length) {
   state.magical_bag_count = input->magical_bag_count;
   for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};
   for (u32 index = 0; index < input->magical_bag_count; ++index) state.magical_bag[index] = {magical_bag[index].id, magical_bag[index].tickets};
-  if (combat_checkpoint) {
+  if (combat_checkpoint || normal_checkpoint) {
     auto sort_bag = [](ThreatBagEntry* bag, u32 count) {
       for (u32 index = 1; index < count; ++index) {
         const ThreatBagEntry current = bag[index];
@@ -1407,7 +2049,7 @@ int battle_protocol_execute(u32 byte_length) {
     event.hits = hits; event.attempts = attempts; event.value1 = value1; event.value2 = value2;
     return true;
   };
-  if (start_checkpoint || combat_checkpoint) {
+  if (start_checkpoint || combat_checkpoint || normal_checkpoint) {
     const StartResult start_result = resolve_start_checkpoint(*input, state);
     if (start_result != StartResult::Ok) {
       const protocol::ProtocolError error = start_result == StartResult::TapeExhausted ? protocol::ProtocolError::TapeExhausted
@@ -1418,6 +2060,14 @@ int battle_protocol_execute(u32 byte_length) {
     }
     if (combat_checkpoint) {
       const CombatResult combat_result = resolve_base_combat(state);
+      if (combat_result != CombatResult::Ok) {
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+            ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
+        return initialize_error_output_at_cursor(*input, error, state.random_cursor);
+      }
+    }
+    if (normal_checkpoint) {
+      const CombatResult combat_result = resolve_normal_combat(*input, state);
       if (combat_result != CombatResult::Ok) {
         const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
             ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;

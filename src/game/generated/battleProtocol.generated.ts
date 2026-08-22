@@ -21,6 +21,7 @@ export const BATTLE_PROTOCOL_ERROR_CODES = {
 } as const;
 export const BATTLE_ENGINE_FLAG_START_CHECKPOINT = 1 << 0;
 export const BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT = 1 << 1;
+export const BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT = 1 << 2;
 
 export const BATTLE_ABILITY_IDS = {
   "defender": 1,

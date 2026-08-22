@@ -59,6 +59,7 @@ inline constexpr unsigned short kDeityCount = ${groups.DEITY.length};
 inline constexpr unsigned short kActionCount = ${groups.ACTION.length};
 inline constexpr unsigned int kEngineFlagStartCheckpoint = 1u << 0;
 inline constexpr unsigned int kEngineFlagCombatBaseCheckpoint = 1u << 1;
+inline constexpr unsigned int kEngineFlagCombatNormalCheckpoint = 1u << 2;
 
 enum class ProtocolError : unsigned int {
   None = 0,
@@ -109,6 +110,7 @@ export const BATTLE_PROTOCOL_ERROR_CODES = {
 } as const;
 export const BATTLE_ENGINE_FLAG_START_CHECKPOINT = 1 << 0;
 export const BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT = 1 << 1;
+export const BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT = 1 << 2;
 
 ${tsMap('BATTLE_ABILITY_IDS', groups.ABILITY)}
 ${tsReverse('BATTLE_ABILITY_NAMES', 'BATTLE_ABILITY_IDS')}
