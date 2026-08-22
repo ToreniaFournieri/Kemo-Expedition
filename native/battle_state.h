@@ -85,6 +85,7 @@ struct CombatantState {
   unsigned int counters = 0;
   bool sealed = false;
   bool howl_active = false;
+  double howl_multiplier = 1.0;
   unsigned int elemental_use[4]{};
   RecoveryState recovery{};
 };
@@ -149,6 +150,7 @@ struct BattleStateCore {
   unsigned int echo_elemental_use[4]{};
   bool sacred_judgement_consumed = false;
   bool party_illusion_consumed = false;
+  bool forced_draw = false;
 };
 
 void reset(BattleStateCore& state);

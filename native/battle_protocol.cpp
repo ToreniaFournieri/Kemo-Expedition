@@ -194,7 +194,7 @@ bool combatant_numbers_are_valid(const CombatantRecord& value) {
 constexpr u32 kInputFlagFertilityInitiative = 1u << 0;
 constexpr u32 kInputFlagAbilitiesPrepared = 1u << 1;
 
-enum class AbilityOwnership : u8 { Unclassified, StartSetup, NormalAction, TimedTrigger, ReactiveChain, DefeatRecovery, InertMetadata };
+enum class AbilityOwnership : u8 { Unclassified, StartSetup, NormalAction, TimedTrigger, ReactiveChain, DefeatRecovery, ExternalPostBattle, InertMetadata };
 
 AbilityOwnership ability_ownership(protocol::AbilityId id) {
   switch (id) {
@@ -243,9 +243,11 @@ AbilityOwnership ability_ownership(protocol::AbilityId id) {
     case protocol::AbilityId::UnstableCore: case protocol::AbilityId::SoulReap:
     case protocol::AbilityId::Regeneration: case protocol::AbilityId::PredatorSense:
     case protocol::AbilityId::Decompose: case protocol::AbilityId::SelfDestruct:
-    case protocol::AbilityId::Free: case protocol::AbilityId::FirstAid:
+    case protocol::AbilityId::Free:
     case protocol::AbilityId::Flying: case protocol::AbilityId::Pursuit:
       return AbilityOwnership::TimedTrigger;
+    case protocol::AbilityId::FirstAid:
+      return AbilityOwnership::ExternalPostBattle;
     case protocol::AbilityId::Counter: case protocol::AbilityId::ReAttack:
     case protocol::AbilityId::NullCounter: case protocol::AbilityId::ReCounter:
     case protocol::AbilityId::CoveringFire: case protocol::AbilityId::MagicalCounter:
@@ -1094,6 +1096,38 @@ bool reactive_combat_domain_is_supported(
   return bag_is_valid(physical_bag, input.physical_bag_count) && bag_is_valid(magical_bag, input.magical_bag_count);
 }
 
+bool timed_combat_domain_is_supported(
+    const InputHeader& input, const CombatantRecord* combatants, const AbilityRecord* abilities,
+    const BagRecord* physical_bag, const BagRecord* magical_bag) {
+  const u32 known_flags = protocol::kEngineFlagStartCheckpoint |
+      protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint |
+      protocol::kEngineFlagCombatReactiveCheckpoint | protocol::kEngineFlagCombatTimedCheckpoint;
+  if ((input.engine_flags & ~known_flags) != 0 ||
+      (input.engine_flags & protocol::kEngineFlagCombatTimedCheckpoint) == 0 ||
+      (input.engine_flags & (protocol::kEngineFlagStartCheckpoint | protocol::kEngineFlagCombatBaseCheckpoint |
+          protocol::kEngineFlagCombatNormalCheckpoint | protocol::kEngineFlagCombatReactiveCheckpoint)) != 0 ||
+      (input.flags & ~(kInputFlagFertilityInitiative | kInputFlagAbilitiesPrepared)) != 0) return false;
+  // The reactive checkpoint's structural validation remains authoritative. Timed
+  // ownership is accepted here, including externally-owned First Aid as a no-op.
+  InputHeader neutral = input;
+  neutral.engine_flags = protocol::kEngineFlagCombatReactiveCheckpoint;
+  return reactive_combat_domain_is_supported(neutral, combatants, abilities, physical_bag, magical_bag) || [&] {
+    u32 enemy_count = 0, party_count = 0;
+    bool rows[bokemo::battle_state::kMaxCombatants]{};
+    for (u32 index = 0; index < input.combatant_count; ++index) {
+      const auto& combatant = combatants[index];
+      if ((combatant.flags & ~1u) != 0) return false;
+      if (combatant.kind == 2) ++enemy_count;
+      else { ++party_count; if (combatant.row == 0 || combatant.row >= bokemo::battle_state::kMaxCombatants || rows[combatant.row]) return false; rows[combatant.row] = true; }
+    }
+    if (enemy_count != 1 || party_count == 0 || party_count > 7) return false;
+    for (u32 index = 0; index < input.ability_count; ++index)
+      if (ability_ownership(static_cast<protocol::AbilityId>(abilities[index].id)) == AbilityOwnership::Unclassified) return false;
+    auto bag_valid = [&](const BagRecord* bag, u32 count) { if (count == 0) return false; for (u32 i = 0; i < count; ++i) if (bag[i].id <= 0 || bag[i].id >= bokemo::battle_state::kMaxCombatants || !rows[bag[i].id] || bag[i].tickets == 0) return false; return true; };
+    return bag_valid(physical_bag, input.physical_bag_count) && bag_valid(magical_bag, input.magical_bag_count);
+  }();
+}
+
 enum class CombatResult { Ok, TapeExhausted, EventCapacity };
 
 double attack_value(const CombatantState& actor, u32 profile_index) {
@@ -1887,7 +1921,7 @@ ReactiveStrikeResult roll_reactive_strike(const InputHeader& input, BattleStateC
       double random = 0.0;
       if (!bokemo::battle_state::consume_random(state, random)) { result.attempts = 0xffff'ffffu; return result; }
       const double potency = actor.side == Side::Party && profile_index == 1 ? 1.0 : actor.profile.accuracy_potency[profile_index];
-      const double chance = battle_hit_chance(potency, actor.profile.accuracy_bonus + actor.profile.deity_bonus[3],
+      const double chance = battle_hit_chance(potency, actor.profile.accuracy_bonus + actor.profile.deity_bonus[3] + actor.temporary.accuracy,
           target.profile.evasion_bonus + target.temporary.evasion, static_cast<int>(attempt + 1),
           static_cast<int>(profile_index), deflection, focus, stability, terrain_modifier);
       hit = random <= chance;
@@ -2055,7 +2089,60 @@ CombatResult resolve_counter_checkpoint(const InputHeader& input, BattleStateCor
 // Magical counter, and Covering fire
 // SpecRef: 6.1.2 | Function of battle | close-range reactive resolution
 // SpecRef: 6.1.3.1 | Actor action | Resurrect and Reanimate recovery
-CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& state) {
+// SpecRef: 6.1.2 | Timed Abilities | COMBAT timing traversal
+CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore& state,
+                                       CombatantState& enemy, CombatantState** parties,
+                                       u32 party_count, int timing) {
+  constexpr u32 kTimed = static_cast<u32>(protocol::ActionId::TimedAbility);
+  auto level_value = [](int level, const int* values, int count) { return level <= 0 ? 0 : values[level >= count ? count - 1 : level - 1]; };
+  auto confusion_timing = [](protocol::AbilityId id, int level) { if (level <= 0) return -1; if (id == protocol::AbilityId::RangedConfusion) return level <= 2 ? 7 : 8; if (id == protocol::AbilityId::MagicConfusion) return level <= 2 ? 4 : 5; return level <= 2 ? 1 : 2; };
+  auto has_future_action = [&](CombatantState& owner, u32 attack) { for (u32 i = 0; i < state.action_count; ++i) if (!state.actions[i].acted && state.actions[i].actor_id == owner.id && state.actions[i].attack_type == attack) return true; return false; };
+  auto emit = [&](CombatantState& actor, CombatantState* target, protocol::AbilityId ability, u32 attack, double value0 = 0, u32 flags = 0) {
+    return emit_state_event(state, protocol::EventOpcode::AbilityActivated, 2, actor.id, target ? target->id : 0,
+      static_cast<u32>(ability), attack, timing, flags, value0, 0, 0, kTimed);
+  };
+  const bool alive = state.party_hp > 0 && state.enemy_hp > 0;
+  if (!alive) return CombatResult::Ok;
+  // Howl uses the single shared ranged timing and is consumed by the next opposing normal action.
+  if (timing == 8) {
+    if (active_ability_level(enemy, protocol::AbilityId::Howl) > 0) {
+      bool party_acted = false; for (u32 i = 0; i < party_count; ++i) party_acted |= parties[i]->acted;
+      if (!party_acted) { const int l = active_ability_level(enemy, protocol::AbilityId::Howl); enemy.howl_active = true; enemy.howl_multiplier = (6 - (l >= 5 ? 5 : l)) / 7.0; if (!emit(enemy, nullptr, protocol::AbilityId::Howl, 1, enemy.howl_multiplier)) return CombatResult::EventCapacity; }
+    }
+    if (!enemy.acted) for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int l = active_ability_level(owner, protocol::AbilityId::Howl); if (l > 0) { owner.howl_active = true; owner.howl_multiplier = (6 - (l >= 5 ? 5 : l)) / 7.0; if (!emit(owner, nullptr, protocol::AbilityId::Howl, 1, owner.howl_multiplier)) return CombatResult::EventCapacity; } }
+  }
+  // Free is melee-only on the same absolute scale. Pursuit prevents the forced draw.
+  if (timing >= 1 && timing <= 5) {
+    const int free_level = active_ability_level(enemy, protocol::AbilityId::Free);
+    bool party_pursuit = false; for (u32 i = 0; i < party_count; ++i) party_pursuit |= active_ability_level(*parties[i], protocol::AbilityId::Pursuit) > 0;
+    if (free_level > 0 && (free_level > 5 ? 5 : free_level) == timing) {
+      if (!emit(enemy, nullptr, party_pursuit ? protocol::AbilityId::Pursuit : protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity;
+      if (!party_pursuit) { state.forced_draw = true; return CombatResult::Ok; }
+    }
+    for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int level = active_ability_level(owner, protocol::AbilityId::Free); if (level <= 0 || (level > 5 ? 5 : level) != timing) continue; const bool pursued = active_ability_level(enemy, protocol::AbilityId::Pursuit) > 0; if (!emit(owner, &enemy, pursued ? protocol::AbilityId::Pursuit : protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity; if (!pursued) { state.forced_draw = true; return CombatResult::Ok; } }
+  }
+  // Confusion is phase-specific but shares the absolute scheduler. Target draw precedes success draw.
+  const protocol::AbilityId confusion[] = {protocol::AbilityId::RangedConfusion, protocol::AbilityId::MagicConfusion, protocol::AbilityId::MeleeConfusion};
+  for (u32 phase = 0; phase < 3; ++phase) {
+    const auto ability = confusion[phase]; const u32 attack = phase + 1;
+    const int enemy_level = active_ability_level(enemy, ability);
+    if (confusion_timing(ability, enemy_level) == timing) {
+      CombatantState* eligible[7]{}; u32 count = 0; for (u32 i = 0; i < party_count; ++i) if (has_future_action(*parties[i], attack)) eligible[count++] = parties[i];
+      if (count > 0) { u32 index = 0; if (!draw_index(state, count, index)) return CombatResult::TapeExhausted; double roll = 0; if (!bokemo::battle_state::consume_random(state, roll)) return CombatResult::TapeExhausted; auto* target = eligible[index]; const int chance[] = {1,3,3,5,7}; const bool success = roll < level_value(enemy_level, chance, 5) / 32.0; if (success && active_ability_level(*target, protocol::AbilityId::NullAntagonism) == 0) target->status_flags |= 1; if (!emit(enemy, target, success && active_ability_level(*target, protocol::AbilityId::NullAntagonism) ? protocol::AbilityId::NullAntagonism : ability, attack, success ? 1 : 0, success && active_ability_level(*target, protocol::AbilityId::NullAntagonism) ? 1 : 0)) return CombatResult::EventCapacity; }
+      else if (!emit(enemy, nullptr, ability, attack)) return CombatResult::EventCapacity;
+    }
+    for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int level = active_ability_level(owner, ability); if (confusion_timing(ability, level) != timing) continue; if (!has_future_action(enemy, attack)) { if (!emit(owner, nullptr, ability, attack)) return CombatResult::EventCapacity; continue; } double roll = 0; if (!bokemo::battle_state::consume_random(state, roll)) return CombatResult::TapeExhausted; const int chance[] = {1,3,3,5,7}; const bool success = roll < level_value(level, chance, 5) / 32.0; if (success && active_ability_level(enemy, protocol::AbilityId::NullAntagonism) == 0) enemy.status_flags |= 1; if (!emit(owner, &enemy, success && active_ability_level(enemy, protocol::AbilityId::NullAntagonism) ? protocol::AbilityId::NullAntagonism : ability, attack, success ? 1 : 0, success && active_ability_level(enemy, protocol::AbilityId::NullAntagonism) ? 1 : 0)) return CombatResult::EventCapacity; }
+  }
+  if (timing == 4) { const int values[] = {30,38,44,48,50}; const int l = active_ability_level(enemy, protocol::AbilityId::PredatorSense); if (l > 0 && state.party_hp < state.party_max_hp * level_value(l, values, 5) / 100.0) { enemy.temporary.accuracy += .04; if (!emit(enemy, nullptr, protocol::AbilityId::PredatorSense, 3, .04)) return CombatResult::EventCapacity; } for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int pl = active_ability_level(owner, protocol::AbilityId::PredatorSense); if (pl > 0 && state.enemy_hp < state.enemy_max_hp * level_value(pl, values, 5) / 100.0) { owner.temporary.accuracy += .04; if (!emit(owner, &enemy, protocol::AbilityId::PredatorSense, 3, .04)) return CombatResult::EventCapacity; } } }
+  if ((timing == 4) || timing == 0) { const int values[] = {30,24,19,15,12}; if (timing == 4 || timing == 0) { const int l = active_ability_level(enemy, protocol::AbilityId::UnstableCore); if (l > 0) { const double damage = __builtin_ceil(state.enemy_hp * level_value(l, values, 5) / 100.0); apply_checkpoint_damage(state, enemy, damage); if (!emit(enemy, nullptr, protocol::AbilityId::UnstableCore, timing == 4 ? 1 : 2, damage)) return CombatResult::EventCapacity; const auto recovered = recover_checkpoint_target(state, enemy, 0, timing, kTimed); if (recovered != CombatResult::Ok) return recovered; } for (u32 i = 0; i < party_count && state.party_hp > 0 && state.enemy_hp > 0; ++i) { auto& owner = *parties[i]; const int pl = active_ability_level(owner, protocol::AbilityId::UnstableCore); if (pl > 0) { const double damage = __builtin_ceil(state.party_hp * level_value(pl, values, 5) / 100.0); apply_checkpoint_damage(state, owner, damage); if (!emit(owner, nullptr, protocol::AbilityId::UnstableCore, timing == 4 ? 1 : 2, damage)) return CombatResult::EventCapacity; const auto recovered = recover_checkpoint_target(state, owner, 0, timing, kTimed); if (recovered != CombatResult::Ok) return recovered; } } } }
+  if (timing == 3) { const int regen[] = {10,15,19,22,24}; const int l = active_ability_level(enemy, protocol::AbilityId::Regeneration); if (l > 0 && enemy.damage_taken > 0) { const double h = apply_checkpoint_heal(state, enemy, __builtin_floor(enemy.damage_taken * level_value(l, regen, 5) / 100.0)); if (h > 0 && !emit(enemy, nullptr, protocol::AbilityId::Regeneration, 3, h)) return CombatResult::EventCapacity; } for (u32 i=0;i<party_count;++i) { auto& o=*parties[i]; const int pl=active_ability_level(o,protocol::AbilityId::Regeneration); if(pl>0&&o.damage_taken>0){const double h=apply_checkpoint_heal(state,o,__builtin_floor(o.damage_taken*level_value(pl,regen,5)/100.0));if(h>0&&!emit(o,nullptr,protocol::AbilityId::Regeneration,3,h))return CombatResult::EventCapacity;}} const int fly[]={40,45,50}; const int fl=active_ability_level(enemy,protocol::AbilityId::Flying);if(fl>0){enemy.temporary.evasion+=level_value(fl,fly,3)/100.0;if(!emit(enemy,nullptr,protocol::AbilityId::Flying,3,enemy.temporary.evasion))return CombatResult::EventCapacity;}for(u32 i=0;i<party_count;++i){auto&o=*parties[i];const int pl=active_ability_level(o,protocol::AbilityId::Flying);if(pl>0){o.temporary.evasion+=level_value(pl,fly,3)/100.0;if(!emit(o,nullptr,protocol::AbilityId::Flying,3,o.temporary.evasion))return CombatResult::EventCapacity;}} }
+  if (timing == 2) { const int soul[]={10,14,17,19,20}; const int l=active_ability_level(enemy,protocol::AbilityId::SoulReap);if(l>0&&state.party_hp<state.party_max_hp*level_value(l,soul,5)/100.0){apply_checkpoint_damage(state,*parties[0],state.party_hp);if(!emit(enemy,parties[0],protocol::AbilityId::SoulReap,1))return CombatResult::EventCapacity;}for(u32 i=0;i<party_count&&state.enemy_hp>0&&state.party_hp>0;++i){auto&o=*parties[i];const int pl=active_ability_level(o,protocol::AbilityId::SoulReap);if(pl>0&&state.enemy_hp<state.enemy_max_hp*level_value(pl,soul,5)/100.0){apply_checkpoint_damage(state,enemy,state.enemy_hp);if(!emit(o,&enemy,protocol::AbilityId::SoulReap,1))return CombatResult::EventCapacity;}}
+    const double decompose[]={6.0/7,5.0/7,4.0/7,3.0/7,2.0/7}; const int dl=active_ability_level(enemy,protocol::AbilityId::Decompose); if(dl>0){CombatantState*target=draw_threat_target(state,false);if(target){const double before=target->profile.physical_defense;target->profile.physical_defense=__builtin_floor(before*decompose[dl>=5?4:dl-1]+.5);if(!emit(enemy,target,protocol::AbilityId::Decompose,3,target->profile.physical_defense))return CombatResult::EventCapacity;}}for(u32 i=0;i<party_count;++i){auto&o=*parties[i];const int pl=active_ability_level(o,protocol::AbilityId::Decompose);if(pl>0){enemy.profile.physical_defense=__builtin_floor(enemy.profile.physical_defense*decompose[pl>=5?4:pl-1]+.5);if(!emit(o,&enemy,protocol::AbilityId::Decompose,3,enemy.profile.physical_defense))return CombatResult::EventCapacity;}}
+    const double ratios[]={.1,.3,.5,.7,1}; const int sl=active_ability_level(enemy,protocol::AbilityId::SelfDestruct);if(sl>0&&state.party_hp>0){CombatantState*target=draw_threat_target(state,false);if(!target)target=parties[0];const double damage=__builtin_floor((state.enemy_hp-target->profile.physical_defense)*ratios[sl>=5?4:sl-1]*(target->profile.defense_amplifier[0]<.01?.01:target->profile.defense_amplifier[0]));apply_checkpoint_damage(state,enemy,state.enemy_hp);if(damage>0)apply_checkpoint_damage(state,*target,damage);if(!emit(enemy,target,protocol::AbilityId::SelfDestruct,3,damage))return CombatResult::EventCapacity;auto recovered=recover_checkpoint_target(state,enemy,3,timing,kTimed);if(recovered!=CombatResult::Ok)return recovered;recovered=recover_checkpoint_target(state,*target,3,timing,kTimed);if(recovered!=CombatResult::Ok)return recovered;}for(u32 i=0;i<party_count&&state.party_hp>0&&state.enemy_hp>0;++i){auto&o=*parties[i];const int pl=active_ability_level(o,protocol::AbilityId::SelfDestruct);if(pl>0){const double damage=__builtin_floor((state.party_hp-enemy.profile.physical_defense)*ratios[pl>=5?4:pl-1]*(enemy.profile.defense_amplifier[0]<.01?.01:enemy.profile.defense_amplifier[0]));apply_checkpoint_damage(state,o,state.party_hp);if(damage>0)apply_checkpoint_damage(state,enemy,damage);if(!emit(o,&enemy,protocol::AbilityId::SelfDestruct,3,damage))return CombatResult::EventCapacity;auto recovered=recover_checkpoint_target(state,o,3,timing,kTimed);if(recovered!=CombatResult::Ok)return recovered;recovered=recover_checkpoint_target(state,enemy,3,timing,kTimed);if(recovered!=CombatResult::Ok)return recovered;}} }
+  return CombatResult::Ok;
+}
+
+CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& state, bool timed = false) {
   constexpr u32 kCombatPhase = 2;
   constexpr u32 kPrevented = 1;
   if (!emit_state_event(state, protocol::EventOpcode::PhaseStarted, kCombatPhase, 0, 0, 0, 0, 49)) return CombatResult::EventCapacity;
@@ -2154,6 +2241,7 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
 
   for (int timing = 49; timing >= 0 && state.party_hp > 0.0 && state.enemy_hp > 0.0; --timing) {
     state.scheduler.next_timing = timing;
+    if (timed) { const auto status = resolve_timed_combat_slot(input, state, *enemy, parties, party_count, timing); if (status != CombatResult::Ok) return status; if (state.forced_draw || state.party_hp <= 0.0 || state.enemy_hp <= 0.0) break; }
     for (u32 action_index = 0; action_index < state.action_count && state.party_hp > 0.0 && state.enemy_hp > 0.0; ++action_index) {
       auto& action = state.actions[action_index];
       if (action.acted || action.timing != timing) continue;
@@ -2174,11 +2262,18 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
       if (input.terrain_id == static_cast<u16>(protocol::TerrainId::EchoDomain) && actor->profile.elemental_offense != 0 &&
           active_ability_level(*actor, protocol::AbilityId::DomainBreaker) == 0) ++state.echo_elemental_use[actor->profile.elemental_offense];
       const int re_level = active_ability_level(*actor, protocol::AbilityId::ReAttack);
+      double howl_multiplier = 1.0;
+      if (timed) {
+        if (actor->side == Side::Party && enemy->howl_active) { howl_multiplier = enemy->howl_multiplier; enemy->howl_active = false; }
+        if (actor->side == Side::Enemy) for (u32 owner_index = 0; owner_index < party_count; ++owner_index) {
+          auto* owner = parties[owner_index]; if (owner->howl_active) { howl_multiplier = owner->howl_multiplier; owner->howl_active = false; }
+        }
+      }
       const u32 repeats = re_level > 0 ? 2 : 1;
       CombatantState* magical_counter_targets[7]{}; u32 magical_counter_count = 0;
       for (u32 repeat = 0; repeat < repeats && state.party_hp > 0.0 && state.enemy_hp > 0.0; ++repeat) {
         const bool re_attack = repeat > 0;
-        const double multiplier = re_attack ? reactive_profile_multiplier(re_level, 1) : 1.0;
+        const double multiplier = (re_attack ? reactive_profile_multiplier(re_level, 1) : 1.0) * howl_multiplier;
         const u32 action_id = re_attack ? static_cast<u32>(protocol::ActionId::ReAttack)
             : static_cast<u32>(protocol::ActionId::NormalAttack);
         if (profile_index == 1 && state.magic_seal_cursor < state.magic_seal_count) {
@@ -2524,8 +2619,9 @@ int battle_protocol_execute(u32 byte_length) {
   const bool combat_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatBaseCheckpoint) != 0;
   const bool normal_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatNormalCheckpoint) != 0;
   const bool reactive_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatReactiveCheckpoint) != 0;
+  const bool timed_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatTimedCheckpoint) != 0;
   if ((start_checkpoint ? 1 : 0) + (combat_checkpoint ? 1 : 0) + (normal_checkpoint ? 1 : 0) +
-      (reactive_checkpoint ? 1 : 0) > 1) {
+      (reactive_checkpoint ? 1 : 0) + (timed_checkpoint ? 1 : 0) > 1) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if (combat_checkpoint && !base_combat_domain_is_supported(*input, records, physical_bag, magical_bag)) {
@@ -2535,6 +2631,9 @@ int battle_protocol_execute(u32 byte_length) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if (reactive_checkpoint && !reactive_combat_domain_is_supported(*input, records, abilities, physical_bag, magical_bag)) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
+  if (timed_checkpoint && !timed_combat_domain_is_supported(*input, records, abilities, physical_bag, magical_bag)) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   alignas(BattleStateCore) static unsigned char state_storage[sizeof(BattleStateCore)];
@@ -2548,7 +2647,7 @@ int battle_protocol_execute(u32 byte_length) {
   state.magical_bag_count = input->magical_bag_count;
   for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};
   for (u32 index = 0; index < input->magical_bag_count; ++index) state.magical_bag[index] = {magical_bag[index].id, magical_bag[index].tickets};
-  if (combat_checkpoint || normal_checkpoint || reactive_checkpoint) {
+  if (combat_checkpoint || normal_checkpoint || reactive_checkpoint || timed_checkpoint) {
     auto sort_bag = [](ThreatBagEntry* bag, u32 count) {
       for (u32 index = 1; index < count; ++index) {
         const ThreatBagEntry current = bag[index];
@@ -2615,7 +2714,7 @@ int battle_protocol_execute(u32 byte_length) {
     event.hits = hits; event.attempts = attempts; event.value1 = value1; event.value2 = value2;
     return true;
   };
-  if (start_checkpoint || combat_checkpoint || normal_checkpoint || reactive_checkpoint) {
+  if (start_checkpoint || combat_checkpoint || normal_checkpoint || reactive_checkpoint || timed_checkpoint) {
     const StartResult start_result = resolve_start_checkpoint(*input, state);
     if (start_result != StartResult::Ok) {
       const protocol::ProtocolError error = start_result == StartResult::TapeExhausted ? protocol::ProtocolError::TapeExhausted
@@ -2648,13 +2747,21 @@ int battle_protocol_execute(u32 byte_length) {
         return initialize_error_output_at_cursor(*input, error, state.random_cursor);
       }
     }
+    if (timed_checkpoint) {
+      const CombatResult combat_result = resolve_reactive_combat(*input, state, true);
+      if (combat_result != CombatResult::Ok) {
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+            ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
+        return initialize_error_output_at_cursor(*input, error, state.random_cursor);
+      }
+    }
     const u64 output_size = sizeof(OutputHeader) + static_cast<u64>(state.event_count) * sizeof(EventRecord) +
         static_cast<u64>(state.physical_bag_count + state.magical_bag_count) * sizeof(BagRecord);
     if (output_size > protocol::kArenaCapacity) return initialize_error_output(*input, protocol::ProtocolError::OutputCapacity);
     auto* output = reinterpret_cast<OutputHeader*>(output_arena);
     initialize_output(*input, output, state.event_count, state.random_cursor);
     output->total_size = static_cast<u32>(output_size);
-    output->outcome = state.enemy_hp <= 0.0 ? 1 : state.party_hp <= 0.0 ? 2 : 0;
+    output->outcome = state.forced_draw ? 3 : state.enemy_hp <= 0.0 ? 1 : state.party_hp <= 0.0 ? 2 : 0;
     output->party_hp = state.party_hp;
     output->enemy_hp = state.enemy_hp;
     const CombatantState* resolved_enemy = nullptr;

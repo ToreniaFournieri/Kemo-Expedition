@@ -6,6 +6,7 @@ export type BattleAbilityOwnership =
   | 'timed_trigger'
   | 'reactive_chain'
   | 'defeat_recovery'
+  | 'external_post_battle'
   | 'inert_metadata';
 
 const classified = <T extends readonly AbilityId[]>(...ids: T): T => ids;
@@ -30,7 +31,7 @@ export const BATTLE_ABILITY_OWNERSHIP_IDS = {
   ),
   timed_trigger: classified(
     'howl', 'ranged_confusion', 'magic_confusion', 'melee_confusion', 'unstable_core', 'soul_reap',
-    'regeneration', 'predator_sense', 'decompose', 'self_destruct', 'free', 'first_aid', 'flying',
+    'regeneration', 'predator_sense', 'decompose', 'self_destruct', 'free', 'flying',
     'pursuit',
   ),
   reactive_chain: classified(
@@ -40,6 +41,9 @@ export const BATTLE_ABILITY_OWNERSHIP_IDS = {
     'bind', 'null_bind',
   ),
   defeat_recovery: classified('resurrect', 'reanimate'),
+  // Expedition orchestration applies First Aid after qualifying Elite battles;
+  // protocol v3 deliberately has none of the required expedition context.
+  external_post_battle: classified('first_aid'),
   inert_metadata: classified(
     'squander', 'hunter', 'tithe', 'seeker', 'cunning', 'cyborgization', 'peddler', 'composure',
     'melee_conversion', 'prophecy', 'base_status_cap_at_15', 'auriferous',

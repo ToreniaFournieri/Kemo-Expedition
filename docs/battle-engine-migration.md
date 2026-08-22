@@ -95,7 +95,8 @@ Part 1 may advance only while all of the following remain true:
 |-|-|
 | START/setup | First Strike, Oblivion, Fading Memory, Mimic, Frostbite, Slow, Boost, Equation Breaker, Domain Breaker, Wind Rider, Coldproof, Defiance, Unforgettable |
 | Supported normal action / immediate consequence | Defender, Iaigiri, Heavy Strike, Command, Resonance, M-Barrier, Deflection, True Sight, Output Stabilizer, Rage, Momentum, Bulwark, Arcane Stability, Arc Magic, Gravity Well, Armor Break, Mana Break, Focus, Stealth, Illusion, all elemental/type Absorb/Null/Reflect abilities, all four Mutual effects, Magic Seal, No Offense, Swarm, Ambush, Overwatch, Execution and their blockers, Null Antagonism, Siege, Dryproof, Vine Cutter, Mana Ward, elemental protection breakers, M-Barrier Breaker, Illusion Breaker, and Bulwark Breaker |
-| Deferred timed trigger | Howl, all three Confusion forms, Unstable Core, Soul Reap, Regeneration, Predator Sense, Decompose, Self Destruct, Free, First Aid, Flying, Pursuit |
+| Deferred timed trigger | Howl, all three Confusion forms, Unstable Core, Soul Reap, Regeneration, Predator Sense, Decompose, Self Destruct, Free, Flying, Pursuit |
+| External post-battle orchestration | First Aid (qualifying Elite-battle expedition processing) |
 | Deferred reactive chain/post-hit | Counter, Re-attack, Null Counter, Re-counter, Covering Fire, Magical Counter, Requiem/Null Requiem, Shock/Null Shock, Corrode/Null Corrode, Life Drain/Null Life Drain, Death Touch/Null Death Touch, Burn/Null Burn, Bind/Null Bind |
 | Deferred defeat recovery | Resurrect, Reanimate |
 | Inert/non-battle metadata | Squander, Hunter, Tithe, Seeker, Cunning, Cyborgization, Peddler, Composure, Melee Conversion, Prophecy, Base Status Cap at 15, Auriferous, Colossal, Upgrade All Abilities, Unlock |
@@ -142,3 +143,9 @@ Semantic events are language-neutral. `target_selected` identifies every actual 
 - Timed-trigger abilities and their COMBAT timing slots remain excluded. END/finalization, final full-turn parity, narration/candidate comparison, and production cutover also remain incomplete.
 - The no-flag wrapper remains temporary. Names, localization, prose narration, and random-value generation remain TypeScript-owned; this checkpoint does not claim full parity or production readiness.
 - Maximum semantic-event volume is still bounded by the fixed 4,096-event state arena. The pathological seven-member test documents deterministic front-to-back ordering and explicit capacity failure behavior; exact reactive-chain ordering remains a high-risk acceptance area until full-turn differential parity is enabled.
+
+## Part 1.7 native timed-COMBAT checkpoint
+
+- The append-only `BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT` / `kEngineFlagCombatTimedCheckpoint` bit (`1 << 4`) selects START, prepared initiative, timed COMBAT slots, normal actions, reactive chains, and defeat recovery in one native protocol execution. It is shadow/test-only, mutually exclusive with every earlier checkpoint, and stops before END.
+- Timed traversal shares the absolute 49→0 COMBAT scheduler and runs before normal actions at the matching timing. The checkpoint accepts timed ownership plus the completed normal/reactive/recovery ownership; First Aid is explicitly `external_post_battle`, accepted as a no-op, emits no battle fact, and consumes no draw. Expedition-level TypeScript orchestration remains responsible for applying First Aid after qualifying Elite battles.
+- The timed slice owns Howl, phase-specific Confusion, Unstable Core, Soul Reap, Regeneration, Predator Sense, Decompose, Self Destruct, Free/Pursuit, and Flying as language-neutral semantic facts. Nonlethal outcomes remain unresolved; native lethal and forced-draw outcomes are returned without entering END/finalization.

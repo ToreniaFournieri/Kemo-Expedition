@@ -20,6 +20,7 @@ import {
   BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
@@ -104,6 +105,7 @@ test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT, 1 << 1);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT, 1 << 2);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT, 1 << 3);
+  assert.equal(BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, 1 << 4);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature, 7);
   assert.equal(getBattleProtocolTerrainName(BATTLE_TERRAIN_IDS['terrain.echo-domain']), 'terrain.echo-domain');
 });
@@ -117,6 +119,7 @@ test('advanced COMBAT ownership matrix classifies every append-only ability exac
   assert.equal(BATTLE_ABILITY_OWNERSHIP.counter, 'reactive_chain');
   assert.equal(BATTLE_ABILITY_OWNERSHIP.resurrect, 'defeat_recovery');
   assert.equal(BATTLE_ABILITY_OWNERSHIP.gravity_well, 'normal_action');
+  assert.equal(BATTLE_ABILITY_OWNERSHIP.first_aid, 'external_post_battle');
 });
 
 test('TypeScript encoder and C++ decoder share one binary input layout', () => {
@@ -561,6 +564,34 @@ function combatReactiveInput(overrides: Partial<BattleProtocolInput> = {}): Batt
     ...overrides,
   };
 }
+
+function combatTimedInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
+  return { ...combatReactiveInput(), engineFlags: BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, ...overrides };
+}
+
+test('timed COMBAT flag is exclusive, accepts externally-owned First Aid, and resolves before normal actions', () => {
+  const exclusive = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    engineFlags: BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT | BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
+    randomValues: [0.5],
+  })));
+  assert.equal(exclusive.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+  assert.equal(exclusive.randomConsumed, 0);
+
+  const input = combatTimedInput({
+    enemyHp: 20, enemyMaxHp: 100,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 1 ? {
+      ...combatant, meleeAttack: 10, meleeNoA: 1,
+      abilities: [{ id: 'predator_sense', level: 1 }, { id: 'first_aid', level: 1 }],
+    } : combatant),
+    randomValues: [0, 0, 0, 0, 0.75],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.events.some((event) => event.abilityId === 'first_aid'), false);
+  const timed = output.events.findIndex((event) => event.abilityId === 'predator_sense');
+  const attack = output.events.findIndex((event) => event.opcode === 'attack');
+  assert.ok(timed >= 0 && timed < attack);
+});
 
 test('reactive COMBAT flag is exclusive and preflights timed and Mimic-copyable mechanics before draws', () => {
   for (const flags of [
