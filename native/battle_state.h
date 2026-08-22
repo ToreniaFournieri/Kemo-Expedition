@@ -5,7 +5,9 @@ namespace bokemo::battle_state {
 constexpr int kMaxCombatants = 8;
 constexpr int kMaxAbilitiesPerCombatant = 64;
 constexpr int kMaxRandomTape = 4096;
-constexpr int kMaxSemanticEvents = 512;
+constexpr int kMaxSemanticEvents = 4096;
+constexpr int kMaxThreatBagEntries = 64;
+constexpr int kMaxNormalActions = kMaxCombatants * 3;
 
 enum class Side : unsigned char { Party = 0, Enemy = 1 };
 
@@ -13,6 +15,31 @@ struct AttackProfile {
   double ranged = 0.0;
   double magical = 0.0;
   double melee = 0.0;
+  double ranged_noa = 0.0;
+  double magical_noa = 0.0;
+  double melee_noa = 0.0;
+  double original_ranged_noa = 0.0;
+  double original_magical_noa = 0.0;
+  double original_melee_noa = 0.0;
+};
+
+struct ImmutableCombatProfile {
+  double physical_defense = 0.0;
+  double magical_defense = 0.0;
+  double accuracy_potency[3]{};
+  double accuracy_bonus = 0.0;
+  double evasion_bonus = 0.0;
+  double penetration[2]{};
+  double elemental_resistance[3]{};
+  double offense_amplifier[2]{};
+  double defense_amplifier[2]{};
+  double phase_bonus[3]{};
+  double deity_bonus[4]{};
+  double enemy_attack_amplifier[3]{};
+  double attack_bonus[3]{};
+  unsigned char elemental_offense = 0;
+  unsigned char magic_style = 0;
+  double elemental_offense_value = 0.0;
 };
 
 struct MutableAbility {
@@ -25,8 +52,8 @@ struct MutableAbility {
 struct TemporaryModifiers {
   double accuracy = 0.0;
   double evasion = 0.0;
-  double physical_defense_debuff = 1.0;
-  double magical_defense_debuff = 1.0;
+  double physical_defense_debuff = 0.0;
+  double magical_defense_debuff = 0.0;
 };
 
 struct RecoveryState {
@@ -41,6 +68,7 @@ struct CombatantState {
   double hp = 0.0;
   double max_hp = 0.0;
   AttackProfile attacks{};
+  ImmutableCombatProfile profile{};
   MutableAbility abilities[kMaxAbilitiesPerCombatant]{};
   int ability_count = 0;
   double damage_taken = 0.0;
@@ -64,17 +92,44 @@ struct SchedulerState {
   unsigned int action_cursor = 0;
 };
 
+struct NormalActionEntry {
+  unsigned int actor_id = 0;
+  unsigned char attack_type = 0;
+  int timing = 0;
+  bool acted = false;
+};
+
+struct ThreatBagEntry { int id = 0; unsigned int tickets = 0; };
+
 struct SemanticEvent {
   unsigned int opcode = 0;
+  unsigned int phase = 0;
   unsigned int actor_id = 0;
   unsigned int target_id = 0;
+  unsigned int ability_id = 0;
+  unsigned int attack_type = 0;
+  int timing = 0;
+  unsigned int hits = 0;
+  unsigned int attempts = 0;
   double value = 0.0;
+  double value1 = 0.0;
+  double value2 = 0.0;
 };
 
 struct BattleStateCore {
   CombatantState combatants[kMaxCombatants]{};
   int combatant_count = 0;
   SchedulerState scheduler{};
+  NormalActionEntry actions[kMaxNormalActions]{};
+  unsigned int action_count = 0;
+  double party_hp = 0.0;
+  double party_max_hp = 0.0;
+  double enemy_hp = 0.0;
+  double enemy_max_hp = 0.0;
+  ThreatBagEntry physical_bag[kMaxThreatBagEntries]{};
+  ThreatBagEntry magical_bag[kMaxThreatBagEntries]{};
+  unsigned int physical_bag_count = 0;
+  unsigned int magical_bag_count = 0;
   double random_tape[kMaxRandomTape]{};
   unsigned int random_cursor = 0;
   unsigned int random_count = 0;

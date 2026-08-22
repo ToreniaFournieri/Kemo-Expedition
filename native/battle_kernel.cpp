@@ -16,7 +16,8 @@ constexpr int kBattleStateTestOperationCapacity = 128;
 constexpr int kBattleStateTestOperationStride = 8;
 double battle_state_test_input[kBattleStateTestOperationCapacity * kBattleStateTestOperationStride];
 double battle_state_test_output[kBattleStateTestOperationCapacity * 5];
-bokemo::battle_state::BattleStateCore battle_state_test_core;
+alignas(bokemo::battle_state::BattleStateCore)
+unsigned char battle_state_test_core_storage[sizeof(bokemo::battle_state::BattleStateCore)];
 
 double* battle_state_test_input_buffer() { return battle_state_test_input; }
 double* battle_state_test_output_buffer() { return battle_state_test_output; }
@@ -25,7 +26,7 @@ int battle_state_test_operation_capacity() { return kBattleStateTestOperationCap
 int battle_run_state_test_operations(int operation_count) {
   using namespace bokemo::battle_state;
   if (operation_count < 0 || operation_count > kBattleStateTestOperationCapacity) return -1;
-  BattleStateCore& state = battle_state_test_core;
+  BattleStateCore& state = *reinterpret_cast<BattleStateCore*>(battle_state_test_core_storage);
   reset(state);
   for (int index = 0; index < operation_count * 5; ++index) battle_state_test_output[index] = 0.0;
   for (int index = 0; index < operation_count; ++index) {
@@ -90,7 +91,7 @@ int equipment_candidate_values[kEquipmentCandidateCapacity * kEquipmentCandidate
 double equipment_candidate_scores[kEquipmentCandidateCapacity];
 
 int battle_kernel_abi_version() {
-  return 7;
+  return 8;
 }
 
 int* equipment_candidate_int_buffer() {

@@ -68,6 +68,7 @@ execFileSync(resolve(llvmRoot, 'clang++'), [
   '-Wl,--export=battle_protocol_transform_abilities',
   '-Wl,--export=battle_protocol_initiative_random_count',
   '-Wl,--export=battle_protocol_prepare_initiative',
+  '-Wl,--export=battle_protocol_execute',
   '-o', wasm,
 ], {
   stdio: 'inherit',

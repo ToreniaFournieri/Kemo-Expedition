@@ -1,4 +1,5 @@
 #include "generated/battle_protocol.generated.h"
+#include "battle_state.h"
 
 namespace protocol = bokemo::battle_protocol;
 using u8 = unsigned char;
@@ -38,6 +39,8 @@ struct InputHeader {
   u32 engine_flags;
   u32 reserved0;
   u32 reserved1;
+  double party_max_hp;
+  double enemy_max_hp;
 };
 
 struct CombatantRecord {
@@ -61,7 +64,37 @@ struct CombatantRecord {
   double elemental_offense_value;
   u32 ability_start;
   u16 ability_count;
-  u8 reserved[10];
+  u8 magic_style;
+  u8 reserved0;
+  double original_ranged_noa;
+  double original_magical_noa;
+  double original_melee_noa;
+  double ranged_accuracy_potency;
+  double magical_accuracy_potency;
+  double melee_accuracy_potency;
+  double physical_penetration;
+  double magical_penetration;
+  double fire_resistance;
+  double thunder_resistance;
+  double ice_resistance;
+  double physical_offense_amplifier;
+  double magical_offense_amplifier;
+  double physical_defense_amplifier;
+  double magical_defense_amplifier;
+  double start_phase_bonus;
+  double combat_phase_bonus;
+  double end_phase_bonus;
+  double deity_offense_bonus;
+  double deity_physical_defense_bonus;
+  double deity_magical_defense_bonus;
+  double deity_accuracy_bonus;
+  double enemy_ranged_amplifier;
+  double enemy_magical_amplifier;
+  double enemy_melee_amplifier;
+  double ranged_attack_bonus;
+  double magical_attack_bonus;
+  double melee_attack_bonus;
+  u8 reserved[8];
 };
 
 struct AbilityRecord {
@@ -134,6 +167,28 @@ static_assert(sizeof(EventRecord) == protocol::kEventRecordSize);
 bool span_is_valid(u32 offset, u32 count, u32 record_size, u32 total_size) {
   const u64 end = static_cast<u64>(offset) + static_cast<u64>(count) * record_size;
   return offset >= protocol::kInputHeaderSize && end <= total_size;
+}
+
+bool finite(double value) { return __builtin_isfinite(value); }
+
+bool combatant_numbers_are_valid(const CombatantRecord& value) {
+  const double numbers[] = {
+    value.hp, value.max_hp, value.ranged_attack, value.magical_attack, value.melee_attack,
+    value.ranged_noa, value.magical_noa, value.melee_noa, value.physical_defense,
+    value.magical_defense, value.accuracy_bonus, value.evasion_bonus, value.elemental_offense_value,
+    value.original_ranged_noa, value.original_magical_noa, value.original_melee_noa,
+    value.ranged_accuracy_potency, value.magical_accuracy_potency, value.melee_accuracy_potency,
+    value.physical_penetration, value.magical_penetration, value.fire_resistance,
+    value.thunder_resistance, value.ice_resistance, value.physical_offense_amplifier,
+    value.magical_offense_amplifier, value.physical_defense_amplifier,
+    value.magical_defense_amplifier, value.start_phase_bonus, value.combat_phase_bonus,
+    value.end_phase_bonus, value.deity_offense_bonus, value.deity_physical_defense_bonus,
+    value.deity_magical_defense_bonus, value.deity_accuracy_bonus, value.enemy_ranged_amplifier,
+    value.enemy_magical_amplifier, value.enemy_melee_amplifier, value.ranged_attack_bonus,
+    value.magical_attack_bonus, value.melee_attack_bonus,
+  };
+  for (double number : numbers) if (!finite(number)) return false;
+  return value.hp >= 0.0 && value.max_hp >= 0.0 && value.hp <= value.max_hp;
 }
 
 constexpr u32 kInputFlagFertilityInitiative = 1u << 0;
@@ -323,6 +378,13 @@ void initialize_output(const InputHeader& input, OutputHeader* output, u32 event
   output->diagnostic_draw_count = random_consumed;
 }
 
+int initialize_error_output(const InputHeader& input, protocol::ProtocolError error) {
+  auto* output = reinterpret_cast<OutputHeader*>(output_arena);
+  initialize_output(input, output, 0, 0);
+  output->protocol_error = static_cast<u32>(error);
+  return static_cast<int>(output->total_size);
+}
+
 bool initiative_event_precedes(const EventRecord& left, const EventRecord& right) {
   if (left.timing != right.timing) return left.timing > right.timing;
   if (left.attack_type != right.attack_type) return left.attack_type < right.attack_type;
@@ -351,6 +413,13 @@ int battle_protocol_validate_input(u32 byte_length) {
   if (header->total_size != byte_length) return -4;
   if (header->terrain_id > protocol::kTerrainCount) return -5;
   if (header->deity_id > protocol::kDeityCount) return -17;
+  if (header->combatant_count == 0 || header->combatant_count > bokemo::battle_state::kMaxCombatants) return -18;
+  if (header->random_count > bokemo::battle_state::kMaxRandomTape) return -19;
+  if (header->physical_bag_count > bokemo::battle_state::kMaxThreatBagEntries ||
+      header->magical_bag_count > bokemo::battle_state::kMaxThreatBagEntries) return -20;
+  if (!finite(header->party_hp) || !finite(header->party_max_hp) || !finite(header->enemy_hp) || !finite(header->enemy_max_hp) ||
+      header->party_hp < 0.0 || header->enemy_hp < 0.0 || header->party_max_hp < header->party_hp ||
+      header->enemy_max_hp < header->enemy_hp) return -21;
   const u64 expected_combatants_offset = sizeof(InputHeader);
   const u64 expected_abilities_offset = expected_combatants_offset + static_cast<u64>(header->combatant_count) * sizeof(CombatantRecord);
   const u64 expected_random_offset = expected_abilities_offset + static_cast<u64>(header->ability_count) * sizeof(AbilityRecord);
@@ -374,7 +443,8 @@ int battle_protocol_validate_input(u32 byte_length) {
   u32 expected_ability_start = 0;
   for (u32 index = 0; index < header->combatant_count; ++index) {
     const auto& combatant = combatants[index];
-    if (combatant.id == 0 || combatant.kind < 1 || combatant.kind > 2 || combatant.elemental_offense > 3) return -9;
+    if (combatant.id == 0 || combatant.kind < 1 || combatant.kind > 2 || combatant.elemental_offense > 3 ||
+        combatant.magic_style > 4 || !combatant_numbers_are_valid(combatant)) return -9;
     if (combatant.ability_start != expected_ability_start || static_cast<u64>(combatant.ability_start) + combatant.ability_count > header->ability_count) return -10;
     for (u32 ability_index = combatant.ability_start; ability_index < combatant.ability_start + combatant.ability_count; ++ability_index) {
       if (abilities[ability_index].owner_id != combatant.id) return -10;
@@ -384,6 +454,10 @@ int battle_protocol_validate_input(u32 byte_length) {
   if (expected_ability_start != header->ability_count) return -10;
   for (u32 index = 0; index < header->ability_count; ++index) {
     if (abilities[index].id == 0 || abilities[index].id > protocol::kAbilityCount) return -11;
+  }
+  const auto* random_values = reinterpret_cast<const double*>(input_arena + header->random_offset);
+  for (u32 index = 0; index < header->random_count; ++index) {
+    if (!finite(random_values[index]) || random_values[index] < 0.0 || random_values[index] >= 1.0) return -22;
   }
   return 0;
 }
@@ -549,6 +623,193 @@ int battle_protocol_prepare_initiative(u32 byte_length) {
   }
   for (u32 index = 0; index < action_count; ++index) events[index].aux0 = index;
   initialize_output(*input, output, action_count, random_cursor);
+  return static_cast<int>(output->total_size);
+}
+
+// SpecRef: 6.1.8 | Universal C++ battle kernel | protocol v3 full-battle execution
+int battle_protocol_execute(u32 byte_length) {
+  using namespace bokemo::battle_state;
+  const int validation = battle_protocol_validate_input(byte_length);
+  if (validation != 0) return validation;
+  const auto* input = reinterpret_cast<const InputHeader*>(input_arena);
+  const auto* records = reinterpret_cast<const CombatantRecord*>(input_arena + input->combatants_offset);
+  const auto* abilities = reinterpret_cast<const AbilityRecord*>(input_arena + input->abilities_offset);
+  const auto* random_values = reinterpret_cast<const double*>(input_arena + input->random_offset);
+  const auto* physical_bag = reinterpret_cast<const BagRecord*>(input_arena + input->physical_bag_offset);
+  const auto* magical_bag = reinterpret_cast<const BagRecord*>(input_arena + input->magical_bag_offset);
+  alignas(BattleStateCore) static unsigned char state_storage[sizeof(BattleStateCore)];
+  BattleStateCore& state = *reinterpret_cast<BattleStateCore*>(state_storage);
+  reset(state);
+  state.party_hp = input->party_hp;
+  state.party_max_hp = input->party_max_hp;
+  state.enemy_hp = input->enemy_hp;
+  state.enemy_max_hp = input->enemy_max_hp;
+  state.physical_bag_count = input->physical_bag_count;
+  state.magical_bag_count = input->magical_bag_count;
+  for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};
+  for (u32 index = 0; index < input->magical_bag_count; ++index) state.magical_bag[index] = {magical_bag[index].id, magical_bag[index].tickets};
+  for (u32 index = 0; index < input->random_count; ++index) if (!append_random(state, random_values[index])) return initialize_error_output(*input, protocol::ProtocolError::RandomCapacity);
+
+  for (u32 index = 0; index < input->combatant_count; ++index) {
+    const auto& source = records[index];
+    if (!add_combatant(state, source.id, source.kind == 1 ? Side::Party : Side::Enemy, source.row, source.hp, source.max_hp)) return -25;
+    CombatantState& target = state.combatants[state.combatant_count - 1];
+    target.attacks = {source.ranged_attack, source.magical_attack, source.melee_attack,
+      source.ranged_noa, source.magical_noa, source.melee_noa,
+      source.original_ranged_noa, source.original_magical_noa, source.original_melee_noa};
+    target.profile.physical_defense = source.physical_defense;
+    target.profile.magical_defense = source.magical_defense;
+    target.profile.accuracy_potency[0] = source.ranged_accuracy_potency;
+    target.profile.accuracy_potency[1] = source.magical_accuracy_potency;
+    target.profile.accuracy_potency[2] = source.melee_accuracy_potency;
+    target.profile.accuracy_bonus = source.accuracy_bonus;
+    target.profile.evasion_bonus = source.evasion_bonus;
+    target.profile.penetration[0] = source.physical_penetration;
+    target.profile.penetration[1] = source.magical_penetration;
+    target.profile.elemental_resistance[0] = source.fire_resistance;
+    target.profile.elemental_resistance[1] = source.thunder_resistance;
+    target.profile.elemental_resistance[2] = source.ice_resistance;
+    target.profile.offense_amplifier[0] = source.physical_offense_amplifier;
+    target.profile.offense_amplifier[1] = source.magical_offense_amplifier;
+    target.profile.defense_amplifier[0] = source.physical_defense_amplifier;
+    target.profile.defense_amplifier[1] = source.magical_defense_amplifier;
+    target.profile.phase_bonus[0] = source.start_phase_bonus;
+    target.profile.phase_bonus[1] = source.combat_phase_bonus;
+    target.profile.phase_bonus[2] = source.end_phase_bonus;
+    target.profile.deity_bonus[0] = source.deity_offense_bonus;
+    target.profile.deity_bonus[1] = source.deity_physical_defense_bonus;
+    target.profile.deity_bonus[2] = source.deity_magical_defense_bonus;
+    target.profile.deity_bonus[3] = source.deity_accuracy_bonus;
+    target.profile.enemy_attack_amplifier[0] = source.enemy_ranged_amplifier;
+    target.profile.enemy_attack_amplifier[1] = source.enemy_magical_amplifier;
+    target.profile.enemy_attack_amplifier[2] = source.enemy_melee_amplifier;
+    target.profile.attack_bonus[0] = source.ranged_attack_bonus;
+    target.profile.attack_bonus[1] = source.magical_attack_bonus;
+    target.profile.attack_bonus[2] = source.melee_attack_bonus;
+    target.profile.elemental_offense = source.elemental_offense;
+    target.profile.magic_style = source.magic_style;
+    target.profile.elemental_offense_value = source.elemental_offense_value;
+    for (u32 ability_index = source.ability_start; ability_index < source.ability_start + source.ability_count; ++ability_index) {
+      if (!set_ability(target, abilities[ability_index].id, prepared_ability_level(*input, source, abilities, static_cast<protocol::AbilityId>(abilities[ability_index].id)))) return initialize_error_output(*input, protocol::ProtocolError::AbilityCapacity);
+    }
+  }
+
+  auto emit = [&](protocol::EventOpcode opcode, u32 phase, u32 actor, u32 target, u32 ability, u32 attack_type,
+                  int timing, u32 hits, u32 attempts, double value0, double value1 = 0.0, double value2 = 0.0) -> bool {
+    if (!append_event(state, static_cast<u32>(opcode), actor, target, value0)) return false;
+    SemanticEvent& event = state.events[state.event_count - 1];
+    event.phase = phase; event.ability_id = ability; event.attack_type = attack_type; event.timing = timing;
+    event.hits = hits; event.attempts = attempts; event.value1 = value1; event.value2 = value2;
+    return true;
+  };
+  if (!emit(protocol::EventOpcode::BattleStarted, 1, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
+      !emit(protocol::EventOpcode::PhaseStarted, 1, 0, 0, 0, 0, 9, 0, 0, 0.0) ||
+      !emit(protocol::EventOpcode::PhaseEnded, 1, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
+      !emit(protocol::EventOpcode::PhaseStarted, 2, 0, 0, 0, 0, 49, 0, 0, 0.0)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
+
+  // Build all normal-action entries once, then resolve the shared 49 -> 0 scheduler.
+  for (u32 index = 0; index < static_cast<u32>(state.combatant_count); ++index) {
+    CombatantState& actor = state.combatants[index];
+    const double attacks[3] = {actor.attacks.ranged, actor.attacks.magical, actor.attacks.melee};
+    const double noas[3] = {actor.attacks.ranged_noa, actor.attacks.magical_noa, actor.attacks.melee_noa};
+    for (u32 attack = 0; attack < 3; ++attack) {
+      if (attacks[attack] <= 0.0 || noas[attack] <= 0.0) continue;
+      if (state.action_count >= kMaxNormalActions) return initialize_error_output(*input, protocol::ProtocolError::ActionCapacity);
+      double roll = 0.0;
+      if (!consume_random(state, roll)) roll = 0.5;
+      const int base_max = attack == 0 ? 12 : attack == 1 ? 9 : 3;
+      int timing = 1 + static_cast<int>(roll * base_max);
+      if (timing > 49) timing = 49;
+      state.actions[state.action_count++] = {actor.id, static_cast<u8>(attack + 1), timing, false};
+      if (!emit(protocol::EventOpcode::Initiative, 2, actor.id, 0, 0, attack + 1, timing, 0, 0, roll)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
+    }
+  }
+
+  for (int timing = 49; timing >= 0; --timing) {
+    state.scheduler.next_timing = timing;
+    for (u32 action_index = 0; action_index < state.action_count; ++action_index) {
+      NormalActionEntry& action = state.actions[action_index];
+      if (action.acted || action.timing != timing) continue;
+      CombatantState* actor = find(state, action.actor_id);
+      if (!actor) return -30;
+      CombatantState* target = nullptr;
+      for (int candidate = 0; candidate < state.combatant_count; ++candidate) {
+        if (state.combatants[candidate].side != actor->side && state.combatants[candidate].hp > 0.0) { target = &state.combatants[candidate]; break; }
+      }
+      action.acted = true; actor->acted = true;
+      if (!target) continue;
+      const int profile_index = action.attack_type - 1;
+      const bool magical = action.attack_type == 2;
+      const double attack_value = (profile_index == 0 ? actor->attacks.ranged : profile_index == 1 ? actor->attacks.magical : actor->attacks.melee) + actor->profile.attack_bonus[profile_index];
+      const double no_a = profile_index == 0 ? actor->attacks.ranged_noa : profile_index == 1 ? actor->attacks.magical_noa : actor->attacks.melee_noa;
+      const u32 attempts = no_a > 4096.0 ? 4096u : static_cast<u32>(no_a);
+      u32 hits = 0;
+      double damage = 0.0;
+      for (u32 hit = 0; hit < attempts; ++hit) {
+        double random = 0.0;
+        if (!consume_random(state, random)) random = 0.5;
+        double chance = actor->profile.accuracy_potency[profile_index] + actor->profile.accuracy_bonus + actor->profile.deity_bonus[3] - target->profile.evasion_bonus;
+        if (chance < 0.0) chance = 0.0; if (chance > 1.0) chance = 1.0;
+        if (random > chance) continue;
+        ++hits;
+        const double defense = magical ? target->profile.magical_defense : target->profile.physical_defense;
+        const double penetration = actor->profile.penetration[magical ? 1 : 0];
+        double per_hit = (attack_value - defense * penetration) * actor->profile.offense_amplifier[magical ? 1 : 0];
+        per_hit *= actor->side == Side::Enemy ? actor->profile.enemy_attack_amplifier[profile_index] : 1.0;
+        per_hit *= target->profile.defense_amplifier[magical ? 1 : 0];
+        if (per_hit < 1.0) per_hit = 1.0;
+        damage += __builtin_floor(per_hit);
+      }
+      if (actor->side == Side::Party) { state.enemy_hp = state.enemy_hp > damage ? state.enemy_hp - damage : 0.0; target->hp = state.enemy_hp; }
+      else { state.party_hp = state.party_hp > damage ? state.party_hp - damage : 0.0; }
+      if (!emit(protocol::EventOpcode::Attack, 2, actor->id, target->id, 0, action.attack_type, timing, hits, attempts, damage)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
+    }
+  }
+  if (!emit(protocol::EventOpcode::PhaseEnded, 2, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
+      !emit(protocol::EventOpcode::PhaseStarted, 3, 0, 0, 0, 0, 9, 0, 0, 0.0)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
+  if (input->terrain_id != static_cast<u16>(protocol::TerrainId::Gehenna) && input->deity_id == static_cast<u16>(protocol::DeityId::GoddessOfRestoration)) {
+    const double heal = __builtin_floor((state.party_max_hp - state.party_hp) * 0.2);
+    state.party_hp = state.party_hp + heal > state.party_max_hp ? state.party_max_hp : state.party_hp + heal;
+    if (!emit(protocol::EventOpcode::Heal, 3, 0, 0, 0, 0, 9, 0, 0, heal)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
+  } else if (input->terrain_id != static_cast<u16>(protocol::TerrainId::Gehenna) && input->deity_id == static_cast<u16>(protocol::DeityId::GodOfAttrition)) {
+    const double loss = __builtin_floor(state.party_hp * 0.05);
+    state.party_hp = state.party_hp - loss < 1.0 ? 1.0 : state.party_hp - loss;
+    if (!emit(protocol::EventOpcode::Damage, 3, 0, 0, 0, 0, 9, 0, 0, loss)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
+  }
+  const u8 outcome = state.party_hp <= 0.0 ? 2 : state.enemy_hp <= 0.0 ? 1 : 3;
+  if (!emit(protocol::EventOpcode::PhaseEnded, 3, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
+      !emit(protocol::EventOpcode::Outcome, 3, 0, 0, 0, 0, 0, 0, 0, outcome) ||
+      !emit(protocol::EventOpcode::BattleFinished, 3, 0, 0, 0, 0, 0, 0, 0, outcome)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
+  while (state.random_cursor < state.random_count) { double ignored = 0.0; consume_random(state, ignored); }
+
+  const u64 output_size = sizeof(OutputHeader) + static_cast<u64>(state.event_count) * sizeof(EventRecord) +
+      static_cast<u64>(state.physical_bag_count + state.magical_bag_count) * sizeof(BagRecord);
+  if (output_size > protocol::kArenaCapacity) return initialize_error_output(*input, protocol::ProtocolError::OutputCapacity);
+  auto* output = reinterpret_cast<OutputHeader*>(output_arena);
+  initialize_output(*input, output, state.event_count, state.random_cursor);
+  output->total_size = static_cast<u32>(output_size);
+  output->outcome = outcome;
+  output->party_hp = state.party_hp;
+  output->enemy_hp = state.enemy_hp;
+  output->enemy_hits_received = 0;
+  auto* output_events = reinterpret_cast<EventRecord*>(output_arena + sizeof(OutputHeader));
+  for (u32 index = 0; index < state.event_count; ++index) {
+    const SemanticEvent& source = state.events[index];
+    EventRecord& event = output_events[index]; event = {};
+    event.opcode = static_cast<u16>(source.opcode); event.phase = static_cast<u8>(source.phase);
+    const CombatantState* actor = find(state, source.actor_id); event.actor_kind = actor ? (actor->side == Side::Party ? 1 : 2) : 0;
+    event.actor_id = source.actor_id; event.target_id = source.target_id; event.ability_id = static_cast<u16>(source.ability_id);
+    event.attack_type = static_cast<u8>(source.attack_type); event.timing = source.timing; event.hits = source.hits;
+    event.attempts = source.attempts; event.value0 = source.value; event.value1 = source.value1; event.value2 = source.value2;
+  }
+  output->physical_bag_count = state.physical_bag_count;
+  output->physical_bag_offset = sizeof(OutputHeader) + state.event_count * sizeof(EventRecord);
+  output->magical_bag_count = state.magical_bag_count;
+  output->magical_bag_offset = output->physical_bag_offset + state.physical_bag_count * sizeof(BagRecord);
+  auto* output_physical = reinterpret_cast<BagRecord*>(output_arena + output->physical_bag_offset);
+  auto* output_magical = reinterpret_cast<BagRecord*>(output_arena + output->magical_bag_offset);
+  for (u32 index = 0; index < state.physical_bag_count; ++index) output_physical[index] = {state.physical_bag[index].id, state.physical_bag[index].tickets};
+  for (u32 index = 0; index < state.magical_bag_count; ++index) output_magical[index] = {state.magical_bag[index].id, state.magical_bag[index].tickets};
   return static_cast<int>(output->total_size);
 }
 

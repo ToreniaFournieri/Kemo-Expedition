@@ -23,7 +23,7 @@ test('seeded battle entry point is reproducible and records replay metadata', ()
   const first = runBattle(input, 0x0123456789abcdefn);
   const second = runBattle(input, 0x0123456789abcdefn);
   assert.deepEqual(second, first);
-  assert.equal(first.engineMetadata.protocolVersion, 2);
+  assert.equal(first.engineMetadata.protocolVersion, 3);
   assert.equal(first.engineMetadata.rngVersion, 1);
   assert.equal(first.engineMetadata.seedHex, '0123456789abcdef');
   assert.ok(first.engineMetadata.randomDrawCount > 0);

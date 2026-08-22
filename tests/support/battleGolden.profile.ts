@@ -6,7 +6,9 @@ import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { executeBattle } from '../../src/game/battle.ts';
+import { executeBattleCandidate } from '../../src/game/battleCandidate.ts';
 import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
+import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -14,8 +16,10 @@ import { setLanguage } from '../../src/i18n/index.ts';
 import type { EnemyDef, GameState, Party, RoomType, TerrainEffectKey } from '../../src/types/index.ts';
 import {
   assertBattleRunnerParity,
+  canonicalBattleJson,
   digestBattleGolden,
   recordBattleGolden,
+  replayBattleGolden,
   type BattleGoldenCase,
   type BattleGoldenDigest,
 } from './battleGoldenHarness.ts';
@@ -288,4 +292,17 @@ test('record/replay detects candidate output and random-consumption drift', () =
     ),
     /candidate battle result differs/,
   );
+});
+
+test('protocol-v3 shadow candidate preserves every frozen result through one measured execution call', () => {
+  for (const fixture of createGoldenCases()) {
+    const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
+    beginBattleKernelMeasurement();
+    const candidate = replayBattleGolden(executeBattleCandidate, fixture, reference.randomTape);
+    const measurement = endBattleKernelMeasurement();
+    assert.equal(canonicalBattleJson(candidate), canonicalBattleJson(reference.snapshot));
+    assert.equal(measurement.calls, 1, `${fixture.id}: shadow candidate must use one measured Wasm call`);
+    assert.ok(measurement.inputBytes > 0, `${fixture.id}: shadow candidate input was not measured`);
+    assert.ok(measurement.outputBytes > 0, `${fixture.id}: shadow candidate output was not measured`);
+  }
 });

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.4 | 20 | 2026/08/22 | Add the shadow-only protocol v3 full-battle path with complete static numerical combat profiles, ABI 8 and the checked-in one-call `battle_protocol_execute` Wasm export, expanded fixed-capacity native state and explicit overflow diagnostics, TypeScript projection/localization adapters, frozen-tape golden parity and boundary-call coverage, while leaving production, AFK, and API battle callers on the existing coordinator. |
 | 0.9.4 | 19 | 2026/08/22 | Freeze the deterministic battle-migration reference contract with pinned SHA-256 identities for the TypeScript reference coordinator and unchanged golden fixture, locked case inventory, outcome and complete-result shape checks, explicit missing, additional, reordered, and output-drift self-tests, and a documented engine-ownership matrix. |
 | 0.9.4 | 18 | 2026/08/22 | Close D3 native-rule coverage gaps and add the D4 internal C++ mutable battle-state core for HP, combatants, abilities, temporary effects, scheduler, random tape, semantic events, recovery, and invariant-tested state transitions while retaining TypeScript battle authority and the one-call production interface. |
 | 0.9.4 | 17 | 2026/08/22 | Add the explicit seeded runBattle validation API, unsigned-64-bit Web Crypto seed generation, fixed replay-seed formatting, C++ RNG-backed reproducibility, and protocol/RNG/draw-count result metadata without changing production battle randomness. |

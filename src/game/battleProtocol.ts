@@ -48,6 +48,35 @@ export type BattleProtocolCombatant = {
   accuracyBonus: number;
   evasionBonus: number;
   elementalOffenseValue: number;
+  originalRangedNoA?: number;
+  originalMagicalNoA?: number;
+  originalMeleeNoA?: number;
+  rangedAccuracyPotency?: number;
+  magicalAccuracyPotency?: number;
+  meleeAccuracyPotency?: number;
+  physicalPenetration?: number;
+  magicalPenetration?: number;
+  fireResistance?: number;
+  thunderResistance?: number;
+  iceResistance?: number;
+  physicalOffenseAmplifier?: number;
+  magicalOffenseAmplifier?: number;
+  physicalDefenseAmplifier?: number;
+  magicalDefenseAmplifier?: number;
+  startPhaseBonus?: number;
+  combatPhaseBonus?: number;
+  endPhaseBonus?: number;
+  deityOffenseBonus?: number;
+  deityPhysicalDefenseBonus?: number;
+  deityMagicalDefenseBonus?: number;
+  deityAccuracyBonus?: number;
+  enemyRangedAmplifier?: number;
+  enemyMagicalAmplifier?: number;
+  enemyMeleeAmplifier?: number;
+  rangedAttackBonus?: number;
+  magicalAttackBonus?: number;
+  meleeAttackBonus?: number;
+  magicStyle?: 0 | 1 | 2 | 3 | 4;
   abilities: BattleProtocolAbility[];
 };
 
@@ -55,7 +84,9 @@ export type BattleProtocolInput = {
   flags?: number;
   terrainEffect?: TerrainEffectKey | null;
   partyHp: number;
+  partyMaxHp?: number;
   enemyHp: number;
+  enemyMaxHp?: number;
   combatants: BattleProtocolCombatant[];
   randomValues: readonly number[];
   physicalThreatBag: ReadonlyArray<{ id: number; tickets: number }>;
@@ -128,10 +159,10 @@ function requireSpan(offset: number, count: number, recordSize: number, totalSiz
 }
 
 export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Array {
-  requireInteger(input.combatants.length, 1, 0xffff, 'combatant count');
+  requireInteger(input.combatants.length, 1, 8, 'combatant count');
   const abilityCount = input.combatants.reduce((total, combatant) => total + combatant.abilities.length, 0);
   requireInteger(abilityCount, 0, 0xffff_ffff, 'ability count');
-  requireInteger(input.randomValues.length, 0, 0xffff_ffff, 'random count');
+  requireInteger(input.randomValues.length, 0, 4_096, 'random count');
 
   const combatantsOffset = BATTLE_INPUT_HEADER_SIZE;
   const abilitiesOffset = combatantsOffset + input.combatants.length * BATTLE_COMBATANT_RECORD_SIZE;
@@ -165,6 +196,8 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
   view.setUint32(BATTLE_INPUT_OFFSETS.magicalBagOffset, magicalBagOffset, littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.partyHp, requireFinite(input.partyHp, 'party HP'), littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.enemyHp, requireFinite(input.enemyHp, 'enemy HP'), littleEndian);
+  view.setFloat64(BATTLE_INPUT_OFFSETS.partyMaxHp, requireFinite(input.partyMaxHp ?? input.partyHp, 'party max HP'), littleEndian);
+  view.setFloat64(BATTLE_INPUT_OFFSETS.enemyMaxHp, requireFinite(input.enemyMaxHp ?? input.enemyHp, 'enemy max HP'), littleEndian);
   const seed = BigInt.asUintN(64, input.seed ?? 0n);
   view.setUint32(BATTLE_INPUT_OFFSETS.seedLow, Number(seed & 0xffff_ffffn), littleEndian);
   view.setUint32(BATTLE_INPUT_OFFSETS.seedHigh, Number(seed >> 32n), littleEndian);
@@ -201,6 +234,38 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
     numericFields.forEach(([fieldOffset, value, label]) => view.setFloat64(offset + fieldOffset, requireFinite(value, label), littleEndian));
     view.setUint32(offset + BATTLE_COMBATANT_OFFSETS.abilityStart, abilityStart, littleEndian);
     view.setUint16(offset + BATTLE_COMBATANT_OFFSETS.abilityCount, combatant.abilities.length, littleEndian);
+    view.setUint8(offset + BATTLE_COMBATANT_OFFSETS.magicStyle, requireInteger(combatant.magicStyle ?? 0, 0, 4, 'magic style'));
+    const extendedNumericFields: Array<[number, number, string]> = [
+      [BATTLE_COMBATANT_OFFSETS.originalRangedNoA, combatant.originalRangedNoA ?? combatant.rangedNoA, 'original ranged NoA'],
+      [BATTLE_COMBATANT_OFFSETS.originalMagicalNoA, combatant.originalMagicalNoA ?? combatant.magicalNoA, 'original magical NoA'],
+      [BATTLE_COMBATANT_OFFSETS.originalMeleeNoA, combatant.originalMeleeNoA ?? combatant.meleeNoA, 'original melee NoA'],
+      [BATTLE_COMBATANT_OFFSETS.rangedAccuracyPotency, combatant.rangedAccuracyPotency ?? 1, 'ranged accuracy potency'],
+      [BATTLE_COMBATANT_OFFSETS.magicalAccuracyPotency, combatant.magicalAccuracyPotency ?? 1, 'magical accuracy potency'],
+      [BATTLE_COMBATANT_OFFSETS.meleeAccuracyPotency, combatant.meleeAccuracyPotency ?? 1, 'melee accuracy potency'],
+      [BATTLE_COMBATANT_OFFSETS.physicalPenetration, combatant.physicalPenetration ?? 1, 'physical penetration'],
+      [BATTLE_COMBATANT_OFFSETS.magicalPenetration, combatant.magicalPenetration ?? 1, 'magical penetration'],
+      [BATTLE_COMBATANT_OFFSETS.fireResistance, combatant.fireResistance ?? 1, 'fire resistance'],
+      [BATTLE_COMBATANT_OFFSETS.thunderResistance, combatant.thunderResistance ?? 1, 'thunder resistance'],
+      [BATTLE_COMBATANT_OFFSETS.iceResistance, combatant.iceResistance ?? 1, 'ice resistance'],
+      [BATTLE_COMBATANT_OFFSETS.physicalOffenseAmplifier, combatant.physicalOffenseAmplifier ?? 1, 'physical offense amplifier'],
+      [BATTLE_COMBATANT_OFFSETS.magicalOffenseAmplifier, combatant.magicalOffenseAmplifier ?? 1, 'magical offense amplifier'],
+      [BATTLE_COMBATANT_OFFSETS.physicalDefenseAmplifier, combatant.physicalDefenseAmplifier ?? 1, 'physical defense amplifier'],
+      [BATTLE_COMBATANT_OFFSETS.magicalDefenseAmplifier, combatant.magicalDefenseAmplifier ?? 1, 'magical defense amplifier'],
+      [BATTLE_COMBATANT_OFFSETS.startPhaseBonus, combatant.startPhaseBonus ?? 0, 'START phase bonus'],
+      [BATTLE_COMBATANT_OFFSETS.combatPhaseBonus, combatant.combatPhaseBonus ?? 0, 'COMBAT phase bonus'],
+      [BATTLE_COMBATANT_OFFSETS.endPhaseBonus, combatant.endPhaseBonus ?? 0, 'END phase bonus'],
+      [BATTLE_COMBATANT_OFFSETS.deityOffenseBonus, combatant.deityOffenseBonus ?? 0, 'deity offense bonus'],
+      [BATTLE_COMBATANT_OFFSETS.deityPhysicalDefenseBonus, combatant.deityPhysicalDefenseBonus ?? 1, 'deity physical defense bonus'],
+      [BATTLE_COMBATANT_OFFSETS.deityMagicalDefenseBonus, combatant.deityMagicalDefenseBonus ?? 1, 'deity magical defense bonus'],
+      [BATTLE_COMBATANT_OFFSETS.deityAccuracyBonus, combatant.deityAccuracyBonus ?? 0, 'deity accuracy bonus'],
+      [BATTLE_COMBATANT_OFFSETS.enemyRangedAmplifier, combatant.enemyRangedAmplifier ?? 1, 'enemy ranged amplifier'],
+      [BATTLE_COMBATANT_OFFSETS.enemyMagicalAmplifier, combatant.enemyMagicalAmplifier ?? 1, 'enemy magical amplifier'],
+      [BATTLE_COMBATANT_OFFSETS.enemyMeleeAmplifier, combatant.enemyMeleeAmplifier ?? 1, 'enemy melee amplifier'],
+      [BATTLE_COMBATANT_OFFSETS.rangedAttackBonus, combatant.rangedAttackBonus ?? 0, 'ranged attack bonus'],
+      [BATTLE_COMBATANT_OFFSETS.magicalAttackBonus, combatant.magicalAttackBonus ?? 0, 'magical attack bonus'],
+      [BATTLE_COMBATANT_OFFSETS.meleeAttackBonus, combatant.meleeAttackBonus ?? 0, 'melee attack bonus'],
+    ];
+    extendedNumericFields.forEach(([fieldOffset, value, label]) => view.setFloat64(offset + fieldOffset, requireFinite(value, label), littleEndian));
 
     combatant.abilities.forEach((ability, localIndex) => {
       const abilityId = BATTLE_ABILITY_IDS[ability.id];

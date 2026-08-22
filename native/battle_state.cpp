@@ -10,7 +10,20 @@ double clamp_hp(double hp, double max_hp) {
 }
 }  // namespace
 
-void reset(BattleStateCore& state) { state = BattleStateCore{}; }
+void reset(BattleStateCore& state) {
+  state.combatant_count = 0;
+  state.scheduler = {};
+  state.action_count = 0;
+  state.party_hp = 0.0;
+  state.party_max_hp = 0.0;
+  state.enemy_hp = 0.0;
+  state.enemy_max_hp = 0.0;
+  state.physical_bag_count = 0;
+  state.magical_bag_count = 0;
+  state.random_cursor = 0;
+  state.random_count = 0;
+  state.event_count = 0;
+}
 
 CombatantState* find(BattleStateCore& state, unsigned int id) {
   for (int index = 0; index < state.combatant_count; ++index) {
@@ -29,6 +42,22 @@ const CombatantState* find(const BattleStateCore& state, unsigned int id) {
 bool add_combatant(BattleStateCore& state, unsigned int id, Side side, unsigned int row, double hp, double max_hp) {
   if (id == 0 || max_hp < 0.0 || find(state, id) || state.combatant_count >= kMaxCombatants) return false;
   CombatantState& target = state.combatants[state.combatant_count++];
+  target = CombatantState{};
+  target.temporary.physical_defense_debuff = 1.0;
+  target.temporary.magical_defense_debuff = 1.0;
+  for (int index = 0; index < 3; ++index) {
+    target.profile.accuracy_potency[index] = 1.0;
+    target.profile.elemental_resistance[index] = 1.0;
+    target.profile.enemy_attack_amplifier[index] = 1.0;
+  }
+  for (int index = 0; index < 2; ++index) {
+    target.profile.penetration[index] = 1.0;
+    target.profile.offense_amplifier[index] = 1.0;
+    target.profile.defense_amplifier[index] = 1.0;
+  }
+  target.profile.deity_bonus[1] = 1.0;
+  target.profile.deity_bonus[2] = 1.0;
+  target.profile.elemental_offense_value = 1.0;
   target.id = id;
   target.side = side;
   target.row = row;
@@ -112,7 +141,11 @@ void apply_temporary_modifiers(CombatantState& target, double accuracy, double e
   target.temporary.magical_defense_debuff *= magical;
 }
 
-void reset_temporary_modifiers(CombatantState& target) { target.temporary = TemporaryModifiers{}; }
+void reset_temporary_modifiers(CombatantState& target) {
+  target.temporary = {};
+  target.temporary.physical_defense_debuff = 1.0;
+  target.temporary.magical_defense_debuff = 1.0;
+}
 
 bool recover_on_defeat(CombatantState& target, unsigned int resurrect_id, unsigned int reanimate_id) {
   if (!is_lethal(target)) return false;
@@ -146,7 +179,12 @@ bool consume_random(BattleStateCore& state, double& value) {
 
 bool append_event(BattleStateCore& state, unsigned int opcode, unsigned int actor_id, unsigned int target_id, double value) {
   if (state.event_count >= kMaxSemanticEvents) return false;
-  state.events[state.event_count++] = SemanticEvent{opcode, actor_id, target_id, value};
+  SemanticEvent& event = state.events[state.event_count++];
+  event = {};
+  event.opcode = opcode;
+  event.actor_id = actor_id;
+  event.target_id = target_id;
+  event.value = value;
   return true;
 }
 

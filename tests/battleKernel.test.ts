@@ -15,7 +15,7 @@ import {
 } from '../src/game/battleKernel.ts';
 
 test('the checked-in C++ battle kernel exposes the expected ABI', () => {
-  assert.equal(getBattleKernelAbiVersion(), 7);
+  assert.equal(getBattleKernelAbiVersion(), 8);
   assert.equal(getBattleRngVersion(), 1);
 });
 

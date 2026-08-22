@@ -7,6 +7,7 @@ import { ENEMIES } from '../../src/data/enemies.ts';
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
 import { executeBattle } from '../../src/game/battle.ts';
+import { executeBattleCandidate } from '../../src/game/battleCandidate.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -100,6 +101,36 @@ test('reports deterministic single-battle migration metrics', () => {
   console.info('BATTLE_MIGRATION_BASELINE', JSON.stringify(report));
   assert.ok(report.medianBattleMs > 0);
   assert.ok(report.medianWasmBoundaryCalls > 1);
+});
+
+test('reports the protocol-v3 one-call shadow boundary', () => {
+  setLanguage('ja');
+  const state = loadState();
+  const fixture = createBattleFixture(state);
+  const calls: number[] = [];
+  const inputBytes: number[] = [];
+  const outputBytes: number[] = [];
+  for (let index = 0; index < 10; index += 1) {
+    beginBattleKernelMeasurement();
+    withRandom(0x3e710001 + index, () => executeBattleCandidate(
+      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
+      fixture.party.currentHp, { terrainEffect: fixture.terrainEffect },
+    ));
+    const boundary = endBattleKernelMeasurement();
+    calls.push(boundary.calls);
+    inputBytes.push(boundary.inputBytes);
+    outputBytes.push(boundary.outputBytes);
+  }
+  const report = {
+    engine: 'protocol-v3-shadow-candidate', samples: calls.length,
+    medianWasmBoundaryCalls: percentile(calls, 0.5),
+    medianInputBytes: percentile(inputBytes, 0.5),
+    medianOutputBytes: percentile(outputBytes, 0.5),
+  };
+  console.info('BATTLE_PROTOCOL_V3_BOUNDARY', JSON.stringify(report));
+  assert.equal(report.medianWasmBoundaryCalls, 1);
+  assert.ok(report.medianInputBytes > 0);
+  assert.ok(report.medianOutputBytes > 0);
 });
 
 test('reports deterministic AFK migration metrics', () => {

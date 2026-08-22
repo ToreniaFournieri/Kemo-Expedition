@@ -3,7 +3,7 @@ import type { AttackType, TerrainEffectKey } from '../types';
 import { decodeBattleProtocolOutput, type BattleProtocolOutput } from './battleProtocol.ts';
 import { BATTLE_PROTOCOL_VERSION } from './generated/battleProtocol.generated.ts';
 
-const ABI_VERSION = 7;
+const ABI_VERSION = 8;
 const RNG_VERSION = 1;
 
 type KernelExports = WebAssembly.Exports & {
@@ -47,6 +47,7 @@ type KernelExports = WebAssembly.Exports & {
   battle_protocol_transform_abilities(byteLength: number): number;
   battle_protocol_initiative_random_count(byteLength: number): number;
   battle_protocol_prepare_initiative(byteLength: number): number;
+  battle_protocol_execute(byteLength: number): number;
 };
 
 const module = new WebAssembly.Module(BATTLE_KERNEL_WASM);
@@ -55,6 +56,7 @@ let measurementEnabled = false;
 let measuredCalls = 0;
 let measuredInputBytes = 0;
 let measuredOutputBytes = 0;
+let measurementSuppressionDepth = 0;
 
 export type BattleKernelMeasurement = {
   calls: number;
@@ -63,10 +65,20 @@ export type BattleKernelMeasurement = {
 };
 
 function recordKernelCall(inputBytes = 0, outputBytes = 0): void {
-  if (!measurementEnabled) return;
+  if (!measurementEnabled || measurementSuppressionDepth > 0) return;
   measuredCalls += 1;
   measuredInputBytes += inputBytes;
   measuredOutputBytes += outputBytes;
+}
+
+/** Keeps the frozen TypeScript oracle outside shadow-candidate boundary metrics. */
+export function withBattleKernelMeasurementSuppressed<T>(operation: () => T): T {
+  measurementSuppressionDepth += 1;
+  try {
+    return operation();
+  } finally {
+    measurementSuppressionDepth -= 1;
+  }
 }
 
 export function beginBattleKernelMeasurement(): void {
@@ -443,4 +455,9 @@ export function getBattleProtocolInitiativeRandomCount(input: Uint8Array): numbe
 
 export function prepareBattleProtocolInitiative(input: Uint8Array): BattleProtocolOutput {
   return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_prepare_initiative(byteLength));
+}
+
+/** One measured Wasm boundary call for the protocol-v3 shadow full-engine path. */
+export function executeBattleProtocol(input: Uint8Array): BattleProtocolOutput {
+  return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_execute(byteLength));
 }
