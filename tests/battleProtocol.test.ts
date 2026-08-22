@@ -8,6 +8,8 @@ import {
 import { getBattleProtocolArenaInfo, probeBattleProtocol } from '../src/game/battleKernel.ts';
 import {
   BATTLE_ABILITY_IDS,
+  BATTLE_ACTION_IDS,
+  BATTLE_DEITY_IDS,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
   BATTLE_PROTOCOL_ARENA_CAPACITY,
@@ -66,16 +68,23 @@ const protocolInput: BattleProtocolInput = {
   randomValues: [0, 0.25, 0.5, 0.999999],
   physicalThreatBag: [{ id: 1, tickets: 16 }, { id: 6, tickets: 1 }],
   magicalThreatBag: [{ id: 1, tickets: 2 }, { id: 6, tickets: 2 }],
+  seed: 0x0123456789abcdefn,
+  deityId: 12,
+  rngVersion: 1,
 };
 
 test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
-  assert.equal(BATTLE_PROTOCOL_VERSION, 1);
+  assert.equal(BATTLE_PROTOCOL_VERSION, 2);
   assert.equal(BATTLE_ABILITY_IDS.defender, 1);
   assert.equal(BATTLE_ABILITY_IDS.unlock, 126);
   assert.equal(BATTLE_TERRAIN_IDS['terrain.rejuvenation'], 1);
   assert.equal(BATTLE_TERRAIN_IDS['terrain.duelist-domain'], 46);
   assert.equal(BATTLE_EVENT_OPCODES.protocol_ready, 1);
   assert.equal(BATTLE_EVENT_OPCODES.outcome, 21);
+  assert.equal(BATTLE_DEITY_IDS.goddess_of_restoration, 1);
+  assert.equal(BATTLE_DEITY_IDS.goddess_of_discord, 12);
+  assert.equal(BATTLE_ACTION_IDS.normal_attack, 1);
+  assert.equal(BATTLE_ACTION_IDS.timed_ability, 15);
   assert.equal(getBattleProtocolTerrainName(BATTLE_TERRAIN_IDS['terrain.echo-domain']), 'terrain.echo-domain');
 });
 
@@ -94,6 +103,10 @@ test('TypeScript encoder and C++ decoder share one binary input layout', () => {
   assert.equal(output.enemyHp, protocolInput.enemyHp);
   assert.equal(output.randomConsumed, 0);
   assert.equal(output.enemyHitsReceived, 0);
+  assert.equal(output.seed, protocolInput.seed);
+  assert.equal(output.rngVersion, protocolInput.rngVersion);
+  assert.equal(output.diagnosticDrawCount, 0);
+  assert.equal(output.protocolError, 0);
   assert.deepEqual(output.events.map((event) => event.opcode), ['protocol_ready']);
   assert.deepEqual(output.physicalThreatBag, protocolInput.physicalThreatBag);
   assert.deepEqual(output.magicalThreatBag, protocolInput.magicalThreatBag);

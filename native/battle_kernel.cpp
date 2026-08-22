@@ -18,7 +18,7 @@ int equipment_candidate_values[kEquipmentCandidateCapacity * kEquipmentCandidate
 double equipment_candidate_scores[kEquipmentCandidateCapacity];
 
 int battle_kernel_abi_version() {
-  return 4;
+  return 6;
 }
 
 int* equipment_candidate_int_buffer() {

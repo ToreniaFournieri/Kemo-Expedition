@@ -5,13 +5,37 @@ import {
   calculateHitChance,
   calculatePerHitDamage,
   getBattleKernelAbiVersion,
+  getBattleRngDoubleSequence,
+  getBattleRngSequence,
+  getBattleRngVersion,
   resolveHitSequence,
   selectBestAutoEquipmentFillCandidate,
   selectBestAutoEquipmentUpgradeCandidate,
 } from '../src/game/battleKernel.ts';
 
 test('the checked-in C++ battle kernel exposes the expected ABI', () => {
-  assert.equal(getBattleKernelAbiVersion(), 4);
+  assert.equal(getBattleKernelAbiVersion(), 6);
+  assert.equal(getBattleRngVersion(), 1);
+});
+
+test('C++ xoshiro256** has stable splitmix64-seeded known-answer output', () => {
+  assert.deepEqual(getBattleRngSequence(0n, 5), [
+    0x99ec5f36cb75f2b4n,
+    0xbf6e1f784956452an,
+    0x1a5f849d4933e6e0n,
+    0x6aa594f1262d2d2cn,
+    0xbba5ad4a1f842e59n,
+  ]);
+  assert.deepEqual(getBattleRngSequence(0n, 5), getBattleRngSequence(0n, 5));
+  assert.notDeepEqual(getBattleRngSequence(0n, 5), getBattleRngSequence(1n, 5));
+});
+
+test('C++ RNG uniform doubles use the specified top-53-bit conversion', () => {
+  const raw = getBattleRngSequence(0x0123456789abcdefn, 8);
+  const actual = getBattleRngDoubleSequence(0x0123456789abcdefn, 8);
+  const expected = raw.map(value => Number(value >> 11n) / 0x20_0000_0000_0000);
+  assert.deepEqual(actual, expected);
+  assert.ok(actual.every(value => value >= 0 && value < 1));
 });
 
 test('C++ auto-equipment fill ranking preserves score and legacy tie-break order', () => {

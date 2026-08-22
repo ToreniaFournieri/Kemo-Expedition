@@ -31,6 +31,11 @@ struct InputHeader {
   u32 magical_bag_offset;
   double party_hp;
   double enemy_hp;
+  u32 seed_low;
+  u32 seed_high;
+  u16 deity_id;
+  u16 rng_version;
+  u32 engine_flags;
   u32 reserved0;
   u32 reserved1;
 };
@@ -87,9 +92,15 @@ struct OutputHeader {
   u32 magical_bag_offset;
   u32 random_consumed;
   u32 enemy_hits_received;
-  u32 reserved0;
+  u32 rng_version;
   double party_hp;
   double enemy_hp;
+  u32 seed_low;
+  u32 seed_high;
+  u32 diagnostic_draw_count;
+  u32 protocol_error;
+  u32 reserved0;
+  u32 reserved1;
 };
 
 struct EventRecord {
@@ -306,6 +317,10 @@ void initialize_output(const InputHeader& input, OutputHeader* output, u32 event
   output->random_consumed = random_consumed;
   output->party_hp = input.party_hp;
   output->enemy_hp = input.enemy_hp;
+  output->rng_version = input.rng_version;
+  output->seed_low = input.seed_low;
+  output->seed_high = input.seed_high;
+  output->diagnostic_draw_count = random_consumed;
 }
 
 bool initiative_event_precedes(const EventRecord& left, const EventRecord& right) {
@@ -335,6 +350,7 @@ int battle_protocol_validate_input(u32 byte_length) {
   if (header->version != protocol::kVersion || header->header_size != sizeof(InputHeader)) return -3;
   if (header->total_size != byte_length) return -4;
   if (header->terrain_id > protocol::kTerrainCount) return -5;
+  if (header->deity_id > protocol::kDeityCount) return -17;
   const u64 expected_combatants_offset = sizeof(InputHeader);
   const u64 expected_abilities_offset = expected_combatants_offset + static_cast<u64>(header->combatant_count) * sizeof(CombatantRecord);
   const u64 expected_random_offset = expected_abilities_offset + static_cast<u64>(header->ability_count) * sizeof(AbilityRecord);
@@ -399,6 +415,9 @@ int battle_protocol_probe(u32 byte_length) {
   output->random_consumed = 0;
   output->party_hp = input->party_hp;
   output->enemy_hp = input->enemy_hp;
+  output->rng_version = input->rng_version;
+  output->seed_low = input->seed_low;
+  output->seed_high = input->seed_high;
   event->opcode = static_cast<u16>(protocol::EventOpcode::ProtocolReady);
   for (u32 index = 0; index < input->physical_bag_count; ++index) output_physical_bag[index] = input_physical_bag[index];
   for (u32 index = 0; index < input->magical_bag_count; ++index) output_magical_bag[index] = input_magical_bag[index];

@@ -60,6 +60,10 @@ export type BattleProtocolInput = {
   randomValues: readonly number[];
   physicalThreatBag: ReadonlyArray<{ id: number; tickets: number }>;
   magicalThreatBag: ReadonlyArray<{ id: number; tickets: number }>;
+  seed?: bigint;
+  deityId?: number;
+  rngVersion?: number;
+  engineFlags?: number;
 };
 
 export type BattleProtocolEvent = {
@@ -93,6 +97,10 @@ export type BattleProtocolOutput = {
   physicalThreatBag: Array<{ id: number; tickets: number }>;
   magicalThreatBag: Array<{ id: number; tickets: number }>;
   byteLength: number;
+  seed: bigint;
+  rngVersion: number;
+  diagnosticDrawCount: number;
+  protocolError: number;
 };
 
 const littleEndian = true;
@@ -157,6 +165,12 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
   view.setUint32(BATTLE_INPUT_OFFSETS.magicalBagOffset, magicalBagOffset, littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.partyHp, requireFinite(input.partyHp, 'party HP'), littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.enemyHp, requireFinite(input.enemyHp, 'enemy HP'), littleEndian);
+  const seed = BigInt.asUintN(64, input.seed ?? 0n);
+  view.setUint32(BATTLE_INPUT_OFFSETS.seedLow, Number(seed & 0xffff_ffffn), littleEndian);
+  view.setUint32(BATTLE_INPUT_OFFSETS.seedHigh, Number(seed >> 32n), littleEndian);
+  view.setUint16(BATTLE_INPUT_OFFSETS.deityId, requireInteger(input.deityId ?? 0, 0, 0xffff, 'deity ID'), littleEndian);
+  view.setUint16(BATTLE_INPUT_OFFSETS.rngVersion, requireInteger(input.rngVersion ?? 0, 0, 0xffff, 'RNG version'), littleEndian);
+  view.setUint32(BATTLE_INPUT_OFFSETS.engineFlags, requireInteger(input.engineFlags ?? 0, 0, 0xffff_ffff, 'engine flags'), littleEndian);
 
   let abilityStart = 0;
   input.combatants.forEach((combatant, combatantIndex) => {
@@ -284,6 +298,11 @@ export function decodeBattleProtocolOutput(bytes: Uint8Array): BattleProtocolOut
     physicalThreatBag: decodeBag(BATTLE_OUTPUT_OFFSETS.physicalBagCount, BATTLE_OUTPUT_OFFSETS.physicalBagOffset, 'physical bag'),
     magicalThreatBag: decodeBag(BATTLE_OUTPUT_OFFSETS.magicalBagCount, BATTLE_OUTPUT_OFFSETS.magicalBagOffset, 'magical bag'),
     byteLength: totalSize,
+    seed: (BigInt(view.getUint32(BATTLE_OUTPUT_OFFSETS.seedHigh, littleEndian)) << 32n)
+      | BigInt(view.getUint32(BATTLE_OUTPUT_OFFSETS.seedLow, littleEndian)),
+    rngVersion: view.getUint32(BATTLE_OUTPUT_OFFSETS.rngVersion, littleEndian),
+    diagnosticDrawCount: view.getUint32(BATTLE_OUTPUT_OFFSETS.diagnosticDrawCount, littleEndian),
+    protocolError: view.getUint32(BATTLE_OUTPUT_OFFSETS.protocolError, littleEndian),
   };
 }
 

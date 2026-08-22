@@ -5,6 +5,7 @@ import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { executeBattle } from '../../src/game/battle.ts';
+import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -162,7 +163,7 @@ test('battle golden fixtures lock complete results and random consumption', () =
 test('record/replay detects candidate output and random-consumption drift', () => {
   const fixtures = createGoldenCases();
   for (const fixture of fixtures) {
-    assertBattleRunnerParity(executeBattle, executeBattle, fixture);
+    assertBattleRunnerParity(executeTypeScriptBattle, executeBattle, fixture);
   }
 
   const fixture = fixtures[0]!;
