@@ -294,12 +294,14 @@ test('record/replay detects candidate output and random-consumption drift', () =
   );
 });
 
-test('protocol-v3 shadow candidate preserves every frozen result through one measured execution call', () => {
+test('temporary protocol-v3 shadow wrapper returns the frozen TypeScript result through one measured execution call', () => {
   for (const fixture of createGoldenCases()) {
     const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
     beginBattleKernelMeasurement();
     const candidate = replayBattleGolden(executeBattleCandidate, fixture, reference.randomTape);
     const measurement = endBattleKernelMeasurement();
+    // The localized complete result is still the frozen TypeScript result. This
+    // assertion is a wrapper-contract check, not independent C++ battle parity.
     assert.equal(canonicalBattleJson(candidate), canonicalBattleJson(reference.snapshot));
     assert.equal(measurement.calls, 1, `${fixture.id}: shadow candidate must use one measured Wasm call`);
     assert.ok(measurement.inputBytes > 0, `${fixture.id}: shadow candidate input was not measured`);

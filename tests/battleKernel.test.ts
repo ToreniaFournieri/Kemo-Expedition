@@ -247,3 +247,10 @@ test('internal mutable battle state applies repeated and competing defeat recove
   assert.equal(output[26], 62);
   assert.equal(output[35], 0);
 });
+
+test('internal mutable battle state reports semantic-event capacity without truncating accepted events', () => {
+  const operations = Array.from({ length: 4_097 }, (_, index) => [16, index + 1, 1, 2, index]);
+  const output = runBattleStateTestOperations(operations);
+  assert.equal(output[(4_096 - 1) * 5], 1);
+  assert.equal(output[4_096 * 5], 0);
+});

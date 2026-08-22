@@ -16,7 +16,9 @@ export const BATTLE_PROTOCOL_ERROR_CODES = {
   eventCapacity: 3,
   actionCapacity: 4,
   outputCapacity: 5,
+  tapeExhausted: 6,
 } as const;
+export const BATTLE_ENGINE_FLAG_START_CHECKPOINT = 1 << 0;
 
 export const BATTLE_ABILITY_IDS = {
   "defender": 1,

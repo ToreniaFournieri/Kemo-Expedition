@@ -16,6 +16,7 @@ inline constexpr unsigned short kTerrainCount = 46;
 inline constexpr unsigned short kEventOpcodeCount = 26;
 inline constexpr unsigned short kDeityCount = 12;
 inline constexpr unsigned short kActionCount = 15;
+inline constexpr unsigned int kEngineFlagStartCheckpoint = 1u << 0;
 
 enum class ProtocolError : unsigned int {
   None = 0,
@@ -24,6 +25,7 @@ enum class ProtocolError : unsigned int {
   EventCapacity = 3,
   ActionCapacity = 4,
   OutputCapacity = 5,
+  TapeExhausted = 6,
 };
 
 enum class AbilityId : unsigned short {

@@ -11,18 +11,7 @@ double clamp_hp(double hp, double max_hp) {
 }  // namespace
 
 void reset(BattleStateCore& state) {
-  state.combatant_count = 0;
-  state.scheduler = {};
-  state.action_count = 0;
-  state.party_hp = 0.0;
-  state.party_max_hp = 0.0;
-  state.enemy_hp = 0.0;
-  state.enemy_max_hp = 0.0;
-  state.physical_bag_count = 0;
-  state.magical_bag_count = 0;
-  state.random_cursor = 0;
-  state.random_count = 0;
-  state.event_count = 0;
+  __builtin_memset(&state, 0, sizeof(BattleStateCore));
 }
 
 CombatantState* find(BattleStateCore& state, unsigned int id) {

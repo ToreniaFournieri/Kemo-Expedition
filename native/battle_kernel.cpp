@@ -12,7 +12,7 @@ unsigned char hit_results[kHitBufferCapacity];
 
 // This grouped entry point is intentionally test-only. It exercises the
 // internal mutable-state core without adding production WebAssembly crossings.
-constexpr int kBattleStateTestOperationCapacity = 128;
+constexpr int kBattleStateTestOperationCapacity = 4097;
 constexpr int kBattleStateTestOperationStride = 8;
 double battle_state_test_input[kBattleStateTestOperationCapacity * kBattleStateTestOperationStride];
 double battle_state_test_output[kBattleStateTestOperationCapacity * 5];

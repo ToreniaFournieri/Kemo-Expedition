@@ -11,6 +11,7 @@ import {
   BATTLE_ABILITY_IDS,
   BATTLE_ACTION_IDS,
   BATTLE_DEITY_IDS,
+  BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
   BATTLE_COMBATANT_OFFSETS,
@@ -231,6 +232,224 @@ test('full-battle execution resets state, consumes the supplied tape exactly, an
   assert.equal(second.randomConsumed, 0);
   assert.equal(second.partyHp, 77);
   assert.equal(second.enemyHp, 88);
+});
+
+function checkpointInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
+  return {
+    partyHp: 100,
+    partyMaxHp: 100,
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    engineFlags: BATTLE_ENGINE_FLAG_START_CHECKPOINT,
+    combatants: [
+      {
+        id: 900,
+        kind: 'enemy',
+        row: 0,
+        elementalOffense: 'none',
+        hp: 100,
+        maxHp: 100,
+        rangedAttack: 0,
+        magicalAttack: 0,
+        meleeAttack: 0,
+        rangedNoA: 0,
+        magicalNoA: 0,
+        meleeNoA: 0,
+        physicalDefense: 0,
+        magicalDefense: 0,
+        accuracyBonus: 0,
+        evasionBonus: 0,
+        elementalOffenseValue: 1,
+        abilities: [],
+      },
+      {
+        id: 1,
+        kind: 'character',
+        row: 1,
+        elementalOffense: 'none',
+        hp: 100,
+        maxHp: 100,
+        rangedAttack: 0,
+        magicalAttack: 0,
+        meleeAttack: 0,
+        rangedNoA: 0,
+        magicalNoA: 0,
+        meleeNoA: 0,
+        physicalDefense: 0,
+        magicalDefense: 0,
+        accuracyBonus: 0,
+        evasionBonus: 0,
+        elementalOffenseValue: 1,
+        abilities: [],
+      },
+    ],
+    randomValues: [],
+    physicalThreatBag: [],
+    magicalThreatBag: [],
+    ...overrides,
+  };
+}
+
+test('START checkpoint resolves an empty slice and leaves outcome unresolved', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput()));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'unresolved');
+  assert.equal(output.randomConsumed, 0);
+  assert.equal(output.diagnosticDrawCount, 0);
+  assert.deepEqual(output.events.map((event) => event.opcode), ['battle_started', 'phase_started', 'phase_ended']);
+});
+
+test('START checkpoint preserves immediate terrain, initiative, then timed draw order', () => {
+  const randomValues = [0, 0, 0.39, 0, 0.1, 0.2, 0.3, 0.4, 0.75, 0.25];
+  const input = checkpointInput({
+    terrainEffect: 'terrain.deletion',
+    randomValues,
+    combatants: [
+      {
+        ...checkpointInput().combatants[0]!,
+        rangedAttack: 10,
+        rangedNoA: 1,
+        abilities: [{ id: 'oblivion', level: 1 }],
+      },
+      {
+        ...checkpointInput().combatants[1]!,
+        meleeAttack: 10,
+        meleeNoA: 1,
+        abilities: [{ id: 'fading_memory', level: 1 }],
+      },
+    ],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.randomConsumed, randomValues.length);
+  assert.equal(output.diagnosticDrawCount, randomValues.length);
+  const deletion = output.events.find((event) => event.opcode === 'ability_mutated' && (event.flags & 8) !== 0);
+  assert.equal(deletion?.targetId, 900);
+  assert.equal(deletion?.abilityId, 'oblivion');
+  assert.equal(output.events.find((event) => event.opcode === 'random_flavor')?.aux0, 3);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'initiative').map((event) => [event.actorId, event.attackType, event.timing]),
+    [[900, 'ranged', 4], [1, 'melee', 2]],
+  );
+  assert.ok(output.events.find((event) => event.opcode === 'ability_mutated' && event.timing === 8));
+
+  const exhausted = executeBattleProtocol(encodeBattleProtocolInput({ ...input, randomValues: randomValues.slice(0, -1) }));
+  assert.equal(exhausted.protocolError, BATTLE_PROTOCOL_ERROR_CODES.tapeExhausted);
+  assert.equal(exhausted.randomConsumed, randomValues.length - 1);
+  assert.equal(exhausted.diagnosticDrawCount, randomValues.length - 1);
+  assert.equal(exhausted.events.length, 0, 'errors must not expose truncated semantic output');
+});
+
+test('START checkpoint emits Deletion prevention, transformations, Silence exceptions, and deity statuses', () => {
+  const unforgettable = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    terrainEffect: 'terrain.deletion',
+    randomValues: [0],
+    combatants: [
+      { ...checkpointInput().combatants[0]!, abilities: [{ id: 'unforgettable', level: 1 }] },
+      checkpointInput().combatants[1]!,
+    ],
+  })));
+  assert.equal(unforgettable.randomConsumed, 1);
+  assert.ok(unforgettable.events.some((event) => event.abilityId === 'unforgettable' && (event.flags & 1) !== 0));
+
+  const emptyDeletion = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    terrainEffect: 'terrain.deletion',
+    randomValues: [0, 0],
+  })));
+  assert.equal(emptyDeletion.randomConsumed, 2, 'an empty Deletion target still consumes the frozen ability-selection draw');
+  assert.equal(emptyDeletion.events.some((event) => event.opcode === 'ability_mutated'), false);
+
+  const transformed = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    terrainEffect: 'terrain.transcendence',
+    combatants: [
+      { ...checkpointInput().combatants[0]!, abilities: [{ id: 'oblivion', level: 5 }] },
+      { ...checkpointInput().combatants[1]!, abilities: [{ id: 'magic_seal', level: 2 }] },
+    ],
+    randomValues: [0, 0],
+  })));
+  const mutation = transformed.events.find((event) => event.abilityId === 'magic_seal' && event.opcode === 'ability_mutated');
+  assert.deepEqual([mutation?.value0, mutation?.value1], [2, 3]);
+  assert.equal(transformed.events.some((event) => event.abilityId === 'oblivion' && event.opcode === 'ability_mutated'), false);
+
+  const suppressed = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    terrainEffect: 'terrain.suppression',
+    combatants: [
+      checkpointInput().combatants[0]!,
+      { ...checkpointInput().combatants[1]!, abilities: [{ id: 'magic_seal', level: 3 }, { id: 'defiance', level: 1 }] },
+    ],
+  })));
+  assert.equal(suppressed.events.some((event) => event.opcode === 'ability_mutated'), false);
+  const suppressionApplied = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    terrainEffect: 'terrain.suppression',
+    combatants: [
+      checkpointInput().combatants[0]!,
+      { ...checkpointInput().combatants[1]!, abilities: [{ id: 'magic_seal', level: 3 }] },
+    ],
+  })));
+  const suppressedMutation = suppressionApplied.events.find((event) => event.opcode === 'ability_mutated');
+  assert.deepEqual([suppressedMutation?.value0, suppressedMutation?.value1], [3, 2]);
+
+  const silence = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    terrainEffect: 'terrain.silence-field',
+    combatants: [
+      { ...checkpointInput().combatants[0]!, abilities: [{ id: 'magic_seal', level: 1 }] },
+      { ...checkpointInput().combatants[1]!, abilities: [{ id: 'magic_seal', level: 1 }, { id: 'equation_breaker', level: 1 }, { id: 'domain_breaker', level: 1 }] },
+    ],
+  })));
+  assert.equal(silence.events.filter((event) => event.abilityId === 'magic_seal').length, 1);
+  assert.ok(silence.events.some((event) => event.abilityId === 'equation_breaker'));
+  assert.ok(silence.events.some((event) => event.abilityId === 'domain_breaker'));
+
+  const discord = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({ deityId: BATTLE_DEITY_IDS.goddess_of_discord, randomValues: [0] })));
+  assert.ok(discord.events.some((event) => event.opcode === 'status_applied' && event.targetId === 1));
+  const nullDiscord = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    deityId: BATTLE_DEITY_IDS.goddess_of_discord,
+    randomValues: [0],
+    combatants: [checkpointInput().combatants[0]!, { ...checkpointInput().combatants[1]!, abilities: [{ id: 'null_antagonism', level: 1 }] }],
+  })));
+  assert.ok(nullDiscord.events.some((event) => event.abilityId === 'null_antagonism' && (event.flags & 1) !== 0));
+
+  const oblivionDeity = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    deityId: BATTLE_DEITY_IDS.god_of_oblivion,
+    randomValues: [0, 0],
+  })));
+  assert.ok(oblivionDeity.events.some((event) => event.abilityId === 'fading_memory' && (event.flags & 16) !== 0));
+  const gehenna = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    deityId: BATTLE_DEITY_IDS.god_of_oblivion,
+    terrainEffect: 'terrain.gehenna',
+  })));
+  assert.equal(gehenna.events.some((event) => event.abilityId === 'fading_memory'), false);
+});
+
+test('START checkpoint resolves Oblivion, Fading Memory, Mimic, and timing-3 facts in owner order', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    randomValues: [0, 0, 0, 0, 0, 0],
+    combatants: [
+      { ...checkpointInput().combatants[0]!, abilities: [{ id: 'fading_memory', level: 1 }, { id: 'mimic', level: 1 }, { id: 'frostbite', level: 1 }] },
+      { ...checkpointInput().combatants[1]!, abilities: [{ id: 'oblivion', level: 1 }, { id: 'magic_seal', level: 1 }, { id: 'mutual_magic_amplify', level: 2 }] },
+    ],
+  })));
+  assert.equal(output.protocolError, 0);
+  const timedMutations = output.events.filter((event) => event.opcode === 'ability_mutated');
+  assert.ok(timedMutations.some((event) => event.timing === 9 && event.actorId === 1 && event.targetId === 900));
+  assert.ok(timedMutations.some((event) => event.timing === 8));
+  assert.ok(output.events.some((event) => event.timing === 3 && event.abilityId === 'magic_seal'));
+  assert.ok(output.events.some((event) => event.timing === 3 && event.abilityId === 'frostbite'));
+  assert.ok(output.events.some((event) => event.timing === 3 && event.abilityId === 'mutual_magic_amplify' && (event.flags & 32) !== 0));
+
+  const mimic = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput({
+    randomValues: [0, 0],
+    combatants: [
+      { ...checkpointInput().combatants[0]!, abilities: [{ id: 'mimic', level: 1 }] },
+      { ...checkpointInput().combatants[1]!, abilities: [{ id: 'magic_seal', level: 2 }] },
+    ],
+  })));
+  assert.ok(mimic.events.some((event) => event.timing === 8 && event.actorId === 900
+    && event.targetId === 1 && event.abilityId === 'magic_seal' && (event.flags & 2) !== 0));
+
+  const reset = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput()));
+  assert.deepEqual(reset.events.map((event) => event.opcode), ['battle_started', 'phase_started', 'phase_ended']);
+  assert.equal(reset.randomConsumed, 0);
 });
 
 test('checked-in full-battle Wasm has no imports and exports the v3 executor', () => {

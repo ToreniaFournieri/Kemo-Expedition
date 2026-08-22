@@ -65,6 +65,7 @@ struct CombatantState {
   unsigned int id = 0;
   Side side = Side::Party;
   unsigned int row = 0;
+  unsigned int status_flags = 0;
   double hp = 0.0;
   double max_hp = 0.0;
   AttackProfile attacks{};
@@ -108,12 +109,16 @@ struct SemanticEvent {
   unsigned int target_id = 0;
   unsigned int ability_id = 0;
   unsigned int attack_type = 0;
+  unsigned int flags = 0;
   int timing = 0;
   unsigned int hits = 0;
   unsigned int attempts = 0;
   double value = 0.0;
   double value1 = 0.0;
   double value2 = 0.0;
+  unsigned int aux0 = 0;
+  unsigned int aux1 = 0;
+  unsigned int aux2 = 0;
 };
 
 struct BattleStateCore {
