@@ -569,6 +569,16 @@ function combatTimedInput(overrides: Partial<BattleProtocolInput> = {}): BattleP
   return { ...combatReactiveInput(), engineFlags: BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, ...overrides };
 }
 
+const EMPTY_THREAT_BAG = Array.from({ length: 6 }, (_, index) => ({ id: index + 1, tickets: 0 }));
+const PHYSICAL_THREAT_BAG_AFTER_ROW_1_DRAW = [
+  { id: 1, tickets: 15 }, { id: 2, tickets: 8 }, { id: 3, tickets: 4 },
+  { id: 4, tickets: 2 }, { id: 5, tickets: 1 }, { id: 6, tickets: 1 },
+];
+const MAGICAL_THREAT_BAG_AFTER_ROW_1_DRAW = Array.from(
+  { length: 6 },
+  (_, index) => ({ id: index + 1, tickets: index === 0 ? 1 : 2 }),
+);
+
 test('timed COMBAT flag is exclusive, accepts externally-owned First Aid, and resolves before normal actions', () => {
   const exclusive = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
     engineFlags: BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT | BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
@@ -646,6 +656,209 @@ test('timed Self Destruct clamps semantic damage at zero below target defense', 
   })));
   assert.equal(output.protocolError, 0);
   assert.equal(output.events.find((event) => event.abilityId === 'self_destruct')?.value0, 0);
+});
+
+test('timed melee 4 preserves Predator Sense before a Free-forced draw', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    enemyHp: 20,
+    enemyMaxHp: 100,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'free', level: 4 }] }
+      : { ...combatant, abilities: [{ id: 'predator_sense', level: 1 }] }),
+    randomValues: [],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'draw');
+  assert.deepEqual(
+    output.events.filter((event) => event.aux0 === BATTLE_ACTION_IDS.timed_ability)
+      .map((event) => event.abilityId),
+    ['predator_sense', 'free'],
+  );
+  assert.equal(output.randomConsumed, 0);
+});
+
+test('timed timing 4 resolves ranged Unstable Core and magic Confusion before melee Free', () => {
+  const input = combatTimedInput({
+    enemyHp: 20,
+    enemyMaxHp: 100,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [
+          { id: 'unstable_core', level: 1 },
+          { id: 'magic_confusion', level: 1 },
+          { id: 'free', level: 4 },
+        ] }
+      : {
+          ...combatant,
+          magicalAttack: 1,
+          magicalNoA: 1,
+          abilities: [{ id: 'predator_sense', level: 1 }],
+        }),
+    randomValues: [
+      0, 0, 0.34, // party magical initiative = timing 4
+      0, 0.99, // Confusion target, then failure
+      0, // party magical hit before the melee timing-4 slot
+    ],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'draw');
+  assert.equal(output.randomConsumed, input.randomValues.length);
+  assert.equal(output.diagnosticDrawCount, input.randomValues.length);
+  assert.deepEqual([output.partyHp, output.enemyHp], [100, 13]);
+  const orderedAbilities = new Set(['unstable_core', 'magic_confusion', 'predator_sense', 'free']);
+  assert.deepEqual(
+    output.events.filter((event) => event.timing === 4 && orderedAbilities.has(event.abilityId ?? ''))
+      .map((event) => event.abilityId),
+    ['unstable_core', 'magic_confusion', 'predator_sense', 'free'],
+  );
+});
+
+test('timed melee 2 preserves Free, Decompose, Confusion, then Self Destruct and draw order', () => {
+  const input = combatTimedInput({
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    partyHp: 1_000,
+    partyMaxHp: 1_000,
+    physicalThreatBag: [{ id: 1, tickets: 1 }, { id: 2, tickets: 1 }],
+    combatants: combatBaseInput().combatants.map((combatant, index) => index === 0
+      ? {
+          ...combatant,
+          abilities: [
+            { id: 'free', level: 2 },
+            { id: 'decompose', level: 1 },
+            { id: 'melee_confusion', level: 3 },
+            { id: 'self_destruct', level: 1 },
+          ],
+        }
+      : index === 1
+        ? { ...combatant, meleeAttack: 1, meleeNoA: 1, abilities: [{ id: 'pursuit', level: 1 }] }
+        : combatant),
+    randomValues: [
+      0.5, // party row 1 initiative = timing 2
+      0.99, // Decompose threat draw = row 2
+      0, 0.99, // Confusion target row 1, then failure
+      0, // Self Destruct threat draw = remaining row 1
+    ],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.randomConsumed, input.randomValues.length);
+  assert.equal(output.diagnosticDrawCount, input.randomValues.length);
+  assert.deepEqual([output.partyHp, output.enemyHp], [990, 0]);
+  const orderedAbilities = new Set(['pursuit', 'decompose', 'melee_confusion', 'self_destruct']);
+  assert.deepEqual(
+    output.events.filter((event) => event.aux0 === BATTLE_ACTION_IDS.timed_ability)
+      .filter((event) => orderedAbilities.has(event.abilityId ?? ''))
+      .map((event) => [event.abilityId, event.targetId]),
+    [
+      ['pursuit', 0],
+      ['decompose', 2],
+      ['melee_confusion', 1],
+      ['self_destruct', 1],
+    ],
+  );
+  assert.deepEqual(output.physicalThreatBag, [{ id: 1, tickets: 0 }, { id: 2, tickets: 0 }]);
+});
+
+test('timed threat targeting refills an empty physical bag and returns the decremented defaults', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    physicalThreatBag: EMPTY_THREAT_BAG,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'decompose', level: 1 }] }
+      : combatant),
+    randomValues: [0],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.randomConsumed, 1);
+  assert.equal(output.diagnosticDrawCount, 1);
+  assert.deepEqual([output.partyHp, output.enemyHp], [100, 100]);
+  assert.equal(output.events.find((event) => event.abilityId === 'decompose')?.targetId, 1);
+  assert.deepEqual(output.physicalThreatBag, PHYSICAL_THREAT_BAG_AFTER_ROW_1_DRAW);
+});
+
+test('timed normal targeting refills an empty magical bag with canonical weights', () => {
+  const input = combatTimedInput({
+    magicalThreatBag: EMPTY_THREAT_BAG,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, magicalAttack: 1, magicalNoA: 1 }
+      : combatant),
+    randomValues: [0, 0, 0, 0, 0],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.randomConsumed, input.randomValues.length);
+  assert.equal(output.events.find((event) => event.opcode === 'target_selected')?.targetId, 1);
+  assert.deepEqual(output.magicalThreatBag, MAGICAL_THREAT_BAG_AFTER_ROW_1_DRAW);
+});
+
+test('timed Decompose exhaustion refills before immediately following Self Destruct', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    physicalThreatBag: [{ id: 2, tickets: 1 }],
+    combatants: combatBaseInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'decompose', level: 1 }, { id: 'self_destruct', level: 1 }] }
+      : combatant),
+    randomValues: [0.5, 0],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.randomConsumed, 2);
+  assert.equal(output.diagnosticDrawCount, 2);
+  assert.deepEqual([output.partyHp, output.enemyHp], [90, 0]);
+  assert.deepEqual(
+    output.events.filter((event) => ['decompose', 'self_destruct'].includes(event.abilityId ?? ''))
+      .map((event) => [event.abilityId, event.targetId]),
+    [['decompose', 2], ['self_destruct', 1]],
+  );
+  assert.deepEqual(output.physicalThreatBag, PHYSICAL_THREAT_BAG_AFTER_ROW_1_DRAW);
+});
+
+test('timed melee threat effects apply Bulwark redirection and Bulwark Breaker bypass', () => {
+  for (const ability of ['decompose', 'self_destruct'] as const) {
+    for (const breaker of [false, true]) {
+      const output = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+        physicalThreatBag: [{ id: 2, tickets: 1 }],
+        partyHp: 1_000,
+        partyMaxHp: 1_000,
+        combatants: combatBaseInput().combatants.map((combatant, index) => index === 0
+          ? { ...combatant, abilities: [
+              { id: ability, level: 1 },
+              ...(breaker ? [{ id: 'bulwark_breaker' as const, level: 1 }] : []),
+            ] }
+          : index === 1
+            ? { ...combatant, abilities: [{ id: 'bulwark', level: 2 }] }
+            : combatant),
+        randomValues: [0],
+      })));
+      assert.equal(output.protocolError, 0);
+      assert.equal(output.randomConsumed, 1);
+      assert.equal(output.events.find((event) => event.abilityId === ability)?.targetId, breaker ? 2 : 1);
+    }
+  }
+});
+
+test('timed threat refill and later conditional draw failures are transactional', () => {
+  const refillExhausted = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    physicalThreatBag: EMPTY_THREAT_BAG,
+    combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'decompose', level: 1 }] }
+      : combatant),
+    randomValues: [],
+  })));
+  assert.equal(refillExhausted.protocolError, BATTLE_PROTOCOL_ERROR_CODES.tapeExhausted);
+  assert.equal(refillExhausted.randomConsumed, 0);
+  assert.deepEqual(refillExhausted.events, []);
+  assert.deepEqual(refillExhausted.physicalThreatBag, []);
+
+  const laterExhausted = executeBattleProtocol(encodeBattleProtocolInput(combatTimedInput({
+    physicalThreatBag: [{ id: 2, tickets: 1 }],
+    combatants: combatBaseInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'decompose', level: 1 }, { id: 'self_destruct', level: 1 }] }
+      : combatant),
+    randomValues: [0.5],
+  })));
+  assert.equal(laterExhausted.protocolError, BATTLE_PROTOCOL_ERROR_CODES.tapeExhausted);
+  assert.equal(laterExhausted.randomConsumed, 1);
+  assert.deepEqual(laterExhausted.events, []);
+  assert.deepEqual(laterExhausted.physicalThreatBag, []);
 });
 
 test('reactive COMBAT flag is exclusive and preflights timed and Mimic-copyable mechanics before draws', () => {
