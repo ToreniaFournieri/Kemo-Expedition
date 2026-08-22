@@ -5,6 +5,7 @@ import {
   BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
 } from './generated/battleProtocol.generated.ts';
 import { computeCharacterStats } from './characterComputation.ts';
@@ -276,6 +277,20 @@ export function executeBattleCombatTimedCheckpoint(
 ): BattleProtocolOutput {
   return executeBattleCandidateProtocol(projectBattleProtocolInput(
     party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
+  ));
+}
+
+/** Test-only native checkpoint: START through canonical END/finalization. */
+export function executeBattleEndCheckpoint(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  randomValues: readonly number[],
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): BattleProtocolOutput {
+  return executeBattleCandidateProtocol(projectBattleProtocolInput(
+    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   ));
 }
 

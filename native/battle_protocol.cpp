@@ -2497,6 +2497,38 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
   if (!emit_state_event(state, protocol::EventOpcode::PhaseEnded, kCombatPhase, 0, 0, 0, 0, 0)) return CombatResult::EventCapacity;
   return CombatResult::Ok;
 }
+
+bool end_checkpoint_domain_is_supported(
+    const InputHeader& input, const CombatantRecord* combatants, const AbilityRecord* abilities,
+    const BagRecord* physical_bag, const BagRecord* magical_bag) {
+  const u32 earlier_flags = protocol::kEngineFlagStartCheckpoint |
+      protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint |
+      protocol::kEngineFlagCombatReactiveCheckpoint | protocol::kEngineFlagCombatTimedCheckpoint;
+  if ((input.engine_flags & protocol::kEngineFlagEndCheckpoint) == 0 ||
+      (input.engine_flags & earlier_flags) != 0) return false;
+  InputHeader timed = input;
+  timed.engine_flags = protocol::kEngineFlagCombatTimedCheckpoint;
+  return timed_combat_domain_is_supported(timed, combatants, abilities, physical_bag, magical_bag);
+}
+
+u8 select_checkpoint_outcome(const BattleStateCore& state, bool surviving_combat_is_draw) {
+  if (state.party_hp <= 0.0) return 2;
+  if (state.enemy_hp <= 0.0) return 1;
+  if (state.forced_draw || surviving_combat_is_draw) return 3;
+  return 0;
+}
+
+bool finalize_end_checkpoint(BattleStateCore& state) {
+  const bool enter_end = !state.forced_draw && state.party_hp > 0.0 && state.enemy_hp > 0.0;
+  const u32 phase = enter_end ? 3 : 2;
+  if (enter_end) {
+    if (!emit_state_event(state, protocol::EventOpcode::PhaseStarted, 3, 0, 0, 0, 0, 49) ||
+        !emit_state_event(state, protocol::EventOpcode::PhaseEnded, 3, 0, 0, 0, 0, 0)) return false;
+  }
+  const u8 outcome = select_checkpoint_outcome(state, true);
+  return emit_state_event(state, protocol::EventOpcode::Outcome, phase, 0, 0, 0, 0, 0, 0, outcome) &&
+      emit_state_event(state, protocol::EventOpcode::BattleFinished, phase, 0, 0, 0, 0, 0, 0, outcome);
+}
 }  // namespace
 
 extern "C" {
@@ -2743,8 +2775,16 @@ int battle_protocol_execute(u32 byte_length) {
   const bool normal_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatNormalCheckpoint) != 0;
   const bool reactive_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatReactiveCheckpoint) != 0;
   const bool timed_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatTimedCheckpoint) != 0;
+  const bool end_checkpoint = (input->engine_flags & protocol::kEngineFlagEndCheckpoint) != 0;
+  const u32 known_engine_flags = protocol::kEngineFlagStartCheckpoint |
+      protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint |
+      protocol::kEngineFlagCombatReactiveCheckpoint | protocol::kEngineFlagCombatTimedCheckpoint |
+      protocol::kEngineFlagEndCheckpoint;
+  if ((input->engine_flags & ~known_engine_flags) != 0) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
   if ((start_checkpoint ? 1 : 0) + (combat_checkpoint ? 1 : 0) + (normal_checkpoint ? 1 : 0) +
-      (reactive_checkpoint ? 1 : 0) + (timed_checkpoint ? 1 : 0) > 1) {
+      (reactive_checkpoint ? 1 : 0) + (timed_checkpoint ? 1 : 0) + (end_checkpoint ? 1 : 0) > 1) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if (combat_checkpoint && !base_combat_domain_is_supported(*input, records, physical_bag, magical_bag)) {
@@ -2759,6 +2799,9 @@ int battle_protocol_execute(u32 byte_length) {
   if (timed_checkpoint && !timed_combat_domain_is_supported(*input, records, abilities, physical_bag, magical_bag)) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
+  if (end_checkpoint && !end_checkpoint_domain_is_supported(*input, records, abilities, physical_bag, magical_bag)) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
   alignas(BattleStateCore) static unsigned char state_storage[sizeof(BattleStateCore)];
   BattleStateCore& state = *reinterpret_cast<BattleStateCore*>(state_storage);
   reset(state);
@@ -2770,7 +2813,7 @@ int battle_protocol_execute(u32 byte_length) {
   state.magical_bag_count = input->magical_bag_count;
   for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};
   for (u32 index = 0; index < input->magical_bag_count; ++index) state.magical_bag[index] = {magical_bag[index].id, magical_bag[index].tickets};
-  if (combat_checkpoint || normal_checkpoint || reactive_checkpoint || timed_checkpoint) {
+  if (combat_checkpoint || normal_checkpoint || reactive_checkpoint || timed_checkpoint || end_checkpoint) {
     auto sort_bag = [](ThreatBagEntry* bag, u32 count) {
       for (u32 index = 1; index < count; ++index) {
         const ThreatBagEntry current = bag[index];
@@ -2837,7 +2880,7 @@ int battle_protocol_execute(u32 byte_length) {
     event.hits = hits; event.attempts = attempts; event.value1 = value1; event.value2 = value2;
     return true;
   };
-  if (start_checkpoint || combat_checkpoint || normal_checkpoint || reactive_checkpoint || timed_checkpoint) {
+  if (start_checkpoint || combat_checkpoint || normal_checkpoint || reactive_checkpoint || timed_checkpoint || end_checkpoint) {
     const StartResult start_result = resolve_start_checkpoint(*input, state);
     if (start_result != StartResult::Ok) {
       const protocol::ProtocolError error = start_result == StartResult::TapeExhausted ? protocol::ProtocolError::TapeExhausted
@@ -2878,13 +2921,26 @@ int battle_protocol_execute(u32 byte_length) {
         return initialize_error_output_at_cursor(*input, error, state.random_cursor);
       }
     }
+    if (end_checkpoint) {
+      const CombatResult combat_result = resolve_reactive_combat(*input, state, true);
+      if (combat_result != CombatResult::Ok) {
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+            ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
+        return initialize_error_output_at_cursor(*input, error, state.random_cursor);
+      }
+      if (!finalize_end_checkpoint(state)) {
+        return initialize_error_output_at_cursor(*input, protocol::ProtocolError::EventCapacity, state.random_cursor);
+      }
+    }
     const u64 output_size = sizeof(OutputHeader) + static_cast<u64>(state.event_count) * sizeof(EventRecord) +
         static_cast<u64>(state.physical_bag_count + state.magical_bag_count) * sizeof(BagRecord);
-    if (output_size > protocol::kArenaCapacity) return initialize_error_output(*input, protocol::ProtocolError::OutputCapacity);
+    if (output_size > protocol::kArenaCapacity) {
+      return initialize_error_output_at_cursor(*input, protocol::ProtocolError::OutputCapacity, state.random_cursor);
+    }
     auto* output = reinterpret_cast<OutputHeader*>(output_arena);
     initialize_output(*input, output, state.event_count, state.random_cursor);
     output->total_size = static_cast<u32>(output_size);
-    output->outcome = state.forced_draw ? 3 : state.enemy_hp <= 0.0 ? 1 : state.party_hp <= 0.0 ? 2 : 0;
+    output->outcome = select_checkpoint_outcome(state, end_checkpoint);
     output->party_hp = state.party_hp;
     output->enemy_hp = state.enemy_hp;
     const CombatantState* resolved_enemy = nullptr;

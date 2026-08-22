@@ -21,6 +21,7 @@ inline constexpr unsigned int kEngineFlagCombatBaseCheckpoint = 1u << 1;
 inline constexpr unsigned int kEngineFlagCombatNormalCheckpoint = 1u << 2;
 inline constexpr unsigned int kEngineFlagCombatReactiveCheckpoint = 1u << 3;
 inline constexpr unsigned int kEngineFlagCombatTimedCheckpoint = 1u << 4;
+inline constexpr unsigned int kEngineFlagEndCheckpoint = 1u << 5;
 
 enum class ProtocolError : unsigned int {
   None = 0,

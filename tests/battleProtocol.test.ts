@@ -21,6 +21,7 @@ import {
   BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
@@ -106,6 +107,7 @@ test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT, 1 << 2);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT, 1 << 3);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, 1 << 4);
+  assert.equal(BATTLE_ENGINE_FLAG_END_CHECKPOINT, 1 << 5);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature, 7);
   assert.equal(getBattleProtocolTerrainName(BATTLE_TERRAIN_IDS['terrain.echo-domain']), 'terrain.echo-domain');
 });
@@ -568,6 +570,169 @@ function combatReactiveInput(overrides: Partial<BattleProtocolInput> = {}): Batt
 function combatTimedInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
   return { ...combatReactiveInput(), engineFlags: BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, ...overrides };
 }
+
+function endCheckpointInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
+  return { ...combatTimedInput(), engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT, ...overrides };
+}
+
+test('END checkpoint flag is exclusive and unknown bits reject transactionally', () => {
+  const earlier = [
+    BATTLE_ENGINE_FLAG_START_CHECKPOINT,
+    BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
+    BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+    BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
+    BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
+  ];
+  for (const flags of [...earlier.map((flag) => flag | BATTLE_ENGINE_FLAG_END_CHECKPOINT), 2 ** 31]) {
+    const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({ engineFlags: flags, randomValues: [0.5] })));
+    assert.equal(output.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+    assert.equal(output.randomConsumed, 0);
+    assert.equal(output.diagnosticDrawCount, 0);
+    assert.deepEqual(output.events, []);
+    assert.deepEqual(output.physicalThreatBag, []);
+    assert.deepEqual(output.magicalThreatBag, []);
+  }
+});
+
+test('END checkpoint traverses reserved END once without drawing and finalizes surviving combat as draw', () => {
+  const input = endCheckpointInput({
+    partyHp: 9_000_000_000,
+    partyMaxHp: 9_000_000_000,
+    enemyHp: 8_000_000_000,
+    enemyMaxHp: 8_000_000_000,
+    randomValues: [0.75],
+  });
+  const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'draw');
+  assert.deepEqual([output.partyHp, output.enemyHp], [input.partyHp, input.enemyHp]);
+  assert.equal(output.randomConsumed, 0);
+  assert.equal(output.diagnosticDrawCount, 0);
+  assert.deepEqual(output.physicalThreatBag, input.physicalThreatBag);
+  assert.deepEqual(output.magicalThreatBag, input.magicalThreatBag);
+  assert.deepEqual(output.events.slice(-4).map((event) => [event.opcode, event.phase, event.timing]), [
+    ['phase_started', 3, 49],
+    ['phase_ended', 3, 0],
+    ['outcome', 3, 0],
+    ['battle_finished', 3, 0],
+  ]);
+  assert.deepEqual(output.events.slice(-2).map((event) => event.value0), [3, 3]);
+  assert.equal(output.events.filter((event) => event.opcode === 'phase_started' && event.phase === 3).length, 1);
+  assert.equal(output.events.filter((event) => event.opcode === 'phase_ended' && event.phase === 3).length, 1);
+});
+
+test('END checkpoint skips END after COMBAT victory or defeat and leaves the tape suffix untouched', () => {
+  const cases = [
+    {
+      expected: 'victory',
+      input: endCheckpointInput({
+        enemyHp: 1, enemyMaxHp: 100,
+        combatants: endCheckpointInput().combatants.map((combatant, index) => index === 1
+          ? { ...combatant, rangedAttack: 100, rangedNoA: 1 } : combatant),
+        randomValues: [0, 0, 0, 0, 0, 0.75, 0.875],
+      }),
+    },
+    {
+      expected: 'defeat',
+      input: endCheckpointInput({
+        partyHp: 1, partyMaxHp: 100,
+        combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+          ? { ...combatant, rangedAttack: 100, rangedNoA: 1 } : combatant),
+        randomValues: [0, 0, 0, 0, 0, 0.75, 0.875],
+      }),
+    },
+  ] as const;
+  for (const { expected, input } of cases) {
+    const output = executeBattleProtocol(encodeBattleProtocolInput(input));
+    assert.equal(output.protocolError, 0);
+    assert.equal(output.outcome, expected);
+    assert.equal(output.events.some((event) => event.phase === 3), false);
+    assert.deepEqual(output.events.slice(-2).map((event) => event.opcode), ['outcome', 'battle_finished']);
+    assert.ok(output.randomConsumed < input.randomValues.length);
+  }
+});
+
+test('END checkpoint gives simultaneous lethality to defeat and preserves exact final state', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    partyHp: 1,
+    partyMaxHp: 100,
+    enemyHp: 1,
+    enemyMaxHp: 100,
+    combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'self_destruct', level: 5 }], physicalDefense: 0 }
+      : { ...combatant, abilities: [], physicalDefense: 0 }),
+    physicalThreatBag: [{ id: 1, tickets: 2 }],
+    randomValues: [0],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.deepEqual([output.partyHp, output.enemyHp, output.outcome], [0, 0, 'defeat']);
+  assert.equal(output.randomConsumed, 1);
+  assert.equal(output.events.some((event) => event.phase === 3), false);
+  assert.deepEqual(output.events.slice(-2).map((event) => event.opcode), ['outcome', 'battle_finished']);
+});
+
+test('END checkpoint preserves forced Free draw at source position without entering END', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'free', level: 4 }] } : combatant),
+    randomValues: [0.875],
+  })));
+  assert.equal(output.outcome, 'draw');
+  assert.equal(output.randomConsumed, 0);
+  assert.equal(output.events.some((event) => event.phase === 3), false);
+  assert.deepEqual(output.events.slice(-2).map((event) => event.opcode), ['outcome', 'battle_finished']);
+});
+
+test('END finalization preserves timed threat refill, hit bookkeeping, and externally-owned First Aid', () => {
+  const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    physicalThreatBag: EMPTY_THREAT_BAG,
+    combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'decompose', level: 1 }] }
+      : { ...combatant, rangedAttack: 1, rangedNoA: 1, abilities: [{ id: 'first_aid', level: 1 }] }),
+    randomValues: [0, 0, 0, 0, 0, 0, 0.875],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.outcome, 'draw');
+  assert.equal(output.enemyHitsReceived, 1);
+  assert.deepEqual(output.physicalThreatBag, PHYSICAL_THREAT_BAG_AFTER_ROW_1_DRAW);
+  assert.equal(output.events.some((event) => event.abilityId === 'first_aid'), false);
+  assert.equal(output.randomConsumed, 6);
+  assert.equal(output.diagnosticDrawCount, 6);
+});
+
+test('END checkpoint failures stay transactional and repeated calls reset finalization state', () => {
+  const exhausted = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'decompose', level: 1 }] } : combatant),
+    randomValues: [],
+  })));
+  assert.equal(exhausted.protocolError, BATTLE_PROTOCOL_ERROR_CODES.tapeExhausted);
+  assert.equal(exhausted.randomConsumed, 0);
+  assert.deepEqual(exhausted.events, []);
+  assert.deepEqual(exhausted.physicalThreatBag, []);
+  assert.deepEqual(exhausted.magicalThreatBag, []);
+
+  const unsupported = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    combatants: endCheckpointInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, flags: 2 }
+      : combatant),
+    randomValues: [0.5],
+  })));
+  assert.equal(unsupported.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+  assert.equal(unsupported.randomConsumed, 0);
+  assert.deepEqual(unsupported.events, []);
+  assert.deepEqual(unsupported.physicalThreatBag, []);
+
+  const first = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    partyHp: 71, partyMaxHp: 71, enemyHp: 83, enemyMaxHp: 83,
+  })));
+  const second = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    partyHp: 91, partyMaxHp: 91, enemyHp: 97, enemyMaxHp: 97,
+  })));
+  assert.deepEqual([first.partyHp, first.enemyHp, first.outcome], [71, 83, 'draw']);
+  assert.deepEqual([second.partyHp, second.enemyHp, second.outcome], [91, 97, 'draw']);
+  assert.equal(second.events.filter((event) => event.opcode === 'battle_finished').length, 1);
+});
 
 const EMPTY_THREAT_BAG = Array.from({ length: 6 }, (_, index) => ({ id: index + 1, tickets: 0 }));
 const PHYSICAL_THREAT_BAG_AFTER_ROW_1_DRAW = [

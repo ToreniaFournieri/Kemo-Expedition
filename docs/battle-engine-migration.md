@@ -153,18 +153,18 @@ Semantic events are language-neutral. `target_selected` identifies every actual 
 - Focused parity coverage proves timing-4 and timing-2 event order, actor/target attribution, exact random cursors, physical and magical empty-bag refill outputs, consecutive exhaustion/refill, Decompose and Self Destruct Bulwark redirection, Bulwark Breaker bypass, and transactional failure on a missing refill or later conditional draw. Existing Howl, Re-attack, Regeneration, terrain ledger, Confusion, Free/Pursuit, Soul Reap, Self Destruct, reactive-chain, frozen-contract, and golden tests remain green.
 - First Aid remains `external_post_battle`, accepted as a no-op, emits no battle fact, and consumes no draw. Expedition-level TypeScript orchestration remains responsible for applying First Aid after qualifying Elite battles. END/finalization, narration comparison, native RNG ownership, full differential parity, and production/AFK/API cutover remain out of scope.
 
+## Part 1.8 native END and finalization checkpoint
+
+- Protocol v3 and ABI 8 remain unchanged. The append-only `BATTLE_ENGINE_FLAG_END_CHECKPOINT` / `kEngineFlagEndCheckpoint` bit (`1 << 5`) selects the shadow/test-only checkpoint and is mutually exclusive with every earlier checkpoint. Unknown or mixed bits fail transactionally at cursor zero. `executeBattleEndCheckpoint` projects once and performs exactly one native protocol execution without reference fallback.
+- The checkpoint reuses Part 1.7's complete supported domain, START, timed/reactive COMBAT, defeat recovery, threat bags, and exact random-tape cursor. First Aid remains accepted as externally owned and produces no native event or draw.
+- Native finalization applies the canonical precedence of defeat when party HP is nonpositive, victory when enemy HP is nonpositive while the party survives, and draw when both sides survive the completed END checkpoint. This also makes defeat authoritative when both aggregate HP values reach zero. Earlier partial checkpoints retain unresolved surviving results, and forced Free remains draw at its frozen source position.
+- Terminal COMBAT results and forced Free draws skip END without consuming later tape values or fabricating END phase facts. When both sides survive COMBAT, native execution enters END once, emits END phase start at reserved timing 49, traverses timing 49 through 0 as no-ops without draws or per-slot events, and emits END phase end followed by outcome and battle-finished facts.
+- Final output preserves double-precision party/enemy HP, `enemyHitsReceived`, canonical physical and magical threat-bag mutations/refills, exact `randomConsumed` and `diagnosticDrawCount`, and the ordered language-neutral semantic stream. Errors expose no partial events or bags, and module-local combat/finalization state resets between calls.
+- Qualifying Elite-room Restoration, Attrition, First Aid, room-end terrain effects, rewards, items, unlocks, XP, trophies, gates, retreat decisions, localized narration, production/AFK/API cutover, and native RNG ownership remain external or deferred.
+
 ## Forward migration roadmap
 
 The target remains one synchronous TypeScript-to-Wasm execution call per battle: TypeScript projects the input and supplies the deterministic random tape, C++ resolves the complete battle, and TypeScript reconstructs localized narration from returned semantic events. Each stage below is an independent acceptance gate. Later-stage work must not be pulled into an earlier checkpoint merely because the protocol has room for it.
-
-### Part 1.8 native END and finalization checkpoint
-
-- Add one append-only, mutually exclusive shadow/test checkpoint that executes the completed START and COMBAT coordinator and then enters the frozen END timing traversal and finalization exactly once.
-- Mirror the frozen coordinator's reserved END timing traversal and terminal precedence, final outcome selection, enemy-hit totals, final HP, and returned threat bags without changing random-tape order. Room/outcome orchestration that is not part of the frozen `executeBattle` result—including qualifying Elite-room deity effects, terrain room-end HP effects, rewards, unlocks, and First Aid—remains external and must not be pulled into this checkpoint.
-- Emit every language-neutral END/finalization fact needed for later TypeScript narration. Do not add localized names or prose to the Wasm payload.
-- Keep TypeScript as the random-tape owner, leave the frozen reference and golden fixture unchanged, and do not cut over production, AFK workers, or Experimental API sorties in this checkpoint.
-
-Acceptance gate: focused END tests prove exact event/state/tape order, transactional failure behavior, and terminal precedence; every earlier checkpoint test remains green; and the candidate completes START, COMBAT, and END in one native execution while remaining shadow-only.
 
 ### Part 1.9 complete-result differential parity and narration
 

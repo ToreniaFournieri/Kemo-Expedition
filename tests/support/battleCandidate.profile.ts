@@ -6,6 +6,7 @@ import {
   executeBattleStartCheckpoint,
   executeBattleCombatReactiveCheckpoint,
   executeBattleCombatTimedCheckpoint,
+  executeBattleEndCheckpoint,
   projectBattleCombatants,
   projectBattleProtocolInput,
 } from '../../src/game/battleCandidate.ts';
@@ -95,6 +96,17 @@ test('timed COMBAT candidate helper uses one native invocation without the froze
   const enemy = { ...structuredClone(ENEMIES[0]!), rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 };
   beginBattleKernelMeasurement();
   const output = executeBattleCombatTimedCheckpoint(party, enemy, state.bags, Array(4_096).fill(0), party.currentHp, {});
+  const measurement = endBattleKernelMeasurement();
+  assert.equal(measurement.calls, 1);
+  assert.ok(output.protocolError === 0 || output.protocolError === 7);
+});
+
+test('END candidate helper projects once and uses exactly one native invocation', () => {
+  const state = sampleState();
+  const party = state.parties[0]!;
+  const enemy = { ...structuredClone(ENEMIES[0]!), rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 };
+  beginBattleKernelMeasurement();
+  const output = executeBattleEndCheckpoint(party, enemy, state.bags, Array(4_096).fill(0), party.currentHp, {});
   const measurement = endBattleKernelMeasurement();
   assert.equal(measurement.calls, 1);
   assert.ok(output.protocolError === 0 || output.protocolError === 7);
