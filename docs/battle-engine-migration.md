@@ -232,6 +232,8 @@ Acceptance gate: complete JSON parity passes for all 11 frozen cases, both curso
 
 The AFK and API measurements verify exact sequential state propagation, unchanged Instant Expedition charge state for API batches, no mutation interleaving inside the pure batch transaction, and no protocol, capacity, or serialization failures. Maximum observed tape/event use remains below 7% of each 4,096 limit. Browser, Electron, and module-worker builds use the same protocol v3, ABI 8, embedded module, projection, and renderer; no binary layout change was required.
 
+Build 33 stabilizes the module-worker cutover for save-backed workloads containing timed Confusion, Unstable Core, or Chain Lightning. The timed native `ability_activated` facts legitimately carry adjacent indexed flavor facts (as does Null Antagonism when it blocks successful Confusion), while Chain Lightning attaches its flavor to the terrain-owned `target_selected` fact and its following damage fact. The semantic validator now recognizes those precise source families and the renderer reconstructs their deterministic localized logs. The reported browser module-worker Chunk and the complete six-party/1,724-battle AFK profile both complete instead of leaving recovery progress at 0%.
+
 Acceptance gate: complete. Part 2 native seeded RNG ownership is ready. The TypeScript-supplied tape and frozen RNG contract remain authoritative until Part 2; Part 3 direct-memory boundary optimization and checkpoint/micro-kernel cleanup remain pending.
 
 ### Part 2 native seeded RNG ownership

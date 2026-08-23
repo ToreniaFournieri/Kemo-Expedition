@@ -401,6 +401,9 @@ const FLAVOR_ABILITIES = new Set<AbilityId>([
   'free', 'flying', 'pursuit', 'unforgettable', 'equation_breaker',
   'null_antagonism', 'rage',
 ]);
+const CONFUSION_ABILITIES = new Set<AbilityId>([
+  'ranged_confusion', 'magic_confusion', 'melee_confusion',
+]);
 
 function replaceFlavor(template: string, replacements: Record<string, string>): string {
   return Object.entries(replacements).reduce(
@@ -445,7 +448,10 @@ function requireFlavorPairs(events: readonly BattleProtocolEvent[]): Map<number,
 
 function sourceRequiresFlavor(event: BattleProtocolEvent): boolean {
   if (event.opcode === 'terrain_effect' && event.phase === 2) return true;
+  if (event.opcode === 'target_selected' && event.phase === 2 && (event.flags & 8) !== 0) return true;
   if (event.opcode === 'ability_mutated' && event.aux0 === 13 && (event.flags & 4) !== 0) return true;
+  if (event.opcode === 'ability_activated' && event.phase === 2
+      && event.abilityId && (CONFUSION_ABILITIES.has(event.abilityId) || event.abilityId === 'unstable_core')) return true;
   if (!event.abilityId || !FLAVOR_ABILITIES.has(event.abilityId)) return false;
   return event.opcode === 'ability_activated' || event.opcode === 'status_applied'
     || event.opcode === 'status_removed' || event.opcode === 'nullified'
@@ -667,7 +673,32 @@ export function convertBattleSemanticEvents(
     const event = events[index]!;
     if (event.opcode === 'random_flavor' || event.opcode === 'battle_started' || event.opcode === 'battle_finished'
         || event.opcode === 'phase_started' || event.opcode === 'phase_ended' || event.opcode === 'initiative'
-        || event.opcode === 'target_selected' || event.opcode === 'death' || event.opcode === 'outcome') continue;
+        || event.opcode === 'death' || event.opcode === 'outcome') continue;
+
+    if (event.opcode === 'target_selected') {
+      if ((event.flags & 8) === 0) continue;
+      const flavor = requireFlavor(flavors, index, event);
+      if (environment.terrainEffect !== 'terrain.chain-lightning') {
+        throw new Error('Flavored terrain target selection is missing Chain Lightning context');
+      }
+      if (flavor.aux0 < 0 || flavor.aux0 >= 10) throw new RangeError(`Invalid terrain flavor index ${flavor.aux0}`);
+      const damage = events[index + 2];
+      if (!damage || damage.opcode !== 'damage' || eventIdentity(damage) !== eventIdentity(event)
+          || damage.targetId !== event.targetId) {
+        throw new Error('Chain Lightning flavor fact is missing its associated damage');
+      }
+      const actor = combatants.get(event.actorId);
+      const target = combatants.get(event.targetId);
+      const characterId = actor?.kind === 'character' ? actor.id : target?.kind === 'character' ? target.id : null;
+      log.push({
+        phase: 'combat', actor: 'effect', effectKind: 'terrain',
+        ...(characterId !== null ? { characterId } : {}),
+        action: t(`battleFlavor.environment.chainLightning.${flavor.aux0 + 1}`, { target: nameOf(event.targetId) }),
+        note: `(⚡ ${noteFormatter.format(damage.value0)})`, elementalOffense: 'thunder',
+        attackType: event.attackType ?? undefined,
+      });
+      continue;
+    }
 
     if (event.opcode === 'terrain_effect' && event.phase === 1) {
       const terrain = environment.terrainEffect;
@@ -743,6 +774,61 @@ export function convertBattleSemanticEvents(
     if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId === 'howl') {
       const numerator = Math.round(event.value0 * 7);
       log.push({ phase: 'combat', initiativeRoll: event.timing, actor: 'triggered', ...(combatants.get(event.actorId)?.kind === 'character' ? { characterId: event.actorId } : {}), action: t('battle.action.howl', { actor: nameOf(event.actorId) }), note: t('battle.note.howl', { numerator }), attackType: event.attackType ?? undefined });
+      continue;
+    }
+
+    if (event.opcode === 'ability_activated' && event.phase === 2
+        && event.abilityId && CONFUSION_ABILITIES.has(event.abilityId)) {
+      const flavor = requireFlavor(flavors, index, event);
+      const actor = combatants.get(event.actorId);
+      const actorName = nameOf(event.actorId);
+      const level = actor?.abilities.get(event.abilityId) ?? 1;
+      const character = actor?.kind === 'character' ? { characterId: event.actorId } : {};
+      if (event.targetId === 0) {
+        log.push({
+          phase: 'combat', initiativeRoll: event.timing, actor: 'triggered', ...character,
+          action: `${actorName}${getBattleFlavorTemplateAtIndex('confusion-no-target', flavor.aux0)}`,
+          note: t('battleFlavor.inline.42'), attackType: event.attackType ?? undefined,
+        });
+      } else {
+        const success = event.value0 > 0;
+        const chance = level >= 5 ? 7 : level === 4 ? 5 : level >= 2 ? 3 : 1;
+        const family: BattleFlavorFamily = success ? 'confusion-success' : 'confusion-failure';
+        const action = `${actorName}${getBattleFlavorTemplateAtIndex(family, flavor.aux0).split('target').join(nameOf(event.targetId))}`;
+        log.push({
+          phase: 'combat', initiativeRoll: event.timing, actor: 'triggered', ...character, action,
+          note: t('battle.note.confusion', { chance, result: t(success ? 'battle.result.success' : 'battle.result.failure') }),
+          attackType: event.attackType ?? undefined,
+        });
+      }
+      continue;
+    }
+
+    if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId === 'null_antagonism') {
+      const flavor = requireFlavor(flavors, index, event);
+      const actor = combatants.get(event.actorId);
+      log.push({
+        phase: 'combat', initiativeRoll: event.timing, actor: 'triggered',
+        ...(actor?.kind === 'character' ? { characterId: event.actorId } : {}),
+        action: replaceFlavor(getBattleFlavorTemplateAtIndex('null-antagonism', flavor.aux0), { actor: nameOf(event.targetId) }),
+        note: t('battle.note.nullAntagonism'), attackType: event.attackType ?? undefined,
+      });
+      continue;
+    }
+
+    if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId === 'unstable_core') {
+      const flavor = requireFlavor(flavors, index, event);
+      const actor = combatants.get(event.actorId);
+      const level = actor?.abilities.get('unstable_core') ?? 1;
+      const percent = level >= 5 ? 12 : level === 4 ? 15 : level === 3 ? 19 : level === 2 ? 24 : 30;
+      const family: BattleFlavorFamily = event.attackType === 'magical' ? 'unstable-core-magical' : 'unstable-core-ranged';
+      log.push({
+        phase: 'combat', initiativeRoll: event.timing, actor: 'triggered',
+        ...(actor?.kind === 'character' ? { characterId: event.actorId } : {}),
+        action: replaceFlavor(getBattleFlavorTemplateAtIndex(family, flavor.aux0), { actor: nameOf(event.actorId) }),
+        note: t('battle.note.unstableCore', { percent }), noteTone: 'muted', damage: event.value0,
+        attackType: event.attackType ?? undefined,
+      });
       continue;
     }
 

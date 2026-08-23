@@ -69,6 +69,54 @@ test('semantic flavor validation rejects missing, duplicate, and misordered fact
   ]), /Unexpected battle flavor fact/);
 });
 
+test('renderer accepts native timed and Chain Lightning flavor facts', () => {
+  const state = sampleState();
+  const party = state.parties[0]!;
+  const enemy = { ...structuredClone(ENEMIES[0]!), hp: 1, rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 };
+  const output = executeBattleEndCheckpoint(party, enemy, state.bags, Array(4_096).fill(0), party.currentHp, {});
+  assert.equal(output.protocolError, 0);
+  const actorId = party.characters[0]!.id;
+  const targetId = 0x8000_0000 + enemy.id;
+  const confusion = semanticEvent({
+    opcode: 'ability_activated', actorId, targetId, abilityId: 'ranged_confusion',
+    timing: 8, aux0: 13, value0: 1,
+  });
+  const confusionFlavor = semanticEvent({
+    opcode: 'random_flavor', actorId, targetId, abilityId: 'ranged_confusion',
+    flags: 0, timing: 8, aux0: 9, aux1: 13,
+  });
+  const unstableCore = semanticEvent({
+    opcode: 'ability_activated', actorId, targetId: 0, abilityId: 'unstable_core',
+    timing: 4, aux0: 13, value0: 30,
+  });
+  const unstableFlavor = semanticEvent({
+    opcode: 'random_flavor', actorId, targetId: 0, abilityId: 'unstable_core',
+    flags: 0, timing: 4, aux0: 4, aux1: 13,
+  });
+  const chainTarget = semanticEvent({
+    opcode: 'target_selected', actorId, targetId, abilityId: null,
+    flags: 8, timing: 7, aux0: 35, value0: 0,
+  });
+  const chainFlavor = semanticEvent({
+    opcode: 'random_flavor', actorId, targetId, abilityId: null,
+    flags: 8, timing: 7, aux0: 9, aux1: 35,
+  });
+  const chainDamage = semanticEvent({
+    opcode: 'damage', actorId, targetId, abilityId: null,
+    flags: 8, timing: 7, aux0: 35, value0: 42,
+  });
+  const events = [
+    ...output.events.slice(0, -2), confusion, confusionFlavor, unstableCore, unstableFlavor,
+    chainTarget, chainFlavor, chainDamage, ...output.events.slice(-2),
+  ];
+  const result = convertBattleSemanticEvents(
+    { ...output, events }, party, enemy, party.currentHp, { terrainEffect: 'terrain.chain-lightning' },
+  );
+  assert.ok(result.log.some((entry) => entry.note?.includes('/32')));
+  assert.ok(result.log.some((entry) => entry.damage === 30 && entry.noteTone === 'muted'));
+  assert.ok(result.log.some((entry) => entry.effectKind === 'terrain' && entry.note?.includes('42')));
+});
+
 test('realm-local random reservoir commits prefixes, preserves suffixes, and rolls failures back', () => {
   const values = Array.from({ length: 20 }, (_, index) => index / 20);
   let cursor = 0;
