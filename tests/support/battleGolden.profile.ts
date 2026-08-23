@@ -11,6 +11,7 @@ import {
   executeBattleCandidateFromSeed,
   executeBattleTapeDiagnostic,
   convertBattleSemanticEvents,
+  projectBattleCombatants,
   projectBattleProtocolInput,
 } from '../../src/game/battleCandidate.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement, executeBattleProtocol, getBattleRngDoubleSequence, getBattleRngVersion } from '../../src/game/battleKernel.ts';
@@ -322,7 +323,7 @@ test('seed boundaries, repeated calls, and tape output ownership remain determin
   }
 });
 
-test('production entry point uses one direct-arena native seeded call without mutating inputs', () => {
+test('projection and production entry point use one direct-arena native seeded call without mutating inputs', () => {
   const productionSource = readFileSync(resolve(ROOT, 'src/game/battle.ts'), 'utf8');
   assert.equal(productionSource.includes('TapeDiagnostic'), false);
   for (const fixture of createGoldenCases()) {
@@ -331,6 +332,8 @@ test('production entry point uses one direct-arena native seeded call without mu
     const bags = structuredClone(fixture.bags);
     const beforeInputs = structuredClone({ party, enemy, bags });
     const seed = naturalFixtureSeed(fixture);
+    projectBattleCombatants(party, enemy, fixture.initialPartyHp ?? party.currentHp, fixture.environment);
+    assert.deepEqual({ party, enemy, bags }, beforeInputs, 'projection must leave Party, Enemy, and bags JSON-identical');
     const expected = executeBattleCandidateFromSeed(
       structuredClone(party), structuredClone(enemy), structuredClone(bags), seed,
       getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
@@ -352,7 +355,7 @@ test('production entry point uses one direct-arena native seeded call without mu
     assert.equal(measurement.encodedInputAllocations, 0);
     assert.equal(measurement.inputArenaCopies, 0);
     assert.equal(measurement.outputBufferCopies, 0);
-    assert.deepEqual({ party, enemy, bags }, beforeInputs);
+    assert.deepEqual({ party, enemy, bags }, beforeInputs, 'production execution must leave Party, Enemy, and bags JSON-identical');
   }
 });
 

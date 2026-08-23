@@ -317,7 +317,7 @@ The v1/v2 fixtures and contracts are immutable historical evidence and remain by
 
 The permanent v2 gate compares every one of the 11 natural-seed cases in Japanese, English, Simplified Chinese, and Traditional Chinese independently against native seeded and equivalent native tape execution. It covers canonical localized results and optional-property presence, semantic events, threat bags, cursors, replay metadata, seed boundaries, repeated calls, failure recovery, and output ownership. Expedition 6 retains seed `0x8e710003`, 107 draws, and grouped Resonance `+12%`; the retained `0x8e710000` through `0x8e71003f` sweep compares seeded and tape execution without fixture writes.
 
-##### Production bundle and performance acceptance
+##### Production bundle and rejected Build 38 performance acceptance
 
 - A permanent esbuild graph/content audit covers `src/main.tsx` and `src/workers/afkChunkWorker.ts`. It rejects the deleted TypeScript coordinator/modules, tape diagnostics, checkpoint adapters, gameplay tape reservation, fixture-generation markers, battle-side `Math.random`, and the removed native placeholder markers. The final Vite browser and AFK-worker bundles pass the same marker audit.
 - Final production profiling retained one Wasm call per encounter, an empty production tape, and structural full encoded-input allocation/input-arena copy/output-buffer copy counters of `0 / 0 / 0` for online, AFK, and API paths.
@@ -331,4 +331,21 @@ The permanent v2 gate compares every one of the 11 natural-seed cases in Japanes
 
 Observed maxima were 276 random draws and 133 semantic events, below the fixed 4,096 limits. Wall-clock figures remain descriptive; one-call routing, empty production tapes, and zero-copy counters are deterministic assertions. Full tests preserve existing saves, legacy logs, First Aid, room-end effects, rewards, and expedition orchestration.
 
-Acceptance gate: complete. Part 3B is complete. Part 3 is complete. The entire battle-engine migration is complete; there is no Part 4.
+Build 38's functional acceptance is retained, but its performance acceptance is rejected: AFK CPU regressed from 3.16 s before migration to 29.83 s and API count-100 reached 55.86 s. Profiling attributed 85.5% of AFK CPU to `structuredClone`. The projection and narration paths each cloned the complete `Party` for stat-only computation; four such computation-only clones in `battleCandidate.ts` multiplied the cost across every battle. The Build 38 migration-complete claim is therefore superseded by the Build 39 stabilization below.
+
+#### Build 39 battle-migration performance stabilization — complete
+
+- Removed exactly the four computation-only `Party`/character clones in static battle projection and semantic narration. `computePartyStats` and `computeCharacterStats` only construct local collections, arrays, maps, and returned stat objects; they do not assign to their input Party, Character, Enemy, or bag objects.
+- The permanent golden gate explicitly proves that both projection and production execution leave Party, Enemy, and bags JSON-identical, while retaining complete result/event/cursor/bag/narration/replay/optional-property parity, one Wasm call, empty production tape, and zero-copy counters.
+- The isolated performance profile now enforces environment-tolerant ceilings of online median below 25 ms, AFK total CPU below 7 s, projected parallel AFK below 2 s, and API count-100 below 10 s. The full test command serializes test files so this timing gate is not distorted by competing test workers; the dedicated benchmark also executes its bundled profile in a fresh child process.
+- The profile rejects any reintroduction of `structuredClone(party)` or a `structuredClone` of a Party character in `battleCandidate.ts`. Worker messages remain unchanged: no payload redesign is justified by the recovered compute measurements, and real-browser AFK wall-time measurement remains the criterion for any future worker work.
+- A local production-browser recovery observation progressed from 79% AFK recovery to normal movement within five seconds of observation (under roughly 6.5 seconds from page load). That real-browser recovery is not materially slow, so Build 39 deliberately retains the existing worker payload shape.
+
+| Path | Build 38 | Build 39 isolated measurement |
+|-|-:|-:|
+| Online Boss median | 40.74 ms | 11.67 ms |
+| AFK workers total CPU | 25.84 s (29.83 s AFK profile) | 2.72 s |
+| AFK projected parallel | 7.81 s | 0.64 s |
+| API count 100 | 46.93 s (55.86 s API profile) | 2.70 s |
+
+Acceptance gate: complete. The performance gate passes with the immutable historical fixtures and all parity, one-call, empty-tape, and zero-copy invariants intact. The battle-engine migration is complete; this stabilization is not Part 4.

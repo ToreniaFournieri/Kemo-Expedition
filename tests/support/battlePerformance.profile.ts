@@ -21,6 +21,10 @@ const SAMPLE_SAVE_PATH = resolve(process.cwd(), 'sample_savedata/Exp8,7,6,5,4,3_
 const WARMUP_COUNT = 8;
 const SAMPLE_COUNT = 40;
 const AFK_CYCLE_DURATION_SCALE = 0.05;
+const ONLINE_MEDIAN_CEILING_MS = 25;
+const AFK_TOTAL_CPU_CEILING_MS = 7_000;
+const AFK_PROJECTED_PARALLEL_CEILING_MS = 2_000;
+const API_COUNT_100_CEILING_MS = 10_000;
 
 function loadState(): GameState {
   const envelope = JSON.parse(readFileSync(SAMPLE_SAVE_PATH, 'utf8')) as { saveDataCompressed: string };
@@ -119,7 +123,7 @@ test('reports deterministic single-battle migration metrics', () => {
     seededInputRandomCount: 0,
   };
   console.info('BATTLE_MIGRATION_BASELINE', JSON.stringify(report));
-  assert.ok(report.medianBattleMs > 0);
+  assert.ok(report.medianBattleMs < ONLINE_MEDIAN_CEILING_MS, `online median ${report.medianBattleMs}ms must remain below ${ONLINE_MEDIAN_CEILING_MS}ms`);
   assert.equal(report.medianWasmBoundaryCalls, 1);
   assert.equal(report.encodedInputAllocations, 0);
   assert.equal(report.inputArenaCopies, 0);
@@ -170,7 +174,8 @@ test('reports deterministic AFK migration metrics', () => {
   };
   console.info('BATTLE_MIGRATION_AFK_BASELINE', JSON.stringify(report));
   assert.equal(report.parties, 6);
-  assert.ok(report.totalWorkerCpuMs > 0);
+  assert.ok(report.totalWorkerCpuMs < AFK_TOTAL_CPU_CEILING_MS, `AFK total CPU ${report.totalWorkerCpuMs}ms must remain below ${AFK_TOTAL_CPU_CEILING_MS}ms`);
+  assert.ok(report.projectedParallelWorkerMs < AFK_PROJECTED_PARALLEL_CEILING_MS, `AFK projected parallel ${report.projectedParallelWorkerMs}ms must remain below ${AFK_PROJECTED_PARALLEL_CEILING_MS}ms`);
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
   assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
 });
@@ -202,7 +207,16 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     assert.deepEqual([finalParty.instantExpeditionStock, finalParty.instantExpeditionChargeStartedAt], chargeBefore);
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
     assert.equal(boundary.encodedInputAllocations + boundary.inputArenaCopies + boundary.outputBufferCopies, 0);
+    if (count === 100) {
+      assert.ok(durationMs < API_COUNT_100_CEILING_MS, `API count-100 ${durationMs}ms must remain below ${API_COUNT_100_CEILING_MS}ms`);
+    }
     reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, encodedInputAllocations: boundary.encodedInputAllocations, inputArenaCopies: boundary.inputArenaCopies, outputBufferCopies: boundary.outputBufferCopies, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
   }
   console.info('BATTLE_MIGRATION_API_BASELINE', JSON.stringify(reports));
+});
+
+test('battle projection hot path does not reintroduce Party structured clones', () => {
+  const candidateSource = readFileSync(resolve(process.cwd(), 'src/game/battleCandidate.ts'), 'utf8');
+  assert.equal(candidateSource.includes('structuredClone(party)'), false);
+  assert.equal(candidateSource.includes('structuredClone(party.characters['), false);
 });

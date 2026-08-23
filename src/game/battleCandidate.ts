@@ -86,7 +86,7 @@ export function projectBattleCombatants(
   partyHp: number,
   environment: BattleEnvironment = {},
 ): { combatants: BattleProtocolCombatant[]; partyMaxHp: number } {
-  const { partyStats, characterStats } = computePartyStats(structuredClone(party));
+  const { partyStats, characterStats } = computePartyStats(party);
   const resonanceSuppressedByGehenna = getDeityKey(party.deity.name) === 'God of Resonance'
     && environment.terrainEffect === 'terrain.gehenna';
   const characters: BattleProtocolCombatant[] = characterStats.map((stats, index) => {
@@ -119,7 +119,7 @@ export function projectBattleCombatants(
     const foldScale = (bonus: number, amplifier: number, deity: number, scale: number) =>
       ((((1 + bonus) * amplifier + deity) * scale - deity) / amplifier) - 1;
     const baseResonance = resonanceSuppressedByGehenna
-      ? computeCharacterStats(structuredClone(party.characters[index]!), party.level, index + 1).abilities
+      ? computeCharacterStats(party.characters[index]!, party.level, index + 1).abilities
         .find((ability) => ability.id === 'resonance')
       : null;
     const abilities = resonanceSuppressedByGehenna
@@ -246,7 +246,7 @@ export function projectBattleProtocolInput(
   environment: BattleEnvironment = {},
   engineFlags = 0,
 ): BattleProtocolInput {
-  const partyHp = initialPartyHp ?? computePartyStats(structuredClone(party)).partyStats.hp;
+  const partyHp = initialPartyHp ?? computePartyStats(party).partyStats.hp;
   const projection = projectBattleCombatants(party, enemy, partyHp, environment);
   const deityKey = getDeityKey(party.deity.name);
   const protocolDeityKey = deityKey && deityKey !== 'None' ? deityProtocolKey[deityKey] : null;
@@ -534,7 +534,7 @@ export function convertBattleSemanticEvents(
     throw new Error('Battle semantic stream is missing its final outcome');
   }
   const flavors = requireFlavorPairs(events);
-  const projection = projectBattleCombatants(party, enemy, initialPartyHp ?? computePartyStats(structuredClone(party)).partyStats.hp, environment);
+  const projection = projectBattleCombatants(party, enemy, initialPartyHp ?? computePartyStats(party).partyStats.hp, environment);
   const combatants = new Map<number, NarrationCombatant>();
   for (const projected of projection.combatants) {
     const character = projected.kind === 'character' ? party.characters.find((entry) => entry.id === projected.id) : null;
