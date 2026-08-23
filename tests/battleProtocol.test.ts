@@ -217,7 +217,7 @@ test('decoder accepts the exact semantic-event ceiling and rejects one-record ov
   const maximum = decodeBattleProtocolOutput(makeOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS));
   assert.equal(maximum.events.length, BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS);
   assert.throws(() => decodeBattleProtocolOutput(makeOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS + 1)), /event count exceeds/);
-  assert.equal(executeBattleProtocolInput(protocolInput).protocolError, 0, 'output overflow must not contaminate the next battle');
+  assert.equal(executeBattleProtocolInput(checkpointInput()).protocolError, 0, 'output overflow must not contaminate the next battle');
 });
 
 test('shared reentrancy guard rejects nested structured execution before arena mutation and recovers', () => {
@@ -323,6 +323,7 @@ test('protocol v3 enforces fixed combatant and random-tape capacities', () => {
   );
   const abilityOverflow = executeBattleProtocol(encodeBattleProtocolInput({
     ...protocolInput,
+    engineFlags: BATTLE_ENGINE_FLAG_START_CHECKPOINT,
     combatants: [{
       ...protocolInput.combatants[0]!,
       abilities: Object.keys(BATTLE_ABILITY_IDS).slice(0, 65).map((id) => ({
@@ -335,27 +336,16 @@ test('protocol v3 enforces fixed combatant and random-tape capacities', () => {
   assert.equal(abilityOverflow.events.length, 0, 'capacity errors must not return truncated events');
 });
 
-test('full-battle execution resets state, consumes the supplied tape exactly, and emits ordered phases', () => {
-  const first = executeBattleProtocol(encodeBattleProtocolInput(protocolInput));
-  assert.equal(first.randomConsumed, protocolInput.randomValues.length);
-  assert.equal(first.diagnosticDrawCount, protocolInput.randomValues.length);
+test('full seeded battle execution resets state and emits ordered phases', () => {
+  const input = seededEndInput(0x1234n);
+  const first = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(first.protocolError, 0);
+  assert.equal(first.randomConsumed, first.diagnosticDrawCount);
   assert.equal(first.events[0]?.opcode, 'battle_started');
   assert.equal(first.events.at(-1)?.opcode, 'battle_finished');
   assert.ok(first.events.some((event) => event.opcode === 'initiative'));
-  assert.deepEqual(first.physicalThreatBag, protocolInput.physicalThreatBag);
-
-  const second = executeBattleProtocol(encodeBattleProtocolInput({
-    ...protocolInput,
-    partyHp: 77,
-    partyMaxHp: 77,
-    enemyHp: 88,
-    enemyMaxHp: 88,
-    randomValues: [],
-    combatants: protocolInput.combatants.map((combatant) => ({ ...combatant, rangedAttack: 0, magicalAttack: 0, meleeAttack: 0 })),
-  }));
-  assert.equal(second.randomConsumed, 0);
-  assert.equal(second.partyHp, 77);
-  assert.equal(second.enemyHp, 88);
+  assert.ok(first.physicalThreatBag.length > 0);
+  assert.deepEqual(executeBattleProtocol(encodeBattleProtocolInput(input)), first);
 });
 
 test('seeded mode rejects mixed tapes, unsupported versions, and non-END checkpoints transactionally', () => {
@@ -387,14 +377,22 @@ test('seeded mode rejects mixed tapes, unsupported versions, and non-END checkpo
   }));
   assert.equal(checkpointConflict.protocolError, BATTLE_PROTOCOL_ERROR_CODES.seededModeConflict);
 
-  const tapeIgnoresSeedMetadata = executeBattleProtocol(encodeBattleProtocolInput({
+  const noCoordinator = executeBattleProtocol(encodeBattleProtocolInput({
     ...protocolInput,
     seed: 0xffff_ffff_ffff_ffffn,
     rngVersion: 1,
     engineFlags: 0,
   }));
-  assert.equal(tapeIgnoresSeedMetadata.protocolError, 0);
-  assert.equal(tapeIgnoresSeedMetadata.randomConsumed, protocolInput.randomValues.length);
+  assert.equal(noCoordinator.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
+  assert.equal(noCoordinator.randomConsumed, 0);
+  assert.equal(noCoordinator.diagnosticDrawCount, 0);
+  assert.deepEqual(noCoordinator.events, []);
+  assert.deepEqual(noCoordinator.physicalThreatBag, []);
+  assert.deepEqual(noCoordinator.magicalThreatBag, []);
+
+  const validAfterRejection = executeBattleProtocol(encodeBattleProtocolInput(seededEndInput(0xffff_ffff_ffff_ffffn)));
+  assert.equal(validAfterRejection.protocolError, 0);
+  assert.ok(validAfterRejection.events.length > 0);
 });
 
 function checkpointInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {

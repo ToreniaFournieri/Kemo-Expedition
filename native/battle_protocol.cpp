@@ -3085,6 +3085,13 @@ int battle_protocol_execute(u32 byte_length) {
       (reactive_checkpoint ? 1 : 0) + (timed_checkpoint ? 1 : 0) + (end_checkpoint ? 1 : 0) > 1) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
+  // A complete battle is always coordinated by END. Earlier checkpoint flags
+  // remain low-level deterministic test seams; an unrecognized/no-coordinator
+  // request must never enter the retired simplified COMBAT/END implementation.
+  if (!start_checkpoint && !combat_checkpoint && !normal_checkpoint &&
+      !reactive_checkpoint && !timed_checkpoint && !end_checkpoint) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
   // Part 2A seeded execution is shadow-only and is deliberately restricted to
   // the complete END coordinator. Tape/checkpoint behavior remains unchanged.
   if (seeded_rng && (!end_checkpoint || input->random_count != 0)) {
@@ -3281,117 +3288,7 @@ int battle_protocol_execute(u32 byte_length) {
     for (u32 index = 0; index < state.magical_bag_count; ++index) output_magical[index] = {state.magical_bag[index].id, state.magical_bag[index].tickets};
     return static_cast<int>(output->total_size);
   }
-  if (!emit(protocol::EventOpcode::BattleStarted, 1, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
-      !emit(protocol::EventOpcode::PhaseStarted, 1, 0, 0, 0, 0, 9, 0, 0, 0.0) ||
-      !emit(protocol::EventOpcode::PhaseEnded, 1, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
-      !emit(protocol::EventOpcode::PhaseStarted, 2, 0, 0, 0, 0, 49, 0, 0, 0.0)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
-
-  // Build all normal-action entries once, then resolve the shared 49 -> 0 scheduler.
-  for (u32 index = 0; index < static_cast<u32>(state.combatant_count); ++index) {
-    CombatantState& actor = state.combatants[index];
-    const double attacks[3] = {actor.attacks.ranged, actor.attacks.magical, actor.attacks.melee};
-    const double noas[3] = {actor.attacks.ranged_noa, actor.attacks.magical_noa, actor.attacks.melee_noa};
-    for (u32 attack = 0; attack < 3; ++attack) {
-      if (attacks[attack] <= 0.0 || noas[attack] <= 0.0) continue;
-      if (state.action_count >= kMaxNormalActions) return initialize_error_output(*input, protocol::ProtocolError::ActionCapacity);
-      double roll = 0.0;
-      if (!consume_random(state, roll)) roll = 0.5;
-      const int base_max = attack == 0 ? 12 : attack == 1 ? 9 : 3;
-      int timing = 1 + static_cast<int>(roll * base_max);
-      if (timing > 49) timing = 49;
-      state.actions[state.action_count++] = {actor.id, static_cast<u8>(attack + 1), timing, false};
-      if (!emit(protocol::EventOpcode::Initiative, 2, actor.id, 0, 0, attack + 1, timing, 0, 0, roll)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
-    }
-  }
-
-  for (int timing = 49; timing >= 0; --timing) {
-    state.scheduler.next_timing = timing;
-    for (u32 action_index = 0; action_index < state.action_count; ++action_index) {
-      NormalActionEntry& action = state.actions[action_index];
-      if (action.acted || action.timing != timing) continue;
-      CombatantState* actor = find(state, action.actor_id);
-      if (!actor) return -30;
-      CombatantState* target = nullptr;
-      for (int candidate = 0; candidate < state.combatant_count; ++candidate) {
-        if (state.combatants[candidate].side != actor->side && state.combatants[candidate].hp > 0.0) { target = &state.combatants[candidate]; break; }
-      }
-      action.acted = true; actor->acted = true;
-      if (!target) continue;
-      const int profile_index = action.attack_type - 1;
-      const bool magical = action.attack_type == 2;
-      const double attack_value = (profile_index == 0 ? actor->attacks.ranged : profile_index == 1 ? actor->attacks.magical : actor->attacks.melee) + actor->profile.attack_bonus[profile_index];
-      const double no_a = profile_index == 0 ? actor->attacks.ranged_noa : profile_index == 1 ? actor->attacks.magical_noa : actor->attacks.melee_noa;
-      const u32 attempts = no_a > 4096.0 ? 4096u : static_cast<u32>(no_a);
-      u32 hits = 0;
-      double damage = 0.0;
-      for (u32 hit = 0; hit < attempts; ++hit) {
-        double random = 0.0;
-        if (!consume_random(state, random)) random = 0.5;
-        double chance = actor->profile.accuracy_potency[profile_index] + actor->profile.accuracy_bonus + actor->profile.deity_bonus[3] - target->profile.evasion_bonus;
-        if (chance < 0.0) chance = 0.0; if (chance > 1.0) chance = 1.0;
-        if (random > chance) continue;
-        ++hits;
-        const double defense = magical ? target->profile.magical_defense : target->profile.physical_defense;
-        const double penetration = actor->profile.penetration[magical ? 1 : 0];
-        double per_hit = (attack_value - defense * penetration) * actor->profile.offense_amplifier[magical ? 1 : 0];
-        per_hit *= actor->side == Side::Enemy ? actor->profile.enemy_attack_amplifier[profile_index] : 1.0;
-        per_hit *= target->profile.defense_amplifier[magical ? 1 : 0];
-        if (per_hit < 1.0) per_hit = 1.0;
-        damage += __builtin_floor(per_hit);
-      }
-      if (actor->side == Side::Party) { state.enemy_hp = state.enemy_hp > damage ? state.enemy_hp - damage : 0.0; target->hp = state.enemy_hp; }
-      else { state.party_hp = state.party_hp > damage ? state.party_hp - damage : 0.0; }
-      if (!emit(protocol::EventOpcode::Attack, 2, actor->id, target->id, 0, action.attack_type, timing, hits, attempts, damage)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
-    }
-  }
-  if (!emit(protocol::EventOpcode::PhaseEnded, 2, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
-      !emit(protocol::EventOpcode::PhaseStarted, 3, 0, 0, 0, 0, 9, 0, 0, 0.0)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
-  if (input->terrain_id != static_cast<u16>(protocol::TerrainId::Gehenna) && input->deity_id == static_cast<u16>(protocol::DeityId::GoddessOfRestoration)) {
-    const double heal = __builtin_floor((state.party_max_hp - state.party_hp) * 0.2);
-    state.party_hp = state.party_hp + heal > state.party_max_hp ? state.party_max_hp : state.party_hp + heal;
-    if (!emit(protocol::EventOpcode::Heal, 3, 0, 0, 0, 0, 9, 0, 0, heal)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
-  } else if (input->terrain_id != static_cast<u16>(protocol::TerrainId::Gehenna) && input->deity_id == static_cast<u16>(protocol::DeityId::GodOfAttrition)) {
-    const double loss = __builtin_floor(state.party_hp * 0.05);
-    state.party_hp = state.party_hp - loss < 1.0 ? 1.0 : state.party_hp - loss;
-    if (!emit(protocol::EventOpcode::Damage, 3, 0, 0, 0, 0, 9, 0, 0, loss)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
-  }
-  const u8 outcome = state.party_hp <= 0.0 ? 2 : state.enemy_hp <= 0.0 ? 1 : 3;
-  if (!emit(protocol::EventOpcode::PhaseEnded, 3, 0, 0, 0, 0, 0, 0, 0, 0.0) ||
-      !emit(protocol::EventOpcode::Outcome, 3, 0, 0, 0, 0, 0, 0, 0, outcome) ||
-      !emit(protocol::EventOpcode::BattleFinished, 3, 0, 0, 0, 0, 0, 0, 0, outcome)) return initialize_error_output(*input, protocol::ProtocolError::EventCapacity);
-  while (state.random_cursor < state.random_count) { double ignored = 0.0; consume_random(state, ignored); }
-
-  const u64 output_size = sizeof(OutputHeader) + static_cast<u64>(state.event_count) * sizeof(EventRecord) +
-      static_cast<u64>(state.physical_bag_count + state.magical_bag_count) * sizeof(BagRecord);
-  if (output_size > protocol::kArenaCapacity) return initialize_error_output(*input, protocol::ProtocolError::OutputCapacity);
-  auto* output = reinterpret_cast<OutputHeader*>(output_arena);
-  initialize_output(*input, output, state.event_count, state.random_cursor);
-  output->total_size = static_cast<u32>(output_size);
-  output->outcome = outcome;
-  output->party_hp = state.party_hp;
-  output->enemy_hp = state.enemy_hp;
-  output->enemy_hits_received = 0;
-  auto* output_events = reinterpret_cast<EventRecord*>(output_arena + sizeof(OutputHeader));
-  for (u32 index = 0; index < state.event_count; ++index) {
-    const SemanticEvent& source = state.events[index];
-    EventRecord& event = output_events[index]; event = {};
-    event.opcode = static_cast<u16>(source.opcode); event.phase = static_cast<u8>(source.phase);
-    const CombatantState* actor = find(state, source.actor_id); event.actor_kind = actor ? (actor->side == Side::Party ? 1 : 2) : 0;
-    event.actor_id = source.actor_id; event.target_id = source.target_id; event.ability_id = static_cast<u16>(source.ability_id);
-    event.attack_type = static_cast<u8>(source.attack_type); event.flags = static_cast<u8>(source.flags);
-    event.timing = source.timing; event.hits = source.hits;
-    event.attempts = source.attempts; event.aux0 = source.aux0; event.value0 = source.value; event.value1 = source.value1; event.value2 = source.value2;
-    event.aux1 = source.aux1; event.aux2 = source.aux2;
-  }
-  output->physical_bag_count = state.physical_bag_count;
-  output->physical_bag_offset = sizeof(OutputHeader) + state.event_count * sizeof(EventRecord);
-  output->magical_bag_count = state.magical_bag_count;
-  output->magical_bag_offset = output->physical_bag_offset + state.physical_bag_count * sizeof(BagRecord);
-  auto* output_physical = reinterpret_cast<BagRecord*>(output_arena + output->physical_bag_offset);
-  auto* output_magical = reinterpret_cast<BagRecord*>(output_arena + output->magical_bag_offset);
-  for (u32 index = 0; index < state.physical_bag_count; ++index) output_physical[index] = {state.physical_bag[index].id, state.physical_bag[index].tickets};
-  for (u32 index = 0; index < state.magical_bag_count; ++index) output_magical[index] = {state.magical_bag[index].id, state.magical_bag[index].tickets};
-  return static_cast<int>(output->total_size);
+  return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
 }
 
 }  // extern "C"

@@ -1,5 +1,4 @@
 import { BATTLE_KERNEL_WASM } from './battleKernelBinary.ts';
-import type { AttackType, TerrainEffectKey } from '../types';
 import {
   decodeBattleProtocolOutput,
   getBattleProtocolEncodingMeasurement,
@@ -21,22 +20,6 @@ type KernelExports = WebAssembly.Exports & {
   equipment_candidate_capacity(): number;
   equipment_select_best_fill_candidate(candidateCount: number): number;
   equipment_select_best_upgrade_candidate(candidateCount: number): number;
-  battle_calculate_per_hit_damage(...values: number[]): number;
-  battle_hit_chance(...values: number[]): number;
-  battle_hit_random_buffer(): number;
-  battle_hit_result_buffer(): number;
-  battle_resolve_hit_sequence(...values: number[]): number;
-  battle_apply_domain_damage_override(...values: number[]): number;
-  battle_normal_action_input_buffer(): number;
-  battle_normal_action_output_buffer(): number;
-  battle_normal_action_target_id_buffer(): number;
-  battle_normal_action_target_row_buffer(): number;
-  battle_normal_action_target_bulwark_buffer(): number;
-  battle_normal_action_bag_id_buffer(): number;
-  battle_normal_action_bag_ticket_buffer(): number;
-  battle_normal_action_value_capacity(): number;
-  battle_normal_action_target_capacity(): number;
-  battle_resolve_normal_action(): number;
   battle_state_test_input_buffer(): number;
   battle_state_test_output_buffer(): number;
   battle_state_test_operation_capacity(): number;
@@ -51,9 +34,6 @@ type KernelExports = WebAssembly.Exports & {
   battle_protocol_version(): number;
   battle_protocol_validate_input(byteLength: number): number;
   battle_protocol_probe(byteLength: number): number;
-  battle_protocol_transform_abilities(byteLength: number): number;
-  battle_protocol_initiative_random_count(byteLength: number): number;
-  battle_protocol_prepare_initiative(byteLength: number): number;
   battle_protocol_execute(byteLength: number): number;
 };
 
@@ -67,7 +47,6 @@ let measuredInputArenaCopies = 0;
 let measuredInputArenaCopyBytes = 0;
 let measuredOutputBufferCopies = 0;
 let measuredOutputBufferCopyBytes = 0;
-let measurementSuppressionDepth = 0;
 let protocolInvocationActive = false;
 
 export type BattleKernelMeasurement = {
@@ -83,20 +62,10 @@ export type BattleKernelMeasurement = {
 };
 
 function recordKernelCall(inputBytes = 0, outputBytes = 0): void {
-  if (!measurementEnabled || measurementSuppressionDepth > 0) return;
+  if (!measurementEnabled) return;
   measuredCalls += 1;
   measuredInputBytes += inputBytes;
   measuredOutputBytes += outputBytes;
-}
-
-/** Keeps the frozen TypeScript oracle outside shadow-candidate boundary metrics. */
-export function withBattleKernelMeasurementSuppressed<T>(operation: () => T): T {
-  measurementSuppressionDepth += 1;
-  try {
-    return operation();
-  } finally {
-    measurementSuppressionDepth -= 1;
-  }
 }
 
 export function beginBattleKernelMeasurement(): void {
@@ -167,181 +136,6 @@ export function getBattleRngVersion(): number {
 export function createBattleRngSourceForTesting(seed: bigint): () => number {
   seedKernelTestRng(seed);
   return () => kernel.battle_rng_next_double();
-}
-
-export function calculatePerHitDamage(
-  attack: number,
-  effectiveDefense: number,
-  multipliers: readonly [number, number, number, number, number, number, number, number, number, number, number, number, number],
-): number {
-  recordKernelCall();
-  return kernel.battle_calculate_per_hit_damage(attack, effectiveDefense, ...multipliers);
-}
-
-export function calculateHitChance(params: {
-  actorAccuracyPotency: number;
-  actorAccuracyBonus: number;
-  opponentEvasionBonus: number;
-  nthHit: number;
-  phase: AttackType;
-  opponentDeflectionLevel: number;
-  actorFocusLevel: number;
-  actorArcaneStabilityLevel: number;
-  terrainEffect?: TerrainEffectKey | null;
-  actorHasTrueSight?: boolean;
-}): number {
-  const attackType = params.phase === 'ranged' ? 0 : params.phase === 'magical' ? 1 : 2;
-  const terrainModifier = params.phase !== 'ranged'
-    ? 0
-    : params.terrainEffect === 'terrain.fog' && !params.actorHasTrueSight
-      ? -25
-      : params.terrainEffect === 'terrain.sunny-beach' ? 20 : 0;
-  recordKernelCall();
-  return kernel.battle_hit_chance(
-    params.actorAccuracyPotency,
-    params.actorAccuracyBonus,
-    params.opponentEvasionBonus,
-    params.nthHit,
-    attackType,
-    params.opponentDeflectionLevel,
-    params.actorFocusLevel,
-    params.actorArcaneStabilityLevel,
-    terrainModifier,
-  );
-}
-
-type HitSequenceParams = Parameters<typeof calculateHitChance>[0] & {
-  actorHasDomainBreaker?: boolean;
-  opponentHasDomainBreaker?: boolean;
-};
-
-export function resolveHitSequence(
-  params: HitSequenceParams,
-  hitCount: number,
-  random: () => number = Math.random,
-): Uint8Array {
-  const normalizedHitCount = Math.max(0, Math.trunc(hitCount));
-  const resolved = new Uint8Array(normalizedHitCount);
-  if (normalizedHitCount === 0) return resolved;
-  const domainGuaranteesHit = !params.actorHasDomainBreaker
-    && !params.opponentHasDomainBreaker
-    && ((params.phase === 'ranged' && params.terrainEffect === 'terrain.sniper-domain')
-      || (params.phase === 'magical' && params.terrainEffect === 'terrain.spell-domain')
-      || (params.phase === 'melee' && params.terrainEffect === 'terrain.duelist-domain'));
-  if (domainGuaranteesHit) {
-    resolved.fill(1);
-    return resolved;
-  }
-
-  const attackType = params.phase === 'ranged' ? 0 : params.phase === 'magical' ? 1 : 2;
-  const terrainModifier = params.phase !== 'ranged'
-    ? 0
-    : params.terrainEffect === 'terrain.fog' && !params.actorHasTrueSight
-      ? -25
-      : params.terrainEffect === 'terrain.sunny-beach' ? 20 : 0;
-  const randomBufferPointer = kernel.battle_hit_random_buffer();
-  const resultBufferPointer = kernel.battle_hit_result_buffer();
-  const capacity = 4096;
-
-  for (let offset = 0; offset < normalizedHitCount; offset += capacity) {
-    const chunkSize = Math.min(capacity, normalizedHitCount - offset);
-    const rolls = new Float64Array(kernel.memory.buffer, randomBufferPointer, chunkSize);
-    for (let index = 0; index < chunkSize; index += 1) rolls[index] = random();
-    recordKernelCall(chunkSize * Float64Array.BYTES_PER_ELEMENT, chunkSize);
-    const hitTotal = kernel.battle_resolve_hit_sequence(
-      params.actorAccuracyPotency,
-      params.actorAccuracyBonus,
-      params.opponentEvasionBonus,
-      offset + 1,
-      chunkSize,
-      attackType,
-      params.opponentDeflectionLevel,
-      params.actorFocusLevel,
-      params.actorArcaneStabilityLevel,
-      terrainModifier,
-    );
-    if (hitTotal < 0) throw new Error('C++ battle kernel rejected hit sequence');
-    resolved.set(
-      new Uint8Array(kernel.memory.buffer, resultBufferPointer, chunkSize),
-      offset,
-    );
-  }
-  return resolved;
-}
-
-export function applyDomainDamageOverride(
-  perHitDamage: number,
-  terrainEffect: string | null | undefined,
-  opponentMaxHp: number,
-  domainIsIgnored: boolean,
-): number {
-  const terrainMode = terrainEffect === 'terrain.floor-domain'
-    ? 1
-    : terrainEffect === 'terrain.cap-domain' ? 2 : 0;
-  recordKernelCall();
-  return kernel.battle_apply_domain_damage_override(
-    perHitDamage,
-    terrainMode,
-    opponentMaxHp,
-    domainIsIgnored ? 1 : 0,
-  );
-}
-
-export type NormalActionKernelTarget = { id: number; row: number; bulwarkLevel: number };
-export type NormalActionKernelBagEntry = { id: number; tickets: number };
-
-export function runNormalActionKernelWithState(
-  values: readonly number[],
-  randomValues: readonly number[] = [],
-  targets: readonly NormalActionKernelTarget[] = [],
-  bagEntries: readonly NormalActionKernelBagEntry[] = [],
-): { output: Float64Array; bagEntries: NormalActionKernelBagEntry[] } {
-  const valueCapacity = kernel.battle_normal_action_value_capacity();
-  const targetCapacity = kernel.battle_normal_action_target_capacity();
-  if (values.length > valueCapacity) throw new RangeError('C++ normal-action input is too large');
-  if (targets.length > targetCapacity) throw new RangeError('C++ normal-action target list is too large');
-  if (bagEntries.length > targetCapacity) throw new RangeError('C++ normal-action bag is too large');
-  if (randomValues.length > 4096) throw new RangeError('C++ normal-action random tape is too large');
-
-  const input = new Float64Array(kernel.memory.buffer, kernel.battle_normal_action_input_buffer(), valueCapacity);
-  input.fill(0);
-  input.set(values);
-  new Float64Array(kernel.memory.buffer, kernel.battle_hit_random_buffer(), randomValues.length).set(randomValues);
-  const targetIds = new Uint32Array(kernel.memory.buffer, kernel.battle_normal_action_target_id_buffer(), targetCapacity);
-  const targetRows = new Uint32Array(kernel.memory.buffer, kernel.battle_normal_action_target_row_buffer(), targetCapacity);
-  const targetBulwark = new Uint32Array(kernel.memory.buffer, kernel.battle_normal_action_target_bulwark_buffer(), targetCapacity);
-  targetIds.fill(0);
-  targetRows.fill(0);
-  targetBulwark.fill(0);
-  targets.forEach((target, index) => {
-    targetIds[index] = target.id;
-    targetRows[index] = target.row;
-    targetBulwark[index] = target.bulwarkLevel;
-  });
-  const bagIds = new Uint32Array(kernel.memory.buffer, kernel.battle_normal_action_bag_id_buffer(), targetCapacity);
-  const bagTickets = new Uint32Array(kernel.memory.buffer, kernel.battle_normal_action_bag_ticket_buffer(), targetCapacity);
-  bagIds.fill(0);
-  bagTickets.fill(0);
-  bagEntries.forEach((entry, index) => {
-    bagIds[index] = entry.id;
-    bagTickets[index] = entry.tickets;
-  });
-
-  recordKernelCall((values.length + randomValues.length) * Float64Array.BYTES_PER_ELEMENT);
-  const status = kernel.battle_resolve_normal_action();
-  if (status !== 0) throw new Error(`C++ normal-action resolver rejected input (${status})`);
-  return {
-    output: new Float64Array(new Float64Array(kernel.memory.buffer, kernel.battle_normal_action_output_buffer(), valueCapacity)),
-    bagEntries: bagEntries.map((entry, index) => ({ id: entry.id, tickets: bagTickets[index]! })),
-  };
-}
-
-export function runNormalActionKernel(
-  values: readonly number[],
-  randomValues: readonly number[] = [],
-  targets: readonly NormalActionKernelTarget[] = [],
-): Float64Array {
-  return runNormalActionKernelWithState(values, randomValues, targets).output;
 }
 
 export function getBattleKernelAbiVersion(): number {
@@ -490,7 +284,7 @@ function invokeBattleProtocol(
       throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
     }
     arena.input.subarray(0, input.byteLength).set(input);
-    if (measurementEnabled && measurementSuppressionDepth === 0) {
+    if (measurementEnabled) {
       measuredInputArenaCopies += 1;
       measuredInputArenaCopyBytes += input.byteLength;
     }
@@ -522,7 +316,7 @@ function invokeBattleProtocolWithWriter(
     if (!copyOutput) return decodeBattleProtocolOutput(outputView);
     const output = new Uint8Array(outputByteLength);
     output.set(outputView);
-    if (measurementEnabled && measurementSuppressionDepth === 0) {
+    if (measurementEnabled) {
       measuredOutputBufferCopies += 1;
       measuredOutputBufferCopyBytes += outputByteLength;
     }
@@ -530,26 +324,6 @@ function invokeBattleProtocolWithWriter(
   } finally {
     protocolInvocationActive = false;
   }
-}
-
-export function transformBattleProtocolAbilities(input: Uint8Array): BattleProtocolOutput {
-  return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_transform_abilities(byteLength));
-}
-
-export function getBattleProtocolInitiativeRandomCount(input: Uint8Array): number {
-  const arena = getBattleProtocolArenaInfo();
-  if (input.byteLength > arena.capacity) {
-    throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
-  }
-  new Uint8Array(kernel.memory.buffer, arena.inputPointer, input.byteLength).set(input);
-  recordKernelCall(input.byteLength);
-  const count = kernel.battle_protocol_initiative_random_count(input.byteLength);
-  if (count < 0) throw new Error(`C++ battle protocol rejected initiative input (${count})`);
-  return count;
-}
-
-export function prepareBattleProtocolInitiative(input: Uint8Array): BattleProtocolOutput {
-  return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_prepare_initiative(byteLength));
 }
 
 /** One measured Wasm boundary call for the protocol-v3 shadow full-engine path. */

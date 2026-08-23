@@ -10,7 +10,7 @@
     "battle:cxx": "node scripts/build-battle-kernel.mjs",
     "battle:protocol": "node scripts/generate-battle-protocol.mjs",
     "battle:protocol:check": "node scripts/generate-battle-protocol.mjs --check",
-    "battle:golden:v2": "BATTLE_GOLDEN_V2_CAPTURE=native-seeded-v2-reviewed node --test tests/battleGolden.test.cjs",
+    "battle:golden:verify": "node --test tests/battleGolden.test.cjs",
     "battle:benchmark": "node --test tests/battlePerformance.test.cjs",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",

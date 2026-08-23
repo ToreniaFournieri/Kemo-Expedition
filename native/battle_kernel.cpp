@@ -1,8 +1,7 @@
 #include "battle_state.h"
 
-// The battle coordinator deliberately supplies random rolls from JavaScript.
-// This keeps the canonical Math.random() draw order unchanged across browser,
-// Electron, AFK workers, and Experimental API sorties.
+// Legacy primitive exports below remain ABI-8 diagnostic seams. Production
+// battles use the protocol-v3 END coordinator and its battle-local seeded RNG.
 
 extern "C" {
 

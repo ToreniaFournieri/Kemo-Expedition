@@ -8,8 +8,6 @@ import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
 import { executeBattle } from '../../src/game/battle.ts';
 import { getProductionBattleTelemetry, resetProductionBattleTelemetryForTesting } from '../../src/game/battle.ts';
-import { executeBattleCandidateFromWindow } from '../../src/game/battleCandidate.ts';
-import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -126,51 +124,6 @@ test('reports deterministic single-battle migration metrics', () => {
   assert.equal(report.encodedInputAllocations, 0);
   assert.equal(report.inputArenaCopies, 0);
   assert.equal(report.outputBufferCopies, 0);
-});
-
-test('reports the protocol-v3 one-call reserved-window boundary', () => {
-  setLanguage('ja');
-  const state = loadState();
-  const fixture = createBattleFixture(state);
-  const calls: number[] = [];
-  const inputBytes: number[] = [];
-  const outputBytes: number[] = [];
-  let encodedInputAllocations = 0;
-  let inputArenaCopies = 0;
-  let outputBufferCopies = 0;
-  for (let index = 0; index < 10; index += 1) {
-    const recording = withRandom(0x8e710001, () => executeTypeScriptBattle(
-      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
-      fixture.party.currentHp, { terrainEffect: fixture.terrainEffect },
-    ));
-    beginBattleKernelMeasurement();
-    executeBattleCandidateFromWindow(
-      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
-      [...recording.tape, ...Array(Math.max(0, 4_096 - recording.tape.length)).fill(0.5)],
-      fixture.party.currentHp, { terrainEffect: fixture.terrainEffect },
-    );
-    const boundary = endBattleKernelMeasurement();
-    calls.push(boundary.calls);
-    inputBytes.push(boundary.inputBytes);
-    outputBytes.push(boundary.outputBytes);
-    encodedInputAllocations += boundary.encodedInputAllocations;
-    inputArenaCopies += boundary.inputArenaCopies;
-    outputBufferCopies += boundary.outputBufferCopies;
-  }
-  const report = {
-    engine: 'protocol-v3-explicit-tape-candidate', samples: calls.length,
-    medianWasmBoundaryCalls: percentile(calls, 0.5),
-    medianInputBytes: percentile(inputBytes, 0.5),
-    medianOutputBytes: percentile(outputBytes, 0.5),
-    encodedInputAllocations, inputArenaCopies, outputBufferCopies,
-  };
-  console.info('BATTLE_PROTOCOL_V3_BOUNDARY', JSON.stringify(report));
-  assert.equal(report.medianWasmBoundaryCalls, 1);
-  assert.ok(report.medianInputBytes > 0);
-  assert.ok(report.medianOutputBytes > 0);
-  assert.equal(report.encodedInputAllocations, report.samples);
-  assert.equal(report.inputArenaCopies, report.samples);
-  assert.equal(report.outputBufferCopies, report.samples);
 });
 
 test('reports deterministic AFK migration metrics', () => {

@@ -11,13 +11,8 @@ import type {
 } from '../types/index.ts';
 import {
   BATTLE_DEITY_IDS,
-  BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
-  BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
-  BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
-  BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
   BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   BATTLE_ENGINE_FLAG_SEEDED_RNG,
-  BATTLE_ENGINE_FLAG_START_CHECKPOINT,
 } from './generated/battleProtocol.generated.ts';
 import { computeCharacterStats } from './characterComputation.ts';
 import { getAbilityName } from './characterComputation.ts';
@@ -271,117 +266,9 @@ export function projectBattleProtocolInput(
   };
 }
 
-/** Raw protocol-v3 execution for focused migration tests; it is not a production battle runner. */
-export function executeBattleCandidateProtocol(input: BattleProtocolInput): BattleProtocolOutput {
+/** Encoded protocol-v3 execution used only by the retained tape diagnostic. */
+function executeNativeBattleProtocol(input: BattleProtocolInput): BattleProtocolOutput {
   return executeBattleProtocol(encodeBattleProtocolInput(input));
-}
-
-export function executeBattleStartCheckpoint(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomValues: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleProtocolOutput {
-  return executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_START_CHECKPOINT,
-  ));
-}
-
-export function executeBattleCombatBaseCheckpoint(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomValues: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleProtocolOutput {
-  return executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
-  ));
-}
-
-export function executeBattleCombatNormalCheckpoint(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomValues: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleProtocolOutput {
-  return executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
-  ));
-}
-
-export function executeBattleCombatReactiveCheckpoint(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomValues: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleProtocolOutput {
-  return executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
-  ));
-}
-
-/** Test-only native checkpoint: START through timed COMBAT and recovery, before END. */
-export function executeBattleCombatTimedCheckpoint(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomValues: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleProtocolOutput {
-  return executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
-  ));
-}
-
-/** Test-only native checkpoint: START through canonical END/finalization. */
-export function executeBattleEndCheckpoint(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomValues: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleProtocolOutput {
-  return executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_END_CHECKPOINT,
-  ));
-}
-
-/**
- * Independent tape-driven native result used by the Part 1.9A raw-parity gate.
- * This path performs no localization and never consults the frozen TypeScript
- * reference; RandomFlavor events retain their zero-based selection in aux0.
- */
-export function executeBattleRawCandidateFromTape(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomTape: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleProtocolOutput {
-  const output = executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party,
-    enemy,
-    bags,
-    randomTape,
-    initialPartyHp,
-    environment,
-    BATTLE_ENGINE_FLAG_END_CHECKPOINT,
-  ));
-  if (output.protocolError !== 0) {
-    throw new Error(`C++ raw battle returned protocol error ${output.protocolError} after ${output.randomConsumed} supplied draws`);
-  }
-  return output;
 }
 
 type NarrationCombatant = {
@@ -470,32 +357,31 @@ export function validateBattleSemanticFlavorFacts(events: readonly BattleProtoco
   });
 }
 
-export type BattleCandidateWindowResult = {
+type BattleNativeExecutionResult = {
   result: BattleCandidateResult;
   protocolOutput: BattleProtocolOutput;
   randomConsumed: number;
   diagnosticDrawCount: number;
   protocolError: number;
   eventCount: number;
-  inputCapacity: number;
 };
 
-export type SeededBattleCandidateResult = BattleCandidateWindowResult & {
+export type SeededBattleCandidateResult = BattleNativeExecutionResult & {
   seed: bigint;
   rngVersion: number;
 };
 
-// SpecRef: 6.1.8 | Universal C++ battle kernel | production reserved-tape window
-export function executeBattleCandidateFromWindow(
+// SpecRef: 6.1.8 | Universal C++ battle kernel | native tape diagnostic
+export function executeBattleTapeDiagnostic(
   party: Party,
   enemy: EnemyDef,
   bags: GameBags,
-  randomWindow: readonly number[],
+  randomTape: readonly number[],
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
-): BattleCandidateWindowResult {
-  const output = executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomWindow, initialPartyHp, environment, BATTLE_ENGINE_FLAG_END_CHECKPOINT,
+): BattleNativeExecutionResult {
+  const output = executeNativeBattleProtocol(projectBattleProtocolInput(
+    party, enemy, bags, randomTape, initialPartyHp, environment, BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   ));
   if (output.protocolError !== 0) {
     throw new Error(`C++ battle returned protocol error ${output.protocolError} after ${output.randomConsumed} supplied draws`);
@@ -503,8 +389,8 @@ export function executeBattleCandidateFromWindow(
   if (output.randomConsumed !== output.diagnosticDrawCount) {
     throw new Error(`C++ battle cursor mismatch: ${output.randomConsumed}/${output.diagnosticDrawCount}`);
   }
-  if (output.randomConsumed < 0 || output.randomConsumed > randomWindow.length) {
-    throw new Error(`C++ battle cursor ${output.randomConsumed} exceeds the ${randomWindow.length}-value window`);
+  if (output.randomConsumed < 0 || output.randomConsumed > randomTape.length) {
+    throw new Error(`C++ battle cursor ${output.randomConsumed} exceeds the ${randomTape.length}-value tape`);
   }
   const result = convertBattleSemanticEvents(output, party, enemy, initialPartyHp, environment);
   return {
@@ -514,11 +400,10 @@ export function executeBattleCandidateFromWindow(
     diagnosticDrawCount: output.diagnosticDrawCount,
     protocolError: output.protocolError,
     eventCount: output.events.length,
-    inputCapacity: randomWindow.length,
   };
 }
 
-// SpecRef: 6.1.8 | Part 2A shadow-only battle-local seeded RNG
+// SpecRef: 6.1.8 | Universal C++ battle kernel | authoritative native seeded execution
 export function executeBattleCandidateFromSeed(
   party: Party,
   enemy: EnemyDef,
@@ -553,7 +438,6 @@ export function executeBattleCandidateFromSeed(
     diagnosticDrawCount: output.diagnosticDrawCount,
     protocolError: output.protocolError,
     eventCount: output.events.length,
-    inputCapacity: 0,
     seed: output.seed,
     rngVersion: output.rngVersion,
   };
@@ -1129,20 +1013,4 @@ export function convertBattleSemanticEvents(
     },
     enemyHitsReceived: output.enemyHitsReceived,
   };
-}
-
-// SpecRef: 6.1.8 | Universal C++ battle kernel | independent tape-driven candidate
-export function executeBattleCandidateFromTape(
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  randomTape: readonly number[],
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
-): BattleCandidateResult {
-  const execution = executeBattleCandidateFromWindow(party, enemy, bags, randomTape, initialPartyHp, environment);
-  if (execution.randomConsumed !== randomTape.length || execution.diagnosticDrawCount !== randomTape.length) {
-    throw new Error(`C++ battle consumed ${execution.randomConsumed}/${execution.diagnosticDrawCount} of ${randomTape.length} supplied random values`);
-  }
-  return execution.result;
 }

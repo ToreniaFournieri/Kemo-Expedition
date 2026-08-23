@@ -1,20 +1,9 @@
-import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import type { EnemyDef, GameBags, Party, TerrainEffectKey } from '../../src/types/index.ts';
-import { getProductionBattleTelemetry } from '../../src/game/battle.ts';
-import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
 
 export type BattleEnvironment = {
   terrainEffect?: TerrainEffectKey | null;
 };
-
-export type BattleRunner<TResult> = (
-  party: Party,
-  enemy: EnemyDef,
-  bags: GameBags,
-  initialPartyHp?: number,
-  environment?: BattleEnvironment,
-) => TResult;
 
 export type BattleGoldenCase = {
   id: string;
@@ -39,91 +28,6 @@ export type BattleGoldenDigest = {
   enemyHp: number | null;
   logCount: number;
 };
-
-function clone<T>(value: T): T {
-  return structuredClone(value);
-}
-
-function createSeededRandom(seed: number): () => number {
-  let state = seed >>> 0;
-  if (state === 0) state = 0x9e3779b9;
-  return () => {
-    state ^= state << 13;
-    state ^= state >>> 17;
-    state ^= state << 5;
-    return (state >>> 0) / 0x1_0000_0000;
-  };
-}
-
-function withRandomSource<T>(random: () => number, operation: () => T): T {
-  const originalRandom = Math.random;
-  Math.random = random;
-  try {
-    return withGameplayRandomSourceForTesting(random, operation);
-  } finally {
-    Math.random = originalRandom;
-  }
-}
-
-function runBattle<TResult>(
-  runner: BattleRunner<TResult>,
-  fixture: BattleGoldenCase,
-  random: () => number,
-): TResult {
-  return withRandomSource(random, () => runner(
-    clone(fixture.party),
-    clone(fixture.enemy),
-    clone(fixture.bags),
-    fixture.initialPartyHp,
-    fixture.environment ? clone(fixture.environment) : undefined,
-  ));
-}
-
-export function recordBattleGolden<TResult>(
-  runner: BattleRunner<TResult>,
-  fixture: BattleGoldenCase,
-): { snapshot: BattleGoldenSnapshot; randomTape: number[] } {
-  const seededRandom = createSeededRandom(fixture.seed);
-  const randomTape: number[] = [];
-  const before = getProductionBattleTelemetry().randomConsumed;
-  const result = runBattle(runner, fixture, () => {
-    const value = seededRandom();
-    randomTape.push(value);
-    return value;
-  });
-  const productionConsumed = getProductionBattleTelemetry().randomConsumed - before;
-  const logicalDrawCount = productionConsumed > 0 ? productionConsumed : randomTape.length;
-  if (productionConsumed > 0) randomTape.splice(logicalDrawCount);
-  return {
-    snapshot: { randomDrawCount: logicalDrawCount, result },
-    randomTape,
-  };
-}
-
-export function replayBattleGolden<TResult>(
-  runner: BattleRunner<TResult>,
-  fixture: BattleGoldenCase,
-  randomTape: readonly number[],
-): BattleGoldenSnapshot {
-  let cursor = 0;
-  let overflow = 0;
-  const before = getProductionBattleTelemetry().randomConsumed;
-  const result = runBattle(runner, fixture, () => {
-    if (cursor >= randomTape.length) {
-      overflow += 1;
-      return 0.5;
-    }
-    return randomTape[cursor++]!;
-  });
-  const productionConsumed = getProductionBattleTelemetry().randomConsumed - before;
-  const logicalDrawCount = productionConsumed > 0 ? productionConsumed : cursor + overflow;
-  assert.equal(
-    logicalDrawCount,
-    randomTape.length,
-    `${fixture.id}: runner consumed ${logicalDrawCount} of ${randomTape.length} recorded random draws`,
-  );
-  return { randomDrawCount: logicalDrawCount, result };
-}
 
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -157,18 +61,4 @@ export function digestBattleGolden(snapshot: BattleGoldenSnapshot): BattleGolden
     enemyHp: typeof result?.enemyHp === 'number' ? result.enemyHp : null,
     logCount: Array.isArray(result?.log) ? result.log.length : 0,
   };
-}
-
-export function assertBattleRunnerParity<TResult>(
-  referenceRunner: BattleRunner<TResult>,
-  candidateRunner: BattleRunner<TResult>,
-  fixture: BattleGoldenCase,
-): void {
-  const reference = recordBattleGolden(referenceRunner, fixture);
-  const candidate = replayBattleGolden(candidateRunner, fixture, reference.randomTape);
-  assert.equal(
-    canonicalBattleJson(candidate),
-    canonicalBattleJson(reference.snapshot),
-    `${fixture.id}: candidate battle result differs from the reference`,
-  );
 }

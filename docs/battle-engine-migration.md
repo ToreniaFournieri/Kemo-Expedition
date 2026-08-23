@@ -284,3 +284,51 @@ Acceptance gate: complete in Build 36. All 11 natural-seed cases pass in all fou
 Logical protocol volume remains measured independently from full-buffer allocation/copy counters. Seeded production input remains an empty tape; observed maxima were 276 random draws and 133 semantic events, below the fixed 4,096 ceilings. Wall-clock values are descriptive and environment-sensitive; the structural zero-copy/allocation assertions are deterministic.
 
 Acceptance gate: Part 3A is complete. Part 3B cleanup is ready but unstarted; obsolete checkpoint-only adapters, the temporary no-flag placeholder, unused micro-kernel APIs, the frozen TypeScript reference, and historical v1/v2 fixtures remain intentionally retained until that separate gate. This does not claim all of Part 3 complete.
+
+#### Part 3B final cleanup and acceptance — complete in Build 38
+
+##### Final retained architecture
+
+- `src/game/battle.ts` acquires one unsigned-64-bit Web Crypto seed and calls `executeBattleCandidateFromSeed`; the candidate projects one protocol-v3 input with `END_CHECKPOINT | SEEDED_RNG`, an empty tape, and executes synchronously through the direct Wasm arena exactly once. TypeScript retains only static projection, strict semantic-event validation, localized rendering, replay metadata, and the compatible result shape.
+- Online expeditions, Gods Battles, expedition simulation, AFK module workers, and Experimental API sorties continue to reach that same production adapter through the authoritative expedition reducer. No caller has a numerical fallback or alternate coordinator.
+- `executeBattleTapeDiagnostic` is the sole high-level tape path. It uses the canonical binary encoder and authoritative native END coordinator for deterministic replay diagnostics; it is absent from browser and AFK-worker production graphs. Raw-result, checkpoint, tape/window alias, and reference-backed candidate adapters were removed.
+- Protocol v3 and ABI 8 remain unchanged. The append-only native START, base-COMBAT, normal-COMBAT, reactive-COMBAT, timed-COMBAT, and END flags remain low-level deterministic test seams exercised directly through protocol tests. ABI-8 primitive numerical and state-test Wasm exports remain only to preserve the accepted ABI and granular native diagnostics; their obsolete JavaScript runtime wrappers are removed and production entrypoints cannot reach them.
+- A request with no recognized coordinator flag now returns `unsupportedCombatFeature` before state initialization. It returns no events, bags, cursor movement, or partial state, and the following valid seeded call is deterministic. The simplified no-flag COMBAT/END implementation and tape-draining behavior were deleted.
+
+##### Removed migration scaffolding
+
+- Deleted the frozen duplicate numerical coordinator `battleTypeScriptReference.ts` and its legacy-only transitive modules: `battleEngine.ts`, `battleSetup.ts`, `battleNormalAction.ts`, `battleReactive.ts`, `battleTimed.ts`, and `domainTerrain.ts`, together with their legacy unit/profile harnesses.
+- Removed checkpoint convenience exports, the raw tape alias, the result-only tape alias, and the generic public candidate-protocol wrapper from `battleCandidate.ts`.
+- Removed unused JavaScript micro-kernel wrappers for per-hit damage, hit chance/sequence, domain overrides, normal-action resolution, ability transformation, and initiative preparation. Native implementations still used internally by the authoritative coordinator or retained for ABI-8 diagnostic compatibility were not removed from Wasm.
+- Removed frozen-reference measurement suppression and the unused gameplay random-tape reservoir. Non-battle expedition randomness remains on `gameplayRandom`; battle randomness is exclusively native and seeded.
+- Replaced writable `battle:golden:v2` with read-only `battle:golden:verify`. No ordinary test or package command writes or regenerates accepted fixtures.
+
+##### Historical fixture policy and final hashes
+
+The v1/v2 fixtures and contracts are immutable historical evidence and remain byte-identical. Their historical `referenceRunner` path and deleted-source digest are metadata, not a live-path existence requirement. Permanent verification pins all five accepted identities:
+
+| Artifact | SHA-256 |
+|-|-|
+| Deleted TypeScript reference | `de13ff1bec298ac9f076229497d9716ea789358856bd7391ceb81fea5b9ba322` |
+| `battleGolden.v1.json` | `e71f11bf791f52315ea20febabfc31cf881e7a72a4154ee95fa5806aa6df8bf0` |
+| `battleReferenceContract.v1.json` | `a784c5b763dbbd62b1fef9529d21bcf76c0afe83bebf26556b595f7c5e8b7867` |
+| Corrected `battleGolden.v2.json` | `a06aa4eef0c53521b1d39a82fba1dc9b0c6aead444d306d4ac44b2a058afbfad` |
+| Corrected `battleReferenceContract.v2.json` | `b3f1159d91bc19061e555b45606f265d4fbe462e9572de2ef8e1c625e025668d` |
+
+The permanent v2 gate compares every one of the 11 natural-seed cases in Japanese, English, Simplified Chinese, and Traditional Chinese independently against native seeded and equivalent native tape execution. It covers canonical localized results and optional-property presence, semantic events, threat bags, cursors, replay metadata, seed boundaries, repeated calls, failure recovery, and output ownership. Expedition 6 retains seed `0x8e710003`, 107 draws, and grouped Resonance `+12%`; the retained `0x8e710000` through `0x8e71003f` sweep compares seeded and tape execution without fixture writes.
+
+##### Production bundle and performance acceptance
+
+- A permanent esbuild graph/content audit covers `src/main.tsx` and `src/workers/afkChunkWorker.ts`. It rejects the deleted TypeScript coordinator/modules, tape diagnostics, checkpoint adapters, gameplay tape reservation, fixture-generation markers, battle-side `Math.random`, and the removed native placeholder markers. The final Vite browser and AFK-worker bundles pass the same marker audit.
+- Final production profiling retained one Wasm call per encounter, an empty production tape, and structural full encoded-input allocation/input-arena copy/output-buffer copy counters of `0 / 0 / 0` for online, AFK, and API paths.
+
+| Path | Workload | Wasm calls | Duration | Logical input / output | Full encoded-input allocations / input copies / output copies |
+|-|-:|-:|-:|-:|-:|
+| Online Boss | 40 measured battles | 40 | median 40.74 ms; p95 44.17 ms | median 2,920 / 7,168 bytes | 0 / 0 / 0 |
+| AFK workers | 6 parties / 1,724 battles | 1,724 | 25.84 s total CPU; 7.81 s projected parallel | 5,000,456 / 4,468,864 bytes total | 0 / 0 / 0 |
+| API count 1 | 24 battles | 24 | 336.73 ms | 70,016 / 52,288 bytes total | 0 / 0 / 0 |
+| API count 100 | 2,400 battles | 2,400 | 46.93 s | 7,001,248 / 5,634,176 bytes total | 0 / 0 / 0 |
+
+Observed maxima were 276 random draws and 133 semantic events, below the fixed 4,096 limits. Wall-clock figures remain descriptive; one-call routing, empty production tapes, and zero-copy counters are deterministic assertions. Full tests preserve existing saves, legacy logs, First Aid, room-end effects, rewards, and expedition orchestration.
+
+Acceptance gate: complete. Part 3B is complete. Part 3 is complete. The entire battle-engine migration is complete; there is no Part 4.
