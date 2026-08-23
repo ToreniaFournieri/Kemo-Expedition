@@ -187,10 +187,15 @@ test('canonical direct writer enforces the exact input-arena ceiling before writ
   const sentinel = new Uint8Array(base.byteLength).fill(0xa5);
   assert.throws(() => writeBattleProtocolInput({ ...protocolInput, randomValues: [], physicalThreatBag: [], magicalThreatBag: [] }, sentinel.subarray(0, -1)), /target capacity/);
   assert.ok(sentinel.every((value) => value === 0xa5), 'one-byte target overflow must fail before writing');
+  const recordOverflow = { ...maximumInput, physicalThreatBag: [...maximumInput.physicalThreatBag, { id: 1, tickets: 1 }] };
   assert.throws(
-    () => encodeBattleProtocolInput({ ...maximumInput, physicalThreatBag: [...maximumInput.physicalThreatBag, { id: 1, tickets: 1 }] }),
+    () => encodeBattleProtocolInput(recordOverflow),
     /arena capacity/,
   );
+  beginBattleKernelMeasurement();
+  assert.throws(() => executeBattleProtocolInput(recordOverflow), /arena capacity/);
+  assert.equal(endBattleKernelMeasurement().calls, 0, 'record overflow must reject before native execution');
+  assert.deepEqual(executeBattleProtocolInput(protocolInput), executeBattleProtocol(encodeBattleProtocolInput(protocolInput)));
 });
 
 test('decoder accepts the exact semantic-event ceiling and rejects one-record overflow', () => {
@@ -212,6 +217,7 @@ test('decoder accepts the exact semantic-event ceiling and rejects one-record ov
   const maximum = decodeBattleProtocolOutput(makeOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS));
   assert.equal(maximum.events.length, BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS);
   assert.throws(() => decodeBattleProtocolOutput(makeOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS + 1)), /event count exceeds/);
+  assert.equal(executeBattleProtocolInput(protocolInput).protocolError, 0, 'output overflow must not contaminate the next battle');
 });
 
 test('shared reentrancy guard rejects nested structured execution before arena mutation and recovers', () => {
