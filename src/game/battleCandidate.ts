@@ -11,6 +11,7 @@ import {
 import { computeCharacterStats } from './characterComputation.ts';
 import { computePartyStats } from './partyComputation.ts';
 import { getDeityKey } from './deity.ts';
+import { getBaseMultiplier } from './baseMultiplier.ts';
 import { executeBattle as executeTypeScriptReference } from './battleTypeScriptReference.ts';
 import {
   executeBattleProtocol,
@@ -50,6 +51,14 @@ function magicStyleId(style: EnemyDef['magicStyle']): 0 | 1 | 2 | 3 | 4 {
   return 0;
 }
 
+function projectedEnemyNoA(enemy: EnemyDef, attackType: 'ranged' | 'magical' | 'melee'): number {
+  let value = attackType === 'ranged' ? enemy.rangedNoA : attackType === 'magical' ? enemy.magicalNoA : enemy.meleeNoA;
+  if (enemy.abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0)) value = Math.ceil(value / 2);
+  if (attackType === 'magical' && enemy.magicStyle === undefined &&
+      enemy.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0)) value = Math.ceil(value / 3);
+  return value;
+}
+
 // SpecRef: 6.1.8 | Universal C++ battle kernel | protocol v3 static numerical projection
 export function projectBattleCombatants(
   party: Party,
@@ -61,6 +70,34 @@ export function projectBattleCombatants(
   const resonanceSuppressedByGehenna = getDeityKey(party.deity.name) === 'God of Resonance'
     && environment.terrainEffect === 'terrain.gehenna';
   const characters: BattleProtocolCombatant[] = characterStats.map((stats, index) => {
+    const character = party.characters[index]!;
+    const appliedBonusNames = new Set(stats.offenseCBonusNames);
+    const uniqueBaseBonus = (kind: 'ranged' | 'magical' | 'melee'): number => {
+      let total = 0;
+      for (const item of character.equipment) {
+        if (!item || (item.baseMultiplier ?? 1) === 1) continue;
+        const relevant = kind === 'ranged' ? !!(item.rangedAttack || item.rangedNoA || item.rangedNoABonus)
+          : kind === 'magical' ? !!(item.magicalAttack || item.magicalNoA || item.magicalNoABonus)
+          : !!(item.meleeAttack || item.meleeNoA || item.meleeNoABonus);
+        if (!relevant) continue;
+        const percent = Math.round(((item.baseMultiplier ?? 1) - 1) * 1000) / 10;
+        const name = `c.${kind}_attack+${percent}`;
+        if (appliedBonusNames.has(name)) continue;
+        appliedBonusNames.add(name);
+        total += (item.baseMultiplier ?? 1) - 1;
+      }
+      return total;
+    };
+    const meleeBaseBonus = uniqueBaseBonus('melee');
+    const rangedBaseBonus = uniqueBaseBonus('ranged');
+    const magicalBaseBonus = uniqueBaseBonus('magical');
+    const rangedBonus = stats.rangedAttackCBonus + rangedBaseBonus + stats.physicalAttackCBonus;
+    const magicalBonus = stats.magicalAttackCBonus + magicalBaseBonus;
+    const meleeBonus = stats.meleeAttackCBonus + meleeBaseBonus + stats.physicalAttackCBonus;
+    const physicalScale = getBaseMultiplier(stats.baseStats.strength, 'attack');
+    const magicalScale = getBaseMultiplier(stats.baseStats.intelligence, 'attack');
+    const foldScale = (bonus: number, amplifier: number, deity: number, scale: number) =>
+      ((((1 + bonus) * amplifier + deity) * scale - deity) / amplifier) - 1;
     const baseResonance = resonanceSuppressedByGehenna
       ? computeCharacterStats(structuredClone(party.characters[index]!), party.level, index + 1).abilities
         .find((ability) => ability.id === 'resonance')
@@ -97,13 +134,13 @@ export function projectBattleCombatants(
       physicalPenetration: stats.penetMultiplier,
       magicalPenetration: stats.penetMultiplier,
       elementalOffenseValue: stats.elementalOffenseValue,
-      fireResistance: partyStats.elementalResistance.fire * stats.elementalDefenseMultipliers.fire,
-      thunderResistance: partyStats.elementalResistance.thunder * stats.elementalDefenseMultipliers.thunder,
-      iceResistance: partyStats.elementalResistance.ice * stats.elementalDefenseMultipliers.ice,
-      physicalOffenseAmplifier: stats.physicalOffenseMultiplier * partyStats.offenseAmplifier,
+      fireResistance: stats.elementalDefenseMultipliers.fire,
+      thunderResistance: stats.elementalDefenseMultipliers.thunder,
+      iceResistance: stats.elementalDefenseMultipliers.ice,
+      physicalOffenseAmplifier: stats.physicalOffenseMultiplier,
       magicalOffenseAmplifier: stats.magicalOffenseMultiplier,
-      physicalDefenseAmplifier: stats.physicalDefenseAmplifier * stats.physicalDefenseMultiplier * partyStats.defenseAmplifiers.physical,
-      magicalDefenseAmplifier: stats.magicalDefenseAmplifier * stats.magicalDefenseMultiplier * partyStats.defenseAmplifiers.magical,
+      physicalDefenseAmplifier: stats.physicalDefenseAmplifier,
+      magicalDefenseAmplifier: stats.magicalDefenseAmplifier,
       startPhaseBonus: 0,
       combatPhaseBonus: 0,
       endPhaseBonus: 0,
@@ -114,9 +151,9 @@ export function projectBattleCombatants(
       enemyRangedAmplifier: 1,
       enemyMagicalAmplifier: 1,
       enemyMeleeAmplifier: 1,
-      rangedAttackBonus: stats.rangedAttackCBonus + stats.physicalAttackCBonus,
-      magicalAttackBonus: stats.magicalAttackCBonus,
-      meleeAttackBonus: stats.meleeAttackCBonus + stats.physicalAttackCBonus,
+      rangedAttackBonus: foldScale(rangedBonus, stats.physicalOffenseMultiplier, stats.deityOffenseAmplifierBonus, physicalScale),
+      magicalAttackBonus: foldScale(magicalBonus, stats.magicalOffenseMultiplier, stats.deityOffenseAmplifierBonus, magicalScale),
+      meleeAttackBonus: foldScale(meleeBonus, stats.physicalOffenseMultiplier, stats.deityOffenseAmplifierBonus, physicalScale),
       magicStyle: 0,
       abilities: abilities.map(({ id, level }) => ({ id, level })),
     };
@@ -134,9 +171,9 @@ export function projectBattleCombatants(
     rangedAttack: enemy.rangedAttack,
     magicalAttack: enemy.magicalAttack,
     meleeAttack: enemy.meleeAttack,
-    rangedNoA: enemy.rangedNoA,
-    magicalNoA: enemy.magicalNoA,
-    meleeNoA: enemy.meleeNoA,
+    rangedNoA: projectedEnemyNoA(enemy, 'ranged'),
+    magicalNoA: projectedEnemyNoA(enemy, 'magical'),
+    meleeNoA: projectedEnemyNoA(enemy, 'melee'),
     originalRangedNoA: enemy.rangedNoA,
     originalMagicalNoA: enemy.magicalNoA,
     originalMeleeNoA: enemy.meleeNoA,
@@ -292,6 +329,34 @@ export function executeBattleEndCheckpoint(
   return executeBattleCandidateProtocol(projectBattleProtocolInput(
     party, enemy, bags, randomValues, initialPartyHp, environment, BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   ));
+}
+
+/**
+ * Independent tape-driven native result used by the Part 1.9A raw-parity gate.
+ * This path performs no localization and never consults the frozen TypeScript
+ * reference; RandomFlavor events retain their zero-based selection in aux0.
+ */
+export function executeBattleRawCandidateFromTape(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  randomTape: readonly number[],
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): BattleProtocolOutput {
+  const output = executeBattleCandidateProtocol(projectBattleProtocolInput(
+    party,
+    enemy,
+    bags,
+    randomTape,
+    initialPartyHp,
+    environment,
+    BATTLE_ENGINE_FLAG_END_CHECKPOINT,
+  ));
+  if (output.protocolError !== 0) {
+    throw new Error(`C++ raw battle returned protocol error ${output.protocolError} after ${output.randomConsumed} supplied draws`);
+  }
+  return output;
 }
 
 /**

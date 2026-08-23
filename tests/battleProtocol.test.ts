@@ -662,11 +662,15 @@ test('END checkpoint gives simultaneous lethality to defeat and preserves exact 
       ? { ...combatant, abilities: [{ id: 'self_destruct', level: 5 }], physicalDefense: 0 }
       : { ...combatant, abilities: [], physicalDefense: 0 }),
     physicalThreatBag: [{ id: 1, tickets: 2 }],
-    randomValues: [0],
+    randomValues: [0, 0.2],
   })));
   assert.equal(output.protocolError, 0);
   assert.deepEqual([output.partyHp, output.enemyHp, output.outcome], [0, 0, 'defeat']);
-  assert.equal(output.randomConsumed, 1);
+  assert.equal(output.randomConsumed, 2);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'random_flavor').map((event) => event.aux0),
+    [2],
+  );
   assert.equal(output.events.some((event) => event.phase === 3), false);
   assert.deepEqual(output.events.slice(-2).map((event) => event.opcode), ['outcome', 'battle_finished']);
 });
@@ -678,9 +682,47 @@ test('END checkpoint preserves forced Free draw at source position without enter
     randomValues: [0.875],
   })));
   assert.equal(output.outcome, 'draw');
-  assert.equal(output.randomConsumed, 0);
+  assert.equal(output.randomConsumed, 1);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'random_flavor').map((event) => event.aux0),
+    [8],
+  );
   assert.equal(output.events.some((event) => event.phase === 3), false);
   assert.deepEqual(output.events.slice(-2).map((event) => event.opcode), ['outcome', 'battle_finished']);
+});
+
+test('END flavor draws use source-order zero-based array boundaries and skipped branches draw nothing', () => {
+  for (const [random, expectedIndex] of [[0, 0], [0.999999, 9]] as const) {
+    const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+      combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+        ? { ...combatant, abilities: [{ id: 'free', level: 4 }] } : combatant),
+      randomValues: [random],
+    })));
+    assert.equal(output.protocolError, 0);
+    assert.equal(output.randomConsumed, 1);
+    assert.deepEqual(
+      output.events.filter((event) => event.opcode === 'random_flavor').map((event) => event.aux0),
+      [expectedIndex],
+    );
+  }
+
+  const skipped = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({ randomValues: [0.999999] })));
+  assert.equal(skipped.protocolError, 0);
+  assert.equal(skipped.randomConsumed, 0);
+  assert.equal(skipped.events.some((event) => event.opcode === 'random_flavor'), false);
+
+  const startFlavor = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    terrainEffect: 'terrain.deletion',
+    combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'unforgettable', level: 1 }] } : combatant),
+    randomValues: [0, 0.999999],
+  })));
+  assert.equal(startFlavor.protocolError, 0);
+  assert.equal(startFlavor.randomConsumed, 2);
+  assert.deepEqual(
+    startFlavor.events.filter((event) => event.opcode === 'random_flavor').map((event) => [event.abilityId, event.aux0]),
+    [['unforgettable', 9]],
+  );
 });
 
 test('END finalization preserves timed threat refill, hit bookkeeping, and externally-owned First Aid', () => {
@@ -696,8 +738,12 @@ test('END finalization preserves timed threat refill, hit bookkeeping, and exter
   assert.equal(output.enemyHitsReceived, 1);
   assert.deepEqual(output.physicalThreatBag, PHYSICAL_THREAT_BAG_AFTER_ROW_1_DRAW);
   assert.equal(output.events.some((event) => event.abilityId === 'first_aid'), false);
-  assert.equal(output.randomConsumed, 6);
-  assert.equal(output.diagnosticDrawCount, 6);
+  assert.equal(output.randomConsumed, 7);
+  assert.equal(output.diagnosticDrawCount, 7);
+  assert.deepEqual(
+    output.events.filter((event) => event.opcode === 'random_flavor').map((event) => event.aux0),
+    [8],
+  );
 });
 
 test('END checkpoint failures stay transactional and repeated calls reset finalization state', () => {
@@ -711,6 +757,17 @@ test('END checkpoint failures stay transactional and repeated calls reset finali
   assert.deepEqual(exhausted.events, []);
   assert.deepEqual(exhausted.physicalThreatBag, []);
   assert.deepEqual(exhausted.magicalThreatBag, []);
+
+  const flavorExhausted = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'decompose', level: 1 }] } : combatant),
+    randomValues: [0],
+  })));
+  assert.equal(flavorExhausted.protocolError, BATTLE_PROTOCOL_ERROR_CODES.tapeExhausted);
+  assert.equal(flavorExhausted.randomConsumed, 1);
+  assert.deepEqual(flavorExhausted.events, []);
+  assert.deepEqual(flavorExhausted.physicalThreatBag, []);
+  assert.deepEqual(flavorExhausted.magicalThreatBag, []);
 
   const unsupported = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
     combatants: endCheckpointInput().combatants.map((combatant, index) => index === 1
@@ -1046,6 +1103,38 @@ test('reactive COMBAT flag is exclusive and preflights timed and Mimic-copyable 
   assert.equal(timed.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
   assert.equal(timed.randomConsumed, 0);
   assert.deepEqual(timed.physicalThreatBag, []);
+});
+
+test('reactive COMBAT applies enemy Heavy Strike penetration and global nth-hit decay before grouped damage', () => {
+  const base = combatReactiveInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    partyHp: 1_000,
+    partyMaxHp: 1_000,
+    combatants: base.combatants.map((combatant, index) => index === 0
+      ? {
+          ...combatant,
+          rangedAttack: 100,
+          rangedNoA: 2,
+          originalRangedNoA: 4,
+          enemyRangedAmplifier: 1,
+          abilities: [{ id: 'heavy_strike', level: 1 }],
+        }
+      : {
+          ...combatant,
+          physicalDefense: 50,
+          rangedNoA: 0,
+          magicalNoA: 0,
+          meleeNoA: 0,
+          abilities: [],
+        }),
+    physicalThreatBag: [{ id: 1, tickets: 32 }],
+    randomValues: [0, 0, 0, 0, 0, 0.95, 0, 0.95, 0.25],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.partyHp, 929);
+  assert.equal(output.randomConsumed, 8);
+  const attack = output.events.find((event) => event.opcode === 'attack' && event.actorId === 900);
+  assert.deepEqual([attack?.value0, attack?.hits, attack?.attempts], [71, 1, 2]);
 });
 
 test('reactive COMBAT executes re-attacks without another initiative roll and preserves action identity', () => {

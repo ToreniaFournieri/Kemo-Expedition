@@ -162,11 +162,24 @@ Semantic events are language-neutral. `target_selected` identifies every actual 
 - Final output preserves double-precision party/enemy HP, `enemyHitsReceived`, canonical physical and magical threat-bag mutations/refills, exact `randomConsumed` and `diagnosticDrawCount`, and the ordered language-neutral semantic stream. Errors expose no partial events or bags, and module-local combat/finalization state resets between calls.
 - Qualifying Elite-room Restoration, Attrition, First Aid, room-end terrain effects, rewards, items, unlocks, XP, trophies, gates, retreat decisions, localized narration, production/AFK/API cutover, and native RNG ownership remain external or deferred.
 
+## Part 1.9A raw tape-driven native-result parity
+
+- `executeBattleRawCandidateFromTape` is the independent shadow/test entry point. It accepts the frozen TypeScript-owned random tape explicitly, selects the Part 1.8 END checkpoint, throws on protocol failure, performs exactly one measured Wasm execution, and never invokes the frozen reference or narration layer.
+- All 11 frozen golden battles now match the reference for outcome, party HP, enemy HP, `enemyHitsReceived`, physical and magical threat-bag entries, `randomConsumed`, and `diagnosticDrawCount`. The four prior anchors remain exact, and the seven previously divergent cases are retained in the same all-case differential gate.
+- Native END execution consumes every reached battle-log flavor selection at its frozen source position and emits a language-neutral `random_flavor` fact whose documented `aux0` is the zero-based array index. Skipped log branches consume no flavor draw; exhaustion returns a transactional tape error with no partial events or bags. Earlier checkpoint flags retain their established pre-1.9A cursor contracts.
+- Parity repairs include static character attack projection and unique base multipliers, enemy Heavy Strike and Arc Magic NoA projection, enemy Heavy Strike defense penetration, global enemy nth-hit decay, Magic Seal draw ordering, Illusion and Stealth prevention timing, counter/re-counter terminal eligibility, recovery flavor/state ordering, and terminal outcome precedence. These are general mechanics with no golden-case or enemy-ID exceptions.
+- Protocol v3 and ABI 8 remain unchanged because the existing `random_flavor` event and auxiliary fields represent the new semantic data without a wire-layout change. TypeScript still owns random-tape creation, names, localization, and complete `BattleLogEntry[]` reconstruction.
+
+### Part 1.9A remaining limitations
+
+- Localized narration and complete JSON-level result parity are intentionally deferred to Part 1.9B. The existing reference-backed `executeBattleCandidate` remains temporary until that narration gate is complete.
+- Production `executeBattle`, AFK workers, Experimental API sorties, native RNG ownership, external room effects, rewards, and First Aid orchestration remain unchanged. Part 1.10, Part 2, and Part 3 remain pending.
+
 ## Forward migration roadmap
 
 The target remains one synchronous TypeScript-to-Wasm execution call per battle: TypeScript projects the input and supplies the deterministic random tape, C++ resolves the complete battle, and TypeScript reconstructs localized narration from returned semantic events. Each stage below is an independent acceptance gate. Later-stage work must not be pulled into an earlier checkpoint merely because the protocol has room for it.
 
-### Part 1.9 complete-result differential parity and narration
+### Part 1.9B localized narration and complete-result parity
 
 - Connect the complete tape-driven native result to the existing record/replay differential harness without falling back to the TypeScript numerical coordinator.
 - Reconstruct the complete localized `BattleLogEntry[]` and canonical battle result from semantic events while keeping names, localization, and display formatting in TypeScript.

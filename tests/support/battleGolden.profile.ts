@@ -6,7 +6,10 @@ import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { executeBattle } from '../../src/game/battle.ts';
-import { executeBattleCandidate } from '../../src/game/battleCandidate.ts';
+import {
+  executeBattleCandidate,
+  executeBattleRawCandidateFromTape,
+} from '../../src/game/battleCandidate.ts';
 import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
@@ -307,4 +310,48 @@ test('temporary protocol-v3 shadow wrapper returns the frozen TypeScript result 
     assert.ok(measurement.inputBytes > 0, `${fixture.id}: shadow candidate input was not measured`);
     assert.ok(measurement.outputBytes > 0, `${fixture.id}: shadow candidate output was not measured`);
   }
+});
+
+test('Part 1.9A raw native result matches the frozen reference through one measured call', () => {
+  const failures: string[] = [];
+  for (const fixture of createGoldenCases()) {
+    const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
+    const expectedResult = reference.snapshot.result as ReturnType<typeof executeTypeScriptBattle>;
+    beginBattleKernelMeasurement();
+    let native: ReturnType<typeof executeBattleRawCandidateFromTape>;
+    try {
+      native = executeBattleRawCandidateFromTape(
+        structuredClone(fixture.party),
+        structuredClone(fixture.enemy),
+        structuredClone(fixture.bags),
+        reference.randomTape,
+        fixture.initialPartyHp,
+        fixture.environment ? structuredClone(fixture.environment) : undefined,
+      );
+    } catch (error) {
+      const measurement = endBattleKernelMeasurement();
+      failures.push(`${fixture.id}: protocol failure ${String(error)}; referenceCursor=${reference.randomTape.length}; WasmCalls=${measurement.calls}`);
+      continue;
+    }
+    const measurement = endBattleKernelMeasurement();
+    const fields = [
+      ['outcome', expectedResult.outcome, native.outcome],
+      ['partyHp', expectedResult.partyHp, native.partyHp],
+      ['enemyHp', expectedResult.enemyHp, native.enemyHp],
+      ['enemyHitsReceived', expectedResult.enemyHitsReceived, native.enemyHitsReceived],
+      ['physicalThreatBag', expectedResult.updatedBags.physicalThreatBag.entries, native.physicalThreatBag],
+      ['magicalThreatBag', expectedResult.updatedBags.magicalThreatBag.entries, native.magicalThreatBag],
+      ['randomConsumed', reference.randomTape.length, native.randomConsumed],
+      ['diagnosticDrawCount', reference.randomTape.length, native.diagnosticDrawCount],
+    ] as const;
+    const unequal = fields.find(([, expectedValue, actualValue]) => {
+      try { assert.deepEqual(actualValue, expectedValue); return false; } catch { return true; }
+    });
+    if (unequal) {
+      const [field, expectedValue, actualValue] = unequal;
+      failures.push(`${fixture.id}: first unequal raw field ${field}; reference=${JSON.stringify(expectedValue)} native=${JSON.stringify(actualValue)}; referenceCursor=${reference.randomTape.length} nativeCursor=${native.randomConsumed}; physical=${JSON.stringify(native.physicalThreatBag)} magical=${JSON.stringify(native.magicalThreatBag)}`);
+    }
+    assert.equal(measurement.calls, 1, `${fixture.id}: raw candidate must use one measured Wasm call`);
+  }
+  assert.deepEqual(failures, [], failures.join('\n'));
 });

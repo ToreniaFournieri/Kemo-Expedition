@@ -685,14 +685,29 @@ bool prepare_state_initiative(const InputHeader& input, BattleStateCore& state) 
 
 enum class StartResult { Ok, TapeExhausted, EventCapacity, AbilityCapacity, ActionCapacity };
 
+StartResult emit_start_random_flavor(BattleStateCore& state, u32 actor, u32 target,
+                                     protocol::AbilityId ability, int timing, u32 action_id) {
+  if (!state.consume_random_flavor) return StartResult::Ok;
+  u32 flavor = 0;
+  if (!draw_index(state, 10, flavor)) {
+    state.random_flavor_tape_exhausted = true;
+    return StartResult::TapeExhausted;
+  }
+  return emit_state_event(state, protocol::EventOpcode::RandomFlavor, 1, actor, target,
+      static_cast<u32>(ability), 0, timing, 0, 0.0, 0.0, 0.0, flavor, action_id)
+      ? StartResult::Ok : StartResult::EventCapacity;
+}
+
 StartResult emit_forget(
     BattleStateCore& state, CombatantState& owner, CombatantState& target,
     protocol::AbilityId source_ability, int timing, bool terrain_source, bool consume_empty_selection) {
   const u32 source_id = static_cast<u32>(source_ability);
   if (active_ability_level(target, protocol::AbilityId::Unforgettable) > 0) {
-    return emit_state_event(state, protocol::EventOpcode::AbilityActivated, 1, owner.id, target.id,
+    if (!emit_state_event(state, protocol::EventOpcode::AbilityActivated, 1, owner.id, target.id,
         static_cast<u32>(protocol::AbilityId::Unforgettable), 0, timing, 1, 0.0, 0.0, 0.0,
-        terrain_source ? 13u : 15u) ? StartResult::Ok : StartResult::EventCapacity;
+        terrain_source ? 13u : 15u)) return StartResult::EventCapacity;
+    return emit_start_random_flavor(state, owner.id, target.id, protocol::AbilityId::Unforgettable,
+        timing, terrain_source ? 13u : 15u);
   }
   const u32 count = active_ability_count(target);
   if (count == 0 && !consume_empty_selection) return StartResult::Ok;
@@ -775,8 +790,13 @@ StartResult resolve_start_checkpoint(const InputHeader& input, BattleStateCore& 
     for (int index = 0; index < state.combatant_count; ++index) {
       auto& owner = state.combatants[index];
       const int level = active_ability_level(owner, protocol::AbilityId::EquationBreaker);
-      if (level > 0 && !emit(protocol::EventOpcode::AbilityActivated, owner.id, 0,
-          static_cast<u32>(protocol::AbilityId::EquationBreaker), 9, kPrevented | kTerrain, level)) return StartResult::EventCapacity;
+      if (level > 0) {
+        if (!emit(protocol::EventOpcode::AbilityActivated, owner.id, 0,
+            static_cast<u32>(protocol::AbilityId::EquationBreaker), 9, kPrevented | kTerrain, level)) return StartResult::EventCapacity;
+        const auto flavor = emit_start_random_flavor(state, owner.id, 0,
+            protocol::AbilityId::EquationBreaker, 9, 13);
+        if (flavor != StartResult::Ok) return flavor;
+      }
     }
   }
 
@@ -1143,6 +1163,22 @@ bool timed_combat_domain_is_supported(
 
 enum class CombatResult { Ok, TapeExhausted, EventCapacity };
 
+// Narration stays in TypeScript. Native consumes the frozen flavor draw at the
+// semantic fact's source position and records only its zero-based array index.
+CombatResult emit_random_flavor(BattleStateCore& state, u32 phase, u32 actor, u32 target,
+                                protocol::AbilityId ability, u32 attack_type, int timing,
+                                u32 choice_count, u32 action_id) {
+  if (!state.consume_random_flavor) return CombatResult::Ok;
+  u32 flavor = 0;
+  if (!draw_index(state, choice_count, flavor)) {
+    state.random_flavor_tape_exhausted = true;
+    return CombatResult::TapeExhausted;
+  }
+  return emit_state_event(state, protocol::EventOpcode::RandomFlavor, phase, actor, target,
+      static_cast<u32>(ability), attack_type, timing, 0, 0.0, 0.0, 0.0,
+      flavor, action_id) ? CombatResult::Ok : CombatResult::EventCapacity;
+}
+
 double attack_value(const CombatantState& actor, u32 profile_index) {
   return profile_index == 0 ? actor.attacks.ranged : profile_index == 1 ? actor.attacks.magical : actor.attacks.melee;
 }
@@ -1408,7 +1444,10 @@ double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
     const double current = action_noa(actor, profile_index);
     penetration += (original > current ? original - current : 0.0) * (heavy >= 2 ? 0.015 : 0.01);
   }
-  const double effective_defense = actor.side == Side::Party ? defense * (1.0 - penetration) : defense;
+  // Heavy Strike's NoA-loss penetration applies to enemies as well as party
+  // combatants. Only the static equipment/stat penetration above is
+  // party-owned; once Heavy Strike is folded in, both sides reduce defense.
+  const double effective_defense = defense * (1.0 - penetration);
   double offense = actor.side == Side::Party
       ? ((1.0 + actor.profile.attack_bonus[profile_index] + actor.profile.phase_bonus[1]) *
           actor.profile.offense_amplifier[family] + actor.profile.deity_bonus[0])
@@ -1756,16 +1795,8 @@ CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& st
                 static_cast<u32>(protocol::AbilityId::Illusion), action.attack_type, timing, kPrevented, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
           }
         }
-        const int stealth = active_ability_level(*target, protocol::AbilityId::Stealth);
-        const double target_hp = target->side == Side::Party ? state.party_hp : state.enemy_hp;
-        const double target_max = target->side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
-        const bool stealth_negated = !illusion_negated && stealth > 0 && target_max > 0.0 && target_hp / target_max <= (stealth >= 2 ? 0.18 : 0.12);
         result.attempts += hit_attempts;
-        if (illusion_negated || stealth_negated) {
-          if (stealth_negated && !emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target->id, actor->id,
-              static_cast<u32>(protocol::AbilityId::Stealth), action.attack_type, timing, kPrevented, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
-          continue;
-        }
+        if (illusion_negated) continue;
         const double per_hit = advanced_per_hit_damage(input, state, *actor, *target, profile_index, antagonism);
         const bool guaranteed = domain_guarantees_hit(input, *actor, *target, profile_index);
         const int deflection = active_ability_level(*target, protocol::AbilityId::Deflection);
@@ -1803,6 +1834,18 @@ CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& st
       for (u32 group = 0; group < group_count; ++group) {
         auto& result = groups[group]; if (!result.target) continue;
         terrain_target = result.target;
+        const int stealth = active_ability_level(*result.target, protocol::AbilityId::Stealth);
+        const double current_target_hp = result.target->side == Side::Party ? state.party_hp : state.enemy_hp;
+        const double target_max = result.target->side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+        const bool stealth_negated = result.hits > 0 && stealth > 0 &&
+            active_ability_level(*actor, protocol::AbilityId::Pursuit) == 0 && target_max > 0.0 &&
+            current_target_hp / target_max <= (stealth >= 2 ? 0.18 : 0.12);
+        if (stealth_negated) {
+          result.hits = 0;
+          result.calculated = 0.0;
+          if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, result.target->id, actor->id,
+              static_cast<u32>(protocol::AbilityId::Stealth), action.attack_type, timing, kPrevented, 0, 0, 0, kNormalAction)) return CombatResult::EventCapacity;
+        }
         const Reaction reaction = defensive_reaction(*actor, *result.target, profile_index);
         double remaining = result.calculated, absorbed = 0.0, reflected_source = 0.0, reflected = 0.0;
         if (reaction.kind == 1) { absorbed = result.calculated > 0.0 ? __builtin_floor(result.calculated * reaction.amplifier) : 0.0; if (result.calculated > 0.0 && absorbed < 1.0) absorbed = 1.0; remaining = 0.0; }
@@ -1918,7 +1961,11 @@ CombatResult recover_checkpoint_target(BattleStateCore& state, CombatantState& t
   if (amount < 1.0) amount = 1.0;
   const double healed = apply_checkpoint_heal(state, target, amount);
   if (!emit_state_event(state, opcode, 2, target.id, target.id, static_cast<u32>(ability),
-      attack_type, timing, 0, healed, 0.0, 0.0, action_id) ||
+      attack_type, timing, 0, healed, 0.0, 0.0, action_id)) return CombatResult::EventCapacity;
+  const auto flavor = emit_random_flavor(state, 2, target.id, target.id, ability,
+      attack_type, timing, 10, action_id);
+  if (flavor != CombatResult::Ok) return flavor;
+  if (
       !emit_state_event(state, protocol::EventOpcode::Heal, 2, target.id, target.id,
       static_cast<u32>(ability), attack_type, timing, 0, healed, amount, 0.0, action_id)) {
     return CombatResult::EventCapacity;
@@ -1947,7 +1994,7 @@ CombatResult emit_counter_nullification(BattleStateCore& state, CombatantState& 
 
 ReactiveStrikeResult roll_reactive_strike(const InputHeader& input, BattleStateCore& state,
                                           CombatantState& actor, CombatantState& target,
-                                          u32 profile_index, double multiplier) {
+                                          u32 profile_index, double multiplier, u32 attempt_offset = 0) {
   ReactiveStrikeResult result{};
   const double raw = __builtin_ceil(action_noa(actor, profile_index) * multiplier *
       terrain_noa_multiplier(input, actor, profile_index));
@@ -1969,7 +2016,7 @@ ReactiveStrikeResult roll_reactive_strike(const InputHeader& input, BattleStateC
       if (!bokemo::battle_state::consume_random(state, random)) { result.attempts = 0xffff'ffffu; return result; }
       const double potency = actor.side == Side::Party && profile_index == 1 ? 1.0 : actor.profile.accuracy_potency[profile_index];
       const double chance = battle_hit_chance(potency, actor.profile.accuracy_bonus + actor.profile.deity_bonus[3] + actor.temporary.accuracy,
-          target.profile.evasion_bonus + target.temporary.evasion, static_cast<int>(attempt + 1),
+          target.profile.evasion_bonus + target.temporary.evasion, static_cast<int>(attempt_offset + attempt + 1),
           static_cast<int>(profile_index), deflection, focus, stability, terrain_modifier);
       hit = random <= chance;
     }
@@ -1994,6 +2041,19 @@ CombatResult emit_reactive_strike(BattleStateCore& state, CombatantState& actor,
                                   u32 action_id, protocol::AbilityId ability,
                                   ReactiveStrikeResult& result) {
   if (result.attempts == 0xffff'ffffu) return CombatResult::TapeExhausted;
+  if (attack_type == 1 && action_id == static_cast<u32>(protocol::ActionId::Counter) && result.hits > 0 &&
+      active_ability_level(target, protocol::AbilityId::Illusion) > 0 && !target.illusion_consumed) {
+    target.illusion_consumed = true;
+    result.calculated = 0.0;
+    result.hits = 0;
+    if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, target.id, actor.id,
+        static_cast<u32>(protocol::AbilityId::Illusion), attack_type, timing, 1, 0, 0, 0, action_id)) {
+      return CombatResult::EventCapacity;
+    }
+    const auto flavor = emit_random_flavor(state, 2, target.id, actor.id,
+        protocol::AbilityId::Illusion, attack_type, timing, 10, action_id);
+    if (flavor != CombatResult::Ok) return flavor;
+  }
   result.applied = apply_checkpoint_damage(state, target, result.calculated);
   if (target.side == Side::Enemy && result.applied > 0.0) target.enemy_hits_received += result.hits;
   if (!emit_state_event(state, protocol::EventOpcode::AbilityActivated, 2, actor.id, target.id,
@@ -2021,6 +2081,9 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
   constexpr int death_numerator[5] = {2, 3, 4, 5, 6};
   constexpr double burn[5] = {0.5, 0.9, 1.2, 1.4, 1.5};
   constexpr int bind_numerator[5] = {2, 3, 4, 5, 6};
+  auto flavor = [&](protocol::AbilityId ability) {
+    return emit_random_flavor(state, 2, actor.id, target.id, ability, attack_type, timing, 10, action_id);
+  };
   const int corrode_level = active_ability_level(actor, protocol::AbilityId::Corrode);
   if (corrode_level > 0 && result.hits >= 3) {
     const bool blocked = active_ability_level(target, protocol::AbilityId::NullCorrode) > 0;
@@ -2028,6 +2091,8 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
         2, actor.id, target.id, static_cast<u32>(blocked ? protocol::AbilityId::NullCorrode : protocol::AbilityId::Corrode),
         attack_type, timing, blocked ? 1u : 0u, blocked ? 0.0 : corrode[corrode_level >= 5 ? 4 : corrode_level - 1],
         0.0, 0.0, action_id)) return CombatResult::EventCapacity;
+    const auto flavored = flavor(blocked ? protocol::AbilityId::NullCorrode : protocol::AbilityId::Corrode);
+    if (flavored != CombatResult::Ok) return flavored;
     if (!blocked) target.offense_multiplier *= corrode[corrode_level >= 5 ? 4 : corrode_level - 1];
   }
   const int drain_level = active_ability_level(actor, protocol::AbilityId::LifeDrain);
@@ -2036,10 +2101,12 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
     if (blocked) {
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, actor.id, target.id,
           static_cast<u32>(protocol::AbilityId::NullLifeDrain), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+      const auto flavored = flavor(protocol::AbilityId::NullLifeDrain); if (flavored != CombatResult::Ok) return flavored;
     } else {
       const double healed = apply_checkpoint_heal(state, actor, __builtin_floor(result.applied * drain[drain_level >= 7 ? 6 : drain_level - 1]));
       if (!emit_state_event(state, protocol::EventOpcode::Heal, 2, actor.id, actor.id,
           static_cast<u32>(protocol::AbilityId::LifeDrain), attack_type, timing, 0, healed, result.applied, 0, action_id)) return CombatResult::EventCapacity;
+      const auto flavored = flavor(protocol::AbilityId::LifeDrain); if (flavored != CombatResult::Ok) return flavored;
     }
   }
   const int death_level = active_ability_level(actor, protocol::AbilityId::DeathTouch);
@@ -2048,6 +2115,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
     if (active_ability_level(target, protocol::AbilityId::NullDeathTouch) > 0) {
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, actor.id, target.id,
           static_cast<u32>(protocol::AbilityId::NullDeathTouch), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+      const auto flavored = flavor(protocol::AbilityId::NullDeathTouch); if (flavored != CombatResult::Ok) return flavored;
     } else {
       double random = 0.0; if (!bokemo::battle_state::consume_random(state, random)) return CombatResult::TapeExhausted;
       const double chance = result.hits * death_numerator[death_level >= 5 ? 4 : death_level - 1] / 256.0;
@@ -2055,6 +2123,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
         const double lethal = target_hp; apply_checkpoint_damage(state, target, lethal);
         if (!emit_state_event(state, protocol::EventOpcode::Damage, 2, actor.id, target.id,
             static_cast<u32>(protocol::AbilityId::DeathTouch), attack_type, timing, 0, lethal, lethal, 0, action_id)) return CombatResult::EventCapacity;
+        const auto flavored = flavor(protocol::AbilityId::DeathTouch); if (flavored != CombatResult::Ok) return flavored;
         const auto recovered = recover_checkpoint_target(state, target, attack_type, timing, action_id);
         if (recovered != CombatResult::Ok) return recovered;
       }
@@ -2066,6 +2135,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
     if (active_ability_level(actor, protocol::AbilityId::NullBurn) > 0) {
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, target.id, actor.id,
           static_cast<u32>(protocol::AbilityId::NullBurn), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+      const auto flavored = flavor(protocol::AbilityId::NullBurn); if (flavored != CombatResult::Ok) return flavored;
     } else {
       const double maximum = actor.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
       const double fire_resistance = actor.profile.elemental_resistance[0];
@@ -2073,6 +2143,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
       const double applied = apply_checkpoint_damage(state, actor, calculated);
       if (calculated > 0.0 && !emit_state_event(state, protocol::EventOpcode::Damage, 2, target.id, actor.id,
           static_cast<u32>(protocol::AbilityId::Burn), attack_type, timing, 0, applied, calculated, 0, action_id)) return CombatResult::EventCapacity;
+      const auto flavored = flavor(protocol::AbilityId::Burn); if (flavored != CombatResult::Ok) return flavored;
       const auto recovered = recover_checkpoint_target(state, actor, attack_type, timing, action_id);
       if (recovered != CombatResult::Ok) return recovered;
     }
@@ -2082,6 +2153,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
     if (active_ability_level(target, protocol::AbilityId::NullBind) > 0) {
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, actor.id, target.id,
           static_cast<u32>(protocol::AbilityId::NullBind), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+      const auto flavored = flavor(protocol::AbilityId::NullBind); if (flavored != CombatResult::Ok) return flavored;
     } else {
       double random = 0.0; if (!bokemo::battle_state::consume_random(state, random)) return CombatResult::TapeExhausted;
       const double chance = result.hits * bind_numerator[bind_level >= 5 ? 4 : bind_level - 1] / 64.0;
@@ -2089,6 +2161,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
         target.incapacitated = true;
         if (!emit_state_event(state, protocol::EventOpcode::StatusApplied, 2, actor.id, target.id,
             static_cast<u32>(protocol::AbilityId::Bind), attack_type, timing, 0, 1, 0, 0, action_id)) return CombatResult::EventCapacity;
+        const auto flavored = flavor(protocol::AbilityId::Bind); if (flavored != CombatResult::Ok) return flavored;
       }
     }
   }
@@ -2099,6 +2172,7 @@ CombatResult resolve_counter_checkpoint(const InputHeader& input, BattleStateCor
                                         CombatantState& attacker, CombatantState& target,
                                         u32 profile_index, double applied_damage, int timing) {
   if (applied_damage <= 0.0 || (profile_index != 0 && profile_index != 2)) return CombatResult::Ok;
+  if ((target.side == Side::Party ? state.party_hp : state.enemy_hp) <= 0.0) return CombatResult::Ok;
   const int counter_level = active_ability_level(target, protocol::AbilityId::Counter);
   if (counter_level <= 0) return CombatResult::Ok;
   if (target.side == Side::Enemy) {
@@ -2146,8 +2220,18 @@ CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore
   auto confusion_timing = [](protocol::AbilityId id, int level) { if (level <= 0) return -1; if (id == protocol::AbilityId::RangedConfusion) return level <= 2 ? 7 : 8; if (id == protocol::AbilityId::MagicConfusion) return level <= 2 ? 4 : 5; return level <= 2 ? 1 : 2; };
   auto has_future_action = [&](CombatantState& owner, u32 attack) { for (u32 i = 0; i < state.action_count; ++i) if (!state.actions[i].acted && state.actions[i].actor_id == owner.id && state.actions[i].attack_type == attack) return true; return false; };
   auto emit = [&](CombatantState& actor, CombatantState* target, protocol::AbilityId ability, u32 attack, double value0 = 0, u32 flags = 0) {
-    return emit_state_event(state, protocol::EventOpcode::AbilityActivated, 2, actor.id, target ? target->id : 0,
-      static_cast<u32>(ability), attack, timing, flags, value0, 0, 0, kTimed);
+    if (!emit_state_event(state, protocol::EventOpcode::AbilityActivated, 2, actor.id, target ? target->id : 0,
+      static_cast<u32>(ability), attack, timing, flags, value0, 0, 0, kTimed)) return false;
+    const bool flavored = ability == protocol::AbilityId::RangedConfusion ||
+        ability == protocol::AbilityId::MagicConfusion || ability == protocol::AbilityId::MeleeConfusion ||
+        ability == protocol::AbilityId::NullAntagonism || ability == protocol::AbilityId::UnstableCore ||
+        ability == protocol::AbilityId::Regeneration || ability == protocol::AbilityId::Flying ||
+        ability == protocol::AbilityId::Decompose || ability == protocol::AbilityId::SelfDestruct ||
+        ability == protocol::AbilityId::SoulReap || ability == protocol::AbilityId::Free ||
+        ability == protocol::AbilityId::Pursuit;
+    if (!flavored) return true;
+    return emit_random_flavor(state, 2, actor.id, target ? target->id : 0, ability, attack,
+        timing, ability == protocol::AbilityId::UnstableCore ? 5 : 10, kTimed) == CombatResult::Ok;
   };
   const bool alive = state.party_hp > 0 && state.enemy_hp > 0;
   if (!alive) return CombatResult::Ok;
@@ -2289,6 +2373,44 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
     if (!emit_state_event(state, protocol::EventOpcode::TargetSelected, kCombatPhase, actor.id, target.id,
         0, profile_index + 1, timing, 0, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
     state.events[state.event_count - 1].attempts = result.attempts;
+    if (profile_index == 0) {
+      bool party_illusion_active = false;
+      if (target.side == Side::Party && !state.party_illusion_consumed) {
+        for (u32 index = 0; index < party_count; ++index) {
+          if (active_ability_level(*parties[index], protocol::AbilityId::Illusion) >= 2) {
+            party_illusion_active = true;
+            break;
+          }
+        }
+      }
+      const bool personal_illusion_active = active_ability_level(target, protocol::AbilityId::Illusion) > 0 &&
+          !target.illusion_consumed;
+      if (party_illusion_active || personal_illusion_active) {
+        const bool broken = active_ability_level(actor, protocol::AbilityId::IllusionBreaker) > 0;
+        if (party_illusion_active) state.party_illusion_consumed = true;
+        else target.illusion_consumed = true;
+        if (!emit_state_event(state, broken ? protocol::EventOpcode::AbilityActivated : protocol::EventOpcode::Nullified,
+            kCombatPhase, broken ? actor.id : target.id, broken ? target.id : actor.id,
+            static_cast<u32>(broken ? protocol::AbilityId::IllusionBreaker : protocol::AbilityId::Illusion),
+            profile_index + 1, timing, broken ? 0u : kPrevented, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+        if (!broken) { result.calculated = 0.0; result.hits = 0; }
+        const auto flavor = emit_random_flavor(state, kCombatPhase, broken ? actor.id : target.id,
+            broken ? target.id : actor.id, broken ? protocol::AbilityId::IllusionBreaker : protocol::AbilityId::Illusion,
+            profile_index + 1, timing, 10, action_id);
+        if (flavor != CombatResult::Ok) return flavor;
+      }
+    }
+    const int stealth = active_ability_level(target, protocol::AbilityId::Stealth);
+    const double stealth_hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+    const double stealth_max = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+    if (result.hits > 0 && stealth > 0 && active_ability_level(actor, protocol::AbilityId::Pursuit) == 0 &&
+        stealth_max > 0.0 && stealth_hp / stealth_max <= (stealth >= 2 ? 0.18 : 0.12)) {
+      result.calculated = 0.0;
+      result.hits = 0;
+      if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target.id, actor.id,
+          static_cast<u32>(protocol::AbilityId::Stealth), profile_index + 1, timing,
+          kPrevented, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+    }
     if (profile_index == 2 && !re_attack &&
         active_ability_level(target, protocol::AbilityId::Shock) > 0 && !target.shock_consumed) {
       target.shock_consumed = true;
@@ -2297,6 +2419,10 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
       if (!emit_state_event(state, blocked ? protocol::EventOpcode::Nullified : protocol::EventOpcode::StatusApplied,
           kCombatPhase, target.id, actor.id, static_cast<u32>(blocked ? protocol::AbilityId::NullShock : protocol::AbilityId::Shock),
           profile_index + 1, timing, blocked ? 1u : 0u, result.hits, result.calculated, 0, action_id)) return CombatResult::EventCapacity;
+      const auto shock_flavor = emit_random_flavor(state, kCombatPhase, target.id, actor.id,
+          blocked ? protocol::AbilityId::NullShock : protocol::AbilityId::Shock,
+          profile_index + 1, timing, 10, action_id);
+      if (shock_flavor != CombatResult::Ok) return shock_flavor;
     }
     const Reaction reaction = defensive_reaction(actor, target, profile_index);
     double remaining = result.calculated, absorbed = 0.0, reflected = 0.0;
@@ -2344,6 +2470,10 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
       if (!emit_state_event(state, blocked ? protocol::EventOpcode::Nullified : protocol::EventOpcode::AbilityActivated,
           kCombatPhase, actor.id, target.id, static_cast<u32>(blocked ? protocol::AbilityId::NullRequiem : protocol::AbilityId::Requiem),
           profile_index + 1, timing, blocked ? 1u : 0u, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+      const auto requiem_flavor = emit_random_flavor(state, kCombatPhase, actor.id, target.id,
+          blocked ? protocol::AbilityId::NullRequiem : protocol::AbilityId::Requiem,
+          profile_index + 1, timing, 10, action_id);
+      if (requiem_flavor != CombatResult::Ok) return requiem_flavor;
       if (!blocked) {
         const double lethal = target.side == Side::Party ? state.party_hp : state.enemy_hp;
         apply_checkpoint_damage(state, target, lethal);
@@ -2399,14 +2529,18 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
         const double multiplier = re_attack ? reactive_profile_multiplier(re_level, 1) : howl_multiplier;
         const u32 action_id = re_attack ? static_cast<u32>(protocol::ActionId::ReAttack)
             : static_cast<u32>(protocol::ActionId::NormalAttack);
-        if (profile_index == 1 && state.magic_seal_cursor < state.magic_seal_count) {
-          const u32 owner = state.magic_seal_owners[state.magic_seal_cursor++];
-          if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, owner, actor->id,
-              static_cast<u32>(protocol::AbilityId::MagicSeal), action.attack_type, timing, kPrevented, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
-          continue;
-        }
+        const bool magic_sealed = profile_index == 1 && state.magic_seal_cursor < state.magic_seal_count;
+        const u32 magic_seal_owner = magic_sealed ? state.magic_seal_owners[state.magic_seal_cursor] : 0;
         if (actor->side == Side::Party) {
           auto result = roll_reactive_strike(input, state, *actor, *enemy, profile_index, multiplier);
+          if (result.attempts == 0xffff'ffffu) return CombatResult::TapeExhausted;
+          if (magic_sealed) {
+            ++state.magic_seal_cursor;
+            if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, magic_seal_owner, actor->id,
+                static_cast<u32>(protocol::AbilityId::MagicSeal), action.attack_type, timing, kPrevented,
+                0, result.calculated, 0, action_id)) return CombatResult::EventCapacity;
+            continue;
+          }
           auto status = apply_main_result(*actor, *enemy, profile_index, timing, action_id, re_attack, result);
           if (status != CombatResult::Ok) return status;
           CombatantState* lethal_terrain_target = nullptr;
@@ -2448,11 +2582,18 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
             u32 group = 0; while (group < group_count && groups[group].target != target) ++group;
             if (group == group_count) groups[group_count++].target = target;
             auto one = roll_reactive_strike(input, state, *actor, *target, profile_index,
-                1.0 / (action_noa(*actor, profile_index) * terrain_noa_multiplier(input, *actor, profile_index)));
+                1.0 / (action_noa(*actor, profile_index) * terrain_noa_multiplier(input, *actor, profile_index)), attempt);
             if (one.attempts == 0xffff'ffffu) return CombatResult::TapeExhausted;
             groups[group].result.attempts += 1;
             groups[group].result.hits += one.hits;
             groups[group].result.calculated += one.calculated;
+          }
+          if (magic_sealed) {
+            ++state.magic_seal_cursor;
+            if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, magic_seal_owner, actor->id,
+                static_cast<u32>(protocol::AbilityId::MagicSeal), action.attack_type, timing, kPrevented,
+                0, 0, 0, action_id)) return CombatResult::EventCapacity;
+            continue;
           }
           double repeat_damage = 0.0;
           CombatantState* first_target = group_count > 0 ? groups[0].target : nullptr;
@@ -2809,6 +2950,7 @@ int battle_protocol_execute(u32 byte_length) {
   state.party_max_hp = input->party_max_hp;
   state.enemy_hp = input->enemy_hp;
   state.enemy_max_hp = input->enemy_max_hp;
+  state.consume_random_flavor = end_checkpoint;
   state.physical_bag_count = input->physical_bag_count;
   state.magical_bag_count = input->magical_bag_count;
   for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};
@@ -2892,7 +3034,7 @@ int battle_protocol_execute(u32 byte_length) {
     if (combat_checkpoint) {
       const CombatResult combat_result = resolve_base_combat(state);
       if (combat_result != CombatResult::Ok) {
-        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted || state.random_flavor_tape_exhausted
             ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
         return initialize_error_output_at_cursor(*input, error, state.random_cursor);
       }
@@ -2900,7 +3042,7 @@ int battle_protocol_execute(u32 byte_length) {
     if (normal_checkpoint) {
       const CombatResult combat_result = resolve_normal_combat(*input, state);
       if (combat_result != CombatResult::Ok) {
-        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted || state.random_flavor_tape_exhausted
             ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
         return initialize_error_output_at_cursor(*input, error, state.random_cursor);
       }
@@ -2908,7 +3050,7 @@ int battle_protocol_execute(u32 byte_length) {
     if (reactive_checkpoint) {
       const CombatResult combat_result = resolve_reactive_combat(*input, state);
       if (combat_result != CombatResult::Ok) {
-        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted || state.random_flavor_tape_exhausted
             ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
         return initialize_error_output_at_cursor(*input, error, state.random_cursor);
       }
@@ -2916,7 +3058,7 @@ int battle_protocol_execute(u32 byte_length) {
     if (timed_checkpoint) {
       const CombatResult combat_result = resolve_reactive_combat(*input, state, true);
       if (combat_result != CombatResult::Ok) {
-        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted || state.random_flavor_tape_exhausted
             ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
         return initialize_error_output_at_cursor(*input, error, state.random_cursor);
       }
@@ -2924,7 +3066,7 @@ int battle_protocol_execute(u32 byte_length) {
     if (end_checkpoint) {
       const CombatResult combat_result = resolve_reactive_combat(*input, state, true);
       if (combat_result != CombatResult::Ok) {
-        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted
+        const protocol::ProtocolError error = combat_result == CombatResult::TapeExhausted || state.random_flavor_tape_exhausted
             ? protocol::ProtocolError::TapeExhausted : protocol::ProtocolError::EventCapacity;
         return initialize_error_output_at_cursor(*input, error, state.random_cursor);
       }

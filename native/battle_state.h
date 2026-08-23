@@ -139,6 +139,8 @@ struct BattleStateCore {
   double party_damage_taken = 0.0;
   double enemy_hp = 0.0;
   double enemy_max_hp = 0.0;
+  bool consume_random_flavor = false;
+  bool random_flavor_tape_exhausted = false;
   ThreatBagEntry physical_bag[kMaxThreatBagEntries]{};
   ThreatBagEntry magical_bag[kMaxThreatBagEntries]{};
   unsigned int physical_bag_count = 0;
