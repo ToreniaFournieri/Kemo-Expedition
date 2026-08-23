@@ -18,6 +18,8 @@ export const BATTLE_PROTOCOL_ERROR_CODES = {
   outputCapacity: 5,
   tapeExhausted: 6,
   unsupportedCombatFeature: 7,
+  seededModeConflict: 8,
+  unsupportedRngVersion: 9,
 } as const;
 export const BATTLE_ENGINE_FLAG_START_CHECKPOINT = 1 << 0;
 export const BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT = 1 << 1;
@@ -25,6 +27,7 @@ export const BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT = 1 << 2;
 export const BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT = 1 << 3;
 export const BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT = 1 << 4;
 export const BATTLE_ENGINE_FLAG_END_CHECKPOINT = 1 << 5;
+export const BATTLE_ENGINE_FLAG_SEEDED_RNG = 1 << 6;
 
 export const BATTLE_ABILITY_IDS = {
   "defender": 1,

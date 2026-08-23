@@ -63,6 +63,7 @@ inline constexpr unsigned int kEngineFlagCombatNormalCheckpoint = 1u << 2;
 inline constexpr unsigned int kEngineFlagCombatReactiveCheckpoint = 1u << 3;
 inline constexpr unsigned int kEngineFlagCombatTimedCheckpoint = 1u << 4;
 inline constexpr unsigned int kEngineFlagEndCheckpoint = 1u << 5;
+inline constexpr unsigned int kEngineFlagSeededRng = 1u << 6;
 
 enum class ProtocolError : unsigned int {
   None = 0,
@@ -73,6 +74,8 @@ enum class ProtocolError : unsigned int {
   OutputCapacity = 5,
   TapeExhausted = 6,
   UnsupportedCombatFeature = 7,
+  SeededModeConflict = 8,
+  UnsupportedRngVersion = 9,
 };
 
 ${cppEnum('AbilityId', groups.ABILITY)}
@@ -110,6 +113,8 @@ export const BATTLE_PROTOCOL_ERROR_CODES = {
   outputCapacity: 5,
   tapeExhausted: 6,
   unsupportedCombatFeature: 7,
+  seededModeConflict: 8,
+  unsupportedRngVersion: 9,
 } as const;
 export const BATTLE_ENGINE_FLAG_START_CHECKPOINT = 1 << 0;
 export const BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT = 1 << 1;
@@ -117,6 +122,7 @@ export const BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT = 1 << 2;
 export const BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT = 1 << 3;
 export const BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT = 1 << 4;
 export const BATTLE_ENGINE_FLAG_END_CHECKPOINT = 1 << 5;
+export const BATTLE_ENGINE_FLAG_SEEDED_RNG = 1 << 6;
 
 ${tsMap('BATTLE_ABILITY_IDS', groups.ABILITY)}
 ${tsReverse('BATTLE_ABILITY_NAMES', 'BATTLE_ABILITY_IDS')}

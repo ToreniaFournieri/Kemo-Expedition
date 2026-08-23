@@ -1,5 +1,7 @@
 #pragma once
 
+#include "battle_rng.h"
+
 namespace bokemo::battle_state {
 
 constexpr int kMaxCombatants = 8;
@@ -146,6 +148,8 @@ struct BattleStateCore {
   unsigned int physical_bag_count = 0;
   unsigned int magical_bag_count = 0;
   double random_tape[kMaxRandomTape]{};
+  bokemo::battle::BattleRng seeded_rng{};
+  bool seeded_random = false;
   unsigned int random_cursor = 0;
   unsigned int random_count = 0;
   SemanticEvent events[kMaxSemanticEvents]{};
@@ -175,6 +179,7 @@ void apply_temporary_modifiers(CombatantState& target, double accuracy, double e
 void reset_temporary_modifiers(CombatantState& target);
 bool recover_on_defeat(CombatantState& target, unsigned int resurrect_id, unsigned int reanimate_id);
 bool append_random(BattleStateCore& state, double value);
+void initialize_seeded_random(BattleStateCore& state, bokemo::battle::u64 seed);
 bool consume_random(BattleStateCore& state, double& value);
 bool append_event(BattleStateCore& state, unsigned int opcode, unsigned int actor_id, unsigned int target_id, double value);
 

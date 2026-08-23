@@ -22,6 +22,7 @@ inline constexpr unsigned int kEngineFlagCombatNormalCheckpoint = 1u << 2;
 inline constexpr unsigned int kEngineFlagCombatReactiveCheckpoint = 1u << 3;
 inline constexpr unsigned int kEngineFlagCombatTimedCheckpoint = 1u << 4;
 inline constexpr unsigned int kEngineFlagEndCheckpoint = 1u << 5;
+inline constexpr unsigned int kEngineFlagSeededRng = 1u << 6;
 
 enum class ProtocolError : unsigned int {
   None = 0,
@@ -32,6 +33,8 @@ enum class ProtocolError : unsigned int {
   OutputCapacity = 5,
   TapeExhausted = 6,
   UnsupportedCombatFeature = 7,
+  SeededModeConflict = 8,
+  UnsupportedRngVersion = 9,
 };
 
 enum class AbilityId : unsigned short {

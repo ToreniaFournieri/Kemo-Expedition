@@ -9,10 +9,12 @@ import { executeBattle } from '../../src/game/battle.ts';
 import { getProductionBattleTelemetry } from '../../src/game/battle.ts';
 import {
   executeBattleCandidateFromTape,
+  executeBattleCandidateFromSeed,
+  executeBattleCandidateFromWindow,
   executeBattleRawCandidateFromTape,
 } from '../../src/game/battleCandidate.ts';
 import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
-import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
+import { beginBattleKernelMeasurement, endBattleKernelMeasurement, getBattleRngDoubleSequence, getBattleRngVersion } from '../../src/game/battleKernel.ts';
 import { gameplayRandom, withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
@@ -319,6 +321,72 @@ test('all four locales retain exact complete reference/candidate narration parit
         canonicalBattleJson(reference.snapshot),
         `${fixture.id}:${language}: localized candidate mismatch`,
       );
+    }
+  }
+  setLanguage('ja');
+});
+
+test('Part 2A battle-local seeded RNG exactly matches equivalent xoshiro tape across golden cases and locales', () => {
+  const fixtures = createGoldenCases();
+  const extraSeeds = [0n, 1n, 0xffff_ffff_ffff_ffffn, 0x8000_0000_0000_1234n];
+  const cases = fixtures.map((fixture) => ({ fixture, seed: BigInt(fixture.seed >>> 0) }));
+  for (const seed of extraSeeds) cases.push({ fixture: fixtures[0]!, seed });
+
+  for (const language of ['ja', 'en', 'zh-CN', 'zh-TW'] as const) {
+    setLanguage(language);
+    for (const { fixture, seed } of cases) {
+      beginBattleKernelMeasurement();
+      const seeded = executeBattleCandidateFromSeed(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        seed, getBattleRngVersion(), fixture.initialPartyHp,
+        fixture.environment ? structuredClone(fixture.environment) : undefined,
+      );
+      const measurement = endBattleKernelMeasurement();
+      assert.equal(measurement.calls, 1, `${fixture.id}:${language}:${seed}: seeded execution must use one Wasm call`);
+      assert.equal(seeded.inputCapacity, 0, `${fixture.id}:${language}:${seed}: seeded input encoded a tape`);
+      assert.equal(seeded.seed, BigInt.asUintN(64, seed));
+      assert.equal(seeded.randomConsumed, seeded.diagnosticDrawCount);
+
+      const tape = getBattleRngDoubleSequence(seed, seeded.randomConsumed);
+      const taped = executeBattleCandidateFromWindow(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        tape, fixture.initialPartyHp,
+        fixture.environment ? structuredClone(fixture.environment) : undefined,
+      );
+      assert.equal(taped.randomConsumed, tape.length);
+      assert.deepEqual(seeded.result, taped.result, `${fixture.id}:${language}:${seed}: canonical result mismatch`);
+      assert.deepEqual(
+        {
+          outcome: seeded.protocolOutput.outcome,
+          partyHp: seeded.protocolOutput.partyHp,
+          enemyHp: seeded.protocolOutput.enemyHp,
+          enemyHitsReceived: seeded.protocolOutput.enemyHitsReceived,
+          physicalThreatBag: seeded.protocolOutput.physicalThreatBag,
+          magicalThreatBag: seeded.protocolOutput.magicalThreatBag,
+          events: seeded.protocolOutput.events,
+          randomConsumed: seeded.protocolOutput.randomConsumed,
+          diagnosticDrawCount: seeded.protocolOutput.diagnosticDrawCount,
+        },
+        {
+          outcome: taped.protocolOutput.outcome,
+          partyHp: taped.protocolOutput.partyHp,
+          enemyHp: taped.protocolOutput.enemyHp,
+          enemyHitsReceived: taped.protocolOutput.enemyHitsReceived,
+          physicalThreatBag: taped.protocolOutput.physicalThreatBag,
+          magicalThreatBag: taped.protocolOutput.magicalThreatBag,
+          events: taped.protocolOutput.events,
+          randomConsumed: taped.protocolOutput.randomConsumed,
+          diagnosticDrawCount: taped.protocolOutput.diagnosticDrawCount,
+        },
+        `${fixture.id}:${language}:${seed}: decoded native output mismatch`,
+      );
+
+      const repeated = executeBattleCandidateFromSeed(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+      );
+      assert.deepEqual(repeated.protocolOutput, seeded.protocolOutput, `${fixture.id}:${language}:${seed}: repeat drift`);
+      assert.deepEqual(repeated.result, seeded.result, `${fixture.id}:${language}:${seed}: repeated canonical drift`);
     }
   }
   setLanguage('ja');

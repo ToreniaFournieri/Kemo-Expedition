@@ -238,10 +238,12 @@ Acceptance gate: complete. Part 2 native seeded RNG ownership is ready. The Type
 
 ### Part 2 native seeded RNG ownership
 
-- Ready after the completed tape-driven production stabilization gate above.
-- Move a battle-local xoshiro256** RNG into native battle state, initialized by the protocol's unsigned 64-bit seed and supported RNG version; route every random decision through explicit native helpers while preserving canonical decision order.
-- Remove the production random tape, retain seed/version/draw-count replay metadata, reject unsupported RNG versions, and prove independent worker instances do not share RNG state.
-- After seeded parity and invariant review, revise the frozen contract and regenerate golden data exactly once as an intentional RNG contract migration rather than an incidental hash update.
+- Part 2A shadow parity is complete in Build 34. `BATTLE_ENGINE_FLAG_SEEDED_RNG` / `kEngineFlagSeededRng` (`1 << 6`) is append-only and uses the existing protocol-v3 seed, RNG-version, output-seed, and diagnostic fields, so protocol v3 and ABI 8 remain unchanged.
+- Seeded mode is test/shadow-only and is accepted only together with the complete `END_CHECKPOINT` coordinator. It requires RNG version 1 and an empty tape. Mixed tape/seeded input, unsupported versions, seeded use without END, other checkpoint combinations, and unknown flags fail transactionally with no events, bags, canonical result, cursor movement, or leaked state. Tape mode remains the default and ignores populated seed metadata.
+- Each `BattleStateCore` owns and initializes its own splitmix64-seeded xoshiro256** state. The centralized `consume_random` helper selects exactly one source per execution and increments the same logical cursor for tape and seeded draws; seeded `randomConsumed` therefore equals `diagnosticDrawCount`.
+- `executeBattleCandidateFromSeed` projects once, encodes no random tape, performs one measured Wasm execution, validates echoed unsigned-64-bit seed/version and draw equality, and reuses the existing semantic renderer. Production `executeBattle`, online progression, AFK workers, Experimental API sorties, and the gameplay tape reservoir remain unchanged.
+- Differential coverage compares decoded native facts and complete localized canonical results for all 11 frozen battles in all four locales, all existing case seeds, seed 0, seed 1, maximum unsigned 64-bit seed, and an additional high-bit seed. Repeated calls, a failed seeded call followed by replay, and independent Wasm instances prove battle-local/module-local reset and isolation. The frozen reference and v1 golden fixtures remain byte-identical.
+- Production seeded-RNG cutover, v2 seeded golden-contract creation, Diary/API replay-schema changes, tape removal, and Part 3 boundary/checkpoint cleanup remain pending a separate authorization.
 
 Acceptance gate: identical input and seed reproduce identical complete results across browser, Electron, workers, and API sorties; different seeds exercise valid paths; all random indices/doubles remain in bounds; and recorded seed metadata replays exactly.
 

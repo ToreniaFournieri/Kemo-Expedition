@@ -160,7 +160,17 @@ bool append_random(BattleStateCore& state, double value) {
   return true;
 }
 
+void initialize_seeded_random(BattleStateCore& state, bokemo::battle::u64 seed) {
+  state.seeded_rng.seed_state(seed);
+  state.seeded_random = true;
+}
+
 bool consume_random(BattleStateCore& state, double& value) {
+  if (state.seeded_random) {
+    value = state.seeded_rng.next_double();
+    ++state.random_cursor;
+    return true;
+  }
   if (state.random_cursor >= state.random_count) return false;
   value = state.random_tape[state.random_cursor++];
   return true;

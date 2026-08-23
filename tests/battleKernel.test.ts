@@ -14,6 +14,28 @@ import {
   selectBestAutoEquipmentUpgradeCandidate,
 } from '../src/game/battleKernel.ts';
 
+const U64_MASK = (1n << 64n) - 1n;
+
+function splitmix64Expansion(seed: bigint): bigint[] {
+  let state = BigInt.asUintN(64, seed);
+  return Array.from({ length: 4 }, () => {
+    state = (state + 0x9e3779b97f4a7c15n) & U64_MASK;
+    let value = state;
+    value = ((value ^ (value >> 30n)) * 0xbf58476d1ce4e5b9n) & U64_MASK;
+    value = ((value ^ (value >> 27n)) * 0x94d049bb133111ebn) & U64_MASK;
+    return (value ^ (value >> 31n)) & U64_MASK;
+  });
+}
+
+test('splitmix64 expands seed zero into the retained xoshiro256** state words', () => {
+  assert.deepEqual(splitmix64Expansion(0n), [
+    0xe220a8397b1dcdafn,
+    0x6e789e6aa1b965f4n,
+    0x06c45d188009454fn,
+    0xf88bb8a8724c81ecn,
+  ]);
+});
+
 test('the checked-in C++ battle kernel exposes the expected ABI', () => {
   assert.equal(getBattleKernelAbiVersion(), 8);
   assert.equal(getBattleRngVersion(), 1);
@@ -29,6 +51,13 @@ test('C++ xoshiro256** has stable splitmix64-seeded known-answer output', () => 
   ]);
   assert.deepEqual(getBattleRngSequence(0n, 5), getBattleRngSequence(0n, 5));
   assert.notDeepEqual(getBattleRngSequence(0n, 5), getBattleRngSequence(1n, 5));
+  assert.deepEqual(getBattleRngSequence(0xffff_ffff_ffff_ffffn, 5), [
+    0x8f5520d52a7ead08n,
+    0xc476a018caa1802dn,
+    0x81de31c0d260469en,
+    0xbf658d7e065f3c2fn,
+    0x913593fda1bca32an,
+  ]);
 });
 
 test('C++ RNG uniform doubles use the specified top-53-bit conversion', () => {

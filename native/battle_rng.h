@@ -8,6 +8,7 @@ inline constexpr unsigned int kBattleRngVersion = 1;
 
 class BattleRng {
  public:
+  BattleRng() = default;
   explicit BattleRng(u64 seed) { seed_state(seed); }
 
   void seed_state(u64 seed) {

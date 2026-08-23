@@ -16,6 +16,7 @@ import {
   BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
   BATTLE_ENGINE_FLAG_END_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_SEEDED_RNG,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
 } from './generated/battleProtocol.generated.ts';
 import { computeCharacterStats } from './characterComputation.ts';
@@ -470,11 +471,17 @@ export function validateBattleSemanticFlavorFacts(events: readonly BattleProtoco
 
 export type BattleCandidateWindowResult = {
   result: BattleCandidateResult;
+  protocolOutput: BattleProtocolOutput;
   randomConsumed: number;
   diagnosticDrawCount: number;
   protocolError: number;
   eventCount: number;
   inputCapacity: number;
+};
+
+export type SeededBattleCandidateResult = BattleCandidateWindowResult & {
+  seed: bigint;
+  rngVersion: number;
 };
 
 // SpecRef: 6.1.8 | Universal C++ battle kernel | production reserved-tape window
@@ -501,11 +508,52 @@ export function executeBattleCandidateFromWindow(
   const result = convertBattleSemanticEvents(output, party, enemy, initialPartyHp, environment);
   return {
     result,
+    protocolOutput: output,
     randomConsumed: output.randomConsumed,
     diagnosticDrawCount: output.diagnosticDrawCount,
     protocolError: output.protocolError,
     eventCount: output.events.length,
     inputCapacity: randomWindow.length,
+  };
+}
+
+// SpecRef: 6.1.8 | Part 2A shadow-only battle-local seeded RNG
+export function executeBattleCandidateFromSeed(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: bigint,
+  rngVersion: number,
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): SeededBattleCandidateResult {
+  const normalizedSeed = BigInt.asUintN(64, seed);
+  const input = projectBattleProtocolInput(
+    party, enemy, bags, [], initialPartyHp, environment,
+    BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+  );
+  input.seed = normalizedSeed;
+  input.rngVersion = rngVersion;
+  const output = executeBattleCandidateProtocol(input);
+  if (output.protocolError !== 0) {
+    throw new Error(`C++ seeded battle returned protocol error ${output.protocolError} after ${output.randomConsumed} draws`);
+  }
+  if (output.seed !== normalizedSeed || output.rngVersion !== rngVersion) {
+    throw new Error(`C++ seeded battle replay metadata mismatch: ${output.seed}/${output.rngVersion}`);
+  }
+  if (output.randomConsumed !== output.diagnosticDrawCount) {
+    throw new Error(`C++ seeded battle draw mismatch: ${output.randomConsumed}/${output.diagnosticDrawCount}`);
+  }
+  return {
+    result: convertBattleSemanticEvents(output, party, enemy, initialPartyHp, environment),
+    protocolOutput: output,
+    randomConsumed: output.randomConsumed,
+    diagnosticDrawCount: output.diagnosticDrawCount,
+    protocolError: output.protocolError,
+    eventCount: output.events.length,
+    inputCapacity: 0,
+    seed: output.seed,
+    rngVersion: output.rngVersion,
   };
 }
 

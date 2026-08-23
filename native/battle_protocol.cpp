@@ -1,4 +1,5 @@
 #include "generated/battle_protocol.generated.h"
+#include "battle_rng.h"
 #include "battle_state.h"
 
 // The freestanding Wasm link omits libm.  Timed Self Destruct uses this only
@@ -3035,16 +3036,25 @@ int battle_protocol_execute(u32 byte_length) {
   const bool reactive_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatReactiveCheckpoint) != 0;
   const bool timed_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatTimedCheckpoint) != 0;
   const bool end_checkpoint = (input->engine_flags & protocol::kEngineFlagEndCheckpoint) != 0;
+  const bool seeded_rng = (input->engine_flags & protocol::kEngineFlagSeededRng) != 0;
   const u32 known_engine_flags = protocol::kEngineFlagStartCheckpoint |
       protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint |
       protocol::kEngineFlagCombatReactiveCheckpoint | protocol::kEngineFlagCombatTimedCheckpoint |
-      protocol::kEngineFlagEndCheckpoint;
+      protocol::kEngineFlagEndCheckpoint | protocol::kEngineFlagSeededRng;
   if ((input->engine_flags & ~known_engine_flags) != 0) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if ((start_checkpoint ? 1 : 0) + (combat_checkpoint ? 1 : 0) + (normal_checkpoint ? 1 : 0) +
       (reactive_checkpoint ? 1 : 0) + (timed_checkpoint ? 1 : 0) + (end_checkpoint ? 1 : 0) > 1) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
+  }
+  // Part 2A seeded execution is shadow-only and is deliberately restricted to
+  // the complete END coordinator. Tape/checkpoint behavior remains unchanged.
+  if (seeded_rng && (!end_checkpoint || input->random_count != 0)) {
+    return initialize_error_output(*input, protocol::ProtocolError::SeededModeConflict);
+  }
+  if (seeded_rng && input->rng_version != bokemo::battle::kBattleRngVersion) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedRngVersion);
   }
   if (combat_checkpoint && !base_combat_domain_is_supported(*input, records, physical_bag, magical_bag)) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
@@ -3069,6 +3079,10 @@ int battle_protocol_execute(u32 byte_length) {
   state.enemy_hp = input->enemy_hp;
   state.enemy_max_hp = input->enemy_max_hp;
   state.consume_random_flavor = end_checkpoint;
+  if (seeded_rng) {
+    const u64 seed = (static_cast<u64>(input->seed_high) << 32) | input->seed_low;
+    initialize_seeded_random(state, seed);
+  }
   state.physical_bag_count = input->physical_bag_count;
   state.magical_bag_count = input->magical_bag_count;
   for (u32 index = 0; index < input->physical_bag_count; ++index) state.physical_bag[index] = {physical_bag[index].id, physical_bag[index].tickets};

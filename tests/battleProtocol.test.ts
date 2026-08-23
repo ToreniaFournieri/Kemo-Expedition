@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   encodeBattleProtocolInput,
+  decodeBattleProtocolOutput,
   getBattleProtocolTerrainName,
   type BattleProtocolInput,
 } from '../src/game/battleProtocol.ts';
@@ -22,6 +23,7 @@ import {
   BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
   BATTLE_ENGINE_FLAG_END_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_SEEDED_RNG,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
   BATTLE_INPUT_OFFSETS,
@@ -108,7 +110,10 @@ test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT, 1 << 3);
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, 1 << 4);
   assert.equal(BATTLE_ENGINE_FLAG_END_CHECKPOINT, 1 << 5);
+  assert.equal(BATTLE_ENGINE_FLAG_SEEDED_RNG, 1 << 6);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature, 7);
+  assert.equal(BATTLE_PROTOCOL_ERROR_CODES.seededModeConflict, 8);
+  assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedRngVersion, 9);
   assert.equal(getBattleProtocolTerrainName(BATTLE_TERRAIN_IDS['terrain.echo-domain']), 'terrain.echo-domain');
 });
 
@@ -265,6 +270,45 @@ test('full-battle execution resets state, consumes the supplied tape exactly, an
   assert.equal(second.enemyHp, 88);
 });
 
+test('seeded mode rejects mixed tapes, unsupported versions, and non-END checkpoints transactionally', () => {
+  const mixed = executeBattleProtocol(encodeBattleProtocolInput({
+    ...protocolInput,
+    engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+  }));
+  assert.equal(mixed.protocolError, BATTLE_PROTOCOL_ERROR_CODES.seededModeConflict);
+  assert.equal(mixed.randomConsumed, 0);
+  assert.equal(mixed.diagnosticDrawCount, 0);
+  assert.deepEqual(mixed.events, []);
+  assert.deepEqual(mixed.physicalThreatBag, []);
+  assert.deepEqual(mixed.magicalThreatBag, []);
+
+  const unsupported = executeBattleProtocol(encodeBattleProtocolInput({
+    ...protocolInput,
+    randomValues: [],
+    rngVersion: 2,
+    engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+  }));
+  assert.equal(unsupported.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedRngVersion);
+  assert.equal(unsupported.randomConsumed, 0);
+  assert.deepEqual(unsupported.events, []);
+
+  const checkpointConflict = executeBattleProtocol(encodeBattleProtocolInput({
+    ...protocolInput,
+    randomValues: [],
+    engineFlags: BATTLE_ENGINE_FLAG_START_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+  }));
+  assert.equal(checkpointConflict.protocolError, BATTLE_PROTOCOL_ERROR_CODES.seededModeConflict);
+
+  const tapeIgnoresSeedMetadata = executeBattleProtocol(encodeBattleProtocolInput({
+    ...protocolInput,
+    seed: 0xffff_ffff_ffff_ffffn,
+    rngVersion: 1,
+    engineFlags: 0,
+  }));
+  assert.equal(tapeIgnoresSeedMetadata.protocolError, 0);
+  assert.equal(tapeIgnoresSeedMetadata.randomConsumed, protocolInput.randomValues.length);
+});
+
 function checkpointInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
   return {
     partyHp: 100,
@@ -320,6 +364,60 @@ function checkpointInput(overrides: Partial<BattleProtocolInput> = {}): BattlePr
     ...overrides,
   };
 }
+
+function seededEndInput(seed: bigint): BattleProtocolInput {
+  const base = checkpointInput();
+  return checkpointInput({
+    seed,
+    rngVersion: 1,
+    engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+    physicalThreatBag: [{ id: 1, tickets: 1 }],
+    magicalThreatBag: [{ id: 1, tickets: 1 }],
+    combatants: [
+      { ...base.combatants[0]!, rangedAttack: 10, rangedNoA: 2 },
+      { ...base.combatants[1]!, meleeAttack: 10, meleeNoA: 2 },
+    ],
+  });
+}
+
+function executeInIndependentInstance(input: BattleProtocolInput) {
+  const instance = new WebAssembly.Instance(new WebAssembly.Module(BATTLE_KERNEL_WASM), {});
+  const exports = instance.exports as WebAssembly.Exports & {
+    memory: WebAssembly.Memory;
+    battle_protocol_input_arena(): number;
+    battle_protocol_output_arena(): number;
+    battle_protocol_execute(byteLength: number): number;
+  };
+  const encoded = encodeBattleProtocolInput(input);
+  new Uint8Array(exports.memory.buffer, exports.battle_protocol_input_arena(), encoded.length).set(encoded);
+  const outputLength = exports.battle_protocol_execute(encoded.length);
+  assert.ok(outputLength > 0);
+  const bytes = new Uint8Array(outputLength);
+  bytes.set(new Uint8Array(exports.memory.buffer, exports.battle_protocol_output_arena(), outputLength));
+  return decodeBattleProtocolOutput(bytes);
+}
+
+test('seeded battles reset after failures and remain isolated across Wasm instances', () => {
+  const input = seededEndInput(0xffff_ffff_ffff_ffffn);
+  const baseline = executeBattleProtocol(encodeBattleProtocolInput(input));
+  assert.equal(baseline.protocolError, 0);
+  assert.equal(baseline.randomConsumed, baseline.diagnosticDrawCount);
+
+  const failed = executeBattleProtocol(encodeBattleProtocolInput({ ...input, rngVersion: 2 }));
+  assert.equal(failed.protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedRngVersion);
+  assert.equal(failed.randomConsumed, 0);
+  assert.deepEqual(failed.events, []);
+  assert.deepEqual(executeBattleProtocol(encodeBattleProtocolInput(input)), baseline);
+
+  const firstInstance = executeInIndependentInstance(input);
+  const secondInstance = executeInIndependentInstance(input);
+  assert.deepEqual(firstInstance, baseline);
+  assert.deepEqual(secondInstance, baseline);
+
+  const divergent = executeBattleProtocol(encodeBattleProtocolInput(seededEndInput(1n)));
+  assert.equal(divergent.protocolError, 0);
+  assert.notDeepEqual(divergent.events, baseline.events);
+});
 
 test('START checkpoint resolves an empty slice and leaves outcome unresolved', () => {
   const output = executeBattleProtocol(encodeBattleProtocolInput(checkpointInput()));
