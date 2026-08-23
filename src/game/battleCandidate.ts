@@ -681,8 +681,38 @@ export function convertBattleSemanticEvents(
     }
   };
   const presentationByTarget = new Map<string, Array<Map<number, number>>>();
-  for (const event of events) {
+  const presentationByAction = new Map<string, Array<{
+    facts: Map<number, number>;
+    hits: number;
+    attempts: number;
+    eventIndex: number;
+  }>>();
+  for (const [eventIndex, event] of events.entries()) {
     if (event.opcode !== 'diagnostic' || (event.flags & 128) === 0) continue;
+    if ((event.flags & 64) !== 0) {
+      const key = actionKey(event);
+      const occurrences = presentationByAction.get(key) ?? [];
+      if ((event.flags & 32) !== 0) {
+        occurrences.push({ facts: new Map<number, number>(), hits: event.hits, attempts: event.attempts, eventIndex });
+      }
+      const occurrence = occurrences[occurrences.length - 1];
+      if (!occurrence) throw new Error(`Native action presentation continuation is missing its start for ${key}`);
+      if (occurrence.hits !== event.hits || occurrence.attempts !== event.attempts) {
+        throw new Error(`Native action presentation totals drifted within ${key}`);
+      }
+      const values = [event.value0, event.value1, event.value2];
+      const groups = [0, 1, 2].filter((group) => (event.aux1 & (0b111 << (group * 3))) !== 0);
+      if ((event.aux1 !== 0 && groups.length !== 1) || (event.aux1 & ~0x1ff) !== 0) {
+        throw new Error(`Invalid native action presentation mask ${event.aux1} for ${key}`);
+      }
+      for (let kind = 1; kind <= 9; kind += 1) {
+        if ((event.aux1 & (1 << (kind - 1))) === 0) continue;
+        if (occurrence.facts.has(kind)) throw new Error(`Duplicate native action presentation fact ${kind} for ${key}`);
+        occurrence.facts.set(kind, values[(kind - 1) % 3]!);
+      }
+      presentationByAction.set(key, occurrences);
+      continue;
+    }
     const key = attackTargetKey(event);
     const occurrences = presentationByTarget.get(key) ?? [new Map<number, number>()];
     let facts = occurrences[occurrences.length - 1]!;
@@ -707,17 +737,7 @@ export function convertBattleSemanticEvents(
     presentationByTarget.set(key, occurrences);
   }
   const presentationOccurrence = new Map<string, number>();
-  const enemyWireId = 0x8000_0000 + enemy.id;
-  const magicalGroups = new Map<string, { hits: number; attempts: number; firstIndex: number }>();
-  events.forEach((event, index) => {
-    if (event.opcode !== 'attack' || event.actorId !== enemyWireId || event.attackType !== 'magical'
-        || event.abilityId === 'magic_seal' || event.attempts <= 0) return;
-    const key = actionKey(event);
-    const group = magicalGroups.get(key) ?? { hits: 0, attempts: 0, firstIndex: index };
-    group.hits += event.hits;
-    group.attempts += event.attempts;
-    magicalGroups.set(key, group);
-  });
+  const actionPresentationOccurrence = new Map<string, number>();
 
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index]!;
@@ -1037,13 +1057,19 @@ export function convertBattleSemanticEvents(
         continue;
       }
 
-      const magicalGroup = actor.kind === 'enemy' && event.attackType === 'magical' ? magicalGroups.get(groupKey) : null;
-      if (magicalGroup?.firstIndex === index) {
-        const attack = `${spellName(actor, magicalGroup.attempts)}${isReAttack ? t('battleLog.action.reAttackSuffix') : ''}`;
+      const actionOccurrence = actionPresentationOccurrence.get(groupKey) ?? 0;
+      const actionPresentation = actor.kind === 'enemy' && event.attackType === 'magical'
+        ? presentationByAction.get(groupKey)?.[actionOccurrence]
+        : undefined;
+      if (actionPresentation && actionPresentation.eventIndex < index) {
+        actionPresentationOccurrence.set(groupKey, actionOccurrence + 1);
+        const actionBonusText = attackBonusText(actionPresentation.facts);
+        const actionProperties = presentationProperties(actionPresentation.facts);
+        const attack = `${spellName(actor, actionPresentation.attempts)}${isReAttack ? t('battleLog.action.reAttackSuffix') : ''}`;
         log.push({
-          phase: 'combat', initiativeRoll, actor: 'enemy', action: `${t('battleLog.action.enemySpellCast', { attack })}${bonusText}`,
-          hits: magicalGroup.hits, totalAttempts: magicalGroup.attempts,
-          ...(presentation.rageBonusPercent !== undefined ? { rageBonusPercent: presentation.rageBonusPercent } : {}),
+          phase: 'combat', initiativeRoll, actor: 'enemy', action: `${t('battleLog.action.enemySpellCast', { attack })}${actionBonusText}`,
+          hits: actionPresentation.hits, totalAttempts: actionPresentation.attempts,
+          ...(actionProperties.rageBonusPercent !== undefined ? { rageBonusPercent: actionProperties.rageBonusPercent } : {}),
           ...(isReAttack ? { isReAttack: true } : {}), elementalOffense: actor.elementalOffense, attackType: event.attackType,
         });
       }

@@ -2067,10 +2067,13 @@ ReactiveStrikeResult roll_reactive_strike(const InputHeader& input, BattleStateC
 // compacted in groups of three across value0/value1/value2:
 // 1 Rage %, 2 Momentum %, 3 Resonance %, 4 Echo %, 5 Ambush multiplier,
 // 6 Overwatch multiplier, 7 Execution multiplier, 8 actor Swarm %, 9 target Swarm %.
+// Flag 64 marks action-scope facts and flag 32 starts one action occurrence;
+// action-scope events also carry the authoritative aggregate hits and attempts.
 CombatResult emit_presentation_facts(const InputHeader& input, BattleStateCore& state,
                                      CombatantState& actor, CombatantState& target,
                                      u32 profile_index, int timing, u32 action_id,
-                                     u32 hits, bool normal_runtime) {
+                                     u32 hits, bool normal_runtime,
+                                     bool action_scope = false, u32 attempts = 0) {
   double values[9]{};
   bool present[9]{};
   auto fact = [&](u32 kind, protocol::AbilityId ability, double value) -> bool {
@@ -2089,7 +2092,7 @@ CombatResult emit_presentation_facts(const InputHeader& input, BattleStateCore& 
     if (percent > 0.0 && !fact(1, protocol::AbilityId::Rage, percent)) return CombatResult::EventCapacity;
   }
   const int momentum = active_ability_level(actor, protocol::AbilityId::Momentum);
-  if (momentum > 0) {
+  if (!action_scope && momentum > 0) {
     const double multiplier = 1.25 - (1.0 - hp_ratio(actor_hp, actor_max)) * (momentum >= 2 ? 0.4 : 0.5);
     const double percent = __builtin_floor((multiplier - 1.0) * 100.0 + 0.5);
     if (!fact(2, protocol::AbilityId::Momentum, percent > 0.0 ? percent : 0.0)) return CombatResult::EventCapacity;
@@ -2108,7 +2111,7 @@ CombatResult emit_presentation_facts(const InputHeader& input, BattleStateCore& 
     const u32 count = state.echo_elemental_use[actor.profile.elemental_offense];
     if (count > 1 && !fact(4, protocol::AbilityId::None, static_cast<double>((count - 1) * 10))) return CombatResult::EventCapacity;
   }
-  if (normal_runtime) {
+  if (normal_runtime && !action_scope) {
     constexpr double action_amplify[5] = {1.3, 1.5, 1.6, 1.65, 1.68};
     const bool normal_action = action_id == static_cast<u32>(protocol::ActionId::NormalAttack);
     const bool opponent_acted = target.acted;
@@ -2128,14 +2131,15 @@ CombatResult emit_presentation_facts(const InputHeader& input, BattleStateCore& 
         target_hp <= target_max * (execution >= 2 ? 0.5 : 0.4) &&
         !fact(7, protocol::AbilityId::Execution, execution >= 2 ? 1.8 : 1.5)) return CombatResult::EventCapacity;
   }
-  if (active_ability_level(actor, protocol::AbilityId::Swarm) > 0) {
+  if (!action_scope && active_ability_level(actor, protocol::AbilityId::Swarm) > 0) {
     const double percent = __builtin_floor((1.0 - hp_ratio(actor_hp, actor_max)) * 0.5 * 100.0 + 0.5);
     if (!fact(8, protocol::AbilityId::Swarm, percent)) return CombatResult::EventCapacity;
   }
-  if (active_ability_level(target, protocol::AbilityId::Swarm) > 0) {
+  if (!action_scope && active_ability_level(target, protocol::AbilityId::Swarm) > 0) {
     const double percent = __builtin_floor((1.0 - hp_ratio(target_hp, target_max)) * 0.5 * 100.0 + 0.5);
     if (!fact(9, protocol::AbilityId::Swarm, percent)) return CombatResult::EventCapacity;
   }
+  bool emitted = false;
   for (u32 group = 0; group < 3; ++group) {
     u32 mask = 0;
     for (u32 slot = 0; slot < 3; ++slot) {
@@ -2143,10 +2147,28 @@ CombatResult emit_presentation_facts(const InputHeader& input, BattleStateCore& 
       if (present[index]) mask |= 1u << index;
     }
     if (mask == 0) continue;
-    if (!emit_state_event(state, protocol::EventOpcode::Diagnostic, 2, actor.id, target.id,
-        0, profile_index + 1, timing, 128, values[group * 3], values[group * 3 + 1],
+    const u32 flags = 128u | (action_scope ? 64u : 0u) | (action_scope && !emitted ? 32u : 0u);
+    if (!emit_state_event(state, protocol::EventOpcode::Diagnostic, 2, actor.id,
+        action_scope ? actor.id : target.id,
+        0, profile_index + 1, timing, flags, values[group * 3], values[group * 3 + 1],
         values[group * 3 + 2], action_id)) return CombatResult::EventCapacity;
     state.events[state.event_count - 1].aux1 = mask;
+    if (action_scope) {
+      state.events[state.event_count - 1].hits = hits;
+      state.events[state.event_count - 1].attempts = attempts;
+    }
+    emitted = true;
+  }
+  // A grouped action with no active numeric bonuses still owns its aggregate
+  // hits/attempts. Emit an empty action-scope fact so repeated action IDs and
+  // zero-hit groups retain an explicit, language-neutral boundary.
+  if (action_scope && !emitted) {
+    if (!emit_state_event(state, protocol::EventOpcode::Diagnostic, 2, actor.id, actor.id,
+        0, profile_index + 1, timing, 128u | 64u | 32u, 0, 0, 0, action_id)) {
+      return CombatResult::EventCapacity;
+    }
+    state.events[state.event_count - 1].hits = hits;
+    state.events[state.event_count - 1].attempts = attempts;
   }
   return CombatResult::Ok;
 }
@@ -2721,6 +2743,13 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
                 0, 0, 0, action_id)) return CombatResult::EventCapacity;
             state.events[state.event_count - 1].attempts = static_cast<u32>(raw);
             continue;
+          }
+          u32 grouped_hits = 0;
+          for (u32 group = 0; group < group_count; ++group) grouped_hits += groups[group].result.hits;
+          if (profile_index == 1 && group_count > 0) {
+            const auto presentation = emit_presentation_facts(input, state, *actor, *actor,
+                profile_index, timing, action_id, grouped_hits, true, true, static_cast<u32>(raw));
+            if (presentation != CombatResult::Ok) return presentation;
           }
           double repeat_damage = 0.0;
           CombatantState* first_target = group_count > 0 ? groups[0].target : nullptr;

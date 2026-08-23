@@ -45,9 +45,6 @@ const GOLDEN_PATH = resolve(ROOT, 'tests/fixtures/battleGolden.v1.json');
 const REFERENCE_CONTRACT_PATH = resolve(ROOT, 'tests/fixtures/battleReferenceContract.v1.json');
 const GOLDEN_V2_PATH = resolve(ROOT, 'tests/fixtures/battleGolden.v2.json');
 const REFERENCE_CONTRACT_V2_PATH = resolve(ROOT, 'tests/fixtures/battleReferenceContract.v2.json');
-const V2_CASE_SEEDS: Readonly<Record<string, bigint>> = {
-  'saved-party-3-expedition-6-boss': 0x8e710004n,
-};
 
 type BattleReferenceContract = {
   contractVersion: number;
@@ -198,6 +195,34 @@ function sha256(path: string): string {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
+function naturalFixtureSeed(fixture: BattleGoldenCase): bigint {
+  return BigInt(fixture.seed >>> 0);
+}
+
+function assertNaturalV2Seeds(fixtures: readonly BattleGoldenCase[]): void {
+  const actual = Object.fromEntries(fixtures.map((fixture) => [
+    fixture.id,
+    naturalFixtureSeed(fixture).toString(16).padStart(16, '0'),
+  ]));
+  assert.deepEqual(actual, {
+    'normal-domain-breaker-counter': '0000000013579bdf',
+    'elite-counter-recounter': '000000002468ace1',
+    'oblivion-and-reanimate': '0000000010203040',
+    'mimic-and-resonance': '0000000089abcdef',
+    'first-strike-defeat': '0000000055aa7711',
+    'saved-party-1-expedition-8-boss': '000000008e710001',
+    'saved-party-2-expedition-7-boss': '000000008e710002',
+    'saved-party-3-expedition-6-boss': '000000008e710003',
+    'saved-party-4-expedition-5-boss': '000000008e710004',
+    'saved-party-5-expedition-4-boss': '000000008e710005',
+    'saved-party-6-expedition-3-boss': '000000008e710006',
+  });
+  assert.deepEqual(
+    fixtures.filter((fixture) => fixture.id.startsWith('saved-party-')).map(naturalFixtureSeed),
+    [0x8e710001n, 0x8e710002n, 0x8e710003n, 0x8e710004n, 0x8e710005n, 0x8e710006n],
+  );
+}
+
 function executeFrozenReferenceFromTape(fixture: BattleGoldenCase, tape: readonly number[]) {
   let cursor = 0;
   const source = () => {
@@ -223,12 +248,14 @@ test('guarded v2 seeded contract generation performs triple differential parity'
   const locales = ['ja', 'en', 'zh-CN', 'zh-TW'] as const;
   const fixtureDocument: Record<string, Record<string, BattleGoldenDigest & { replayMetadata: ReturnType<typeof createBattleReplayMetadata> }>> = {};
   const seeds: Record<string, string> = {};
+  const fixtures = createGoldenCases();
+  assertNaturalV2Seeds(fixtures);
   for (const language of locales) {
     setLanguage(language);
     fixtureDocument[language] = {};
-    for (const fixture of createGoldenCases()) {
+    for (const fixture of fixtures) {
       setLanguage(language);
-      const seed = V2_CASE_SEEDS[fixture.id] ?? BigInt(fixture.seed >>> 0);
+      const seed = naturalFixtureSeed(fixture);
       const seeded = executeBattleCandidateFromSeed(
         structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
         seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
@@ -252,6 +279,14 @@ test('guarded v2 seeded contract generation performs triple differential parity'
     }
   }
   setLanguage('ja');
+  assert.deepEqual(
+    seeds,
+    Object.fromEntries(fixtures.map((fixture) => [
+      fixture.id,
+      naturalFixtureSeed(fixture).toString(16).padStart(16, '0'),
+    ])),
+    'The v2 contract must use every fixture\'s declared natural seed',
+  );
   writeFileSync(GOLDEN_V2_PATH, `${JSON.stringify(fixtureDocument, null, 2)}\n`);
   const contract = {
     contractVersion: 2,
@@ -262,7 +297,7 @@ test('guarded v2 seeded contract generation performs triple differential parity'
     protocolVersion: BATTLE_PROTOCOL_VERSION,
     abiVersion: getBattleKernelAbiVersion(),
     locales,
-    caseIds: createGoldenCases().map((fixture) => fixture.id),
+    caseIds: fixtures.map((fixture) => fixture.id),
     seeds,
     canonicalResultFields: [...referenceContract.canonicalResultFields, 'replayMetadata'],
     referenceRunner: referenceContract.referenceRunner,
@@ -285,6 +320,90 @@ test('v2 seeded fixture and contract remain pinned when present', () => {
   assert.equal(sha256(resolve(ROOT, contract.goldenFixture)), contract.goldenSha256);
   assert.equal(contract.referenceSha256, referenceContract.referenceSha256);
   assert.equal(contract.predecessorGoldenSha256, referenceContract.goldenSha256);
+});
+
+test('v2 contract seeds equal the natural fixture seeds', () => {
+  const fixtures = createGoldenCases();
+  assertNaturalV2Seeds(fixtures);
+  const contract = JSON.parse(readFileSync(REFERENCE_CONTRACT_V2_PATH, 'utf8')) as {
+    seeds: Record<string, string>;
+  };
+  assert.deepEqual(
+    contract.seeds,
+    Object.fromEntries(fixtures.map((fixture) => [
+      fixture.id,
+      naturalFixtureSeed(fixture).toString(16).padStart(16, '0'),
+    ])),
+  );
+});
+
+test('Expedition 6 natural seed retains complete grouped Resonance parity in every locale', () => {
+  const fixture = createGoldenCases().find((entry) => entry.id === 'saved-party-3-expedition-6-boss');
+  assert.ok(fixture);
+  const seed = 0x8e710003n;
+  assert.equal(naturalFixtureSeed(fixture), seed);
+  for (const language of ['ja', 'en', 'zh-CN', 'zh-TW'] as const) {
+    setLanguage(language);
+    const seeded = executeBattleCandidateFromSeed(
+      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+      seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+    );
+    assert.equal(seeded.randomConsumed, 107, `${language}: natural-seed draw count drifted`);
+    assert.equal(seeded.diagnosticDrawCount, 107, `${language}: diagnostic draw count drifted`);
+    const tape = getBattleRngDoubleSequence(seed, seeded.randomConsumed);
+    const reference = executeFrozenReferenceFromTape(fixture, tape);
+    const taped = executeBattleCandidateFromWindow(
+      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+      tape, fixture.initialPartyHp, fixture.environment,
+    );
+    const referenceJson = canonicalBattleJson({ randomDrawCount: 107, result: reference });
+    assert.equal(canonicalBattleJson({ randomDrawCount: 107, result: taped.result }), referenceJson);
+    assert.equal(canonicalBattleJson({ randomDrawCount: 107, result: seeded.result }), referenceJson);
+    assert.deepEqual(seeded.result, taped.result, `${language}: optional-property presence drifted`);
+    assert.deepEqual(
+      seeded.protocolOutput.events,
+      taped.protocolOutput.events,
+      `${language}: ordered native semantic facts drifted`,
+    );
+    const groupedHeader = seeded.result.log.find((entry) => (
+      entry.actor === 'enemy'
+      && entry.attackType === 'magical'
+      && entry.hits === 3
+      && entry.isEnemyTargetHit !== true
+    ));
+    assert.ok(groupedHeader, `${language}: grouped three-hit magical header is missing`);
+    assert.match(groupedHeader.action, /12%/, `${language}: grouped Resonance must render +12%`);
+  }
+  setLanguage('ja');
+});
+
+test('Expedition 6 presentation-rich deterministic seed sweep retains triple parity', () => {
+  const fixture = createGoldenCases().find((entry) => entry.id === 'saved-party-3-expedition-6-boss');
+  assert.ok(fixture);
+  for (const language of ['ja', 'en', 'zh-CN', 'zh-TW'] as const) {
+    setLanguage(language);
+    for (let offset = 0n; offset <= 0x3fn; offset += 1n) {
+      const seed = 0x8e710000n + offset;
+      const seeded = executeBattleCandidateFromSeed(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+      );
+      const tape = getBattleRngDoubleSequence(seed, seeded.randomConsumed);
+      const reference = executeFrozenReferenceFromTape(fixture, tape);
+      const taped = executeBattleCandidateFromWindow(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        tape, fixture.initialPartyHp, fixture.environment,
+      );
+      const expectedJson = canonicalBattleJson({ randomDrawCount: tape.length, result: reference });
+      const identity = `${fixture.id}:${language}:${seed.toString(16).padStart(16, '0')}`;
+      assert.equal(canonicalBattleJson({ randomDrawCount: tape.length, result: taped.result }), expectedJson, `${identity}: tape mismatch`);
+      assert.equal(canonicalBattleJson({ randomDrawCount: tape.length, result: seeded.result }), expectedJson, `${identity}: seeded mismatch`);
+      assert.deepEqual(seeded.protocolOutput.events, taped.protocolOutput.events, `${identity}: semantic fact mismatch`);
+      assert.equal(taped.randomConsumed, tape.length, `${identity}: tape cursor mismatch`);
+      assert.equal(seeded.diagnosticDrawCount, tape.length, `${identity}: seeded cursor mismatch`);
+    }
+  }
+  setLanguage('ja');
 });
 
 test('v2 authoritative fixture retains all-locale triple differential parity', () => {

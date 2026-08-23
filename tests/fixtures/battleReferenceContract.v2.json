@@ -33,7 +33,7 @@
     "first-strike-defeat": "0000000055aa7711",
     "saved-party-1-expedition-8-boss": "000000008e710001",
     "saved-party-2-expedition-7-boss": "000000008e710002",
-    "saved-party-3-expedition-6-boss": "000000008e710004",
+    "saved-party-3-expedition-6-boss": "000000008e710003",
     "saved-party-4-expedition-5-boss": "000000008e710004",
     "saved-party-5-expedition-4-boss": "000000008e710005",
     "saved-party-6-expedition-3-boss": "000000008e710006"
@@ -55,5 +55,5 @@
   "predecessorGoldenFixture": "tests/fixtures/battleGolden.v1.json",
   "predecessorGoldenSha256": "e71f11bf791f52315ea20febabfc31cf881e7a72a4154ee95fa5806aa6df8bf0",
   "goldenFixture": "tests/fixtures/battleGolden.v2.json",
-  "goldenSha256": "4eef9a97be3549c787f0fae57b0a0c39535b2ebe80dae5e3fde6592b38e25ba3"
+  "goldenSha256": "a06aa4eef0c53521b1d39a82fba1dc9b0c6aead444d306d4ac44b2a058afbfad"
 }
