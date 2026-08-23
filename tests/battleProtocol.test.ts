@@ -4,13 +4,17 @@ import {
   encodeBattleProtocolInput,
   decodeBattleProtocolOutput,
   getBattleProtocolTerrainName,
+  writeBattleProtocolInput,
+  BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS,
   type BattleProtocolInput,
 } from '../src/game/battleProtocol.ts';
 import {
   beginBattleKernelMeasurement,
   endBattleKernelMeasurement,
   executeBattleProtocol,
+  executeBattleProtocolInput,
   getBattleProtocolArenaInfo,
+  growBattleProtocolMemoryForTesting,
   probeBattleProtocol,
 } from '../src/game/battleKernel.ts';
 import { BATTLE_KERNEL_WASM } from '../src/game/battleKernelBinary.ts';
@@ -26,11 +30,16 @@ import {
   BATTLE_ENGINE_FLAG_SEEDED_RNG,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
   BATTLE_EVENT_OPCODES,
+  BATTLE_EVENT_OFFSETS,
+  BATTLE_EVENT_RECORD_SIZE,
   BATTLE_INPUT_OFFSETS,
   BATTLE_COMBATANT_OFFSETS,
   BATTLE_COMBATANT_RECORD_SIZE,
   BATTLE_PROTOCOL_ARENA_CAPACITY,
   BATTLE_PROTOCOL_INPUT_MAGIC,
+  BATTLE_PROTOCOL_OUTPUT_MAGIC,
+  BATTLE_OUTPUT_HEADER_SIZE,
+  BATTLE_OUTPUT_OFFSETS,
   BATTLE_PROTOCOL_ERROR_CODES,
   BATTLE_PROTOCOL_VERSION,
   BATTLE_TERRAIN_IDS,
@@ -153,6 +162,73 @@ test('TypeScript encoder and C++ decoder share one binary input layout', () => {
   assert.deepEqual(output.magicalThreatBag, protocolInput.magicalThreatBag);
 });
 
+test('structured and retained byte execution paths produce identical owned output', () => {
+  const encoded = encodeBattleProtocolInput(protocolInput);
+  const expected = executeBattleProtocol(encoded);
+  const actual = executeBattleProtocolInput(protocolInput);
+  assert.deepEqual(actual, expected);
+  const retained = structuredClone(actual);
+  executeBattleProtocolInput({ ...protocolInput, partyHp: 77, partyMaxHp: 77 });
+  assert.deepEqual(actual, retained, 'later arena reuse must not mutate returned objects or arrays');
+});
+
+test('canonical direct writer enforces the exact input-arena ceiling before writing', () => {
+  const base = encodeBattleProtocolInput({ ...protocolInput, randomValues: [], physicalThreatBag: [], magicalThreatBag: [] });
+  const bagRecords = (BATTLE_PROTOCOL_ARENA_CAPACITY - base.byteLength) / 8;
+  assert.ok(Number.isInteger(bagRecords));
+  const maximumInput = {
+    ...protocolInput,
+    randomValues: [],
+    physicalThreatBag: Array.from({ length: bagRecords }, () => ({ id: 1, tickets: 1 })),
+    magicalThreatBag: [],
+  };
+  const exactArena = new Uint8Array(BATTLE_PROTOCOL_ARENA_CAPACITY);
+  assert.equal(writeBattleProtocolInput(maximumInput, exactArena), BATTLE_PROTOCOL_ARENA_CAPACITY);
+  const sentinel = new Uint8Array(base.byteLength).fill(0xa5);
+  assert.throws(() => writeBattleProtocolInput({ ...protocolInput, randomValues: [], physicalThreatBag: [], magicalThreatBag: [] }, sentinel.subarray(0, -1)), /target capacity/);
+  assert.ok(sentinel.every((value) => value === 0xa5), 'one-byte target overflow must fail before writing');
+  assert.throws(
+    () => encodeBattleProtocolInput({ ...maximumInput, physicalThreatBag: [...maximumInput.physicalThreatBag, { id: 1, tickets: 1 }] }),
+    /arena capacity/,
+  );
+});
+
+test('decoder accepts the exact semantic-event ceiling and rejects one-record overflow', () => {
+  const makeOutput = (eventCount: number) => {
+    const totalSize = BATTLE_OUTPUT_HEADER_SIZE + eventCount * BATTLE_EVENT_RECORD_SIZE;
+    const bytes = new Uint8Array(totalSize);
+    const view = new DataView(bytes.buffer);
+    view.setUint32(BATTLE_OUTPUT_OFFSETS.magic, BATTLE_PROTOCOL_OUTPUT_MAGIC, true);
+    view.setUint16(BATTLE_OUTPUT_OFFSETS.version, BATTLE_PROTOCOL_VERSION, true);
+    view.setUint16(BATTLE_OUTPUT_OFFSETS.headerSize, BATTLE_OUTPUT_HEADER_SIZE, true);
+    view.setUint32(BATTLE_OUTPUT_OFFSETS.totalSize, totalSize, true);
+    view.setUint32(BATTLE_OUTPUT_OFFSETS.eventCount, eventCount, true);
+    view.setUint32(BATTLE_OUTPUT_OFFSETS.eventsOffset, BATTLE_OUTPUT_HEADER_SIZE, true);
+    for (let index = 0; index < eventCount; index += 1) {
+      view.setUint16(BATTLE_OUTPUT_HEADER_SIZE + index * BATTLE_EVENT_RECORD_SIZE + BATTLE_EVENT_OFFSETS.opcode, BATTLE_EVENT_OPCODES.protocol_ready, true);
+    }
+    return bytes;
+  };
+  const maximum = decodeBattleProtocolOutput(makeOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS));
+  assert.equal(maximum.events.length, BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS);
+  assert.throws(() => decodeBattleProtocolOutput(makeOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS + 1)), /event count exceeds/);
+});
+
+test('shared reentrancy guard rejects nested structured execution before arena mutation and recovers', () => {
+  const baseline = executeBattleProtocolInput(protocolInput);
+  const reentrant = { ...protocolInput } as BattleProtocolInput;
+  Object.defineProperty(reentrant, 'combatants', {
+    get() {
+      executeBattleProtocolInput(protocolInput);
+      return protocolInput.combatants;
+    },
+  });
+  beginBattleKernelMeasurement();
+  assert.throws(() => executeBattleProtocolInput(reentrant), /Nested or reentrant/);
+  assert.equal(endBattleKernelMeasurement().calls, 0);
+  assert.deepEqual(executeBattleProtocolInput(protocolInput), baseline);
+});
+
 test('the Wasm protocol reuses fixed input and output arenas', () => {
   const before = getBattleProtocolArenaInfo();
   probeBattleProtocol(encodeBattleProtocolInput(protocolInput));
@@ -160,6 +236,12 @@ test('the Wasm protocol reuses fixed input and output arenas', () => {
   assert.deepEqual(after, before);
   assert.equal(after.capacity, BATTLE_PROTOCOL_ARENA_CAPACITY);
   assert.notEqual(after.inputPointer, after.outputPointer);
+});
+
+test('direct arena views are recreated after Wasm memory growth', () => {
+  const before = executeBattleProtocolInput(protocolInput);
+  growBattleProtocolMemoryForTesting();
+  assert.deepEqual(executeBattleProtocolInput(protocolInput), before);
 });
 
 test('TypeScript and C++ reject invalid binary protocol data', () => {

@@ -263,11 +263,24 @@ Acceptance gate: complete in Build 36. All 11 natural-seed cases pass in all fou
 
 ### Part 3 single-crossing optimization and cleanup
 
-Status: ready after Build 36 corrective Part 2B acceptance; not started.
+#### Part 3A direct-arena boundary — complete in Build 37
 
-- Encode directly into reusable Wasm input memory where safe, cache arena pointers/capacities, decode the contiguous semantic output before the next invocation, and reuse typed-array views without introducing reentrancy.
-- Preserve one Wasm invocation per encounter rather than batching an entire multi-cycle sortie into one oversized call. Serialize battles per JavaScript realm and let each AFK worker own its Wasm instance.
-- Establish tested event/output capacity ceilings, return explicit overflow errors without truncation, keep synchronous online latency within the UI budget, and keep large AFK/API workloads in workers or yielding between battles.
-- Remove obsolete checkpoint-only adapters, the temporary no-flag placeholder path, unused micro-kernel production APIs, and the duplicate TypeScript numerical engine only after their replacement gates are proven.
+- Production seeded candidates call `executeBattleProtocolInput`, which validates and sizes the complete structured input before native execution, writes the canonical protocol-v3 little-endian records directly into the fixed Wasm input arena, executes exactly once, and decodes the output arena while the invocation owns it. The retained `encodeBattleProtocolInput` and byte-input executor use the same validator, layout, offsets, and record writer for tape diagnostics, corruption, malformed-binary, and frozen-reference tests.
+- Arena pointers, capacity, and reusable input/output views are cached only beside the module-local Wasm instance. Pointer ranges are checked explicitly, and the cache re-queries metadata and recreates views whenever `WebAssembly.Memory.buffer` identity changes. No result exposes a Wasm-backed view: decoding creates fully owned objects, event arrays, and bag arrays before releasing the shared realm-local guard.
+- Byte and structured execution share one reentrancy guard. Nested execution rejects before input writing or telemetry, every failure releases the guard in `finally`, and sequential calls after validation, protocol, capacity, decoding, or memory-growth cases remain deterministic. AFK workers retain their existing per-worker module ownership; online calls remain synchronous and AFK/API orchestration is unchanged.
+- Permanent capacity coverage writes an exact 524,288-byte input, rejects a one-byte target shortage and one additional eight-byte record before native execution, decodes all 4,096 supported semantic events, rejects event 4,097 explicitly, and retains the native transactional event-capacity gate. Oversized and failed operations do not contaminate the following battle.
+- Direct-versus-encoded differential coverage passes all 11 natural-seed golden battles in Japanese, English, zh-CN, and zh-TW, the Expedition 6 seed `0x8e710003` 107-draw grouped Resonance `+12%` regression, seeds 0 and 1, maximum u64, a high-bit seed, repeated calls, failure recovery, output ownership across later arena reuse, memory growth, and the existing independent-instance/worker coverage. Protocol output, semantic events, bags, cursors, replay metadata, localized results, and optional-property presence remain exact. Protocol v3, ABI 8, and every frozen fixture remain unchanged.
 
-Acceptance gate: the optimized boundary preserves the complete seeded result and semantic event stream, retains deterministic replay, meets measured latency/capacity targets, and leaves a single authoritative production battle engine.
+##### Part 3A capacity and performance evidence
+
+| Path | Workload | Wasm calls | Duration | Logical input / output | Full encoded-input allocations / input copies / output copies |
+|-|-:|-:|-:|-:|-:|
+| Online Boss | 40 measured battles | 40 | median 35.00 ms; p95 38.87 ms | median 2,920 / 7,168 bytes | 0 / 0 / 0 |
+| Retained tape diagnostic | 10 measured battles | 10 | descriptive only | median 35,688 / 7,168 bytes | 10 / 10 / 10 |
+| AFK workers | 6 parties / 1,724 battles | 1,724 | 25.27 s total CPU; 7.15 s projected parallel | 5,000,456 / 4,468,864 bytes total | 0 / 0 / 0 |
+| API count 1 | 24 battles | 24 | 329.01 ms | 70,016 / 52,288 bytes total | 0 / 0 / 0 |
+| API count 100 | 2,400 battles | 2,400 | 48.50 s | 7,001,248 / 5,634,176 bytes total | 0 / 0 / 0 |
+
+Logical protocol volume remains measured independently from full-buffer allocation/copy counters. Seeded production input remains an empty tape; observed maxima were 276 random draws and 133 semantic events, below the fixed 4,096 ceilings. Wall-clock values are descriptive and environment-sensitive; the structural zero-copy/allocation assertions are deterministic.
+
+Acceptance gate: Part 3A is complete. Part 3B cleanup is ready but unstarted; obsolete checkpoint-only adapters, the temporary no-flag placeholder, unused micro-kernel APIs, the frozen TypeScript reference, and historical v1/v2 fixtures remain intentionally retained until that separate gate. This does not claim all of Part 3 complete.

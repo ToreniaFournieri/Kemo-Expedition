@@ -139,6 +139,7 @@ const littleEndian = true;
 const elementalIds: Record<ElementalOffense, number> = { none: 0, fire: 1, thunder: 2, ice: 3 };
 const attackTypes: Array<AttackType | null> = [null, 'ranged', 'magical', 'melee'];
 const outcomes = ['unresolved', 'victory', 'defeat', 'draw'] as const;
+export const BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS = 4_096;
 
 function requireInteger(value: number, minimum: number, maximum: number, label: string): number {
   if (!Number.isInteger(value) || value < minimum || value > maximum) {
@@ -159,11 +160,37 @@ function requireSpan(offset: number, count: number, recordSize: number, totalSiz
   }
 }
 
-export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Array {
+type BattleProtocolInputLayout = {
+  abilityCount: number;
+  combatantsOffset: number;
+  abilitiesOffset: number;
+  randomOffset: number;
+  physicalBagOffset: number;
+  magicalBagOffset: number;
+  totalSize: number;
+  terrainId: number;
+  seed: bigint;
+};
+
+let encodedInputAllocations = 0;
+let encodedInputAllocationBytes = 0;
+
+export function resetBattleProtocolEncodingMeasurement(): void {
+  encodedInputAllocations = 0;
+  encodedInputAllocationBytes = 0;
+}
+
+export function getBattleProtocolEncodingMeasurement(): { allocations: number; bytes: number } {
+  return { allocations: encodedInputAllocations, bytes: encodedInputAllocationBytes };
+}
+
+function validateBattleProtocolInput(input: BattleProtocolInput): BattleProtocolInputLayout {
   requireInteger(input.combatants.length, 1, 8, 'combatant count');
   const abilityCount = input.combatants.reduce((total, combatant) => total + combatant.abilities.length, 0);
   requireInteger(abilityCount, 0, 0xffff_ffff, 'ability count');
   requireInteger(input.randomValues.length, 0, 4_096, 'random count');
+  requireInteger(input.physicalThreatBag.length, 0, 0xffff_ffff, 'physical threat bag count');
+  requireInteger(input.magicalThreatBag.length, 0, 0xffff_ffff, 'magical threat bag count');
 
   const combatantsOffset = BATTLE_INPUT_HEADER_SIZE;
   const abilitiesOffset = combatantsOffset + input.combatants.length * BATTLE_COMBATANT_RECORD_SIZE;
@@ -171,20 +198,101 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
   const physicalBagOffset = randomOffset + input.randomValues.length * Float64Array.BYTES_PER_ELEMENT;
   const magicalBagOffset = physicalBagOffset + input.physicalThreatBag.length * BATTLE_BAG_RECORD_SIZE;
   const totalSize = magicalBagOffset + input.magicalThreatBag.length * BATTLE_BAG_RECORD_SIZE;
-  if (totalSize > BATTLE_PROTOCOL_ARENA_CAPACITY) {
+  if (!Number.isSafeInteger(totalSize) || totalSize > BATTLE_PROTOCOL_ARENA_CAPACITY) {
     throw new RangeError(`Battle protocol input requires ${totalSize} bytes; arena capacity is ${BATTLE_PROTOCOL_ARENA_CAPACITY}`);
   }
 
-  const bytes = new Uint8Array(totalSize);
-  const view = new DataView(bytes.buffer);
+  requireInteger(input.flags ?? 0, 0, 0xffff_ffff, 'battle flags');
+  const terrainId = input.terrainEffect ? BATTLE_TERRAIN_IDS[input.terrainEffect as keyof typeof BATTLE_TERRAIN_IDS] : 0;
+  if (input.terrainEffect && terrainId === undefined) throw new Error(`Unknown battle terrain ID: ${input.terrainEffect}`);
+  requireFinite(input.partyHp, 'party HP');
+  requireFinite(input.enemyHp, 'enemy HP');
+  requireFinite(input.partyMaxHp ?? input.partyHp, 'party max HP');
+  requireFinite(input.enemyMaxHp ?? input.enemyHp, 'enemy max HP');
+  const seed = requireBattleSeed(input.seed ?? 0n);
+  requireInteger(input.deityId ?? 0, 0, 0xffff, 'deity ID');
+  requireInteger(input.rngVersion ?? 0, 0, 0xffff, 'RNG version');
+  requireInteger(input.engineFlags ?? 0, 0, 0xffff_ffff, 'engine flags');
+
+  input.combatants.forEach((combatant) => {
+    requireInteger(combatant.id, 1, 0xffff_ffff, 'combatant ID');
+    requireInteger(combatant.row, 0, 0xff, 'combatant row');
+    requireInteger(combatant.flags ?? 0, 0, 0xff, 'combatant flags');
+    requireInteger(combatant.abilities.length, 0, 0xffff, 'combatant ability count');
+    requireInteger(combatant.magicStyle ?? 0, 0, 4, 'magic style');
+    if (elementalIds[combatant.elementalOffense] === undefined) {
+      throw new Error(`Unknown elemental offense: ${combatant.elementalOffense}`);
+    }
+    const numericFields: Array<[number, string]> = [
+      [combatant.hp, 'combatant HP'], [combatant.maxHp, 'combatant max HP'],
+      [combatant.rangedAttack, 'ranged attack'], [combatant.magicalAttack, 'magical attack'],
+      [combatant.meleeAttack, 'melee attack'], [combatant.rangedNoA, 'ranged NoA'],
+      [combatant.magicalNoA, 'magical NoA'], [combatant.meleeNoA, 'melee NoA'],
+      [combatant.physicalDefense, 'physical defense'], [combatant.magicalDefense, 'magical defense'],
+      [combatant.accuracyBonus, 'accuracy bonus'], [combatant.evasionBonus, 'evasion bonus'],
+      [combatant.elementalOffenseValue, 'elemental offense value'],
+      [combatant.originalRangedNoA ?? combatant.rangedNoA, 'original ranged NoA'],
+      [combatant.originalMagicalNoA ?? combatant.magicalNoA, 'original magical NoA'],
+      [combatant.originalMeleeNoA ?? combatant.meleeNoA, 'original melee NoA'],
+      [combatant.rangedAccuracyPotency ?? 1, 'ranged accuracy potency'],
+      [combatant.magicalAccuracyPotency ?? 1, 'magical accuracy potency'],
+      [combatant.meleeAccuracyPotency ?? 1, 'melee accuracy potency'],
+      [combatant.physicalPenetration ?? 1, 'physical penetration'],
+      [combatant.magicalPenetration ?? 1, 'magical penetration'],
+      [combatant.fireResistance ?? 1, 'fire resistance'],
+      [combatant.thunderResistance ?? 1, 'thunder resistance'],
+      [combatant.iceResistance ?? 1, 'ice resistance'],
+      [combatant.physicalOffenseAmplifier ?? 1, 'physical offense amplifier'],
+      [combatant.magicalOffenseAmplifier ?? 1, 'magical offense amplifier'],
+      [combatant.physicalDefenseAmplifier ?? 1, 'physical defense amplifier'],
+      [combatant.magicalDefenseAmplifier ?? 1, 'magical defense amplifier'],
+      [combatant.startPhaseBonus ?? 0, 'START phase bonus'],
+      [combatant.combatPhaseBonus ?? 0, 'COMBAT phase bonus'],
+      [combatant.endPhaseBonus ?? 0, 'END phase bonus'],
+      [combatant.deityOffenseBonus ?? 0, 'deity offense bonus'],
+      [combatant.deityPhysicalDefenseBonus ?? 1, 'deity physical defense bonus'],
+      [combatant.deityMagicalDefenseBonus ?? 1, 'deity magical defense bonus'],
+      [combatant.deityAccuracyBonus ?? 0, 'deity accuracy bonus'],
+      [combatant.enemyRangedAmplifier ?? 1, 'enemy ranged amplifier'],
+      [combatant.enemyMagicalAmplifier ?? 1, 'enemy magical amplifier'],
+      [combatant.enemyMeleeAmplifier ?? 1, 'enemy melee amplifier'],
+      [combatant.rangedAttackBonus ?? 0, 'ranged attack bonus'],
+      [combatant.magicalAttackBonus ?? 0, 'magical attack bonus'],
+      [combatant.meleeAttackBonus ?? 0, 'melee attack bonus'],
+    ];
+    numericFields.forEach(([value, label]) => requireFinite(value, label));
+    combatant.abilities.forEach((ability) => {
+      if (BATTLE_ABILITY_IDS[ability.id] === undefined) throw new Error(`Unknown battle ability ID: ${ability.id}`);
+      requireInteger(ability.level, 0, 0xff, 'ability level');
+      requireInteger(ability.flags ?? 0, 0, 0xff, 'ability flags');
+    });
+  });
+  input.randomValues.forEach((value) => {
+    const normalized = requireFinite(value, 'random value');
+    if (normalized < 0 || normalized >= 1) throw new RangeError('random value must be in [0, 1)');
+  });
+  const validateBag = (entries: ReadonlyArray<{ id: number; tickets: number }>, label: string) => entries.forEach((entry) => {
+    requireInteger(entry.id, -0x8000_0000, 0x7fff_ffff, `${label} ID`);
+    requireInteger(entry.tickets, 0, 0xffff_ffff, `${label} tickets`);
+  });
+  validateBag(input.physicalThreatBag, 'physical threat bag');
+  validateBag(input.magicalThreatBag, 'magical threat bag');
+  return { abilityCount, combatantsOffset, abilitiesOffset, randomOffset, physicalBagOffset, magicalBagOffset, totalSize, terrainId: terrainId ?? 0, seed };
+}
+
+function writeValidatedBattleProtocolInput(input: BattleProtocolInput, layout: BattleProtocolInputLayout, bytes: Uint8Array): number {
+  if (bytes.byteLength < layout.totalSize) {
+    throw new RangeError(`Battle protocol input target requires ${layout.totalSize} bytes; target capacity is ${bytes.byteLength}`);
+  }
+  const { abilityCount, combatantsOffset, abilitiesOffset, randomOffset, physicalBagOffset, magicalBagOffset, totalSize, terrainId, seed } = layout;
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, totalSize);
   view.setUint32(BATTLE_INPUT_OFFSETS.magic, BATTLE_PROTOCOL_INPUT_MAGIC, littleEndian);
   view.setUint16(BATTLE_INPUT_OFFSETS.version, BATTLE_PROTOCOL_VERSION, littleEndian);
   view.setUint16(BATTLE_INPUT_OFFSETS.headerSize, BATTLE_INPUT_HEADER_SIZE, littleEndian);
   view.setUint32(BATTLE_INPUT_OFFSETS.totalSize, totalSize, littleEndian);
   view.setUint32(BATTLE_INPUT_OFFSETS.flags, input.flags ?? 0, littleEndian);
-  const terrainId = input.terrainEffect ? BATTLE_TERRAIN_IDS[input.terrainEffect as keyof typeof BATTLE_TERRAIN_IDS] : 0;
-  if (input.terrainEffect && terrainId === undefined) throw new Error(`Unknown battle terrain ID: ${input.terrainEffect}`);
-  view.setUint16(BATTLE_INPUT_OFFSETS.terrainId, terrainId ?? 0, littleEndian);
+  view.setUint16(BATTLE_INPUT_OFFSETS.terrainId, terrainId, littleEndian);
   view.setUint16(BATTLE_INPUT_OFFSETS.combatantCount, input.combatants.length, littleEndian);
   view.setUint32(BATTLE_INPUT_OFFSETS.abilityCount, abilityCount, littleEndian);
   view.setUint32(BATTLE_INPUT_OFFSETS.randomCount, input.randomValues.length, littleEndian);
@@ -199,7 +307,6 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
   view.setFloat64(BATTLE_INPUT_OFFSETS.enemyHp, requireFinite(input.enemyHp, 'enemy HP'), littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.partyMaxHp, requireFinite(input.partyMaxHp ?? input.partyHp, 'party max HP'), littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.enemyMaxHp, requireFinite(input.enemyMaxHp ?? input.enemyHp, 'enemy max HP'), littleEndian);
-  const seed = requireBattleSeed(input.seed ?? 0n);
   view.setUint32(BATTLE_INPUT_OFFSETS.seedLow, Number(seed & 0xffff_ffffn), littleEndian);
   view.setUint32(BATTLE_INPUT_OFFSETS.seedHigh, Number(seed >> 32n), littleEndian);
   view.setUint16(BATTLE_INPUT_OFFSETS.deityId, requireInteger(input.deityId ?? 0, 0, 0xffff, 'deity ID'), littleEndian);
@@ -294,10 +401,26 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
   };
   encodeBag(input.physicalThreatBag, physicalBagOffset, 'physical threat bag');
   encodeBag(input.magicalThreatBag, magicalBagOffset, 'magical threat bag');
+  return totalSize;
+}
+
+/** Validates and writes canonical protocol-v3 bytes into caller-owned memory. */
+export function writeBattleProtocolInput(input: BattleProtocolInput, target: Uint8Array): number {
+  const layout = validateBattleProtocolInput(input);
+  return writeValidatedBattleProtocolInput(input, layout, target);
+}
+
+export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Array {
+  const layout = validateBattleProtocolInput(input);
+  const bytes = new Uint8Array(layout.totalSize);
+  encodedInputAllocations += 1;
+  encodedInputAllocationBytes += layout.totalSize;
+  writeValidatedBattleProtocolInput(input, layout, bytes);
   return bytes;
 }
 
 export function decodeBattleProtocolOutput(bytes: Uint8Array): BattleProtocolOutput {
+  if (bytes.byteLength > BATTLE_PROTOCOL_ARENA_CAPACITY) throw new Error('Battle protocol output exceeds its arena capacity');
   if (bytes.byteLength < BATTLE_OUTPUT_HEADER_SIZE) throw new Error('Battle protocol output is shorter than its header');
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (view.getUint32(BATTLE_OUTPUT_OFFSETS.magic, littleEndian) !== BATTLE_PROTOCOL_OUTPUT_MAGIC) throw new Error('Invalid battle protocol output magic');
@@ -310,6 +433,7 @@ export function decodeBattleProtocolOutput(bytes: Uint8Array): BattleProtocolOut
   if (!outcome) throw new Error(`Invalid battle protocol outcome ${outcomeId}`);
 
   const eventCount = view.getUint32(BATTLE_OUTPUT_OFFSETS.eventCount, littleEndian);
+  if (eventCount > BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS) throw new Error('Battle protocol event count exceeds its supported capacity');
   const eventsOffset = view.getUint32(BATTLE_OUTPUT_OFFSETS.eventsOffset, littleEndian);
   requireSpan(eventsOffset, eventCount, BATTLE_EVENT_RECORD_SIZE, totalSize, 'events');
   const events = Array.from({ length: eventCount }, (_, index): BattleProtocolEvent => {

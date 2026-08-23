@@ -1,6 +1,13 @@
 import { BATTLE_KERNEL_WASM } from './battleKernelBinary.ts';
 import type { AttackType, TerrainEffectKey } from '../types';
-import { decodeBattleProtocolOutput, type BattleProtocolOutput } from './battleProtocol.ts';
+import {
+  decodeBattleProtocolOutput,
+  getBattleProtocolEncodingMeasurement,
+  resetBattleProtocolEncodingMeasurement,
+  writeBattleProtocolInput,
+  type BattleProtocolInput,
+  type BattleProtocolOutput,
+} from './battleProtocol.ts';
 import { BATTLE_PROTOCOL_VERSION } from './generated/battleProtocol.generated.ts';
 
 const ABI_VERSION = 8;
@@ -56,6 +63,10 @@ let measurementEnabled = false;
 let measuredCalls = 0;
 let measuredInputBytes = 0;
 let measuredOutputBytes = 0;
+let measuredInputArenaCopies = 0;
+let measuredInputArenaCopyBytes = 0;
+let measuredOutputBufferCopies = 0;
+let measuredOutputBufferCopyBytes = 0;
 let measurementSuppressionDepth = 0;
 let protocolInvocationActive = false;
 
@@ -63,6 +74,12 @@ export type BattleKernelMeasurement = {
   calls: number;
   inputBytes: number;
   outputBytes: number;
+  encodedInputAllocations: number;
+  encodedInputAllocationBytes: number;
+  inputArenaCopies: number;
+  inputArenaCopyBytes: number;
+  outputBufferCopies: number;
+  outputBufferCopyBytes: number;
 };
 
 function recordKernelCall(inputBytes = 0, outputBytes = 0): void {
@@ -86,15 +103,27 @@ export function beginBattleKernelMeasurement(): void {
   measuredCalls = 0;
   measuredInputBytes = 0;
   measuredOutputBytes = 0;
+  measuredInputArenaCopies = 0;
+  measuredInputArenaCopyBytes = 0;
+  measuredOutputBufferCopies = 0;
+  measuredOutputBufferCopyBytes = 0;
+  resetBattleProtocolEncodingMeasurement();
   measurementEnabled = true;
 }
 
 export function endBattleKernelMeasurement(): BattleKernelMeasurement {
   measurementEnabled = false;
+  const encoding = getBattleProtocolEncodingMeasurement();
   return {
     calls: measuredCalls,
     inputBytes: measuredInputBytes,
     outputBytes: measuredOutputBytes,
+    encodedInputAllocations: encoding.allocations,
+    encodedInputAllocationBytes: encoding.bytes,
+    inputArenaCopies: measuredInputArenaCopies,
+    inputArenaCopyBytes: measuredInputArenaCopyBytes,
+    outputBufferCopies: measuredOutputBufferCopies,
+    outputBufferCopyBytes: measuredOutputBufferCopyBytes,
   };
 }
 if (kernel.battle_kernel_abi_version() !== ABI_VERSION) {
@@ -416,6 +445,38 @@ export function getBattleProtocolArenaInfo(): {
   };
 }
 
+type ProtocolArenaCache = {
+  buffer: ArrayBuffer;
+  inputPointer: number;
+  outputPointer: number;
+  capacity: number;
+  input: Uint8Array;
+  output: Uint8Array;
+};
+
+let protocolArenaCache: ProtocolArenaCache | null = null;
+
+function getProtocolArenaCache(): ProtocolArenaCache {
+  const buffer = kernel.memory.buffer;
+  if (protocolArenaCache?.buffer === buffer) return protocolArenaCache;
+  const { inputPointer, outputPointer, capacity } = getBattleProtocolArenaInfo();
+  if (!Number.isInteger(inputPointer) || !Number.isInteger(outputPointer) || !Number.isInteger(capacity) || capacity < 0) {
+    throw new Error('C++ battle protocol returned invalid arena metadata');
+  }
+  if (inputPointer < 0 || outputPointer < 0 || inputPointer + capacity > buffer.byteLength || outputPointer + capacity > buffer.byteLength) {
+    throw new Error('C++ battle protocol arena lies outside Wasm memory');
+  }
+  protocolArenaCache = {
+    buffer,
+    inputPointer,
+    outputPointer,
+    capacity,
+    input: new Uint8Array(buffer, inputPointer, capacity),
+    output: new Uint8Array(buffer, outputPointer, capacity),
+  };
+  return protocolArenaCache;
+}
+
 export function probeBattleProtocol(input: Uint8Array): BattleProtocolOutput {
   return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_probe(byteLength));
 }
@@ -424,21 +485,48 @@ function invokeBattleProtocol(
   input: Uint8Array,
   operation: (byteLength: number) => number,
 ): BattleProtocolOutput {
+  return invokeBattleProtocolWithWriter((arena) => {
+    if (input.byteLength > arena.capacity) {
+      throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
+    }
+    arena.input.subarray(0, input.byteLength).set(input);
+    if (measurementEnabled && measurementSuppressionDepth === 0) {
+      measuredInputArenaCopies += 1;
+      measuredInputArenaCopyBytes += input.byteLength;
+    }
+    return input.byteLength;
+  }, operation, true);
+}
+
+function invokeBattleProtocolWithWriter(
+  writeInput: (arena: ProtocolArenaCache) => number,
+  operation: (byteLength: number) => number,
+  copyOutput: boolean,
+): BattleProtocolOutput {
   if (protocolInvocationActive) throw new Error('Nested or reentrant Wasm battle protocol execution is not supported');
   protocolInvocationActive = true;
   try {
-  const arena = getBattleProtocolArenaInfo();
-  if (input.byteLength > arena.capacity) {
-    throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
-  }
-  new Uint8Array(kernel.memory.buffer, arena.inputPointer, input.byteLength).set(input);
-  const outputByteLength = operation(input.byteLength);
-  if (outputByteLength < 0) throw new Error(`C++ battle protocol rejected input (${outputByteLength})`);
-  if (outputByteLength > arena.capacity) throw new Error('C++ battle protocol returned an oversized output');
-  recordKernelCall(input.byteLength, outputByteLength);
-  const output = new Uint8Array(outputByteLength);
-  output.set(new Uint8Array(kernel.memory.buffer, arena.outputPointer, outputByteLength));
-  return decodeBattleProtocolOutput(output);
+    let arena = getProtocolArenaCache();
+    const inputByteLength = writeInput(arena);
+    if (!Number.isInteger(inputByteLength) || inputByteLength < 0 || inputByteLength > arena.capacity) {
+      throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
+    }
+    const outputByteLength = operation(inputByteLength);
+    if (!Number.isInteger(outputByteLength) || outputByteLength < 0) {
+      throw new Error(`C++ battle protocol rejected input (${outputByteLength})`);
+    }
+    arena = getProtocolArenaCache();
+    if (outputByteLength > arena.capacity) throw new Error('C++ battle protocol returned an oversized output');
+    recordKernelCall(inputByteLength, outputByteLength);
+    const outputView = arena.output.subarray(0, outputByteLength);
+    if (!copyOutput) return decodeBattleProtocolOutput(outputView);
+    const output = new Uint8Array(outputByteLength);
+    output.set(outputView);
+    if (measurementEnabled && measurementSuppressionDepth === 0) {
+      measuredOutputBufferCopies += 1;
+      measuredOutputBufferCopyBytes += outputByteLength;
+    }
+    return decodeBattleProtocolOutput(output);
   } finally {
     protocolInvocationActive = false;
   }
@@ -467,4 +555,18 @@ export function prepareBattleProtocolInitiative(input: Uint8Array): BattleProtoc
 /** One measured Wasm boundary call for the protocol-v3 shadow full-engine path. */
 export function executeBattleProtocol(input: Uint8Array): BattleProtocolOutput {
   return invokeBattleProtocol(input, (byteLength) => kernel.battle_protocol_execute(byteLength));
+}
+
+/** One measured Wasm call with canonical structured input written directly into its arena. */
+export function executeBattleProtocolInput(input: BattleProtocolInput): BattleProtocolOutput {
+  return invokeBattleProtocolWithWriter(
+    (arena) => writeBattleProtocolInput(input, arena.input),
+    (byteLength) => kernel.battle_protocol_execute(byteLength),
+    false,
+  );
+}
+
+/** Test-only proof that cached protocol views are recreated after Wasm memory growth. */
+export function growBattleProtocolMemoryForTesting(): void {
+  kernel.memory.grow(1);
 }

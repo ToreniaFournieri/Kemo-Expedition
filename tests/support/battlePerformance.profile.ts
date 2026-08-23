@@ -89,6 +89,9 @@ test('reports deterministic single-battle migration metrics', () => {
   const calls: number[] = [];
   const inputBytes: number[] = [];
   const outputBytes: number[] = [];
+  const encodedInputAllocations: number[] = [];
+  const inputArenaCopies: number[] = [];
+  const outputBufferCopies: number[] = [];
   for (let index = 0; index < SAMPLE_COUNT; index += 1) {
     beginBattleKernelMeasurement();
     const started = performance.now();
@@ -98,6 +101,9 @@ test('reports deterministic single-battle migration metrics', () => {
     calls.push(boundary.calls);
     inputBytes.push(boundary.inputBytes);
     outputBytes.push(boundary.outputBytes);
+    encodedInputAllocations.push(boundary.encodedInputAllocations);
+    inputArenaCopies.push(boundary.inputArenaCopies);
+    outputBufferCopies.push(boundary.outputBufferCopies);
     draws.push(measured.logicalDraws);
     events.push(measured.result.log.length);
   }
@@ -107,6 +113,9 @@ test('reports deterministic single-battle migration metrics', () => {
     medianRandomDraws: percentile(draws, 0.5), medianEventCount: percentile(events, 0.5),
     medianWasmBoundaryCalls: percentile(calls, 0.5), medianInputBytes: percentile(inputBytes, 0.5),
     medianOutputBytes: percentile(outputBytes, 0.5),
+    encodedInputAllocations: encodedInputAllocations.reduce((sum, value) => sum + value, 0),
+    inputArenaCopies: inputArenaCopies.reduce((sum, value) => sum + value, 0),
+    outputBufferCopies: outputBufferCopies.reduce((sum, value) => sum + value, 0),
     maxRandomConsumed: getProductionBattleTelemetry().maxRandomConsumed,
     maxSemanticEvents: getProductionBattleTelemetry().maxSemanticEvents,
     seededInputRandomCount: 0,
@@ -114,6 +123,9 @@ test('reports deterministic single-battle migration metrics', () => {
   console.info('BATTLE_MIGRATION_BASELINE', JSON.stringify(report));
   assert.ok(report.medianBattleMs > 0);
   assert.equal(report.medianWasmBoundaryCalls, 1);
+  assert.equal(report.encodedInputAllocations, 0);
+  assert.equal(report.inputArenaCopies, 0);
+  assert.equal(report.outputBufferCopies, 0);
 });
 
 test('reports the protocol-v3 one-call reserved-window boundary', () => {
@@ -123,6 +135,9 @@ test('reports the protocol-v3 one-call reserved-window boundary', () => {
   const calls: number[] = [];
   const inputBytes: number[] = [];
   const outputBytes: number[] = [];
+  let encodedInputAllocations = 0;
+  let inputArenaCopies = 0;
+  let outputBufferCopies = 0;
   for (let index = 0; index < 10; index += 1) {
     const recording = withRandom(0x8e710001, () => executeTypeScriptBattle(
       structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
@@ -138,17 +153,24 @@ test('reports the protocol-v3 one-call reserved-window boundary', () => {
     calls.push(boundary.calls);
     inputBytes.push(boundary.inputBytes);
     outputBytes.push(boundary.outputBytes);
+    encodedInputAllocations += boundary.encodedInputAllocations;
+    inputArenaCopies += boundary.inputArenaCopies;
+    outputBufferCopies += boundary.outputBufferCopies;
   }
   const report = {
     engine: 'protocol-v3-explicit-tape-candidate', samples: calls.length,
     medianWasmBoundaryCalls: percentile(calls, 0.5),
     medianInputBytes: percentile(inputBytes, 0.5),
     medianOutputBytes: percentile(outputBytes, 0.5),
+    encodedInputAllocations, inputArenaCopies, outputBufferCopies,
   };
   console.info('BATTLE_PROTOCOL_V3_BOUNDARY', JSON.stringify(report));
   assert.equal(report.medianWasmBoundaryCalls, 1);
   assert.ok(report.medianInputBytes > 0);
   assert.ok(report.medianOutputBytes > 0);
+  assert.equal(report.encodedInputAllocations, report.samples);
+  assert.equal(report.inputArenaCopies, report.samples);
+  assert.equal(report.outputBufferCopies, report.samples);
 });
 
 test('reports deterministic AFK migration metrics', () => {
@@ -158,6 +180,9 @@ test('reports deterministic AFK migration metrics', () => {
   let calls = 0;
   let inputBytes = 0;
   let outputBytes = 0;
+  let encodedInputAllocations = 0;
+  let inputArenaCopies = 0;
+  let outputBufferCopies = 0;
   const battlesBefore = getProductionBattleTelemetry().battles;
   for (const [partyIndex, party] of state.parties.entries()) {
     beginBattleKernelMeasurement();
@@ -175,6 +200,9 @@ test('reports deterministic AFK migration metrics', () => {
     calls += boundary.calls;
     inputBytes += boundary.inputBytes;
     outputBytes += boundary.outputBytes;
+    encodedInputAllocations += boundary.encodedInputAllocations;
+    inputArenaCopies += boundary.inputArenaCopies;
+    outputBufferCopies += boundary.outputBufferCopies;
   }
   const report = {
     engine: 'protocol-v3-production-native-coordinator', parties: state.parties.length,
@@ -182,6 +210,7 @@ test('reports deterministic AFK migration metrics', () => {
     projectedParallelWorkerMs: Math.max(...durations), p95WorkerMs: percentile(durations, 0.95),
     battles: getProductionBattleTelemetry().battles - battlesBefore,
     wasmBoundaryCalls: calls, inputBytes, outputBytes,
+    encodedInputAllocations, inputArenaCopies, outputBufferCopies,
     maxRandomConsumed: getProductionBattleTelemetry().maxRandomConsumed,
     maxSemanticEvents: getProductionBattleTelemetry().maxSemanticEvents,
     seededInputRandomCount: 0,
@@ -190,6 +219,7 @@ test('reports deterministic AFK migration metrics', () => {
   assert.equal(report.parties, 6);
   assert.ok(report.totalWorkerCpuMs > 0);
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
+  assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
 });
 
 test('reports Experimental API sortie counts 1 and 100 through the production battle entry point', () => {
@@ -218,7 +248,8 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     const finalParty = batch.state.parties[partyIndex]!;
     assert.deepEqual([finalParty.instantExpeditionStock, finalParty.instantExpeditionChargeStartedAt], chargeBefore);
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
-    reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
+    assert.equal(boundary.encodedInputAllocations + boundary.inputArenaCopies + boundary.outputBufferCopies, 0);
+    reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, encodedInputAllocations: boundary.encodedInputAllocations, inputArenaCopies: boundary.inputArenaCopies, outputBufferCopies: boundary.outputBufferCopies, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
   }
   console.info('BATTLE_MIGRATION_API_BASELINE', JSON.stringify(reports));
 });

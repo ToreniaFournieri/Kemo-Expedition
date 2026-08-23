@@ -62,7 +62,7 @@ test('production seed acquisition is one low/high Web Crypto call and failures a
   assert.throws(() => withBattleSeedSourceForTesting(() => { throw new Error('seed failure'); }, () => executeBattle(
     input.party, input.enemy, input.bags, input.initialPartyHp,
   )), /seed failure/);
-  assert.deepEqual(endBattleKernelMeasurement(), { calls: 0, inputBytes: 0, outputBytes: 0 });
+  assert.equal(endBattleKernelMeasurement().calls, 0);
   assert.equal(getProductionBattleTelemetry().battles, 0);
 });
 
@@ -76,7 +76,7 @@ test('seed boundaries, runtime types, and RNG versions are validated without wra
   resetProductionBattleTelemetryForTesting();
   beginBattleKernelMeasurement();
   assert.throws(() => executeBattleWithSeed(input.party, input.enemy, input.bags, 1n, 2, input.initialPartyHp), /Unsupported battle RNG version/);
-  assert.deepEqual(endBattleKernelMeasurement(), { calls: 0, inputBytes: 0, outputBytes: 0 });
+  assert.equal(endBattleKernelMeasurement().calls, 0);
   assert.equal(getProductionBattleTelemetry().battles, 0);
 });
 

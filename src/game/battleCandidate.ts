@@ -24,7 +24,7 @@ import { getAbilityName } from './characterComputation.ts';
 import { computePartyStats } from './partyComputation.ts';
 import { getDeityKey } from './deity.ts';
 import { getBaseMultiplier } from './baseMultiplier.ts';
-import { executeBattleProtocol } from './battleKernel.ts';
+import { executeBattleProtocol, executeBattleProtocolInput } from './battleKernel.ts';
 import { getTerrainEffectGlossaryEntry } from '../data/glossary.ts';
 import { t } from '../i18n/index.ts';
 import { resolveMagicProfile } from './magic.ts';
@@ -536,7 +536,7 @@ export function executeBattleCandidateFromSeed(
   );
   input.seed = normalizedSeed;
   input.rngVersion = rngVersion;
-  const output = executeBattleCandidateProtocol(input);
+  const output = executeBattleProtocolInput(input);
   if (output.protocolError !== 0) {
     throw new Error(`C++ seeded battle returned protocol error ${output.protocolError} after ${output.randomConsumed} draws`);
   }

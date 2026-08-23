@@ -12,12 +12,15 @@ import {
   executeBattleCandidateFromSeed,
   executeBattleCandidateFromWindow,
   executeBattleRawCandidateFromTape,
+  convertBattleSemanticEvents,
+  projectBattleProtocolInput,
 } from '../../src/game/battleCandidate.ts';
 import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
-import { beginBattleKernelMeasurement, endBattleKernelMeasurement, getBattleRngDoubleSequence, getBattleRngVersion } from '../../src/game/battleKernel.ts';
+import { beginBattleKernelMeasurement, endBattleKernelMeasurement, executeBattleProtocol, getBattleRngDoubleSequence, getBattleRngVersion } from '../../src/game/battleKernel.ts';
 import { getBattleKernelAbiVersion } from '../../src/game/battleKernel.ts';
 import { createBattleReplayMetadata } from '../../src/game/battleReplay.ts';
-import { BATTLE_PROTOCOL_VERSION } from '../../src/game/generated/battleProtocol.generated.ts';
+import { encodeBattleProtocolInput } from '../../src/game/battleProtocol.ts';
+import { BATTLE_ENGINE_FLAG_END_CHECKPOINT, BATTLE_ENGINE_FLAG_SEEDED_RNG, BATTLE_PROTOCOL_VERSION } from '../../src/game/generated/battleProtocol.generated.ts';
 import { gameplayRandom, withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
@@ -566,6 +569,9 @@ test('production entry point uses one native seeded Wasm call and preserves inpu
     assert.equal(getProductionBattleTelemetry().randomConsumed - beforeDraws, expected.randomConsumed);
     assert.equal(acquisitions, 1);
     assert.equal(measurement.calls, 1, `${fixture.id}: production must use one Wasm call`);
+    assert.equal(measurement.encodedInputAllocations, 0, `${fixture.id}: production must not allocate an encoded input buffer`);
+    assert.equal(measurement.inputArenaCopies, 0, `${fixture.id}: production must write directly into the input arena`);
+    assert.equal(measurement.outputBufferCopies, 0, `${fixture.id}: production must decode directly from the output arena`);
     assert.deepEqual({ party, enemy, bags }, beforeInputs, `${fixture.id}: production mutated its inputs`);
   }
 });
@@ -607,9 +613,27 @@ test('Part 2A battle-local seeded RNG exactly matches equivalent xoshiro tape ac
       );
       const measurement = endBattleKernelMeasurement();
       assert.equal(measurement.calls, 1, `${fixture.id}:${language}:${seed}: seeded execution must use one Wasm call`);
+      assert.equal(measurement.encodedInputAllocations, 0, `${fixture.id}:${language}:${seed}: direct input allocated a full encoded buffer`);
+      assert.equal(measurement.inputArenaCopies, 0, `${fixture.id}:${language}:${seed}: direct input copied a full encoded buffer`);
+      assert.equal(measurement.outputBufferCopies, 0, `${fixture.id}:${language}:${seed}: direct output copied a full arena buffer`);
       assert.equal(seeded.inputCapacity, 0, `${fixture.id}:${language}:${seed}: seeded input encoded a tape`);
       assert.equal(seeded.seed, BigInt.asUintN(64, seed));
       assert.equal(seeded.randomConsumed, seeded.diagnosticDrawCount);
+
+      const encodedInput = projectBattleProtocolInput(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags), [],
+        fixture.initialPartyHp, fixture.environment ? structuredClone(fixture.environment) : undefined,
+        BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+      );
+      encodedInput.seed = seed;
+      encodedInput.rngVersion = getBattleRngVersion();
+      const encodedOutput = executeBattleProtocol(encodeBattleProtocolInput(encodedInput));
+      assert.deepEqual(encodedOutput, seeded.protocolOutput, `${fixture.id}:${language}:${seed}: direct/encoded protocol output mismatch`);
+      assert.deepEqual(
+        convertBattleSemanticEvents(encodedOutput, fixture.party, fixture.enemy, fixture.initialPartyHp, fixture.environment),
+        seeded.result,
+        `${fixture.id}:${language}:${seed}: direct/encoded localized result mismatch`,
+      );
 
       const tape = getBattleRngDoubleSequence(seed, seeded.randomConsumed);
       const taped = executeBattleCandidateFromWindow(
