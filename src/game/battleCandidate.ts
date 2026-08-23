@@ -435,6 +435,11 @@ function requireFlavorPairs(events: readonly BattleProtocolEvent[]): Map<number,
     usedSources.add(sourceIndex);
     pairs.set(sourceIndex, flavor);
   }
+  for (const sourceIndex of pairs.keys()) {
+    if (!sourceRequiresFlavor(events[sourceIndex]!)) {
+      throw new Error(`Unexpected battle flavor fact for ${events[sourceIndex]!.opcode}:${events[sourceIndex]!.abilityId ?? 'terrain'}`);
+    }
+  }
   return pairs;
 }
 
@@ -455,6 +460,47 @@ export function validateBattleSemanticFlavorFacts(events: readonly BattleProtoco
       throw new Error(`Missing battle flavor fact for ${event.opcode}:${event.abilityId ?? 'terrain'}`);
     }
   });
+}
+
+export type BattleCandidateWindowResult = {
+  result: BattleCandidateResult;
+  randomConsumed: number;
+  diagnosticDrawCount: number;
+  protocolError: number;
+  eventCount: number;
+  inputCapacity: number;
+};
+
+// SpecRef: 6.1.8 | Universal C++ battle kernel | production reserved-tape window
+export function executeBattleCandidateFromWindow(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  randomWindow: readonly number[],
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): BattleCandidateWindowResult {
+  const output = executeBattleCandidateProtocol(projectBattleProtocolInput(
+    party, enemy, bags, randomWindow, initialPartyHp, environment, BATTLE_ENGINE_FLAG_END_CHECKPOINT,
+  ));
+  if (output.protocolError !== 0) {
+    throw new Error(`C++ battle returned protocol error ${output.protocolError} after ${output.randomConsumed} supplied draws`);
+  }
+  if (output.randomConsumed !== output.diagnosticDrawCount) {
+    throw new Error(`C++ battle cursor mismatch: ${output.randomConsumed}/${output.diagnosticDrawCount}`);
+  }
+  if (output.randomConsumed < 0 || output.randomConsumed > randomWindow.length) {
+    throw new Error(`C++ battle cursor ${output.randomConsumed} exceeds the ${randomWindow.length}-value window`);
+  }
+  const result = convertBattleSemanticEvents(output, party, enemy, initialPartyHp, environment);
+  return {
+    result,
+    randomConsumed: output.randomConsumed,
+    diagnosticDrawCount: output.diagnosticDrawCount,
+    protocolError: output.protocolError,
+    eventCount: output.events.length,
+    inputCapacity: randomWindow.length,
+  };
 }
 
 function requireFlavor(
@@ -578,25 +624,33 @@ export function convertBattleSemanticEvents(
       pendingAfterAttack.delete(key);
     }
   };
-  const presentationByTarget = new Map<string, Map<number, number>>();
+  const presentationByTarget = new Map<string, Array<Map<number, number>>>();
   for (const event of events) {
     if (event.opcode !== 'diagnostic' || (event.flags & 128) === 0) continue;
     const key = attackTargetKey(event);
-    const facts = presentationByTarget.get(key) ?? new Map<number, number>();
+    const occurrences = presentationByTarget.get(key) ?? [new Map<number, number>()];
+    let facts = occurrences[occurrences.length - 1]!;
     const values = [event.value0, event.value1, event.value2];
     const groups = [0, 1, 2].filter((group) => (event.aux1 & (0b111 << (group * 3))) !== 0);
     if (groups.length !== 1 || (event.aux1 & ~0x1ff) !== 0) {
       throw new Error(`Invalid native presentation mask ${event.aux1} for ${key}`);
     }
     const group = groups[0]!;
+    const kinds = [0, 1, 2]
+      .map((slot) => group * 3 + slot + 1)
+      .filter((kind) => (event.aux1 & (1 << (kind - 1))) !== 0);
+    if (kinds.some((kind) => facts.has(kind))) {
+      facts = new Map<number, number>();
+      occurrences.push(facts);
+    }
     for (let slot = 0; slot < 3; slot += 1) {
       const kind = group * 3 + slot + 1;
       if ((event.aux1 & (1 << (kind - 1))) === 0) continue;
-      if (facts.has(kind)) throw new Error(`Duplicate native presentation fact ${kind} for ${key}`);
       facts.set(kind, values[slot]!);
     }
-    presentationByTarget.set(key, facts);
+    presentationByTarget.set(key, occurrences);
   }
+  const presentationOccurrence = new Map<string, number>();
   const enemyWireId = 0x8000_0000 + enemy.id;
   const magicalGroups = new Map<string, { hits: number; attempts: number; firstIndex: number }>();
   events.forEach((event, index) => {
@@ -790,8 +844,44 @@ export function convertBattleSemanticEvents(
       const actor = combatants.get(event.actorId);
       const target = combatants.get(event.targetId);
       if (!actor) throw new Error(`Attack event references missing actor ${event.actorId}`);
+      const specialAttack = event.abilityId === 'gravity_well' || event.abilityId === 'armor_break' || event.abilityId === 'mana_break'
+        ? event.abilityId : null;
+      if (specialAttack) {
+        const specialName = resolveMagicProfile({
+          style: specialAttack === 'gravity_well' ? 'percentage_damage' : 'debuff',
+          specialMagic: specialAttack,
+          elementalOffense: actor.elementalOffense,
+          elementalOffenseValue: actor.elementalOffenseValue,
+          magicalNoA: Math.max(1, event.attempts),
+        }).spellName;
+        const isReAttack = event.aux0 === 3;
+        const attackName = `${specialName}${isReAttack ? t('battleLog.action.reAttackSuffix') : ''}`;
+        const appliedDamage = event.value0;
+        log.push({
+          phase: 'combat',
+          initiativeRoll: initiatives.get(initiativeKey(actor.id, event.attackType)) ?? event.timing,
+          actor: actor.kind === 'enemy' ? 'enemy' : 'character',
+          ...(actor.kind === 'character' ? { characterId: actor.id } : {}),
+          action: actor.kind === 'enemy'
+            ? t('battleLog.action.enemySpellCast', { attack: attackName })
+            : t('battleLog.action.characterSpellCast', { actor: actor.name, attack: attackName }),
+          damage: appliedDamage,
+          ...(actor.kind === 'character' ? { damageTarget: target?.kind === 'character' ? 'party' as const : 'enemy' as const } : {}),
+          ...(specialAttack === 'gravity_well' && appliedDamage === 0 ? { showZeroDamage: true } : {}),
+          ...(specialAttack === 'gravity_well' ? { hits: 1, totalAttempts: 1 } : {}),
+          specialAttack,
+          ...(isReAttack ? { isReAttack: true } : {}),
+          elementalOffense: 'none',
+          attackType: event.attackType,
+        });
+        appendPending(event);
+        continue;
+      }
       const groupKey = actionKey(event);
-      const presentationFacts = presentationByTarget.get(attackTargetKey(event)) ?? new Map<number, number>();
+      const presentationKey = attackTargetKey(event);
+      const occurrence = presentationOccurrence.get(presentationKey) ?? 0;
+      const presentationFacts = presentationByTarget.get(presentationKey)?.[occurrence] ?? new Map<number, number>();
+      presentationOccurrence.set(presentationKey, occurrence + 1);
       const bonusText = attackBonusText(presentationFacts);
       const presentation = presentationProperties(presentationFacts);
       const initiativeRoll = initiatives.get(initiativeKey(actor.id, event.attackType)) ?? event.timing;
@@ -888,14 +978,9 @@ export function executeBattleCandidateFromTape(
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
 ): BattleCandidateResult {
-  const output = executeBattleCandidateProtocol(projectBattleProtocolInput(
-    party, enemy, bags, randomTape, initialPartyHp, environment, BATTLE_ENGINE_FLAG_END_CHECKPOINT,
-  ));
-  if (output.protocolError !== 0) {
-    throw new Error(`C++ battle returned protocol error ${output.protocolError} after ${output.randomConsumed} supplied draws`);
+  const execution = executeBattleCandidateFromWindow(party, enemy, bags, randomTape, initialPartyHp, environment);
+  if (execution.randomConsumed !== randomTape.length || execution.diagnosticDrawCount !== randomTape.length) {
+    throw new Error(`C++ battle consumed ${execution.randomConsumed}/${execution.diagnosticDrawCount} of ${randomTape.length} supplied random values`);
   }
-  if (output.randomConsumed !== randomTape.length || output.diagnosticDrawCount !== randomTape.length) {
-    throw new Error(`C++ battle consumed ${output.randomConsumed}/${output.diagnosticDrawCount} of ${randomTape.length} supplied random values`);
-  }
-  return convertBattleSemanticEvents(output, party, enemy, initialPartyHp, environment);
+  return execution.result;
 }

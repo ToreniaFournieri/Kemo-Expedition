@@ -560,7 +560,7 @@ export interface PersistedRuntimeSnapshot {
 
 
 export function rollPercentInclusive(min: number, max: number): number {
-  return min + Math.random() * (max - min + Number.EPSILON);
+  return min + gameplayRandom() * (max - min + Number.EPSILON);
 }
 
 export const PARTY_CYCLE_TICK_MS = 100;
@@ -3147,3 +3147,4 @@ export function getNextMissingAutoEquipmentCategory(
 
   return null;
 }
+import { gameplayRandom } from '../../game/gameplayRandom';

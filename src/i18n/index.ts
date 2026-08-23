@@ -85,6 +85,7 @@ export function t(key: string, params?: TranslationParams): string {
 export function getRandomTranslation(prefix: string, count: number, params?: TranslationParams): string {
   const safeCount = Math.max(0, Math.floor(count));
   if (safeCount <= 0) return t(prefix, params);
-  const index = Math.floor(Math.random() * safeCount) + 1;
+  const index = Math.floor(gameplayRandom() * safeCount) + 1;
   return t(`${prefix}.${index}`, params);
 }
+import { gameplayRandom } from '../game/gameplayRandom';

@@ -16,6 +16,7 @@ selectBestAutoEquipmentFillCandidate,
 selectBestAutoEquipmentUpgradeCandidate,
 type EquipmentRankingCandidate,
 } from '../game/battleKernel';
+import { gameplayRandom } from '../game/gameplayRandom';
 import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
@@ -3391,7 +3392,7 @@ export function HomeScreen({
     const isColosseumSortie = party.selectedDungeonId === 99;
 
     if (!isColosseumSortie && (party.currentHp <= 0 || partyStats.hp <= 0)) {
-      const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
+      const refusingCharacter = party.characters[Math.floor(gameplayRandom() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
       if (party.diarySettings.notifyCyclePopup) actions.addNotification(t('home.notification.characterRefusedExpedition', { character: refusingCharacter }));
       return;
     }

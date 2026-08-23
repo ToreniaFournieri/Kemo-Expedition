@@ -15,6 +15,12 @@ import {
 import { getBattleFlavorTemplateAtIndex } from '../../src/game/battleNarration.ts';
 import type { BattleProtocolEvent } from '../../src/game/battleProtocol.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
+import {
+  gameplayRandom,
+  getGameplayRandomStateForTesting,
+  reserveGameplayRandomTape,
+  withGameplayRandomSourceForTesting,
+} from '../../src/game/gameplayRandom.ts';
 import { computeCharacterStats } from '../../src/game/characterComputation.ts';
 import { getDeityKey } from '../../src/game/deity.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
@@ -56,6 +62,31 @@ test('semantic flavor validation rejects missing, duplicate, and misordered fact
     semanticEvent({ opcode: 'diagnostic', abilityId: null }),
     flavor,
   ]), /does not match its source event/);
+  const unexpectedSource = semanticEvent({ opcode: 'attack', abilityId: null });
+  assert.throws(() => validateBattleSemanticFlavorFacts([
+    unexpectedSource,
+    semanticEvent({ opcode: 'random_flavor', abilityId: null, flags: 0, aux0: 0, aux1: unexpectedSource.aux0 }),
+  ]), /Unexpected battle flavor fact/);
+});
+
+test('realm-local random reservoir commits prefixes, preserves suffixes, and rolls failures back', () => {
+  const values = Array.from({ length: 20 }, (_, index) => index / 20);
+  let cursor = 0;
+  withGameplayRandomSourceForTesting(() => values[cursor++]!, () => {
+    const first = reserveGameplayRandomTape(8);
+    assert.deepEqual(first.tape, values.slice(0, 8));
+    assert.throws(() => reserveGameplayRandomTape(1), /Nested or reentrant/);
+    first.commit(3);
+    assert.equal(gameplayRandom(), values[3]);
+    const attempted = reserveGameplayRandomTape(8);
+    assert.equal(attempted.tape[0], values[4]);
+    attempted.rollback();
+    assert.equal(gameplayRandom(), values[4], 'rollback must commit zero values');
+    assert.equal(getGameplayRandomStateForTesting().reservationActive, false);
+  });
+  withGameplayRandomSourceForTesting(() => 0.75, () => {
+    assert.equal(gameplayRandom(), 0.75, 'a scoped realm must not inherit another realm suffix');
+  });
 });
 
 test('candidate projection is complete, non-mutating, and excludes object/UI payloads', () => {

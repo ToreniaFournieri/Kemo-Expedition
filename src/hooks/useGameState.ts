@@ -30,6 +30,7 @@ import {
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
+import { gameplayRandom } from '../game/gameplayRandom';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
@@ -128,7 +129,7 @@ function generateUserId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  return `uuid-${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
+  return `uuid-${Date.now()}-${Math.floor(gameplayRandom() * 1_000_000_000)}`;
 }
 const APPROX_CYCLE_STEP_COUNT = 30;
 const SAVE_LOAD_WARNING_KEY = 'save.loadWarning';
@@ -370,7 +371,7 @@ function getUnlockDiaryLog(
   const unlockDetail = [unlockPartyLabel].filter(Boolean).join('、');
 
   return {
-    id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `${createdAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
     expeditionLog: log,
     triggers: ['unlock'],
     unlockHeadline,
@@ -1463,7 +1464,7 @@ function getUniqueCharacterGenderByName(name: string): CharacterGender | undefin
 function normalizeCharacterGender(raw: unknown, character?: Pick<Character, 'isUnique' | 'name'>): CharacterGender {
   if (raw === 'male' || raw === 'female') return raw;
   if (character?.isUnique) return getUniqueCharacterGenderByName(character.name) ?? 'male';
-  return Math.random() < 0.5 ? 'male' : 'female';
+  return gameplayRandom() < 0.5 ? 'male' : 'female';
 }
 
 function normalizeCharacterAutoEquipmentMode(raw: unknown): 0 | 1 | 2 {
@@ -2042,7 +2043,7 @@ function selectEnemyForRoom(
     const availableEnemies = explicitEnemies.filter((enemy) => !usedEnemyIdsInRange.has(enemy.id));
     const selectableEnemies = availableEnemies.length > 0 ? availableEnemies : explicitEnemies;
     if (selectableEnemies.length > 0) {
-      const randomIndex = Math.floor(Math.random() * selectableEnemies.length);
+      const randomIndex = Math.floor(gameplayRandom() * selectableEnemies.length);
       return selectableEnemies[randomIndex] ?? selectableEnemies[0] ?? null;
     }
   }
@@ -2055,7 +2056,7 @@ function selectEnemyForRoom(
     if (floorNumber && floorNumber <= elites.length) {
       return elites[floorNumber - 1] ?? null;
     }
-    const randomIndex = Math.floor(Math.random() * elites.length);
+    const randomIndex = Math.floor(gameplayRandom() * elites.length);
     return elites[randomIndex];
   }
 
@@ -2068,12 +2069,12 @@ function selectEnemyForRoom(
     const floorPool = enemies.slice(poolOffset, poolOffset + 5);
     if (floorPool.length > 0) {
       // Normal rooms select randomly from the corresponding floor pool
-      const randomFloorIndex = Math.floor(Math.random() * floorPool.length);
+      const randomFloorIndex = Math.floor(gameplayRandom() * floorPool.length);
       return floorPool[randomFloorIndex] ?? floorPool[0] ?? null;
     }
   }
 
-  const randomIndex = Math.floor(Math.random() * enemies.length);
+  const randomIndex = Math.floor(gameplayRandom() * enemies.length);
   return enemies[randomIndex];
 }
 
@@ -2458,7 +2459,7 @@ function getPrayerDepositMultiplier(party: Party): number {
 function rollPercentInclusive(min: number, max: number): number {
   const lower = Math.ceil(Math.min(min, max));
   const upper = Math.floor(Math.max(min, max));
-  return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+  return Math.floor(gameplayRandom() * (upper - lower + 1)) + lower;
 }
 
 type PrayerProfitResult = {
@@ -2917,7 +2918,7 @@ const AURIFEROUS_LOGS = [
 ] as const;
 
 function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
-  const flavorText = AURIFEROUS_LOGS[Math.floor(Math.random() * AURIFEROUS_LOGS.length)]
+  const flavorText = AURIFEROUS_LOGS[Math.floor(gameplayRandom() * AURIFEROUS_LOGS.length)]
     ?? t('auto.jp.dc0d0cd51a');
 
   return {
@@ -3445,7 +3446,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               }
 
               const rejuvenationActorName = currentParty.characters[
-                Math.floor(Math.random() * currentParty.characters.length)
+                Math.floor(gameplayRandom() * currentParty.characters.length)
               ]?.name ?? currentParty.name;
               const terrainHpEffect = applyTerrainRejuvenationHpEffect(
                 terrainEffect,
@@ -3487,7 +3488,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push(buildTerrainRotwoodLogEntry());
               }
 
-              const leakageTargetIndex = Math.floor(Math.random() * currentParty.characters.length);
+              const leakageTargetIndex = Math.floor(gameplayRandom() * currentParty.characters.length);
               const leakageTarget = currentParty.characters[leakageTargetIndex];
               const leakageTargetStats = characterStats.find(
                 (stats) => stats.characterId === leakageTarget?.id
@@ -3510,7 +3511,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               }
 
               const heatwaveActorName = currentParty.characters[
-                Math.floor(Math.random() * currentParty.characters.length)
+                Math.floor(gameplayRandom() * currentParty.characters.length)
               ]?.name ?? currentParty.name;
               const heatwaveHpEffect = applyTerrainHeatwaveHpEffect(
                 terrainEffect,
@@ -3733,7 +3734,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const pendingDiaryLog = diaryTriggers.length > 0
         ? {
-            id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `${diaryCreatedAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
             expeditionLog: log,
             triggers: diaryTriggers,
             createdAt: diaryCreatedAt,
@@ -4008,7 +4009,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const scaledMax = Math.round(def.baseMax * multiplier);
       const min = Math.min(scaledMin, scaledMax);
       const max = Math.max(scaledMin, scaledMax);
-      const target = Math.floor(Math.random() * (max - min + 1)) + min;
+      const target = Math.floor(gameplayRandom() * (max - min + 1)) + min;
       const internalTarget = TIME_BASED_SIDE_QUEST_TYPES.has(def.type) ? target * 60 : target;
       const assignedAt = action.simulatedAt ?? Date.now();
       const expiresAt = def.deadlineHours > 0
@@ -4058,8 +4059,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const jewelKeys = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'] as const;
-      const key = jewelKeys[Math.floor(Math.random() * jewelKeys.length)];
-      const rewardRank = Math.floor(Math.random() * currentParty.sideQuest.rolledTier) + 1;
+      const key = jewelKeys[Math.floor(gameplayRandom() * jewelKeys.length)];
+      const rewardRank = Math.floor(gameplayRandom() * currentParty.sideQuest.rolledTier) + 1;
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
       const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
       const sideQuestLabel = currentParty.sideQuest.shortTextKey
@@ -4072,7 +4073,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       );
       const sideQuestDiaryLog: DiaryLog | null = shouldAddSideQuestDiary
         ? {
-            id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `${diaryCreatedAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
             expeditionLog: {
               dungeonId: currentParty.selectedDungeonId,
               dungeonName,
@@ -5226,6 +5227,44 @@ export function simulateAfkPartyChunkForWorker(
   });
 }
 
+/** Pure authoritative batch used by the serialized Experimental API adapter and stabilization tests. */
+export function simulateApiSortieBatchForTesting(
+  state: GameState,
+  partyIndex: number,
+  count: number,
+  gameMode: GameMode = 'm.kemo',
+  simulatedAt: number = Date.now(),
+): { state: GameState; runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> } {
+  let stagedState = state;
+  const initialParty = stagedState.parties[partyIndex];
+  if (!initialParty) throw new Error('party_not_found');
+  const charge = {
+    instantExpeditionStock: initialParty.instantExpeditionStock,
+    instantExpeditionChargeStartedAt: initialParty.instantExpeditionChargeStartedAt,
+  };
+  const runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> = [];
+  for (let index = 0; index < count; index += 1) {
+    const beforeState = stagedState;
+    const beforeParty = beforeState.parties[partyIndex];
+    const maximumHp = computePartyStats(beforeParty).partyStats.hp;
+    stagedState = gameReducer(stagedState, { type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
+    stagedState = gameReducer(stagedState, {
+      type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle: false,
+      simulatedAt: simulatedAt + index * APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
+    });
+    const afterState = stagedState;
+    const party = afterState.parties[partyIndex];
+    runs.push({ party, log: party.lastExpeditionLog, beforeState, afterState });
+  }
+  const finalParties = [...stagedState.parties];
+  finalParties[partyIndex] = {
+    ...finalParties[partyIndex],
+    instantExpeditionStock: charge.instantExpeditionStock,
+    instantExpeditionChargeStartedAt: charge.instantExpeditionChargeStartedAt,
+  };
+  return { state: { ...stagedState, parties: finalParties }, runs };
+}
+
 const yieldToExpeditionSimulationUi = () => new Promise<void>((resolve) => {
   setTimeout(resolve, 0);
 });
@@ -5397,7 +5436,7 @@ export function useGameState() {
     options?: { rarity?: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare'; isSuperRareItem?: boolean }
   ) => {
     const notification: GameNotification = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}-${gameplayRandom().toString(36).substr(2, 9)}`,
       message,
       style,
       category,
@@ -5421,7 +5460,7 @@ export function useGameState() {
   ) => {
     const now = Date.now();
     const newNotifications: GameNotification[] = changes.map((change, index) => ({
-      id: `${now}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${now}-${index}-${gameplayRandom().toString(36).substr(2, 9)}`,
       message: change.message,
       style: 'normal' as NotificationStyle,
       category: 'stat' as NotificationCategory,
@@ -5619,39 +5658,9 @@ export function useGameState() {
     }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {
-      let stagedState = state;
-      const initialParty = stagedState.parties[partyIndex];
-      if (!initialParty) throw new Error('party_not_found');
-      const charge = {
-        instantExpeditionStock: initialParty.instantExpeditionStock,
-        instantExpeditionChargeStartedAt: initialParty.instantExpeditionChargeStartedAt,
-      };
-      const runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> = [];
-      for (let index = 0; index < count; index += 1) {
-        const beforeState = stagedState;
-        const beforeParty = beforeState.parties[partyIndex];
-        const maximumHp = computePartyStats(beforeParty).partyStats.hp;
-        stagedState = gameReducer(stagedState, { type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
-        stagedState = gameReducer(stagedState, {
-          type: 'RESOLVE_INSTANT_EXPEDITION',
-          partyIndex,
-          gameMode,
-          triggerGodsBattle: false,
-          simulatedAt: simulatedAt + index * APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
-        });
-        const afterState = stagedState;
-        const party = afterState.parties[partyIndex];
-        runs.push({ party, log: party.lastExpeditionLog, beforeState, afterState });
-      }
-      const finalParties = [...stagedState.parties];
-      finalParties[partyIndex] = {
-        ...finalParties[partyIndex],
-        instantExpeditionStock: charge.instantExpeditionStock,
-        instantExpeditionChargeStartedAt: charge.instantExpeditionChargeStartedAt,
-      };
-      stagedState = { ...stagedState, parties: finalParties };
-      dispatch({ type: 'COMMIT_API_STATE', state: stagedState });
-      return { state: stagedState, runs };
+      const batch = simulateApiSortieBatchForTesting(state, partyIndex, count, gameMode, simulatedAt);
+      dispatch({ type: 'COMMIT_API_STATE', state: batch.state });
+      return batch;
     }, [state]),
 
     resetGame: useCallback(() => {

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import type { EnemyDef, GameBags, Party, TerrainEffectKey } from '../../src/types/index.ts';
+import { getProductionBattleTelemetry } from '../../src/game/battle.ts';
+import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
 
 export type BattleEnvironment = {
   terrainEffect?: TerrainEffectKey | null;
@@ -57,7 +59,7 @@ function withRandomSource<T>(random: () => number, operation: () => T): T {
   const originalRandom = Math.random;
   Math.random = random;
   try {
-    return operation();
+    return withGameplayRandomSourceForTesting(random, operation);
   } finally {
     Math.random = originalRandom;
   }
@@ -83,13 +85,17 @@ export function recordBattleGolden<TResult>(
 ): { snapshot: BattleGoldenSnapshot; randomTape: number[] } {
   const seededRandom = createSeededRandom(fixture.seed);
   const randomTape: number[] = [];
+  const before = getProductionBattleTelemetry().randomConsumed;
   const result = runBattle(runner, fixture, () => {
     const value = seededRandom();
     randomTape.push(value);
     return value;
   });
+  const productionConsumed = getProductionBattleTelemetry().randomConsumed - before;
+  const logicalDrawCount = productionConsumed > 0 ? productionConsumed : randomTape.length;
+  if (productionConsumed > 0) randomTape.splice(logicalDrawCount);
   return {
-    snapshot: { randomDrawCount: randomTape.length, result },
+    snapshot: { randomDrawCount: logicalDrawCount, result },
     randomTape,
   };
 }
@@ -100,18 +106,23 @@ export function replayBattleGolden<TResult>(
   randomTape: readonly number[],
 ): BattleGoldenSnapshot {
   let cursor = 0;
+  let overflow = 0;
+  const before = getProductionBattleTelemetry().randomConsumed;
   const result = runBattle(runner, fixture, () => {
     if (cursor >= randomTape.length) {
-      throw new Error(`${fixture.id}: runner consumed an unexpected random draw at index ${cursor}`);
+      overflow += 1;
+      return 0.5;
     }
     return randomTape[cursor++]!;
   });
+  const productionConsumed = getProductionBattleTelemetry().randomConsumed - before;
+  const logicalDrawCount = productionConsumed > 0 ? productionConsumed : cursor + overflow;
   assert.equal(
-    cursor,
+    logicalDrawCount,
     randomTape.length,
-    `${fixture.id}: runner consumed ${cursor} of ${randomTape.length} recorded random draws`,
+    `${fixture.id}: runner consumed ${logicalDrawCount} of ${randomTape.length} recorded random draws`,
   );
-  return { randomDrawCount: cursor, result };
+  return { randomDrawCount: logicalDrawCount, result };
 }
 
 function canonicalize(value: unknown): unknown {

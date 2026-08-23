@@ -212,18 +212,31 @@ The inventory audit identified and closed ambiguous flavor ownership, missing ST
 
 Acceptance gate: complete JSON parity passes for all 11 frozen cases, both cursor fields are exact, every case makes one measured Wasm execution call, the retained capacity/transactional tests pass, and all three frozen hashes remain unchanged. Part 1.10 is ready; this is not a production cutover.
 
-### Part 1.10 deterministic production cutover and stabilization — ready
+### Part 1.10 deterministic production cutover and stabilization — complete
 
-- Route production `executeBattle`, AFK workers, and Experimental API sorties through the same complete one-call tape-driven native coordinator.
-- Reduce TypeScript battle code to projection, deterministic tape supply, semantic narration, and external expedition orchestration such as qualifying post-battle First Aid.
-- Remove production numerical micro-crossings and prevent production fallback to the TypeScript numerical coordinator. Retain the frozen reference only as a temporary stabilization oracle until cutover evidence is complete.
-- Measure online, AFK-worker, and API behavior, including arena capacity, serialization/reentrancy, output volume, and browser/Electron/worker consistency.
+- Production `executeBattle` is now a small adapter over `executeBattleCandidateFromWindow`. Online expeditions call it directly from the authoritative reducer; each AFK module worker reaches the same reducer and owns its module-local reservoir/Wasm instance; the Experimental API count-1-to-100 batch uses the same pure serialized reducer routine and commits only its final staged state. No entry point has a separate coordinator or fallback.
+- `src/game/gameplayRandom.ts` owns a realm-local transactional reservoir. Its injectable underlying source fills a 4,096-value window without consuming the logical queue. Native executes once, narration and protocol checks complete, and only `randomConsumed` values are removed. The unused suffix supplies subsequent gameplay draws in order. A battle-level protocol, capacity, narration/rendering, or result-transaction failure rolls back that reservation and commits zero values. An outer API/save rejection after one or more fully successful battles discards staged game state but deterministically retains those already committed battle prefixes; it never exposes a partial result or bag. Nested reservations and nested protocol arena use are rejected. Scoped test sources restore their prior source and suffix state so cases and realms cannot leak.
+- Gameplay random callers that share expedition ordering—including bags, encounter selection, rewards, side-quest choices, external battle/terrain flavor, and generated gameplay record IDs—use the reservoir abstraction. The startup loading-message choice remains visual-only and separate. Seeded validation injects a scoped source and never replaces global `Math.random`.
+- `src/game/battle.ts` no longer contains the numerical TypeScript coordinator. It retains only the compatible public result contract, the native adapter, telemetry, and the non-resolving enemy attack display summary. The frozen `battleTypeScriptReference.ts` remains test-only; production source and built main/worker bundles do not import it or contain legacy coordinator markers.
+- Semantic validation rejects missing, duplicate, misordered, mismatched, and unexpected extra `random_flavor` facts. Presentation diagnostics support repeated action identities without conflating occurrences, and special-magic logs preserve canonical localized shape. Exact complete-result differential coverage passes all 11 frozen cases in Japanese, English, Simplified Chinese, and Traditional Chinese (44 combinations), including ordered strings, formatting, and optional-property presence.
+- Frozen production-entry coverage proves canonical JSON identity, exact logical draw commitment, preserved next-stream value, one measured Wasm execution, input immutability, and exact threat bags/cursors for every golden case. Existing tape exhaustion, event exhaustion, transactional output, arena reset, terminal ordering, and capacity gates remain green; dedicated reservoir tests cover sequential suffix use, rollback, source isolation, and reentrant rejection.
 
-Acceptance gate: all runtime entry points use the same Wasm protocol/ABI, every battle makes one execution crossing, no TypeScript-owned numerical battle formula remains on a production path, and performance/capacity regressions are within documented limits.
+#### Part 1.10 stabilization evidence
+
+| Path | Workload | Wasm calls | Duration evidence | Protocol volume and maxima |
+|-|-:|-:|-|-|
+| Online single battle | 40 measured Boss battles | 1 per encounter | median 36.66 ms; p95 38.91 ms in isolated profile, with a contention run of median 90.44 ms / p95 137.94 ms | median input 35,688 bytes; median output 7,424 bytes; max tape 262; max events 131 |
+| AFK worker routine | 6 party Chunks / 1,724 battles | 1,724 | 29.43 s total CPU; 9.89 s projected parallel maximum in isolated profile | 61,492,632 input bytes; 4,464,320 output bytes; max tape 276; max events 131 |
+| Experimental API | count 1 / 24 battles | 24 | 327.60 ms | 856,440 input bytes; 55,232 output bytes; max tape 131; max events 83 |
+| Experimental API | count 100 / 2,400 battles | 2,400 | 53.24 s | 85,644,568 input bytes; 5,660,544 output bytes; max tape 166; max events 132 |
+
+The AFK and API measurements verify exact sequential state propagation, unchanged Instant Expedition charge state for API batches, no mutation interleaving inside the pure batch transaction, and no protocol, capacity, or serialization failures. Maximum observed tape/event use remains below 7% of each 4,096 limit. Browser, Electron, and module-worker builds use the same protocol v3, ABI 8, embedded module, projection, and renderer; no binary layout change was required.
+
+Acceptance gate: complete. Part 2 native seeded RNG ownership is ready. The TypeScript-supplied tape and frozen RNG contract remain authoritative until Part 2; Part 3 direct-memory boundary optimization and checkpoint/micro-kernel cleanup remain pending.
 
 ### Part 2 native seeded RNG ownership
 
-- Begin only after the tape-driven production engine has complete parity and has stabilized.
+- Ready after the completed tape-driven production stabilization gate above.
 - Move a battle-local xoshiro256** RNG into native battle state, initialized by the protocol's unsigned 64-bit seed and supported RNG version; route every random decision through explicit native helpers while preserving canonical decision order.
 - Remove the production random tape, retain seed/version/draw-count replay metadata, reject unsupported RNG versions, and prove independent worker instances do not share RNG state.
 - After seeded parity and invariant review, revise the frozen contract and regenerate golden data exactly once as an intentional RNG contract migration rather than an incidental hash update.

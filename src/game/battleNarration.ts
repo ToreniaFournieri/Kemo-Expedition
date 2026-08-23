@@ -1,5 +1,6 @@
 import { AttackType, BattleLogEntry } from '../types';
 import { t } from '../i18n';
+import { gameplayRandom } from './gameplayRandom';
 
 const CONFUSION_SUCCESS_LOGS = [
   'battleFlavor.confusion-success.1',
@@ -545,7 +546,7 @@ const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
 const battleNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
 function pickRandomEntry<T>(entries: readonly T[]): T {
-  return entries[Math.floor(Math.random() * entries.length)];
+  return entries[Math.floor(gameplayRandom() * entries.length)];
 }
 
 function pickRandomTranslatedEntry(entries: readonly string[]): string {

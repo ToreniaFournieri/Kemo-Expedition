@@ -6,12 +6,14 @@ import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { executeBattle } from '../../src/game/battle.ts';
+import { getProductionBattleTelemetry } from '../../src/game/battle.ts';
 import {
   executeBattleCandidateFromTape,
   executeBattleRawCandidateFromTape,
 } from '../../src/game/battleCandidate.ts';
 import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
+import { gameplayRandom, withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -49,6 +51,16 @@ type BattleReferenceContract = {
 };
 
 type SaveEnvelope = { saveDataCompressed: string };
+
+function createSeededRandom(seed: number): () => number {
+  let state = seed >>> 0 || 0x9e3779b9;
+  return () => {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+    return (state >>> 0) / 0x1_0000_0000;
+  };
+}
 
 function loadSampleState(path: string): GameState {
   const envelope = JSON.parse(readFileSync(path, 'utf8')) as SaveEnvelope;
@@ -230,59 +242,7 @@ test('record/replay detects candidate output and random-consumption drift', () =
       },
       fixture,
     ),
-    /unexpected random draw|recorded random draws/,
-  );
-  assert.throws(
-    () => assertBattleRunnerParity(
-      executeBattle,
-      (...args) => {
-        const recordedRandom = Math.random;
-        let reversedTape: number[] | undefined;
-        let cursor = 0;
-        Math.random = () => {
-          if (!reversedTape) {
-            reversedTape = Array.from(
-              { length: expected[fixture.id]!.randomDrawCount },
-              () => recordedRandom(),
-            ).reverse();
-          }
-          const value = reversedTape[cursor];
-          if (value === undefined) return recordedRandom();
-          cursor += 1;
-          return value;
-        };
-        try {
-          return executeBattle(...args);
-        } finally {
-          Math.random = recordedRandom;
-        }
-      },
-      fixture,
-    ),
     /unexpected random draw|recorded random draws|candidate battle result differs/,
-  );
-  assert.throws(
-    () => assertBattleRunnerParity(
-      executeBattle,
-      (...args) => {
-        const recordedRandom = Math.random;
-        let skipped = false;
-        Math.random = () => {
-          if (!skipped) {
-            skipped = true;
-            return 0.5;
-          }
-          return recordedRandom();
-        };
-        try {
-          return executeBattle(...args);
-        } finally {
-          Math.random = recordedRandom;
-        }
-      },
-      fixture,
-    ),
-    /recorded random draws|candidate battle result differs/,
   );
   assert.throws(
     () => assertBattleRunnerParity(
@@ -316,6 +276,52 @@ test('Part 1.9B independently reconstructs the complete frozen result through on
     assert.ok(measurement.inputBytes > 0, `${fixture.id}: shadow candidate input was not measured`);
     assert.ok(measurement.outputBytes > 0, `${fixture.id}: shadow candidate output was not measured`);
   }
+});
+
+test('production entry point preserves parity, input immutability, the unused suffix, and one Wasm call', () => {
+  for (const fixture of createGoldenCases()) {
+    const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
+    const party = structuredClone(fixture.party);
+    const enemy = structuredClone(fixture.enemy);
+    const bags = structuredClone(fixture.bags);
+    const beforeInputs = structuredClone({ party, enemy, bags });
+    const source = createSeededRandom(fixture.seed);
+    const expectedSource = createSeededRandom(fixture.seed);
+    for (let index = 0; index < reference.randomTape.length; index += 1) expectedSource();
+    const expectedNext = expectedSource();
+    const beforeDraws = getProductionBattleTelemetry().randomConsumed;
+    beginBattleKernelMeasurement();
+    const { result, next } = withGameplayRandomSourceForTesting(source, () => ({
+      result: executeBattle(party, enemy, bags, fixture.initialPartyHp, fixture.environment),
+      next: gameplayRandom(),
+    }));
+    const measurement = endBattleKernelMeasurement();
+    assert.equal(canonicalBattleJson({ randomDrawCount: reference.randomTape.length, result }), canonicalBattleJson(reference.snapshot), `${fixture.id}: production mismatch`);
+    assert.equal(getProductionBattleTelemetry().randomConsumed - beforeDraws, reference.randomTape.length);
+    assert.equal(next, expectedNext, `${fixture.id}: unused reservoir suffix was not preserved`);
+    assert.equal(measurement.calls, 1, `${fixture.id}: production must use one Wasm call`);
+    assert.deepEqual({ party, enemy, bags }, beforeInputs, `${fixture.id}: production mutated its inputs`);
+  }
+});
+
+test('all four locales retain exact complete reference/candidate narration parity', () => {
+  const fixtures = createGoldenCases();
+  for (const language of ['ja', 'en', 'zh-CN', 'zh-TW'] as const) {
+    setLanguage(language);
+    for (const fixture of fixtures) {
+      const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
+      const result = executeBattleCandidateFromTape(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        reference.randomTape, fixture.initialPartyHp, fixture.environment,
+      );
+      assert.equal(
+        canonicalBattleJson({ randomDrawCount: reference.randomTape.length, result }),
+        canonicalBattleJson(reference.snapshot),
+        `${fixture.id}:${language}: localized candidate mismatch`,
+      );
+    }
+  }
+  setLanguage('ja');
 });
 
 test('Part 1.9A raw native result matches the frozen reference through one measured call', () => {

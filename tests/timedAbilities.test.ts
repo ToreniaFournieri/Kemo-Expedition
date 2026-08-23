@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const battleSource = readFileSync(new URL('../src/game/battle.ts', import.meta.url), 'utf8');
+const battleSource = readFileSync(new URL('../native/battle_protocol.cpp', import.meta.url), 'utf8');
 
 test('Soul Reap resolves once at COMBAT2 rather than at magic end', () => {
   assert.match(
     battleSource,
-    /const triggerSoulReapAtTiming = \(timing: number\): void => \{[\s\S]*?phase !== 'ranged' \|\| timing !== 2/,
+    /auto trigger_soul_reap = \[&\]\(\) -> CombatResult \{[\s\S]*?attack != 1 \|\| timing != 2/,
   );
-  assert.match(battleSource, /triggerSoulReapAtTiming\(2\);/);
-  assert.doesNotMatch(battleSource, /triggerSoulReapAtEnd|initiativeRoll: 0,[\s\S]{0,200}buildSoulReapAction/);
+  assert.match(battleSource, /timing == 2[\s\S]*?run\(trigger_soul_reap\)/);
+  assert.doesNotMatch(battleSource, /trigger_soul_reap_at_end/);
 });

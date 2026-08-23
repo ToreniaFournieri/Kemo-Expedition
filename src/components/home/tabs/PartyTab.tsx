@@ -9,6 +9,7 @@ import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
+import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
@@ -539,7 +540,7 @@ export default function PartyTab({
 
     const availableCandidates = ptCandidates.filter((candidate: string) => !usedNames.has(candidate));
     const candidatePool = availableCandidates.length > 0 ? availableCandidates : ptCandidates;
-    return candidatePool[Math.floor(Math.random() * candidatePool.length)];
+    return candidatePool[Math.floor(gameplayRandom() * candidatePool.length)];
   };
 
   const handleRaceChange = (raceId: Character['raceId']) => {

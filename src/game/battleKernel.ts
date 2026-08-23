@@ -57,6 +57,7 @@ let measuredCalls = 0;
 let measuredInputBytes = 0;
 let measuredOutputBytes = 0;
 let measurementSuppressionDepth = 0;
+let protocolInvocationActive = false;
 
 export type BattleKernelMeasurement = {
   calls: number;
@@ -423,6 +424,9 @@ function invokeBattleProtocol(
   input: Uint8Array,
   operation: (byteLength: number) => number,
 ): BattleProtocolOutput {
+  if (protocolInvocationActive) throw new Error('Nested or reentrant Wasm battle protocol execution is not supported');
+  protocolInvocationActive = true;
+  try {
   const arena = getBattleProtocolArenaInfo();
   if (input.byteLength > arena.capacity) {
     throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
@@ -435,6 +439,9 @@ function invokeBattleProtocol(
   const output = new Uint8Array(outputByteLength);
   output.set(new Uint8Array(kernel.memory.buffer, arena.outputPointer, outputByteLength));
   return decodeBattleProtocolOutput(output);
+  } finally {
+    protocolInvocationActive = false;
+  }
 }
 
 export function transformBattleProtocolAbilities(input: Uint8Array): BattleProtocolOutput {
