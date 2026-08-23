@@ -172,23 +172,47 @@ Semantic events are language-neutral. `target_selected` identifies every actual 
 
 ### Part 1.9A remaining limitations
 
-- Localized narration and complete JSON-level result parity are intentionally deferred to Part 1.9B. The existing reference-backed `executeBattleCandidate` remains temporary until that narration gate is complete.
+- Localized narration and complete JSON-level result parity were deferred here and are now completed by Part 1.9B below. The reference-backed candidate path has been removed.
 - Production `executeBattle`, AFK workers, Experimental API sorties, native RNG ownership, external room effects, rewards, and First Aid orchestration remain unchanged. Part 1.10, Part 2, and Part 3 remain pending.
 
 ## Forward migration roadmap
 
 The target remains one synchronous TypeScript-to-Wasm execution call per battle: TypeScript projects the input and supplies the deterministic random tape, C++ resolves the complete battle, and TypeScript reconstructs localized narration from returned semantic events. Each stage below is an independent acceptance gate. Later-stage work must not be pulled into an earlier checkpoint merely because the protocol has room for it.
 
-### Part 1.9B localized narration and complete-result parity
+### Part 1.9B localized narration and complete-result parity — complete
 
-- Connect the complete tape-driven native result to the existing record/replay differential harness without falling back to the TypeScript numerical coordinator.
-- Reconstruct the complete localized `BattleLogEntry[]` and canonical battle result from semantic events while keeping names, localization, and display formatting in TypeScript.
-- Compare outcome, HP, ordered logs, random consumption, enemy-hit totals, updated threat bags, and complete result shape for every frozen golden case plus pathological capacity and ordering cases.
-- Close semantic-event schema gaps explicitly. Increment protocol or ABI versions only for an actual incompatible wire-layout change.
+- `executeBattleCandidateFromTape` is the independent shadow/test entry point. It receives the recorded tape explicitly, projects once, invokes the END checkpoint exactly once, throws on every protocol error, and rejects the result unless both native cursor fields equal the supplied tape length. The candidate module has no runtime reference-coordinator import, does not call `Math.random`, and never accepts a reference result or log.
+- `convertBattleSemanticEvents` creates a new canonical result from native output/events plus static naming, localization, and display context. It validates terminal ordering, semantic flavor adjacency/identity, required and duplicate flavor facts, source association, zero-based flavor bounds, presentation masks, and unresolved pending reactive narration. Property omission is deliberate so JSON shape matches the reference exactly.
+- C++ remains authoritative for HP, targeting, hits, damage, recovery, bags, action order, and numeric log-presentation facts. Party Magic Seal now negates before hit resolution and therefore consumes no hit draws, while enemy Magic Seal retains its canonical target/hit traversal. No production caller was changed.
 
-Acceptance gate: the native candidate is JSON-level identical to the frozen TypeScript reference for the complete golden inventory, consumes the exact tape without an extra draw, makes exactly one measured Wasm execution call per battle, and leaves all frozen hashes unchanged.
+#### Frozen event-to-log inventory
 
-### Part 1.10 deterministic production cutover and stabilization
+| Golden case | Outcome | Cursor | Logs | Principal event-to-log coverage |
+|-|-:|-:|-:|-|
+| `normal-domain-breaker-counter` | victory | 99 | 9 | START terrain, Domain Breaker, normal attacks, Counter, damage and terminal facts |
+| `elite-counter-recounter` | victory | 113 | 6 | Counter/Re-counter association, reactive ordering and exact optional fields |
+| `oblivion-and-reanimate` | draw | 165 | 26 | Oblivion/Fading mutation, recovery/Reanimate, flavored effects and END draw |
+| `mimic-and-resonance` | victory | 65 | 6 | Mimic mutation, Resonance presentation and indexed native flavor facts |
+| `first-strike-defeat` | defeat | 44 | 4 | First Strike initiative, lethal ordering and defeat terminal precedence |
+| `saved-party-1-expedition-8-boss` | victory | 232 | 18 | Save-backed Boss actions, grouped targets, Magic Seal and threat bags |
+| `saved-party-2-expedition-7-boss` | victory | 190 | 13 | Multi-target magical narration, reactive facts and terminal truncation |
+| `saved-party-3-expedition-6-boss` | victory | 100 | 10 | Terrain/effect ordering, recovery-capable semantic stream and bags |
+| `saved-party-4-expedition-5-boss` | victory | 31 | 3 | Minimal ordered result and optional-property omission |
+| `saved-party-5-expedition-4-boss` | victory | 63 | 9 | Illusion/reactive narration and source-adjacent flavor selection |
+| `saved-party-6-expedition-3-boss` | victory | 41 | 5 | Short terminal battle, grouped damage and complete returned state |
+
+The inventory audit identified and closed ambiguous flavor ownership, missing START display snapshots after ability removal, Magic Seal attempt/source ordering, deferred Shock narration, grouped magical target headers, Illusion/Stealth negation association, recovery attribution, and native presentation-number ownership. The full differential gate compares every canonical field and exact property presence/omission, not only log digests.
+
+#### Part 1.9B semantic presentation contract
+
+- `random_flavor.aux0` is the authoritative zero-based template index. Its immediately preceding source fact must match phase, actor, ability, attack type, timing, and action identity; `aux1` repeats the source action ID. No renderer-side selection or draw is permitted.
+- `diagnostic` facts with flag `128` carry language-neutral presentation values keyed by actor, target, attack type, timing, and action ID. `aux1` is a nine-bit presence mask compacted into groups of three across `value0/value1/value2`: Rage %, Momentum %, Resonance %, Echo %, Ambush, Overwatch, Execution, actor Swarm %, and opponent Swarm %. This bounds added event volume while leaving the renderer formula-free.
+- Existing facts were populated where needed: START effects snapshot the display owner/level before later forgetting, Magic Seal terminal facts retain attempt count, and ordered attack/status/recovery/flavor facts carry unambiguous action identities.
+- Protocol v3 and ABI 8 remain correct. No record size, opcode registry, arena, export, import, or binary layout changed; the implementation reused append-only flags and existing value/auxiliary fields.
+
+Acceptance gate: complete JSON parity passes for all 11 frozen cases, both cursor fields are exact, every case makes one measured Wasm execution call, the retained capacity/transactional tests pass, and all three frozen hashes remain unchanged. Part 1.10 is ready; this is not a production cutover.
+
+### Part 1.10 deterministic production cutover and stabilization — ready
 
 - Route production `executeBattle`, AFK workers, and Experimental API sorties through the same complete one-call tape-driven native coordinator.
 - Reduce TypeScript battle code to projection, deterministic tape supply, semantic narration, and external expedition orchestration such as qualifying post-battle First Aid.

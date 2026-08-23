@@ -7,7 +7,8 @@ import { ENEMIES } from '../../src/data/enemies.ts';
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
 import { executeBattle } from '../../src/game/battle.ts';
-import { executeBattleCandidate } from '../../src/game/battleCandidate.ts';
+import { executeBattleCandidateFromTape } from '../../src/game/battleCandidate.ts';
+import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -40,13 +41,14 @@ function createSeededRandom(seed: number): () => number {
   };
 }
 
-function withRandom<T>(seed: number, operation: () => T): { result: T; draws: number } {
+function withRandom<T>(seed: number, operation: () => T): { result: T; draws: number; tape: number[] } {
   const previous = Math.random;
   const random = createSeededRandom(seed);
   let draws = 0;
-  Math.random = () => { draws += 1; return random(); };
+  const tape: number[] = [];
+  Math.random = () => { draws += 1; const value = random(); tape.push(value); return value; };
   try {
-    return { result: operation(), draws };
+    return { result: operation(), draws, tape };
   } finally {
     Math.random = previous;
   }
@@ -111,11 +113,15 @@ test('reports the protocol-v3 one-call shadow boundary', () => {
   const inputBytes: number[] = [];
   const outputBytes: number[] = [];
   for (let index = 0; index < 10; index += 1) {
-    beginBattleKernelMeasurement();
-    withRandom(0x3e710001 + index, () => executeBattleCandidate(
+    const recording = withRandom(0x3e710001 + index, () => executeTypeScriptBattle(
       structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
       fixture.party.currentHp, { terrainEffect: fixture.terrainEffect },
     ));
+    beginBattleKernelMeasurement();
+    executeBattleCandidateFromTape(
+      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
+      recording.tape, fixture.party.currentHp, { terrainEffect: fixture.terrainEffect },
+    );
     const boundary = endBattleKernelMeasurement();
     calls.push(boundary.calls);
     inputBytes.push(boundary.inputBytes);

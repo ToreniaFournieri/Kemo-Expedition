@@ -7,7 +7,7 @@ import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { executeBattle } from '../../src/game/battle.ts';
 import {
-  executeBattleCandidate,
+  executeBattleCandidateFromTape,
   executeBattleRawCandidateFromTape,
 } from '../../src/game/battleCandidate.ts';
 import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
@@ -297,15 +297,21 @@ test('record/replay detects candidate output and random-consumption drift', () =
   );
 });
 
-test('temporary protocol-v3 shadow wrapper returns the frozen TypeScript result through one measured execution call', () => {
+test('Part 1.9B independently reconstructs the complete frozen result through one measured execution call', () => {
   for (const fixture of createGoldenCases()) {
     const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
     beginBattleKernelMeasurement();
-    const candidate = replayBattleGolden(executeBattleCandidate, fixture, reference.randomTape);
+    const result = executeBattleCandidateFromTape(
+      structuredClone(fixture.party),
+      structuredClone(fixture.enemy),
+      structuredClone(fixture.bags),
+      reference.randomTape,
+      fixture.initialPartyHp,
+      fixture.environment ? structuredClone(fixture.environment) : undefined,
+    );
     const measurement = endBattleKernelMeasurement();
-    // The localized complete result is still the frozen TypeScript result. This
-    // assertion is a wrapper-contract check, not independent C++ battle parity.
-    assert.equal(canonicalBattleJson(candidate), canonicalBattleJson(reference.snapshot));
+    const candidate = { randomDrawCount: reference.randomTape.length, result };
+    assert.equal(canonicalBattleJson(candidate), canonicalBattleJson(reference.snapshot), `${fixture.id}: complete candidate mismatch`);
     assert.equal(measurement.calls, 1, `${fixture.id}: shadow candidate must use one measured Wasm call`);
     assert.ok(measurement.inputBytes > 0, `${fixture.id}: shadow candidate input was not measured`);
     assert.ok(measurement.outputBytes > 0, `${fixture.id}: shadow candidate output was not measured`);
