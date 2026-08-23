@@ -238,16 +238,31 @@ Acceptance gate: complete. Part 2 native seeded RNG ownership is ready. The Type
 
 ### Part 2 native seeded RNG ownership
 
-- Part 2A shadow parity is complete in Build 34. `BATTLE_ENGINE_FLAG_SEEDED_RNG` / `kEngineFlagSeededRng` (`1 << 6`) is append-only and uses the existing protocol-v3 seed, RNG-version, output-seed, and diagnostic fields, so protocol v3 and ABI 8 remain unchanged.
-- Seeded mode is test/shadow-only and is accepted only together with the complete `END_CHECKPOINT` coordinator. It requires RNG version 1 and an empty tape. Mixed tape/seeded input, unsupported versions, seeded use without END, other checkpoint combinations, and unknown flags fail transactionally with no events, bags, canonical result, cursor movement, or leaked state. Tape mode remains the default and ignores populated seed metadata.
+- Part 2A shadow parity completed in Build 34. Part 2B production cutover completes in Build 35. `BATTLE_ENGINE_FLAG_SEEDED_RNG` / `kEngineFlagSeededRng` (`1 << 6`) uses the existing protocol-v3 seed, RNG-version, output-seed, and diagnostic fields, so protocol v3 and ABI 8 remain unchanged.
+- Seeded mode is authoritative production execution and is accepted only together with the complete `END_CHECKPOINT` coordinator. It requires RNG version 1 and an empty tape. Mixed tape/seeded input, unsupported versions, seeded use without END, other checkpoint combinations, and unknown flags fail transactionally with no events, bags, canonical result, cursor movement, or leaked state. Tape mode remains test-only for the historical v1 lineage and differential verification.
 - Each `BattleStateCore` owns and initializes its own splitmix64-seeded xoshiro256** state. The centralized `consume_random` helper selects exactly one source per execution and increments the same logical cursor for tape and seeded draws; seeded `randomConsumed` therefore equals `diagnosticDrawCount`.
-- `executeBattleCandidateFromSeed` projects once, encodes no random tape, performs one measured Wasm execution, validates echoed unsigned-64-bit seed/version and draw equality, and reuses the existing semantic renderer. Production `executeBattle`, online progression, AFK workers, Experimental API sorties, and the gameplay tape reservoir remain unchanged.
-- Differential coverage compares decoded native facts and complete localized canonical results for all 11 frozen battles in all four locales, all existing case seeds, seed 0, seed 1, maximum unsigned 64-bit seed, and an additional high-bit seed. Repeated calls, a failed seeded call followed by replay, and independent Wasm instances prove battle-local/module-local reset and isolation. The frozen reference and v1 golden fixtures remain byte-identical.
-- Production seeded-RNG cutover, v2 seeded golden-contract creation, Diary/API replay-schema changes, tape removal, and Part 3 boundary/checkpoint cleanup remain pending a separate authorization.
+- `executeBattle` acquires exactly one seed from one Web Crypto `getRandomValues` call over two `Uint32` words (`values[0]` low, `values[1]` high), projects once, encodes no random tape, performs one Wasm execution, validates echoed unsigned-64-bit seed/version and draw equality, completes semantic narration, and only then updates telemetry and exposes replay metadata. Seed 0 and maximum u64 are valid; negative, oversized, non-bigint, unsupported-version, and Web Crypto failures reject without wrapping, tape fallback, telemetry, or caller mutation.
+- Online expeditions, Gods Battles, simulations, AFK module workers, and Experimental API sortie counts 1 through 100 all route through this adapter. Each worker realm owns its module instance and battle-local RNG state. `gameplayRandom` remains authoritative only for non-battle expedition randomness.
+- Completed battle-bearing expedition entries retain `{ protocolVersion, abiVersion, rngVersion, seedHex, randomDrawCount }`; `seedHex` is exactly 16 lowercase hexadecimal characters and the draw count is native output. Save/hydration, latest logs, Diary logs, and retained API battle-log serialization preserve this optional field. Legacy entries load without it, and observations never expose future seeds.
+- The guarded `npm run battle:golden:v2` command performs frozen-reference tape, native tape, and native seeded equality before writing. Ordinary tests never write fixtures and permanently rerun the 11-case × 4-locale triple gate against `battleGolden.v2.json`. Native tape and seeded results also compare exact optional-property presence.
+- Frozen v1 identities remain: reference `de13ff1bec298ac9f076229497d9716ea789358856bd7391ceb81fea5b9ba322`, golden `e71f11bf791f52315ea20febabfc31cf881e7a72a4154ee95fa5806aa6df8bf0`, contract `a784c5b763dbbd62b1fef9529d21bcf76c0afe83bebf26556b595f7c5e8b7867`. V2 identities are golden `4eef9a97be3549c787f0fae57b0a0c39535b2ebe80dae5e3fde6592b38e25ba3` and contract `0ee1498eb246c80723e0a6496488fd6180a8e501d77f839e1e4002e0f34e5d28`.
 
-Acceptance gate: identical input and seed reproduce identical complete results across browser, Electron, workers, and API sorties; different seeds exercise valid paths; all random indices/doubles remain in bounds; and recorded seed metadata replays exactly.
+#### Part 2B seeded production performance
+
+| Path | Workload | Wasm calls | Duration | Input / output | Max draws / events | Tape length |
+|-|-:|-:|-:|-:|-:|-:|
+| Online Boss | 40 measured battles | 40 | median 37.24 ms; p95 41.13 ms | median 2,920 / 7,168 bytes | 262 / 131 | 0 |
+| AFK workers | 6 parties / 1,724 battles | 1,724 | 28.44 s total CPU; 9.66 s projected parallel | 5,000,456 / 4,461,312 bytes total | 276 / 131 | 0 |
+| API count 1 | 24 battles | 24 | 311.25 ms | 70,016 / 52,288 bytes total | 144 / 81 | 0 |
+| API count 100 | 2,400 battles | 2,400 | 50.76 s | 7,001,248 / 5,627,712 bytes total | 155 / 131 | 0 |
+
+The seeded online input is 2,920 bytes versus 35,688 bytes for the retained 4,096-value tape diagnostic path. No seeded profile fell back to tape mode.
+
+Acceptance gate: complete. Part 2 is complete and Part 3 is ready.
 
 ### Part 3 single-crossing optimization and cleanup
+
+Status: ready; not started by Part 2B.
 
 - Encode directly into reusable Wasm input memory where safe, cache arena pointers/capacities, decode the contiguous semantic output before the next invocation, and reuse typed-array views without introducing reentrancy.
 - Preserve one Wasm invocation per encounter rather than batching an entire multi-cycle sortie into one oversized call. Serialize battles per JavaScript realm and let each AFK worker own its Wasm instance.

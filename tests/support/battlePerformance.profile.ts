@@ -16,6 +16,7 @@ import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import { simulateAfkPartyChunkForWorker, simulateApiSortieBatchForTesting } from '../../src/hooks/useGameState.ts';
 import { setLanguage } from '../../src/i18n/index.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
+import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import type { GameState } from '../../src/types.ts';
 
 const SAMPLE_SAVE_PATH = resolve(process.cwd(), 'sample_savedata/Exp8,7,6,5,4,3_set_for_test_v0.9.3_dev_20260820.kemoz');
@@ -74,10 +75,10 @@ test('reports deterministic single-battle migration metrics', () => {
   const fixture = createBattleFixture(state);
   const run = (iteration: number) => {
     const before = getProductionBattleTelemetry().randomConsumed;
-    const measured = withRandom(0x8e710001 + iteration, () => executeBattle(
+    const measured = withBattleSeedSourceForTesting(() => BigInt(0x8e710001 + iteration), () => withRandom(0x8e710001 + iteration, () => executeBattle(
       structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
       fixture.party.currentHp, { terrainEffect: fixture.terrainEffect },
-    ));
+    )));
     return { ...measured, logicalDraws: getProductionBattleTelemetry().randomConsumed - before };
   };
   for (let index = 0; index < WARMUP_COUNT; index += 1) run(index);
@@ -108,6 +109,7 @@ test('reports deterministic single-battle migration metrics', () => {
     medianOutputBytes: percentile(outputBytes, 0.5),
     maxRandomConsumed: getProductionBattleTelemetry().maxRandomConsumed,
     maxSemanticEvents: getProductionBattleTelemetry().maxSemanticEvents,
+    seededInputRandomCount: 0,
   };
   console.info('BATTLE_MIGRATION_BASELINE', JSON.stringify(report));
   assert.ok(report.medianBattleMs > 0);
@@ -160,13 +162,14 @@ test('reports deterministic AFK migration metrics', () => {
   for (const [partyIndex, party] of state.parties.entries()) {
     beginBattleKernelMeasurement();
     const started = performance.now();
-    withRandom(0xaf000000 + partyIndex, () => simulateAfkPartyChunkForWorker(state, {
+    let seedCursor = 0n;
+    withBattleSeedSourceForTesting(() => (BigInt(0xaf000000 + partyIndex) << 32n) | seedCursor++, () => withRandom(0xaf000000 + partyIndex, () => simulateAfkPartyChunkForWorker(state, {
       partyIndex,
       cycleDurationMs: getApproxAfkCycleDurationMs(party, AFK_CYCLE_DURATION_SCALE),
       simulatedCompletedAt: Date.UTC(2026, 7, 20),
       cycleDurationScale: AFK_CYCLE_DURATION_SCALE,
       gameMode: 'm.kemo',
-    }));
+    })));
     durations.push(performance.now() - started);
     const boundary = endBattleKernelMeasurement();
     calls += boundary.calls;
@@ -181,6 +184,7 @@ test('reports deterministic AFK migration metrics', () => {
     wasmBoundaryCalls: calls, inputBytes, outputBytes,
     maxRandomConsumed: getProductionBattleTelemetry().maxRandomConsumed,
     maxSemanticEvents: getProductionBattleTelemetry().maxSemanticEvents,
+    seededInputRandomCount: 0,
   };
   console.info('BATTLE_MIGRATION_AFK_BASELINE', JSON.stringify(report));
   assert.equal(report.parties, 6);
@@ -198,8 +202,11 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     const chargeBefore = [initialParty.instantExpeditionStock, initialParty.instantExpeditionChargeStartedAt];
     beginBattleKernelMeasurement();
     const started = performance.now();
-    const batch = withGameplayRandomSourceForTesting(createSeededRandom(0xa9100000 + count), () => (
-      simulateApiSortieBatchForTesting(state, partyIndex, count, 'm.kemo', Date.UTC(2026, 7, 23))
+    let seedCursor = 0n;
+    const batch = withBattleSeedSourceForTesting(() => (BigInt(0xa9100000 + count) << 32n) | seedCursor++, () => (
+      withGameplayRandomSourceForTesting(createSeededRandom(0xa9100000 + count), () => (
+        simulateApiSortieBatchForTesting(state, partyIndex, count, 'm.kemo', Date.UTC(2026, 7, 23))
+      ))
     ));
     const durationMs = performance.now() - started;
     const boundary = endBattleKernelMeasurement();
@@ -211,7 +218,7 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     const finalParty = batch.state.parties[partyIndex]!;
     assert.deepEqual([finalParty.instantExpeditionStock, finalParty.instantExpeditionChargeStartedAt], chargeBefore);
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
-    reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents });
+    reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
   }
   console.info('BATTLE_MIGRATION_API_BASELINE', JSON.stringify(reports));
 });

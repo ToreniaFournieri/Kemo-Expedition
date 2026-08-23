@@ -703,6 +703,14 @@ export interface ExpeditionLogEntry {
   attritionAmount?: number;
   gateInfo?: string;
   details: BattleLogEntry[];
+  /** Completed-battle replay data. Absent on legacy and non-battle entries. */
+  replayMetadata?: {
+    protocolVersion: number;
+    abiVersion: number;
+    rngVersion: number;
+    seedHex: string;
+    randomDrawCount: number;
+  };
 }
 
 export interface ExpeditionLog {

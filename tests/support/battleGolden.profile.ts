@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
@@ -15,7 +15,11 @@ import {
 } from '../../src/game/battleCandidate.ts';
 import { executeBattle as executeTypeScriptBattle } from '../../src/game/battleTypeScriptReference.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement, getBattleRngDoubleSequence, getBattleRngVersion } from '../../src/game/battleKernel.ts';
+import { getBattleKernelAbiVersion } from '../../src/game/battleKernel.ts';
+import { createBattleReplayMetadata } from '../../src/game/battleReplay.ts';
+import { BATTLE_PROTOCOL_VERSION } from '../../src/game/generated/battleProtocol.generated.ts';
 import { gameplayRandom, withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
+import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -39,6 +43,11 @@ const MULTI_EXPEDITION_SAVE_PATH = resolve(
 );
 const GOLDEN_PATH = resolve(ROOT, 'tests/fixtures/battleGolden.v1.json');
 const REFERENCE_CONTRACT_PATH = resolve(ROOT, 'tests/fixtures/battleReferenceContract.v1.json');
+const GOLDEN_V2_PATH = resolve(ROOT, 'tests/fixtures/battleGolden.v2.json');
+const REFERENCE_CONTRACT_V2_PATH = resolve(ROOT, 'tests/fixtures/battleReferenceContract.v2.json');
+const V2_CASE_SEEDS: Readonly<Record<string, bigint>> = {
+  'saved-party-3-expedition-6-boss': 0x8e710004n,
+};
 
 type BattleReferenceContract = {
   contractVersion: number;
@@ -135,7 +144,7 @@ function savedPartyBossCase(state: GameState, partyIndex: number, seed: number):
   );
 }
 
-function createGoldenCases(): BattleGoldenCase[] {
+export function createGoldenCases(): BattleGoldenCase[] {
   setLanguage('ja');
   const state = loadSampleState(SAMPLE_SAVE_PATH);
   const multiExpeditionState = loadSampleState(MULTI_EXPEDITION_SAVE_PATH);
@@ -189,6 +198,132 @@ function sha256(path: string): string {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
+function executeFrozenReferenceFromTape(fixture: BattleGoldenCase, tape: readonly number[]) {
+  let cursor = 0;
+  const source = () => {
+    if (cursor >= tape.length) throw new Error(`${fixture.id}: frozen reference exceeded seeded tape`);
+    return tape[cursor++]!;
+  };
+  const previousRandom = Math.random;
+  Math.random = source;
+  try {
+    const result = withGameplayRandomSourceForTesting(source, () => executeTypeScriptBattle(
+      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+      fixture.initialPartyHp, fixture.environment ? structuredClone(fixture.environment) : undefined,
+    ));
+    assert.equal(cursor, tape.length, `${fixture.id}: frozen reference did not consume the complete seeded tape`);
+    return result;
+  } finally {
+    Math.random = previousRandom;
+  }
+}
+
+test('guarded v2 seeded contract generation performs triple differential parity', () => {
+  if (process.env.BATTLE_GOLDEN_V2_CAPTURE !== 'native-seeded-v2-reviewed') return;
+  const locales = ['ja', 'en', 'zh-CN', 'zh-TW'] as const;
+  const fixtureDocument: Record<string, Record<string, BattleGoldenDigest & { replayMetadata: ReturnType<typeof createBattleReplayMetadata> }>> = {};
+  const seeds: Record<string, string> = {};
+  for (const language of locales) {
+    setLanguage(language);
+    fixtureDocument[language] = {};
+    for (const fixture of createGoldenCases()) {
+      setLanguage(language);
+      const seed = V2_CASE_SEEDS[fixture.id] ?? BigInt(fixture.seed >>> 0);
+      const seeded = executeBattleCandidateFromSeed(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+      );
+      const tape = getBattleRngDoubleSequence(seed, seeded.randomConsumed);
+      const reference = executeFrozenReferenceFromTape(fixture, tape);
+      const taped = executeBattleCandidateFromWindow(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        tape, fixture.initialPartyHp, fixture.environment,
+      );
+      assert.equal(canonicalBattleJson({ randomDrawCount: tape.length, result: taped.result }), canonicalBattleJson({ randomDrawCount: tape.length, result: reference }), `${fixture.id}:${language}: frozen/native-tape canonical mismatch`);
+      assert.equal(canonicalBattleJson({ randomDrawCount: tape.length, result: seeded.result }), canonicalBattleJson({ randomDrawCount: tape.length, result: reference }), `${fixture.id}:${language}: frozen/native-seeded canonical mismatch`);
+      assert.deepEqual(seeded.result, taped.result, `${fixture.id}:${language}: native optional-property presence mismatch`);
+      assert.equal(taped.randomConsumed, tape.length);
+      assert.equal(seeded.randomConsumed, tape.length);
+      assert.equal(seeded.diagnosticDrawCount, tape.length);
+      const replayMetadata = createBattleReplayMetadata(seed, seeded.rngVersion, seeded.randomConsumed);
+      seeds[fixture.id] = replayMetadata.seedHex;
+      const snapshot = { randomDrawCount: seeded.randomConsumed, result: { ...seeded.result, replayMetadata } };
+      fixtureDocument[language]![fixture.id] = { ...digestBattleGolden(snapshot), replayMetadata };
+    }
+  }
+  setLanguage('ja');
+  writeFileSync(GOLDEN_V2_PATH, `${JSON.stringify(fixtureDocument, null, 2)}\n`);
+  const contract = {
+    contractVersion: 2,
+    randomnessMode: 'native-seeded-xoshiro256starstar',
+    migrationReason: 'intentional native RNG ownership cutover',
+    rngVersion: getBattleRngVersion(),
+    seedEncoding: '16 lowercase hexadecimal characters encoding unsigned u64; values[0] low, values[1] high',
+    protocolVersion: BATTLE_PROTOCOL_VERSION,
+    abiVersion: getBattleKernelAbiVersion(),
+    locales,
+    caseIds: createGoldenCases().map((fixture) => fixture.id),
+    seeds,
+    canonicalResultFields: [...referenceContract.canonicalResultFields, 'replayMetadata'],
+    referenceRunner: referenceContract.referenceRunner,
+    referenceSha256: sha256(resolve(ROOT, referenceContract.referenceRunner)),
+    predecessorContract: 'tests/fixtures/battleReferenceContract.v1.json',
+    predecessorContractSha256: sha256(REFERENCE_CONTRACT_PATH),
+    predecessorGoldenFixture: referenceContract.goldenFixture,
+    predecessorGoldenSha256: sha256(GOLDEN_PATH),
+    goldenFixture: 'tests/fixtures/battleGolden.v2.json',
+    goldenSha256: sha256(GOLDEN_V2_PATH),
+  };
+  writeFileSync(REFERENCE_CONTRACT_V2_PATH, `${JSON.stringify(contract, null, 2)}\n`);
+  console.info('BATTLE_GOLDEN_V2_CAPTURE', JSON.stringify({ goldenSha256: contract.goldenSha256, contractSha256: sha256(REFERENCE_CONTRACT_V2_PATH) }));
+});
+
+test('v2 seeded fixture and contract remain pinned when present', () => {
+  if (!existsSync(GOLDEN_V2_PATH) || !existsSync(REFERENCE_CONTRACT_V2_PATH)) return;
+  const contract = JSON.parse(readFileSync(REFERENCE_CONTRACT_V2_PATH, 'utf8')) as { contractVersion: number; goldenFixture: string; goldenSha256: string; referenceSha256: string; predecessorGoldenSha256: string };
+  assert.equal(contract.contractVersion, 2);
+  assert.equal(sha256(resolve(ROOT, contract.goldenFixture)), contract.goldenSha256);
+  assert.equal(contract.referenceSha256, referenceContract.referenceSha256);
+  assert.equal(contract.predecessorGoldenSha256, referenceContract.goldenSha256);
+});
+
+test('v2 authoritative fixture retains all-locale triple differential parity', () => {
+  const contract = JSON.parse(readFileSync(REFERENCE_CONTRACT_V2_PATH, 'utf8')) as {
+    locales: Array<'ja' | 'en' | 'zh-CN' | 'zh-TW'>;
+    seeds: Record<string, string>;
+  };
+  const expectedV2 = JSON.parse(readFileSync(GOLDEN_V2_PATH, 'utf8')) as Record<string, Record<string, BattleGoldenDigest & { replayMetadata: ReturnType<typeof createBattleReplayMetadata> }>>;
+  for (const language of contract.locales) {
+    for (const fixture of createGoldenCases()) {
+      setLanguage(language);
+      const seedHex = contract.seeds[fixture.id];
+      assert.match(seedHex ?? '', /^[0-9a-f]{16}$/);
+      const seed = BigInt(`0x${seedHex}`);
+      const seeded = executeBattleCandidateFromSeed(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+      );
+      const tape = getBattleRngDoubleSequence(seed, seeded.randomConsumed);
+      const reference = executeFrozenReferenceFromTape(fixture, tape);
+      const taped = executeBattleCandidateFromWindow(
+        structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+        tape, fixture.initialPartyHp, fixture.environment,
+      );
+      const referenceJson = canonicalBattleJson({ randomDrawCount: tape.length, result: reference });
+      assert.equal(canonicalBattleJson({ randomDrawCount: tape.length, result: taped.result }), referenceJson);
+      assert.equal(canonicalBattleJson({ randomDrawCount: tape.length, result: seeded.result }), referenceJson);
+      assert.deepEqual(seeded.result, taped.result);
+      const replayMetadata = createBattleReplayMetadata(seed, seeded.rngVersion, seeded.randomConsumed);
+      assert.deepEqual(
+        { ...digestBattleGolden({ randomDrawCount: seeded.randomConsumed, result: { ...seeded.result, replayMetadata } }), replayMetadata },
+        expectedV2[language]![fixture.id],
+        `${fixture.id}:${language}: v2 authoritative digest drift`,
+      );
+    }
+  }
+  setLanguage('ja');
+});
+
 test('battle reference source and golden fixture match the frozen contract', () => {
   assert.equal(referenceContract.contractVersion, 1);
   assert.equal(referenceContract.randomnessMode, 'typescript-ordered-tape');
@@ -209,7 +344,7 @@ test('battle golden fixtures lock complete results and random consumption', () =
   const fixtures = createGoldenCases();
   assert.deepEqual(fixtures.map((fixture) => fixture.id), referenceContract.goldenCaseIds);
   const recordings = fixtures.map((fixture) => {
-    const recording = recordBattleGolden(executeBattle, fixture);
+    const recording = recordBattleGolden(executeTypeScriptBattle, fixture);
     const result = recording.snapshot.result as Record<string, unknown>;
     assert.deepEqual(Object.keys(result), referenceContract.canonicalResultFields, `${fixture.id}: result shape drifted`);
     return [fixture.id, digestBattleGolden(recording.snapshot)] as const;
@@ -231,16 +366,21 @@ test('battle golden fixtures lock complete results and random consumption', () =
 test('record/replay detects candidate output and random-consumption drift', () => {
   const fixtures = createGoldenCases();
   for (const fixture of fixtures) {
-    assertBattleRunnerParity(executeTypeScriptBattle, executeBattle, fixture);
+    const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
+    const candidate = executeBattleCandidateFromTape(
+      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+      reference.randomTape, fixture.initialPartyHp, fixture.environment,
+    );
+    assert.equal(canonicalBattleJson({ randomDrawCount: reference.randomTape.length, result: candidate }), canonicalBattleJson(reference.snapshot));
   }
 
   const fixture = fixtures[0]!;
   assert.throws(
     () => assertBattleRunnerParity(
-      executeBattle,
+      executeTypeScriptBattle,
       (...args) => {
         Math.random();
-        return executeBattle(...args);
+        return executeTypeScriptBattle(...args);
       },
       fixture,
     ),
@@ -248,9 +388,9 @@ test('record/replay detects candidate output and random-consumption drift', () =
   );
   assert.throws(
     () => assertBattleRunnerParity(
-      executeBattle,
+      executeTypeScriptBattle,
       (...args) => {
-        const result = executeBattle(...args);
+        const result = executeTypeScriptBattle(...args);
         return { ...result, partyHp: result.partyHp + 1 };
       },
       fixture,
@@ -280,27 +420,32 @@ test('Part 1.9B independently reconstructs the complete frozen result through on
   }
 });
 
-test('production entry point preserves parity, input immutability, the unused suffix, and one Wasm call', () => {
+test('production entry point uses one native seeded Wasm call and preserves input immutability', () => {
+  const productionSource = readFileSync(resolve(ROOT, 'src/game/battle.ts'), 'utf8');
+  assert.equal(productionSource.includes('reserveGameplayRandomTape'), false);
+  assert.equal(productionSource.includes('executeBattleCandidateFromWindow'), false);
   for (const fixture of createGoldenCases()) {
-    const reference = recordBattleGolden(executeTypeScriptBattle, fixture);
     const party = structuredClone(fixture.party);
     const enemy = structuredClone(fixture.enemy);
     const bags = structuredClone(fixture.bags);
     const beforeInputs = structuredClone({ party, enemy, bags });
-    const source = createSeededRandom(fixture.seed);
-    const expectedSource = createSeededRandom(fixture.seed);
-    for (let index = 0; index < reference.randomTape.length; index += 1) expectedSource();
-    const expectedNext = expectedSource();
+    const seed = BigInt(fixture.seed >>> 0);
+    const expected = executeBattleCandidateFromSeed(
+      structuredClone(party), structuredClone(enemy), structuredClone(bags), seed,
+      getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+    );
     const beforeDraws = getProductionBattleTelemetry().randomConsumed;
     beginBattleKernelMeasurement();
-    const { result, next } = withGameplayRandomSourceForTesting(source, () => ({
-      result: executeBattle(party, enemy, bags, fixture.initialPartyHp, fixture.environment),
-      next: gameplayRandom(),
-    }));
+    let acquisitions = 0;
+    const result = withBattleSeedSourceForTesting(() => { acquisitions += 1; return seed; }, () => (
+      executeBattle(party, enemy, bags, fixture.initialPartyHp, fixture.environment)
+    ));
     const measurement = endBattleKernelMeasurement();
-    assert.equal(canonicalBattleJson({ randomDrawCount: reference.randomTape.length, result }), canonicalBattleJson(reference.snapshot), `${fixture.id}: production mismatch`);
-    assert.equal(getProductionBattleTelemetry().randomConsumed - beforeDraws, reference.randomTape.length);
-    assert.equal(next, expectedNext, `${fixture.id}: unused reservoir suffix was not preserved`);
+    assert.deepEqual({ ...result, replayMetadata: undefined }, { ...expected.result, replayMetadata: undefined }, `${fixture.id}: production mismatch`);
+    assert.equal(result.replayMetadata.seedHex, seed.toString(16).padStart(16, '0'));
+    assert.equal(result.replayMetadata.randomDrawCount, expected.randomConsumed);
+    assert.equal(getProductionBattleTelemetry().randomConsumed - beforeDraws, expected.randomConsumed);
+    assert.equal(acquisitions, 1);
     assert.equal(measurement.calls, 1, `${fixture.id}: production must use one Wasm call`);
     assert.deepEqual({ party, enemy, bags }, beforeInputs, `${fixture.id}: production mutated its inputs`);
   }

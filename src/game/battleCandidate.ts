@@ -36,6 +36,7 @@ import {
   type BattleProtocolInput,
   type BattleProtocolOutput,
 } from './battleProtocol.ts';
+import { requireBattleRngVersion, requireBattleSeed } from './battleReplay.ts';
 
 type BattleEnvironment = { terrainEffect?: TerrainEffectKey | null };
 
@@ -527,7 +528,8 @@ export function executeBattleCandidateFromSeed(
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
 ): SeededBattleCandidateResult {
-  const normalizedSeed = BigInt.asUintN(64, seed);
+  const normalizedSeed = requireBattleSeed(seed);
+  requireBattleRngVersion(rngVersion);
   const input = projectBattleProtocolInput(
     party, enemy, bags, [], initialPartyHp, environment,
     BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,

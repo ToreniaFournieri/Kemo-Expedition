@@ -22,6 +22,7 @@ import {
   BATTLE_TERRAIN_IDS,
   BATTLE_TERRAIN_NAMES,
 } from './generated/battleProtocol.generated.ts';
+import { requireBattleSeed } from './battleReplay.ts';
 
 export type BattleProtocolAbility = {
   id: AbilityId;
@@ -198,7 +199,7 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
   view.setFloat64(BATTLE_INPUT_OFFSETS.enemyHp, requireFinite(input.enemyHp, 'enemy HP'), littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.partyMaxHp, requireFinite(input.partyMaxHp ?? input.partyHp, 'party max HP'), littleEndian);
   view.setFloat64(BATTLE_INPUT_OFFSETS.enemyMaxHp, requireFinite(input.enemyMaxHp ?? input.enemyHp, 'enemy max HP'), littleEndian);
-  const seed = BigInt.asUintN(64, input.seed ?? 0n);
+  const seed = requireBattleSeed(input.seed ?? 0n);
   view.setUint32(BATTLE_INPUT_OFFSETS.seedLow, Number(seed & 0xffff_ffffn), littleEndian);
   view.setUint32(BATTLE_INPUT_OFFSETS.seedHigh, Number(seed >> 32n), littleEndian);
   view.setUint16(BATTLE_INPUT_OFFSETS.deityId, requireInteger(input.deityId ?? 0, 0, 0xffff, 'deity ID'), littleEndian);

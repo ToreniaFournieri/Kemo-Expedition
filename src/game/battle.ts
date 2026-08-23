@@ -1,15 +1,14 @@
 import type { ComputedPartyStats, EnemyDef, GameBags, Party, TerrainEffectKey } from '../types/index.ts';
 import {
-  executeBattleCandidateFromWindow,
+  executeBattleCandidateFromSeed,
   type BattleCandidateResult,
 } from './battleCandidate.ts';
-import {
-  BATTLE_RANDOM_TAPE_CAPACITY,
-  reserveGameplayRandomTape,
-} from './gameplayRandom.ts';
+import { getBattleRngVersion } from './battleKernel.ts';
+import { createBattleReplayMetadata, requireBattleRngVersion, requireBattleSeed, type BattleReplayMetadata } from './battleReplay.ts';
+import { acquireBattleSeed } from './battleSeedSource.ts';
 
 export type BattleEnvironment = { terrainEffect?: TerrainEffectKey | null };
-export type BattleResult = BattleCandidateResult;
+export type BattleResult = BattleCandidateResult & { replayMetadata: BattleReplayMetadata };
 
 export type ProductionBattleTelemetry = {
   battles: number;
@@ -33,31 +32,34 @@ export function executeBattle(
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
 ): BattleResult {
-  const reservation = reserveGameplayRandomTape(BATTLE_RANDOM_TAPE_CAPACITY);
-  let committed = false;
-  try {
-    const execution = executeBattleCandidateFromWindow(
-      party,
-      enemy,
-      bags,
-      reservation.tape,
-      initialPartyHp,
-      environment,
-    );
-    // Rendering and validation completed. This is the sole commit point; every
-    // earlier failure retains the entire attempted prefix.
-    reservation.commit(execution.randomConsumed);
-    committed = true;
-    telemetry = {
-      battles: telemetry.battles + 1,
-      randomConsumed: telemetry.randomConsumed + execution.randomConsumed,
-      maxRandomConsumed: Math.max(telemetry.maxRandomConsumed, execution.randomConsumed),
-      maxSemanticEvents: Math.max(telemetry.maxSemanticEvents, execution.eventCount),
-    };
-    return execution.result;
-  } finally {
-    if (!committed) reservation.rollback();
-  }
+  return executeBattleWithSeed(party, enemy, bags, acquireBattleSeed(), getBattleRngVersion(), initialPartyHp, environment);
+}
+
+/** Explicit deterministic replay. The supplied seed is never normalized or wrapped. */
+export function executeBattleWithSeed(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: unknown,
+  rngVersion: unknown = getBattleRngVersion(),
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): BattleResult {
+  const validatedSeed = requireBattleSeed(seed);
+  const validatedRngVersion = requireBattleRngVersion(rngVersion);
+  const execution = executeBattleCandidateFromSeed(
+    party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment,
+  );
+  const replayMetadata = createBattleReplayMetadata(
+    execution.seed, execution.rngVersion, execution.randomConsumed,
+  );
+  telemetry = {
+    battles: telemetry.battles + 1,
+    randomConsumed: telemetry.randomConsumed + execution.randomConsumed,
+    maxRandomConsumed: Math.max(telemetry.maxRandomConsumed, execution.randomConsumed),
+    maxSemanticEvents: Math.max(telemetry.maxSemanticEvents, execution.eventCount),
+  };
+  return { ...execution.result, replayMetadata };
 }
 
 export function getProductionBattleTelemetry(): Readonly<ProductionBattleTelemetry> {

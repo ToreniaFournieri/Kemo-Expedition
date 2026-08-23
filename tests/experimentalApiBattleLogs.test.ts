@@ -28,6 +28,7 @@ const expeditionLog: ExpeditionLog = {
     remainingPartyHP: 0,
     maxPartyHP: 100,
     rewardItems: [],
+    replayMetadata: { protocolVersion: 3, abiVersion: 8, rngVersion: 1, seedHex: '0123456789abcdef', randomDrawCount: 127 },
     details: [{
       phase: 'combat',
       actor: 'character',
@@ -76,6 +77,7 @@ test('retained battle-log serializer exposes safe recorded events without intern
   assert.equal(response.battleLog.rooms[0].events[0].attempts, 3);
   assert.deepEqual(response.battleLog.rooms[0].events[0].modifiers, { firstStrike: true });
   assert.equal(response.battleLog.autoSell.gold, 10);
+  assert.equal(response.battleLog.rooms[0].replayMetadata?.seedHex, '0123456789abcdef');
 
   const serialized = JSON.stringify(response);
   assert.equal(serialized.includes('enemySnapshot'), false);

@@ -2011,8 +2011,16 @@ CombatResult emit_counter_nullification(BattleStateCore& state, CombatantState& 
 
 ReactiveStrikeResult roll_reactive_strike(const InputHeader& input, BattleStateCore& state,
                                           CombatantState& actor, CombatantState& target,
-                                          u32 profile_index, double multiplier, u32 attempt_offset = 0) {
+                                          u32 profile_index, double multiplier, u32 attempt_offset = 0,
+                                          bool register_echo = false) {
   ReactiveStrikeResult result{};
+  // The frozen coordinator registers selected counter-family elemental
+  // actions in this shared path before calculating Echo Domain.
+  if (register_echo && input.terrain_id == static_cast<u16>(protocol::TerrainId::EchoDomain) &&
+      actor.profile.elemental_offense != 0 &&
+      active_ability_level(actor, protocol::AbilityId::DomainBreaker) == 0) {
+    ++state.echo_elemental_use[actor.profile.elemental_offense];
+  }
   const double raw = __builtin_ceil(action_noa(actor, profile_index) * multiplier *
       terrain_noa_multiplier(input, actor, profile_index));
   if (raw <= 0.0 || raw > 0xffff'ffffull) return result;
@@ -2295,7 +2303,7 @@ CombatResult resolve_counter_checkpoint(const InputHeader& input, BattleStateCor
         profile_index + 1, timing, static_cast<u32>(protocol::ActionId::Counter));
   }
   auto counter = roll_reactive_strike(input, state, target, attacker, profile_index,
-      reactive_profile_multiplier(counter_level, 2));
+      reactive_profile_multiplier(counter_level, 2), 0, true);
   auto status = emit_reactive_strike(input, state, target, attacker, profile_index + 1, timing,
       static_cast<u32>(protocol::ActionId::Counter), protocol::AbilityId::Counter, counter);
   if (status != CombatResult::Ok || (attacker.side == Side::Party ? state.party_hp : state.enemy_hp) <= 0.0) return status;

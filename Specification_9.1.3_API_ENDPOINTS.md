@@ -1193,6 +1193,13 @@ Both battle-log endpoints use this top-level response shape:
         "startingPartyHp": 1400,
         "remainingPartyHp": 0,
         "maximumPartyHp": 4200,
+        "replayMetadata": {
+          "protocolVersion": 3,
+          "abiVersion": 8,
+          "rngVersion": 1,
+          "seedHex": "0123456789abcdef",
+          "randomDrawCount": 127
+        },
         "events": [
           {
             "index": 1,
@@ -1267,6 +1274,7 @@ Each `battleLog.rooms` entry contains:
 | `maximumPartyHp` | integer | Yes | Maximum party HP recorded for the room. |
 | `healAmount` | integer or `null` | Yes | Room healing, or `null` when none was recorded. |
 | `attritionAmount` | integer or `null` | Yes | Room attrition damage, or `null` when none was recorded. |
+| `replayMetadata` | object | No | Completed-battle replay metadata containing `protocolVersion`, `abiVersion`, `rngVersion`, 16-character lowercase `seedHex`, and native `randomDrawCount`. Absent for legacy and non-battle entries. It never describes a future or unresolved battle. |
 | `events` | array | Yes | Detailed battle events in original execution order. |
 
 The API MUST NOT expose a retained internal enemy snapshot, reward-roll inputs, or internal renderer references. Room reward items are represented only through the expedition-level `rewards` array.

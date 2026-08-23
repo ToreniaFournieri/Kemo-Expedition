@@ -3313,6 +3313,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               remainingPartyHP: battleResult.partyHp,
               maxPartyHP: partyStats.hp,
               details: battleResult.log,
+              replayMetadata: battleResult.replayMetadata,
             };
 
             const currentEnemyStats = nextEnemyBattleStats[enemy.id] ?? { defeats: 0, encounters: 0 };

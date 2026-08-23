@@ -98,6 +98,7 @@ export function buildExperimentalBattleLog(
         maximumPartyHp: entry.maxPartyHP,
         healAmount: entry.healAmount ?? null,
         attritionAmount: entry.attritionAmount ?? null,
+        ...(entry.replayMetadata ? { replayMetadata: { ...entry.replayMetadata } } : {}),
         events: entry.details.map(serializeRetainedBattleEvent),
       })),
     },
