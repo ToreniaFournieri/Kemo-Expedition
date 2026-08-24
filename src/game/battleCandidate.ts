@@ -20,7 +20,7 @@ import { computePartyStats } from './partyComputation.ts';
 import type { ComputedPartyStatus } from './partyComputation.ts';
 import { getDeityKey } from './deity.ts';
 import { getBaseMultiplier } from './baseMultiplier.ts';
-import { executeBattleProtocol, executeBattleProtocolInput } from './battleKernel.ts';
+import { consumeBattleProtocolInput, executeBattleProtocol, executeBattleProtocolInput } from './battleKernel.ts';
 import { getTerrainEffectGlossaryEntry } from '../data/glossary.ts';
 import { t } from '../i18n/index.ts';
 import { resolveMagicProfile } from './magic.ts';
@@ -32,6 +32,7 @@ import {
 } from './battleNarration.ts';
 import {
   encodeBattleProtocolInput,
+  recordBattleResultBagEntryObjectAllocations,
   type BattleProtocolCombatant,
   type BattleProtocolEvent,
   type BattleProtocolInput,
@@ -316,30 +317,123 @@ function flavorFamily(abilityId: AbilityId): BattleFlavorFamily | null {
   return FLAVOR_ABILITIES.has(abilityId) && abilityId !== 'rage' ? family : null;
 }
 
+type IndexedBattleProtocolOutput = Pick<BattleProtocolOutput,
+  'flags' | 'outcome' | 'partyHp' | 'enemyHp' | 'randomConsumed' | 'enemyHitsReceived'
+  | 'byteLength' | 'seed' | 'rngVersion' | 'diagnosticDrawCount' | 'protocolError'> & {
+  eventCount: number;
+  physicalThreatBagCount: number;
+  magicalThreatBagCount: number;
+  eventOpcode(index: number): BattleProtocolEvent['opcode'];
+  eventPhase(index: number): number;
+  eventActorKind(index: number): number;
+  eventActorId(index: number): number;
+  eventTargetId(index: number): number;
+  eventAbilityId(index: number): AbilityId | null;
+  eventAttackType(index: number): AttackType | null;
+  eventFlags(index: number): number;
+  eventTiming(index: number): number;
+  eventHits(index: number): number;
+  eventAttempts(index: number): number;
+  eventAux0(index: number): number;
+  eventValue0(index: number): number;
+  eventValue1(index: number): number;
+  eventValue2(index: number): number;
+  eventAux1(index: number): number;
+  eventAux2(index: number): number;
+  physicalThreatBagId(index: number): number;
+  physicalThreatBagTickets(index: number): number;
+  magicalThreatBagId(index: number): number;
+  magicalThreatBagTickets(index: number): number;
+};
+
+class OwnedBattleProtocolOutputIndex implements IndexedBattleProtocolOutput {
+  constructor(private readonly output: BattleProtocolOutput) {}
+  get flags() { return this.output.flags; }
+  get outcome() { return this.output.outcome; }
+  get partyHp() { return this.output.partyHp; }
+  get enemyHp() { return this.output.enemyHp; }
+  get randomConsumed() { return this.output.randomConsumed; }
+  get enemyHitsReceived() { return this.output.enemyHitsReceived; }
+  get byteLength() { return this.output.byteLength; }
+  get seed() { return this.output.seed; }
+  get rngVersion() { return this.output.rngVersion; }
+  get diagnosticDrawCount() { return this.output.diagnosticDrawCount; }
+  get protocolError() { return this.output.protocolError; }
+  get eventCount() { return this.output.events.length; }
+  get physicalThreatBagCount() { return this.output.physicalThreatBag.length; }
+  get magicalThreatBagCount() { return this.output.magicalThreatBag.length; }
+  eventOpcode(index: number) { return this.output.events[index]!.opcode; }
+  eventPhase(index: number) { return this.output.events[index]!.phase; }
+  eventActorKind(index: number) { return this.output.events[index]!.actorKind; }
+  eventActorId(index: number) { return this.output.events[index]!.actorId; }
+  eventTargetId(index: number) { return this.output.events[index]!.targetId; }
+  eventAbilityId(index: number) { return this.output.events[index]!.abilityId; }
+  eventAttackType(index: number) { return this.output.events[index]!.attackType; }
+  eventFlags(index: number) { return this.output.events[index]!.flags; }
+  eventTiming(index: number) { return this.output.events[index]!.timing; }
+  eventHits(index: number) { return this.output.events[index]!.hits; }
+  eventAttempts(index: number) { return this.output.events[index]!.attempts; }
+  eventAux0(index: number) { return this.output.events[index]!.aux0; }
+  eventValue0(index: number) { return this.output.events[index]!.value0; }
+  eventValue1(index: number) { return this.output.events[index]!.value1; }
+  eventValue2(index: number) { return this.output.events[index]!.value2; }
+  eventAux1(index: number) { return this.output.events[index]!.aux1; }
+  eventAux2(index: number) { return this.output.events[index]!.aux2; }
+  physicalThreatBagId(index: number) { return this.output.physicalThreatBag[index]!.id; }
+  physicalThreatBagTickets(index: number) { return this.output.physicalThreatBag[index]!.tickets; }
+  magicalThreatBagId(index: number) { return this.output.magicalThreatBag[index]!.id; }
+  magicalThreatBagTickets(index: number) { return this.output.magicalThreatBag[index]!.tickets; }
+}
+
+class BattleProtocolEventCursor implements BattleProtocolEvent {
+  index = 0;
+  constructor(private readonly output: IndexedBattleProtocolOutput) {}
+  select(index: number): this { this.index = index; return this; }
+  get opcode() { return this.output.eventOpcode(this.index); }
+  get phase() { return this.output.eventPhase(this.index); }
+  get actorKind() { return this.output.eventActorKind(this.index); }
+  get actorId() { return this.output.eventActorId(this.index); }
+  get targetId() { return this.output.eventTargetId(this.index); }
+  get abilityId() { return this.output.eventAbilityId(this.index); }
+  get attackType() { return this.output.eventAttackType(this.index); }
+  get flags() { return this.output.eventFlags(this.index); }
+  get timing() { return this.output.eventTiming(this.index); }
+  get hits() { return this.output.eventHits(this.index); }
+  get attempts() { return this.output.eventAttempts(this.index); }
+  get aux0() { return this.output.eventAux0(this.index); }
+  get value0() { return this.output.eventValue0(this.index); }
+  get value1() { return this.output.eventValue1(this.index); }
+  get value2() { return this.output.eventValue2(this.index); }
+  get aux1() { return this.output.eventAux1(this.index); }
+  get aux2() { return this.output.eventAux2(this.index); }
+}
+
 function eventIdentity(event: BattleProtocolEvent): string {
   return [event.phase, event.actorId, event.abilityId ?? '-', event.attackType ?? '-', event.timing].join(':');
 }
 
-function requireFlavorPairs(events: readonly BattleProtocolEvent[]): Map<number, BattleProtocolEvent> {
-  const pairs = new Map<number, BattleProtocolEvent>();
+function requireFlavorPairs(output: IndexedBattleProtocolOutput): Map<number, number> {
+  const pairs = new Map<number, number>();
   const usedSources = new Set<number>();
-  for (let index = 0; index < events.length; index += 1) {
-    const flavor = events[index]!;
+  const flavor = new BattleProtocolEventCursor(output);
+  const source = new BattleProtocolEventCursor(output);
+  for (let index = 0; index < output.eventCount; index += 1) {
+    flavor.select(index);
     if (flavor.opcode !== 'random_flavor') continue;
     const sourceIndex = index - 1;
-    const source = events[sourceIndex];
-    if (!source || source.opcode === 'random_flavor' || usedSources.has(sourceIndex)) {
+    if (sourceIndex < 0 || source.select(sourceIndex).opcode === 'random_flavor' || usedSources.has(sourceIndex)) {
       throw new Error(`Misordered or duplicate battle flavor fact at event ${index}`);
     }
     if (eventIdentity(source) !== eventIdentity(flavor) || source.aux0 !== flavor.aux1) {
       throw new Error(`Battle flavor fact at event ${index} does not match its source event`);
     }
     usedSources.add(sourceIndex);
-    pairs.set(sourceIndex, flavor);
+    pairs.set(sourceIndex, index);
   }
   for (const sourceIndex of pairs.keys()) {
-    if (!sourceRequiresFlavor(events[sourceIndex]!)) {
-      throw new Error(`Unexpected battle flavor fact for ${events[sourceIndex]!.opcode}:${events[sourceIndex]!.abilityId ?? 'terrain'}`);
+    source.select(sourceIndex);
+    if (!sourceRequiresFlavor(source)) {
+      throw new Error(`Unexpected battle flavor fact for ${source.opcode}:${source.abilityId ?? 'terrain'}`);
     }
   }
   return pairs;
@@ -360,7 +454,12 @@ function sourceRequiresFlavor(event: BattleProtocolEvent): boolean {
 }
 
 export function validateBattleSemanticFlavorFacts(events: readonly BattleProtocolEvent[]): void {
-  const pairs = requireFlavorPairs(events);
+  const output = new OwnedBattleProtocolOutputIndex({
+    flags: 0, outcome: 'unresolved', partyHp: 0, enemyHp: 0, randomConsumed: 0, enemyHitsReceived: 0,
+    events: [...events], physicalThreatBag: [], magicalThreatBag: [], byteLength: 0, seed: 0n,
+    rngVersion: 0, diagnosticDrawCount: 0, protocolError: 0,
+  });
+  const pairs = requireFlavorPairs(output);
   events.forEach((event, index) => {
     if (sourceRequiresFlavor(event) && !pairs.has(index)) {
       throw new Error(`Missing battle flavor fact for ${event.opcode}:${event.abilityId ?? 'terrain'}`);
@@ -377,7 +476,7 @@ type BattleNativeExecutionResult = {
   eventCount: number;
 };
 
-export type SeededBattleCandidateResult = BattleNativeExecutionResult & {
+export type SeededBattleCandidateResult = Omit<BattleNativeExecutionResult, 'protocolOutput'> & {
   seed: bigint;
   rngVersion: number;
 };
@@ -432,6 +531,46 @@ export function executeBattleCandidateFromSeed(
   );
   input.seed = normalizedSeed;
   input.rngVersion = rngVersion;
+  return consumeBattleProtocolInput(input, (output) => {
+    if (output.protocolError !== 0) {
+      throw new Error(`C++ seeded battle returned protocol error ${output.protocolError} after ${output.randomConsumed} draws`);
+    }
+    if (output.seed !== normalizedSeed || output.rngVersion !== rngVersion) {
+      throw new Error(`C++ seeded battle replay metadata mismatch: ${output.seed}/${output.rngVersion}`);
+    }
+    if (output.randomConsumed !== output.diagnosticDrawCount) {
+      throw new Error(`C++ seeded battle draw mismatch: ${output.randomConsumed}/${output.diagnosticDrawCount}`);
+    }
+    return {
+      result: convertIndexedBattleSemanticEvents(output, party, enemy, initialPartyHp, environment),
+      randomConsumed: output.randomConsumed,
+      diagnosticDrawCount: output.diagnosticDrawCount,
+      protocolError: output.protocolError,
+      eventCount: output.eventCount,
+      seed: output.seed,
+      rngVersion: output.rngVersion,
+    };
+  });
+}
+
+/** Diagnostic-only seeded execution with fully owned protocol materialization. */
+export function executeBattleCandidateDiagnosticFromSeed(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: bigint,
+  rngVersion: number,
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): BattleNativeExecutionResult & { seed: bigint; rngVersion: number } {
+  const normalizedSeed = requireBattleSeed(seed);
+  requireBattleRngVersion(rngVersion);
+  const input = projectBattleProtocolInput(
+    party, enemy, bags, [], initialPartyHp, environment,
+    BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+  );
+  input.seed = normalizedSeed;
+  input.rngVersion = rngVersion;
   const output = executeBattleProtocolInput(input);
   if (output.protocolError !== 0) {
     throw new Error(`C++ seeded battle returned protocol error ${output.protocolError} after ${output.randomConsumed} draws`);
@@ -455,13 +594,14 @@ export function executeBattleCandidateFromSeed(
 }
 
 function requireFlavor(
-  pairs: ReadonlyMap<number, BattleProtocolEvent>,
+  pairs: ReadonlyMap<number, number>,
   sourceIndex: number,
   source: BattleProtocolEvent,
-): BattleProtocolEvent {
-  const flavor = pairs.get(sourceIndex);
-  if (!flavor) throw new Error(`Missing battle flavor fact for ${source.opcode}:${source.abilityId ?? 'terrain'}`);
-  return flavor;
+  flavor: BattleProtocolEventCursor,
+): BattleProtocolEventCursor {
+  const flavorIndex = pairs.get(sourceIndex);
+  if (flavorIndex === undefined) throw new Error(`Missing battle flavor fact for ${source.opcode}:${source.abilityId ?? 'terrain'}`);
+  return flavor.select(flavorIndex);
 }
 
 function magicStyleFor(combatant: NarrationCombatant): NonNullable<EnemyDef['magicStyle']> {
@@ -547,15 +687,29 @@ export function convertBattleSemanticEvents(
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
 ): BattleCandidateResult {
-  const events = output.events;
-  if (events[0]?.opcode !== 'battle_started' || events[events.length - 1]?.opcode !== 'battle_finished') {
+  return convertIndexedBattleSemanticEvents(
+    new OwnedBattleProtocolOutputIndex(output), party, enemy, initialPartyHp, environment,
+  );
+}
+
+function convertIndexedBattleSemanticEvents(
+  output: IndexedBattleProtocolOutput,
+  party: Party,
+  enemy: EnemyDef,
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+): BattleCandidateResult {
+  const event = new BattleProtocolEventCursor(output);
+  const flavorEvent = new BattleProtocolEventCursor(output);
+  const associatedEvent = new BattleProtocolEventCursor(output);
+  if (output.eventCount === 0 || event.select(0).opcode !== 'battle_started'
+      || event.select(output.eventCount - 1).opcode !== 'battle_finished') {
     throw new Error('Battle semantic stream has invalid terminal ordering');
   }
-  const outcomeEvent = events[events.length - 2];
-  if (outcomeEvent?.opcode !== 'outcome' || output.outcome === 'unresolved') {
+  if (output.eventCount < 2 || event.select(output.eventCount - 2).opcode !== 'outcome' || output.outcome === 'unresolved') {
     throw new Error('Battle semantic stream is missing its final outcome');
   }
-  const flavors = requireFlavorPairs(events);
+  const flavors = requireFlavorPairs(output);
   const projection = projectBattleCombatants(
     party,
     enemy,
@@ -579,9 +733,6 @@ export function convertBattleSemanticEvents(
   const nameOf = (id: number): string => combatants.get(id)?.name ?? t('battle.actor.ally');
   const log: BattleLogEntry[] = [];
   const initiatives = new Map<string, number>();
-  for (const event of events) {
-    if (event.opcode === 'initiative' && event.attackType) initiatives.set(initiativeKey(event.actorId, event.attackType), event.timing);
-  }
   const pendingAfterAttack = new Map<string, BattleLogEntry[]>();
   const negatedActionKeys = new Set<string>();
   const appendPending = (event: BattleProtocolEvent): void => {
@@ -599,7 +750,12 @@ export function convertBattleSemanticEvents(
     attempts: number;
     eventIndex: number;
   }>>();
-  for (const [eventIndex, event] of events.entries()) {
+  for (let eventIndex = 0; eventIndex < output.eventCount; eventIndex += 1) {
+    event.select(eventIndex);
+    if (event.opcode === 'initiative' && event.attackType) {
+      initiatives.set(initiativeKey(event.actorId, event.attackType), event.timing);
+      continue;
+    }
     if (event.opcode !== 'diagnostic' || (event.flags & 128) === 0) continue;
     if ((event.flags & 64) !== 0) {
       const key = actionKey(event);
@@ -612,15 +768,18 @@ export function convertBattleSemanticEvents(
       if (occurrence.hits !== event.hits || occurrence.attempts !== event.attempts) {
         throw new Error(`Native action presentation totals drifted within ${key}`);
       }
-      const values = [event.value0, event.value1, event.value2];
-      const groups = [0, 1, 2].filter((group) => (event.aux1 & (0b111 << (group * 3))) !== 0);
-      if ((event.aux1 !== 0 && groups.length !== 1) || (event.aux1 & ~0x1ff) !== 0) {
+      let populatedGroups = 0;
+      for (let group = 0; group < 3; group += 1) {
+        if ((event.aux1 & (0b111 << (group * 3))) !== 0) populatedGroups += 1;
+      }
+      if ((event.aux1 !== 0 && populatedGroups !== 1) || (event.aux1 & ~0x1ff) !== 0) {
         throw new Error(`Invalid native action presentation mask ${event.aux1} for ${key}`);
       }
       for (let kind = 1; kind <= 9; kind += 1) {
         if ((event.aux1 & (1 << (kind - 1))) === 0) continue;
         if (occurrence.facts.has(kind)) throw new Error(`Duplicate native action presentation fact ${kind} for ${key}`);
-        occurrence.facts.set(kind, values[(kind - 1) % 3]!);
+        const slot = (kind - 1) % 3;
+        occurrence.facts.set(kind, slot === 0 ? event.value0 : slot === 1 ? event.value1 : event.value2);
       }
       presentationByAction.set(key, occurrences);
       continue;
@@ -628,43 +787,49 @@ export function convertBattleSemanticEvents(
     const key = attackTargetKey(event);
     const occurrences = presentationByTarget.get(key) ?? [new Map<number, number>()];
     let facts = occurrences[occurrences.length - 1]!;
-    const values = [event.value0, event.value1, event.value2];
-    const groups = [0, 1, 2].filter((group) => (event.aux1 & (0b111 << (group * 3))) !== 0);
-    if (groups.length !== 1 || (event.aux1 & ~0x1ff) !== 0) {
+    let group = -1;
+    let populatedGroups = 0;
+    for (let candidateGroup = 0; candidateGroup < 3; candidateGroup += 1) {
+      if ((event.aux1 & (0b111 << (candidateGroup * 3))) === 0) continue;
+      group = candidateGroup;
+      populatedGroups += 1;
+    }
+    if (populatedGroups !== 1 || (event.aux1 & ~0x1ff) !== 0) {
       throw new Error(`Invalid native presentation mask ${event.aux1} for ${key}`);
     }
-    const group = groups[0]!;
-    const kinds = [0, 1, 2]
-      .map((slot) => group * 3 + slot + 1)
-      .filter((kind) => (event.aux1 & (1 << (kind - 1))) !== 0);
-    if (kinds.some((kind) => facts.has(kind))) {
+    let duplicate = false;
+    for (let slot = 0; slot < 3; slot += 1) {
+      const kind = group * 3 + slot + 1;
+      if ((event.aux1 & (1 << (kind - 1))) !== 0 && facts.has(kind)) duplicate = true;
+    }
+    if (duplicate) {
       facts = new Map<number, number>();
       occurrences.push(facts);
     }
     for (let slot = 0; slot < 3; slot += 1) {
       const kind = group * 3 + slot + 1;
       if ((event.aux1 & (1 << (kind - 1))) === 0) continue;
-      facts.set(kind, values[slot]!);
+      facts.set(kind, slot === 0 ? event.value0 : slot === 1 ? event.value1 : event.value2);
     }
     presentationByTarget.set(key, occurrences);
   }
   const presentationOccurrence = new Map<string, number>();
   const actionPresentationOccurrence = new Map<string, number>();
 
-  for (let index = 0; index < events.length; index += 1) {
-    const event = events[index]!;
+  for (let index = 0; index < output.eventCount; index += 1) {
+    event.select(index);
     if (event.opcode === 'random_flavor' || event.opcode === 'battle_started' || event.opcode === 'battle_finished'
         || event.opcode === 'phase_started' || event.opcode === 'phase_ended' || event.opcode === 'initiative'
         || event.opcode === 'death' || event.opcode === 'outcome') continue;
 
     if (event.opcode === 'target_selected') {
       if ((event.flags & 8) === 0) continue;
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       if (environment.terrainEffect !== 'terrain.chain-lightning') {
         throw new Error('Flavored terrain target selection is missing Chain Lightning context');
       }
       if (flavor.aux0 < 0 || flavor.aux0 >= 10) throw new RangeError(`Invalid terrain flavor index ${flavor.aux0}`);
-      const damage = events[index + 2];
+      const damage = index + 2 < output.eventCount ? associatedEvent.select(index + 2) : null;
       if (!damage || damage.opcode !== 'damage' || eventIdentity(damage) !== eventIdentity(event)
           || damage.targetId !== event.targetId) {
         throw new Error('Chain Lightning flavor fact is missing its associated damage');
@@ -703,7 +868,7 @@ export function convertBattleSemanticEvents(
       const actor = combatants.get(event.actorId);
       const target = combatants.get(event.targetId);
       if (event.aux0 === 13 && (event.flags & 4) !== 0) {
-        const flavor = requireFlavor(flavors, index, event);
+        const flavor = requireFlavor(flavors, index, event, flavorEvent);
         const terrain = environment.terrainEffect;
         if (!terrain) throw new Error('Terrain mutation is missing terrain context');
         const prefix = terrain === 'terrain.deletion' ? 'battleFlavor.environment.deletion' : `battleFlavor.environment.${terrain.slice(8)}`;
@@ -735,7 +900,7 @@ export function convertBattleSemanticEvents(
       const owner = nameOf(event.actorId);
       const level = Math.max(1, Math.round(event.value0));
       if (event.abilityId === 'unforgettable') {
-        const flavor = requireFlavor(flavors, index, event);
+        const flavor = requireFlavor(flavors, index, event, flavorEvent);
         const terrainLabelKey = 'terrainEffect.terrain.deletion.label';
         const terrainLabel = t(terrainLabelKey);
         const source = event.aux0 === 13
@@ -748,7 +913,7 @@ export function convertBattleSemanticEvents(
           note: t('battle.note.unforgettable'), noteTone: 'muted',
         });
       } else if (event.abilityId === 'equation_breaker') {
-        const flavor = requireFlavor(flavors, index, event);
+        const flavor = requireFlavor(flavors, index, event, flavorEvent);
         log.push({
           phase: 'start', actor: 'effect',
           ...(combatants.get(event.actorId)?.kind === 'character' ? { characterId: event.actorId } : {}),
@@ -756,7 +921,7 @@ export function convertBattleSemanticEvents(
           note: t('battle.note.equationBreakerSilence'),
         });
       } else if (event.abilityId === 'null_antagonism') {
-        const flavor = requireFlavor(flavors, index, event);
+        const flavor = requireFlavor(flavors, index, event, flavorEvent);
         log.push({
           phase: 'start', actor: 'effect',
           ...(combatants.get(event.targetId)?.kind === 'character' ? { characterId: event.targetId } : {}),
@@ -790,7 +955,7 @@ export function convertBattleSemanticEvents(
 
     if (event.opcode === 'ability_activated' && event.phase === 2
         && event.abilityId && CONFUSION_ABILITIES.has(event.abilityId)) {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const actor = combatants.get(event.actorId);
       const actorName = nameOf(event.actorId);
       const level = actor?.abilities.get(event.abilityId) ?? 1;
@@ -819,7 +984,7 @@ export function convertBattleSemanticEvents(
     }
 
     if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId === 'null_antagonism') {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const actor = combatants.get(event.actorId);
       log.push({
         phase: 'combat', initiativeRoll: event.timing, actor: 'triggered',
@@ -831,7 +996,7 @@ export function convertBattleSemanticEvents(
     }
 
     if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId === 'unstable_core') {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const actor = combatants.get(event.actorId);
       const level = actor?.abilities.get('unstable_core') ?? 1;
       const percent = level >= 5 ? 12 : level === 4 ? 15 : level === 3 ? 19 : level === 2 ? 24 : 30;
@@ -848,7 +1013,7 @@ export function convertBattleSemanticEvents(
 
     if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId
         && ['regeneration', 'flying', 'decompose', 'self_destruct', 'soul_reap', 'free', 'pursuit'].includes(event.abilityId)) {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const family = flavorFamily(event.abilityId);
       if (!family) throw new Error(`Missing flavor family for ${event.abilityId}`);
       const actor = combatants.get(event.actorId);
@@ -883,7 +1048,7 @@ export function convertBattleSemanticEvents(
 
     if ((event.opcode === 'nullified' && event.abilityId === 'illusion')
         || (event.opcode === 'ability_activated' && event.abilityId === 'illusion_breaker')) {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const broken = event.abilityId === 'illusion_breaker';
       const action = replaceFlavor(getBattleFlavorTemplateAtIndex(broken ? 'illusion-breaker' : 'illusion', flavor.aux0), {
         actor: nameOf(event.actorId), target: nameOf(event.actorId),
@@ -905,7 +1070,7 @@ export function convertBattleSemanticEvents(
     }
 
     if ((event.opcode === 'status_applied' || event.opcode === 'nullified') && (event.abilityId === 'shock' || event.abilityId === 'null_shock')) {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const family = event.abilityId === 'shock' ? 'shock' : 'null-shock';
       const action = replaceFlavor(getBattleFlavorTemplateAtIndex(family, flavor.aux0), { actor: nameOf(event.targetId), target: nameOf(event.actorId) });
       const key = reverseActionKey(event);
@@ -933,7 +1098,7 @@ export function convertBattleSemanticEvents(
     }
 
     if ((event.opcode === 'resurrected' || event.opcode === 'reanimated') && event.abilityId) {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const family = event.opcode === 'resurrected' ? 'resurrect' : 'reanimate';
       log.push({
         phase: 'combat', initiativeRoll: event.timing,
@@ -947,7 +1112,7 @@ export function convertBattleSemanticEvents(
     }
 
     if (event.opcode === 'heal' && event.abilityId === 'life_drain') {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const level = combatants.get(event.actorId)?.abilities.get('life_drain') ?? 1;
       const portion = ['0.1%', '0.3%', '1%', '3%', '10%', '30%', '100%'][Math.min(7, Math.max(1, level)) - 1]!;
       const targetId = flavor.targetId;
@@ -963,7 +1128,7 @@ export function convertBattleSemanticEvents(
 
     if (flavors.has(index) && event.opcode !== 'action_skipped' && event.abilityId && ['corrode', 'null_corrode', 'null_life_drain', 'death_touch', 'null_death_touch',
       'burn', 'null_burn', 'bind', 'null_bind', 'requiem', 'null_requiem'].includes(event.abilityId)) {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const family = flavorFamily(event.abilityId);
       if (!family) throw new Error(`Missing flavor family for ${event.abilityId}`);
       const actor = combatants.get(event.actorId);
@@ -1008,7 +1173,7 @@ export function convertBattleSemanticEvents(
     }
 
     if (event.opcode === 'action_skipped' && event.abilityId === 'bind') {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const actor = combatants.get(event.actorId);
       log.push({
         phase: 'combat', initiativeRoll: event.timing, actor: 'triggered',
@@ -1020,7 +1185,7 @@ export function convertBattleSemanticEvents(
     }
 
     if (event.opcode === 'terrain_effect' && event.phase === 2) {
-      const flavor = requireFlavor(flavors, index, event);
+      const flavor = requireFlavor(flavors, index, event, flavorEvent);
       if (flavor.aux0 < 0 || flavor.aux0 >= 10) throw new RangeError(`Invalid terrain flavor index ${flavor.aux0}`);
       const terrain = environment.terrainEffect;
       if (!terrain) throw new Error('Combat terrain event is missing terrain context');
@@ -1157,19 +1322,24 @@ export function convertBattleSemanticEvents(
     if (event.abilityId && FLAVOR_ABILITIES.has(event.abilityId)) {
       const family = flavorFamily(event.abilityId);
       if (family) {
-        requireFlavor(flavors, index, event);
+        requireFlavor(flavors, index, event, flavorEvent);
         throw new Error(`Unhandled battle flavor source ${event.opcode}:${event.abilityId}`);
       }
       continue;
     }
   }
   if (pendingAfterAttack.size > 0) throw new Error('Battle semantic stream ended with unassociated reactive narration');
+  recordBattleResultBagEntryObjectAllocations(output.physicalThreatBagCount + output.magicalThreatBagCount);
   return {
     phase: 'combat', partyHp: output.partyHp, enemyHp: output.enemyHp, log,
     outcome: output.outcome as BattleOutcome,
     updatedBags: {
-      physicalThreatBag: { entries: output.physicalThreatBag },
-      magicalThreatBag: { entries: output.magicalThreatBag },
+      physicalThreatBag: { entries: Array.from({ length: output.physicalThreatBagCount }, (_, index) => ({
+        id: output.physicalThreatBagId(index), tickets: output.physicalThreatBagTickets(index),
+      })) },
+      magicalThreatBag: { entries: Array.from({ length: output.magicalThreatBagCount }, (_, index) => ({
+        id: output.magicalThreatBagId(index), tickets: output.magicalThreatBagTickets(index),
+      })) },
     },
     enemyHitsReceived: output.enemyHitsReceived,
   };

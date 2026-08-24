@@ -9,6 +9,7 @@ import { executeBattle } from '../../src/game/battle.ts';
 import { getProductionBattleTelemetry } from '../../src/game/battle.ts';
 import {
   executeBattleCandidateFromSeed,
+  executeBattleCandidateDiagnosticFromSeed,
   executeBattleTapeDiagnostic,
   convertBattleSemanticEvents,
   projectBattleCombatants,
@@ -207,7 +208,7 @@ function naturalFixtureSeed(fixture: BattleGoldenCase): bigint {
 }
 
 function executeNativePair(fixture: BattleGoldenCase, seed: bigint) {
-  const seeded = executeBattleCandidateFromSeed(
+  const seeded = executeBattleCandidateDiagnosticFromSeed(
     structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
     seed, getBattleRngVersion(), fixture.initialPartyHp,
     fixture.environment ? structuredClone(fixture.environment) : undefined,
@@ -355,6 +356,8 @@ test('projection and production entry point use one direct-arena native seeded c
     assert.equal(measurement.encodedInputAllocations, 0);
     assert.equal(measurement.inputArenaCopies, 0);
     assert.equal(measurement.outputBufferCopies, 0);
+    assert.equal(measurement.decodedEventObjectAllocations, 0);
+    assert.equal(measurement.decodedBagEntryObjectAllocations, 0);
     assert.deepEqual({ party, enemy, bags }, beforeInputs, 'production execution must leave Party, Enemy, and bags JSON-identical');
   }
 });
@@ -362,7 +365,7 @@ test('projection and production entry point use one direct-arena native seeded c
 test('direct structured and encoded seeded protocol boundaries remain identical', () => {
   const fixture = createGoldenCases()[0]!;
   const seed = naturalFixtureSeed(fixture);
-  const seeded = executeBattleCandidateFromSeed(
+  const seeded = executeBattleCandidateDiagnosticFromSeed(
     structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
     seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
   );

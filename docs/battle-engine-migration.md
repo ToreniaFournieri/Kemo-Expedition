@@ -349,3 +349,23 @@ Build 38's functional acceptance is retained, but its performance acceptance is 
 | API count 100 | 46.93 s (55.86 s API profile) | 2.70 s |
 
 Acceptance gate: complete. The performance gate passes with the immutable historical fixtures and all parity, one-call, empty-tape, and zero-copy invariants intact. The battle-engine migration is complete; this stabilization is not Part 4.
+
+## Borrowed output materialization optimization — complete in Build 45
+
+Production seeded execution now validates a borrowed indexed view over the Wasm output arena and performs semantic validation and localized narration synchronously while the existing realm-local protocol guard owns that arena. Magic, protocol version, header/total size, outcome, the event count and span, both bag counts and spans, and every event opcode, ability ID, and attack type are validated before the consumer runs. Indexed scalar/event/bag reads check the view lifetime; the kernel invalidates the view before releasing the guard, and an escaped reader throws after callback return. The arena is re-queried after native execution, so memory growth recreates the underlying views before validation. No Wasm-backed `TypedArray`, `DataView`, reader, cursor, or other borrowed reference is returned.
+
+The production candidate retains only event indices for flavor pairing and presentation association. It copies the final localized `BattleLogEntry` objects, final physical and magical threat-bag entries, and scalar result/replay/telemetry fields that must survive arena reuse. Its return no longer contains the complete diagnostic `protocolOutput`. `decodeBattleProtocolOutput`, encoded byte execution, `executeBattleTapeDiagnostic`, and the dedicated seeded diagnostic helper still materialize fully owned event and bag objects for protocol corruption tests, frozen contracts, retained-tape diagnostics, and differential verification. Esbuild graph/content audits prove that the owned decoder, owned-output adapter, seeded diagnostic helper, and tape diagnostic are absent from both browser and AFK-worker production bundles.
+
+Measurement now distinguishes `decodedEventObjectAllocations`, `decodedBagEntryObjectAllocations`, and final `resultBagEntryObjectAllocations`. Online, the 1,724-battle AFK profile, API count 1, and API count 100 all report zero decoder event and bag object allocations while retaining zero encoded-input allocations, input-arena copies, and output-buffer copies. Final result bag copies remain explicit: 12 per battle in these profiles (480 online, 20,688 AFK, 288 API count 1, and 28,800 API count 100). Diagnostic execution reports the exact owned event and bag record counts it materializes.
+
+Parity coverage retains all 11 natural-seed battles in Japanese, English, Simplified Chinese, and Traditional Chinese; native seeded-versus-native tape equality; exact localized result/property presence, semantic order, HP, outcome, threat bags, cursors, draw counts, seed/RNG metadata, enemy hits, and replay serialization; unchanged Party, Enemy, and input bags; later-arena owned-output stability; memory growth; callback/narration failure recovery; and byte-identical v1/v2 hashes. Protocol version 3 and ABI version 8 are unchanged, with one native execution and an empty input tape per production encounter.
+
+Fresh-process measurements on the same machine are descriptive and noisy. The pre-change run was online median/p95 12.16/14.95 ms, AFK total/projected-parallel 1,800.49/481.69 ms, and API count-100 2,967.25 ms. Two optimized fresh-process runs were:
+
+| Path | Post-change run 1 | Post-change run 2 | Comparison with pre-change |
+|-|-:|-:|-:|
+| Online Boss median / p95 | 11.10 / 12.75 ms | 11.62 / 13.23 ms | p95 improved 11.5–14.7%; no regression |
+| AFK total CPU / projected parallel | 1,796.60 / 457.82 ms | 1,864.27 / 487.19 ms | mixed within run noise (-0.2% to +3.5% total; -5.0% to +1.1% projected) |
+| API count 100 | 2,591.33 ms | 2,739.40 ms | improved 7.7–12.7% |
+
+The deterministic allocation/GC reduction is accepted with no material AFK latency regression; AFK wall timing itself is not claimed as a stable improvement from these two runs. Remaining measured object creation is dominated by required final battle-log/presentation objects, projected combat/stat structures, and the 12 owned final threat-bag entries per encounter. Gate 2 direct Party-to-arena input writing and resident native profile caching were not implemented.

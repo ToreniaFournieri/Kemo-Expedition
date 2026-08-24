@@ -94,6 +94,9 @@ test('reports deterministic single-battle migration metrics', () => {
   const encodedInputAllocations: number[] = [];
   const inputArenaCopies: number[] = [];
   const outputBufferCopies: number[] = [];
+  const decodedEventObjectAllocations: number[] = [];
+  const decodedBagEntryObjectAllocations: number[] = [];
+  const resultBagEntryObjectAllocations: number[] = [];
   for (let index = 0; index < SAMPLE_COUNT; index += 1) {
     beginBattleKernelMeasurement();
     const started = performance.now();
@@ -106,6 +109,9 @@ test('reports deterministic single-battle migration metrics', () => {
     encodedInputAllocations.push(boundary.encodedInputAllocations);
     inputArenaCopies.push(boundary.inputArenaCopies);
     outputBufferCopies.push(boundary.outputBufferCopies);
+    decodedEventObjectAllocations.push(boundary.decodedEventObjectAllocations);
+    decodedBagEntryObjectAllocations.push(boundary.decodedBagEntryObjectAllocations);
+    resultBagEntryObjectAllocations.push(boundary.resultBagEntryObjectAllocations);
     draws.push(measured.logicalDraws);
     events.push(measured.result.log.length);
   }
@@ -118,6 +124,9 @@ test('reports deterministic single-battle migration metrics', () => {
     encodedInputAllocations: encodedInputAllocations.reduce((sum, value) => sum + value, 0),
     inputArenaCopies: inputArenaCopies.reduce((sum, value) => sum + value, 0),
     outputBufferCopies: outputBufferCopies.reduce((sum, value) => sum + value, 0),
+    decodedEventObjectAllocations: decodedEventObjectAllocations.reduce((sum, value) => sum + value, 0),
+    decodedBagEntryObjectAllocations: decodedBagEntryObjectAllocations.reduce((sum, value) => sum + value, 0),
+    resultBagEntryObjectAllocations: resultBagEntryObjectAllocations.reduce((sum, value) => sum + value, 0),
     maxRandomConsumed: getProductionBattleTelemetry().maxRandomConsumed,
     maxSemanticEvents: getProductionBattleTelemetry().maxSemanticEvents,
     seededInputRandomCount: 0,
@@ -128,6 +137,8 @@ test('reports deterministic single-battle migration metrics', () => {
   assert.equal(report.encodedInputAllocations, 0);
   assert.equal(report.inputArenaCopies, 0);
   assert.equal(report.outputBufferCopies, 0);
+  assert.equal(report.decodedEventObjectAllocations, 0);
+  assert.equal(report.decodedBagEntryObjectAllocations, 0);
 });
 
 test('reports deterministic AFK migration metrics', () => {
@@ -140,6 +151,9 @@ test('reports deterministic AFK migration metrics', () => {
   let encodedInputAllocations = 0;
   let inputArenaCopies = 0;
   let outputBufferCopies = 0;
+  let decodedEventObjectAllocations = 0;
+  let decodedBagEntryObjectAllocations = 0;
+  let resultBagEntryObjectAllocations = 0;
   const battlesBefore = getProductionBattleTelemetry().battles;
   for (const [partyIndex, party] of state.parties.entries()) {
     beginBattleKernelMeasurement();
@@ -160,6 +174,9 @@ test('reports deterministic AFK migration metrics', () => {
     encodedInputAllocations += boundary.encodedInputAllocations;
     inputArenaCopies += boundary.inputArenaCopies;
     outputBufferCopies += boundary.outputBufferCopies;
+    decodedEventObjectAllocations += boundary.decodedEventObjectAllocations;
+    decodedBagEntryObjectAllocations += boundary.decodedBagEntryObjectAllocations;
+    resultBagEntryObjectAllocations += boundary.resultBagEntryObjectAllocations;
   }
   const report = {
     engine: 'protocol-v3-production-native-coordinator', parties: state.parties.length,
@@ -168,6 +185,7 @@ test('reports deterministic AFK migration metrics', () => {
     battles: getProductionBattleTelemetry().battles - battlesBefore,
     wasmBoundaryCalls: calls, inputBytes, outputBytes,
     encodedInputAllocations, inputArenaCopies, outputBufferCopies,
+    decodedEventObjectAllocations, decodedBagEntryObjectAllocations, resultBagEntryObjectAllocations,
     maxRandomConsumed: getProductionBattleTelemetry().maxRandomConsumed,
     maxSemanticEvents: getProductionBattleTelemetry().maxSemanticEvents,
     seededInputRandomCount: 0,
@@ -178,6 +196,7 @@ test('reports deterministic AFK migration metrics', () => {
   assert.ok(report.projectedParallelWorkerMs < AFK_PROJECTED_PARALLEL_CEILING_MS, `AFK projected parallel ${report.projectedParallelWorkerMs}ms must remain below ${AFK_PROJECTED_PARALLEL_CEILING_MS}ms`);
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
   assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
+  assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
 });
 
 test('reports Experimental API sortie counts 1 and 100 through the production battle entry point', () => {
@@ -207,10 +226,11 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     assert.deepEqual([finalParty.instantExpeditionStock, finalParty.instantExpeditionChargeStartedAt], chargeBefore);
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
     assert.equal(boundary.encodedInputAllocations + boundary.inputArenaCopies + boundary.outputBufferCopies, 0);
+    assert.equal(boundary.decodedEventObjectAllocations + boundary.decodedBagEntryObjectAllocations, 0);
     if (count === 100) {
       assert.ok(durationMs < API_COUNT_100_CEILING_MS, `API count-100 ${durationMs}ms must remain below ${API_COUNT_100_CEILING_MS}ms`);
     }
-    reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, encodedInputAllocations: boundary.encodedInputAllocations, inputArenaCopies: boundary.inputArenaCopies, outputBufferCopies: boundary.outputBufferCopies, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
+    reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, encodedInputAllocations: boundary.encodedInputAllocations, inputArenaCopies: boundary.inputArenaCopies, outputBufferCopies: boundary.outputBufferCopies, decodedEventObjectAllocations: boundary.decodedEventObjectAllocations, decodedBagEntryObjectAllocations: boundary.decodedBagEntryObjectAllocations, resultBagEntryObjectAllocations: boundary.resultBagEntryObjectAllocations, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
   }
   console.info('BATTLE_MIGRATION_API_BASELINE', JSON.stringify(reports));
 });

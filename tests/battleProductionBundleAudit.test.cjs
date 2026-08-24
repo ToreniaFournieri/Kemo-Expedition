@@ -14,6 +14,9 @@ const FORBIDDEN_INPUTS = [
 
 const FORBIDDEN_BUNDLE_MARKERS = [
   'executeBattleTapeDiagnostic',
+  'executeBattleCandidateDiagnosticFromSeed',
+  'decodeBattleProtocolOutput',
+  'OwnedBattleProtocolOutputIndex',
   'reserveGameplayRandomTape',
   'BATTLE_GOLDEN_V2_CAPTURE',
   'executeBattleStartCheckpoint',

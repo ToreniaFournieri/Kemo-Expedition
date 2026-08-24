@@ -6,10 +6,12 @@ import {
   getBattleProtocolTerrainName,
   writeBattleProtocolInput,
   BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS,
+  BorrowedBattleProtocolOutputView,
   type BattleProtocolInput,
 } from '../src/game/battleProtocol.ts';
 import {
   beginBattleKernelMeasurement,
+  consumeBattleProtocolInput,
   endBattleKernelMeasurement,
   executeBattleProtocol,
   executeBattleProtocolInput,
@@ -101,6 +103,30 @@ const protocolInput: BattleProtocolInput = {
   rngVersion: 1,
 };
 
+function syntheticOutput(eventCount: number, physicalBagCount = 0, magicalBagCount = 0): Uint8Array {
+  const eventsOffset = BATTLE_OUTPUT_HEADER_SIZE;
+  const physicalBagOffset = eventsOffset + eventCount * BATTLE_EVENT_RECORD_SIZE;
+  const magicalBagOffset = physicalBagOffset + physicalBagCount * 8;
+  const totalSize = magicalBagOffset + magicalBagCount * 8;
+  const bytes = new Uint8Array(totalSize);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.magic, BATTLE_PROTOCOL_OUTPUT_MAGIC, true);
+  view.setUint16(BATTLE_OUTPUT_OFFSETS.version, BATTLE_PROTOCOL_VERSION, true);
+  view.setUint16(BATTLE_OUTPUT_OFFSETS.headerSize, BATTLE_OUTPUT_HEADER_SIZE, true);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.totalSize, totalSize, true);
+  view.setUint8(BATTLE_OUTPUT_OFFSETS.outcome, 1);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.eventCount, eventCount, true);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.eventsOffset, eventsOffset, true);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.physicalBagCount, physicalBagCount, true);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.physicalBagOffset, physicalBagCount === 0 ? 0 : physicalBagOffset, true);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.magicalBagCount, magicalBagCount, true);
+  view.setUint32(BATTLE_OUTPUT_OFFSETS.magicalBagOffset, magicalBagCount === 0 ? 0 : magicalBagOffset, true);
+  for (let index = 0; index < eventCount; index += 1) {
+    view.setUint16(eventsOffset + index * BATTLE_EVENT_RECORD_SIZE + BATTLE_EVENT_OFFSETS.opcode, BATTLE_EVENT_OPCODES.protocol_ready, true);
+  }
+  return bytes;
+}
+
 test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_PROTOCOL_VERSION, 3);
   assert.equal(BATTLE_ABILITY_IDS.defender, 1);
@@ -172,6 +198,18 @@ test('structured and retained byte execution paths produce identical owned outpu
   assert.deepEqual(actual, retained, 'later arena reuse must not mutate returned objects or arrays');
 });
 
+test('owned diagnostic decoding reports its exact event and bag materializations', () => {
+  beginBattleKernelMeasurement();
+  const output = executeBattleProtocolInput(protocolInput);
+  const measurement = endBattleKernelMeasurement();
+  assert.equal(measurement.decodedEventObjectAllocations, output.events.length);
+  assert.equal(
+    measurement.decodedBagEntryObjectAllocations,
+    output.physicalThreatBag.length + output.magicalThreatBag.length,
+  );
+  assert.equal(measurement.resultBagEntryObjectAllocations, 0);
+});
+
 test('canonical direct writer enforces the exact input-arena ceiling before writing', () => {
   const base = encodeBattleProtocolInput({ ...protocolInput, randomValues: [], physicalThreatBag: [], magicalThreatBag: [] });
   const bagRecords = (BATTLE_PROTOCOL_ARENA_CAPACITY - base.byteLength) / 8;
@@ -218,6 +256,71 @@ test('decoder accepts the exact semantic-event ceiling and rejects one-record ov
   assert.equal(maximum.events.length, BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS);
   assert.throws(() => decodeBattleProtocolOutput(makeOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS + 1)), /event count exceeds/);
   assert.equal(executeBattleProtocolInput(checkpointInput()).protocolError, 0, 'output overflow must not contaminate the next battle');
+});
+
+test('borrowed reader validates headers, spans, enums, exact capacity, indexed fields, and bags once', () => {
+  const bytes = syntheticOutput(BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS);
+  const view = new DataView(bytes.buffer);
+  const lastOffset = BATTLE_OUTPUT_HEADER_SIZE + (BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS - 1) * BATTLE_EVENT_RECORD_SIZE;
+  view.setUint32(BATTLE_OUTPUT_HEADER_SIZE + BATTLE_EVENT_OFFSETS.actorId, 11, true);
+  view.setUint32(lastOffset + BATTLE_EVENT_OFFSETS.actorId, 99, true);
+  const borrowed = new BorrowedBattleProtocolOutputView(bytes);
+  assert.equal(borrowed.eventCount, 4_096);
+  assert.equal(borrowed.eventActorId(0), 11);
+  assert.equal(borrowed.eventActorId(4_095), 99);
+  const bagBytes = syntheticOutput(1, 1, 1);
+  const bagData = new DataView(bagBytes.buffer);
+  const physicalOffset = bagData.getUint32(BATTLE_OUTPUT_OFFSETS.physicalBagOffset, true);
+  const magicalOffset = bagData.getUint32(BATTLE_OUTPUT_OFFSETS.magicalBagOffset, true);
+  bagData.setInt32(physicalOffset, -7, true);
+  bagData.setUint32(physicalOffset + 4, 16, true);
+  bagData.setInt32(magicalOffset, 6, true);
+  bagData.setUint32(magicalOffset + 4, 2, true);
+  const bagView = new BorrowedBattleProtocolOutputView(bagBytes);
+  assert.deepEqual([bagView.physicalThreatBagId(0), bagView.physicalThreatBagTickets(0)], [-7, 16]);
+  assert.deepEqual([bagView.magicalThreatBagId(0), bagView.magicalThreatBagTickets(0)], [6, 2]);
+
+  assert.throws(() => new BorrowedBattleProtocolOutputView(syntheticOutput(4_097)), /event count exceeds/);
+  const corrupt = (mutate: (data: DataView) => void, pattern: RegExp) => {
+    const candidate = syntheticOutput(1);
+    mutate(new DataView(candidate.buffer));
+    assert.throws(() => new BorrowedBattleProtocolOutputView(candidate), pattern);
+  };
+  corrupt((data) => data.setUint32(BATTLE_OUTPUT_OFFSETS.magic, 0, true), /magic/);
+  corrupt((data) => data.setUint16(BATTLE_OUTPUT_OFFSETS.version, 2, true), /version/);
+  corrupt((data) => data.setUint16(BATTLE_OUTPUT_OFFSETS.headerSize, 0, true), /header size/);
+  corrupt((data) => data.setUint32(BATTLE_OUTPUT_OFFSETS.totalSize, 0, true), /output size/);
+  corrupt((data) => data.setUint8(BATTLE_OUTPUT_OFFSETS.outcome, 9), /outcome/);
+  corrupt((data) => data.setUint32(BATTLE_OUTPUT_OFFSETS.eventsOffset, 0, true), /events span/);
+  corrupt((data) => data.setUint16(BATTLE_OUTPUT_HEADER_SIZE + BATTLE_EVENT_OFFSETS.opcode, 0xffff, true), /opcode/);
+  corrupt((data) => data.setUint16(BATTLE_OUTPUT_HEADER_SIZE + BATTLE_EVENT_OFFSETS.abilityId, 0xffff, true), /ability/);
+  corrupt((data) => data.setUint8(BATTLE_OUTPUT_HEADER_SIZE + BATTLE_EVENT_OFFSETS.attackType, 0xff), /attack type/);
+  const empty = new BorrowedBattleProtocolOutputView(syntheticOutput(1));
+  assert.equal(empty.physicalThreatBagCount + empty.magicalThreatBagCount, 0);
+});
+
+test('borrowed consumer invalidates escaped views and releases its guard after consumer and narration failures', () => {
+  const baseline = executeBattleProtocolInput(checkpointInput());
+  let escaped: BorrowedBattleProtocolOutputView | undefined;
+  consumeBattleProtocolInput(checkpointInput(), (output) => {
+    escaped = output;
+    assert.ok(output.eventCount > 0);
+    return output.outcome;
+  });
+  assert.throws(() => escaped!.eventOpcode(0), /no longer active/);
+  assert.throws(() => escaped!.eventCount, /no longer active/);
+  assert.throws(() => escaped!.byteLength, /no longer active/);
+  assert.throws(() => consumeBattleProtocolInput(checkpointInput(), () => {
+    throw new Error('consumer failed');
+  }), /consumer failed/);
+  assert.deepEqual(executeBattleProtocolInput(checkpointInput()), baseline);
+  assert.throws(() => consumeBattleProtocolInput(checkpointInput(), (output) => {
+    output.eventOpcode(0);
+    throw new Error('narration failed');
+  }), /narration failed/);
+  assert.deepEqual(executeBattleProtocolInput(checkpointInput()), baseline);
+  growBattleProtocolMemoryForTesting();
+  assert.equal(consumeBattleProtocolInput(checkpointInput(), (output) => output.protocolError), 0);
 });
 
 test('shared reentrancy guard rejects nested structured execution before arena mutation and recovers', () => {

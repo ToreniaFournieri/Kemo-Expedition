@@ -1,5 +1,6 @@
 import { BATTLE_KERNEL_WASM } from './battleKernelBinary.ts';
 import {
+  BorrowedBattleProtocolOutputView,
   decodeBattleProtocolOutput,
   getBattleProtocolEncodingMeasurement,
   resetBattleProtocolEncodingMeasurement,
@@ -59,6 +60,9 @@ export type BattleKernelMeasurement = {
   inputArenaCopyBytes: number;
   outputBufferCopies: number;
   outputBufferCopyBytes: number;
+  decodedEventObjectAllocations: number;
+  decodedBagEntryObjectAllocations: number;
+  resultBagEntryObjectAllocations: number;
 };
 
 function recordKernelCall(inputBytes = 0, outputBytes = 0): void {
@@ -93,6 +97,9 @@ export function endBattleKernelMeasurement(): BattleKernelMeasurement {
     inputArenaCopyBytes: measuredInputArenaCopyBytes,
     outputBufferCopies: measuredOutputBufferCopies,
     outputBufferCopyBytes: measuredOutputBufferCopyBytes,
+    decodedEventObjectAllocations: encoding.decodedEventObjectAllocations,
+    decodedBagEntryObjectAllocations: encoding.decodedBagEntryObjectAllocations,
+    resultBagEntryObjectAllocations: encoding.resultBagEntryObjectAllocations,
   };
 }
 if (kernel.battle_kernel_abi_version() !== ABI_VERSION) {
@@ -279,7 +286,7 @@ function invokeBattleProtocol(
   input: Uint8Array,
   operation: (byteLength: number) => number,
 ): BattleProtocolOutput {
-  return invokeBattleProtocolWithWriter((arena) => {
+  return invokeBattleProtocolWithWriterAndConsumer((arena) => {
     if (input.byteLength > arena.capacity) {
       throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
     }
@@ -289,14 +296,24 @@ function invokeBattleProtocol(
       measuredInputArenaCopyBytes += input.byteLength;
     }
     return input.byteLength;
-  }, operation, true);
+  }, operation, (view) => {
+    const arena = getProtocolArenaCache();
+    const output = new Uint8Array(view.byteLength);
+    output.set(arena.output.subarray(0, view.byteLength));
+    if (measurementEnabled) {
+      measuredOutputBufferCopies += 1;
+      measuredOutputBufferCopyBytes += view.byteLength;
+    }
+    return decodeBattleProtocolOutput(output);
+  });
 }
 
-function invokeBattleProtocolWithWriter(
+// SpecRef: 6.1.8 | Universal C++ battle kernel | synchronous borrowed output consumer
+function invokeBattleProtocolWithWriterAndConsumer<T>(
   writeInput: (arena: ProtocolArenaCache) => number,
   operation: (byteLength: number) => number,
-  copyOutput: boolean,
-): BattleProtocolOutput {
+  consumer: (output: BorrowedBattleProtocolOutputView) => T,
+): T {
   if (protocolInvocationActive) throw new Error('Nested or reentrant Wasm battle protocol execution is not supported');
   protocolInvocationActive = true;
   try {
@@ -312,15 +329,12 @@ function invokeBattleProtocolWithWriter(
     arena = getProtocolArenaCache();
     if (outputByteLength > arena.capacity) throw new Error('C++ battle protocol returned an oversized output');
     recordKernelCall(inputByteLength, outputByteLength);
-    const outputView = arena.output.subarray(0, outputByteLength);
-    if (!copyOutput) return decodeBattleProtocolOutput(outputView);
-    const output = new Uint8Array(outputByteLength);
-    output.set(outputView);
-    if (measurementEnabled) {
-      measuredOutputBufferCopies += 1;
-      measuredOutputBufferCopyBytes += outputByteLength;
+    const borrowed = new BorrowedBattleProtocolOutputView(arena.output.subarray(0, outputByteLength));
+    try {
+      return consumer(borrowed);
+    } finally {
+      borrowed.invalidate();
     }
-    return decodeBattleProtocolOutput(output);
   } finally {
     protocolInvocationActive = false;
   }
@@ -333,10 +347,25 @@ export function executeBattleProtocol(input: Uint8Array): BattleProtocolOutput {
 
 /** One measured Wasm call with canonical structured input written directly into its arena. */
 export function executeBattleProtocolInput(input: BattleProtocolInput): BattleProtocolOutput {
-  return invokeBattleProtocolWithWriter(
+  return invokeBattleProtocolWithWriterAndConsumer(
     (arena) => writeBattleProtocolInput(input, arena.input),
     (byteLength) => kernel.battle_protocol_execute(byteLength),
-    false,
+    (view) => {
+      const arena = getProtocolArenaCache();
+      return decodeBattleProtocolOutput(arena.output.subarray(0, view.byteLength));
+    },
+  );
+}
+
+/** Synchronously consumes a validated borrowed output while the protocol arena is exclusively owned. */
+export function consumeBattleProtocolInput<T>(
+  input: BattleProtocolInput,
+  consumer: (output: BorrowedBattleProtocolOutputView) => T,
+): T {
+  return invokeBattleProtocolWithWriterAndConsumer(
+    (arena) => writeBattleProtocolInput(input, arena.input),
+    (byteLength) => kernel.battle_protocol_execute(byteLength),
+    consumer,
   );
 }
 

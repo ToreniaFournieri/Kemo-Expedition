@@ -154,6 +154,7 @@ function requireFinite(value: number, label: string): number {
 }
 
 function requireSpan(offset: number, count: number, recordSize: number, totalSize: number, label: string): void {
+  if (count === 0 && offset === 0) return;
   const end = offset + count * recordSize;
   if (!Number.isSafeInteger(end) || offset < BATTLE_OUTPUT_HEADER_SIZE || end > totalSize) {
     throw new Error(`Invalid battle protocol ${label} span`);
@@ -174,14 +175,36 @@ type BattleProtocolInputLayout = {
 
 let encodedInputAllocations = 0;
 let encodedInputAllocationBytes = 0;
+let decodedEventObjectAllocations = 0;
+let decodedBagEntryObjectAllocations = 0;
+let resultBagEntryObjectAllocations = 0;
 
 export function resetBattleProtocolEncodingMeasurement(): void {
   encodedInputAllocations = 0;
   encodedInputAllocationBytes = 0;
+  decodedEventObjectAllocations = 0;
+  decodedBagEntryObjectAllocations = 0;
+  resultBagEntryObjectAllocations = 0;
 }
 
-export function getBattleProtocolEncodingMeasurement(): { allocations: number; bytes: number } {
-  return { allocations: encodedInputAllocations, bytes: encodedInputAllocationBytes };
+export function getBattleProtocolEncodingMeasurement(): {
+  allocations: number;
+  bytes: number;
+  decodedEventObjectAllocations: number;
+  decodedBagEntryObjectAllocations: number;
+  resultBagEntryObjectAllocations: number;
+} {
+  return {
+    allocations: encodedInputAllocations,
+    bytes: encodedInputAllocationBytes,
+    decodedEventObjectAllocations,
+    decodedBagEntryObjectAllocations,
+    resultBagEntryObjectAllocations,
+  };
+}
+
+export function recordBattleResultBagEntryObjectAllocations(count: number): void {
+  resultBagEntryObjectAllocations += count;
 }
 
 function validateBattleProtocolInput(input: BattleProtocolInput): BattleProtocolInputLayout {
@@ -419,80 +442,163 @@ export function encodeBattleProtocolInput(input: BattleProtocolInput): Uint8Arra
   return bytes;
 }
 
-export function decodeBattleProtocolOutput(bytes: Uint8Array): BattleProtocolOutput {
+// SpecRef: 6.1.8 | Universal C++ battle kernel | protocol v3 borrowed output materialization
+export class BorrowedBattleProtocolOutputView {
+  private readonly borrowedByteLength: number;
+  private readonly borrowedEventCount: number;
+  private readonly borrowedPhysicalThreatBagCount: number;
+  private readonly borrowedMagicalThreatBagCount: number;
+  private readonly view: DataView;
+  private readonly eventsOffset: number;
+  private readonly physicalBagOffset: number;
+  private readonly magicalBagOffset: number;
+  private active = true;
+  private lastEventIndex = -1;
+  private lastEventOffset = 0;
+
+  constructor(bytes: Uint8Array) {
   if (bytes.byteLength > BATTLE_PROTOCOL_ARENA_CAPACITY) throw new Error('Battle protocol output exceeds its arena capacity');
   if (bytes.byteLength < BATTLE_OUTPUT_HEADER_SIZE) throw new Error('Battle protocol output is shorter than its header');
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (view.getUint32(BATTLE_OUTPUT_OFFSETS.magic, littleEndian) !== BATTLE_PROTOCOL_OUTPUT_MAGIC) throw new Error('Invalid battle protocol output magic');
   if (view.getUint16(BATTLE_OUTPUT_OFFSETS.version, littleEndian) !== BATTLE_PROTOCOL_VERSION) throw new Error('Unsupported battle protocol output version');
   if (view.getUint16(BATTLE_OUTPUT_OFFSETS.headerSize, littleEndian) !== BATTLE_OUTPUT_HEADER_SIZE) throw new Error('Invalid battle protocol output header size');
-  const totalSize = view.getUint32(BATTLE_OUTPUT_OFFSETS.totalSize, littleEndian);
-  if (totalSize < BATTLE_OUTPUT_HEADER_SIZE || totalSize > bytes.byteLength) throw new Error('Invalid battle protocol output size');
+    const totalSize = view.getUint32(BATTLE_OUTPUT_OFFSETS.totalSize, littleEndian);
+    if (totalSize < BATTLE_OUTPUT_HEADER_SIZE || totalSize > bytes.byteLength) throw new Error('Invalid battle protocol output size');
   const outcomeId = view.getUint8(BATTLE_OUTPUT_OFFSETS.outcome);
-  const outcome = outcomes[outcomeId];
-  if (!outcome) throw new Error(`Invalid battle protocol outcome ${outcomeId}`);
+    if (!outcomes[outcomeId]) throw new Error(`Invalid battle protocol outcome ${outcomeId}`);
 
-  const eventCount = view.getUint32(BATTLE_OUTPUT_OFFSETS.eventCount, littleEndian);
-  if (eventCount > BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS) throw new Error('Battle protocol event count exceeds its supported capacity');
-  const eventsOffset = view.getUint32(BATTLE_OUTPUT_OFFSETS.eventsOffset, littleEndian);
-  requireSpan(eventsOffset, eventCount, BATTLE_EVENT_RECORD_SIZE, totalSize, 'events');
-  const events = Array.from({ length: eventCount }, (_, index): BattleProtocolEvent => {
-    const offset = eventsOffset + index * BATTLE_EVENT_RECORD_SIZE;
+    this.borrowedEventCount = view.getUint32(BATTLE_OUTPUT_OFFSETS.eventCount, littleEndian);
+    if (this.borrowedEventCount > BATTLE_PROTOCOL_MAX_SEMANTIC_EVENTS) throw new Error('Battle protocol event count exceeds its supported capacity');
+    this.eventsOffset = view.getUint32(BATTLE_OUTPUT_OFFSETS.eventsOffset, littleEndian);
+    requireSpan(this.eventsOffset, this.borrowedEventCount, BATTLE_EVENT_RECORD_SIZE, totalSize, 'events');
+    this.borrowedPhysicalThreatBagCount = view.getUint32(BATTLE_OUTPUT_OFFSETS.physicalBagCount, littleEndian);
+    this.physicalBagOffset = view.getUint32(BATTLE_OUTPUT_OFFSETS.physicalBagOffset, littleEndian);
+    requireSpan(this.physicalBagOffset, this.borrowedPhysicalThreatBagCount, BATTLE_BAG_RECORD_SIZE, totalSize, 'physical bag');
+    this.borrowedMagicalThreatBagCount = view.getUint32(BATTLE_OUTPUT_OFFSETS.magicalBagCount, littleEndian);
+    this.magicalBagOffset = view.getUint32(BATTLE_OUTPUT_OFFSETS.magicalBagOffset, littleEndian);
+    requireSpan(this.magicalBagOffset, this.borrowedMagicalThreatBagCount, BATTLE_BAG_RECORD_SIZE, totalSize, 'magical bag');
+    for (let index = 0; index < this.borrowedEventCount; index += 1) {
+      const offset = this.eventsOffset + index * BATTLE_EVENT_RECORD_SIZE;
     const opcodeId = view.getUint16(offset + BATTLE_EVENT_OFFSETS.opcode, littleEndian);
-    const opcode = BATTLE_EVENT_NAMES[opcodeId];
-    if (!opcode) throw new Error(`Invalid battle event opcode ${opcodeId}`);
+      if (!BATTLE_EVENT_NAMES[opcodeId]) throw new Error(`Invalid battle event opcode ${opcodeId}`);
     const abilityId = view.getUint16(offset + BATTLE_EVENT_OFFSETS.abilityId, littleEndian);
     const attackTypeId = view.getUint8(offset + BATTLE_EVENT_OFFSETS.attackType);
     if (abilityId !== 0 && !BATTLE_ABILITY_NAMES[abilityId]) throw new Error(`Invalid battle event ability ${abilityId}`);
     if (attackTypeId >= attackTypes.length) throw new Error(`Invalid battle event attack type ${attackTypeId}`);
+    }
+    this.view = view;
+    this.borrowedByteLength = totalSize;
+  }
+
+  invalidate(): void {
+    this.active = false;
+  }
+
+  private requireActive(): void {
+    if (!this.active) throw new Error('Borrowed battle protocol output view is no longer active');
+  }
+
+  private eventOffset(index: number): number {
+    this.requireActive();
+    if (index === this.lastEventIndex) return this.lastEventOffset;
+    if (!Number.isInteger(index) || index < 0 || index >= this.borrowedEventCount) {
+      throw new RangeError(`Battle protocol event index ${index} is outside 0..${this.borrowedEventCount - 1}`);
+    }
+    this.lastEventIndex = index;
+    this.lastEventOffset = this.eventsOffset + index * BATTLE_EVENT_RECORD_SIZE;
+    return this.lastEventOffset;
+  }
+
+  private bagOffset(kind: 'physical' | 'magical', index: number): number {
+    this.requireActive();
+    const count = kind === 'physical' ? this.borrowedPhysicalThreatBagCount : this.borrowedMagicalThreatBagCount;
+    if (!Number.isInteger(index) || index < 0 || index >= count) {
+      throw new RangeError(`Battle protocol ${kind} bag index ${index} is outside 0..${count - 1}`);
+    }
+    return (kind === 'physical' ? this.physicalBagOffset : this.magicalBagOffset) + index * BATTLE_BAG_RECORD_SIZE;
+  }
+
+  get byteLength(): number { this.requireActive(); return this.borrowedByteLength; }
+  get eventCount(): number { this.requireActive(); return this.borrowedEventCount; }
+  get physicalThreatBagCount(): number { this.requireActive(); return this.borrowedPhysicalThreatBagCount; }
+  get magicalThreatBagCount(): number { this.requireActive(); return this.borrowedMagicalThreatBagCount; }
+  get flags(): number { this.requireActive(); return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.flags, littleEndian); }
+  get outcome(): BattleProtocolOutput['outcome'] { this.requireActive(); return outcomes[this.view.getUint8(BATTLE_OUTPUT_OFFSETS.outcome)]!; }
+  get partyHp(): number { this.requireActive(); return this.view.getFloat64(BATTLE_OUTPUT_OFFSETS.partyHp, littleEndian); }
+  get enemyHp(): number { this.requireActive(); return this.view.getFloat64(BATTLE_OUTPUT_OFFSETS.enemyHp, littleEndian); }
+  get randomConsumed(): number { this.requireActive(); return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.randomConsumed, littleEndian); }
+  get enemyHitsReceived(): number { this.requireActive(); return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.enemyHitsReceived, littleEndian); }
+  get seed(): bigint {
+    this.requireActive();
+    return (BigInt(this.view.getUint32(BATTLE_OUTPUT_OFFSETS.seedHigh, littleEndian)) << 32n)
+      | BigInt(this.view.getUint32(BATTLE_OUTPUT_OFFSETS.seedLow, littleEndian));
+  }
+  get rngVersion(): number { this.requireActive(); return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.rngVersion, littleEndian); }
+  get diagnosticDrawCount(): number { this.requireActive(); return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.diagnosticDrawCount, littleEndian); }
+  get protocolError(): number { this.requireActive(); return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.protocolError, littleEndian); }
+
+  eventOpcode(index: number): BattleProtocolEvent['opcode'] {
+    return BATTLE_EVENT_NAMES[this.view.getUint16(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.opcode, littleEndian)]!;
+  }
+  eventPhase(index: number): number { return this.view.getUint8(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.phase); }
+  eventActorKind(index: number): number { return this.view.getUint8(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.actorKind); }
+  eventActorId(index: number): number { return this.view.getUint32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.actorId, littleEndian); }
+  eventTargetId(index: number): number { return this.view.getUint32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.targetId, littleEndian); }
+  eventAbilityId(index: number): AbilityId | null {
+    const id = this.view.getUint16(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.abilityId, littleEndian);
+    return id === 0 ? null : BATTLE_ABILITY_NAMES[id] as AbilityId;
+  }
+  eventAttackType(index: number): AttackType | null {
+    return attackTypes[this.view.getUint8(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.attackType)] ?? null;
+  }
+  eventFlags(index: number): number { return this.view.getUint8(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.flags); }
+  eventTiming(index: number): number { return this.view.getInt32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.timing, littleEndian); }
+  eventHits(index: number): number { return this.view.getUint32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.hits, littleEndian); }
+  eventAttempts(index: number): number { return this.view.getUint32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.attempts, littleEndian); }
+  eventAux0(index: number): number { return this.view.getUint32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.aux0, littleEndian); }
+  eventValue0(index: number): number { return this.view.getFloat64(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.value0, littleEndian); }
+  eventValue1(index: number): number { return this.view.getFloat64(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.value1, littleEndian); }
+  eventValue2(index: number): number { return this.view.getFloat64(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.value2, littleEndian); }
+  eventAux1(index: number): number { return this.view.getUint32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.aux1, littleEndian); }
+  eventAux2(index: number): number { return this.view.getUint32(this.eventOffset(index) + BATTLE_EVENT_OFFSETS.aux2, littleEndian); }
+  physicalThreatBagId(index: number): number { return this.view.getInt32(this.bagOffset('physical', index) + BATTLE_BAG_OFFSETS.id, littleEndian); }
+  physicalThreatBagTickets(index: number): number { return this.view.getUint32(this.bagOffset('physical', index) + BATTLE_BAG_OFFSETS.tickets, littleEndian); }
+  magicalThreatBagId(index: number): number { return this.view.getInt32(this.bagOffset('magical', index) + BATTLE_BAG_OFFSETS.id, littleEndian); }
+  magicalThreatBagTickets(index: number): number { return this.view.getUint32(this.bagOffset('magical', index) + BATTLE_BAG_OFFSETS.tickets, littleEndian); }
+}
+
+export function decodeBattleProtocolOutput(bytes: Uint8Array): BattleProtocolOutput {
+  const output = new BorrowedBattleProtocolOutputView(bytes);
+  const events = Array.from({ length: output.eventCount }, (_, index): BattleProtocolEvent => {
+    decodedEventObjectAllocations += 1;
     return {
-      opcode,
-      phase: view.getUint8(offset + BATTLE_EVENT_OFFSETS.phase),
-      actorKind: view.getUint8(offset + BATTLE_EVENT_OFFSETS.actorKind),
-      actorId: view.getUint32(offset + BATTLE_EVENT_OFFSETS.actorId, littleEndian),
-      targetId: view.getUint32(offset + BATTLE_EVENT_OFFSETS.targetId, littleEndian),
-      abilityId: abilityId === 0 ? null : BATTLE_ABILITY_NAMES[abilityId] as AbilityId,
-      attackType: attackTypes[attackTypeId] ?? null,
-      flags: view.getUint8(offset + BATTLE_EVENT_OFFSETS.flags),
-      timing: view.getInt32(offset + BATTLE_EVENT_OFFSETS.timing, littleEndian),
-      hits: view.getUint32(offset + BATTLE_EVENT_OFFSETS.hits, littleEndian),
-      attempts: view.getUint32(offset + BATTLE_EVENT_OFFSETS.attempts, littleEndian),
-      aux0: view.getUint32(offset + BATTLE_EVENT_OFFSETS.aux0, littleEndian),
-      value0: view.getFloat64(offset + BATTLE_EVENT_OFFSETS.value0, littleEndian),
-      value1: view.getFloat64(offset + BATTLE_EVENT_OFFSETS.value1, littleEndian),
-      value2: view.getFloat64(offset + BATTLE_EVENT_OFFSETS.value2, littleEndian),
-      aux1: view.getUint32(offset + BATTLE_EVENT_OFFSETS.aux1, littleEndian),
-      aux2: view.getUint32(offset + BATTLE_EVENT_OFFSETS.aux2, littleEndian),
+      opcode: output.eventOpcode(index), phase: output.eventPhase(index), actorKind: output.eventActorKind(index),
+      actorId: output.eventActorId(index), targetId: output.eventTargetId(index), abilityId: output.eventAbilityId(index),
+      attackType: output.eventAttackType(index), flags: output.eventFlags(index), timing: output.eventTiming(index),
+      hits: output.eventHits(index), attempts: output.eventAttempts(index), aux0: output.eventAux0(index),
+      value0: output.eventValue0(index), value1: output.eventValue1(index), value2: output.eventValue2(index),
+      aux1: output.eventAux1(index), aux2: output.eventAux2(index),
     };
   });
 
-  const decodeBag = (countOffset: number, recordsOffset: number, label: string) => {
-    const count = view.getUint32(countOffset, littleEndian);
-    const offset = view.getUint32(recordsOffset, littleEndian);
-    if (count === 0) return [];
-    requireSpan(offset, count, BATTLE_BAG_RECORD_SIZE, totalSize, label);
-    return Array.from({ length: count }, (_, index) => ({
-      id: view.getInt32(offset + index * BATTLE_BAG_RECORD_SIZE + BATTLE_BAG_OFFSETS.id, littleEndian),
-      tickets: view.getUint32(offset + index * BATTLE_BAG_RECORD_SIZE + BATTLE_BAG_OFFSETS.tickets, littleEndian),
-    }));
+  const decodeBag = (kind: 'physical' | 'magical', count: number) => {
+    return Array.from({ length: count }, (_, index) => {
+      decodedBagEntryObjectAllocations += 1;
+      return kind === 'physical'
+        ? { id: output.physicalThreatBagId(index), tickets: output.physicalThreatBagTickets(index) }
+        : { id: output.magicalThreatBagId(index), tickets: output.magicalThreatBagTickets(index) };
+    });
   };
 
   return {
-    flags: view.getUint32(BATTLE_OUTPUT_OFFSETS.flags, littleEndian),
-    outcome,
-    partyHp: view.getFloat64(BATTLE_OUTPUT_OFFSETS.partyHp, littleEndian),
-    enemyHp: view.getFloat64(BATTLE_OUTPUT_OFFSETS.enemyHp, littleEndian),
-    randomConsumed: view.getUint32(BATTLE_OUTPUT_OFFSETS.randomConsumed, littleEndian),
-    enemyHitsReceived: view.getUint32(BATTLE_OUTPUT_OFFSETS.enemyHitsReceived, littleEndian),
+    flags: output.flags, outcome: output.outcome, partyHp: output.partyHp, enemyHp: output.enemyHp,
+    randomConsumed: output.randomConsumed, enemyHitsReceived: output.enemyHitsReceived,
     events,
-    physicalThreatBag: decodeBag(BATTLE_OUTPUT_OFFSETS.physicalBagCount, BATTLE_OUTPUT_OFFSETS.physicalBagOffset, 'physical bag'),
-    magicalThreatBag: decodeBag(BATTLE_OUTPUT_OFFSETS.magicalBagCount, BATTLE_OUTPUT_OFFSETS.magicalBagOffset, 'magical bag'),
-    byteLength: totalSize,
-    seed: (BigInt(view.getUint32(BATTLE_OUTPUT_OFFSETS.seedHigh, littleEndian)) << 32n)
-      | BigInt(view.getUint32(BATTLE_OUTPUT_OFFSETS.seedLow, littleEndian)),
-    rngVersion: view.getUint32(BATTLE_OUTPUT_OFFSETS.rngVersion, littleEndian),
-    diagnosticDrawCount: view.getUint32(BATTLE_OUTPUT_OFFSETS.diagnosticDrawCount, littleEndian),
-    protocolError: view.getUint32(BATTLE_OUTPUT_OFFSETS.protocolError, littleEndian),
+    physicalThreatBag: decodeBag('physical', output.physicalThreatBagCount),
+    magicalThreatBag: decodeBag('magical', output.magicalThreatBagCount),
+    byteLength: output.byteLength, seed: output.seed, rngVersion: output.rngVersion,
+    diagnosticDrawCount: output.diagnosticDrawCount, protocolError: output.protocolError,
   };
 }
 
