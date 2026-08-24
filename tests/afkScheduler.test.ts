@@ -156,9 +156,9 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
   assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
   assert.match(homeSource, /afkActiveCommitTransactionRef\.current = \{/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
-  assert.match(homeSource, /transaction\.phase = 'awaiting-auto-equipment-commit'/);
   assert.match(homeSource, /runAutoEquipment\(\s*\[transaction\.result\.partyIndex\]/);
-  assert.match(homeSource, /completeAfkCommitTransaction\(transaction\.result\)/);
+  assert.match(homeSource, /runAutoEquipment\([\s\S]{0,240}completeAfkCommitTransaction\(transaction\.result\)/);
+  assert.doesNotMatch(homeSource, /mutationCount === 0/);
   assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
 });
 
