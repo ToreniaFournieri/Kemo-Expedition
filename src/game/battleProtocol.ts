@@ -501,10 +501,10 @@ export class BorrowedBattleProtocolOutputView {
 
   private eventOffset(index: number): number {
     this.requireActive();
-    if (index === this.lastEventIndex) return this.lastEventOffset;
     if (!Number.isInteger(index) || index < 0 || index >= this.borrowedEventCount) {
       throw new RangeError(`Battle protocol event index ${index} is outside 0..${this.borrowedEventCount - 1}`);
     }
+    if (index === this.lastEventIndex) return this.lastEventOffset;
     this.lastEventIndex = index;
     this.lastEventOffset = this.eventsOffset + index * BATTLE_EVENT_RECORD_SIZE;
     return this.lastEventOffset;

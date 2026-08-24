@@ -369,3 +369,56 @@ Fresh-process measurements on the same machine are descriptive and noisy. The pr
 | API count 100 | 2,591.33 ms | 2,739.40 ms | improved 7.7–12.7% |
 
 The deterministic allocation/GC reduction is accepted with no material AFK latency regression; AFK wall timing itself is not claimed as a stable improvement from these two runs. Remaining measured object creation is dominated by required final battle-log/presentation objects, projected combat/stat structures, and the 12 owned final threat-bag entries per encounter. Gate 2 direct Party-to-arena input writing and resident native profile caching were not implemented.
+
+## Gate 0R — retrospective attribution (Build 46)
+
+### Reader correction and measurement boundaries
+
+`BorrowedBattleProtocolOutputView.eventOffset()` now rejects non-integers and every index outside `0 <= index < eventCount` before consulting its last-index cache. This closes the fresh-reader `-1` sentinel collision without removing the valid-index cache. A table-driven regression exercises `-1`, `eventCount`, fractional values, `NaN`, `Infinity`, every indexed event getter, all four bag getters, invalid access after a valid cached access, and valid recovery after rejection. Protocol v3 and ABI 8 are unchanged.
+
+The acceptance benchmark retains its existing online, six-party/1,724-battle AFK, API count-1, and API count-100 workloads, now explicitly labeled end-to-end. Their timed intervals include their existing orchestration and, for online, fixture `structuredClone` work; they are not protocol-boundary timings. A separate battle-only microprofile prepares all Party, Enemy, bag, environment, and other inputs before the interval, warms the production route, times only deterministic `executeBattleWithSeed` projection through the final owned `BattleResult`, and checks input immutability afterward. The typical case uses party 6/seed `0x8e710006` and produces 24 semantic events; the heavy case uses party 1/seed `0x8e710017` and produces 132 events. Both retain one Wasm execution, an empty production tape, zero encoded-input allocations/full-buffer copies/decoded production event or bag objects, and 12 required final bag-entry objects per battle.
+
+### Paired pre/post Gate 1 result
+
+Commit `6fb485e8` (A) and the active Build 46 snapshot (B) were exported without switching the active worktree. Both exports used Node v26.7.0, the same checked dependency directory and lockfile, the same save and benchmark source, deterministic seeds, equivalent warmup, and a fresh child process for each run. Five runs per revision used the alternating order `A B B A A B B A A B`. Values are median across runs, followed by the complete run range; relative change is B versus A.
+
+| Metric | A median (range), ms | B median (range), ms | Relative |
+|-|-:|-:|-:|
+| Battle-only typical median | 0.810 (0.628–0.881) | 0.774 (0.759–0.833) | -4.5% |
+| Battle-only typical p95 | 1.482 (1.414–1.822) | 1.631 (1.301–1.690) | +10.1% |
+| Battle-only heavy median | 1.323 (1.111–1.396) | 1.285 (1.205–1.464) | -2.9% |
+| Battle-only heavy p95 | 1.860 (1.625–2.755) | 1.734 (1.607–2.374) | -6.8% |
+| End-to-end online median | 13.987 (11.461–14.786) | 13.619 (12.617–13.865) | -2.6% |
+| End-to-end online p95 | 15.502 (12.618–16.996) | 15.690 (14.322–17.702) | +1.2% |
+| AFK total CPU | 2,155.112 (1,750.171–2,220.259) | 2,153.686 (1,983.057–2,443.623) | -0.1% |
+| AFK projected parallel | 541.299 (435.773–640.985) | 548.386 (496.602–662.414) | +1.3% |
+| API count-100 | 3,059.568 (2,967.366–3,161.222) | 3,059.898 (2,917.880–3,266.827) | +0.01% |
+
+Every A/B range overlaps. Direction changes between median and p95 and across workload types, while the relative differences are smaller than or comparable to the observed ranges. Gate 1 therefore has no latency change distinguishable from run-to-run noise; its accepted benefit remains deterministic removal of owned production event/bag materialization.
+
+### CPU and allocation attribution
+
+The active snapshot was bundled once and run in fresh processes with V8 Inspector CPU profiling and heap allocation sampling started only after save loading and fixture setup. Profiles cover 4,000 typical battles, 2,000 heavy battles, the exact 1,724-battle AFK workload, and API count-100 (2,400 battles). No runtime phase hooks were added: named frames and their complete sampled stacks separated the adjacent phases sufficiently. “Self” assigns a sample to the nearest named phase frame; “inclusive” includes samples below that phase and therefore intentionally overlaps, especially where party/stat computation is called from projection and narration. Percentages use all profiler samples, including GC/runtime samples.
+
+| CPU phase | Typical self / incl. | Heavy self / incl. | AFK self / incl. | API-100 self / incl. |
+|-|-:|-:|-:|-:|
+| Party/stat computation | 75.4% / 80.7% | 74.3% / 77.7% | 70.9% / 74.4% | 68.6% / 74.2% |
+| Protocol input projection | 1.6% / 82.3% | 0.8% / 78.4% | 1.0% / 1.0% | 0.7% / 31.2% |
+| Input validation/layout | 1.8% / 1.8% | 0.9% / 0.9% | 0.8% / 0.8% | 0.7% / 0.7% |
+| Arena field writing | 2.0% / 3.7% | 1.4% / 2.3% | 1.4% / 2.2% | 1.0% / 1.7% |
+| Native Wasm execution | 1.6% / 1.6% | 2.2% / 2.2% | 1.0% / 1.0% | 0.8% / 0.8% |
+| Borrowed construction/validation | 0.1% / 0.1% | 0.2% / 0.2% | <0.1% / <0.1% | 0.1% / 0.1% |
+| Indexed semantic preprocessing | 0.7% / 0.7% | 1.3% / 1.3% | 0.4% / 0.4% | 0.2% / 0.2% |
+| Localization/log construction | 7.7% / 48.4% | 9.1% / 47.5% | 6.2% / 7.2% | 8.0% / 22.6% |
+| Final threat-bag copying | below sampling resolution | below sampling resolution | below sampling resolution | below sampling resolution |
+| Outside-battle orchestration | 0% / 0% | 0% / 0% | 10.7% / 92.4% | 12.3% / 92.6% |
+
+The remaining 7.4–9.9% self CPU is V8 runtime, GC, or frames without a stable phase name. Projection plus narration inclusive time is 35.8% of the combined AFK/API samples: `(27.1 + 194.6 + 1,300.0 + 942.0) / (2,720.0 + 4,168.7)`. Validation plus writing is only 1.9% combined self (2.6% inclusive), borrowed construction plus indexed access is about 0.4% self, native Wasm is 0.9%, and the final bag copy produced no CPU sample. The exact structural counter still records 12 final bag-entry objects per battle, but heap sampling did not identify that copy among dominant stacks, so it is not a material GC driver in these workloads.
+
+Allocation sampling attributes 88.1%, 88.2%, 87.0%, and 86.9% of typical, heavy, AFK, and API sampled allocation volume respectively to party/stat computation. The largest stacks are repeatedly `computeCharacterStats` through `computeCharacterHpContribution` or the `computePartyStats` character map: individual stacks account for about 6.4–8.4% of typical, 6.8–12.1% of heavy, 4.7–7.6% of AFK, and 2.8–4.0% of API sampled bytes. The largest non-stat stack is the tuple callback beneath `writeValidatedBattleProtocolInput` (about 2.3% of typical sampled bytes). By phase, input projection is 1.2–2.7%, validation 1.2–3.0%, writing 1.5–3.4%, localization/log construction 1.6–6.1%, and AFK/API orchestration 6.2%/7.5%. Heap sampling estimates allocation volume rather than retained heap and varies with sampling; exact structural counters remain authoritative only for the allocations they name.
+
+### Gate decision
+
+Gate 2 is justified only as the combined direct Party-to-arena writer plus shared narration-context work described by the decision rule. Projection plus duplicated narration/stat work exceeds 15% across AFK/API, and the narration side alone is 16.5% inclusive across those two profiles, providing a credible end-to-end opportunity above 5%. The shared computed combat/narration context should be the primary design target; the direct writer alone is unlikely to clear the 5% end-to-end bar because validation, arena writing, and projection-object overhead outside stat computation are small.
+
+No separate validation/writer optimization, borrowed-reader pass, final-bag representation change, native profile cache, or Wasm work is supported by these measurements. Gate 2 and native profile caching were not implemented in Build 46.

@@ -6,7 +6,7 @@ import { getDungeonById } from '../../src/data/dungeons.ts';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
-import { executeBattle } from '../../src/game/battle.ts';
+import { executeBattle, executeBattleWithSeed } from '../../src/game/battle.ts';
 import { getProductionBattleTelemetry, resetProductionBattleTelemetryForTesting } from '../../src/game/battle.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
@@ -25,6 +25,7 @@ const ONLINE_MEDIAN_CEILING_MS = 25;
 const AFK_TOTAL_CPU_CEILING_MS = 7_000;
 const AFK_PROJECTED_PARALLEL_CEILING_MS = 2_000;
 const API_COUNT_100_CEILING_MS = 10_000;
+const RETROSPECTIVE_COMPARISON = process.env.BOKEMO_RETROSPECTIVE_COMPARISON === '1';
 
 function loadState(): GameState {
   const envelope = JSON.parse(readFileSync(SAMPLE_SAVE_PATH, 'utf8')) as { saveDataCompressed: string };
@@ -70,7 +71,109 @@ function createBattleFixture(state: GameState) {
   return { party, enemy: getEncounterEnemyWithScaling(enemy, dungeon, floor.floorNumber, 'battle_Boss'), terrainEffect: floor.terrainEffect };
 }
 
-test('reports deterministic single-battle migration metrics', () => {
+function createPartyBattleFixture(state: GameState, partyIndex: number) {
+  const party = state.parties[partyIndex];
+  if (!party) throw new Error(`Performance save is missing party ${partyIndex + 1}`);
+  const dungeon = getDungeonById(party.selectedDungeonId);
+  const floor = dungeon?.floors[dungeon.floors.length - 1];
+  const bossId = floor?.rooms.find(room => room.type === 'battle_Boss')?.bossId ?? dungeon?.bossId;
+  const enemy = ENEMIES.find(entry => entry.id === bossId);
+  if (!dungeon || !floor || !enemy) throw new Error(`Performance save is missing party ${partyIndex + 1}'s boss encounter`);
+  return { party, enemy: getEncounterEnemyWithScaling(enemy, dungeon, floor.floorNumber, 'battle_Boss'), terrainEffect: floor.terrainEffect };
+}
+
+function measureBattleOnlyCase(
+  label: string,
+  state: GameState,
+  fixture: ReturnType<typeof createPartyBattleFixture>,
+  seed: bigint,
+) {
+  const prepared = Array.from({ length: WARMUP_COUNT + SAMPLE_COUNT }, () => ({
+    party: structuredClone(fixture.party),
+    enemy: structuredClone(fixture.enemy),
+    bags: structuredClone(state.bags),
+    environment: { terrainEffect: fixture.terrainEffect },
+  }));
+  const before = prepared.map(input => JSON.stringify(input));
+  for (let index = 0; index < WARMUP_COUNT; index += 1) {
+    const input = prepared[index]!;
+    executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment);
+  }
+  const durations: number[] = [];
+  const events: number[] = [];
+  let calls = 0;
+  let encodedInputAllocations = 0;
+  let inputArenaCopies = 0;
+  let outputBufferCopies = 0;
+  let decodedEventObjectAllocations = 0;
+  let decodedBagEntryObjectAllocations = 0;
+  let resultBagEntryObjectAllocations = 0;
+  for (let index = WARMUP_COUNT; index < prepared.length; index += 1) {
+    const input = prepared[index]!;
+    resetProductionBattleTelemetryForTesting();
+    beginBattleKernelMeasurement();
+    const started = performance.now();
+    executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment);
+    durations.push(performance.now() - started);
+    const boundary = endBattleKernelMeasurement();
+    calls += boundary.calls;
+    encodedInputAllocations += boundary.encodedInputAllocations;
+    inputArenaCopies += boundary.inputArenaCopies;
+    outputBufferCopies += boundary.outputBufferCopies;
+    decodedEventObjectAllocations += boundary.decodedEventObjectAllocations ?? 0;
+    decodedBagEntryObjectAllocations += boundary.decodedBagEntryObjectAllocations ?? 0;
+    resultBagEntryObjectAllocations += boundary.resultBagEntryObjectAllocations ?? 0;
+    events.push(getProductionBattleTelemetry().maxSemanticEvents);
+  }
+  prepared.forEach((input, index) => assert.equal(JSON.stringify(input), before[index], `${label} input ${index} mutated`));
+  const report = {
+    boundary: 'battle-only-production-projection-through-owned-result', label, samples: SAMPLE_COUNT,
+    seed: `0x${seed.toString(16)}`, medianBattleMs: percentile(durations, 0.5), p95BattleMs: percentile(durations, 0.95),
+    minBattleMs: Math.min(...durations), maxBattleMs: Math.max(...durations),
+    medianSemanticEvents: percentile(events, 0.5), maxSemanticEvents: Math.max(...events),
+    wasmBoundaryCalls: calls, encodedInputAllocations, inputArenaCopies, outputBufferCopies,
+    decodedEventObjectAllocations, decodedBagEntryObjectAllocations, resultBagEntryObjectAllocations,
+    seededInputRandomCount: 0,
+  };
+  assert.equal(report.wasmBoundaryCalls, SAMPLE_COUNT, `${label} must execute native Wasm once per battle`);
+  assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
+  if (!RETROSPECTIVE_COMPARISON) assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
+  return report;
+}
+
+function findSemanticHeavySeed(
+  state: GameState,
+  fixture: ReturnType<typeof createPartyBattleFixture>,
+): bigint {
+  let selectedSeed = 0x8e710001n;
+  let selectedEventCount = -1;
+  for (let offset = 1; offset <= 64; offset += 1) {
+    const seed = 0x8e710000n + BigInt(offset);
+    resetProductionBattleTelemetryForTesting();
+    executeBattleWithSeed(
+      structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(state.bags),
+      seed, 1, fixture.party.currentHp, { terrainEffect: fixture.terrainEffect },
+    );
+    const eventCount = getProductionBattleTelemetry().maxSemanticEvents;
+    if (eventCount > selectedEventCount) {
+      selectedSeed = seed;
+      selectedEventCount = eventCount;
+    }
+  }
+  assert.ok(selectedEventCount >= 132, `semantic-heavy fixture reached only ${selectedEventCount} events`);
+  return selectedSeed;
+}
+
+test('reports isolated deterministic battle-only microprofiles', () => {
+  setLanguage('ja');
+  const state = loadState();
+  const typical = measureBattleOnlyCase('typical', state, createPartyBattleFixture(state, 5), 0x8e710006n);
+  const heavyFixture = createPartyBattleFixture(state, 0);
+  const semanticHeavy = measureBattleOnlyCase('semantic-heavy', state, heavyFixture, findSemanticHeavySeed(state, heavyFixture));
+  console.info('BATTLE_ONLY_BASELINE', JSON.stringify([typical, semanticHeavy]));
+});
+
+test('reports deterministic end-to-end online single-battle migration metrics', () => {
   resetProductionBattleTelemetryForTesting();
   setLanguage('ja');
   const state = loadState();
@@ -109,14 +212,14 @@ test('reports deterministic single-battle migration metrics', () => {
     encodedInputAllocations.push(boundary.encodedInputAllocations);
     inputArenaCopies.push(boundary.inputArenaCopies);
     outputBufferCopies.push(boundary.outputBufferCopies);
-    decodedEventObjectAllocations.push(boundary.decodedEventObjectAllocations);
-    decodedBagEntryObjectAllocations.push(boundary.decodedBagEntryObjectAllocations);
-    resultBagEntryObjectAllocations.push(boundary.resultBagEntryObjectAllocations);
+    decodedEventObjectAllocations.push(boundary.decodedEventObjectAllocations ?? 0);
+    decodedBagEntryObjectAllocations.push(boundary.decodedBagEntryObjectAllocations ?? 0);
+    resultBagEntryObjectAllocations.push(boundary.resultBagEntryObjectAllocations ?? 0);
     draws.push(measured.logicalDraws);
     events.push(measured.result.log.length);
   }
   const report = {
-    engine: 'protocol-v3-production-native-coordinator', samples: SAMPLE_COUNT,
+    boundary: 'end-to-end-including-fixture-cloning', engine: 'protocol-v3-production-native-coordinator', samples: SAMPLE_COUNT,
     medianBattleMs: percentile(duration, 0.5), p95BattleMs: percentile(duration, 0.95),
     medianRandomDraws: percentile(draws, 0.5), medianEventCount: percentile(events, 0.5),
     medianWasmBoundaryCalls: percentile(calls, 0.5), medianInputBytes: percentile(inputBytes, 0.5),
@@ -137,11 +240,13 @@ test('reports deterministic single-battle migration metrics', () => {
   assert.equal(report.encodedInputAllocations, 0);
   assert.equal(report.inputArenaCopies, 0);
   assert.equal(report.outputBufferCopies, 0);
-  assert.equal(report.decodedEventObjectAllocations, 0);
-  assert.equal(report.decodedBagEntryObjectAllocations, 0);
+  if (!RETROSPECTIVE_COMPARISON) {
+    assert.equal(report.decodedEventObjectAllocations, 0);
+    assert.equal(report.decodedBagEntryObjectAllocations, 0);
+  }
 });
 
-test('reports deterministic AFK migration metrics', () => {
+test('reports deterministic end-to-end AFK migration metrics', () => {
   resetProductionBattleTelemetryForTesting();
   const state = loadState();
   const durations: number[] = [];
@@ -174,12 +279,12 @@ test('reports deterministic AFK migration metrics', () => {
     encodedInputAllocations += boundary.encodedInputAllocations;
     inputArenaCopies += boundary.inputArenaCopies;
     outputBufferCopies += boundary.outputBufferCopies;
-    decodedEventObjectAllocations += boundary.decodedEventObjectAllocations;
-    decodedBagEntryObjectAllocations += boundary.decodedBagEntryObjectAllocations;
-    resultBagEntryObjectAllocations += boundary.resultBagEntryObjectAllocations;
+    decodedEventObjectAllocations += boundary.decodedEventObjectAllocations ?? 0;
+    decodedBagEntryObjectAllocations += boundary.decodedBagEntryObjectAllocations ?? 0;
+    resultBagEntryObjectAllocations += boundary.resultBagEntryObjectAllocations ?? 0;
   }
   const report = {
-    engine: 'protocol-v3-production-native-coordinator', parties: state.parties.length,
+    boundary: 'end-to-end-afk-orchestration', engine: 'protocol-v3-production-native-coordinator', parties: state.parties.length,
     totalWorkerCpuMs: durations.reduce((sum, value) => sum + value, 0),
     projectedParallelWorkerMs: Math.max(...durations), p95WorkerMs: percentile(durations, 0.95),
     battles: getProductionBattleTelemetry().battles - battlesBefore,
@@ -196,11 +301,11 @@ test('reports deterministic AFK migration metrics', () => {
   assert.ok(report.projectedParallelWorkerMs < AFK_PROJECTED_PARALLEL_CEILING_MS, `AFK projected parallel ${report.projectedParallelWorkerMs}ms must remain below ${AFK_PROJECTED_PARALLEL_CEILING_MS}ms`);
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
   assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
-  assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
+  if (!RETROSPECTIVE_COMPARISON) assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
 });
 
 test('reports Experimental API sortie counts 1 and 100 through the production battle entry point', () => {
-  const reports: Array<Record<string, number>> = [];
+  const reports: Array<Record<string, number | string>> = [];
   for (const count of [1, 100]) {
     resetProductionBattleTelemetryForTesting();
     const state = loadState();
@@ -226,11 +331,11 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     assert.deepEqual([finalParty.instantExpeditionStock, finalParty.instantExpeditionChargeStartedAt], chargeBefore);
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
     assert.equal(boundary.encodedInputAllocations + boundary.inputArenaCopies + boundary.outputBufferCopies, 0);
-    assert.equal(boundary.decodedEventObjectAllocations + boundary.decodedBagEntryObjectAllocations, 0);
+    if (!RETROSPECTIVE_COMPARISON) assert.equal(boundary.decodedEventObjectAllocations + boundary.decodedBagEntryObjectAllocations, 0);
     if (count === 100) {
       assert.ok(durationMs < API_COUNT_100_CEILING_MS, `API count-100 ${durationMs}ms must remain below ${API_COUNT_100_CEILING_MS}ms`);
     }
-    reports.push({ count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, encodedInputAllocations: boundary.encodedInputAllocations, inputArenaCopies: boundary.inputArenaCopies, outputBufferCopies: boundary.outputBufferCopies, decodedEventObjectAllocations: boundary.decodedEventObjectAllocations, decodedBagEntryObjectAllocations: boundary.decodedBagEntryObjectAllocations, resultBagEntryObjectAllocations: boundary.resultBagEntryObjectAllocations, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
+    reports.push({ boundary: 'end-to-end-api-sortie-orchestration', count, durationMs, battles: telemetry.battles, wasmCalls: boundary.calls, inputBytes: boundary.inputBytes, outputBytes: boundary.outputBytes, encodedInputAllocations: boundary.encodedInputAllocations, inputArenaCopies: boundary.inputArenaCopies, outputBufferCopies: boundary.outputBufferCopies, decodedEventObjectAllocations: boundary.decodedEventObjectAllocations ?? 0, decodedBagEntryObjectAllocations: boundary.decodedBagEntryObjectAllocations ?? 0, resultBagEntryObjectAllocations: boundary.resultBagEntryObjectAllocations ?? 0, maxRandomConsumed: telemetry.maxRandomConsumed, maxSemanticEvents: telemetry.maxSemanticEvents, seededInputRandomCount: 0 });
   }
   console.info('BATTLE_MIGRATION_API_BASELINE', JSON.stringify(reports));
 });

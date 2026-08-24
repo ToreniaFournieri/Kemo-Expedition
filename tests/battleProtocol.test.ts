@@ -23,6 +23,7 @@ import { BATTLE_KERNEL_WASM } from '../src/game/battleKernelBinary.ts';
 import {
   BATTLE_ABILITY_IDS,
   BATTLE_ACTION_IDS,
+  BATTLE_BAG_OFFSETS,
   BATTLE_DEITY_IDS,
   BATTLE_ENGINE_FLAG_COMBAT_BASE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
@@ -297,6 +298,71 @@ test('borrowed reader validates headers, spans, enums, exact capacity, indexed f
   corrupt((data) => data.setUint8(BATTLE_OUTPUT_HEADER_SIZE + BATTLE_EVENT_OFFSETS.attackType, 0xff), /attack type/);
   const empty = new BorrowedBattleProtocolOutputView(syntheticOutput(1));
   assert.equal(empty.physicalThreatBagCount + empty.magicalThreatBagCount, 0);
+});
+
+test('borrowed indexed getters reject every invalid index without contaminating cached access', () => {
+  const bytes = syntheticOutput(2, 1, 1);
+  const data = new DataView(bytes.buffer);
+  data.setUint32(BATTLE_OUTPUT_HEADER_SIZE + BATTLE_EVENT_OFFSETS.actorId, 11, true);
+  data.setUint32(BATTLE_OUTPUT_HEADER_SIZE + BATTLE_EVENT_RECORD_SIZE + BATTLE_EVENT_OFFSETS.actorId, 99, true);
+  const physicalOffset = data.getUint32(BATTLE_OUTPUT_OFFSETS.physicalBagOffset, true);
+  const magicalOffset = data.getUint32(BATTLE_OUTPUT_OFFSETS.magicalBagOffset, true);
+  data.setInt32(physicalOffset, -7, true);
+  data.setUint32(physicalOffset + BATTLE_BAG_OFFSETS.tickets, 16, true);
+  data.setInt32(magicalOffset, 6, true);
+  data.setUint32(magicalOffset + BATTLE_BAG_OFFSETS.tickets, 2, true);
+
+  const firstAccessInvalidIndices = [-1, 2, 0.5, Number.NaN, Number.POSITIVE_INFINITY];
+  for (const invalidIndex of firstAccessInvalidIndices) {
+    const fresh = new BorrowedBattleProtocolOutputView(bytes);
+    assert.throws(() => fresh.eventActorId(invalidIndex), RangeError);
+    assert.equal(fresh.eventActorId(0), 11, 'a rejected first access must not contaminate the reader');
+  }
+
+  const eventGetters: Array<(view: BorrowedBattleProtocolOutputView, index: number) => unknown> = [
+    (view, index) => view.eventOpcode(index),
+    (view, index) => view.eventPhase(index),
+    (view, index) => view.eventActorKind(index),
+    (view, index) => view.eventActorId(index),
+    (view, index) => view.eventTargetId(index),
+    (view, index) => view.eventAbilityId(index),
+    (view, index) => view.eventAttackType(index),
+    (view, index) => view.eventFlags(index),
+    (view, index) => view.eventTiming(index),
+    (view, index) => view.eventHits(index),
+    (view, index) => view.eventAttempts(index),
+    (view, index) => view.eventAux0(index),
+    (view, index) => view.eventValue0(index),
+    (view, index) => view.eventValue1(index),
+    (view, index) => view.eventValue2(index),
+    (view, index) => view.eventAux1(index),
+    (view, index) => view.eventAux2(index),
+  ];
+  for (const getter of eventGetters) {
+    const reader = new BorrowedBattleProtocolOutputView(bytes);
+    getter(reader, 1);
+    assert.throws(() => getter(reader, -1), RangeError);
+    assert.throws(() => getter(reader, reader.eventCount), RangeError);
+    assert.equal(reader.eventActorId(1), 99, 'rejection after a cached access must preserve the cached record');
+  }
+
+  const bagGetters: Array<(view: BorrowedBattleProtocolOutputView, index: number) => unknown> = [
+    (view, index) => view.physicalThreatBagId(index),
+    (view, index) => view.physicalThreatBagTickets(index),
+    (view, index) => view.magicalThreatBagId(index),
+    (view, index) => view.magicalThreatBagTickets(index),
+  ];
+  for (const getter of bagGetters) {
+    const reader = new BorrowedBattleProtocolOutputView(bytes);
+    assert.throws(() => getter(reader, -1), RangeError);
+    assert.throws(() => getter(reader, 1), RangeError);
+    assert.throws(() => getter(reader, 0.5), RangeError);
+  }
+  const recovered = new BorrowedBattleProtocolOutputView(bytes);
+  assert.throws(() => recovered.physicalThreatBagId(Number.NaN), RangeError);
+  assert.throws(() => recovered.magicalThreatBagId(Number.POSITIVE_INFINITY), RangeError);
+  assert.deepEqual([recovered.physicalThreatBagId(0), recovered.physicalThreatBagTickets(0)], [-7, 16]);
+  assert.deepEqual([recovered.magicalThreatBagId(0), recovered.magicalThreatBagTickets(0)], [6, 2]);
 });
 
 test('borrowed consumer invalidates escaped views and releases its guard after consumer and narration failures', () => {
