@@ -73,6 +73,24 @@ export interface AfkOnlineProgressLockState {
   shouldRebuildAfterRecovery: boolean;
 }
 
+export function getAfkRecoveryCompletedMs(
+  totalMs: number,
+  remainingMsByParty: Record<number, number>,
+  fallbackRemainingMs: number,
+): number {
+  const total = Math.max(0, totalMs);
+  if (total === 0) return 0;
+
+  const remaining = Object.values(remainingMsByParty)
+    .filter(Number.isFinite)
+    .map((value) => Math.max(0, Math.min(total, value)));
+  const averageRemaining = remaining.length > 0
+    ? remaining.reduce((sum, value) => sum + value, 0) / remaining.length
+    : Math.max(0, Math.min(total, fallbackRemainingMs));
+
+  return Math.max(0, Math.min(total, total - averageRemaining));
+}
+
 export interface AfkSchedulerProfile {
   startedAt: number;
   completedAt: number | null;
