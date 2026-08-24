@@ -28,6 +28,7 @@ import {
 createAfkSchedulerProfile,
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 getEffectiveAfkElapsedMs,
+getAfkRecoveryCompletedMs,
 getApproxAfkCycleDurationMs,
 observeAfkRecoveryBacklog,
 recordAfkSchedulerBatch,
@@ -2458,7 +2459,15 @@ export function HomeScreen({
   // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
   // On refresh, `state.reactivate` progress is re-based to 0/x using the restored pending AFK backlog.
   const afkRecoveryTotalMs = Math.max(pendingAfkMs, afkRecoveryTotalMsRef.current);
-  const afkRecoveryCompletedMs = Math.max(0, afkRecoveryTotalMs - pendingAfkMs);
+  // The scheduler's canonical pending value is the slowest party's remaining
+  // backlog. Using it for display kept recovery at 0 until every parallel party
+  // committed its first Chunk. Average the independently committed party
+  // backlogs so each completed worker transaction advances the visible meter.
+  const afkRecoveryCompletedMs = getAfkRecoveryCompletedMs(
+    afkRecoveryTotalMs,
+    afkRemainingMsByPartyRef.current,
+    pendingAfkMs,
+  );
   const afkRecoveryProgressPercent = pendingAfkMs > 0
     ? Math.max(
         0,

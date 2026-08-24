@@ -8,6 +8,7 @@ import {
   getAdaptiveAfkOperationCount,
   getAfkBatchBudgetMs,
   getEffectiveAfkElapsedMs,
+  getAfkRecoveryCompletedMs,
   getAfkOperationWindow,
   normalizePersistedAfkChunkCursor,
   observeAfkRecoveryBacklog,
@@ -120,6 +121,12 @@ test('AFK reconstruction requires an observed positive backlog followed by zero'
 
   const settled = observeAfkRecoveryBacklog(0, completed.hasObservedActiveRecovery);
   assert.equal(settled.didCompleteRecovery, false);
+});
+
+test('AFK recovery display advances as parallel party Chunks commit', () => {
+  assert.equal(getAfkRecoveryCompletedMs(60_000, {}, 60_000), 0);
+  assert.equal(getAfkRecoveryCompletedMs(60_000, { 0: 30_000, 1: 60_000 }, 60_000), 15_000);
+  assert.equal(getAfkRecoveryCompletedMs(60_000, { 0: 0, 1: 0 }, 60_000), 60_000);
 });
 
 test('online progression stays paused for every active AFK recovery boundary', () => {
