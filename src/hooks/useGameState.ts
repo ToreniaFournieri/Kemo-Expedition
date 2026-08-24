@@ -29,6 +29,7 @@ import {
   ExpeditionSimulationResult,
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats, type ComputedPartyStatus } from '../game/partyComputation';
+import { deriveExpeditionRewardContext } from '../game/expeditionRewardContext';
 import { executeBattle, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
 import { gameplayRandom } from '../game/gameplayRandom';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
@@ -2441,7 +2442,7 @@ function getPartyAbilityLevel(party: Party, abilityId: string): number {
   }, 0);
 }
 
-function getPartyCunningMultiplier(party: Party): number {
+function getCurrentPartyCunningMultiplier(party: Party): number {
   const cunningLevel = getPartyAbilityLevel(party, 'cunning');
   const abilityMultiplier = cunningLevel >= 2 ? 1.3 : cunningLevel >= 1 ? 1.2 : 1;
 
@@ -2529,25 +2530,6 @@ function processAfkCycleProfit(state: GameState, partyIndex: number, simulatedAt
 
   return nextState;
 }
-
-function getUnlockActorName(party: Party): string | undefined {
-  const { characterStats } = computePartyStats(party);
-  let bestLevel = 0;
-  let unlockActorName: string | undefined;
-
-  for (const char of party.characters) {
-    const stats = characterStats.find(cs => cs.characterId === char.id);
-    const unlockAbility = stats?.abilities.find(ability => ability.id === 'unlock');
-    if (!unlockAbility) continue;
-    if (unlockAbility.level > bestLevel) {
-      bestLevel = unlockAbility.level;
-      unlockActorName = char.name;
-    }
-  }
-
-  return unlockActorName;
-}
-
 
 function applyPeriodicDeityHpEffect(
   deityName: string,
@@ -3118,6 +3100,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const suppliedPartyStatus = action.chunkPartyStatus ?? action.authoritativePartyStatus;
       const statusParty = suppliedPartyStatus?.party ?? currentParty;
       const partyStatus = suppliedPartyStatus?.computed ?? computePartyStats(statusParty);
+      const rewardContext = deriveExpeditionRewardContext(statusParty, partyStatus);
       recordRunExpeditionStatusAuthority(suppliedPartyStatus !== undefined);
       const { partyStats, characterStats } = partyStatus;
       const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
@@ -3352,9 +3335,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 );
               }
 
-              const unlockActorName = getUnlockActorName(statusParty);
+              const unlockActorName = rewardContext.unlockActorName;
               const hasUnlock = !!unlockActorName;
-              const autoSellMultiplier = getPartyCunningMultiplier(statusParty);
+              const autoSellMultiplier = rewardContext.autoSellMultiplier;
               const deityDonation =
                 state.global.deityDonations[normalizeDeityName(statusParty.deity.name)]
                 ?? statusParty.deityGold
@@ -3701,7 +3684,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalRemainingPartyHP = entries.length > 0
         ? entries[entries.length - 1].remainingPartyHP
         : currentHp;
-      const expeditionAutoSellMultiplier = getPartyCunningMultiplier(statusParty);
+      const expeditionAutoSellMultiplier = rewardContext.autoSellMultiplier;
 
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
@@ -4598,7 +4581,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         enhancement,
         superRare,
       };
-      const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
+      const autoSellMultiplier = getCurrentPartyCunningMultiplier(currentParty);
       const inventoryResult = addItemToInventory(
         globalState.inventory,
         purchasedItem,
