@@ -422,3 +422,62 @@ Allocation sampling attributes 88.1%, 88.2%, 87.0%, and 86.9% of typical, heavy,
 Gate 2 is justified only as the combined direct Party-to-arena writer plus shared narration-context work described by the decision rule. Projection plus duplicated narration/stat work exceeds 15% across AFK/API, and the narration side alone is 16.5% inclusive across those two profiles, providing a credible end-to-end opportunity above 5%. The shared computed combat/narration context should be the primary design target; the direct writer alone is unlikely to clear the 5% end-to-end bar because validation, arena writing, and projection-object overhead outside stat computation are small.
 
 No separate validation/writer optimization, borrowed-reader pass, final-bag representation change, native profile cache, or Wasm work is supported by these measurements. Gate 2 and native profile caching were not implemented in Build 46.
+
+## Gate 2A shared computed battle context (Build 47)
+
+### Authority and execution architecture
+
+`RUN_EXPEDITION` now retains one named `ComputedPartyStatus` authority. Online expeditions, simulations, and Gods Battles compute it once from the transaction's current party. Every battle in that expedition receives the exact object. AFK continues to own one immutable party and computed-status snapshot captured at Chunk start and supplies it to all 12 Cycles, preserving Build 44 semantics while mutable HP, XP, rewards, gates, and other progression continue independently. An API sortie computes one status from each Cycle's incoming party, uses it for pre-run maximum HP and the expedition, then computes the next Cycle's status from the preceding Cycle's resulting state. No status survives a Cycle/transaction authority boundary, and there is no global, cross-party, or cross-realm cache.
+
+Seeded production calls `prepareBattleExecution()` once. That operation projects protocol combatants once, builds the existing protocol-v3 `BattleProtocolInput`, and copies only narration facts into a fresh battle-local context: ID, kind, display name, elemental offense/value, magic style, physical defense, and a new mutable ability-level map. Protocol objects and computed status are not retained or mutated by narration. The existing direct-arena `writeBattleProtocolInput()` path executes Wasm once, the borrowed output is converted inside its guarded lifetime with the prepared context, and the public result remains owned. Production narration no longer accepts Party, Enemy, or computed status and cannot call `computePartyStats()` or `projectBattleCombatants()`. Retained owned/tape diagnostics reconstruct their own projection only when invoked independently and remain excluded from browser and AFK production bundles.
+
+Exact test measurements prove the following production invariants:
+
+- an unsupplied `RUN_EXPEDITION` records one reducer status computation and zero supplied snapshots;
+- API records one supplied status per Cycle and zero reducer recomputations;
+- an AFK party Chunk records 12 supplied statuses and zero reducer recomputations;
+- every production encounter records one preparation, one combatant projection, one narration, one Wasm call, and zero diagnostic narration preparations;
+- supplied reducer/API/AFK status produces zero battle-local party-status computations and zero projection fallbacks;
+- independent diagnostic conversion is counted separately and remains byte-for-byte equal to borrowed production conversion.
+
+### Correctness evidence
+
+All 11 frozen natural-seed battles remain exact in Japanese, English, Simplified Chinese, and Traditional Chinese. Native seeded/tape output, localized `BattleResult`, exact `BattleLogEntry` order and optional-property shape, HP, outcomes, enemy hits, threat bags, cursors, draw counts, seed/RNG replay metadata, deity and Gehenna/Resonance behavior, input immutability, memory growth, borrowed-reader lifetime/failure recovery, and frozen v1/v2 hashes remain unchanged. Focused tests additionally prove online authority reuse; sequential API state ownership; 12-Cycle AFK snapshot reuse; protocol/narration fact identity; independent ability maps; no computed-status or protocol mutation; Gehenna base-Resonance identity; failure recovery; and owned diagnostic parity. Production and AFK bundles still exclude diagnostic owned conversion/decoding.
+
+Protocol version 3 and Wasm ABI 8 are unchanged. Direct Party-to-arena writing, validation tuple optimization, worker message redesign, native profile installation/caching, protocol redesign, threat-bag changes, and a TypeScript numerical fallback were not implemented.
+
+### Paired Build 46 comparison
+
+Build 46 (A) and the Gate 2A workspace (B) were exported without switching the active worktree and used Node v26.7.0, the same checked dependencies, lockfile, save, benchmark source, deterministic seeds, warmup, and fresh child process per run. Five runs per side used the alternating order `A B B A A B B A A B`. Values are the median across runs and complete range; relative change is B versus A.
+
+| Metric | Build 46 median (range), ms | Gate 2A median (range), ms | Relative |
+|-|-:|-:|-:|
+| Battle-only typical median | 0.804 (0.714–0.847) | 0.511 (0.471–0.547) | -36.5% |
+| Battle-only typical p95 | 1.454 (1.401–1.474) | 1.167 (0.733–1.328) | -19.8% |
+| Battle-only heavy median | 1.420 (1.100–1.600) | 0.839 (0.750–2.137) | -40.9% |
+| Battle-only heavy p95 | 2.319 (1.928–2.579) | 1.280 (1.243–20.159) | -44.8% |
+| End-to-end online median | 14.198 (12.455–16.068) | 13.599 (13.165–14.491) | -4.2% |
+| End-to-end online p95 | 16.416 (14.350–17.966) | 15.946 (15.006–16.652) | -2.9% |
+| AFK total CPU | 2,266.899 (1,959.429–2,319.599) | 2,235.187 (2,107.550–2,341.860) | -1.4% |
+| AFK projected parallel | 574.798 (482.664–609.932) | 585.955 (551.148–623.249) | +1.9% |
+| API count-100 | 3,196.813 (2,886.778–3,365.691) | 2,183.111 (2,059.861–2,337.412) | -31.7% |
+
+One heavy B p95 run contained a process-level outlier, but the five-run median p95 and four other B runs retain the improvement. The API acceptance threshold is cleared by a wide margin. Online p95 improves rather than regresses, AFK total improves slightly, and the small projected-parallel movement is within overlapping run ranges. All absolute ceilings, one-Wasm-call counts, empty seeded tapes, and zero-copy/zero-production-decoder-allocation counters pass.
+
+### Updated CPU and allocation attribution
+
+Fresh V8 Inspector profiles use the same Gate 0R boundaries: 4,000 typical battles, 2,000 heavy battles, 1,724 AFK battles, and API count-100/2,400 battles. Self CPU percentages after Gate 2A are:
+
+| Phase | Typical | Heavy | AFK | API-100 |
+|-|-:|-:|-:|-:|
+| Party/stat computation | 67.3% | 62.1% | 68.7% | 61.7% |
+| Protocol projection | 1.8% | 1.5% | 1.1% | 0.7% |
+| Validation/layout | 2.0% | 0.7% | 0.6% | 0.9% |
+| Arena writing | 2.3% | 0.8% | 0.7% | 1.9% |
+| Localization/log construction | 8.7% | 14.9% | 7.5% | 8.0% |
+
+Party/stat sampled allocation volume falls from Gate 0R's 88.1%, 88.2%, 87.0%, and 86.9% to 80.8%, 80.7%, 87.7%, and 81.4% for typical, heavy, AFK, and API respectively. AFK remains dominated by reducer/orchestration stat consumers because battle already received chunk status before Gate 2A. Remaining `computePartyStats()` hot paths in AFK/API include status-dependent reward/automation helpers such as Cunning/prayer multipliers, unlock actor naming, post-Cycle healing, observation/final summaries, and one authoritative Cycle-start computation. Direct battle narration no longer appears beneath those stacks when supplied status is available.
+
+### Gate 2B decision
+
+Gate 2B direct Party-to-arena writing is rejected. Projection plus validation plus arena writing is only 4.0%, 3.1%, 2.4%, and 3.5% self CPU for typical, heavy, AFK, and API—well below the required 10–15%—and therefore has no credible remaining end-to-end opportunity above 5%. Protocol-boundary migration should stop at Gate 2A. Further work, if separately justified, should target the remaining expedition/orchestration party-stat consumers rather than bypassing `BattleProtocolInput` or adding native profile caching.

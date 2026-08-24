@@ -5,9 +5,11 @@ import test from 'node:test';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
+import { AFK_CHUNK_CYCLE_COUNT } from '../../src/game/afkChunkCoordinator.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement } from '../../src/game/battleKernel.ts';
 import { executeBattle, executeBattleWithSeed } from '../../src/game/battle.ts';
 import { getProductionBattleTelemetry, resetProductionBattleTelemetryForTesting } from '../../src/game/battle.ts';
+import { getBattlePreparationMeasurement, resetBattlePreparationMeasurementForTesting } from '../../src/game/battleCandidate.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -248,6 +250,7 @@ test('reports deterministic end-to-end online single-battle migration metrics', 
 
 test('reports deterministic end-to-end AFK migration metrics', () => {
   resetProductionBattleTelemetryForTesting();
+  resetBattlePreparationMeasurementForTesting();
   const state = loadState();
   const durations: number[] = [];
   let calls = 0;
@@ -295,11 +298,18 @@ test('reports deterministic end-to-end AFK migration metrics', () => {
     maxSemanticEvents: getProductionBattleTelemetry().maxSemanticEvents,
     seededInputRandomCount: 0,
   };
+  const preparation = getBattlePreparationMeasurement();
   console.info('BATTLE_MIGRATION_AFK_BASELINE', JSON.stringify(report));
   assert.equal(report.parties, 6);
   assert.ok(report.totalWorkerCpuMs < AFK_TOTAL_CPU_CEILING_MS, `AFK total CPU ${report.totalWorkerCpuMs}ms must remain below ${AFK_TOTAL_CPU_CEILING_MS}ms`);
   assert.ok(report.projectedParallelWorkerMs < AFK_PROJECTED_PARALLEL_CEILING_MS, `AFK projected parallel ${report.projectedParallelWorkerMs}ms must remain below ${AFK_PROJECTED_PARALLEL_CEILING_MS}ms`);
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
+  assert.equal(preparation.combatantProjections, report.battles, 'AFK production must project once per battle');
+  assert.equal(preparation.productionNarrations, report.battles, 'AFK production must narrate each prepared projection once');
+  assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'AFK battles must use chunk-start status');
+  assert.equal(preparation.productionPartyStatusComputations, 0, 'AFK battles must not compute status locally');
+  assert.equal(getProductionBattleTelemetry().runExpeditionStatusComputations, 0, 'AFK Cycles must not recompute RUN_EXPEDITION status');
+  assert.equal(getProductionBattleTelemetry().runExpeditionStatusSnapshots, state.parties.length * AFK_CHUNK_CYCLE_COUNT, 'AFK must reuse one supplied status for all 12 Cycles per party');
   assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
   if (!RETROSPECTIVE_COMPARISON) assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
 });
@@ -308,6 +318,7 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
   const reports: Array<Record<string, number | string>> = [];
   for (const count of [1, 100]) {
     resetProductionBattleTelemetryForTesting();
+    resetBattlePreparationMeasurementForTesting();
     const state = loadState();
     const partyIndex = state.parties.length - 1;
     const initialParty = state.parties[partyIndex]!;
@@ -330,6 +341,13 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     const finalParty = batch.state.parties[partyIndex]!;
     assert.deepEqual([finalParty.instantExpeditionStock, finalParty.instantExpeditionChargeStartedAt], chargeBefore);
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
+    const preparation = getBattlePreparationMeasurement();
+    assert.equal(preparation.combatantProjections, telemetry.battles, 'API production must project once per battle');
+    assert.equal(preparation.productionNarrations, telemetry.battles, 'API production must narrate each prepared projection once');
+    assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'API battles must use Cycle-start status');
+    assert.equal(preparation.productionPartyStatusComputations, 0, 'API battles must not compute status locally');
+    assert.equal(telemetry.runExpeditionStatusComputations, 0, 'API RUN_EXPEDITION must not recompute supplied Cycle status');
+    assert.equal(telemetry.runExpeditionStatusSnapshots, count, 'API must supply one fresh authoritative status per Cycle');
     assert.equal(boundary.encodedInputAllocations + boundary.inputArenaCopies + boundary.outputBufferCopies, 0);
     if (!RETROSPECTIVE_COMPARISON) assert.equal(boundary.decodedEventObjectAllocations + boundary.decodedBagEntryObjectAllocations, 0);
     if (count === 100) {

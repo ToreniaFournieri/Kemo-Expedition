@@ -96,6 +96,8 @@ export function projectBattleCombatants(
   partyHp: number,
   environment: BattleEnvironment = {},
 ): { combatants: BattleProtocolCombatant[]; partyMaxHp: number } {
+  preparationMeasurement.combatantProjections += 1;
+  if (!environment.partyStatus) preparationMeasurement.projectionPartyStatusFallbacks += 1;
   const { partyStats, characterStats } = environment.partyStatus ?? computePartyStats(party);
   const resonanceSuppressedByGehenna = getDeityKey(party.deity.name) === 'God of Resonance'
     && environment.terrainEffect === 'terrain.gehenna';
@@ -258,6 +260,19 @@ export function projectBattleProtocolInput(
 ): BattleProtocolInput {
   const partyHp = initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp;
   const projection = projectBattleCombatants(party, enemy, partyHp, environment);
+  return createBattleProtocolInput(party, enemy, bags, randomValues, partyHp, environment, engineFlags, projection);
+}
+
+function createBattleProtocolInput(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  randomValues: readonly number[],
+  partyHp: number,
+  environment: BattleEnvironment,
+  engineFlags: number,
+  projection: { combatants: BattleProtocolCombatant[]; partyMaxHp: number },
+): BattleProtocolInput {
   const deityKey = getDeityKey(party.deity.name);
   const protocolDeityKey = deityKey && deityKey !== 'None' ? deityProtocolKey[deityKey] : null;
   return {
@@ -276,6 +291,29 @@ export function projectBattleProtocolInput(
   };
 }
 
+export function prepareBattleExecution(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  randomValues: readonly number[],
+  initialPartyHp?: number,
+  environment: BattleEnvironment = {},
+  engineFlags = 0,
+): PreparedBattleExecution {
+  preparationMeasurement.productionPreparations += 1;
+  const partyStatus = environment.partyStatus ?? computePartyStats(party);
+  if (!environment.partyStatus) preparationMeasurement.productionPartyStatusComputations += 1;
+  const preparedEnvironment = { ...environment, partyStatus };
+  const partyHp = initialPartyHp ?? partyStatus.partyStats.hp;
+  const projection = projectBattleCombatants(party, enemy, partyHp, preparedEnvironment);
+  return {
+    input: createBattleProtocolInput(
+      party, enemy, bags, randomValues, partyHp, preparedEnvironment, engineFlags, projection,
+    ),
+    narration: createBattleNarrationContext(projection, party, enemy, preparedEnvironment.terrainEffect),
+  };
+}
+
 /** Encoded protocol-v3 execution used only by the retained tape diagnostic. */
 function executeNativeBattleProtocol(input: BattleProtocolInput): BattleProtocolOutput {
   return executeBattleProtocol(encodeBattleProtocolInput(input));
@@ -291,6 +329,72 @@ type NarrationCombatant = {
   physicalDefense: number;
   abilities: Map<AbilityId, number>;
 };
+
+export type BattleNarrationContext = {
+  terrainEffect?: TerrainEffectKey | null;
+  combatants: Map<number, NarrationCombatant>;
+};
+
+export type PreparedBattleExecution = {
+  input: BattleProtocolInput;
+  narration: BattleNarrationContext;
+};
+
+export type BattlePreparationMeasurement = {
+  combatantProjections: number;
+  projectionPartyStatusFallbacks: number;
+  productionPreparations: number;
+  productionPartyStatusComputations: number;
+  productionNarrations: number;
+  diagnosticNarrationPreparations: number;
+};
+
+let preparationMeasurement: BattlePreparationMeasurement = {
+  combatantProjections: 0,
+  projectionPartyStatusFallbacks: 0,
+  productionPreparations: 0,
+  productionPartyStatusComputations: 0,
+  productionNarrations: 0,
+  diagnosticNarrationPreparations: 0,
+};
+
+export function getBattlePreparationMeasurement(): Readonly<BattlePreparationMeasurement> {
+  return { ...preparationMeasurement };
+}
+
+export function resetBattlePreparationMeasurementForTesting(): void {
+  preparationMeasurement = {
+    combatantProjections: 0,
+    projectionPartyStatusFallbacks: 0,
+    productionPreparations: 0,
+    productionPartyStatusComputations: 0,
+    productionNarrations: 0,
+    diagnosticNarrationPreparations: 0,
+  };
+}
+
+function createBattleNarrationContext(
+  projection: { combatants: readonly BattleProtocolCombatant[] },
+  party: Party,
+  enemy: EnemyDef,
+  terrainEffect?: TerrainEffectKey | null,
+): BattleNarrationContext {
+  const characterNames = new Map(party.characters.map((character) => [character.id, character.name]));
+  const combatants = new Map<number, NarrationCombatant>();
+  for (const projected of projection.combatants) {
+    combatants.set(projected.id, {
+      id: projected.id,
+      kind: projected.kind,
+      name: projected.kind === 'character' ? (characterNames.get(projected.id) ?? enemy.name) : enemy.name,
+      elementalOffense: projected.elementalOffense,
+      elementalOffenseValue: projected.elementalOffenseValue,
+      magicStyle: projected.kind === 'enemy' ? enemy.magicStyle : undefined,
+      physicalDefense: projected.physicalDefense,
+      abilities: new Map(projected.abilities.map((ability) => [ability.id, ability.level])),
+    });
+  }
+  return { terrainEffect, combatants };
+}
 
 const noteFormatter = new Intl.NumberFormat('ja-JP');
 const FLAVOR_ABILITIES = new Set<AbilityId>([
@@ -525,10 +629,11 @@ export function executeBattleCandidateFromSeed(
 ): SeededBattleCandidateResult {
   const normalizedSeed = requireBattleSeed(seed);
   requireBattleRngVersion(rngVersion);
-  const input = projectBattleProtocolInput(
+  const prepared = prepareBattleExecution(
     party, enemy, bags, [], initialPartyHp, environment,
     BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
   );
+  const { input } = prepared;
   input.seed = normalizedSeed;
   input.rngVersion = rngVersion;
   return consumeBattleProtocolInput(input, (output) => {
@@ -541,8 +646,9 @@ export function executeBattleCandidateFromSeed(
     if (output.randomConsumed !== output.diagnosticDrawCount) {
       throw new Error(`C++ seeded battle draw mismatch: ${output.randomConsumed}/${output.diagnosticDrawCount}`);
     }
+    preparationMeasurement.productionNarrations += 1;
     return {
-      result: convertIndexedBattleSemanticEvents(output, party, enemy, initialPartyHp, environment),
+      result: convertIndexedBattleSemanticEvents(output, prepared.narration),
       randomConsumed: output.randomConsumed,
       diagnosticDrawCount: output.diagnosticDrawCount,
       protocolError: output.protocolError,
@@ -687,17 +793,18 @@ export function convertBattleSemanticEvents(
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
 ): BattleCandidateResult {
+  preparationMeasurement.diagnosticNarrationPreparations += 1;
+  const partyHp = initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp;
+  const projection = projectBattleCombatants(party, enemy, partyHp, environment);
   return convertIndexedBattleSemanticEvents(
-    new OwnedBattleProtocolOutputIndex(output), party, enemy, initialPartyHp, environment,
+    new OwnedBattleProtocolOutputIndex(output),
+    createBattleNarrationContext(projection, party, enemy, environment.terrainEffect),
   );
 }
 
 function convertIndexedBattleSemanticEvents(
   output: IndexedBattleProtocolOutput,
-  party: Party,
-  enemy: EnemyDef,
-  initialPartyHp?: number,
-  environment: BattleEnvironment = {},
+  narration: BattleNarrationContext,
 ): BattleCandidateResult {
   const event = new BattleProtocolEventCursor(output);
   const flavorEvent = new BattleProtocolEventCursor(output);
@@ -710,26 +817,7 @@ function convertIndexedBattleSemanticEvents(
     throw new Error('Battle semantic stream is missing its final outcome');
   }
   const flavors = requireFlavorPairs(output);
-  const projection = projectBattleCombatants(
-    party,
-    enemy,
-    initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp,
-    environment,
-  );
-  const combatants = new Map<number, NarrationCombatant>();
-  for (const projected of projection.combatants) {
-    const character = projected.kind === 'character' ? party.characters.find((entry) => entry.id === projected.id) : null;
-    combatants.set(projected.id, {
-      id: projected.id,
-      kind: projected.kind,
-      name: character?.name ?? enemy.name,
-      elementalOffense: projected.elementalOffense,
-      elementalOffenseValue: projected.elementalOffenseValue,
-      magicStyle: projected.kind === 'enemy' ? enemy.magicStyle : undefined,
-      physicalDefense: projected.physicalDefense,
-      abilities: new Map(projected.abilities.map((ability) => [ability.id, ability.level])),
-    });
-  }
+  const { combatants } = narration;
   const nameOf = (id: number): string => combatants.get(id)?.name ?? t('battle.actor.ally');
   const log: BattleLogEntry[] = [];
   const initiatives = new Map<string, number>();
@@ -825,7 +913,7 @@ function convertIndexedBattleSemanticEvents(
     if (event.opcode === 'target_selected') {
       if ((event.flags & 8) === 0) continue;
       const flavor = requireFlavor(flavors, index, event, flavorEvent);
-      if (environment.terrainEffect !== 'terrain.chain-lightning') {
+      if (narration.terrainEffect !== 'terrain.chain-lightning') {
         throw new Error('Flavored terrain target selection is missing Chain Lightning context');
       }
       if (flavor.aux0 < 0 || flavor.aux0 >= 10) throw new RangeError(`Invalid terrain flavor index ${flavor.aux0}`);
@@ -848,7 +936,7 @@ function convertIndexedBattleSemanticEvents(
     }
 
     if (event.opcode === 'terrain_effect' && event.phase === 1) {
-      const terrain = environment.terrainEffect;
+      const terrain = narration.terrainEffect;
       if (!terrain) throw new Error('Native START terrain fact has no narration context');
       const glossary = getTerrainEffectGlossaryEntry(terrain);
       const labelKey = `terrainEffect.${terrain}.label`;
@@ -869,7 +957,7 @@ function convertIndexedBattleSemanticEvents(
       const target = combatants.get(event.targetId);
       if (event.aux0 === 13 && (event.flags & 4) !== 0) {
         const flavor = requireFlavor(flavors, index, event, flavorEvent);
-        const terrain = environment.terrainEffect;
+        const terrain = narration.terrainEffect;
         if (!terrain) throw new Error('Terrain mutation is missing terrain context');
         const prefix = terrain === 'terrain.deletion' ? 'battleFlavor.environment.deletion' : `battleFlavor.environment.${terrain.slice(8)}`;
         if (flavor.aux0 < 0 || flavor.aux0 >= 10) throw new RangeError(`Invalid terrain flavor index ${flavor.aux0}`);
@@ -1187,7 +1275,7 @@ function convertIndexedBattleSemanticEvents(
     if (event.opcode === 'terrain_effect' && event.phase === 2) {
       const flavor = requireFlavor(flavors, index, event, flavorEvent);
       if (flavor.aux0 < 0 || flavor.aux0 >= 10) throw new RangeError(`Invalid terrain flavor index ${flavor.aux0}`);
-      const terrain = environment.terrainEffect;
+      const terrain = narration.terrainEffect;
       if (!terrain) throw new Error('Combat terrain event is missing terrain context');
       const prefixes: Partial<Record<TerrainEffectKey, string>> = {
         'terrain.vine-snare': 'vineSnare', 'terrain.crystal-zone': 'crystalZone', 'terrain.conduction': 'conduction',

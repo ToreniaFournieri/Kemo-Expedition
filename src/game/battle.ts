@@ -19,6 +19,8 @@ export type ProductionBattleTelemetry = {
   randomConsumed: number;
   maxRandomConsumed: number;
   maxSemanticEvents: number;
+  runExpeditionStatusComputations: number;
+  runExpeditionStatusSnapshots: number;
 };
 
 let telemetry: ProductionBattleTelemetry = {
@@ -26,6 +28,8 @@ let telemetry: ProductionBattleTelemetry = {
   randomConsumed: 0,
   maxRandomConsumed: 0,
   maxSemanticEvents: 0,
+  runExpeditionStatusComputations: 0,
+  runExpeditionStatusSnapshots: 0,
 };
 
 // SpecRef: 6.1.8 | Universal C++ battle kernel | deterministic production adapter
@@ -58,6 +62,7 @@ export function executeBattleWithSeed(
     execution.seed, execution.rngVersion, execution.randomConsumed,
   );
   telemetry = {
+    ...telemetry,
     battles: telemetry.battles + 1,
     randomConsumed: telemetry.randomConsumed + execution.randomConsumed,
     maxRandomConsumed: Math.max(telemetry.maxRandomConsumed, execution.randomConsumed),
@@ -71,7 +76,22 @@ export function getProductionBattleTelemetry(): Readonly<ProductionBattleTelemet
 }
 
 export function resetProductionBattleTelemetryForTesting(): void {
-  telemetry = { battles: 0, randomConsumed: 0, maxRandomConsumed: 0, maxSemanticEvents: 0 };
+  telemetry = {
+    battles: 0,
+    randomConsumed: 0,
+    maxRandomConsumed: 0,
+    maxSemanticEvents: 0,
+    runExpeditionStatusComputations: 0,
+    runExpeditionStatusSnapshots: 0,
+  };
+}
+
+export function recordRunExpeditionStatusAuthority(supplied: boolean): void {
+  telemetry = {
+    ...telemetry,
+    runExpeditionStatusComputations: telemetry.runExpeditionStatusComputations + (supplied ? 0 : 1),
+    runExpeditionStatusSnapshots: telemetry.runExpeditionStatusSnapshots + (supplied ? 1 : 0),
+  };
 }
 
 // Numerical display summary only; this function does not resolve mechanics.

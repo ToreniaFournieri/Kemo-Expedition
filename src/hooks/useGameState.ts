@@ -29,7 +29,7 @@ import {
   ExpeditionSimulationResult,
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats, type ComputedPartyStatus } from '../game/partyComputation';
-import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
+import { executeBattle, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
 import { gameplayRandom } from '../game/gameplayRandom';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
@@ -1971,8 +1971,8 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus } }
-  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
+  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
@@ -3098,6 +3098,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         simulatedAt: action.simulatedAt,
         gameMode: action.gameMode,
         triggerGodsBattle: action.triggerGodsBattle,
+        authoritativePartyStatus: action.authoritativePartyStatus,
       });
       return gameReducer(expeditionState, {
         type: 'FINALIZE_DIARY_LOG',
@@ -3114,8 +3115,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // SpecRef: 5.1 | Chunk | Party status is calculated once at Chunk start.
       // AFK progression supplies the immutable status source captured before its
       // first Cycle. Mutable progress continues to come from currentParty.
-      const statusParty = action.chunkPartyStatus?.party ?? currentParty;
-      const { partyStats, characterStats } = action.chunkPartyStatus?.computed ?? computePartyStats(statusParty);
+      const suppliedPartyStatus = action.chunkPartyStatus ?? action.authoritativePartyStatus;
+      const statusParty = suppliedPartyStatus?.party ?? currentParty;
+      const partyStatus = suppliedPartyStatus?.computed ?? computePartyStats(statusParty);
+      recordRunExpeditionStatusAuthority(suppliedPartyStatus !== undefined);
+      const { partyStats, characterStats } = partyStatus;
       const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
         return state;
@@ -3281,7 +3285,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
             const battleResult = executeBattle(statusParty, enemy, bags, roomStartHp, {
               terrainEffect,
-              partyStatus: action.chunkPartyStatus?.computed,
+              partyStatus,
             });
 
             // Update threat bags from battle result
@@ -5197,6 +5201,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
+/** Test seam for measuring one authoritative online/Gods Battle reducer transaction. */
+export function runExpeditionTransactionForTesting(
+  state: GameState,
+  partyIndex: number,
+  options: { gameMode?: GameMode; triggerGodsBattle?: boolean; simulatedAt?: number } = {},
+): GameState {
+  return gameReducer(state, { type: 'RUN_EXPEDITION', partyIndex, ...options });
+}
+
 /**
  * Runs the same reducer action used by the UI AFK scheduler without requiring a
  * mounted React tree. This deliberately narrow entry point lets save-backed
@@ -5262,11 +5275,13 @@ export function simulateApiSortieBatchForTesting(
   for (let index = 0; index < count; index += 1) {
     const beforeState = stagedState;
     const beforeParty = beforeState.parties[partyIndex];
-    const maximumHp = computePartyStats(beforeParty).partyStats.hp;
+    const computed = computePartyStats(beforeParty);
+    const maximumHp = computed.partyStats.hp;
     stagedState = gameReducer(stagedState, { type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
     stagedState = gameReducer(stagedState, {
       type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle: false,
       simulatedAt: simulatedAt + index * APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
+      authoritativePartyStatus: { party: beforeParty, computed },
     });
     const afterState = stagedState;
     const party = afterState.parties[partyIndex];

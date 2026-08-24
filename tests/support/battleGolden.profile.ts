@@ -12,8 +12,11 @@ import {
   executeBattleCandidateDiagnosticFromSeed,
   executeBattleTapeDiagnostic,
   convertBattleSemanticEvents,
+  getBattlePreparationMeasurement,
+  prepareBattleExecution,
   projectBattleCombatants,
   projectBattleProtocolInput,
+  resetBattlePreparationMeasurementForTesting,
 } from '../../src/game/battleCandidate.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement, executeBattleProtocol, getBattleRngDoubleSequence, getBattleRngVersion } from '../../src/game/battleKernel.ts';
 import { createBattleReplayMetadata } from '../../src/game/battleReplay.ts';
@@ -21,6 +24,8 @@ import { encodeBattleProtocolInput } from '../../src/game/battleProtocol.ts';
 import { BATTLE_ENGINE_FLAG_END_CHECKPOINT, BATTLE_ENGINE_FLAG_SEEDED_RNG } from '../../src/game/generated/battleProtocol.generated.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
+import { computeCharacterStats } from '../../src/game/characterComputation.ts';
+import { computePartyStats } from '../../src/game/partyComputation.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import { setLanguage } from '../../src/i18n/index.ts';
@@ -340,6 +345,7 @@ test('projection and production entry point use one direct-arena native seeded c
       getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
     );
     const beforeDraws = getProductionBattleTelemetry().randomConsumed;
+    resetBattlePreparationMeasurementForTesting();
     beginBattleKernelMeasurement();
     let acquisitions = 0;
     const result = withBattleSeedSourceForTesting(() => {
@@ -358,8 +364,70 @@ test('projection and production entry point use one direct-arena native seeded c
     assert.equal(measurement.outputBufferCopies, 0);
     assert.equal(measurement.decodedEventObjectAllocations, 0);
     assert.equal(measurement.decodedBagEntryObjectAllocations, 0);
+    assert.deepEqual(getBattlePreparationMeasurement(), {
+      combatantProjections: 1,
+      projectionPartyStatusFallbacks: 0,
+      productionPreparations: 1,
+      productionPartyStatusComputations: 1,
+      productionNarrations: 1,
+      diagnosticNarrationPreparations: 0,
+    });
     assert.deepEqual({ party, enemy, bags }, beforeInputs, 'production execution must leave Party, Enemy, and bags JSON-identical');
   }
+});
+
+test('prepared protocol and narration share one projection without retaining mutable projection objects', () => {
+  const fixture = createGoldenCases()[0]!;
+  const partyStatus = computePartyStats(fixture.party);
+  const statusBefore = structuredClone(partyStatus);
+  resetBattlePreparationMeasurementForTesting();
+  const prepared = prepareBattleExecution(
+    fixture.party, fixture.enemy, fixture.bags, [], fixture.initialPartyHp,
+    { ...fixture.environment, partyStatus },
+    BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+  );
+  for (const projected of prepared.input.combatants) {
+    const narrated = prepared.narration.combatants.get(projected.id)!;
+    assert.equal(narrated.kind, projected.kind);
+    assert.equal(narrated.elementalOffense, projected.elementalOffense);
+    assert.equal(narrated.elementalOffenseValue, projected.elementalOffenseValue);
+    assert.equal(narrated.physicalDefense, projected.physicalDefense);
+    assert.deepEqual([...narrated.abilities], projected.abilities.map(({ id, level }) => [id, level]));
+  }
+  const first = prepared.input.combatants[0]!;
+  const narrated = prepared.narration.combatants.get(first.id)!;
+  const ability = first.abilities[0];
+  if (ability) narrated.abilities.set(ability.id, ability.level + 100);
+  assert.deepEqual(partyStatus, statusBefore, 'narration mutation must not mutate authoritative computed status');
+  if (ability) assert.equal(first.abilities[0]!.level, ability.level, 'narration mutation must not mutate protocol projection');
+  assert.deepEqual(getBattlePreparationMeasurement(), {
+    combatantProjections: 1,
+    projectionPartyStatusFallbacks: 0,
+    productionPreparations: 1,
+    productionPartyStatusComputations: 0,
+    productionNarrations: 0,
+    diagnosticNarrationPreparations: 0,
+  });
+});
+
+test('Gehenna base Resonance is projected once and copied exactly into narration', () => {
+  const fixture = createGoldenCases()[0]!;
+  const party = { ...fixture.party, deity: { ...fixture.party.deity, name: 'God of Resonance' } };
+  const partyStatus = computePartyStats(party);
+  resetBattlePreparationMeasurementForTesting();
+  const prepared = prepareBattleExecution(
+    party, fixture.enemy, fixture.bags, [], fixture.initialPartyHp,
+    { terrainEffect: 'terrain.gehenna', partyStatus },
+  );
+  for (const [index, character] of party.characters.entries()) {
+    const projected = prepared.input.combatants.find(({ id }) => id === character.id)!;
+    const expected = computeCharacterStats(character, party.level, index + 1).abilities
+      .find(({ id }) => id === 'resonance')?.level;
+    const projectedLevel = projected.abilities.find(({ id }) => id === 'resonance')?.level;
+    assert.equal(projectedLevel, expected);
+    assert.equal(prepared.narration.combatants.get(character.id)!.abilities.get('resonance'), expected);
+  }
+  assert.equal(getBattlePreparationMeasurement().combatantProjections, 1);
 });
 
 test('direct structured and encoded seeded protocol boundaries remain identical', () => {
@@ -378,7 +446,17 @@ test('direct structured and encoded seeded protocol boundaries remain identical'
   input.rngVersion = getBattleRngVersion();
   const encoded = executeBattleProtocol(encodeBattleProtocolInput(input));
   assert.deepEqual(encoded, seeded.protocolOutput);
-  assert.deepEqual(convertBattleSemanticEvents(
+  resetBattlePreparationMeasurementForTesting();
+  const converted = convertBattleSemanticEvents(
     encoded, fixture.party, fixture.enemy, fixture.initialPartyHp, fixture.environment,
-  ), seeded.result);
+  );
+  assert.deepEqual(converted, seeded.result);
+  assert.deepEqual(getBattlePreparationMeasurement(), {
+    combatantProjections: 1,
+    projectionPartyStatusFallbacks: 1,
+    productionPreparations: 0,
+    productionPartyStatusComputations: 0,
+    productionNarrations: 0,
+    diagnosticNarrationPreparations: 1,
+  });
 });

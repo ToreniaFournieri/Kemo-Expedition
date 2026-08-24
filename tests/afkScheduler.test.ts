@@ -166,8 +166,9 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
 test('AFK Chunk party status is calculated once and reused by all twelve Cycles', () => {
   assert.match(hookSource, /const chunkPartyStatus = state\.parties\.map\(\(party\) => \(\{\s*party,\s*computed: computePartyStats\(party\),\s*\}\)\);/);
   assert.match(hookSource, /for \(const \{ runIndex, partyIndex, partyCycleDurationMs \} of operationWindow\)[\s\S]*chunkPartyStatus: chunkPartyStatus\[partyIndex\]/);
-  assert.match(hookSource, /const \{ partyStats, characterStats \} = action\.chunkPartyStatus\?\.computed \?\? computePartyStats\(statusParty\)/);
-  assert.match(hookSource, /executeBattle\(statusParty, enemy, bags, roomStartHp, \{[\s\S]{0,160}partyStatus: action\.chunkPartyStatus\?\.computed/);
+  assert.match(hookSource, /const suppliedPartyStatus = action\.chunkPartyStatus \?\? action\.authoritativePartyStatus/);
+  assert.match(hookSource, /const partyStatus = suppliedPartyStatus\?\.computed \?\? computePartyStats\(statusParty\)/);
+  assert.match(hookSource, /executeBattle\(statusParty, enemy, bags, roomStartHp, \{[\s\S]{0,160}partyStatus,/);
   assert.match(battleCandidateSource, /environment\.partyStatus \?\? computePartyStats\(party\)/);
 });
 
