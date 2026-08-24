@@ -1,4 +1,5 @@
 import type { ComputedPartyStats, EnemyDef, GameBags, Party, TerrainEffectKey } from '../types/index.ts';
+import type { ComputedPartyStatus } from './partyComputation.ts';
 import {
   executeBattleCandidateFromSeed,
   type BattleCandidateResult,
@@ -7,7 +8,10 @@ import { getBattleRngVersion } from './battleKernel.ts';
 import { createBattleReplayMetadata, requireBattleRngVersion, requireBattleSeed, type BattleReplayMetadata } from './battleReplay.ts';
 import { acquireBattleSeed } from './battleSeedSource.ts';
 
-export type BattleEnvironment = { terrainEffect?: TerrainEffectKey | null };
+export type BattleEnvironment = {
+  terrainEffect?: TerrainEffectKey | null;
+  partyStatus?: ComputedPartyStatus;
+};
 export type BattleResult = BattleCandidateResult & { replayMetadata: BattleReplayMetadata };
 
 export type ProductionBattleTelemetry = {

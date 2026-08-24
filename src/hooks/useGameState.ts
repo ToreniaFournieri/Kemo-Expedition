@@ -28,7 +28,7 @@ import {
   ExpeditionDestinationMode,
   ExpeditionSimulationResult,
 } from '../types';
-import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
+import { computeCharacterHpContribution, computePartyStats, type ComputedPartyStatus } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { gameplayRandom } from '../game/gameplayRandom';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
@@ -1971,7 +1971,7 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
@@ -3111,7 +3111,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
       const isGodsBattle = action.triggerGodsBattle === true && isGodsBattleAvailable(currentParty, dungeon.id);
-      const { partyStats, characterStats } = computePartyStats(currentParty);
+      // SpecRef: 5.1 | Chunk | Party status is calculated once at Chunk start.
+      // AFK progression supplies the immutable status source captured before its
+      // first Cycle. Mutable progress continues to come from currentParty.
+      const statusParty = action.chunkPartyStatus?.party ?? currentParty;
+      const { partyStats, characterStats } = action.chunkPartyStatus?.computed ?? computePartyStats(statusParty);
       const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
         return state;
@@ -3275,7 +3279,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (terrainEffect) {
               revealedTerrainKeys.add(terrainEffect);
             }
-            const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp, { terrainEffect });
+            const battleResult = executeBattle(statusParty, enemy, bags, roomStartHp, {
+              terrainEffect,
+              partyStatus: action.chunkPartyStatus?.computed,
+            });
 
             // Update threat bags from battle result
             bags = {
@@ -3335,22 +3342,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 totalExp += calculateExperience(
                   enemy.experience,
                   roomDef.type,
-                  currentParty.level,
+                  statusParty.level,
                   enemyLevelFinal,
                   isGodsBattle,
                 );
               }
 
-              const unlockActorName = getUnlockActorName(currentParty);
+              const unlockActorName = getUnlockActorName(statusParty);
               const hasUnlock = !!unlockActorName;
-              const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
+              const autoSellMultiplier = getPartyCunningMultiplier(statusParty);
               const deityDonation =
-                state.global.deityDonations[normalizeDeityName(currentParty.deity.name)]
-                ?? currentParty.deityGold
+                state.global.deityDonations[normalizeDeityName(statusParty.deity.name)]
+                ?? statusParty.deityGold
                 ?? 0;
               // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
               // SpecRef: 1.1.7 | g. gods, religions | Goddess of Discord
-              const deityRewardDrawBonuses = getDeityRewardDrawBonuses(currentParty.deity.name, deityDonation);
+              const deityRewardDrawBonuses = getDeityRewardDrawBonuses(statusParty.deity.name, deityDonation);
               let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
               if (!isColosseumBattle) {
                 const enemyAuriferousLevel = enemy.abilities
@@ -3404,7 +3411,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               entries.push(entry);
 
               const deityHpEffect = applyPeriodicDeityHpEffect(
-                currentParty.deity.name,
+                statusParty.deity.name,
                 deityDonation,
                 floor.floorNumber,
                 roomIndex + 1,
@@ -3423,7 +3430,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.attritionAmount = deityHpEffect.attritionAmount;
               }
               const deityLogEntry = buildDeityEffectLogEntry(
-                currentParty.deity.name,
+                statusParty.deity.name,
                 deityHpEffect.healAmount,
                 deityHpEffect.attritionAmount
               );
@@ -3432,7 +3439,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               }
 
               const firstAidHpEffect = applyFirstAidHpEffect(
-                currentParty,
+                statusParty,
                 characterStats,
                 floor.floorNumber,
                 roomIndex + 1,
@@ -3446,9 +3453,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push(...firstAidHpEffect.logs);
               }
 
-              const rejuvenationActorName = currentParty.characters[
-                Math.floor(gameplayRandom() * currentParty.characters.length)
-              ]?.name ?? currentParty.name;
+              const rejuvenationActorName = statusParty.characters[
+                Math.floor(gameplayRandom() * statusParty.characters.length)
+              ]?.name ?? statusParty.name;
               const terrainHpEffect = applyTerrainRejuvenationHpEffect(
                 terrainEffect,
                 roomDef.type,
@@ -3481,7 +3488,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const isNormalOrEliteRoom = roomDef.type === 'battle_Normal' || roomDef.type === 'battle_Elite';
               const restorationBlockedByRotwood = terrainEffect === 'terrain.rotwood'
                 && isNormalOrEliteRoom
-                && getDeityKey(currentParty.deity.name) === 'Goddess of Restoration'
+                && getDeityKey(statusParty.deity.name) === 'Goddess of Restoration'
                 && floor.floorNumber >= 1
                 && floor.floorNumber <= 5
                 && roomIndex + 1 === 4;
@@ -3489,8 +3496,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push(buildTerrainRotwoodLogEntry());
               }
 
-              const leakageTargetIndex = Math.floor(gameplayRandom() * currentParty.characters.length);
-              const leakageTarget = currentParty.characters[leakageTargetIndex];
+              const leakageTargetIndex = Math.floor(gameplayRandom() * statusParty.characters.length);
+              const leakageTarget = statusParty.characters[leakageTargetIndex];
               const leakageTargetStats = characterStats.find(
                 (stats) => stats.characterId === leakageTarget?.id
               );
@@ -3504,16 +3511,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = leakageHpEffect.hp;
               entry.remainingPartyHP = currentHp;
               const leakageLogEntry = buildTerrainLeakageLogEntry(
-                leakageTarget?.name ?? currentParty.name,
+                leakageTarget?.name ?? statusParty.name,
                 leakageHpEffect.damageAmount
               );
               if (leakageLogEntry) {
                 entry.details.push(leakageLogEntry);
               }
 
-              const heatwaveActorName = currentParty.characters[
-                Math.floor(gameplayRandom() * currentParty.characters.length)
-              ]?.name ?? currentParty.name;
+              const heatwaveActorName = statusParty.characters[
+                Math.floor(gameplayRandom() * statusParty.characters.length)
+              ]?.name ?? statusParty.name;
               const heatwaveHpEffect = applyTerrainHeatwaveHpEffect(
                 terrainEffect,
                 roomDef.type,
@@ -3690,7 +3697,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalRemainingPartyHP = entries.length > 0
         ? entries[entries.length - 1].remainingPartyHP
         : currentHp;
-      const expeditionAutoSellMultiplier = getPartyCunningMultiplier(currentParty);
+      const expeditionAutoSellMultiplier = getPartyCunningMultiplier(statusParty);
 
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
@@ -3747,7 +3754,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const nextAltarVictoriesByEnemyType = { ...(state.global.altarVictoriesByEnemyType ?? {}) };
       if (finalOutcome === 'Clear') {
         const assignedEnemyTypes = new Set(
-          currentParty.characters
+          statusParty.characters
             .filter((character) => character.raceId === 'mimorian')
             .map((character) => ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType)
             .filter((enemyType): enemyType is string => Boolean(enemyType)),
@@ -4788,6 +4795,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (operationEnd <= operationStart) return state;
 
       let workingState = state;
+      // Each reducer call represents one logical Chunk for worker-backed AFK
+      // recovery. Retain these Party objects as the status inputs for every
+      // Cycle even as workingState accumulates level, XP, HP, and gate changes.
+      const chunkPartyStatus = state.parties.map((party) => ({
+        party,
+        computed: computePartyStats(party),
+      }));
       const simulationEndAt = action.simulatedEndAt ?? Date.now();
       const simulationStartAt = simulationEndAt - cappedElapsedMs;
       const partyTimestampStepMs = 1_000;
@@ -4822,6 +4836,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             gameMode,
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
+            chunkPartyStatus: chunkPartyStatus[partyIndex],
           });
           workingState = gameReducer(workingState, {
             type: 'FINALIZE_DIARY_LOG',

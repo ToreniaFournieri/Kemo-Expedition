@@ -20,6 +20,7 @@
   - **1 Chunk = 12 Cycles**.
   - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
   - Each Chunk continues using the party and global parameters captured when it begins.
+  - Party status is calculated once at the beginning of each Chunk and remains unchanged throughout all Cycles within that Chunk.
   - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
   - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
   - **Process:** At the end of a Chunk, the worker (representative of each PT) submits the Chunk results to the coordinator-managed global commit queue. The coordinator processes queued workers sequentially.

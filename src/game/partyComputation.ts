@@ -187,11 +187,13 @@ export function computeCharacterHpContribution(
   };
 }
 
-// SpecRef: 2.1.2 | Party | computePartyStats
-export function computePartyStats(party: Party): {
+export interface ComputedPartyStatus {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];
-} {
+}
+
+// SpecRef: 2.1.2 | Party | computePartyStats
+export function computePartyStats(party: Party): ComputedPartyStatus {
   const baseCharacterStats: ComputedCharacterStats[] = party.characters.map((c, index) =>
     computeCharacterStats(c, party.level, index + 1) // Row is 1-6
   );

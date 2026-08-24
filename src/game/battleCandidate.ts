@@ -17,6 +17,7 @@ import {
 import { computeCharacterStats } from './characterComputation.ts';
 import { getAbilityName } from './characterComputation.ts';
 import { computePartyStats } from './partyComputation.ts';
+import type { ComputedPartyStatus } from './partyComputation.ts';
 import { getDeityKey } from './deity.ts';
 import { getBaseMultiplier } from './baseMultiplier.ts';
 import { executeBattleProtocol, executeBattleProtocolInput } from './battleKernel.ts';
@@ -38,7 +39,10 @@ import {
 } from './battleProtocol.ts';
 import { requireBattleRngVersion, requireBattleSeed } from './battleReplay.ts';
 
-type BattleEnvironment = { terrainEffect?: TerrainEffectKey | null };
+type BattleEnvironment = {
+  terrainEffect?: TerrainEffectKey | null;
+  partyStatus?: ComputedPartyStatus;
+};
 
 export type BattleCandidateResult = {
   phase: 'combat';
@@ -91,7 +95,7 @@ export function projectBattleCombatants(
   partyHp: number,
   environment: BattleEnvironment = {},
 ): { combatants: BattleProtocolCombatant[]; partyMaxHp: number } {
-  const { partyStats, characterStats } = computePartyStats(party);
+  const { partyStats, characterStats } = environment.partyStatus ?? computePartyStats(party);
   const resonanceSuppressedByGehenna = getDeityKey(party.deity.name) === 'God of Resonance'
     && environment.terrainEffect === 'terrain.gehenna';
   const characters: BattleProtocolCombatant[] = characterStats.map((stats, index) => {
@@ -251,7 +255,7 @@ export function projectBattleProtocolInput(
   environment: BattleEnvironment = {},
   engineFlags = 0,
 ): BattleProtocolInput {
-  const partyHp = initialPartyHp ?? computePartyStats(party).partyStats.hp;
+  const partyHp = initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp;
   const projection = projectBattleCombatants(party, enemy, partyHp, environment);
   const deityKey = getDeityKey(party.deity.name);
   const protocolDeityKey = deityKey && deityKey !== 'None' ? deityProtocolKey[deityKey] : null;
@@ -552,7 +556,12 @@ export function convertBattleSemanticEvents(
     throw new Error('Battle semantic stream is missing its final outcome');
   }
   const flavors = requireFlavorPairs(events);
-  const projection = projectBattleCombatants(party, enemy, initialPartyHp ?? computePartyStats(party).partyStats.hp, environment);
+  const projection = projectBattleCombatants(
+    party,
+    enemy,
+    initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp,
+    environment,
+  );
   const combatants = new Map<number, NarrationCombatant>();
   for (const projected of projection.combatants) {
     const character = projected.kind === 'character' ? party.characters.find((entry) => entry.id === projected.id) : null;

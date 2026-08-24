@@ -16,6 +16,7 @@ import {
 } from '../src/game/afkSchedulerCore.ts';
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
+const battleCandidateSource = readFileSync(new URL('../src/game/battleCandidate.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -160,6 +161,14 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
   assert.match(homeSource, /runAutoEquipment\([\s\S]{0,240}completeAfkCommitTransaction\(transaction\.result\)/);
   assert.doesNotMatch(homeSource, /mutationCount === 0/);
   assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
+});
+
+test('AFK Chunk party status is calculated once and reused by all twelve Cycles', () => {
+  assert.match(hookSource, /const chunkPartyStatus = state\.parties\.map\(\(party\) => \(\{\s*party,\s*computed: computePartyStats\(party\),\s*\}\)\);/);
+  assert.match(hookSource, /for \(const \{ runIndex, partyIndex, partyCycleDurationMs \} of operationWindow\)[\s\S]*chunkPartyStatus: chunkPartyStatus\[partyIndex\]/);
+  assert.match(hookSource, /const \{ partyStats, characterStats \} = action\.chunkPartyStatus\?\.computed \?\? computePartyStats\(statusParty\)/);
+  assert.match(hookSource, /executeBattle\(statusParty, enemy, bags, roomStartHp, \{[\s\S]{0,160}partyStatus: action\.chunkPartyStatus\?\.computed/);
+  assert.match(battleCandidateSource, /environment\.partyStatus \?\? computePartyStats\(party\)/);
 });
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
