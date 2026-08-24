@@ -959,6 +959,30 @@ test('END Burn and Null Burn flavor facts preserve their reversed source ownersh
   assert.equal(zeroDamage.events.some((event) => event.abilityId === 'burn'), false);
 });
 
+test('END Equation Breaker flavor fact retains the Silence Field source position', () => {
+  const base = endCheckpointInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    terrainEffect: 'terrain.silence-field',
+    combatants: [
+      base.combatants[0]!,
+      { ...base.combatants[1]!, abilities: [{ id: 'equation_breaker', level: 1 }] },
+    ],
+    randomValues: [0],
+  })));
+  assert.equal(output.protocolError, 0);
+  const sourceIndex = output.events.findIndex((event) => event.opcode === 'ability_activated'
+    && event.abilityId === 'equation_breaker');
+  assert.ok(sourceIndex >= 0);
+  const source = output.events[sourceIndex]!;
+  const flavor = output.events[sourceIndex + 1]!;
+  assert.equal(flavor.opcode, 'random_flavor');
+  assert.deepEqual(
+    [flavor.phase, flavor.actorId, flavor.targetId, flavor.abilityId, flavor.attackType, flavor.timing, flavor.aux1],
+    [source.phase, source.actorId, source.targetId, source.abilityId, source.attackType, source.timing, source.aux0],
+  );
+  assert.equal(source.aux0, 13);
+});
+
 test('END finalization preserves timed threat refill, hit bookkeeping, and externally-owned First Aid', () => {
   const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
     physicalThreatBag: EMPTY_THREAT_BAG,

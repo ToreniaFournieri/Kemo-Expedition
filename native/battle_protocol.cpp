@@ -817,7 +817,8 @@ StartResult resolve_start_checkpoint(const InputHeader& input, BattleStateCore& 
       const int level = active_ability_level(owner, protocol::AbilityId::EquationBreaker);
       if (level > 0) {
         if (!emit(protocol::EventOpcode::AbilityActivated, owner.id, 0,
-            static_cast<u32>(protocol::AbilityId::EquationBreaker), 9, kPrevented | kTerrain, level)) return StartResult::EventCapacity;
+            static_cast<u32>(protocol::AbilityId::EquationBreaker), 9, kPrevented | kTerrain,
+            level, 0.0, 13)) return StartResult::EventCapacity;
         const auto flavor = emit_start_random_flavor(state, owner.id, 0,
             protocol::AbilityId::EquationBreaker, 9, 13);
         if (flavor != StartResult::Ok) return flavor;
