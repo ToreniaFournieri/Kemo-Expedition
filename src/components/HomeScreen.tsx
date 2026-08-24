@@ -240,7 +240,6 @@ export function HomeScreen({
   const afkActiveCommitTransactionRef = useRef<{
     result: AfkPartyChunkResult;
     capturedSettingChanges: boolean;
-    phase: 'awaiting-chunk-commit' | 'awaiting-auto-equipment-commit';
   } | null>(null);
   const afkWorkerJobSequenceRef = useRef(0);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
@@ -2173,28 +2172,16 @@ export function HomeScreen({
     const transaction = afkActiveCommitTransactionRef.current;
     if (!transaction) return;
 
-    if (transaction.phase === 'awaiting-chunk-commit') {
-      if (transaction.capturedSettingChanges) {
-        completeAfkCommitTransaction(transaction.result);
-        return;
-      }
-
-      // The worker's PT now sees the coordinator-committed Chunk state. Keep
-      // ownership of the coordinator slot until its equipment mutations have
-      // committed, preventing another stale worker result from duplicating an
-      // inventory item between the inventory and an equipment slot.
-      transaction.phase = 'awaiting-auto-equipment-commit';
-      const summary = runAutoEquipment(
+    if (!transaction.capturedSettingChanges) {
+      // React queues these equipment mutations before the coordinator version
+      // update below. Completing in this effect therefore retains the slot until
+      // the Chunk commit is visible, while avoiding a second state-change signal
+      // that may never arrive when an equipment action is rejected as a no-op.
+      runAutoEquipment(
         [transaction.result.partyIndex],
         undefined,
         { suppressNotifications: true },
       );
-      const mutationCount = summary.unequippedCount
-        + summary.equippedCount
-        + summary.upgradedCount
-        + summary.jewelAssignmentCount;
-      if (mutationCount === 0) completeAfkCommitTransaction(transaction.result);
-      return;
     }
 
     completeAfkCommitTransaction(transaction.result);
@@ -2246,7 +2233,6 @@ export function HomeScreen({
         afkActiveCommitTransactionRef.current = {
           result: completedResult,
           capturedSettingChanges,
-          phase: 'awaiting-chunk-commit',
         };
         actions.commitAfkPartyChunk(completedResult);
         return;
