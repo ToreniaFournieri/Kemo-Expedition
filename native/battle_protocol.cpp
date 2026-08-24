@@ -840,6 +840,9 @@ StartResult resolve_start_checkpoint(const InputHeader& input, BattleStateCore& 
         if (active_ability_level(*target, protocol::AbilityId::NullAntagonism) > 0) {
           if (!emit(protocol::EventOpcode::AbilityActivated, target->id, target->id,
               static_cast<u32>(protocol::AbilityId::NullAntagonism), 9, kPrevented | kDeity, 1, 0, 14)) return StartResult::EventCapacity;
+          const auto flavor = emit_start_random_flavor(state, target->id, target->id,
+              protocol::AbilityId::NullAntagonism, 9, 14);
+          if (flavor != StartResult::Ok) return flavor;
         } else {
           target->status_flags |= 1;
           if (!emit(protocol::EventOpcode::StatusApplied, 0, target->id, 0, 9, kDeity, 1, 0, 14)) return StartResult::EventCapacity;
@@ -2264,6 +2267,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
         const double lethal = target_hp; apply_checkpoint_damage(state, target, lethal);
         if (!emit_state_event(state, protocol::EventOpcode::Damage, 2, actor.id, target.id,
             static_cast<u32>(protocol::AbilityId::DeathTouch), attack_type, timing, 0, lethal, lethal, 0, action_id)) return CombatResult::EventCapacity;
+        state.events[state.event_count - 1].hits = result.hits;
         const auto flavored = flavor(protocol::AbilityId::DeathTouch); if (flavored != CombatResult::Ok) return flavored;
         const auto recovered = recover_checkpoint_target(state, target, attack_type, timing, action_id);
         if (recovered != CombatResult::Ok) return recovered;
@@ -2377,8 +2381,11 @@ CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore
         ability == protocol::AbilityId::SoulReap || ability == protocol::AbilityId::Free ||
         ability == protocol::AbilityId::Pursuit;
     if (!flavored) return true;
+    const u32 choice_count = ability == protocol::AbilityId::UnstableCore ? 5
+        : (ability == protocol::AbilityId::RangedConfusion || ability == protocol::AbilityId::MagicConfusion ||
+           ability == protocol::AbilityId::MeleeConfusion) && !target ? 13 : 10;
     return emit_random_flavor(state, 2, actor.id, target ? target->id : 0, ability, attack,
-        timing, ability == protocol::AbilityId::UnstableCore ? 5 : 10, kTimed) == CombatResult::Ok;
+        timing, choice_count, kTimed) == CombatResult::Ok;
   };
   const bool alive = state.party_hp > 0 && state.enemy_hp > 0;
   if (!alive) return CombatResult::Ok;
@@ -2396,12 +2403,16 @@ CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore
   auto trigger_free = [&]() -> CombatResult {
     if (attack != 3 || timing < 1 || timing > 5) return CombatResult::Ok;
     const int free_level = active_ability_level(enemy, protocol::AbilityId::Free);
-    bool party_pursuit = false; for (u32 i = 0; i < party_count; ++i) party_pursuit |= active_ability_level(*parties[i], protocol::AbilityId::Pursuit) > 0;
+    CombatantState* party_pursuit_owner = nullptr; for (u32 i = 0; i < party_count; ++i) if (!party_pursuit_owner && active_ability_level(*parties[i], protocol::AbilityId::Pursuit) > 0) party_pursuit_owner = parties[i];
     if (free_level > 0 && (free_level > 5 ? 5 : free_level) == timing) {
-      if (!emit(enemy, nullptr, party_pursuit ? protocol::AbilityId::Pursuit : protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity;
-      if (!party_pursuit) { state.forced_draw = true; return CombatResult::Ok; }
+      if (party_pursuit_owner) {
+        if (!emit(*party_pursuit_owner, &enemy, protocol::AbilityId::Pursuit, 3)) return CombatResult::EventCapacity;
+      } else {
+        if (!emit(enemy, nullptr, protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity;
+        state.forced_draw = true; return CombatResult::Ok;
+      }
     }
-    for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int level = active_ability_level(owner, protocol::AbilityId::Free); if (level <= 0 || (level > 5 ? 5 : level) != timing) continue; const bool pursued = active_ability_level(enemy, protocol::AbilityId::Pursuit) > 0; if (!emit(owner, &enemy, pursued ? protocol::AbilityId::Pursuit : protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity; if (!pursued) { state.forced_draw = true; return CombatResult::Ok; } }
+    for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int level = active_ability_level(owner, protocol::AbilityId::Free); if (level <= 0 || (level > 5 ? 5 : level) != timing) continue; const bool pursued = active_ability_level(enemy, protocol::AbilityId::Pursuit) > 0; if (!emit(pursued ? enemy : owner, pursued ? &owner : nullptr, pursued ? protocol::AbilityId::Pursuit : protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity; if (!pursued) { state.forced_draw = true; return CombatResult::Ok; } }
     return CombatResult::Ok;
   };
 
@@ -2655,6 +2666,10 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
         if (!emit_state_event(state, protocol::EventOpcode::ActionSkipped, kCombatPhase, actor->id, actor->id,
             static_cast<u32>(protocol::AbilityId::Bind), action.attack_type, timing, kPrevented, 0, 0, 0,
             static_cast<u32>(protocol::ActionId::NormalAttack))) return CombatResult::EventCapacity;
+        const auto flavor = emit_random_flavor(state, kCombatPhase, actor->id, actor->id,
+            protocol::AbilityId::Bind, action.attack_type, timing, 10,
+            static_cast<u32>(protocol::ActionId::NormalAttack));
+        if (flavor != CombatResult::Ok) return flavor;
         continue;
       }
       if (active_ability_level(*actor, protocol::AbilityId::NoOffense) > 0) { actor->acted = true; continue; }

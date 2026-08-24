@@ -983,6 +983,49 @@ test('END Equation Breaker flavor fact retains the Silence Field source position
   assert.equal(source.aux0, 13);
 });
 
+test('END Discord nullification emits an adjacent flavor fact with matching identity', () => {
+  const base = endCheckpointInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    deityId: BATTLE_DEITY_IDS.goddess_of_discord,
+    combatants: base.combatants.map((combatant, index) => ({
+      ...combatant,
+      rangedAttack: 0, magicalAttack: 0, meleeAttack: 0,
+      rangedNoA: 0, magicalNoA: 0, meleeNoA: 0,
+      abilities: index === 1 ? [{ id: 'null_antagonism', level: 1 }] : [],
+    })),
+    randomValues: [0, 0.999999],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.randomConsumed, 2);
+  const sourceIndex = output.events.findIndex((event) => event.opcode === 'ability_activated'
+    && event.abilityId === 'null_antagonism');
+  assert.ok(sourceIndex >= 0);
+  const source = output.events[sourceIndex]!;
+  const flavor = output.events[sourceIndex + 1]!;
+  assert.deepEqual(
+    [flavor.opcode, flavor.actorId, flavor.targetId, flavor.abilityId, flavor.timing, flavor.aux0, flavor.aux1],
+    ['random_flavor', source.actorId, source.targetId, source.abilityId, source.timing, 9, source.aux0],
+  );
+});
+
+test('END no-target Confusion can select all thirteen flavor entries', () => {
+  const base = endCheckpointInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    combatants: base.combatants.map((combatant, index) => ({
+      ...combatant,
+      rangedAttack: 0, magicalAttack: 0, meleeAttack: 0,
+      rangedNoA: 0, magicalNoA: 0, meleeNoA: 0,
+      abilities: index === 0 ? [{ id: 'melee_confusion', level: 3 }] : [],
+    })),
+    randomValues: [0.999999],
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.equal(output.randomConsumed, 1);
+  const flavor = output.events.find((event) => event.opcode === 'random_flavor'
+    && event.abilityId === 'melee_confusion');
+  assert.deepEqual([flavor?.targetId, flavor?.aux0], [0, 12]);
+});
+
 test('END finalization preserves timed threat refill, hit bookkeeping, and externally-owned First Aid', () => {
   const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
     physicalThreatBag: EMPTY_THREAT_BAG,
@@ -1231,7 +1274,7 @@ test('timed melee 2 preserves Free, Decompose, Confusion, then Self Destruct and
       .filter((event) => orderedAbilities.has(event.abilityId ?? ''))
       .map((event) => [event.abilityId, event.targetId]),
     [
-      ['pursuit', 0],
+      ['pursuit', 900],
       ['decompose', 2],
       ['melee_confusion', 1],
       ['self_destruct', 1],

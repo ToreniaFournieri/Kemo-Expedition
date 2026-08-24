@@ -23,7 +23,12 @@ import { executeBattleProtocol, executeBattleProtocolInput } from './battleKerne
 import { getTerrainEffectGlossaryEntry } from '../data/glossary.ts';
 import { t } from '../i18n/index.ts';
 import { resolveMagicProfile } from './magic.ts';
-import { getBattleFlavorTemplateAtIndex, type BattleFlavorFamily } from './battleNarration.ts';
+import {
+  formatDecomposeNote,
+  formatRegenerationNote,
+  getBattleFlavorTemplateAtIndex,
+  type BattleFlavorFamily,
+} from './battleNarration.ts';
 import {
   encodeBattleProtocolInput,
   type BattleProtocolCombatant,
@@ -278,6 +283,7 @@ type NarrationCombatant = {
   elementalOffense: ElementalOffense;
   elementalOffenseValue: number;
   magicStyle: EnemyDef['magicStyle'];
+  physicalDefense: number;
   abilities: Map<AbilityId, number>;
 };
 
@@ -338,6 +344,7 @@ function requireFlavorPairs(events: readonly BattleProtocolEvent[]): Map<number,
 function sourceRequiresFlavor(event: BattleProtocolEvent): boolean {
   if (event.opcode === 'terrain_effect' && event.phase === 2) return true;
   if (event.opcode === 'target_selected' && event.phase === 2 && (event.flags & 8) !== 0) return true;
+  if (event.opcode === 'action_skipped' && event.abilityId === 'bind') return true;
   if (event.opcode === 'ability_mutated' && event.aux0 === 13 && (event.flags & 4) !== 0) return true;
   if (event.opcode === 'ability_activated' && event.phase === 2
       && event.abilityId && (CONFUSION_ABILITIES.has(event.abilityId) || event.abilityId === 'unstable_core')) return true;
@@ -491,6 +498,17 @@ function abilityLabel(abilityId: AbilityId, level: number): string {
   return t('battle.abilityLabel', { name: getAbilityName(abilityId, level) });
 }
 
+function fractionMultiplier(value: number): string {
+  for (let numerator = 2; numerator <= 6; numerator += 1) {
+    if (Math.abs(value - numerator / 7) < 1e-6) return `x${numerator}/7`;
+  }
+  return `x${value}`;
+}
+
+function abilityLevel(combatant: NarrationCombatant | undefined, abilityId: AbilityId): number {
+  return combatant?.abilities.get(abilityId) ?? 1;
+}
+
 function attackBonusText(facts: ReadonlyMap<number, number>): string {
   const notes: string[] = [];
   const resonance = facts.get(3);
@@ -545,6 +563,7 @@ export function convertBattleSemanticEvents(
       elementalOffense: projected.elementalOffense,
       elementalOffenseValue: projected.elementalOffenseValue,
       magicStyle: projected.kind === 'enemy' ? enemy.magicStyle : undefined,
+      physicalDefense: projected.physicalDefense,
       abilities: new Map(projected.abilities.map((ability) => [ability.id, ability.level])),
     });
   }
@@ -706,7 +725,36 @@ export function convertBattleSemanticEvents(
     if (event.opcode === 'ability_activated' && event.phase === 1 && event.abilityId) {
       const owner = nameOf(event.actorId);
       const level = Math.max(1, Math.round(event.value0));
-      if (event.abilityId === 'defender' || event.abilityId === 'command' || event.abilityId === 'm_barrier') {
+      if (event.abilityId === 'unforgettable') {
+        const flavor = requireFlavor(flavors, index, event);
+        const terrainLabelKey = 'terrainEffect.terrain.deletion.label';
+        const terrainLabel = t(terrainLabelKey);
+        const source = event.aux0 === 13
+          ? (terrainLabel === terrainLabelKey ? getTerrainEffectGlossaryEntry('terrain.deletion')?.label ?? 'terrain.deletion' : terrainLabel)
+          : owner;
+        log.push({
+          phase: 'start', actor: 'effect',
+          ...(combatants.get(event.targetId)?.kind === 'character' ? { characterId: event.targetId } : {}),
+          action: replaceFlavor(getBattleFlavorTemplateAtIndex('unforgettable', flavor.aux0), { actor: source, target: nameOf(event.targetId) }),
+          note: t('battle.note.unforgettable'), noteTone: 'muted',
+        });
+      } else if (event.abilityId === 'equation_breaker') {
+        const flavor = requireFlavor(flavors, index, event);
+        log.push({
+          phase: 'start', actor: 'effect',
+          ...(combatants.get(event.actorId)?.kind === 'character' ? { characterId: event.actorId } : {}),
+          action: replaceFlavor(getBattleFlavorTemplateAtIndex('equation-breaker', flavor.aux0), { actor: owner }),
+          note: t('battle.note.equationBreakerSilence'),
+        });
+      } else if (event.abilityId === 'null_antagonism') {
+        const flavor = requireFlavor(flavors, index, event);
+        log.push({
+          phase: 'start', actor: 'effect',
+          ...(combatants.get(event.targetId)?.kind === 'character' ? { characterId: event.targetId } : {}),
+          action: replaceFlavor(getBattleFlavorTemplateAtIndex('null-antagonism', flavor.aux0), { actor: nameOf(event.targetId) }),
+          note: t('battle.note.nullAntagonism'),
+        });
+      } else if (event.abilityId === 'defender' || event.abilityId === 'command' || event.abilityId === 'm_barrier') {
         const multiplier = event.abilityId === 'command' ? (level >= 3 ? '1.6' : level === 2 ? '1.5' : '1.4')
           : (level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3');
         const noteKey = event.abilityId === 'command' ? 'battle.note.backlinePhysicalDamageDealtMultiplier'
@@ -748,7 +796,10 @@ export function convertBattleSemanticEvents(
         const success = event.value0 > 0;
         const chance = level >= 5 ? 7 : level === 4 ? 5 : level >= 2 ? 3 : 1;
         const family: BattleFlavorFamily = success ? 'confusion-success' : 'confusion-failure';
-        const action = `${actorName}${getBattleFlavorTemplateAtIndex(family, flavor.aux0).split('target').join(nameOf(event.targetId))}`;
+        const targetName = nameOf(event.targetId);
+        const template = getBattleFlavorTemplateAtIndex(family, flavor.aux0);
+        const resolved = replaceFlavor(template, { actor: actorName, target: targetName }).split('target').join(targetName);
+        const action = template.includes('{actor}') ? resolved : `${actorName}${resolved}`;
         log.push({
           phase: 'combat', initiativeRoll: event.timing, actor: 'triggered', ...character, action,
           note: t('battle.note.confusion', { chance, result: t(success ? 'battle.result.success' : 'battle.result.failure') }),
@@ -786,11 +837,50 @@ export function convertBattleSemanticEvents(
       continue;
     }
 
-    if ((event.opcode === 'nullified' || event.opcode === 'status_applied') && event.abilityId === 'illusion') {
+    if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId
+        && ['regeneration', 'flying', 'decompose', 'self_destruct', 'soul_reap', 'free', 'pursuit'].includes(event.abilityId)) {
       const flavor = requireFlavor(flavors, index, event);
-      const action = replaceFlavor(getBattleFlavorTemplateAtIndex('illusion', flavor.aux0), { target: nameOf(event.actorId) });
-      const key = reverseActionKey(event);
-      negatedActionKeys.add(reverseAttackTargetKey(event));
+      const family = flavorFamily(event.abilityId);
+      if (!family) throw new Error(`Missing flavor family for ${event.abilityId}`);
+      const actor = combatants.get(event.actorId);
+      const target = combatants.get(event.targetId);
+      const action = replaceFlavor(getBattleFlavorTemplateAtIndex(family, flavor.aux0), {
+        actor: nameOf(event.actorId), target: nameOf(event.targetId),
+      });
+      let note: string | undefined;
+      let noteTone: 'muted' | undefined;
+      if (event.abilityId === 'regeneration') note = formatRegenerationNote(event.value0);
+      else if (event.abilityId === 'flying') note = t('battle.note.flying', { evasion: Math.round(event.value0 * 100) });
+      else if (event.abilityId === 'decompose' && target) {
+        note = formatDecomposeNote(target.name, target.physicalDefense, event.value0);
+        noteTone = 'muted';
+        target.physicalDefense = event.value0;
+      } else if (event.abilityId === 'soul_reap') {
+        const thresholds = [10, 14, 17, 19, 20];
+        note = t('battle.note.soulReap', { percent: thresholds[Math.min(5, Math.max(1, abilityLevel(actor, 'soul_reap'))) - 1] });
+      }
+      log.push({
+        phase: 'combat', initiativeRoll: event.timing, actor: 'triggered',
+        ...(actor?.kind === 'character' ? { characterId: actor.id } : {}), action,
+        ...(note ? { note } : {}), ...(noteTone ? { noteTone } : {}),
+        ...(event.abilityId === 'self_destruct' && event.value0 > 0 ? {
+          damage: event.value0,
+          damageTarget: target?.kind === 'character' ? 'party' as const : 'enemy' as const,
+        } : {}),
+        attackType: event.attackType ?? undefined,
+      });
+      continue;
+    }
+
+    if ((event.opcode === 'nullified' && event.abilityId === 'illusion')
+        || (event.opcode === 'ability_activated' && event.abilityId === 'illusion_breaker')) {
+      const flavor = requireFlavor(flavors, index, event);
+      const broken = event.abilityId === 'illusion_breaker';
+      const action = replaceFlavor(getBattleFlavorTemplateAtIndex(broken ? 'illusion-breaker' : 'illusion', flavor.aux0), {
+        actor: nameOf(event.actorId), target: nameOf(event.actorId),
+      });
+      const key = broken ? actionKey(event) : reverseActionKey(event);
+      if (!broken) negatedActionKeys.add(reverseAttackTargetKey(event));
       pendingAfterAttack.set(key, [...(pendingAfterAttack.get(key) ?? []), { phase: 'combat', actor: 'effect', action, attackType: event.attackType ?? undefined }]);
       continue;
     }
@@ -858,6 +948,64 @@ export function convertBattleSemanticEvents(
         effectKind: 'life_drain', effectSourceName: nameOf(event.actorId), effectTargetName: nameOf(targetId), effectHealAmount: event.value0,
         action: replaceFlavor(getBattleFlavorTemplateAtIndex('life-drain', flavor.aux0), { actor: nameOf(event.actorId), target: nameOf(targetId) }),
         note: t('battle.note.lifeDrain', { portion, healAmount: event.value0 }), noteTone: 'muted', attackType: event.attackType ?? undefined,
+      });
+      continue;
+    }
+
+    if (flavors.has(index) && event.opcode !== 'action_skipped' && event.abilityId && ['corrode', 'null_corrode', 'null_life_drain', 'death_touch', 'null_death_touch',
+      'burn', 'null_burn', 'bind', 'null_bind', 'requiem', 'null_requiem'].includes(event.abilityId)) {
+      const flavor = requireFlavor(flavors, index, event);
+      const family = flavorFamily(event.abilityId);
+      if (!family) throw new Error(`Missing flavor family for ${event.abilityId}`);
+      const actor = combatants.get(event.actorId);
+      const target = combatants.get(event.targetId);
+      const burn = event.abilityId === 'burn';
+      const action = replaceFlavor(getBattleFlavorTemplateAtIndex(family, flavor.aux0), {
+        actor: burn ? nameOf(event.targetId) : nameOf(event.actorId),
+        target: nameOf(event.targetId),
+      });
+      let note: string | undefined;
+      if (event.abilityId === 'corrode') note = t('battle.note.corrode', { multiplier: fractionMultiplier(event.value0) });
+      else if (event.abilityId === 'null_corrode') note = t('battle.note.nullCorrode');
+      else if (event.abilityId === 'null_life_drain') note = t('battle.note.nullLifeDrain');
+      else if (event.abilityId === 'death_touch') {
+        const numerators = [2, 3, 4, 5, 6];
+        const level = Math.min(5, Math.max(1, abilityLevel(actor, 'death_touch')));
+        note = t('battle.note.deathTouch', { probabilityNumerator: Math.min(256, event.hits * numerators[level - 1]!) });
+      } else if (event.abilityId === 'null_death_touch') note = t('battle.note.nullDeathTouch');
+      else if (event.abilityId === 'burn') note = t('battle.note.burn');
+      else if (event.abilityId === 'null_burn') note = t('battle.note.nullBurn');
+      else if (event.abilityId === 'bind') note = t('battle.note.bindIncapacitated');
+      else if (event.abilityId === 'null_bind') note = t('battle.note.nullBind');
+      const inlineRequiem = event.abilityId === 'requiem' || event.abilityId === 'null_requiem';
+      const affectedCharacterId = actor?.kind === 'character' ? actor.id
+        : (event.abilityId === 'burn' || event.abilityId === 'null_burn' || event.abilityId === 'bind' || event.abilityId === 'null_bind')
+          && target?.kind === 'character' ? target.id : null;
+      log.push({
+        phase: 'combat', initiativeRoll: event.timing, actor: inlineRequiem
+          ? (actor?.kind === 'enemy' ? 'enemy' : 'character') : 'triggered',
+        ...(affectedCharacterId !== null ? { characterId: affectedCharacterId } : {}),
+        action: inlineRequiem
+          ? `${action} ${t(event.abilityId === 'requiem' ? 'battle.note.requiemInline' : 'battle.note.nullRequiemInline')}`
+          : action,
+        ...(note ? { note, noteTone: 'muted' as const } : {}),
+        ...(event.abilityId === 'burn' && event.value0 > 0 ? {
+          damage: event.value0, damageTarget: target?.kind === 'character' ? 'party' as const : 'enemy' as const,
+          elementalOffense: 'fire' as const,
+        } : {}),
+        hideInitiativeLabel: !inlineRequiem, attackType: event.attackType ?? undefined,
+      });
+      continue;
+    }
+
+    if (event.opcode === 'action_skipped' && event.abilityId === 'bind') {
+      const flavor = requireFlavor(flavors, index, event);
+      const actor = combatants.get(event.actorId);
+      log.push({
+        phase: 'combat', initiativeRoll: event.timing, actor: 'triggered',
+        ...(actor?.kind === 'character' ? { characterId: actor.id } : {}),
+        action: replaceFlavor(getBattleFlavorTemplateAtIndex('incapacitated', flavor.aux0), { actor: nameOf(event.actorId) }),
+        attackType: event.attackType ?? undefined,
       });
       continue;
     }
@@ -999,7 +1147,10 @@ export function convertBattleSemanticEvents(
 
     if (event.abilityId && FLAVOR_ABILITIES.has(event.abilityId)) {
       const family = flavorFamily(event.abilityId);
-      if (family) requireFlavor(flavors, index, event);
+      if (family) {
+        requireFlavor(flavors, index, event);
+        throw new Error(`Unhandled battle flavor source ${event.opcode}:${event.abilityId}`);
+      }
       continue;
     }
   }

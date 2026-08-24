@@ -14,6 +14,54 @@ import zhTW from '../src/i18n/zh-TW.ts';
 
 const glossarySource = readFileSync(new URL('../src/data/glossary.ts', import.meta.url), 'utf8');
 
+test('all indexed ability and terrain flavor families are complete and use supported placeholders in every language', () => {
+  const languages = [
+    ['ja', ja], ['en', en], ['zh-CN', zhCN], ['zh-TW', zhTW],
+  ] as const;
+  const placeholders = (value: string) => [...new Set(
+    [...value.replace(/(?<!\{)\btarget\b(?!\})/g, '{target}').matchAll(/\{([^}]+)\}/g)].map((match) => match[1]),
+  )].sort();
+
+  const abilityFamilies: Record<string, number> = {
+    'confusion-success': 10, 'confusion-failure': 10, 'confusion-no-target': 13,
+    'soul-reap': 10, regeneration: 10, 'self-destruct': 10, decompose: 10, free: 10,
+    pursuit: 10, illusion: 10, 'illusion-breaker': 10, shock: 10, 'null-shock': 10,
+    flying: 10, corrode: 10, 'null-corrode': 10, 'life-drain': 10, 'null-life-drain': 10,
+    'death-touch': 10, 'null-death-touch': 10, burn: 10, 'null-burn': 10, bind: 10,
+    'null-bind': 10, incapacitated: 10, resurrect: 10, reanimate: 10, requiem: 10,
+    'null-requiem': 10, 'null-antagonism': 10, 'equation-breaker': 10, unforgettable: 10,
+    inline: 42,
+  };
+  for (const [family, count] of Object.entries(abilityFamilies)) {
+    for (let index = 1; index <= count; index += 1) {
+      const key = `battleFlavor.${family}.${index}`;
+      const reference = ja[key];
+      assert.ok(reference, `ja is missing ${key}`);
+      for (const [language, dictionary] of languages) {
+        assert.ok(dictionary[key], `${language} is missing ${key}`);
+        assert.ok(placeholders(dictionary[key]).every((placeholder) => ['actor', 'target', 'spell'].includes(placeholder)),
+          `${language} has an unsupported placeholder in ${key}`);
+      }
+    }
+  }
+
+  const terrainFamilies = [
+    'regeneration', 'decayBlocked', 'abundant', 'decay', 'shock', 'heatwave', 'vineSnare',
+    'crystalZone', 'conduction', 'manaBurn', 'sacredJudgement', 'chainLightning', 'deletion',
+  ] as const;
+  for (const family of terrainFamilies) {
+    for (let index = 1; index <= 10; index += 1) {
+      const key = `battleFlavor.environment.${family}.${index}`;
+      const reference = ja[key];
+      assert.ok(reference, `ja is missing ${key}`);
+      for (const [language, dictionary] of languages) {
+        assert.ok(dictionary[key], `${language} is missing ${key}`);
+        assert.deepEqual(placeholders(dictionary[key]), placeholders(reference), `${language} placeholder mismatch in ${key}`);
+      }
+    }
+  }
+});
+
 test('normalizes supported system language tags case-insensitively', () => {
   assert.equal(normalizeSystemLanguage('ja-JP'), 'ja');
   assert.equal(normalizeSystemLanguage('EN-us'), 'en');

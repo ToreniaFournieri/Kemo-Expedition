@@ -533,6 +533,14 @@ const INDEXED_BATTLE_FLAVORS: Record<BattleFlavorFamily, readonly string[]> = {
   unforgettable: UNFORGETTABLE_LOGS,
 };
 
+export const BATTLE_FLAVOR_FAMILIES = Object.freeze(
+  Object.keys(INDEXED_BATTLE_FLAVORS) as BattleFlavorFamily[],
+);
+
+export function getBattleFlavorFamilySize(family: BattleFlavorFamily): number {
+  return INDEXED_BATTLE_FLAVORS[family].length;
+}
+
 /** Deterministic flavor lookup for semantic-event narration. */
 export function getBattleFlavorTemplateAtIndex(family: BattleFlavorFamily, index: number): string {
   const entries = INDEXED_BATTLE_FLAVORS[family];
@@ -555,7 +563,8 @@ function pickRandomTranslatedEntry(entries: readonly string[]): string {
 
 export function buildConfusionAction(actorName: string, targetName: string, success: boolean): string {
   const template = pickRandomTranslatedEntry(success ? CONFUSION_SUCCESS_LOGS : CONFUSION_FAILURE_LOGS);
-  return `${actorName}${template.split('target').join(targetName)}`;
+  const resolved = template.replace(/\{actor\}/g, actorName).replace(/\{target\}/g, targetName).split('target').join(targetName);
+  return template.includes('{actor}') ? resolved : `${actorName}${resolved}`;
 }
 
 export function buildAntagonismAction(
