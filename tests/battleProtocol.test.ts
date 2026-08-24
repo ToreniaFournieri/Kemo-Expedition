@@ -909,6 +909,56 @@ test('END flavor draws use source-order zero-based array boundaries and skipped 
   );
 });
 
+test('END Burn and Null Burn flavor facts preserve their reversed source ownership', () => {
+  const base = endCheckpointInput();
+  const executeBurnCase = (nullified: boolean) => executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    partyHp: 1_000,
+    partyMaxHp: 1_000,
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    combatants: base.combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'burn', level: 1 }] }
+      : {
+        ...combatant,
+        meleeAttack: 10,
+        meleeNoA: 1,
+        abilities: nullified ? [{ id: 'null_burn', level: 1 }] : [],
+      }),
+    physicalThreatBag: [{ id: 1, tickets: 32 }],
+    randomValues: Array(32).fill(0),
+  })));
+
+  for (const [nullified, abilityId, opcode] of [
+    [false, 'burn', 'damage'],
+    [true, 'null_burn', 'nullified'],
+  ] as const) {
+    const output = executeBurnCase(nullified);
+    assert.equal(output.protocolError, 0);
+    const sourceIndex = output.events.findIndex((event) => event.opcode === opcode && event.abilityId === abilityId);
+    assert.ok(sourceIndex >= 0);
+    const source = output.events[sourceIndex]!;
+    const flavor = output.events[sourceIndex + 1]!;
+    assert.equal(flavor.opcode, 'random_flavor');
+    assert.deepEqual(
+      [flavor.phase, flavor.actorId, flavor.targetId, flavor.abilityId, flavor.attackType, flavor.timing, flavor.aux1],
+      [source.phase, source.actorId, source.targetId, source.abilityId, source.attackType, source.timing, source.aux0],
+    );
+    assert.deepEqual([source.actorId, source.targetId], [base.combatants[0]!.id, base.combatants[1]!.id]);
+  }
+
+  const zeroDamage = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
+    partyHp: 100,
+    partyMaxHp: 100,
+    combatants: base.combatants.map((combatant, index) => index === 0
+      ? { ...combatant, abilities: [{ id: 'burn', level: 1 }] }
+      : { ...combatant, meleeAttack: 10, meleeNoA: 1 }),
+    physicalThreatBag: [{ id: 1, tickets: 32 }],
+    randomValues: Array(32).fill(0),
+  })));
+  assert.equal(zeroDamage.protocolError, 0);
+  assert.equal(zeroDamage.events.some((event) => event.abilityId === 'burn'), false);
+});
+
 test('END finalization preserves timed threat refill, hit bookkeeping, and externally-owned First Aid', () => {
   const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
     physicalThreatBag: EMPTY_THREAT_BAG,

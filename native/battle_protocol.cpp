@@ -2275,15 +2275,21 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
     if (active_ability_level(actor, protocol::AbilityId::NullBurn) > 0) {
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, target.id, actor.id,
           static_cast<u32>(protocol::AbilityId::NullBurn), attack_type, timing, 1, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
-      const auto flavored = flavor(protocol::AbilityId::NullBurn); if (flavored != CombatResult::Ok) return flavored;
+      const auto flavored = emit_random_flavor(state, 2, target.id, actor.id,
+          protocol::AbilityId::NullBurn, attack_type, timing, 10, action_id);
+      if (flavored != CombatResult::Ok) return flavored;
     } else {
       const double maximum = actor.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
       const double fire_resistance = actor.profile.elemental_resistance[0];
       const double calculated = __builtin_floor(maximum * result.hits * burn[burn_level >= 5 ? 4 : burn_level - 1] / 100.0 * fire_resistance);
       const double applied = apply_checkpoint_damage(state, actor, calculated);
-      if (calculated > 0.0 && !emit_state_event(state, protocol::EventOpcode::Damage, 2, target.id, actor.id,
-          static_cast<u32>(protocol::AbilityId::Burn), attack_type, timing, 0, applied, calculated, 0, action_id)) return CombatResult::EventCapacity;
-      const auto flavored = flavor(protocol::AbilityId::Burn); if (flavored != CombatResult::Ok) return flavored;
+      if (calculated > 0.0) {
+        if (!emit_state_event(state, protocol::EventOpcode::Damage, 2, target.id, actor.id,
+            static_cast<u32>(protocol::AbilityId::Burn), attack_type, timing, 0, applied, calculated, 0, action_id)) return CombatResult::EventCapacity;
+        const auto flavored = emit_random_flavor(state, 2, target.id, actor.id,
+            protocol::AbilityId::Burn, attack_type, timing, 10, action_id);
+        if (flavored != CombatResult::Ok) return flavored;
+      }
       const auto recovered = recover_checkpoint_target(state, actor, attack_type, timing, action_id);
       if (recovered != CombatResult::Ok) return recovered;
     }
