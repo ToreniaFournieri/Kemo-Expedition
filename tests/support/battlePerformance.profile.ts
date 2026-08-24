@@ -89,6 +89,7 @@ function measureBattleOnlyCase(
   state: GameState,
   fixture: ReturnType<typeof createPartyBattleFixture>,
   seed: bigint,
+  outputMode: 'full' | 'result-only' = 'full',
 ) {
   const prepared = Array.from({ length: WARMUP_COUNT + SAMPLE_COUNT }, () => ({
     party: structuredClone(fixture.party),
@@ -99,7 +100,11 @@ function measureBattleOnlyCase(
   const before = prepared.map(input => JSON.stringify(input));
   for (let index = 0; index < WARMUP_COUNT; index += 1) {
     const input = prepared[index]!;
-    executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment);
+    if (outputMode === 'result-only') {
+      executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment, { outputMode });
+    } else {
+      executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment);
+    }
   }
   const durations: number[] = [];
   const events: number[] = [];
@@ -115,7 +120,11 @@ function measureBattleOnlyCase(
     resetProductionBattleTelemetryForTesting();
     beginBattleKernelMeasurement();
     const started = performance.now();
-    executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment);
+    if (outputMode === 'result-only') {
+      executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment, { outputMode });
+    } else {
+      executeBattleWithSeed(input.party, input.enemy, input.bags, seed, 1, input.party.currentHp, input.environment);
+    }
     durations.push(performance.now() - started);
     const boundary = endBattleKernelMeasurement();
     calls += boundary.calls;
@@ -129,7 +138,7 @@ function measureBattleOnlyCase(
   }
   prepared.forEach((input, index) => assert.equal(JSON.stringify(input), before[index], `${label} input ${index} mutated`));
   const report = {
-    boundary: 'battle-only-production-projection-through-owned-result', label, samples: SAMPLE_COUNT,
+    boundary: 'battle-only-production-projection-through-owned-result', label, outputMode, samples: SAMPLE_COUNT,
     seed: `0x${seed.toString(16)}`, medianBattleMs: percentile(durations, 0.5), p95BattleMs: percentile(durations, 0.95),
     minBattleMs: Math.min(...durations), maxBattleMs: Math.max(...durations),
     medianSemanticEvents: percentile(events, 0.5), maxSemanticEvents: Math.max(...events),
@@ -169,10 +178,16 @@ function findSemanticHeavySeed(
 test('reports isolated deterministic battle-only microprofiles', () => {
   setLanguage('ja');
   const state = loadState();
-  const typical = measureBattleOnlyCase('typical', state, createPartyBattleFixture(state, 5), 0x8e710006n);
+  const typicalFixture = createPartyBattleFixture(state, 5);
+  const typical = measureBattleOnlyCase('typical', state, typicalFixture, 0x8e710006n);
+  const typicalResultOnly = measureBattleOnlyCase('typical', state, typicalFixture, 0x8e710006n, 'result-only');
   const heavyFixture = createPartyBattleFixture(state, 0);
-  const semanticHeavy = measureBattleOnlyCase('semantic-heavy', state, heavyFixture, findSemanticHeavySeed(state, heavyFixture));
-  console.info('BATTLE_ONLY_BASELINE', JSON.stringify([typical, semanticHeavy]));
+  const heavySeed = findSemanticHeavySeed(state, heavyFixture);
+  const semanticHeavy = measureBattleOnlyCase('semantic-heavy', state, heavyFixture, heavySeed);
+  const semanticHeavyResultOnly = measureBattleOnlyCase('semantic-heavy', state, heavyFixture, heavySeed, 'result-only');
+  console.info('BATTLE_ONLY_BASELINE', JSON.stringify([
+    typical, typicalResultOnly, semanticHeavy, semanticHeavyResultOnly,
+  ]));
 });
 
 test('reports deterministic end-to-end online single-battle migration metrics', () => {

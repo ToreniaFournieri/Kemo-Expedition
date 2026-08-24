@@ -2,7 +2,9 @@ import type { ComputedPartyStats, EnemyDef, GameBags, Party, TerrainEffectKey } 
 import type { ComputedPartyStatus } from './partyComputation.ts';
 import {
   executeBattleCandidateFromSeed,
+  type BattleCandidateResolution,
   type BattleCandidateResult,
+  type BattleOutputMode,
 } from './battleCandidate.ts';
 import { getBattleRngVersion } from './battleKernel.ts';
 import { createBattleReplayMetadata, requireBattleRngVersion, requireBattleSeed, type BattleReplayMetadata } from './battleReplay.ts';
@@ -13,6 +15,8 @@ export type BattleEnvironment = {
   partyStatus?: ComputedPartyStatus;
 };
 export type BattleResult = BattleCandidateResult & { replayMetadata: BattleReplayMetadata };
+export type BattleResolution = BattleCandidateResolution & { replayMetadata: BattleReplayMetadata };
+export type BattleExecutionOptions = { outputMode?: BattleOutputMode };
 
 export type ProductionBattleTelemetry = {
   battles: number;
@@ -37,10 +41,35 @@ export function executeBattle(
   party: Party,
   enemy: EnemyDef,
   bags: GameBags,
+  initialPartyHp: number | undefined,
+  environment: BattleEnvironment | undefined,
+  options: { outputMode: 'result-only' },
+): BattleResolution;
+export function executeBattle(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  initialPartyHp?: number,
+  environment?: BattleEnvironment,
+  options?: { outputMode?: 'full' },
+): BattleResult;
+export function executeBattle(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
-): BattleResult {
-  return executeBattleWithSeed(party, enemy, bags, acquireBattleSeed(), getBattleRngVersion(), initialPartyHp, environment);
+  options: BattleExecutionOptions = {},
+): BattleResolution {
+  if (options.outputMode === 'result-only') {
+    return executeBattleWithSeed(
+      party, enemy, bags, acquireBattleSeed(), getBattleRngVersion(), initialPartyHp, environment,
+      { outputMode: 'result-only' },
+    );
+  }
+  return executeBattleWithSeed(
+    party, enemy, bags, acquireBattleSeed(), getBattleRngVersion(), initialPartyHp, environment,
+  );
 }
 
 /** Explicit deterministic replay. The supplied seed is never normalized or wrapped. */
@@ -49,15 +78,40 @@ export function executeBattleWithSeed(
   enemy: EnemyDef,
   bags: GameBags,
   seed: unknown,
+  rngVersion: unknown,
+  initialPartyHp: number | undefined,
+  environment: BattleEnvironment | undefined,
+  options: { outputMode: 'result-only' },
+): BattleResolution;
+export function executeBattleWithSeed(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: unknown,
+  rngVersion?: unknown,
+  initialPartyHp?: number,
+  environment?: BattleEnvironment,
+  options?: { outputMode?: 'full' },
+): BattleResult;
+export function executeBattleWithSeed(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: unknown,
   rngVersion: unknown = getBattleRngVersion(),
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
-): BattleResult {
+  options: BattleExecutionOptions = {},
+): BattleResolution {
   const validatedSeed = requireBattleSeed(seed);
   const validatedRngVersion = requireBattleRngVersion(rngVersion);
-  const execution = executeBattleCandidateFromSeed(
-    party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment,
-  );
+  const execution = options.outputMode === 'result-only'
+    ? executeBattleCandidateFromSeed(
+      party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment, 'result-only',
+    )
+    : executeBattleCandidateFromSeed(
+      party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment,
+    );
   const replayMetadata = createBattleReplayMetadata(
     execution.seed, execution.rngVersion, execution.randomConsumed,
   );

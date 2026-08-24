@@ -57,6 +57,11 @@ and {condition ≥ 230}
     - No items are obtained.
     - No notifications are generated.
     - Clear-Gate progress is not updated.
+  - Because each simulation run is resolved only inside a private clone and exposes only aggregated outcomes, its battles use the result-only production battle output mode:
+    - Preserve the authoritative C++ outcome, final HP, enemy hit count, updated threat bags, random consumption, seed, and replay metadata.
+    - Do not construct the TypeScript narration context, localize semantic events, or allocate `BattleLogEntry` objects.
+    - The private simulation may use empty per-room `details` arrays because neither its expedition log nor its cloned state may be retained or displayed.
+  - Online play, Gods Battles, AFK processing, Experimental AI API sorties, latest expedition logs, and Diary logs must continue using full narrated battle results. The result-only mode must not be selected merely because execution is batched or backgrounded.
   - The simulation is processed asynchronously.
   - When all 100 runs are complete, display the aggregated result:
     - If the run reaches the expedition completion condition: `Example: 踏破45% / 引分10% / 撤退35% / 敗北10%`

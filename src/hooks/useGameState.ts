@@ -1972,7 +1972,7 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus }; battleOutputMode?: 'full' | 'result-only' }
   | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
@@ -3266,10 +3266,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (terrainEffect) {
               revealedTerrainKeys.add(terrainEffect);
             }
-            const battleResult = executeBattle(statusParty, enemy, bags, roomStartHp, {
-              terrainEffect,
-              partyStatus,
-            });
+            const battleResult = action.battleOutputMode === 'result-only'
+              ? executeBattle(statusParty, enemy, bags, roomStartHp, {
+                terrainEffect,
+                partyStatus,
+              }, { outputMode: 'result-only' })
+              : executeBattle(statusParty, enemy, bags, roomStartHp, {
+                terrainEffect,
+                partyStatus,
+              });
 
             // Update threat bags from battle result
             bags = {
@@ -3306,7 +3311,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               damageTaken,
               remainingPartyHP: battleResult.partyHp,
               maxPartyHP: partyStats.hp,
-              details: battleResult.log,
+              details: 'log' in battleResult && Array.isArray(battleResult.log) ? battleResult.log : [],
               replayMetadata: battleResult.replayMetadata,
             };
 
@@ -5327,6 +5332,7 @@ export async function simulateExpeditionRuns(
       partyIndex,
       gameMode,
       triggerGodsBattle: false,
+      battleOutputMode: 'result-only',
     });
     const log = resolvedState.parties[partyIndex]?.lastExpeditionLog;
     if (!log) throw new Error('simulation_failed');

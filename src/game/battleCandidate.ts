@@ -45,11 +45,10 @@ type BattleEnvironment = {
   partyStatus?: ComputedPartyStatus;
 };
 
-export type BattleCandidateResult = {
+export type BattleCandidateResolution = {
   phase: 'combat';
   partyHp: number;
   enemyHp: number;
-  log: BattleLogEntry[];
   outcome: BattleOutcome;
   updatedBags: {
     physicalThreatBag: { entries: Array<{ id: number; tickets: number }> };
@@ -57,6 +56,12 @@ export type BattleCandidateResult = {
   };
   enemyHitsReceived: number;
 };
+
+export type BattleCandidateResult = BattleCandidateResolution & {
+  log: BattleLogEntry[];
+};
+
+export type BattleOutputMode = 'full' | 'result-only';
 
 const deityProtocolKey = {
   'Goddess of Restoration': 'goddess_of_restoration',
@@ -299,6 +304,7 @@ export function prepareBattleExecution(
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
   engineFlags = 0,
+  outputMode: BattleOutputMode = 'full',
 ): PreparedBattleExecution {
   preparationMeasurement.productionPreparations += 1;
   const partyStatus = environment.partyStatus ?? computePartyStats(party);
@@ -310,7 +316,9 @@ export function prepareBattleExecution(
     input: createBattleProtocolInput(
       party, enemy, bags, randomValues, partyHp, preparedEnvironment, engineFlags, projection,
     ),
-    narration: createBattleNarrationContext(projection, party, enemy, preparedEnvironment.terrainEffect),
+    narration: outputMode === 'full'
+      ? createBattleNarrationContext(projection, party, enemy, preparedEnvironment.terrainEffect)
+      : null,
   };
 }
 
@@ -337,7 +345,7 @@ export type BattleNarrationContext = {
 
 export type PreparedBattleExecution = {
   input: BattleProtocolInput;
-  narration: BattleNarrationContext;
+  narration: BattleNarrationContext | null;
 };
 
 export type BattlePreparationMeasurement = {
@@ -346,6 +354,7 @@ export type BattlePreparationMeasurement = {
   productionPreparations: number;
   productionPartyStatusComputations: number;
   productionNarrations: number;
+  productionResultOnlyResolutions: number;
   diagnosticNarrationPreparations: number;
 };
 
@@ -355,6 +364,7 @@ let preparationMeasurement: BattlePreparationMeasurement = {
   productionPreparations: 0,
   productionPartyStatusComputations: 0,
   productionNarrations: 0,
+  productionResultOnlyResolutions: 0,
   diagnosticNarrationPreparations: 0,
 };
 
@@ -369,6 +379,7 @@ export function resetBattlePreparationMeasurementForTesting(): void {
     productionPreparations: 0,
     productionPartyStatusComputations: 0,
     productionNarrations: 0,
+    productionResultOnlyResolutions: 0,
     diagnosticNarrationPreparations: 0,
   };
 }
@@ -580,7 +591,9 @@ type BattleNativeExecutionResult = {
   eventCount: number;
 };
 
-export type SeededBattleCandidateResult = Omit<BattleNativeExecutionResult, 'protocolOutput'> & {
+export type SeededBattleCandidateResult<T extends BattleCandidateResolution = BattleCandidateResult> =
+  Omit<BattleNativeExecutionResult, 'protocolOutput' | 'result'> & {
+  result: T;
   seed: bigint;
   rngVersion: number;
 };
@@ -624,14 +637,36 @@ export function executeBattleCandidateFromSeed(
   bags: GameBags,
   seed: bigint,
   rngVersion: number,
+  initialPartyHp: number | undefined,
+  environment: BattleEnvironment | undefined,
+  outputMode: 'result-only',
+): SeededBattleCandidateResult<BattleCandidateResolution>;
+export function executeBattleCandidateFromSeed(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: bigint,
+  rngVersion: number,
+  initialPartyHp?: number,
+  environment?: BattleEnvironment,
+  outputMode?: 'full',
+): SeededBattleCandidateResult<BattleCandidateResult>;
+export function executeBattleCandidateFromSeed(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: bigint,
+  rngVersion: number,
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
-): SeededBattleCandidateResult {
+  outputMode: BattleOutputMode = 'full',
+): SeededBattleCandidateResult<BattleCandidateResolution> | SeededBattleCandidateResult<BattleCandidateResult> {
   const normalizedSeed = requireBattleSeed(seed);
   requireBattleRngVersion(rngVersion);
   const prepared = prepareBattleExecution(
     party, enemy, bags, [], initialPartyHp, environment,
     BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+    outputMode,
   );
   const { input } = prepared;
   input.seed = normalizedSeed;
@@ -646,9 +681,15 @@ export function executeBattleCandidateFromSeed(
     if (output.randomConsumed !== output.diagnosticDrawCount) {
       throw new Error(`C++ seeded battle draw mismatch: ${output.randomConsumed}/${output.diagnosticDrawCount}`);
     }
-    preparationMeasurement.productionNarrations += 1;
+    if (outputMode === 'result-only') {
+      preparationMeasurement.productionResultOnlyResolutions += 1;
+    } else {
+      preparationMeasurement.productionNarrations += 1;
+    }
     return {
-      result: convertIndexedBattleSemanticEvents(output, prepared.narration),
+      result: outputMode === 'result-only'
+        ? createBattleCandidateResolution(output)
+        : convertIndexedBattleSemanticEvents(output, prepared.narration!),
       randomConsumed: output.randomConsumed,
       diagnosticDrawCount: output.diagnosticDrawCount,
       protocolError: output.protocolError,
@@ -1417,9 +1458,27 @@ function convertIndexedBattleSemanticEvents(
     }
   }
   if (pendingAfterAttack.size > 0) throw new Error('Battle semantic stream ended with unassociated reactive narration');
+  const resolution = createBattleCandidateResolution(output);
+  return {
+    phase: resolution.phase,
+    partyHp: resolution.partyHp,
+    enemyHp: resolution.enemyHp,
+    log,
+    outcome: resolution.outcome,
+    updatedBags: resolution.updatedBags,
+    enemyHitsReceived: resolution.enemyHitsReceived,
+  };
+}
+
+function createBattleCandidateResolution(
+  output: IndexedBattleProtocolOutput,
+): BattleCandidateResolution {
+  if (output.outcome === 'unresolved') {
+    throw new Error('Battle protocol output is missing its final outcome');
+  }
   recordBattleResultBagEntryObjectAllocations(output.physicalThreatBagCount + output.magicalThreatBagCount);
   return {
-    phase: 'combat', partyHp: output.partyHp, enemyHp: output.enemyHp, log,
+    phase: 'combat', partyHp: output.partyHp, enemyHp: output.enemyHp,
     outcome: output.outcome as BattleOutcome,
     updatedBags: {
       physicalThreatBag: { entries: Array.from({ length: output.physicalThreatBagCount }, (_, index) => ({

@@ -10,6 +10,10 @@ test('expedition simulations resolve isolated authoritative runs and yield async
   assert.match(hookSource, /const baseline = structuredClone\(state\)/);
   assert.match(hookSource, /const runState = structuredClone\(baseline\)/);
   assert.match(hookSource, /gameReducer\(runState, \{[\s\S]*type: 'RUN_EXPEDITION'/);
+  assert.match(
+    hookSource.match(/export async function simulateExpeditionRuns[\s\S]*?return result;\n\}/)?.[0] ?? '',
+    /battleOutputMode: 'result-only'/,
+  );
   assert.match(hookSource, /completed % 5 === 0[\s\S]*await yieldToExpeditionSimulationUi\(\)/);
   assert.doesNotMatch(
     hookSource.match(/export async function simulateExpeditionRuns[\s\S]*?return result;\n\}/)?.[0] ?? '',

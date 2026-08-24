@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
-import { executeBattle } from '../../src/game/battle.ts';
+import { executeBattle, executeBattleWithSeed } from '../../src/game/battle.ts';
 import { getProductionBattleTelemetry } from '../../src/game/battle.ts';
 import {
   executeBattleCandidateFromSeed,
@@ -370,6 +370,7 @@ test('projection and production entry point use one direct-arena native seeded c
       productionPreparations: 1,
       productionPartyStatusComputations: 1,
       productionNarrations: 1,
+      productionResultOnlyResolutions: 0,
       diagnosticNarrationPreparations: 0,
     });
     assert.deepEqual({ party, enemy, bags }, beforeInputs, 'production execution must leave Party, Enemy, and bags JSON-identical');
@@ -406,6 +407,7 @@ test('prepared protocol and narration share one projection without retaining mut
     productionPreparations: 1,
     productionPartyStatusComputations: 0,
     productionNarrations: 0,
+    productionResultOnlyResolutions: 0,
     diagnosticNarrationPreparations: 0,
   });
 });
@@ -457,6 +459,37 @@ test('direct structured and encoded seeded protocol boundaries remain identical'
     productionPreparations: 0,
     productionPartyStatusComputations: 0,
     productionNarrations: 0,
+    productionResultOnlyResolutions: 0,
     diagnosticNarrationPreparations: 1,
+  });
+});
+
+test('result-only production execution preserves authoritative seeded results without narration', () => {
+  const fixture = createGoldenCases()[0]!;
+  const seed = naturalFixtureSeed(fixture);
+  resetBattlePreparationMeasurementForTesting();
+  beginBattleKernelMeasurement();
+  const full = executeBattleWithSeed(
+    structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+    seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+  );
+  const resultOnly = executeBattleWithSeed(
+    structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+    seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment, { outputMode: 'result-only' },
+  );
+  const measurement = endBattleKernelMeasurement();
+  const { log: _log, ...expectedResolution } = full;
+  assert.deepEqual(resultOnly, expectedResolution);
+  assert.equal('log' in resultOnly, false);
+  assert.equal(measurement.calls, 2);
+  assert.equal(measurement.encodedInputAllocations + measurement.inputArenaCopies + measurement.outputBufferCopies, 0);
+  assert.deepEqual(getBattlePreparationMeasurement(), {
+    combatantProjections: 2,
+    projectionPartyStatusFallbacks: 0,
+    productionPreparations: 2,
+    productionPartyStatusComputations: 2,
+    productionNarrations: 1,
+    productionResultOnlyResolutions: 1,
+    diagnosticNarrationPreparations: 0,
   });
 });
