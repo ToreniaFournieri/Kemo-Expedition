@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import { simulateAfkPartyChunkForWorker } from '../hooks/useGameState';
-import type { AfkPartyChunkJob, AfkPartyChunkResult } from '../game/afkChunkCoordinator';
+import { createAfkPartyChunkResult, type AfkPartyChunkJob } from '../game/afkChunkCoordinator';
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -16,16 +16,7 @@ self.onmessage = (event: MessageEvent<AfkPartyChunkJob>) => {
       cycleDurationScale: job.cycleDurationScale,
       gameMode: job.gameMode,
     });
-    const result: AfkPartyChunkResult = {
-      jobId: job.jobId,
-      partyIndex: job.partyIndex,
-      partyId: job.partyId,
-      simulatedCompletedAt: job.simulatedCompletedAt,
-      cycleDurationMs: job.cycleDurationMs,
-      baseState: job.baseState,
-      resultState,
-      durationMs: Math.max(0, performance.now() - startedAt),
-    };
+    const result = createAfkPartyChunkResult(job, resultState, Math.max(0, performance.now() - startedAt));
     self.postMessage({ type: 'complete', result });
   } catch (error) {
     self.postMessage({

@@ -1,0 +1,679 @@
+{
+  "schemaVersion": 1,
+  "profile": "smoke",
+  "generatedAt": "2026-08-25T12:41:58.306Z",
+  "platform": "darwin-arm64",
+  "node": "v26.7.0",
+  "gate": {
+    "absoluteAllowanceBytes": 33554432,
+    "percentageAllowance": 20
+  },
+  "reports": [
+    {
+      "workload": "idle",
+      "runs": [
+        {
+          "workload": "idle",
+          "elapsedMs": 83,
+          "initial": {
+            "rss": 86818816,
+            "heapTotal": 14172160,
+            "heapUsed": 9622672,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "peak": {
+            "rss": 86851584,
+            "heapTotal": 14172160,
+            "heapUsed": 9651256,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "completion": {
+            "rss": 86851584,
+            "heapTotal": 14172160,
+            "heapUsed": 9651816,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "settled": {
+            "rss": 86851584,
+            "heapTotal": 14172160,
+            "heapUsed": 9637184,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "idle",
+          "elapsedMs": 90,
+          "initial": {
+            "rss": 86851584,
+            "heapTotal": 14172160,
+            "heapUsed": 9634072,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "peak": {
+            "rss": 86851584,
+            "heapTotal": 14172160,
+            "heapUsed": 9651760,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "completion": {
+            "rss": 86851584,
+            "heapTotal": 14172160,
+            "heapUsed": 9652320,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "settled": {
+            "rss": 86851584,
+            "heapTotal": 14172160,
+            "heapUsed": 9636392,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "idle",
+          "elapsedMs": 90,
+          "initial": {
+            "rss": 86867968,
+            "heapTotal": 14172160,
+            "heapUsed": 9634744,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "peak": {
+            "rss": 86867968,
+            "heapTotal": 14172160,
+            "heapUsed": 9653088,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "completion": {
+            "rss": 86867968,
+            "heapTotal": 14172160,
+            "heapUsed": 9653648,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "settled": {
+            "rss": 86867968,
+            "heapTotal": 14172160,
+            "heapUsed": 9637064,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "wasmMemory": 2883584
+        }
+      ],
+      "afkEnvelopeBytes": {
+        "legacyBytes": 16218987,
+        "compactBytes": 4322058
+      },
+      "settledGrowthBytes": 16384,
+      "settledGrowthPercent": 0.018864365214110543,
+      "regression": false
+    },
+    {
+      "workload": "normal-play",
+      "runs": [
+        {
+          "workload": "normal-play",
+          "elapsedMs": 235,
+          "initial": {
+            "rss": 235880448,
+            "heapTotal": 76201984,
+            "heapUsed": 11878680,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 259391488,
+            "heapTotal": 109199360,
+            "heapUsed": 69832136,
+            "external": 5317902,
+            "arrayBuffers": 282824
+          },
+          "completion": {
+            "rss": 259391488,
+            "heapTotal": 109199360,
+            "heapUsed": 39652080,
+            "external": 5317902,
+            "arrayBuffers": 282056
+          },
+          "settled": {
+            "rss": 243351552,
+            "heapTotal": 80396288,
+            "heapUsed": 11824288,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "normal-play",
+          "elapsedMs": 259,
+          "initial": {
+            "rss": 243351552,
+            "heapTotal": 80134144,
+            "heapUsed": 11814024,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 247267328,
+            "heapTotal": 120061952,
+            "heapUsed": 75984920,
+            "external": 5318078,
+            "arrayBuffers": 283000
+          },
+          "completion": {
+            "rss": 230408192,
+            "heapTotal": 91193344,
+            "heapUsed": 35587496,
+            "external": 5317518,
+            "arrayBuffers": 282440
+          },
+          "settled": {
+            "rss": 229621760,
+            "heapTotal": 75153408,
+            "heapUsed": 11911744,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "normal-play",
+          "elapsedMs": 225,
+          "initial": {
+            "rss": 229621760,
+            "heapTotal": 75153408,
+            "heapUsed": 11903536,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 250363904,
+            "heapTotal": 104579072,
+            "heapUsed": 61298224,
+            "external": 5317710,
+            "arrayBuffers": 282632
+          },
+          "completion": {
+            "rss": 250363904,
+            "heapTotal": 104579072,
+            "heapUsed": 61298784,
+            "external": 5317710,
+            "arrayBuffers": 282632
+          },
+          "settled": {
+            "rss": 235094016,
+            "heapTotal": 77774848,
+            "heapUsed": 11947520,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        }
+      ],
+      "afkEnvelopeBytes": {
+        "legacyBytes": 16234036,
+        "compactBytes": 4337042
+      },
+      "settledGrowthBytes": -8257536,
+      "settledGrowthPercent": -3.393253888103413,
+      "regression": false
+    },
+    {
+      "workload": "x100",
+      "runs": [
+        {
+          "workload": "x100",
+          "elapsedMs": 647,
+          "initial": {
+            "rss": 265224192,
+            "heapTotal": 81182720,
+            "heapUsed": 12525400,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 276398080,
+            "heapTotal": 112640000,
+            "heapUsed": 73990376,
+            "external": 5318310,
+            "arrayBuffers": 283232
+          },
+          "completion": {
+            "rss": 276398080,
+            "heapTotal": 112640000,
+            "heapUsed": 73990904,
+            "external": 5318310,
+            "arrayBuffers": 283232
+          },
+          "settled": {
+            "rss": 275955712,
+            "heapTotal": 80920576,
+            "heapUsed": 12789880,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "x100",
+          "elapsedMs": 702,
+          "initial": {
+            "rss": 275955712,
+            "heapTotal": 80396288,
+            "heapUsed": 12711952,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 276824064,
+            "heapTotal": 115048448,
+            "heapUsed": 76326664,
+            "external": 5318286,
+            "arrayBuffers": 283208
+          },
+          "completion": {
+            "rss": 276840448,
+            "heapTotal": 115048448,
+            "heapUsed": 76403832,
+            "external": 5318286,
+            "arrayBuffers": 283208
+          },
+          "settled": {
+            "rss": 276004864,
+            "heapTotal": 81182720,
+            "heapUsed": 12545208,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "x100",
+          "elapsedMs": 926,
+          "initial": {
+            "rss": 276004864,
+            "heapTotal": 81182720,
+            "heapUsed": 12210760,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 297238528,
+            "heapTotal": 126599168,
+            "heapUsed": 74923664,
+            "external": 5317710,
+            "arrayBuffers": 282632
+          },
+          "completion": {
+            "rss": 297238528,
+            "heapTotal": 126599168,
+            "heapUsed": 74924208,
+            "external": 5317710,
+            "arrayBuffers": 282632
+          },
+          "settled": {
+            "rss": 281968640,
+            "heapTotal": 81707008,
+            "heapUsed": 12149432,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        }
+      ],
+      "afkEnvelopeBytes": {
+        "legacyBytes": 16224474,
+        "compactBytes": 4327443
+      },
+      "settledGrowthBytes": 6012928,
+      "settledGrowthPercent": 2.178946743454254,
+      "regression": false
+    },
+    {
+      "workload": "afk-24h",
+      "runs": [
+        {
+          "workload": "afk-24h",
+          "elapsedMs": 504,
+          "initial": {
+            "rss": 254033920,
+            "heapTotal": 81182720,
+            "heapUsed": 12441128,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 277381120,
+            "heapTotal": 113917952,
+            "heapUsed": 48018320,
+            "external": 5317190,
+            "arrayBuffers": 282112
+          },
+          "completion": {
+            "rss": 277381120,
+            "heapTotal": 113917952,
+            "heapUsed": 48018848,
+            "external": 5317190,
+            "arrayBuffers": 282112
+          },
+          "settled": {
+            "rss": 260882432,
+            "heapTotal": 81444864,
+            "heapUsed": 12624920,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "afk-24h",
+          "elapsedMs": 538,
+          "initial": {
+            "rss": 260882432,
+            "heapTotal": 81444864,
+            "heapUsed": 12592608,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 260882432,
+            "heapTotal": 98795520,
+            "heapUsed": 61946032,
+            "external": 5317750,
+            "arrayBuffers": 282672
+          },
+          "completion": {
+            "rss": 248201216,
+            "heapTotal": 98795520,
+            "heapUsed": 61946576,
+            "external": 5317750,
+            "arrayBuffers": 282672
+          },
+          "settled": {
+            "rss": 246579200,
+            "heapTotal": 81182720,
+            "heapUsed": 12382768,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "afk-24h",
+          "elapsedMs": 483,
+          "initial": {
+            "rss": 246579200,
+            "heapTotal": 81182720,
+            "heapUsed": 12373024,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 267829248,
+            "heapTotal": 112967680,
+            "heapUsed": 66907920,
+            "external": 5317590,
+            "arrayBuffers": 282512
+          },
+          "completion": {
+            "rss": 267829248,
+            "heapTotal": 112967680,
+            "heapUsed": 66908464,
+            "external": 5317590,
+            "arrayBuffers": 282512
+          },
+          "settled": {
+            "rss": 251953152,
+            "heapTotal": 81182720,
+            "heapUsed": 12511392,
+            "external": 5317134,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        }
+      ],
+      "afkEnvelopeBytes": {
+        "legacyBytes": 16233472,
+        "compactBytes": 4336499
+      },
+      "settledGrowthBytes": -8929280,
+      "settledGrowthPercent": -3.422721848897821,
+      "regression": false
+    },
+    {
+      "workload": "simulation-100",
+      "runs": [
+        {
+          "workload": "simulation-100",
+          "elapsedMs": 6221,
+          "initial": {
+            "rss": 595771392,
+            "heapTotal": 80920576,
+            "heapUsed": 11270536,
+            "external": 5375632,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 759332864,
+            "heapTotal": 321863680,
+            "heapUsed": 267452368,
+            "external": 5376016,
+            "arrayBuffers": 282416
+          },
+          "completion": {
+            "rss": 759332864,
+            "heapTotal": 310034432,
+            "heapUsed": 267452928,
+            "external": 5374693,
+            "arrayBuffers": 282352
+          },
+          "settled": {
+            "rss": 710213632,
+            "heapTotal": 80658432,
+            "heapUsed": 11130280,
+            "external": 5374397,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "simulation-100",
+          "elapsedMs": 6321,
+          "initial": {
+            "rss": 688193536,
+            "heapTotal": 80658432,
+            "heapUsed": 11100528,
+            "external": 5374397,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 785383424,
+            "heapTotal": 344621056,
+            "heapUsed": 280969168,
+            "external": 5374781,
+            "arrayBuffers": 282328
+          },
+          "completion": {
+            "rss": 586137600,
+            "heapTotal": 150650880,
+            "heapUsed": 84193400,
+            "external": 5374589,
+            "arrayBuffers": 282056
+          },
+          "settled": {
+            "rss": 585875456,
+            "heapTotal": 80134144,
+            "heapUsed": 11036264,
+            "external": 5374397,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "simulation-100",
+          "elapsedMs": 6346,
+          "initial": {
+            "rss": 585875456,
+            "heapTotal": 80134144,
+            "heapUsed": 11019384,
+            "external": 5374397,
+            "arrayBuffers": 282056
+          },
+          "peak": {
+            "rss": 668827648,
+            "heapTotal": 320700416,
+            "heapUsed": 266702744,
+            "external": 5374901,
+            "arrayBuffers": 282368
+          },
+          "completion": {
+            "rss": 622329856,
+            "heapTotal": 310640640,
+            "heapUsed": 266703304,
+            "external": 5374709,
+            "arrayBuffers": 282368
+          },
+          "settled": {
+            "rss": 616579072,
+            "heapTotal": 80396288,
+            "heapUsed": 10905352,
+            "external": 5374397,
+            "arrayBuffers": 282056
+          },
+          "wasmMemory": 2883584
+        }
+      ],
+      "afkEnvelopeBytes": {
+        "legacyBytes": 16219823,
+        "compactBytes": 4322541
+      },
+      "settledGrowthBytes": -93634560,
+      "settledGrowthPercent": -13.183999261788317,
+      "regression": false
+    },
+    {
+      "workload": "pane-switching",
+      "runs": [
+        {
+          "workload": "pane-switching",
+          "elapsedMs": 26,
+          "initial": {
+            "rss": 89112576,
+            "heapTotal": 14172160,
+            "heapUsed": 9638792,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "peak": {
+            "rss": 89145344,
+            "heapTotal": 14172160,
+            "heapUsed": 9744256,
+            "external": 10645504,
+            "arrayBuffers": 5791088
+          },
+          "completion": {
+            "rss": 89145344,
+            "heapTotal": 14172160,
+            "heapUsed": 9744704,
+            "external": 10645504,
+            "arrayBuffers": 5791088
+          },
+          "settled": {
+            "rss": 89145344,
+            "heapTotal": 14172160,
+            "heapUsed": 9642872,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "pane-switching",
+          "elapsedMs": 26,
+          "initial": {
+            "rss": 89161728,
+            "heapTotal": 14172160,
+            "heapUsed": 9639720,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "peak": {
+            "rss": 89178112,
+            "heapTotal": 14172160,
+            "heapUsed": 9761432,
+            "external": 10645504,
+            "arrayBuffers": 5791088
+          },
+          "completion": {
+            "rss": 89178112,
+            "heapTotal": 14172160,
+            "heapUsed": 9762432,
+            "external": 10645504,
+            "arrayBuffers": 5791088
+          },
+          "settled": {
+            "rss": 89178112,
+            "heapTotal": 14172160,
+            "heapUsed": 9659432,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "wasmMemory": 2883584
+        },
+        {
+          "workload": "pane-switching",
+          "elapsedMs": 27,
+          "initial": {
+            "rss": 89178112,
+            "heapTotal": 14172160,
+            "heapUsed": 9657744,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "peak": {
+            "rss": 89178112,
+            "heapTotal": 14172160,
+            "heapUsed": 9763792,
+            "external": 10645504,
+            "arrayBuffers": 5791088
+          },
+          "completion": {
+            "rss": 89178112,
+            "heapTotal": 14172160,
+            "heapUsed": 9764352,
+            "external": 10645504,
+            "arrayBuffers": 5791088
+          },
+          "settled": {
+            "rss": 89178112,
+            "heapTotal": 14172160,
+            "heapUsed": 9660672,
+            "external": 5130328,
+            "arrayBuffers": 275912
+          },
+          "wasmMemory": 2883584
+        }
+      ],
+      "afkEnvelopeBytes": {
+        "legacyBytes": 16234108,
+        "compactBytes": 4337142
+      },
+      "settledGrowthBytes": 32768,
+      "settledGrowthPercent": 0.03675794890645102,
+      "regression": false
+    }
+  ]
+}

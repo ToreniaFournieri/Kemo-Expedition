@@ -262,6 +262,9 @@
 - If save loading fails, API control must be refused and the protections in section 5.1.4 apply. The existing save must not be overwritten.
 - Implementation entry points for the API listener, IPC bridge, validation, batch resolution, persistence, and UI control lock must use `SpecRef: 9.1.3 | Experimental AI API | <anchor>` comments with the corresponding anchor from this section.
 
+### 9.2 Memory management and monitoring
+- @Specification_9.2_MEMORY_MANAGEMENT.md
+
 ## 10. Coding Rule: SpecRef Traceability
 - To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.
 

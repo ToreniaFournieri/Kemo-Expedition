@@ -43,11 +43,12 @@ type AfkPartyChunkJob,
 type AfkPartyChunkResult,
 } from '../game/afkChunkCoordinator';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
-import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel } from '../game/environment';
+import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
 import { isExperimentalApiCommandType } from '../game/experimentalApiContracts';
 import { buildExperimentalBattleLog,buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
+import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { JEWELS_BY_ITEM_CATEGORY,planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { computePartyStats } from '../game/partyComputation';
@@ -235,7 +236,7 @@ export function HomeScreen({
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
   const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
-  const afkActiveChunkJobsRef = useRef(new Map<number, { job: AfkPartyChunkJob; worker: Worker }>());
+  const afkActiveChunkJobsRef = useRef(new Map<number, { job: Omit<AfkPartyChunkJob, 'baseState'>; worker: Worker | null }>());
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
   const afkActiveCommitTransactionRef = useRef<{
     result: AfkPartyChunkResult;
@@ -243,6 +244,8 @@ export function HomeScreen({
   } | null>(null);
   const afkWorkerJobSequenceRef = useRef(0);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
+  const memoryPreviousAfkActiveRef = useRef(false);
+  const memoryOnlineStartedRef = useRef(false);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
   const afkSchedulerProfileRef = useRef<AfkSchedulerProfile | null>(null);
   const afkBatchMeasurementRef = useRef<{
@@ -275,6 +278,47 @@ export function HomeScreen({
   apiActionsRef.current = actions;
   apiAutoRunRef.current = isAutoRepeatEnabled;
   apiCyclesRef.current = partyCycles;
+
+  useEffect(() => {
+    memoryMonitor.start();
+    return () => memoryMonitor.stop();
+  }, []);
+
+  useEffect(() => {
+    if (!isDebugModeEnabled()) return;
+    window.__BOKEMO_MEMORY_BENCHMARK__ = {
+      switchPanes: async (iterations) => {
+        const count = Math.max(0, Math.floor(iterations));
+        for (let index = 0; index < count; index += 1) {
+          setActiveTab(MAIN_TAB_ORDER[index % MAIN_TAB_ORDER.length]);
+          await new Promise<void>((resolve) => window.setTimeout(resolve, 25));
+        }
+      },
+      sample: async () => {
+        await memoryMonitor.sample();
+        return memoryMonitor.getDiagnosticExport();
+      },
+    };
+    return () => {
+      delete window.__BOKEMO_MEMORY_BENCHMARK__;
+    };
+  }, []);
+
+  useEffect(() => {
+    const afkActive = pendingAfkMs > 0;
+    const runtimeMode = afkActive ? 'afk' : isAutoRepeatEnabled ? 'online' : 'idle';
+    memoryMonitor.setRuntime(runtimeMode, debugSettings.timeSpeed);
+    if (isAutoRepeatEnabled && !afkActive && !memoryOnlineStartedRef.current) {
+      memoryOnlineStartedRef.current = true;
+      void memoryMonitor.recordEvent('online_processing_start');
+    }
+    if (afkActive && !memoryPreviousAfkActiveRef.current) {
+      void memoryMonitor.recordEvent('afk_emulation_start');
+    } else if (!afkActive && memoryPreviousAfkActiveRef.current) {
+      void memoryMonitor.recordEvent('afk_emulation_complete');
+    }
+    memoryPreviousAfkActiveRef.current = afkActive;
+  }, [debugSettings.timeSpeed, isAutoRepeatEnabled, pendingAfkMs]);
 
   useEffect(() => {
     apiStateVersionRef.current += 1;
@@ -1697,6 +1741,9 @@ export function HomeScreen({
     const remaining = Object.values(afkRemainingMsByPartyRef.current);
     pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
     setPendingAfkMs(pendingAfkMsRef.current);
+    const battles = Object.values(result.globalDelta.enemyBattleStats)
+      .reduce((total, value) => total + Math.max(0, value.encounters), 0);
+    memoryMonitor.markChunkComplete(battles);
     setAfkCoordinatorVersion((version) => version + 1);
   }, []);
 
@@ -1750,7 +1797,10 @@ export function HomeScreen({
     afkRecoveryTotalMsRef.current = 0;
     afkChunkCursorRef.current = null;
     afkRemainingMsByPartyRef.current = {};
-    afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
+    afkActiveChunkJobsRef.current.forEach(({ job, worker }) => {
+      worker?.terminate();
+      memoryMonitor.releaseWorker(job.jobId);
+    });
     afkActiveChunkJobsRef.current.clear();
     afkCompletedChunkResultsRef.current.clear();
     try {
@@ -2212,7 +2262,8 @@ export function HomeScreen({
       const completedResult = afkCompletedChunkResultsRef.current.get(nextCanonicalJob.jobId);
       if (completedResult) {
         const active = afkActiveChunkJobsRef.current.get(completedResult.partyIndex);
-        active?.worker.terminate();
+        active?.worker?.terminate();
+        memoryMonitor.releaseWorker(completedResult.jobId);
         afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
         afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
         afkLastBatchCommittedAtRef.current = performance.now();
@@ -2222,7 +2273,7 @@ export function HomeScreen({
           completedResult.durationMs,
           AFK_CHUNK_CYCLE_COUNT,
         );
-        const baseParty = completedResult.baseState.parties[completedResult.partyIndex];
+        const baseParty = completedResult.baseParty;
         const liveParty = state.parties.find((party) => party.id === completedResult.partyId)
           ?? state.parties[completedResult.partyIndex];
         const capturedSettingChanges = Boolean(
@@ -2263,23 +2314,32 @@ export function HomeScreen({
         cycleDurationScale: durationScale,
       };
       const worker = new Worker(new URL('../workers/afkChunkWorker.ts', import.meta.url), { type: 'module' });
+      const { baseState: _releasedBaseState, ...jobMetadata } = job;
+      const jobId = job.jobId;
+      memoryMonitor.registerWorker(jobId);
       worker.onmessage = (event: MessageEvent<{ type: 'complete'; result: AfkPartyChunkResult } | { type: 'error'; jobId: string; message: string }>) => {
         if (event.data.type === 'complete') {
+          worker.terminate();
+          memoryMonitor.releaseWorker(event.data.result.jobId);
+          const active = afkActiveChunkJobsRef.current.get(partyIndex);
+          if (active) active.worker = null;
           afkCompletedChunkResultsRef.current.set(event.data.result.jobId, event.data.result);
         } else {
           console.error(`AFK worker ${event.data.jobId} failed:`, event.data.message);
-          afkActiveChunkJobsRef.current.get(partyIndex)?.worker.terminate();
+          afkActiveChunkJobsRef.current.get(partyIndex)?.worker?.terminate();
           afkActiveChunkJobsRef.current.delete(partyIndex);
+          memoryMonitor.releaseWorker(event.data.jobId);
         }
         setAfkCoordinatorVersion((version) => version + 1);
       };
       worker.onerror = (event) => {
-        console.error(`AFK worker ${job.jobId} failed:`, event.message);
+        console.error(`AFK worker ${jobId} failed:`, event.message);
         worker.terminate();
         afkActiveChunkJobsRef.current.delete(partyIndex);
+        memoryMonitor.releaseWorker(jobId);
         setAfkCoordinatorVersion((version) => version + 1);
       };
-      afkActiveChunkJobsRef.current.set(partyIndex, { job, worker });
+      afkActiveChunkJobsRef.current.set(partyIndex, { job: jobMetadata, worker });
       worker.postMessage(job);
       startedJob = true;
     });
@@ -2292,7 +2352,10 @@ export function HomeScreen({
   }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
 
   useEffect(() => () => {
-    afkActiveChunkJobsRef.current.forEach(({ worker }) => worker.terminate());
+    afkActiveChunkJobsRef.current.forEach(({ job, worker }) => {
+      worker?.terminate();
+      memoryMonitor.releaseWorker(job.jobId);
+    });
     afkActiveChunkJobsRef.current.clear();
   }, []);
 
@@ -3567,7 +3630,14 @@ export function HomeScreen({
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
           onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
           onResetExpeditionStats={actions.resetExpeditionStats}
-          onSimulateExpedition={(partyIndex, onProgress) => actions.simulateExpedition(partyIndex, gameModeRef.current, onProgress)}
+          onSimulateExpedition={async (partyIndex, onProgress) => {
+            memoryMonitor.setRuntime('simulation', debugSettings.timeSpeed);
+            try {
+              return await actions.simulateExpedition(partyIndex, gameModeRef.current, onProgress);
+            } finally {
+              memoryMonitor.setRuntime(pendingAfkMsRef.current > 0 ? 'afk' : isAutoRepeatEnabled ? 'online' : 'idle', debugSettings.timeSpeed);
+            }
+          }}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}

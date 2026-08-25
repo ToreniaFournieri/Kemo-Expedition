@@ -4,6 +4,7 @@ import {
   AFK_CHUNK_CYCLE_COUNT,
   commitAfkPartyChunk,
   compareAfkChunkResults,
+  createAfkPartyChunkResult,
   hasPendingPartySettingChanges,
   type AfkPartyChunkResult,
 } from '../src/game/afkChunkCoordinator.ts';
@@ -99,18 +100,22 @@ test('coordinator merges stale global deltas and lets pending PT settings win', 
     characters: [{ ...baseParty.characters[0], name: 'Pending name' }],
   });
   const currentState = makeState(liveParty, 120, 4);
-  const result: AfkPartyChunkResult = {
+  const result: AfkPartyChunkResult = createAfkPartyChunkResult({
     jobId: 'job-1',
     partyIndex: 0,
     partyId: 1,
     simulatedCompletedAt: 1_000,
     cycleDurationMs: 100,
     baseState,
-    resultState,
-    durationMs: 5,
-  };
+    gameMode: 'm.kemo',
+    cycleDurationScale: 1,
+    simulatedStartedAt: 0,
+  }, resultState, 5);
 
   const committed = commitAfkPartyChunk(currentState, result);
+  assert.equal('baseState' in result, false);
+  assert.equal('resultState' in result, false);
+  assert.equal(result.schemaVersion, 1);
   assert.equal(committed.global.gold, 135);
   assert.equal(committed.global.inventory['1-0-0'].count, 6);
   assert.equal(committed.parties[0].level, 2);

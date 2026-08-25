@@ -742,6 +742,12 @@ export const RACE_ICON_SOURCES = RACES
 export function preloadRaceIcons(): void {
   RACE_ICON_SOURCES.forEach((iconSrc) => {
     const image = new Image();
+    const release = () => {
+      image.onload = null;
+      image.onerror = null;
+    };
+    image.onload = release;
+    image.onerror = release;
     image.src = iconSrc;
   });
 }

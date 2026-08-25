@@ -1,4 +1,4 @@
-import type { Character, GameState, InventoryRecord, Party } from '../types';
+import type { Character, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
 
 export const AFK_CHUNK_CYCLE_COUNT = 12;
 
@@ -15,14 +15,44 @@ export interface AfkPartyChunkJob {
 }
 
 export interface AfkPartyChunkResult {
+  schemaVersion: 1;
   jobId: string;
   partyIndex: number;
   partyId: number;
   simulatedCompletedAt: number;
   cycleDurationMs: number;
-  baseState: GameState;
-  resultState: GameState;
+  baseParty: Party;
+  resultParty: Party;
+  unlockedParties: Party[];
+  globalDelta: AfkGlobalDelta;
   durationMs: number;
+}
+
+interface InventoryDelta {
+  countDelta: number;
+  isNew: boolean;
+  variant: InventoryRecord[string];
+}
+
+interface BattleStatDelta {
+  defeats: number;
+  encounters: number;
+}
+
+export interface AfkGlobalDelta {
+  gold: number;
+  prana: number;
+  inventory: Record<string, InventoryDelta>;
+  jewels: Record<string, number>;
+  deityDonations: Record<string, number>;
+  altarVictoriesByEnemyType: Record<string, number>;
+  enemyBattleStats: Record<number, BattleStatDelta>;
+  unlockedMimorianEnemyIds: number[];
+  unlockedDeities: string[];
+  challengedGodNames: string[];
+  revealedItemCompendiumItemIds: number[];
+  revealedGlossaryAbilityIds: string[];
+  revealedGlossaryTerrainKeys: TerrainEffectKey[];
 }
 
 export function compareAfkChunkResults(
@@ -38,10 +68,8 @@ function jsonEqual(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function addUnique<T>(current: T[], base: T[], result: T[]): T[] {
-  const serializedBase = new Set(base.map((value) => JSON.stringify(value)));
+function addUnique<T>(current: T[], additions: T[]): T[] {
   const serializedCurrent = new Set(current.map((value) => JSON.stringify(value)));
-  const additions = result.filter((value) => !serializedBase.has(JSON.stringify(value)));
   return [
     ...current,
     ...additions.filter((value) => {
@@ -53,54 +81,128 @@ function addUnique<T>(current: T[], base: T[], result: T[]): T[] {
   ];
 }
 
-function mergeNumberRecord(
-  current: Record<string, number>,
+function createNumberDelta(
   base: Record<string, number>,
   result: Record<string, number>,
 ): Record<string, number> {
-  const next = { ...current };
+  const delta: Record<string, number> = {};
   new Set([...Object.keys(base), ...Object.keys(result)]).forEach((key) => {
-    const delta = (result[key] ?? 0) - (base[key] ?? 0);
-    if (delta !== 0) next[key] = Math.max(0, (next[key] ?? 0) + delta);
+    const value = (result[key] ?? 0) - (base[key] ?? 0);
+    if (value !== 0) delta[key] = value;
+  });
+  return delta;
+}
+
+function mergeNumberDelta(
+  current: Record<string, number>,
+  delta: Record<string, number>,
+): Record<string, number> {
+  const next = { ...current };
+  Object.entries(delta).forEach(([key, value]) => {
+    if (value !== 0) next[key] = Math.max(0, (next[key] ?? 0) + value);
   });
   return next;
 }
 
-function mergeBattleStats(
-  current: NonNullable<GameState['global']['enemyBattleStats']>,
+function createBattleStatsDelta(
   base: NonNullable<GameState['global']['enemyBattleStats']>,
   result: NonNullable<GameState['global']['enemyBattleStats']>,
-): NonNullable<GameState['global']['enemyBattleStats']> {
-  const next = { ...current };
+): Record<number, BattleStatDelta> {
+  const delta: Record<number, BattleStatDelta> = {};
   new Set([...Object.keys(base), ...Object.keys(result)]).forEach((rawKey) => {
     const key = Number(rawKey);
-    const currentValue = next[key] ?? { defeats: 0, encounters: 0 };
     const baseValue = base[key] ?? { defeats: 0, encounters: 0 };
     const resultValue = result[key] ?? { defeats: 0, encounters: 0 };
+    const value = {
+      defeats: resultValue.defeats - baseValue.defeats,
+      encounters: resultValue.encounters - baseValue.encounters,
+    };
+    if (value.defeats !== 0 || value.encounters !== 0) delta[key] = value;
+  });
+  return delta;
+}
+
+function mergeBattleStatsDelta(
+  current: NonNullable<GameState['global']['enemyBattleStats']>,
+  delta: Record<number, BattleStatDelta>,
+): NonNullable<GameState['global']['enemyBattleStats']> {
+  const next = { ...current };
+  Object.entries(delta).forEach(([rawKey, value]) => {
+    const key = Number(rawKey);
+    const currentValue = next[key] ?? { defeats: 0, encounters: 0 };
     next[key] = {
-      defeats: Math.max(0, currentValue.defeats + resultValue.defeats - baseValue.defeats),
-      encounters: Math.max(0, currentValue.encounters + resultValue.encounters - baseValue.encounters),
+      defeats: Math.max(0, currentValue.defeats + value.defeats),
+      encounters: Math.max(0, currentValue.encounters + value.encounters),
     };
   });
   return next;
 }
 
-function mergeInventory(current: InventoryRecord, base: InventoryRecord, result: InventoryRecord): InventoryRecord {
-  const next = { ...current };
+function createInventoryDelta(base: InventoryRecord, result: InventoryRecord): Record<string, InventoryDelta> {
+  const delta: Record<string, InventoryDelta> = {};
   new Set([...Object.keys(base), ...Object.keys(result)]).forEach((key) => {
-    const baseVariant = base[key];
     const resultVariant = result[key];
     if (!resultVariant) return;
-    const delta = resultVariant.count - (baseVariant?.count ?? 0);
-    if (delta === 0) return;
+    const countDelta = resultVariant.count - (base[key]?.count ?? 0);
+    if (countDelta !== 0 || resultVariant.isNew) {
+      delta[key] = { countDelta, isNew: resultVariant.isNew === true, variant: resultVariant };
+    }
+  });
+  return delta;
+}
+
+function mergeInventoryDelta(current: InventoryRecord, delta: Record<string, InventoryDelta>): InventoryRecord {
+  const next = { ...current };
+  Object.entries(delta).forEach(([key, change]) => {
     const currentVariant = next[key];
     next[key] = {
-      ...(currentVariant ?? resultVariant),
-      count: Math.max(0, Math.min(99, (currentVariant?.count ?? 0) + delta)),
-      isNew: (currentVariant?.isNew ?? false) || resultVariant.isNew,
+      ...(currentVariant ?? change.variant),
+      count: Math.max(0, Math.min(99, (currentVariant?.count ?? 0) + change.countDelta)),
+      isNew: (currentVariant?.isNew ?? false) || change.isNew,
     };
   });
   return next;
+}
+
+function additions<T>(base: T[], result: T[]): T[] {
+  const baseKeys = new Set(base.map((value) => JSON.stringify(value)));
+  return result.filter((value) => !baseKeys.has(JSON.stringify(value)));
+}
+
+export function createAfkPartyChunkResult(
+  job: AfkPartyChunkJob,
+  resultState: GameState,
+  durationMs: number,
+): AfkPartyChunkResult {
+  const baseGlobal = job.baseState.global;
+  const resultGlobal = resultState.global;
+  return {
+    schemaVersion: 1,
+    jobId: job.jobId,
+    partyIndex: job.partyIndex,
+    partyId: job.partyId,
+    simulatedCompletedAt: job.simulatedCompletedAt,
+    cycleDurationMs: job.cycleDurationMs,
+    baseParty: job.baseState.parties[job.partyIndex],
+    resultParty: resultState.parties[job.partyIndex],
+    unlockedParties: resultState.parties.slice(job.baseState.parties.length),
+    globalDelta: {
+      gold: resultGlobal.gold - baseGlobal.gold,
+      prana: resultGlobal.prana - baseGlobal.prana,
+      inventory: createInventoryDelta(baseGlobal.inventory, resultGlobal.inventory),
+      jewels: createNumberDelta(baseGlobal.jewels, resultGlobal.jewels),
+      deityDonations: createNumberDelta(baseGlobal.deityDonations, resultGlobal.deityDonations),
+      altarVictoriesByEnemyType: createNumberDelta(baseGlobal.altarVictoriesByEnemyType ?? {}, resultGlobal.altarVictoriesByEnemyType ?? {}),
+      enemyBattleStats: createBattleStatsDelta(baseGlobal.enemyBattleStats ?? {}, resultGlobal.enemyBattleStats ?? {}),
+      unlockedMimorianEnemyIds: additions(baseGlobal.unlockedMimorianEnemyIds, resultGlobal.unlockedMimorianEnemyIds),
+      unlockedDeities: additions(baseGlobal.unlockedDeities, resultGlobal.unlockedDeities),
+      challengedGodNames: additions(baseGlobal.challengedGodNames, resultGlobal.challengedGodNames),
+      revealedItemCompendiumItemIds: additions(baseGlobal.revealedItemCompendiumItemIds, resultGlobal.revealedItemCompendiumItemIds),
+      revealedGlossaryAbilityIds: additions(baseGlobal.revealedGlossaryAbilityIds, resultGlobal.revealedGlossaryAbilityIds),
+      revealedGlossaryTerrainKeys: additions(baseGlobal.revealedGlossaryTerrainKeys, resultGlobal.revealedGlossaryTerrainKeys),
+    },
+    durationMs,
+  };
 }
 
 function overlayChangedCharacterSettings(base: Character[], result: Character[], live: Character[]): Character[] {
@@ -152,8 +254,8 @@ export function overlayPendingPartySettings(base: Party, result: Party, live: Pa
  * settings are overlaid after the Chunk result.
  */
 export function commitAfkPartyChunk(current: GameState, result: AfkPartyChunkResult): GameState {
-  const baseParty = result.baseState.parties[result.partyIndex];
-  const resultParty = result.resultState.parties[result.partyIndex];
+  const baseParty = result.baseParty;
+  const resultParty = result.resultParty;
   const liveParty = current.parties.find((party) => party.id === result.partyId)
     ?? current.parties[result.partyIndex];
   if (!baseParty || !resultParty || !liveParty) return current;
@@ -163,42 +265,37 @@ export function commitAfkPartyChunk(current: GameState, result: AfkPartyChunkRes
   if (livePartyIndex < 0) return current;
   parties[livePartyIndex] = overlayPendingPartySettings(baseParty, resultParty, liveParty);
 
-  result.resultState.parties.slice(result.baseState.parties.length).forEach((unlockedParty) => {
+  result.unlockedParties.forEach((unlockedParty) => {
     if (!parties.some((party) => party.id === unlockedParty.id)) parties.push(unlockedParty);
   });
 
-  const baseGlobal = result.baseState.global;
-  const resultGlobal = result.resultState.global;
   const currentGlobal = current.global;
-  const goldDelta = resultGlobal.gold - baseGlobal.gold;
-  const pranaDelta = resultGlobal.prana - baseGlobal.prana;
+  const delta = result.globalDelta;
 
   return {
     ...current,
     parties,
     global: {
       ...currentGlobal,
-      gold: Math.max(0, currentGlobal.gold + goldDelta),
-      prana: Math.max(0, currentGlobal.prana + pranaDelta),
-      inventory: mergeInventory(currentGlobal.inventory, baseGlobal.inventory, resultGlobal.inventory),
-      jewels: mergeNumberRecord(currentGlobal.jewels, baseGlobal.jewels, resultGlobal.jewels),
-      deityDonations: mergeNumberRecord(currentGlobal.deityDonations, baseGlobal.deityDonations, resultGlobal.deityDonations),
-      altarVictoriesByEnemyType: mergeNumberRecord(
+      gold: Math.max(0, currentGlobal.gold + delta.gold),
+      prana: Math.max(0, currentGlobal.prana + delta.prana),
+      inventory: mergeInventoryDelta(currentGlobal.inventory, delta.inventory),
+      jewels: mergeNumberDelta(currentGlobal.jewels, delta.jewels),
+      deityDonations: mergeNumberDelta(currentGlobal.deityDonations, delta.deityDonations),
+      altarVictoriesByEnemyType: mergeNumberDelta(
         currentGlobal.altarVictoriesByEnemyType ?? {},
-        baseGlobal.altarVictoriesByEnemyType ?? {},
-        resultGlobal.altarVictoriesByEnemyType ?? {},
+        delta.altarVictoriesByEnemyType,
       ),
-      enemyBattleStats: mergeBattleStats(
+      enemyBattleStats: mergeBattleStatsDelta(
         currentGlobal.enemyBattleStats ?? {},
-        baseGlobal.enemyBattleStats ?? {},
-        resultGlobal.enemyBattleStats ?? {},
+        delta.enemyBattleStats,
       ),
-      unlockedMimorianEnemyIds: addUnique(currentGlobal.unlockedMimorianEnemyIds, baseGlobal.unlockedMimorianEnemyIds, resultGlobal.unlockedMimorianEnemyIds),
-      unlockedDeities: addUnique(currentGlobal.unlockedDeities, baseGlobal.unlockedDeities, resultGlobal.unlockedDeities),
-      challengedGodNames: addUnique(currentGlobal.challengedGodNames, baseGlobal.challengedGodNames, resultGlobal.challengedGodNames),
-      revealedItemCompendiumItemIds: addUnique(currentGlobal.revealedItemCompendiumItemIds, baseGlobal.revealedItemCompendiumItemIds, resultGlobal.revealedItemCompendiumItemIds),
-      revealedGlossaryAbilityIds: addUnique(currentGlobal.revealedGlossaryAbilityIds, baseGlobal.revealedGlossaryAbilityIds, resultGlobal.revealedGlossaryAbilityIds),
-      revealedGlossaryTerrainKeys: addUnique(currentGlobal.revealedGlossaryTerrainKeys, baseGlobal.revealedGlossaryTerrainKeys, resultGlobal.revealedGlossaryTerrainKeys),
+      unlockedMimorianEnemyIds: addUnique(currentGlobal.unlockedMimorianEnemyIds, delta.unlockedMimorianEnemyIds),
+      unlockedDeities: addUnique(currentGlobal.unlockedDeities, delta.unlockedDeities),
+      challengedGodNames: addUnique(currentGlobal.challengedGodNames, delta.challengedGodNames),
+      revealedItemCompendiumItemIds: addUnique(currentGlobal.revealedItemCompendiumItemIds, delta.revealedItemCompendiumItemIds),
+      revealedGlossaryAbilityIds: addUnique(currentGlobal.revealedGlossaryAbilityIds, delta.revealedGlossaryAbilityIds),
+      revealedGlossaryTerrainKeys: addUnique(currentGlobal.revealedGlossaryTerrainKeys, delta.revealedGlossaryTerrainKeys),
     },
   };
 }

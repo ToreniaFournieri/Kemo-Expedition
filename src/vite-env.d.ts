@@ -55,9 +55,14 @@ interface DesktopPartyProgressSnapshot {
 }
 
 interface Window {
+  __BOKEMO_MEMORY_BENCHMARK__?: {
+    switchPanes: (iterations: number) => Promise<void>;
+    sample: () => Promise<import('./game/memoryMonitoring').MemoryDiagnosticExport>;
+  };
   bokemoDesktop?: {
     getStatus: () => Promise<{ isMacDesktop: boolean; notificationSupported: boolean }>;
     getWindowVisibility: () => Promise<boolean>;
+    getProcessMemoryMetrics: () => Promise<DesktopProcessMemoryMetrics>;
     getLaunchAtLogin: () => Promise<boolean>;
     setLaunchAtLogin: (enabled: boolean) => Promise<boolean>;
     showNotification: (payload: DesktopNotificationPayload) => Promise<boolean>;
@@ -74,6 +79,11 @@ interface Window {
     selectParty: (partyId: number) => Promise<boolean>;
     onSnapshot: (callback: (snapshot: DesktopPartyProgressSnapshot) => void) => () => void;
   };
+}
+
+interface DesktopProcessMemoryMetrics {
+  privateBytes: number | null;
+  residentSetBytes: number | null;
 }
 
 interface DesktopExperimentalApiSettings {

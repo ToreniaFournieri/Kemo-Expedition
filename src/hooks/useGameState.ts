@@ -116,6 +116,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
+import { memoryMonitor } from '../game/memoryMonitoring';
 import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
@@ -5302,6 +5303,7 @@ export async function simulateExpeditionRuns(
   count = 100,
   onProgress?: (completed: number, total: number) => void,
 ): Promise<ExpeditionSimulationResult> {
+  void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
   const sourceParty = state.parties[partyIndex];
   if (!sourceParty) throw new Error('party_not_found');
@@ -5336,6 +5338,7 @@ export async function simulateExpeditionRuns(
     });
     const log = resolvedState.parties[partyIndex]?.lastExpeditionLog;
     if (!log) throw new Error('simulation_failed');
+    memoryMonitor.incrementBattleCount(log.entries.length);
 
     if (log.finalOutcome === 'Clear') {
       result.Clear += 1;
@@ -5356,6 +5359,7 @@ export async function simulateExpeditionRuns(
     }
   }
 
+  void memoryMonitor.recordEvent('simulation_complete');
   return result;
 }
 

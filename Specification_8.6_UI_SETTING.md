@@ -387,6 +387,7 @@ HP: 312                 タイプ: 神魔
     - Always show a strong warning and require confirmation before execution.
 
 **Debug pane(デバッグ)**
+- Dev and beta show a localized Memory Diagnostics section with current and peak available metrics, active worker/sample/event counts, bounded session JSON export, and session reset. Production does not show this section.
  
 - Clairvoyance: OFF/ON
   - if OFF, disable `Clairvoyance (未来視)` as default.

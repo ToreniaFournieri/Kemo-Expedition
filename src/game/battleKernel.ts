@@ -149,6 +149,11 @@ export function getBattleKernelAbiVersion(): number {
   return kernel.battle_kernel_abi_version();
 }
 
+/** Read-only byte size for runtime memory diagnostics. */
+export function getBattleKernelMemoryBytes(): number {
+  return kernel.memory.buffer.byteLength;
+}
+
 /** Test-only grouped access to the internal C++ mutable battle-state core. */
 export function runBattleStateTestOperations(
   operations: readonly (readonly number[])[],

@@ -226,6 +226,11 @@ export default function PartyTab({
     image.onload = () => setIsPartyPaneBackgroundAvailable(true);
     image.onerror = () => setIsPartyPaneBackgroundAvailable(false);
     image.src = `${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName}`;
+    return () => {
+      image.onload = null;
+      image.onerror = null;
+      image.src = '';
+    };
   }, [partyPaneBackgroundImageFileName]);
 
   const getReorderedIndex = useCallback((currentIndex: number, fromIndex: number, toIndex: number) => {

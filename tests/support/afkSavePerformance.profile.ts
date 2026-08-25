@@ -10,6 +10,7 @@ import {
   AFK_CHUNK_CYCLE_COUNT,
   commitAfkPartyChunk,
   compareAfkChunkResults,
+  createAfkPartyChunkResult,
   type AfkPartyChunkResult,
 } from '../../src/game/afkChunkCoordinator.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
@@ -86,16 +87,17 @@ test('Expedition 8 sample save reports worker and coordinator duration complianc
     });
     const durationMs = performance.now() - startedAt;
     workerDurationsMs.push(durationMs);
-    return {
+    return createAfkPartyChunkResult({
       jobId: `profile-${party.id}`,
       partyIndex,
       partyId: party.id,
       simulatedCompletedAt: simulatedEndAt,
       cycleDurationMs,
       baseState,
-      resultState,
-      durationMs,
-    };
+      gameMode: 'm.kemo',
+      cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
+      simulatedStartedAt: simulatedEndAt - cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
+    }, resultState, durationMs);
   }).sort(compareAfkChunkResults);
 
   const coordinatorDurationsMs: number[] = [];

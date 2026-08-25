@@ -356,6 +356,15 @@ ipcMain.handle('desktop:get-status', () => ({
   notificationSupported: Notification.isSupported(),
 }));
 ipcMain.handle('desktop:get-window-visibility', () => Boolean(mainWindow?.isVisible()));
+ipcMain.handle('desktop:get-process-memory-metrics', (event) => {
+  const processId = event.sender.getOSProcessId();
+  const metric = app.getAppMetrics().find((entry) => entry.pid === processId);
+  const memory = metric?.memory;
+  return {
+    privateBytes: Number.isFinite(memory?.privateBytes) ? memory.privateBytes * 1024 : null,
+    residentSetBytes: Number.isFinite(memory?.workingSetSize) ? memory.workingSetSize * 1024 : null,
+  };
+});
 ipcMain.handle('desktop:get-launch-at-login', () => app.getLoginItemSettings().openAtLogin);
 ipcMain.handle('desktop:set-launch-at-login', (_event, enabled) => {
   if (process.platform !== 'darwin') return false;
