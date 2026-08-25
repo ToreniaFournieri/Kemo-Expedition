@@ -1,4 +1,11 @@
 const zhCN = {
+  'setting.runtime.title': '运行时诊断',
+  'setting.runtime.afkTrace': 'AFK 运行时跟踪',
+  'setting.runtime.phase': '当前阶段',
+  'setting.runtime.traceActivity': '跟踪活动',
+  'setting.runtime.traceCounts': '{events} 个事件 · {anomalies} 个异常',
+  'setting.runtime.longestWait': '最长等待',
+  'setting.runtime.none': '无',
 'app.title': '冒兽',
 'setting.memory.title': '内存诊断',
 'setting.memory.current': '当前',

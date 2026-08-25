@@ -44,6 +44,7 @@ type AfkPartyChunkJob,
 type AfkPartyChunkResult,
 } from '../game/afkChunkCoordinator';
 import { recordAfkWorkerJobTelemetry,terminateAfkWorkers } from '../game/afkWorkerTelemetry';
+import { AFK_TRACE_WATCHDOG_INTERVAL_MS,afkRuntimeTrace } from '../game/afkRuntimeTrace';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
@@ -239,19 +240,27 @@ export function HomeScreen({
   const pendingAfkMsRef = useRef(0);
   const afkInteractionPausedRef = useRef(false);
   const afkInteractionPauseTimerRef = useRef<number | null>(null);
+  const afkInteractionPauseStartedAtRef = useRef<number | null>(null);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
   const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
-  const afkActiveChunkJobsRef = useRef(new Map<number, { job: Omit<AfkPartyChunkJob, 'baseState'>; worker: Worker | null }>());
+  const afkActiveChunkJobsRef = useRef(new Map<number, {
+    job: Omit<AfkPartyChunkJob, 'baseState'>;
+    worker: Worker | null;
+    status: 'queued' | 'running' | 'completed';
+    startedMonotonicAt: number;
+  }>());
   const afkWorkerPoolRef = useRef<Array<{ worker: Worker; jobId: string | null; createdAt: number; completedJobs: number }>>([]);
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
   const afkActiveCommitTransactionRef = useRef<{
     result: AfkPartyChunkResult;
     capturedSettingChanges: boolean;
+    startedAt: number;
   } | null>(null);
   const afkWorkerJobSequenceRef = useRef(0);
+  const afkHeadOfLineWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
   const renderCommitDurationsRef = useRef<number[]>([]);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
   const memoryPreviousAfkActiveRef = useRef(false);
@@ -288,6 +297,26 @@ export function HomeScreen({
     state.parties.map((party) => party.lastExpeditionLog),
   );
   const [apiControlActive, setApiControlActive] = useState(false);
+
+  useEffect(() => {
+    if (!afkRuntimeTrace.isEnabled()) return;
+    let expectedAt = performance.now() + AFK_TRACE_WATCHDOG_INTERVAL_MS;
+    const watchdogId = window.setInterval(() => {
+      afkRuntimeTrace.checkWatchdog(expectedAt);
+      expectedAt = performance.now() + AFK_TRACE_WATCHDOG_INTERVAL_MS;
+    }, AFK_TRACE_WATCHDOG_INTERVAL_MS);
+    const recordVisibility = () => {
+      if (!afkRuntimeTrace.isRecoveryActive()) return;
+      afkRuntimeTrace.record('visibility_change', {
+        data: { visibility: document.visibilityState },
+      });
+    };
+    document.addEventListener('visibilitychange', recordVisibility);
+    return () => {
+      window.clearInterval(watchdogId);
+      document.removeEventListener('visibilitychange', recordVisibility);
+    };
+  }, []);
   const apiControlActiveRef = useRef(false);
   const apiRevisionRef = useRef(0);
   const apiSimulatedAtRef = useRef(Date.now());
@@ -1754,7 +1783,26 @@ export function HomeScreen({
 
   apiAutoEquipmentRunnerRef.current = runAutoEquipment;
 
+  const updateAfkTraceCoordinator = useCallback((canonicalJobId: string | null = null) => {
+    const activeJobs = [...afkActiveChunkJobsRef.current.values()];
+    afkRuntimeTrace.updateCoordinator({
+      pendingAfkMs: pendingAfkMsRef.current,
+      completedResultCount: afkCompletedChunkResultsRef.current.size,
+      workerPoolSize: afkWorkerPoolRef.current.length,
+      canonicalJobId,
+      activeJobs: activeJobs.map(({ job, status, startedMonotonicAt }) => ({
+        jobId: job.jobId,
+        partyId: job.partyId,
+        partyIndex: job.partyIndex,
+        status,
+        startedMonotonicAt,
+        simulatedCompletedAt: job.simulatedCompletedAt,
+      })),
+    });
+  }, []);
+
   const completeAfkCommitTransaction = useCallback((result: AfkPartyChunkResult) => {
+    const transactionStartedAt = afkActiveCommitTransactionRef.current?.startedAt ?? performance.now();
     const chunkElapsedMs = result.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
     afkRemainingMsByPartyRef.current[result.partyIndex] = Math.max(
       0,
@@ -1767,8 +1815,18 @@ export function HomeScreen({
     const battles = Object.values(result.globalDelta.enemyBattleStats)
       .reduce((total, value) => total + Math.max(0, value.encounters), 0);
     memoryMonitor.markChunkComplete(battles);
+    afkRuntimeTrace.record('commit_transaction_complete', {
+      phase: 'commit_awaiting_react',
+      partyId: result.partyId,
+      partyIndex: result.partyIndex,
+      jobId: result.jobId,
+      durationMs: performance.now() - transactionStartedAt,
+      progress: true,
+      data: { pendingAfkMs: pendingAfkMsRef.current },
+    });
+    updateAfkTraceCoordinator();
     setAfkCoordinatorVersion((version) => version + 1);
-  }, []);
+  }, [updateAfkTraceCoordinator]);
 
   useEffect(() => {
     const previousPartyCount = prevPartyCountRef.current;
@@ -1808,6 +1866,7 @@ export function HomeScreen({
   }, [state.parties]);
 
   const handleResetGame = useCallback(() => {
+    afkRuntimeTrace.cancelRecovery('game_reset');
     autoRepeatEnabledRef.current = true;
     setIsAutoRepeatEnabled(true);
     setPartyCycles({});
@@ -1827,13 +1886,14 @@ export function HomeScreen({
     afkWorkerPoolRef.current = [];
     afkActiveChunkJobsRef.current.clear();
     afkCompletedChunkResultsRef.current.clear();
+    updateAfkTraceCoordinator();
     try {
       localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
     } catch (error) {
       console.error('Failed to clear AFK runtime state:', error);
     }
     actions.resetGame();
-  }, [actions]);
+  }, [actions, updateAfkTraceCoordinator]);
 
   useEffect(() => {
     gameModeRef.current = gameMode;
@@ -1907,6 +1967,12 @@ export function HomeScreen({
       setAutoRepeatEnabled(parsed.autoRepeatEnabled);
       const restoredPendingAfkMs = parsed.pendingAfkMs;
       if (restoredPendingAfkMs > 0) {
+        // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Debug-only runtime trace
+        afkRuntimeTrace.startRecovery({
+          source: 'restored_checkpoint',
+          pendingAfkMs: restoredPendingAfkMs,
+          partyCount: latestPartiesRef.current.length,
+        });
         pendingAfkMsRef.current = restoredPendingAfkMs;
         setPendingAfkMs(restoredPendingAfkMs);
         afkSchedulerProfileRef.current = {
@@ -2251,19 +2317,58 @@ export function HomeScreen({
       // update below. Completing in this effect therefore retains the slot until
       // the Chunk commit is visible, while avoiding a second state-change signal
       // that may never arrive when an equipment action is rejected as a no-op.
-      runAutoEquipment(
+      const autoEquipmentStartedAt = performance.now();
+      afkRuntimeTrace.record('auto_equipment_start', {
+        phase: 'auto_equipment',
+        partyId: transaction.result.partyId,
+        partyIndex: transaction.result.partyIndex,
+        jobId: transaction.result.jobId,
+      });
+      const summary = runAutoEquipment(
         [transaction.result.partyIndex],
         undefined,
         { suppressNotifications: true },
       );
+      afkRuntimeTrace.record('auto_equipment_complete', {
+        phase: 'auto_equipment',
+        partyId: transaction.result.partyId,
+        partyIndex: transaction.result.partyIndex,
+        jobId: transaction.result.jobId,
+        durationMs: performance.now() - autoEquipmentStartedAt,
+        progress: true,
+        data: {
+          processedCharacters: summary.processedCharacterIds.length,
+          unequippedCount: summary.unequippedCount,
+          equippedCount: summary.equippedCount,
+          upgradedCount: summary.upgradedCount,
+          jewelAssignmentCount: summary.jewelAssignmentCount,
+        },
+      });
+    } else {
+      afkRuntimeTrace.record('auto_equipment_skipped', {
+        phase: 'commit_awaiting_react',
+        partyId: transaction.result.partyId,
+        partyIndex: transaction.result.partyIndex,
+        jobId: transaction.result.jobId,
+        data: { reason: 'captured_setting_changes' },
+      });
     }
 
     completeAfkCommitTransaction(transaction.result);
   }, [completeAfkCommitTransaction, runAutoEquipment, state]);
 
   useEffect(() => {
-    if (pendingAfkMs <= 0 || afkInteractionPausedRef.current) return;
-    if (afkActiveCommitTransactionRef.current) return;
+    if (pendingAfkMs <= 0) return;
+    if (afkInteractionPausedRef.current) {
+      afkRuntimeTrace.setPhase('interaction_pause');
+      updateAfkTraceCoordinator();
+      return;
+    }
+    if (afkActiveCommitTransactionRef.current) {
+      afkRuntimeTrace.setPhase('commit_awaiting_react');
+      updateAfkTraceCoordinator(afkActiveCommitTransactionRef.current.result.jobId);
+      return;
+    }
     // v0.9.2 persisted a cross-party operation cursor. Party-scoped workers
     // restart only the uncommitted legacy slice from its durable game-state save.
     afkChunkCursorRef.current = null;
@@ -2283,8 +2388,19 @@ export function HomeScreen({
     const activeJobs = Array.from(afkActiveChunkJobsRef.current.values()).map(({ job }) => job);
     if (activeJobs.length > 0) {
       const nextCanonicalJob = [...activeJobs].sort((left, right) => compareAfkChunkResults(left, right))[0];
+      updateAfkTraceCoordinator(nextCanonicalJob.jobId);
       const completedResult = afkCompletedChunkResultsRef.current.get(nextCanonicalJob.jobId);
       if (completedResult) {
+        const headOfLineWait = afkHeadOfLineWaitRef.current;
+        if (headOfLineWait) {
+          afkRuntimeTrace.record('canonical_order_wait_end', {
+            phase: 'canonical_order_wait',
+            jobId: headOfLineWait.blockerJobId,
+            durationMs: performance.now() - headOfLineWait.startedAt,
+            progress: true,
+          });
+          afkHeadOfLineWaitRef.current = null;
+        }
         afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
         afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
         afkLastBatchCommittedAtRef.current = performance.now();
@@ -2302,12 +2418,49 @@ export function HomeScreen({
           && liveParty
           && hasPendingPartySettingChanges(baseParty, liveParty),
         );
+        afkRuntimeTrace.record('commit_transaction_start', {
+          phase: 'commit_dispatch',
+          partyId: completedResult.partyId,
+          partyIndex: completedResult.partyIndex,
+          jobId: completedResult.jobId,
+          progress: true,
+          data: {
+            capturedSettingChanges,
+            completedResultCount: afkCompletedChunkResultsRef.current.size,
+          },
+        });
         afkActiveCommitTransactionRef.current = {
           result: completedResult,
           capturedSettingChanges,
+          startedAt: performance.now(),
         };
         actions.commitAfkPartyChunk(completedResult);
+        afkRuntimeTrace.record('commit_reducer_dispatched', {
+          phase: 'commit_awaiting_react',
+          partyId: completedResult.partyId,
+          partyIndex: completedResult.partyIndex,
+          jobId: completedResult.jobId,
+        });
         return;
+      }
+      if (afkCompletedChunkResultsRef.current.size > 0) {
+        if (afkHeadOfLineWaitRef.current?.blockerJobId !== nextCanonicalJob.jobId) {
+          afkHeadOfLineWaitRef.current = {
+            blockerJobId: nextCanonicalJob.jobId,
+            startedAt: performance.now(),
+          };
+          afkRuntimeTrace.record('canonical_order_wait_start', {
+            phase: 'canonical_order_wait',
+            partyId: nextCanonicalJob.partyId,
+            partyIndex: nextCanonicalJob.partyIndex,
+            jobId: nextCanonicalJob.jobId,
+            data: { completedResultCount: afkCompletedChunkResultsRef.current.size },
+          });
+        } else {
+          afkRuntimeTrace.setPhase('canonical_order_wait');
+        }
+      } else {
+        afkRuntimeTrace.setPhase('worker_execution');
       }
     }
 
@@ -2333,6 +2486,11 @@ export function HomeScreen({
           completedJobs: 0,
         };
         afkWorkerPoolRef.current.push(poolSlot);
+        afkRuntimeTrace.record('worker_created', {
+          phase: 'worker_queue',
+          durationMs: 0,
+          data: { workerPoolSize: afkWorkerPoolRef.current.length, workerLimit },
+        });
       }
       if (!poolSlot) return;
 
@@ -2357,37 +2515,112 @@ export function HomeScreen({
       const jobId = job.jobId;
       poolSlot.jobId = jobId;
       memoryMonitor.registerWorker(jobId);
-      worker.onmessage = (event: MessageEvent<{ type: 'complete'; result: AfkPartyChunkResult } | { type: 'error'; jobId: string; message: string }>) => {
+      worker.onmessage = (event: MessageEvent<
+        | { type: 'started'; jobId: string; partyIndex: number }
+        | { type: 'complete'; result: AfkPartyChunkResult }
+        | { type: 'error'; jobId: string; message: string }
+      >) => {
         const eventJobId = event.data.type === 'complete' ? event.data.result.jobId : event.data.jobId;
         const currentSlot = afkWorkerPoolRef.current.find((slot) => slot.worker === worker);
         if (!currentSlot || currentSlot.jobId !== eventJobId) return;
+        if (event.data.type === 'started') {
+          const active = afkActiveChunkJobsRef.current.get(event.data.partyIndex);
+          if (active) active.status = 'running';
+          afkRuntimeTrace.record('worker_job_started', {
+            phase: 'worker_execution',
+            partyId: job.partyId,
+            partyIndex: job.partyIndex,
+            jobId,
+            durationMs: performance.now() - (job.queuedAt ?? performance.now()),
+            progress: true,
+          });
+          updateAfkTraceCoordinator();
+          return;
+        }
         currentSlot.jobId = null;
         if (event.data.type === 'complete') {
           currentSlot.completedJobs += 1;
           recordAfkWorkerJobTelemetry(event.data.result.jobId, event.data.result.workerTelemetry);
           memoryMonitor.releaseWorker(event.data.result.jobId);
           const active = afkActiveChunkJobsRef.current.get(partyIndex);
-          if (active) active.worker = null;
+          if (active) {
+            active.worker = null;
+            active.status = 'completed';
+          }
           afkCompletedChunkResultsRef.current.set(event.data.result.jobId, event.data.result);
+          afkRuntimeTrace.record('worker_job_complete', {
+            phase: 'worker_execution',
+            partyId: event.data.result.partyId,
+            partyIndex: event.data.result.partyIndex,
+            jobId: event.data.result.jobId,
+            durationMs: event.data.result.durationMs,
+            progress: true,
+            data: {
+              workerStartupMs: event.data.result.workerTelemetry.workerStartupMs,
+              queueMs: event.data.result.workerTelemetry.queueMs,
+              executionMs: event.data.result.workerTelemetry.executionMs,
+              inputTransferBytes: event.data.result.workerTelemetry.inputTransferBytes,
+              outputTransferBytes: event.data.result.workerTelemetry.outputTransferBytes,
+            },
+          });
         } else {
           console.error(`AFK worker ${event.data.jobId} failed:`, event.data.message);
+          afkRuntimeTrace.record('worker_job_error', {
+            phase: 'error',
+            partyId: job.partyId,
+            partyIndex,
+            jobId: event.data.jobId,
+            anomaly: true,
+            progress: true,
+            data: { message: event.data.message },
+          });
           terminateAfkWorkers([worker], 'worker-error-message');
           afkWorkerPoolRef.current = afkWorkerPoolRef.current.filter((slot) => slot.worker !== worker);
           afkActiveChunkJobsRef.current.delete(partyIndex);
           memoryMonitor.releaseWorker(event.data.jobId);
         }
+        updateAfkTraceCoordinator();
         setAfkCoordinatorVersion((version) => version + 1);
       };
       worker.onerror = (event) => {
         console.error(`AFK worker ${jobId} failed:`, event.message);
+        afkRuntimeTrace.record('worker_job_error', {
+          phase: 'error',
+          partyId: job.partyId,
+          partyIndex,
+          jobId,
+          anomaly: true,
+          progress: true,
+          data: { message: event.message },
+        });
         terminateAfkWorkers([worker], 'worker-error-event');
         afkWorkerPoolRef.current = afkWorkerPoolRef.current.filter((slot) => slot.worker !== worker);
         afkActiveChunkJobsRef.current.delete(partyIndex);
         memoryMonitor.releaseWorker(jobId);
+        updateAfkTraceCoordinator();
         setAfkCoordinatorVersion((version) => version + 1);
       };
-      afkActiveChunkJobsRef.current.set(partyIndex, { job: jobMetadata, worker });
+      afkActiveChunkJobsRef.current.set(partyIndex, {
+        job: jobMetadata,
+        worker,
+        status: 'queued',
+        startedMonotonicAt: job.queuedAt ?? performance.now(),
+      });
+      afkRuntimeTrace.record('worker_job_posted', {
+        phase: 'worker_queue',
+        partyId: party.id,
+        partyIndex,
+        jobId,
+        progress: true,
+        data: {
+          activeJobCount: afkActiveChunkJobsRef.current.size,
+          workerPoolSize: afkWorkerPoolRef.current.length,
+          inputTransferBytes: job.inputTransferBytes ?? 0,
+          simulatedCompletedAt: job.simulatedCompletedAt,
+        },
+      });
       worker.postMessage(job);
+      updateAfkTraceCoordinator();
       startedJob = true;
     });
 
@@ -2397,17 +2630,22 @@ export function HomeScreen({
       afkRemainingMsByPartyRef.current = {};
       pendingAfkMsRef.current = 0;
       setPendingAfkMs(0);
+      updateAfkTraceCoordinator();
     }
-  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state]);
+  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state, updateAfkTraceCoordinator]);
 
   useEffect(() => () => {
+    afkRuntimeTrace.cancelRecovery('unmount', {
+      activeJobCount: afkActiveChunkJobsRef.current.size,
+    });
     afkActiveChunkJobsRef.current.forEach(({ job }) => {
       memoryMonitor.releaseWorker(job.jobId);
     });
     terminateAfkWorkers(afkWorkerPoolRef.current.map(({ worker }) => worker), 'unmount');
     afkWorkerPoolRef.current = [];
     afkActiveChunkJobsRef.current.clear();
-  }, []);
+    updateAfkTraceCoordinator();
+  }, [updateAfkTraceCoordinator]);
 
   useEffect(() => {
     const backlogObservation = observeAfkRecoveryBacklog(
@@ -2527,6 +2765,10 @@ export function HomeScreen({
     }
 
     afkSimulationAnchorRef.current = null;
+    afkRuntimeTrace.completeRecovery({
+      recoveredAfkMs: afkRecoveryTotalMsRef.current,
+      partyCount: latestPartiesRef.current.length,
+    });
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
   }, [actions, debugSettings, pendingAfkMs]);
@@ -2592,15 +2834,46 @@ export function HomeScreen({
   }), []);
 
   const persistAfkRuntimeState = useCallback((checkpointAt: number = lastCheckpointAtRef.current) => {
+    // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Debug-only runtime trace
     if (pendingAfkSimulationRef.current) return;
 
+    const traceCheckpoint = afkRuntimeTrace.isRecoveryActive();
+    const checkpointStartedAt = traceCheckpoint ? performance.now() : 0;
+    const previousTracePhase = traceCheckpoint ? afkRuntimeTrace.getCurrentSnapshot().phase : 'idle';
     try {
-      localStorage.setItem(
-        AFK_RUNTIME_STORAGE_KEY,
-        JSON.stringify(getRuntimeSnapshot(checkpointAt))
-      );
+      const serializationStartedAt = traceCheckpoint ? performance.now() : 0;
+      const payload = JSON.stringify(getRuntimeSnapshot(checkpointAt));
+      if (traceCheckpoint) {
+        afkRuntimeTrace.record('afk_checkpoint_serialization', {
+          phase: 'afk_checkpoint',
+          durationMs: performance.now() - serializationStartedAt,
+          data: { payloadLength: payload.length },
+        });
+      }
+      const storageStartedAt = traceCheckpoint ? performance.now() : 0;
+      localStorage.setItem(AFK_RUNTIME_STORAGE_KEY, payload);
+      if (traceCheckpoint) {
+        afkRuntimeTrace.record('afk_checkpoint_storage_write', {
+          phase: 'afk_checkpoint',
+          durationMs: performance.now() - storageStartedAt,
+        });
+        afkRuntimeTrace.record('afk_checkpoint_complete', {
+          phase: 'afk_checkpoint',
+          durationMs: performance.now() - checkpointStartedAt,
+        });
+        afkRuntimeTrace.setPhase(previousTracePhase);
+      }
     } catch (error) {
       console.error('Failed to persist AFK runtime state:', error);
+      if (traceCheckpoint) {
+        afkRuntimeTrace.record('afk_checkpoint_error', {
+          phase: 'error',
+          durationMs: performance.now() - checkpointStartedAt,
+          anomaly: true,
+          data: { message: error instanceof Error ? error.message : String(error) },
+        });
+        afkRuntimeTrace.setPhase(previousTracePhase);
+      }
     }
   }, [getRuntimeSnapshot]);
 
@@ -2686,6 +2959,13 @@ export function HomeScreen({
       // A returning player starts each catch-up at 100% efficiency. Convert this
       // absence once into effective simulation time using the progressive bands.
       const effectiveElapsedMs = getEffectiveAfkElapsedMs(elapsedMs);
+      // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Debug-only runtime trace
+      afkRuntimeTrace.startRecovery({
+        source: pendingAfkMsRef.current > 0 ? 'additional_checkpoint' : 'elapsed_checkpoint',
+        elapsedMs,
+        effectiveElapsedMs,
+        partyCount: parties.length,
+      });
       if (pendingAfkMsRef.current <= 0) {
         afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = true;
@@ -3826,15 +4106,27 @@ export function HomeScreen({
         const target = event.target instanceof Element
           ? event.target.closest('button, input, select, textarea, a, [role="button"]')
           : null;
-        if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
+        if (!target || target.closest('nav[aria-label="Main navigation"]') || target.closest('[data-afk-readonly="true"]')) return;
         // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Responsiveness
         // Pause before the next scheduler slice, but leave the event live so the
         // normal UI mutation can commit at a safe boundary.
         afkInteractionPausedRef.current = true;
+        afkInteractionPauseStartedAtRef.current = performance.now();
+        afkRuntimeTrace.record('interaction_pause_start', {
+          phase: 'interaction_pause',
+          data: { input: 'pointer' },
+        });
         if (afkInteractionPauseTimerRef.current !== null) window.clearTimeout(afkInteractionPauseTimerRef.current);
         afkInteractionPauseTimerRef.current = window.setTimeout(() => {
           afkInteractionPauseTimerRef.current = null;
           afkInteractionPausedRef.current = false;
+          afkRuntimeTrace.record('interaction_pause_end', {
+            phase: 'interaction_pause',
+            durationMs: Math.max(0, performance.now() - (afkInteractionPauseStartedAtRef.current ?? performance.now())),
+            progress: true,
+            data: { input: 'pointer' },
+          });
+          afkInteractionPauseStartedAtRef.current = null;
           setAfkInteractionPauseVersion((version) => version + 1);
         }, 0);
       }}
@@ -3843,12 +4135,24 @@ export function HomeScreen({
         const target = event.target instanceof Element
           ? event.target.closest('button, input, select, textarea, a, [role="button"]')
           : null;
-        if (!target || target.closest('nav[aria-label="Main navigation"]')) return;
+        if (!target || target.closest('nav[aria-label="Main navigation"]') || target.closest('[data-afk-readonly="true"]')) return;
         afkInteractionPausedRef.current = true;
+        afkInteractionPauseStartedAtRef.current = performance.now();
+        afkRuntimeTrace.record('interaction_pause_start', {
+          phase: 'interaction_pause',
+          data: { input: 'keyboard' },
+        });
         if (afkInteractionPauseTimerRef.current !== null) window.clearTimeout(afkInteractionPauseTimerRef.current);
         afkInteractionPauseTimerRef.current = window.setTimeout(() => {
           afkInteractionPauseTimerRef.current = null;
           afkInteractionPausedRef.current = false;
+          afkRuntimeTrace.record('interaction_pause_end', {
+            phase: 'interaction_pause',
+            durationMs: Math.max(0, performance.now() - (afkInteractionPauseStartedAtRef.current ?? performance.now())),
+            progress: true,
+            data: { input: 'keyboard' },
+          });
+          afkInteractionPauseStartedAtRef.current = null;
           setAfkInteractionPauseVersion((version) => version + 1);
         }, 0);
       }}

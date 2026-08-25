@@ -158,7 +158,7 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
   assert.match(homeSource, /afkActiveCommitTransactionRef\.current = \{/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
   assert.match(homeSource, /runAutoEquipment\(\s*\[transaction\.result\.partyIndex\]/);
-  assert.match(homeSource, /runAutoEquipment\([\s\S]{0,240}completeAfkCommitTransaction\(transaction\.result\)/);
+  assert.match(homeSource, /const summary = runAutoEquipment\([\s\S]{0,1800}completeAfkCommitTransaction\(transaction\.result\)/);
   assert.doesNotMatch(homeSource, /mutationCount === 0/);
   assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
 });
@@ -174,7 +174,7 @@ test('AFK Chunk party status is calculated once and reused by all twelve Cycles'
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
   assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
-  assert.match(homeSource, /if \(pendingAfkMs <= 0 \|\| afkInteractionPausedRef\.current\) return/);
+  assert.match(homeSource, /if \(pendingAfkMs <= 0\) return;[\s\S]{0,120}if \(afkInteractionPausedRef\.current\)/);
   assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /afkInteractionPausedRef\.current = false/);
   assert.doesNotMatch(homeSource, /event\.preventDefault\(\);\s*event\.stopPropagation\(\);/);

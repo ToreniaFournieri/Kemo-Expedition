@@ -295,6 +295,16 @@ Progress-only React updates must not trigger complete save serialization.
 
 The application must remain interactive during AFK recovery.
 
+**Debug-only runtime trace**
+
+- Dev and beta automatically retain a bounded, session-scoped AFK runtime trace. Production must not retain AFK trace events or expose the trace UI.
+- The trace is observational and must not add worker or commit timeouts, cancel recovery, alter coordinator ordering, change deterministic gameplay, or persist into save data.
+- The trace records metadata-only lifecycle and timing for recovery, worker queue/start/completion/error/termination, canonical commit ordering, setting-change cutoff, reducer commit visibility, automatic equipment, interaction pauses, visibility, game-state persistence, and AFK runtime checkpoints.
+- A completed worker result that cannot commit because an earlier simulated completion-time job remains unfinished must be recorded explicitly as canonical-order waiting.
+- While AFK recovery is active, a 250 ms watchdog records event-loop scheduling delay of at least 250 ms and a classified long wait after 1,000 ms without coordinator progress. Resumption records the completed wait duration. These classifications are diagnostics and do not prove a deadlock.
+- Detailed trace history is limited to 2,048 events and anomaly history to 256 events per session. Exports include dropped-event counts, aggregate counts and maximum durations, and a current coordinator snapshot containing in-flight job ages.
+- Trace payloads may include version, build, environment, timestamps, visibility, hardware concurrency, party/job IDs, phases, durations, queue and backlog counts, transfer sizes, counters, and error text. They must exclude complete save state, random state, combat logs, reward details, character data, and User ID.
+
 
 **Notification**
 - Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG

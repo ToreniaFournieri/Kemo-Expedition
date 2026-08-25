@@ -116,6 +116,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
+import { afkRuntimeTrace } from '../game/afkRuntimeTrace';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
 
@@ -1367,12 +1368,54 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
 type SaveStateResult = { ok: true } | { ok: false; errorLog: string };
 
 function saveState(state: GameState): SaveStateResult {
+  // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Debug-only runtime trace
+  const traceSave = afkRuntimeTrace.isRecoveryActive();
+  const saveStartedAt = traceSave ? performance.now() : 0;
+  const previousTracePhase = traceSave ? afkRuntimeTrace.getCurrentSnapshot().phase : 'idle';
   try {
+    const serializationStartedAt = traceSave ? performance.now() : 0;
     const payload = JSON.stringify(serializeGameState(state));
-    localStorage.setItem(STORAGE_KEY, encodePersistedState(payload));
+    if (traceSave) {
+      afkRuntimeTrace.record('game_save_serialization', {
+        phase: 'game_save',
+        durationMs: performance.now() - serializationStartedAt,
+        data: { payloadLength: payload.length },
+      });
+    }
+    const compressionStartedAt = traceSave ? performance.now() : 0;
+    const encoded = encodePersistedState(payload);
+    if (traceSave) {
+      afkRuntimeTrace.record('game_save_compression', {
+        phase: 'game_save',
+        durationMs: performance.now() - compressionStartedAt,
+        data: { encodedLength: encoded.length },
+      });
+    }
+    const storageStartedAt = traceSave ? performance.now() : 0;
+    localStorage.setItem(STORAGE_KEY, encoded);
+    if (traceSave) {
+      afkRuntimeTrace.record('game_save_storage_write', {
+        phase: 'game_save',
+        durationMs: performance.now() - storageStartedAt,
+      });
+      afkRuntimeTrace.record('game_save_complete', {
+        phase: 'game_save',
+        durationMs: performance.now() - saveStartedAt,
+      });
+      afkRuntimeTrace.setPhase(previousTracePhase);
+    }
     return { ok: true };
   } catch (e) {
     console.error('Failed to save state:', e);
+    if (traceSave) {
+      afkRuntimeTrace.record('game_save_error', {
+        phase: 'error',
+        durationMs: performance.now() - saveStartedAt,
+        anomaly: true,
+        data: { message: e instanceof Error ? e.message : String(e) },
+      });
+      afkRuntimeTrace.setPhase(previousTracePhase);
+    }
     return { ok: false, errorLog: formatLoadErrorLog(e) };
   }
 }

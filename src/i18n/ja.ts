@@ -1,5 +1,12 @@
 const ja = {
   'app.title': '冒ケモ',
+  'setting.runtime.title': 'ランタイム診断',
+  'setting.runtime.afkTrace': 'AFKランタイムトレース',
+  'setting.runtime.phase': '現在のフェーズ',
+  'setting.runtime.traceActivity': 'トレース状況',
+  'setting.runtime.traceCounts': 'イベント {events}・異常 {anomalies}',
+  'setting.runtime.longestWait': '最長待機',
+  'setting.runtime.none': 'なし',
   'setting.memory.title': 'メモリ診断',
   'setting.memory.current': '現在',
   'setting.memory.peak': 'ピーク',

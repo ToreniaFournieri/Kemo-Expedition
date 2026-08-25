@@ -1,5 +1,12 @@
 const en = {
   'app.title': 'BoKemo',
+  'setting.runtime.title': 'Runtime Diagnostics',
+  'setting.runtime.afkTrace': 'AFK runtime trace',
+  'setting.runtime.phase': 'Active phase',
+  'setting.runtime.traceActivity': 'Trace activity',
+  'setting.runtime.traceCounts': '{events} events · {anomalies} anomalies',
+  'setting.runtime.longestWait': 'Longest wait',
+  'setting.runtime.none': 'None',
   'setting.memory.title': 'Memory Diagnostics',
   'setting.memory.current': 'Current',
   'setting.memory.peak': 'Peak',

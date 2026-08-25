@@ -1,4 +1,11 @@
 const zhTW = {
+  'setting.runtime.title': '執行階段診斷',
+  'setting.runtime.afkTrace': 'AFK 執行階段追蹤',
+  'setting.runtime.phase': '目前階段',
+  'setting.runtime.traceActivity': '追蹤活動',
+  'setting.runtime.traceCounts': '{events} 個事件 · {anomalies} 個異常',
+  'setting.runtime.longestWait': '最長等待',
+  'setting.runtime.none': '無',
   'app.title': '冒獸',
   'setting.memory.title': '記憶體診斷',
   'setting.memory.current': '目前',

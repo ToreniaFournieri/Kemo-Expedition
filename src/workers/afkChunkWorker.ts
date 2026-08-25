@@ -12,6 +12,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
   try {
     await ensureLanguageLoaded(job.baseState.global.language);
     const executionStartedAt = performance.now();
+    self.postMessage({ type: 'started', jobId: job.jobId, partyIndex: job.partyIndex });
     const resultState = simulateAfkPartyChunkForWorker(job.baseState, {
       partyIndex: job.partyIndex,
       cycleDurationMs: job.cycleDurationMs,

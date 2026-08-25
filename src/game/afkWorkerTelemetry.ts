@@ -1,4 +1,5 @@
 import type { AfkWorkerPerformanceTelemetry } from './afkChunkCoordinator';
+import { afkRuntimeTrace } from './afkRuntimeTrace';
 
 const TELEMETRY_LIMIT = 120;
 
@@ -27,10 +28,13 @@ export function terminateAfkWorkers(workers: readonly Worker[], reason: string):
   workers.forEach((worker) => worker.terminate());
   const durationMs = Math.max(0, performance.now() - startedAt);
   append({ kind: 'termination', reason, workerCount: workers.length, durationMs, recordedAt: Date.now() });
+  afkRuntimeTrace.record('worker_pool_terminated', {
+    durationMs,
+    data: { reason, workerCount: workers.length },
+  });
   return durationMs;
 }
 
 export function getAfkWorkerTelemetryForTesting(): readonly AfkWorkerTelemetrySample[] {
   return Object.freeze([...samples]);
 }
-

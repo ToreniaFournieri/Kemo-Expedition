@@ -46,7 +46,7 @@
 - Significant events are `session_start`, `online_processing_start`, `chunk_complete`, `afk_emulation_start`, `afk_emulation_complete`, `simulation_start`, `simulation_complete`, `wasm_memory_growth`, `memory_warning`, and `session_end`.
 - Events include timestamp, runtime mode, speed, elapsed time, available memory fields, active workers, completed Chunks, and battle count.
 - Three consecutive samples at or above 85% of an exposed JavaScript heap limit produce one debounced warning. The warning rearms only after usage falls below 75%.
-- Diagnostics are session-scoped, excluded from saves, and bounded. Dev and beta expose current/peak data plus JSON export and reset in the Debug pane. Production retains internal monitoring and warnings without a diagnostics UI.
+- Diagnostics are session-scoped, excluded from saves, and bounded. Dev and beta expose current/peak data together with the metadata-only AFK runtime trace defined in section 5.1.1.1 through one combined Runtime Diagnostics JSON export and reset in the Debug pane. Production retains internal memory monitoring and warnings without a diagnostics UI or retained AFK trace events.
 
 ## 9.2.6 Repeatable benchmarks
 
@@ -77,4 +77,3 @@ The standard benchmark suite contains:
 - x100 completes the stress benchmark without memory-related crashes.
 - Monitoring and logging remain bounded and do not materially increase CPU or memory consumption.
 - Temporary peaks are acceptable when memory subsequently returns to an appropriate settled range.
-

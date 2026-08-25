@@ -25,7 +25,7 @@ isDungeonEntryUnlocked
 } from '../../../game/clearGate';
 import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings } from '../../../game/colosseum';
 import { DebugSettings } from '../../../game/debugSettings';
-import { MemoryDiagnostics } from '../../MemoryDiagnostics';
+import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
 import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
@@ -2729,7 +2729,7 @@ export default function SettingTab({
       {debugModeEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('debug', t('setting.debug'))}
         {settingPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
-          <MemoryDiagnostics />
+          <RuntimeDiagnostics />
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
           <div className="bg-white rounded border p-2">
             <div className="text-xs text-gray-500 mb-1">Speed of time</div>

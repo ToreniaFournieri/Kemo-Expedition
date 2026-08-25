@@ -13,6 +13,7 @@ import {
   createAfkPartyChunkResult,
   type AfkPartyChunkResult,
 } from '../../src/game/afkChunkCoordinator.ts';
+import { AfkRuntimeTrace } from '../../src/game/afkRuntimeTrace.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
@@ -72,6 +73,8 @@ test('Expedition 8 sample save covers every AFK efficiency duration period', () 
 
 test('Expedition 8 sample save reports worker and coordinator duration compliance', () => {
   const baseState = loadSampleState();
+  const trace = new AfkRuntimeTrace({ enabled: true, environment: 'dev' });
+  trace.startRecovery({ source: 'save_performance_profile', partyCount: baseState.parties.length });
   let state = baseState;
   const simulatedEndAt = Date.UTC(2026, 7, 16);
   const workerDurationsMs: number[] = [];
@@ -87,6 +90,14 @@ test('Expedition 8 sample save reports worker and coordinator duration complianc
     });
     const durationMs = performance.now() - startedAt;
     workerDurationsMs.push(durationMs);
+    trace.record('worker_job_complete', {
+      phase: 'worker_execution',
+      partyId: party.id,
+      partyIndex,
+      jobId: `profile-${party.id}`,
+      durationMs,
+      progress: true,
+    });
     return createAfkPartyChunkResult({
       jobId: `profile-${party.id}`,
       partyIndex,
@@ -104,8 +115,20 @@ test('Expedition 8 sample save reports worker and coordinator duration complianc
   results.forEach((result) => {
     const startedAt = performance.now();
     state = commitAfkPartyChunk(state, result);
-    coordinatorDurationsMs.push(performance.now() - startedAt);
+    const durationMs = performance.now() - startedAt;
+    coordinatorDurationsMs.push(durationMs);
+    trace.record('commit_transaction_complete', {
+      phase: 'commit_awaiting_react',
+      partyId: result.partyId,
+      partyIndex: result.partyIndex,
+      jobId: result.jobId,
+      durationMs,
+      progress: true,
+    });
   });
+
+  trace.completeRecovery();
+  const traceExport = trace.getDiagnosticExport();
 
   const report = {
     parties: state.parties.length,
@@ -115,9 +138,14 @@ test('Expedition 8 sample save reports worker and coordinator duration complianc
     p95CoordinatorCommitDurationMs: percentile(coordinatorDurationsMs, 0.95),
     longestCoordinatorCommitDurationMs: Math.max(...coordinatorDurationsMs),
     coordinatorWithin50msCeiling: Math.max(...coordinatorDurationsMs) < MAX_BATCH_DURATION_MS,
+    tracedLongestWorkerMs: traceExport.aggregatesByEvent.worker_job_complete.maxDurationMs,
+    tracedLongestCoordinatorMs: traceExport.aggregatesByEvent.commit_transaction_complete.maxDurationMs,
   };
   console.info('AFK_WORKER_COORDINATOR_DURATION_REPORT', JSON.stringify(report));
 
   assert.ok(Number.isFinite(report.longestCoordinatorCommitDurationMs));
   assert.equal(report.coordinatorWithin50msCeiling, true);
+  assert.equal(report.tracedLongestWorkerMs, Math.max(...workerDurationsMs));
+  assert.equal(report.tracedLongestCoordinatorMs, Math.max(...coordinatorDurationsMs));
+  assert.ok(report.tracedLongestWorkerMs > report.tracedLongestCoordinatorMs);
 });
