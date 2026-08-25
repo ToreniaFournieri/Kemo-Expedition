@@ -28,13 +28,15 @@ import { computeCharacterStats } from '../../src/game/characterComputation.ts';
 import { computePartyStats } from '../../src/game/partyComputation.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
-import { setLanguage } from '../../src/i18n/index.ts';
+import { ensureLanguageLoaded, setLanguage, SUPPORTED_LANGUAGES } from '../../src/i18n/index.ts';
 import type { EnemyDef, GameState, Party, RoomType, TerrainEffectKey } from '../../src/types/index.ts';
 import {
   digestBattleGolden,
   type BattleGoldenCase,
   type BattleGoldenDigest,
 } from './battleGoldenHarness.ts';
+
+await Promise.all(SUPPORTED_LANGUAGES.map((language) => ensureLanguageLoaded(language)));
 
 const ROOT = process.cwd();
 const SAMPLE_SAVE_PATH = resolve(ROOT, 'sample_savedata/ALL_Exp8_v0.9.3_dev_20260816.kemoz');

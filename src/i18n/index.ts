@@ -1,9 +1,7 @@
 import ja from './ja';
-import en from './en';
-import zhCN from './zh-CN';
-import zhTW from './zh-TW';
 import { createEnvironmentStorageKey } from '../game/environment';
 import { resolveSystemLanguage, selectInitialLanguage } from './languageDetection';
+import { gameplayRandom } from '../game/gameplayRandom';
 
 export type Language = 'ja' | 'en' | 'zh-CN' | 'zh-TW';
 export type TranslationParams = Record<string, string | number>;
@@ -14,8 +12,29 @@ export const DEFAULT_LANGUAGE: Language = 'ja';
 // SpecRef: 9 | Environment | Save Data Isolation
 export const LANGUAGE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-language');
 
-const dictionaries: Record<Language, TranslationDictionary> = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW };
-let activeLanguage: Language = DEFAULT_LANGUAGE;
+const fallbackDictionary: TranslationDictionary = ja;
+const dictionaries: Partial<Record<Language, TranslationDictionary>> = { ja: fallbackDictionary };
+const dictionaryLoads = new Map<Language, Promise<void>>();
+let activeDictionary: TranslationDictionary = fallbackDictionary;
+
+export function ensureLanguageLoaded(language: Language): Promise<void> {
+  const normalizedLanguage = normalizeLanguage(language);
+  if (dictionaries[normalizedLanguage]) return Promise.resolve();
+  const pending = dictionaryLoads.get(normalizedLanguage);
+  if (pending) return pending;
+  const load = (async () => {
+    const dictionary = normalizedLanguage === 'en'
+      ? (await import('./en')).default
+      : normalizedLanguage === 'zh-CN'
+        ? (await import('./zh-CN')).default
+        : normalizedLanguage === 'zh-TW'
+          ? (await import('./zh-TW')).default
+          : ja;
+    dictionaries[normalizedLanguage] = dictionary;
+  })();
+  dictionaryLoads.set(normalizedLanguage, load);
+  return load.finally(() => dictionaryLoads.delete(normalizedLanguage));
+}
 
 export function normalizeLanguage(value: unknown): Language {
   if (value === 'zh') return 'zh-CN';
@@ -65,12 +84,15 @@ export function persistLanguage(language: Language): void {
 }
 
 export function setLanguage(language: Language): void {
-  activeLanguage = normalizeLanguage(language);
+  const normalizedLanguage = normalizeLanguage(language);
+  const dictionary = dictionaries[normalizedLanguage];
+  if (!dictionary) throw new Error(`Language dictionary is not loaded: ${normalizedLanguage}`);
+  activeDictionary = dictionary;
 }
 
 export function translate(language: Language, key: string, params?: TranslationParams): string {
   const normalizedLanguage = normalizeLanguage(language);
-  const template = dictionaries[normalizedLanguage][key] ?? dictionaries[DEFAULT_LANGUAGE][key] ?? key;
+  const template = dictionaries[normalizedLanguage]?.[key] ?? dictionaries[DEFAULT_LANGUAGE]?.[key] ?? key;
   if (!params) return template;
   return template.replace(/\{(\w+)\}/g, (match, paramKey: string) => {
     const value = params[paramKey];
@@ -80,7 +102,12 @@ export function translate(language: Language, key: string, params?: TranslationP
 
 // SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
 export function t(key: string, params?: TranslationParams): string {
-  return translate(activeLanguage, key, params);
+  const template = activeDictionary[key] ?? fallbackDictionary[key] ?? key;
+  if (!params) return template;
+  return template.replace(/\{(\w+)\}/g, (match, paramKey: string) => {
+    const value = params[paramKey];
+    return value === undefined ? match : String(value);
+  });
 }
 export function getRandomTranslation(prefix: string, count: number, params?: TranslationParams): string {
   const safeCount = Math.max(0, Math.floor(count));
@@ -88,4 +115,3 @@ export function getRandomTranslation(prefix: string, count: number, params?: Tra
   const index = Math.floor(gameplayRandom() * safeCount) + 1;
   return t(`${prefix}.${index}`, params);
 }
-import { gameplayRandom } from '../game/gameplayRandom';

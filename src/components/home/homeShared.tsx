@@ -233,7 +233,7 @@ export interface HomeScreenProps {
     resetCommonSuperRareBag: () => void;
     resetRareSuperRareBag: () => void;
     resetSideQuestBag: () => void;
-    setLanguage: (language: Language) => void;
+    setLanguage: (language: Language) => Promise<void>;
     unlockPartySlot: () => void;
     addNotification: (
       message: string,
@@ -564,6 +564,24 @@ export function rollPercentInclusive(min: number, max: number): number {
 }
 
 export const PARTY_CYCLE_TICK_MS = 100;
+
+export function getNextPartyCycleCheckpointDelay(
+  cycles: Record<number, PartyCycleRuntime>,
+  now: number,
+  maximumDelayMs = 1_000,
+): number {
+  let nextDelay = Math.max(PARTY_CYCLE_TICK_MS, maximumDelayMs);
+  let hasActiveCycle = false;
+  Object.values(cycles).forEach((cycle) => {
+    if (cycle.state === 'idle' || cycle.state === 'reactivate') return;
+    hasActiveCycle = true;
+    const elapsed = Math.max(0, now - cycle.stateStartedAt);
+    const remaining = Math.max(PARTY_CYCLE_TICK_MS, cycle.durationMs - elapsed);
+    nextDelay = Math.min(nextDelay, remaining);
+  });
+  if (!hasActiveCycle && Object.keys(cycles).length === 0) return PARTY_CYCLE_TICK_MS;
+  return Math.max(PARTY_CYCLE_TICK_MS, Math.min(maximumDelayMs, Math.ceil(nextDelay)));
+}
 export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;

@@ -2,6 +2,14 @@ import type { Character, GameState, InventoryRecord, Party, TerrainEffectKey } f
 
 export const AFK_CHUNK_CYCLE_COUNT = 12;
 
+/** Balanced recovery concurrency: leave capacity for the renderer and OS while
+ * avoiding six simultaneous module realms on fully unlocked saves. */
+export function getAfkWorkerPoolLimit(logicalProcessors: number | undefined, partyCount: number): number {
+  const processors = Number.isFinite(logicalProcessors) ? Math.max(1, Math.floor(logicalProcessors!)) : 4;
+  const hardwareLimit = processors <= 3 ? 1 : processors <= 7 ? 3 : 4;
+  return Math.max(1, Math.min(Math.max(1, Math.floor(partyCount)), hardwareLimit));
+}
+
 export interface AfkPartyChunkJob {
   jobId: string;
   partyIndex: number;
@@ -12,6 +20,18 @@ export interface AfkPartyChunkJob {
   baseState: GameState;
   gameMode: 'm.kemo' | 'm.luna' | 'm.laika';
   cycleDurationScale: number;
+  queuedAt?: number;
+  workerCreatedAt?: number;
+  isFirstWorkerJob?: boolean;
+  inputTransferBytes?: number;
+}
+
+export interface AfkWorkerPerformanceTelemetry {
+  workerStartupMs: number;
+  queueMs: number;
+  executionMs: number;
+  inputTransferBytes: number;
+  outputTransferBytes: number;
 }
 
 export interface AfkPartyChunkResult {
@@ -26,6 +46,7 @@ export interface AfkPartyChunkResult {
   unlockedParties: Party[];
   globalDelta: AfkGlobalDelta;
   durationMs: number;
+  workerTelemetry: AfkWorkerPerformanceTelemetry;
 }
 
 interface InventoryDelta {
@@ -173,6 +194,7 @@ export function createAfkPartyChunkResult(
   job: AfkPartyChunkJob,
   resultState: GameState,
   durationMs: number,
+  workerTelemetry: Partial<AfkWorkerPerformanceTelemetry> = {},
 ): AfkPartyChunkResult {
   const baseGlobal = job.baseState.global;
   const resultGlobal = resultState.global;
@@ -202,6 +224,13 @@ export function createAfkPartyChunkResult(
       revealedGlossaryTerrainKeys: additions(baseGlobal.revealedGlossaryTerrainKeys, resultGlobal.revealedGlossaryTerrainKeys),
     },
     durationMs,
+    workerTelemetry: {
+      workerStartupMs: Math.max(0, workerTelemetry.workerStartupMs ?? 0),
+      queueMs: Math.max(0, workerTelemetry.queueMs ?? 0),
+      executionMs: Math.max(0, workerTelemetry.executionMs ?? durationMs),
+      inputTransferBytes: Math.max(0, Math.floor(workerTelemetry.inputTransferBytes ?? job.inputTransferBytes ?? 0)),
+      outputTransferBytes: Math.max(0, Math.floor(workerTelemetry.outputTransferBytes ?? 0)),
+    },
   };
 }
 

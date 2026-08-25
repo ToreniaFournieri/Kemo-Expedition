@@ -214,5 +214,5 @@ test('mutation-aware stat consumers remain outside the transaction context', () 
   assert.match(source, /const \{ partyStats: postCycleStats \} = computePartyStats\(postCycleParty\)/);
   assert.match(source, /case 'HEAL_PARTY_HP':[\s\S]*computePartyStats\(currentParty\)/);
   assert.match(source, /const computed = computePartyStats\(beforeParty\)/);
-  assert.match(source, /const maximumHp = computePartyStats\(baselineParty\)/);
+  assert.match(source, /const computed = computePartyStats\(beforeParty\)[\s\S]*const maximumHp = computed\.partyStats\.hp/);
 });

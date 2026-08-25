@@ -5,6 +5,7 @@ import {
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkResult,
+  getAfkWorkerPoolLimit,
   hasPendingPartySettingChanges,
   type AfkPartyChunkResult,
 } from '../src/game/afkChunkCoordinator.ts';
@@ -80,6 +81,14 @@ test('party AFK Chunks contain exactly twelve Cycles', () => {
   assert.equal(AFK_CHUNK_CYCLE_COUNT, 12);
 });
 
+test('AFK worker pool preserves renderer capacity and never exceeds party count', () => {
+  assert.equal(getAfkWorkerPoolLimit(2, 6), 1);
+  assert.equal(getAfkWorkerPoolLimit(4, 6), 3);
+  assert.equal(getAfkWorkerPoolLimit(8, 6), 4);
+  assert.equal(getAfkWorkerPoolLimit(16, 2), 2);
+  assert.equal(getAfkWorkerPoolLimit(undefined, 6), 3);
+});
+
 test('coordinator order is simulated completion time then party ID', () => {
   const later = { simulatedCompletedAt: 200, partyId: 1, jobId: 'b' };
   const earlierHigherParty = { simulatedCompletedAt: 100, partyId: 2, jobId: 'c' };
@@ -110,12 +119,25 @@ test('coordinator merges stale global deltas and lets pending PT settings win', 
     gameMode: 'm.kemo',
     cycleDurationScale: 1,
     simulatedStartedAt: 0,
-  }, resultState, 5);
+  }, resultState, 5, {
+    workerStartupMs: 1,
+    queueMs: 2,
+    executionMs: 3,
+    inputTransferBytes: 4,
+    outputTransferBytes: 5,
+  });
 
   const committed = commitAfkPartyChunk(currentState, result);
   assert.equal('baseState' in result, false);
   assert.equal('resultState' in result, false);
   assert.equal(result.schemaVersion, 1);
+  assert.deepEqual(result.workerTelemetry, {
+    workerStartupMs: 1,
+    queueMs: 2,
+    executionMs: 3,
+    inputTransferBytes: 4,
+    outputTransferBytes: 5,
+  });
   assert.equal(committed.global.gold, 135);
   assert.equal(committed.global.inventory['1-0-0'].count, 6);
   assert.equal(committed.parties[0].level, 2);

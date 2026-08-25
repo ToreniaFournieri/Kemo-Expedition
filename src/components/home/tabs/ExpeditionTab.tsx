@@ -105,6 +105,7 @@ export default function ExpeditionTab({
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
   isDarkModeEnabled: boolean;
 }) {
+  const [liveProgressNowMs, setLiveProgressNowMs] = useState(() => Date.now());
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
     enemy: EnemyDef;
@@ -138,6 +139,14 @@ export default function ExpeditionTab({
   const [disclosedExpeditionLogs, setDisclosedExpeditionLogs] = useState<Array<Party['lastExpeditionLog'] | null>>(() =>
     state.parties.map((party) => party.lastExpeditionLog)
   );
+
+  useEffect(() => {
+    if (afkRecoveryProgressPercent !== null) return;
+    const timer = window.setInterval(() => setLiveProgressNowMs(Date.now()), 100);
+    return () => window.clearInterval(timer);
+  }, [afkRecoveryProgressPercent]);
+
+  const progressNowMs = afkRecoveryProgressPercent === null ? liveProgressNowMs : emulatedNowMs;
 
   useEffect(() => {
     // SpecRef: 8.3 | UI_EXPEDITION | Update Timing
@@ -442,8 +451,8 @@ export default function ExpeditionTab({
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
         const getDifficultyOffsetBubbleText = (offset: number) => t('home.expedition.difficultyOffsetBubble', { enemyLevel: formatNumber(offset), itemChance: formatNumber(getDifficultyOffsetItemChanceTickets(offset)), superRareChance: formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset)) });
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
-        const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
+        const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: progressNowMs, durationMs: 1000 };
+        const cycleElapsedMs = Math.max(0, progressNowMs - cycle.stateStartedAt);
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
@@ -572,7 +581,7 @@ export default function ExpeditionTab({
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
-        const instantChargeState = getInstantExpeditionChargeState(party, emulatedNowMs);
+        const instantChargeState = getInstantExpeditionChargeState(party, progressNowMs);
         const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
         const instantChargeLabel = instantChargeDisplay.label;
         const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
@@ -602,7 +611,7 @@ export default function ExpeditionTab({
         const compactProgressItems = getCompactProgressItems(
           party,
           getTimeSpeedScale(debugSettings),
-          emulatedNowMs,
+          progressNowMs,
           cycle.state,
         );
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
@@ -802,7 +811,7 @@ export default function ExpeditionTab({
               <span className={`mt-0.5 block relative h-5 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
-                  style={{ width: `${visualProgressPercent}%` }}
+                  style={{ width: `${visualProgressPercent}%`, transition: 'width 100ms linear' }}
                 />
                 <span className={`relative z-10 flex h-full items-center justify-center px-1.5 text-center leading-tight ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                   <span className="w-full truncate leading-tight">
@@ -816,7 +825,7 @@ export default function ExpeditionTab({
               <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-transparent" aria-label="Sub progress bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(subProgressPercent)}>
                 <div
                   className="h-full bg-sub/40"
-                  style={{ width: `${subProgressPercent}%` }}
+                  style={{ width: `${subProgressPercent}%`, transition: 'width 100ms linear' }}
                 />
               </div>
             ) : (

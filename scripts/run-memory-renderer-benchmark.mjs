@@ -50,9 +50,13 @@ try {
   await evaluate(`window.__BOKEMO_MEMORY_BENCHMARK__.switchPanes(${smoke ? 12 : 1000})`);
   await delay(smoke ? 100 : 5_000);
   const settled = await evaluate('window.__BOKEMO_MEMORY_BENCHMARK__.sample()');
-  console.log(JSON.stringify({ schemaVersion: 1, profile: smoke ? 'smoke' : 'standard', initial, afterIdle, settled }, null, 2));
+  const renderProfile = await evaluate('window.__BOKEMO_RENDER_PROFILE__ ?? null');
+  const afkWorkerProfile = await evaluate('window.__BOKEMO_AFK_WORKER_PROFILE__ ?? []');
+  console.log(JSON.stringify({ schemaVersion: 1, profile: smoke ? 'smoke' : 'standard', initial, afterIdle, settled, renderProfile, afkWorkerProfile }, null, 2));
+  if (renderProfile && renderProfile.p95CommitDurationMs >= 8) {
+    throw new Error(`React commit p95 ${renderProfile.p95CommitDurationMs}ms must remain below 8ms`);
+  }
   socket.close();
 } finally {
   electron.kill('SIGTERM');
 }
-

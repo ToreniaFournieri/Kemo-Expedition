@@ -113,7 +113,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
+import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
 import { memoryMonitor } from '../game/memoryMonitoring';
@@ -1957,6 +1957,46 @@ function createInitialState(): InitialStateResult {
 
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
+export type ExpeditionResolutionMode = 'full' | 'forecast';
+
+export interface ExpeditionForecastBattleDiagnostic {
+  enemyId: number | undefined;
+  outcome: ExpeditionLogEntry['outcome'];
+  remainingPartyHP: number;
+  replayMetadata: ExpeditionLogEntry['replayMetadata'];
+}
+
+export interface ExpeditionForecastResolution {
+  outcome: ExpeditionLog['finalOutcome'];
+  completedRooms: number;
+  finalHp: number;
+  terminalBattleOutcome: ExpeditionLogEntry['outcome'] | null;
+  battleDiagnostics: ExpeditionForecastBattleDiagnostic[];
+}
+
+export interface SimulationSandbox {
+  partyIndex: number;
+  baseline: GameState;
+  authoritativePartyStatus: ComputedPartyStatus;
+}
+
+const forecastResolutionByState = new WeakMap<GameState, ExpeditionForecastResolution>();
+
+function createForecastResolution(log: ExpeditionLog): ExpeditionForecastResolution {
+  return {
+    outcome: log.finalOutcome,
+    completedRooms: log.completedRooms,
+    finalHp: log.remainingPartyHP,
+    terminalBattleOutcome: log.entries[log.entries.length - 1]?.outcome ?? null,
+    battleDiagnostics: log.entries.map((entry) => ({
+      enemyId: entry.enemyId,
+      outcome: entry.outcome,
+      remainingPartyHP: entry.remainingPartyHP,
+      replayMetadata: entry.replayMetadata,
+    })),
+  };
+}
+
 export type AfkBatchTestOptions = AfkSimulationBatchSlice & {
   elapsedMs: number;
   isAutoRepeatEnabled: boolean;
@@ -1973,7 +2013,7 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus }; battleOutputMode?: 'full' | 'result-only' }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus }; battleOutputMode?: 'full' | 'result-only'; resolutionMode?: ExpeditionResolutionMode }
   | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
@@ -3731,6 +3771,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (hasRareMatch) diaryTriggers.push('eliteRare');
       }
 
+      // SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
+      // Forecast state is private and discarded. Preserve the terminal Diary-ID
+      // draw when a full resolution would create an entry, then stop before
+      // allocating its retained Diary/unlock/compendium projections.
+      if (action.resolutionMode === 'forecast') {
+        if (diaryTriggers.length > 0) gameplayRandom();
+        const updatedParties = [...state.parties];
+        updatedParties[action.partyIndex] = {
+          ...currentParty,
+          bags,
+          lastExpeditionLog: null,
+          pendingDiaryLog: null,
+          currentHp: finalRemainingPartyHP,
+        };
+        const forecastState = {
+          ...state,
+          parties: updatedParties,
+        };
+        forecastResolutionByState.set(forecastState, createForecastResolution(log));
+        return forecastState;
+      }
+
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
 
       const pendingDiaryLog = diaryTriggers.length > 0
@@ -5194,7 +5256,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 export function runExpeditionTransactionForTesting(
   state: GameState,
   partyIndex: number,
-  options: { gameMode?: GameMode; triggerGodsBattle?: boolean; simulatedAt?: number } = {},
+  options: {
+    gameMode?: GameMode;
+    triggerGodsBattle?: boolean;
+    simulatedAt?: number;
+    battleOutputMode?: 'full' | 'result-only';
+    resolutionMode?: ExpeditionResolutionMode;
+    authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus };
+  } = {},
 ): GameState {
   return gameReducer(state, { type: 'RUN_EXPEDITION', partyIndex, ...options });
 }
@@ -5285,9 +5354,107 @@ export function simulateApiSortieBatchForTesting(
   return { state: { ...stagedState, parties: finalParties }, runs };
 }
 
+const EXPEDITION_SIMULATION_SLICE_BUDGET_MS = 10;
+const EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS = 100;
+
 const yieldToExpeditionSimulationUi = () => new Promise<void>((resolve) => {
   setTimeout(resolve, 0);
 });
+
+/**
+ * Create one private, compact baseline for a forecast batch. Only the selected
+ * party is cloned; unrelated parties and master/configuration data are shared
+ * read-only. Persistent-only collections are replaced with scratch collections
+ * because forecast results are discarded and cannot reveal or commit them.
+ */
+export function createSimulationSandbox(state: GameState, partyIndex: number): SimulationSandbox {
+  const sourceParty = state.parties[partyIndex];
+  if (!sourceParty) throw new Error('party_not_found');
+  const party = structuredClone(sourceParty);
+  const authoritativePartyStatus = computePartyStats(party);
+  party.currentHp = authoritativePartyStatus.partyStats.hp;
+  party.lastExpeditionLog = null;
+  party.pendingDiaryLog = null;
+  party.diaryLogs = [];
+
+  const parties = [...state.parties];
+  parties[partyIndex] = party;
+  return {
+    partyIndex,
+    authoritativePartyStatus,
+    baseline: {
+      ...state,
+      parties,
+      global: {
+        ...state.global,
+        gold: 0,
+        inventory: {},
+        enemyBattleStats: {},
+        altarVictoriesByEnemyType: {},
+        revealedItemCompendiumItemIds: [],
+        revealedGlossaryAbilityIds: [],
+        revealedGlossaryTerrainKeys: [],
+      },
+    },
+  };
+}
+
+export function createSimulationRunState(sandbox: SimulationSandbox): GameState {
+  return {
+    ...sandbox.baseline,
+    parties: [...sandbox.baseline.parties],
+    global: {
+      ...sandbox.baseline.global,
+      inventory: {},
+      enemyBattleStats: {},
+      altarVictoriesByEnemyType: {},
+      revealedItemCompendiumItemIds: [],
+      revealedGlossaryAbilityIds: [],
+      revealedGlossaryTerrainKeys: [],
+    },
+  };
+}
+
+/** Test seam for exact full/forecast differential coverage. */
+export function resolveSimulationRunForTesting(
+  state: GameState,
+  partyIndex: number,
+  resolutionMode: ExpeditionResolutionMode,
+): { state: GameState; resolution: ExpeditionForecastResolution } {
+  if (resolutionMode === 'forecast') {
+    const sandbox = createSimulationSandbox(state, partyIndex);
+    const resolvedState = gameReducer(createSimulationRunState(sandbox), {
+      type: 'RUN_EXPEDITION',
+      partyIndex,
+      battleOutputMode: 'result-only',
+      resolutionMode,
+      authoritativePartyStatus: {
+        party: sandbox.baseline.parties[partyIndex],
+        computed: sandbox.authoritativePartyStatus,
+      },
+    });
+    const resolution = forecastResolutionByState.get(resolvedState);
+    if (!resolution) throw new Error('simulation_failed');
+    return { state: resolvedState, resolution };
+  }
+  const baseline = structuredClone(state);
+  const party = baseline.parties[partyIndex];
+  if (!party) throw new Error('party_not_found');
+  const computed = computePartyStats(party);
+  party.currentHp = computed.partyStats.hp;
+  party.lastExpeditionLog = null;
+  party.pendingDiaryLog = null;
+  const resolvedState = gameReducer(baseline, {
+    type: 'RUN_EXPEDITION',
+    partyIndex,
+    battleOutputMode: 'result-only',
+    resolutionMode,
+    authoritativePartyStatus: { party, computed },
+  });
+  const log = resolvedState.parties[partyIndex]?.lastExpeditionLog;
+  if (!log) throw new Error('simulation_failed');
+  return { state: resolvedState, resolution: createForecastResolution(log) };
+}
 
 /**
  * SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
@@ -5305,18 +5472,7 @@ export async function simulateExpeditionRuns(
 ): Promise<ExpeditionSimulationResult> {
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
-  const sourceParty = state.parties[partyIndex];
-  if (!sourceParty) throw new Error('party_not_found');
-
-  const baseline = structuredClone(state);
-  const baselineParty = baseline.parties[partyIndex];
-  const maximumHp = computePartyStats(baselineParty).partyStats.hp;
-  baseline.parties[partyIndex] = {
-    ...baselineParty,
-    currentHp: maximumHp,
-    lastExpeditionLog: null,
-    pendingDiaryLog: null,
-  };
+  const sandbox = createSimulationSandbox(state, partyIndex);
 
   const result: ExpeditionSimulationResult = {
     Clear: 0,
@@ -5327,35 +5483,46 @@ export async function simulateExpeditionRuns(
     total,
   };
 
+  let sliceStartedAt = performance.now();
+  let lastProgressAt = sliceStartedAt - EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS;
   for (let index = 0; index < total; index += 1) {
-    const runState = structuredClone(baseline);
+    const runState = createSimulationRunState(sandbox);
     const resolvedState = gameReducer(runState, {
       type: 'RUN_EXPEDITION',
       partyIndex,
       gameMode,
       triggerGodsBattle: false,
       battleOutputMode: 'result-only',
+      resolutionMode: 'forecast',
+      authoritativePartyStatus: {
+        party: sandbox.baseline.parties[partyIndex],
+        computed: sandbox.authoritativePartyStatus,
+      },
     });
-    const log = resolvedState.parties[partyIndex]?.lastExpeditionLog;
-    if (!log) throw new Error('simulation_failed');
-    memoryMonitor.incrementBattleCount(log.entries.length);
+    const resolution = forecastResolutionByState.get(resolvedState);
+    if (!resolution) throw new Error('simulation_failed');
+    memoryMonitor.incrementBattleCount(resolution.completedRooms);
 
-    if (log.finalOutcome === 'Clear') {
+    if (resolution.outcome === 'Clear') {
       result.Clear += 1;
-    } else if (log.finalOutcome === 'Escape') {
+    } else if (resolution.outcome === 'Escape') {
       result.Turned_Back += 1;
-    } else if (log.finalOutcome === 'Defeat') {
+    } else if (resolution.outcome === 'Defeat') {
       result.Defeat += 1;
     } else {
-      const finalEntry = log.entries[log.entries.length - 1];
-      if (finalEntry?.outcome === 'draw') result.Draw_Retreat += 1;
+      if (resolution.terminalBattleOutcome === 'draw') result.Draw_Retreat += 1;
       else result.Wounded_Retreat += 1;
     }
 
     const completed = index + 1;
-    onProgress?.(completed, total);
-    if (completed < total && completed % 5 === 0) {
+    const now = performance.now();
+    if (completed === total || now - lastProgressAt >= EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS) {
+      onProgress?.(completed, total);
+      lastProgressAt = now;
+    }
+    if (completed < total && now - sliceStartedAt >= EXPEDITION_SIMULATION_SLICE_BUDGET_MS) {
       await yieldToExpeditionSimulationUi();
+      sliceStartedAt = performance.now();
     }
   }
 
@@ -5729,7 +5896,8 @@ export function useGameState() {
       dispatch({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
     }, []),
 
-    setLanguage: useCallback((language: Language) => {
+    setLanguage: useCallback(async (language: Language) => {
+      await ensureLanguageLoaded(language);
       dispatch({ type: 'SET_LANGUAGE', language });
     }, []),
 

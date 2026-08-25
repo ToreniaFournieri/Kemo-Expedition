@@ -7,14 +7,16 @@ const tabSource = readFileSync(new URL('../src/components/home/tabs/ExpeditionTa
 
 test('expedition simulations resolve isolated authoritative runs and yield asynchronously', () => {
   assert.match(hookSource, /export async function simulateExpeditionRuns/);
-  assert.match(hookSource, /const baseline = structuredClone\(state\)/);
-  assert.match(hookSource, /const runState = structuredClone\(baseline\)/);
+  assert.match(hookSource, /export function createSimulationSandbox/);
+  assert.match(hookSource, /const party = structuredClone\(sourceParty\)/);
+  assert.match(hookSource, /const runState = createSimulationRunState\(sandbox\)/);
   assert.match(hookSource, /gameReducer\(runState, \{[\s\S]*type: 'RUN_EXPEDITION'/);
   assert.match(
     hookSource.match(/export async function simulateExpeditionRuns[\s\S]*?return result;\n\}/)?.[0] ?? '',
     /battleOutputMode: 'result-only'/,
   );
-  assert.match(hookSource, /completed % 5 === 0[\s\S]*await yieldToExpeditionSimulationUi\(\)/);
+  assert.match(hookSource, /resolutionMode: 'forecast'/);
+  assert.match(hookSource, /now - sliceStartedAt >= EXPEDITION_SIMULATION_SLICE_BUDGET_MS[\s\S]*await yieldToExpeditionSimulationUi\(\)/);
   assert.doesNotMatch(
     hookSource.match(/export async function simulateExpeditionRuns[\s\S]*?return result;\n\}/)?.[0] ?? '',
     /dispatch\(|saveState\(/,

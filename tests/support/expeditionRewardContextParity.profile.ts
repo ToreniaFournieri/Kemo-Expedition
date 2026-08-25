@@ -14,8 +14,10 @@ import {
   simulateApiSortieBatchForTesting,
   simulateExpeditionRuns,
 } from '../../src/hooks/useGameState.ts';
-import { setLanguage } from '../../src/i18n/index.ts';
+import { ensureLanguageLoaded, setLanguage, SUPPORTED_LANGUAGES } from '../../src/i18n/index.ts';
 import type { GameState } from '../../src/types.ts';
+
+await Promise.all(SUPPORTED_LANGUAGES.map((language) => ensureLanguageLoaded(language)));
 
 const SAVE_PATH = resolve(process.cwd(), 'sample_savedata/Exp8,7,6,5,4,3_set_for_test_v0.9.3_dev_20260820.kemoz');
 const outputPath = process.argv[2];

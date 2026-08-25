@@ -12,6 +12,17 @@ const getPublicPngFileNames = (directory: string): string[] => (
 
 export default defineConfig({
   plugins: [react({ babel: { compact: true } })],
+  worker: {
+    format: 'es',
+    rollupOptions: {
+      treeshake: {
+        moduleSideEffects(id) {
+          const normalizedId = id.replaceAll('\\', '/');
+          return !normalizedId.includes('/node_modules/react/');
+        },
+      },
+    },
+  },
   base: './',
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0'),
