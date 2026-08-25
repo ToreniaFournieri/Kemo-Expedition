@@ -388,7 +388,11 @@ HP: 312                 タイプ: 神魔
 
 **Debug pane(デバッグ)**
 - Dev and beta show a localized Runtime Diagnostics section combining current and peak memory metrics with the bounded AFK runtime trace defined in section 5.1.1.1. It displays active worker/sample/memory-event counts, current AFK phase, trace/anomaly counts, and longest completed wait.
-- Runtime Diagnostics provides one combined session JSON export and one combined session reset. The export includes version, build, environment, technically available browser/runtime metadata, memory diagnostics, and metadata-only AFK trace diagnostics. Production does not show this section.
+- Runtime Diagnostics:
+  - memory: OFF/ON (Default: OFF)
+  - anomalies OFF/ON (Default: ON)
+    - anomalies are always ON for prod environmepnt, and send this to developper
+  - provides one combined session JSON export and one combined session reset. The export includes version, build, environment, technically available browser/runtime metadata, memory diagnostics, and metadata-only AFK trace diagnostics. Production does not show this section.
  
 - Clairvoyance: OFF/ON
   - if OFF, disable `Clairvoyance (未来視)` as default.
