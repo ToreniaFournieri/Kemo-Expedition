@@ -83,10 +83,10 @@ test('party AFK Chunks contain exactly twelve Cycles', () => {
 
 test('AFK worker pool preserves renderer capacity and never exceeds party count', () => {
   assert.equal(getAfkWorkerPoolLimit(2, 6), 1);
-  assert.equal(getAfkWorkerPoolLimit(4, 6), 3);
-  assert.equal(getAfkWorkerPoolLimit(8, 6), 4);
+  assert.equal(getAfkWorkerPoolLimit(4, 6), 2);
+  assert.equal(getAfkWorkerPoolLimit(8, 6), 2);
   assert.equal(getAfkWorkerPoolLimit(16, 2), 2);
-  assert.equal(getAfkWorkerPoolLimit(undefined, 6), 3);
+  assert.equal(getAfkWorkerPoolLimit(undefined, 6), 2);
 });
 
 test('coordinator order is simulated completion time then party ID', () => {

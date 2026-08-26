@@ -316,13 +316,23 @@ async function runProfile() {
     warmupSaveSamples.push(await runSaveSample(state, persistenceCoordinator, persistenceTelemetry));
     warmupAfkSamples.push(await runAfkSample(state));
   }
+  const saveSamples: SaveSample[] = [];
+  const afkSamples: AfkSample[] = [];
+  for (let index = 0; index < __PROFILE_SAMPLE_COUNT__; index += 1) {
+    saveSamples.push(await runSaveSample(state, persistenceCoordinator, persistenceTelemetry));
+    afkSamples.push(await runAfkSample(state));
+  }
+
+  // Run the synchronous correctness oracle after all measured work so its JIT,
+  // allocation, and long-task behavior cannot contaminate save/AFK samples.
   const startupTrace: RendererTraceInterval[] = [];
-  const longTasks: Array<{ name: string; startTime: number; durationMs: number; attribution: string[] }> = [];
+  const observedLongTasks: Array<{ name: string; startTime: number; durationMs: number; attribution: string[] }> = [];
+  const validationWindowStartedAt = performance.now();
   const LongTaskObserver = typeof PerformanceObserver === 'undefined' ? null : PerformanceObserver;
   const longTaskObserver = LongTaskObserver ? new LongTaskObserver((list) => {
     list.getEntries().forEach((entry) => {
       const attributed = entry as PerformanceEntry & { attribution?: Array<{ name?: string }> };
-      longTasks.push({
+      observedLongTasks.push({
         name: entry.name,
         startTime: entry.startTime,
         durationMs: entry.duration,
@@ -349,22 +359,22 @@ async function runProfile() {
   const deterministicSecond = JSON.stringify(serializeGameState(deterministicSecondState));
   startupTrace.push({ name: 'deterministic_afk_second_serialization', durationMs: performance.now() - secondSerializationStartedAt });
   const deterministicValidationMs = performance.now() - validationStartedAt;
+  const validationWindowEndedAt = performance.now();
   startupTrace.push({ name: 'deterministic_afk_validation_total', durationMs: deterministicValidationMs });
   const deterministicValidationEventLoopDelayMs = await validationTimer;
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  // Chromium publishes Long Tasks asynchronously after the blocked task ends.
+  await new Promise((resolve) => setTimeout(resolve, 50));
   longTaskObserver?.takeRecords().forEach((entry) => {
     const attributed = entry as PerformanceEntry & { attribution?: Array<{ name?: string }> };
-    longTasks.push({ name: entry.name, startTime: entry.startTime, durationMs: entry.duration,
+    observedLongTasks.push({ name: entry.name, startTime: entry.startTime, durationMs: entry.duration,
       attribution: attributed.attribution?.map((value) => value.name ?? 'unknown') ?? [] });
   });
   longTaskObserver?.disconnect();
+  const longTasks = observedLongTasks.filter((entry) => (
+    entry.startTime <= validationWindowEndedAt
+    && entry.startTime + entry.durationMs >= validationWindowStartedAt
+  ));
   invariant(deterministicSecond === deterministicFirst, 'seeded AFK result drift');
-  const saveSamples: SaveSample[] = [];
-  const afkSamples: AfkSample[] = [];
-  for (let index = 0; index < __PROFILE_SAMPLE_COUNT__; index += 1) {
-    saveSamples.push(await runSaveSample(state, persistenceCoordinator, persistenceTelemetry));
-    afkSamples.push(await runAfkSample(state));
-  }
 
   const persisted = localStorage.getItem(STORAGE_KEY);
   invariant(persisted, 'localStorage payload missing');
@@ -406,6 +416,7 @@ async function runProfile() {
       })),
     },
     startupSequence: {
+      position: 'after_measured_samples',
       deterministicValidationMs,
       eventLoopDelayMs: deterministicValidationEventLoopDelayMs,
       largestNamedRendererInterval: startupTrace.reduce((largest, interval) => (

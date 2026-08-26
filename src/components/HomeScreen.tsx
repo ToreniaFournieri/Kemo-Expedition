@@ -2509,10 +2509,9 @@ export function HomeScreen({
         workerCreatedAt: poolSlot.createdAt,
         isFirstWorkerJob: poolSlot.completedJobs === 0,
       };
-      // Exact structured-clone sizing is diagnostic-only; avoid a second full-state stringify in production.
-      if (afkRuntimeTrace.isEnabled()) {
-        job.inputTransferBytes = new TextEncoder().encode(JSON.stringify(job)).byteLength;
-      }
+      // Exact structured-clone sizing belongs in the opt-in Expedition 8 profiler.
+      // The automatic dev/beta trace must remain observational and must not
+      // stringify the complete state before every worker submission.
       const worker = poolSlot.worker;
       const { baseState: _releasedBaseState, ...jobMetadata } = job;
       const jobId = job.jobId;
@@ -2618,7 +2617,7 @@ export function HomeScreen({
         data: {
           activeJobCount: afkActiveChunkJobsRef.current.size,
           workerPoolSize: afkWorkerPoolRef.current.length,
-          inputTransferBytes: job.inputTransferBytes ?? 0,
+          inputTransferBytes: job.inputTransferBytes ?? null,
           simulatedCompletedAt: job.simulatedCompletedAt,
         },
       });

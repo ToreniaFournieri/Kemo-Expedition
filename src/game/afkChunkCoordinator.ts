@@ -2,11 +2,11 @@ import type { Character, GameState, InventoryRecord, Party, TerrainEffectKey } f
 
 export const AFK_CHUNK_CYCLE_COUNT = 12;
 
-/** Balanced recovery concurrency: leave capacity for the renderer and OS while
- * avoiding six simultaneous module realms on fully unlocked saves. */
+/** Balanced recovery concurrency: limit synchronous full-state worker
+ * submissions to two per renderer task while leaving capacity for the UI/OS. */
 export function getAfkWorkerPoolLimit(logicalProcessors: number | undefined, partyCount: number): number {
   const processors = Number.isFinite(logicalProcessors) ? Math.max(1, Math.floor(logicalProcessors!)) : 4;
-  const hardwareLimit = processors <= 3 ? 1 : processors <= 7 ? 3 : 4;
+  const hardwareLimit = processors <= 3 ? 1 : 2;
   return Math.max(1, Math.min(Math.max(1, Math.floor(partyCount)), hardwareLimit));
 }
 

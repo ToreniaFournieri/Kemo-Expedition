@@ -155,6 +155,11 @@ test('active-job snapshots expose age without retaining prohibited payload field
 test('runtime wiring covers worker, ordering, commit, equipment, persistence, and combined export phases', () => {
   assert.match(workerSource, /type: 'started'/);
   assert.match(homeSource, /worker_job_posted/);
+  assert.doesNotMatch(
+    homeSource,
+    /inputTransferBytes\s*=\s*new TextEncoder\(\)\.encode\(JSON\.stringify\(job\)\)/,
+    'automatic tracing must not stringify complete AFK jobs to calculate transfer size',
+  );
   assert.match(homeSource, /worker_job_started/);
   assert.match(homeSource, /worker_job_complete/);
   assert.match(homeSource, /canonical_order_wait_start/);

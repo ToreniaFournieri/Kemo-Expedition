@@ -23,21 +23,23 @@ No React tree is mounted by this hidden profile, so React rendering, effects, an
 
 ## Controlled comparison
 
+> Build-55 correction: this legacy matrix used a non-empty serialization as its “Deterministic” check, so the Pass labels were not equality checks. The build-55 follow-up uses seeded byte-exact SHA-256 verification. The former “current concurrency (4)” variants were stress variants rather than the production-selected width of three on this six-processor host.
+
 Environment: Electron 37.10.3 / Chromium 138, hidden sandboxed renderer, six logical processors, 8 GiB reported device memory. Controlled variants used one warm-up followed by five measured samples and nearest-rank percentiles. Event-loop values are p50 / p95 / maximum milliseconds.
 
 | Variant | Event-loop delay | Largest named renderer interval | Submission / worker / coordinator | Peak heap | 4-second stall | Deterministic |
 |---|---:|---|---|---:|---|---|
-| A. Existing diagnostic behavior: six full jobs, current concurrency, exact sizing | 125.1 / 133.9 / 133.9 | initial sizing + four-job submission burst; 151.3 ms representative cold run | 84.7 ms six-job submission p50; 938.7 ms worker CPU sum; 2.4 ms commit p50 | 94.6 MB | No | Pass |
+| A. Legacy diagnostic behavior: six full jobs, concurrency 4, exact sizing | 125.1 / 133.9 / 133.9 | initial sizing + four-job submission burst; 151.3 ms representative cold run | 84.7 ms six-job submission p50; 938.7 ms worker CPU sum; 2.4 ms commit p50 | 94.6 MB | No | Not verified |
 | B. Create four workers, submit nothing | 1.3 / 1.8 / 1.8 | worker constructor calls, <=0.4 ms total; readiness is asynchronous | 28.2 ms p50 first-ready latency | 76.4 MB | No | N/A |
-| C. One full job | 30.0 / 30.5 / 30.5 | sizing + submission burst, 37.0 ms representative | 13.1 ms submission; 140.1 ms worker compute; 0.5 ms commit p50 | 85.4 MB | No | Pass |
-| D. Six full jobs sequentially | 18.5 / 19.9 / 19.9 | individual `postMessage`, about 16 ms representative maximum | 87.6 ms submission total; 422.1 ms worker CPU sum; 2.6 ms commit p50 | 73.0 MB | No | Pass |
-| E. Six full jobs, current concurrency (4), no exact sizing | 52.1 / 57.3 / 57.3 | initial four-job submission burst, 66.1 ms representative | 96.4 ms submission total; 1,050.8 ms worker CPU sum; 2.8 ms commit p50 | 74.8 MB | No | Pass |
+| C. One full job | 30.0 / 30.5 / 30.5 | sizing + submission burst, 37.0 ms representative | 13.1 ms submission; 140.1 ms worker compute; 0.5 ms commit p50 | 85.4 MB | No | Not verified |
+| D. Six full jobs sequentially | 18.5 / 19.9 / 19.9 | individual `postMessage`, about 16 ms representative maximum | 87.6 ms submission total; 422.1 ms worker CPU sum; 2.6 ms commit p50 | 73.0 MB | No | Not verified |
+| E. Six full jobs, concurrency 4 stress, no exact sizing | 52.1 / 57.3 / 57.3 | initial four-job submission burst, 66.1 ms representative | 96.4 ms submission total; 1,050.8 ms worker CPU sum; 2.8 ms commit p50 | 74.8 MB | No | Not verified |
 | F. Small payload, same scheduling, no work | 1.6 / 1.7 / 1.7 | submission, <=0.1 ms | 0.1 ms six-job submission total; no compute/commit | 45.4 MB | No | N/A |
 | G. Full payload, no simulation work | 71.0 / 73.9 / 73.9 | initial four-job submission burst, 66.2 ms representative | 91.9 ms submission total; no compute/commit | 46.4 MB | No | N/A |
-| H. Pre-warmed workers, full simulation | 59.7 / 61.8 / 61.8 | initial four-job submission burst, 70.7 ms representative | 99.4 ms submission total; 1,086.9 ms worker CPU sum; 3.2 ms commit p50 | 75.7 MB | No | Pass |
-| I1. Concurrency cap 1 | 18.5 / 21.0 / 21.0 | individual `postMessage`, 17.3 ms representative maximum | 92.3 ms submission total; 442.0 ms worker CPU sum; 2.7 ms commit p50 | 72.0 MB | No | Pass |
-| I2. Concurrency cap 2 | 40.1 / 45.7 / 45.7 | initial two-job submission burst, 37.0 ms representative | 98.5 ms submission total; 621.5 ms worker CPU sum; 3.2 ms commit p50 | 72.8 MB | No | Pass |
-| J. Persistence worker disabled control | Same controlled matrix (no persistence worker) | No four-second interval | Compare with the normal profile below | covered above | No | Pass where applicable |
+| H. Message-prewarmed workers, full simulation | 59.7 / 61.8 / 61.8 | initial four-job submission burst, 70.7 ms representative | 99.4 ms submission total; 1,086.9 ms worker CPU sum; 3.2 ms commit p50 | 75.7 MB | No | Not verified |
+| I1. Concurrency cap 1 | 18.5 / 21.0 / 21.0 | individual `postMessage`, 17.3 ms representative maximum | 92.3 ms submission total; 442.0 ms worker CPU sum; 2.7 ms commit p50 | 72.0 MB | No | Not verified |
+| I2. Concurrency cap 2 | 40.1 / 45.7 / 45.7 | initial two-job submission burst, 37.0 ms representative | 98.5 ms submission total; 621.5 ms worker CPU sum; 3.2 ms commit p50 | 72.8 MB | No | Not verified |
+| J. Persistence worker disabled control | Same controlled matrix (no persistence worker) | No four-second interval | Compare with the normal profile below | covered above | No | Not verified where applicable |
 
 The exact full-job diagnostic representation is 7,304,469 JSON characters / 14,608,938 UTF-16 bytes. Individual full-state `postMessage` calls were approximately 12–19 ms; worker handler entry followed 0–7.1 ms after the renderer call returned. Full payload/no-work versus small payload/no-work confirms a separate structured-clone submission cost, and four back-to-back submissions can exceed the 50 ms renderer-task budget. It does not explain the historical 4.1-second gap. A full-state message redesign remains a separate measured follow-up and was intentionally not started here.
 
