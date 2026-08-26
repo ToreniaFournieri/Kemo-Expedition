@@ -9,8 +9,14 @@ export type AutoEquipmentProfileWorkload =
   | 'jewel_priority'
   | 'max_inventory';
 
+export type AutoEquipmentProfileScope = 'all_parties' | 'party_1' | 'character_1';
+
+/** Keeps deterministic workload hashes stable across metadata-only application build increments. */
+export const AUTO_EQUIPMENT_PROFILE_HASH_BUILD_NUMBER = 56;
+
 export type AutoEquipmentAttributionPhase =
   | 'inventoryClone'
+  | 'inventoryIndexBuild'
   | 'inventoryScan'
   | 'nativeRanking'
   | 'statComputation'
@@ -28,13 +34,22 @@ export interface AutoEquipmentAttributionResult {
   unclassifiedMs: number;
   phasesMs: Record<AutoEquipmentAttributionPhase, number>;
   inventoryEntriesVisited: number;
+  inventoryIndexEntries: number;
   rankingCandidates: number;
   dispatchedActions: number;
+}
+
+export interface AutoEquipmentReducerAttribution {
+  partyStatsMs: number;
+  inventoryMutationMs: number;
+  structuralAndControlMs: number;
+  partyStatsCalls: number;
 }
 
 export interface AutoEquipmentAttributionCollector {
   measure<T>(phase: AutoEquipmentAttributionPhase, operation: () => T): T;
   addInventoryEntries(count: number): void;
+  addInventoryIndexEntries(count: number): void;
   addRankingCandidates(count: number): void;
   addDispatchedAction(): void;
   finish(totalMs: number): AutoEquipmentAttributionResult;
@@ -43,6 +58,7 @@ export interface AutoEquipmentAttributionCollector {
 export function createAutoEquipmentAttributionCollector(): AutoEquipmentAttributionCollector {
   const phasesMs: Record<AutoEquipmentAttributionPhase, number> = {
     inventoryClone: 0,
+    inventoryIndexBuild: 0,
     inventoryScan: 0,
     nativeRanking: 0,
     statComputation: 0,
@@ -52,6 +68,7 @@ export function createAutoEquipmentAttributionCollector(): AutoEquipmentAttribut
     reducerApplication: 0,
   };
   let inventoryEntriesVisited = 0;
+  let inventoryIndexEntries = 0;
   let rankingCandidates = 0;
   let dispatchedActions = 0;
 
@@ -67,6 +84,9 @@ export function createAutoEquipmentAttributionCollector(): AutoEquipmentAttribut
     addInventoryEntries(count: number) {
       inventoryEntriesVisited += Math.max(0, Math.floor(count));
     },
+    addInventoryIndexEntries(count: number) {
+      inventoryIndexEntries += Math.max(0, Math.floor(count));
+    },
     addRankingCandidates(count: number) {
       rankingCandidates += Math.max(0, Math.floor(count));
     },
@@ -81,6 +101,7 @@ export function createAutoEquipmentAttributionCollector(): AutoEquipmentAttribut
         unclassifiedMs: Math.max(0, normalizedTotalMs - classifiedMs),
         phasesMs: { ...phasesMs },
         inventoryEntriesVisited,
+        inventoryIndexEntries,
         rankingCandidates,
         dispatchedActions,
       };

@@ -66,7 +66,7 @@ import {
 } from '../game/bags';
 import { getItemById } from '../data/items';
 import { hydrateGameState } from '../game/saveCodec';
-import type { AutoEquipmentProfileAction } from '../game/autoEquipmentAttribution';
+import type { AutoEquipmentProfileAction, AutoEquipmentReducerAttribution } from '../game/autoEquipmentAttribution';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
@@ -2023,7 +2023,7 @@ type GameAction =
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
-  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[] }
+  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -2953,6 +2953,21 @@ function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean 
 
 interface AutoEquipmentReducerContext {
   maxHpByPartyId: Map<number, number>;
+  attribution?: AutoEquipmentReducerAttribution;
+}
+
+function measureAutoEquipmentReducerWork<T>(
+  context: AutoEquipmentReducerContext | undefined,
+  phase: 'partyStatsMs' | 'inventoryMutationMs',
+  operation: () => T,
+): T {
+  if (!context?.attribution) return operation();
+  const startedAt = performance.now();
+  try {
+    return operation();
+  } finally {
+    context.attribution[phase] += Math.max(0, performance.now() - startedAt);
+  }
 }
 
 function syncPartyCurrentHpAfterMaxHpChange(
@@ -2960,9 +2975,21 @@ function syncPartyCurrentHpAfterMaxHpChange(
   nextParty: Party,
   autoEquipmentContext?: AutoEquipmentReducerContext,
 ): Party {
-  const previousMaxHp = autoEquipmentContext?.maxHpByPartyId.get(previousParty.id)
-    ?? computePartyStats(previousParty).partyStats.hp;
-  const nextMaxHp = computePartyStats(nextParty).partyStats.hp;
+  const cachedPreviousMaxHp = autoEquipmentContext?.maxHpByPartyId.get(previousParty.id);
+  const previousMaxHp = cachedPreviousMaxHp ?? measureAutoEquipmentReducerWork(
+    autoEquipmentContext,
+    'partyStatsMs',
+    () => computePartyStats(previousParty).partyStats.hp,
+  );
+  if (autoEquipmentContext?.attribution && cachedPreviousMaxHp === undefined) {
+    autoEquipmentContext.attribution.partyStatsCalls += 1;
+  }
+  const nextMaxHp = measureAutoEquipmentReducerWork(
+    autoEquipmentContext,
+    'partyStatsMs',
+    () => computePartyStats(nextParty).partyStats.hp,
+  );
+  if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.partyStatsCalls += 1;
   autoEquipmentContext?.maxHpByPartyId.set(nextParty.id, nextMaxHp);
   if (nextMaxHp <= 0) return nextParty;
 
@@ -2988,8 +3015,20 @@ function gameReducer(
 
     case 'APPLY_AUTO_EQUIPMENT_ACTIONS': {
       // SpecRef: 7.1.1 | AUTO equipment logic | Processing priority
-      const context: AutoEquipmentReducerContext = { maxHpByPartyId: new Map() };
-      return action.actions.reduce((current, nestedAction) => gameReducer(current, nestedAction, context), state);
+      const context: AutoEquipmentReducerContext = {
+        maxHpByPartyId: new Map(),
+        attribution: action.attribution,
+      };
+      const startedAt = action.attribution ? performance.now() : 0;
+      const nextState = action.actions.reduce((current, nestedAction) => gameReducer(current, nestedAction, context), state);
+      if (action.attribution) {
+        const totalMs = Math.max(0, performance.now() - startedAt);
+        action.attribution.structuralAndControlMs = Math.max(
+          0,
+          totalMs - action.attribution.partyStatsMs - action.attribution.inventoryMutationMs,
+        );
+      }
+      return nextState;
     }
     case 'SET_LANGUAGE': {
       // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
@@ -4268,7 +4307,11 @@ function gameReducer(
       // Add old item back to inventory
       const oldItem = character.equipment[action.slotIndex];
       if (oldItem) {
-        const addResult = addItemToInventory(newInventory, oldItem, newGold);
+        const addResult = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryMutationMs',
+          () => addItemToInventory(newInventory, oldItem, newGold),
+        );
         newInventory = addResult.inventory;
         newGold = addResult.gold;
         if (oldItem.jewel) {
@@ -4280,7 +4323,11 @@ function gameReducer(
       if (action.itemKey) {
         const variant = newInventory[action.itemKey];
         if (variant && variant.count > 0) {
-          newInventory = removeItemFromInventory(newInventory, action.itemKey);
+          newInventory = measureAutoEquipmentReducerWork(
+            autoEquipmentContext,
+            'inventoryMutationMs',
+            () => removeItemFromInventory(newInventory, action.itemKey!),
+          );
           const equippedCharacter = {
             ...replaceCharacterEquipment(character, action.slotIndex, { ...variant.item, jewel: null }),
             autoEquipmentMode: nextAutoEquipmentMode,
@@ -4362,7 +4409,11 @@ function gameReducer(
 
       const isRemovingCurrentJewel = item.jewel?.key === action.jewelKey && item.jewel.rank === action.rank;
       if (isRemovingCurrentJewel) {
-        const newJewels = addJewelToInventory(state.global.jewels, action.jewelKey, action.rank);
+        const newJewels = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryMutationMs',
+          () => addJewelToInventory(state.global.jewels, action.jewelKey, action.rank),
+        );
         const replacedItem: Item = { ...item, jewel: null };
         const newCharacters = [...currentParty.characters];
         newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
@@ -4382,9 +4433,17 @@ function gameReducer(
 
       if (getJewelOwnedCount(state.global.jewels, action.jewelKey, action.rank) <= 0) return state;
 
-      let newJewels = removeJewelFromInventory(state.global.jewels, action.jewelKey, action.rank);
+      let newJewels = measureAutoEquipmentReducerWork(
+        autoEquipmentContext,
+        'inventoryMutationMs',
+        () => removeJewelFromInventory(state.global.jewels, action.jewelKey, action.rank),
+      );
       if (item.jewel) {
-        newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
+        newJewels = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryMutationMs',
+          () => addJewelToInventory(newJewels, item.jewel!.key, item.jewel!.rank),
+        );
       }
       const replacedItem: Item = { ...item, jewel: { key: action.jewelKey, rank: action.rank } };
       const newCharacters = [...currentParty.characters];
@@ -5270,8 +5329,9 @@ function gameReducer(
 export function applyAutoEquipmentProfileActions(
   state: GameState,
   actions: readonly AutoEquipmentProfileAction[],
+  attribution?: AutoEquipmentReducerAttribution,
 ): GameState {
-  return gameReducer(state, { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions: [...actions] });
+  return gameReducer(state, { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions: [...actions], attribution });
 }
 
 export function applyAutoEquipmentProfileActionsSequentially(

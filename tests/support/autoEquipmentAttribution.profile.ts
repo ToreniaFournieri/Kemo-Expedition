@@ -52,6 +52,37 @@ test('batched automatic-equipment reducer is byte-identical to sequential action
   assert.equal(JSON.stringify(serializeGameState(batched)), JSON.stringify(serializeGameState(sequential)));
 });
 
+test('batched reducer preserves mixed inventory, upgrade, and Jewel action semantics', () => {
+  const state = createAutoEquipmentProfileState(loadFixture(), 'max_inventory');
+  const partyIndex = 0;
+  const character = state.parties[partyIndex].characters[0];
+  const swordEntry = Object.entries(state.global.inventory).find(([, variant]) => (
+    variant.status === 'owned' && variant.count > 0 && variant.item.category === 'sword'
+  ));
+  assert.ok(swordEntry);
+  state.global.jewels['might:1'] = Math.max(2, state.global.jewels['might:1'] ?? 0);
+  const actions: AutoEquipmentProfileAction[] = [
+    { type: 'EQUIP_ITEM', characterId: character.id, slotIndex: 0, itemKey: swordEntry[0], partyIndex },
+    { type: 'ATTACH_JEWEL', characterId: character.id, slotIndex: 0, jewelKey: 'might', rank: 1, partyIndex },
+    { type: 'EQUIP_ITEM', characterId: character.id, slotIndex: 0, itemKey: null, partyIndex },
+  ];
+  const reducerAttribution = {
+    partyStatsMs: 0,
+    inventoryMutationMs: 0,
+    structuralAndControlMs: 0,
+    partyStatsCalls: 0,
+  };
+
+  const batched = applyAutoEquipmentProfileActions(state, actions, reducerAttribution);
+  const sequential = applyAutoEquipmentProfileActionsSequentially(state, actions);
+
+  assert.equal(JSON.stringify(serializeGameState(batched)), JSON.stringify(serializeGameState(sequential)));
+  assert.ok(reducerAttribution.partyStatsCalls >= actions.length);
+  assert.ok(reducerAttribution.partyStatsMs >= 0);
+  assert.ok(reducerAttribution.inventoryMutationMs >= 0);
+  assert.ok(reducerAttribution.structuralAndControlMs >= 0);
+});
+
 test('automatic-equipment attribution records bounded phase and workload counters', () => {
   const collector = createAutoEquipmentAttributionCollector();
   collector.measure('inventoryScan', () => 1);

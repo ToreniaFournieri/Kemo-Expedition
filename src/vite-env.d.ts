@@ -7,6 +7,7 @@ declare const __PUBLIC_CHIBI_IMAGE_FILES__: readonly string[];
 declare const __AUTO_EQUIPMENT_PROFILE_ENABLED__: boolean;
 
 type AutoEquipmentProfileWorkload = import('./game/autoEquipmentAttribution').AutoEquipmentProfileWorkload;
+type AutoEquipmentProfileScope = import('./game/autoEquipmentAttribution').AutoEquipmentProfileScope;
 type AutoEquipmentAttributionResult = import('./game/autoEquipmentAttribution').AutoEquipmentAttributionResult;
 
 interface ImportMetaEnv {
@@ -60,14 +61,17 @@ interface DesktopPartyProgressSnapshot {
 
 interface Window {
   __BOKEMO_AUTO_EQUIPMENT_PROFILE__?: {
-    run: (workload: AutoEquipmentProfileWorkload) => Promise<{
+    run: (workload: AutoEquipmentProfileWorkload, scope?: AutoEquipmentProfileScope) => Promise<{
       workload: AutoEquipmentProfileWorkload;
+      scope: AutoEquipmentProfileScope;
       summary: import('./components/home/homeShared').AutoEquipmentRunSummary;
       attribution: AutoEquipmentAttributionResult;
       actions: unknown[];
       actionSequenceSha256: string;
       finalStateSha256: string;
       sequentialReducerMs: number;
+      reducerAttribution: import('./game/autoEquipmentAttribution').AutoEquipmentReducerAttribution;
+      legacyPlanningMs: number;
     }>;
   };
   __BOKEMO_MEMORY_BENCHMARK__?: {

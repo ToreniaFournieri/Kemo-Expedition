@@ -25,12 +25,15 @@ import { getDeityDepositMultiplier,getDeityKey,getDeityStateDurationMultiplier,i
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
 import {
+AUTO_EQUIPMENT_PROFILE_HASH_BUILD_NUMBER,
 createAutoEquipmentAttributionCollector,
 createAutoEquipmentProfileState,
 type AutoEquipmentAttributionCollector,
 type AutoEquipmentProfileAction,
+type AutoEquipmentProfileScope,
 type AutoEquipmentProfileWorkload,
 } from '../game/autoEquipmentAttribution';
+import { AutoEquipmentInventoryIndex } from '../game/autoEquipmentInventoryIndex';
 import {
 createAfkSchedulerProfile,
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
@@ -1115,6 +1118,7 @@ export function HomeScreen({
         sourceState: GameState;
         collector: AutoEquipmentAttributionCollector;
         actions: AutoEquipmentProfileAction[];
+        candidateStrategy?: 'indexed' | 'legacy';
       };
     },
   ): AutoEquipmentRunSummary => {
@@ -1128,6 +1132,7 @@ export function HomeScreen({
     };
     const profile = options?.profile;
     const sourceState = profile?.sourceState ?? state;
+    const candidateStrategy = profile?.candidateStrategy ?? 'indexed';
     const measure = <T,>(phase: Parameters<AutoEquipmentAttributionCollector['measure']>[0], operation: () => T): T => (
       profile ? profile.collector.measure(phase, operation) : operation()
     );
@@ -1157,6 +1162,15 @@ export function HomeScreen({
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
     const simulatedInventory: InventoryRecord = measure('inventoryClone', () => ({ ...sourceState.global.inventory }));
+    let inventoryIndex: AutoEquipmentInventoryIndex | null = null;
+    const getInventoryIndex = (): AutoEquipmentInventoryIndex | null => {
+      if (candidateStrategy !== 'indexed') return null;
+      if (!inventoryIndex) {
+        inventoryIndex = measure('inventoryIndexBuild', () => new AutoEquipmentInventoryIndex(simulatedInventory));
+        profile?.collector.addInventoryIndexEntries(Object.keys(simulatedInventory).length);
+      }
+      return inventoryIndex;
+    };
     const slotNotifications = new Map<string, { message: string; partyIndex: number; startedFromEmpty: boolean }>();
     const setSlotNotification = (
       partyName: string,
@@ -1274,7 +1288,9 @@ export function HomeScreen({
       if (existing) {
         simulatedInventory[key] = { ...existing, count: existing.count + 1, status: 'owned' };
       } else {
-        simulatedInventory[key] = { item, count: 1, status: 'owned' };
+        const variant = { item, count: 1, status: 'owned' as const };
+        simulatedInventory[key] = variant;
+        inventoryIndex?.addIfAbsent(key, variant);
       }
     };
 
@@ -1283,6 +1299,7 @@ export function HomeScreen({
       if (!existing || existing.count <= 0) return;
       if (existing.count <= 1) {
         delete simulatedInventory[key];
+        inventoryIndex?.remove(key, existing);
       } else {
         simulatedInventory[key] = { ...existing, count: existing.count - 1 };
       }
@@ -1486,9 +1503,14 @@ export function HomeScreen({
       // SpecRef: 7.1.1.2 | Equipping into empty slots | Search for a candidate item
       const optionKeys: string[] = [];
       const candidates: EquipmentRankingCandidate[] = [];
-      const inventoryEntries = Object.entries(simulatedInventory);
-      profile?.collector.addInventoryEntries(inventoryEntries.length);
-      measure('inventoryScan', () => inventoryEntries.forEach(([key, variant]) => {
+      const candidateIndex = getInventoryIndex();
+      const inventoryKeys = candidateIndex
+        ? candidateIndex.keysForCategories(targetCategories)
+        : Object.keys(simulatedInventory);
+      profile?.collector.addInventoryEntries(inventoryKeys.length);
+      measure('inventoryScan', () => inventoryKeys.forEach((key) => {
+          const variant = simulatedInventory[key];
+          if (!variant) return;
           if (
             variant.status !== 'owned'
             || variant.count <= 0
@@ -1531,9 +1553,14 @@ export function HomeScreen({
 
       const optionKeys: string[] = [];
       const candidates: EquipmentRankingCandidate[] = [];
-      const inventoryEntries = Object.entries(simulatedInventory);
-      profile?.collector.addInventoryEntries(inventoryEntries.length);
-      measure('inventoryScan', () => inventoryEntries.forEach(([key, variant]) => {
+      const candidateIndex = getInventoryIndex();
+      const inventoryKeys = candidateIndex
+        ? candidateIndex.keysForItemId(equippedItem.id)
+        : Object.keys(simulatedInventory);
+      profile?.collector.addInventoryEntries(inventoryKeys.length);
+      measure('inventoryScan', () => inventoryKeys.forEach((key) => {
+          const variant = simulatedInventory[key];
+          if (!variant) return;
           if (variant.status !== 'owned' || variant.count <= 0) return;
           if (variant.item.id !== equippedItem.id) return;
           if (variant.item.superRare > 0) return;
@@ -1847,20 +1874,30 @@ export function HomeScreen({
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
     window.__BOKEMO_AUTO_EQUIPMENT_PROFILE__ = {
-      async run(workload: AutoEquipmentProfileWorkload) {
+      async run(workload: AutoEquipmentProfileWorkload, scope: AutoEquipmentProfileScope = 'all_parties') {
         const sourceState = createAutoEquipmentProfileState(
           autoEquipmentProfileBaseStateRef.current ?? state,
           workload,
         );
         const collector = createAutoEquipmentAttributionCollector();
         const recordedActions: AutoEquipmentProfileAction[] = [];
+        const reducerAttribution = {
+          partyStatsMs: 0,
+          inventoryMutationMs: 0,
+          structuralAndControlMs: 0,
+          partyStatsCalls: 0,
+        };
+        const targetPartyIndexes = scope === 'all_parties' ? undefined : [0];
+        const targetCharacterIds = scope === 'character_1'
+          ? [sourceState.parties[0]?.characters[0]?.id].filter((id): id is number => typeof id === 'number')
+          : undefined;
         const startedAt = performance.now();
-        const summary = runAutoEquipment(undefined, undefined, {
+        const summary = runAutoEquipment(targetPartyIndexes, targetCharacterIds, {
           suppressNotifications: true,
-          profile: { sourceState, collector, actions: recordedActions },
+          profile: { sourceState, collector, actions: recordedActions, candidateStrategy: 'indexed' },
         });
         const finalState = collector.measure('reducerApplication', () => (
-          applyAutoEquipmentProfileActions(sourceState, recordedActions)
+          applyAutoEquipmentProfileActions(sourceState, recordedActions, reducerAttribution)
         ));
         const attribution = collector.finish(performance.now() - startedAt);
         const sequentialReducerStartedAt = performance.now();
@@ -1871,14 +1908,39 @@ export function HomeScreen({
         if (JSON.stringify(serializedFinalState) !== JSON.stringify(serializedSequentialFinalState)) {
           throw new Error(`Batched automatic-equipment reducer parity failed for ${workload}`);
         }
+        const legacyCollector = createAutoEquipmentAttributionCollector();
+        const legacyActions: AutoEquipmentProfileAction[] = [];
+        const legacyPlanningStartedAt = performance.now();
+        const legacySummary = runAutoEquipment(targetPartyIndexes, targetCharacterIds, {
+          suppressNotifications: true,
+          profile: {
+            sourceState,
+            collector: legacyCollector,
+            actions: legacyActions,
+            candidateStrategy: 'legacy',
+          },
+        });
+        const legacyPlanningMs = performance.now() - legacyPlanningStartedAt;
+        if (JSON.stringify(recordedActions) !== JSON.stringify(legacyActions)) {
+          throw new Error(`Indexed automatic-equipment action parity failed for ${scope}:${workload}`);
+        }
+        if (JSON.stringify(summary) !== JSON.stringify(legacySummary)) {
+          throw new Error(`Indexed automatic-equipment summary parity failed for ${scope}:${workload}`);
+        }
         return {
           workload,
           summary,
           attribution,
           actions: recordedActions,
           actionSequenceSha256: await sha256ProfileValue(recordedActions),
-          finalStateSha256: await sha256ProfileValue(serializedFinalState),
+          finalStateSha256: await sha256ProfileValue({
+            ...serializedFinalState,
+            buildNumber: AUTO_EQUIPMENT_PROFILE_HASH_BUILD_NUMBER,
+          }),
           sequentialReducerMs,
+          reducerAttribution,
+          scope,
+          legacyPlanningMs,
         };
       },
     };
