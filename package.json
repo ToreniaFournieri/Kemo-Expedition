@@ -17,6 +17,8 @@
     "memory:benchmark:renderer": "node scripts/run-memory-renderer-benchmark.mjs --profile=standard",
     "memory:smoke": "node --experimental-strip-types scripts/run-memory-benchmarks.mjs --profile=smoke",
     "performance:bundle": "node scripts/check-performance-bundles.mjs",
+    "performance:exp8": "node scripts/run-expedition-8-renderer-profile.mjs",
+    "performance:exp8:node": "node scripts/run-expedition-8-save-profile.mjs",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",
     "desktop:prod": "npm run build && electron . --environment=prod",

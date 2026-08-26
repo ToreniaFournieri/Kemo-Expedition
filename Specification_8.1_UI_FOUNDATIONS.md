@@ -234,6 +234,7 @@
     2. Highest experience points
     3. Smallest PT number (PT1 → PT6) when tied
   - (3) `anomalies` file
+    - if it has anomalies, attached this file.
 
 
 - Status table

@@ -165,7 +165,8 @@ test('runtime wiring covers worker, ordering, commit, equipment, persistence, an
   assert.match(homeSource, /auto_equipment_complete/);
   assert.match(homeSource, /afk_checkpoint_serialization/);
   assert.match(homeSource, /afk_checkpoint_storage_write/);
-  assert.match(hookSource, /game_save_serialization/);
+  assert.match(hookSource, /game_save_canonical_snapshot/);
+  assert.match(hookSource, /game_save_json_stringify/);
   assert.match(hookSource, /game_save_compression/);
   assert.match(hookSource, /game_save_storage_write/);
   assert.match(diagnosticsSource, /memory: memoryMonitor\.getDiagnosticExport\(\)/);

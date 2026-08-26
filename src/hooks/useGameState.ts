@@ -65,7 +65,7 @@ import {
   initializeBags,
 } from '../game/bags';
 import { getItemById } from '../data/items';
-import { hydrateGameState, serializeGameState } from '../game/saveCodec';
+import { hydrateGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
@@ -113,6 +113,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
+import { persistGameState } from '../game/savePersistence';
 import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
@@ -1373,34 +1374,42 @@ function saveState(state: GameState): SaveStateResult {
   const saveStartedAt = traceSave ? performance.now() : 0;
   const previousTracePhase = traceSave ? afkRuntimeTrace.getCurrentSnapshot().phase : 'idle';
   try {
-    const serializationStartedAt = traceSave ? performance.now() : 0;
-    const payload = JSON.stringify(serializeGameState(state));
+    const profile = persistGameState(
+      state,
+      STORAGE_KEY,
+      localStorage,
+      traceSave ? { now: () => performance.now() } : undefined,
+    );
     if (traceSave) {
-      afkRuntimeTrace.record('game_save_serialization', {
+      if (!profile) throw new Error('Save profiling result was unavailable.');
+      afkRuntimeTrace.record('game_save_canonical_snapshot', {
         phase: 'game_save',
-        durationMs: performance.now() - serializationStartedAt,
-        data: { payloadLength: payload.length },
+        durationMs: profile.phases.canonicalSnapshotMs,
       });
-    }
-    const compressionStartedAt = traceSave ? performance.now() : 0;
-    const encoded = encodePersistedState(payload);
-    if (traceSave) {
+      afkRuntimeTrace.record('game_save_json_stringify', {
+        phase: 'game_save',
+        durationMs: profile.phases.jsonStringifyMs,
+        data: {
+          payloadLength: profile.sizes.jsonChars,
+          payloadBytes: profile.sizes.jsonUtf16Bytes,
+        },
+      });
       afkRuntimeTrace.record('game_save_compression', {
         phase: 'game_save',
-        durationMs: performance.now() - compressionStartedAt,
-        data: { encodedLength: encoded.length },
+        durationMs: profile.phases.compressionEncodingMs,
+        data: {
+          encodedLength: profile.sizes.encodedChars,
+          encodedBytes: profile.sizes.encodedUtf16Bytes,
+        },
       });
-    }
-    const storageStartedAt = traceSave ? performance.now() : 0;
-    localStorage.setItem(STORAGE_KEY, encoded);
-    if (traceSave) {
       afkRuntimeTrace.record('game_save_storage_write', {
         phase: 'game_save',
-        durationMs: performance.now() - storageStartedAt,
+        durationMs: profile.phases.storageWriteMs,
       });
       afkRuntimeTrace.record('game_save_complete', {
         phase: 'game_save',
-        durationMs: performance.now() - saveStartedAt,
+        durationMs: profile.phases.endToEndMs,
+        data: { compressionRatio: profile.sizes.compressionRatio },
       });
       afkRuntimeTrace.setPhase(previousTracePhase);
     }
