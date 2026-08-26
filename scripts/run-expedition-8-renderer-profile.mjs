@@ -15,6 +15,7 @@ function parsePositiveInteger(name, fallback) {
 
 const samples = parsePositiveInteger('samples', 20);
 const warmups = parsePositiveInteger('warmups', 2);
+const summaryOnly = process.argv.includes('--summary-only');
 const temporaryDirectory = mkdtempSync(join(tmpdir(), 'bokemo-exp8-renderer-profile-'));
 const rendererPath = join(temporaryDirectory, 'profile.js');
 const workerPath = join(temporaryDirectory, 'afk-worker.js');
@@ -78,7 +79,15 @@ app.whenReady().then(async () => {
   try {
     await window.loadFile(${JSON.stringify(htmlPath)});
     const report = await window.webContents.executeJavaScript('window.__BOKEMO_EXP8_PROFILE_PROMISE__', true);
-    process.stdout.write(JSON.stringify(report, null, 2) + '\\n');
+    const printable = ${summaryOnly ? `{
+      ...report,
+      startupSequence: {
+        ...report.startupSequence,
+        intervals: undefined,
+        browserLongTasks: report.startupSequence.browserLongTasks,
+      },
+    }` : 'report'};
+    process.stdout.write(JSON.stringify(printable, null, 2) + '\\n');
     app.exit(0);
   } catch (error) {
     process.stderr.write((error && error.stack ? error.stack : String(error)) + '\\n');

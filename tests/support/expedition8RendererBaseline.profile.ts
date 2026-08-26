@@ -57,6 +57,12 @@ interface AfkSample {
   longestSingleCoordinatorCommitMs: number;
 }
 
+interface RendererTraceInterval {
+  name: string;
+  durationMs: number;
+  partyIndex?: number;
+}
+
 function invariant(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
@@ -132,8 +138,13 @@ async function loadAndValidateFixture() {
   };
 }
 
-function runDeterministicAfkWorkflow(baseState: GameState): GameState {
+function runDeterministicAfkWorkflow(
+  baseState: GameState,
+  trace: RendererTraceInterval[] = [],
+  label = 'deterministic_afk',
+): GameState {
   const results: AfkPartyChunkResult[] = baseState.parties.map((party, partyIndex) => {
+    const partyStartedAt = performance.now();
     const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
     let seedCursor = 0n;
     const resultState = withBattleSeedSourceForTesting(
@@ -149,7 +160,7 @@ function runDeterministicAfkWorkflow(baseState: GameState): GameState {
         }),
       ),
     );
-    return createAfkPartyChunkResult({
+    const chunkResult = createAfkPartyChunkResult({
       jobId: `renderer-profile-${party.id}`,
       partyIndex,
       partyId: party.id,
@@ -160,9 +171,14 @@ function runDeterministicAfkWorkflow(baseState: GameState): GameState {
       gameMode: 'm.kemo',
       cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
     }, resultState, 0);
+    trace.push({ name: `${label}_party_simulation_and_delta`, partyIndex, durationMs: performance.now() - partyStartedAt });
+    return chunkResult;
   }).sort(compareAfkChunkResults);
 
-  return results.reduce((state, result) => commitAfkPartyChunk(state, result), baseState);
+  const commitStartedAt = performance.now();
+  const committed = results.reduce((state, result) => commitAfkPartyChunk(state, result), baseState);
+  trace.push({ name: `${label}_six_party_commit`, durationMs: performance.now() - commitStartedAt });
+  return committed;
 }
 
 async function runAfkSample(baseState: GameState): Promise<AfkSample> {
@@ -300,8 +316,48 @@ async function runProfile() {
     warmupSaveSamples.push(await runSaveSample(state, persistenceCoordinator, persistenceTelemetry));
     warmupAfkSamples.push(await runAfkSample(state));
   }
-  const deterministicFirst = JSON.stringify(serializeGameState(runDeterministicAfkWorkflow(state)));
-  const deterministicSecond = JSON.stringify(serializeGameState(runDeterministicAfkWorkflow(state)));
+  const startupTrace: RendererTraceInterval[] = [];
+  const longTasks: Array<{ name: string; startTime: number; durationMs: number; attribution: string[] }> = [];
+  const LongTaskObserver = typeof PerformanceObserver === 'undefined' ? null : PerformanceObserver;
+  const longTaskObserver = LongTaskObserver ? new LongTaskObserver((list) => {
+    list.getEntries().forEach((entry) => {
+      const attributed = entry as PerformanceEntry & { attribution?: Array<{ name?: string }> };
+      longTasks.push({
+        name: entry.name,
+        startTime: entry.startTime,
+        durationMs: entry.duration,
+        attribution: attributed.attribution?.map((value) => value.name ?? 'unknown') ?? [],
+      });
+    });
+  }) : null;
+  try { longTaskObserver?.observe({ type: 'longtask', buffered: true }); } catch { /* Unsupported runtime. */ }
+  const validationTimerScheduledAt = performance.now();
+  const validationTimer = new Promise<number>((resolve) => {
+    setTimeout(() => resolve(performance.now() - validationTimerScheduledAt), 0);
+  });
+  const validationStartedAt = performance.now();
+  const firstWorkflowStartedAt = performance.now();
+  const deterministicFirstState = runDeterministicAfkWorkflow(state, startupTrace, 'deterministic_afk_first');
+  startupTrace.push({ name: 'deterministic_afk_first_workflow', durationMs: performance.now() - firstWorkflowStartedAt });
+  const firstSerializationStartedAt = performance.now();
+  const deterministicFirst = JSON.stringify(serializeGameState(deterministicFirstState));
+  startupTrace.push({ name: 'deterministic_afk_first_serialization', durationMs: performance.now() - firstSerializationStartedAt });
+  const secondWorkflowStartedAt = performance.now();
+  const deterministicSecondState = runDeterministicAfkWorkflow(state, startupTrace, 'deterministic_afk_second');
+  startupTrace.push({ name: 'deterministic_afk_second_workflow', durationMs: performance.now() - secondWorkflowStartedAt });
+  const secondSerializationStartedAt = performance.now();
+  const deterministicSecond = JSON.stringify(serializeGameState(deterministicSecondState));
+  startupTrace.push({ name: 'deterministic_afk_second_serialization', durationMs: performance.now() - secondSerializationStartedAt });
+  const deterministicValidationMs = performance.now() - validationStartedAt;
+  startupTrace.push({ name: 'deterministic_afk_validation_total', durationMs: deterministicValidationMs });
+  const deterministicValidationEventLoopDelayMs = await validationTimer;
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  longTaskObserver?.takeRecords().forEach((entry) => {
+    const attributed = entry as PerformanceEntry & { attribution?: Array<{ name?: string }> };
+    longTasks.push({ name: entry.name, startTime: entry.startTime, durationMs: entry.duration,
+      attribution: attributed.attribution?.map((value) => value.name ?? 'unknown') ?? [] });
+  });
+  longTaskObserver?.disconnect();
   invariant(deterministicSecond === deterministicFirst, 'seeded AFK result drift');
   const saveSamples: SaveSample[] = [];
   const afkSamples: AfkSample[] = [];
@@ -348,6 +404,15 @@ async function runProfile() {
         afkWorkerAsyncWallMs: warmupAfkSamples[index]!.workerAsyncWallMs,
         coordinatorCommitMs: warmupAfkSamples[index]!.coordinatorCommitMs,
       })),
+    },
+    startupSequence: {
+      deterministicValidationMs,
+      eventLoopDelayMs: deterministicValidationEventLoopDelayMs,
+      largestNamedRendererInterval: startupTrace.reduce((largest, interval) => (
+        interval.durationMs > largest.durationMs ? interval : largest
+      ), { name: 'none', durationMs: 0 }),
+      intervals: startupTrace,
+      browserLongTasks: longTasks,
     },
     environment: {
       userAgent: navigator.userAgent,
