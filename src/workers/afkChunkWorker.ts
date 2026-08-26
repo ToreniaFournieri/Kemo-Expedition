@@ -29,7 +29,9 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
       executionMs: completedAt - executionStartedAt,
       inputTransferBytes: job.inputTransferBytes,
     });
-    result.workerTelemetry.outputTransferBytes = new TextEncoder().encode(JSON.stringify(result)).byteLength;
+    if (job.inputTransferBytes !== undefined) {
+      result.workerTelemetry.outputTransferBytes = new TextEncoder().encode(JSON.stringify(result)).byteLength;
+    }
     self.postMessage({ type: 'complete', result });
   } catch (error) {
     self.postMessage({

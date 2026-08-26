@@ -10,6 +10,7 @@ import {
 
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
+const persistenceSource = readFileSync(new URL('../src/game/savePersistence.ts', import.meta.url), 'utf8');
 const workerSource = readFileSync(new URL('../src/workers/afkChunkWorker.ts', import.meta.url), 'utf8');
 const diagnosticsSource = readFileSync(new URL('../src/components/MemoryDiagnostics.tsx', import.meta.url), 'utf8');
 
@@ -165,10 +166,16 @@ test('runtime wiring covers worker, ordering, commit, equipment, persistence, an
   assert.match(homeSource, /auto_equipment_complete/);
   assert.match(homeSource, /afk_checkpoint_serialization/);
   assert.match(homeSource, /afk_checkpoint_storage_write/);
-  assert.match(hookSource, /game_save_canonical_snapshot/);
-  assert.match(hookSource, /game_save_json_stringify/);
-  assert.match(hookSource, /game_save_compression/);
-  assert.match(hookSource, /game_save_storage_write/);
+  assert.match(hookSource, /game_save_\$\{event\.event\}/);
+  assert.match(persistenceSource, /'canonical_snapshot'/);
+  assert.match(persistenceSource, /'json_serialization'/);
+  assert.match(persistenceSource, /'worker_compression'/);
+  assert.match(persistenceSource, /'worker_submission'/);
+  assert.match(persistenceSource, /'worker_queue_latency'/);
+  assert.match(persistenceSource, /'result_delivery'/);
+  assert.match(persistenceSource, /'storage_write'/);
+  assert.match(persistenceSource, /'durability_latency'/);
+  assert.match(persistenceSource, /'event_loop_delay'/);
   assert.match(diagnosticsSource, /memory: memoryMonitor\.getDiagnosticExport\(\)/);
   assert.match(diagnosticsSource, /afkTrace: afkRuntimeTrace\.getDiagnosticExport\(\)/);
   assert.match(diagnosticsSource, /bokemo-runtime-diagnostics-v/);

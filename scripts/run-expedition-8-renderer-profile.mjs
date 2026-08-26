@@ -18,6 +18,7 @@ const warmups = parsePositiveInteger('warmups', 2);
 const temporaryDirectory = mkdtempSync(join(tmpdir(), 'bokemo-exp8-renderer-profile-'));
 const rendererPath = join(temporaryDirectory, 'profile.js');
 const workerPath = join(temporaryDirectory, 'afk-worker.js');
+const persistenceWorkerPath = join(temporaryDirectory, 'persistence-worker.js');
 const htmlPath = join(temporaryDirectory, 'profile.html');
 const mainPath = join(temporaryDirectory, 'main.cjs');
 const userDataPath = join(temporaryDirectory, 'electron-user-data');
@@ -39,6 +40,7 @@ try {
       __PROFILE_SAMPLE_COUNT__: String(samples),
       __PROFILE_WARMUP_COUNT__: String(warmups),
       __AFK_WORKER_URL__: JSON.stringify('./afk-worker.js'),
+      __PERSISTENCE_WORKER_URL__: JSON.stringify('./persistence-worker.js'),
     },
     logLevel: 'silent',
   });
@@ -52,6 +54,15 @@ try {
       'import.meta.env.DEV': 'false',
       __BUILD_NUMBER__: '0',
     },
+    logLevel: 'silent',
+  });
+  buildSync({
+    entryPoints: [resolve(process.cwd(), 'src/workers/persistenceWorker.ts')],
+    outfile: persistenceWorkerPath,
+    bundle: true,
+    platform: 'browser',
+    format: 'esm',
+    define: { 'import.meta.env.DEV': 'false', __BUILD_NUMBER__: '0' },
     logLevel: 'silent',
   });
   writeFileSync(htmlPath, '<!doctype html><meta charset="utf-8"><script type="module" src="./profile.js"></script>\n');

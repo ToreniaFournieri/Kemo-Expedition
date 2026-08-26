@@ -227,7 +227,8 @@ export interface HomeScreenProps {
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
     };
     resetGame: () => void;
-    importGameState: (state: GameState) => { state: GameState | null; errorLog: string | null };
+    importGameState: (state: GameState) => Promise<{ state: GameState | null; errorLog: string | null }>;
+    getCompressedSavePayload: () => Promise<string>;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetCommonSuperRareBag: () => void;
@@ -243,7 +244,7 @@ export interface HomeScreenProps {
       options?: { rarity?: ItemRarity; isSuperRareItem?: boolean }
     ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
-    flushSave: () => void;
+    flushSave: () => Promise<void>;
   };
 }
 

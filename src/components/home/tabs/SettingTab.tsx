@@ -35,7 +35,7 @@ import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRare
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
 import { computePartyStats } from '../../../game/partyComputation';
 import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
-import { decodePersistedState,encodePersistedState } from '../../../game/storageCompression';
+import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
 import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
@@ -94,6 +94,7 @@ export default function SettingTab({
   deityDonations,
   onResetGame,
   onImportGameState,
+  getCompressedSavePayload,
   getRuntimeSnapshot,
   onAddNotification,
   onGrantFeedbackReward,
@@ -126,7 +127,8 @@ export default function SettingTab({
   gameState: GameState;
   deityDonations: Record<string, number>;
   onResetGame: () => void;
-  onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => { state: GameState | null; errorLog: string | null };
+  onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => Promise<{ state: GameState | null; errorLog: string | null }>;
+  getCompressedSavePayload: () => Promise<string>;
   getRuntimeSnapshot: () => PersistedRuntimeSnapshot;
   onAddNotification: (
     message: string,
@@ -336,7 +338,7 @@ export default function SettingTab({
     setFeedbackFiles(selectedFiles.slice(0, 4));
   };
 
-  const buildBackupFile = (): File => {
+  const buildBackupFile = async (): Promise<File> => {
     const payload = {
       meta: {
         app: 'Kemo-Expedition',
@@ -345,7 +347,7 @@ export default function SettingTab({
         exportedAt: new Date().toISOString(),
         format: 'compressed-v1',
       },
-      saveDataCompressed: encodePersistedState(JSON.stringify(serializeGameState(gameState))),
+      saveDataCompressed: await getCompressedSavePayload(),
       runtimeSnapshot: getRuntimeSnapshot(),
     };
     return new File([JSON.stringify(payload)], getBackupFileName('compressed'), { type: 'application/json' });
@@ -385,7 +387,7 @@ export default function SettingTab({
       };
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
-      const generatedFiles: File[] = [buildBackupFile()];
+      const generatedFiles: File[] = [await buildBackupFile()];
       if (feedbackLatestBattleLogSelection !== 'None') {
         const latestBattleLogFile = buildLatestBattleLogHtml(feedbackLatestBattleLogSelection);
         if (latestBattleLogFile) {
@@ -625,7 +627,7 @@ export default function SettingTab({
 
   // SpecRef: 8.6 | UI_SETTING | 5.1 Backup (Export)
   const handleExportBackup = async () => {
-    const backupFile = buildBackupFile();
+    const backupFile = await buildBackupFile();
     const nav = navigator as Navigator & {
       canShare?: (data: ShareData) => boolean;
       share?: (data: ShareData) => Promise<void>;
@@ -744,7 +746,7 @@ export default function SettingTab({
       const runtimeSnapshot = parsed && typeof parsed === 'object' && 'runtimeSnapshot' in parsed
         ? (parsed as { runtimeSnapshot?: unknown }).runtimeSnapshot
         : undefined;
-      const importResult = onImportGameState(saveData as GameState, runtimeSnapshot);
+      const importResult = await onImportGameState(saveData as GameState, runtimeSnapshot);
       if (!importResult.state) {
         window.alert(`${t('setting.import.invalidFormat')}\n\n${importResult.errorLog ?? ''}`);
         return;

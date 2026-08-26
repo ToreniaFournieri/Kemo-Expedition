@@ -9,14 +9,14 @@ const homeSharedSource = readFileSync(new URL('../src/components/home/homeShared
 const settingTabSource = readFileSync(new URL('../src/components/home/tabs/SettingTab.tsx', import.meta.url), 'utf8');
 
 test('failed game-state writes remain pending and schedule an automatic retry', () => {
-  assert.match(hookSource, /const result = saveState\(pendingSaveStateRef\.current\);[\s\S]*if \(!result\.ok\)[\s\S]*flushPendingSaveAttempt\(\)/);
-  assert.match(hookSource, /if \(!result\.ok\)[\s\S]*return;[\s\S]*pendingSaveStateRef\.current = null/);
+  assert.match(hookSource, /onError: \(error\)[\s\S]*saveRetryTimeoutRef\.current = setTimeout[\s\S]*persistenceCoordinatorRef\.current\?\.retry\(\)/);
+  assert.match(hookSource, /requestDurable\(latestGameStateRef\.current\)/);
 });
 
 test('imports use the startup migration pipeline before they are persisted and committed', () => {
-  assert.match(hookSource, /loadSavedState\(encodePersistedState\(JSON\.stringify\(nextState\)\)\)/);
+  assert.match(hookSource, /loadSavedState\(JSON\.stringify\(nextState\)\)/);
   assert.match(hookSource, /gameReducer\(imported\.state, \{ type: 'IMPORT_GAME_STATE', state: imported\.state \}\)/);
-  assert.match(hookSource, /saveState\(normalizedState\)[\s\S]*COMMIT_API_STATE/);
+  assert.match(hookSource, /await persistenceCoordinatorRef\.current\?\.requestDurable\(normalizedState\)[\s\S]*COMMIT_API_STATE/);
 });
 
 test('backup payloads include a schema-marked runtime snapshot and imports replace it', () => {
@@ -27,7 +27,7 @@ test('backup payloads include a schema-marked runtime snapshot and imports repla
   assert.match(homeSource, /normalizeRuntimeSnapshot\(rawRuntimeSnapshot, result\.state\.parties\.length\)/);
   assert.match(homeSource, /localStorage\.setItem\(AFK_RUNTIME_STORAGE_KEY, JSON\.stringify\(nextRuntimeSnapshot\)\)/);
   assert.match(homeSource, /afkRemainingMsByParty: afkRemainingMsByPartyRef\.current/);
-  assert.match(homeSource, /if \(pendingAfkMsRef\.current > 0\) actions\.flushSave\(\);[\s\S]*persistAfkRuntimeState\(\)/);
+  assert.match(homeSource, /if \(pendingAfkMsRef\.current > 0\) await actions\.flushSave\(\)\.catch[\s\S]*persistAfkRuntimeState\(\)/);
 });
 
 test('the checked-in legacy backup retains the required canonical roots', () => {

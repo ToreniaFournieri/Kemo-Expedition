@@ -112,8 +112,12 @@ import {
   removeJewelFromInventory,
   getJewelNameByRank,
 } from '../game/jewel';
-import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { persistGameState } from '../game/savePersistence';
+import { decodePersistedState } from '../game/storageCompression';
+import {
+  createBrowserPersistenceWorker,
+  PersistenceCoordinator,
+  type PersistenceTelemetryEvent,
+} from '../game/savePersistence';
 import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
@@ -1364,69 +1368,6 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
     return { state: null, errorLog: formatLoadErrorLog(e) };
   }
   return { state: null, errorLog: null };
-}
-
-type SaveStateResult = { ok: true } | { ok: false; errorLog: string };
-
-function saveState(state: GameState): SaveStateResult {
-  // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Debug-only runtime trace
-  const traceSave = afkRuntimeTrace.isRecoveryActive();
-  const saveStartedAt = traceSave ? performance.now() : 0;
-  const previousTracePhase = traceSave ? afkRuntimeTrace.getCurrentSnapshot().phase : 'idle';
-  try {
-    const profile = persistGameState(
-      state,
-      STORAGE_KEY,
-      localStorage,
-      traceSave ? { now: () => performance.now() } : undefined,
-    );
-    if (traceSave) {
-      if (!profile) throw new Error('Save profiling result was unavailable.');
-      afkRuntimeTrace.record('game_save_canonical_snapshot', {
-        phase: 'game_save',
-        durationMs: profile.phases.canonicalSnapshotMs,
-      });
-      afkRuntimeTrace.record('game_save_json_stringify', {
-        phase: 'game_save',
-        durationMs: profile.phases.jsonStringifyMs,
-        data: {
-          payloadLength: profile.sizes.jsonChars,
-          payloadBytes: profile.sizes.jsonUtf16Bytes,
-        },
-      });
-      afkRuntimeTrace.record('game_save_compression', {
-        phase: 'game_save',
-        durationMs: profile.phases.compressionEncodingMs,
-        data: {
-          encodedLength: profile.sizes.encodedChars,
-          encodedBytes: profile.sizes.encodedUtf16Bytes,
-        },
-      });
-      afkRuntimeTrace.record('game_save_storage_write', {
-        phase: 'game_save',
-        durationMs: profile.phases.storageWriteMs,
-      });
-      afkRuntimeTrace.record('game_save_complete', {
-        phase: 'game_save',
-        durationMs: profile.phases.endToEndMs,
-        data: { compressionRatio: profile.sizes.compressionRatio },
-      });
-      afkRuntimeTrace.setPhase(previousTracePhase);
-    }
-    return { ok: true };
-  } catch (e) {
-    console.error('Failed to save state:', e);
-    if (traceSave) {
-      afkRuntimeTrace.record('game_save_error', {
-        phase: 'error',
-        durationMs: performance.now() - saveStartedAt,
-        anomaly: true,
-        data: { message: e instanceof Error ? e.message : String(e) },
-      });
-      afkRuntimeTrace.setPhase(previousTracePhase);
-    }
-    return { ok: false, errorLog: formatLoadErrorLog(e) };
-  }
 }
 
 function createInitialDeity(name: string) {
@@ -5589,51 +5530,86 @@ export function useGameState() {
     initialStateRef.current = createInitialState();
   }
   const [state, dispatch] = useReducer(gameReducer, initialStateRef.current.state);
+  const latestGameStateRef = useRef(state);
+  latestGameStateRef.current = state;
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
   const [saveErrorLog, setSaveErrorLog] = useState<string | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingSaveStateRef = useRef<GameState | null>(null);
+  const saveRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const persistenceCoordinatorRef = useRef<PersistenceCoordinator | null>(null);
   const lastSavedAtRef = useRef(0);
   const loadErrorLog = initialStateRef.current.loadErrorLog;
   const isSaveBlockedByLoadFailure = loadErrorLog !== null;
 
-  const flushPendingSave = useCallback(function flushPendingSaveAttempt() {
-    // SpecRef: 5.1.4 | Save and load | Do not overwrite or save the current runtime state.
-    if (isSaveBlockedByLoadFailure) return;
-    if (!pendingSaveStateRef.current) return;
-    const result = saveState(pendingSaveStateRef.current);
-    if (!result.ok) {
-      setSaveErrorLog(result.errorLog);
-      if (!saveTimeoutRef.current) {
-        saveTimeoutRef.current = setTimeout(() => {
-          saveTimeoutRef.current = null;
-          flushPendingSaveAttempt();
-        }, STATE_SAVE_THROTTLE_MS);
+  const createPersistenceCoordinator = useCallback(() => {
+    const recordPersistenceTelemetry = (event: PersistenceTelemetryEvent) => {
+      if (event.event === 'durability_latency') {
+        setSaveErrorLog(null);
+        if (saveRetryTimeoutRef.current) {
+          clearTimeout(saveRetryTimeoutRef.current);
+          saveRetryTimeoutRef.current = null;
+        }
       }
-      return;
-    }
-    pendingSaveStateRef.current = null;
-    lastSavedAtRef.current = Date.now();
-    setSaveErrorLog(null);
+      if (!afkRuntimeTrace.isRecoveryActive()) return;
+      afkRuntimeTrace.record(`game_save_${event.event}`, {
+        phase: event.event.endsWith('error') ? 'error' : 'game_save',
+        durationMs: event.durationMs,
+        anomaly: event.event.endsWith('error'),
+        data: { revision: event.revision, requestId: event.requestId ?? 0, ...event.data },
+      });
+    };
+    return new PersistenceCoordinator({
+      storageKey: STORAGE_KEY,
+      storage: localStorage,
+      workerFactory: createBrowserPersistenceWorker,
+      onTelemetry: recordPersistenceTelemetry,
+      onError: (error) => {
+        console.error('Failed to save state:', error);
+        setSaveErrorLog(formatLoadErrorLog(error));
+        if (!saveRetryTimeoutRef.current) {
+          saveRetryTimeoutRef.current = setTimeout(() => {
+            saveRetryTimeoutRef.current = null;
+            persistenceCoordinatorRef.current?.retry();
+          }, STATE_SAVE_THROTTLE_MS);
+        }
+      },
+    });
+  }, []);
+
+  if (!persistenceCoordinatorRef.current && !isSaveBlockedByLoadFailure) {
+    persistenceCoordinatorRef.current = createPersistenceCoordinator();
+  }
+
+  const flushPendingSave = useCallback((): Promise<void> => {
+    // SpecRef: 5.1.4 | Save and load | Do not overwrite state after a load failure.
+    if (isSaveBlockedByLoadFailure) return Promise.resolve();
+    const flush = persistenceCoordinatorRef.current?.requestDurable(latestGameStateRef.current) ?? Promise.resolve();
+    return flush.then(() => {
+      lastSavedAtRef.current = Date.now();
+      setSaveErrorLog(null);
+    });
   }, [isSaveBlockedByLoadFailure]);
 
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
   useEffect(() => {
     if (isSaveBlockedByLoadFailure) {
-      pendingSaveStateRef.current = null;
       return;
     }
-    pendingSaveStateRef.current = state;
 
     const now = Date.now();
     const msSinceLastSave = now - lastSavedAtRef.current;
+
+    const requestSave = () => {
+      persistenceCoordinatorRef.current?.requestOrdinary(state);
+      lastSavedAtRef.current = Date.now();
+    };
 
     if (msSinceLastSave >= STATE_SAVE_THROTTLE_MS) {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
         saveTimeoutRef.current = null;
       }
-      flushPendingSave();
+      requestSave();
       return;
     }
 
@@ -5644,18 +5620,22 @@ export function useGameState() {
     const delayMs = Math.max(0, STATE_SAVE_THROTTLE_MS - msSinceLastSave);
     saveTimeoutRef.current = setTimeout(() => {
       saveTimeoutRef.current = null;
-      flushPendingSave();
+      requestSave();
     }, delayMs);
-  }, [state, flushPendingSave, isSaveBlockedByLoadFailure]);
+  }, [state, isSaveBlockedByLoadFailure]);
 
   useEffect(() => {
+    if (!persistenceCoordinatorRef.current && !isSaveBlockedByLoadFailure) {
+      persistenceCoordinatorRef.current = createPersistenceCoordinator();
+    }
     const flushOnHidden = () => {
       if (document.visibilityState === 'hidden') {
-        flushPendingSave();
+        void flushPendingSave().catch(() => undefined);
       }
     };
 
-    window.addEventListener('beforeunload', flushPendingSave);
+    const requestBestEffortFlush = () => { void flushPendingSave().catch(() => undefined) };
+    window.addEventListener('beforeunload', requestBestEffortFlush);
     document.addEventListener('visibilitychange', flushOnHidden);
 
     return () => {
@@ -5663,11 +5643,17 @@ export function useGameState() {
         clearTimeout(saveTimeoutRef.current);
         saveTimeoutRef.current = null;
       }
-      window.removeEventListener('beforeunload', flushPendingSave);
+      if (saveRetryTimeoutRef.current) {
+        clearTimeout(saveRetryTimeoutRef.current);
+        saveRetryTimeoutRef.current = null;
+      }
+      window.removeEventListener('beforeunload', requestBestEffortFlush);
       document.removeEventListener('visibilitychange', flushOnHidden);
-      flushPendingSave();
+      // Worker completion is not guaranteed during page teardown; reject durable waiters cleanly.
+      persistenceCoordinatorRef.current?.shutdown();
+      persistenceCoordinatorRef.current = null;
     };
-  }, [flushPendingSave]);
+  }, [createPersistenceCoordinator, flushPendingSave, isSaveBlockedByLoadFailure]);
 
   // Add notification helper
   // For 'stat' category, dismiss previous stat notifications first
@@ -5910,22 +5896,28 @@ export function useGameState() {
       dispatch({ type: 'RESET_GAME' });
     }, []),
 
-    importGameState: useCallback((nextState: GameState): LoadSavedStateResult => {
+    importGameState: useCallback(async (nextState: GameState): Promise<LoadSavedStateResult> => {
       try {
-        const imported = loadSavedState(encodePersistedState(JSON.stringify(nextState)));
+        // Unprefixed JSON is intentionally accepted by the normal legacy load path.
+        const imported = loadSavedState(JSON.stringify(nextState));
         if (!imported.state) return imported;
         const normalizedState = gameReducer(imported.state, { type: 'IMPORT_GAME_STATE', state: imported.state });
-        const persisted = saveState(normalizedState);
-        if (!persisted.ok) {
-          setSaveErrorLog(persisted.errorLog);
-          return { state: null, errorLog: persisted.errorLog };
-        }
+        await persistenceCoordinatorRef.current?.requestDurable(normalizedState);
         dispatch({ type: 'COMMIT_API_STATE', state: normalizedState });
         setSaveErrorLog(null);
         return { state: normalizedState, errorLog: null };
       } catch (error) {
-        return { state: null, errorLog: formatLoadErrorLog(error) };
+        const errorLog = formatLoadErrorLog(error);
+        setSaveErrorLog(errorLog);
+        return { state: null, errorLog };
       }
+    }, []),
+
+    getCompressedSavePayload: useCallback(async (): Promise<string> => {
+      await persistenceCoordinatorRef.current?.requestDurable(latestGameStateRef.current);
+      const payload = localStorage.getItem(STORAGE_KEY);
+      if (!payload) throw new Error('Durable save payload was unavailable.');
+      return payload;
     }, []),
 
     resetCommonBags: useCallback((partyIndex?: number) => {

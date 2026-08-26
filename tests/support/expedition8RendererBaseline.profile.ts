@@ -12,7 +12,11 @@ import {
 } from '../../src/game/afkChunkCoordinator.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
-import { persistGameState, type PersistedStateProfile } from '../../src/game/savePersistence.ts';
+import {
+  PersistenceCoordinator,
+  type PersistenceTelemetryEvent,
+  type PersistedStateProfile,
+} from '../../src/game/savePersistence.ts';
 import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
@@ -24,6 +28,7 @@ declare const __EXPEDITION_8_SAVE_SHA256__: string;
 declare const __PROFILE_SAMPLE_COUNT__: number;
 declare const __PROFILE_WARMUP_COUNT__: number;
 declare const __AFK_WORKER_URL__: string;
+declare const __PERSISTENCE_WORKER_URL__: string;
 
 const STORAGE_KEY = 'bokemo-expedition-8-renderer-profile';
 const DEV_CYCLE_DURATION_SCALE = 0.05;
@@ -39,6 +44,9 @@ interface Distribution {
 interface SaveSample {
   profile: PersistedStateProfile;
   eventLoopDelayMs: number;
+  workerSubmissionMs: number;
+  workerQueueLatencyMs: number;
+  resultDeliveryMs: number;
 }
 
 interface AfkSample {
@@ -106,6 +114,7 @@ async function loadAndValidateFixture() {
   invariant(Object.keys(state.global.inventory).length === 2_308, 'fixture inventory identity mismatch');
   return {
     state,
+    expectedEncodedPayload: envelope.saveDataCompressed,
     identity: {
       path: 'sample_savedata/ALL_Exp8_v0.9.3_dev_20260816.kemoz',
       sha256: __EXPEDITION_8_SAVE_SHA256__,
@@ -228,29 +237,67 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
   };
 }
 
-async function runSaveSample(state: GameState): Promise<SaveSample> {
+async function runSaveSample(
+  state: GameState,
+  coordinator: PersistenceCoordinator,
+  telemetry: PersistenceTelemetryEvent[],
+): Promise<SaveSample> {
+  telemetry.splice(0);
   const timerScheduledAt = performance.now();
   let resolveTimer!: (delayMs: number) => void;
   const timer = new Promise<number>((resolve) => {
     resolveTimer = resolve;
   });
   setTimeout(() => resolveTimer(performance.now() - timerScheduledAt), 0);
-  const profile = persistGameState(state, STORAGE_KEY, localStorage, {
-    now: () => performance.now(),
-    includeUtf8Sizes: true,
-  });
-  invariant(profile, 'persistence profile missing');
-  return { profile, eventLoopDelayMs: await timer };
+  await coordinator.requestDurable(state);
+  const persisted = localStorage.getItem(STORAGE_KEY);
+  invariant(persisted, 'persistence worker did not write localStorage');
+  const jsonPayload = JSON.stringify(serializeGameState(state));
+  const duration = (event: PersistenceTelemetryEvent['event']) => telemetry.find((sample) => sample.event === event)?.durationMs ?? 0;
+  const jsonUtf8Bytes = new TextEncoder().encode(jsonPayload).byteLength;
+  const encodedUtf8Bytes = new TextEncoder().encode(persisted).byteLength;
+  const profile: PersistedStateProfile = {
+    phases: {
+      canonicalSnapshotMs: duration('canonical_snapshot'),
+      jsonStringifyMs: duration('json_serialization'),
+      compressionEncodingMs: duration('worker_compression'),
+      storageWriteMs: duration('storage_write'),
+      endToEndMs: duration('durability_latency'),
+    },
+    sizes: {
+      jsonChars: jsonPayload.length,
+      jsonUtf8Bytes,
+      jsonUtf16Bytes: jsonPayload.length * 2,
+      encodedChars: persisted.length,
+      encodedUtf8Bytes,
+      encodedUtf16Bytes: persisted.length * 2,
+      compressionRatio: persisted.length / jsonPayload.length,
+    },
+  };
+  return {
+    profile,
+    eventLoopDelayMs: await timer,
+    workerSubmissionMs: duration('worker_submission'),
+    workerQueueLatencyMs: duration('worker_queue_latency'),
+    resultDeliveryMs: duration('result_delivery'),
+  };
 }
 
 async function runProfile() {
   setLanguage('ja');
-  const { state, identity } = await loadAndValidateFixture();
+  const { state, identity, expectedEncodedPayload } = await loadAndValidateFixture();
   localStorage.removeItem(STORAGE_KEY);
+  const persistenceTelemetry: PersistenceTelemetryEvent[] = [];
+  const persistenceCoordinator = new PersistenceCoordinator({
+    storageKey: STORAGE_KEY,
+    storage: localStorage,
+    workerFactory: () => new Worker(new URL(__PERSISTENCE_WORKER_URL__, import.meta.url), { type: 'module' }),
+    onTelemetry: (event) => persistenceTelemetry.push(event),
+  });
   const warmupSaveSamples: SaveSample[] = [];
   const warmupAfkSamples: AfkSample[] = [];
   for (let index = 0; index < __PROFILE_WARMUP_COUNT__; index += 1) {
-    warmupSaveSamples.push(await runSaveSample(state));
+    warmupSaveSamples.push(await runSaveSample(state, persistenceCoordinator, persistenceTelemetry));
     warmupAfkSamples.push(await runAfkSample(state));
   }
   const deterministicFirst = JSON.stringify(serializeGameState(runDeterministicAfkWorkflow(state)));
@@ -259,12 +306,13 @@ async function runProfile() {
   const saveSamples: SaveSample[] = [];
   const afkSamples: AfkSample[] = [];
   for (let index = 0; index < __PROFILE_SAMPLE_COUNT__; index += 1) {
-    saveSamples.push(await runSaveSample(state));
+    saveSamples.push(await runSaveSample(state, persistenceCoordinator, persistenceTelemetry));
     afkSamples.push(await runAfkSample(state));
   }
 
   const persisted = localStorage.getItem(STORAGE_KEY);
   invariant(persisted, 'localStorage payload missing');
+  invariant(persisted === expectedEncodedPayload, 'persistence worker bytes differ from the retained synchronous codec fixture');
   invariant(
     JSON.stringify(JSON.parse(decodePersistedState(persisted))) === JSON.stringify(serializeGameState(state)),
     'canonical persisted-state round trip changed',
@@ -275,14 +323,16 @@ async function runProfile() {
   const size = saveSamples[0]!.profile.sizes;
   invariant(saveSamples.every((sample) => JSON.stringify(sample.profile.sizes) === JSON.stringify(size)), 'payload sizes changed');
   const finalStateSha256 = await sha256(deterministicFirst);
+  persistenceCoordinator.shutdown();
   localStorage.removeItem(STORAGE_KEY);
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     fixture: identity,
     validation: {
       canonicalRoundTrip: true,
+      byteIdenticalWorkerEncoding: true,
       deterministicAfkFinalState: true,
       deterministicAfkFinalStateSha256: finalStateSha256,
     },
@@ -313,6 +363,9 @@ async function runProfile() {
       canonicalSnapshot: distribution(phaseValues('canonicalSnapshotMs')),
       jsonStringify: distribution(phaseValues('jsonStringifyMs')),
       compressionEncoding: distribution(phaseValues('compressionEncodingMs')),
+      rendererWorkerSubmission: distribution(saveSamples.map((sample) => sample.workerSubmissionMs)),
+      workerQueueLatency: distribution(saveSamples.map((sample) => sample.workerQueueLatencyMs)),
+      workerResultDelivery: distribution(saveSamples.map((sample) => sample.resultDeliveryMs)),
       persistenceWrite: distribution(phaseValues('storageWriteMs')),
       endToEndSave: distribution(phaseValues('endToEndMs')),
       eventLoopDelay: distribution(saveSamples.map((sample) => sample.eventLoopDelayMs)),
@@ -326,7 +379,7 @@ async function runProfile() {
       'AFK worker execution is reported from production worker telemetry; asynchronous wall time includes startup, structured-clone transfer, language readiness, and the production-sized worker pool.',
       'The projected parallel worker value is the slowest individual execution and excludes startup, transfer, queueing, and pool contention.',
       'Coordinator timing covers the pure canonical commit reducer and excludes React dispatch-to-visibility and automatic-equipment follow-up time.',
-      'The event-loop delay is timer drift around the synchronous save and may include renderer scheduling overhead; it is not a Long Tasks API entry.',
+      'The event-loop delay is zero-delay timer drift around renderer preparation and worker submission; it is not a Long Tasks API entry.',
     ],
   };
 }

@@ -407,11 +407,11 @@ export function HomeScreen({
       apiControlActiveRef.current = active;
       setApiControlActive(active);
       lastCheckpointAtRef.current = Date.now();
-      if (!active) apiActionsRef.current.flushSave();
+      if (!active) await apiActionsRef.current.flushSave();
       return { status: 'ready', revision: apiRevisionRef.current };
     }
     if (operation === 'release') {
-      apiActionsRef.current.flushSave();
+      await apiActionsRef.current.flushSave();
       apiControlActiveRef.current = false;
       setApiControlActive(false);
       lastCheckpointAtRef.current = Date.now();
@@ -614,7 +614,7 @@ export function HomeScreen({
       if (dispatched) await waitForApiStateUpdate(previousVersion);
       else await new Promise((resolve) => window.setTimeout(resolve, 0));
       apiRevisionRef.current += 1;
-      apiActionsRef.current.flushSave();
+      await apiActionsRef.current.flushSave();
       return { command: { type, status: 'applied', previousRevision, revision: apiRevisionRef.current }, effects, observation: buildApiObservation() };
     }
 
@@ -664,7 +664,7 @@ export function HomeScreen({
       const finalParty = batch.state.parties[partyIndex];
       const chargeAfter = { stock: finalParty.instantExpeditionStock ?? 0, chargeStartedAt: finalParty.instantExpeditionChargeStartedAt ?? null };
       apiRevisionRef.current += 1;
-      apiActionsRef.current.flushSave();
+      await apiActionsRef.current.flushSave();
       return { sortie: { partyId: Number(payload.partyId), dungeonId, requestedCount: Number(payload.count), completedCount: Number(payload.count), previousRevision, revision: apiRevisionRef.current, partyElapsedStartMs: 0, partyElapsedEndMs: elapsed }, prelude: null, outcomes, totals, charge: { before: chargeBefore, after: chargeAfter }, sideQuests: { assigned: 0, completed: 0, cancelled: 0, expired: 0 }, unlocks: { bossDungeonIds: [], godBattleDungeonIds: [], partyIds: [], deityIds: [], otherIds: [] }, runs, observation: buildApiObservation() };
     }
     return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
@@ -2509,7 +2509,10 @@ export function HomeScreen({
         workerCreatedAt: poolSlot.createdAt,
         isFirstWorkerJob: poolSlot.completedJobs === 0,
       };
-      job.inputTransferBytes = new TextEncoder().encode(JSON.stringify(job)).byteLength;
+      // Exact structured-clone sizing is diagnostic-only; avoid a second full-state stringify in production.
+      if (afkRuntimeTrace.isEnabled()) {
+        job.inputTransferBytes = new TextEncoder().encode(JSON.stringify(job)).byteLength;
+      }
       const worker = poolSlot.worker;
       const { baseState: _releasedBaseState, ...jobMetadata } = job;
       const jobId = job.jobId;
@@ -2877,8 +2880,8 @@ export function HomeScreen({
     }
   }, [getRuntimeSnapshot]);
 
-  const handleImportGameState = useCallback((nextState: GameState, rawRuntimeSnapshot?: unknown) => {
-    const result = actions.importGameState(nextState);
+  const handleImportGameState = useCallback(async (nextState: GameState, rawRuntimeSnapshot?: unknown) => {
+    const result = await actions.importGameState(nextState);
     if (!result.state) return result;
 
     const importedRuntime = normalizeRuntimeSnapshot(rawRuntimeSnapshot, result.state.parties.length);
@@ -3007,7 +3010,7 @@ export function HomeScreen({
       setPendingAfkMs(nextPendingAfkMs);
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;
-      actions.flushSave();
+      void actions.flushSave().catch(() => undefined);
       persistAfkRuntimeState(now);
       return;
     }
@@ -3348,10 +3351,10 @@ export function HomeScreen({
   }, [processTimeCheckpoint]);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
+    const id = window.setInterval(async () => {
       // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Saving and persistence
       // Flush authoritative game state before writing the matching AFK cursor checkpoint.
-      if (pendingAfkMsRef.current > 0) actions.flushSave();
+      if (pendingAfkMsRef.current > 0) await actions.flushSave().catch(() => undefined);
       persistAfkRuntimeState();
     }, 5000);
 
@@ -3380,7 +3383,8 @@ export function HomeScreen({
     const persistLatestCheckpoint = () => {
       const now = Date.now();
       lastCheckpointAtRef.current = now;
-      actions.flushSave();
+      // pagehide/beforeunload cannot guarantee that an asynchronous worker flush completes.
+      void actions.flushSave().catch(() => undefined);
       persistAfkRuntimeState(now);
     };
 
@@ -4051,6 +4055,7 @@ export function HomeScreen({
         deityDonations={state.global.deityDonations}
         onResetGame={handleResetGame}
         onImportGameState={handleImportGameState}
+        getCompressedSavePayload={actions.getCompressedSavePayload}
         getRuntimeSnapshot={getRuntimeSnapshot}
         onAddNotification={actions.addNotification}
         onGrantFeedbackReward={actions.grantFeedbackReward}

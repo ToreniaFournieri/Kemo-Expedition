@@ -1,5 +1,27 @@
 # Expedition 8 save/compression baseline — 2026/08/26
 
+## Milestone 2 result (build 54)
+
+The unchanged `encodePersistedState` codec now runs in a dedicated module worker behind a single-flight coordinator. Canonical compaction and `JSON.stringify` remain renderer-owned, and the final `localStorage.setItem` remains in the renderer. The build-53 diagnostic was confirmed: 13 synchronous saves consumed 15,634.0 ms, compression consumed 15,227.6 ms (97.4%), and the 38 recorded event-loop stalls included a still-unclassified initial 4,101.6 ms stall before the first measured save.
+
+The same hidden Electron fixture, two warm-ups, 20 measured samples, and nearest-rank method produced:
+
+| Metric | Build 53 p50 / p95 / max | Build 54 p50 / p95 / max |
+|---|---:|---:|
+| Canonical snapshot | 1.5 / 1.9 / 2.1 | 1.1 / 1.3 / 1.4 |
+| Renderer `JSON.stringify` | 25.7 / 30.1 / 31.5 | 18.4 / 20.2 / 20.5 |
+| Renderer worker submission | not measured | 1.2 / 1.3 / 1.4 |
+| Worker queue latency | not measured | 2.3 / 2.8 / 2.9 |
+| Worker compression | 1,211.4 / 1,647.9 / 2,143.4 (renderer) | 925.6 / 963.2 / 973.0 (worker) |
+| Worker result delivery | not measured | 2.3 / 4.3 / 4.4 |
+| Chromium storage write | 2.8 / 5.3 / 5.6 | 0.7 / 1.3 / 2.3 |
+| End-to-end durability | 1,242.0 / 1,682.1 / 2,180.5 synchronous | 952.3 / 988.3 / 1,000.9 asynchronous |
+| Save-surrounding renderer event-loop delay | 1,262.3 / 1,702.1 / 2,211.5 | 21.1 / 23.2 / 23.5 |
+
+No measured renderer persistence task exceeded 50 ms. The async durability latency still includes worker compression and is not renderer blocking time. The payload remained exactly 6,944,587 JSON characters and 409,974 encoded characters; the actual persistence-worker output was byte-identical to the retained synchronous-codec fixture. Canonical round-trip passed, and the deterministic six-party Expedition 8 AFK SHA-256 remained `11fb8356c53d5087d8f220408a92c3c8b12ef276abf2898e9a7e19e7b88bfebc`.
+
+Follow-up scope remains intentionally unchanged: measure and then reduce full-state AFK structured cloning, investigate the initial 4.1-second startup stall, and separately profile automatic equipment. Codec replacement, checkpoint-frequency changes, AFK message redesign, and auto-equipment optimization were not part of Milestone 2.
+
 ## Scope
 
 This is the Milestone 1 measurement baseline. It does not change the save format, codec, checkpoint frequency, AFK scheduling, worker/coordinator ordering, or gameplay behavior.
