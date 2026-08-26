@@ -66,6 +66,7 @@ import {
 } from '../game/bags';
 import { getItemById } from '../data/items';
 import { hydrateGameState } from '../game/saveCodec';
+import type { AutoEquipmentProfileAction } from '../game/autoEquipmentAttribution';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
@@ -2022,6 +2023,7 @@ type GameAction =
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
+  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[] }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -2949,9 +2951,19 @@ function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean 
   return currentHp <= maxHp * 0.3;
 }
 
-function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Party): Party {
-  const previousMaxHp = computePartyStats(previousParty).partyStats.hp;
+interface AutoEquipmentReducerContext {
+  maxHpByPartyId: Map<number, number>;
+}
+
+function syncPartyCurrentHpAfterMaxHpChange(
+  previousParty: Party,
+  nextParty: Party,
+  autoEquipmentContext?: AutoEquipmentReducerContext,
+): Party {
+  const previousMaxHp = autoEquipmentContext?.maxHpByPartyId.get(previousParty.id)
+    ?? computePartyStats(previousParty).partyStats.hp;
   const nextMaxHp = computePartyStats(nextParty).partyStats.hp;
+  autoEquipmentContext?.maxHpByPartyId.set(nextParty.id, nextMaxHp);
   if (nextMaxHp <= 0) return nextParty;
 
   const previousCurrentHp = typeof previousParty.currentHp === 'number'
@@ -2967,8 +2979,18 @@ function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Par
   };
 }
 
-function gameReducer(state: GameState, action: GameAction): GameState {
+function gameReducer(
+  state: GameState,
+  action: GameAction,
+  autoEquipmentContext?: AutoEquipmentReducerContext,
+): GameState {
   switch (action.type) {
+
+    case 'APPLY_AUTO_EQUIPMENT_ACTIONS': {
+      // SpecRef: 7.1.1 | AUTO equipment logic | Processing priority
+      const context: AutoEquipmentReducerContext = { maxHpByPartyId: new Map() };
+      return action.actions.reduce((current, nestedAction) => gameReducer(current, nestedAction, context), state);
+    }
     case 'SET_LANGUAGE': {
       // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
       // SpecRef: 5.1.4 | Save and load | Persisted user settings
@@ -4270,7 +4292,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
             ...currentParty,
             characters: newCharacters
-          });
+          }, autoEquipmentContext);
 
           return {
             ...state,
@@ -4291,7 +4313,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      });
+      }, autoEquipmentContext);
 
       return {
         ...state,
@@ -4349,7 +4371,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
           ...currentParty,
           characters: newCharacters,
-        });
+        }, autoEquipmentContext);
 
         return {
           ...state,
@@ -4372,7 +4394,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters,
-      });
+      }, autoEquipmentContext);
 
       return {
         ...state,
@@ -5245,6 +5267,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
+export function applyAutoEquipmentProfileActions(
+  state: GameState,
+  actions: readonly AutoEquipmentProfileAction[],
+): GameState {
+  return gameReducer(state, { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions: [...actions] });
+}
+
+export function applyAutoEquipmentProfileActionsSequentially(
+  state: GameState,
+  actions: readonly AutoEquipmentProfileAction[],
+): GameState {
+  return actions.reduce((current, action) => gameReducer(current, action), state);
+}
+
 /** Test seam for measuring one authoritative online/Gods Battle reducer transaction. */
 export function runExpeditionTransactionForTesting(
   state: GameState,
@@ -5804,6 +5840,10 @@ export function useGameState() {
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => {
       dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey, partyIndex });
+    }, []),
+
+    applyAutoEquipmentActions: useCallback((actions: AutoEquipmentProfileAction[]) => {
+      dispatch({ type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions });
     }, []),
 
     toggleEquipmentLock: useCallback((characterId: number, slotIndex: number, partyIndex?: number) => {

@@ -20,6 +20,7 @@ const SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
 const HEARTBEAT_MS = 10;
 const EXPECTED_SIX_PARTY_SHA256 = '11fb8356c53d5087d8f220408a92c3c8b12ef276abf2898e9a7e19e7b88bfebc';
+const EXPECTED_ONE_PARTY_SHA256 = '29d67498ac202b6416abbe5c8cfc5bb9631439dba3c954a7aca6fee9d64c7a19';
 const epochNow = () => performance.timeOrigin + performance.now();
 
 interface Distribution { samples: number; p50: number; p95: number; maximum: number }
@@ -323,12 +324,20 @@ async function runProfile() {
     for (let index = 0; index < __DIAGNOSTIC_WARMUP_COUNT__; index += 1) await runSample(state, variant, -(index + 1));
     const samples: Sample[] = [];
     for (let index = 0; index < __DIAGNOSTIC_SAMPLE_COUNT__; index += 1) samples.push(await runSample(state, variant, index));
-    const sampleHashes = samples.map((sample) => sample.deterministicHash).filter((hash): hash is string => hash !== null);
     const expectedHash = variant.work !== 'simulate'
       ? null
       : variant.jobs === state.parties.length
         ? EXPECTED_SIX_PARTY_SHA256
-        : sampleHashes[0] ?? null;
+        : variant.jobs === 1
+          ? EXPECTED_ONE_PARTY_SHA256
+          : null;
+    if (variant.work === 'simulate' && expectedHash === null) {
+      throw new Error(`Missing pinned deterministic hash for ${variant.name}`);
+    }
+    if (expectedHash !== null && samples.some((sample) => sample.deterministicHash !== expectedHash)) {
+      const observed = [...new Set(samples.map((sample) => sample.deterministicHash))].join(', ');
+      throw new Error(`Deterministic hash mismatch for ${variant.name}: expected ${expectedHash}; observed ${observed}`);
+    }
     report[variant.name] = { configuration: variant, summary: summarize(samples, expectedHash), samples };
   }
   return {

@@ -30,8 +30,8 @@ export interface AfkWorkerPerformanceTelemetry {
   workerStartupMs: number;
   queueMs: number;
   executionMs: number;
-  inputTransferBytes: number;
-  outputTransferBytes: number;
+  inputTransferBytes: number | null;
+  outputTransferBytes: number | null;
 }
 
 export interface AfkPartyChunkResult {
@@ -47,6 +47,10 @@ export interface AfkPartyChunkResult {
   globalDelta: AfkGlobalDelta;
   durationMs: number;
   workerTelemetry: AfkWorkerPerformanceTelemetry;
+}
+
+function normalizeTransferBytes(value: number | null | undefined): number | null {
+  return value == null ? null : Math.max(0, Math.floor(value));
 }
 
 interface InventoryDelta {
@@ -228,8 +232,8 @@ export function createAfkPartyChunkResult(
       workerStartupMs: Math.max(0, workerTelemetry.workerStartupMs ?? 0),
       queueMs: Math.max(0, workerTelemetry.queueMs ?? 0),
       executionMs: Math.max(0, workerTelemetry.executionMs ?? durationMs),
-      inputTransferBytes: Math.max(0, Math.floor(workerTelemetry.inputTransferBytes ?? job.inputTransferBytes ?? 0)),
-      outputTransferBytes: Math.max(0, Math.floor(workerTelemetry.outputTransferBytes ?? 0)),
+      inputTransferBytes: normalizeTransferBytes(workerTelemetry.inputTransferBytes ?? job.inputTransferBytes),
+      outputTransferBytes: normalizeTransferBytes(workerTelemetry.outputTransferBytes),
     },
   };
 }

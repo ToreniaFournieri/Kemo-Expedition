@@ -37,6 +37,7 @@ import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDispla
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
+import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
 import {
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 AFK_MAX_REAL_ELAPSED_MS,
@@ -202,6 +203,7 @@ export interface HomeScreenProps {
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
+    applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
     toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>, partyIndex?: number) => void;

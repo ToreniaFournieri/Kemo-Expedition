@@ -81,6 +81,24 @@ test('party AFK Chunks contain exactly twelve Cycles', () => {
   assert.equal(AFK_CHUNK_CYCLE_COUNT, 12);
 });
 
+test('unmeasured AFK transfer sizes remain unavailable', () => {
+  const baseState = makeState(makeParty(), 100, 1);
+  const result = createAfkPartyChunkResult({
+    jobId: 'job-unmeasured',
+    partyIndex: 0,
+    partyId: 1,
+    simulatedCompletedAt: 1_000,
+    cycleDurationMs: 100,
+    baseState,
+    gameMode: 'm.kemo',
+    cycleDurationScale: 1,
+    simulatedStartedAt: 0,
+  }, baseState, 5);
+
+  assert.equal(result.workerTelemetry.inputTransferBytes, null);
+  assert.equal(result.workerTelemetry.outputTransferBytes, null);
+});
+
 test('AFK worker pool preserves renderer capacity and never exceeds party count', () => {
   assert.equal(getAfkWorkerPoolLimit(2, 6), 1);
   assert.equal(getAfkWorkerPoolLimit(4, 6), 2);

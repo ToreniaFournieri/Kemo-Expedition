@@ -25,6 +25,13 @@ import { getDeityDepositMultiplier,getDeityKey,getDeityStateDurationMultiplier,i
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
 import {
+createAutoEquipmentAttributionCollector,
+createAutoEquipmentProfileState,
+type AutoEquipmentAttributionCollector,
+type AutoEquipmentProfileAction,
+type AutoEquipmentProfileWorkload,
+} from '../game/autoEquipmentAttribution';
+import {
 createAfkSchedulerProfile,
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 getEffectiveAfkElapsedMs,
@@ -59,6 +66,11 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { setLanguage,t } from '../i18n';
+import { serializeGameState } from '../game/saveCodec';
+import {
+applyAutoEquipmentProfileActions,
+applyAutoEquipmentProfileActionsSequentially,
+} from '../hooks/useGameState';
 import { Bonus,Character,ExpeditionDepthLimit,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
 import { NotificationToast } from './NotificationToast';
 
@@ -157,6 +169,12 @@ const BaseTab = lazy(loadBaseTab);
 const DiaryTab = lazy(loadDiaryTab);
 const SettingTab = lazy(loadSettingTab);
 
+async function sha256ProfileValue(value: unknown): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 /** Load the initial tab behind the startup screen. */
 export function preloadInitialHomeTab() {
   return loadExpeditionTab();
@@ -206,6 +224,10 @@ export function HomeScreen({
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
+  const autoEquipmentProfileBaseStateRef = useRef<GameState | null>(null);
+  if (__AUTO_EQUIPMENT_PROFILE_ENABLED__ && autoEquipmentProfileBaseStateRef.current === null) {
+    autoEquipmentProfileBaseStateRef.current = structuredClone(state);
+  }
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
@@ -1087,8 +1109,16 @@ export function HomeScreen({
   const runAutoEquipment = useCallback((
     targetPartyIndexes?: number[],
     targetCharacterIds?: Array<number | string>,
-    options?: { suppressNotifications?: boolean },
+    options?: {
+      suppressNotifications?: boolean;
+      profile?: {
+        sourceState: GameState;
+        collector: AutoEquipmentAttributionCollector;
+        actions: AutoEquipmentProfileAction[];
+      };
+    },
   ): AutoEquipmentRunSummary => {
+    const plannedActions: AutoEquipmentProfileAction[] = [];
     const summary: AutoEquipmentRunSummary = {
       processedCharacterIds: [],
       unequippedCount: 0,
@@ -1096,9 +1126,37 @@ export function HomeScreen({
       upgradedCount: 0,
       jewelAssignmentCount: 0,
     };
+    const profile = options?.profile;
+    const sourceState = profile?.sourceState ?? state;
+    const measure = <T,>(phase: Parameters<AutoEquipmentAttributionCollector['measure']>[0], operation: () => T): T => (
+      profile ? profile.collector.measure(phase, operation) : operation()
+    );
+    const queueAutoEquipmentAction = (action: AutoEquipmentProfileAction): void => {
+      plannedActions.push(action);
+      if (!profile) return;
+      profile.collector.addDispatchedAction();
+      profile.actions.push(action);
+    };
+    const dispatchEquipItem = (
+      characterId: number,
+      slotIndex: number,
+      inventoryKey: string | null,
+      partyIndex: number,
+    ) => measure('actionDispatch', () => {
+      queueAutoEquipmentAction({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey: inventoryKey, partyIndex });
+    });
+    const dispatchAttachJewel = (
+      characterId: number,
+      slotIndex: number,
+      key: JewelKey,
+      rank: number,
+      partyIndex: number,
+    ) => measure('actionDispatch', () => {
+      queueAutoEquipmentAction({ type: 'ATTACH_JEWEL', characterId, slotIndex, jewelKey: key, rank, partyIndex });
+    });
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
-    const simulatedInventory: InventoryRecord = { ...state.global.inventory };
+    const simulatedInventory: InventoryRecord = measure('inventoryClone', () => ({ ...sourceState.global.inventory }));
     const slotNotifications = new Map<string, { message: string; partyIndex: number; startedFromEmpty: boolean }>();
     const setSlotNotification = (
       partyName: string,
@@ -1131,15 +1189,9 @@ export function HomeScreen({
       previousItem: Item | null,
       partyIndex: number,
     ) => {
-      setSlotNotification(
-        partyName,
-        characterName,
-        characterId,
-        slotIndex,
-        partyIndex,
-        item,
-        previousItem,
-      );
+      measure('notificationPlanning', () => setSlotNotification(
+        partyName, characterName, characterId, slotIndex, partyIndex, item, previousItem,
+      ));
     };
 
     const areEquipmentEntitiesEqual = (a: Item | null, b: Item | null): boolean => {
@@ -1434,8 +1486,9 @@ export function HomeScreen({
       // SpecRef: 7.1.1.2 | Equipping into empty slots | Search for a candidate item
       const optionKeys: string[] = [];
       const candidates: EquipmentRankingCandidate[] = [];
-      Object.entries(simulatedInventory)
-        .forEach(([key, variant]) => {
+      const inventoryEntries = Object.entries(simulatedInventory);
+      profile?.collector.addInventoryEntries(inventoryEntries.length);
+      measure('inventoryScan', () => inventoryEntries.forEach(([key, variant]) => {
           if (
             variant.status !== 'owned'
             || variant.count <= 0
@@ -1466,9 +1519,10 @@ export function HomeScreen({
             itemId: variant.item.id,
             selectionValue: getAutoEquipmentSelectionValueForCharacter(character, variant.item),
           });
-        });
+        }));
 
-      const selectedIndex = selectBestAutoEquipmentFillCandidate(candidates);
+      profile?.collector.addRankingCandidates(candidates.length);
+      const selectedIndex = measure('nativeRanking', () => selectBestAutoEquipmentFillCandidate(candidates));
       return selectedIndex == null ? null : optionKeys[selectedIndex] ?? null;
     };
 
@@ -1477,7 +1531,9 @@ export function HomeScreen({
 
       const optionKeys: string[] = [];
       const candidates: EquipmentRankingCandidate[] = [];
-      Object.entries(simulatedInventory).forEach(([key, variant]) => {
+      const inventoryEntries = Object.entries(simulatedInventory);
+      profile?.collector.addInventoryEntries(inventoryEntries.length);
+      measure('inventoryScan', () => inventoryEntries.forEach(([key, variant]) => {
           if (variant.status !== 'owned' || variant.count <= 0) return;
           if (variant.item.id !== equippedItem.id) return;
           if (variant.item.superRare > 0) return;
@@ -1489,11 +1545,12 @@ export function HomeScreen({
             enhancement: variant.item.enhancement,
             coreConcept: getItemCoreConceptValue(variant.item),
             superRare: variant.item.superRare,
-            itemId: variant.item.id,
-          });
+          itemId: variant.item.id,
         });
+      }));
 
-      const selectedIndex = selectBestAutoEquipmentUpgradeCandidate(candidates);
+      profile?.collector.addRankingCandidates(candidates.length);
+      const selectedIndex = measure('nativeRanking', () => selectBestAutoEquipmentUpgradeCandidate(candidates));
       return selectedIndex == null ? null : optionKeys[selectedIndex] ?? null;
     };
 
@@ -1519,10 +1576,10 @@ export function HomeScreen({
       return compareItemsByTierAndEnhancement(b, a);
     };
 
-    state.parties.forEach((party, partyIndex) => {
+    sourceState.parties.forEach((party, partyIndex) => {
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
-      const isJewelPriorityParty = state.global.jewelAutoEquipPriorityPartyId === party.id;
+      const isJewelPriorityParty = sourceState.global.jewelAutoEquipPriorityPartyId === party.id;
 
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
@@ -1532,9 +1589,11 @@ export function HomeScreen({
         if (autoEquipmentMode === 0) {
           // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
           if (isJewelPriorityParty) {
-            const assignments = planAutoJewelAssignmentsForCharacter(character, state.global.jewels);
+            const assignments = measure('jewelPlanning', () => (
+              planAutoJewelAssignmentsForCharacter(character, sourceState.global.jewels)
+            ));
             assignments.forEach((assignment) => {
-              actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
+              dispatchAttachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
               summary.jewelAssignmentCount += 1;
             });
           }
@@ -1544,7 +1603,7 @@ export function HomeScreen({
         // SpecRef: 7.1.1.2 | Equipping into empty slots | Item selection from a specific item category
         const combatStyle = decideAutoEquipmentCombatStyle(character);
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.guardian;
-        const { maxEquipSlots } = computeCharacterStats(character, party.level);
+        const { maxEquipSlots } = measure('statComputation', () => computeCharacterStats(character, party.level));
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
         const memoryDEquipmentSlots = autoEquipmentMode === 2
           ? simulatedEquipmentSlots.map((item) => (item ? { ...item } : null))
@@ -1566,7 +1625,7 @@ export function HomeScreen({
             if (equippedItem.isLocked === true) return;
             if (equippedItem.superRare > 0) return;
             addItemToSimulatedInventory(equippedItem);
-            actions.equipItem(character.id, slotIndex, null, partyIndex);
+            dispatchEquipItem(character.id, slotIndex, null, partyIndex);
             summary.unequippedCount += 1;
             simulatedEquipmentSlots[slotIndex] = null;
           });
@@ -1644,7 +1703,7 @@ export function HomeScreen({
             simulatedEquipmentSlots[slotIndex] = variant.item;
             memoryItemIds.add(variant.item.id);
             getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
-            actions.equipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
+            dispatchEquipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
             summary.equippedCount += 1;
           });
         }
@@ -1664,10 +1723,10 @@ export function HomeScreen({
             : variant.item;
           simulatedEquipmentSlots[slotIndex] = nextEquippedItem;
 
-          actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
+          dispatchEquipItem(character.id, slotIndex, itemKey, partyIndex);
           summary.upgradedCount += 1;
           if (equippedItem.jewel) {
-            actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
+            dispatchAttachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
           if (autoEquipmentMode !== 2) {
             queueAutoEquipmentNotification(
@@ -1703,7 +1762,7 @@ export function HomeScreen({
             const jewel = sortedJewels[jewelIndex];
             jewelIndex += 1;
             simulatedEquipmentSlots[slotIndex] = { ...item, jewel };
-            actions.attachJewel(character.id, slotIndex, jewel.key, jewel.rank, partyIndex);
+            dispatchAttachJewel(character.id, slotIndex, jewel.key, jewel.rank, partyIndex);
             summary.jewelAssignmentCount += 1;
           });
         });
@@ -1714,7 +1773,9 @@ export function HomeScreen({
             ...character,
             equipment: simulatedEquipmentSlots,
           };
-          const assignments = planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, state.global.jewels);
+          const assignments = measure('jewelPlanning', () => (
+            planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, sourceState.global.jewels)
+          ));
           assignments.forEach((assignment) => {
             const slotItem = simulatedEquipmentSlots[assignment.slotIndex];
             if (!slotItem) return;
@@ -1722,7 +1783,7 @@ export function HomeScreen({
               ...slotItem,
               jewel: { key: assignment.key, rank: assignment.rank },
             };
-            actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
+            dispatchAttachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
             summary.jewelAssignmentCount += 1;
           });
         }
@@ -1764,7 +1825,9 @@ export function HomeScreen({
       });
     });
 
-    const shouldSuppressAutoEquipmentNotifications = options?.suppressNotifications
+    if (!profile && plannedActions.length > 0) actions.applyAutoEquipmentActions(plannedActions);
+
+    const shouldSuppressAutoEquipmentNotifications = profile || options?.suppressNotifications
       || pendingAfkMsRef.current > 0
       || shouldShowAfkSummaryRef.current
       || justCompletedAfkRecoveryRef.current;
@@ -1772,14 +1835,57 @@ export function HomeScreen({
     if (shouldSuppressAutoEquipmentNotifications) return summary;
 
     slotNotifications.forEach(({ message, partyIndex }) => {
-      if (state.parties[partyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) return;
-      actions.addNotification(message, 'normal', 'item', true, {
-        rarity: 'common',
-        isSuperRareItem: false,
-      });
+      if (sourceState.parties[partyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) return;
+      measure('actionDispatch', () => actions.addNotification(message, 'normal', 'item', true, {
+          rarity: 'common',
+          isSuperRareItem: false,
+        }));
     });
     return summary;
   }, [actions, state.global.inventory, state.parties]);
+
+  useEffect(() => {
+    if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
+    window.__BOKEMO_AUTO_EQUIPMENT_PROFILE__ = {
+      async run(workload: AutoEquipmentProfileWorkload) {
+        const sourceState = createAutoEquipmentProfileState(
+          autoEquipmentProfileBaseStateRef.current ?? state,
+          workload,
+        );
+        const collector = createAutoEquipmentAttributionCollector();
+        const recordedActions: AutoEquipmentProfileAction[] = [];
+        const startedAt = performance.now();
+        const summary = runAutoEquipment(undefined, undefined, {
+          suppressNotifications: true,
+          profile: { sourceState, collector, actions: recordedActions },
+        });
+        const finalState = collector.measure('reducerApplication', () => (
+          applyAutoEquipmentProfileActions(sourceState, recordedActions)
+        ));
+        const attribution = collector.finish(performance.now() - startedAt);
+        const sequentialReducerStartedAt = performance.now();
+        const sequentialFinalState = applyAutoEquipmentProfileActionsSequentially(sourceState, recordedActions);
+        const sequentialReducerMs = performance.now() - sequentialReducerStartedAt;
+        const serializedFinalState = serializeGameState(finalState);
+        const serializedSequentialFinalState = serializeGameState(sequentialFinalState);
+        if (JSON.stringify(serializedFinalState) !== JSON.stringify(serializedSequentialFinalState)) {
+          throw new Error(`Batched automatic-equipment reducer parity failed for ${workload}`);
+        }
+        return {
+          workload,
+          summary,
+          attribution,
+          actions: recordedActions,
+          actionSequenceSha256: await sha256ProfileValue(recordedActions),
+          finalStateSha256: await sha256ProfileValue(serializedFinalState),
+          sequentialReducerMs,
+        };
+      },
+    };
+    return () => {
+      delete window.__BOKEMO_AUTO_EQUIPMENT_PROFILE__;
+    };
+  }, [runAutoEquipment, state]);
 
   apiAutoEquipmentRunnerRef.current = runAutoEquipment;
 
