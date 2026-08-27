@@ -5,10 +5,18 @@ import test from 'node:test';
 import {
   createAutoEquipmentAttributionCollector,
   createAutoEquipmentProfileState,
+  createAutoEquipmentReducerAttribution,
   type AutoEquipmentProfileAction,
 } from '../../src/game/autoEquipmentAttribution.ts';
 import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
+import {
+  computePartyMaxHp,
+  computePartyStats,
+  createPartyMaxHpLedger,
+  updatePartyMaxHpLedger,
+} from '../../src/game/partyComputation.ts';
+import { JEWELS_BY_ITEM_CATEGORY } from '../../src/game/jewel.ts';
 import {
   applyAutoEquipmentProfileActions,
   applyAutoEquipmentProfileActionsSequentially,
@@ -35,6 +43,27 @@ test('automatic-equipment attribution workloads are isolated deterministic fixtu
   assert.equal(fixture.parties[0].characters[0].autoEquipmentMode, originalMode);
 });
 
+test('HP-only party computation is exact for every save-backed party', () => {
+  const state = loadFixture();
+  for (const party of state.parties) {
+    assert.equal(computePartyMaxHp(party), computePartyStats(party).partyStats.hp);
+  }
+});
+
+test('incremental HP ledger rebuilds on party-wide HP input changes', () => {
+  const previousParty = structuredClone(loadFixture().parties[0]);
+  const nextParty = { ...previousParty, level: previousParty.level + 1 };
+  const changedCharacterId = previousParty.characters[0].id;
+  const update = updatePartyMaxHpLedger(
+    createPartyMaxHpLedger(previousParty),
+    previousParty,
+    nextParty,
+    changedCharacterId,
+  );
+  assert.equal(update.rebuilt, true);
+  assert.equal(update.ledger.maxHp, computePartyStats(nextParty).partyStats.hp);
+});
+
 test('batched automatic-equipment reducer is byte-identical to sequential actions', () => {
   const state = createAutoEquipmentProfileState(loadFixture(), 'full_rebuild');
   const actions: AutoEquipmentProfileAction[] = [];
@@ -47,9 +76,12 @@ test('batched automatic-equipment reducer is byte-identical to sequential action
     });
   });
 
-  const batched = applyAutoEquipmentProfileActions(state, actions);
   const sequential = applyAutoEquipmentProfileActionsSequentially(state, actions);
-  assert.equal(JSON.stringify(serializeGameState(batched)), JSON.stringify(serializeGameState(sequential)));
+  const expected = JSON.stringify(serializeGameState(sequential));
+  for (const strategy of ['legacy_full_party', 'whole_party_max_hp', 'incremental_hp'] as const) {
+    const batched = applyAutoEquipmentProfileActions(state, actions, undefined, strategy);
+    assert.equal(JSON.stringify(serializeGameState(batched)), expected);
+  }
 });
 
 test('batched reducer preserves mixed inventory, upgrade, and Jewel action semantics', () => {
@@ -66,21 +98,49 @@ test('batched reducer preserves mixed inventory, upgrade, and Jewel action seman
     { type: 'ATTACH_JEWEL', characterId: character.id, slotIndex: 0, jewelKey: 'might', rank: 1, partyIndex },
     { type: 'EQUIP_ITEM', characterId: character.id, slotIndex: 0, itemKey: null, partyIndex },
   ];
-  const reducerAttribution = {
-    partyStatsMs: 0,
-    inventoryMutationMs: 0,
-    structuralAndControlMs: 0,
-    partyStatsCalls: 0,
-  };
+  const reducerAttribution = createAutoEquipmentReducerAttribution();
 
   const batched = applyAutoEquipmentProfileActions(state, actions, reducerAttribution);
   const sequential = applyAutoEquipmentProfileActionsSequentially(state, actions);
 
   assert.equal(JSON.stringify(serializeGameState(batched)), JSON.stringify(serializeGameState(sequential)));
-  assert.ok(reducerAttribution.partyStatsCalls >= actions.length);
+  assert.equal(reducerAttribution.partyStatsCalls, 0);
+  assert.equal(reducerAttribution.partyMaxHpCalls, 0);
+  assert.equal(reducerAttribution.hpLedgerInitializations, 1);
+  assert.equal(reducerAttribution.hpLedgerUpdates, actions.length);
+  assert.equal(reducerAttribution.hpLedgerRebuilds, 0);
+  assert.equal(reducerAttribution.characterHpContributionCalls, state.parties[partyIndex].characters.length + actions.length);
   assert.ok(reducerAttribution.partyStatsMs >= 0);
   assert.ok(reducerAttribution.inventoryMutationMs >= 0);
   assert.ok(reducerAttribution.structuralAndControlMs >= 0);
+});
+
+test('HP strategies preserve every damaged-party intermediate state', () => {
+  const state = createAutoEquipmentProfileState(loadFixture(), 'max_inventory');
+  const partyIndex = 0;
+  const character = state.parties[partyIndex].characters.find((candidate) => candidate.equipment.some(Boolean));
+  assert.ok(character);
+  const slotIndex = character.equipment.findIndex(Boolean);
+  const item = character.equipment[slotIndex];
+  assert.ok(item);
+  const jewelKey = JEWELS_BY_ITEM_CATEGORY[item.category].find((key) => key !== 'might');
+  assert.ok(jewelKey);
+  state.parties[partyIndex].currentHp = 1;
+  state.global.jewels[`${jewelKey}:8`] = Math.max(2, state.global.jewels[`${jewelKey}:8`] ?? 0);
+  const actions: AutoEquipmentProfileAction[] = [
+    { type: 'ATTACH_JEWEL', characterId: character.id, slotIndex, jewelKey, rank: 8, partyIndex },
+    { type: 'EQUIP_ITEM', characterId: character.id, slotIndex, itemKey: null, partyIndex },
+  ];
+
+  for (let actionCount = 1; actionCount <= actions.length; actionCount += 1) {
+    const prefix = actions.slice(0, actionCount);
+    const sequential = applyAutoEquipmentProfileActionsSequentially(state, prefix);
+    const expected = JSON.stringify(serializeGameState(sequential));
+    for (const strategy of ['legacy_full_party', 'whole_party_max_hp', 'incremental_hp'] as const) {
+      const candidate = applyAutoEquipmentProfileActions(state, prefix, undefined, strategy);
+      assert.equal(JSON.stringify(serializeGameState(candidate)), expected);
+    }
+  }
 });
 
 test('automatic-equipment attribution records bounded phase and workload counters', () => {

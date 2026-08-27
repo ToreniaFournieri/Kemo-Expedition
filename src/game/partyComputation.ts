@@ -187,6 +187,94 @@ export function computeCharacterHpContribution(
   };
 }
 
+export function computePartyMaxHp(party: Party): number {
+  let bonusHp = 0;
+  for (const character of party.characters) {
+    bonusHp += computeCharacterHpContribution(character, party.level).totalHpBonus;
+  }
+  return Math.floor(bonusHp * getDeityPartyHpMultiplier(party.deity.name, party.deityGold ?? 0));
+}
+
+export interface PartyMaxHpLedger {
+  partyId: number;
+  partyLevel: number;
+  deityName: string;
+  deityGold: number;
+  characterIds: number[];
+  contributionByCharacterId: Map<number, number>;
+  bonusHp: number;
+  maxHp: number;
+}
+
+export function createPartyMaxHpLedger(party: Party): PartyMaxHpLedger {
+  const contributionByCharacterId = new Map<number, number>();
+  let bonusHp = 0;
+  for (const character of party.characters) {
+    const contribution = computeCharacterHpContribution(character, party.level).totalHpBonus;
+    contributionByCharacterId.set(character.id, contribution);
+    bonusHp += contribution;
+  }
+  const deityGold = party.deityGold ?? 0;
+  return {
+    partyId: party.id,
+    partyLevel: party.level,
+    deityName: party.deity.name,
+    deityGold,
+    characterIds: party.characters.map((character) => character.id),
+    contributionByCharacterId,
+    bonusHp,
+    maxHp: Math.floor(bonusHp * getDeityPartyHpMultiplier(party.deity.name, deityGold)),
+  };
+}
+
+function canIncrementPartyMaxHpLedger(
+  ledger: PartyMaxHpLedger,
+  previousParty: Party,
+  nextParty: Party,
+): boolean {
+  if (
+    ledger.partyId !== previousParty.id
+    || nextParty.id !== previousParty.id
+    || ledger.partyLevel !== previousParty.level
+    || nextParty.level !== previousParty.level
+    || ledger.deityName !== previousParty.deity.name
+    || nextParty.deity.name !== previousParty.deity.name
+    || ledger.deityGold !== (previousParty.deityGold ?? 0)
+    || (nextParty.deityGold ?? 0) !== (previousParty.deityGold ?? 0)
+    || ledger.characterIds.length !== previousParty.characters.length
+    || nextParty.characters.length !== previousParty.characters.length
+  ) return false;
+
+  return ledger.characterIds.every((characterId, index) => (
+    previousParty.characters[index]?.id === characterId
+    && nextParty.characters[index]?.id === characterId
+  ));
+}
+
+export function updatePartyMaxHpLedger(
+  ledger: PartyMaxHpLedger,
+  previousParty: Party,
+  nextParty: Party,
+  changedCharacterId: number,
+): { ledger: PartyMaxHpLedger; rebuilt: boolean } {
+  if (!canIncrementPartyMaxHpLedger(ledger, previousParty, nextParty)) {
+    return { ledger: createPartyMaxHpLedger(nextParty), rebuilt: true };
+  }
+
+  const nextCharacter = nextParty.characters.find((character) => character.id === changedCharacterId);
+  const previousContribution = ledger.contributionByCharacterId.get(changedCharacterId);
+  if (!nextCharacter || previousContribution === undefined) {
+    return { ledger: createPartyMaxHpLedger(nextParty), rebuilt: true };
+  }
+
+  const nextContribution = computeCharacterHpContribution(nextCharacter, nextParty.level).totalHpBonus;
+  const bonusHp = ledger.bonusHp - previousContribution + nextContribution;
+  ledger.contributionByCharacterId.set(changedCharacterId, nextContribution);
+  ledger.bonusHp = bonusHp;
+  ledger.maxHp = Math.floor(bonusHp * getDeityPartyHpMultiplier(ledger.deityName, ledger.deityGold));
+  return { ledger, rebuilt: false };
+}
+
 export interface ComputedPartyStatus {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];
@@ -206,13 +294,6 @@ export function computePartyStats(party: Party): ComputedPartyStatus {
   //         x (b.vitality + b.mind) / 20 x c.growth_xV), round off}
   //       + {(3.0 x b.mind + 3.0 x b.vitality + (L_eff x b.vitality x (b.vitality + b.mind) / 20) x c.growth_xV), round off}
   //     )
-  let bonusHp = 0;
-
-  for (const character of party.characters) {
-    const characterHpContribution = computeCharacterHpContribution(character, party.level);
-    bonusHp += characterHpContribution.totalHpBonus;
-  }
-
   // Collect all party abilities
   const partyAbilitiesMap = new Map<AbilityId, number>();
   for (const cs of characterStats) {
@@ -264,8 +345,7 @@ export function computePartyStats(party: Party): ComputedPartyStatus {
     ice: deityElementalModifier.ice,
   };
 
-  const deityHpMultiplier = getDeityPartyHpMultiplier(party.deity.name, party.deityGold ?? 0);
-  const totalHp = Math.floor(bonusHp * deityHpMultiplier);
+  const totalHp = computePartyMaxHp(party);
 
   return {
     partyStats: {

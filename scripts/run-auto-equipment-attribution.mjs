@@ -102,7 +102,7 @@ app.whenReady().then(async () => {
     await window.webContents.executeJavaScript(\`localStorage.setItem('kemo-expedition-save:prod', \${JSON.stringify(${JSON.stringify(encodedState)})})\`, true);
     await window.webContents.reload();
     await waitForProfile(window);
-    const report = { schemaVersion: 2, generatedAt: new Date().toISOString(), scope, sampling: { warmups: ${warmups}, measuredSamples: ${samples} }, workloads: {} };
+    const report = { schemaVersion: 3, generatedAt: new Date().toISOString(), scope, sampling: { warmups: ${warmups}, measuredSamples: ${samples} }, workloads: {} };
     for (const workload of workloads) {
       for (let index = 0; index < ${warmups}; index += 1) await runSample(window, workload);
       const measured = [];
@@ -130,7 +130,23 @@ app.whenReady().then(async () => {
             inventoryMutationMs: distribution(measured.map((sample) => sample.reducerAttribution.inventoryMutationMs)),
             structuralAndControlMs: distribution(measured.map((sample) => sample.reducerAttribution.structuralAndControlMs)),
             partyStatsCalls: measured[0].reducerAttribution.partyStatsCalls,
+            partyMaxHpCalls: measured[0].reducerAttribution.partyMaxHpCalls,
+            characterStatsCalls: measured[0].reducerAttribution.characterStatsCalls,
+            characterHpContributionCalls: measured[0].reducerAttribution.characterHpContributionCalls,
+            hpLedgerInitializations: measured[0].reducerAttribution.hpLedgerInitializations,
+            hpLedgerUpdates: measured[0].reducerAttribution.hpLedgerUpdates,
+            hpLedgerRebuilds: measured[0].reducerAttribution.hpLedgerRebuilds,
           },
+          hpStrategyCandidates: Object.fromEntries(
+            Object.keys(measured[0].hpStrategyCandidates).map((strategy) => [strategy, {
+              reducerMs: distribution(measured.map((sample) => sample.hpStrategyCandidates[strategy].reducerMs)),
+              partyStatsMs: distribution(measured.map((sample) => sample.hpStrategyCandidates[strategy].attribution.partyStatsMs)),
+              attributionCounts: Object.fromEntries(
+                Object.entries(measured[0].hpStrategyCandidates[strategy].attribution)
+                  .filter(([key]) => !key.endsWith('Ms')),
+              ),
+            }]),
+          ),
           reducerMedianImprovementPercent: sequentialReducer.p50 <= 0 ? 0 : (1 - optimizedReducer.p50 / sequentialReducer.p50) * 100,
           inventoryEntriesVisited: measured[0].attribution.inventoryEntriesVisited,
           inventoryIndexEntries: measured[0].attribution.inventoryIndexEntries,
@@ -139,7 +155,7 @@ app.whenReady().then(async () => {
           actionSequenceSha256: actionHashes[0],
           finalStateSha256: finalHashes[0],
           runSummary: measured[0].summary,
-          limitations: ['The verification-window delay includes the sequential parity oracle and SHA-256 hashing; production synchronous work is represented by totalMs and phasesMs.'],
+          limitations: ['The verification-window delay includes the legacy full-party reducer, whole-party Max-HP reducer, sequential parity oracle, legacy planner oracle, and SHA-256 hashing; production synchronous work is represented by totalMs and phasesMs.'],
         },
         ...(${summaryOnly} ? {} : { samples: measured }),
       };

@@ -44,6 +44,29 @@ export interface AutoEquipmentReducerAttribution {
   inventoryMutationMs: number;
   structuralAndControlMs: number;
   partyStatsCalls: number;
+  partyMaxHpCalls: number;
+  characterStatsCalls: number;
+  characterHpContributionCalls: number;
+  hpLedgerInitializations: number;
+  hpLedgerUpdates: number;
+  hpLedgerRebuilds: number;
+}
+
+export type AutoEquipmentHpStrategy = 'legacy_full_party' | 'whole_party_max_hp' | 'incremental_hp';
+
+export function createAutoEquipmentReducerAttribution(): AutoEquipmentReducerAttribution {
+  return {
+    partyStatsMs: 0,
+    inventoryMutationMs: 0,
+    structuralAndControlMs: 0,
+    partyStatsCalls: 0,
+    partyMaxHpCalls: 0,
+    characterStatsCalls: 0,
+    characterHpContributionCalls: 0,
+    hpLedgerInitializations: 0,
+    hpLedgerUpdates: 0,
+    hpLedgerRebuilds: 0,
+  };
 }
 
 export interface AutoEquipmentAttributionCollector {

@@ -28,7 +28,15 @@ import {
   ExpeditionDestinationMode,
   ExpeditionSimulationResult,
 } from '../types';
-import { computeCharacterHpContribution, computePartyStats, type ComputedPartyStatus } from '../game/partyComputation';
+import {
+  computeCharacterHpContribution,
+  computePartyMaxHp,
+  computePartyStats,
+  createPartyMaxHpLedger,
+  updatePartyMaxHpLedger,
+  type ComputedPartyStatus,
+  type PartyMaxHpLedger,
+} from '../game/partyComputation';
 import { deriveExpeditionRewardContext } from '../game/expeditionRewardContext';
 import { executeBattle, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
 import { gameplayRandom } from '../game/gameplayRandom';
@@ -66,7 +74,11 @@ import {
 } from '../game/bags';
 import { getItemById } from '../data/items';
 import { hydrateGameState } from '../game/saveCodec';
-import type { AutoEquipmentProfileAction, AutoEquipmentReducerAttribution } from '../game/autoEquipmentAttribution';
+import type {
+  AutoEquipmentHpStrategy,
+  AutoEquipmentProfileAction,
+  AutoEquipmentReducerAttribution,
+} from '../game/autoEquipmentAttribution';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
@@ -2023,7 +2035,7 @@ type GameAction =
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
-  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution }
+  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -2952,7 +2964,9 @@ function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean 
 }
 
 interface AutoEquipmentReducerContext {
+  hpStrategy: AutoEquipmentHpStrategy;
   maxHpByPartyId: Map<number, number>;
+  hpLedgerByPartyId: Map<number, PartyMaxHpLedger>;
   attribution?: AutoEquipmentReducerAttribution;
 }
 
@@ -2973,23 +2987,93 @@ function measureAutoEquipmentReducerWork<T>(
 function syncPartyCurrentHpAfterMaxHpChange(
   previousParty: Party,
   nextParty: Party,
+  changedCharacterId: number,
   autoEquipmentContext?: AutoEquipmentReducerContext,
 ): Party {
+  if (autoEquipmentContext?.hpStrategy === 'incremental_hp') {
+    let ledger = autoEquipmentContext.hpLedgerByPartyId.get(previousParty.id);
+    if (!ledger) {
+      ledger = measureAutoEquipmentReducerWork(
+        autoEquipmentContext,
+        'partyStatsMs',
+        () => createPartyMaxHpLedger(previousParty),
+      );
+      autoEquipmentContext.hpLedgerByPartyId.set(previousParty.id, ledger);
+      if (autoEquipmentContext.attribution) {
+        autoEquipmentContext.attribution.hpLedgerInitializations += 1;
+        autoEquipmentContext.attribution.characterHpContributionCalls += previousParty.characters.length;
+        autoEquipmentContext.attribution.characterStatsCalls += previousParty.characters.length;
+      }
+    }
+    const previousMaxHp = ledger.maxHp;
+    const update = measureAutoEquipmentReducerWork(
+      autoEquipmentContext,
+      'partyStatsMs',
+      () => updatePartyMaxHpLedger(ledger!, previousParty, nextParty, changedCharacterId),
+    );
+    autoEquipmentContext.hpLedgerByPartyId.set(nextParty.id, update.ledger);
+    if (autoEquipmentContext.attribution) {
+      if (update.rebuilt) {
+        autoEquipmentContext.attribution.hpLedgerRebuilds += 1;
+        autoEquipmentContext.attribution.characterHpContributionCalls += nextParty.characters.length;
+        autoEquipmentContext.attribution.characterStatsCalls += nextParty.characters.length;
+      } else {
+        autoEquipmentContext.attribution.hpLedgerUpdates += 1;
+        autoEquipmentContext.attribution.characterHpContributionCalls += 1;
+        autoEquipmentContext.attribution.characterStatsCalls += 1;
+      }
+    }
+    const nextMaxHp = update.ledger.maxHp;
+    if (nextMaxHp <= 0) return nextParty;
+    const previousCurrentHp = typeof previousParty.currentHp === 'number'
+      ? previousParty.currentHp
+      : previousMaxHp;
+    const damagedHp = Math.max(0, previousMaxHp - Math.max(0, previousCurrentHp));
+    return {
+      ...nextParty,
+      currentHp: Math.max(1, Math.min(nextMaxHp, nextMaxHp - damagedHp)),
+    };
+  }
+
   const cachedPreviousMaxHp = autoEquipmentContext?.maxHpByPartyId.get(previousParty.id);
   const previousMaxHp = cachedPreviousMaxHp ?? measureAutoEquipmentReducerWork(
     autoEquipmentContext,
     'partyStatsMs',
-    () => computePartyStats(previousParty).partyStats.hp,
+    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+      ? computePartyMaxHp(previousParty)
+      : computePartyStats(previousParty).partyStats.hp,
   );
   if (autoEquipmentContext?.attribution && cachedPreviousMaxHp === undefined) {
-    autoEquipmentContext.attribution.partyStatsCalls += 1;
+    const characterCount = previousParty.characters.length;
+    if (autoEquipmentContext.hpStrategy === 'whole_party_max_hp') {
+      autoEquipmentContext.attribution.partyMaxHpCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount;
+    } else {
+      autoEquipmentContext.attribution.partyStatsCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount * 2;
+    }
   }
   const nextMaxHp = measureAutoEquipmentReducerWork(
     autoEquipmentContext,
     'partyStatsMs',
-    () => computePartyStats(nextParty).partyStats.hp,
+    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+      ? computePartyMaxHp(nextParty)
+      : computePartyStats(nextParty).partyStats.hp,
   );
-  if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.partyStatsCalls += 1;
+  if (autoEquipmentContext?.attribution) {
+    const characterCount = nextParty.characters.length;
+    if (autoEquipmentContext.hpStrategy === 'whole_party_max_hp') {
+      autoEquipmentContext.attribution.partyMaxHpCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount;
+    } else {
+      autoEquipmentContext.attribution.partyStatsCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount * 2;
+    }
+  }
   autoEquipmentContext?.maxHpByPartyId.set(nextParty.id, nextMaxHp);
   if (nextMaxHp <= 0) return nextParty;
 
@@ -3016,7 +3100,9 @@ function gameReducer(
     case 'APPLY_AUTO_EQUIPMENT_ACTIONS': {
       // SpecRef: 7.1.1 | AUTO equipment logic | Processing priority
       const context: AutoEquipmentReducerContext = {
+        hpStrategy: action.hpStrategy ?? 'incremental_hp',
         maxHpByPartyId: new Map(),
+        hpLedgerByPartyId: new Map(),
         attribution: action.attribution,
       };
       const startedAt = action.attribution ? performance.now() : 0;
@@ -4339,7 +4425,7 @@ function gameReducer(
           updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
             ...currentParty,
             characters: newCharacters
-          }, autoEquipmentContext);
+          }, character.id, autoEquipmentContext);
 
           return {
             ...state,
@@ -4360,7 +4446,7 @@ function gameReducer(
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      }, autoEquipmentContext);
+      }, character.id, autoEquipmentContext);
 
       return {
         ...state,
@@ -4422,7 +4508,7 @@ function gameReducer(
         updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
           ...currentParty,
           characters: newCharacters,
-        }, autoEquipmentContext);
+        }, character.id, autoEquipmentContext);
 
         return {
           ...state,
@@ -4453,7 +4539,7 @@ function gameReducer(
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters,
-      }, autoEquipmentContext);
+      }, character.id, autoEquipmentContext);
 
       return {
         ...state,
@@ -4563,7 +4649,7 @@ function gameReducer(
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      });
+      }, oldChar.id);
 
       return {
         ...state,
@@ -5330,8 +5416,9 @@ export function applyAutoEquipmentProfileActions(
   state: GameState,
   actions: readonly AutoEquipmentProfileAction[],
   attribution?: AutoEquipmentReducerAttribution,
+  hpStrategy: AutoEquipmentHpStrategy = 'incremental_hp',
 ): GameState {
-  return gameReducer(state, { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions: [...actions], attribution });
+  return gameReducer(state, { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions: [...actions], attribution, hpStrategy });
 }
 
 export function applyAutoEquipmentProfileActionsSequentially(

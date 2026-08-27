@@ -71,6 +71,10 @@ interface Window {
       finalStateSha256: string;
       sequentialReducerMs: number;
       reducerAttribution: import('./game/autoEquipmentAttribution').AutoEquipmentReducerAttribution;
+      hpStrategyCandidates: Record<string, {
+        reducerMs: number;
+        attribution: import('./game/autoEquipmentAttribution').AutoEquipmentReducerAttribution;
+      }>;
       legacyPlanningMs: number;
     }>;
   };

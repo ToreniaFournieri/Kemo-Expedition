@@ -28,6 +28,7 @@ import {
 AUTO_EQUIPMENT_PROFILE_HASH_BUILD_NUMBER,
 createAutoEquipmentAttributionCollector,
 createAutoEquipmentProfileState,
+createAutoEquipmentReducerAttribution,
 type AutoEquipmentAttributionCollector,
 type AutoEquipmentProfileAction,
 type AutoEquipmentProfileScope,
@@ -1881,12 +1882,7 @@ export function HomeScreen({
         );
         const collector = createAutoEquipmentAttributionCollector();
         const recordedActions: AutoEquipmentProfileAction[] = [];
-        const reducerAttribution = {
-          partyStatsMs: 0,
-          inventoryMutationMs: 0,
-          structuralAndControlMs: 0,
-          partyStatsCalls: 0,
-        };
+        const reducerAttribution = createAutoEquipmentReducerAttribution();
         const targetPartyIndexes = scope === 'all_parties' ? undefined : [0];
         const targetCharacterIds = scope === 'character_1'
           ? [sourceState.parties[0]?.characters[0]?.id].filter((id): id is number => typeof id === 'number')
@@ -1900,13 +1896,38 @@ export function HomeScreen({
           applyAutoEquipmentProfileActions(sourceState, recordedActions, reducerAttribution)
         ));
         const attribution = collector.finish(performance.now() - startedAt);
+        const legacyReducerAttribution = createAutoEquipmentReducerAttribution();
+        const legacyReducerStartedAt = performance.now();
+        const legacyReducerFinalState = applyAutoEquipmentProfileActions(
+          sourceState,
+          recordedActions,
+          legacyReducerAttribution,
+          'legacy_full_party',
+        );
+        const legacyReducerMs = performance.now() - legacyReducerStartedAt;
+        const wholePartyMaxHpAttribution = createAutoEquipmentReducerAttribution();
+        const wholePartyMaxHpStartedAt = performance.now();
+        const wholePartyMaxHpFinalState = applyAutoEquipmentProfileActions(
+          sourceState,
+          recordedActions,
+          wholePartyMaxHpAttribution,
+          'whole_party_max_hp',
+        );
+        const wholePartyMaxHpReducerMs = performance.now() - wholePartyMaxHpStartedAt;
         const sequentialReducerStartedAt = performance.now();
         const sequentialFinalState = applyAutoEquipmentProfileActionsSequentially(sourceState, recordedActions);
         const sequentialReducerMs = performance.now() - sequentialReducerStartedAt;
         const serializedFinalState = serializeGameState(finalState);
+        const serializedLegacyReducerFinalState = serializeGameState(legacyReducerFinalState);
+        const serializedWholePartyMaxHpFinalState = serializeGameState(wholePartyMaxHpFinalState);
         const serializedSequentialFinalState = serializeGameState(sequentialFinalState);
-        if (JSON.stringify(serializedFinalState) !== JSON.stringify(serializedSequentialFinalState)) {
-          throw new Error(`Batched automatic-equipment reducer parity failed for ${workload}`);
+        const canonicalFinalState = JSON.stringify(serializedFinalState);
+        if (
+          canonicalFinalState !== JSON.stringify(serializedLegacyReducerFinalState)
+          || canonicalFinalState !== JSON.stringify(serializedWholePartyMaxHpFinalState)
+          || canonicalFinalState !== JSON.stringify(serializedSequentialFinalState)
+        ) {
+          throw new Error(`Automatic-equipment HP strategy parity failed for ${workload}`);
         }
         const legacyCollector = createAutoEquipmentAttributionCollector();
         const legacyActions: AutoEquipmentProfileAction[] = [];
@@ -1939,6 +1960,16 @@ export function HomeScreen({
           }),
           sequentialReducerMs,
           reducerAttribution,
+          hpStrategyCandidates: {
+            legacyFullParty: { reducerMs: legacyReducerMs, attribution: legacyReducerAttribution },
+            wholePartyMaxHp: { reducerMs: wholePartyMaxHpReducerMs, attribution: wholePartyMaxHpAttribution },
+            incrementalHp: {
+              reducerMs: reducerAttribution.partyStatsMs
+                + reducerAttribution.inventoryMutationMs
+                + reducerAttribution.structuralAndControlMs,
+              attribution: reducerAttribution,
+            },
+          },
           scope,
           legacyPlanningMs,
         };
