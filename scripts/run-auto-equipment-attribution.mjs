@@ -74,7 +74,12 @@ const expectedHashes = {
   },
 };
 const nearestRank = (values, ratio) => [...values].sort((a, b) => a - b)[Math.max(0, Math.ceil(values.length * ratio) - 1)] ?? 0;
-const distribution = (values) => ({ samples: values.length, p50: nearestRank(values, 0.5), p95: nearestRank(values, 0.95), maximum: Math.max(...values, 0) });
+const distribution = (values) => ({
+  samples: values.length,
+  p50: nearestRank(values, 0.5),
+  p95: nearestRank(values, 0.95),
+  maximum: values.length === 0 ? 0 : Math.max(...values),
+});
 
 async function waitForProfile(window) {
   const deadline = Date.now() + 15000;
@@ -86,11 +91,11 @@ async function waitForProfile(window) {
   throw new Error('Automatic-equipment profile hook did not become ready');
 }
 
-async function runSample(window, workload) {
+async function runSample(window, workload, candidateOrderOffset) {
   return window.webContents.executeJavaScript(\`(async () => {
     const timerStartedAt = performance.now();
     const eventLoopDelay = new Promise((resolve) => setTimeout(() => resolve(performance.now() - timerStartedAt), 0));
-    const result = await window.__BOKEMO_AUTO_EQUIPMENT_PROFILE__.run(\${JSON.stringify(workload)}, \${JSON.stringify(scope)});
+    const result = await window.__BOKEMO_AUTO_EQUIPMENT_PROFILE__.run(\${JSON.stringify(workload)}, \${JSON.stringify(scope)}, \${candidateOrderOffset});
     return { ...result, profileVerificationWindowDelayMs: await eventLoopDelay };
   })()\`, true);
 }
@@ -102,11 +107,11 @@ app.whenReady().then(async () => {
     await window.webContents.executeJavaScript(\`localStorage.setItem('kemo-expedition-save:prod', \${JSON.stringify(${JSON.stringify(encodedState)})})\`, true);
     await window.webContents.reload();
     await waitForProfile(window);
-    const report = { schemaVersion: 3, generatedAt: new Date().toISOString(), scope, sampling: { warmups: ${warmups}, measuredSamples: ${samples} }, workloads: {} };
+    const report = { schemaVersion: 4, generatedAt: new Date().toISOString(), scope, sampling: { warmups: ${warmups}, measuredSamples: ${samples}, candidateOrder: 'rotating' }, workloads: {} };
     for (const workload of workloads) {
-      for (let index = 0; index < ${warmups}; index += 1) await runSample(window, workload);
+      for (let index = 0; index < ${warmups}; index += 1) await runSample(window, workload, index);
       const measured = [];
-      for (let index = 0; index < ${samples}; index += 1) measured.push(await runSample(window, workload));
+      for (let index = 0; index < ${samples}; index += 1) measured.push(await runSample(window, workload, index));
       const actionHashes = [...new Set(measured.map((sample) => sample.actionSequenceSha256))];
       const finalHashes = [...new Set(measured.map((sample) => sample.finalStateSha256))];
       if (actionHashes.length !== 1 || finalHashes.length !== 1) throw new Error(\`Non-deterministic automatic-equipment workload: \${workload}\`);
@@ -127,7 +132,9 @@ app.whenReady().then(async () => {
           legacyPlanningMs: distribution(measured.map((sample) => sample.legacyPlanningMs)),
           reducerAttribution: {
             partyStatsMs: distribution(measured.map((sample) => sample.reducerAttribution.partyStatsMs)),
+            inventoryPreparationMs: distribution(measured.map((sample) => sample.reducerAttribution.inventoryPreparationMs)),
             inventoryMutationMs: distribution(measured.map((sample) => sample.reducerAttribution.inventoryMutationMs)),
+            jewelMutationMs: distribution(measured.map((sample) => sample.reducerAttribution.jewelMutationMs)),
             structuralAndControlMs: distribution(measured.map((sample) => sample.reducerAttribution.structuralAndControlMs)),
             partyStatsCalls: measured[0].reducerAttribution.partyStatsCalls,
             partyMaxHpCalls: measured[0].reducerAttribution.partyMaxHpCalls,
@@ -136,16 +143,52 @@ app.whenReady().then(async () => {
             hpLedgerInitializations: measured[0].reducerAttribution.hpLedgerInitializations,
             hpLedgerUpdates: measured[0].reducerAttribution.hpLedgerUpdates,
             hpLedgerRebuilds: measured[0].reducerAttribution.hpLedgerRebuilds,
+            eagerInventoryRecordClones: measured[0].reducerAttribution.eagerInventoryRecordClones,
+            eagerJewelRecordClones: measured[0].reducerAttribution.eagerJewelRecordClones,
+            transactionInventoryRecordClones: measured[0].reducerAttribution.transactionInventoryRecordClones,
+            transactionJewelRecordClones: measured[0].reducerAttribution.transactionJewelRecordClones,
+            inventoryMutationRecordClones: measured[0].reducerAttribution.inventoryMutationRecordClones,
+            jewelMutationRecordClones: measured[0].reducerAttribution.jewelMutationRecordClones,
+            appliedEquipmentActions: measured[0].reducerAttribution.appliedEquipmentActions,
+            appliedJewelActions: measured[0].reducerAttribution.appliedJewelActions,
           },
-          hpStrategyCandidates: Object.fromEntries(
-            Object.keys(measured[0].hpStrategyCandidates).map((strategy) => [strategy, {
-              reducerMs: distribution(measured.map((sample) => sample.hpStrategyCandidates[strategy].reducerMs)),
-              partyStatsMs: distribution(measured.map((sample) => sample.hpStrategyCandidates[strategy].attribution.partyStatsMs)),
+          reducerCandidates: Object.fromEntries(
+            Object.keys(measured[0].reducerCandidates).map((strategy) => [strategy, {
+              reducerMs: distribution(measured.map((sample) => sample.reducerCandidates[strategy].reducerMs)),
+              pairedTotalMs: distribution(measured.map((sample) => (
+                sample.attribution.totalMs
+                  - sample.reducerCandidates.incrementalHp.reducerMs
+                  + sample.reducerCandidates[strategy].reducerMs
+              ))),
+              pairedProductionImprovementPercent: distribution(measured.map((sample) => {
+                const pairedTotal = sample.attribution.totalMs
+                  - sample.reducerCandidates.incrementalHp.reducerMs
+                  + sample.reducerCandidates[strategy].reducerMs;
+                return pairedTotal <= 0 ? 0 : (1 - sample.attribution.totalMs / pairedTotal) * 100;
+              })),
+              pairedCandidateImprovementPercent: distribution(measured.map((sample) => {
+                const pairedTotal = sample.attribution.totalMs
+                  - sample.reducerCandidates.incrementalHp.reducerMs
+                  + sample.reducerCandidates[strategy].reducerMs;
+                return sample.attribution.totalMs <= 0 ? 0 : (1 - pairedTotal / sample.attribution.totalMs) * 100;
+              })),
+              partyStatsMs: distribution(measured.map((sample) => sample.reducerCandidates[strategy].attribution.partyStatsMs)),
+              inventoryPreparationMs: distribution(measured.map((sample) => sample.reducerCandidates[strategy].attribution.inventoryPreparationMs)),
+              inventoryMutationMs: distribution(measured.map((sample) => sample.reducerCandidates[strategy].attribution.inventoryMutationMs)),
+              jewelMutationMs: distribution(measured.map((sample) => sample.reducerCandidates[strategy].attribution.jewelMutationMs)),
+              structuralAndControlMs: distribution(measured.map((sample) => sample.reducerCandidates[strategy].attribution.structuralAndControlMs)),
               attributionCounts: Object.fromEntries(
-                Object.entries(measured[0].hpStrategyCandidates[strategy].attribution)
+                Object.entries(measured[0].reducerCandidates[strategy].attribution)
                   .filter(([key]) => !key.endsWith('Ms')),
               ),
             }]),
+          ),
+          reducerCandidateExecutionOrders: Object.fromEntries(
+            measured.reduce((counts, sample) => {
+              const order = sample.reducerCandidateExecutionOrder.join('>');
+              counts.set(order, (counts.get(order) ?? 0) + 1);
+              return counts;
+            }, new Map()),
           ),
           reducerMedianImprovementPercent: sequentialReducer.p50 <= 0 ? 0 : (1 - optimizedReducer.p50 / sequentialReducer.p50) * 100,
           inventoryEntriesVisited: measured[0].attribution.inventoryEntriesVisited,
@@ -155,7 +198,7 @@ app.whenReady().then(async () => {
           actionSequenceSha256: actionHashes[0],
           finalStateSha256: finalHashes[0],
           runSummary: measured[0].summary,
-          limitations: ['The verification-window delay includes the legacy full-party reducer, whole-party Max-HP reducer, sequential parity oracle, legacy planner oracle, and SHA-256 hashing; production synchronous work is represented by totalMs and phasesMs.'],
+          limitations: ['The verification-window delay includes rotating reducer candidates, the sequential parity oracle, legacy planner oracle, and SHA-256 hashing; production synchronous work is represented by totalMs and phasesMs. Paired totals are calculated per sample before percentile aggregation.'],
         },
         ...(${summaryOnly} ? {} : { samples: measured }),
       };

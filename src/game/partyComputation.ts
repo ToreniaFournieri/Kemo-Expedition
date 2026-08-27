@@ -257,6 +257,9 @@ export function updatePartyMaxHpLedger(
   nextParty: Party,
   changedCharacterId: number,
 ): { ledger: PartyMaxHpLedger; rebuilt: boolean } {
+  // Transaction precondition: only changedCharacterId may have different
+  // character-scoped HP inputs. Party-wide inputs and member topology are
+  // checked below and rebuild the ledger when they change.
   if (!canIncrementPartyMaxHpLedger(ledger, previousParty, nextParty)) {
     return { ledger: createPartyMaxHpLedger(nextParty), rebuilt: true };
   }

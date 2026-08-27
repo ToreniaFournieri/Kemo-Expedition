@@ -61,7 +61,7 @@ interface DesktopPartyProgressSnapshot {
 
 interface Window {
   __BOKEMO_AUTO_EQUIPMENT_PROFILE__?: {
-    run: (workload: AutoEquipmentProfileWorkload, scope?: AutoEquipmentProfileScope) => Promise<{
+    run: (workload: AutoEquipmentProfileWorkload, scope?: AutoEquipmentProfileScope, candidateOrderOffset?: number) => Promise<{
       workload: AutoEquipmentProfileWorkload;
       scope: AutoEquipmentProfileScope;
       summary: import('./components/home/homeShared').AutoEquipmentRunSummary;
@@ -71,10 +71,11 @@ interface Window {
       finalStateSha256: string;
       sequentialReducerMs: number;
       reducerAttribution: import('./game/autoEquipmentAttribution').AutoEquipmentReducerAttribution;
-      hpStrategyCandidates: Record<string, {
+      reducerCandidates: Record<string, {
         reducerMs: number;
         attribution: import('./game/autoEquipmentAttribution').AutoEquipmentReducerAttribution;
       }>;
+      reducerCandidateExecutionOrder: string[];
       legacyPlanningMs: number;
     }>;
   };

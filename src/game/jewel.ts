@@ -142,14 +142,27 @@ export function getJewelOwnedCount(inv: JewelInventory, key: JewelKey, rank: num
   return inv[getJewelInventoryKey(key, rank)] ?? 0;
 }
 
-export function addJewelToInventory(inv: JewelInventory, key: JewelKey, rank: number, count: number = 1): JewelInventory {
+export function addJewelToInventory(
+  inv: JewelInventory,
+  key: JewelKey,
+  rank: number,
+  count: number = 1,
+  mutateInventory: boolean = false,
+): JewelInventory {
   const k = getJewelInventoryKey(key, rank);
-  return { ...inv, [k]: (inv[k] ?? 0) + count };
+  const next = mutateInventory ? inv : { ...inv };
+  next[k] = (next[k] ?? 0) + count;
+  return next;
 }
 
-export function removeJewelFromInventory(inv: JewelInventory, key: JewelKey, rank: number): JewelInventory {
+export function removeJewelFromInventory(
+  inv: JewelInventory,
+  key: JewelKey,
+  rank: number,
+  mutateInventory: boolean = false,
+): JewelInventory {
   const k = getJewelInventoryKey(key, rank);
-  const next = { ...inv };
+  const next = mutateInventory ? inv : { ...inv };
   const current = next[k] ?? 0;
   if (current <= 1) delete next[k]; else next[k] = current - 1;
   return next;

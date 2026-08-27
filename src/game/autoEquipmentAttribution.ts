@@ -41,7 +41,9 @@ export interface AutoEquipmentAttributionResult {
 
 export interface AutoEquipmentReducerAttribution {
   partyStatsMs: number;
+  inventoryPreparationMs: number;
   inventoryMutationMs: number;
+  jewelMutationMs: number;
   structuralAndControlMs: number;
   partyStatsCalls: number;
   partyMaxHpCalls: number;
@@ -50,14 +52,25 @@ export interface AutoEquipmentReducerAttribution {
   hpLedgerInitializations: number;
   hpLedgerUpdates: number;
   hpLedgerRebuilds: number;
+  eagerInventoryRecordClones: number;
+  eagerJewelRecordClones: number;
+  transactionInventoryRecordClones: number;
+  transactionJewelRecordClones: number;
+  inventoryMutationRecordClones: number;
+  jewelMutationRecordClones: number;
+  appliedEquipmentActions: number;
+  appliedJewelActions: number;
 }
 
 export type AutoEquipmentHpStrategy = 'legacy_full_party' | 'whole_party_max_hp' | 'incremental_hp';
+export type AutoEquipmentStateStrategy = 'legacy_eager_clone' | 'reuse_immutable_inputs' | 'copy_once_transaction';
 
 export function createAutoEquipmentReducerAttribution(): AutoEquipmentReducerAttribution {
   return {
     partyStatsMs: 0,
+    inventoryPreparationMs: 0,
     inventoryMutationMs: 0,
+    jewelMutationMs: 0,
     structuralAndControlMs: 0,
     partyStatsCalls: 0,
     partyMaxHpCalls: 0,
@@ -66,6 +79,14 @@ export function createAutoEquipmentReducerAttribution(): AutoEquipmentReducerAtt
     hpLedgerInitializations: 0,
     hpLedgerUpdates: 0,
     hpLedgerRebuilds: 0,
+    eagerInventoryRecordClones: 0,
+    eagerJewelRecordClones: 0,
+    transactionInventoryRecordClones: 0,
+    transactionJewelRecordClones: 0,
+    inventoryMutationRecordClones: 0,
+    jewelMutationRecordClones: 0,
+    appliedEquipmentActions: 0,
+    appliedJewelActions: 0,
   };
 }
 

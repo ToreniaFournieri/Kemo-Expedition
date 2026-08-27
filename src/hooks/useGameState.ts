@@ -17,6 +17,7 @@ import {
   ExpeditionLogEntry,
   BattleLogEntry,
   InventoryRecord,
+  JewelInventory,
   getVariantKey,
   GameNotification,
   NotificationStyle,
@@ -78,6 +79,7 @@ import type {
   AutoEquipmentHpStrategy,
   AutoEquipmentProfileAction,
   AutoEquipmentReducerAttribution,
+  AutoEquipmentStateStrategy,
 } from '../game/autoEquipmentAttribution';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -896,7 +898,8 @@ function addItemToInventory(
   inventory: InventoryRecord,
   item: Item,
   currentGold: number,
-  autoSellMultiplier: number = 1
+  autoSellMultiplier: number = 1,
+  mutateInventory: boolean = false,
 ): { inventory: InventoryRecord; gold: number; wasAutoSold: boolean; autoSellProfit: number } {
   const key = getVariantKey(item);
   const existing = inventory[key];
@@ -924,7 +927,7 @@ function addItemToInventory(
   }
 
   // Otherwise add to inventory
-  const newInventory = { ...inventory };
+  const newInventory = mutateInventory ? inventory : { ...inventory };
   if (existing) {
     newInventory[key] = {
       ...existing,
@@ -945,11 +948,15 @@ function addItemToInventory(
 }
 
 // Helper to remove one item from inventory
-function removeItemFromInventory(inventory: InventoryRecord, key: string): InventoryRecord {
+function removeItemFromInventory(
+  inventory: InventoryRecord,
+  key: string,
+  mutateInventory: boolean = false,
+): InventoryRecord {
   const existing = inventory[key];
   if (!existing || existing.count <= 0) return inventory;
 
-  const newInventory = { ...inventory };
+  const newInventory = mutateInventory ? inventory : { ...inventory };
   if (existing.count === 1) {
     // Last item - mark as notown instead of deleting
     newInventory[key] = { ...existing, count: 0, status: 'notown' };
@@ -2035,7 +2042,7 @@ type GameAction =
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
-  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy }
+  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -2965,14 +2972,17 @@ function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean 
 
 interface AutoEquipmentReducerContext {
   hpStrategy: AutoEquipmentHpStrategy;
+  stateStrategy: AutoEquipmentStateStrategy;
   maxHpByPartyId: Map<number, number>;
   hpLedgerByPartyId: Map<number, PartyMaxHpLedger>;
+  inventoryDraft?: InventoryRecord;
+  jewelDraft?: JewelInventory;
   attribution?: AutoEquipmentReducerAttribution;
 }
 
 function measureAutoEquipmentReducerWork<T>(
   context: AutoEquipmentReducerContext | undefined,
-  phase: 'partyStatsMs' | 'inventoryMutationMs',
+  phase: 'partyStatsMs' | 'inventoryPreparationMs' | 'inventoryMutationMs' | 'jewelMutationMs',
   operation: () => T,
 ): T {
   if (!context?.attribution) return operation();
@@ -2982,6 +2992,38 @@ function measureAutoEquipmentReducerWork<T>(
   } finally {
     context.attribution[phase] += Math.max(0, performance.now() - startedAt);
   }
+}
+
+function getAutoEquipmentInventoryForMutation(
+  context: AutoEquipmentReducerContext | undefined,
+  inventory: InventoryRecord,
+): InventoryRecord {
+  if (context?.stateStrategy !== 'copy_once_transaction') return inventory;
+  if (!context.inventoryDraft) {
+    context.inventoryDraft = measureAutoEquipmentReducerWork(
+      context,
+      'inventoryPreparationMs',
+      () => ({ ...inventory }),
+    );
+    if (context.attribution) context.attribution.transactionInventoryRecordClones += 1;
+  }
+  return context.inventoryDraft;
+}
+
+function getAutoEquipmentJewelsForMutation(
+  context: AutoEquipmentReducerContext | undefined,
+  jewels: JewelInventory,
+): JewelInventory {
+  if (context?.stateStrategy !== 'copy_once_transaction') return jewels;
+  if (!context.jewelDraft) {
+    context.jewelDraft = measureAutoEquipmentReducerWork(
+      context,
+      'inventoryPreparationMs',
+      () => ({ ...jewels }),
+    );
+    if (context.attribution) context.attribution.transactionJewelRecordClones += 1;
+  }
+  return context.jewelDraft;
 }
 
 function syncPartyCurrentHpAfterMaxHpChange(
@@ -3101,6 +3143,7 @@ function gameReducer(
       // SpecRef: 7.1.1 | AUTO equipment logic | Processing priority
       const context: AutoEquipmentReducerContext = {
         hpStrategy: action.hpStrategy ?? 'incremental_hp',
+        stateStrategy: action.stateStrategy ?? 'copy_once_transaction',
         maxHpByPartyId: new Map(),
         hpLedgerByPartyId: new Map(),
         attribution: action.attribution,
@@ -3111,7 +3154,11 @@ function gameReducer(
         const totalMs = Math.max(0, performance.now() - startedAt);
         action.attribution.structuralAndControlMs = Math.max(
           0,
-          totalMs - action.attribution.partyStatsMs - action.attribution.inventoryMutationMs,
+          totalMs
+            - action.attribution.partyStatsMs
+            - action.attribution.inventoryPreparationMs
+            - action.attribution.inventoryMutationMs
+            - action.attribution.jewelMutationMs,
         );
       }
       return nextState;
@@ -4386,9 +4433,26 @@ function gameReducer(
       const nextAutoEquipmentMode = isManualEquipmentChange && character.autoEquipmentMode === 2
         ? 1
         : character.autoEquipmentMode;
-      let newInventory = { ...state.global.inventory };
-      let newJewels = { ...state.global.jewels };
+      const usesTransactionDraft = autoEquipmentContext?.stateStrategy === 'copy_once_transaction';
+      let newInventory = getAutoEquipmentInventoryForMutation(autoEquipmentContext, state.global.inventory);
+      let newJewels = state.global.jewels;
       let newGold = state.global.gold;
+      if (autoEquipmentContext?.stateStrategy === 'legacy_eager_clone') {
+        newInventory = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryPreparationMs',
+          () => ({ ...newInventory }),
+        );
+        newJewels = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryPreparationMs',
+          () => ({ ...newJewels }),
+        );
+        if (autoEquipmentContext.attribution) {
+          autoEquipmentContext.attribution.eagerInventoryRecordClones += 1;
+          autoEquipmentContext.attribution.eagerJewelRecordClones += 1;
+        }
+      }
 
       // Add old item back to inventory
       const oldItem = character.equipment[action.slotIndex];
@@ -4396,12 +4460,30 @@ function gameReducer(
         const addResult = measureAutoEquipmentReducerWork(
           autoEquipmentContext,
           'inventoryMutationMs',
-          () => addItemToInventory(newInventory, oldItem, newGold),
+          () => addItemToInventory(newInventory, oldItem, newGold, 1, usesTransactionDraft),
         );
+        if (autoEquipmentContext?.attribution && addResult.inventory !== newInventory) {
+          autoEquipmentContext.attribution.inventoryMutationRecordClones += 1;
+        }
         newInventory = addResult.inventory;
         newGold = addResult.gold;
         if (oldItem.jewel) {
-          newJewels = addJewelToInventory(newJewels, oldItem.jewel.key, oldItem.jewel.rank);
+          newJewels = getAutoEquipmentJewelsForMutation(autoEquipmentContext, newJewels);
+          const previousJewels = newJewels;
+          newJewels = measureAutoEquipmentReducerWork(
+            autoEquipmentContext,
+            'jewelMutationMs',
+            () => addJewelToInventory(
+              previousJewels,
+              oldItem.jewel!.key,
+              oldItem.jewel!.rank,
+              1,
+              usesTransactionDraft,
+            ),
+          );
+          if (autoEquipmentContext?.attribution && newJewels !== previousJewels) {
+            autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+          }
         }
       }
 
@@ -4409,11 +4491,15 @@ function gameReducer(
       if (action.itemKey) {
         const variant = newInventory[action.itemKey];
         if (variant && variant.count > 0) {
+          const previousInventory = newInventory;
           newInventory = measureAutoEquipmentReducerWork(
             autoEquipmentContext,
             'inventoryMutationMs',
-            () => removeItemFromInventory(newInventory, action.itemKey!),
+            () => removeItemFromInventory(previousInventory, action.itemKey!, usesTransactionDraft),
           );
+          if (autoEquipmentContext?.attribution && newInventory !== previousInventory) {
+            autoEquipmentContext.attribution.inventoryMutationRecordClones += 1;
+          }
           const equippedCharacter = {
             ...replaceCharacterEquipment(character, action.slotIndex, { ...variant.item, jewel: null }),
             autoEquipmentMode: nextAutoEquipmentMode,
@@ -4426,6 +4512,7 @@ function gameReducer(
             ...currentParty,
             characters: newCharacters
           }, character.id, autoEquipmentContext);
+          if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedEquipmentActions += 1;
 
           return {
             ...state,
@@ -4447,6 +4534,7 @@ function gameReducer(
         ...currentParty,
         characters: newCharacters
       }, character.id, autoEquipmentContext);
+      if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedEquipmentActions += 1;
 
       return {
         ...state,
@@ -4495,11 +4583,21 @@ function gameReducer(
 
       const isRemovingCurrentJewel = item.jewel?.key === action.jewelKey && item.jewel.rank === action.rank;
       if (isRemovingCurrentJewel) {
+        const jewelsForMutation = getAutoEquipmentJewelsForMutation(autoEquipmentContext, state.global.jewels);
         const newJewels = measureAutoEquipmentReducerWork(
           autoEquipmentContext,
-          'inventoryMutationMs',
-          () => addJewelToInventory(state.global.jewels, action.jewelKey, action.rank),
+          'jewelMutationMs',
+          () => addJewelToInventory(
+            jewelsForMutation,
+            action.jewelKey,
+            action.rank,
+            1,
+            autoEquipmentContext?.stateStrategy === 'copy_once_transaction',
+          ),
         );
+        if (autoEquipmentContext?.attribution && newJewels !== jewelsForMutation) {
+          autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+        }
         const replacedItem: Item = { ...item, jewel: null };
         const newCharacters = [...currentParty.characters];
         newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
@@ -4509,6 +4607,7 @@ function gameReducer(
           ...currentParty,
           characters: newCharacters,
         }, character.id, autoEquipmentContext);
+        if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedJewelActions += 1;
 
         return {
           ...state,
@@ -4519,17 +4618,26 @@ function gameReducer(
 
       if (getJewelOwnedCount(state.global.jewels, action.jewelKey, action.rank) <= 0) return state;
 
+      const usesTransactionDraft = autoEquipmentContext?.stateStrategy === 'copy_once_transaction';
+      const jewelsForMutation = getAutoEquipmentJewelsForMutation(autoEquipmentContext, state.global.jewels);
       let newJewels = measureAutoEquipmentReducerWork(
         autoEquipmentContext,
-        'inventoryMutationMs',
-        () => removeJewelFromInventory(state.global.jewels, action.jewelKey, action.rank),
+        'jewelMutationMs',
+        () => removeJewelFromInventory(jewelsForMutation, action.jewelKey, action.rank, usesTransactionDraft),
       );
+      if (autoEquipmentContext?.attribution && newJewels !== jewelsForMutation) {
+        autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+      }
       if (item.jewel) {
+        const previousJewels = newJewels;
         newJewels = measureAutoEquipmentReducerWork(
           autoEquipmentContext,
-          'inventoryMutationMs',
-          () => addJewelToInventory(newJewels, item.jewel!.key, item.jewel!.rank),
+          'jewelMutationMs',
+          () => addJewelToInventory(previousJewels, item.jewel!.key, item.jewel!.rank, 1, usesTransactionDraft),
         );
+        if (autoEquipmentContext?.attribution && newJewels !== previousJewels) {
+          autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+        }
       }
       const replacedItem: Item = { ...item, jewel: { key: action.jewelKey, rank: action.rank } };
       const newCharacters = [...currentParty.characters];
@@ -4540,6 +4648,7 @@ function gameReducer(
         ...currentParty,
         characters: newCharacters,
       }, character.id, autoEquipmentContext);
+      if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedJewelActions += 1;
 
       return {
         ...state,
@@ -5417,8 +5526,15 @@ export function applyAutoEquipmentProfileActions(
   actions: readonly AutoEquipmentProfileAction[],
   attribution?: AutoEquipmentReducerAttribution,
   hpStrategy: AutoEquipmentHpStrategy = 'incremental_hp',
+  stateStrategy: AutoEquipmentStateStrategy = 'copy_once_transaction',
 ): GameState {
-  return gameReducer(state, { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions: [...actions], attribution, hpStrategy });
+  return gameReducer(state, {
+    type: 'APPLY_AUTO_EQUIPMENT_ACTIONS',
+    actions: [...actions],
+    attribution,
+    hpStrategy,
+    stateStrategy,
+  });
 }
 
 export function applyAutoEquipmentProfileActionsSequentially(

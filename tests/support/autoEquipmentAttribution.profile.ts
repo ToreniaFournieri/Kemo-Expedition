@@ -86,6 +86,7 @@ test('batched automatic-equipment reducer is byte-identical to sequential action
 
 test('batched reducer preserves mixed inventory, upgrade, and Jewel action semantics', () => {
   const state = createAutoEquipmentProfileState(loadFixture(), 'max_inventory');
+  const serializedSource = JSON.stringify(serializeGameState(state));
   const partyIndex = 0;
   const character = state.parties[partyIndex].characters[0];
   const swordEntry = Object.entries(state.global.inventory).find(([, variant]) => (
@@ -101,17 +102,52 @@ test('batched reducer preserves mixed inventory, upgrade, and Jewel action seman
   const reducerAttribution = createAutoEquipmentReducerAttribution();
 
   const batched = applyAutoEquipmentProfileActions(state, actions, reducerAttribution);
+  const eagerCloneAttribution = createAutoEquipmentReducerAttribution();
+  const eagerCloneCandidate = applyAutoEquipmentProfileActions(
+    state,
+    actions,
+    eagerCloneAttribution,
+    'incremental_hp',
+    'legacy_eager_clone',
+  );
+  const copyOnceAttribution = createAutoEquipmentReducerAttribution();
+  const copyOnceCandidate = applyAutoEquipmentProfileActions(
+    state,
+    actions,
+    copyOnceAttribution,
+    'incremental_hp',
+    'copy_once_transaction',
+  );
   const sequential = applyAutoEquipmentProfileActionsSequentially(state, actions);
 
   assert.equal(JSON.stringify(serializeGameState(batched)), JSON.stringify(serializeGameState(sequential)));
+  assert.equal(JSON.stringify(serializeGameState(eagerCloneCandidate)), JSON.stringify(serializeGameState(sequential)));
+  assert.equal(JSON.stringify(serializeGameState(copyOnceCandidate)), JSON.stringify(serializeGameState(sequential)));
+  assert.equal(JSON.stringify(serializeGameState(state)), serializedSource);
   assert.equal(reducerAttribution.partyStatsCalls, 0);
   assert.equal(reducerAttribution.partyMaxHpCalls, 0);
   assert.equal(reducerAttribution.hpLedgerInitializations, 1);
   assert.equal(reducerAttribution.hpLedgerUpdates, actions.length);
   assert.equal(reducerAttribution.hpLedgerRebuilds, 0);
   assert.equal(reducerAttribution.characterHpContributionCalls, state.parties[partyIndex].characters.length + actions.length);
+  assert.equal(reducerAttribution.eagerInventoryRecordClones, 0);
+  assert.equal(reducerAttribution.eagerJewelRecordClones, 0);
+  assert.equal(reducerAttribution.transactionInventoryRecordClones, 1);
+  assert.equal(reducerAttribution.transactionJewelRecordClones, 1);
+  assert.equal(reducerAttribution.inventoryMutationRecordClones, 0);
+  assert.equal(reducerAttribution.jewelMutationRecordClones, 0);
+  assert.equal(reducerAttribution.appliedEquipmentActions, 2);
+  assert.equal(reducerAttribution.appliedJewelActions, 1);
+  assert.equal(eagerCloneAttribution.eagerInventoryRecordClones, 2);
+  assert.equal(eagerCloneAttribution.eagerJewelRecordClones, 2);
+  assert.equal(copyOnceAttribution.transactionInventoryRecordClones, 1);
+  assert.equal(copyOnceAttribution.transactionJewelRecordClones, 1);
+  assert.equal(copyOnceAttribution.inventoryMutationRecordClones, 0);
+  assert.equal(copyOnceAttribution.jewelMutationRecordClones, 0);
   assert.ok(reducerAttribution.partyStatsMs >= 0);
+  assert.ok(reducerAttribution.inventoryPreparationMs >= 0);
   assert.ok(reducerAttribution.inventoryMutationMs >= 0);
+  assert.ok(reducerAttribution.jewelMutationMs >= 0);
   assert.ok(reducerAttribution.structuralAndControlMs >= 0);
 });
 
@@ -140,7 +176,39 @@ test('HP strategies preserve every damaged-party intermediate state', () => {
       const candidate = applyAutoEquipmentProfileActions(state, prefix, undefined, strategy);
       assert.equal(JSON.stringify(serializeGameState(candidate)), expected);
     }
+    const eagerCloneCandidate = applyAutoEquipmentProfileActions(
+      state,
+      prefix,
+      undefined,
+      'incremental_hp',
+      'legacy_eager_clone',
+    );
+    assert.equal(JSON.stringify(serializeGameState(eagerCloneCandidate)), expected);
+    const copyOnceCandidate = applyAutoEquipmentProfileActions(
+      state,
+      prefix,
+      undefined,
+      'incremental_hp',
+      'copy_once_transaction',
+    );
+    assert.equal(JSON.stringify(serializeGameState(copyOnceCandidate)), expected);
   }
+});
+
+test('empty automatic-equipment batches perform no reducer allocation work', () => {
+  const state = loadFixture();
+  const attribution = createAutoEquipmentReducerAttribution();
+  const result = applyAutoEquipmentProfileActions(state, [], attribution);
+
+  assert.equal(result, state);
+  assert.equal(attribution.eagerInventoryRecordClones, 0);
+  assert.equal(attribution.eagerJewelRecordClones, 0);
+  assert.equal(attribution.transactionInventoryRecordClones, 0);
+  assert.equal(attribution.transactionJewelRecordClones, 0);
+  assert.equal(attribution.inventoryMutationRecordClones, 0);
+  assert.equal(attribution.jewelMutationRecordClones, 0);
+  assert.equal(attribution.appliedEquipmentActions, 0);
+  assert.equal(attribution.appliedJewelActions, 0);
 });
 
 test('automatic-equipment attribution records bounded phase and workload counters', () => {

@@ -1875,59 +1875,83 @@ export function HomeScreen({
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
     window.__BOKEMO_AUTO_EQUIPMENT_PROFILE__ = {
-      async run(workload: AutoEquipmentProfileWorkload, scope: AutoEquipmentProfileScope = 'all_parties') {
+      async run(
+        workload: AutoEquipmentProfileWorkload,
+        scope: AutoEquipmentProfileScope = 'all_parties',
+        candidateOrderOffset: number = 0,
+      ) {
         const sourceState = createAutoEquipmentProfileState(
           autoEquipmentProfileBaseStateRef.current ?? state,
           workload,
         );
         const collector = createAutoEquipmentAttributionCollector();
         const recordedActions: AutoEquipmentProfileAction[] = [];
-        const reducerAttribution = createAutoEquipmentReducerAttribution();
         const targetPartyIndexes = scope === 'all_parties' ? undefined : [0];
         const targetCharacterIds = scope === 'character_1'
           ? [sourceState.parties[0]?.characters[0]?.id].filter((id): id is number => typeof id === 'number')
           : undefined;
-        const startedAt = performance.now();
+        const planningStartedAt = performance.now();
         const summary = runAutoEquipment(targetPartyIndexes, targetCharacterIds, {
           suppressNotifications: true,
           profile: { sourceState, collector, actions: recordedActions, candidateStrategy: 'indexed' },
         });
-        const finalState = collector.measure('reducerApplication', () => (
-          applyAutoEquipmentProfileActions(sourceState, recordedActions, reducerAttribution)
-        ));
-        const attribution = collector.finish(performance.now() - startedAt);
-        const legacyReducerAttribution = createAutoEquipmentReducerAttribution();
-        const legacyReducerStartedAt = performance.now();
-        const legacyReducerFinalState = applyAutoEquipmentProfileActions(
-          sourceState,
-          recordedActions,
-          legacyReducerAttribution,
-          'legacy_full_party',
-        );
-        const legacyReducerMs = performance.now() - legacyReducerStartedAt;
-        const wholePartyMaxHpAttribution = createAutoEquipmentReducerAttribution();
-        const wholePartyMaxHpStartedAt = performance.now();
-        const wholePartyMaxHpFinalState = applyAutoEquipmentProfileActions(
-          sourceState,
-          recordedActions,
-          wholePartyMaxHpAttribution,
-          'whole_party_max_hp',
-        );
-        const wholePartyMaxHpReducerMs = performance.now() - wholePartyMaxHpStartedAt;
+        const planningMs = performance.now() - planningStartedAt;
+        const candidateDefinitions = {
+          build58EagerClone: { hpStrategy: 'incremental_hp', stateStrategy: 'legacy_eager_clone' },
+          immutableInputReuse: { hpStrategy: 'incremental_hp', stateStrategy: 'reuse_immutable_inputs' },
+          legacyFullParty: { hpStrategy: 'legacy_full_party', stateStrategy: 'copy_once_transaction' },
+          wholePartyMaxHp: { hpStrategy: 'whole_party_max_hp', stateStrategy: 'copy_once_transaction' },
+          incrementalHp: { hpStrategy: 'incremental_hp', stateStrategy: 'copy_once_transaction' },
+        } as const;
+        type CandidateName = keyof typeof candidateDefinitions;
+        const candidateNames = Object.keys(candidateDefinitions) as CandidateName[];
+        const normalizedOffset = ((Math.floor(candidateOrderOffset) % candidateNames.length) + candidateNames.length)
+          % candidateNames.length;
+        const reducerCandidateExecutionOrder = [
+          ...candidateNames.slice(normalizedOffset),
+          ...candidateNames.slice(0, normalizedOffset),
+        ];
+        const reducerCandidates = {} as Record<CandidateName, {
+          reducerMs: number;
+          attribution: ReturnType<typeof createAutoEquipmentReducerAttribution>;
+          finalState: GameState;
+        }>;
+        for (const candidateName of reducerCandidateExecutionOrder) {
+          const definition = candidateDefinitions[candidateName];
+          const candidateAttribution = createAutoEquipmentReducerAttribution();
+          const candidateStartedAt = performance.now();
+          const applyCandidate = () => applyAutoEquipmentProfileActions(
+            sourceState,
+            recordedActions,
+            candidateAttribution,
+            definition.hpStrategy,
+            definition.stateStrategy,
+          );
+          const candidateFinalState = candidateName === 'incrementalHp'
+            ? collector.measure('reducerApplication', applyCandidate)
+            : applyCandidate();
+          reducerCandidates[candidateName] = {
+            reducerMs: performance.now() - candidateStartedAt,
+            attribution: candidateAttribution,
+            finalState: candidateFinalState,
+          };
+        }
+        const finalState = reducerCandidates.incrementalHp.finalState;
+        const reducerAttribution = reducerCandidates.incrementalHp.attribution;
+        const attribution = collector.finish(planningMs + reducerCandidates.incrementalHp.reducerMs);
         const sequentialReducerStartedAt = performance.now();
         const sequentialFinalState = applyAutoEquipmentProfileActionsSequentially(sourceState, recordedActions);
         const sequentialReducerMs = performance.now() - sequentialReducerStartedAt;
         const serializedFinalState = serializeGameState(finalState);
-        const serializedLegacyReducerFinalState = serializeGameState(legacyReducerFinalState);
-        const serializedWholePartyMaxHpFinalState = serializeGameState(wholePartyMaxHpFinalState);
         const serializedSequentialFinalState = serializeGameState(sequentialFinalState);
         const canonicalFinalState = JSON.stringify(serializedFinalState);
-        if (
-          canonicalFinalState !== JSON.stringify(serializedLegacyReducerFinalState)
-          || canonicalFinalState !== JSON.stringify(serializedWholePartyMaxHpFinalState)
-          || canonicalFinalState !== JSON.stringify(serializedSequentialFinalState)
-        ) {
-          throw new Error(`Automatic-equipment HP strategy parity failed for ${workload}`);
+        for (const candidateName of candidateNames) {
+          if (canonicalFinalState !== JSON.stringify(serializeGameState(reducerCandidates[candidateName].finalState))) {
+            throw new Error(`Automatic-equipment reducer candidate parity failed for ${workload}:${candidateName}`);
+          }
+        }
+        if (canonicalFinalState !== JSON.stringify(serializedSequentialFinalState)) {
+          throw new Error(`Automatic-equipment sequential reducer parity failed for ${workload}`);
         }
         const legacyCollector = createAutoEquipmentAttributionCollector();
         const legacyActions: AutoEquipmentProfileAction[] = [];
@@ -1960,16 +1984,11 @@ export function HomeScreen({
           }),
           sequentialReducerMs,
           reducerAttribution,
-          hpStrategyCandidates: {
-            legacyFullParty: { reducerMs: legacyReducerMs, attribution: legacyReducerAttribution },
-            wholePartyMaxHp: { reducerMs: wholePartyMaxHpReducerMs, attribution: wholePartyMaxHpAttribution },
-            incrementalHp: {
-              reducerMs: reducerAttribution.partyStatsMs
-                + reducerAttribution.inventoryMutationMs
-                + reducerAttribution.structuralAndControlMs,
-              attribution: reducerAttribution,
-            },
-          },
+          reducerCandidates: Object.fromEntries(candidateNames.map((candidateName) => [candidateName, {
+            reducerMs: reducerCandidates[candidateName].reducerMs,
+            attribution: reducerCandidates[candidateName].attribution,
+          }])),
+          reducerCandidateExecutionOrder,
           scope,
           legacyPlanningMs,
         };
