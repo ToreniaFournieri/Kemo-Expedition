@@ -30,6 +30,7 @@ createAutoEquipmentAttributionCollector,
 createAutoEquipmentProfileState,
 createAutoEquipmentReducerAttribution,
 type AutoEquipmentAttributionCollector,
+type AutoEquipmentAttributionResult,
 type AutoEquipmentProfileAction,
 type AutoEquipmentProfileScope,
 type AutoEquipmentProfileWorkload,
@@ -1119,7 +1120,12 @@ export function HomeScreen({
         sourceState: GameState;
         collector: AutoEquipmentAttributionCollector;
         actions: AutoEquipmentProfileAction[];
-        candidateStrategy?: 'indexed' | 'legacy';
+        candidateStrategy?:
+          | 'legacy'
+          | 'indexed'
+          | 'indexed_multiplier_cache'
+          | 'indexed_item_facts'
+          | 'indexed_prepared';
       };
     },
   ): AutoEquipmentRunSummary => {
@@ -1133,7 +1139,11 @@ export function HomeScreen({
     };
     const profile = options?.profile;
     const sourceState = profile?.sourceState ?? state;
-    const candidateStrategy = profile?.candidateStrategy ?? 'indexed';
+    const candidateStrategy = profile?.candidateStrategy ?? 'indexed_prepared';
+    const usesInventoryIndex = candidateStrategy !== 'legacy';
+    const usesItemFactCache = candidateStrategy === 'indexed_item_facts' || candidateStrategy === 'indexed_prepared';
+    const usesCharacterCategoryMultiplierCache = candidateStrategy === 'indexed_multiplier_cache'
+      || candidateStrategy === 'indexed_prepared';
     const measure = <T,>(phase: Parameters<AutoEquipmentAttributionCollector['measure']>[0], operation: () => T): T => (
       profile ? profile.collector.measure(phase, operation) : operation()
     );
@@ -1165,7 +1175,7 @@ export function HomeScreen({
     const simulatedInventory: InventoryRecord = measure('inventoryClone', () => ({ ...sourceState.global.inventory }));
     let inventoryIndex: AutoEquipmentInventoryIndex | null = null;
     const getInventoryIndex = (): AutoEquipmentInventoryIndex | null => {
-      if (candidateStrategy !== 'indexed') return null;
+      if (!usesInventoryIndex) return null;
       if (!inventoryIndex) {
         inventoryIndex = measure('inventoryIndexBuild', () => new AutoEquipmentInventoryIndex(simulatedInventory));
         profile?.collector.addInventoryIndexEntries(Object.keys(simulatedInventory).length);
@@ -1375,6 +1385,53 @@ export function HomeScreen({
       return bonusNames;
     };
 
+    type AutoEquipmentItemFacts = {
+      tier: number;
+      coreConcept: number;
+      hasAntagonism: boolean;
+      cBonusSignatures: readonly string[];
+      noABonus: number;
+    };
+    let itemFactCache: WeakMap<Item, AutoEquipmentItemFacts> | null = null;
+    const computeItemFacts = (item: Item): AutoEquipmentItemFacts => {
+      profile?.collector.addItemFactComputation();
+      const noABonus = item.category === 'gauntlet'
+        ? item.meleeNoABonus ?? 0
+        : item.category === 'archery'
+          ? item.rangedNoABonus ?? 0
+          : item.category === 'catalyst'
+            ? item.magicalNoABonus ?? 0
+            : 0;
+      return {
+        tier: getItemTier(item),
+        coreConcept: getItemCoreConceptValue(item),
+        hasAntagonism: [
+          ...(item.bonuses ?? []),
+          ...getSuperRareBonuses(item.superRare),
+        ].some((bonus) => bonus.type === 'antagonism'),
+        cBonusSignatures: [...getItemCBonusSignatures(item)],
+        noABonus,
+      };
+    };
+    const getItemFacts = (item: Item): AutoEquipmentItemFacts => {
+      if (!usesItemFactCache) return computeItemFacts(item);
+      const cache = itemFactCache ??= new WeakMap<Item, AutoEquipmentItemFacts>();
+      const cached = cache.get(item);
+      if (cached) {
+        profile?.collector.addItemFactCacheHit();
+        return cached;
+      }
+      const facts = computeItemFacts(item);
+      cache.set(item, facts);
+      return facts;
+    };
+    const addItemCBonusSignaturesToMemory = (item: Item, memory: Set<string>): void => {
+      const cachedFacts = usesItemFactCache ? itemFactCache?.get(item) : undefined;
+      if (cachedFacts) profile?.collector.addItemFactCacheHit();
+      const signatures = cachedFacts?.cBonusSignatures ?? getItemCBonusSignatures(item);
+      signatures.forEach((bonusName) => memory.add(bonusName));
+    };
+
     const compareItemsByTierAndEnhancement = (a: Item, b: Item): number => {
       const tierDiff = getItemTier(a) - getItemTier(b);
       if (tierDiff !== 0) return tierDiff;
@@ -1479,20 +1536,44 @@ export function HomeScreen({
       return [targetCategory];
     };
 
-    const getAutoEquipmentSelectionValueForCharacter = (character: Character, item: Item): number => {
+    let characterCategoryMultiplierCache: WeakMap<Character, Map<ItemCategory, number>> | null = null;
+    const getAutoEquipmentCategoryMultiplier = (character: Character, category: ItemCategory): number => {
+      if (!usesCharacterCategoryMultiplierCache) {
+        profile?.collector.addCharacterCategoryMultiplierComputation();
+        return getCharacterCategoryMultiplier(character, category);
+      }
+      const cache = characterCategoryMultiplierCache ??= new WeakMap<Character, Map<ItemCategory, number>>();
+      let characterCache = cache.get(character);
+      if (!characterCache) {
+        characterCache = new Map<ItemCategory, number>();
+        cache.set(character, characterCache);
+      }
+      const cached = characterCache.get(category);
+      if (cached !== undefined) {
+        profile?.collector.addCharacterCategoryMultiplierCacheHit();
+        return cached;
+      }
+      profile?.collector.addCharacterCategoryMultiplierComputation();
+      const multiplier = getCharacterCategoryMultiplier(character, category);
+      characterCache.set(category, multiplier);
+      return multiplier;
+    };
+
+    const getAutoEquipmentSelectionValueForCharacter = (
+      character: Character,
+      item: Item,
+      coreConcept: number = getItemCoreConceptValue(item),
+      noABonus: number = item.category === 'gauntlet'
+        ? item.meleeNoABonus ?? 0
+        : item.category === 'archery'
+          ? item.rangedNoABonus ?? 0
+          : item.category === 'catalyst'
+            ? item.magicalNoABonus ?? 0
+            : 0,
+    ): number => {
       // SpecRef: 7.1.1.2 | Equipping into empty slots | modified core concept
-      const categoryMultiplier = getCharacterCategoryMultiplier(character, item.category);
-      const modifiedCoreConceptValue = Math.round(getItemCoreConceptValue(item) * categoryMultiplier);
-      if (item.category === 'gauntlet') {
-        return modifiedCoreConceptValue + (item.meleeNoABonus ?? 0);
-      }
-      if (item.category === 'archery') {
-        return modifiedCoreConceptValue + (item.rangedNoABonus ?? 0);
-      }
-      if (item.category === 'catalyst') {
-        return modifiedCoreConceptValue + (item.magicalNoABonus ?? 0);
-      }
-      return modifiedCoreConceptValue;
+      const categoryMultiplier = getAutoEquipmentCategoryMultiplier(character, item.category);
+      return Math.round(coreConcept * categoryMultiplier) + noABonus;
     };
 
     const getBestVariantKeyInCategory = (
@@ -1521,13 +1602,14 @@ export function HomeScreen({
           }
 
           if (memoryItemIds.has(variant.item.id)) return;
-          const hasAntagonismBonus = [
-            ...(variant.item.bonuses ?? []),
-            ...getSuperRareBonuses(variant.item.superRare),
-          ].some((bonus) => bonus.type === 'antagonism');
+          const itemFacts = usesItemFactCache ? getItemFacts(variant.item) : null;
+          const hasAntagonismBonus = itemFacts?.hasAntagonism ?? [
+              ...(variant.item.bonuses ?? []),
+              ...getSuperRareBonuses(variant.item.superRare),
+            ].some((bonus) => bonus.type === 'antagonism');
           if (hasAntagonismBonus) return;
 
-          const cBonusNames = getItemCBonusSignatures(variant.item);
+          const cBonusNames = itemFacts?.cBonusSignatures ?? getItemCBonusSignatures(variant.item);
           for (const bonusName of cBonusNames) {
             if (memoryCBonusNames.has(bonusName)) return;
           }
@@ -1535,12 +1617,19 @@ export function HomeScreen({
           optionKeys.push(key);
           candidates.push({
             index: optionKeys.length - 1,
-            tier: getItemTier(variant.item),
+            tier: itemFacts?.tier ?? getItemTier(variant.item),
             enhancement: variant.item.enhancement,
-            coreConcept: getItemCoreConceptValue(variant.item),
+            coreConcept: itemFacts?.coreConcept ?? getItemCoreConceptValue(variant.item),
             superRare: variant.item.superRare,
             itemId: variant.item.id,
-            selectionValue: getAutoEquipmentSelectionValueForCharacter(character, variant.item),
+            selectionValue: itemFacts
+              ? getAutoEquipmentSelectionValueForCharacter(
+                character,
+                variant.item,
+                itemFacts.coreConcept,
+                itemFacts.noABonus,
+              )
+              : getAutoEquipmentSelectionValueForCharacter(character, variant.item),
           });
         }));
 
@@ -1682,7 +1771,7 @@ export function HomeScreen({
         simulatedEquipmentSlots.forEach((item) => {
           if (!item) return;
           memoryItemIds.add(item.id);
-          getItemCBonusSignatures(item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
+          addItemCBonusSignaturesToMemory(item, memoryCBonusNames);
           equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
         });
 
@@ -1730,7 +1819,7 @@ export function HomeScreen({
             removeItemFromSimulatedInventory(resolvedSelection.itemKey);
             simulatedEquipmentSlots[slotIndex] = variant.item;
             memoryItemIds.add(variant.item.id);
-            getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
+            addItemCBonusSignaturesToMemory(variant.item, memoryCBonusNames);
             dispatchEquipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
             summary.equippedCount += 1;
           });
@@ -1884,18 +1973,69 @@ export function HomeScreen({
           autoEquipmentProfileBaseStateRef.current ?? state,
           workload,
         );
-        const collector = createAutoEquipmentAttributionCollector();
-        const recordedActions: AutoEquipmentProfileAction[] = [];
         const targetPartyIndexes = scope === 'all_parties' ? undefined : [0];
         const targetCharacterIds = scope === 'character_1'
           ? [sourceState.parties[0]?.characters[0]?.id].filter((id): id is number => typeof id === 'number')
           : undefined;
-        const planningStartedAt = performance.now();
-        const summary = runAutoEquipment(targetPartyIndexes, targetCharacterIds, {
-          suppressNotifications: true,
-          profile: { sourceState, collector, actions: recordedActions, candidateStrategy: 'indexed' },
-        });
-        const planningMs = performance.now() - planningStartedAt;
+        const plannerDefinitions = {
+          indexedBaseline: 'indexed',
+          multiplierMemo: 'indexed_multiplier_cache',
+          itemFactsMemo: 'indexed_item_facts',
+          combined: 'indexed_prepared',
+        } as const;
+        type PlannerCandidateName = keyof typeof plannerDefinitions;
+        const plannerCandidateNames = Object.keys(plannerDefinitions) as PlannerCandidateName[];
+        const normalizedPlannerOffset = (
+          (Math.floor(candidateOrderOffset) % plannerCandidateNames.length) + plannerCandidateNames.length
+        ) % plannerCandidateNames.length;
+        const plannerCandidateExecutionOrder = [
+          ...plannerCandidateNames.slice(normalizedPlannerOffset),
+          ...plannerCandidateNames.slice(0, normalizedPlannerOffset),
+        ];
+        const plannerCandidates = {} as Record<PlannerCandidateName, {
+          planningMs: number;
+          attribution: AutoEquipmentAttributionResult;
+          collector: ReturnType<typeof createAutoEquipmentAttributionCollector>;
+          actions: AutoEquipmentProfileAction[];
+          summary: AutoEquipmentRunSummary;
+        }>;
+        for (const candidateName of plannerCandidateExecutionOrder) {
+          const candidateCollector = createAutoEquipmentAttributionCollector();
+          const candidateActions: AutoEquipmentProfileAction[] = [];
+          const candidatePlanningStartedAt = performance.now();
+          const candidateSummary = runAutoEquipment(targetPartyIndexes, targetCharacterIds, {
+            suppressNotifications: true,
+            profile: {
+              sourceState,
+              collector: candidateCollector,
+              actions: candidateActions,
+              candidateStrategy: plannerDefinitions[candidateName],
+            },
+          });
+          const candidatePlanningMs = performance.now() - candidatePlanningStartedAt;
+          plannerCandidates[candidateName] = {
+            planningMs: candidatePlanningMs,
+            attribution: candidateCollector.finish(candidatePlanningMs),
+            collector: candidateCollector,
+            actions: candidateActions,
+            summary: candidateSummary,
+          };
+        }
+        const productionPlanner = plannerCandidates.combined;
+        const collector = productionPlanner.collector;
+        const recordedActions = productionPlanner.actions;
+        const summary = productionPlanner.summary;
+        const planningMs = productionPlanner.planningMs;
+        const canonicalPlannerActions = JSON.stringify(recordedActions);
+        const canonicalPlannerSummary = JSON.stringify(summary);
+        for (const candidateName of plannerCandidateNames) {
+          if (canonicalPlannerActions !== JSON.stringify(plannerCandidates[candidateName].actions)) {
+            throw new Error(`Automatic-equipment planner candidate action parity failed for ${workload}:${candidateName}`);
+          }
+          if (canonicalPlannerSummary !== JSON.stringify(plannerCandidates[candidateName].summary)) {
+            throw new Error(`Automatic-equipment planner candidate summary parity failed for ${workload}:${candidateName}`);
+          }
+        }
         const candidateDefinitions = {
           build58EagerClone: { hpStrategy: 'incremental_hp', stateStrategy: 'legacy_eager_clone' },
           immutableInputReuse: { hpStrategy: 'incremental_hp', stateStrategy: 'reuse_immutable_inputs' },
@@ -1903,15 +2043,15 @@ export function HomeScreen({
           wholePartyMaxHp: { hpStrategy: 'whole_party_max_hp', stateStrategy: 'copy_once_transaction' },
           incrementalHp: { hpStrategy: 'incremental_hp', stateStrategy: 'copy_once_transaction' },
         } as const;
-        type CandidateName = keyof typeof candidateDefinitions;
-        const candidateNames = Object.keys(candidateDefinitions) as CandidateName[];
-        const normalizedOffset = ((Math.floor(candidateOrderOffset) % candidateNames.length) + candidateNames.length)
-          % candidateNames.length;
+        type ReducerCandidateName = keyof typeof candidateDefinitions;
+        const reducerCandidateNames = Object.keys(candidateDefinitions) as ReducerCandidateName[];
+        const normalizedOffset = ((Math.floor(candidateOrderOffset) % reducerCandidateNames.length) + reducerCandidateNames.length)
+          % reducerCandidateNames.length;
         const reducerCandidateExecutionOrder = [
-          ...candidateNames.slice(normalizedOffset),
-          ...candidateNames.slice(0, normalizedOffset),
+          ...reducerCandidateNames.slice(normalizedOffset),
+          ...reducerCandidateNames.slice(0, normalizedOffset),
         ];
-        const reducerCandidates = {} as Record<CandidateName, {
+        const reducerCandidates = {} as Record<ReducerCandidateName, {
           reducerMs: number;
           attribution: ReturnType<typeof createAutoEquipmentReducerAttribution>;
           finalState: GameState;
@@ -1945,7 +2085,7 @@ export function HomeScreen({
         const serializedFinalState = serializeGameState(finalState);
         const serializedSequentialFinalState = serializeGameState(sequentialFinalState);
         const canonicalFinalState = JSON.stringify(serializedFinalState);
-        for (const candidateName of candidateNames) {
+        for (const candidateName of reducerCandidateNames) {
           if (canonicalFinalState !== JSON.stringify(serializeGameState(reducerCandidates[candidateName].finalState))) {
             throw new Error(`Automatic-equipment reducer candidate parity failed for ${workload}:${candidateName}`);
           }
@@ -1984,11 +2124,16 @@ export function HomeScreen({
           }),
           sequentialReducerMs,
           reducerAttribution,
-          reducerCandidates: Object.fromEntries(candidateNames.map((candidateName) => [candidateName, {
+          reducerCandidates: Object.fromEntries(reducerCandidateNames.map((candidateName) => [candidateName, {
             reducerMs: reducerCandidates[candidateName].reducerMs,
             attribution: reducerCandidates[candidateName].attribution,
           }])),
           reducerCandidateExecutionOrder,
+          plannerCandidates: Object.fromEntries(plannerCandidateNames.map((candidateName) => [candidateName, {
+            planningMs: plannerCandidates[candidateName].planningMs,
+            attribution: plannerCandidates[candidateName].attribution,
+          }])),
+          plannerCandidateExecutionOrder,
           scope,
           legacyPlanningMs,
         };

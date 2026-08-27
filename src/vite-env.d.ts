@@ -76,6 +76,11 @@ interface Window {
         attribution: import('./game/autoEquipmentAttribution').AutoEquipmentReducerAttribution;
       }>;
       reducerCandidateExecutionOrder: string[];
+      plannerCandidates: Record<string, {
+        planningMs: number;
+        attribution: AutoEquipmentAttributionResult;
+      }>;
+      plannerCandidateExecutionOrder: string[];
       legacyPlanningMs: number;
     }>;
   };

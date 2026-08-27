@@ -37,6 +37,10 @@ export interface AutoEquipmentAttributionResult {
   inventoryIndexEntries: number;
   rankingCandidates: number;
   dispatchedActions: number;
+  itemFactComputations: number;
+  itemFactCacheHits: number;
+  characterCategoryMultiplierComputations: number;
+  characterCategoryMultiplierCacheHits: number;
 }
 
 export interface AutoEquipmentReducerAttribution {
@@ -96,6 +100,10 @@ export interface AutoEquipmentAttributionCollector {
   addInventoryIndexEntries(count: number): void;
   addRankingCandidates(count: number): void;
   addDispatchedAction(): void;
+  addItemFactComputation(): void;
+  addItemFactCacheHit(): void;
+  addCharacterCategoryMultiplierComputation(): void;
+  addCharacterCategoryMultiplierCacheHit(): void;
   finish(totalMs: number): AutoEquipmentAttributionResult;
 }
 
@@ -115,6 +123,10 @@ export function createAutoEquipmentAttributionCollector(): AutoEquipmentAttribut
   let inventoryIndexEntries = 0;
   let rankingCandidates = 0;
   let dispatchedActions = 0;
+  let itemFactComputations = 0;
+  let itemFactCacheHits = 0;
+  let characterCategoryMultiplierComputations = 0;
+  let characterCategoryMultiplierCacheHits = 0;
 
   return {
     measure<T>(phase: AutoEquipmentAttributionPhase, operation: () => T): T {
@@ -137,6 +149,18 @@ export function createAutoEquipmentAttributionCollector(): AutoEquipmentAttribut
     addDispatchedAction() {
       dispatchedActions += 1;
     },
+    addItemFactComputation() {
+      itemFactComputations += 1;
+    },
+    addItemFactCacheHit() {
+      itemFactCacheHits += 1;
+    },
+    addCharacterCategoryMultiplierComputation() {
+      characterCategoryMultiplierComputations += 1;
+    },
+    addCharacterCategoryMultiplierCacheHit() {
+      characterCategoryMultiplierCacheHits += 1;
+    },
     finish(totalMs: number) {
       const normalizedTotalMs = Math.max(0, totalMs);
       const classifiedMs = Object.values(phasesMs).reduce((sum, value) => sum + value, 0);
@@ -148,6 +172,10 @@ export function createAutoEquipmentAttributionCollector(): AutoEquipmentAttribut
         inventoryIndexEntries,
         rankingCandidates,
         dispatchedActions,
+        itemFactComputations,
+        itemFactCacheHits,
+        characterCategoryMultiplierComputations,
+        characterCategoryMultiplierCacheHits,
       };
     },
   };

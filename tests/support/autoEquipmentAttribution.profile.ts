@@ -217,11 +217,19 @@ test('automatic-equipment attribution records bounded phase and workload counter
   collector.addInventoryEntries(12);
   collector.addRankingCandidates(3);
   collector.addDispatchedAction();
+  collector.addItemFactComputation();
+  collector.addItemFactCacheHit();
+  collector.addCharacterCategoryMultiplierComputation();
+  collector.addCharacterCategoryMultiplierCacheHit();
   const result = collector.finish(10);
 
   assert.equal(result.inventoryEntriesVisited, 12);
   assert.equal(result.rankingCandidates, 3);
   assert.equal(result.dispatchedActions, 1);
+  assert.equal(result.itemFactComputations, 1);
+  assert.equal(result.itemFactCacheHits, 1);
+  assert.equal(result.characterCategoryMultiplierComputations, 1);
+  assert.equal(result.characterCategoryMultiplierCacheHits, 1);
   assert.ok(result.phasesMs.inventoryScan >= 0);
   assert.ok(result.unclassifiedMs >= 0 && result.unclassifiedMs <= result.totalMs);
 });

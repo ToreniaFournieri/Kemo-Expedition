@@ -107,7 +107,7 @@ app.whenReady().then(async () => {
     await window.webContents.executeJavaScript(\`localStorage.setItem('kemo-expedition-save:prod', \${JSON.stringify(${JSON.stringify(encodedState)})})\`, true);
     await window.webContents.reload();
     await waitForProfile(window);
-    const report = { schemaVersion: 4, generatedAt: new Date().toISOString(), scope, sampling: { warmups: ${warmups}, measuredSamples: ${samples}, candidateOrder: 'rotating' }, workloads: {} };
+    const report = { schemaVersion: 5, generatedAt: new Date().toISOString(), scope, sampling: { warmups: ${warmups}, measuredSamples: ${samples}, candidateOrder: 'rotating' }, workloads: {} };
     for (const workload of workloads) {
       for (let index = 0; index < ${warmups}; index += 1) await runSample(window, workload, index);
       const measured = [];
@@ -130,6 +130,38 @@ app.whenReady().then(async () => {
           phasesMs: Object.fromEntries(phaseNames.map((phase) => [phase, distribution(measured.map((sample) => sample.attribution.phasesMs[phase]))])),
           sequentialReducerMs: sequentialReducer,
           legacyPlanningMs: distribution(measured.map((sample) => sample.legacyPlanningMs)),
+          plannerCandidates: Object.fromEntries(
+            Object.keys(measured[0].plannerCandidates).map((strategy) => [strategy, {
+              planningMs: distribution(measured.map((sample) => sample.plannerCandidates[strategy].planningMs)),
+              pairedTotalMs: distribution(measured.map((sample) => (
+                sample.attribution.totalMs
+                  - sample.plannerCandidates.combined.planningMs
+                  + sample.plannerCandidates[strategy].planningMs
+              ))),
+              pairedProductionImprovementPercent: distribution(measured.map((sample) => {
+                const pairedTotal = sample.attribution.totalMs
+                  - sample.plannerCandidates.combined.planningMs
+                  + sample.plannerCandidates[strategy].planningMs;
+                return pairedTotal <= 0 ? 0 : (1 - sample.attribution.totalMs / pairedTotal) * 100;
+              })),
+              phasesMs: Object.fromEntries(
+                Object.keys(measured[0].plannerCandidates[strategy].attribution.phasesMs).map((phase) => [phase,
+                  distribution(measured.map((sample) => sample.plannerCandidates[strategy].attribution.phasesMs[phase])),
+                ]),
+              ),
+              attributionCounts: Object.fromEntries(
+                Object.entries(measured[0].plannerCandidates[strategy].attribution)
+                  .filter(([key]) => !key.endsWith('Ms') && key !== 'phasesMs' && key !== 'totalMs' && key !== 'unclassifiedMs'),
+              ),
+            }]),
+          ),
+          plannerCandidateExecutionOrders: Object.fromEntries(
+            measured.reduce((counts, sample) => {
+              const order = sample.plannerCandidateExecutionOrder.join('>');
+              counts.set(order, (counts.get(order) ?? 0) + 1);
+              return counts;
+            }, new Map()),
+          ),
           reducerAttribution: {
             partyStatsMs: distribution(measured.map((sample) => sample.reducerAttribution.partyStatsMs)),
             inventoryPreparationMs: distribution(measured.map((sample) => sample.reducerAttribution.inventoryPreparationMs)),
@@ -198,7 +230,7 @@ app.whenReady().then(async () => {
           actionSequenceSha256: actionHashes[0],
           finalStateSha256: finalHashes[0],
           runSummary: measured[0].summary,
-          limitations: ['The verification-window delay includes rotating reducer candidates, the sequential parity oracle, legacy planner oracle, and SHA-256 hashing; production synchronous work is represented by totalMs and phasesMs. Paired totals are calculated per sample before percentile aggregation.'],
+          limitations: ['The verification-window delay includes rotating planner and reducer candidates, the sequential parity oracle, legacy planner oracle, and SHA-256 hashing; production synchronous work is represented by totalMs and phasesMs. Paired totals are calculated per sample before percentile aggregation.'],
         },
         ...(${summaryOnly} ? {} : { samples: measured }),
       };
