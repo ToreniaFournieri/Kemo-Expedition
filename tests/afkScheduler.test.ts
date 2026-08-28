@@ -149,11 +149,14 @@ test('profiling aggregates batches in memory without per-Cycle output', () => {
   assert.equal(second.longestEventLoopDelayMs, 7);
 });
 
-test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () => {
-  assert.match(hookSource, /cycleDurationMs \* AFK_CHUNK_CYCLE_COUNT/);
+test('runtime assigns one twelve-Cycle Chunk with per-Cycle presentation progress to each party worker', () => {
+  assert.match(hookSource, /options\.operationCount \?\? AFK_CHUNK_CYCLE_COUNT/);
+  assert.match(hookSource, /options\.onProgress\?\.\(operationIndex \+ 1, operationCount\)/);
   assert.match(hookSource, /partyIndex === options\.partyIndex \? cycleDurationMs : inactiveDurationMs/);
   assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
+  assert.match(homeSource, /now - afkLastProgressRenderAtRef\.current >= 100/);
+  assert.match(homeSource, /afkPresentedRemainingByParty\.reduce[\s\S]{0,160}afkPresentedRemainingByParty\.length/);
   assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
   assert.match(homeSource, /afkActiveCommitTransactionRef\.current = \{/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
@@ -164,7 +167,8 @@ test('runtime assigns exactly one twelve-Cycle Chunk to each party worker', () =
 });
 
 test('AFK Chunk party status is calculated once and reused by all twelve Cycles', () => {
-  assert.match(hookSource, /const chunkPartyStatus = state\.parties\.map\(\(party\) => \(\{\s*party,\s*computed: computePartyStats\(party\),\s*\}\)\);/);
+  assert.match(hookSource, /const chunkPartyStatus = action\.chunkPartyStatus \?\? state\.parties\.map\(\(party\) => \(\{\s*party,\s*computed: computePartyStats\(party\),\s*\}\)\);/);
+  assert.match(hookSource, /const chunkPartyStatus = state\.parties\.map\(\(candidate\) => \(\{\s*party: candidate,\s*computed: computePartyStats\(candidate\),\s*\}\)\);/);
   assert.match(hookSource, /for \(const \{ runIndex, partyIndex, partyCycleDurationMs \} of operationWindow\)[\s\S]*chunkPartyStatus: chunkPartyStatus\[partyIndex\]/);
   assert.match(hookSource, /const suppliedPartyStatus = action\.chunkPartyStatus \?\? action\.authoritativePartyStatus/);
   assert.match(hookSource, /const partyStatus = suppliedPartyStatus\?\.computed \?\? computePartyStats\(statusParty\)/);

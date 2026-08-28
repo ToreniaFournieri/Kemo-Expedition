@@ -273,6 +273,8 @@ export function HomeScreen({
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
   const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
+  const afkInFlightCompletedMsByPartyRef = useRef<Record<number, number>>({});
+  const afkLastProgressRenderAtRef = useRef(0);
   const afkActiveChunkJobsRef = useRef(new Map<number, {
     job: Omit<AfkPartyChunkJob, 'baseState'>;
     worker: Worker | null;
@@ -290,6 +292,7 @@ export function HomeScreen({
   const afkHeadOfLineWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
   const renderCommitDurationsRef = useRef<number[]>([]);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
+  const [, setAfkProgressPresentationVersion] = useState(0);
   const memoryPreviousAfkActiveRef = useRef(false);
   const memoryOnlineStartedRef = useRef(false);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
@@ -2166,7 +2169,8 @@ export function HomeScreen({
 
   const completeAfkCommitTransaction = useCallback((result: AfkPartyChunkResult) => {
     const transactionStartedAt = afkActiveCommitTransactionRef.current?.startedAt ?? performance.now();
-    const chunkElapsedMs = result.cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+    const chunkElapsedMs = result.cycleDurationMs * result.operationCount;
+    delete afkInFlightCompletedMsByPartyRef.current[result.partyIndex];
     afkRemainingMsByPartyRef.current[result.partyIndex] = Math.max(
       0,
       (afkRemainingMsByPartyRef.current[result.partyIndex] ?? 0) - chunkElapsedMs,
@@ -2242,6 +2246,7 @@ export function HomeScreen({
     afkRecoveryTotalMsRef.current = 0;
     afkChunkCursorRef.current = null;
     afkRemainingMsByPartyRef.current = {};
+    afkInFlightCompletedMsByPartyRef.current = {};
     afkActiveChunkJobsRef.current.forEach(({ job }) => {
       memoryMonitor.releaseWorker(job.jobId);
     });
@@ -2738,6 +2743,7 @@ export function HomeScreen({
 
     if (!autoRepeatEnabledRef.current) {
       afkRemainingMsByPartyRef.current = {};
+      afkInFlightCompletedMsByPartyRef.current = {};
       setPendingAfkMs(0);
       return;
     }
@@ -2771,7 +2777,7 @@ export function HomeScreen({
         afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
           profile,
           completedResult.durationMs,
-          AFK_CHUNK_CYCLE_COUNT,
+          completedResult.operationCount,
         );
         const baseParty = completedResult.baseParty;
         const liveParty = state.parties.find((party) => party.id === completedResult.partyId)
@@ -2865,6 +2871,7 @@ export function HomeScreen({
         simulatedStartedAt,
         simulatedCompletedAt: simulatedStartedAt + chunkElapsedMs,
         cycleDurationMs,
+        operationCount: AFK_CHUNK_CYCLE_COUNT,
         baseState: state,
         gameMode,
         cycleDurationScale: durationScale,
@@ -2882,6 +2889,7 @@ export function HomeScreen({
       memoryMonitor.registerWorker(jobId);
       worker.onmessage = (event: MessageEvent<
         | { type: 'started'; jobId: string; partyIndex: number }
+        | { type: 'progress'; jobId: string; partyIndex: number; completedOperations: number; operationCount: number }
         | { type: 'complete'; result: AfkPartyChunkResult }
         | { type: 'error'; jobId: string; message: string }
       >) => {
@@ -2900,6 +2908,19 @@ export function HomeScreen({
             progress: true,
           });
           updateAfkTraceCoordinator();
+          return;
+        }
+        if (event.data.type === 'progress') {
+          const completedOperations = Math.max(
+            0,
+            Math.min(event.data.operationCount, Math.floor(event.data.completedOperations)),
+          );
+          afkInFlightCompletedMsByPartyRef.current[event.data.partyIndex] = completedOperations * job.cycleDurationMs;
+          const now = performance.now();
+          if (now - afkLastProgressRenderAtRef.current >= 100) {
+            afkLastProgressRenderAtRef.current = now;
+            setAfkProgressPresentationVersion((version) => version + 1);
+          }
           return;
         }
         currentSlot.jobId = null;
@@ -2942,6 +2963,7 @@ export function HomeScreen({
           terminateAfkWorkers([worker], 'worker-error-message');
           afkWorkerPoolRef.current = afkWorkerPoolRef.current.filter((slot) => slot.worker !== worker);
           afkActiveChunkJobsRef.current.delete(partyIndex);
+          delete afkInFlightCompletedMsByPartyRef.current[partyIndex];
           memoryMonitor.releaseWorker(event.data.jobId);
         }
         updateAfkTraceCoordinator();
@@ -2961,6 +2983,7 @@ export function HomeScreen({
         terminateAfkWorkers([worker], 'worker-error-event');
         afkWorkerPoolRef.current = afkWorkerPoolRef.current.filter((slot) => slot.worker !== worker);
         afkActiveChunkJobsRef.current.delete(partyIndex);
+        delete afkInFlightCompletedMsByPartyRef.current[partyIndex];
         memoryMonitor.releaseWorker(jobId);
         updateAfkTraceCoordinator();
         setAfkCoordinatorVersion((version) => version + 1);
@@ -2971,6 +2994,7 @@ export function HomeScreen({
         status: 'queued',
         startedMonotonicAt: job.queuedAt ?? performance.now(),
       });
+      afkInFlightCompletedMsByPartyRef.current[partyIndex] = 0;
       afkRuntimeTrace.record('worker_job_posted', {
         phase: 'worker_queue',
         partyId: party.id,
@@ -2993,6 +3017,7 @@ export function HomeScreen({
       terminateAfkWorkers(afkWorkerPoolRef.current.map(({ worker }) => worker), 'recovery-complete');
       afkWorkerPoolRef.current = [];
       afkRemainingMsByPartyRef.current = {};
+      afkInFlightCompletedMsByPartyRef.current = {};
       pendingAfkMsRef.current = 0;
       setPendingAfkMs(0);
       updateAfkTraceCoordinator();
@@ -3009,6 +3034,7 @@ export function HomeScreen({
     terminateAfkWorkers(afkWorkerPoolRef.current.map(({ worker }) => worker), 'unmount');
     afkWorkerPoolRef.current = [];
     afkActiveChunkJobsRef.current.clear();
+    afkInFlightCompletedMsByPartyRef.current = {};
     updateAfkTraceCoordinator();
   }, [updateAfkTraceCoordinator]);
 
@@ -3164,7 +3190,17 @@ export function HomeScreen({
   // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
   // On refresh, `state.reactivate` progress is re-based to 0/x using the restored pending AFK backlog.
   const afkRecoveryTotalMs = Math.max(pendingAfkMs, afkRecoveryTotalMsRef.current);
-  const afkRecoveryCompletedMs = Math.max(0, afkRecoveryTotalMs - pendingAfkMs);
+  const afkPresentedRemainingByParty = Object.entries(afkRemainingMsByPartyRef.current).map(
+    ([rawPartyIndex, remainingMs]) => Math.max(
+      0,
+      remainingMs - (afkInFlightCompletedMsByPartyRef.current[Number(rawPartyIndex)] ?? 0),
+    ),
+  );
+  const afkPresentedPendingMs = afkPresentedRemainingByParty.length > 0
+    ? afkPresentedRemainingByParty.reduce((total, remainingMs) => total + remainingMs, 0)
+      / afkPresentedRemainingByParty.length
+    : pendingAfkMs;
+  const afkRecoveryCompletedMs = Math.max(0, afkRecoveryTotalMs - afkPresentedPendingMs);
   const afkRecoveryProgressPercent = pendingAfkMs > 0
     ? Math.max(
         0,
@@ -3267,6 +3303,7 @@ export function HomeScreen({
     afkChunkCursorRef.current = importedRuntime?.afkChunkCursor ?? null;
     afkRemainingMsByPartyRef.current = importedRuntime?.afkRemainingMsByParty
       ?? Object.fromEntries(result.state.parties.map((_, partyIndex) => [partyIndex, nextPendingAfkMs]));
+    afkInFlightCompletedMsByPartyRef.current = {};
     shouldRebuildPartyCyclesAfterAfkRef.current = nextPendingAfkMs > 0;
     lastCheckpointAtRef.current = importedRuntime?.checkpointAt ?? now;
 

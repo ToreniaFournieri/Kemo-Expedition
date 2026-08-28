@@ -19,6 +19,10 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
       simulatedCompletedAt: job.simulatedCompletedAt,
       cycleDurationScale: job.cycleDurationScale,
       gameMode: job.gameMode,
+      operationCount: job.operationCount,
+      onProgress: (completedOperations, operationCount) => {
+        self.postMessage({ type: 'progress', jobId: job.jobId, partyIndex: job.partyIndex, completedOperations, operationCount });
+      },
     });
     const completedAt = performance.now();
     const result = createAfkPartyChunkResult(job, resultState, Math.max(0, completedAt - receivedAt), {

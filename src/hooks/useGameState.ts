@@ -2059,7 +2059,7 @@ type GameAction =
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }> }
   | { type: 'COMMIT_AFK_PARTY_CHUNK'; result: AfkPartyChunkResult }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
@@ -5122,7 +5122,7 @@ function gameReducer(
       // Each reducer call represents one logical Chunk for worker-backed AFK
       // recovery. Retain these Party objects as the status inputs for every
       // Cycle even as workingState accumulates level, XP, HP, and gate changes.
-      const chunkPartyStatus = state.parties.map((party) => ({
+      const chunkPartyStatus = action.chunkPartyStatus ?? state.parties.map((party) => ({
         party,
         computed: computePartyStats(party),
       }));
@@ -5581,29 +5581,42 @@ export function simulateAfkPartyChunkForWorker(
     simulatedCompletedAt: number;
     cycleDurationScale: number;
     gameMode?: GameMode;
+    operationCount?: number;
+    onProgress?: (completedOperations: number, operationCount: number) => void;
   },
 ): GameState {
   const party = state.parties[options.partyIndex];
   if (!party) return state;
   setActiveLanguage(state.global.language);
   const cycleDurationMs = Math.max(1, Math.floor(options.cycleDurationMs));
-  const elapsedMs = cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+  const operationCount = Math.max(1, Math.floor(options.operationCount ?? AFK_CHUNK_CYCLE_COUNT));
+  const elapsedMs = cycleDurationMs * operationCount;
   const inactiveDurationMs = elapsedMs + 1;
   const cycleDurationByParty = state.parties.map((_, partyIndex) => (
     partyIndex === options.partyIndex ? cycleDurationMs : inactiveDurationMs
   ));
-  return gameReducer(state, {
-    type: 'SIMULATE_AFK',
-    elapsedMs,
-    isAutoRepeatEnabled: true,
-    gameMode: options.gameMode,
-    simulatedEndAt: options.simulatedCompletedAt,
-    cycleDurationScale: options.cycleDurationScale,
-    cycleDurationByParty,
-    operationStart: 0,
-    operationCount: AFK_CHUNK_CYCLE_COUNT,
-    finalizeChunk: true,
-  });
+  const chunkPartyStatus = state.parties.map((candidate) => ({
+    party: candidate,
+    computed: computePartyStats(candidate),
+  }));
+  let workingState = state;
+  for (let operationIndex = 0; operationIndex < operationCount; operationIndex += 1) {
+    workingState = gameReducer(workingState, {
+      type: 'SIMULATE_AFK',
+      elapsedMs,
+      isAutoRepeatEnabled: true,
+      gameMode: options.gameMode,
+      simulatedEndAt: options.simulatedCompletedAt,
+      cycleDurationScale: options.cycleDurationScale,
+      cycleDurationByParty,
+      operationStart: operationIndex,
+      operationCount: 1,
+      finalizeChunk: operationIndex + 1 === operationCount,
+      chunkPartyStatus,
+    });
+    options.onProgress?.(operationIndex + 1, operationCount);
+  }
+  return workingState;
 }
 
 /** Pure authoritative batch used by the serialized Experimental API adapter and stabilization tests. */

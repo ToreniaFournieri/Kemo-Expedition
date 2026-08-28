@@ -17,6 +17,7 @@ export interface AfkPartyChunkJob {
   simulatedStartedAt: number;
   simulatedCompletedAt: number;
   cycleDurationMs: number;
+  operationCount?: number;
   baseState: GameState;
   gameMode: 'm.kemo' | 'm.luna' | 'm.laika';
   cycleDurationScale: number;
@@ -41,6 +42,7 @@ export interface AfkPartyChunkResult {
   partyId: number;
   simulatedCompletedAt: number;
   cycleDurationMs: number;
+  operationCount: number;
   baseParty: Party;
   resultParty: Party;
   unlockedParties: Party[];
@@ -209,6 +211,7 @@ export function createAfkPartyChunkResult(
     partyId: job.partyId,
     simulatedCompletedAt: job.simulatedCompletedAt,
     cycleDurationMs: job.cycleDurationMs,
+    operationCount: Math.max(1, Math.floor(job.operationCount ?? AFK_CHUNK_CYCLE_COUNT)),
     baseParty: job.baseState.parties[job.partyIndex],
     resultParty: resultState.parties[job.partyIndex],
     unlockedParties: resultState.parties.slice(job.baseState.parties.length),
