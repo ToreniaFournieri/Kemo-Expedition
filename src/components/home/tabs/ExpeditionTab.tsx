@@ -10,6 +10,7 @@ hasDefeatedDungeonBoss
 import { DebugSettings,getTimeSpeedScale } from '../../../game/debugSettings';
 import { getDifficultyOffsetItemChanceTickets,getDifficultyOffsetMax,getDifficultyOffsetSuperRareChanceTickets,normalizeDifficultyOffset } from '../../../game/difficultyOffset';
 import { getItemDisplayName } from '../../../game/gameState';
+import { EXPEDITION_SIMULATION_RUN_COUNT } from '../../../game/expeditionSimulation';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
 import { computePartyStats } from '../../../game/partyComputation';
 import { t } from '../../../i18n';
@@ -302,7 +303,7 @@ export default function ExpeditionTab({
     setActiveSimulationResultBubble((current) => current?.key === `simulation:${partyIndex}` ? null : current);
     setSimulationByParty((current) => ({
       ...current,
-      [partyIndex]: { status: 'running', completed: 0, total: 100 },
+      [partyIndex]: { status: 'running', completed: 0, total: EXPEDITION_SIMULATION_RUN_COUNT },
     }));
 
     try {
@@ -322,7 +323,7 @@ export default function ExpeditionTab({
       if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
       setSimulationByParty((current) => ({
         ...current,
-        [partyIndex]: { status: 'error', completed: 0, total: 100 },
+        [partyIndex]: { status: 'error', completed: 0, total: EXPEDITION_SIMULATION_RUN_COUNT },
       }));
     }
   };
@@ -483,12 +484,12 @@ export default function ExpeditionTab({
           ? t(simulationUsesClearLabel
             ? 'party.expedition.simulationResult.clear'
             : 'party.expedition.simulationResult.return', {
-            success: formatNumber(simulationUsesClearLabel
+            success: formatDecimal((simulationUsesClearLabel
               ? simulation.result.Clear
-              : simulation.result.Turned_Back),
-            draw: formatNumber(simulation.result.Draw_Retreat),
-            retreat: formatNumber(simulation.result.Wounded_Retreat),
-            defeat: formatNumber(simulation.result.Defeat),
+              : simulation.result.Turned_Back) / simulation.result.total * 100, 1),
+            draw: formatDecimal(simulation.result.Draw_Retreat / simulation.result.total * 100, 1),
+            retreat: formatDecimal(simulation.result.Wounded_Retreat / simulation.result.total * 100, 1),
+            defeat: formatDecimal(simulation.result.Defeat / simulation.result.total * 100, 1),
           })
           : null;
 

@@ -39,6 +39,7 @@ import {
   type PartyMaxHpLedger,
 } from '../game/partyComputation';
 import { deriveExpeditionRewardContext } from '../game/expeditionRewardContext';
+import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { executeBattle, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
 import { gameplayRandom } from '../game/gameplayRandom';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
@@ -5791,7 +5792,7 @@ export async function simulateExpeditionRuns(
   state: GameState,
   partyIndex: number,
   gameMode: GameMode = 'm.kemo',
-  count = 100,
+  count = EXPEDITION_SIMULATION_RUN_COUNT,
   onProgress?: (completed: number, total: number) => void,
 ): Promise<ExpeditionSimulationResult> {
   void memoryMonitor.recordEvent('simulation_start');
@@ -6074,7 +6075,7 @@ export function useGameState() {
     }, []),
 
     simulateExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', onProgress?: (completed: number, total: number) => void) => (
-      simulateExpeditionRuns(state, partyIndex, gameMode, 100, onProgress)
+      simulateExpeditionRuns(state, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress)
     ), [state]),
 
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
