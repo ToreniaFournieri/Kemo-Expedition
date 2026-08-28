@@ -12,7 +12,7 @@ import { ensureLanguageLoaded } from '../../src/i18n/index.ts';
 
 declare const self: DedicatedWorkerGlobalScope;
 
-type Candidate = 'full' | 'compact';
+type Candidate = 'full' | 'build62' | 'production';
 const epochNow = () => performance.timeOrigin + performance.now();
 
 function createSeededRandom(seed: number): () => number {
@@ -46,13 +46,16 @@ self.onmessage = async (event: MessageEvent<{
           simulatedCompletedAt: job.simulatedCompletedAt,
           cycleDurationScale: job.cycleDurationScale,
           gameMode: job.gameMode,
+          chunkStatusScope: candidate === 'production' ? 'target' : 'all',
         }),
       ),
     );
     const completeResult = createAfkPartyChunkResult(job, resultState, 0);
-    const result = candidate === 'compact'
+    const result = candidate === 'production'
       ? createAfkPartyChunkWorkerResult(completeResult)
-      : completeResult;
+      : candidate === 'build62'
+        ? (({ baseParty: _baseParty, ...build62Result }) => build62Result)(completeResult)
+        : completeResult;
     const computeEndedAt = epochNow();
     const resultPostStartedAt = epochNow();
     self.postMessage({

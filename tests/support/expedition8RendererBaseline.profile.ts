@@ -56,6 +56,10 @@ interface AfkSample {
   workerExecutionMs: number;
   projectedParallelWorkerMs: number;
   workerAsyncWallMs: number;
+  workerStartupMs: number;
+  workerQueueMs: number;
+  workerUnattributedWallMs: number;
+  partyExecutionMs: number[];
   coordinatorCommitMs: number;
   longestSingleCoordinatorCommitMs: number;
 }
@@ -82,6 +86,13 @@ function distribution(values: number[]): Distribution {
     p95: nearestRank(values, 0.95),
     maximum: Math.max(...values),
   };
+}
+
+function baseStatePartyDistributions(state: GameState, samples: AfkSample[]) {
+  return state.parties.map((party, partyIndex) => ({
+    partyId: party.id,
+    duration: distribution(samples.map((sample) => sample.partyExecutionMs[partyIndex] ?? 0)),
+  }));
 }
 
 function createSeededRandom(seed: number): () => number {
@@ -187,6 +198,7 @@ function runDeterministicAfkWorkflow(
 async function runAfkSample(baseState: GameState): Promise<AfkSample> {
   const jobs: AfkPartyChunkJob[] = baseState.parties.map((party, partyIndex) => {
     const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
+    const workerState = createAfkPartyChunkWorkerState(baseState, partyIndex);
     const job: AfkPartyChunkJob = {
       jobId: `renderer-worker-profile-${party.id}`,
       partyIndex,
@@ -194,7 +206,7 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
       simulatedStartedAt: SIMULATED_END_AT - cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
       simulatedCompletedAt: SIMULATED_END_AT,
       cycleDurationMs,
-      baseState,
+      baseState: workerState,
       gameMode: 'm.kemo',
       cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
       queuedAt: performance.now(),
@@ -254,6 +266,15 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
     workerExecutionMs: results.reduce((total, result) => total + result.workerTelemetry.executionMs, 0),
     projectedParallelWorkerMs: Math.max(...results.map((result) => result.workerTelemetry.executionMs)),
     workerAsyncWallMs,
+    workerStartupMs: results.reduce((total, result) => total + result.workerTelemetry.workerStartupMs, 0),
+    workerQueueMs: results.reduce((total, result) => total + result.workerTelemetry.queueMs, 0),
+    workerUnattributedWallMs: Math.max(
+      0,
+      workerAsyncWallMs - (results.reduce((total, result) => total + result.workerTelemetry.executionMs, 0) / workerLimit),
+    ),
+    partyExecutionMs: baseState.parties.map((party) => (
+      results.find((result) => result.partyId === party.id)?.workerTelemetry.executionMs ?? 0
+    )),
     coordinatorCommitMs: coordinatorDurations.reduce((total, value) => total + value, 0),
     longestSingleCoordinatorCommitMs: Math.max(...coordinatorDurations),
   };
@@ -399,7 +420,7 @@ async function runProfile() {
   localStorage.removeItem(STORAGE_KEY);
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     generatedAt: new Date().toISOString(),
     fixture: identity,
     validation: {
@@ -454,6 +475,10 @@ async function runProfile() {
       afkWorkerExecutionSixPartyCpuSum: distribution(afkSamples.map((sample) => sample.workerExecutionMs)),
       afkWorkerExecutionProjectedParallel: distribution(afkSamples.map((sample) => sample.projectedParallelWorkerMs)),
       afkWorkerAsyncWall: distribution(afkSamples.map((sample) => sample.workerAsyncWallMs)),
+      afkWorkerStartupSixPartySum: distribution(afkSamples.map((sample) => sample.workerStartupMs)),
+      afkWorkerQueueSixPartySum: distribution(afkSamples.map((sample) => sample.workerQueueMs)),
+      afkWorkerUnattributedWallAboveIdealCpuSplit: distribution(afkSamples.map((sample) => sample.workerUnattributedWallMs)),
+      afkWorkerExecutionByParty: baseStatePartyDistributions(state, afkSamples),
       coordinatorCommitSixPartySum: distribution(afkSamples.map((sample) => sample.coordinatorCommitMs)),
       coordinatorCommitLongestSingle: distribution(afkSamples.map((sample) => sample.longestSingleCoordinatorCommitMs)),
     },

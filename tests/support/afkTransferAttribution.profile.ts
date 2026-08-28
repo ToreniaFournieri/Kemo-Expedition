@@ -132,6 +132,9 @@ if (compactFinalHash !== EXPECTED_FINAL_HASH) {
 
 const resultSizes = results.map((result) => {
   const { baseParty: _baseParty, ...withoutBaseParty } = result;
+  const compactWorkerResult = createAfkPartyChunkWorkerResult(
+    compactResults.find((candidate) => candidate.partyId === result.partyId)!,
+  );
   return {
     partyId: result.partyId,
     completeResultBytes: utf8Bytes(result),
@@ -139,6 +142,7 @@ const resultSizes = results.map((result) => {
     resultPartyBytes: utf8Bytes(result.resultParty),
     globalDeltaBytes: utf8Bytes(result.globalDelta),
     resultWithoutBasePartyBytes: utf8Bytes(withoutBaseParty),
+    compactHistoryWorkerResultBytes: utf8Bytes(compactWorkerResult),
   };
 });
 
@@ -170,6 +174,7 @@ const report = {
     results: resultSizes,
     completeSixPartyBytes: resultSizes.reduce((total, result) => total + result.completeResultBytes, 0),
     withoutBasePartySixPartyBytes: resultSizes.reduce((total, result) => total + result.resultWithoutBasePartyBytes, 0),
+    compactHistorySixPartyBytes: resultSizes.reduce((total, result) => total + result.compactHistoryWorkerResultBytes, 0),
   },
 };
 

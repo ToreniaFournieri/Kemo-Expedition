@@ -37,6 +37,8 @@ function makeParty(overrides: Partial<Party> = {}): Party {
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
+    lastExpeditionLog: null,
+    diaryLogs: [],
     diarySettings: {} as Party['diarySettings'],
     ...overrides,
   } as Party;
@@ -145,8 +147,34 @@ test('renderer hydration restores the exact complete worker-result envelope', ()
 
   const workerResult = createAfkPartyChunkWorkerResult(complete);
   assert.equal('baseParty' in workerResult, false);
+  assert.equal(workerResult.transferSchemaVersion, 2);
+  assert.deepEqual(workerResult.resultParty.diaryLogs, []);
+  assert.equal(workerResult.resultParty.lastExpeditionLog, null);
   assert.equal(
     JSON.stringify(hydrateAfkPartyChunkResult(workerResult, baseState.parties[0])),
+    JSON.stringify(complete),
+  );
+});
+
+test('worker history transfer references the renderer-owned retained Diary suffix', () => {
+  const retainedLog = { id: 'retained', expeditionLog: { dungeonId: 8 }, createdAt: 1 } as Party['diaryLogs'][number];
+  const newLog = { id: 'new', expeditionLog: { dungeonId: 8 }, createdAt: 2 } as Party['diaryLogs'][number];
+  const baseParty = makeParty({ diaryLogs: [retainedLog], lastExpeditionLog: retainedLog.expeditionLog });
+  const resultParty = makeParty({ diaryLogs: [newLog, retainedLog], lastExpeditionLog: newLog.expeditionLog });
+  const baseState = makeState(baseParty, 100, 1);
+  const resultState = makeState(resultParty, 100, 1);
+  const complete = createAfkPartyChunkResult({
+    jobId: 'job-history-delta', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState, gameMode: 'm.kemo', cycleDurationScale: 1,
+  }, resultState, 5);
+
+  const workerResult = createAfkPartyChunkWorkerResult(complete);
+  assert.deepEqual(workerResult.partyHistory.diaryLogs[1], { source: 'base', index: 0 });
+  assert.equal(workerResult.partyHistory.diaryLogs[0]?.source, 'worker');
+  assert.deepEqual(workerResult.partyHistory.lastExpeditionLog, { source: 'diary', index: 0 });
+  assert.equal(
+    JSON.stringify(hydrateAfkPartyChunkResult(workerResult, baseParty)),
     JSON.stringify(complete),
   );
 });

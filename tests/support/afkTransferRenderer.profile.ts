@@ -19,7 +19,8 @@ declare const __AFK_TRANSFER_WORKER_URL__: string;
 declare const __AFK_TRANSFER_SAMPLE_COUNT__: number;
 declare const __AFK_TRANSFER_WARMUP_COUNT__: number;
 
-type Candidate = 'full' | 'compact';
+type Candidate = 'full' | 'build62' | 'production';
+type Build62WorkerResult = Omit<AfkPartyChunkResult, 'baseParty'>;
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
 const EXPECTED_HASH = '11fb8356c53d5087d8f220408a92c3c8b12ef276abf2898e9a7e19e7b88bfebc';
@@ -58,6 +59,24 @@ async function sha256(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+function hydrateBuild62Result(result: Build62WorkerResult, baseParty: GameState['parties'][number]): AfkPartyChunkResult {
+  return {
+    schemaVersion: result.schemaVersion,
+    jobId: result.jobId,
+    partyIndex: result.partyIndex,
+    partyId: result.partyId,
+    simulatedCompletedAt: result.simulatedCompletedAt,
+    cycleDurationMs: result.cycleDurationMs,
+    operationCount: result.operationCount,
+    baseParty,
+    resultParty: result.resultParty,
+    unlockedParties: result.unlockedParties,
+    globalDelta: result.globalDelta,
+    durationMs: result.durationMs,
+    workerTelemetry: result.workerTelemetry,
+  };
+}
+
 function createJob(state: GameState, partyIndex: number, candidate: Candidate, sampleIndex: number): AfkPartyChunkJob {
   const party = state.parties[partyIndex];
   const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
@@ -69,7 +88,7 @@ function createJob(state: GameState, partyIndex: number, candidate: Candidate, s
     simulatedCompletedAt: SIMULATED_END_AT,
     cycleDurationMs,
     operationCount: AFK_CHUNK_CYCLE_COUNT,
-    baseState: candidate === 'compact' ? createAfkPartyChunkWorkerState(state, partyIndex) : state,
+    baseState: candidate === 'full' ? state : createAfkPartyChunkWorkerState(state, partyIndex),
     gameMode: 'm.kemo',
     cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
   };
@@ -105,10 +124,12 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
           const finish = () => {
             if (!completion || !postComplete) return;
             const deliveredAt = performance.timeOrigin + performance.now();
-            const workerResult = completion.result as AfkPartyChunkResult | AfkPartyChunkWorkerResult;
-            const hydrated = candidate === 'compact'
+            const workerResult = completion.result as AfkPartyChunkResult | Build62WorkerResult | AfkPartyChunkWorkerResult;
+            const hydrated = candidate === 'production'
               ? hydrateAfkPartyChunkResult(workerResult as AfkPartyChunkWorkerResult, state.parties[job.partyIndex])
-              : workerResult as AfkPartyChunkResult;
+              : candidate === 'build62'
+                ? hydrateBuild62Result(workerResult as Build62WorkerResult, state.parties[job.partyIndex])
+                : workerResult as AfkPartyChunkResult;
             computeDurations.push(Number(completion.computeEndedAt) - Number(completion.computeStartedAt));
             resultPostDurations.push(postComplete.resultPostEndedAt - postComplete.resultPostStartedAt);
             resultDeliveryDurations.push(deliveredAt - postComplete.resultPostEndedAt);
@@ -174,39 +195,50 @@ function summarize(samples: Sample[]) {
 async function runProfile() {
   const envelope = JSON.parse(__EXPEDITION_8_SAVE_FIXTURE__) as { saveDataCompressed: string };
   const state = hydrateGameState(JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState);
-  const measured: Record<Candidate, Sample[]> = { full: [], compact: [] };
+  const measured: Record<Candidate, Sample[]> = { full: [], build62: [], production: [] };
   for (let index = -__AFK_TRANSFER_WARMUP_COUNT__; index < __AFK_TRANSFER_SAMPLE_COUNT__; index += 1) {
-    const order: Candidate[] = index % 2 === 0 ? ['full', 'compact'] : ['compact', 'full'];
+    const orders: Candidate[][] = [
+      ['full', 'build62', 'production'],
+      ['build62', 'production', 'full'],
+      ['production', 'full', 'build62'],
+    ];
+    const order = orders[((index % orders.length) + orders.length) % orders.length]!;
     const pair: Partial<Record<Candidate, Sample>> = {};
     for (const candidate of order) pair[candidate] = await runCandidate(state, candidate, index);
-    if (pair.full!.hydratedResultsJson !== pair.compact!.hydratedResultsJson) {
+    if (pair.full!.hydratedResultsJson !== pair.build62!.hydratedResultsJson
+      || pair.full!.hydratedResultsJson !== pair.production!.hydratedResultsJson) {
       throw new Error(`Hydrated full/compact result mismatch in sample ${index}`);
     }
     if (index >= 0) {
       measured.full.push(pair.full!);
-      measured.compact.push(pair.compact!);
+      measured.build62.push(pair.build62!);
+      measured.production.push(pair.production!);
     }
   }
-  const pairedWallImprovement = measured.full.map((sample, index) => (
-    (1 - measured.compact[index].wallMs / sample.wallMs) * 100
+  const pairedWallImprovement = measured.build62.map((sample, index) => (
+    (1 - measured.production[index].wallMs / sample.wallMs) * 100
   ));
-  const pairedEventLoopImprovement = measured.full.map((sample, index) => (
-    (1 - measured.compact[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
+  const pairedEventLoopImprovement = measured.build62.map((sample, index) => (
+    (1 - measured.production[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
   ));
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     sampling: {
       warmups: __AFK_TRANSFER_WARMUP_COUNT__,
       measuredSamples: __AFK_TRANSFER_SAMPLE_COUNT__,
-      candidateOrder: 'alternating-within-sample',
+      candidateOrder: 'rotating-within-sample',
     },
     validation: {
       hydratedResultsByteIdenticalEverySample: true,
       deterministicAfkFinalStateSha256: EXPECTED_HASH,
     },
-    candidates: { full: summarize(measured.full), compact: summarize(measured.compact) },
-    pairedImprovementPercent: {
+    candidates: {
+      full: summarize(measured.full),
+      build62: summarize(measured.build62),
+      production: summarize(measured.production),
+    },
+    build62ToProductionPairedImprovementPercent: {
       wallMs: distribution(pairedWallImprovement),
       eventLoopDelayMs: distribution(pairedEventLoopImprovement),
     },

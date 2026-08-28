@@ -5583,6 +5583,7 @@ export function simulateAfkPartyChunkForWorker(
     gameMode?: GameMode;
     operationCount?: number;
     onProgress?: (completedOperations: number, operationCount: number) => void;
+    chunkStatusScope?: 'target' | 'all';
   },
 ): GameState {
   const party = state.parties[options.partyIndex];
@@ -5595,10 +5596,23 @@ export function simulateAfkPartyChunkForWorker(
   const cycleDurationByParty = state.parties.map((_, partyIndex) => (
     partyIndex === options.partyIndex ? cycleDurationMs : inactiveDurationMs
   ));
-  const chunkPartyStatus = state.parties.map((candidate) => ({
-    party: candidate,
-    computed: computePartyStats(candidate),
-  }));
+  const chunkPartyStatus: Array<{ party: Party; computed: ComputedPartyStatus }> = [];
+  if (options.chunkStatusScope === 'all') {
+    state.parties.forEach((candidate, candidateIndex) => {
+      chunkPartyStatus[candidateIndex] = {
+        party: candidate,
+        computed: computePartyStats(candidate),
+      };
+    });
+  } else {
+    // SpecRef: 5.1 | Chunk | Party status is calculated once at the beginning of each Chunk.
+    // A party-scoped worker cannot advance inactive parties, so retain only the
+    // one authoritative status snapshot consumed by its twelve target Cycles.
+    chunkPartyStatus[options.partyIndex] = {
+      party,
+      computed: computePartyStats(party),
+    };
+  }
   let workingState = state;
   for (let operationIndex = 0; operationIndex < operationCount; operationIndex += 1) {
     workingState = gameReducer(workingState, {

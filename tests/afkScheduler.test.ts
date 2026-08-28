@@ -175,11 +175,13 @@ test('runtime assigns one twelve-Cycle Chunk with per-Cycle presentation progres
 test('the canonical renderer profile accepts presentation-only worker progress', () => {
   assert.match(rendererProfileSource, /type: 'progress'; jobId: string; partyIndex: number/);
   assert.match(rendererProfileSource, /event\.data\.type === 'started' \|\| event\.data\.type === 'progress'/);
+  assert.match(rendererProfileSource, /baseState: workerState/);
+  assert.match(rendererProfileSource, /const workerState = createAfkPartyChunkWorkerState\(baseState, partyIndex\)/);
 });
 
 test('AFK Chunk party status is calculated once and reused by all twelve Cycles', () => {
   assert.match(hookSource, /const chunkPartyStatus = action\.chunkPartyStatus \?\? state\.parties\.map\(\(party\) => \(\{\s*party,\s*computed: computePartyStats\(party\),\s*\}\)\);/);
-  assert.match(hookSource, /const chunkPartyStatus = state\.parties\.map\(\(candidate\) => \(\{\s*party: candidate,\s*computed: computePartyStats\(candidate\),\s*\}\)\);/);
+  assert.match(hookSource, /chunkPartyStatus\[options\.partyIndex\] = \{\s*party,\s*computed: computePartyStats\(party\),\s*\};/);
   assert.match(hookSource, /for \(const \{ runIndex, partyIndex, partyCycleDurationMs \} of operationWindow\)[\s\S]*chunkPartyStatus: chunkPartyStatus\[partyIndex\]/);
   assert.match(hookSource, /const suppliedPartyStatus = action\.chunkPartyStatus \?\? action\.authoritativePartyStatus/);
   assert.match(hookSource, /const partyStatus = suppliedPartyStatus\?\.computed \?\? computePartyStats\(statusParty\)/);

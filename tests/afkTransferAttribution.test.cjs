@@ -22,4 +22,8 @@ test('AFK transfer attribution preserves parity and enforces compact-envelope re
     report.output.withoutBasePartySixPartyBytes
       < report.output.completeSixPartyBytes * 0.51,
   );
+  assert.ok(
+    report.output.compactHistorySixPartyBytes
+      < report.output.withoutBasePartySixPartyBytes * 0.6,
+  );
 });

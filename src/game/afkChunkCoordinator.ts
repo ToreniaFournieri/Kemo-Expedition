@@ -1,4 +1,4 @@
-import type { Character, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
+import type { Character, DiaryLog, ExpeditionLog, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
 
 export const AFK_CHUNK_CYCLE_COUNT = 12;
 
@@ -51,7 +51,24 @@ export interface AfkPartyChunkResult {
   workerTelemetry: AfkWorkerPerformanceTelemetry;
 }
 
-export type AfkPartyChunkWorkerResult = Omit<AfkPartyChunkResult, 'baseParty'>;
+type AfkDiaryLogTransferEntry =
+  | { source: 'base'; index: number }
+  | { source: 'worker'; value: DiaryLog };
+
+type AfkLastExpeditionLogTransfer =
+  | { source: 'base' }
+  | { source: 'diary'; index: number }
+  | { source: 'worker'; value: ExpeditionLog | null };
+
+interface AfkPartyHistoryTransfer {
+  diaryLogs: AfkDiaryLogTransferEntry[];
+  lastExpeditionLog: AfkLastExpeditionLogTransfer;
+}
+
+export type AfkPartyChunkWorkerResult = Omit<AfkPartyChunkResult, 'baseParty'> & {
+  transferSchemaVersion: 2;
+  partyHistory: AfkPartyHistoryTransfer;
+};
 
 /**
  * Removes retained Diary presentation history from parties that this worker
@@ -70,14 +87,51 @@ export function createAfkPartyChunkWorkerState(state: GameState, partyIndex: num
 }
 
 export function createAfkPartyChunkWorkerResult(result: AfkPartyChunkResult): AfkPartyChunkWorkerResult {
+  // SpecRef: 9.2.3 | Runtime retention and transfer | Worker and subsystem boundaries should transfer compact results or state deltas where practical
+  const baseDiaryLogs = result.baseParty.diaryLogs ?? [];
+  const resultDiaryLogs = result.resultParty.diaryLogs ?? [];
+  const diaryLogs: AfkDiaryLogTransferEntry[] = resultDiaryLogs.map((diaryLog) => {
+    const baseIndex = baseDiaryLogs.indexOf(diaryLog);
+    return baseIndex >= 0
+      ? { source: 'base', index: baseIndex }
+      : { source: 'worker', value: diaryLog };
+  });
+  const resultDiaryIndex = resultDiaryLogs.findIndex((diaryLog) => (
+    diaryLog.expeditionLog === result.resultParty.lastExpeditionLog
+  ));
+  const lastExpeditionLog: AfkLastExpeditionLogTransfer = result.resultParty.lastExpeditionLog === result.baseParty.lastExpeditionLog
+    ? { source: 'base' }
+    : resultDiaryIndex >= 0
+      ? { source: 'diary', index: resultDiaryIndex }
+      : { source: 'worker', value: result.resultParty.lastExpeditionLog };
   const { baseParty: _baseParty, ...workerResult } = result;
-  return workerResult;
+  return {
+    ...workerResult,
+    transferSchemaVersion: 2,
+    resultParty: {
+      ...workerResult.resultParty,
+      lastExpeditionLog: null,
+      diaryLogs: [],
+    },
+    partyHistory: { diaryLogs, lastExpeditionLog },
+  };
 }
 
 export function hydrateAfkPartyChunkResult(
   result: AfkPartyChunkWorkerResult,
   baseParty: Party,
 ): AfkPartyChunkResult {
+  // SpecRef: 9.2.3 | Runtime retention and transfer | Worker and subsystem boundaries should transfer compact results or state deltas where practical
+  const diaryLogs = result.partyHistory.diaryLogs.map((entry) => (
+    entry.source === 'base'
+      ? baseParty.diaryLogs?.[entry.index]
+      : entry.value
+  )).filter((entry): entry is DiaryLog => entry !== undefined);
+  const lastExpeditionLog = result.partyHistory.lastExpeditionLog.source === 'base'
+    ? baseParty.lastExpeditionLog
+    : result.partyHistory.lastExpeditionLog.source === 'diary'
+      ? diaryLogs[result.partyHistory.lastExpeditionLog.index]?.expeditionLog ?? null
+      : result.partyHistory.lastExpeditionLog.value;
   return {
     schemaVersion: result.schemaVersion,
     jobId: result.jobId,
@@ -87,7 +141,11 @@ export function hydrateAfkPartyChunkResult(
     cycleDurationMs: result.cycleDurationMs,
     operationCount: result.operationCount,
     baseParty,
-    resultParty: result.resultParty,
+    resultParty: {
+      ...result.resultParty,
+      lastExpeditionLog,
+      diaryLogs,
+    },
     unlockedParties: result.unlockedParties,
     globalDelta: result.globalDelta,
     durationMs: result.durationMs,
