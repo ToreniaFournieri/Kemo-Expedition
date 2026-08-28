@@ -24,6 +24,7 @@
     "performance:afk-transfer": "node scripts/run-afk-transfer-attribution.mjs",
     "performance:afk-transfer:renderer": "node scripts/run-afk-transfer-renderer-profile.mjs",
     "performance:afk-chunk-status": "node scripts/run-afk-chunk-status-attribution.mjs",
+    "performance:afk-item-lookup": "node scripts/run-afk-item-lookup-attribution.mjs",
     "performance:auto-equipment": "node scripts/run-auto-equipment-attribution.mjs",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",

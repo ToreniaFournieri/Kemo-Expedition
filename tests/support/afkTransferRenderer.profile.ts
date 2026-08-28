@@ -24,7 +24,7 @@ declare const __AFK_TRANSFER_WORKER_URL__: string;
 declare const __AFK_TRANSFER_SAMPLE_COUNT__: number;
 declare const __AFK_TRANSFER_WARMUP_COUNT__: number;
 
-type Candidate = 'full' | 'build62' | 'production' | 'continuation';
+type Candidate = 'full' | 'build62' | 'linear' | 'production' | 'continuation';
 type Build62WorkerResult = Omit<AfkPartyChunkResult, 'baseParty'>;
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
@@ -189,7 +189,7 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
             const workerResult = completion.result as AfkPartyChunkResult | Build62WorkerResult | AfkPartyChunkWorkerResult | AfkPartyChunkWorkerResultV3;
             const hydrated = candidate === 'continuation'
               ? hydrateAfkPartyChunkResultV3(workerResult as AfkPartyChunkWorkerResultV3, baseJob.baseState.parties[job.partyIndex])
-              : candidate === 'production'
+              : candidate === 'production' || candidate === 'linear'
                 ? hydrateAfkPartyChunkResult(workerResult as AfkPartyChunkWorkerResult, baseJob.baseState.parties[job.partyIndex])
               : candidate === 'build62'
                 ? hydrateBuild62Result(workerResult as Build62WorkerResult, state.parties[job.partyIndex])
@@ -304,18 +304,19 @@ function summarize(samples: Sample[]) {
 async function runProfile() {
   const envelope = JSON.parse(__EXPEDITION_8_SAVE_FIXTURE__) as { saveDataCompressed: string };
   const state = hydrateGameState(JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState);
-  const measured: Record<Candidate, Sample[]> = { full: [], build62: [], production: [], continuation: [] };
+  const measured: Record<Candidate, Sample[]> = { full: [], build62: [], linear: [], production: [], continuation: [] };
   for (let index = -__AFK_TRANSFER_WARMUP_COUNT__; index < __AFK_TRANSFER_SAMPLE_COUNT__; index += 1) {
     const orders: Candidate[][] = [
-      ['full', 'build62', 'production', 'continuation'],
-      ['build62', 'continuation', 'production', 'full'],
-      ['continuation', 'production', 'full', 'build62'],
-      ['production', 'full', 'continuation', 'build62'],
+      ['full', 'build62', 'continuation', 'linear', 'production'],
+      ['build62', 'continuation', 'full', 'production', 'linear'],
+      ['continuation', 'full', 'build62', 'linear', 'production'],
+      ['full', 'continuation', 'build62', 'production', 'linear'],
     ];
     const order = orders[((index % orders.length) + orders.length) % orders.length]!;
     const pair: Partial<Record<Candidate, Sample>> = {};
     for (const candidate of order) pair[candidate] = await runCandidate(state, candidate, index);
     if (pair.full!.hydratedResultsJson !== pair.production!.hydratedResultsJson
+      || pair.full!.hydratedResultsJson !== pair.linear!.hydratedResultsJson
       || pair.full!.hydratedResultsJson !== pair.continuation!.hydratedResultsJson
       || new Set(Object.values(pair).map((sample) => sample!.finalHash)).size !== 1) {
       throw new Error(`Hydrated full/compact result mismatch in sample ${index}: ${JSON.stringify({
@@ -330,6 +331,7 @@ async function runProfile() {
       const retainMetrics = (sample: Sample): Sample => ({ ...sample, hydratedResultsJson: '' });
       measured.full.push(retainMetrics(pair.full!));
       measured.build62.push(retainMetrics(pair.build62!));
+      measured.linear.push(retainMetrics(pair.linear!));
       measured.production.push(retainMetrics(pair.production!));
       measured.continuation.push(retainMetrics(pair.continuation!));
     }
@@ -345,6 +347,12 @@ async function runProfile() {
   ));
   const continuationHeartbeatImprovement = measured.production.map((sample, index) => (
     (1 - measured.continuation[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
+  ));
+  const indexedWallImprovement = measured.linear.map((sample, index) => (
+    (1 - measured.production[index].wallMs / sample.wallMs) * 100
+  ));
+  const indexedComputeImprovement = measured.linear.map((sample, index) => (
+    (1 - measured.production[index].workerComputeSumMs / sample.workerComputeSumMs) * 100
   ));
   return {
     schemaVersion: 2,
@@ -362,6 +370,7 @@ async function runProfile() {
     candidates: {
       full: summarize(measured.full),
       build62: summarize(measured.build62),
+      linear: summarize(measured.linear),
       production: summarize(measured.production),
       continuation: summarize(measured.continuation),
     },
@@ -372,6 +381,10 @@ async function runProfile() {
     productionToContinuationPairedImprovementPercent: {
       wallMs: distribution(continuationWallImprovement),
       eventLoopDelayMs: distribution(continuationHeartbeatImprovement),
+    },
+    linearToIndexedPairedImprovementPercent: {
+      wallMs: distribution(indexedWallImprovement),
+      workerComputeSumMs: distribution(indexedComputeImprovement),
     },
   };
 }
