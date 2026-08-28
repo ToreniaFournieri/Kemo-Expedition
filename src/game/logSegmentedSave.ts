@@ -226,13 +226,20 @@ function readDiaryLogRecord(
   reference: PersistedDiaryLogReference,
   partyId: number,
   storageKey: string,
-): DiaryLog {
+  onMissingDiaryRecord?: (partyId: number, logId: string) => void,
+): DiaryLog | null {
   const baseKey = getDiaryLogStorageKey(storageKey, partyId, reference.id);
   if (reference.recordKey !== baseKey && !reference.recordKey.startsWith(`${baseKey}:`)) {
     invalidSegmentedSave(`Diary record key mismatch for ${reference.id}`);
   }
   const encodedRecord = storage.getItem(reference.recordKey);
-  if (!encodedRecord) invalidSegmentedSave(`missing Diary record ${reference.id}`);
+  if (!encodedRecord) {
+    if (onMissingDiaryRecord) {
+      onMissingDiaryRecord(partyId, reference.id);
+      return null;
+    }
+    invalidSegmentedSave(`missing Diary record ${reference.id}`);
+  }
   const parsed = JSON.parse(decodePersistedState(encodedRecord)) as Partial<PersistedDiaryLogRecord>;
   if (parsed.storageFormat !== LOG_SEGMENTED_SAVE_FORMAT
     || parsed.schemaVersion !== LOG_SEGMENTED_SAVE_SCHEMA_VERSION
@@ -249,6 +256,9 @@ export function hydrateLogSegmentedSave(
   encodedPayload: string,
   storage: Pick<LogSegmentedStorage, 'getItem'>,
   storageKey: string,
+  options: {
+    readonly onMissingDiaryRecord?: (partyId: number, logId: string) => void;
+  } = {},
 ): GameState | null {
   const core = parseCore(encodedPayload);
   if (!core) return null;
@@ -262,16 +272,27 @@ export function hydrateLogSegmentedSave(
       return invalidSegmentedSave(`Party history mismatch at index ${partyIndex}`);
     }
     const seenIds = new Set<string>();
-    const diaryLogs = history.diaryLogs.map((reference) => {
+    const diaryLogs = history.diaryLogs.flatMap((reference) => {
       if (seenIds.has(reference.id)) invalidSegmentedSave(`duplicate Diary reference ${reference.id}`);
       seenIds.add(reference.id);
-      return readDiaryLogRecord(storage, reference, party.id, storageKey);
+      const diaryLog = readDiaryLogRecord(
+        storage,
+        reference,
+        party.id,
+        storageKey,
+        options.onMissingDiaryRecord,
+      );
+      return diaryLog ? [diaryLog] : [];
     });
     const latestTransfer = history.lastExpeditionLog;
     const lastExpeditionLog = latestTransfer.source === 'diary'
       ? (() => {
         const diary = diaryLogs.find((entry) => entry.id === latestTransfer.diaryLogId);
-        if (!diary) return invalidSegmentedSave('latest-expedition Diary reference is unavailable');
+        if (!diary) {
+          if (options.onMissingDiaryRecord
+            && history.diaryLogs.some((entry) => entry.id === latestTransfer.diaryLogId)) return null;
+          return invalidSegmentedSave('latest-expedition Diary reference is unavailable');
+        }
         return diary.expeditionLog;
       })()
       : latestTransfer.source === 'explicit'

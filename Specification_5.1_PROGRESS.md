@@ -299,7 +299,9 @@ Authoritative runtime game-state persistence uses log-segmented schema v1:
 - the frequently rewritten compressed core stores Party Diary order, read state, and references to those records, while a latest-expedition value outside the retained Diary remains explicit;
 - ordinary and AFK checkpoints reuse existing retained records and compress only the core plus any newly inserted Diary records;
 - new records must be written before the referencing core manifest, and records made unreachable by retention or import replacement may be deleted only after that manifest is durable;
+- a checkpoint prepared while an import replacement generation is not yet durable must carry its own complete Diary record generation so later publication cannot reference records deleted by that replacement;
 - a failed write before the manifest commit must leave the prior save loadable, including during complete import replacement;
+- when loading a save produced by an earlier runtime that already references an absent Diary record, omit only that unrecoverable Diary entry, preserve the remaining authoritative state and retained history, and repair the manifest at the next successful checkpoint;
 - legacy monolithic saves remain loadable and migrate on the next successful checkpoint;
 - portable backup export remains one complete `compressed-v1` payload and does not expose the internal segmented storage representation.
 

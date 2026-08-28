@@ -114,6 +114,7 @@ export class PersistenceCoordinator {
   private readonly cachedLastLogReferences = new WeakMap<object, string>();
   private readonly replacementRecordNamespace = globalThis.crypto?.randomUUID?.()
     ?? `replacement-${Date.now()}-${Math.floor(performance.now() * 1000)}`;
+  private selfContainedThroughRevision = 0;
   private lastEnqueuedState: GameState | null = null;
   private lastEnqueuedRevision = 0;
   private stopped = false;
@@ -179,14 +180,20 @@ export class PersistenceCoordinator {
     if (this.stopped) throw new PersistenceShutdownError();
     if (!rewriteAllLogs && state === this.lastEnqueuedState) return this.lastEnqueuedRevision;
     const revision = ++this.revision;
+    // A full replacement garbage-collects the prior record generation. Every
+    // snapshot prepared before the newest self-contained snapshot is durable
+    // must therefore carry its own complete generation as well; otherwise it
+    // could later publish references to records that the replacement deleted.
+    const requiresSelfContainedLogs = rewriteAllLogs || this.durableRevision < this.selfContainedThroughRevision;
+    if (requiresSelfContainedLogs) this.selfContainedThroughRevision = revision;
     const requestedAt = this.now();
     const canonicalStarted = this.now();
     const canonical = serializeGameState(state);
     this.emit({ event: 'canonical_snapshot', revision, durationMs: this.now() - canonicalStarted });
     const serializationStarted = this.now();
     const projection = createLogSegmentedSaveProjection(canonical, this.options.storageKey, this.persistedLogKeys, {
-      rewriteAllLogs,
-      recordNamespace: rewriteAllLogs ? `${this.replacementRecordNamespace}-${revision}` : undefined,
+      rewriteAllLogs: requiresSelfContainedLogs,
+      recordNamespace: requiresSelfContainedLogs ? `${this.replacementRecordNamespace}-${revision}` : undefined,
       stateAlreadySerialized: true,
       cachedLastReferences: this.cachedLastLogReferences,
     });

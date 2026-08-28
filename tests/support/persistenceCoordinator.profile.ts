@@ -173,6 +173,28 @@ test('localStorage failure retains encoded bytes and retries without recompressi
   coordinator.shutdown();
 });
 
+test('checkpoint prepared during full replacement keeps a self-contained Diary generation', async () => {
+  const base = loadFixture();
+  const { coordinator, workers, writes, storage } = harness();
+  const initial = coordinator.requestDurable(base);
+  workers[0]!.complete();
+  await initial;
+
+  const replacement = coordinator.replaceDurable(withGold(base, 2));
+  const replacementRequest = workers[0]!.requests.at(-1)!;
+  coordinator.requestOrdinary(withGold(base, 3));
+  workers[0]!.complete(replacementRequest);
+  await replacement;
+
+  const checkpointRequest = workers[0]!.requests.at(-1)!;
+  assert.ok((checkpointRequest.logRecords?.length ?? 0) > 0);
+  assert.notEqual(checkpointRequest.logRecords?.[0]?.key, replacementRequest.logRecords?.[0]?.key);
+  workers[0]!.complete(checkpointRequest);
+
+  assert.equal(hydrateLogSegmentedSave(writes.at(-1)!, storage, 'save')?.global.gold, 3);
+  coordinator.shutdown();
+});
+
 test('teardown rejects pending durability without unhandled rejections', async () => {
   const { coordinator, workers } = harness();
   const unhandled: unknown[] = [];

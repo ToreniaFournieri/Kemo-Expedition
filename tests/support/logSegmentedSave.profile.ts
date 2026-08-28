@@ -116,6 +116,26 @@ test('a missing referenced Diary record invalidates the segmented save', () => {
   assert.throws(() => hydrateLogSegmentedSave(encodedCore, storage, STORAGE_KEY), /missing Diary record/);
 });
 
+test('a missing referenced Diary record can be omitted during runtime recovery', () => {
+  const state = loadFixture();
+  const storage = new MemoryStorage();
+  const projection = createLogSegmentedSaveProjection(state, STORAGE_KEY);
+  const encodedCore = writeProjection(storage, projection);
+  const missingKey = [...projection.retainedLogKeys][0]!;
+  const missingId = decodeURIComponent(missingKey.split(':').at(-1)!);
+  storage.removeItem(missingKey);
+  const recovered: string[] = [];
+
+  const hydrated = hydrateLogSegmentedSave(encodedCore, storage, STORAGE_KEY, {
+    onMissingDiaryRecord: (partyId, logId) => recovered.push(`${partyId}:${logId}`),
+  });
+
+  assert.deepEqual(recovered, [`1:${missingId}`]);
+  assert.equal(hydrated?.parties[0]?.diaryLogs.some((entry) => entry.id === missingId), false);
+  assert.equal(hydrated?.parties.slice(1).flatMap((party) => party.diaryLogs).length,
+    state.parties.slice(1).flatMap((party) => party.diaryLogs).length);
+});
+
 test('a partial full replacement cannot overwrite records referenced by the prior manifest', () => {
   const state = loadFixture();
   const storage = new MemoryStorage();

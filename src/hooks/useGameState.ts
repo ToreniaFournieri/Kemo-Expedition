@@ -1111,9 +1111,15 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
     }
 
     // SpecRef: 5.1.4 | Save and load | Include the error log details in the popup.
+    const missingDiaryRecords: string[] = [];
     const segmentedState = encodedState === undefined
-      ? hydrateLogSegmentedSave(saved, localStorage, STORAGE_KEY)
+      ? hydrateLogSegmentedSave(saved, localStorage, STORAGE_KEY, {
+          onMissingDiaryRecord: (partyId, logId) => missingDiaryRecords.push(`PT${partyId}:${logId}`),
+        })
       : null;
+    if (missingDiaryRecords.length > 0) {
+      console.warn(`Recovered segmented save without ${missingDiaryRecords.length} missing Diary record(s): ${missingDiaryRecords.join(', ')}`);
+    }
     const parsed = segmentedState ?? JSON.parse(decodePersistedState(saved));
     // Validate it has required properties and migrate legacy saves.
     const hasParties = Array.isArray(parsed?.parties);
