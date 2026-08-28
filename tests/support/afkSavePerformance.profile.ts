@@ -9,6 +9,9 @@ import {
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkResult,
+  createAfkPartyChunkWorkerResult,
+  createAfkPartyChunkWorkerState,
+  hydrateAfkPartyChunkResult,
   type AfkPartyChunkResult,
 } from '../../src/game/afkChunkCoordinator.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
@@ -43,15 +46,16 @@ function createSeededRandom(seed: number): () => number {
   };
 }
 
-function runDeterministicAfkWorkflow(baseState: GameState): GameState {
+function runDeterministicAfkWorkflow(baseState: GameState, compact: boolean = false): GameState {
   const results: AfkPartyChunkResult[] = baseState.parties.map((party, partyIndex) => {
+    const workerState = compact ? createAfkPartyChunkWorkerState(baseState, partyIndex) : baseState;
     const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
     let seedCursor = 0n;
     const resultState = withBattleSeedSourceForTesting(
       () => (BigInt(0xaf000000 + partyIndex) << 32n) | seedCursor++,
       () => withGameplayRandomSourceForTesting(
         createSeededRandom(0xaf000000 + partyIndex),
-        () => simulateAfkPartyChunkForWorker(baseState, {
+        () => simulateAfkPartyChunkForWorker(workerState, {
           partyIndex,
           cycleDurationMs,
           simulatedCompletedAt: SIMULATED_END_AT,
@@ -60,17 +64,20 @@ function runDeterministicAfkWorkflow(baseState: GameState): GameState {
         }),
       ),
     );
-    return createAfkPartyChunkResult({
+    const completeResult = createAfkPartyChunkResult({
       jobId: `regression-${party.id}`,
       partyIndex,
       partyId: party.id,
       simulatedStartedAt: SIMULATED_END_AT - cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
       simulatedCompletedAt: SIMULATED_END_AT,
       cycleDurationMs,
-      baseState,
+      baseState: workerState,
       gameMode: 'm.kemo',
       cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
     }, resultState, 0);
+    return compact
+      ? hydrateAfkPartyChunkResult(createAfkPartyChunkWorkerResult(completeResult), baseState.parties[partyIndex])
+      : completeResult;
   }).sort(compareAfkChunkResults);
   return results.reduce(commitAfkPartyChunk, baseState);
 }
@@ -108,5 +115,7 @@ test('profiling wrappers preserve deterministic AFK worker and coordinator resul
   const { state } = loadAndValidateExpedition8Fixture();
   const first = runDeterministicAfkWorkflow(state);
   const second = runDeterministicAfkWorkflow(state);
+  const compact = runDeterministicAfkWorkflow(state, true);
   assert.deepEqual(serializeGameState(second), serializeGameState(first));
+  assert.deepEqual(serializeGameState(compact), serializeGameState(first));
 });

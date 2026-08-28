@@ -18,6 +18,10 @@ import {
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
 const battleCandidateSource = readFileSync(new URL('../src/game/battleCandidate.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
+const rendererProfileSource = readFileSync(
+  new URL('./support/expedition8RendererBaseline.profile.ts', import.meta.url),
+  'utf8',
+);
 const HOUR_MS = 60 * 60 * 1000;
 
 test('AFK elapsed time uses the specified progressive efficiency bands', () => {
@@ -155,6 +159,8 @@ test('runtime assigns one twelve-Cycle Chunk with per-Cycle presentation progres
   assert.match(hookSource, /partyIndex === options\.partyIndex \? cycleDurationMs : inactiveDurationMs/);
   assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
+  assert.match(homeSource, /baseState: createAfkPartyChunkWorkerState\(state, partyIndex\)/);
+  assert.match(homeSource, /hydrateAfkPartyChunkResult\(event\.data\.result, active\.baseParty\)/);
   assert.match(homeSource, /now - afkLastProgressRenderAtRef\.current >= 100/);
   assert.match(homeSource, /afkPresentedRemainingByParty\.reduce[\s\S]{0,160}afkPresentedRemainingByParty\.length/);
   assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
@@ -164,6 +170,11 @@ test('runtime assigns one twelve-Cycle Chunk with per-Cycle presentation progres
   assert.match(homeSource, /const summary = runAutoEquipment\([\s\S]{0,1800}completeAfkCommitTransaction\(transaction\.result\)/);
   assert.doesNotMatch(homeSource, /mutationCount === 0/);
   assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
+});
+
+test('the canonical renderer profile accepts presentation-only worker progress', () => {
+  assert.match(rendererProfileSource, /type: 'progress'; jobId: string; partyIndex: number/);
+  assert.match(rendererProfileSource, /event\.data\.type === 'started' \|\| event\.data\.type === 'progress'/);
 });
 
 test('AFK Chunk party status is calculated once and reused by all twelve Cycles', () => {

@@ -6,9 +6,12 @@ import {
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkResult,
+  createAfkPartyChunkWorkerState,
   getAfkWorkerPoolLimit,
+  hydrateAfkPartyChunkResult,
   type AfkPartyChunkJob,
   type AfkPartyChunkResult,
+  type AfkPartyChunkWorkerResult,
 } from '../../src/game/afkChunkCoordinator.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
@@ -167,7 +170,7 @@ function runDeterministicAfkWorkflow(
       simulatedStartedAt: SIMULATED_END_AT - cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
       simulatedCompletedAt: SIMULATED_END_AT,
       cycleDurationMs,
-      baseState,
+      baseState: createAfkPartyChunkWorkerState(baseState, partyIndex),
       gameMode: 'm.kemo',
       cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
     }, resultState, 0);
@@ -216,11 +219,14 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
         const result = await new Promise<AfkPartyChunkResult>((resolve, reject) => {
           worker.onmessage = (event: MessageEvent<
             | { type: 'started'; jobId: string; partyIndex: number }
-            | { type: 'complete'; result: AfkPartyChunkResult }
+            | { type: 'progress'; jobId: string; partyIndex: number; completedOperations: number; operationCount: number }
+            | { type: 'complete'; result: AfkPartyChunkWorkerResult }
             | { type: 'error'; jobId: string; message: string }
           >) => {
-            if (event.data.type === 'started') return;
-            if (event.data.type === 'complete') resolve(event.data.result);
+            if (event.data.type === 'started' || event.data.type === 'progress') return;
+            if (event.data.type === 'complete') {
+              resolve(hydrateAfkPartyChunkResult(event.data.result, baseState.parties[event.data.result.partyIndex]));
+            }
             else reject(new Error(`AFK worker ${event.data.jobId}: ${event.data.message}`));
           };
           worker.onerror = (event) => reject(new Error(event.message));

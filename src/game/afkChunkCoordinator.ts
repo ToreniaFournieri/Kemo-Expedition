@@ -51,6 +51,50 @@ export interface AfkPartyChunkResult {
   workerTelemetry: AfkWorkerPerformanceTelemetry;
 }
 
+export type AfkPartyChunkWorkerResult = Omit<AfkPartyChunkResult, 'baseParty'>;
+
+/**
+ * Removes retained Diary presentation history from parties that this worker
+ * cannot advance. The target party remains byte-identical because its existing
+ * history is authoritative for Diary retention and finalization.
+ */
+export function createAfkPartyChunkWorkerState(state: GameState, partyIndex: number): GameState {
+  return {
+    ...state,
+    parties: state.parties.map((party, index) => (
+      index === partyIndex
+        ? party
+        : { ...party, lastExpeditionLog: null, diaryLogs: [] }
+    )),
+  };
+}
+
+export function createAfkPartyChunkWorkerResult(result: AfkPartyChunkResult): AfkPartyChunkWorkerResult {
+  const { baseParty: _baseParty, ...workerResult } = result;
+  return workerResult;
+}
+
+export function hydrateAfkPartyChunkResult(
+  result: AfkPartyChunkWorkerResult,
+  baseParty: Party,
+): AfkPartyChunkResult {
+  return {
+    schemaVersion: result.schemaVersion,
+    jobId: result.jobId,
+    partyIndex: result.partyIndex,
+    partyId: result.partyId,
+    simulatedCompletedAt: result.simulatedCompletedAt,
+    cycleDurationMs: result.cycleDurationMs,
+    operationCount: result.operationCount,
+    baseParty,
+    resultParty: result.resultParty,
+    unlockedParties: result.unlockedParties,
+    globalDelta: result.globalDelta,
+    durationMs: result.durationMs,
+    workerTelemetry: result.workerTelemetry,
+  };
+}
+
 function normalizeTransferBytes(value: number | null | undefined): number | null {
   return value == null ? null : Math.max(0, Math.floor(value));
 }

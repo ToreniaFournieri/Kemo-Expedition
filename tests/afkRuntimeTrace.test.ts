@@ -162,9 +162,10 @@ test('runtime wiring covers worker, ordering, commit, equipment, persistence, an
   );
   assert.match(homeSource, /worker_job_started/);
   assert.match(homeSource, /worker_job_complete/);
-  assert.match(homeSource, /inputTransferBytes: event\.data\.result\.workerTelemetry\.inputTransferBytes/);
-  assert.match(homeSource, /outputTransferBytes: event\.data\.result\.workerTelemetry\.outputTransferBytes/);
+  assert.match(homeSource, /inputTransferBytes: result\.workerTelemetry\.inputTransferBytes/);
+  assert.match(homeSource, /outputTransferBytes: result\.workerTelemetry\.outputTransferBytes/);
   assert.match(workerSource, /if \(job\.inputTransferBytes !== undefined\)/);
+  assert.match(workerSource, /createAfkPartyChunkWorkerResult\(completeResult\)/);
   assert.match(homeSource, /canonical_order_wait_start/);
   assert.match(homeSource, /canonical_order_wait_end/);
   assert.match(homeSource, /commit_transaction_start/);

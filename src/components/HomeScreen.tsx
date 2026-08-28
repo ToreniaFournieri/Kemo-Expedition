@@ -50,10 +50,13 @@ type PersistedAfkChunkCursor,
 import {
 AFK_CHUNK_CYCLE_COUNT,
 compareAfkChunkResults,
+createAfkPartyChunkWorkerState,
 getAfkWorkerPoolLimit,
 hasPendingPartySettingChanges,
+hydrateAfkPartyChunkResult,
 type AfkPartyChunkJob,
 type AfkPartyChunkResult,
+type AfkPartyChunkWorkerResult,
 } from '../game/afkChunkCoordinator';
 import { recordAfkWorkerJobTelemetry,terminateAfkWorkers } from '../game/afkWorkerTelemetry';
 import { AFK_TRACE_WATCHDOG_INTERVAL_MS,afkRuntimeTrace } from '../game/afkRuntimeTrace';
@@ -277,6 +280,7 @@ export function HomeScreen({
   const afkLastProgressRenderAtRef = useRef(0);
   const afkActiveChunkJobsRef = useRef(new Map<number, {
     job: Omit<AfkPartyChunkJob, 'baseState'>;
+    baseParty: Party;
     worker: Worker | null;
     status: 'queued' | 'running' | 'completed';
     startedMonotonicAt: number;
@@ -2864,6 +2868,7 @@ export function HomeScreen({
       if (!poolSlot) return;
 
       const simulatedStartedAt = anchor - remainingMs;
+      const baseParty = state.parties[partyIndex];
       const job: AfkPartyChunkJob = {
         jobId: `afk-${party.id}-${++afkWorkerJobSequenceRef.current}`,
         partyIndex,
@@ -2872,7 +2877,7 @@ export function HomeScreen({
         simulatedCompletedAt: simulatedStartedAt + chunkElapsedMs,
         cycleDurationMs,
         operationCount: AFK_CHUNK_CYCLE_COUNT,
-        baseState: state,
+        baseState: createAfkPartyChunkWorkerState(state, partyIndex),
         gameMode,
         cycleDurationScale: durationScale,
         queuedAt: performance.now(),
@@ -2890,7 +2895,7 @@ export function HomeScreen({
       worker.onmessage = (event: MessageEvent<
         | { type: 'started'; jobId: string; partyIndex: number }
         | { type: 'progress'; jobId: string; partyIndex: number; completedOperations: number; operationCount: number }
-        | { type: 'complete'; result: AfkPartyChunkResult }
+        | { type: 'complete'; result: AfkPartyChunkWorkerResult }
         | { type: 'error'; jobId: string; message: string }
       >) => {
         const eventJobId = event.data.type === 'complete' ? event.data.result.jobId : event.data.jobId;
@@ -2925,28 +2930,28 @@ export function HomeScreen({
         }
         currentSlot.jobId = null;
         if (event.data.type === 'complete') {
-          currentSlot.completedJobs += 1;
-          recordAfkWorkerJobTelemetry(event.data.result.jobId, event.data.result.workerTelemetry);
-          memoryMonitor.releaseWorker(event.data.result.jobId);
           const active = afkActiveChunkJobsRef.current.get(partyIndex);
-          if (active) {
-            active.worker = null;
-            active.status = 'completed';
-          }
-          afkCompletedChunkResultsRef.current.set(event.data.result.jobId, event.data.result);
+          if (!active) return;
+          const result = hydrateAfkPartyChunkResult(event.data.result, active.baseParty);
+          currentSlot.completedJobs += 1;
+          recordAfkWorkerJobTelemetry(result.jobId, result.workerTelemetry);
+          memoryMonitor.releaseWorker(result.jobId);
+          active.worker = null;
+          active.status = 'completed';
+          afkCompletedChunkResultsRef.current.set(result.jobId, result);
           afkRuntimeTrace.record('worker_job_complete', {
             phase: 'worker_execution',
-            partyId: event.data.result.partyId,
-            partyIndex: event.data.result.partyIndex,
-            jobId: event.data.result.jobId,
-            durationMs: event.data.result.durationMs,
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.durationMs,
             progress: true,
             data: {
-              workerStartupMs: event.data.result.workerTelemetry.workerStartupMs,
-              queueMs: event.data.result.workerTelemetry.queueMs,
-              executionMs: event.data.result.workerTelemetry.executionMs,
-              inputTransferBytes: event.data.result.workerTelemetry.inputTransferBytes,
-              outputTransferBytes: event.data.result.workerTelemetry.outputTransferBytes,
+              workerStartupMs: result.workerTelemetry.workerStartupMs,
+              queueMs: result.workerTelemetry.queueMs,
+              executionMs: result.workerTelemetry.executionMs,
+              inputTransferBytes: result.workerTelemetry.inputTransferBytes,
+              outputTransferBytes: result.workerTelemetry.outputTransferBytes,
             },
           });
         } else {
@@ -2990,6 +2995,7 @@ export function HomeScreen({
       };
       afkActiveChunkJobsRef.current.set(partyIndex, {
         job: jobMetadata,
+        baseParty,
         worker,
         status: 'queued',
         startedMonotonicAt: job.queuedAt ?? performance.now(),

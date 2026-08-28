@@ -1,7 +1,11 @@
 /// <reference lib="webworker" />
 
 import { simulateAfkPartyChunkForWorker } from '../hooks/useGameState';
-import { createAfkPartyChunkResult, type AfkPartyChunkJob } from '../game/afkChunkCoordinator';
+import {
+  createAfkPartyChunkResult,
+  createAfkPartyChunkWorkerResult,
+  type AfkPartyChunkJob,
+} from '../game/afkChunkCoordinator';
 import { ensureLanguageLoaded } from '../i18n';
 
 declare const self: DedicatedWorkerGlobalScope;
@@ -25,7 +29,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
       },
     });
     const completedAt = performance.now();
-    const result = createAfkPartyChunkResult(job, resultState, Math.max(0, completedAt - receivedAt), {
+    const completeResult = createAfkPartyChunkResult(job, resultState, Math.max(0, completedAt - receivedAt), {
       workerStartupMs: job.isFirstWorkerJob && job.workerCreatedAt !== undefined
         ? receivedAt - job.workerCreatedAt
         : 0,
@@ -33,6 +37,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
       executionMs: completedAt - executionStartedAt,
       inputTransferBytes: job.inputTransferBytes,
     });
+    const result = createAfkPartyChunkWorkerResult(completeResult);
     if (job.inputTransferBytes !== undefined) {
       result.workerTelemetry.outputTransferBytes = new TextEncoder().encode(JSON.stringify(result)).byteLength;
     }

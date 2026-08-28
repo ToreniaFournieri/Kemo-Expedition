@@ -20,6 +20,8 @@
     "performance:exp8": "node scripts/run-expedition-8-renderer-profile.mjs",
     "performance:exp8:startup": "node scripts/run-expedition-8-startup-diagnostics.mjs",
     "performance:exp8:node": "node scripts/run-expedition-8-save-profile.mjs",
+    "performance:afk-transfer": "node scripts/run-afk-transfer-attribution.mjs",
+    "performance:afk-transfer:renderer": "node scripts/run-afk-transfer-renderer-profile.mjs",
     "performance:auto-equipment": "node scripts/run-auto-equipment-attribution.mjs",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",

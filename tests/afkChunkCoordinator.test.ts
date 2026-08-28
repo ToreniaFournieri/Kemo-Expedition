@@ -5,8 +5,11 @@ import {
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkResult,
+  createAfkPartyChunkWorkerResult,
+  createAfkPartyChunkWorkerState,
   getAfkWorkerPoolLimit,
   hasPendingPartySettingChanges,
+  hydrateAfkPartyChunkResult,
   type AfkPartyChunkResult,
 } from '../src/game/afkChunkCoordinator.ts';
 import type { GameState, Party } from '../src/types/index.ts';
@@ -97,6 +100,55 @@ test('unmeasured AFK transfer sizes remain unavailable', () => {
 
   assert.equal(result.workerTelemetry.inputTransferBytes, null);
   assert.equal(result.workerTelemetry.outputTransferBytes, null);
+});
+
+test('party-scoped worker inputs remove only inactive Diary presentation history', () => {
+  const target = makeParty({
+    id: 1,
+    lastExpeditionLog: { dungeonId: 8 } as Party['lastExpeditionLog'],
+    diaryLogs: [{ id: 'target-log' }] as Party['diaryLogs'],
+  });
+  const inactive = makeParty({
+    id: 2,
+    name: 'PT2',
+    lastExpeditionLog: { dungeonId: 7 } as Party['lastExpeditionLog'],
+    diaryLogs: [{ id: 'inactive-log' }] as Party['diaryLogs'],
+  });
+  const state = makeState(target, 100, 1);
+  state.parties.push(inactive);
+
+  const workerState = createAfkPartyChunkWorkerState(state, 0);
+
+  assert.notEqual(workerState, state);
+  assert.equal(workerState.parties[0], target);
+  assert.equal(workerState.parties[1].id, inactive.id);
+  assert.equal(workerState.parties[1].name, inactive.name);
+  assert.equal(workerState.parties[1].lastExpeditionLog, null);
+  assert.deepEqual(workerState.parties[1].diaryLogs, []);
+  assert.equal(state.parties[1].lastExpeditionLog, inactive.lastExpeditionLog);
+  assert.equal(state.parties[1].diaryLogs[0]?.id, 'inactive-log');
+});
+
+test('renderer hydration restores the exact complete worker-result envelope', () => {
+  const baseState = makeState(makeParty(), 100, 1);
+  const complete = createAfkPartyChunkResult({
+    jobId: 'job-compact-output',
+    partyIndex: 0,
+    partyId: 1,
+    simulatedCompletedAt: 1_000,
+    cycleDurationMs: 100,
+    baseState,
+    gameMode: 'm.kemo',
+    cycleDurationScale: 1,
+    simulatedStartedAt: 0,
+  }, baseState, 5);
+
+  const workerResult = createAfkPartyChunkWorkerResult(complete);
+  assert.equal('baseParty' in workerResult, false);
+  assert.equal(
+    JSON.stringify(hydrateAfkPartyChunkResult(workerResult, baseState.parties[0])),
+    JSON.stringify(complete),
+  );
 });
 
 test('AFK worker pool preserves renderer capacity and never exceeds party count', () => {
