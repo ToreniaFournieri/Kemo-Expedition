@@ -10,6 +10,21 @@ const getPublicPngFileNames = (directory: string): string[] => (
     .map((entry) => entry.name)
 );
 
+const getLocaleChunkName = (id: string): string | undefined => {
+  const normalizedId = id.replaceAll('\\', '/');
+  if (normalizedId.includes('/src/i18n/ja.ts')) return 'locale-ja';
+  if (normalizedId.includes('/src/i18n/en.ts')) return 'locale-en';
+  if (normalizedId.includes('/src/i18n/zh-CN.ts')) return 'locale-zh-CN';
+  if (normalizedId.includes('/src/i18n/zh-TW.ts')) return 'locale-zh-TW';
+  return undefined;
+};
+
+const getSharedChunkName = (id: string): string | undefined => {
+  const normalizedId = id.replaceAll('\\', '/');
+  return getLocaleChunkName(normalizedId)
+    ?? (normalizedId.includes('/src/game/battleKernelBinary.ts') ? 'battle-kernel-binary' : undefined);
+};
+
 export default defineConfig({
   plugins: [react({ babel: { compact: true } })],
   worker: {
@@ -20,6 +35,9 @@ export default defineConfig({
           const normalizedId = id.replaceAll('\\', '/');
           return !normalizedId.includes('/node_modules/react/');
         },
+      },
+      output: {
+        manualChunks: getSharedChunkName,
       },
     },
   },
@@ -42,10 +60,8 @@ export default defineConfig({
         manualChunks(id) {
           const normalizedId = id.replaceAll('\\', '/');
           if (normalizedId.includes('/node_modules/')) return 'vendor';
-          if (normalizedId.includes('/src/i18n/ja.ts')) return 'locale-ja';
-          if (normalizedId.includes('/src/i18n/en.ts')) return 'locale-en';
-          if (normalizedId.includes('/src/i18n/zh-CN.ts')) return 'locale-zh-CN';
-          if (normalizedId.includes('/src/i18n/zh-TW.ts')) return 'locale-zh-TW';
+          const sharedChunkName = getSharedChunkName(normalizedId);
+          if (sharedChunkName) return sharedChunkName;
           if (normalizedId.includes('/src/game/') || normalizedId.includes('/src/data/')) return 'game-domain';
           return undefined;
         },
