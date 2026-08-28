@@ -16,7 +16,7 @@ import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRando
 import {
   persistGameState,
   type PersistedStateProfile,
-  type PersistedStateStorage,
+  type PersistedStateWriter,
 } from '../../src/game/savePersistence.ts';
 import { serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -140,7 +140,7 @@ function runAfkSample(baseState: GameState): AfkSample {
   };
 }
 
-async function runSaveSample(state: GameState, storage: PersistedStateStorage): Promise<SaveSample> {
+async function runSaveSample(state: GameState, storage: PersistedStateWriter): Promise<SaveSample> {
   const timerScheduledAt = performance.now();
   let resolveTimer!: (delayMs: number) => void;
   const timer = new Promise<number>((resolve) => {
@@ -176,7 +176,7 @@ const warmupCount = parsePositiveInteger('warmups', DEFAULT_WARMUP_COUNT);
 const { state, identity } = loadAndValidateExpedition8Fixture();
 const temporaryDirectory = mkdtempSync(join(tmpdir(), 'bokemo-exp8-save-profile-'));
 const storagePath = join(temporaryDirectory, 'persisted-state.txt');
-const storage: PersistedStateStorage = {
+const storage: PersistedStateWriter = {
   setItem: (_key, value) => writeFileSync(storagePath, value, 'utf8'),
 };
 

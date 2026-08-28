@@ -9,6 +9,7 @@ import {
   type PersistenceWorkerRequest,
   type PersistenceWorkerResponse,
 } from '../../src/game/savePersistence.ts';
+import { hydrateLogSegmentedSave } from '../../src/game/logSegmentedSave.ts';
 import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState, encodePersistedState } from '../../src/game/storageCompression.ts';
 import type { GameState } from '../../src/types.ts';
@@ -24,6 +25,10 @@ class ControlledWorker implements PersistenceWorkerLike {
   complete(request = this.requests.at(-1)!): void {
     this.onmessage?.({ data: { type: 'complete', requestId: request.requestId, revision: request.revision,
       encodedPayload: encodePersistedState(request.jsonPayload), queueLatencyMs: 1, compressionMs: 2,
+      encodedLogRecords: (request.logRecords ?? []).map((record) => ({
+        key: record.key,
+        encodedPayload: encodePersistedState(record.jsonPayload),
+      })),
       completedAt: performance.timeOrigin + performance.now() } } as MessageEvent<PersistenceWorkerResponse>);
   }
   fail(request = this.requests.at(-1)!, message = 'encode failed'): void {
@@ -32,9 +37,12 @@ class ControlledWorker implements PersistenceWorkerLike {
   }
 }
 
+let fixture: GameState | null = null;
 function loadFixture(): GameState {
+  if (fixture) return fixture;
   const envelope = JSON.parse(readFileSync(resolve(process.cwd(), 'sample_savedata/ALL_Exp8_v0.9.3_dev_20260816.kemoz'), 'utf8')) as { saveDataCompressed: string };
-  return hydrateGameState(JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState);
+  fixture = hydrateGameState(JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState);
+  return fixture;
 }
 
 function withGold(state: GameState, gold: number): GameState {
@@ -44,31 +52,51 @@ function withGold(state: GameState, gold: number): GameState {
 function harness(options: { failWrites?: number } = {}) {
   const workers: ControlledWorker[] = [];
   const writes: string[] = [];
+  const values = new Map<string, string>();
   let remainingFailures = options.failWrites ?? 0;
+  const storage = {
+    get length() { return values.size },
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      if (remainingFailures-- > 0) throw new Error('quota');
+      values.set(key, value);
+      if (key === 'save') writes.push(value);
+    },
+    removeItem: (key: string) => { values.delete(key) },
+    key: (index: number) => [...values.keys()][index] ?? null,
+  };
   const coordinator = new PersistenceCoordinator({
     storageKey: 'save',
-    storage: { setItem: (_key, value) => { if (remainingFailures-- > 0) throw new Error('quota'); writes.push(value) } },
+    storage,
     workerFactory: () => { const worker = new ControlledWorker(); workers.push(worker); return worker },
   });
-  return { coordinator, workers, writes };
+  return { coordinator, workers, writes, storage };
 }
 
-test('worker-coordinated output is byte-identical to the synchronous encoder and round-trips semantically', async () => {
+test('worker-coordinated log-segmented output round-trips semantically', async () => {
   const state = loadFixture();
-  const { coordinator, workers, writes } = harness();
+  const { coordinator, workers, writes, storage } = harness();
   const durable = coordinator.requestDurable(state);
   const request = workers[0]!.requests[0]!;
   workers[0]!.complete(request);
   await durable;
-  const expected = encodePersistedState(JSON.stringify(serializeGameState(state)));
-  assert.equal(writes[0], expected);
-  assert.deepEqual(JSON.parse(decodePersistedState(writes[0]!)), serializeGameState(state));
+  assert.deepEqual(hydrateLogSegmentedSave(writes[0]!, storage, 'save'), serializeGameState(state));
+  coordinator.shutdown();
+});
+
+test('export payload remains a portable monolithic compressed-v1 save', async () => {
+  const state = loadFixture();
+  const { coordinator, workers } = harness();
+  const exported = coordinator.createExportPayload(state);
+  workers[0]!.complete();
+  assert.deepEqual(JSON.parse(decodePersistedState(await exported)), serializeGameState(state));
+  assert.equal(workers[0]!.terminated, true);
   coordinator.shutdown();
 });
 
 test('single-flight coalescing keeps only the latest pending state', async () => {
   const base = loadFixture();
-  const { coordinator, workers, writes } = harness();
+  const { coordinator, workers, writes, storage } = harness();
   coordinator.requestOrdinary(withGold(base, 1));
   coordinator.requestOrdinary(withGold(base, 2));
   const latest = coordinator.requestDurable(withGold(base, 3));
@@ -78,14 +106,14 @@ test('single-flight coalescing keeps only the latest pending state', async () =>
   assert.equal(workers[0]!.requests.length, 2);
   workers[0]!.complete(workers[0]!.requests[1]);
   await latest;
-  assert.equal((JSON.parse(decodePersistedState(writes.at(-1)!)) as GameState).global.gold, 3);
+  assert.equal(hydrateLogSegmentedSave(writes.at(-1)!, storage, 'save')?.global.gold, 3);
   assert.equal(writes.length, 2);
   coordinator.shutdown();
 });
 
 test('stale and out-of-order worker responses cannot overwrite newer work', async () => {
   const base = loadFixture();
-  const { coordinator, workers, writes } = harness();
+  const { coordinator, workers, writes, storage } = harness();
   coordinator.requestOrdinary(withGold(base, 10));
   const oldRequest = workers[0]!.requests[0]!;
   const latest = coordinator.requestDurable(withGold(base, 30));
@@ -95,7 +123,7 @@ test('stale and out-of-order worker responses cannot overwrite newer work', asyn
   assert.equal(writes.length, 1);
   workers[0]!.complete(latestRequest);
   await latest;
-  assert.equal((JSON.parse(decodePersistedState(writes.at(-1)!)) as GameState).global.gold, 30);
+  assert.equal(hydrateLogSegmentedSave(writes.at(-1)!, storage, 'save')?.global.gold, 30);
   coordinator.shutdown();
 });
 

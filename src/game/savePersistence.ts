@@ -1,8 +1,16 @@
 import type { GameState } from '../types';
+import {
+  createLogSegmentedSaveProjection,
+  getPersistedDiaryLogKeys,
+  removeOrphanedDiaryLogRecords,
+  type LogSegmentedStorage,
+  type PreparedDiaryLogRecord,
+} from './logSegmentedSave.ts';
 import { serializeGameState } from './saveCodec.ts';
 import { encodePersistedState } from './storageCompression.ts';
 
-export interface PersistedStateStorage { setItem(key: string, value: string): void }
+export interface PersistedStateWriter { setItem(key: string, value: string): void }
+export type PersistedStateStorage = LogSegmentedStorage;
 export interface PersistencePhaseDurations { canonicalSnapshotMs: number; jsonStringifyMs: number; compressionEncodingMs: number; storageWriteMs: number; endToEndMs: number }
 export interface PersistencePayloadSizes { jsonChars: number; jsonUtf8Bytes: number; jsonUtf16Bytes: number; encodedChars: number; encodedUtf8Bytes: number; encodedUtf16Bytes: number; compressionRatio: number }
 export interface PersistedStateProfile { phases: PersistencePhaseDurations; sizes: PersistencePayloadSizes }
@@ -11,9 +19,10 @@ interface PersistenceProfilingOptions { now?: () => number; includeUtf8Sizes?: b
 export interface PersistenceWorkerRequest {
   readonly type: 'encode'; readonly requestId: number; readonly revision: number;
   readonly jsonPayload: string; readonly submittedAt: number;
+  readonly logRecords?: readonly PreparedDiaryLogRecord[];
 }
 export type PersistenceWorkerResponse =
-  | { readonly type: 'complete'; readonly requestId: number; readonly revision: number; readonly encodedPayload: string; readonly queueLatencyMs: number; readonly compressionMs: number; readonly completedAt: number }
+  | { readonly type: 'complete'; readonly requestId: number; readonly revision: number; readonly encodedPayload: string; readonly encodedLogRecords: readonly { key: string; encodedPayload: string }[]; readonly queueLatencyMs: number; readonly compressionMs: number; readonly completedAt: number }
   | { readonly type: 'error'; readonly requestId: number; readonly revision: number; readonly message: string };
 export interface PersistenceWorkerLike {
   onmessage: ((event: MessageEvent<PersistenceWorkerResponse>) => void) | null;
@@ -36,9 +45,18 @@ export interface PersistenceCoordinatorOptions {
   readonly onError?: (error: Error) => void;
 }
 
-interface PreparedSave { readonly revision: number; readonly jsonPayload: string; readonly requestedAt: number }
+interface PreparedSave {
+  readonly revision: number;
+  readonly jsonPayload: string;
+  readonly logRecords: readonly PreparedDiaryLogRecord[];
+  readonly retainedLogKeys: readonly string[];
+  readonly requestedAt: number;
+}
 interface InFlightSave extends PreparedSave { readonly requestId: number }
-interface StorageRetry extends InFlightSave { readonly encodedPayload: string }
+interface StorageRetry extends InFlightSave {
+  readonly encodedPayload: string;
+  readonly encodedLogRecords: readonly { key: string; encodedPayload: string }[];
+}
 interface DurableWaiter { readonly revision: number; readonly resolve: () => void; readonly reject: (error: Error) => void }
 
 export class PersistenceShutdownError extends Error {
@@ -50,7 +68,7 @@ function getCrossContextNow(): number { return performance.timeOrigin + performa
 
 /** Milestone 1 synchronous reference pipeline retained for byte-parity tests and baselines. */
 // SpecRef: 5.1.4 | Save and load | Data persistence
-export function persistGameState(state: GameState, storageKey: string, storage: PersistedStateStorage, profiling?: PersistenceProfilingOptions): PersistedStateProfile | null {
+export function persistGameState(state: GameState, storageKey: string, storage: PersistedStateWriter, profiling?: PersistenceProfilingOptions): PersistedStateProfile | null {
   const now = profiling?.now ?? (() => performance.now());
   const enabled = profiling !== undefined;
   const endStarted = enabled ? now() : 0;
@@ -92,15 +110,45 @@ export class PersistenceCoordinator {
   private pending: PreparedSave | null = null;
   private storageRetry: StorageRetry | null = null;
   private waiters: DurableWaiter[] = [];
+  private persistedLogKeys: Set<string>;
+  private readonly cachedLastLogReferences = new WeakMap<object, string>();
+  private readonly replacementRecordNamespace = globalThis.crypto?.randomUUID?.()
+    ?? `replacement-${Date.now()}-${Math.floor(performance.now() * 1000)}`;
+  private lastEnqueuedState: GameState | null = null;
+  private lastEnqueuedRevision = 0;
   private stopped = false;
 
   constructor(options: PersistenceCoordinatorOptions) {
     this.options = options;
     this.now = options.now ?? (() => performance.now());
+    this.persistedLogKeys = getPersistedDiaryLogKeys(options.storage.getItem(options.storageKey));
   }
 
   requestOrdinary(state: GameState): number { return this.enqueue(state) }
   requestDurable(state: GameState): Promise<void> { const revision = this.enqueue(state); return this.waitForRevision(revision) }
+  replaceDurable(state: GameState): Promise<void> { const revision = this.enqueue(state, true); return this.waitForRevision(revision) }
+  async createExportPayload(state: GameState): Promise<string> {
+    if (this.stopped) throw new PersistenceShutdownError();
+    const jsonPayload = JSON.stringify(serializeGameState(state));
+    const worker = this.options.workerFactory();
+    return new Promise<string>((resolve, reject) => {
+      const finish = () => worker.terminate();
+      worker.onmessage = (event) => {
+        const response = event.data;
+        finish();
+        if (response.type === 'error') reject(new Error(response.message));
+        else resolve(response.encodedPayload);
+      };
+      worker.onerror = (event) => { finish(); reject(new Error(event.message || 'Export compression worker failed.')); };
+      worker.postMessage({
+        type: 'encode',
+        requestId: 0,
+        revision: 0,
+        jsonPayload,
+        submittedAt: getCrossContextNow(),
+      });
+    });
+  }
   flush(): Promise<void> {
     if (this.stopped) return Promise.reject(new PersistenceShutdownError());
     if (this.revision === 0 || this.durableRevision >= this.revision) return Promise.resolve();
@@ -127,18 +175,33 @@ export class PersistenceCoordinator {
   }
 
   private emit(event: PersistenceTelemetryEvent): void { this.options.onTelemetry?.(event) }
-  private enqueue(state: GameState): number {
+  private enqueue(state: GameState, rewriteAllLogs = false): number {
     if (this.stopped) throw new PersistenceShutdownError();
+    if (!rewriteAllLogs && state === this.lastEnqueuedState) return this.lastEnqueuedRevision;
     const revision = ++this.revision;
     const requestedAt = this.now();
     const canonicalStarted = this.now();
     const canonical = serializeGameState(state);
     this.emit({ event: 'canonical_snapshot', revision, durationMs: this.now() - canonicalStarted });
-    const stringifyStarted = this.now();
-    const jsonPayload = JSON.stringify(canonical);
-    this.emit({ event: 'json_serialization', revision, durationMs: this.now() - stringifyStarted,
-      data: { jsonChars: jsonPayload.length, jsonUtf16Bytes: jsonPayload.length * 2 } });
-    this.pending = { revision, jsonPayload, requestedAt };
+    const serializationStarted = this.now();
+    const projection = createLogSegmentedSaveProjection(canonical, this.options.storageKey, this.persistedLogKeys, {
+      rewriteAllLogs,
+      recordNamespace: rewriteAllLogs ? `${this.replacementRecordNamespace}-${revision}` : undefined,
+      stateAlreadySerialized: true,
+      cachedLastReferences: this.cachedLastLogReferences,
+    });
+    this.emit({ event: 'json_serialization', revision, durationMs: this.now() - serializationStarted,
+      data: { jsonChars: projection.coreJsonChars, jsonUtf16Bytes: projection.coreJsonChars * 2,
+        diaryRecords: projection.newLogRecords.length } });
+    this.pending = {
+      revision,
+      jsonPayload: projection.coreJsonPayload,
+      logRecords: projection.newLogRecords,
+      retainedLogKeys: [...projection.retainedLogKeys],
+      requestedAt,
+    };
+    this.lastEnqueuedState = state;
+    this.lastEnqueuedRevision = revision;
     this.startPending();
     return revision;
   }
@@ -161,12 +224,13 @@ export class PersistenceCoordinator {
     const inFlight: InFlightSave = { ...prepared, requestId: ++this.requestId };
     this.inFlight = inFlight;
     const request: PersistenceWorkerRequest = { type: 'encode', requestId: inFlight.requestId, revision: inFlight.revision,
-      jsonPayload: inFlight.jsonPayload, submittedAt: getCrossContextNow() };
+      jsonPayload: inFlight.jsonPayload, logRecords: inFlight.logRecords, submittedAt: getCrossContextNow() };
     const submissionStarted = this.now();
     try { this.ensureWorker().postMessage(request) }
     catch (error) { this.handleWorkerFailure(error instanceof Error ? error : new Error(String(error))); return }
     this.emit({ event: 'worker_submission', revision: inFlight.revision, requestId: inFlight.requestId,
-      durationMs: this.now() - submissionStarted, data: { jsonChars: inFlight.jsonPayload.length, jsonUtf16Bytes: inFlight.jsonPayload.length * 2 } });
+      durationMs: this.now() - submissionStarted, data: { jsonChars: inFlight.jsonPayload.length,
+        jsonUtf16Bytes: inFlight.jsonPayload.length * 2, diaryRecords: inFlight.logRecords.length } });
     const timerScheduledAt = this.now();
     setTimeout(() => {
       if (!this.stopped) this.emit({ event: 'event_loop_delay', revision: inFlight.revision, requestId: inFlight.requestId,
@@ -181,20 +245,39 @@ export class PersistenceCoordinator {
     this.emit({ event: 'worker_compression', revision: inFlight.revision, requestId: inFlight.requestId, durationMs: response.compressionMs });
     this.emit({ event: 'result_delivery', revision: inFlight.revision, requestId: inFlight.requestId, durationMs: Math.max(0, getCrossContextNow() - response.completedAt) });
     this.inFlight = null;
-    this.storageRetry = { ...inFlight, encodedPayload: response.encodedPayload };
+    this.storageRetry = { ...inFlight, encodedPayload: response.encodedPayload, encodedLogRecords: response.encodedLogRecords };
     this.writeEncodedPayload(this.storageRetry);
   }
   private writeEncodedPayload(retry: StorageRetry): void {
     if (this.stopped || this.storageRetry?.requestId !== retry.requestId) return;
     const started = this.now();
-    try { this.options.storage.setItem(this.options.storageKey, retry.encodedPayload) }
+    let removedDiaryRecords = 0;
+    const retained = new Set(retry.retainedLogKeys);
+    try {
+      // New immutable records become durable before the core starts referencing
+      // them. The core key is one atomic manifest-last commit.
+      retry.encodedLogRecords.forEach((record) => this.options.storage.setItem(record.key, record.encodedPayload));
+      this.options.storage.setItem(this.options.storageKey, retry.encodedPayload);
+      this.persistedLogKeys = retained;
+    }
     catch (error) {
       const normalized = error instanceof Error ? error : new Error(String(error));
       this.emit({ event: 'storage_error', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - started,
         data: { message: normalized.message } });
       this.options.onError?.(normalized); return;
     }
-    this.emit({ event: 'storage_write', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - started });
+    // Garbage collection is deliberately outside the durability transaction:
+    // once the manifest/core write succeeds, obsolete immutable records are
+    // unreachable and a cleanup failure must not retry or reject that save.
+    try {
+      removedDiaryRecords = removeOrphanedDiaryLogRecords(this.options.storageKey, this.options.storage, retained);
+    } catch (error) {
+      const normalized = error instanceof Error ? error : new Error(String(error));
+      this.emit({ event: 'storage_error', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - started,
+        data: { message: normalized.message, maintenance: true } });
+    }
+    this.emit({ event: 'storage_write', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - started,
+      data: { diaryRecordsWritten: retry.encodedLogRecords.length, diaryRecordsRemoved: removedDiaryRecords } });
     this.emit({ event: 'durability_latency', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - retry.requestedAt });
     this.durableRevision = Math.max(this.durableRevision, retry.revision);
     this.storageRetry = null;

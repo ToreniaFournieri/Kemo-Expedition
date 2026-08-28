@@ -16,7 +16,7 @@ test('failed game-state writes remain pending and schedule an automatic retry', 
 test('imports use the startup migration pipeline before they are persisted and committed', () => {
   assert.match(hookSource, /loadSavedState\(JSON\.stringify\(nextState\)\)/);
   assert.match(hookSource, /gameReducer\(imported\.state, \{ type: 'IMPORT_GAME_STATE', state: imported\.state \}\)/);
-  assert.match(hookSource, /await persistenceCoordinatorRef\.current\?\.requestDurable\(normalizedState\)[\s\S]*COMMIT_API_STATE/);
+  assert.match(hookSource, /await persistenceCoordinatorRef\.current\?\.replaceDurable\(normalizedState\)[\s\S]*COMMIT_API_STATE/);
 });
 
 test('backup payloads include a schema-marked runtime snapshot and imports replace it', () => {

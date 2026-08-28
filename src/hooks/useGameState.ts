@@ -128,6 +128,7 @@ import {
   getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState } from '../game/storageCompression';
+import { hydrateLogSegmentedSave, removeAllDiaryLogRecords } from '../game/logSegmentedSave';
 import {
   createBrowserPersistenceWorker,
   PersistenceCoordinator,
@@ -1109,7 +1110,10 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
     }
 
     // SpecRef: 5.1.4 | Save and load | Include the error log details in the popup.
-    const parsed = JSON.parse(decodePersistedState(saved));
+    const segmentedState = encodedState === undefined
+      ? hydrateLogSegmentedSave(saved, localStorage, STORAGE_KEY)
+      : null;
+    const parsed = segmentedState ?? JSON.parse(decodePersistedState(saved));
     // Validate it has required properties and migrate legacy saves.
     const hasParties = Array.isArray(parsed?.parties);
     const hasBags = parsed?.bags && typeof parsed.bags === 'object';
@@ -5280,6 +5284,7 @@ function gameReducer(
       // Clear localStorage
       try {
         localStorage.removeItem(STORAGE_KEY);
+        removeAllDiaryLogRecords(STORAGE_KEY, localStorage);
       } catch (e) {
         console.error('Failed to clear saved state:', e);
       }
@@ -6232,7 +6237,7 @@ export function useGameState() {
         const imported = loadSavedState(JSON.stringify(nextState));
         if (!imported.state) return imported;
         const normalizedState = gameReducer(imported.state, { type: 'IMPORT_GAME_STATE', state: imported.state });
-        await persistenceCoordinatorRef.current?.requestDurable(normalizedState);
+        await persistenceCoordinatorRef.current?.replaceDurable(normalizedState);
         dispatch({ type: 'COMMIT_API_STATE', state: normalizedState });
         setSaveErrorLog(null);
         return { state: normalizedState, errorLog: null };
@@ -6245,9 +6250,9 @@ export function useGameState() {
 
     getCompressedSavePayload: useCallback(async (): Promise<string> => {
       await persistenceCoordinatorRef.current?.requestDurable(latestGameStateRef.current);
-      const payload = localStorage.getItem(STORAGE_KEY);
-      if (!payload) throw new Error('Durable save payload was unavailable.');
-      return payload;
+      const coordinator = persistenceCoordinatorRef.current;
+      if (!coordinator) throw new Error('Persistence coordinator was unavailable.');
+      return coordinator.createExportPayload(latestGameStateRef.current);
     }, []),
 
     resetCommonBags: useCallback((partyIndex?: number) => {

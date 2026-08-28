@@ -11,10 +11,14 @@ self.onmessage = (event: MessageEvent<PersistenceWorkerRequest>) => {
   try {
     const compressionStartedAt = performance.now();
     const encodedPayload = encodePersistedState(request.jsonPayload);
+    const encodedLogRecords = (request.logRecords ?? []).map((record) => ({
+      key: record.key,
+      encodedPayload: encodePersistedState(record.jsonPayload),
+    }));
     const compressionCompletedAt = performance.now();
     const completedAt = performance.timeOrigin + compressionCompletedAt;
     const response: PersistenceWorkerResponse = { type: 'complete', requestId: request.requestId, revision: request.revision,
-      encodedPayload, queueLatencyMs: Math.max(0, receivedAt - request.submittedAt),
+      encodedPayload, encodedLogRecords, queueLatencyMs: Math.max(0, receivedAt - request.submittedAt),
       compressionMs: Math.max(0, compressionCompletedAt - compressionStartedAt), completedAt };
     self.postMessage(response);
   } catch (error) {

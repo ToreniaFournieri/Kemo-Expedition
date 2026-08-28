@@ -20,6 +20,7 @@ import {
   type PersistenceTelemetryEvent,
   type PersistedStateProfile,
 } from '../../src/game/savePersistence.ts';
+import { hydrateLogSegmentedSave, removeAllDiaryLogRecords } from '../../src/game/logSegmentedSave.ts';
 import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
@@ -75,6 +76,14 @@ interface RendererTraceInterval {
 
 function invariant(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
+}
+
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, (_key, current) => {
+    if (!current || Array.isArray(current) || typeof current !== 'object') return current;
+    return Object.fromEntries(Object.entries(current as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right)));
+  });
 }
 
 function nearestRank(values: number[], ratio: number): number {
@@ -303,10 +312,12 @@ async function runSaveSample(
     resolveTimer = resolve;
   });
   setTimeout(() => resolveTimer(performance.now() - timerScheduledAt), 0);
-  await coordinator.requestDurable(state);
+  // Each checkpoint receives a new reducer state in production. Preserve the
+  // unchanged immutable Diary objects while avoiding exact-object deduplication.
+  await coordinator.requestDurable({ ...state });
   const persisted = localStorage.getItem(STORAGE_KEY);
   invariant(persisted, 'persistence worker did not write localStorage');
-  const jsonPayload = JSON.stringify(serializeGameState(state));
+  const jsonPayload = decodePersistedState(persisted);
   const duration = (event: PersistenceTelemetryEvent['event']) => telemetry.find((sample) => sample.event === event)?.durationMs ?? 0;
   const jsonUtf8Bytes = new TextEncoder().encode(jsonPayload).byteLength;
   const encodedUtf8Bytes = new TextEncoder().encode(persisted).byteLength;
@@ -416,9 +427,10 @@ async function runProfile() {
 
   const persisted = localStorage.getItem(STORAGE_KEY);
   invariant(persisted, 'localStorage payload missing');
-  invariant(persisted === expectedEncodedPayload, 'persistence worker bytes differ from the retained synchronous codec fixture');
+  const exportedPayload = await persistenceCoordinator.createExportPayload(state);
+  invariant(exportedPayload === expectedEncodedPayload, 'export worker bytes differ from the retained synchronous codec fixture');
   invariant(
-    JSON.stringify(JSON.parse(decodePersistedState(persisted))) === JSON.stringify(serializeGameState(state)),
+    stableJson(hydrateLogSegmentedSave(persisted, localStorage, STORAGE_KEY)) === stableJson(serializeGameState(state)),
     'canonical persisted-state round trip changed',
   );
   const phaseValues = (field: keyof PersistedStateProfile['phases']) => (
@@ -426,9 +438,24 @@ async function runProfile() {
   );
   const size = saveSamples[0]!.profile.sizes;
   invariant(saveSamples.every((sample) => JSON.stringify(sample.profile.sizes) === JSON.stringify(size)), 'payload sizes changed');
+  const diaryPrefix = `${STORAGE_KEY}:diary:`;
+  const diaryEncodedPayloads: string[] = [];
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (key?.startsWith(diaryPrefix)) diaryEncodedPayloads.push(localStorage.getItem(key) ?? '');
+  }
+  const diaryEncodedChars = diaryEncodedPayloads.reduce((total, value) => total + value.length, 0);
+  const segmentedStorage = {
+    coreEncodedChars: persisted.length,
+    diaryRecordCount: diaryEncodedPayloads.length,
+    diaryEncodedChars,
+    totalEncodedChars: persisted.length + diaryEncodedChars,
+    portableExportEncodedChars: exportedPayload.length,
+  };
   const finalStateSha256 = await sha256(deterministicFirst);
   persistenceCoordinator.shutdown();
   localStorage.removeItem(STORAGE_KEY);
+  removeAllDiaryLogRecords(STORAGE_KEY, localStorage);
 
   return {
     schemaVersion: 3,
@@ -472,7 +499,7 @@ async function runProfile() {
       timingClock: 'renderer performance.now() monotonic high-resolution clock',
       persistence: 'Chromium localStorage.setItem in a hidden sandboxed Electron renderer',
     },
-    payload: size,
+    payload: { ...size, segmentedStorage },
     metricsMs: {
       canonicalSnapshot: distribution(phaseValues('canonicalSnapshotMs')),
       jsonStringify: distribution(phaseValues('jsonStringifyMs')),
@@ -502,6 +529,7 @@ async function runProfile() {
       'Wall above the ideal CPU split is divided into fixed non-preemptive slot imbalance and wall above the longest actual slot execution; neither bucket is assumed fully recoverable.',
       'Coordinator timing covers the pure canonical commit reducer and excludes React dispatch-to-visibility and automatic-equipment follow-up time.',
       'The event-loop delay is zero-delay timer drift around renderer preparation and worker submission; it is not a Long Tasks API entry.',
+      'Independent Diary records reset the compression dictionary per record, so bounded runtime storage is larger than the monolithic portable export; the payload section reports both.',
     ],
   };
 }
