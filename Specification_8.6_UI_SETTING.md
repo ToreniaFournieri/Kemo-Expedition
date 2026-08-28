@@ -390,6 +390,7 @@ HP: 312                 タイプ: 神魔
 - Dev and beta show a localized Runtime Diagnostics section combining current and peak memory metrics with the bounded AFK runtime trace defined in section 5.1.1.1. It displays active worker/sample/memory-event counts, current AFK phase, trace/anomaly counts, and longest completed wait.
 - Runtime Diagnostics: OFF/ON  (Default: OFF)
   - It can be explicitly enabled through the Debug Pane, a supported runtime API, or a development command/option such as an npm script or startup flag.
+    - `npm run dev:diagnostics` for explicit startup enablement.
   - Diagnostics collection begins when the setting is switched to ON.
   - provides one combined session JSON export and one combined session reset. The export includes version, build, environment, technically available browser/runtime metadata, memory diagnostics, and metadata-only AFK trace diagnostics. Production does not show this section.
  

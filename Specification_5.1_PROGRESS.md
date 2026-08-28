@@ -32,6 +32,8 @@
     - If setting changes were captured at the cutoff, the coordinator applies and commits those changes after the Chunk result.
     - The worker's commit transaction is complete, and the coordinator proceeds to the next queued worker.
     - Once a worker's transaction begins, it retains its coordinator processing slot until all required commits are complete. The worker does not re-enter or re-check the global commit queue during the transaction.
+- **AFK UI update policy**: During accelerated AFK processing, UI updates are throttled to **once every 250 ms**.
+
 
 ```
 PT1 transaction begins
