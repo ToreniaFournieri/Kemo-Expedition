@@ -12,12 +12,12 @@ function formatBytes(value: number | null): string {
 }
 
 const METRICS: ReadonlyArray<{ key: keyof MemoryMetrics; label: string }> = [
-  { key: 'currentMemory', label: 'setting.memory.total' },
+  { key: 'applicationWorkingSet', label: 'setting.memory.applicationWorkingSet' },
+  { key: 'rendererWorkingSet', label: 'setting.memory.rendererWorkingSet' },
   { key: 'jsHeapUsed', label: 'setting.memory.jsHeap' },
   { key: 'wasmMemory', label: 'setting.memory.wasm' },
   { key: 'estimatedAssetMemory', label: 'setting.memory.assets' },
   { key: 'workerOwnedEstimate', label: 'setting.memory.workers' },
-  { key: 'processMemory', label: 'setting.memory.process' },
 ];
 
 export interface RuntimeDiagnosticExport {

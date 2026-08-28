@@ -1,7 +1,7 @@
 import { getBattleKernelMemoryBytes } from './battleKernel.ts';
 import { getEnvironmentId, type EnvironmentId } from './environment.ts';
 
-export const MEMORY_DIAGNOSTIC_SCHEMA_VERSION = 1 as const;
+export const MEMORY_DIAGNOSTIC_SCHEMA_VERSION = 2 as const;
 export const MEMORY_SAMPLE_LIMIT = 120;
 export const MEMORY_EVENT_LIMIT = 256;
 export const MEMORY_NORMAL_SAMPLE_INTERVAL_MS = 15_000;
@@ -28,8 +28,16 @@ export interface MemoryMetrics {
   readonly wasmMemory: number | null;
   readonly estimatedAssetMemory: number | null;
   readonly workerOwnedEstimate: number | null;
-  readonly processMemory: number | null;
-  readonly currentMemory: number | null;
+  readonly applicationWorkingSet: number | null;
+  readonly rendererWorkingSet: number | null;
+}
+
+export interface DesktopProcessMemoryBreakdown {
+  readonly pid: number | null;
+  readonly type: string;
+  readonly name: string | null;
+  readonly serviceName: string | null;
+  readonly workingSetBytes: number | null;
 }
 
 export interface MemorySnapshot {
@@ -43,6 +51,7 @@ export interface MemorySnapshot {
   readonly battleCount: number;
   readonly current: MemoryMetrics;
   readonly peak: MemoryMetrics;
+  readonly processBreakdown: readonly DesktopProcessMemoryBreakdown[];
 }
 
 export interface MemoryEvent {
@@ -70,9 +79,12 @@ export interface MemoryDiagnosticExport {
 }
 
 export interface DesktopProcessMemoryMetrics {
-  readonly privateBytes: number | null;
-  readonly residentSetBytes: number | null;
+  readonly applicationWorkingSetBytes: number | null;
+  readonly rendererWorkingSetBytes: number | null;
+  readonly processBreakdown: readonly DesktopProcessMemoryBreakdown[];
 }
+
+type DesktopMemoryReader = () => Promise<DesktopProcessMemoryMetrics | null>;
 
 type HeapPerformance = Performance & {
   memory?: {
@@ -106,9 +118,32 @@ function emptyMetrics(): MemoryMetrics {
     wasmMemory: null,
     estimatedAssetMemory: null,
     workerOwnedEstimate: null,
-    processMemory: null,
-    currentMemory: null,
+    applicationWorkingSet: null,
+    rendererWorkingSet: null,
   };
+}
+
+async function readDesktopMemoryMetrics(): Promise<DesktopProcessMemoryMetrics | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    return await window.bokemoDesktop?.getMemoryMetrics?.() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeProcessBreakdown(value: unknown): readonly DesktopProcessMemoryBreakdown[] {
+  if (!Array.isArray(value)) return Object.freeze([]);
+  return Object.freeze(value.map((entry) => {
+    const metric = entry as Partial<DesktopProcessMemoryBreakdown> | null;
+    return Object.freeze({
+      pid: typeof metric?.pid === 'number' && Number.isInteger(metric.pid) && metric.pid >= 0 ? metric.pid : null,
+      type: typeof metric?.type === 'string' ? metric.type : 'Unknown',
+      name: typeof metric?.name === 'string' ? metric.name : null,
+      serviceName: typeof metric?.serviceName === 'string' ? metric.serviceName : null,
+      workingSetBytes: finiteMetric(metric?.workingSetBytes),
+    });
+  }));
 }
 
 function estimateVisibleArtworkBytes(): number | null {
@@ -150,10 +185,16 @@ export class MemoryMonitor {
   private lastWasmBytes: number | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private running = false;
+  private readonly desktopMemoryReader: DesktopMemoryReader;
 
-  constructor(environment: EnvironmentId = getEnvironmentId(), now: () => number = () => Date.now()) {
+  constructor(
+    environment: EnvironmentId = getEnvironmentId(),
+    now: () => number = () => Date.now(),
+    desktopMemoryReader: DesktopMemoryReader = readDesktopMemoryMetrics,
+  ) {
     this.environment = environment;
     this.now = now;
+    this.desktopMemoryReader = desktopMemoryReader;
   }
 
   start(): void {
@@ -251,19 +292,16 @@ export class MemoryMonitor {
 
   async sample(overrides: Partial<MemoryMetrics> = {}): Promise<MemorySnapshot> {
     const heap = typeof performance === 'undefined' ? undefined : (performance as HeapPerformance).memory;
-    const desktopMetrics = await this.readDesktopProcessMetrics();
+    const desktopMetrics = await this.desktopMemoryReader();
     const workerEstimates = [...this.workers.values()];
     const workerOwnedEstimate = workerEstimates.some((value) => value !== null)
       ? workerEstimates.reduce<number>((sum, value) => sum + (value ?? 0), 0)
       : null;
     const wasmMemory = finiteMetric(getBattleKernelMemoryBytes());
     const jsHeapUsed = finiteMetric(overrides.jsHeapUsed ?? heap?.usedJSHeapSize);
-    const processMemory = finiteMetric(overrides.processMemory ?? desktopMetrics?.residentSetBytes ?? desktopMetrics?.privateBytes);
     const estimatedAssetMemory = finiteMetric(overrides.estimatedAssetMemory ?? estimateVisibleArtworkBytes());
-    const fallbackParts = [jsHeapUsed, wasmMemory, estimatedAssetMemory, workerOwnedEstimate];
-    const fallbackCurrent = fallbackParts.some((value) => value !== null)
-      ? fallbackParts.reduce<number>((sum, value) => sum + (value ?? 0), 0)
-      : null;
+    const applicationWorkingSet = finiteMetric(overrides.applicationWorkingSet ?? desktopMetrics?.applicationWorkingSetBytes);
+    const rendererWorkingSet = finiteMetric(overrides.rendererWorkingSet ?? desktopMetrics?.rendererWorkingSetBytes);
     const current: MemoryMetrics = Object.freeze({
       jsHeapUsed,
       jsHeapTotal: finiteMetric(overrides.jsHeapTotal ?? heap?.totalJSHeapSize),
@@ -271,8 +309,8 @@ export class MemoryMonitor {
       wasmMemory,
       estimatedAssetMemory,
       workerOwnedEstimate,
-      processMemory,
-      currentMemory: finiteMetric(overrides.currentMemory ?? processMemory ?? fallbackCurrent),
+      applicationWorkingSet,
+      rendererWorkingSet,
     });
     this.peak = Object.freeze({
       jsHeapUsed: maxMetric(this.peak.jsHeapUsed, current.jsHeapUsed),
@@ -281,8 +319,8 @@ export class MemoryMonitor {
       wasmMemory: maxMetric(this.peak.wasmMemory, current.wasmMemory),
       estimatedAssetMemory: maxMetric(this.peak.estimatedAssetMemory, current.estimatedAssetMemory),
       workerOwnedEstimate: maxMetric(this.peak.workerOwnedEstimate, current.workerOwnedEstimate),
-      processMemory: maxMetric(this.peak.processMemory, current.processMemory),
-      currentMemory: maxMetric(this.peak.currentMemory, current.currentMemory),
+      applicationWorkingSet: maxMetric(this.peak.applicationWorkingSet, current.applicationWorkingSet),
+      rendererWorkingSet: maxMetric(this.peak.rendererWorkingSet, current.rendererWorkingSet),
     });
     const snapshot: MemorySnapshot = Object.freeze({
       schemaVersion: MEMORY_DIAGNOSTIC_SCHEMA_VERSION,
@@ -295,6 +333,7 @@ export class MemoryMonitor {
       battleCount: this.battleCount,
       current,
       peak: this.peak,
+      processBreakdown: normalizeProcessBreakdown(desktopMetrics?.processBreakdown),
     });
     boundedAppend(this.samples, snapshot, MEMORY_SAMPLE_LIMIT);
     this.observeWasmGrowth(current.wasmMemory);
@@ -356,15 +395,6 @@ export class MemoryMonitor {
       console.warn('BoKemo memory warning: JavaScript heap usage exceeded 85% for three samples.');
     } else if (ratio < 0.75) {
       this.warningActive = false;
-    }
-  }
-
-  private async readDesktopProcessMetrics(): Promise<DesktopProcessMemoryMetrics | null> {
-    if (typeof window === 'undefined') return null;
-    try {
-      return await window.bokemoDesktop?.getProcessMemoryMetrics?.() ?? null;
-    } catch {
-      return null;
     }
   }
 

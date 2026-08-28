@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('bokemoDesktop', {
   getStatus: () => ipcRenderer.invoke('desktop:get-status'),
   getWindowVisibility: () => ipcRenderer.invoke('desktop:get-window-visibility'),
-  getProcessMemoryMetrics: () => ipcRenderer.invoke('desktop:get-process-memory-metrics'),
+  getMemoryMetrics: () => ipcRenderer.invoke('desktop:get-memory-metrics'),
   getLaunchAtLogin: () => ipcRenderer.invoke('desktop:get-launch-at-login'),
   setLaunchAtLogin: (enabled) => ipcRenderer.invoke('desktop:set-launch-at-login', enabled === true),
   showNotification: (payload) => ipcRenderer.invoke('desktop:show-notification', payload),

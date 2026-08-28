@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { createExperimentalApi } = require('./experimental-api.cjs');
+const { normalizeAppMemoryMetrics } = require('./memory-metrics.cjs');
 
 const APP_HOST = 'bokemo';
 const APP_ORIGIN = `app://${APP_HOST}`;
@@ -356,14 +357,9 @@ ipcMain.handle('desktop:get-status', () => ({
   notificationSupported: Notification.isSupported(),
 }));
 ipcMain.handle('desktop:get-window-visibility', () => Boolean(mainWindow?.isVisible()));
-ipcMain.handle('desktop:get-process-memory-metrics', (event) => {
+ipcMain.handle('desktop:get-memory-metrics', (event) => {
   const processId = event.sender.getOSProcessId();
-  const metric = app.getAppMetrics().find((entry) => entry.pid === processId);
-  const memory = metric?.memory;
-  return {
-    privateBytes: Number.isFinite(memory?.privateBytes) ? memory.privateBytes * 1024 : null,
-    residentSetBytes: Number.isFinite(memory?.workingSetSize) ? memory.workingSetSize * 1024 : null,
-  };
+  return normalizeAppMemoryMetrics(app.getAppMetrics(), processId);
 });
 ipcMain.handle('desktop:get-launch-at-login', () => app.getLoginItemSettings().openAtLogin);
 ipcMain.handle('desktop:set-launch-at-login', (_event, enabled) => {

@@ -92,7 +92,7 @@ interface Window {
   bokemoDesktop?: {
     getStatus: () => Promise<{ isMacDesktop: boolean; notificationSupported: boolean }>;
     getWindowVisibility: () => Promise<boolean>;
-    getProcessMemoryMetrics: () => Promise<DesktopProcessMemoryMetrics>;
+    getMemoryMetrics: () => Promise<DesktopProcessMemoryMetrics>;
     getLaunchAtLogin: () => Promise<boolean>;
     setLaunchAtLogin: (enabled: boolean) => Promise<boolean>;
     showNotification: (payload: DesktopNotificationPayload) => Promise<boolean>;
@@ -112,8 +112,15 @@ interface Window {
 }
 
 interface DesktopProcessMemoryMetrics {
-  privateBytes: number | null;
-  residentSetBytes: number | null;
+  applicationWorkingSetBytes: number | null;
+  rendererWorkingSetBytes: number | null;
+  processBreakdown: Array<{
+    pid: number | null;
+    type: string;
+    name: string | null;
+    serviceName: string | null;
+    workingSetBytes: number | null;
+  }>;
 }
 
 interface DesktopExperimentalApiSettings {

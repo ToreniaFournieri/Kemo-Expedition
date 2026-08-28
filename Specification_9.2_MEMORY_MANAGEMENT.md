@@ -38,9 +38,12 @@
 
 ## 9.2.5 Runtime monitoring and logging
 
-- Monitoring periodically collects every technically available source among JavaScript heap, C++/WebAssembly bytes, visible-artwork estimate, worker-owned estimate, active worker count, and total process memory.
+- Monitoring periodically collects every technically available source among JavaScript heap, C++/WebAssembly bytes, visible-artwork estimate, worker-owned estimate, active worker count, the main renderer working set, and the aggregate Electron application working set.
+- In the packaged desktop application, the aggregate application working set is the sum of the current working-set values reported by Electron for every process owned by the BoKemo instance, including Browser, Tab, GPU, Utility, and secondary-renderer processes. If any included process lacks a valid working-set value, the aggregate is unavailable rather than partial.
+- Each desktop sample retains a process breakdown containing PID, process type, optional service/name metadata, and working-set bytes. The breakdown is included in the bounded JSON sample history for attribution but is excluded from significant-event records and the compact Debug-pane table.
+- Aggregate working set is the best whole-application indicator exposed by Electron for this runtime, but operating-system shared pages may appear in more than one process value. It must not be described as an exact unique-physical-memory measurement.
 - Unsupported sources must be represented as unavailable; they must not be estimated as zero or fabricated.
-- Current and peak values are required. Monitoring must have negligible, bounded overhead.
+- Current and peak values are required for aggregate application and main-renderer working sets and the other numeric sources. Monitoring must have negligible, bounded overhead.
 - Normal sampling occurs every 15 seconds. x100 and unlimited modes sample every 60 seconds. Significant lifecycle boundaries may take additional samples.
 - Periodic history is limited to 120 snapshots and significant-event history to 256 entries per session.
 - Significant events are `session_start`, `online_processing_start`, `chunk_complete`, `afk_emulation_start`, `afk_emulation_complete`, `simulation_start`, `simulation_complete`, `wasm_memory_growth`, `memory_warning`, and `session_end`.

@@ -387,7 +387,7 @@ HP: 312                 タイプ: 神魔
     - Always show a strong warning and require confirmation before execution.
 
 **Debug pane(デバッグ)**
-- Dev and beta show a localized Runtime Diagnostics section combining current and peak memory metrics with the bounded AFK runtime trace defined in section 5.1.1.1. It displays active worker/sample/memory-event counts, current AFK phase, trace/anomaly counts, and longest completed wait.
+- Dev and beta show a localized Runtime Diagnostics section combining current and peak memory metrics with the bounded AFK runtime trace defined in section 5.1.1.1. The compact memory table displays the aggregate Electron application working set and main-renderer working set when available, without the per-process breakdown retained in the JSON export. It also displays active worker/sample/memory-event counts, current AFK phase, trace/anomaly counts, and longest completed wait.
 - Runtime Diagnostics: OFF/ON  (Default: OFF)
   - It can be explicitly enabled through the Debug Pane, a supported runtime API, or a development command/option such as an npm script or startup flag.
     - `npm run dev:diagnostics` for explicit startup enablement.
