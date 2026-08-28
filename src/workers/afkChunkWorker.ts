@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { simulateAfkPartyChunkForWorker } from '../hooks/useGameState';
+import { getAfkInventoryDeltaForState, simulateAfkPartyChunkForWorker } from '../hooks/useGameState';
 import {
   createAfkPartyChunkResult,
   createAfkPartyChunkWorkerResult,
@@ -37,7 +37,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
       queueMs: job.queuedAt === undefined ? 0 : receivedAtEpoch - job.queuedAt,
       executionMs: completedAt - executionStartedAt,
       inputTransferBytes: job.inputTransferBytes,
-    });
+    }, getAfkInventoryDeltaForState(resultState));
     const result = createAfkPartyChunkWorkerResult(completeResult);
     if (job.inputTransferBytes !== undefined) {
       result.workerTelemetry.outputTransferBytes = new TextEncoder().encode(JSON.stringify(result)).byteLength;

@@ -46,7 +46,11 @@ function createSeededRandom(seed: number): () => number {
   };
 }
 
-function runDeterministicAfkWorkflow(baseState: GameState, compact: boolean = false): GameState {
+function runDeterministicAfkWorkflow(
+  baseState: GameState,
+  compact: boolean = false,
+  inventoryStrategy: 'immutable' | 'overlay' = 'overlay',
+): GameState {
   const results: AfkPartyChunkResult[] = baseState.parties.map((party, partyIndex) => {
     const workerState = compact ? createAfkPartyChunkWorkerState(baseState, partyIndex) : baseState;
     const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
@@ -61,6 +65,7 @@ function runDeterministicAfkWorkflow(baseState: GameState, compact: boolean = fa
           simulatedCompletedAt: SIMULATED_END_AT,
           cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
           gameMode: 'm.kemo',
+          inventoryStrategy,
         }),
       ),
     );
@@ -116,6 +121,8 @@ test('profiling wrappers preserve deterministic AFK worker and coordinator resul
   const first = runDeterministicAfkWorkflow(state);
   const second = runDeterministicAfkWorkflow(state);
   const compact = runDeterministicAfkWorkflow(state, true);
+  const immutableInventory = runDeterministicAfkWorkflow(state, false, 'immutable');
   assert.deepEqual(serializeGameState(second), serializeGameState(first));
   assert.deepEqual(serializeGameState(compact), serializeGameState(first));
+  assert.deepEqual(serializeGameState(immutableInventory), serializeGameState(first));
 });

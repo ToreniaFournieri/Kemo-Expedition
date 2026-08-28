@@ -110,11 +110,18 @@ test('unmeasured AFK transfer sizes remain unavailable', () => {
   assert.equal(result.workerTelemetry.outputTransferBytes, null);
 });
 
-test('party-scoped worker inputs remove only inactive Diary presentation history', () => {
+test('party-scoped worker inputs replace target Diary bodies with bounded retention placeholders', () => {
+  const targetDiaryLog = {
+    id: 'target-log',
+    expeditionLog: { dungeonId: 8, entries: [] },
+    triggers: ['victory'],
+    createdAt: 200,
+    isRead: false,
+  } as Party['diaryLogs'][number];
   const target = makeParty({
     id: 1,
     lastExpeditionLog: { dungeonId: 8 } as Party['lastExpeditionLog'],
-    diaryLogs: [{ id: 'target-log' }] as Party['diaryLogs'],
+    diaryLogs: [targetDiaryLog],
   });
   const inactive = makeParty({
     id: 2,
@@ -128,13 +135,22 @@ test('party-scoped worker inputs remove only inactive Diary presentation history
   const workerState = createAfkPartyChunkWorkerState(state, 0);
 
   assert.notEqual(workerState, state);
-  assert.equal(workerState.parties[0], target);
+  assert.notEqual(workerState.parties[0], target);
+  assert.equal(workerState.parties[0].lastExpeditionLog, null);
+  assert.deepEqual(workerState.parties[0].diaryLogs, [{
+    id: 'target-log',
+    createdAt: 200,
+    isRead: false,
+    __afkBaseDiaryIndex: 0,
+  }]);
+  assert.ok(JSON.stringify(workerState).length < JSON.stringify(state).length);
   assert.equal(workerState.parties[1].id, inactive.id);
   assert.equal(workerState.parties[1].name, inactive.name);
   assert.equal(workerState.parties[1].lastExpeditionLog, null);
   assert.deepEqual(workerState.parties[1].diaryLogs, []);
   assert.equal(state.parties[1].lastExpeditionLog, inactive.lastExpeditionLog);
   assert.equal(state.parties[1].diaryLogs[0]?.id, 'inactive-log');
+  assert.equal(state.parties[0].diaryLogs[0], targetDiaryLog);
 });
 
 test('renderer hydration restores the exact complete worker-result envelope', () => {
@@ -160,6 +176,44 @@ test('renderer hydration restores the exact complete worker-result envelope', ()
     JSON.stringify(hydrateAfkPartyChunkResult(workerResult, baseState.parties[0])),
     JSON.stringify(complete),
   );
+});
+
+test('renderer hydration restores retained Diary bodies around new worker logs', () => {
+  const olderLog = {
+    id: 'older-log', expeditionLog: { dungeonId: 7, entries: [{ type: 'older' }] }, createdAt: 100, isRead: true,
+  } as Party['diaryLogs'][number];
+  const newerLog = {
+    id: 'newer-log', expeditionLog: { dungeonId: 8, entries: [{ type: 'newer' }] }, createdAt: 200, isRead: false,
+  } as Party['diaryLogs'][number];
+  const generatedLog = {
+    id: 'generated-log', expeditionLog: { dungeonId: 9, entries: [{ type: 'generated' }] }, createdAt: 300, isRead: false,
+  } as Party['diaryLogs'][number];
+  const baseState = makeState(makeParty({
+    diaryLogs: [newerLog, olderLog],
+    lastExpeditionLog: newerLog.expeditionLog,
+  }), 100, 1);
+  const workerState = createAfkPartyChunkWorkerState(baseState, 0);
+  const resultState = {
+    ...workerState,
+    parties: [{
+      ...workerState.parties[0],
+      diaryLogs: [generatedLog, ...workerState.parties[0].diaryLogs],
+      lastExpeditionLog: generatedLog.expeditionLog,
+    }],
+  };
+  const complete = createAfkPartyChunkResult({
+    jobId: 'job-journal-hydration', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: workerState, gameMode: 'm.kemo', cycleDurationScale: 1,
+  }, resultState, 5);
+
+  const hydrated = hydrateAfkPartyChunkResult(createAfkPartyChunkWorkerResult(complete), baseState.parties[0]);
+
+  assert.deepEqual(hydrated.resultParty.diaryLogs, [generatedLog, newerLog, olderLog]);
+  assert.equal(hydrated.resultParty.diaryLogs[1], newerLog);
+  assert.equal(hydrated.resultParty.diaryLogs[2], olderLog);
+  assert.equal(hydrated.resultParty.lastExpeditionLog, generatedLog.expeditionLog);
+  assert.equal(JSON.stringify(hydrated).includes('__afkBaseDiaryIndex'), false);
 });
 
 test('schema v3 continuation restores renderer authority from retained worker history', () => {

@@ -10,13 +10,16 @@ import {
 } from '../../src/game/afkChunkCoordinator.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
-import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
+import {
+  getAfkInventoryDeltaForState,
+  simulateAfkPartyChunkForWorker,
+} from '../../src/hooks/useGameState.ts';
 import { ensureLanguageLoaded } from '../../src/i18n/index.ts';
 import { withItemLookupStrategyForTesting } from '../../src/data/items.ts';
 
 declare const self: DedicatedWorkerGlobalScope;
 
-type Candidate = 'full' | 'build62' | 'linear' | 'production' | 'continuation';
+type Candidate = 'full' | 'build62' | 'build71' | 'linear' | 'production' | 'continuation';
 const epochNow = () => performance.timeOrigin + performance.now();
 const retainedParties = new Map<number, { party: import('../../src/types.ts').Party; stateToken: string; revision: number }>();
 
@@ -59,12 +62,18 @@ self.onmessage = async (event: MessageEvent<{
             simulatedCompletedAt: job.simulatedCompletedAt,
             cycleDurationScale: job.cycleDurationScale,
             gameMode: job.gameMode,
-            chunkStatusScope: candidate === 'production' || candidate === 'continuation' || candidate === 'linear' ? 'target' : 'all',
+            chunkStatusScope: candidate === 'full' || candidate === 'build62' ? 'all' : 'target',
+            inventoryStrategy: candidate === 'full' || candidate === 'build62' || candidate === 'build71' ? 'immutable' : 'overlay',
           }),
         ),
       )
     ));
-    const completeResult = createAfkPartyChunkResult({ ...job, baseState }, resultState, 0);
+    const completeResult = createAfkPartyChunkResult(
+      { ...job, baseState },
+      resultState,
+      0,
+      getAfkInventoryDeltaForState(resultState),
+    );
     const result = candidate === 'continuation' && 'transferKind' in job
       ? (() => {
         retainedParties.set(job.partyId, {
@@ -78,7 +87,7 @@ self.onmessage = async (event: MessageEvent<{
           reconciliationRevision: job.reconciliationRevision,
         });
       })()
-      : candidate === 'production' || candidate === 'linear'
+      : candidate === 'production' || candidate === 'linear' || candidate === 'build71'
       ? createAfkPartyChunkWorkerResult(completeResult)
       : candidate === 'build62'
         ? (({ baseParty: _baseParty, ...build62Result }) => build62Result)(completeResult)

@@ -104,6 +104,12 @@ type AfkPartyChunkWorkerParty = Omit<Party, 'diaryLogs' | 'lastExpeditionLog'> &
   lastExpeditionLog: null;
 };
 
+const AFK_BASE_DIARY_INDEX_KEY = '__afkBaseDiaryIndex';
+
+type AfkBaseDiaryPlaceholder = Pick<DiaryLog, 'id' | 'createdAt' | 'isRead'> & {
+  [AFK_BASE_DIARY_INDEX_KEY]: number;
+};
+
 export type AfkPartyChunkWorkerResult = Omit<AfkPartyChunkResult, 'baseParty' | 'resultParty'> & {
   transferSchemaVersion: 2;
   resultParty: AfkPartyChunkWorkerParty;
@@ -117,17 +123,41 @@ export type AfkPartyChunkWorkerResultV3 = Omit<AfkPartyChunkWorkerResult, 'trans
   reconciliationRevision: number;
 };
 
+function createAfkBaseDiaryPlaceholder(diaryLog: DiaryLog, index: number): DiaryLog {
+  return {
+    id: diaryLog.id,
+    createdAt: diaryLog.createdAt,
+    isRead: diaryLog.isRead,
+    [AFK_BASE_DIARY_INDEX_KEY]: index,
+  } as AfkBaseDiaryPlaceholder as unknown as DiaryLog;
+}
+
+function getAfkBaseDiaryIndex(diaryLog: DiaryLog): number | null {
+  const value = (diaryLog as DiaryLog & Partial<AfkBaseDiaryPlaceholder>)[AFK_BASE_DIARY_INDEX_KEY];
+  return Number.isInteger(value) && value! >= 0 ? value! : null;
+}
+
 /**
- * Removes retained Diary presentation history from parties that this worker
- * cannot advance. The target party remains byte-identical because its existing
- * history is authoritative for Diary retention and finalization.
+ * Removes retained Diary presentation bodies from every party. The target
+ * party keeps bounded identity/order/read placeholders so normal retention and
+ * unread calculations remain authoritative without transferring old logs.
  */
-export function createAfkPartyChunkWorkerState(state: GameState, partyIndex: number): GameState {
+export function createAfkPartyChunkWorkerState(
+  state: GameState,
+  partyIndex: number,
+  historyStrategy: 'full' | 'placeholders' = 'placeholders',
+): GameState {
   return {
     ...state,
     parties: state.parties.map((party, index) => (
       index === partyIndex
-        ? party
+        ? historyStrategy === 'full'
+          ? party
+          : {
+          ...party,
+          lastExpeditionLog: null,
+          diaryLogs: (party.diaryLogs ?? []).map(createAfkBaseDiaryPlaceholder),
+          }
         : { ...party, lastExpeditionLog: null, diaryLogs: [] }
     )),
   };
@@ -138,7 +168,8 @@ export function createAfkPartyChunkWorkerResult(result: AfkPartyChunkResult): Af
   const baseDiaryLogs = result.baseParty.diaryLogs ?? [];
   const resultDiaryLogs = result.resultParty.diaryLogs ?? [];
   const diaryLogs: AfkDiaryLogTransferEntry[] = resultDiaryLogs.map((diaryLog) => {
-    const baseIndex = baseDiaryLogs.indexOf(diaryLog);
+    const placeholderIndex = getAfkBaseDiaryIndex(diaryLog);
+    const baseIndex = placeholderIndex ?? baseDiaryLogs.indexOf(diaryLog);
     return baseIndex >= 0
       ? { source: 'base', index: baseIndex }
       : { source: 'worker', value: diaryLog };
@@ -377,11 +408,13 @@ function normalizeTransferBytes(value: number | null | undefined): number | null
   return value == null ? null : Math.max(0, Math.floor(value));
 }
 
-interface InventoryDelta {
+export interface AfkInventoryDeltaEntry {
   countDelta: number;
   isNew: boolean;
   variant: InventoryRecord[string];
 }
+
+export type AfkInventoryDelta = Record<string, AfkInventoryDeltaEntry>;
 
 interface BattleStatDelta {
   defeats: number;
@@ -391,7 +424,7 @@ interface BattleStatDelta {
 export interface AfkGlobalDelta {
   gold: number;
   prana: number;
-  inventory: Record<string, InventoryDelta>;
+  inventory: AfkInventoryDelta;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
   altarVictoriesByEnemyType: Record<string, number>;
@@ -487,8 +520,8 @@ function mergeBattleStatsDelta(
   return next;
 }
 
-function createInventoryDelta(base: InventoryRecord, result: InventoryRecord): Record<string, InventoryDelta> {
-  const delta: Record<string, InventoryDelta> = {};
+function createInventoryDelta(base: InventoryRecord, result: InventoryRecord): AfkInventoryDelta {
+  const delta: AfkInventoryDelta = {};
   new Set([...Object.keys(base), ...Object.keys(result)]).forEach((key) => {
     const resultVariant = result[key];
     if (!resultVariant) return;
@@ -500,7 +533,7 @@ function createInventoryDelta(base: InventoryRecord, result: InventoryRecord): R
   return delta;
 }
 
-function mergeInventoryDelta(current: InventoryRecord, delta: Record<string, InventoryDelta>): InventoryRecord {
+function mergeInventoryDelta(current: InventoryRecord, delta: AfkInventoryDelta): InventoryRecord {
   const next = { ...current };
   Object.entries(delta).forEach(([key, change]) => {
     const currentVariant = next[key];
@@ -523,6 +556,7 @@ export function createAfkPartyChunkResult(
   resultState: GameState,
   durationMs: number,
   workerTelemetry: Partial<AfkWorkerPerformanceTelemetry> = {},
+  inventoryDeltaOverride?: AfkInventoryDelta,
 ): AfkPartyChunkResult {
   const baseGlobal = job.baseState.global;
   const resultGlobal = resultState.global;
@@ -540,7 +574,7 @@ export function createAfkPartyChunkResult(
     globalDelta: {
       gold: resultGlobal.gold - baseGlobal.gold,
       prana: resultGlobal.prana - baseGlobal.prana,
-      inventory: createInventoryDelta(baseGlobal.inventory, resultGlobal.inventory),
+      inventory: inventoryDeltaOverride ?? createInventoryDelta(baseGlobal.inventory, resultGlobal.inventory),
       jewels: createNumberDelta(baseGlobal.jewels, resultGlobal.jewels),
       deityDonations: createNumberDelta(baseGlobal.deityDonations, resultGlobal.deityDonations),
       altarVictoriesByEnemyType: createNumberDelta(baseGlobal.altarVictoriesByEnemyType ?? {}, resultGlobal.altarVictoriesByEnemyType ?? {}),

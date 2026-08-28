@@ -137,7 +137,12 @@ import {
 } from '../game/savePersistence';
 import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
-import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
+import {
+  AFK_CHUNK_CYCLE_COUNT,
+  commitAfkPartyChunk,
+  type AfkInventoryDelta,
+  type AfkPartyChunkResult,
+} from '../game/afkChunkCoordinator';
 import { afkRuntimeTrace } from '../game/afkRuntimeTrace';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
@@ -888,6 +893,116 @@ function getItemRarityCode(item: Item): 'common' | 'uncommon' | 'eliteRare' | 'b
   if (rarityCode >= 300) return 'eliteRare';
   if (rarityCode >= 200) return 'uncommon';
   return 'common';
+}
+
+type InventoryVariant = InventoryRecord[string];
+
+interface AfkInventoryMutation {
+  key: string;
+  hadOverlayValue: boolean;
+  previousValue: InventoryVariant | undefined;
+}
+
+/**
+ * SpecRef: 9.2.3 | Runtime retention and transfer | Large temporary datasets should be processed incrementally
+ *
+ * Worker-local copy-on-write inventory view. Reads fall through to the captured
+ * Chunk input while writes retain only changed variants. Checkpoints provide
+ * exact per-expedition rollback without cloning the complete inventory.
+ */
+class AfkInventoryOverlay {
+  readonly record: InventoryRecord;
+  private readonly changes = new Map<string, InventoryVariant | undefined>();
+  private readonly mutations: AfkInventoryMutation[] = [];
+
+  constructor(private readonly base: InventoryRecord) {
+    this.record = new Proxy({} as InventoryRecord, {
+      get: (_target, property) => {
+        if (typeof property !== 'string') return Reflect.get(this.base, property);
+        return this.changes.has(property) ? this.changes.get(property) : this.base[property];
+      },
+      set: (_target, property, value) => {
+        if (typeof property !== 'string') return false;
+        this.mutations.push({
+          key: property,
+          hadOverlayValue: this.changes.has(property),
+          previousValue: this.changes.get(property),
+        });
+        this.changes.set(property, value as InventoryVariant);
+        return true;
+      },
+      deleteProperty: (_target, property) => {
+        if (typeof property !== 'string') return false;
+        this.mutations.push({
+          key: property,
+          hadOverlayValue: this.changes.has(property),
+          previousValue: this.changes.get(property),
+        });
+        this.changes.set(property, undefined);
+        return true;
+      },
+      ownKeys: () => {
+        const keys = Reflect.ownKeys(this.base);
+        this.changes.forEach((_value, key) => {
+          if (!Reflect.has(this.base, key)) keys.push(key);
+        });
+        return keys.filter((key) => typeof key !== 'string' || this.get(key) !== undefined);
+      },
+      getOwnPropertyDescriptor: (_target, property) => {
+        if (typeof property !== 'string' || this.get(property) === undefined) return undefined;
+        return { configurable: true, enumerable: true, writable: true, value: this.get(property) };
+      },
+      has: (_target, property) => typeof property === 'string' && this.get(property) !== undefined,
+    });
+  }
+
+  private get(key: string): InventoryVariant | undefined {
+    return this.changes.has(key) ? this.changes.get(key) : this.base[key];
+  }
+
+  checkpoint(): number {
+    return this.mutations.length;
+  }
+
+  rollback(checkpoint: number): void {
+    while (this.mutations.length > checkpoint) {
+      const mutation = this.mutations.pop()!;
+      if (mutation.hadOverlayValue) this.changes.set(mutation.key, mutation.previousValue);
+      else this.changes.delete(mutation.key);
+    }
+  }
+
+  releaseCheckpoint(): void {
+    this.mutations.length = 0;
+  }
+
+  createDelta(): AfkInventoryDelta {
+    const delta: AfkInventoryDelta = {};
+    const append = (key: string, variant: InventoryVariant | undefined) => {
+      if (!variant) return;
+      const countDelta = variant.count - (this.base[key]?.count ?? 0);
+      if (countDelta !== 0 || variant.isNew) {
+        delta[key] = { countDelta, isNew: variant.isNew === true, variant };
+      }
+    };
+    // Preserve the former full-diff insertion order exactly: authoritative base
+    // keys first, followed by newly introduced overlay keys.
+    Object.keys(this.base).forEach((key) => append(key, this.get(key)));
+    this.changes.forEach((variant, key) => {
+      if (!(key in this.base)) append(key, variant);
+    });
+    return delta;
+  }
+}
+
+interface AfkChunkReducerContext {
+  inventoryOverlay: AfkInventoryOverlay;
+}
+
+const afkInventoryDeltaByState = new WeakMap<GameState, AfkInventoryDelta>();
+
+export function getAfkInventoryDeltaForState(state: GameState): AfkInventoryDelta | undefined {
+  return afkInventoryDeltaByState.get(state);
 }
 
 // Helper to calculate sell price for an item
@@ -2356,6 +2471,7 @@ function resolveEnemyRewards(
   auriferousBonusRolls: number = 0,
   difficultyItemChanceTickets: number = 0,
   difficultySuperRareChanceTickets: number = 0,
+  mutateInventory: boolean = false,
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -2439,7 +2555,7 @@ function resolveEnemyRewards(
 
     const newItem: Item = { ...baseItem, enhancement: normalizedEnhancement, superRare: srVal };
     const itemName = getItemDisplayName(newItem);
-    const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier);
+    const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier, mutateInventory);
     recoveredItems.push(newItem);
     inventory = result.inventory;
     gold = result.gold;
@@ -3147,6 +3263,7 @@ function gameReducer(
   state: GameState,
   action: GameAction,
   autoEquipmentContext?: AutoEquipmentReducerContext,
+  afkChunkContext?: AfkChunkReducerContext,
 ): GameState {
   switch (action.type) {
 
@@ -3364,7 +3481,8 @@ function gameReducer(
       let totalExp = 0;
       let bags = normalizeImportedBags(currentParty.bags);
       let finalOutcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' = 'Clear';
-      let currentInventory = state.global.inventory;
+      const afkInventoryCheckpoint = afkChunkContext?.inventoryOverlay.checkpoint();
+      let currentInventory = afkChunkContext?.inventoryOverlay.record ?? state.global.inventory;
       let currentGold = state.global.gold;
       let totalAutoSellProfit = 0;
       let totalAutoSellItemCount = 0;
@@ -3610,6 +3728,7 @@ function gameReducer(
                   difficultyItemChanceTickets,
                   difficultySuperRareChanceTickets
                     + (terrainEffect !== 'terrain.gehenna' ? deityRewardDrawBonuses.superRareChanceTickets : 0),
+                  afkChunkContext !== undefined,
                 );
                 bags = rewardResult.bags;
                 currentInventory = rewardResult.inventory;
@@ -3838,7 +3957,12 @@ function gameReducer(
 
       // On defeat: revert inventory and gold (no item rewards), but keep experience
       const isDefeat = finalOutcome === 'Defeat';
-      const finalInventory = isDefeat ? state.global.inventory : currentInventory;
+      if (isDefeat && afkChunkContext && afkInventoryCheckpoint !== undefined) {
+        afkChunkContext.inventoryOverlay.rollback(afkInventoryCheckpoint);
+      }
+      const finalInventory = afkChunkContext?.inventoryOverlay.record
+        ?? (isDefeat ? state.global.inventory : currentInventory);
+      afkChunkContext?.inventoryOverlay.releaseCheckpoint();
       const finalRewards = isDefeat ? [] : rewards;
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
       const finalAutoSellItemCount = isDefeat ? 0 : totalAutoSellItemCount;
@@ -5172,13 +5296,13 @@ function gameReducer(
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
             chunkPartyStatus: chunkPartyStatus[partyIndex],
-          });
+          }, undefined, afkChunkContext);
           workingState = gameReducer(workingState, {
             type: 'FINALIZE_DIARY_LOG',
             partyIndex,
             simulatedAt,
             isAfkSimulation: true,
-          });
+          }, undefined, afkChunkContext);
 
           const postFinalizeParty = workingState.parties[partyIndex];
           if (postFinalizeParty) {
@@ -5189,7 +5313,7 @@ function gameReducer(
                 partyIndex,
                 dungeonId: autoAdvanceDecision.nextDungeonId,
                 selectionMode: 'auto',
-              });
+              }, undefined, afkChunkContext);
             }
           }
 
@@ -5210,7 +5334,7 @@ function gameReducer(
                 partyIndex,
                 amount: approximateProgress,
                 simulatedAt,
-              });
+              }, undefined, afkChunkContext);
             }
           }
 
@@ -5226,7 +5350,7 @@ function gameReducer(
                 type: 'HEAL_PARTY_HP',
                 partyIndex,
                 amount: missingHp,
-              });
+              }, undefined, afkChunkContext);
             }
           }
 
@@ -5236,7 +5360,7 @@ function gameReducer(
               partyIndex,
               rolledTier: postCycleParty.selectedDungeonId,
               simulatedAt,
-            });
+            }, undefined, afkChunkContext);
           }
 
           const latestParty = workingState.parties[partyIndex];
@@ -5245,7 +5369,7 @@ function gameReducer(
             latestParty?.sideQuest
             && simulatedAt >= getScaledSideQuestExpiresAt(latestParty.sideQuest, resolvedCycleDurationScale)
           ) {
-            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex });
+            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
           }
       }
 
@@ -5596,6 +5720,7 @@ export function simulateAfkPartyChunkForWorker(
     operationCount?: number;
     onProgress?: (completedOperations: number, operationCount: number) => void;
     chunkStatusScope?: 'target' | 'all';
+    inventoryStrategy?: 'immutable' | 'overlay';
   },
 ): GameState {
   const party = state.parties[options.partyIndex];
@@ -5625,6 +5750,9 @@ export function simulateAfkPartyChunkForWorker(
       computed: computePartyStats(party),
     };
   }
+  const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable'
+    ? undefined
+    : { inventoryOverlay: new AfkInventoryOverlay(state.global.inventory) };
   let workingState = state;
   for (let operationIndex = 0; operationIndex < operationCount; operationIndex += 1) {
     workingState = gameReducer(workingState, {
@@ -5639,8 +5767,11 @@ export function simulateAfkPartyChunkForWorker(
       operationCount: 1,
       finalizeChunk: operationIndex + 1 === operationCount,
       chunkPartyStatus,
-    });
+    }, undefined, afkChunkContext);
     options.onProgress?.(operationIndex + 1, operationCount);
+  }
+  if (afkChunkContext) {
+    afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
   }
   return workingState;
 }

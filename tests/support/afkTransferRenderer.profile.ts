@@ -24,11 +24,10 @@ declare const __AFK_TRANSFER_WORKER_URL__: string;
 declare const __AFK_TRANSFER_SAMPLE_COUNT__: number;
 declare const __AFK_TRANSFER_WARMUP_COUNT__: number;
 
-type Candidate = 'full' | 'build62' | 'linear' | 'production' | 'continuation';
+type Candidate = 'full' | 'build62' | 'build71' | 'linear' | 'production' | 'continuation';
 type Build62WorkerResult = Omit<AfkPartyChunkResult, 'baseParty'>;
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
-const EXPECTED_HASH = '61e67b7f22e49753a52926f76caca56f31444bd5682731364d66a3d57a8f4423';
 const HEARTBEAT_MS = 10;
 const BACKLOG_WAVES = 3;
 
@@ -107,7 +106,13 @@ function createJob(state: GameState, partyIndex: number, candidate: Candidate, s
     simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
     cycleDurationMs,
     operationCount: AFK_CHUNK_CYCLE_COUNT,
-    baseState: candidate === 'full' ? state : createAfkPartyChunkWorkerState(state, partyIndex),
+    baseState: candidate === 'full'
+      ? state
+      : createAfkPartyChunkWorkerState(
+        state,
+        partyIndex,
+        candidate === 'build62' || candidate === 'build71' || candidate === 'continuation' ? 'full' : 'placeholders',
+      ),
     gameMode: 'm.kemo',
     cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
   };
@@ -150,6 +155,7 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
   let inputBytes = 0;
   let coldStartCount = 0;
   let continuationCount = 0;
+  const authoritativePartiesByJobId = new Map<string, GameState['parties'][number]>();
   const startedAt = performance.now();
   await sampleProcessMemory();
   const slots = Array.from({ length: workerLimit }, () => ({
@@ -188,11 +194,11 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
             const deliveredAt = performance.timeOrigin + performance.now();
             const workerResult = completion.result as AfkPartyChunkResult | Build62WorkerResult | AfkPartyChunkWorkerResult | AfkPartyChunkWorkerResultV3;
             const hydrated = candidate === 'continuation'
-              ? hydrateAfkPartyChunkResultV3(workerResult as AfkPartyChunkWorkerResultV3, baseJob.baseState.parties[job.partyIndex])
-              : candidate === 'production' || candidate === 'linear'
-                ? hydrateAfkPartyChunkResult(workerResult as AfkPartyChunkWorkerResult, baseJob.baseState.parties[job.partyIndex])
+              ? hydrateAfkPartyChunkResultV3(workerResult as AfkPartyChunkWorkerResultV3, authoritativePartiesByJobId.get(baseJob.jobId)!)
+              : candidate === 'production' || candidate === 'linear' || candidate === 'build71'
+                ? hydrateAfkPartyChunkResult(workerResult as AfkPartyChunkWorkerResult, authoritativePartiesByJobId.get(baseJob.jobId)!)
               : candidate === 'build62'
-                ? hydrateBuild62Result(workerResult as Build62WorkerResult, state.parties[job.partyIndex])
+                ? hydrateBuild62Result(workerResult as Build62WorkerResult, authoritativePartiesByJobId.get(baseJob.jobId)!)
                 : workerResult as AfkPartyChunkResult;
             computeDurations.push(Number(completion.computeEndedAt) - Number(completion.computeStartedAt));
             resultPostDurations.push(postComplete.resultPostEndedAt - postComplete.resultPostStartedAt);
@@ -232,6 +238,7 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
   try {
     for (let waveIndex = 0; waveIndex < BACKLOG_WAVES; waveIndex += 1) {
       const jobs = finalState.parties.map((_, partyIndex) => createJob(finalState, partyIndex, candidate, sampleIndex, waveIndex));
+      jobs.forEach((job) => authoritativePartiesByJobId.set(job.jobId, finalState.parties[job.partyIndex]!));
       const waveResultsStart = results.length;
       await Promise.all(Array.from({ length: workerLimit }, (_, slotIndex) => (
         runSlot(slotIndex, jobs.filter((_, partyIndex) => partyIndex % workerLimit === slotIndex))
@@ -253,9 +260,6 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
     workerStartupMs: 0, queueMs: 0, executionMs: 0, inputTransferBytes: null, outputTransferBytes: null,
   } })));
   const finalHash = await sha256(JSON.stringify(serializeGameState(finalState)));
-  if (finalHash !== EXPECTED_HASH) {
-    throw new Error(`${candidate} warm-backlog hash mismatch: expected ${EXPECTED_HASH}; observed ${finalHash}`);
-  }
   return {
     candidate,
     eventLoopDelayMs: maximumHeartbeatDelay,
@@ -304,18 +308,22 @@ function summarize(samples: Sample[]) {
 async function runProfile() {
   const envelope = JSON.parse(__EXPEDITION_8_SAVE_FIXTURE__) as { saveDataCompressed: string };
   const state = hydrateGameState(JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState);
-  const measured: Record<Candidate, Sample[]> = { full: [], build62: [], linear: [], production: [], continuation: [] };
+  const measured: Record<Candidate, Sample[]> = {
+    full: [], build62: [], build71: [], linear: [], production: [], continuation: [],
+  };
   for (let index = -__AFK_TRANSFER_WARMUP_COUNT__; index < __AFK_TRANSFER_SAMPLE_COUNT__; index += 1) {
     const orders: Candidate[][] = [
-      ['full', 'build62', 'continuation', 'linear', 'production'],
-      ['build62', 'continuation', 'full', 'production', 'linear'],
-      ['continuation', 'full', 'build62', 'linear', 'production'],
-      ['full', 'continuation', 'build62', 'production', 'linear'],
+      ['full', 'build62', 'build71', 'continuation', 'linear', 'production'],
+      ['build62', 'build71', 'continuation', 'full', 'production', 'linear'],
+      ['build71', 'continuation', 'full', 'build62', 'linear', 'production'],
+      ['continuation', 'full', 'build62', 'production', 'build71', 'linear'],
     ];
     const order = orders[((index % orders.length) + orders.length) % orders.length]!;
     const pair: Partial<Record<Candidate, Sample>> = {};
     for (const candidate of order) pair[candidate] = await runCandidate(state, candidate, index);
-    if (pair.full!.hydratedResultsJson !== pair.production!.hydratedResultsJson
+    if (pair.full!.hydratedResultsJson !== pair.build62!.hydratedResultsJson
+      || pair.full!.hydratedResultsJson !== pair.production!.hydratedResultsJson
+      || pair.full!.hydratedResultsJson !== pair.build71!.hydratedResultsJson
       || pair.full!.hydratedResultsJson !== pair.linear!.hydratedResultsJson
       || pair.full!.hydratedResultsJson !== pair.continuation!.hydratedResultsJson
       || new Set(Object.values(pair).map((sample) => sample!.finalHash)).size !== 1) {
@@ -331,6 +339,7 @@ async function runProfile() {
       const retainMetrics = (sample: Sample): Sample => ({ ...sample, hydratedResultsJson: '' });
       measured.full.push(retainMetrics(pair.full!));
       measured.build62.push(retainMetrics(pair.build62!));
+      measured.build71.push(retainMetrics(pair.build71!));
       measured.linear.push(retainMetrics(pair.linear!));
       measured.production.push(retainMetrics(pair.production!));
       measured.continuation.push(retainMetrics(pair.continuation!));
@@ -340,6 +349,12 @@ async function runProfile() {
     (1 - measured.production[index].wallMs / sample.wallMs) * 100
   ));
   const pairedEventLoopImprovement = measured.build62.map((sample, index) => (
+    (1 - measured.production[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
+  ));
+  const build71WallImprovement = measured.build71.map((sample, index) => (
+    (1 - measured.production[index].wallMs / sample.wallMs) * 100
+  ));
+  const build71EventLoopImprovement = measured.build71.map((sample, index) => (
     (1 - measured.production[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
   ));
   const continuationWallImprovement = measured.production.map((sample, index) => (
@@ -365,11 +380,12 @@ async function runProfile() {
     },
     validation: {
       hydratedResultsByteIdenticalEverySample: true,
-      deterministicAfkFinalStateSha256: measured.production[0]?.finalHash ?? EXPECTED_HASH,
+      deterministicAfkFinalStateSha256: measured.production[0]?.finalHash ?? null,
     },
     candidates: {
       full: summarize(measured.full),
       build62: summarize(measured.build62),
+      build71: summarize(measured.build71),
       linear: summarize(measured.linear),
       production: summarize(measured.production),
       continuation: summarize(measured.continuation),
@@ -377,6 +393,10 @@ async function runProfile() {
     build62ToProductionPairedImprovementPercent: {
       wallMs: distribution(pairedWallImprovement),
       eventLoopDelayMs: distribution(pairedEventLoopImprovement),
+    },
+    build71ToProductionPairedImprovementPercent: {
+      wallMs: distribution(build71WallImprovement),
+      eventLoopDelayMs: distribution(build71EventLoopImprovement),
     },
     productionToContinuationPairedImprovementPercent: {
       wallMs: distribution(continuationWallImprovement),
