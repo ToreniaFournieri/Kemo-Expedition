@@ -3,9 +3,12 @@ import {
   AFK_CHUNK_CYCLE_COUNT,
   compareAfkChunkResults,
   commitAfkPartyChunk,
+  createAfkPartyChunkWorkerState,
   getAfkWorkerPoolLimit,
+  hydrateAfkPartyChunkResult,
   type AfkPartyChunkJob,
   type AfkPartyChunkResult,
+  type AfkPartyChunkWorkerResult,
 } from '../../src/game/afkChunkCoordinator.ts';
 import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -60,8 +63,9 @@ interface Variant {
   name: string;
   jobs: number;
   concurrency: number;
-  payload: 'full' | 'small';
+  payload: 'full' | 'compact' | 'small';
   work: 'simulate' | 'noop';
+  resultContract?: 'complete' | 'production';
   exactSizing: boolean;
   prewarm: boolean;
   createOnly?: boolean;
@@ -170,6 +174,8 @@ async function runSample(state: GameState, variant: Variant, sampleIndex: number
       const constructionAt = performance.now();
       const payload = variant.payload === 'full'
         ? createJob(state, partyIndex % state.parties.length, correlationId)
+        : variant.payload === 'compact'
+          ? createJob(createAfkPartyChunkWorkerState(state, partyIndex % state.parties.length), partyIndex % state.parties.length, correlationId)
         : { partyIndex, marker: correlationId, values: [1, 2, 3, 4] };
       const payloadConstructionMs = performance.now() - constructionAt;
       const sizingAt = performance.now();
@@ -181,6 +187,7 @@ async function runSample(state: GameState, variant: Variant, sampleIndex: number
       const trace = await runOnSlot(slot, {
         correlationId,
         mode: variant.work,
+        resultContract: variant.resultContract,
         payload,
       }, true);
       trace.payloadConstructionMs = payloadConstructionMs;
@@ -190,7 +197,11 @@ async function runSample(state: GameState, variant: Variant, sampleIndex: number
       traces.push(trace);
       intervals.push({ name: `postMessage:${correlationId}`, durationMs: trace.postMessageMs });
       intervals.push({ name: `renderer_result_handler:${correlationId}`, durationMs: trace.resultDeliveryMs });
-      if (trace.result) results.push(trace.result);
+      if (trace.result) {
+        results.push(variant.resultContract === 'production'
+          ? hydrateAfkPartyChunkResult(trace.result as AfkPartyChunkWorkerResult, state.parties[partyIndex % state.parties.length]!)
+          : trace.result as AfkPartyChunkResult);
+      }
     }
   });
   intervals.push({ name: 'initial_renderer_submission_burst', durationMs: performance.now() - initialSubmissionBurstStartedAt });
@@ -231,9 +242,14 @@ async function runSample(state: GameState, variant: Variant, sampleIndex: number
 
 async function runOnSlot(
   slot: WorkerSlot,
-  request: { correlationId: string; mode: 'noop' | 'simulate'; payload: unknown },
+  request: {
+    correlationId: string;
+    mode: 'noop' | 'simulate';
+    resultContract?: 'complete' | 'production';
+    payload: unknown;
+  },
   keepResult: boolean,
-): Promise<JobTrace & { result?: AfkPartyChunkResult }> {
+): Promise<JobTrace & { result?: AfkPartyChunkResult | AfkPartyChunkWorkerResult }> {
   const submittedAt = epochNow();
   let postMessageEndedAt = submittedAt;
   return new Promise((resolve, reject) => {
@@ -318,6 +334,8 @@ async function runProfile() {
     { name: 'I_concurrency_2', jobs: 6, concurrency: 2, payload: 'full', work: 'simulate', exactSizing: false, prewarm: false },
     { name: 'I_concurrency_3', jobs: 6, concurrency: 3, payload: 'full', work: 'simulate', exactSizing: false, prewarm: false },
     { name: 'I_concurrency_4_stress', jobs: 6, concurrency: 4, payload: 'full', work: 'simulate', exactSizing: false, prewarm: false },
+    { name: 'J_production_compact_concurrency_2', jobs: 6, concurrency: 2, payload: 'compact', work: 'simulate', resultContract: 'production', exactSizing: false, prewarm: false },
+    { name: 'J_production_compact_concurrency_3', jobs: 6, concurrency: 3, payload: 'compact', work: 'simulate', resultContract: 'production', exactSizing: false, prewarm: false },
   ];
   const report: Record<string, unknown> = {};
   for (const variant of variants) {
@@ -341,7 +359,7 @@ async function runProfile() {
     report[variant.name] = { configuration: variant, summary: summarize(samples, expectedHash), samples };
   }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     sampling: { warmups: __DIAGNOSTIC_WARMUP_COUNT__, measuredSamples: __DIAGNOSTIC_SAMPLE_COUNT__, heartbeatMs: HEARTBEAT_MS },
     environment: { userAgent: navigator.userAgent, logicalProcessors: navigator.hardwareConcurrency, deviceMemoryGiB: (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? null },

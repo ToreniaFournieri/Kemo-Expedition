@@ -13,4 +13,7 @@ test('Expedition 8 startup diagnostics pin and enforce every seeded simulation h
   assert.doesNotMatch(source, /sampleHashes\[0\]/);
   assert.match(source, /Missing pinned deterministic hash/);
   assert.match(source, /Deterministic hash mismatch/);
+  assert.match(source, /J_production_compact_concurrency_2/);
+  assert.match(source, /J_production_compact_concurrency_3/);
+  assert.match(source, /hydrateAfkPartyChunkResult/);
 });

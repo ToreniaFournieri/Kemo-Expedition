@@ -285,7 +285,14 @@ export function HomeScreen({
     status: 'queued' | 'running' | 'completed';
     startedMonotonicAt: number;
   }>());
-  const afkWorkerPoolRef = useRef<Array<{ worker: Worker; jobId: string | null; createdAt: number; completedJobs: number }>>([]);
+  const afkWorkerPoolRef = useRef<Array<{
+    worker: Worker;
+    slotId: number;
+    jobId: string | null;
+    createdEpochAt: number;
+    lastReleasedAt: number;
+    completedJobs: number;
+  }>>([]);
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
   const afkActiveCommitTransactionRef = useRef<{
     result: AfkPartyChunkResult;
@@ -293,6 +300,7 @@ export function HomeScreen({
     startedAt: number;
   } | null>(null);
   const afkWorkerJobSequenceRef = useRef(0);
+  const afkWorkerSlotSequenceRef = useRef(0);
   const afkHeadOfLineWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
   const renderCommitDurationsRef = useRef<number[]>([]);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
@@ -2854,21 +2862,24 @@ export function HomeScreen({
         const createdAt = performance.now();
         poolSlot = {
           worker: new Worker(new URL('../workers/afkChunkWorker.ts', import.meta.url), { type: 'module' }),
+          slotId: ++afkWorkerSlotSequenceRef.current,
           jobId: null,
-          createdAt,
+          createdEpochAt: performance.timeOrigin + createdAt,
+          lastReleasedAt: createdAt,
           completedJobs: 0,
         };
         afkWorkerPoolRef.current.push(poolSlot);
         afkRuntimeTrace.record('worker_created', {
           phase: 'worker_queue',
           durationMs: 0,
-          data: { workerPoolSize: afkWorkerPoolRef.current.length, workerLimit },
+          data: { workerPoolSize: afkWorkerPoolRef.current.length, workerLimit, workerSlotId: poolSlot.slotId },
         });
       }
       if (!poolSlot) return;
 
       const simulatedStartedAt = anchor - remainingMs;
       const baseParty = state.parties[partyIndex];
+      const jobQueuedMonotonicAt = performance.now();
       const job: AfkPartyChunkJob = {
         jobId: `afk-${party.id}-${++afkWorkerJobSequenceRef.current}`,
         partyIndex,
@@ -2880,16 +2891,37 @@ export function HomeScreen({
         baseState: createAfkPartyChunkWorkerState(state, partyIndex),
         gameMode,
         cycleDurationScale: durationScale,
-        queuedAt: performance.now(),
-        workerCreatedAt: poolSlot.createdAt,
+        queuedAt: performance.timeOrigin + jobQueuedMonotonicAt,
+        workerCreatedAt: poolSlot.createdEpochAt,
         isFirstWorkerJob: poolSlot.completedJobs === 0,
       };
       // Exact structured-clone sizing belongs in the opt-in Expedition 8 profiler.
       // The automatic dev/beta trace must remain observational and must not
       // stringify the complete state before every worker submission.
       const worker = poolSlot.worker;
+      const workerSlotId = poolSlot.slotId;
+      const slotDispatchGapMs = Math.max(0, performance.now() - poolSlot.lastReleasedAt);
       const { baseState: _releasedBaseState, ...jobMetadata } = job;
       const jobId = job.jobId;
+      const failWorkerJob = (failedJobId: string, message: string, reason: string) => {
+        console.error(`AFK worker ${failedJobId} failed:`, message);
+        afkRuntimeTrace.record('worker_job_error', {
+          phase: 'error',
+          partyId: job.partyId,
+          partyIndex,
+          jobId: failedJobId,
+          anomaly: true,
+          progress: true,
+          data: { message },
+        });
+        terminateAfkWorkers([worker], reason);
+        afkWorkerPoolRef.current = afkWorkerPoolRef.current.filter((slot) => slot.worker !== worker);
+        afkActiveChunkJobsRef.current.delete(partyIndex);
+        delete afkInFlightCompletedMsByPartyRef.current[partyIndex];
+        memoryMonitor.releaseWorker(failedJobId);
+        updateAfkTraceCoordinator();
+        setAfkCoordinatorVersion((version) => version + 1);
+      };
       poolSlot.jobId = jobId;
       memoryMonitor.registerWorker(jobId);
       worker.onmessage = (event: MessageEvent<
@@ -2909,8 +2941,9 @@ export function HomeScreen({
             partyId: job.partyId,
             partyIndex: job.partyIndex,
             jobId,
-            durationMs: performance.now() - (job.queuedAt ?? performance.now()),
+            durationMs: performance.now() - jobQueuedMonotonicAt,
             progress: true,
+            data: { workerSlotId },
           });
           updateAfkTraceCoordinator();
           return;
@@ -2928,11 +2961,24 @@ export function HomeScreen({
           }
           return;
         }
-        currentSlot.jobId = null;
         if (event.data.type === 'complete') {
           const active = afkActiveChunkJobsRef.current.get(partyIndex);
           if (!active) return;
-          const result = hydrateAfkPartyChunkResult(event.data.result, active.baseParty);
+          let result: AfkPartyChunkResult;
+          const hydrationStartedAt = performance.now();
+          try {
+            result = hydrateAfkPartyChunkResult(event.data.result, active.baseParty);
+          } catch (error) {
+            failWorkerJob(
+              event.data.result.jobId,
+              error instanceof Error ? error.message : String(error),
+              'worker-invalid-result',
+            );
+            return;
+          }
+          const hydrationMs = Math.max(0, performance.now() - hydrationStartedAt);
+          currentSlot.jobId = null;
+          currentSlot.lastReleasedAt = performance.now();
           currentSlot.completedJobs += 1;
           recordAfkWorkerJobTelemetry(result.jobId, result.workerTelemetry);
           memoryMonitor.releaseWorker(result.jobId);
@@ -2952,53 +2998,28 @@ export function HomeScreen({
               executionMs: result.workerTelemetry.executionMs,
               inputTransferBytes: result.workerTelemetry.inputTransferBytes,
               outputTransferBytes: result.workerTelemetry.outputTransferBytes,
+              workerSlotId,
+              slotDispatchGapMs,
+              hydrationMs,
+              jobWallMs: Math.max(0, performance.now() - active.startedMonotonicAt),
             },
           });
         } else {
-          console.error(`AFK worker ${event.data.jobId} failed:`, event.data.message);
-          afkRuntimeTrace.record('worker_job_error', {
-            phase: 'error',
-            partyId: job.partyId,
-            partyIndex,
-            jobId: event.data.jobId,
-            anomaly: true,
-            progress: true,
-            data: { message: event.data.message },
-          });
-          terminateAfkWorkers([worker], 'worker-error-message');
-          afkWorkerPoolRef.current = afkWorkerPoolRef.current.filter((slot) => slot.worker !== worker);
-          afkActiveChunkJobsRef.current.delete(partyIndex);
-          delete afkInFlightCompletedMsByPartyRef.current[partyIndex];
-          memoryMonitor.releaseWorker(event.data.jobId);
+          failWorkerJob(event.data.jobId, event.data.message, 'worker-error-message');
+          return;
         }
         updateAfkTraceCoordinator();
         setAfkCoordinatorVersion((version) => version + 1);
       };
       worker.onerror = (event) => {
-        console.error(`AFK worker ${jobId} failed:`, event.message);
-        afkRuntimeTrace.record('worker_job_error', {
-          phase: 'error',
-          partyId: job.partyId,
-          partyIndex,
-          jobId,
-          anomaly: true,
-          progress: true,
-          data: { message: event.message },
-        });
-        terminateAfkWorkers([worker], 'worker-error-event');
-        afkWorkerPoolRef.current = afkWorkerPoolRef.current.filter((slot) => slot.worker !== worker);
-        afkActiveChunkJobsRef.current.delete(partyIndex);
-        delete afkInFlightCompletedMsByPartyRef.current[partyIndex];
-        memoryMonitor.releaseWorker(jobId);
-        updateAfkTraceCoordinator();
-        setAfkCoordinatorVersion((version) => version + 1);
+        failWorkerJob(jobId, event.message, 'worker-error-event');
       };
       afkActiveChunkJobsRef.current.set(partyIndex, {
         job: jobMetadata,
         baseParty,
         worker,
         status: 'queued',
-        startedMonotonicAt: job.queuedAt ?? performance.now(),
+        startedMonotonicAt: jobQueuedMonotonicAt,
       });
       afkInFlightCompletedMsByPartyRef.current[partyIndex] = 0;
       afkRuntimeTrace.record('worker_job_posted', {
@@ -3010,6 +3031,8 @@ export function HomeScreen({
         data: {
           activeJobCount: afkActiveChunkJobsRef.current.size,
           workerPoolSize: afkWorkerPoolRef.current.length,
+          workerSlotId,
+          slotDispatchGapMs,
           inputTransferBytes: job.inputTransferBytes ?? null,
           simulatedCompletedAt: job.simulatedCompletedAt,
         },

@@ -164,6 +164,11 @@ test('runtime wiring covers worker, ordering, commit, equipment, persistence, an
   assert.match(homeSource, /worker_job_complete/);
   assert.match(homeSource, /inputTransferBytes: result\.workerTelemetry\.inputTransferBytes/);
   assert.match(homeSource, /outputTransferBytes: result\.workerTelemetry\.outputTransferBytes/);
+  assert.match(homeSource, /workerSlotId/);
+  assert.match(homeSource, /slotDispatchGapMs/);
+  assert.match(homeSource, /hydrationMs/);
+  assert.match(homeSource, /jobWallMs/);
+  assert.match(homeSource, /worker-invalid-result/);
   assert.match(workerSource, /if \(job\.inputTransferBytes !== undefined\)/);
   assert.match(workerSource, /createAfkPartyChunkWorkerResult\(completeResult\)/);
   assert.match(homeSource, /canonical_order_wait_start/);

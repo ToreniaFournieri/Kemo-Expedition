@@ -1,4 +1,5 @@
 import type { Character, DiaryLog, ExpeditionLog, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
+import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
 
 export const AFK_CHUNK_CYCLE_COUNT = 12;
 
@@ -65,8 +66,14 @@ interface AfkPartyHistoryTransfer {
   lastExpeditionLog: AfkLastExpeditionLogTransfer;
 }
 
-export type AfkPartyChunkWorkerResult = Omit<AfkPartyChunkResult, 'baseParty'> & {
+type AfkPartyChunkWorkerParty = Omit<Party, 'diaryLogs' | 'lastExpeditionLog'> & {
+  diaryLogs: [];
+  lastExpeditionLog: null;
+};
+
+export type AfkPartyChunkWorkerResult = Omit<AfkPartyChunkResult, 'baseParty' | 'resultParty'> & {
   transferSchemaVersion: 2;
+  resultParty: AfkPartyChunkWorkerParty;
   partyHistory: AfkPartyHistoryTransfer;
 };
 
@@ -111,10 +118,14 @@ export function createAfkPartyChunkWorkerResult(result: AfkPartyChunkResult): Af
     resultParty: {
       ...workerResult.resultParty,
       lastExpeditionLog: null,
-      diaryLogs: [],
+      diaryLogs: [] as [],
     },
     partyHistory: { diaryLogs, lastExpeditionLog },
   };
+}
+
+function invalidAfkWorkerResult(message: string): never {
+  throw new Error(`Invalid AFK worker transfer schema v2: ${message}`);
 }
 
 export function hydrateAfkPartyChunkResult(
@@ -122,16 +133,39 @@ export function hydrateAfkPartyChunkResult(
   baseParty: Party,
 ): AfkPartyChunkResult {
   // SpecRef: 9.2.3 | Runtime retention and transfer | Worker and subsystem boundaries should transfer compact results or state deltas where practical
-  const diaryLogs = result.partyHistory.diaryLogs.map((entry) => (
-    entry.source === 'base'
-      ? baseParty.diaryLogs?.[entry.index]
-      : entry.value
-  )).filter((entry): entry is DiaryLog => entry !== undefined);
+  if (result.transferSchemaVersion !== 2) invalidAfkWorkerResult('unsupported transferSchemaVersion');
+  if (!Number.isInteger(result.partyIndex) || result.partyIndex < 0) invalidAfkWorkerResult('invalid partyIndex');
+  if (result.partyId !== baseParty.id || result.resultParty.id !== result.partyId) {
+    invalidAfkWorkerResult('party identity mismatch');
+  }
+  if (!result.partyHistory || !Array.isArray(result.partyHistory.diaryLogs)) {
+    invalidAfkWorkerResult('missing partyHistory');
+  }
+  if (result.partyHistory.diaryLogs.length > DIARY_LOG_RETENTION_LIMIT) {
+    invalidAfkWorkerResult('Diary retention limit exceeded');
+  }
+  const baseDiaryLogs = baseParty.diaryLogs ?? [];
+  const diaryLogs = result.partyHistory.diaryLogs.map((entry, transferIndex) => {
+    if (entry.source === 'worker') return entry.value;
+    if (entry.source !== 'base' || !Number.isInteger(entry.index) || entry.index < 0 || entry.index >= baseDiaryLogs.length) {
+      return invalidAfkWorkerResult(`invalid base Diary reference at transfer index ${transferIndex}`);
+    }
+    return baseDiaryLogs[entry.index]!;
+  });
+  if (!result.partyHistory.lastExpeditionLog) invalidAfkWorkerResult('missing lastExpeditionLog transfer');
   const lastExpeditionLog = result.partyHistory.lastExpeditionLog.source === 'base'
     ? baseParty.lastExpeditionLog
     : result.partyHistory.lastExpeditionLog.source === 'diary'
-      ? diaryLogs[result.partyHistory.lastExpeditionLog.index]?.expeditionLog ?? null
-      : result.partyHistory.lastExpeditionLog.value;
+      ? (() => {
+        const index = result.partyHistory.lastExpeditionLog.index;
+        if (!Number.isInteger(index) || index < 0 || index >= diaryLogs.length) {
+          return invalidAfkWorkerResult('invalid lastExpeditionLog Diary reference');
+        }
+        return diaryLogs[index]!.expeditionLog;
+      })()
+      : result.partyHistory.lastExpeditionLog.source === 'worker'
+        ? result.partyHistory.lastExpeditionLog.value
+        : invalidAfkWorkerResult('invalid lastExpeditionLog source');
   return {
     schemaVersion: result.schemaVersion,
     jobId: result.jobId,

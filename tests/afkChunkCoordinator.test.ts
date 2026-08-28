@@ -11,6 +11,7 @@ import {
   hasPendingPartySettingChanges,
   hydrateAfkPartyChunkResult,
   type AfkPartyChunkResult,
+  type AfkPartyChunkWorkerResult,
 } from '../src/game/afkChunkCoordinator.ts';
 import type { GameState, Party } from '../src/types/index.ts';
 
@@ -176,6 +177,68 @@ test('worker history transfer references the renderer-owned retained Diary suffi
   assert.equal(
     JSON.stringify(hydrateAfkPartyChunkResult(workerResult, baseParty)),
     JSON.stringify(complete),
+  );
+});
+
+test('worker history transfer preserves an explicit latest expedition outside the Diary', () => {
+  const retainedLog = { id: 'retained', expeditionLog: { dungeonId: 8 }, createdAt: 1 } as Party['diaryLogs'][number];
+  const explicitLatest = { dungeonId: 7 } as NonNullable<Party['lastExpeditionLog']>;
+  const baseParty = makeParty({ diaryLogs: [retainedLog], lastExpeditionLog: retainedLog.expeditionLog });
+  const resultParty = makeParty({ diaryLogs: [retainedLog], lastExpeditionLog: explicitLatest });
+  const baseState = makeState(baseParty, 100, 1);
+  const complete = createAfkPartyChunkResult({
+    jobId: 'job-explicit-latest', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState, gameMode: 'm.kemo', cycleDurationScale: 1,
+  }, makeState(resultParty, 100, 1), 5);
+
+  const workerResult = createAfkPartyChunkWorkerResult(complete);
+  assert.deepEqual(workerResult.partyHistory.lastExpeditionLog, { source: 'worker', value: explicitLatest });
+  assert.equal(JSON.stringify(hydrateAfkPartyChunkResult(workerResult, baseParty)), JSON.stringify(complete));
+});
+
+test('worker history hydration rejects incompatible schemas and invalid references', () => {
+  const retainedLog = { id: 'retained', expeditionLog: { dungeonId: 8 }, createdAt: 1 } as Party['diaryLogs'][number];
+  const baseParty = makeParty({ diaryLogs: [retainedLog], lastExpeditionLog: retainedLog.expeditionLog });
+  const baseState = makeState(baseParty, 100, 1);
+  const complete = createAfkPartyChunkResult({
+    jobId: 'job-invalid-history', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState, gameMode: 'm.kemo', cycleDurationScale: 1,
+  }, baseState, 5);
+  const workerResult = createAfkPartyChunkWorkerResult(complete);
+
+  assert.throws(
+    () => hydrateAfkPartyChunkResult({ ...workerResult, transferSchemaVersion: 1 } as unknown as AfkPartyChunkWorkerResult, baseParty),
+    /unsupported transferSchemaVersion/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkResult({
+      ...workerResult,
+      partyHistory: { ...workerResult.partyHistory, diaryLogs: [{ source: 'base', index: 1 }] },
+    }, baseParty),
+    /invalid base Diary reference/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkResult({
+      ...workerResult,
+      partyHistory: { ...workerResult.partyHistory, lastExpeditionLog: { source: 'diary', index: 1 } },
+    }, baseParty),
+    /invalid lastExpeditionLog Diary reference/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkResult({ ...workerResult, partyId: 2 }, baseParty),
+    /party identity mismatch/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkResult({
+      ...workerResult,
+      partyHistory: {
+        ...workerResult.partyHistory,
+        diaryLogs: Array.from({ length: 25 }, () => ({ source: 'base' as const, index: 0 })),
+      },
+    }, baseParty),
+    /Diary retention limit exceeded/,
   );
 });
 

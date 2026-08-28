@@ -59,6 +59,9 @@ interface AfkSample {
   workerStartupMs: number;
   workerQueueMs: number;
   workerUnattributedWallMs: number;
+  workerLongestSlotExecutionMs: number;
+  workerNonPreemptiveTailMs: number;
+  workerNonComputeCriticalPathMs: number;
   partyExecutionMs: number[];
   coordinatorCommitMs: number;
   longestSingleCoordinatorCommitMs: number;
@@ -209,18 +212,18 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
       baseState: workerState,
       gameMode: 'm.kemo',
       cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
-      queuedAt: performance.now(),
     };
     job.inputTransferBytes = new TextEncoder().encode(JSON.stringify(job)).byteLength;
     return job;
   });
   const results: AfkPartyChunkResult[] = [];
   const workerLimit = getAfkWorkerPoolLimit(navigator.hardwareConcurrency, baseState.parties.length);
+  const slotExecutionMs = Array.from({ length: workerLimit }, () => 0);
   let nextJobIndex = 0;
   const asyncStartedAt = performance.now();
 
-  const runWorkerSlot = async () => {
-    const workerCreatedAt = performance.now();
+  const runWorkerSlot = async (slotIndex: number) => {
+    const workerCreatedAt = performance.timeOrigin + performance.now();
     const worker = new Worker(new URL(__AFK_WORKER_URL__, import.meta.url), { type: 'module' });
     let completedJobs = 0;
     try {
@@ -228,6 +231,7 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
         const job = jobs[nextJobIndex++]!;
         job.workerCreatedAt = workerCreatedAt;
         job.isFirstWorkerJob = completedJobs === 0;
+        job.queuedAt = performance.timeOrigin + performance.now();
         const result = await new Promise<AfkPartyChunkResult>((resolve, reject) => {
           worker.onmessage = (event: MessageEvent<
             | { type: 'started'; jobId: string; partyIndex: number }
@@ -245,14 +249,18 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
           worker.postMessage(job);
         });
         results.push(result);
+        slotExecutionMs[slotIndex] += result.workerTelemetry.executionMs;
         completedJobs += 1;
       }
     } finally {
       worker.terminate();
     }
   };
-  await Promise.all(Array.from({ length: workerLimit }, () => runWorkerSlot()));
+  await Promise.all(Array.from({ length: workerLimit }, (_, slotIndex) => runWorkerSlot(slotIndex)));
   const workerAsyncWallMs = performance.now() - asyncStartedAt;
+  const workerExecutionMs = results.reduce((total, result) => total + result.workerTelemetry.executionMs, 0);
+  const idealCpuSplitMs = workerExecutionMs / workerLimit;
+  const longestSlotExecutionMs = Math.max(...slotExecutionMs, 0);
   results.sort(compareAfkChunkResults);
 
   let state = baseState;
@@ -263,15 +271,18 @@ async function runAfkSample(baseState: GameState): Promise<AfkSample> {
     coordinatorDurations.push(performance.now() - startedAt);
   }
   return {
-    workerExecutionMs: results.reduce((total, result) => total + result.workerTelemetry.executionMs, 0),
+    workerExecutionMs,
     projectedParallelWorkerMs: Math.max(...results.map((result) => result.workerTelemetry.executionMs)),
     workerAsyncWallMs,
     workerStartupMs: results.reduce((total, result) => total + result.workerTelemetry.workerStartupMs, 0),
     workerQueueMs: results.reduce((total, result) => total + result.workerTelemetry.queueMs, 0),
     workerUnattributedWallMs: Math.max(
       0,
-      workerAsyncWallMs - (results.reduce((total, result) => total + result.workerTelemetry.executionMs, 0) / workerLimit),
+      workerAsyncWallMs - idealCpuSplitMs,
     ),
+    workerLongestSlotExecutionMs: longestSlotExecutionMs,
+    workerNonPreemptiveTailMs: Math.max(0, longestSlotExecutionMs - idealCpuSplitMs),
+    workerNonComputeCriticalPathMs: Math.max(0, workerAsyncWallMs - longestSlotExecutionMs),
     partyExecutionMs: baseState.parties.map((party) => (
       results.find((result) => result.partyId === party.id)?.workerTelemetry.executionMs ?? 0
     )),
@@ -478,6 +489,9 @@ async function runProfile() {
       afkWorkerStartupSixPartySum: distribution(afkSamples.map((sample) => sample.workerStartupMs)),
       afkWorkerQueueSixPartySum: distribution(afkSamples.map((sample) => sample.workerQueueMs)),
       afkWorkerUnattributedWallAboveIdealCpuSplit: distribution(afkSamples.map((sample) => sample.workerUnattributedWallMs)),
+      afkWorkerLongestSlotExecution: distribution(afkSamples.map((sample) => sample.workerLongestSlotExecutionMs)),
+      afkWorkerNonPreemptiveTailAboveIdealCpuSplit: distribution(afkSamples.map((sample) => sample.workerNonPreemptiveTailMs)),
+      afkWorkerNonComputeCriticalPathAboveLongestSlotExecution: distribution(afkSamples.map((sample) => sample.workerNonComputeCriticalPathMs)),
       afkWorkerExecutionByParty: baseStatePartyDistributions(state, afkSamples),
       coordinatorCommitSixPartySum: distribution(afkSamples.map((sample) => sample.coordinatorCommitMs)),
       coordinatorCommitLongestSingle: distribution(afkSamples.map((sample) => sample.longestSingleCoordinatorCommitMs)),
@@ -485,6 +499,7 @@ async function runProfile() {
     limitations: [
       'AFK worker execution is reported from production worker telemetry; asynchronous wall time includes startup, structured-clone transfer, language readiness, and the production-sized worker pool.',
       'The projected parallel worker value is the slowest individual execution and excludes startup, transfer, queueing, and pool contention.',
+      'Wall above the ideal CPU split is divided into fixed non-preemptive slot imbalance and wall above the longest actual slot execution; neither bucket is assumed fully recoverable.',
       'Coordinator timing covers the pure canonical commit reducer and excludes React dispatch-to-visibility and automatic-equipment follow-up time.',
       'The event-loop delay is zero-delay timer drift around renderer preparation and worker submission; it is not a Long Tasks API entry.',
     ],

@@ -1,6 +1,10 @@
 /// <reference lib="webworker" />
 
-import { createAfkPartyChunkResult, type AfkPartyChunkJob } from '../../src/game/afkChunkCoordinator.ts';
+import {
+  createAfkPartyChunkResult,
+  createAfkPartyChunkWorkerResult,
+  type AfkPartyChunkJob,
+} from '../../src/game/afkChunkCoordinator.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
 import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
@@ -25,10 +29,11 @@ self.onmessage = async (event: MessageEvent<{
   type: 'job';
   correlationId: string;
   mode: 'noop' | 'simulate';
+  resultContract?: 'complete' | 'production';
   payload: unknown;
 }>) => {
   const handlerEnteredAt = epochNow();
-  const { correlationId, mode, payload } = event.data;
+  const { correlationId, mode, payload, resultContract = 'complete' } = event.data;
   const computeStartedAt = epochNow();
   try {
     let result: unknown = null;
@@ -49,7 +54,10 @@ self.onmessage = async (event: MessageEvent<{
           }),
         ),
       );
-      result = createAfkPartyChunkResult(job, resultState, 0);
+      const completeResult = createAfkPartyChunkResult(job, resultState, 0);
+      result = resultContract === 'production'
+        ? createAfkPartyChunkWorkerResult(completeResult)
+        : completeResult;
     }
     const computeEndedAt = epochNow();
     const response = { type: 'complete', correlationId, handlerEnteredAt, computeStartedAt, computeEndedAt, result };

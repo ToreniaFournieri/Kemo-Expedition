@@ -13,6 +13,7 @@ declare const self: DedicatedWorkerGlobalScope;
 self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
   const job = event.data;
   const receivedAt = performance.now();
+  const receivedAtEpoch = performance.timeOrigin + receivedAt;
   try {
     await ensureLanguageLoaded(job.baseState.global.language);
     const executionStartedAt = performance.now();
@@ -31,9 +32,9 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
     const completedAt = performance.now();
     const completeResult = createAfkPartyChunkResult(job, resultState, Math.max(0, completedAt - receivedAt), {
       workerStartupMs: job.isFirstWorkerJob && job.workerCreatedAt !== undefined
-        ? receivedAt - job.workerCreatedAt
+        ? receivedAtEpoch - job.workerCreatedAt
         : 0,
-      queueMs: job.queuedAt === undefined ? 0 : receivedAt - job.queuedAt,
+      queueMs: job.queuedAt === undefined ? 0 : receivedAtEpoch - job.queuedAt,
       executionMs: completedAt - executionStartedAt,
       inputTransferBytes: job.inputTransferBytes,
     });
