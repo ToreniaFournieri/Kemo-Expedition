@@ -2731,7 +2731,8 @@ export default function SettingTab({
       {debugModeEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('debug', t('setting.debug'))}
         {settingPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
-          <RuntimeDiagnostics />
+          <button type="button" onClick={() => onUpdateDebugSettings({ runtimeDiagnosticsEnabled: !debugSettings.runtimeDiagnosticsEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">{t('setting.runtime.toggle', { state: t(debugSettings.runtimeDiagnosticsEnabled ? 'setting.runtime.on' : 'setting.runtime.off') })}</button>
+          {debugSettings.runtimeDiagnosticsEnabled && <RuntimeDiagnostics />}
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
           <div className="bg-white rounded border p-2">
             <div className="text-xs text-gray-500 mb-1">Speed of time</div>

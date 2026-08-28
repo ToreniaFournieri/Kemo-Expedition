@@ -1,6 +1,9 @@
 const en = {
   'app.title': 'BoKemo',
   'setting.runtime.title': 'Runtime Diagnostics',
+  'setting.runtime.toggle': 'Runtime Diagnostics: {state}',
+  'setting.runtime.on': 'ON',
+  'setting.runtime.off': 'OFF',
   'setting.runtime.afkTrace': 'AFK runtime trace',
   'setting.runtime.phase': 'Active phase',
   'setting.runtime.traceActivity': 'Trace activity',

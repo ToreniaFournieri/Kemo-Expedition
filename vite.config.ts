@@ -30,6 +30,7 @@ export default defineConfig({
     __PUBLIC_CHARACTER_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('character')),
     __PUBLIC_CHIBI_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('chibi')),
     __AUTO_EQUIPMENT_PROFILE_ENABLED__: JSON.stringify(process.env.BOKEMO_AUTO_EQUIPMENT_PROFILE === '1'),
+    __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__: JSON.stringify(process.env.BOKEMO_RUNTIME_DIAGNOSTICS === '1'),
   },
   build: {
     rollupOptions: {

@@ -1,6 +1,9 @@
 const ja = {
   'app.title': '冒ケモ',
   'setting.runtime.title': 'ランタイム診断',
+  'setting.runtime.toggle': 'ランタイム診断: {state}',
+  'setting.runtime.on': 'オン',
+  'setting.runtime.off': 'オフ',
   'setting.runtime.afkTrace': 'AFKランタイムトレース',
   'setting.runtime.phase': '現在のフェーズ',
   'setting.runtime.traceActivity': 'トレース状況',

@@ -1,5 +1,8 @@
 const zhTW = {
   'setting.runtime.title': '執行階段診斷',
+  'setting.runtime.toggle': '執行階段診斷：{state}',
+  'setting.runtime.on': '開啟',
+  'setting.runtime.off': '關閉',
   'setting.runtime.afkTrace': 'AFK 執行階段追蹤',
   'setting.runtime.phase': '目前階段',
   'setting.runtime.traceActivity': '追蹤活動',

@@ -60,6 +60,7 @@ export interface MemoryEvent {
 
 export interface MemoryDiagnosticExport {
   readonly schemaVersion: typeof MEMORY_DIAGNOSTIC_SCHEMA_VERSION;
+  readonly enabled: boolean;
   readonly environment: EnvironmentId;
   readonly sessionStartedAt: number;
   readonly exportedAt: number;
@@ -157,19 +158,39 @@ export class MemoryMonitor {
 
   start(): void {
     if (this.running) return;
-    this.running = true;
     this.sessionStartedAt = this.now();
+    this.samples = [];
+    this.events = [];
+    this.peak = emptyMetrics();
+    this.completedChunks = 0;
+    this.battleCount = 0;
+    this.highHeapSamples = 0;
+    this.warningActive = false;
+    this.lastWasmBytes = null;
+    this.running = true;
     void this.recordEvent('session_start');
     this.schedule();
   }
 
-  stop(): void {
+  pause(): void {
     if (this.running) this.recordEventFromCurrent('session_end');
     this.running = false;
     if (this.timer !== null) clearTimeout(this.timer);
     this.timer = null;
+  }
+
+  stop(): void {
+    this.pause();
     this.listeners.clear();
     this.workers.clear();
+  }
+
+  isRunning(): boolean {
+    return this.running;
+  }
+
+  getActiveWorkerCount(): number {
+    return this.workers.size;
   }
 
   setRuntime(mode: MemoryRuntimeMode, speed: MemorySpeed): void {
@@ -204,6 +225,7 @@ export class MemoryMonitor {
   getDiagnosticExport(): MemoryDiagnosticExport {
     return Object.freeze({
       schemaVersion: MEMORY_DIAGNOSTIC_SCHEMA_VERSION,
+      enabled: this.running,
       environment: this.environment,
       sessionStartedAt: this.sessionStartedAt,
       exportedAt: this.now(),
@@ -282,15 +304,19 @@ export class MemoryMonitor {
   }
 
   async recordEvent(event: MemoryEventName): Promise<void> {
+    if (!this.running) return;
     const snapshot = await this.sample();
+    if (!this.running) return;
     this.appendEvent(event, snapshot.current);
   }
 
   recordEventFromCurrent(event: MemoryEventName): void {
+    if (!this.running) return;
     this.appendEvent(event, this.getSnapshot()?.current ?? emptyMetrics());
   }
 
   markChunkComplete(battleCount = 0): void {
+    if (!this.running) return;
     this.completedChunks += 1;
     this.incrementBattleCount(battleCount);
     this.recordEventFromCurrent('chunk_complete');

@@ -5,6 +5,7 @@ declare const __BUILD_NUMBER__: number;
 declare const __PUBLIC_CHARACTER_IMAGE_FILES__: readonly string[];
 declare const __PUBLIC_CHIBI_IMAGE_FILES__: readonly string[];
 declare const __AUTO_EQUIPMENT_PROFILE_ENABLED__: boolean;
+declare const __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__: boolean;
 
 type AutoEquipmentProfileWorkload = import('./game/autoEquipmentAttribution').AutoEquipmentProfileWorkload;
 type AutoEquipmentProfileScope = import('./game/autoEquipmentAttribution').AutoEquipmentProfileScope;

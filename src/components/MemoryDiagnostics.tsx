@@ -28,8 +28,13 @@ export interface RuntimeDiagnosticExport {
     readonly environment: ReturnType<typeof getEnvironmentId>;
     readonly exportedAt: number;
     readonly userAgent: string;
+    readonly platform: string;
+    readonly language: string;
     readonly hardwareConcurrency: number | null;
+    readonly deviceMemoryGiB: number | null;
     readonly visibility: string;
+    readonly viewport: { readonly width: number; readonly height: number } | null;
+    readonly timeOrigin: number | null;
   };
   readonly memory: ReturnType<typeof memoryMonitor.getDiagnosticExport>;
   readonly afkTrace: ReturnType<typeof afkRuntimeTrace.getDiagnosticExport>;
@@ -41,6 +46,9 @@ function formatDuration(value: number): string {
 }
 
 function buildRuntimeDiagnosticExport(): RuntimeDiagnosticExport {
+  const runtimeNavigator = typeof navigator === 'undefined'
+    ? null
+    : navigator as Navigator & { deviceMemory?: number };
   return Object.freeze({
     schemaVersion: 1,
     app: Object.freeze({
@@ -48,11 +56,18 @@ function buildRuntimeDiagnosticExport(): RuntimeDiagnosticExport {
       build: __BUILD_NUMBER__,
       environment: getEnvironmentId(),
       exportedAt: Date.now(),
-      userAgent: typeof navigator === 'undefined' ? 'unavailable' : navigator.userAgent,
-      hardwareConcurrency: typeof navigator === 'undefined' || !Number.isFinite(navigator.hardwareConcurrency)
+      userAgent: runtimeNavigator?.userAgent ?? 'unavailable',
+      platform: runtimeNavigator?.platform ?? 'unavailable',
+      language: runtimeNavigator?.language ?? 'unavailable',
+      hardwareConcurrency: runtimeNavigator === null || !Number.isFinite(runtimeNavigator.hardwareConcurrency)
         ? null
-        : navigator.hardwareConcurrency,
+        : runtimeNavigator.hardwareConcurrency,
+      deviceMemoryGiB: runtimeNavigator === null || !Number.isFinite(runtimeNavigator.deviceMemory)
+        ? null
+        : runtimeNavigator.deviceMemory ?? null,
       visibility: typeof document === 'undefined' ? 'unavailable' : document.visibilityState,
+      viewport: typeof window === 'undefined' ? null : Object.freeze({ width: window.innerWidth, height: window.innerHeight }),
+      timeOrigin: typeof performance === 'undefined' || !Number.isFinite(performance.timeOrigin) ? null : performance.timeOrigin,
     }),
     memory: memoryMonitor.getDiagnosticExport(),
     afkTrace: afkRuntimeTrace.getDiagnosticExport(),
@@ -112,7 +127,7 @@ export function RuntimeDiagnostics() {
           </div>
           <div className="mt-2 text-xs text-gray-500">
             {t('setting.memory.activity', {
-              workers: snapshot.activeWorkers,
+              workers: memoryMonitor.getActiveWorkerCount(),
               samples: diagnostics.samples.length,
               events: diagnostics.events.length,
             })}

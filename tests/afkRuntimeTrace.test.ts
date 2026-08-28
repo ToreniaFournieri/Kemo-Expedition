@@ -45,6 +45,30 @@ test('AFK runtime tracing is a complete no-op when disabled', () => {
   assert.equal(exported.current.recoveryActive, false);
 });
 
+test('AFK runtime tracing starts a fresh bounded session only after explicit enablement', () => {
+  const clock = makeClock();
+  const trace = new AfkRuntimeTrace({
+    enabled: false,
+    environment: 'dev',
+    wallNow: clock.wallNow,
+    monotonicNow: clock.monotonicNow,
+  });
+  trace.record('before_enable');
+  assert.equal(trace.getDiagnosticExport().events.length, 0);
+  trace.setEnabled(true);
+  trace.startRecovery();
+  assert.equal(trace.getDiagnosticExport().events.length, 1);
+  trace.setEnabled(false);
+  trace.record('after_disable');
+  assert.equal(trace.getDiagnosticExport().events.length, 1);
+});
+
+test('production refuses runtime trace enablement', () => {
+  const trace = new AfkRuntimeTrace({ enabled: false, environment: 'prod' });
+  trace.setEnabled(true);
+  assert.equal(trace.isEnabled(), false);
+});
+
 test('AFK trace retention, aggregates, dropped counts, and reset are bounded', () => {
   const clock = makeClock();
   const trace = new AfkRuntimeTrace({
@@ -110,6 +134,24 @@ test('cancelling recovery closes its active state and records the reason', () =>
     && event.data.reason === 'game_reset'
     && event.data.activeJobCount === 2
   )));
+});
+
+test('session reset preserves an in-flight recovery while clearing retained diagnostics', () => {
+  const clock = makeClock();
+  const trace = new AfkRuntimeTrace({
+    enabled: true,
+    environment: 'dev',
+    wallNow: clock.wallNow,
+    monotonicNow: clock.monotonicNow,
+  });
+  trace.startRecovery();
+  trace.setPhase('worker_execution');
+  trace.record('worker_job_started');
+  trace.reset();
+  const exported = trace.getDiagnosticExport();
+  assert.equal(exported.events.length, 0);
+  assert.equal(exported.current.recoveryActive, true);
+  assert.equal(exported.current.phase, 'worker_execution');
 });
 
 test('active-job snapshots expose age without retaining prohibited payload fields', () => {

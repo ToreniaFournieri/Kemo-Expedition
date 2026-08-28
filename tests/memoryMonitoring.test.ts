@@ -21,6 +21,7 @@ test('memory monitoring keeps bounded samples and tracks peaks without inventing
 
 test('memory event logging is bounded and heap warnings are debounced', async () => {
   const monitor = new MemoryMonitor('beta');
+  monitor.start();
   await monitor.sample({ jsHeapUsed: 90, jsHeapTotal: 100, jsHeapLimit: 100 });
   await monitor.sample({ jsHeapUsed: 91, jsHeapTotal: 100, jsHeapLimit: 100 });
   await monitor.sample({ jsHeapUsed: 92, jsHeapTotal: 100, jsHeapLimit: 100 });
@@ -33,18 +34,35 @@ test('memory event logging is bounded and heap warnings are debounced', async ()
   assert.equal(monitor.getDiagnosticExport().events.filter((event) => event.event === 'memory_warning').length, 2);
   for (let index = 0; index < MEMORY_EVENT_LIMIT + 10; index += 1) monitor.recordEventFromCurrent('chunk_complete');
   assert.equal(monitor.getDiagnosticExport().events.length, MEMORY_EVENT_LIMIT);
+  monitor.stop();
 });
 
-test('worker ownership is released on stop and reset clears bounded history', async () => {
+test('pausing collection retains live worker ownership while stop releases it', async () => {
   const monitor = new MemoryMonitor('dev');
   monitor.registerWorker('worker-1', 4096);
+  assert.equal((await monitor.sample()).activeWorkers, 1);
+  monitor.pause();
   assert.equal((await monitor.sample()).activeWorkers, 1);
   monitor.stop();
   assert.equal((await monitor.sample()).activeWorkers, 0);
   monitor.reset();
   const diagnostics = monitor.getDiagnosticExport();
   assert.equal(diagnostics.samples.length, 0);
-  assert.equal(diagnostics.events.length, 1);
+  assert.equal(diagnostics.events.length, 0);
+});
+
+test('runtime events are collected only between explicit start and stop', async () => {
+  const monitor = new MemoryMonitor('dev');
+  await monitor.recordEvent('simulation_start');
+  assert.equal(monitor.getDiagnosticExport().samples.length, 0);
+  monitor.start();
+  await monitor.recordEvent('simulation_start');
+  assert.equal(monitor.getDiagnosticExport().enabled, true);
+  assert.ok(monitor.getDiagnosticExport().events.some((event) => event.event === 'simulation_start'));
+  monitor.stop();
+  await monitor.recordEvent('simulation_complete');
+  assert.equal(monitor.getDiagnosticExport().enabled, false);
+  assert.equal(monitor.getDiagnosticExport().events.some((event) => event.event === 'simulation_complete'), false);
 });
 
 test('desktop bridge is read-only and image probes release handlers and sources', () => {

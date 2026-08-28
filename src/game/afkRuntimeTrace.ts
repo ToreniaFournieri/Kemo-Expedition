@@ -161,7 +161,7 @@ function sanitizeData(
 }
 
 export class AfkRuntimeTrace {
-  private readonly enabled: boolean;
+  private enabled: boolean;
   private readonly environment: EnvironmentId;
   private readonly wallNow: () => number;
   private readonly monotonicNow: () => number;
@@ -211,12 +211,35 @@ export class AfkRuntimeTrace {
     return this.enabled;
   }
 
+  setEnabled(enabled: boolean): void {
+    const next = enabled && this.environment !== 'prod';
+    if (this.enabled === next) return;
+    this.enabled = next;
+    if (next) {
+      this.reset();
+      return;
+    }
+    if (this.notifyTimer !== null) clearTimeout(this.notifyTimer);
+    this.notifyTimer = null;
+    this.recoveryActive = false;
+    this.recoveryId = null;
+    this.phase = 'idle';
+    this.coordinator = {
+      pendingAfkMs: 0,
+      activeJobs: [],
+      completedResultCount: 0,
+      workerPoolSize: 0,
+      canonicalJobId: null,
+    };
+    this.revision += 1;
+    this.listeners.forEach((listener) => listener());
+  }
+
   isRecoveryActive(): boolean {
     return this.enabled && this.recoveryActive;
   }
 
   subscribe(listener: Listener): () => void {
-    if (!this.enabled) return () => undefined;
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
@@ -382,13 +405,15 @@ export class AfkRuntimeTrace {
 
   reset(): void {
     if (!this.enabled) return;
+    const recoveryWasActive = this.recoveryActive;
+    const activePhase = this.phase;
     this.sessionStartedAt = this.wallNow();
     this.sequence = 0;
     this.revision += 1;
-    this.recoverySequence = 0;
-    this.recoveryId = null;
-    this.recoveryActive = false;
-    this.phase = 'idle';
+    this.recoverySequence = recoveryWasActive ? 1 : 0;
+    this.recoveryId = recoveryWasActive ? `afk-${this.sessionStartedAt}-1` : null;
+    this.recoveryActive = recoveryWasActive;
+    this.phase = recoveryWasActive ? activePhase : 'idle';
     this.phaseStartedAt = this.monotonicNow();
     this.lastProgressAt = this.phaseStartedAt;
     this.longWaitStartedAt = null;
@@ -399,13 +424,15 @@ export class AfkRuntimeTrace {
     this.aggregatesByEvent.clear();
     this.aggregatesByPhase.clear();
     this.aggregatesByParty.clear();
-    this.coordinator = {
-      pendingAfkMs: 0,
-      activeJobs: [],
-      completedResultCount: 0,
-      workerPoolSize: 0,
-      canonicalJobId: null,
-    };
+    if (!recoveryWasActive) {
+      this.coordinator = {
+        pendingAfkMs: 0,
+        activeJobs: [],
+        completedResultCount: 0,
+        workerPoolSize: 0,
+        canonicalJobId: null,
+      };
+    }
     this.notifyNow();
   }
 
@@ -444,4 +471,4 @@ export class AfkRuntimeTrace {
   }
 }
 
-export const afkRuntimeTrace = new AfkRuntimeTrace();
+export const afkRuntimeTrace = new AfkRuntimeTrace({ enabled: false });

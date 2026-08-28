@@ -1,5 +1,8 @@
 const zhCN = {
   'setting.runtime.title': '运行时诊断',
+  'setting.runtime.toggle': '运行时诊断：{state}',
+  'setting.runtime.on': '开启',
+  'setting.runtime.off': '关闭',
   'setting.runtime.afkTrace': 'AFK 运行时跟踪',
   'setting.runtime.phase': '当前阶段',
   'setting.runtime.traceActivity': '跟踪活动',

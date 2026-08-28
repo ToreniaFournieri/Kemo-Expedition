@@ -6,6 +6,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "dev": "vite",
+    "dev:diagnostics": "BOKEMO_RUNTIME_DIAGNOSTICS=1 vite --open /dev/",
     "build": "tsc -b && vite build",
     "battle:cxx": "node scripts/build-battle-kernel.mjs",
     "battle:protocol": "node scripts/generate-battle-protocol.mjs",

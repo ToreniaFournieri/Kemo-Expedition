@@ -341,7 +341,16 @@ export function HomeScreen({
   const [apiControlActive, setApiControlActive] = useState(false);
 
   useEffect(() => {
-    if (!afkRuntimeTrace.isEnabled()) return;
+    const enabled = isDebugModeEnabled() && debugSettings.runtimeDiagnosticsEnabled;
+    afkRuntimeTrace.setEnabled(enabled);
+    if (!enabled) {
+      memoryMonitor.pause();
+      return;
+    }
+    memoryMonitor.start();
+    if (pendingAfkMsRef.current > 0) {
+      afkRuntimeTrace.startRecovery({ pendingAfkMs: pendingAfkMsRef.current });
+    }
     let expectedAt = performance.now() + AFK_TRACE_WATCHDOG_INTERVAL_MS;
     const watchdogId = window.setInterval(() => {
       afkRuntimeTrace.checkWatchdog(expectedAt);
@@ -357,8 +366,12 @@ export function HomeScreen({
     return () => {
       window.clearInterval(watchdogId);
       document.removeEventListener('visibilitychange', recordVisibility);
+      memoryMonitor.pause();
+      afkRuntimeTrace.setEnabled(false);
     };
-  }, []);
+  }, [debugSettings.runtimeDiagnosticsEnabled]);
+
+  useEffect(() => () => memoryMonitor.stop(), []);
   const apiControlActiveRef = useRef(false);
   const apiRevisionRef = useRef(0);
   const apiSimulatedAtRef = useRef(Date.now());
@@ -372,11 +385,6 @@ export function HomeScreen({
   apiActionsRef.current = actions;
   apiAutoRunRef.current = isAutoRepeatEnabled;
   apiCyclesRef.current = partyCycles;
-
-  useEffect(() => {
-    memoryMonitor.start();
-    return () => memoryMonitor.stop();
-  }, []);
 
   useEffect(() => {
     if (!isDebugModeEnabled()) return;
