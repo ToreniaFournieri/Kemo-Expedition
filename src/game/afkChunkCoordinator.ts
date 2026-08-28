@@ -28,6 +28,39 @@ export interface AfkPartyChunkJob {
   inputTransferBytes?: number;
 }
 
+export interface AfkPartyChunkColdWorkerJob extends AfkPartyChunkJob {
+  transferSchemaVersion: 3;
+  transferKind: 'cold';
+  nextStateToken: string;
+  reconciliationRevision: number;
+}
+
+type AfkContinuationDiaryLogTransferEntry =
+  | { source: 'retained'; index: number }
+  | { source: 'renderer'; value: DiaryLog };
+
+type AfkContinuationLastExpeditionLogTransfer =
+  | { source: 'retained' }
+  | { source: 'diary'; index: number }
+  | { source: 'renderer'; value: ExpeditionLog | null };
+
+interface AfkContinuationPartyHistoryTransfer {
+  diaryLogs: AfkContinuationDiaryLogTransferEntry[];
+  lastExpeditionLog: AfkContinuationLastExpeditionLogTransfer;
+}
+
+export interface AfkPartyChunkContinuationWorkerJob extends AfkPartyChunkJob {
+  transferSchemaVersion: 3;
+  transferKind: 'continuation';
+  retainedStateToken: string;
+  nextStateToken: string;
+  reconciliationRevision: number;
+  retainedRevision: number;
+  partyHistory: AfkContinuationPartyHistoryTransfer;
+}
+
+export type AfkPartyChunkWorkerJob = AfkPartyChunkColdWorkerJob | AfkPartyChunkContinuationWorkerJob;
+
 export interface AfkWorkerPerformanceTelemetry {
   workerStartupMs: number;
   queueMs: number;
@@ -77,6 +110,13 @@ export type AfkPartyChunkWorkerResult = Omit<AfkPartyChunkResult, 'baseParty' | 
   partyHistory: AfkPartyHistoryTransfer;
 };
 
+export type AfkPartyChunkWorkerResultV3 = Omit<AfkPartyChunkWorkerResult, 'transferSchemaVersion'> & {
+  transferSchemaVersion: 3;
+  consumedStateToken: string | null;
+  nextStateToken: string;
+  reconciliationRevision: number;
+};
+
 /**
  * Removes retained Diary presentation history from parties that this worker
  * cannot advance. The target party remains byte-identical because its existing
@@ -121,6 +161,17 @@ export function createAfkPartyChunkWorkerResult(result: AfkPartyChunkResult): Af
       diaryLogs: [] as [],
     },
     partyHistory: { diaryLogs, lastExpeditionLog },
+  };
+}
+
+export function createAfkPartyChunkWorkerResultV3(
+  result: AfkPartyChunkResult,
+  continuation: Omit<AfkPartyChunkWorkerResultV3, keyof AfkPartyChunkWorkerResult | 'transferSchemaVersion'>,
+): AfkPartyChunkWorkerResultV3 {
+  return {
+    ...createAfkPartyChunkWorkerResult(result),
+    transferSchemaVersion: 3,
+    ...continuation,
   };
 }
 
@@ -185,6 +236,141 @@ export function hydrateAfkPartyChunkResult(
     durationMs: result.durationMs,
     workerTelemetry: result.workerTelemetry,
   };
+}
+
+export function hydrateAfkPartyChunkResultV3(
+  result: AfkPartyChunkWorkerResultV3,
+  baseParty: Party,
+): AfkPartyChunkResult {
+  if (result.transferSchemaVersion !== 3) throw new Error('Invalid AFK worker transfer schema v3');
+  if (!result.nextStateToken || !Number.isInteger(result.reconciliationRevision) || result.reconciliationRevision < 1) {
+    throw new Error('Invalid AFK worker transfer schema v3 acknowledgement');
+  }
+  if (result.consumedStateToken !== null && typeof result.consumedStateToken !== 'string') {
+    throw new Error('Invalid AFK worker transfer schema v3 consumed token');
+  }
+  return hydrateAfkPartyChunkResult({ ...result, transferSchemaVersion: 2 }, baseParty);
+}
+
+function diaryLogEqual(left: DiaryLog, right: DiaryLog): boolean {
+  return left.id === right.id && JSON.stringify(left) === JSON.stringify(right);
+}
+
+export function createAfkPartyChunkColdWorkerJob(
+  job: AfkPartyChunkJob,
+  nextStateToken: string,
+  reconciliationRevision: number,
+): AfkPartyChunkColdWorkerJob {
+  return {
+    ...job,
+    transferSchemaVersion: 3,
+    transferKind: 'cold',
+    nextStateToken,
+    reconciliationRevision,
+  };
+}
+
+export function createAfkPartyChunkContinuationWorkerJob(
+  job: AfkPartyChunkJob,
+  retainedParty: Party,
+  retainedStateToken: string,
+  retainedRevision: number,
+  nextStateToken: string,
+  reconciliationRevision: number,
+): AfkPartyChunkContinuationWorkerJob {
+  if (!retainedStateToken || retainedParty.id !== job.partyId) {
+    throw new Error('Invalid AFK continuation source identity');
+  }
+  if (!Number.isInteger(retainedRevision) || retainedRevision < 1
+    || !Number.isInteger(reconciliationRevision) || reconciliationRevision <= retainedRevision) {
+    throw new Error('Invalid AFK continuation reconciliation revision');
+  }
+  const authoritativeParty = job.baseState.parties[job.partyIndex];
+  if (!authoritativeParty || authoritativeParty.id !== job.partyId) {
+    throw new Error('Invalid AFK continuation authoritative party');
+  }
+  const retainedDiaryLogs = retainedParty.diaryLogs ?? [];
+  const authoritativeDiaryLogs = authoritativeParty.diaryLogs ?? [];
+  const diaryLogs: AfkContinuationDiaryLogTransferEntry[] = authoritativeDiaryLogs.map((diaryLog) => {
+    const retainedIndex = retainedDiaryLogs.findIndex((retained) => diaryLogEqual(retained, diaryLog));
+    return retainedIndex >= 0
+      ? { source: 'retained', index: retainedIndex }
+      : { source: 'renderer', value: diaryLog };
+  });
+  const diaryIndex = authoritativeDiaryLogs.findIndex((entry) => entry.expeditionLog === authoritativeParty.lastExpeditionLog);
+  const lastExpeditionLog: AfkContinuationLastExpeditionLogTransfer = authoritativeParty.lastExpeditionLog === retainedParty.lastExpeditionLog
+    ? { source: 'retained' }
+    : diaryIndex >= 0
+      ? { source: 'diary', index: diaryIndex }
+      : { source: 'renderer', value: authoritativeParty.lastExpeditionLog };
+  const baseState = createAfkPartyChunkWorkerState(job.baseState, job.partyIndex);
+  baseState.parties[job.partyIndex] = {
+    ...authoritativeParty,
+    diaryLogs: [],
+    lastExpeditionLog: null,
+  };
+  return {
+    ...job,
+    baseState,
+    transferSchemaVersion: 3,
+    transferKind: 'continuation',
+    retainedStateToken,
+    nextStateToken,
+    reconciliationRevision,
+    retainedRevision,
+    partyHistory: { diaryLogs, lastExpeditionLog },
+  };
+}
+
+export function hydrateAfkPartyChunkContinuationWorkerState(
+  job: AfkPartyChunkContinuationWorkerJob,
+  retainedParty: Party,
+  retainedStateToken: string,
+  retainedRevision: number,
+): GameState {
+  if (job.transferSchemaVersion !== 3 || job.transferKind !== 'continuation') {
+    throw new Error('Invalid AFK continuation transfer kind');
+  }
+  if (job.retainedStateToken !== retainedStateToken || job.retainedRevision !== retainedRevision) {
+    throw new Error('AFK continuation state mismatch');
+  }
+  if (job.reconciliationRevision <= retainedRevision) {
+    throw new Error('AFK continuation revision mismatch');
+  }
+  const compactParty = job.baseState.parties[job.partyIndex];
+  if (!retainedParty || !compactParty || retainedParty.id !== job.partyId || compactParty.id !== job.partyId) {
+    throw new Error('AFK continuation party identity mismatch');
+  }
+  if (!job.partyHistory || !Array.isArray(job.partyHistory.diaryLogs)
+    || job.partyHistory.diaryLogs.length > DIARY_LOG_RETENTION_LIMIT) {
+    throw new Error('Invalid AFK continuation Diary transfer');
+  }
+  const retainedDiaryLogs = retainedParty.diaryLogs ?? [];
+  const diaryLogs = job.partyHistory.diaryLogs.map((entry, index) => {
+    if (entry.source === 'renderer') return entry.value;
+    if (entry.source !== 'retained' || !Number.isInteger(entry.index)
+      || entry.index < 0 || entry.index >= retainedDiaryLogs.length) {
+      throw new Error(`Invalid AFK continuation Diary reference at ${index}`);
+    }
+    return retainedDiaryLogs[entry.index]!;
+  });
+  const latest = job.partyHistory.lastExpeditionLog;
+  if (!latest) throw new Error('Missing AFK continuation latest expedition transfer');
+  const lastExpeditionLog = latest.source === 'retained'
+    ? retainedParty.lastExpeditionLog
+    : latest.source === 'diary'
+      ? (() => {
+        if (!Number.isInteger(latest.index) || latest.index < 0 || latest.index >= diaryLogs.length) {
+          throw new Error('Invalid AFK continuation latest expedition reference');
+        }
+        return diaryLogs[latest.index]!.expeditionLog;
+      })()
+      : latest.source === 'renderer'
+        ? latest.value
+        : null;
+  const parties = [...job.baseState.parties];
+  parties[job.partyIndex] = { ...compactParty, diaryLogs, lastExpeditionLog };
+  return { ...job.baseState, parties };
 }
 
 function normalizeTransferBytes(value: number | null | undefined): number | null {

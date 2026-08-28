@@ -4,12 +4,17 @@ import {
   AFK_CHUNK_CYCLE_COUNT,
   commitAfkPartyChunk,
   compareAfkChunkResults,
+  createAfkPartyChunkColdWorkerJob,
+  createAfkPartyChunkContinuationWorkerJob,
   createAfkPartyChunkResult,
   createAfkPartyChunkWorkerResult,
+  createAfkPartyChunkWorkerResultV3,
   createAfkPartyChunkWorkerState,
   getAfkWorkerPoolLimit,
   hasPendingPartySettingChanges,
   hydrateAfkPartyChunkResult,
+  hydrateAfkPartyChunkResultV3,
+  hydrateAfkPartyChunkContinuationWorkerState,
   type AfkPartyChunkResult,
   type AfkPartyChunkWorkerResult,
 } from '../src/game/afkChunkCoordinator.ts';
@@ -154,6 +159,93 @@ test('renderer hydration restores the exact complete worker-result envelope', ()
   assert.equal(
     JSON.stringify(hydrateAfkPartyChunkResult(workerResult, baseState.parties[0])),
     JSON.stringify(complete),
+  );
+});
+
+test('schema v3 continuation restores renderer authority from retained worker history', () => {
+  const retainedLog = { id: 'retained', expeditionLog: { dungeonId: 8 }, createdAt: 1 } as Party['diaryLogs'][number];
+  const rendererLog = { id: 'renderer', expeditionLog: { dungeonId: 7 }, createdAt: 2 } as Party['diaryLogs'][number];
+  const retainedParty = makeParty({
+    diaryLogs: [retainedLog],
+    lastExpeditionLog: retainedLog.expeditionLog,
+    level: 2,
+  });
+  const authoritativeParty = makeParty({
+    diaryLogs: [rendererLog, structuredClone(retainedLog)],
+    lastExpeditionLog: rendererLog.expeditionLog,
+    level: 3,
+    selectedDungeonId: 4,
+  });
+  const authoritativeState = makeState(authoritativeParty, 150, 3);
+  const baseJob: import('../src/game/afkChunkCoordinator.ts').AfkPartyChunkJob = {
+    jobId: 'continuation-1', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: authoritativeState, gameMode: 'm.kemo', cycleDurationScale: 1,
+  };
+  const job = createAfkPartyChunkContinuationWorkerJob(
+    baseJob,
+    retainedParty,
+    'retained-token',
+    1,
+    'next-token',
+    2,
+  );
+
+  assert.equal(job.transferSchemaVersion, 3);
+  assert.equal(job.transferKind, 'continuation');
+  assert.deepEqual(job.baseState.parties[0].diaryLogs, []);
+  assert.deepEqual(job.partyHistory.diaryLogs[1], { source: 'retained', index: 0 });
+  assert.equal(job.partyHistory.diaryLogs[0]?.source, 'renderer');
+  const hydrated = hydrateAfkPartyChunkContinuationWorkerState(job, retainedParty, 'retained-token', 1);
+  assert.equal(JSON.stringify(hydrated), JSON.stringify(authoritativeState));
+});
+
+test('schema v3 continuation rejects stale tokens, revisions, and party identities', () => {
+  const party = makeParty();
+  const baseJob: import('../src/game/afkChunkCoordinator.ts').AfkPartyChunkJob = {
+    jobId: 'continuation-invalid', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: makeState(party, 100, 1), gameMode: 'm.kemo', cycleDurationScale: 1,
+  };
+  const job = createAfkPartyChunkContinuationWorkerJob(baseJob, party, 'token', 1, 'next', 2);
+  assert.throws(
+    () => hydrateAfkPartyChunkContinuationWorkerState(job, party, 'stale', 1),
+    /state mismatch/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkContinuationWorkerState(job, party, 'token', 2),
+    /state mismatch/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkContinuationWorkerState(job, makeParty({ id: 2 }), 'token', 1),
+    /party identity mismatch/,
+  );
+  assert.throws(
+    () => createAfkPartyChunkContinuationWorkerJob(baseJob, party, 'token', 2, 'next', 2),
+    /reconciliation revision/,
+  );
+});
+
+test('schema v3 worker results validate continuation acknowledgements', () => {
+  const party = makeParty();
+  const state = makeState(party, 100, 1);
+  const cold = createAfkPartyChunkColdWorkerJob({
+    jobId: 'cold-v3', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: state, gameMode: 'm.kemo', cycleDurationScale: 1,
+  }, 'state-1', 1);
+  const complete = createAfkPartyChunkResult(cold, state, 5);
+  const workerResult = createAfkPartyChunkWorkerResultV3(complete, {
+    consumedStateToken: null,
+    nextStateToken: cold.nextStateToken,
+    reconciliationRevision: cold.reconciliationRevision,
+  });
+  assert.equal(workerResult.transferSchemaVersion, 3);
+  assert.equal(workerResult.nextStateToken, 'state-1');
+  assert.equal(JSON.stringify(hydrateAfkPartyChunkResultV3(workerResult, party)), JSON.stringify(complete));
+  assert.throws(
+    () => hydrateAfkPartyChunkResultV3({ ...workerResult, nextStateToken: '' }, party),
+    /acknowledgement/,
   );
 });
 

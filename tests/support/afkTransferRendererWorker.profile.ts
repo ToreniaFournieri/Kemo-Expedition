@@ -3,7 +3,10 @@
 import {
   createAfkPartyChunkResult,
   createAfkPartyChunkWorkerResult,
+  createAfkPartyChunkWorkerResultV3,
+  hydrateAfkPartyChunkContinuationWorkerState,
   type AfkPartyChunkJob,
+  type AfkPartyChunkWorkerJob,
 } from '../../src/game/afkChunkCoordinator.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
@@ -12,8 +15,9 @@ import { ensureLanguageLoaded } from '../../src/i18n/index.ts';
 
 declare const self: DedicatedWorkerGlobalScope;
 
-type Candidate = 'full' | 'build62' | 'production';
+type Candidate = 'full' | 'build62' | 'production' | 'continuation';
 const epochNow = () => performance.timeOrigin + performance.now();
+const retainedParties = new Map<number, { party: import('../../src/types.ts').Party; stateToken: string; revision: number }>();
 
 function createSeededRandom(seed: number): () => number {
   let value = seed >>> 0 || 0x9e3779b9;
@@ -28,30 +32,50 @@ function createSeededRandom(seed: number): () => number {
 self.onmessage = async (event: MessageEvent<{
   candidate: Candidate;
   correlationId: string;
-  job: AfkPartyChunkJob;
+  job: AfkPartyChunkJob | AfkPartyChunkWorkerJob;
 }>) => {
   const { candidate, correlationId, job } = event.data;
   const receivedAt = epochNow();
   try {
-    await ensureLanguageLoaded(job.baseState.global.language);
+    const baseState = candidate === 'continuation' && 'transferKind' in job && job.transferKind === 'continuation'
+      ? (() => {
+        const retained = retainedParties.get(job.partyId);
+        if (!retained) throw new Error('AFK continuation state mismatch');
+        return hydrateAfkPartyChunkContinuationWorkerState(job, retained.party, retained.stateToken, retained.revision);
+      })()
+      : job.baseState;
+    await ensureLanguageLoaded(baseState.global.language);
     let seedCursor = 0n;
     const computeStartedAt = epochNow();
     const resultState = withBattleSeedSourceForTesting(
       () => (BigInt(0xaf000000 + job.partyIndex) << 32n) | seedCursor++,
       () => withGameplayRandomSourceForTesting(
         createSeededRandom(0xaf000000 + job.partyIndex),
-        () => simulateAfkPartyChunkForWorker(job.baseState, {
+        () => simulateAfkPartyChunkForWorker(baseState, {
           partyIndex: job.partyIndex,
           cycleDurationMs: job.cycleDurationMs,
           simulatedCompletedAt: job.simulatedCompletedAt,
           cycleDurationScale: job.cycleDurationScale,
           gameMode: job.gameMode,
-          chunkStatusScope: candidate === 'production' ? 'target' : 'all',
+          chunkStatusScope: candidate === 'production' || candidate === 'continuation' ? 'target' : 'all',
         }),
       ),
     );
-    const completeResult = createAfkPartyChunkResult(job, resultState, 0);
-    const result = candidate === 'production'
+    const completeResult = createAfkPartyChunkResult({ ...job, baseState }, resultState, 0);
+    const result = candidate === 'continuation' && 'transferKind' in job
+      ? (() => {
+        retainedParties.set(job.partyId, {
+          party: resultState.parties[job.partyIndex],
+          stateToken: job.nextStateToken,
+          revision: job.reconciliationRevision,
+        });
+        return createAfkPartyChunkWorkerResultV3(completeResult, {
+          consumedStateToken: job.transferKind === 'continuation' ? job.retainedStateToken : null,
+          nextStateToken: job.nextStateToken,
+          reconciliationRevision: job.reconciliationRevision,
+        });
+      })()
+      : candidate === 'production'
       ? createAfkPartyChunkWorkerResult(completeResult)
       : candidate === 'build62'
         ? (({ baseParty: _baseParty, ...build62Result }) => build62Result)(completeResult)

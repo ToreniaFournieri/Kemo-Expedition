@@ -18,6 +18,7 @@ const rendererPath = join(temporaryDirectory, 'profile.js');
 const workerPath = join(temporaryDirectory, 'worker.js');
 const htmlPath = join(temporaryDirectory, 'profile.html');
 const mainPath = join(temporaryDirectory, 'main.cjs');
+const preloadPath = join(temporaryDirectory, 'preload.cjs');
 const userDataPath = join(temporaryDirectory, 'electron-user-data');
 const fixture = readFileSync(resolve(process.cwd(), 'sample_savedata/ALL_Exp8_v0.9.3_dev_20260816.kemoz'), 'utf8');
 
@@ -48,12 +49,21 @@ try {
     logLevel: 'silent',
   });
   writeFileSync(htmlPath, '<!doctype html><meta charset="utf-8"><script type="module" src="./profile.js"></script>\n');
+  writeFileSync(preloadPath, `
+const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('__BOKEMO_PROFILE_MEMORY__', {
+  sample: () => ipcRenderer.invoke('profile:get-memory-metrics'),
+});
+`);
   writeFileSync(mainPath, `
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const { normalizeAppMemoryMetrics } = require(${JSON.stringify(resolve(process.cwd(), 'desktop/memory-metrics.cjs'))});
 app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('js-flags', '--expose-gc');
 app.setPath('userData', ${JSON.stringify(userDataPath)});
 app.whenReady().then(async () => {
-  const window = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
+  const window = new BrowserWindow({ show: false, webPreferences: { preload: ${JSON.stringify(preloadPath)}, contextIsolation: true, nodeIntegration: false, sandbox: true } });
+  ipcMain.handle('profile:get-memory-metrics', (event) => normalizeAppMemoryMetrics(app.getAppMetrics(), event.sender.getOSProcessId()));
   try {
     await window.loadFile(${JSON.stringify(htmlPath)});
     const report = await window.webContents.executeJavaScript('window.__BOKEMO_AFK_TRANSFER_PROFILE__', true);
