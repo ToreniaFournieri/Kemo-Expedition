@@ -318,13 +318,13 @@ HP: 312                 タイプ: 神魔
   - If ON, Show statistic line of Party pane in Expedition tab.
 
 - "テーマカラー"
-  - Switch to "ケモ", "ルナ", "ライカ"
-  - ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`
+  - Switch to ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`, オルカ `m.orca`
   - Default: `m.kemo`
   - Description:
     - `m.kemo` "青を基調としたテーマです"
     - `m.luna` "黄色を基調としたテーマです"
     - `m.laika` "緑を基調としたテーマです"
+    - `m.orca` "オルカのテーマカラーです"
 
 
 **Feedback フィードバック**

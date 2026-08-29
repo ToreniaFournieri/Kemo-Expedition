@@ -19,38 +19,33 @@
 
 - **Color Scheme**
 
-  - `m.kemo` mode:
-	- Base colors
-	  - Text: Black
-	  - Pane / card background: Gray
-	  - Page background: White
-	- Sub color (~30%)
-	  - Blue `#3B82F6` (information, selection, links)
-	- Accent color (~5%)
-	  - Dark Orange `#EA580C` (important actions, warnings, highlights)
+Note:
+  - In Light mode, --hp-current and --hp-current-strong use the same value. --hp-current-strong should therefore inherit the value defined for --hp-current.
+  - In Light mode, --surface-pane is always #EEF5F5, regardless of theme.
+  - In Light mode, --hp-healed is always #B8EDB2, regardless of theme.
+  - In Dark mode, --surface-pane is always #1E293B, regardless of theme.
+  - In Dark mode, --hp-healed is always #5E8C5B, regardless of theme.
 
-  - `m.luna` mode:
-    - Base colors:
-      - Text: Black
-      - Pane / card background: Gray
-      - Page background: White
-    - Sub color (~30%):
-      - Yellow-Orange `#c28832` (information, selection, links)
-    - Accent color (~5%):
-      - Blue `#0c3cea`  (important actions, warnings, highlights)
-     
-  - `m.laika` mode:
-    - Base colors:
-      - Text: Black
-      - Pane / card background: Gray
-      - Page background: White
-  - Sub color (~30%)
-    - Green `#08A645`
-      (information, selection, links)
-  - Accent color (~5%)
-    - Crimson Red `#DC2626`
-      (important actions, warnings, highlights)
-  - Damage taken color: `#ffebcd`
+
+* Light mode
+| Theme       | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` | `--hp-track` |
+| ----------- | -------: | -------: | -------: | -------: | -------: | ------------------------: |
+| m.kemo light  |`#3B82F6` |`#EA580C` |`#93C5FD` |`#FCB786` |                 `#E2E8F0` |
+| m.luna light  |`#C28832` |`#0C3CEA` |`#E8B568` |`#FFED91` | `rgb(217 204 175 / 0.45)` |
+| m.laika light |`#08A645` |`#DC2626` |`#08A645` |`#FFEBCD` |                 `#D1D5DB` |
+| m.orca light  |`#2EB9C1` |`#A6C83D` |`#7DD4D8` |`#DDE89A` | `rgb(173 211 213 / 0.40)` |
+
+
+* Dark mode
+
+| Theme      | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` | `--hp-track` |
+| ---------- | -------: | -------: | -------: | -------: | ---------------------: |
+| m.kemo dark  |`#3B82F6` |`#EA580C` |`#6A94C6` |`#A5886D` |              `#374151` |
+| m.luna dark  |`#C28832` |`#60A5FA` |`#AA8D5D` |`#857255` | `rgb(43 52 68 / 0.45)` |
+| m.laika dark |`#08A645` |`#DC2626` |`#08A645` |`#92675B` |              `#374151` |
+| m.orca dark  |`#45C1CA` |`#B3D355` |`#4E9FA5` |`#8A9160` | `rgb(63 74 82 / 0.55)` |
+
+
 
 **Emoji Icon Replacement**
 - All emoji used in UI, logs, and text outputs must be replaced with their corresponding icon image assets.
