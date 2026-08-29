@@ -691,8 +691,9 @@ export function getAutoSellStepCount(party: Party): number {
 
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
 export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))]';
-export type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
-export type DarkModeSetting = 'off' | 'on' | 'system';
+export type { DarkModeSetting, GameMode } from '../../theme/theme';
+import type { DarkModeSetting, GameMode } from '../../theme/theme';
+import { isGameMode } from '../../theme/theme';
 export const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 export const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 export const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-expedition-stats-display');
@@ -3071,7 +3072,7 @@ export function getInitialGameMode(): GameMode {
 
   try {
     const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-    if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
+    if (isGameMode(savedMode)) {
       return savedMode;
     }
   } catch (error) {

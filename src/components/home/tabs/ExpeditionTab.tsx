@@ -1007,28 +1007,28 @@ export default function ExpeditionTab({
                         className="h-full"
                         style={{
                           width: `${((simulationUsesClearLabel ? simulation.result.Clear : simulation.result.Turned_Back) / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 80%, white)',
+                          backgroundColor: 'var(--outcome-success)',
                         }}
                       />
                       <span
                         className="h-full"
                         style={{
                           width: `${(simulation.result.Draw_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 50%, white)',
+                          backgroundColor: 'var(--outcome-draw)',
                         }}
                       />
                       <span
                         className="h-full"
                         style={{
                           width: `${(simulation.result.Wounded_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 50%, white)',
+                          backgroundColor: 'var(--outcome-retreat)',
                         }}
                       />
                       <span
                         className="h-full"
                         style={{
                           width: `${(simulation.result.Defeat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 80%, white)',
+                          backgroundColor: 'var(--outcome-defeat)',
                         }}
                       />
                     </span>
@@ -1173,7 +1173,7 @@ export default function ExpeditionTab({
                                       event.currentTarget,
                                     );
                                   }}
-                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
+                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus"
                                 >
                                   {renderEnemyNameWithMutedClass(entry.enemyName)}
                                 </span>
@@ -1195,16 +1195,16 @@ export default function ExpeditionTab({
                               <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
                                   <div className="mb-0.5">{t('home.battle.partyHpLabel')} {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
-                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
-                                    <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--color-hp-taken))' }} />
+                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--hp-track) / var(--hp-track-alpha, 1))" }}>
+                                    <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--hp-current))' }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--hp-healed))' }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--hp-damage-taken))' }} />
                                   </div>
                                 </div>
                                 <div>
                                   <div className="mb-0.5">{t('home.battle.enemyHpLabel')} {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
-                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
-                                    <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
+                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--hp-track) / var(--hp-track-alpha, 1))" }}>
+                                    <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--hp-current))' }} />
                                   </div>
                                 </div>
                               </div>

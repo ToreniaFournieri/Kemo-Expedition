@@ -2812,7 +2812,7 @@ export default function PartyTab({
         );
 
         return (
-          <div className={`mt-4 border rounded-lg p-4 shadow-md shadow-slate-900/15 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+          <div className={`mt-4 border rounded-lg p-4 shadow-md shadow-slate-900/15 ${selectingSlot !== null ? 'border-selection bg-selection/[0.12]' : 'border-line bg-surface-subtle'}`}>
             <div className="mb-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">
@@ -2903,7 +2903,7 @@ export default function PartyTab({
                   disabled={!displayItem.isEquipped && selectingSlot === null && !hasEmptySlot}
                   className={`w-full p-2 text-left text-sm border rounded bg-white shadow-sm shadow-slate-900/10 ${
                     displayItem.isEquipped
-                      ? 'border-sub bg-blue-50'
+                      ? 'border-selection bg-selection/[0.12]'
                       : selectingSlot !== null || hasEmptySlot
                         ? 'border-gray-200 hover:bg-gray-50'
                         : 'border-gray-200 opacity-50 cursor-not-allowed'

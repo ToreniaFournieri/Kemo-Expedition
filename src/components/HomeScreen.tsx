@@ -84,6 +84,7 @@ applyAutoEquipmentProfileActionsSequentially,
 } from '../hooks/useGameState';
 import { Bonus,Character,ExpeditionDepthLimit,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
 import { NotificationToast } from './NotificationToast';
+import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameMode } from '../theme/theme';
 
 
 import {
@@ -779,9 +780,7 @@ export function HomeScreen({
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    const lightTint = gameMode === 'm.luna' ? '#f6efe2' : gameMode === 'm.laika' ? '#e6efe7' : '#f3f4f6';
-    const darkTint = gameMode === 'm.luna' ? '#2f2620' : gameMode === 'm.laika' ? '#17281f' : '#1f2937';
-    const resolvedTint = isDarkModeEnabled ? darkTint : lightTint;
+    const resolvedTint = getBrowserChromeColor(gameMode, isDarkModeEnabled);
 
     // iOS Safari sometimes ignores in-place content updates.
     // Replacing the node restores immediate, no-refresh tint switching.
@@ -2315,7 +2314,7 @@ export function HomeScreen({
         return;
       }
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-      if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
+      if (isGameMode(savedMode)) {
         setGameMode(savedMode);
       }
     } catch (error) {
@@ -2529,13 +2528,7 @@ export function HomeScreen({
       unreadDiaryCount: state.parties.reduce((count, party) => (
         count + party.diaryLogs.reduce((partyCount, log) => partyCount + (log.isRead ? 0 : 1), 0)
       ), 0),
-      theme: (
-        gameMode === 'm.laika'
-          ? (isDarkModeEnabled ? 'laika-dark' : 'laika')
-          : gameMode === 'm.luna'
-            ? (isDarkModeEnabled ? 'luna-dark' : 'luna')
-            : isDarkModeEnabled ? 'dark' : 'light'
-      ) as DesktopPartyProgressSnapshot['theme'],
+      theme: getDesktopTheme(gameMode, isDarkModeEnabled),
       parties,
     };
     const snapshotHash = JSON.stringify(snapshotWithoutTimestamp);
@@ -4562,7 +4555,7 @@ export function HomeScreen({
       }}
     >
     <div
-      className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}
+      className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${getThemeClassName(gameMode)} ${isDarkModeEnabled ? 'theme-dark' : ''}`}
       aria-busy={pendingAfkMs > 0}
       onClickCapture={(event) => {
         if (pendingAfkMs <= 0) return;
@@ -4624,7 +4617,7 @@ export function HomeScreen({
         <div className="fixed inset-0 z-[100] cursor-wait bg-transparent" aria-label="Experimental AI API control active">
           <button
             type="button"
-            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-red-300 bg-white px-3 py-2 text-xs text-red-700 shadow"
+            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-status-error-border bg-surface-card px-3 py-2 text-xs text-status-error shadow"
             onClick={() => void window.bokemoDesktop?.setExperimentalApiEnabled(false).then((settings) => {
               window.dispatchEvent(new CustomEvent('bokemo-experimental-api-settings', { detail: settings }));
             })}
@@ -4721,12 +4714,12 @@ export function HomeScreen({
               >
                 <span className="relative z-10">{tab.label}</span>
                 {tab.id === 'diary' && hasUnreadDiary && (
-                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] leading-none text-white">
+                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-status-unread px-1.5 py-0.5 text-[10px] leading-none text-content-inverse">
                     {unreadDiaryBadgeLabel}
                   </span>
                 )}
                 {tab.id === 'setting' && hasUnreadDeveloperNews && (
-                  <span className="absolute -top-1 right-1 z-50 inline-flex h-2.5 w-2.5 rounded-full bg-red-500" aria-label="Unread developer news" />
+                  <span className="absolute -top-1 right-1 z-50 inline-flex h-2.5 w-2.5 rounded-full bg-status-unread" aria-label="Unread developer news" />
                 )}
               </button>
             );

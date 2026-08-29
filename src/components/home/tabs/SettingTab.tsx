@@ -38,6 +38,7 @@ import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
 import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
 import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
+import { GAME_MODES } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
 import { ExperimentalApiSettings } from '../../ExperimentalApiSettings';
 
@@ -552,7 +553,7 @@ export default function SettingTab({
         <span className="inline-flex items-center gap-2">
           <span>{title}</span>
           {panelKey === 'news' && hasUnreadDeveloperNews && (
-            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-500" aria-label="Unread developer news" />
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-status-unread" aria-label="Unread developer news" />
           )}
         </span>
         <span className={`text-xs text-gray-500 transform transition-transform ${expanded ? 'rotate-180' : ''}`}>▼</span>
@@ -1530,7 +1531,7 @@ export default function SettingTab({
                 : 'https://discord.gg/k9VSf2ghM'}
               target="_blank"
               rel="noopener noreferrer"
-              className="discord-community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
+              className="discord-community-link block rounded border p-3 text-sm font-semibold underline underline-offset-2 pane-button-shadow"
             >
               {t('setting.developerNews.discordCommunity')}
             </a>
@@ -2232,7 +2233,7 @@ export default function SettingTab({
                               <button
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
-                                className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                className="rounded px-1 text-left hover:bg-selection/[0.12] focus:outline-none focus:ring-1 focus:ring-focus"
                                 aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
@@ -2317,7 +2318,7 @@ export default function SettingTab({
                               <button
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
-                                className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                className="rounded px-1 text-left hover:bg-selection/[0.12] focus:outline-none focus:ring-1 focus:ring-focus"
                                 aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
@@ -2463,7 +2464,7 @@ export default function SettingTab({
                                   <button
                                     type="button"
                                     onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
-                                    className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                    className="rounded px-1 text-left hover:bg-selection/[0.12] focus:outline-none focus:ring-1 focus:ring-focus"
                                     aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                                   >
                                     {token.label}
@@ -2679,39 +2680,27 @@ export default function SettingTab({
           <div>
             <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.themeColor')}</div>
             <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
-                disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.kemo'
-                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
-                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
-                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-              >
-                {t('setting.theme.kemo')}
-              </button>
-              <button
-                onClick={() => onSetGameMode('m.luna')}
-                disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.luna'
-                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
-                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
-                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-              >
-                {t('setting.theme.luna')}
-              </button>
-              <button
-                onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
-                disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.laika'
-                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
-                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
-                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-              >
-                {t('setting.theme.laika')}
-              </button>
+              {GAME_MODES.map((mode) => {
+                const labelKey = mode === 'm.kemo'
+                  ? 'setting.theme.kemo'
+                  : mode === 'm.luna'
+                    ? 'setting.theme.luna'
+                    : 'setting.theme.laika';
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => !modeSelectionLocked && onSetGameMode(mode)}
+                    disabled={modeSelectionLocked}
+                    className={`py-2 rounded border text-sm font-medium ${
+                      gameMode === mode
+                        ? 'bg-selection text-content-inverse border-selection pane-button-shadow-soft'
+                        : 'bg-surface-interactive text-content-default border-line-strong pane-button-shadow'
+                    } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {gameMode === 'm.kemo'

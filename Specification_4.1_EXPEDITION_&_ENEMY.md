@@ -114,7 +114,6 @@
   - `x.exp_def_mult`(n)= (1.11 - max(0, 0.00048*(n-25)) - max(0, 0.00006*(n-49)))^n
   - `x.exp_def_amp_mult`(n)= 1.0
 
-- If `m.luna`, add +5 `x.enemy_level` for all enemy 
 
 - **Enemy entity distribution** for each `x.expediton`
 

@@ -73,7 +73,7 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
             const unreadCount = party.diaryLogs.filter((log) => !log.isRead).length;
             if (unreadCount === 0) return null;
             return (
-              <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 py-0.5 text-[9px] leading-none text-white">
+              <span className="absolute -right-1 -top-1 rounded-full bg-status-unread px-1 py-0.5 text-[9px] leading-none text-content-inverse">
                 {Math.min(unreadCount, DIARY_LOG_RETENTION_LIMIT)}
               </span>
             );
@@ -700,7 +700,7 @@ export default function DiaryTab({
                                       : null;
                                     handleEnemyBestiaryBubbleToggle(roomKey, entry, enemyLevel, event.currentTarget);
                                   }}
-                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
+                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus"
                                 >
                                   {renderEnemyNameWithMutedClass(entry.enemyName)}
                                 </span>
@@ -729,16 +729,16 @@ export default function DiaryTab({
                             <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                               <div>
                                 <div className="mb-0.5">{t('home.battle.partyHpLabel')} {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
-                                <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
-                                  <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
-                                  <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
-                                  <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--color-hp-taken))' }} />
+                                <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--hp-track) / var(--hp-track-alpha, 1))" }}>
+                                  <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--hp-current))' }} />
+                                  <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--hp-healed))' }} />
+                                  <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--hp-damage-taken))' }} />
                                 </div>
                               </div>
                               <div>
                                 <div className="mb-0.5">{t('home.battle.enemyHpLabel')} {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
-                                <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
-                                  <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
+                                <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--hp-track) / var(--hp-track-alpha, 1))" }}>
+                                  <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--hp-current))' }} />
                                 </div>
                               </div>
                             </div>

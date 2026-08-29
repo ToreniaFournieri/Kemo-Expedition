@@ -20,7 +20,7 @@ export function ExperimentalApiSettings() {
   const endpoint = settings.enabled && settings.port ? `http://${settings.host}:${settings.port}/experimental/v1` : null;
 
   return (
-    <div className="mt-3 rounded border border-amber-200 bg-white p-3 text-sm pane-button-shadow">
+    <div className="mt-3 rounded border border-status-warning-border bg-surface-card p-3 text-sm pane-button-shadow">
       <label className="flex items-center justify-between gap-3">
         <span className="font-medium">{t('setting.experimentalApi.title')}</span>
         <input

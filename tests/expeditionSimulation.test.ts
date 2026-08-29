@@ -36,10 +36,10 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /simulation\.result\.Turned_Back === 0/);
   assert.match(tabSource, /activeSimulationResultBubble/);
   assert.match(tabSource, /role="tooltip"/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-sub\)\) 80%, white\)/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-sub\)\) 50%, white\)/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-accent\)\) 50%, white\)/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-accent\)\) 80%, white\)/);
+  assert.match(tabSource, /var\(--outcome-success\)/);
+  assert.match(tabSource, /var\(--outcome-draw\)/);
+  assert.match(tabSource, /var\(--outcome-retreat\)/);
+  assert.match(tabSource, /var\(--outcome-defeat\)/);
   assert.match(tabSource, /simulation\.result\.Draw_Retreat \/ simulation\.result\.total/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Draw_Retreat \/ simulation\.result\.total \* 100, 1\)/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Wounded_Retreat \/ simulation\.result\.total \* 100, 1\)/);

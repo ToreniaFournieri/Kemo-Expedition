@@ -3,108 +3,193 @@
 @tailwind utilities;
 
 :root {
-  --color-sub: 59 130 246;
-  --color-accent: 234 88 12;
-  --color-pane: 243 244 246;
-  --color-hp-bar: 147 197 253;
-  --color-hp-bar-mild: 147 197 253;
-  --color-hp-taken: 252 183 134;
-  --color-heal-bar: 184 237 178;
-  --color-hp-bar-empty: 226 232 240;
-  --color-hp-bar-empty-alpha: 1;
-  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(69%) sepia(94%) saturate(1800%) hue-rotate(194deg) brightness(75%) contrast(95%);
-  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(2064%) hue-rotate(8deg) brightness(98%) contrast(92%);
-  --side-quest-icon-opacity: 0.9;
+  /* Theme identity. Components consume the semantic aliases below. */
+  --theme-sub: 59 130 246;
+  --theme-accent: 234 88 12;
+  --theme-on-sub: 255 255 255;
+  --theme-on-accent: 255 255 255;
+
+  /* Neutral surfaces and content. */
+  --surface-canvas: 255 255 255;
+  --surface-card: 255 255 255;
+  --surface-pane: 243 244 246;
+  --surface-subtle: 249 250 251;
+  --surface-muted: 243 244 246;
+  --surface-strong: 229 231 235;
+  --surface-disabled: 209 213 219;
+  --surface-interactive: 255 255 255;
+  --surface-interactive-hover: 243 244 246;
+  --surface-overlay: 255 255 255;
+  --surface-image-mask: 255 255 255;
+  --content-primary: 0 0 0;
+  --content-strong: 31 41 55;
+  --content-default: 55 65 81;
+  --content-secondary: 75 85 99;
+  --content-muted: 107 114 128;
+  --content-faint: 156 163 175;
+  --content-disabled: 156 163 175;
+  --content-inverse: 255 255 255;
+  --border-subtle: 243 244 246;
+  --border-default: 229 231 235;
+  --border-strong: 209 213 219;
+
+  /* Interaction and fixed feedback roles. */
+  --selection-fill: var(--theme-sub);
+  --selection-fill-soft: var(--theme-sub);
+  --selection-border: var(--theme-sub);
+  --focus-ring: var(--theme-sub);
+  --link-text: var(--theme-sub);
+  --link-hover-surface: var(--theme-sub);
+  --status-error: 185 28 28;
+  --status-error-strong: 127 29 29;
+  --status-error-surface: 254 242 242;
+  --status-error-border: 252 165 165;
+  --status-warning: 180 83 9;
+  --status-warning-surface: 255 251 235;
+  --status-warning-border: 253 230 138;
+  --status-success: 22 163 74;
+  --status-info: var(--theme-sub);
+  --status-unread: 239 68 68;
+
+  /* Game visualization roles. */
+  --hp-current-strong: 147 197 253;
+  --hp-current: 147 197 253;
+  --hp-damage-taken: 252 183 134;
+  --hp-healed: 184 237 178;
+  --hp-track: 226 232 240;
+  --hp-track-alpha: 1;
+  --progress-primary: var(--theme-sub);
+  --progress-secondary: var(--theme-sub);
+  --progress-track: 226 232 240;
+  --condition-positive: var(--theme-sub);
+  --condition-negative: var(--theme-accent);
+  --outcome-success: color-mix(in srgb, rgb(var(--theme-sub)) 80%, white);
+  --outcome-draw: color-mix(in srgb, rgb(var(--theme-sub)) 50%, white);
+  --outcome-retreat: color-mix(in srgb, rgb(var(--theme-accent)) 50%, white);
+  --outcome-defeat: color-mix(in srgb, rgb(var(--theme-accent)) 80%, white);
+  --rarity-common: var(--content-strong);
+  --rarity-uncommon: var(--content-strong);
+  --rarity-elite: var(--theme-sub);
+  --rarity-boss: var(--theme-accent);
+  --rarity-mythic: var(--theme-accent);
+  --rarity-super-rare: var(--theme-accent);
+  --notification-normal-text: var(--theme-sub);
+  --notification-rare-text: var(--theme-accent);
+  --notification-surface: var(--surface-overlay);
+  --notification-border: var(--border-default);
+  --external-discord-text: 67 56 202;
+  --external-discord-surface: 238 242 255;
+  --external-discord-border: 199 210 254;
+  --external-discord-decoration: 165 180 252;
+  --external-discord-hover-text: 55 48 163;
+  --external-discord-hover-surface: 224 231 255;
+
+  /* Raster icon compatibility. */
+  --icon-theme-sub-filter: brightness(0) saturate(100%) invert(69%) sepia(94%) saturate(1800%) hue-rotate(194deg) brightness(75%) contrast(95%);
+  --icon-theme-accent-filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(2064%) hue-rotate(8deg) brightness(98%) contrast(92%);
+  --icon-muted-filter: grayscale(1) saturate(0) brightness(1.0);
+  --icon-on-dark-filter: none;
+  --icon-secondary-opacity: 0.9;
+
+  /* Legacy aliases retained while generated utilities and older selectors migrate. */
+  --color-sub: var(--theme-sub);
+  --color-accent: var(--theme-accent);
+  --color-pane: var(--surface-pane);
+  --color-hp-bar: var(--hp-current-strong);
+  --color-hp-bar-mild: var(--hp-current);
+  --color-hp-taken: var(--hp-damage-taken);
+  --color-heal-bar: var(--hp-healed);
+  --color-hp-bar-empty: var(--hp-track);
+  --color-hp-bar-empty-alpha: var(--hp-track-alpha);
+  --sub-theme-emoji-filter: var(--icon-theme-sub-filter);
+  --accent-theme-emoji-filter: var(--icon-theme-accent-filter);
+  --side-quest-icon-opacity: var(--icon-secondary-opacity);
+
+  /* Liquid Glass foundation. */
   --glass-highlight: rgb(255 255 255 / 0.78);
-  --glass-tint: rgb(255 255 255 / 0.50);
+  --glass-surface: rgb(255 255 255 / 0.50);
   --glass-border: rgb(255 255 255 / 0.72);
   --glass-shadow: rgb(15 23 42 / 0.14);
+  --glass-overlay: rgb(255 255 255 / 0.44);
+  --glass-selected-glow: rgb(var(--theme-sub) / 0.2);
+  --glass-tint: var(--glass-surface);
 }
 
 .theme-luna {
-  --color-sub: 194 136 50;
-  --color-accent: 12 60 234;
-  --color-pane: 243 244 246;
-  --color-hp-bar: 223 190 128;
-  --color-hp-bar-mild: 232 181 104;
-  --color-hp-taken: 255 237 145;
-  --color-heal-bar: 184 237 178;
-  --color-hp-bar-empty: 217 204 175;
-  --color-hp-bar-empty-alpha: 0.45;
-  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
-  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(32%) sepia(87%) saturate(2961%) hue-rotate(223deg) brightness(95%) contrast(91%);
-  --side-quest-icon-opacity: 0.9;
+  --theme-sub: 194 136 50;
+  --theme-accent: 12 60 234;
+  --surface-pane: 243 244 246;
+  --hp-current-strong: 223 190 128;
+  --hp-current: 232 181 104;
+  --hp-damage-taken: 255 237 145;
+  --hp-healed: 184 237 178;
+  --hp-track: 217 204 175;
+  --hp-track-alpha: 0.45;
+  --progress-track: 217 204 175;
+  --icon-theme-sub-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
+  --icon-theme-accent-filter: brightness(0) saturate(100%) invert(32%) sepia(87%) saturate(2961%) hue-rotate(223deg) brightness(95%) contrast(91%);
 }
-
-.theme-luna .text-blue-600 {
-  color: rgb(var(--color-sub));
-}
-
-.theme-luna .bg-blue-50 {
-  background-color: rgb(var(--color-sub) / 0.12);
-}
-
-.theme-luna .bg-blue-100 {
-  background-color: rgb(var(--color-sub) / 0.2);
-}
-
-.theme-luna .bg-blue-500 {
-  background-color: rgb(var(--color-sub));
-}
-
-.theme-luna .hover\:bg-blue-600:hover {
-  background-color: rgb(var(--color-sub) / 0.9);
-}
-
 
 .theme-laika {
-  --color-sub: 8 166 69;
-  --color-accent: 220 38 38;
-  --color-pane: 229 231 235;
-  --color-hp-bar: 8 166 69;
-  --color-hp-bar-mild: 8 166 69;
+  --theme-sub: 8 166 69;
+  --theme-accent: 220 38 38;
+  --surface-pane: 229 231 235;
+  --hp-current-strong: 8 166 69;
+  --hp-current: 8 166 69;
   /* SpecRef: 8.1 | UI_FOUNDATIONS | Damage taken color */
-  --color-hp-taken: 255 235 205;
-  --color-heal-bar: 184 237 178;
-  --color-hp-bar-empty: 209 213 219;
+  --hp-damage-taken: 255 235 205;
+  --hp-healed: 184 237 178;
+  --hp-track: 209 213 219;
+  --progress-track: 209 213 219;
   /* SpecRef: 8.1 | UI_FOUNDATIONS | Emoji Display Rule */
-  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(55%) sepia(54%) saturate(312%) hue-rotate(108deg) brightness(88%) contrast(88%);
-  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(28%) sepia(74%) saturate(2140%) hue-rotate(356deg) brightness(90%) contrast(86%);
-  --side-quest-icon-opacity: 0.9;
-}
-
-.theme-laika .text-blue-600 {
-  color: rgb(var(--color-sub));
-}
-
-.theme-laika .bg-blue-50 {
-  background-color: rgb(var(--color-sub) / 0.12);
-}
-
-.theme-laika .bg-blue-100 {
-  background-color: rgb(var(--color-sub) / 0.2);
-}
-
-.theme-laika .bg-blue-500 {
-  background-color: rgb(var(--color-sub));
-}
-
-.theme-laika .hover\:bg-blue-600:hover {
-  background-color: rgb(var(--color-sub) / 0.9);
+  --icon-theme-sub-filter: brightness(0) saturate(100%) invert(55%) sepia(54%) saturate(312%) hue-rotate(108deg) brightness(88%) contrast(88%);
+  --icon-theme-accent-filter: brightness(0) saturate(100%) invert(28%) sepia(74%) saturate(2140%) hue-rotate(356deg) brightness(90%) contrast(86%);
 }
 
 .theme-dark {
   color-scheme: dark;
   background-color: #111827;
   color: rgb(229 231 235);
-  --color-hp-bar-mild: 106 148 198;
-  --color-hp-taken: 165 136 109;
-  --color-heal-bar: 94 140 91;
-  --color-hp-bar-empty: 55 65 81;
+  --surface-canvas: 17 24 39;
+  --surface-card: 31 41 55;
+  --surface-pane: 17 24 39;
+  --surface-subtle: 15 23 42;
+  --surface-muted: 30 41 59;
+  --surface-strong: 51 65 85;
+  --surface-disabled: 30 41 59;
+  --surface-interactive: 31 41 55;
+  --surface-interactive-hover: 30 41 59;
+  --surface-overlay: 30 41 59;
+  --surface-image-mask: 15 23 42;
+  --content-primary: 229 231 235;
+  --content-strong: 229 231 235;
+  --content-default: 229 231 235;
+  --content-secondary: 156 163 175;
+  --content-muted: 156 163 175;
+  --content-faint: 148 163 184;
+  --content-disabled: 148 163 184;
+  --content-inverse: 229 231 235;
+  --border-subtle: 75 85 99;
+  --border-default: 75 85 99;
+  --border-strong: 75 85 99;
+  --notification-border: 71 85 105;
+  --external-discord-text: 165 180 252;
+  --external-discord-surface: 30 41 59;
+  --external-discord-border: 99 102 241;
+  --external-discord-decoration: 129 140 248;
+  --external-discord-hover-text: 199 210 254;
+  --external-discord-hover-surface: 49 46 129;
+  --hp-current: 106 148 198;
+  --hp-damage-taken: 165 136 109;
+  --hp-healed: 94 140 91;
+  --hp-track: 55 65 81;
+  --progress-track: 55 65 81;
+  --icon-on-dark-filter: brightness(0) invert(0.82);
   --glass-highlight: rgb(255 255 255 / 0.18);
-  --glass-tint: rgb(51 65 85 / 0.42);
+  --glass-surface: rgb(51 65 85 / 0.42);
   --glass-border: rgb(148 163 184 / 0.55);
   --glass-shadow: rgb(2 6 23 / 0.5);
+  --glass-overlay: rgb(255 255 255 / 0.2);
 }
 
 html.app-dark,
@@ -151,31 +236,19 @@ body.app-dark {
 }
 
 
-.theme-dark .bg-blue-50 {
-  background-color: rgb(var(--color-sub) / 0.2);
-}
-
-.theme-dark .bg-blue-100 {
-  background-color: rgb(var(--color-sub) / 0.28);
-}
-
-.theme-dark .bg-blue-50\/70 {
-  background-color: rgb(var(--color-sub) / 0.18);
-}
-
 /* SpecRef: 8.6 | UI_SETTING | Official Discord Community (日本語・中文・English) */
-.theme-dark .discord-community-link {
-  background-color: rgb(30 41 59);
-  border-color: rgb(99 102 241 / 0.65);
-  color: rgb(165 180 252);
-  text-decoration-color: rgb(129 140 248);
+.discord-community-link {
+  background-color: rgb(var(--external-discord-surface));
+  border-color: rgb(var(--external-discord-border) / 0.65);
+  color: rgb(var(--external-discord-text));
+  text-decoration-color: rgb(var(--external-discord-decoration));
 }
 
-.theme-dark .discord-community-link:hover,
-.theme-dark .discord-community-link:focus-visible {
-  background-color: rgb(49 46 129 / 0.45);
-  border-color: rgb(129 140 248);
-  color: rgb(199 210 254);
+.discord-community-link:hover,
+.discord-community-link:focus-visible {
+  background-color: rgb(var(--external-discord-hover-surface) / 0.45);
+  border-color: rgb(var(--external-discord-decoration));
+  color: rgb(var(--external-discord-hover-text));
 }
 
 .theme-dark .hover\:bg-gray-100\/70:hover {
@@ -347,29 +420,31 @@ body.app-dark {
 
 
 .theme-luna.theme-dark {
-  --color-accent: 96 165 250;
-  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(67%) sepia(56%) saturate(2024%) hue-rotate(188deg) brightness(102%) contrast(96%);
-  --color-hp-bar: 170 141 93;
-  --color-hp-bar-mild: 170 141 93;
-  --color-hp-taken: 133 114 85;
-  --color-heal-bar: 112 138 88;
-  --color-hp-bar-empty: 43 52 68;
-  --color-hp-bar-empty-alpha: 0.45;
+  --theme-accent: 96 165 250;
+  --icon-theme-accent-filter: brightness(0) saturate(100%) invert(67%) sepia(56%) saturate(2024%) hue-rotate(188deg) brightness(102%) contrast(96%);
+  --hp-current-strong: 170 141 93;
+  --hp-current: 170 141 93;
+  --hp-damage-taken: 133 114 85;
+  --hp-healed: 112 138 88;
+  --hp-track: 43 52 68;
+  --hp-track-alpha: 0.45;
+  --progress-track: 43 52 68;
 }
 
 .theme-laika.theme-dark {
-  --color-sub: 8 166 69;
-  --color-accent: 220 38 38;
-  --color-pane: 30 41 59;
-  --color-hp-bar: 8 166 69;
-  --color-hp-bar-mild: 8 166 69;
-  --color-hp-taken: 146 103 91;
-  --color-heal-bar: 72 130 89;
-  --color-hp-bar-empty: 55 65 81;
+  --theme-sub: 8 166 69;
+  --theme-accent: 220 38 38;
+  --surface-pane: 30 41 59;
+  --hp-current-strong: 8 166 69;
+  --hp-current: 8 166 69;
+  --hp-damage-taken: 146 103 91;
+  --hp-healed: 72 130 89;
+  --hp-track: 55 65 81;
+  --progress-track: 55 65 81;
 }
 
 .theme-dark .race-icon {
-  filter: brightness(0) invert(0.82);
+  filter: var(--icon-on-dark-filter);
 }
 
 body {
@@ -408,8 +483,8 @@ body {
 
 .gray-theme-emoji-icon {
   display: inline-block;
-  -webkit-filter: grayscale(1) saturate(0) brightness(1.0);
-  filter: grayscale(1) saturate(0) brightness(1.0);
+  -webkit-filter: var(--icon-muted-filter);
+  filter: var(--icon-muted-filter);
   opacity: var(--side-quest-icon-opacity);
 }
 

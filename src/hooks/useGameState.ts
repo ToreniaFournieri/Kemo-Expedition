@@ -1,4 +1,5 @@
 import { useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import type { GameMode } from '../theme/theme';
 import {
   GameState,
   Item,
@@ -2094,7 +2095,6 @@ function createInitialState(): InitialStateResult {
   };
 }
 
-type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
 export type ExpeditionResolutionMode = 'full' | 'forecast';
 
