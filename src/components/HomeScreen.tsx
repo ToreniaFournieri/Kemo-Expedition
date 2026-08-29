@@ -768,14 +768,29 @@ export function HomeScreen({
   const isDarkModeEnabled = darkModeSetting === 'on' || (darkModeSetting === 'system' && isSystemDarkMode);
 
   useEffect(() => {
+    const themeClassName = getThemeClassName(gameMode);
+    const themeClassNames = ['theme-luna', 'theme-laika'] as const;
+    themeClassNames.forEach((className) => {
+      const enabled = className === themeClassName;
+      document.body.classList.toggle(className, enabled);
+      document.documentElement.classList.toggle(className, enabled);
+    });
     document.body.classList.toggle('app-dark', isDarkModeEnabled);
     document.documentElement.classList.toggle('app-dark', isDarkModeEnabled);
+    document.body.classList.toggle('theme-dark', isDarkModeEnabled);
+    document.documentElement.classList.toggle('theme-dark', isDarkModeEnabled);
 
     return () => {
+      themeClassNames.forEach((className) => {
+        document.body.classList.remove(className);
+        document.documentElement.classList.remove(className);
+      });
       document.body.classList.remove('app-dark');
       document.documentElement.classList.remove('app-dark');
+      document.body.classList.remove('theme-dark');
+      document.documentElement.classList.remove('theme-dark');
     };
-  }, [isDarkModeEnabled]);
+  }, [gameMode, isDarkModeEnabled]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;

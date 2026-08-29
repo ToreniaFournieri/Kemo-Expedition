@@ -140,6 +140,7 @@ Error, unread, theme accent, and warning remain separate even when their present
 | `--notification-normal-text` | Theme sub |
 | `--notification-rare-text` | Theme accent |
 | `--notification-surface` | Overlay/card surface |
+| `--notification-surface-alpha` | Appearance-specific toast translucency (`0.8` light, `0.52` dark) |
 | `--notification-border` | Theme-appropriate toast boundary |
 
 ## Glass, icons, and platform integration
@@ -170,4 +171,5 @@ The browser chrome values remain: Kemo `#F3F4F6/#1F2937`, Luna `#F6EFE2/#2F2620`
 - Fixed Red is allowed only behind error/unread semantics; theme accent is not a substitute for system errors.
 - Component-specific artwork masks and glass variants may retain dedicated semantic component tokens until their visual values are deliberately merged.
 - Equal values are not sufficient reason to merge tokens. Merge only after confirming their meanings and light/dark behavior are equivalent.
+- Semantic aliases must be refreshed on each theme/appearance scope; declaring a `var(...)` alias only on `:root` freezes its inherited computed value to the root Kemo palette.
 - Theme contract tests must cover all three identities in light and dark appearance, browser chrome mapping, desktop snapshot mapping, and the absence of legacy theme-blue utilities in migrated components.

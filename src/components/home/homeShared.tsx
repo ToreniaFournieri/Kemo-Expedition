@@ -910,12 +910,14 @@ export function getEnemyClassSummary(enemy: EnemyDef): string {
 
 export function FloatingBubblePortal({ children }: { children: ReactNode }) {
   if (typeof document === 'undefined') return null;
-  const portalThemeClass = document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark')
-    ? 'theme-dark'
-    : '';
+  const portalThemeClasses = [
+    document.documentElement.classList.contains('theme-luna') || document.body.classList.contains('theme-luna') ? 'theme-luna' : '',
+    document.documentElement.classList.contains('theme-laika') || document.body.classList.contains('theme-laika') ? 'theme-laika' : '',
+    document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark') ? 'theme-dark' : '',
+  ].filter(Boolean).join(' ');
 
   return createPortal(
-    <div className={portalThemeClass}>
+    <div className={portalThemeClasses}>
       {children}
     </div>,
     document.body,

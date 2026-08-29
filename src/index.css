@@ -76,6 +76,7 @@
   --notification-normal-text: var(--theme-sub);
   --notification-rare-text: var(--theme-accent);
   --notification-surface: var(--surface-overlay);
+  --notification-surface-alpha: 0.8;
   --notification-border: var(--border-default);
   --external-discord-text: 67 56 202;
   --external-discord-surface: 238 242 255;
@@ -173,6 +174,7 @@
   --border-default: 75 85 99;
   --border-strong: 75 85 99;
   --notification-border: 71 85 105;
+  --notification-surface-alpha: 0.52;
   --external-discord-text: 165 180 252;
   --external-discord-surface: 30 41 59;
   --external-discord-border: 99 102 241;
@@ -211,8 +213,12 @@ body.app-dark {
 }
 
 .theme-dark .notification-toast-item {
-  border: 1px solid rgb(71 85 105);
   box-shadow: 0 8px 24px rgb(2 6 23 / 0.45);
+}
+
+.notification-toast-item {
+  border-color: rgb(var(--notification-border));
+  background-color: rgb(var(--notification-surface) / var(--notification-surface-alpha));
 }
 
 .theme-dark .bg-pane {
@@ -441,6 +447,56 @@ body.app-dark {
   --hp-healed: 72 130 89;
   --hp-track: 55 65 81;
   --progress-track: 55 65 81;
+}
+
+/*
+ * CSS custom-property aliases resolve at computed-value time. Refresh every
+ * semantic alias on the element that owns a theme/appearance class so it uses
+ * that element's final Kemo/Luna/Laika and light/dark foundation values rather
+ * than inheriting the already-resolved :root Kemo value.
+ */
+.theme-luna,
+.theme-laika,
+.theme-dark {
+  --selection-fill: var(--theme-sub);
+  --selection-fill-soft: var(--theme-sub);
+  --selection-border: var(--theme-sub);
+  --focus-ring: var(--theme-sub);
+  --link-text: var(--theme-sub);
+  --link-hover-surface: var(--theme-sub);
+  --status-info: var(--theme-sub);
+  --progress-primary: var(--theme-sub);
+  --progress-secondary: var(--theme-sub);
+  --condition-positive: var(--theme-sub);
+  --condition-negative: var(--theme-accent);
+  --outcome-success: color-mix(in srgb, rgb(var(--theme-sub)) 80%, white);
+  --outcome-draw: color-mix(in srgb, rgb(var(--theme-sub)) 50%, white);
+  --outcome-retreat: color-mix(in srgb, rgb(var(--theme-accent)) 50%, white);
+  --outcome-defeat: color-mix(in srgb, rgb(var(--theme-accent)) 80%, white);
+  --rarity-common: var(--content-strong);
+  --rarity-uncommon: var(--content-strong);
+  --rarity-elite: var(--theme-sub);
+  --rarity-boss: var(--theme-accent);
+  --rarity-mythic: var(--theme-accent);
+  --rarity-super-rare: var(--theme-accent);
+  --notification-normal-text: var(--theme-sub);
+  --notification-rare-text: var(--theme-accent);
+  --notification-surface: var(--surface-overlay);
+  --notification-border: var(--border-default);
+  --color-sub: var(--theme-sub);
+  --color-accent: var(--theme-accent);
+  --color-pane: var(--surface-pane);
+  --color-hp-bar: var(--hp-current-strong);
+  --color-hp-bar-mild: var(--hp-current);
+  --color-hp-taken: var(--hp-damage-taken);
+  --color-heal-bar: var(--hp-healed);
+  --color-hp-bar-empty: var(--hp-track);
+  --color-hp-bar-empty-alpha: var(--hp-track-alpha);
+  --sub-theme-emoji-filter: var(--icon-theme-sub-filter);
+  --accent-theme-emoji-filter: var(--icon-theme-accent-filter);
+  --side-quest-icon-opacity: var(--icon-secondary-opacity);
+  --glass-tint: var(--glass-surface);
+  --glass-selected-glow: rgb(var(--theme-sub) / 0.2);
 }
 
 .theme-dark .race-icon {

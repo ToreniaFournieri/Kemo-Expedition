@@ -13,6 +13,9 @@ import {
 const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
 const tailwind = readFileSync(new URL('../tailwind.config.js', import.meta.url), 'utf8');
 const document = readFileSync(new URL('../docs/ui-color-semantic-tokens.md', import.meta.url), 'utf8');
+const homeScreen = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
+const homeShared = readFileSync(new URL('../src/components/home/homeShared.tsx', import.meta.url), 'utf8');
+const notificationToast = readFileSync(new URL('../src/components/NotificationToast.tsx', import.meta.url), 'utf8');
 const migratedSources = [
   '../src/App.tsx',
   '../src/components/NotificationToast.tsx',
@@ -43,7 +46,7 @@ test('semantic token contract covers foundations, feedback, gameplay, glass, and
     '--content-primary', '--content-muted', '--border-default', '--selection-fill', '--focus-ring',
     '--status-error', '--status-warning', '--status-unread', '--hp-current', '--hp-damage-taken',
     '--hp-healed', '--hp-track', '--outcome-success', '--rarity-super-rare',
-    '--notification-surface', '--glass-surface', '--icon-theme-sub-filter',
+    '--notification-surface', '--notification-surface-alpha', '--glass-surface', '--icon-theme-sub-filter',
   ]) {
     assert.match(css, new RegExp(`${token}:`));
     assert.match(document, new RegExp(token));
@@ -53,6 +56,23 @@ test('semantic token contract covers foundations, feedback, gameplay, glass, and
   assert.match(tailwind, /surface-canvas/);
   assert.match(tailwind, /content-primary/);
   assert.match(tailwind, /status-error/);
+});
+
+test('theme-scoped aliases and document portals resolve the active theme instead of inherited Kemo defaults', () => {
+  const aliasRefreshBlock = css.match(/\.theme-luna,\s*\.theme-laika,\s*\.theme-dark\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+  for (const alias of ['--selection-fill', '--color-sub', '--notification-normal-text', '--notification-surface', '--outcome-success']) {
+    assert.match(aliasRefreshBlock, new RegExp(`${alias}:`));
+  }
+  assert.match(homeScreen, /document\.body\.classList\.toggle\('theme-dark', isDarkModeEnabled\)/);
+  assert.match(homeScreen, /document\.body\.classList\.toggle\(className, enabled\)/);
+  assert.match(homeShared, /'theme-luna'[\s\S]*'theme-laika'[\s\S]*'theme-dark'/);
+});
+
+test('dark notification translucency is semantic and no longer forced to an opaque light surface', () => {
+  assert.match(css, /--notification-surface-alpha:\s*0\.8/);
+  assert.match(css, /\.theme-dark\s*\{[\s\S]*--notification-surface-alpha:\s*0\.52/);
+  assert.match(css, /background-color:\s*rgb\(var\(--notification-surface\) \/ var\(--notification-surface-alpha\)\)/);
+  assert.doesNotMatch(notificationToast, /bg-notification-surface/);
 });
 
 test('migrated semantic surfaces no longer encode theme behavior with fixed blue utilities', () => {

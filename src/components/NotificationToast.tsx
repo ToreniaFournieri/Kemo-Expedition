@@ -70,7 +70,7 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
         px-3 py-1.5 rounded-lg shadow-md cursor-pointer
         text-xs ${fontWeight} w-fit text-left
         transition-opacity duration-300
-        border border-notification-border bg-notification-surface/80 ${isItem ? itemTextColor : nonItemColor}
+        border border-notification-border ${isItem ? itemTextColor : nonItemColor}
       `}
     >
       {notification.message}
