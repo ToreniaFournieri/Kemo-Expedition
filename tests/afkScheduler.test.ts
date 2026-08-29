@@ -160,7 +160,8 @@ test('runtime assigns one twelve-Cycle Chunk with per-Cycle presentation progres
   assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
   assert.match(homeSource, /baseState: createAfkPartyChunkWorkerState\(state, partyIndex\)/);
-  assert.match(homeSource, /hydrateAfkPartyChunkResult\(event\.data\.result, active\.baseParty\)/);
+  assert.match(homeSource, /hydrateAfkPartyChunkInventoryResult\(event\.data\.result, active\.baseParty, inventoryJob\)/);
+  assert.match(homeSource, /createAfkPartyChunkInventoryContinuationWorkerJob/);
   assert.match(homeSource, /now - afkLastProgressRenderAtRef\.current >= 100/);
   assert.match(homeSource, /afkPresentedRemainingByParty\.reduce[\s\S]{0,160}afkPresentedRemainingByParty\.length/);
   assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);

@@ -3,22 +3,38 @@
 import { getAfkInventoryDeltaForState, simulateAfkPartyChunkForWorker } from '../hooks/useGameState';
 import {
   createAfkPartyChunkResult,
-  createAfkPartyChunkWorkerResult,
-  type AfkPartyChunkJob,
+  createAfkPartyChunkInventoryWorkerResult,
+  hydrateAfkPartyChunkInventoryWorkerState,
+  type AfkPartyChunkInventoryWorkerJob,
 } from '../game/afkChunkCoordinator';
+import type { InventoryRecord } from '../types';
 import { ensureLanguageLoaded } from '../i18n';
 
 declare const self: DedicatedWorkerGlobalScope;
 
-self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
+let retainedInventory: InventoryRecord | null = null;
+let retainedInventoryToken: string | null = null;
+let retainedInventoryRevision = 0;
+
+self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) => {
   const job = event.data;
   const receivedAt = performance.now();
   const receivedAtEpoch = performance.timeOrigin + receivedAt;
   try {
-    await ensureLanguageLoaded(job.baseState.global.language);
+    const hydrated = hydrateAfkPartyChunkInventoryWorkerState(
+      job,
+      retainedInventory,
+      retainedInventoryToken,
+      retainedInventoryRevision,
+    );
+    const baseState = hydrated.state;
+    retainedInventory = hydrated.inventory;
+    retainedInventoryToken = job.nextInventoryToken;
+    retainedInventoryRevision = job.inventoryRevision;
+    await ensureLanguageLoaded(baseState.global.language);
     const executionStartedAt = performance.now();
     self.postMessage({ type: 'started', jobId: job.jobId, partyIndex: job.partyIndex });
-    const resultState = simulateAfkPartyChunkForWorker(job.baseState, {
+    const resultState = simulateAfkPartyChunkForWorker(baseState, {
       partyIndex: job.partyIndex,
       cycleDurationMs: job.cycleDurationMs,
       simulatedCompletedAt: job.simulatedCompletedAt,
@@ -30,7 +46,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
       },
     });
     const completedAt = performance.now();
-    const completeResult = createAfkPartyChunkResult(job, resultState, Math.max(0, completedAt - receivedAt), {
+    const completeResult = createAfkPartyChunkResult({ ...job, baseState }, resultState, Math.max(0, completedAt - receivedAt), {
       workerStartupMs: job.isFirstWorkerJob && job.workerCreatedAt !== undefined
         ? receivedAtEpoch - job.workerCreatedAt
         : 0,
@@ -38,7 +54,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkJob>) => {
       executionMs: completedAt - executionStartedAt,
       inputTransferBytes: job.inputTransferBytes,
     }, getAfkInventoryDeltaForState(resultState));
-    const result = createAfkPartyChunkWorkerResult(completeResult);
+    const result = createAfkPartyChunkInventoryWorkerResult(completeResult, job);
     if (job.inputTransferBytes !== undefined) {
       result.workerTelemetry.outputTransferBytes = new TextEncoder().encode(JSON.stringify(result)).byteLength;
     }

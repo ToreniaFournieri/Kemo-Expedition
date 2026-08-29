@@ -7,12 +7,17 @@ import {
   createAfkPartyChunkColdWorkerJob,
   createAfkPartyChunkContinuationWorkerJob,
   createAfkPartyChunkResult,
+  createAfkPartyChunkInventoryColdWorkerJob,
+  createAfkPartyChunkInventoryContinuationWorkerJob,
+  createAfkPartyChunkInventoryWorkerResult,
   createAfkPartyChunkWorkerResult,
   createAfkPartyChunkWorkerResultV3,
   createAfkPartyChunkWorkerState,
   getAfkWorkerPoolLimit,
   hasPendingPartySettingChanges,
   hydrateAfkPartyChunkResult,
+  hydrateAfkPartyChunkInventoryResult,
+  hydrateAfkPartyChunkInventoryWorkerState,
   hydrateAfkPartyChunkResultV3,
   hydrateAfkPartyChunkContinuationWorkerState,
   type AfkPartyChunkResult,
@@ -300,6 +305,94 @@ test('schema v3 worker results validate continuation acknowledgements', () => {
   assert.throws(
     () => hydrateAfkPartyChunkResultV3({ ...workerResult, nextStateToken: '' }, party),
     /acknowledgement/,
+  );
+});
+
+test('schema v4 inventory continuation transfers only changed and deleted variants', () => {
+  const party = makeParty();
+  const retainedState = makeState(party, 100, 1);
+  retainedState.global.inventory['2-0-0'] = {
+    item: { id: 2, category: 'sword', name: 'Old', enhancement: 0, superRare: 0 },
+    count: 2,
+    status: 'owned',
+    isNew: false,
+  };
+  const authoritativeState = structuredClone(retainedState);
+  authoritativeState.global.inventory['1-0-0'] = {
+    ...authoritativeState.global.inventory['1-0-0']!,
+    count: 4,
+  };
+  delete authoritativeState.global.inventory['2-0-0'];
+  authoritativeState.global.inventory['3-0-0'] = {
+    item: { id: 3, category: 'sword', name: 'New', enhancement: 0, superRare: 0 },
+    count: 1,
+    status: 'owned',
+    isNew: true,
+  };
+  const baseJob: import('../src/game/afkChunkCoordinator.ts').AfkPartyChunkJob = {
+    jobId: 'inventory-v4', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: authoritativeState, gameMode: 'm.kemo', cycleDurationScale: 1,
+  };
+  const job = createAfkPartyChunkInventoryContinuationWorkerJob(
+    baseJob,
+    retainedState.global.inventory,
+    'inventory-1',
+    1,
+    'inventory-2',
+    2,
+  );
+
+  assert.deepEqual(job.baseState.global.inventory, {});
+  assert.equal(job.inventoryChanges['1-0-0']?.count, 4);
+  assert.equal(job.inventoryChanges['2-0-0'], null);
+  assert.equal(job.inventoryChanges['3-0-0']?.count, 1);
+  const retainedWorkerInventory = structuredClone(retainedState.global.inventory);
+  const hydrated = hydrateAfkPartyChunkInventoryWorkerState(job, retainedWorkerInventory, 'inventory-1', 1);
+  assert.equal(JSON.stringify(hydrated.state), JSON.stringify(authoritativeState));
+  assert.equal(hydrated.inventory, retainedWorkerInventory);
+});
+
+test('schema v4 inventory reconciliation rejects stale state and acknowledgement replay', () => {
+  const party = makeParty();
+  const state = makeState(party, 100, 1);
+  const baseJob: import('../src/game/afkChunkCoordinator.ts').AfkPartyChunkJob = {
+    jobId: 'inventory-v4-invalid', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: state, gameMode: 'm.kemo', cycleDurationScale: 1,
+  };
+  const cold = createAfkPartyChunkInventoryColdWorkerJob(baseJob, 'inventory-1', 1);
+  const coldHydrated = hydrateAfkPartyChunkInventoryWorkerState(cold, null, null, 0);
+  const continuation = createAfkPartyChunkInventoryContinuationWorkerJob(
+    baseJob,
+    state.global.inventory,
+    'inventory-1',
+    1,
+    'inventory-2',
+    2,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryWorkerState(continuation, coldHydrated.inventory, 'stale', 1),
+    /state mismatch/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryWorkerState(continuation, coldHydrated.inventory, 'inventory-1', 2),
+    /state mismatch/,
+  );
+
+  const complete = createAfkPartyChunkResult({ ...continuation, baseState: state }, state, 5);
+  const workerResult = createAfkPartyChunkInventoryWorkerResult(complete, continuation);
+  assert.equal(
+    JSON.stringify(hydrateAfkPartyChunkInventoryResult(workerResult, party, continuation)),
+    JSON.stringify(complete),
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryResult({ ...workerResult, nextInventoryToken: 'replayed' }, party, continuation),
+    /acknowledgement/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryResult({ ...workerResult, consumedInventoryToken: 'stale' }, party, continuation),
+    /consumed token acknowledgement/,
   );
 });
 

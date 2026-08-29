@@ -51,12 +51,15 @@ import {
 AFK_CHUNK_CYCLE_COUNT,
 compareAfkChunkResults,
 createAfkPartyChunkWorkerState,
+createAfkPartyChunkInventoryColdWorkerJob,
+createAfkPartyChunkInventoryContinuationWorkerJob,
 getAfkWorkerPoolLimit,
 hasPendingPartySettingChanges,
-hydrateAfkPartyChunkResult,
+hydrateAfkPartyChunkInventoryResult,
 type AfkPartyChunkJob,
 type AfkPartyChunkResult,
-type AfkPartyChunkWorkerResult,
+type AfkPartyChunkInventoryWorkerJob,
+type AfkPartyChunkInventoryWorkerResult,
 } from '../game/afkChunkCoordinator';
 import { recordAfkWorkerJobTelemetry,terminateAfkWorkers } from '../game/afkWorkerTelemetry';
 import { AFK_TRACE_WATCHDOG_INTERVAL_MS,afkRuntimeTrace } from '../game/afkRuntimeTrace';
@@ -292,6 +295,9 @@ export function HomeScreen({
     createdEpochAt: number;
     lastReleasedAt: number;
     completedJobs: number;
+    retainedInventory: InventoryRecord | null;
+    retainedInventoryToken: string | null;
+    retainedInventoryRevision: number;
   }>>([]);
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
   const afkActiveCommitTransactionRef = useRef<{
@@ -2875,6 +2881,9 @@ export function HomeScreen({
           createdEpochAt: performance.timeOrigin + createdAt,
           lastReleasedAt: createdAt,
           completedJobs: 0,
+          retainedInventory: null,
+          retainedInventoryToken: null,
+          retainedInventoryRevision: 0,
         };
         afkWorkerPoolRef.current.push(poolSlot);
         afkRuntimeTrace.record('worker_created', {
@@ -2903,6 +2912,16 @@ export function HomeScreen({
         workerCreatedAt: poolSlot.createdEpochAt,
         isFirstWorkerJob: poolSlot.completedJobs === 0,
       };
+      const inventoryJob: AfkPartyChunkInventoryWorkerJob = poolSlot.retainedInventory && poolSlot.retainedInventoryToken
+        ? createAfkPartyChunkInventoryContinuationWorkerJob(
+          job,
+          poolSlot.retainedInventory,
+          poolSlot.retainedInventoryToken,
+          poolSlot.retainedInventoryRevision,
+          `${job.jobId}:inventory`,
+          poolSlot.retainedInventoryRevision + 1,
+        )
+        : createAfkPartyChunkInventoryColdWorkerJob(job, `${job.jobId}:inventory`, 1);
       // Exact structured-clone sizing belongs in the opt-in Expedition 8 profiler.
       // The automatic dev/beta trace must remain observational and must not
       // stringify the complete state before every worker submission.
@@ -2935,7 +2954,7 @@ export function HomeScreen({
       worker.onmessage = (event: MessageEvent<
         | { type: 'started'; jobId: string; partyIndex: number }
         | { type: 'progress'; jobId: string; partyIndex: number; completedOperations: number; operationCount: number }
-        | { type: 'complete'; result: AfkPartyChunkWorkerResult }
+        | { type: 'complete'; result: AfkPartyChunkInventoryWorkerResult }
         | { type: 'error'; jobId: string; message: string }
       >) => {
         const eventJobId = event.data.type === 'complete' ? event.data.result.jobId : event.data.jobId;
@@ -2975,7 +2994,7 @@ export function HomeScreen({
           let result: AfkPartyChunkResult;
           const hydrationStartedAt = performance.now();
           try {
-            result = hydrateAfkPartyChunkResult(event.data.result, active.baseParty);
+            result = hydrateAfkPartyChunkInventoryResult(event.data.result, active.baseParty, inventoryJob);
           } catch (error) {
             failWorkerJob(
               event.data.result.jobId,
@@ -2988,6 +3007,9 @@ export function HomeScreen({
           currentSlot.jobId = null;
           currentSlot.lastReleasedAt = performance.now();
           currentSlot.completedJobs += 1;
+          currentSlot.retainedInventory = job.baseState.global.inventory;
+          currentSlot.retainedInventoryToken = inventoryJob.nextInventoryToken;
+          currentSlot.retainedInventoryRevision = inventoryJob.inventoryRevision;
           recordAfkWorkerJobTelemetry(result.jobId, result.workerTelemetry);
           memoryMonitor.releaseWorker(result.jobId);
           active.worker = null;
@@ -3045,7 +3067,7 @@ export function HomeScreen({
           simulatedCompletedAt: job.simulatedCompletedAt,
         },
       });
-      worker.postMessage(job);
+      worker.postMessage(inventoryJob);
       updateAfkTraceCoordinator();
       startedJob = true;
     });

@@ -61,6 +61,27 @@ export interface AfkPartyChunkContinuationWorkerJob extends AfkPartyChunkJob {
 
 export type AfkPartyChunkWorkerJob = AfkPartyChunkColdWorkerJob | AfkPartyChunkContinuationWorkerJob;
 
+export interface AfkPartyChunkInventoryColdWorkerJob extends AfkPartyChunkJob {
+  inventoryTransferSchemaVersion: 4;
+  inventoryTransferKind: 'cold';
+  nextInventoryToken: string;
+  inventoryRevision: number;
+}
+
+export interface AfkPartyChunkInventoryContinuationWorkerJob extends AfkPartyChunkJob {
+  inventoryTransferSchemaVersion: 4;
+  inventoryTransferKind: 'continuation';
+  retainedInventoryToken: string;
+  nextInventoryToken: string;
+  retainedInventoryRevision: number;
+  inventoryRevision: number;
+  inventoryChanges: Record<string, InventoryRecord[string] | null>;
+}
+
+export type AfkPartyChunkInventoryWorkerJob =
+  | AfkPartyChunkInventoryColdWorkerJob
+  | AfkPartyChunkInventoryContinuationWorkerJob;
+
 export interface AfkWorkerPerformanceTelemetry {
   workerStartupMs: number;
   queueMs: number;
@@ -121,6 +142,13 @@ export type AfkPartyChunkWorkerResultV3 = Omit<AfkPartyChunkWorkerResult, 'trans
   consumedStateToken: string | null;
   nextStateToken: string;
   reconciliationRevision: number;
+};
+
+export type AfkPartyChunkInventoryWorkerResult = Omit<AfkPartyChunkWorkerResult, 'transferSchemaVersion'> & {
+  transferSchemaVersion: 4;
+  consumedInventoryToken: string | null;
+  nextInventoryToken: string;
+  inventoryRevision: number;
 };
 
 function createAfkBaseDiaryPlaceholder(diaryLog: DiaryLog, index: number): DiaryLog {
@@ -281,6 +309,131 @@ export function hydrateAfkPartyChunkResultV3(
     throw new Error('Invalid AFK worker transfer schema v3 consumed token');
   }
   return hydrateAfkPartyChunkResult({ ...result, transferSchemaVersion: 2 }, baseParty);
+}
+
+export function hydrateAfkPartyChunkInventoryResult(
+  result: AfkPartyChunkInventoryWorkerResult,
+  baseParty: Party,
+  expected: AfkPartyChunkInventoryWorkerJob,
+): AfkPartyChunkResult {
+  if (result.transferSchemaVersion !== 4
+    || result.nextInventoryToken !== expected.nextInventoryToken
+    || result.inventoryRevision !== expected.inventoryRevision) {
+    throw new Error('Invalid AFK inventory reconciliation acknowledgement');
+  }
+  if (result.consumedInventoryToken !== null && typeof result.consumedInventoryToken !== 'string') {
+    throw new Error('Invalid AFK inventory reconciliation consumed token');
+  }
+  const expectedConsumedToken = expected.inventoryTransferKind === 'continuation'
+    ? expected.retainedInventoryToken
+    : null;
+  if (result.consumedInventoryToken !== expectedConsumedToken) {
+    throw new Error('Invalid AFK inventory reconciliation consumed token acknowledgement');
+  }
+  return hydrateAfkPartyChunkResult({ ...result, transferSchemaVersion: 2 }, baseParty);
+}
+
+export function createAfkPartyChunkInventoryColdWorkerJob(
+  job: AfkPartyChunkJob,
+  nextInventoryToken: string,
+  inventoryRevision: number,
+): AfkPartyChunkInventoryColdWorkerJob {
+  if (!nextInventoryToken || !Number.isInteger(inventoryRevision) || inventoryRevision < 1) {
+    throw new Error('Invalid AFK inventory cold transfer');
+  }
+  return {
+    ...job,
+    inventoryTransferSchemaVersion: 4,
+    inventoryTransferKind: 'cold',
+    nextInventoryToken,
+    inventoryRevision,
+  };
+}
+
+export function createAfkPartyChunkInventoryContinuationWorkerJob(
+  job: AfkPartyChunkJob,
+  retainedInventory: InventoryRecord,
+  retainedInventoryToken: string,
+  retainedInventoryRevision: number,
+  nextInventoryToken: string,
+  inventoryRevision: number,
+): AfkPartyChunkInventoryContinuationWorkerJob {
+  if (!retainedInventoryToken || !nextInventoryToken
+    || !Number.isInteger(retainedInventoryRevision) || retainedInventoryRevision < 1
+    || !Number.isInteger(inventoryRevision) || inventoryRevision <= retainedInventoryRevision) {
+    throw new Error('Invalid AFK inventory continuation transfer');
+  }
+  const authoritativeInventory = job.baseState.global.inventory;
+  const inventoryChanges: Record<string, InventoryRecord[string] | null> = {};
+  Object.entries(authoritativeInventory).forEach(([key, variant]) => {
+    if (retainedInventory[key] !== variant) inventoryChanges[key] = variant;
+  });
+  Object.keys(retainedInventory).forEach((key) => {
+    if (!(key in authoritativeInventory)) inventoryChanges[key] = null;
+  });
+  return {
+    ...job,
+    baseState: {
+      ...job.baseState,
+      global: { ...job.baseState.global, inventory: {} },
+    },
+    inventoryTransferSchemaVersion: 4,
+    inventoryTransferKind: 'continuation',
+    retainedInventoryToken,
+    nextInventoryToken,
+    retainedInventoryRevision,
+    inventoryRevision,
+    inventoryChanges,
+  };
+}
+
+export function hydrateAfkPartyChunkInventoryWorkerState(
+  job: AfkPartyChunkInventoryWorkerJob,
+  retainedInventory: InventoryRecord | null,
+  retainedInventoryToken: string | null,
+  retainedInventoryRevision: number,
+): { state: GameState; inventory: InventoryRecord } {
+  if (job.inventoryTransferSchemaVersion !== 4) {
+    throw new Error('Invalid AFK inventory transfer schema');
+  }
+  if (job.inventoryTransferKind === 'cold') {
+    if (!job.nextInventoryToken || !Number.isInteger(job.inventoryRevision) || job.inventoryRevision < 1) {
+      throw new Error('Invalid AFK inventory cold state');
+    }
+    return { state: job.baseState, inventory: job.baseState.global.inventory };
+  }
+  if (!retainedInventory
+    || job.retainedInventoryToken !== retainedInventoryToken
+    || job.retainedInventoryRevision !== retainedInventoryRevision) {
+    throw new Error('AFK inventory reconciliation state mismatch');
+  }
+  if (!job.nextInventoryToken || job.inventoryRevision <= retainedInventoryRevision) {
+    throw new Error('AFK inventory reconciliation revision mismatch');
+  }
+  Object.entries(job.inventoryChanges).forEach(([key, variant]) => {
+    if (variant === null) delete retainedInventory[key];
+    else retainedInventory[key] = variant;
+  });
+  return {
+    state: {
+      ...job.baseState,
+      global: { ...job.baseState.global, inventory: retainedInventory },
+    },
+    inventory: retainedInventory,
+  };
+}
+
+export function createAfkPartyChunkInventoryWorkerResult(
+  result: AfkPartyChunkResult,
+  job: AfkPartyChunkInventoryWorkerJob,
+): AfkPartyChunkInventoryWorkerResult {
+  return {
+    ...createAfkPartyChunkWorkerResult(result),
+    transferSchemaVersion: 4,
+    consumedInventoryToken: job.inventoryTransferKind === 'continuation' ? job.retainedInventoryToken : null,
+    nextInventoryToken: job.nextInventoryToken,
+    inventoryRevision: job.inventoryRevision,
+  };
 }
 
 function diaryLogEqual(left: DiaryLog, right: DiaryLog): boolean {

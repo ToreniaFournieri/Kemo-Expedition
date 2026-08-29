@@ -9,7 +9,7 @@ function positive(name, fallback) {
 
 const samples = positive('samples', 5);
 const warmups = positive('warmups', 1);
-const candidates = ['build72', 'production'];
+const candidates = ['build72', 'inventory'];
 const values = Object.fromEntries(candidates.map((candidate) => [candidate, {}]));
 const finalHashes = Object.fromEntries(candidates.map((candidate) => [candidate, new Set()]));
 
@@ -57,7 +57,7 @@ const fields = [
 ];
 const memory = Object.fromEntries(fields.map((field) => [field, {
   build72: distribution(values.build72[field]),
-  production: distribution(values.production[field]),
+  inventory: distribution(values.inventory[field]),
 }]));
 
 process.stdout.write(`${JSON.stringify({
@@ -66,10 +66,10 @@ process.stdout.write(`${JSON.stringify({
   sampling: { samples, warmups, processIsolation: 'fresh-electron-process-per-candidate' },
   validation: {
     build72FinalStateSha256: [...finalHashes.build72][0] ?? null,
-    productionFinalStateSha256: [...finalHashes.production][0] ?? null,
+    inventoryFinalStateSha256: [...finalHashes.inventory][0] ?? null,
     finalStateIdentical: finalHashes.build72.size === 1
-      && finalHashes.production.size === 1
-      && [...finalHashes.build72][0] === [...finalHashes.production][0],
+      && finalHashes.inventory.size === 1
+      && [...finalHashes.build72][0] === [...finalHashes.inventory][0],
   },
   memory,
 }, null, 2)}\n`);
