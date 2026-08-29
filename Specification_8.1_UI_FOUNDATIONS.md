@@ -27,10 +27,6 @@
 | m.laika light | #08A645 | #DC2626 | #08A645 | #FFEBCD |               #D1D5DB |
 | m.orca light  | #269096 | #8bab2d | #2EB9C1 | #DDE89A | rgb(173 211 213 / 0.40) |
 
-- m.orca light `--theme-sub`:  #2EB9C1 ->  #269096
-- m.orca light `--theme-accent`: #A6C83D -> #8bab2d
-- m.orca light `--hp-current`:  #7DD4D8 ->  #2EB9C1
-
 * Dark mode
 
 | Theme | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` | `--hp-track` |
