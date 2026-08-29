@@ -347,7 +347,7 @@ function normalizePartyProgressSnapshot(value) {
     language: value.language,
     updatedAt: Date.now(),
     unreadDiaryCount: Math.max(0, Math.floor(Number(value.unreadDiaryCount) || 0)),
-    theme: ['dark', 'laika', 'laika-dark', 'luna', 'luna-dark'].includes(value.theme) ? value.theme : 'light',
+    theme: ['dark', 'laika', 'laika-dark', 'luna', 'luna-dark', 'orca', 'orca-dark'].includes(value.theme) ? value.theme : 'light',
     parties,
   };
 }

@@ -28,7 +28,7 @@ const migratedSources = [
 ].map((path) => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
 
 test('theme registry owns browser, class, and desktop mappings for every game mode', () => {
-  assert.deepEqual(GAME_MODES, ['m.kemo', 'm.luna', 'm.laika']);
+  assert.deepEqual(GAME_MODES, ['m.kemo', 'm.luna', 'm.laika', 'm.orca']);
   for (const mode of GAME_MODES) {
     assert.equal(isGameMode(mode), true);
     assert.equal(getThemeClassName(mode), THEME_DEFINITIONS[mode].className);
@@ -58,14 +58,21 @@ test('semantic token contract covers foundations, feedback, gameplay, glass, and
   assert.match(tailwind, /status-error/);
 });
 
+test('UI foundation palette uses shared appearance values and exact four-theme HP colors', () => {
+  assert.match(css, /:root\s*\{[\s\S]*--surface-pane:\s*238 245 245;[\s\S]*--hp-current-strong:\s*var\(--hp-current\);[\s\S]*--hp-healed:\s*184 237 178;/);
+  assert.match(css, /\.theme-dark\s*\{[\s\S]*--surface-pane:\s*30 41 59;[\s\S]*--hp-healed:\s*94 140 91;/);
+  assert.match(css, /\.theme-orca\s*\{[\s\S]*--theme-sub:\s*46 185 193;[\s\S]*--theme-accent:\s*166 200 61;[\s\S]*--hp-current:\s*125 212 216;[\s\S]*--hp-damage-taken:\s*221 232 154;[\s\S]*--hp-track:\s*173 211 213;[\s\S]*--hp-track-alpha:\s*0\.4;/);
+  assert.match(css, /\.theme-orca\.theme-dark\s*\{[\s\S]*--theme-sub:\s*69 193 202;[\s\S]*--theme-accent:\s*179 211 85;[\s\S]*--hp-current:\s*78 159 165;[\s\S]*--hp-damage-taken:\s*138 145 96;[\s\S]*--hp-track:\s*63 74 82;[\s\S]*--hp-track-alpha:\s*0\.55;/);
+});
+
 test('theme-scoped aliases and document portals resolve the active theme instead of inherited Kemo defaults', () => {
-  const aliasRefreshBlock = css.match(/\.theme-luna,\s*\.theme-laika,\s*\.theme-dark\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+  const aliasRefreshBlock = css.match(/\.theme-luna,\s*\.theme-laika,\s*\.theme-orca,\s*\.theme-dark\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
   for (const alias of ['--selection-fill', '--color-sub', '--notification-normal-text', '--notification-surface', '--outcome-success']) {
     assert.match(aliasRefreshBlock, new RegExp(`${alias}:`));
   }
   assert.match(homeScreen, /document\.body\.classList\.toggle\('theme-dark', isDarkModeEnabled\)/);
   assert.match(homeScreen, /document\.body\.classList\.toggle\(className, enabled\)/);
-  assert.match(homeShared, /'theme-luna'[\s\S]*'theme-laika'[\s\S]*'theme-dark'/);
+  assert.match(homeShared, /'theme-luna'[\s\S]*'theme-laika'[\s\S]*'theme-orca'[\s\S]*'theme-dark'/);
 });
 
 test('dark notification translucency is semantic and no longer forced to an opaque light surface', () => {

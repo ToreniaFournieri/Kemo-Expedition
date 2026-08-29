@@ -8,36 +8,34 @@ This document records the runtime color meanings before similar values are merge
 
 The color system has three layers:
 
-1. Theme identity: the Kemo, Luna, or Laika sub/accent pair and theme-specific visualization colors.
+1. Theme identity: the Kemo, Luna, Laika, or Orca sub/accent pair and theme-specific visualization colors.
 2. UI semantics: canvas, surfaces, content, borders, status, interaction, and glass roles.
 3. Game semantics: HP, progress, outcome, condition, rarity, and notification roles.
 
-Light/dark appearance is independent from theme identity. The three themes therefore produce six browser variants. The macOS Party Progress pane consumes the same semantic names in its isolated stylesheet.
+Light/dark appearance is independent from theme identity. The four themes therefore produce eight browser variants. The macOS Party Progress pane consumes the same semantic names in its isolated stylesheet.
 
 ## Actual theme identity values
 
-| Token | Kemo light | Luna light | Laika light |
-|---|---:|---:|---:|
-| `--theme-sub` | `#3B82F6` | `#C28832` | `#08A645` |
-| `--theme-accent` | `#EA580C` | `#0C3CEA` | `#DC2626` |
-| `--surface-pane` | `#F3F4F6` | `#F3F4F6` | `#E5E7EB` |
-| `--hp-current-strong` | `#93C5FD` | `#DFBE80` | `#08A645` |
-| `--hp-current` | `#93C5FD` | `#E8B568` | `#08A645` |
-| `--hp-damage-taken` | `#FCB786` | `#FFED91` | `#FFEBCD` |
-| `--hp-healed` | `#B8EDB2` | `#B8EDB2` | `#B8EDB2` |
-| `--hp-track` | `#E2E8F0` | `rgb(217 204 175 / 0.45)` | `#D1D5DB` |
+| Token | Kemo light | Luna light | Laika light | Orca light |
+|---|---:|---:|---:|---:|
+| `--theme-sub` | `#3B82F6` | `#C28832` | `#08A645` | `#2EB9C1` |
+| `--theme-accent` | `#EA580C` | `#0C3CEA` | `#DC2626` | `#A6C83D` |
+| `--surface-pane` | `#EEF5F5` | `#EEF5F5` | `#EEF5F5` | `#EEF5F5` |
+| `--hp-current-strong` | `var(--hp-current)` | `var(--hp-current)` | `var(--hp-current)` | `var(--hp-current)` |
+| `--hp-current` | `#93C5FD` | `#E8B568` | `#08A645` | `#7DD4D8` |
+| `--hp-damage-taken` | `#FCB786` | `#FFED91` | `#FFEBCD` | `#DDE89A` |
+| `--hp-healed` | `#B8EDB2` | `#B8EDB2` | `#B8EDB2` | `#B8EDB2` |
+| `--hp-track` | `#E2E8F0` | `rgb(217 204 175 / 0.45)` | `#D1D5DB` | `rgb(173 211 213 / 0.40)` |
 
-| Token | Kemo dark | Luna dark | Laika dark |
-|---|---:|---:|---:|
-| `--theme-sub` | `#3B82F6` | `#C28832` | `#08A645` |
-| `--theme-accent` | `#EA580C` | `#60A5FA` | `#DC2626` |
-| `--surface-pane` | `#111827` | `#111827` | `#1E293B` |
-| `--hp-current` | `#6A94C6` | `#AA8D5D` | `#08A645` |
-| `--hp-damage-taken` | `#A5886D` | `#857255` | `#92675B` |
-| `--hp-healed` | `#5E8C5B` | `#708A58` | `#488259` |
-| `--hp-track` | `#374151` | `rgb(43 52 68 / 0.45)` | `#374151` |
-
-Luna dark intentionally retains its existing brighter browser accent. The isolated desktop pane still uses the exact specification accent `#0C3CEA`; the two roles remain distinct until a future visual decision merges them.
+| Token | Kemo dark | Luna dark | Laika dark | Orca dark |
+|---|---:|---:|---:|---:|
+| `--theme-sub` | `#3B82F6` | `#C28832` | `#08A645` | `#45C1CA` |
+| `--theme-accent` | `#EA580C` | `#60A5FA` | `#DC2626` | `#B3D355` |
+| `--surface-pane` | `#1E293B` | `#1E293B` | `#1E293B` | `#1E293B` |
+| `--hp-current` | `#6A94C6` | `#AA8D5D` | `#08A645` | `#4E9FA5` |
+| `--hp-damage-taken` | `#A5886D` | `#857255` | `#92675B` | `#8A9160` |
+| `--hp-healed` | `#5E8C5B` | `#5E8C5B` | `#5E8C5B` | `#5E8C5B` |
+| `--hp-track` | `#374151` | `rgb(43 52 68 / 0.45)` | `#374151` | `rgb(63 74 82 / 0.55)` |
 
 ## Foundation tokens
 

@@ -1,11 +1,11 @@
-export const GAME_MODES = ['m.kemo', 'm.luna', 'm.laika'] as const;
+export const GAME_MODES = ['m.kemo', 'm.luna', 'm.laika', 'm.orca'] as const;
 
 export type GameMode = typeof GAME_MODES[number];
 export type DarkModeSetting = 'off' | 'on' | 'system';
-export type DesktopTheme = 'light' | 'dark' | 'laika' | 'laika-dark' | 'luna' | 'luna-dark';
+export type DesktopTheme = 'light' | 'dark' | 'laika' | 'laika-dark' | 'luna' | 'luna-dark' | 'orca' | 'orca-dark';
 
 type ThemeDefinition = {
-  className: '' | 'theme-luna' | 'theme-laika';
+  className: '' | 'theme-luna' | 'theme-laika' | 'theme-orca';
   browserChrome: { light: string; dark: string };
   desktop: { light: DesktopTheme; dark: DesktopTheme };
 };
@@ -25,6 +25,11 @@ export const THEME_DEFINITIONS: Record<GameMode, ThemeDefinition> = {
     className: 'theme-laika',
     browserChrome: { light: '#e6efe7', dark: '#17281f' },
     desktop: { light: 'laika', dark: 'laika-dark' },
+  },
+  'm.orca': {
+    className: 'theme-orca',
+    browserChrome: { light: '#eef5f5', dark: '#1e293b' },
+    desktop: { light: 'orca', dark: 'orca-dark' },
   },
 };
 

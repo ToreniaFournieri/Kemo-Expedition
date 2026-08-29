@@ -2679,13 +2679,15 @@ export default function SettingTab({
 
           <div>
             <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.themeColor')}</div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {GAME_MODES.map((mode) => {
                 const labelKey = mode === 'm.kemo'
                   ? 'setting.theme.kemo'
                   : mode === 'm.luna'
                     ? 'setting.theme.luna'
-                    : 'setting.theme.laika';
+                    : mode === 'm.laika'
+                      ? 'setting.theme.laika'
+                      : 'setting.theme.orca';
                 return (
                   <button
                     key={mode}
@@ -2707,7 +2709,9 @@ export default function SettingTab({
                 ? t('setting.theme.description.kemo')
                 : gameMode === 'm.luna'
                   ? t('setting.theme.description.luna')
-                  : t('setting.theme.description.laika')}
+                  : gameMode === 'm.laika'
+                    ? t('setting.theme.description.laika')
+                    : t('setting.theme.description.orca')}
             </div>
           </div>
 

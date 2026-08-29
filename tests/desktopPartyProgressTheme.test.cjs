@@ -8,8 +8,9 @@ const projectRoot = path.resolve(__dirname, '..');
 test('desktop Party Progress pane uses the exact UI foundation theme colors and flat fills', () => {
   const css = fs.readFileSync(path.join(projectRoot, 'src', 'partyProgressPane.css'), 'utf8');
   const renderer = fs.readFileSync(path.join(projectRoot, 'src', 'partyProgressMain.tsx'), 'utf8');
+  const desktopMain = fs.readFileSync(path.join(projectRoot, 'desktop', 'main.cjs'), 'utf8');
 
-  for (const color of ['#3b82f6', '#ea580c', '#c28832', '#0c3cea', '#08a645', '#dc2626']) {
+  for (const color of ['#3b82f6', '#ea580c', '#c28832', '#0c3cea', '#60a5fa', '#08a645', '#dc2626', '#2eb9c1', '#a6c83d', '#45c1ca', '#b3d355']) {
     assert.match(css, new RegExp(color));
   }
 
@@ -22,4 +23,5 @@ test('desktop Party Progress pane uses the exact UI foundation theme colors and 
   assert.match(css, /--theme-sub-soft:\s*rgb\(8 166 69 \/ 0\.2\)/);
   assert.doesNotMatch(css, /linear-gradient|radial-gradient|backdrop-filter|color-mix|text-shadow|box-shadow/);
   assert.match(renderer, /document\.documentElement\.style\.colorScheme\s*=\s*theme/);
+  assert.match(desktopMain, /'orca', 'orca-dark'/);
 });

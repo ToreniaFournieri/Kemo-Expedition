@@ -769,7 +769,7 @@ export function HomeScreen({
 
   useEffect(() => {
     const themeClassName = getThemeClassName(gameMode);
-    const themeClassNames = ['theme-luna', 'theme-laika'] as const;
+    const themeClassNames = ['theme-luna', 'theme-laika', 'theme-orca'] as const;
     themeClassNames.forEach((className) => {
       const enabled = className === themeClassName;
       document.body.classList.toggle(className, enabled);

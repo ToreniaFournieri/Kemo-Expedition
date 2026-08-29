@@ -12,7 +12,7 @@
   /* Neutral surfaces and content. */
   --surface-canvas: 255 255 255;
   --surface-card: 255 255 255;
-  --surface-pane: 243 244 246;
+  --surface-pane: 238 245 245;
   --surface-subtle: 249 250 251;
   --surface-muted: 243 244 246;
   --surface-strong: 229 231 235;
@@ -52,8 +52,8 @@
   --status-unread: 239 68 68;
 
   /* Game visualization roles. */
-  --hp-current-strong: 147 197 253;
   --hp-current: 147 197 253;
+  --hp-current-strong: var(--hp-current);
   --hp-damage-taken: 252 183 134;
   --hp-healed: 184 237 178;
   --hp-track: 226 232 240;
@@ -119,11 +119,8 @@
 .theme-luna {
   --theme-sub: 194 136 50;
   --theme-accent: 12 60 234;
-  --surface-pane: 243 244 246;
-  --hp-current-strong: 223 190 128;
   --hp-current: 232 181 104;
   --hp-damage-taken: 255 237 145;
-  --hp-healed: 184 237 178;
   --hp-track: 217 204 175;
   --hp-track-alpha: 0.45;
   --progress-track: 217 204 175;
@@ -134,17 +131,26 @@
 .theme-laika {
   --theme-sub: 8 166 69;
   --theme-accent: 220 38 38;
-  --surface-pane: 229 231 235;
-  --hp-current-strong: 8 166 69;
   --hp-current: 8 166 69;
   /* SpecRef: 8.1 | UI_FOUNDATIONS | Damage taken color */
   --hp-damage-taken: 255 235 205;
-  --hp-healed: 184 237 178;
   --hp-track: 209 213 219;
   --progress-track: 209 213 219;
   /* SpecRef: 8.1 | UI_FOUNDATIONS | Emoji Display Rule */
   --icon-theme-sub-filter: brightness(0) saturate(100%) invert(55%) sepia(54%) saturate(312%) hue-rotate(108deg) brightness(88%) contrast(88%);
   --icon-theme-accent-filter: brightness(0) saturate(100%) invert(28%) sepia(74%) saturate(2140%) hue-rotate(356deg) brightness(90%) contrast(86%);
+}
+
+.theme-orca {
+  --theme-sub: 46 185 193;
+  --theme-accent: 166 200 61;
+  --hp-current: 125 212 216;
+  --hp-damage-taken: 221 232 154;
+  --hp-track: 173 211 213;
+  --hp-track-alpha: 0.4;
+  --progress-track: 173 211 213;
+  --icon-theme-sub-filter: brightness(0) saturate(100%) invert(70%) sepia(36%) saturate(957%) hue-rotate(134deg) brightness(88%) contrast(87%);
+  --icon-theme-accent-filter: brightness(0) saturate(100%) invert(75%) sepia(44%) saturate(732%) hue-rotate(28deg) brightness(94%) contrast(82%);
 }
 
 .theme-dark {
@@ -153,7 +159,7 @@
   color: rgb(229 231 235);
   --surface-canvas: 17 24 39;
   --surface-card: 31 41 55;
-  --surface-pane: 17 24 39;
+  --surface-pane: 30 41 59;
   --surface-subtle: 15 23 42;
   --surface-muted: 30 41 59;
   --surface-strong: 51 65 85;
@@ -428,10 +434,8 @@ body.app-dark {
 .theme-luna.theme-dark {
   --theme-accent: 96 165 250;
   --icon-theme-accent-filter: brightness(0) saturate(100%) invert(67%) sepia(56%) saturate(2024%) hue-rotate(188deg) brightness(102%) contrast(96%);
-  --hp-current-strong: 170 141 93;
   --hp-current: 170 141 93;
   --hp-damage-taken: 133 114 85;
-  --hp-healed: 112 138 88;
   --hp-track: 43 52 68;
   --hp-track-alpha: 0.45;
   --progress-track: 43 52 68;
@@ -440,23 +444,31 @@ body.app-dark {
 .theme-laika.theme-dark {
   --theme-sub: 8 166 69;
   --theme-accent: 220 38 38;
-  --surface-pane: 30 41 59;
-  --hp-current-strong: 8 166 69;
   --hp-current: 8 166 69;
   --hp-damage-taken: 146 103 91;
-  --hp-healed: 72 130 89;
   --hp-track: 55 65 81;
   --progress-track: 55 65 81;
+}
+
+.theme-orca.theme-dark {
+  --theme-sub: 69 193 202;
+  --theme-accent: 179 211 85;
+  --hp-current: 78 159 165;
+  --hp-damage-taken: 138 145 96;
+  --hp-track: 63 74 82;
+  --hp-track-alpha: 0.55;
+  --progress-track: 63 74 82;
 }
 
 /*
  * CSS custom-property aliases resolve at computed-value time. Refresh every
  * semantic alias on the element that owns a theme/appearance class so it uses
- * that element's final Kemo/Luna/Laika and light/dark foundation values rather
+ * that element's final Kemo/Luna/Laika/Orca and light/dark foundation values rather
  * than inheriting the already-resolved :root Kemo value.
  */
 .theme-luna,
 .theme-laika,
+.theme-orca,
 .theme-dark {
   --selection-fill: var(--theme-sub);
   --selection-fill-soft: var(--theme-sub);

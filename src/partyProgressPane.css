@@ -43,7 +43,8 @@ body[data-theme="light"] .pane-shell {
 }
 
 body[data-theme="laika"] .pane-shell,
-body[data-theme="luna"] .pane-shell {
+body[data-theme="luna"] .pane-shell,
+body[data-theme="orca"] .pane-shell {
   --surface-canvas: #ffffff;
   --surface-card: #f3f4f6;
   --surface-interactive-hover: #e5e7eb;
@@ -56,8 +57,10 @@ body[data-theme="luna"] .pane-shell {
 /* SpecRef: 8.1 | UI_FOUNDATIONS | exact theme sub and accent pairs */
 body[data-theme="laika"] .pane-shell,
 body[data-theme="laika-dark"] .pane-shell { --theme-sub: #08a645; --theme-sub-soft: rgb(8 166 69 / 0.2); --theme-accent: #dc2626; }
-body[data-theme="luna"] .pane-shell,
-body[data-theme="luna-dark"] .pane-shell { --theme-sub: #c28832; --theme-sub-soft: rgb(194 136 50 / 0.2); --theme-accent: #0c3cea; }
+body[data-theme="luna"] .pane-shell { --theme-sub: #c28832; --theme-sub-soft: rgb(194 136 50 / 0.2); --theme-accent: #0c3cea; }
+body[data-theme="luna-dark"] .pane-shell { --theme-sub: #c28832; --theme-sub-soft: rgb(194 136 50 / 0.2); --theme-accent: #60a5fa; }
+body[data-theme="orca"] .pane-shell { --theme-sub: #2eb9c1; --theme-sub-soft: rgb(46 185 193 / 0.2); --theme-accent: #a6c83d; }
+body[data-theme="orca-dark"] .pane-shell { --theme-sub: #45c1ca; --theme-sub-soft: rgb(69 193 202 / 0.2); --theme-accent: #b3d355; }
 
 .pane-header {
   display: flex;

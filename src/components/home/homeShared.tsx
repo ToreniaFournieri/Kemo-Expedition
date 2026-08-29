@@ -913,6 +913,7 @@ export function FloatingBubblePortal({ children }: { children: ReactNode }) {
   const portalThemeClasses = [
     document.documentElement.classList.contains('theme-luna') || document.body.classList.contains('theme-luna') ? 'theme-luna' : '',
     document.documentElement.classList.contains('theme-laika') || document.body.classList.contains('theme-laika') ? 'theme-laika' : '',
+    document.documentElement.classList.contains('theme-orca') || document.body.classList.contains('theme-orca') ? 'theme-orca' : '',
     document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark') ? 'theme-dark' : '',
   ].filter(Boolean).join(' ');
 
