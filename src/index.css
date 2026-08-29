@@ -142,9 +142,9 @@
 }
 
 .theme-orca {
-  --theme-sub: 46 185 193;
-  --theme-accent: 166 200 61;
-  --hp-current: 125 212 216;
+  --theme-sub: 38 144 150;
+  --theme-accent: 139 171 45;
+  --hp-current: 46 185 193;
   --hp-damage-taken: 221 232 154;
   --hp-track: 173 211 213;
   --hp-track-alpha: 0.4;

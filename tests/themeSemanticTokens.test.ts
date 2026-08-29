@@ -61,7 +61,7 @@ test('semantic token contract covers foundations, feedback, gameplay, glass, and
 test('UI foundation palette uses shared appearance values and exact four-theme HP colors', () => {
   assert.match(css, /:root\s*\{[\s\S]*--surface-pane:\s*238 245 245;[\s\S]*--hp-current-strong:\s*var\(--hp-current\);[\s\S]*--hp-healed:\s*184 237 178;/);
   assert.match(css, /\.theme-dark\s*\{[\s\S]*--surface-pane:\s*30 41 59;[\s\S]*--hp-healed:\s*94 140 91;/);
-  assert.match(css, /\.theme-orca\s*\{[\s\S]*--theme-sub:\s*46 185 193;[\s\S]*--theme-accent:\s*166 200 61;[\s\S]*--hp-current:\s*125 212 216;[\s\S]*--hp-damage-taken:\s*221 232 154;[\s\S]*--hp-track:\s*173 211 213;[\s\S]*--hp-track-alpha:\s*0\.4;/);
+  assert.match(css, /\.theme-orca\s*\{[\s\S]*--theme-sub:\s*38 144 150;[\s\S]*--theme-accent:\s*139 171 45;[\s\S]*--hp-current:\s*46 185 193;[\s\S]*--hp-damage-taken:\s*221 232 154;[\s\S]*--hp-track:\s*173 211 213;[\s\S]*--hp-track-alpha:\s*0\.4;/);
   assert.match(css, /\.theme-orca\.theme-dark\s*\{[\s\S]*--theme-sub:\s*69 193 202;[\s\S]*--theme-accent:\s*179 211 85;[\s\S]*--hp-current:\s*78 159 165;[\s\S]*--hp-damage-taken:\s*138 145 96;[\s\S]*--hp-track:\s*63 74 82;[\s\S]*--hp-track-alpha:\s*0\.55;/);
 });
 

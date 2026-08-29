@@ -10,7 +10,7 @@ test('desktop Party Progress pane uses the exact UI foundation theme colors and 
   const renderer = fs.readFileSync(path.join(projectRoot, 'src', 'partyProgressMain.tsx'), 'utf8');
   const desktopMain = fs.readFileSync(path.join(projectRoot, 'desktop', 'main.cjs'), 'utf8');
 
-  for (const color of ['#3b82f6', '#ea580c', '#c28832', '#0c3cea', '#60a5fa', '#08a645', '#dc2626', '#2eb9c1', '#a6c83d', '#45c1ca', '#b3d355']) {
+  for (const color of ['#3b82f6', '#ea580c', '#c28832', '#0c3cea', '#60a5fa', '#08a645', '#dc2626', '#269096', '#8bab2d', '#45c1ca', '#b3d355']) {
     assert.match(css, new RegExp(color));
   }
 

@@ -59,7 +59,7 @@ body[data-theme="laika"] .pane-shell,
 body[data-theme="laika-dark"] .pane-shell { --theme-sub: #08a645; --theme-sub-soft: rgb(8 166 69 / 0.2); --theme-accent: #dc2626; }
 body[data-theme="luna"] .pane-shell { --theme-sub: #c28832; --theme-sub-soft: rgb(194 136 50 / 0.2); --theme-accent: #0c3cea; }
 body[data-theme="luna-dark"] .pane-shell { --theme-sub: #c28832; --theme-sub-soft: rgb(194 136 50 / 0.2); --theme-accent: #60a5fa; }
-body[data-theme="orca"] .pane-shell { --theme-sub: #2eb9c1; --theme-sub-soft: rgb(46 185 193 / 0.2); --theme-accent: #a6c83d; }
+body[data-theme="orca"] .pane-shell { --theme-sub: #269096; --theme-sub-soft: rgb(38 144 150 / 0.2); --theme-accent: #8bab2d; }
 body[data-theme="orca-dark"] .pane-shell { --theme-sub: #45c1ca; --theme-sub-soft: rgb(69 193 202 / 0.2); --theme-accent: #b3d355; }
 
 .pane-header {
