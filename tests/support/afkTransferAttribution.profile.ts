@@ -14,7 +14,7 @@ import {
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
 import { serializeGameState } from '../../src/game/saveCodec.ts';
-import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
+import { getAfkInventoryDeltaForState, simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
 import { setLanguage } from '../../src/i18n/index.ts';
 import type { GameState } from '../../src/types.ts';
 import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
@@ -109,14 +109,19 @@ const compactResults: AfkPartyChunkResult[] = state.parties.map((party, partyInd
       }),
     ),
   );
-  const completeResult = createAfkPartyChunkResult(job, resultState, 0);
+  const completeResult = createAfkPartyChunkResult(job, resultState, 0, {}, getAfkInventoryDeltaForState(resultState));
   return hydrateAfkPartyChunkResult(createAfkPartyChunkWorkerResult(completeResult), state.parties[partyIndex]);
 }).sort(compareAfkChunkResults);
 
 const resultBytes = results.map((result) => JSON.stringify(result));
 const compactResultBytes = compactResults.map((result) => JSON.stringify(result));
 if (JSON.stringify(resultBytes) !== JSON.stringify(compactResultBytes)) {
-  throw new Error('Compact AFK worker inputs changed one or more hydrated worker results');
+  const partyIndex = resultBytes.findIndex((value, index) => value !== compactResultBytes[index]);
+  const expected = resultBytes[partyIndex] ?? '';
+  const actual = compactResultBytes[partyIndex] ?? '';
+  let offset = 0;
+  while (offset < expected.length && expected[offset] === actual[offset]) offset += 1;
+  throw new Error(`Compact AFK worker inputs changed hydrated worker result ${partyIndex} at ${offset}: ${expected.slice(offset, offset + 240)} != ${actual.slice(offset, offset + 240)}`);
 }
 
 const finalState = results.reduce((current, result) => commitAfkPartyChunk(current, result), state);

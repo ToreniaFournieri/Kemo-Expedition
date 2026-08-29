@@ -16,10 +16,11 @@ import {
 } from '../../src/hooks/useGameState.ts';
 import { ensureLanguageLoaded } from '../../src/i18n/index.ts';
 import { withItemLookupStrategyForTesting } from '../../src/data/items.ts';
+import { materializeAfkCompactInventoryCandidateDelta } from './afkCompactInventoryCandidate.ts';
 
 declare const self: DedicatedWorkerGlobalScope;
 
-type Candidate = 'full' | 'build62' | 'build71' | 'linear' | 'production' | 'continuation';
+type Candidate = 'full' | 'build62' | 'build71' | 'build72' | 'linear' | 'production' | 'continuation';
 const epochNow = () => performance.timeOrigin + performance.now();
 const retainedParties = new Map<number, { party: import('../../src/types.ts').Party; stateToken: string; revision: number }>();
 
@@ -68,11 +69,15 @@ self.onmessage = async (event: MessageEvent<{
         ),
       )
     ));
+    const inventoryDelta = getAfkInventoryDeltaForState(resultState);
     const completeResult = createAfkPartyChunkResult(
       { ...job, baseState },
       resultState,
       0,
-      getAfkInventoryDeltaForState(resultState),
+      {},
+      candidate === 'production' || candidate === 'linear'
+        ? materializeAfkCompactInventoryCandidateDelta(inventoryDelta!)
+        : inventoryDelta,
     );
     const result = candidate === 'continuation' && 'transferKind' in job
       ? (() => {
@@ -87,7 +92,7 @@ self.onmessage = async (event: MessageEvent<{
           reconciliationRevision: job.reconciliationRevision,
         });
       })()
-      : candidate === 'production' || candidate === 'linear' || candidate === 'build71'
+      : candidate === 'production' || candidate === 'linear' || candidate === 'build71' || candidate === 'build72'
       ? createAfkPartyChunkWorkerResult(completeResult)
       : candidate === 'build62'
         ? (({ baseParty: _baseParty, ...build62Result }) => build62Result)(completeResult)

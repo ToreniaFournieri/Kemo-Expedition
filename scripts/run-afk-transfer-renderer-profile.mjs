@@ -13,6 +13,8 @@ function positive(name, fallback) {
 
 const samples = positive('samples', 20);
 const warmups = positive('warmups', 2);
+const onlyCandidate = process.argv.find((value) => value.startsWith('--only='))?.split('=')[1] ?? '';
+const promotionOnly = process.argv.includes('--promotion');
 const temporaryDirectory = mkdtempSync(join(tmpdir(), 'bokemo-afk-transfer-renderer-'));
 const rendererPath = join(temporaryDirectory, 'profile.js');
 const workerPath = join(temporaryDirectory, 'worker.js');
@@ -36,6 +38,8 @@ try {
       __AFK_TRANSFER_WORKER_URL__: JSON.stringify('./worker.js'),
       __AFK_TRANSFER_SAMPLE_COUNT__: String(samples),
       __AFK_TRANSFER_WARMUP_COUNT__: String(warmups),
+      __AFK_TRANSFER_ONLY_CANDIDATE__: JSON.stringify(onlyCandidate),
+      __AFK_TRANSFER_PROMOTION_ONLY__: String(promotionOnly),
     },
     logLevel: 'silent',
   });

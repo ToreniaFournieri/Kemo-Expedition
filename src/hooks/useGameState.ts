@@ -910,7 +910,7 @@ interface AfkInventoryMutation {
  * Chunk input while writes retain only changed variants. Checkpoints provide
  * exact per-expedition rollback without cloning the complete inventory.
  */
-class AfkInventoryOverlay {
+export class AfkInventoryOverlay {
   readonly record: InventoryRecord;
   private readonly changes = new Map<string, InventoryVariant | undefined>();
   private readonly mutations: AfkInventoryMutation[] = [];

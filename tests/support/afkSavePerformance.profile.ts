@@ -19,9 +19,10 @@ import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRando
 import { persistGameState } from '../../src/game/savePersistence.ts';
 import { serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
-import { simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
+import { AfkInventoryOverlay, simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
 import type { GameState } from '../../src/types.ts';
 import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
+import { createAfkCompactInventoryCandidateState } from './afkCompactInventoryCandidate.ts';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DEV_CYCLE_DURATION_SCALE = 0.05;
@@ -125,4 +126,46 @@ test('profiling wrappers preserve deterministic AFK worker and coordinator resul
   assert.deepEqual(serializeGameState(second), serializeGameState(first));
   assert.deepEqual(serializeGameState(compact), serializeGameState(first));
   assert.deepEqual(serializeGameState(immutableInventory), serializeGameState(first));
+});
+
+test('AFK inventory overlay rolls back repeated Defeat mutations and releases successful journals', () => {
+  const { state } = loadAndValidateExpedition8Fixture();
+  const entries = Object.entries(state.global.inventory);
+  const [existingKey, existingVariant] = entries.find(([, variant]) => variant.count < 97)!;
+  const [, introducedVariant] = entries.find(([key]) => key !== existingKey)!;
+  const base = { [existingKey]: existingVariant };
+  const overlay = new AfkInventoryOverlay(base);
+
+  const defeatCheckpoint = overlay.checkpoint();
+  overlay.record[existingKey] = { ...existingVariant, count: existingVariant.count + 1 };
+  overlay.record[existingKey] = { ...existingVariant, count: existingVariant.count + 2 };
+  overlay.record['999999-0-0'] = { ...introducedVariant, count: 1 };
+  overlay.rollback(defeatCheckpoint);
+  assert.equal(overlay.record[existingKey], existingVariant);
+  assert.equal(overlay.record['999999-0-0'], undefined);
+
+  const clearCheckpoint = overlay.checkpoint();
+  overlay.record[existingKey] = { ...existingVariant, count: existingVariant.count + 1 };
+  overlay.releaseCheckpoint();
+  overlay.rollback(clearCheckpoint);
+  assert.equal(overlay.record[existingKey]?.count, existingVariant.count + 1);
+});
+
+test('compact inventory candidate retains only dynamic item fields without mutating renderer state', () => {
+  const { state } = loadAndValidateExpedition8Fixture();
+  const [key, original] = Object.entries(state.global.inventory)[0]!;
+  const candidate = createAfkCompactInventoryCandidateState(state, 0);
+  assert.notEqual(candidate.global.inventory, state.global.inventory);
+  assert.deepEqual(candidate.global.inventory[key], {
+    ...original,
+    item: {
+      id: original.item.id,
+      enhancement: original.item.enhancement,
+      superRare: original.item.superRare,
+      isLocked: original.item.isLocked,
+      jewel: original.item.jewel,
+      ...(Object.prototype.hasOwnProperty.call(original.item, 'isNew') ? { isNew: original.item.isNew } : {}),
+    },
+  });
+  assert.equal(state.global.inventory[key], original);
 });

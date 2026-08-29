@@ -18,13 +18,16 @@ import {
 import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import type { GameState } from '../../src/types.ts';
+import { createAfkCompactInventoryCandidateState } from './afkCompactInventoryCandidate.ts';
 
 declare const __EXPEDITION_8_SAVE_FIXTURE__: string;
 declare const __AFK_TRANSFER_WORKER_URL__: string;
 declare const __AFK_TRANSFER_SAMPLE_COUNT__: number;
 declare const __AFK_TRANSFER_WARMUP_COUNT__: number;
+declare const __AFK_TRANSFER_ONLY_CANDIDATE__: string;
+declare const __AFK_TRANSFER_PROMOTION_ONLY__: boolean;
 
-type Candidate = 'full' | 'build62' | 'build71' | 'linear' | 'production' | 'continuation';
+type Candidate = 'full' | 'build62' | 'build71' | 'build72' | 'linear' | 'production' | 'continuation';
 type Build62WorkerResult = Omit<AfkPartyChunkResult, 'baseParty'>;
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
@@ -108,11 +111,13 @@ function createJob(state: GameState, partyIndex: number, candidate: Candidate, s
     operationCount: AFK_CHUNK_CYCLE_COUNT,
     baseState: candidate === 'full'
       ? state
-      : createAfkPartyChunkWorkerState(
-        state,
-        partyIndex,
-        candidate === 'build62' || candidate === 'build71' || candidate === 'continuation' ? 'full' : 'placeholders',
-      ),
+      : candidate === 'production' || candidate === 'linear'
+        ? createAfkCompactInventoryCandidateState(state, partyIndex)
+        : createAfkPartyChunkWorkerState(
+          state,
+          partyIndex,
+          candidate === 'build62' || candidate === 'build71' || candidate === 'continuation' ? 'full' : 'placeholders',
+        ),
     gameMode: 'm.kemo',
     cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
   };
@@ -195,7 +200,7 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
             const workerResult = completion.result as AfkPartyChunkResult | Build62WorkerResult | AfkPartyChunkWorkerResult | AfkPartyChunkWorkerResultV3;
             const hydrated = candidate === 'continuation'
               ? hydrateAfkPartyChunkResultV3(workerResult as AfkPartyChunkWorkerResultV3, authoritativePartiesByJobId.get(baseJob.jobId)!)
-              : candidate === 'production' || candidate === 'linear' || candidate === 'build71'
+              : candidate === 'production' || candidate === 'linear' || candidate === 'build71' || candidate === 'build72'
                 ? hydrateAfkPartyChunkResult(workerResult as AfkPartyChunkWorkerResult, authoritativePartiesByJobId.get(baseJob.jobId)!)
               : candidate === 'build62'
                 ? hydrateBuild62Result(workerResult as Build62WorkerResult, authoritativePartiesByJobId.get(baseJob.jobId)!)
@@ -309,24 +314,37 @@ async function runProfile() {
   const envelope = JSON.parse(__EXPEDITION_8_SAVE_FIXTURE__) as { saveDataCompressed: string };
   const state = hydrateGameState(JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState);
   const measured: Record<Candidate, Sample[]> = {
-    full: [], build62: [], build71: [], linear: [], production: [], continuation: [],
+    full: [], build62: [], build71: [], build72: [], linear: [], production: [], continuation: [],
   };
+  const onlyCandidate = (__AFK_TRANSFER_ONLY_CANDIDATE__ || '') as Candidate | '';
+  const validCandidates: Candidate[] = ['full', 'build62', 'build71', 'build72', 'linear', 'production', 'continuation'];
+  if (onlyCandidate && !validCandidates.includes(onlyCandidate)) throw new Error(`Unknown isolated candidate: ${onlyCandidate}`);
   for (let index = -__AFK_TRANSFER_WARMUP_COUNT__; index < __AFK_TRANSFER_SAMPLE_COUNT__; index += 1) {
     const orders: Candidate[][] = [
-      ['full', 'build62', 'build71', 'continuation', 'linear', 'production'],
-      ['build62', 'build71', 'continuation', 'full', 'production', 'linear'],
-      ['build71', 'continuation', 'full', 'build62', 'linear', 'production'],
-      ['continuation', 'full', 'build62', 'production', 'build71', 'linear'],
+      ['full', 'build62', 'build71', 'build72', 'continuation', 'linear', 'production'],
+      ['build62', 'build71', 'build72', 'continuation', 'full', 'production', 'linear'],
+      ['build71', 'build72', 'continuation', 'full', 'build62', 'linear', 'production'],
+      ['build72', 'continuation', 'full', 'build62', 'production', 'build71', 'linear'],
     ];
-    const order = orders[((index % orders.length) + orders.length) % orders.length]!;
+    const order = onlyCandidate
+      ? [onlyCandidate]
+      : __AFK_TRANSFER_PROMOTION_ONLY__
+        ? index % 2 === 0 ? ['build72', 'production'] as Candidate[] : ['production', 'build72'] as Candidate[]
+        : orders[((index % orders.length) + orders.length) % orders.length]!;
     const pair: Partial<Record<Candidate, Sample>> = {};
     for (const candidate of order) pair[candidate] = await runCandidate(state, candidate, index);
-    if (pair.full!.hydratedResultsJson !== pair.build62!.hydratedResultsJson
+    if (__AFK_TRANSFER_PROMOTION_ONLY__) {
+      if (pair.build72!.hydratedResultsJson !== pair.production!.hydratedResultsJson
+        || pair.build72!.finalHash !== pair.production!.finalHash) {
+        throw new Error(`Build-72/production promotion parity mismatch in sample ${index}`);
+      }
+    } else if (!onlyCandidate && (pair.full!.hydratedResultsJson !== pair.build62!.hydratedResultsJson
       || pair.full!.hydratedResultsJson !== pair.production!.hydratedResultsJson
       || pair.full!.hydratedResultsJson !== pair.build71!.hydratedResultsJson
+      || pair.full!.hydratedResultsJson !== pair.build72!.hydratedResultsJson
       || pair.full!.hydratedResultsJson !== pair.linear!.hydratedResultsJson
       || pair.full!.hydratedResultsJson !== pair.continuation!.hydratedResultsJson
-      || new Set(Object.values(pair).map((sample) => sample!.finalHash)).size !== 1) {
+      || new Set(Object.values(pair).map((sample) => sample!.finalHash)).size !== 1)) {
       throw new Error(`Hydrated full/compact result mismatch in sample ${index}: ${JSON.stringify({
         fullBuild62: pair.full!.hydratedResultsJson === pair.build62!.hydratedResultsJson,
         fullProduction: pair.full!.hydratedResultsJson === pair.production!.hydratedResultsJson,
@@ -337,38 +355,27 @@ async function runProfile() {
     }
     if (index >= 0) {
       const retainMetrics = (sample: Sample): Sample => ({ ...sample, hydratedResultsJson: '' });
-      measured.full.push(retainMetrics(pair.full!));
-      measured.build62.push(retainMetrics(pair.build62!));
-      measured.build71.push(retainMetrics(pair.build71!));
-      measured.linear.push(retainMetrics(pair.linear!));
-      measured.production.push(retainMetrics(pair.production!));
-      measured.continuation.push(retainMetrics(pair.continuation!));
+      order.forEach((candidate) => measured[candidate].push(retainMetrics(pair[candidate]!)));
     }
   }
-  const pairedWallImprovement = measured.build62.map((sample, index) => (
-    (1 - measured.production[index].wallMs / sample.wallMs) * 100
+  const pairedImprovement = (
+    baseline: Sample[],
+    candidate: Sample[],
+    field: 'wallMs' | 'eventLoopDelayMs' | 'workerComputeSumMs',
+  ) => Array.from({ length: Math.min(baseline.length, candidate.length) }, (_, index) => (
+    (1 - candidate[index]![field] / baseline[index]![field]) * 100
   ));
-  const pairedEventLoopImprovement = measured.build62.map((sample, index) => (
-    (1 - measured.production[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
-  ));
-  const build71WallImprovement = measured.build71.map((sample, index) => (
-    (1 - measured.production[index].wallMs / sample.wallMs) * 100
-  ));
-  const build71EventLoopImprovement = measured.build71.map((sample, index) => (
-    (1 - measured.production[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
-  ));
-  const continuationWallImprovement = measured.production.map((sample, index) => (
-    (1 - measured.continuation[index].wallMs / sample.wallMs) * 100
-  ));
-  const continuationHeartbeatImprovement = measured.production.map((sample, index) => (
-    (1 - measured.continuation[index].eventLoopDelayMs / sample.eventLoopDelayMs) * 100
-  ));
-  const indexedWallImprovement = measured.linear.map((sample, index) => (
-    (1 - measured.production[index].wallMs / sample.wallMs) * 100
-  ));
-  const indexedComputeImprovement = measured.linear.map((sample, index) => (
-    (1 - measured.production[index].workerComputeSumMs / sample.workerComputeSumMs) * 100
-  ));
+  const pairedWallImprovement = pairedImprovement(measured.build62, measured.production, 'wallMs');
+  const pairedEventLoopImprovement = pairedImprovement(measured.build62, measured.production, 'eventLoopDelayMs');
+  const build71WallImprovement = pairedImprovement(measured.build71, measured.production, 'wallMs');
+  const build71EventLoopImprovement = pairedImprovement(measured.build71, measured.production, 'eventLoopDelayMs');
+  const build72WallImprovement = pairedImprovement(measured.build72, measured.production, 'wallMs');
+  const build72EventLoopImprovement = pairedImprovement(measured.build72, measured.production, 'eventLoopDelayMs');
+  const build72ComputeImprovement = pairedImprovement(measured.build72, measured.production, 'workerComputeSumMs');
+  const continuationWallImprovement = pairedImprovement(measured.production, measured.continuation, 'wallMs');
+  const continuationHeartbeatImprovement = pairedImprovement(measured.production, measured.continuation, 'eventLoopDelayMs');
+  const indexedWallImprovement = pairedImprovement(measured.linear, measured.production, 'wallMs');
+  const indexedComputeImprovement = pairedImprovement(measured.linear, measured.production, 'workerComputeSumMs');
   return {
     schemaVersion: 2,
     generatedAt: new Date().toISOString(),
@@ -376,16 +383,19 @@ async function runProfile() {
       warmups: __AFK_TRANSFER_WARMUP_COUNT__,
       measuredSamples: __AFK_TRANSFER_SAMPLE_COUNT__,
       backlogWaves: BACKLOG_WAVES,
-      candidateOrder: 'rotating-within-sample',
+      candidateOrder: onlyCandidate
+        ? `isolated-${onlyCandidate}`
+        : __AFK_TRANSFER_PROMOTION_ONLY__ ? 'alternating-build72-production' : 'rotating-within-sample',
     },
     validation: {
       hydratedResultsByteIdenticalEverySample: true,
-      deterministicAfkFinalStateSha256: measured.production[0]?.finalHash ?? null,
+      deterministicAfkFinalStateSha256: validCandidates.flatMap((candidate) => measured[candidate])[0]?.finalHash ?? null,
     },
     candidates: {
       full: summarize(measured.full),
       build62: summarize(measured.build62),
       build71: summarize(measured.build71),
+      build72: summarize(measured.build72),
       linear: summarize(measured.linear),
       production: summarize(measured.production),
       continuation: summarize(measured.continuation),
@@ -397,6 +407,11 @@ async function runProfile() {
     build71ToProductionPairedImprovementPercent: {
       wallMs: distribution(build71WallImprovement),
       eventLoopDelayMs: distribution(build71EventLoopImprovement),
+    },
+    build72ToProductionPairedImprovementPercent: {
+      wallMs: distribution(build72WallImprovement),
+      eventLoopDelayMs: distribution(build72EventLoopImprovement),
+      workerComputeSumMs: distribution(build72ComputeImprovement),
     },
     productionToContinuationPairedImprovementPercent: {
       wallMs: distribution(continuationWallImprovement),
