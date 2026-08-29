@@ -1,4 +1,4 @@
-import { Fragment,useEffect,useState,type Dispatch,type SetStateAction } from 'react';
+import { Fragment,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
 import {
 DUNGEONS,
 getEffectiveEnemyLevel,
@@ -10,10 +10,11 @@ hasDefeatedDungeonBoss
 import { DebugSettings,getTimeSpeedScale } from '../../../game/debugSettings';
 import { getDifficultyOffsetItemChanceTickets,getDifficultyOffsetMax,getDifficultyOffsetSuperRareChanceTickets,normalizeDifficultyOffset } from '../../../game/difficultyOffset';
 import { getItemDisplayName } from '../../../game/gameState';
+import { EXPEDITION_SIMULATION_RUN_COUNT } from '../../../game/expeditionSimulation';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
 import { computePartyStats } from '../../../game/partyComputation';
 import { t } from '../../../i18n';
-import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,GameState,Item,Party } from '../../../types';
+import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item,Party } from '../../../types';
 
 
 import {
@@ -71,6 +72,7 @@ export default function ExpeditionTab({
   onSetExpeditionDepthLimit,
   onSetExpeditionDifficultyOffset,
   onResetExpeditionStats,
+  onSimulateExpedition,
   isExpeditionStatsDisplayEnabled,
   partyCycles,
   afkRecoveryProgressPercent,
@@ -91,6 +93,7 @@ export default function ExpeditionTab({
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onSetExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
+  onSimulateExpedition: (partyIndex: number, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
   isExpeditionStatsDisplayEnabled: boolean;
   partyCycles: Record<number, PartyCycleRuntime>;
   afkRecoveryProgressPercent: number | null;
@@ -103,6 +106,7 @@ export default function ExpeditionTab({
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
   isDarkModeEnabled: boolean;
 }) {
+  const [liveProgressNowMs, setLiveProgressNowMs] = useState(() => Date.now());
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
     enemy: EnemyDef;
@@ -112,6 +116,20 @@ export default function ExpeditionTab({
     width: number;
   } | null>(null);
   const [activeRewardItemBubble, setActiveRewardItemBubble] = useState<RewardItemBubble | null>(null);
+  const [simulationByParty, setSimulationByParty] = useState<Record<number, {
+    status: 'running' | 'complete' | 'error';
+    completed: number;
+    total: number;
+    result?: ExpeditionSimulationResult;
+  }>>({});
+  const simulationRequestIdByParty = useRef<Record<number, number>>({});
+  const [activeSimulationResultBubble, setActiveSimulationResultBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    maxWidth: number;
+  } | null>(null);
   const [activeProgressBubble, setActiveProgressBubble] = useState<{
     key: string;
     text: string;
@@ -122,6 +140,14 @@ export default function ExpeditionTab({
   const [disclosedExpeditionLogs, setDisclosedExpeditionLogs] = useState<Array<Party['lastExpeditionLog'] | null>>(() =>
     state.parties.map((party) => party.lastExpeditionLog)
   );
+
+  useEffect(() => {
+    if (afkRecoveryProgressPercent !== null) return;
+    const timer = window.setInterval(() => setLiveProgressNowMs(Date.now()), 100);
+    return () => window.clearInterval(timer);
+  }, [afkRecoveryProgressPercent]);
+
+  const progressNowMs = afkRecoveryProgressPercent === null ? liveProgressNowMs : emulatedNowMs;
 
   useEffect(() => {
     // SpecRef: 8.3 | UI_EXPEDITION | Update Timing
@@ -260,10 +286,55 @@ export default function ExpeditionTab({
     });
   };
 
+  const clearPartySimulation = (partyIndex: number) => {
+    simulationRequestIdByParty.current[partyIndex] = (simulationRequestIdByParty.current[partyIndex] ?? 0) + 1;
+    setActiveSimulationResultBubble((current) => current?.key === `simulation:${partyIndex}` ? null : current);
+    setSimulationByParty((current) => {
+      if (!current[partyIndex]) return current;
+      const next = { ...current };
+      delete next[partyIndex];
+      return next;
+    });
+  };
+
+  const handleSimulationRun = async (partyIndex: number) => {
+    const requestId = (simulationRequestIdByParty.current[partyIndex] ?? 0) + 1;
+    simulationRequestIdByParty.current[partyIndex] = requestId;
+    setActiveSimulationResultBubble((current) => current?.key === `simulation:${partyIndex}` ? null : current);
+    setSimulationByParty((current) => ({
+      ...current,
+      [partyIndex]: { status: 'running', completed: 0, total: EXPEDITION_SIMULATION_RUN_COUNT },
+    }));
+
+    try {
+      const result = await onSimulateExpedition(partyIndex, (completed, total) => {
+        if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
+        setSimulationByParty((current) => ({
+          ...current,
+          [partyIndex]: { status: 'running', completed, total },
+        }));
+      });
+      if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
+      setSimulationByParty((current) => ({
+        ...current,
+        [partyIndex]: { status: 'complete', completed: result.total, total: result.total, result },
+      }));
+    } catch {
+      if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
+      setSimulationByParty((current) => ({
+        ...current,
+        [partyIndex]: { status: 'error', completed: 0, total: EXPEDITION_SIMULATION_RUN_COUNT },
+      }));
+    }
+  };
+
   return (
     <div
       className="space-y-1.5"
       onPointerDown={() => {
+        if (activeSimulationResultBubble) {
+          setActiveSimulationResultBubble(null);
+        }
         if (activeProgressBubble) {
           setActiveProgressBubble(null);
         }
@@ -291,6 +362,24 @@ export default function ExpeditionTab({
             onPointerDown={(event) => event.stopPropagation()}
           >
             {renderTextWithRaceIcons(activeRewardItemBubble.text)}
+          </div>
+        </FloatingBubblePortal>
+      ) : null}
+      {activeSimulationResultBubble ? (
+        <FloatingBubblePortal>
+          <div
+            className="floating-bubble-pane pointer-events-none fixed z-30 -translate-y-full rounded-lg p-2"
+            style={{
+              top: activeSimulationResultBubble.top,
+              left: activeSimulationResultBubble.left,
+              width: 'max-content',
+              maxWidth: activeSimulationResultBubble.maxWidth,
+            }}
+            role="tooltip"
+          >
+            <div className="whitespace-nowrap text-xs leading-snug text-gray-700">
+              {activeSimulationResultBubble.text}
+            </div>
           </div>
         </FloatingBubblePortal>
       ) : null}
@@ -363,8 +452,8 @@ export default function ExpeditionTab({
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
         const getDifficultyOffsetBubbleText = (offset: number) => t('home.expedition.difficultyOffsetBubble', { enemyLevel: formatNumber(offset), itemChance: formatNumber(getDifficultyOffsetItemChanceTickets(offset)), superRareChance: formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset)) });
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
-        const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
+        const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: progressNowMs, durationMs: 1000 };
+        const cycleElapsedMs = Math.max(0, progressNowMs - cycle.stateStartedAt);
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
@@ -384,6 +473,25 @@ export default function ExpeditionTab({
           ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
           : getPartyCycleStateLabel(cycle.state);
         const conditionLabel = getConditionLabel(party.condition, true);
+        const simulation = simulationByParty[partyIndex];
+        // A locked Clear-Gate can turn a nominal "all" run back early, so use
+        // the authoritative aggregate outcome instead of inferring the label
+        // from the configured depth selector alone.
+        const simulationUsesClearLabel = simulation?.result
+          ? simulation.result.Turned_Back === 0
+          : party.expeditionDepthLimit === 'all';
+        const simulationResultText = simulation?.status === 'complete' && simulation.result
+          ? t(simulationUsesClearLabel
+            ? 'party.expedition.simulationResult.clear'
+            : 'party.expedition.simulationResult.return', {
+            success: formatDecimal((simulationUsesClearLabel
+              ? simulation.result.Clear
+              : simulation.result.Turned_Back) / simulation.result.total * 100, 1),
+            draw: formatDecimal(simulation.result.Draw_Retreat / simulation.result.total * 100, 1),
+            retreat: formatDecimal(simulation.result.Wounded_Retreat / simulation.result.total * 100, 1),
+            defeat: formatDecimal(simulation.result.Defeat / simulation.result.total * 100, 1),
+          })
+          : null;
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
@@ -474,7 +582,7 @@ export default function ExpeditionTab({
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
-        const instantChargeState = getInstantExpeditionChargeState(party, emulatedNowMs);
+        const instantChargeState = getInstantExpeditionChargeState(party, progressNowMs);
         const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
         const instantChargeLabel = instantChargeDisplay.label;
         const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
@@ -504,7 +612,7 @@ export default function ExpeditionTab({
         const compactProgressItems = getCompactProgressItems(
           party,
           getTimeSpeedScale(debugSettings),
-          emulatedNowMs,
+          progressNowMs,
           cycle.state,
         );
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
@@ -704,7 +812,7 @@ export default function ExpeditionTab({
               <span className={`mt-0.5 block relative h-5 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
-                  style={{ width: `${visualProgressPercent}%` }}
+                  style={{ width: `${visualProgressPercent}%`, transition: 'width 100ms linear' }}
                 />
                 <span className={`relative z-10 flex h-full items-center justify-center px-1.5 text-center leading-tight ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                   <span className="w-full truncate leading-tight">
@@ -718,7 +826,7 @@ export default function ExpeditionTab({
               <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-transparent" aria-label="Sub progress bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(subProgressPercent)}>
                 <div
                   className="h-full bg-sub/40"
-                  style={{ width: `${subProgressPercent}%` }}
+                  style={{ width: `${subProgressPercent}%`, transition: 'width 100ms linear' }}
                 />
               </div>
             ) : (
@@ -740,7 +848,10 @@ export default function ExpeditionTab({
                   </button>
                   <select
                     value={party.selectedDungeonId}
-                    onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
+                    onChange={(e) => {
+                      clearPartySimulation(partyIndex);
+                      onSelectDungeon(partyIndex, Number(e.target.value));
+                    }}
                     className="min-w-0 w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {DUNGEONS.filter((dungeon) => debugSettings.colosseumEnabled || dungeon.id !== 99).map(dungeon => {
@@ -752,7 +863,10 @@ export default function ExpeditionTab({
                   </select>
                   <select
                     value={party.expeditionDepthLimit}
-                    onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
+                    onChange={(e) => {
+                      clearPartySimulation(partyIndex);
+                      onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit);
+                    }}
                     className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {getExpeditionDepthOptions(party.selectedDungeonId).map((option) => (
@@ -784,7 +898,10 @@ export default function ExpeditionTab({
                         type="button"
                         disabled={selectedDifficultyOffset <= 0}
                         aria-label={t('party.expedition.difficultyDecrease')}
-                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset - 2)}
+                        onClick={() => {
+                          clearPartySimulation(partyIndex);
+                          onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset - 2);
+                        }}
                         className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
                       >
                         −
@@ -797,6 +914,7 @@ export default function ExpeditionTab({
                         value={selectedDifficultyOffset}
                         onChange={(e) => {
                           const nextOffset = Number(e.target.value);
+                          clearPartySimulation(partyIndex);
                           onSetExpeditionDifficultyOffset(partyIndex, nextOffset);
                         }}
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
@@ -806,7 +924,10 @@ export default function ExpeditionTab({
                         type="button"
                         disabled={selectedDifficultyOffset >= difficultyOffsetMax}
                         aria-label={t('party.expedition.difficultyIncrease')}
-                        onClick={() => onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset + 2)}
+                        onClick={() => {
+                          clearPartySimulation(partyIndex);
+                          onSetExpeditionDifficultyOffset(partyIndex, selectedDifficultyOffset + 2);
+                        }}
                         className={`${IOS_GLASS_BUTTON_CLASS} flex h-7 w-7 shrink-0 items-center justify-center text-base font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40`}
                       >
                         +
@@ -834,6 +955,85 @@ export default function ExpeditionTab({
                     </div>
                   </div>
                 )}
+                <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                  <button
+                    type="button"
+                    disabled={simulation?.status === 'running'}
+                    onClick={() => void handleSimulationRun(partyIndex)}
+                    className={`${IOS_GLASS_BUTTON_CLASS} shrink-0 px-2.5 py-1.5 font-medium disabled:cursor-wait disabled:opacity-60`}
+                  >
+                    {t('party.expedition.simulationRun')}
+                  </button>
+                  <span className="min-w-0 text-right tabular-nums">
+                    {simulation?.status === 'running'
+                      ? t('party.expedition.simulationRunning', {
+                        completed: formatNumber(simulation.completed),
+                        total: formatNumber(simulation.total),
+                      })
+                      : simulationResultText
+                      ?? (simulation?.status === 'error'
+                      ? t('party.expedition.simulationError')
+                      : null)}
+                  </span>
+                </div>
+                {simulation?.status === 'complete' && simulation.result && simulationResultText ? (
+                  <button
+                    type="button"
+                    className="block h-3 w-full overflow-visible rounded-full bg-gray-200/70 focus:outline-none focus:ring-2 focus:ring-sub/60 focus:ring-offset-1"
+                    aria-label={simulationResultText}
+                    title={simulationResultText}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      const key = `simulation:${partyIndex}`;
+                      if (activeSimulationResultBubble?.key === key) {
+                        setActiveSimulationResultBubble(null);
+                        return;
+                      }
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      const viewportPadding = 12;
+                      const maxWidth = Math.min(420, window.innerWidth - viewportPadding * 2);
+                      setActiveSimulationResultBubble({
+                        key,
+                        text: simulationResultText,
+                        top: rect.top - 8,
+                        left: Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - viewportPadding - maxWidth),
+                        maxWidth,
+                      });
+                    }}
+                  >
+                    <span className="flex h-full w-full overflow-hidden rounded-full" aria-hidden="true">
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${((simulationUsesClearLabel ? simulation.result.Clear : simulation.result.Turned_Back) / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 80%, white)',
+                        }}
+                      />
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${(simulation.result.Draw_Retreat / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 50%, white)',
+                        }}
+                      />
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${(simulation.result.Wounded_Retreat / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 50%, white)',
+                        }}
+                      />
+                      <span
+                        className="h-full"
+                        style={{
+                          width: `${(simulation.result.Defeat / simulation.result.total) * 100}%`,
+                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 80%, white)',
+                        }}
+                      />
+                    </span>
+                  </button>
+                ) : null}
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>

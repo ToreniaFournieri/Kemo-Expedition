@@ -17,6 +17,7 @@ import {
   ExpeditionLogEntry,
   BattleLogEntry,
   InventoryRecord,
+  JewelInventory,
   getVariantKey,
   GameNotification,
   NotificationStyle,
@@ -26,9 +27,21 @@ import {
   EnemyDef,
   ExpeditionDepthLimit,
   ExpeditionDestinationMode,
+  ExpeditionSimulationResult,
 } from '../types';
-import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
-import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
+import {
+  computeCharacterHpContribution,
+  computePartyMaxHp,
+  computePartyStats,
+  createPartyMaxHpLedger,
+  updatePartyMaxHpLedger,
+  type ComputedPartyStatus,
+  type PartyMaxHpLedger,
+} from '../game/partyComputation';
+import { deriveExpeditionRewardContext } from '../game/expeditionRewardContext';
+import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
+import { executeBattle, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
+import { gameplayRandom } from '../game/gameplayRandom';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
@@ -62,7 +75,13 @@ import {
   initializeBags,
 } from '../game/bags';
 import { getItemById } from '../data/items';
-import { hydrateGameState, serializeGameState } from '../game/saveCodec';
+import { hydrateGameState } from '../game/saveCodec';
+import type {
+  AutoEquipmentHpStrategy,
+  AutoEquipmentProfileAction,
+  AutoEquipmentReducerAttribution,
+  AutoEquipmentStateStrategy,
+} from '../game/autoEquipmentAttribution';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
@@ -109,10 +128,23 @@ import {
   removeJewelFromInventory,
   getJewelNameByRank,
 } from '../game/jewel';
-import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { Language, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
+import { decodePersistedState } from '../game/storageCompression';
+import { hydrateLogSegmentedSave, removeAllDiaryLogRecords } from '../game/logSegmentedSave';
+import {
+  createBrowserPersistenceWorker,
+  PersistenceCoordinator,
+  type PersistenceTelemetryEvent,
+} from '../game/savePersistence';
+import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
-import { AFK_CHUNK_CYCLE_COUNT, commitAfkPartyChunk, type AfkPartyChunkResult } from '../game/afkChunkCoordinator';
+import {
+  AFK_CHUNK_CYCLE_COUNT,
+  commitAfkPartyChunk,
+  type AfkInventoryDelta,
+  type AfkPartyChunkResult,
+} from '../game/afkChunkCoordinator';
+import { afkRuntimeTrace } from '../game/afkRuntimeTrace';
+import { memoryMonitor } from '../game/memoryMonitoring';
 import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
@@ -127,7 +159,7 @@ function generateUserId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  return `uuid-${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
+  return `uuid-${Date.now()}-${Math.floor(gameplayRandom() * 1_000_000_000)}`;
 }
 const APPROX_CYCLE_STEP_COUNT = 30;
 const SAVE_LOAD_WARNING_KEY = 'save.loadWarning';
@@ -369,7 +401,7 @@ function getUnlockDiaryLog(
   const unlockDetail = [unlockPartyLabel].filter(Boolean).join('、');
 
   return {
-    id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `${createdAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
     expeditionLog: log,
     triggers: ['unlock'],
     unlockHeadline,
@@ -863,6 +895,116 @@ function getItemRarityCode(item: Item): 'common' | 'uncommon' | 'eliteRare' | 'b
   return 'common';
 }
 
+type InventoryVariant = InventoryRecord[string];
+
+interface AfkInventoryMutation {
+  key: string;
+  hadOverlayValue: boolean;
+  previousValue: InventoryVariant | undefined;
+}
+
+/**
+ * SpecRef: 9.2.3 | Runtime retention and transfer | Large temporary datasets should be processed incrementally
+ *
+ * Worker-local copy-on-write inventory view. Reads fall through to the captured
+ * Chunk input while writes retain only changed variants. Checkpoints provide
+ * exact per-expedition rollback without cloning the complete inventory.
+ */
+class AfkInventoryOverlay {
+  readonly record: InventoryRecord;
+  private readonly changes = new Map<string, InventoryVariant | undefined>();
+  private readonly mutations: AfkInventoryMutation[] = [];
+
+  constructor(private readonly base: InventoryRecord) {
+    this.record = new Proxy({} as InventoryRecord, {
+      get: (_target, property) => {
+        if (typeof property !== 'string') return Reflect.get(this.base, property);
+        return this.changes.has(property) ? this.changes.get(property) : this.base[property];
+      },
+      set: (_target, property, value) => {
+        if (typeof property !== 'string') return false;
+        this.mutations.push({
+          key: property,
+          hadOverlayValue: this.changes.has(property),
+          previousValue: this.changes.get(property),
+        });
+        this.changes.set(property, value as InventoryVariant);
+        return true;
+      },
+      deleteProperty: (_target, property) => {
+        if (typeof property !== 'string') return false;
+        this.mutations.push({
+          key: property,
+          hadOverlayValue: this.changes.has(property),
+          previousValue: this.changes.get(property),
+        });
+        this.changes.set(property, undefined);
+        return true;
+      },
+      ownKeys: () => {
+        const keys = Reflect.ownKeys(this.base);
+        this.changes.forEach((_value, key) => {
+          if (!Reflect.has(this.base, key)) keys.push(key);
+        });
+        return keys.filter((key) => typeof key !== 'string' || this.get(key) !== undefined);
+      },
+      getOwnPropertyDescriptor: (_target, property) => {
+        if (typeof property !== 'string' || this.get(property) === undefined) return undefined;
+        return { configurable: true, enumerable: true, writable: true, value: this.get(property) };
+      },
+      has: (_target, property) => typeof property === 'string' && this.get(property) !== undefined,
+    });
+  }
+
+  private get(key: string): InventoryVariant | undefined {
+    return this.changes.has(key) ? this.changes.get(key) : this.base[key];
+  }
+
+  checkpoint(): number {
+    return this.mutations.length;
+  }
+
+  rollback(checkpoint: number): void {
+    while (this.mutations.length > checkpoint) {
+      const mutation = this.mutations.pop()!;
+      if (mutation.hadOverlayValue) this.changes.set(mutation.key, mutation.previousValue);
+      else this.changes.delete(mutation.key);
+    }
+  }
+
+  releaseCheckpoint(): void {
+    this.mutations.length = 0;
+  }
+
+  createDelta(): AfkInventoryDelta {
+    const delta: AfkInventoryDelta = {};
+    const append = (key: string, variant: InventoryVariant | undefined) => {
+      if (!variant) return;
+      const countDelta = variant.count - (this.base[key]?.count ?? 0);
+      if (countDelta !== 0 || variant.isNew) {
+        delta[key] = { countDelta, isNew: variant.isNew === true, variant };
+      }
+    };
+    // Preserve the former full-diff insertion order exactly: authoritative base
+    // keys first, followed by newly introduced overlay keys.
+    Object.keys(this.base).forEach((key) => append(key, this.get(key)));
+    this.changes.forEach((variant, key) => {
+      if (!(key in this.base)) append(key, variant);
+    });
+    return delta;
+  }
+}
+
+interface AfkChunkReducerContext {
+  inventoryOverlay: AfkInventoryOverlay;
+}
+
+const afkInventoryDeltaByState = new WeakMap<GameState, AfkInventoryDelta>();
+
+export function getAfkInventoryDeltaForState(state: GameState): AfkInventoryDelta | undefined {
+  return afkInventoryDeltaByState.get(state);
+}
+
 // Helper to calculate sell price for an item
 function calculateSellPrice(item: Item, autoSellMultiplier: number = 1): number {
   return calculateItemSellPrice(item, autoSellMultiplier);
@@ -873,7 +1015,8 @@ function addItemToInventory(
   inventory: InventoryRecord,
   item: Item,
   currentGold: number,
-  autoSellMultiplier: number = 1
+  autoSellMultiplier: number = 1,
+  mutateInventory: boolean = false,
 ): { inventory: InventoryRecord; gold: number; wasAutoSold: boolean; autoSellProfit: number } {
   const key = getVariantKey(item);
   const existing = inventory[key];
@@ -901,7 +1044,7 @@ function addItemToInventory(
   }
 
   // Otherwise add to inventory
-  const newInventory = { ...inventory };
+  const newInventory = mutateInventory ? inventory : { ...inventory };
   if (existing) {
     newInventory[key] = {
       ...existing,
@@ -922,11 +1065,15 @@ function addItemToInventory(
 }
 
 // Helper to remove one item from inventory
-function removeItemFromInventory(inventory: InventoryRecord, key: string): InventoryRecord {
+function removeItemFromInventory(
+  inventory: InventoryRecord,
+  key: string,
+  mutateInventory: boolean = false,
+): InventoryRecord {
   const existing = inventory[key];
   if (!existing || existing.count <= 0) return inventory;
 
-  const newInventory = { ...inventory };
+  const newInventory = mutateInventory ? inventory : { ...inventory };
   if (existing.count === 1) {
     // Last item - mark as notown instead of deleting
     newInventory[key] = { ...existing, count: 0, status: 'notown' };
@@ -1079,7 +1226,16 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
     }
 
     // SpecRef: 5.1.4 | Save and load | Include the error log details in the popup.
-    const parsed = JSON.parse(decodePersistedState(saved));
+    const missingDiaryRecords: string[] = [];
+    const segmentedState = encodedState === undefined
+      ? hydrateLogSegmentedSave(saved, localStorage, STORAGE_KEY, {
+          onMissingDiaryRecord: (partyId, logId) => missingDiaryRecords.push(`PT${partyId}:${logId}`),
+        })
+      : null;
+    if (missingDiaryRecords.length > 0) {
+      console.warn(`Recovered segmented save without ${missingDiaryRecords.length} missing Diary record(s): ${missingDiaryRecords.join(', ')}`);
+    }
+    const parsed = segmentedState ?? JSON.parse(decodePersistedState(saved));
     // Validate it has required properties and migrate legacy saves.
     const hasParties = Array.isArray(parsed?.parties);
     const hasBags = parsed?.bags && typeof parsed.bags === 'object';
@@ -1360,19 +1516,6 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
   return { state: null, errorLog: null };
 }
 
-type SaveStateResult = { ok: true } | { ok: false; errorLog: string };
-
-function saveState(state: GameState): SaveStateResult {
-  try {
-    const payload = JSON.stringify(serializeGameState(state));
-    localStorage.setItem(STORAGE_KEY, encodePersistedState(payload));
-    return { ok: true };
-  } catch (e) {
-    console.error('Failed to save state:', e);
-    return { ok: false, errorLog: formatLoadErrorLog(e) };
-  }
-}
-
 function createInitialDeity(name: string) {
   return {
     name: normalizeDeityName(name),
@@ -1462,7 +1605,7 @@ function getUniqueCharacterGenderByName(name: string): CharacterGender | undefin
 function normalizeCharacterGender(raw: unknown, character?: Pick<Character, 'isUnique' | 'name'>): CharacterGender {
   if (raw === 'male' || raw === 'female') return raw;
   if (character?.isUnique) return getUniqueCharacterGenderByName(character.name) ?? 'male';
-  return Math.random() < 0.5 ? 'male' : 'female';
+  return gameplayRandom() < 0.5 ? 'male' : 'female';
 }
 
 function normalizeCharacterAutoEquipmentMode(raw: unknown): 0 | 1 | 2 {
@@ -1953,6 +2096,46 @@ function createInitialState(): InitialStateResult {
 
 type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
+export type ExpeditionResolutionMode = 'full' | 'forecast';
+
+export interface ExpeditionForecastBattleDiagnostic {
+  enemyId: number | undefined;
+  outcome: ExpeditionLogEntry['outcome'];
+  remainingPartyHP: number;
+  replayMetadata: ExpeditionLogEntry['replayMetadata'];
+}
+
+export interface ExpeditionForecastResolution {
+  outcome: ExpeditionLog['finalOutcome'];
+  completedRooms: number;
+  finalHp: number;
+  terminalBattleOutcome: ExpeditionLogEntry['outcome'] | null;
+  battleDiagnostics: ExpeditionForecastBattleDiagnostic[];
+}
+
+export interface SimulationSandbox {
+  partyIndex: number;
+  baseline: GameState;
+  authoritativePartyStatus: ComputedPartyStatus;
+}
+
+const forecastResolutionByState = new WeakMap<GameState, ExpeditionForecastResolution>();
+
+function createForecastResolution(log: ExpeditionLog): ExpeditionForecastResolution {
+  return {
+    outcome: log.finalOutcome,
+    completedRooms: log.completedRooms,
+    finalHp: log.remainingPartyHP,
+    terminalBattleOutcome: log.entries[log.entries.length - 1]?.outcome ?? null,
+    battleDiagnostics: log.entries.map((entry) => ({
+      enemyId: entry.enemyId,
+      outcome: entry.outcome,
+      remainingPartyHP: entry.remainingPartyHP,
+      replayMetadata: entry.replayMetadata,
+    })),
+  };
+}
+
 export type AfkBatchTestOptions = AfkSimulationBatchSlice & {
   elapsedMs: number;
   isAutoRepeatEnabled: boolean;
@@ -1969,8 +2152,8 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
-  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus }; battleOutputMode?: 'full' | 'result-only'; resolutionMode?: ExpeditionResolutionMode }
+  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
@@ -1985,6 +2168,7 @@ type GameAction =
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
+  | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -2001,7 +2185,7 @@ type GameAction =
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }> }
   | { type: 'COMMIT_AFK_PARTY_CHUNK'; result: AfkPartyChunkResult }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
@@ -2041,7 +2225,7 @@ function selectEnemyForRoom(
     const availableEnemies = explicitEnemies.filter((enemy) => !usedEnemyIdsInRange.has(enemy.id));
     const selectableEnemies = availableEnemies.length > 0 ? availableEnemies : explicitEnemies;
     if (selectableEnemies.length > 0) {
-      const randomIndex = Math.floor(Math.random() * selectableEnemies.length);
+      const randomIndex = Math.floor(gameplayRandom() * selectableEnemies.length);
       return selectableEnemies[randomIndex] ?? selectableEnemies[0] ?? null;
     }
   }
@@ -2054,7 +2238,7 @@ function selectEnemyForRoom(
     if (floorNumber && floorNumber <= elites.length) {
       return elites[floorNumber - 1] ?? null;
     }
-    const randomIndex = Math.floor(Math.random() * elites.length);
+    const randomIndex = Math.floor(gameplayRandom() * elites.length);
     return elites[randomIndex];
   }
 
@@ -2067,12 +2251,12 @@ function selectEnemyForRoom(
     const floorPool = enemies.slice(poolOffset, poolOffset + 5);
     if (floorPool.length > 0) {
       // Normal rooms select randomly from the corresponding floor pool
-      const randomFloorIndex = Math.floor(Math.random() * floorPool.length);
+      const randomFloorIndex = Math.floor(gameplayRandom() * floorPool.length);
       return floorPool[randomFloorIndex] ?? floorPool[0] ?? null;
     }
   }
 
-  const randomIndex = Math.floor(Math.random() * enemies.length);
+  const randomIndex = Math.floor(gameplayRandom() * enemies.length);
   return enemies[randomIndex];
 }
 
@@ -2287,6 +2471,7 @@ function resolveEnemyRewards(
   auriferousBonusRolls: number = 0,
   difficultyItemChanceTickets: number = 0,
   difficultySuperRareChanceTickets: number = 0,
+  mutateInventory: boolean = false,
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -2370,7 +2555,7 @@ function resolveEnemyRewards(
 
     const newItem: Item = { ...baseItem, enhancement: normalizedEnhancement, superRare: srVal };
     const itemName = getItemDisplayName(newItem);
-    const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier);
+    const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier, mutateInventory);
     recoveredItems.push(newItem);
     inventory = result.inventory;
     gold = result.gold;
@@ -2439,7 +2624,7 @@ function getPartyAbilityLevel(party: Party, abilityId: string): number {
   }, 0);
 }
 
-function getPartyCunningMultiplier(party: Party): number {
+function getCurrentPartyCunningMultiplier(party: Party): number {
   const cunningLevel = getPartyAbilityLevel(party, 'cunning');
   const abilityMultiplier = cunningLevel >= 2 ? 1.3 : cunningLevel >= 1 ? 1.2 : 1;
 
@@ -2457,7 +2642,7 @@ function getPrayerDepositMultiplier(party: Party): number {
 function rollPercentInclusive(min: number, max: number): number {
   const lower = Math.ceil(Math.min(min, max));
   const upper = Math.floor(Math.max(min, max));
-  return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+  return Math.floor(gameplayRandom() * (upper - lower + 1)) + lower;
 }
 
 type PrayerProfitResult = {
@@ -2527,25 +2712,6 @@ function processAfkCycleProfit(state: GameState, partyIndex: number, simulatedAt
 
   return nextState;
 }
-
-function getUnlockActorName(party: Party): string | undefined {
-  const { characterStats } = computePartyStats(party);
-  let bestLevel = 0;
-  let unlockActorName: string | undefined;
-
-  for (const char of party.characters) {
-    const stats = characterStats.find(cs => cs.characterId === char.id);
-    const unlockAbility = stats?.abilities.find(ability => ability.id === 'unlock');
-    if (!unlockAbility) continue;
-    if (unlockAbility.level > bestLevel) {
-      bestLevel = unlockAbility.level;
-      unlockActorName = char.name;
-    }
-  }
-
-  return unlockActorName;
-}
-
 
 function applyPeriodicDeityHpEffect(
   deityName: string,
@@ -2916,7 +3082,7 @@ const AURIFEROUS_LOGS = [
 ] as const;
 
 function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
-  const flavorText = AURIFEROUS_LOGS[Math.floor(Math.random() * AURIFEROUS_LOGS.length)]
+  const flavorText = AURIFEROUS_LOGS[Math.floor(gameplayRandom() * AURIFEROUS_LOGS.length)]
     ?? t('auto.jp.dc0d0cd51a');
 
   return {
@@ -2931,9 +3097,153 @@ function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean 
   return currentHp <= maxHp * 0.3;
 }
 
-function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Party): Party {
-  const previousMaxHp = computePartyStats(previousParty).partyStats.hp;
-  const nextMaxHp = computePartyStats(nextParty).partyStats.hp;
+interface AutoEquipmentReducerContext {
+  hpStrategy: AutoEquipmentHpStrategy;
+  stateStrategy: AutoEquipmentStateStrategy;
+  maxHpByPartyId: Map<number, number>;
+  hpLedgerByPartyId: Map<number, PartyMaxHpLedger>;
+  inventoryDraft?: InventoryRecord;
+  jewelDraft?: JewelInventory;
+  attribution?: AutoEquipmentReducerAttribution;
+}
+
+function measureAutoEquipmentReducerWork<T>(
+  context: AutoEquipmentReducerContext | undefined,
+  phase: 'partyStatsMs' | 'inventoryPreparationMs' | 'inventoryMutationMs' | 'jewelMutationMs',
+  operation: () => T,
+): T {
+  if (!context?.attribution) return operation();
+  const startedAt = performance.now();
+  try {
+    return operation();
+  } finally {
+    context.attribution[phase] += Math.max(0, performance.now() - startedAt);
+  }
+}
+
+function getAutoEquipmentInventoryForMutation(
+  context: AutoEquipmentReducerContext | undefined,
+  inventory: InventoryRecord,
+): InventoryRecord {
+  if (context?.stateStrategy !== 'copy_once_transaction') return inventory;
+  if (!context.inventoryDraft) {
+    context.inventoryDraft = measureAutoEquipmentReducerWork(
+      context,
+      'inventoryPreparationMs',
+      () => ({ ...inventory }),
+    );
+    if (context.attribution) context.attribution.transactionInventoryRecordClones += 1;
+  }
+  return context.inventoryDraft;
+}
+
+function getAutoEquipmentJewelsForMutation(
+  context: AutoEquipmentReducerContext | undefined,
+  jewels: JewelInventory,
+): JewelInventory {
+  if (context?.stateStrategy !== 'copy_once_transaction') return jewels;
+  if (!context.jewelDraft) {
+    context.jewelDraft = measureAutoEquipmentReducerWork(
+      context,
+      'inventoryPreparationMs',
+      () => ({ ...jewels }),
+    );
+    if (context.attribution) context.attribution.transactionJewelRecordClones += 1;
+  }
+  return context.jewelDraft;
+}
+
+function syncPartyCurrentHpAfterMaxHpChange(
+  previousParty: Party,
+  nextParty: Party,
+  changedCharacterId: number,
+  autoEquipmentContext?: AutoEquipmentReducerContext,
+): Party {
+  if (autoEquipmentContext?.hpStrategy === 'incremental_hp') {
+    let ledger = autoEquipmentContext.hpLedgerByPartyId.get(previousParty.id);
+    if (!ledger) {
+      ledger = measureAutoEquipmentReducerWork(
+        autoEquipmentContext,
+        'partyStatsMs',
+        () => createPartyMaxHpLedger(previousParty),
+      );
+      autoEquipmentContext.hpLedgerByPartyId.set(previousParty.id, ledger);
+      if (autoEquipmentContext.attribution) {
+        autoEquipmentContext.attribution.hpLedgerInitializations += 1;
+        autoEquipmentContext.attribution.characterHpContributionCalls += previousParty.characters.length;
+        autoEquipmentContext.attribution.characterStatsCalls += previousParty.characters.length;
+      }
+    }
+    const previousMaxHp = ledger.maxHp;
+    const update = measureAutoEquipmentReducerWork(
+      autoEquipmentContext,
+      'partyStatsMs',
+      () => updatePartyMaxHpLedger(ledger!, previousParty, nextParty, changedCharacterId),
+    );
+    autoEquipmentContext.hpLedgerByPartyId.set(nextParty.id, update.ledger);
+    if (autoEquipmentContext.attribution) {
+      if (update.rebuilt) {
+        autoEquipmentContext.attribution.hpLedgerRebuilds += 1;
+        autoEquipmentContext.attribution.characterHpContributionCalls += nextParty.characters.length;
+        autoEquipmentContext.attribution.characterStatsCalls += nextParty.characters.length;
+      } else {
+        autoEquipmentContext.attribution.hpLedgerUpdates += 1;
+        autoEquipmentContext.attribution.characterHpContributionCalls += 1;
+        autoEquipmentContext.attribution.characterStatsCalls += 1;
+      }
+    }
+    const nextMaxHp = update.ledger.maxHp;
+    if (nextMaxHp <= 0) return nextParty;
+    const previousCurrentHp = typeof previousParty.currentHp === 'number'
+      ? previousParty.currentHp
+      : previousMaxHp;
+    const damagedHp = Math.max(0, previousMaxHp - Math.max(0, previousCurrentHp));
+    return {
+      ...nextParty,
+      currentHp: Math.max(1, Math.min(nextMaxHp, nextMaxHp - damagedHp)),
+    };
+  }
+
+  const cachedPreviousMaxHp = autoEquipmentContext?.maxHpByPartyId.get(previousParty.id);
+  const previousMaxHp = cachedPreviousMaxHp ?? measureAutoEquipmentReducerWork(
+    autoEquipmentContext,
+    'partyStatsMs',
+    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+      ? computePartyMaxHp(previousParty)
+      : computePartyStats(previousParty).partyStats.hp,
+  );
+  if (autoEquipmentContext?.attribution && cachedPreviousMaxHp === undefined) {
+    const characterCount = previousParty.characters.length;
+    if (autoEquipmentContext.hpStrategy === 'whole_party_max_hp') {
+      autoEquipmentContext.attribution.partyMaxHpCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount;
+    } else {
+      autoEquipmentContext.attribution.partyStatsCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount * 2;
+    }
+  }
+  const nextMaxHp = measureAutoEquipmentReducerWork(
+    autoEquipmentContext,
+    'partyStatsMs',
+    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+      ? computePartyMaxHp(nextParty)
+      : computePartyStats(nextParty).partyStats.hp,
+  );
+  if (autoEquipmentContext?.attribution) {
+    const characterCount = nextParty.characters.length;
+    if (autoEquipmentContext.hpStrategy === 'whole_party_max_hp') {
+      autoEquipmentContext.attribution.partyMaxHpCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount;
+    } else {
+      autoEquipmentContext.attribution.partyStatsCalls += 1;
+      autoEquipmentContext.attribution.characterHpContributionCalls += characterCount;
+      autoEquipmentContext.attribution.characterStatsCalls += characterCount * 2;
+    }
+  }
+  autoEquipmentContext?.maxHpByPartyId.set(nextParty.id, nextMaxHp);
   if (nextMaxHp <= 0) return nextParty;
 
   const previousCurrentHp = typeof previousParty.currentHp === 'number'
@@ -2949,8 +3259,38 @@ function syncPartyCurrentHpAfterMaxHpChange(previousParty: Party, nextParty: Par
   };
 }
 
-function gameReducer(state: GameState, action: GameAction): GameState {
+function gameReducer(
+  state: GameState,
+  action: GameAction,
+  autoEquipmentContext?: AutoEquipmentReducerContext,
+  afkChunkContext?: AfkChunkReducerContext,
+): GameState {
   switch (action.type) {
+
+    case 'APPLY_AUTO_EQUIPMENT_ACTIONS': {
+      // SpecRef: 7.1.1 | AUTO equipment logic | Processing priority
+      const context: AutoEquipmentReducerContext = {
+        hpStrategy: action.hpStrategy ?? 'incremental_hp',
+        stateStrategy: action.stateStrategy ?? 'copy_once_transaction',
+        maxHpByPartyId: new Map(),
+        hpLedgerByPartyId: new Map(),
+        attribution: action.attribution,
+      };
+      const startedAt = action.attribution ? performance.now() : 0;
+      const nextState = action.actions.reduce((current, nestedAction) => gameReducer(current, nestedAction, context), state);
+      if (action.attribution) {
+        const totalMs = Math.max(0, performance.now() - startedAt);
+        action.attribution.structuralAndControlMs = Math.max(
+          0,
+          totalMs
+            - action.attribution.partyStatsMs
+            - action.attribution.inventoryPreparationMs
+            - action.attribution.inventoryMutationMs
+            - action.attribution.jewelMutationMs,
+        );
+      }
+      return nextState;
+    }
     case 'SET_LANGUAGE': {
       // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
       // SpecRef: 5.1.4 | Save and load | Persisted user settings
@@ -3096,6 +3436,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         simulatedAt: action.simulatedAt,
         gameMode: action.gameMode,
         triggerGodsBattle: action.triggerGodsBattle,
+        authoritativePartyStatus: action.authoritativePartyStatus,
       });
       return gameReducer(expeditionState, {
         type: 'FINALIZE_DIARY_LOG',
@@ -3109,7 +3450,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
       const isGodsBattle = action.triggerGodsBattle === true && isGodsBattleAvailable(currentParty, dungeon.id);
-      const { partyStats, characterStats } = computePartyStats(currentParty);
+      // SpecRef: 5.1 | Chunk | Party status is calculated once at Chunk start.
+      // AFK progression supplies the immutable status source captured before its
+      // first Cycle. Mutable progress continues to come from currentParty.
+      const suppliedPartyStatus = action.chunkPartyStatus ?? action.authoritativePartyStatus;
+      const statusParty = suppliedPartyStatus?.party ?? currentParty;
+      const partyStatus = suppliedPartyStatus?.computed ?? computePartyStats(statusParty);
+      const rewardContext = deriveExpeditionRewardContext(statusParty, partyStatus);
+      recordRunExpeditionStatusAuthority(suppliedPartyStatus !== undefined);
+      const { partyStats, characterStats } = partyStatus;
       const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
         return state;
@@ -3132,7 +3481,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalExp = 0;
       let bags = normalizeImportedBags(currentParty.bags);
       let finalOutcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' = 'Clear';
-      let currentInventory = state.global.inventory;
+      const afkInventoryCheckpoint = afkChunkContext?.inventoryOverlay.checkpoint();
+      let currentInventory = afkChunkContext?.inventoryOverlay.record ?? state.global.inventory;
       let currentGold = state.global.gold;
       let totalAutoSellProfit = 0;
       let totalAutoSellItemCount = 0;
@@ -3273,7 +3623,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (terrainEffect) {
               revealedTerrainKeys.add(terrainEffect);
             }
-            const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp, { terrainEffect });
+            const battleResult = action.battleOutputMode === 'result-only'
+              ? executeBattle(statusParty, enemy, bags, roomStartHp, {
+                terrainEffect,
+                partyStatus,
+              }, { outputMode: 'result-only' })
+              : executeBattle(statusParty, enemy, bags, roomStartHp, {
+                terrainEffect,
+                partyStatus,
+              });
 
             // Update threat bags from battle result
             bags = {
@@ -3310,7 +3668,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               damageTaken,
               remainingPartyHP: battleResult.partyHp,
               maxPartyHP: partyStats.hp,
-              details: battleResult.log,
+              details: 'log' in battleResult && Array.isArray(battleResult.log) ? battleResult.log : [],
+              replayMetadata: battleResult.replayMetadata,
             };
 
             const currentEnemyStats = nextEnemyBattleStats[enemy.id] ?? { defeats: 0, encounters: 0 };
@@ -3332,22 +3691,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 totalExp += calculateExperience(
                   enemy.experience,
                   roomDef.type,
-                  currentParty.level,
+                  statusParty.level,
                   enemyLevelFinal,
                   isGodsBattle,
                 );
               }
 
-              const unlockActorName = getUnlockActorName(currentParty);
+              const unlockActorName = rewardContext.unlockActorName;
               const hasUnlock = !!unlockActorName;
-              const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
+              const autoSellMultiplier = rewardContext.autoSellMultiplier;
               const deityDonation =
-                state.global.deityDonations[normalizeDeityName(currentParty.deity.name)]
-                ?? currentParty.deityGold
+                state.global.deityDonations[normalizeDeityName(statusParty.deity.name)]
+                ?? statusParty.deityGold
                 ?? 0;
               // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
               // SpecRef: 1.1.7 | g. gods, religions | Goddess of Discord
-              const deityRewardDrawBonuses = getDeityRewardDrawBonuses(currentParty.deity.name, deityDonation);
+              const deityRewardDrawBonuses = getDeityRewardDrawBonuses(statusParty.deity.name, deityDonation);
               let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
               if (!isColosseumBattle) {
                 const enemyAuriferousLevel = enemy.abilities
@@ -3369,6 +3728,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   difficultyItemChanceTickets,
                   difficultySuperRareChanceTickets
                     + (terrainEffect !== 'terrain.gehenna' ? deityRewardDrawBonuses.superRareChanceTickets : 0),
+                  afkChunkContext !== undefined,
                 );
                 bags = rewardResult.bags;
                 currentInventory = rewardResult.inventory;
@@ -3401,7 +3761,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               entries.push(entry);
 
               const deityHpEffect = applyPeriodicDeityHpEffect(
-                currentParty.deity.name,
+                statusParty.deity.name,
                 deityDonation,
                 floor.floorNumber,
                 roomIndex + 1,
@@ -3420,7 +3780,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.attritionAmount = deityHpEffect.attritionAmount;
               }
               const deityLogEntry = buildDeityEffectLogEntry(
-                currentParty.deity.name,
+                statusParty.deity.name,
                 deityHpEffect.healAmount,
                 deityHpEffect.attritionAmount
               );
@@ -3429,7 +3789,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               }
 
               const firstAidHpEffect = applyFirstAidHpEffect(
-                currentParty,
+                statusParty,
                 characterStats,
                 floor.floorNumber,
                 roomIndex + 1,
@@ -3443,9 +3803,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push(...firstAidHpEffect.logs);
               }
 
-              const rejuvenationActorName = currentParty.characters[
-                Math.floor(Math.random() * currentParty.characters.length)
-              ]?.name ?? currentParty.name;
+              const rejuvenationActorName = statusParty.characters[
+                Math.floor(gameplayRandom() * statusParty.characters.length)
+              ]?.name ?? statusParty.name;
               const terrainHpEffect = applyTerrainRejuvenationHpEffect(
                 terrainEffect,
                 roomDef.type,
@@ -3478,7 +3838,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const isNormalOrEliteRoom = roomDef.type === 'battle_Normal' || roomDef.type === 'battle_Elite';
               const restorationBlockedByRotwood = terrainEffect === 'terrain.rotwood'
                 && isNormalOrEliteRoom
-                && getDeityKey(currentParty.deity.name) === 'Goddess of Restoration'
+                && getDeityKey(statusParty.deity.name) === 'Goddess of Restoration'
                 && floor.floorNumber >= 1
                 && floor.floorNumber <= 5
                 && roomIndex + 1 === 4;
@@ -3486,8 +3846,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push(buildTerrainRotwoodLogEntry());
               }
 
-              const leakageTargetIndex = Math.floor(Math.random() * currentParty.characters.length);
-              const leakageTarget = currentParty.characters[leakageTargetIndex];
+              const leakageTargetIndex = Math.floor(gameplayRandom() * statusParty.characters.length);
+              const leakageTarget = statusParty.characters[leakageTargetIndex];
               const leakageTargetStats = characterStats.find(
                 (stats) => stats.characterId === leakageTarget?.id
               );
@@ -3501,16 +3861,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = leakageHpEffect.hp;
               entry.remainingPartyHP = currentHp;
               const leakageLogEntry = buildTerrainLeakageLogEntry(
-                leakageTarget?.name ?? currentParty.name,
+                leakageTarget?.name ?? statusParty.name,
                 leakageHpEffect.damageAmount
               );
               if (leakageLogEntry) {
                 entry.details.push(leakageLogEntry);
               }
 
-              const heatwaveActorName = currentParty.characters[
-                Math.floor(Math.random() * currentParty.characters.length)
-              ]?.name ?? currentParty.name;
+              const heatwaveActorName = statusParty.characters[
+                Math.floor(gameplayRandom() * statusParty.characters.length)
+              ]?.name ?? statusParty.name;
               const heatwaveHpEffect = applyTerrainHeatwaveHpEffect(
                 terrainEffect,
                 roomDef.type,
@@ -3597,7 +3957,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       // On defeat: revert inventory and gold (no item rewards), but keep experience
       const isDefeat = finalOutcome === 'Defeat';
-      const finalInventory = isDefeat ? state.global.inventory : currentInventory;
+      if (isDefeat && afkChunkContext && afkInventoryCheckpoint !== undefined) {
+        afkChunkContext.inventoryOverlay.rollback(afkInventoryCheckpoint);
+      }
+      const finalInventory = afkChunkContext?.inventoryOverlay.record
+        ?? (isDefeat ? state.global.inventory : currentInventory);
+      afkChunkContext?.inventoryOverlay.releaseCheckpoint();
       const finalRewards = isDefeat ? [] : rewards;
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
       const finalAutoSellItemCount = isDefeat ? 0 : totalAutoSellItemCount;
@@ -3687,7 +4052,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalRemainingPartyHP = entries.length > 0
         ? entries[entries.length - 1].remainingPartyHP
         : currentHp;
-      const expeditionAutoSellMultiplier = getPartyCunningMultiplier(currentParty);
+      const expeditionAutoSellMultiplier = rewardContext.autoSellMultiplier;
 
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
@@ -3728,11 +4093,33 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (hasRareMatch) diaryTriggers.push('eliteRare');
       }
 
+      // SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
+      // Forecast state is private and discarded. Preserve the terminal Diary-ID
+      // draw when a full resolution would create an entry, then stop before
+      // allocating its retained Diary/unlock/compendium projections.
+      if (action.resolutionMode === 'forecast') {
+        if (diaryTriggers.length > 0) gameplayRandom();
+        const updatedParties = [...state.parties];
+        updatedParties[action.partyIndex] = {
+          ...currentParty,
+          bags,
+          lastExpeditionLog: null,
+          pendingDiaryLog: null,
+          currentHp: finalRemainingPartyHP,
+        };
+        const forecastState = {
+          ...state,
+          parties: updatedParties,
+        };
+        forecastResolutionByState.set(forecastState, createForecastResolution(log));
+        return forecastState;
+      }
+
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
 
       const pendingDiaryLog = diaryTriggers.length > 0
         ? {
-            id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `${diaryCreatedAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
             expeditionLog: log,
             triggers: diaryTriggers,
             createdAt: diaryCreatedAt,
@@ -3744,7 +4131,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const nextAltarVictoriesByEnemyType = { ...(state.global.altarVictoriesByEnemyType ?? {}) };
       if (finalOutcome === 'Clear') {
         const assignedEnemyTypes = new Set(
-          currentParty.characters
+          statusParty.characters
             .filter((character) => character.raceId === 'mimorian')
             .map((character) => ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType)
             .filter((enemyType): enemyType is string => Boolean(enemyType)),
@@ -4007,7 +4394,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const scaledMax = Math.round(def.baseMax * multiplier);
       const min = Math.min(scaledMin, scaledMax);
       const max = Math.max(scaledMin, scaledMax);
-      const target = Math.floor(Math.random() * (max - min + 1)) + min;
+      const target = Math.floor(gameplayRandom() * (max - min + 1)) + min;
       const internalTarget = TIME_BASED_SIDE_QUEST_TYPES.has(def.type) ? target * 60 : target;
       const assignedAt = action.simulatedAt ?? Date.now();
       const expiresAt = def.deadlineHours > 0
@@ -4057,8 +4444,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const jewelKeys = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'] as const;
-      const key = jewelKeys[Math.floor(Math.random() * jewelKeys.length)];
-      const rewardRank = Math.floor(Math.random() * currentParty.sideQuest.rolledTier) + 1;
+      const key = jewelKeys[Math.floor(gameplayRandom() * jewelKeys.length)];
+      const rewardRank = Math.floor(gameplayRandom() * currentParty.sideQuest.rolledTier) + 1;
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
       const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
       const sideQuestLabel = currentParty.sideQuest.shortTextKey
@@ -4071,7 +4458,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       );
       const sideQuestDiaryLog: DiaryLog | null = shouldAddSideQuestDiary
         ? {
-            id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `${diaryCreatedAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
             expeditionLog: {
               dungeonId: currentParty.selectedDungeonId,
               dungeonName,
@@ -4181,18 +4568,57 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const nextAutoEquipmentMode = isManualEquipmentChange && character.autoEquipmentMode === 2
         ? 1
         : character.autoEquipmentMode;
-      let newInventory = { ...state.global.inventory };
-      let newJewels = { ...state.global.jewels };
+      const usesTransactionDraft = autoEquipmentContext?.stateStrategy === 'copy_once_transaction';
+      let newInventory = getAutoEquipmentInventoryForMutation(autoEquipmentContext, state.global.inventory);
+      let newJewels = state.global.jewels;
       let newGold = state.global.gold;
+      if (autoEquipmentContext?.stateStrategy === 'legacy_eager_clone') {
+        newInventory = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryPreparationMs',
+          () => ({ ...newInventory }),
+        );
+        newJewels = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryPreparationMs',
+          () => ({ ...newJewels }),
+        );
+        if (autoEquipmentContext.attribution) {
+          autoEquipmentContext.attribution.eagerInventoryRecordClones += 1;
+          autoEquipmentContext.attribution.eagerJewelRecordClones += 1;
+        }
+      }
 
       // Add old item back to inventory
       const oldItem = character.equipment[action.slotIndex];
       if (oldItem) {
-        const addResult = addItemToInventory(newInventory, oldItem, newGold);
+        const addResult = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'inventoryMutationMs',
+          () => addItemToInventory(newInventory, oldItem, newGold, 1, usesTransactionDraft),
+        );
+        if (autoEquipmentContext?.attribution && addResult.inventory !== newInventory) {
+          autoEquipmentContext.attribution.inventoryMutationRecordClones += 1;
+        }
         newInventory = addResult.inventory;
         newGold = addResult.gold;
         if (oldItem.jewel) {
-          newJewels = addJewelToInventory(newJewels, oldItem.jewel.key, oldItem.jewel.rank);
+          newJewels = getAutoEquipmentJewelsForMutation(autoEquipmentContext, newJewels);
+          const previousJewels = newJewels;
+          newJewels = measureAutoEquipmentReducerWork(
+            autoEquipmentContext,
+            'jewelMutationMs',
+            () => addJewelToInventory(
+              previousJewels,
+              oldItem.jewel!.key,
+              oldItem.jewel!.rank,
+              1,
+              usesTransactionDraft,
+            ),
+          );
+          if (autoEquipmentContext?.attribution && newJewels !== previousJewels) {
+            autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+          }
         }
       }
 
@@ -4200,7 +4626,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (action.itemKey) {
         const variant = newInventory[action.itemKey];
         if (variant && variant.count > 0) {
-          newInventory = removeItemFromInventory(newInventory, action.itemKey);
+          const previousInventory = newInventory;
+          newInventory = measureAutoEquipmentReducerWork(
+            autoEquipmentContext,
+            'inventoryMutationMs',
+            () => removeItemFromInventory(previousInventory, action.itemKey!, usesTransactionDraft),
+          );
+          if (autoEquipmentContext?.attribution && newInventory !== previousInventory) {
+            autoEquipmentContext.attribution.inventoryMutationRecordClones += 1;
+          }
           const equippedCharacter = {
             ...replaceCharacterEquipment(character, action.slotIndex, { ...variant.item, jewel: null }),
             autoEquipmentMode: nextAutoEquipmentMode,
@@ -4212,7 +4646,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
             ...currentParty,
             characters: newCharacters
-          });
+          }, character.id, autoEquipmentContext);
+          if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedEquipmentActions += 1;
 
           return {
             ...state,
@@ -4233,7 +4668,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      });
+      }, character.id, autoEquipmentContext);
+      if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedEquipmentActions += 1;
 
       return {
         ...state,
@@ -4282,7 +4718,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const isRemovingCurrentJewel = item.jewel?.key === action.jewelKey && item.jewel.rank === action.rank;
       if (isRemovingCurrentJewel) {
-        const newJewels = addJewelToInventory(state.global.jewels, action.jewelKey, action.rank);
+        const jewelsForMutation = getAutoEquipmentJewelsForMutation(autoEquipmentContext, state.global.jewels);
+        const newJewels = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'jewelMutationMs',
+          () => addJewelToInventory(
+            jewelsForMutation,
+            action.jewelKey,
+            action.rank,
+            1,
+            autoEquipmentContext?.stateStrategy === 'copy_once_transaction',
+          ),
+        );
+        if (autoEquipmentContext?.attribution && newJewels !== jewelsForMutation) {
+          autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+        }
         const replacedItem: Item = { ...item, jewel: null };
         const newCharacters = [...currentParty.characters];
         newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
@@ -4291,7 +4741,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
           ...currentParty,
           characters: newCharacters,
-        });
+        }, character.id, autoEquipmentContext);
+        if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedJewelActions += 1;
 
         return {
           ...state,
@@ -4302,9 +4753,26 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (getJewelOwnedCount(state.global.jewels, action.jewelKey, action.rank) <= 0) return state;
 
-      let newJewels = removeJewelFromInventory(state.global.jewels, action.jewelKey, action.rank);
+      const usesTransactionDraft = autoEquipmentContext?.stateStrategy === 'copy_once_transaction';
+      const jewelsForMutation = getAutoEquipmentJewelsForMutation(autoEquipmentContext, state.global.jewels);
+      let newJewels = measureAutoEquipmentReducerWork(
+        autoEquipmentContext,
+        'jewelMutationMs',
+        () => removeJewelFromInventory(jewelsForMutation, action.jewelKey, action.rank, usesTransactionDraft),
+      );
+      if (autoEquipmentContext?.attribution && newJewels !== jewelsForMutation) {
+        autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+      }
       if (item.jewel) {
-        newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
+        const previousJewels = newJewels;
+        newJewels = measureAutoEquipmentReducerWork(
+          autoEquipmentContext,
+          'jewelMutationMs',
+          () => addJewelToInventory(previousJewels, item.jewel!.key, item.jewel!.rank, 1, usesTransactionDraft),
+        );
+        if (autoEquipmentContext?.attribution && newJewels !== previousJewels) {
+          autoEquipmentContext.attribution.jewelMutationRecordClones += 1;
+        }
       }
       const replacedItem: Item = { ...item, jewel: { key: action.jewelKey, rank: action.rank } };
       const newCharacters = [...currentParty.characters];
@@ -4314,7 +4782,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters,
-      });
+      }, character.id, autoEquipmentContext);
+      if (autoEquipmentContext?.attribution) autoEquipmentContext.attribution.appliedJewelActions += 1;
 
       return {
         ...state,
@@ -4424,7 +4893,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       updatedParties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
         ...currentParty,
         characters: newCharacters
-      });
+      }, oldChar.id);
 
       return {
         ...state,
@@ -4584,7 +5053,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         enhancement,
         superRare,
       };
-      const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
+      const autoSellMultiplier = getCurrentPartyCunningMultiplier(currentParty);
       const inventoryResult = addItemToInventory(
         globalState.inventory,
         purchasedItem,
@@ -4785,6 +5254,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (operationEnd <= operationStart) return state;
 
       let workingState = state;
+      // Each reducer call represents one logical Chunk for worker-backed AFK
+      // recovery. Retain these Party objects as the status inputs for every
+      // Cycle even as workingState accumulates level, XP, HP, and gate changes.
+      const chunkPartyStatus = action.chunkPartyStatus ?? state.parties.map((party) => ({
+        party,
+        computed: computePartyStats(party),
+      }));
       const simulationEndAt = action.simulatedEndAt ?? Date.now();
       const simulationStartAt = simulationEndAt - cappedElapsedMs;
       const partyTimestampStepMs = 1_000;
@@ -4819,13 +5295,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             gameMode,
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
-          });
+            chunkPartyStatus: chunkPartyStatus[partyIndex],
+          }, undefined, afkChunkContext);
           workingState = gameReducer(workingState, {
             type: 'FINALIZE_DIARY_LOG',
             partyIndex,
             simulatedAt,
             isAfkSimulation: true,
-          });
+          }, undefined, afkChunkContext);
 
           const postFinalizeParty = workingState.parties[partyIndex];
           if (postFinalizeParty) {
@@ -4836,7 +5313,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 partyIndex,
                 dungeonId: autoAdvanceDecision.nextDungeonId,
                 selectionMode: 'auto',
-              });
+              }, undefined, afkChunkContext);
             }
           }
 
@@ -4857,7 +5334,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 partyIndex,
                 amount: approximateProgress,
                 simulatedAt,
-              });
+              }, undefined, afkChunkContext);
             }
           }
 
@@ -4873,7 +5350,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 type: 'HEAL_PARTY_HP',
                 partyIndex,
                 amount: missingHp,
-              });
+              }, undefined, afkChunkContext);
             }
           }
 
@@ -4883,7 +5360,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               partyIndex,
               rolledTier: postCycleParty.selectedDungeonId,
               simulatedAt,
-            });
+            }, undefined, afkChunkContext);
           }
 
           const latestParty = workingState.parties[partyIndex];
@@ -4892,7 +5369,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             latestParty?.sideQuest
             && simulatedAt >= getScaledSideQuestExpiresAt(latestParty.sideQuest, resolvedCycleDurationScale)
           ) {
-            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex });
+            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
           }
       }
 
@@ -4938,6 +5415,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // Clear localStorage
       try {
         localStorage.removeItem(STORAGE_KEY);
+        removeAllDiaryLogRecords(STORAGE_KEY, localStorage);
       } catch (e) {
         console.error('Failed to clear saved state:', e);
       }
@@ -5179,6 +5657,45 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
+export function applyAutoEquipmentProfileActions(
+  state: GameState,
+  actions: readonly AutoEquipmentProfileAction[],
+  attribution?: AutoEquipmentReducerAttribution,
+  hpStrategy: AutoEquipmentHpStrategy = 'incremental_hp',
+  stateStrategy: AutoEquipmentStateStrategy = 'copy_once_transaction',
+): GameState {
+  return gameReducer(state, {
+    type: 'APPLY_AUTO_EQUIPMENT_ACTIONS',
+    actions: [...actions],
+    attribution,
+    hpStrategy,
+    stateStrategy,
+  });
+}
+
+export function applyAutoEquipmentProfileActionsSequentially(
+  state: GameState,
+  actions: readonly AutoEquipmentProfileAction[],
+): GameState {
+  return actions.reduce((current, action) => gameReducer(current, action), state);
+}
+
+/** Test seam for measuring one authoritative online/Gods Battle reducer transaction. */
+export function runExpeditionTransactionForTesting(
+  state: GameState,
+  partyIndex: number,
+  options: {
+    gameMode?: GameMode;
+    triggerGodsBattle?: boolean;
+    simulatedAt?: number;
+    battleOutputMode?: 'full' | 'result-only';
+    resolutionMode?: ExpeditionResolutionMode;
+    authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus };
+  } = {},
+): GameState {
+  return gameReducer(state, { type: 'RUN_EXPEDITION', partyIndex, ...options });
+}
+
 /**
  * Runs the same reducer action used by the UI AFK scheduler without requiring a
  * mounted React tree. This deliberately narrow entry point lets save-backed
@@ -5200,29 +5717,279 @@ export function simulateAfkPartyChunkForWorker(
     simulatedCompletedAt: number;
     cycleDurationScale: number;
     gameMode?: GameMode;
+    operationCount?: number;
+    onProgress?: (completedOperations: number, operationCount: number) => void;
+    chunkStatusScope?: 'target' | 'all';
+    inventoryStrategy?: 'immutable' | 'overlay';
   },
 ): GameState {
   const party = state.parties[options.partyIndex];
   if (!party) return state;
   setActiveLanguage(state.global.language);
   const cycleDurationMs = Math.max(1, Math.floor(options.cycleDurationMs));
-  const elapsedMs = cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
+  const operationCount = Math.max(1, Math.floor(options.operationCount ?? AFK_CHUNK_CYCLE_COUNT));
+  const elapsedMs = cycleDurationMs * operationCount;
   const inactiveDurationMs = elapsedMs + 1;
   const cycleDurationByParty = state.parties.map((_, partyIndex) => (
     partyIndex === options.partyIndex ? cycleDurationMs : inactiveDurationMs
   ));
-  return gameReducer(state, {
-    type: 'SIMULATE_AFK',
-    elapsedMs,
-    isAutoRepeatEnabled: true,
-    gameMode: options.gameMode,
-    simulatedEndAt: options.simulatedCompletedAt,
-    cycleDurationScale: options.cycleDurationScale,
-    cycleDurationByParty,
-    operationStart: 0,
-    operationCount: AFK_CHUNK_CYCLE_COUNT,
-    finalizeChunk: true,
+  const chunkPartyStatus: Array<{ party: Party; computed: ComputedPartyStatus }> = [];
+  if (options.chunkStatusScope === 'all') {
+    state.parties.forEach((candidate, candidateIndex) => {
+      chunkPartyStatus[candidateIndex] = {
+        party: candidate,
+        computed: computePartyStats(candidate),
+      };
+    });
+  } else {
+    // SpecRef: 5.1 | Chunk | Party status is calculated once at the beginning of each Chunk.
+    // A party-scoped worker cannot advance inactive parties, so retain only the
+    // one authoritative status snapshot consumed by its twelve target Cycles.
+    chunkPartyStatus[options.partyIndex] = {
+      party,
+      computed: computePartyStats(party),
+    };
+  }
+  const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable'
+    ? undefined
+    : { inventoryOverlay: new AfkInventoryOverlay(state.global.inventory) };
+  let workingState = state;
+  for (let operationIndex = 0; operationIndex < operationCount; operationIndex += 1) {
+    workingState = gameReducer(workingState, {
+      type: 'SIMULATE_AFK',
+      elapsedMs,
+      isAutoRepeatEnabled: true,
+      gameMode: options.gameMode,
+      simulatedEndAt: options.simulatedCompletedAt,
+      cycleDurationScale: options.cycleDurationScale,
+      cycleDurationByParty,
+      operationStart: operationIndex,
+      operationCount: 1,
+      finalizeChunk: operationIndex + 1 === operationCount,
+      chunkPartyStatus,
+    }, undefined, afkChunkContext);
+    options.onProgress?.(operationIndex + 1, operationCount);
+  }
+  if (afkChunkContext) {
+    afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
+  }
+  return workingState;
+}
+
+/** Pure authoritative batch used by the serialized Experimental API adapter and stabilization tests. */
+export function simulateApiSortieBatchForTesting(
+  state: GameState,
+  partyIndex: number,
+  count: number,
+  gameMode: GameMode = 'm.kemo',
+  simulatedAt: number = Date.now(),
+): { state: GameState; runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> } {
+  let stagedState = state;
+  const initialParty = stagedState.parties[partyIndex];
+  if (!initialParty) throw new Error('party_not_found');
+  const charge = {
+    instantExpeditionStock: initialParty.instantExpeditionStock,
+    instantExpeditionChargeStartedAt: initialParty.instantExpeditionChargeStartedAt,
+  };
+  const runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> = [];
+  for (let index = 0; index < count; index += 1) {
+    const beforeState = stagedState;
+    const beforeParty = beforeState.parties[partyIndex];
+    const computed = computePartyStats(beforeParty);
+    const maximumHp = computed.partyStats.hp;
+    stagedState = gameReducer(stagedState, { type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
+    stagedState = gameReducer(stagedState, {
+      type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle: false,
+      simulatedAt: simulatedAt + index * APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
+      authoritativePartyStatus: { party: beforeParty, computed },
+    });
+    const afterState = stagedState;
+    const party = afterState.parties[partyIndex];
+    runs.push({ party, log: party.lastExpeditionLog, beforeState, afterState });
+  }
+  const finalParties = [...stagedState.parties];
+  finalParties[partyIndex] = {
+    ...finalParties[partyIndex],
+    instantExpeditionStock: charge.instantExpeditionStock,
+    instantExpeditionChargeStartedAt: charge.instantExpeditionChargeStartedAt,
+  };
+  return { state: { ...stagedState, parties: finalParties }, runs };
+}
+
+const EXPEDITION_SIMULATION_SLICE_BUDGET_MS = 10;
+const EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS = 100;
+
+const yieldToExpeditionSimulationUi = () => new Promise<void>((resolve) => {
+  setTimeout(resolve, 0);
+});
+
+/**
+ * Create one private, compact baseline for a forecast batch. Only the selected
+ * party is cloned; unrelated parties and master/configuration data are shared
+ * read-only. Persistent-only collections are replaced with scratch collections
+ * because forecast results are discarded and cannot reveal or commit them.
+ */
+export function createSimulationSandbox(state: GameState, partyIndex: number): SimulationSandbox {
+  const sourceParty = state.parties[partyIndex];
+  if (!sourceParty) throw new Error('party_not_found');
+  const party = structuredClone(sourceParty);
+  const authoritativePartyStatus = computePartyStats(party);
+  party.currentHp = authoritativePartyStatus.partyStats.hp;
+  party.lastExpeditionLog = null;
+  party.pendingDiaryLog = null;
+  party.diaryLogs = [];
+
+  const parties = [...state.parties];
+  parties[partyIndex] = party;
+  return {
+    partyIndex,
+    authoritativePartyStatus,
+    baseline: {
+      ...state,
+      parties,
+      global: {
+        ...state.global,
+        gold: 0,
+        inventory: {},
+        enemyBattleStats: {},
+        altarVictoriesByEnemyType: {},
+        revealedItemCompendiumItemIds: [],
+        revealedGlossaryAbilityIds: [],
+        revealedGlossaryTerrainKeys: [],
+      },
+    },
+  };
+}
+
+export function createSimulationRunState(sandbox: SimulationSandbox): GameState {
+  return {
+    ...sandbox.baseline,
+    parties: [...sandbox.baseline.parties],
+    global: {
+      ...sandbox.baseline.global,
+      inventory: {},
+      enemyBattleStats: {},
+      altarVictoriesByEnemyType: {},
+      revealedItemCompendiumItemIds: [],
+      revealedGlossaryAbilityIds: [],
+      revealedGlossaryTerrainKeys: [],
+    },
+  };
+}
+
+/** Test seam for exact full/forecast differential coverage. */
+export function resolveSimulationRunForTesting(
+  state: GameState,
+  partyIndex: number,
+  resolutionMode: ExpeditionResolutionMode,
+): { state: GameState; resolution: ExpeditionForecastResolution } {
+  if (resolutionMode === 'forecast') {
+    const sandbox = createSimulationSandbox(state, partyIndex);
+    const resolvedState = gameReducer(createSimulationRunState(sandbox), {
+      type: 'RUN_EXPEDITION',
+      partyIndex,
+      battleOutputMode: 'result-only',
+      resolutionMode,
+      authoritativePartyStatus: {
+        party: sandbox.baseline.parties[partyIndex],
+        computed: sandbox.authoritativePartyStatus,
+      },
+    });
+    const resolution = forecastResolutionByState.get(resolvedState);
+    if (!resolution) throw new Error('simulation_failed');
+    return { state: resolvedState, resolution };
+  }
+  const baseline = structuredClone(state);
+  const party = baseline.parties[partyIndex];
+  if (!party) throw new Error('party_not_found');
+  const computed = computePartyStats(party);
+  party.currentHp = computed.partyStats.hp;
+  party.lastExpeditionLog = null;
+  party.pendingDiaryLog = null;
+  const resolvedState = gameReducer(baseline, {
+    type: 'RUN_EXPEDITION',
+    partyIndex,
+    battleOutputMode: 'result-only',
+    resolutionMode,
+    authoritativePartyStatus: { party, computed },
   });
+  const log = resolvedState.parties[partyIndex]?.lastExpeditionLog;
+  if (!log) throw new Error('simulation_failed');
+  return { state: resolvedState, resolution: createForecastResolution(log) };
+}
+
+/**
+ * SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
+ *
+ * Resolve forecast expeditions only against private clones. Each run starts from
+ * the same current configuration and full HP, matching a normal post-rest
+ * expedition without committing rewards, progression, Diary entries, or state.
+ */
+export async function simulateExpeditionRuns(
+  state: GameState,
+  partyIndex: number,
+  gameMode: GameMode = 'm.kemo',
+  count = EXPEDITION_SIMULATION_RUN_COUNT,
+  onProgress?: (completed: number, total: number) => void,
+): Promise<ExpeditionSimulationResult> {
+  void memoryMonitor.recordEvent('simulation_start');
+  const total = Math.max(1, Math.floor(count));
+  const sandbox = createSimulationSandbox(state, partyIndex);
+
+  const result: ExpeditionSimulationResult = {
+    Clear: 0,
+    Turned_Back: 0,
+    Draw_Retreat: 0,
+    Wounded_Retreat: 0,
+    Defeat: 0,
+    total,
+  };
+
+  let sliceStartedAt = performance.now();
+  let lastProgressAt = sliceStartedAt - EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS;
+  for (let index = 0; index < total; index += 1) {
+    const runState = createSimulationRunState(sandbox);
+    const resolvedState = gameReducer(runState, {
+      type: 'RUN_EXPEDITION',
+      partyIndex,
+      gameMode,
+      triggerGodsBattle: false,
+      battleOutputMode: 'result-only',
+      resolutionMode: 'forecast',
+      authoritativePartyStatus: {
+        party: sandbox.baseline.parties[partyIndex],
+        computed: sandbox.authoritativePartyStatus,
+      },
+    });
+    const resolution = forecastResolutionByState.get(resolvedState);
+    if (!resolution) throw new Error('simulation_failed');
+    memoryMonitor.incrementBattleCount(resolution.completedRooms);
+
+    if (resolution.outcome === 'Clear') {
+      result.Clear += 1;
+    } else if (resolution.outcome === 'Escape') {
+      result.Turned_Back += 1;
+    } else if (resolution.outcome === 'Defeat') {
+      result.Defeat += 1;
+    } else {
+      if (resolution.terminalBattleOutcome === 'draw') result.Draw_Retreat += 1;
+      else result.Wounded_Retreat += 1;
+    }
+
+    const completed = index + 1;
+    const now = performance.now();
+    if (completed === total || now - lastProgressAt >= EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS) {
+      onProgress?.(completed, total);
+      lastProgressAt = now;
+    }
+    if (completed < total && now - sliceStartedAt >= EXPEDITION_SIMULATION_SLICE_BUDGET_MS) {
+      await yieldToExpeditionSimulationUi();
+      sliceStartedAt = performance.now();
+    }
+  }
+
+  void memoryMonitor.recordEvent('simulation_complete');
+  return result;
 }
 
 // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
@@ -5232,51 +5999,86 @@ export function useGameState() {
     initialStateRef.current = createInitialState();
   }
   const [state, dispatch] = useReducer(gameReducer, initialStateRef.current.state);
+  const latestGameStateRef = useRef(state);
+  latestGameStateRef.current = state;
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
   const [saveErrorLog, setSaveErrorLog] = useState<string | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingSaveStateRef = useRef<GameState | null>(null);
+  const saveRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const persistenceCoordinatorRef = useRef<PersistenceCoordinator | null>(null);
   const lastSavedAtRef = useRef(0);
   const loadErrorLog = initialStateRef.current.loadErrorLog;
   const isSaveBlockedByLoadFailure = loadErrorLog !== null;
 
-  const flushPendingSave = useCallback(function flushPendingSaveAttempt() {
-    // SpecRef: 5.1.4 | Save and load | Do not overwrite or save the current runtime state.
-    if (isSaveBlockedByLoadFailure) return;
-    if (!pendingSaveStateRef.current) return;
-    const result = saveState(pendingSaveStateRef.current);
-    if (!result.ok) {
-      setSaveErrorLog(result.errorLog);
-      if (!saveTimeoutRef.current) {
-        saveTimeoutRef.current = setTimeout(() => {
-          saveTimeoutRef.current = null;
-          flushPendingSaveAttempt();
-        }, STATE_SAVE_THROTTLE_MS);
+  const createPersistenceCoordinator = useCallback(() => {
+    const recordPersistenceTelemetry = (event: PersistenceTelemetryEvent) => {
+      if (event.event === 'durability_latency') {
+        setSaveErrorLog(null);
+        if (saveRetryTimeoutRef.current) {
+          clearTimeout(saveRetryTimeoutRef.current);
+          saveRetryTimeoutRef.current = null;
+        }
       }
-      return;
-    }
-    pendingSaveStateRef.current = null;
-    lastSavedAtRef.current = Date.now();
-    setSaveErrorLog(null);
+      if (!afkRuntimeTrace.isRecoveryActive()) return;
+      afkRuntimeTrace.record(`game_save_${event.event}`, {
+        phase: event.event.endsWith('error') ? 'error' : 'game_save',
+        durationMs: event.durationMs,
+        anomaly: event.event.endsWith('error'),
+        data: { revision: event.revision, requestId: event.requestId ?? 0, ...event.data },
+      });
+    };
+    return new PersistenceCoordinator({
+      storageKey: STORAGE_KEY,
+      storage: localStorage,
+      workerFactory: createBrowserPersistenceWorker,
+      onTelemetry: recordPersistenceTelemetry,
+      onError: (error) => {
+        console.error('Failed to save state:', error);
+        setSaveErrorLog(formatLoadErrorLog(error));
+        if (!saveRetryTimeoutRef.current) {
+          saveRetryTimeoutRef.current = setTimeout(() => {
+            saveRetryTimeoutRef.current = null;
+            persistenceCoordinatorRef.current?.retry();
+          }, STATE_SAVE_THROTTLE_MS);
+        }
+      },
+    });
+  }, []);
+
+  if (!persistenceCoordinatorRef.current && !isSaveBlockedByLoadFailure) {
+    persistenceCoordinatorRef.current = createPersistenceCoordinator();
+  }
+
+  const flushPendingSave = useCallback((): Promise<void> => {
+    // SpecRef: 5.1.4 | Save and load | Do not overwrite state after a load failure.
+    if (isSaveBlockedByLoadFailure) return Promise.resolve();
+    const flush = persistenceCoordinatorRef.current?.requestDurable(latestGameStateRef.current) ?? Promise.resolve();
+    return flush.then(() => {
+      lastSavedAtRef.current = Date.now();
+      setSaveErrorLog(null);
+    });
   }, [isSaveBlockedByLoadFailure]);
 
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
   useEffect(() => {
     if (isSaveBlockedByLoadFailure) {
-      pendingSaveStateRef.current = null;
       return;
     }
-    pendingSaveStateRef.current = state;
 
     const now = Date.now();
     const msSinceLastSave = now - lastSavedAtRef.current;
+
+    const requestSave = () => {
+      persistenceCoordinatorRef.current?.requestOrdinary(state);
+      lastSavedAtRef.current = Date.now();
+    };
 
     if (msSinceLastSave >= STATE_SAVE_THROTTLE_MS) {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
         saveTimeoutRef.current = null;
       }
-      flushPendingSave();
+      requestSave();
       return;
     }
 
@@ -5287,18 +6089,22 @@ export function useGameState() {
     const delayMs = Math.max(0, STATE_SAVE_THROTTLE_MS - msSinceLastSave);
     saveTimeoutRef.current = setTimeout(() => {
       saveTimeoutRef.current = null;
-      flushPendingSave();
+      requestSave();
     }, delayMs);
-  }, [state, flushPendingSave, isSaveBlockedByLoadFailure]);
+  }, [state, isSaveBlockedByLoadFailure]);
 
   useEffect(() => {
+    if (!persistenceCoordinatorRef.current && !isSaveBlockedByLoadFailure) {
+      persistenceCoordinatorRef.current = createPersistenceCoordinator();
+    }
     const flushOnHidden = () => {
       if (document.visibilityState === 'hidden') {
-        flushPendingSave();
+        void flushPendingSave().catch(() => undefined);
       }
     };
 
-    window.addEventListener('beforeunload', flushPendingSave);
+    const requestBestEffortFlush = () => { void flushPendingSave().catch(() => undefined) };
+    window.addEventListener('beforeunload', requestBestEffortFlush);
     document.addEventListener('visibilitychange', flushOnHidden);
 
     return () => {
@@ -5306,11 +6112,17 @@ export function useGameState() {
         clearTimeout(saveTimeoutRef.current);
         saveTimeoutRef.current = null;
       }
-      window.removeEventListener('beforeunload', flushPendingSave);
+      if (saveRetryTimeoutRef.current) {
+        clearTimeout(saveRetryTimeoutRef.current);
+        saveRetryTimeoutRef.current = null;
+      }
+      window.removeEventListener('beforeunload', requestBestEffortFlush);
       document.removeEventListener('visibilitychange', flushOnHidden);
-      flushPendingSave();
+      // Worker completion is not guaranteed during page teardown; reject durable waiters cleanly.
+      persistenceCoordinatorRef.current?.shutdown();
+      persistenceCoordinatorRef.current = null;
     };
-  }, [flushPendingSave]);
+  }, [createPersistenceCoordinator, flushPendingSave, isSaveBlockedByLoadFailure]);
 
   // Add notification helper
   // For 'stat' category, dismiss previous stat notifications first
@@ -5322,7 +6134,7 @@ export function useGameState() {
     options?: { rarity?: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare'; isSuperRareItem?: boolean }
   ) => {
     const notification: GameNotification = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}-${gameplayRandom().toString(36).substr(2, 9)}`,
       message,
       style,
       category,
@@ -5346,7 +6158,7 @@ export function useGameState() {
   ) => {
     const now = Date.now();
     const newNotifications: GameNotification[] = changes.map((change, index) => ({
-      id: `${now}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${now}-${index}-${gameplayRandom().toString(36).substr(2, 9)}`,
       message: change.message,
       style: 'normal' as NotificationStyle,
       category: 'stat' as NotificationCategory,
@@ -5398,6 +6210,10 @@ export function useGameState() {
     resetExpeditionStats: useCallback((partyIndex: number) => {
       dispatch({ type: 'RESET_EXPEDITION_STATS', partyIndex });
     }, []),
+
+    simulateExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', onProgress?: (completed: number, total: number) => void) => (
+      simulateExpeditionRuns(state, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress)
+    ), [state]),
 
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
@@ -5457,6 +6273,10 @@ export function useGameState() {
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => {
       dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey, partyIndex });
+    }, []),
+
+    applyAutoEquipmentActions: useCallback((actions: AutoEquipmentProfileAction[]) => {
+      dispatch({ type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions });
     }, []),
 
     toggleEquipmentLock: useCallback((characterId: number, slotIndex: number, partyIndex?: number) => {
@@ -5540,61 +6360,37 @@ export function useGameState() {
     }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {
-      let stagedState = state;
-      const initialParty = stagedState.parties[partyIndex];
-      if (!initialParty) throw new Error('party_not_found');
-      const charge = {
-        instantExpeditionStock: initialParty.instantExpeditionStock,
-        instantExpeditionChargeStartedAt: initialParty.instantExpeditionChargeStartedAt,
-      };
-      const runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> = [];
-      for (let index = 0; index < count; index += 1) {
-        const beforeState = stagedState;
-        const beforeParty = beforeState.parties[partyIndex];
-        const maximumHp = computePartyStats(beforeParty).partyStats.hp;
-        stagedState = gameReducer(stagedState, { type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
-        stagedState = gameReducer(stagedState, {
-          type: 'RESOLVE_INSTANT_EXPEDITION',
-          partyIndex,
-          gameMode,
-          triggerGodsBattle: false,
-          simulatedAt: simulatedAt + index * APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
-        });
-        const afterState = stagedState;
-        const party = afterState.parties[partyIndex];
-        runs.push({ party, log: party.lastExpeditionLog, beforeState, afterState });
-      }
-      const finalParties = [...stagedState.parties];
-      finalParties[partyIndex] = {
-        ...finalParties[partyIndex],
-        instantExpeditionStock: charge.instantExpeditionStock,
-        instantExpeditionChargeStartedAt: charge.instantExpeditionChargeStartedAt,
-      };
-      stagedState = { ...stagedState, parties: finalParties };
-      dispatch({ type: 'COMMIT_API_STATE', state: stagedState });
-      return { state: stagedState, runs };
+      const batch = simulateApiSortieBatchForTesting(state, partyIndex, count, gameMode, simulatedAt);
+      dispatch({ type: 'COMMIT_API_STATE', state: batch.state });
+      return batch;
     }, [state]),
 
     resetGame: useCallback(() => {
       dispatch({ type: 'RESET_GAME' });
     }, []),
 
-    importGameState: useCallback((nextState: GameState): LoadSavedStateResult => {
+    importGameState: useCallback(async (nextState: GameState): Promise<LoadSavedStateResult> => {
       try {
-        const imported = loadSavedState(encodePersistedState(JSON.stringify(nextState)));
+        // Unprefixed JSON is intentionally accepted by the normal legacy load path.
+        const imported = loadSavedState(JSON.stringify(nextState));
         if (!imported.state) return imported;
         const normalizedState = gameReducer(imported.state, { type: 'IMPORT_GAME_STATE', state: imported.state });
-        const persisted = saveState(normalizedState);
-        if (!persisted.ok) {
-          setSaveErrorLog(persisted.errorLog);
-          return { state: null, errorLog: persisted.errorLog };
-        }
+        await persistenceCoordinatorRef.current?.replaceDurable(normalizedState);
         dispatch({ type: 'COMMIT_API_STATE', state: normalizedState });
         setSaveErrorLog(null);
         return { state: normalizedState, errorLog: null };
       } catch (error) {
-        return { state: null, errorLog: formatLoadErrorLog(error) };
+        const errorLog = formatLoadErrorLog(error);
+        setSaveErrorLog(errorLog);
+        return { state: null, errorLog };
       }
+    }, []),
+
+    getCompressedSavePayload: useCallback(async (): Promise<string> => {
+      await persistenceCoordinatorRef.current?.requestDurable(latestGameStateRef.current);
+      const coordinator = persistenceCoordinatorRef.current;
+      if (!coordinator) throw new Error('Persistence coordinator was unavailable.');
+      return coordinator.createExportPayload(latestGameStateRef.current);
     }, []),
 
     resetCommonBags: useCallback((partyIndex?: number) => {
@@ -5617,7 +6413,8 @@ export function useGameState() {
       dispatch({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
     }, []),
 
-    setLanguage: useCallback((language: Language) => {
+    setLanguage: useCallback(async (language: Language) => {
+      await ensureLanguageLoaded(language);
       dispatch({ type: 'SET_LANGUAGE', language });
     }, []),
 

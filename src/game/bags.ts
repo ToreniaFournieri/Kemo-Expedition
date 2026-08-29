@@ -1,5 +1,6 @@
 import { GameBags, RandomBag, WeightedBagEntry } from '../types';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { gameplayRandom } from './gameplayRandom';
 
 function cloneEntries(entries: WeightedBagEntry[]): WeightedBagEntry[] {
   return entries.map((entry) => ({ ...entry }));
@@ -271,7 +272,7 @@ export function drawFromBag(bag: RandomBag): { ticket: number; newBag: RandomBag
   }
 
   const sortedEntries = sortEntriesStable(bag.entries);
-  const roll = Math.floor(Math.random() * totalTickets) + 1;
+  const roll = Math.floor(gameplayRandom() * totalTickets) + 1;
   let cumulative = 0;
 
   const newEntries = sortedEntries.map((entry) => ({ ...entry }));

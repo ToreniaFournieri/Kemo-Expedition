@@ -796,6 +796,18 @@ function generateItems(): ItemDef[] {
 
 export const ITEMS: ItemDef[] = generateItems();
 
+const ITEM_BY_ID = new Map<number, ItemDef>();
+for (const item of ITEMS) {
+  // Preserve Array.find semantics if malformed master data ever contains a
+  // duplicate ID: the first declared item remains authoritative.
+  if (!ITEM_BY_ID.has(item.id)) ITEM_BY_ID.set(item.id, item);
+}
+
+type ItemLookupStrategy = 'linear' | 'indexed';
+const linearItemLookup = (id: number): ItemDef | undefined => ITEMS.find((item) => item.id === id);
+const indexedItemLookup = (id: number): ItemDef | undefined => ITEM_BY_ID.get(id);
+let activeItemLookup = indexedItemLookup;
+
 // ============================================================
 // Item lookup helpers
 // ============================================================
@@ -811,5 +823,16 @@ export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[]
   return ITEMS.filter(i => i.id >= tierBase + rarityBase && i.id < tierBase + rarityBase + 100);
 }
 
-export const getItemById = (id: number): ItemDef | undefined =>
-  ITEMS.find(i => i.id === id);
+// SpecRef: 9.2.3 | Runtime retention and transfer | Runtime data may be retained only while it is active, likely to be reused soon, or small enough to provide a meaningful measured benefit
+export const getItemById = (id: number): ItemDef | undefined => activeItemLookup(id);
+
+/** Profile-only differential seam. Production always uses the indexed lookup. */
+export function withItemLookupStrategyForTesting<T>(strategy: ItemLookupStrategy, operation: () => T): T {
+  const previous = activeItemLookup;
+  activeItemLookup = strategy === 'linear' ? linearItemLookup : indexedItemLookup;
+  try {
+    return operation();
+  } finally {
+    activeItemLookup = previous;
+  }
+}

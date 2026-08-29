@@ -9,6 +9,7 @@ import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
+import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
@@ -225,6 +226,11 @@ export default function PartyTab({
     image.onload = () => setIsPartyPaneBackgroundAvailable(true);
     image.onerror = () => setIsPartyPaneBackgroundAvailable(false);
     image.src = `${import.meta.env.BASE_URL}${partyPaneBackgroundImageFileName}`;
+    return () => {
+      image.onload = null;
+      image.onerror = null;
+      image.src = '';
+    };
   }, [partyPaneBackgroundImageFileName]);
 
   const getReorderedIndex = useCallback((currentIndex: number, fromIndex: number, toIndex: number) => {
@@ -539,7 +545,7 @@ export default function PartyTab({
 
     const availableCandidates = ptCandidates.filter((candidate: string) => !usedNames.has(candidate));
     const candidatePool = availableCandidates.length > 0 ? availableCandidates : ptCandidates;
-    return candidatePool[Math.floor(Math.random() * candidatePool.length)];
+    return candidatePool[Math.floor(gameplayRandom() * candidatePool.length)];
   };
 
   const handleRaceChange = (raceId: Character['raceId']) => {

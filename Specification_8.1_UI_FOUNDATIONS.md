@@ -143,7 +143,8 @@
   - Displays the current game speed state symbol and the remaining boost duration in hours without the `x1.0` or `x1.2` multiplier text.
     - x1.0 -> `▷`
     - x1.2 or higher -> `▶︎`
-- When the player presses the Speed of Time button:
+
+- **Progress Report:** When the player presses the Speed of Time button:
   - Show the following confirmation dialog:
     - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
     - Dialog options: YES / NO

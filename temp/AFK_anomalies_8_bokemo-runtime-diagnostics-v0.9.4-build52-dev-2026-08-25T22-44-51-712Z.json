@@ -1,0 +1,6233 @@
+{
+  "schemaVersion": 1,
+  "app": {
+    "version": "v0.9.4",
+    "build": 52,
+    "environment": "dev",
+    "exportedAt": 1787697891708,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15",
+    "hardwareConcurrency": 4,
+    "visibility": "visible"
+  },
+  "memory": {
+    "schemaVersion": 1,
+    "environment": "dev",
+    "sessionStartedAt": 1787697862108,
+    "exportedAt": 1787697891708,
+    "current": {
+      "schemaVersion": 1,
+      "timestamp": 1787697890168,
+      "elapsedTime": 28060,
+      "runtimeMode": "online",
+      "speed": "realtime",
+      "activeWorkers": 0,
+      "completedChunks": 30,
+      "battleCount": 36,
+      "current": {
+        "jsHeapUsed": null,
+        "jsHeapTotal": null,
+        "jsHeapLimit": null,
+        "wasmMemory": 2883584,
+        "estimatedAssetMemory": 10433472,
+        "workerOwnedEstimate": null,
+        "processMemory": null,
+        "currentMemory": 13317056
+      },
+      "peak": {
+        "jsHeapUsed": null,
+        "jsHeapTotal": null,
+        "jsHeapLimit": null,
+        "wasmMemory": 2883584,
+        "estimatedAssetMemory": 10433472,
+        "workerOwnedEstimate": null,
+        "processMemory": null,
+        "currentMemory": 13317056
+      }
+    },
+    "samples": [
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697862115,
+        "elapsedTime": 7,
+        "runtimeMode": "online",
+        "speed": "realtime",
+        "activeWorkers": 0,
+        "completedChunks": 0,
+        "battleCount": 0,
+        "current": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 0,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 2883584
+        },
+        "peak": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 0,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 2883584
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697862115,
+        "elapsedTime": 7,
+        "runtimeMode": "online",
+        "speed": "realtime",
+        "activeWorkers": 0,
+        "completedChunks": 0,
+        "battleCount": 0,
+        "current": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 0,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 2883584
+        },
+        "peak": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 0,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 2883584
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697877605,
+        "elapsedTime": 15497,
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "activeWorkers": 1,
+        "completedChunks": 0,
+        "battleCount": 0,
+        "current": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        },
+        "peak": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697890168,
+        "elapsedTime": 28060,
+        "runtimeMode": "online",
+        "speed": "realtime",
+        "activeWorkers": 0,
+        "completedChunks": 30,
+        "battleCount": 36,
+        "current": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 10433472,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 13317056
+        },
+        "peak": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 10433472,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 13317056
+        }
+      }
+    ],
+    "events": [
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697862115,
+        "event": "session_start",
+        "runtimeMode": "online",
+        "speed": "realtime",
+        "elapsedTime": 7,
+        "activeWorkers": 0,
+        "completedChunks": 0,
+        "battleCount": 0,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 0,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 2883584
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697862115,
+        "event": "online_processing_start",
+        "runtimeMode": "online",
+        "speed": "realtime",
+        "elapsedTime": 7,
+        "activeWorkers": 0,
+        "completedChunks": 0,
+        "battleCount": 0,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 0,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 2883584
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697877606,
+        "event": "afk_emulation_start",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 15498,
+        "activeWorkers": 1,
+        "completedChunks": 0,
+        "battleCount": 0,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697881509,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 19401,
+        "activeWorkers": 0,
+        "completedChunks": 1,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697881852,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 19744,
+        "activeWorkers": 0,
+        "completedChunks": 2,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697882055,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 19947,
+        "activeWorkers": 0,
+        "completedChunks": 3,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697882313,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 20205,
+        "activeWorkers": 0,
+        "completedChunks": 4,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697882496,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 20388,
+        "activeWorkers": 0,
+        "completedChunks": 5,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697884176,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 22068,
+        "activeWorkers": 0,
+        "completedChunks": 6,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697884409,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 22301,
+        "activeWorkers": 0,
+        "completedChunks": 7,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697884633,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 22525,
+        "activeWorkers": 0,
+        "completedChunks": 8,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697884803,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 22695,
+        "activeWorkers": 0,
+        "completedChunks": 9,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697885073,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 22965,
+        "activeWorkers": 0,
+        "completedChunks": 10,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697885266,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 23158,
+        "activeWorkers": 0,
+        "completedChunks": 11,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697885457,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 23349,
+        "activeWorkers": 0,
+        "completedChunks": 12,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697885662,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 23554,
+        "activeWorkers": 0,
+        "completedChunks": 13,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697885887,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 23779,
+        "activeWorkers": 0,
+        "completedChunks": 14,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697886043,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 23935,
+        "activeWorkers": 0,
+        "completedChunks": 15,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697886227,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 24119,
+        "activeWorkers": 0,
+        "completedChunks": 16,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697886389,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 24281,
+        "activeWorkers": 0,
+        "completedChunks": 17,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697886602,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 24494,
+        "activeWorkers": 0,
+        "completedChunks": 18,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697886762,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 24654,
+        "activeWorkers": 0,
+        "completedChunks": 19,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697886967,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 24859,
+        "activeWorkers": 0,
+        "completedChunks": 20,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697887125,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 25017,
+        "activeWorkers": 0,
+        "completedChunks": 21,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697887373,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 25265,
+        "activeWorkers": 0,
+        "completedChunks": 22,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697887525,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 25417,
+        "activeWorkers": 0,
+        "completedChunks": 23,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697889043,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 26935,
+        "activeWorkers": 0,
+        "completedChunks": 24,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697889196,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 27088,
+        "activeWorkers": 0,
+        "completedChunks": 25,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697889368,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 27260,
+        "activeWorkers": 0,
+        "completedChunks": 26,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697889517,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 27409,
+        "activeWorkers": 0,
+        "completedChunks": 27,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697889706,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 27598,
+        "activeWorkers": 0,
+        "completedChunks": 28,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697889868,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 27760,
+        "activeWorkers": 0,
+        "completedChunks": 29,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697890089,
+        "event": "chunk_complete",
+        "runtimeMode": "afk",
+        "speed": "realtime",
+        "elapsedTime": 27981,
+        "activeWorkers": 0,
+        "completedChunks": 30,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 1736864,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 4620448
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "timestamp": 1787697890168,
+        "event": "afk_emulation_complete",
+        "runtimeMode": "online",
+        "speed": "realtime",
+        "elapsedTime": 28060,
+        "activeWorkers": 0,
+        "completedChunks": 30,
+        "battleCount": 36,
+        "metrics": {
+          "jsHeapUsed": null,
+          "jsHeapTotal": null,
+          "jsHeapLimit": null,
+          "wasmMemory": 2883584,
+          "estimatedAssetMemory": 10433472,
+          "workerOwnedEstimate": null,
+          "processMemory": null,
+          "currentMemory": 13317056
+        }
+      }
+    ]
+  },
+  "afkTrace": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "environment": "dev",
+    "sessionStartedAt": 1787697860868,
+    "exportedAt": 1787697891708,
+    "droppedEventCount": 0,
+    "droppedAnomalyCount": 0,
+    "current": {
+      "recoveryId": null,
+      "recoveryActive": false,
+      "phase": "idle",
+      "phaseAgeMs": 1543,
+      "lastProgressAgeMs": 1543,
+      "longWaitActive": false,
+      "longWaitAgeMs": null,
+      "pendingAfkMs": 0,
+      "completedResultCount": 0,
+      "workerPoolSize": 0,
+      "canonicalJobId": null,
+      "activeJobs": []
+    },
+    "aggregatesByEvent": {
+      "recovery_start": {
+        "count": 1,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "afk_checkpoint_serialization": {
+        "count": 35,
+        "totalDurationMs": 3.000000000003638,
+        "maxDurationMs": 1.000000000003638
+      },
+      "afk_checkpoint_storage_write": {
+        "count": 35,
+        "totalDurationMs": 1,
+        "maxDurationMs": 1
+      },
+      "afk_checkpoint_complete": {
+        "count": 35,
+        "totalDurationMs": 6.000000000003638,
+        "maxDurationMs": 1.000000000003638
+      },
+      "worker_created": {
+        "count": 1,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "worker_job_posted": {
+        "count": 30,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "event_loop_lag": {
+        "count": 5,
+        "totalDurationMs": 12510,
+        "maxDurationMs": 6600
+      },
+      "game_save_serialization": {
+        "count": 3,
+        "totalDurationMs": 90.99999999999272,
+        "maxDurationMs": 40
+      },
+      "game_save_compression": {
+        "count": 3,
+        "totalDurationMs": 4720.000000000004,
+        "maxDurationMs": 2047.0000000000036
+      },
+      "game_save_storage_write": {
+        "count": 3,
+        "totalDurationMs": 100,
+        "maxDurationMs": 40.99999999999636
+      },
+      "game_save_complete": {
+        "count": 3,
+        "totalDurationMs": 4911.999999999996,
+        "maxDurationMs": 2129
+      },
+      "long_wait_start": {
+        "count": 3,
+        "totalDurationMs": 5669.999999999996,
+        "maxDurationMs": 2798
+      },
+      "worker_job_started": {
+        "count": 30,
+        "totalDurationMs": 9088.000000000004,
+        "maxDurationMs": 3812
+      },
+      "long_wait_end": {
+        "count": 3,
+        "totalDurationMs": 6688,
+        "maxDurationMs": 3812
+      },
+      "worker_job_complete": {
+        "count": 30,
+        "totalDurationMs": 1201.9999999999932,
+        "maxDurationMs": 162
+      },
+      "commit_transaction_start": {
+        "count": 30,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "commit_reducer_dispatched": {
+        "count": 30,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "auto_equipment_skipped": {
+        "count": 15,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "commit_transaction_complete": {
+        "count": 30,
+        "totalDurationMs": 783.9999999999891,
+        "maxDurationMs": 50.99999999999636
+      },
+      "auto_equipment_start": {
+        "count": 15,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "auto_equipment_complete": {
+        "count": 15,
+        "totalDurationMs": 302.99999999998545,
+        "maxDurationMs": 31
+      },
+      "worker_pool_terminated": {
+        "count": 1,
+        "totalDurationMs": 1.000000000003638,
+        "maxDurationMs": 1.000000000003638
+      },
+      "recovery_complete": {
+        "count": 1,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      }
+    },
+    "aggregatesByPhase": {
+      "recovery_start": {
+        "count": 1,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "afk_checkpoint": {
+        "count": 105,
+        "totalDurationMs": 10.000000000007276,
+        "maxDurationMs": 1.000000000003638
+      },
+      "worker_queue": {
+        "count": 32,
+        "totalDurationMs": 6600,
+        "maxDurationMs": 6600
+      },
+      "game_save": {
+        "count": 12,
+        "totalDurationMs": 9822.999999999993,
+        "maxDurationMs": 2129
+      },
+      "worker_execution": {
+        "count": 70,
+        "totalDurationMs": 28557.999999999993,
+        "maxDurationMs": 3812
+      },
+      "commit_dispatch": {
+        "count": 30,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      },
+      "commit_awaiting_react": {
+        "count": 76,
+        "totalDurationMs": 784.9999999999927,
+        "maxDurationMs": 50.99999999999636
+      },
+      "auto_equipment": {
+        "count": 30,
+        "totalDurationMs": 302.99999999998545,
+        "maxDurationMs": 31
+      },
+      "recovery_complete": {
+        "count": 1,
+        "totalDurationMs": 0,
+        "maxDurationMs": 0
+      }
+    },
+    "aggregatesByParty": {
+      "1": {
+        "count": 225,
+        "totalDurationMs": 11376.99999999997,
+        "maxDurationMs": 3812
+      }
+    },
+    "events": [
+      {
+        "schemaVersion": 1,
+        "sequence": 1,
+        "timestamp": 1787697877591,
+        "monotonicTime": 17274,
+        "event": "recovery_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "recovery_start",
+        "data": {
+          "source": "elapsed_checkpoint",
+          "elapsedMs": 583200000,
+          "effectiveElapsedMs": 162000000,
+          "partyCount": 1
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 2,
+        "timestamp": 1787697877592,
+        "monotonicTime": 17274,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1382
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 3,
+        "timestamp": 1787697877592,
+        "monotonicTime": 17274,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 4,
+        "timestamp": 1787697877592,
+        "monotonicTime": 17274,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 5,
+        "timestamp": 1787697877600,
+        "monotonicTime": 17283,
+        "event": "worker_created",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "durationMs": 0,
+        "data": {
+          "workerPoolSize": 1,
+          "workerLimit": 1
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 6,
+        "timestamp": 1787697877601,
+        "monotonicTime": 17283,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-1",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 22372,
+          "simulatedCompletedAt": 1787541277591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 7,
+        "timestamp": 1787697877602,
+        "monotonicTime": 17285,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1382
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 8,
+        "timestamp": 1787697877602,
+        "monotonicTime": 17285,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 9,
+        "timestamp": 1787697877602,
+        "monotonicTime": 17285,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 10,
+        "timestamp": 1787697877612,
+        "monotonicTime": 17294,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "durationMs": 6600,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 11,
+        "timestamp": 1787697877612,
+        "monotonicTime": 17295,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1382
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 12,
+        "timestamp": 1787697877612,
+        "monotonicTime": 17295,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 13,
+        "timestamp": 1787697877612,
+        "monotonicTime": 17295,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 14,
+        "timestamp": 1787697878251,
+        "monotonicTime": 17933,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1382
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 15,
+        "timestamp": 1787697878251,
+        "monotonicTime": 17933,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 16,
+        "timestamp": 1787697878251,
+        "monotonicTime": 17933,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 17,
+        "timestamp": 1787697878292,
+        "monotonicTime": 17974,
+        "event": "game_save_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 40,
+        "data": {
+          "payloadLength": 6945254
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 18,
+        "timestamp": 1787697880339,
+        "monotonicTime": 20022.000000000004,
+        "event": "game_save_compression",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 2047.0000000000036,
+        "data": {
+          "encodedLength": 410199
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 19,
+        "timestamp": 1787697880380,
+        "monotonicTime": 20063,
+        "event": "game_save_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 40.99999999999636
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 20,
+        "timestamp": 1787697880380,
+        "monotonicTime": 20063,
+        "event": "game_save_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 2129
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 21,
+        "timestamp": 1787697880398,
+        "monotonicTime": 20081,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 2537,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 22,
+        "timestamp": 1787697880398,
+        "monotonicTime": 20081,
+        "event": "long_wait_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 2798,
+        "data": {
+          "thresholdMs": 1000,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 23,
+        "timestamp": 1787697881409,
+        "monotonicTime": 21092,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 761,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 24,
+        "timestamp": 1787697881412,
+        "monotonicTime": 21095,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-1",
+        "durationMs": 3812
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 25,
+        "timestamp": 1787697881412,
+        "monotonicTime": 21095,
+        "event": "long_wait_end",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 3812,
+        "data": {
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 26,
+        "timestamp": 1787697881414,
+        "monotonicTime": 21096,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-1",
+        "durationMs": 162,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 162,
+          "inputTransferBytes": 22372,
+          "outputTransferBytes": 63037
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 27,
+        "timestamp": 1787697881473,
+        "monotonicTime": 21156,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-1",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 28,
+        "timestamp": 1787697881473,
+        "monotonicTime": 21156,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-1"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 29,
+        "timestamp": 1787697881509,
+        "monotonicTime": 21191,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-1",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 30,
+        "timestamp": 1787697881509,
+        "monotonicTime": 21192,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-1",
+        "durationMs": 36,
+        "data": {
+          "pendingAfkMs": 156600000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 31,
+        "timestamp": 1787697881557,
+        "monotonicTime": 21240.000000000004,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6022416,
+          "simulatedCompletedAt": 1787546677591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 32,
+        "timestamp": 1787697881623,
+        "monotonicTime": 21305,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 33,
+        "timestamp": 1787697881623,
+        "monotonicTime": 21305,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 34,
+        "timestamp": 1787697881623,
+        "monotonicTime": 21305,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 35,
+        "timestamp": 1787697881655,
+        "monotonicTime": 21338,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2",
+        "durationMs": 146
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 36,
+        "timestamp": 1787697881793,
+        "monotonicTime": 21476,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2",
+        "durationMs": 132.00000000000045,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 132.00000000000045,
+          "inputTransferBytes": 6022416,
+          "outputTransferBytes": 130236
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 37,
+        "timestamp": 1787697881806,
+        "monotonicTime": 21489,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 38,
+        "timestamp": 1787697881807,
+        "monotonicTime": 21489,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 39,
+        "timestamp": 1787697881822,
+        "monotonicTime": 21504,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 40,
+        "timestamp": 1787697881852,
+        "monotonicTime": 21535,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2",
+        "durationMs": 31,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 26
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 41,
+        "timestamp": 1787697881852,
+        "monotonicTime": 21535,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-2",
+        "durationMs": 46,
+        "data": {
+          "pendingAfkMs": 151200000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 42,
+        "timestamp": 1787697881898,
+        "monotonicTime": 21580.000000000004,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-3",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006525,
+          "simulatedCompletedAt": 1787552077591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 43,
+        "timestamp": 1787697882032,
+        "monotonicTime": 21715,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-3",
+        "durationMs": 180
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 44,
+        "timestamp": 1787697882033,
+        "monotonicTime": 21715,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-3",
+        "durationMs": 42,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 42,
+          "inputTransferBytes": 6006525,
+          "outputTransferBytes": 114375
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 45,
+        "timestamp": 1787697882033,
+        "monotonicTime": 21716,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-3",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 46,
+        "timestamp": 1787697882033,
+        "monotonicTime": 21716,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-3"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 47,
+        "timestamp": 1787697882033,
+        "monotonicTime": 21716,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 48,
+        "timestamp": 1787697882033,
+        "monotonicTime": 21716,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 49,
+        "timestamp": 1787697882033,
+        "monotonicTime": 21716,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 50,
+        "timestamp": 1787697882054,
+        "monotonicTime": 21737.000000000004,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-3",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 51,
+        "timestamp": 1787697882055,
+        "monotonicTime": 21737.000000000004,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-3",
+        "durationMs": 21.000000000003638,
+        "data": {
+          "pendingAfkMs": 145800000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 52,
+        "timestamp": 1787697882091,
+        "monotonicTime": 21774,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006640,
+          "simulatedCompletedAt": 1787557477591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 53,
+        "timestamp": 1787697882166,
+        "monotonicTime": 21849,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 54,
+        "timestamp": 1787697882166,
+        "monotonicTime": 21849,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 55,
+        "timestamp": 1787697882166,
+        "monotonicTime": 21849,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 56,
+        "timestamp": 1787697882180,
+        "monotonicTime": 21863,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4",
+        "durationMs": 125.99999999999636
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 57,
+        "timestamp": 1787697882234,
+        "monotonicTime": 21917,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4",
+        "durationMs": 43,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 43,
+          "inputTransferBytes": 6006640,
+          "outputTransferBytes": 114534
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 58,
+        "timestamp": 1787697882277,
+        "monotonicTime": 21960,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 59,
+        "timestamp": 1787697882278,
+        "monotonicTime": 21960,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 60,
+        "timestamp": 1787697882291,
+        "monotonicTime": 21974,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 61,
+        "timestamp": 1787697882313,
+        "monotonicTime": 21995,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4",
+        "durationMs": 21,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 30
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 62,
+        "timestamp": 1787697882313,
+        "monotonicTime": 21995,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-4",
+        "durationMs": 35,
+        "data": {
+          "pendingAfkMs": 140400000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 63,
+        "timestamp": 1787697882350,
+        "monotonicTime": 22032,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-5",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006660,
+          "simulatedCompletedAt": 1787562877591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 64,
+        "timestamp": 1787697882478,
+        "monotonicTime": 22160,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-5",
+        "durationMs": 165
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 65,
+        "timestamp": 1787697882478,
+        "monotonicTime": 22161,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-5",
+        "durationMs": 34,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 34,
+          "inputTransferBytes": 6006660,
+          "outputTransferBytes": 114567
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 66,
+        "timestamp": 1787697882479,
+        "monotonicTime": 22161,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-5",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 67,
+        "timestamp": 1787697882479,
+        "monotonicTime": 22161,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-5"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 68,
+        "timestamp": 1787697882479,
+        "monotonicTime": 22161,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 69,
+        "timestamp": 1787697882479,
+        "monotonicTime": 22161,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 70,
+        "timestamp": 1787697882479,
+        "monotonicTime": 22161,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 71,
+        "timestamp": 1787697882495,
+        "monotonicTime": 22178,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-5",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 72,
+        "timestamp": 1787697882496,
+        "monotonicTime": 22178,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-5",
+        "durationMs": 17,
+        "data": {
+          "pendingAfkMs": 135000000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 73,
+        "timestamp": 1787697882531,
+        "monotonicTime": 22214.000000000004,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006596,
+          "simulatedCompletedAt": 1787568277591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 74,
+        "timestamp": 1787697882591,
+        "monotonicTime": 22273,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 75,
+        "timestamp": 1787697882591,
+        "monotonicTime": 22273,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 76,
+        "timestamp": 1787697882591,
+        "monotonicTime": 22273,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 77,
+        "timestamp": 1787697882603,
+        "monotonicTime": 22286,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6",
+        "durationMs": 108
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 78,
+        "timestamp": 1787697882649,
+        "monotonicTime": 22331,
+        "event": "game_save_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 26.999999999996362,
+        "data": {
+          "payloadLength": 5081544
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 79,
+        "timestamp": 1787697884035,
+        "monotonicTime": 23718,
+        "event": "game_save_compression",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 1387,
+        "data": {
+          "encodedLength": 307011
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 80,
+        "timestamp": 1787697884065,
+        "monotonicTime": 23747,
+        "event": "game_save_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 29
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 81,
+        "timestamp": 1787697884065,
+        "monotonicTime": 23747,
+        "event": "game_save_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 1442.9999999999964
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 82,
+        "timestamp": 1787697884065,
+        "monotonicTime": 23747,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 83,
+        "timestamp": 1787697884065,
+        "monotonicTime": 23747,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 84,
+        "timestamp": 1787697884065,
+        "monotonicTime": 23748,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 85,
+        "timestamp": 1787697884076,
+        "monotonicTime": 23759,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1349,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 86,
+        "timestamp": 1787697884076,
+        "monotonicTime": 23759,
+        "event": "long_wait_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1473,
+        "data": {
+          "thresholdMs": 1000,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 87,
+        "timestamp": 1787697884079,
+        "monotonicTime": 23761,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6",
+        "durationMs": 59,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 59,
+          "inputTransferBytes": 6006596,
+          "outputTransferBytes": 114487
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 88,
+        "timestamp": 1787697884079,
+        "monotonicTime": 23761,
+        "event": "long_wait_end",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1475,
+        "data": {
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 89,
+        "timestamp": 1787697884124,
+        "monotonicTime": 23807.000000000004,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 90,
+        "timestamp": 1787697884125,
+        "monotonicTime": 23807.000000000004,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 91,
+        "timestamp": 1787697884149,
+        "monotonicTime": 23832,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 92,
+        "timestamp": 1787697884175,
+        "monotonicTime": 23858,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6",
+        "durationMs": 26,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 28
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 93,
+        "timestamp": 1787697884176,
+        "monotonicTime": 23858,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-6",
+        "durationMs": 50.99999999999636,
+        "data": {
+          "pendingAfkMs": 129600000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 94,
+        "timestamp": 1787697884214,
+        "monotonicTime": 23897.000000000004,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-7",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006596,
+          "simulatedCompletedAt": 1787573677591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 95,
+        "timestamp": 1787697884341,
+        "monotonicTime": 24024,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 96,
+        "timestamp": 1787697884341,
+        "monotonicTime": 24024,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 97,
+        "timestamp": 1787697884341,
+        "monotonicTime": 24024,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 98,
+        "timestamp": 1787697884342,
+        "monotonicTime": 24024,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-7",
+        "durationMs": 166
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 99,
+        "timestamp": 1787697884364,
+        "monotonicTime": 24046,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-7",
+        "durationMs": 57,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 56,
+          "inputTransferBytes": 6006596,
+          "outputTransferBytes": 114487
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 100,
+        "timestamp": 1787697884379,
+        "monotonicTime": 24062,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-7",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 101,
+        "timestamp": 1787697884380,
+        "monotonicTime": 24062,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-7"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 102,
+        "timestamp": 1787697884409,
+        "monotonicTime": 24091,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-7",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 103,
+        "timestamp": 1787697884409,
+        "monotonicTime": 24091,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-7",
+        "durationMs": 29,
+        "data": {
+          "pendingAfkMs": 124200000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 104,
+        "timestamp": 1787697884444,
+        "monotonicTime": 24127,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006660,
+          "simulatedCompletedAt": 1787579077591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 105,
+        "timestamp": 1787697884489,
+        "monotonicTime": 24172,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 106,
+        "timestamp": 1787697884489,
+        "monotonicTime": 24172,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 107,
+        "timestamp": 1787697884489,
+        "monotonicTime": 24172,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 108,
+        "timestamp": 1787697884515,
+        "monotonicTime": 24197,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8",
+        "durationMs": 106
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 109,
+        "timestamp": 1787697884570,
+        "monotonicTime": 24252,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8",
+        "durationMs": 51,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 51,
+          "inputTransferBytes": 6006660,
+          "outputTransferBytes": 114567
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 110,
+        "timestamp": 1787697884593,
+        "monotonicTime": 24276,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 111,
+        "timestamp": 1787697884593,
+        "monotonicTime": 24276,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 112,
+        "timestamp": 1787697884611,
+        "monotonicTime": 24293,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 113,
+        "timestamp": 1787697884633,
+        "monotonicTime": 24315,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8",
+        "durationMs": 22,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 30
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 114,
+        "timestamp": 1787697884633,
+        "monotonicTime": 24315,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-8",
+        "durationMs": 39,
+        "data": {
+          "pendingAfkMs": 118800000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 115,
+        "timestamp": 1787697884671,
+        "monotonicTime": 24354,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-9",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006660,
+          "simulatedCompletedAt": 1787584477591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 116,
+        "timestamp": 1787697884778,
+        "monotonicTime": 24461.000000000004,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-9",
+        "durationMs": 146.00000000000364
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 117,
+        "timestamp": 1787697884779,
+        "monotonicTime": 24461.000000000004,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-9",
+        "durationMs": 25,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 25,
+          "inputTransferBytes": 6006660,
+          "outputTransferBytes": 114569
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 118,
+        "timestamp": 1787697884779,
+        "monotonicTime": 24462,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-9",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 119,
+        "timestamp": 1787697884779,
+        "monotonicTime": 24462,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-9"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 120,
+        "timestamp": 1787697884779,
+        "monotonicTime": 24462,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 121,
+        "timestamp": 1787697884779,
+        "monotonicTime": 24462,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 122,
+        "timestamp": 1787697884779,
+        "monotonicTime": 24462,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 123,
+        "timestamp": 1787697884803,
+        "monotonicTime": 24485,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-9",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 124,
+        "timestamp": 1787697884803,
+        "monotonicTime": 24485,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-9",
+        "durationMs": 23,
+        "data": {
+          "pendingAfkMs": 113400000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 125,
+        "timestamp": 1787697884841,
+        "monotonicTime": 24524,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787589877591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 126,
+        "timestamp": 1787697884929,
+        "monotonicTime": 24612.000000000004,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1.000000000003638,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 127,
+        "timestamp": 1787697884929,
+        "monotonicTime": 24612.000000000004,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 128,
+        "timestamp": 1787697884929,
+        "monotonicTime": 24612.000000000004,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1.000000000003638
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 129,
+        "timestamp": 1787697884978,
+        "monotonicTime": 24661,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10",
+        "durationMs": 176
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 130,
+        "timestamp": 1787697885024,
+        "monotonicTime": 24707,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10",
+        "durationMs": 40.00000000000091,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 40.00000000000091,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114522
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 131,
+        "timestamp": 1787697885040,
+        "monotonicTime": 24723,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 132,
+        "timestamp": 1787697885040,
+        "monotonicTime": 24723,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 133,
+        "timestamp": 1787697885054,
+        "monotonicTime": 24737.000000000004,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 134,
+        "timestamp": 1787697885073,
+        "monotonicTime": 24755,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10",
+        "durationMs": 17.999999999996362,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 28
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 135,
+        "timestamp": 1787697885073,
+        "monotonicTime": 24755,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-10",
+        "durationMs": 32,
+        "data": {
+          "pendingAfkMs": 108000000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 136,
+        "timestamp": 1787697885112,
+        "monotonicTime": 24795,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-11",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787595277591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 137,
+        "timestamp": 1787697885232,
+        "monotonicTime": 24915,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 138,
+        "timestamp": 1787697885232,
+        "monotonicTime": 24915,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 139,
+        "timestamp": 1787697885232,
+        "monotonicTime": 24915,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 140,
+        "timestamp": 1787697885233,
+        "monotonicTime": 24916,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-11",
+        "durationMs": 161
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 141,
+        "timestamp": 1787697885234,
+        "monotonicTime": 24916,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-11",
+        "durationMs": 24,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 24,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114492
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 142,
+        "timestamp": 1787697885247,
+        "monotonicTime": 24929.000000000004,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-11",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 143,
+        "timestamp": 1787697885247,
+        "monotonicTime": 24929.000000000004,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-11"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 144,
+        "timestamp": 1787697885266,
+        "monotonicTime": 24949,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-11",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 145,
+        "timestamp": 1787697885266,
+        "monotonicTime": 24949,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-11",
+        "durationMs": 19.999999999996362,
+        "data": {
+          "pendingAfkMs": 102600000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 146,
+        "timestamp": 1787697885302,
+        "monotonicTime": 24984,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787600677591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 147,
+        "timestamp": 1787697885355,
+        "monotonicTime": 25038,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1389
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 148,
+        "timestamp": 1787697885356,
+        "monotonicTime": 25038,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 149,
+        "timestamp": 1787697885356,
+        "monotonicTime": 25038,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 150,
+        "timestamp": 1787697885372,
+        "monotonicTime": 25055,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12",
+        "durationMs": 106
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 151,
+        "timestamp": 1787697885406,
+        "monotonicTime": 25088,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12",
+        "durationMs": 29,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 29,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 152,
+        "timestamp": 1787697885421,
+        "monotonicTime": 25103,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 153,
+        "timestamp": 1787697885421,
+        "monotonicTime": 25103,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 154,
+        "timestamp": 1787697885438,
+        "monotonicTime": 25121.000000000004,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 155,
+        "timestamp": 1787697885457,
+        "monotonicTime": 25140,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12",
+        "durationMs": 18.999999999996362,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 30
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 156,
+        "timestamp": 1787697885457,
+        "monotonicTime": 25140,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-12",
+        "durationMs": 37,
+        "data": {
+          "pendingAfkMs": 97200000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 157,
+        "timestamp": 1787697885495,
+        "monotonicTime": 25178,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-13",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787606077591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 158,
+        "timestamp": 1787697885614,
+        "monotonicTime": 25296,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-13",
+        "durationMs": 156
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 159,
+        "timestamp": 1787697885614,
+        "monotonicTime": 25296,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1387
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 160,
+        "timestamp": 1787697885614,
+        "monotonicTime": 25297,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 161,
+        "timestamp": 1787697885614,
+        "monotonicTime": 25297,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 162,
+        "timestamp": 1787697885627,
+        "monotonicTime": 25309,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-13",
+        "durationMs": 39,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 39,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 163,
+        "timestamp": 1787697885643,
+        "monotonicTime": 25326,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-13",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 164,
+        "timestamp": 1787697885643,
+        "monotonicTime": 25326,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-13"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 165,
+        "timestamp": 1787697885662,
+        "monotonicTime": 25344,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-13",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 166,
+        "timestamp": 1787697885662,
+        "monotonicTime": 25345,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-13",
+        "durationMs": 19,
+        "data": {
+          "pendingAfkMs": 91800000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 167,
+        "timestamp": 1787697885702,
+        "monotonicTime": 25384,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787611477591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 168,
+        "timestamp": 1787697885805,
+        "monotonicTime": 25488,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1387
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 169,
+        "timestamp": 1787697885805,
+        "monotonicTime": 25488,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 170,
+        "timestamp": 1787697885805,
+        "monotonicTime": 25488,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 171,
+        "timestamp": 1787697885819,
+        "monotonicTime": 25501,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14",
+        "durationMs": 156
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 172,
+        "timestamp": 1787697885841,
+        "monotonicTime": 25523,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14",
+        "durationMs": 40.00000000000091,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 40.00000000000091,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114522
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 173,
+        "timestamp": 1787697885857,
+        "monotonicTime": 25540,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 174,
+        "timestamp": 1787697885857,
+        "monotonicTime": 25540,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 175,
+        "timestamp": 1787697885868,
+        "monotonicTime": 25551.000000000004,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 176,
+        "timestamp": 1787697885887,
+        "monotonicTime": 25569,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14",
+        "durationMs": 17.999999999996362,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 28
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 177,
+        "timestamp": 1787697885887,
+        "monotonicTime": 25569,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-14",
+        "durationMs": 29,
+        "data": {
+          "pendingAfkMs": 86400000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 178,
+        "timestamp": 1787697885925,
+        "monotonicTime": 25608,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-15",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787616877591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 179,
+        "timestamp": 1787697886030,
+        "monotonicTime": 25712,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-15",
+        "durationMs": 143
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 180,
+        "timestamp": 1787697886030,
+        "monotonicTime": 25713,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-15",
+        "durationMs": 23,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 23,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114492
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 181,
+        "timestamp": 1787697886031,
+        "monotonicTime": 25713,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-15",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 182,
+        "timestamp": 1787697886031,
+        "monotonicTime": 25713,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-15"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 183,
+        "timestamp": 1787697886031,
+        "monotonicTime": 25713,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1387
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 184,
+        "timestamp": 1787697886031,
+        "monotonicTime": 25713,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 185,
+        "timestamp": 1787697886031,
+        "monotonicTime": 25713,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 186,
+        "timestamp": 1787697886043,
+        "monotonicTime": 25725,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-15",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 187,
+        "timestamp": 1787697886043,
+        "monotonicTime": 25725,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-15",
+        "durationMs": 12,
+        "data": {
+          "pendingAfkMs": 81000000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 188,
+        "timestamp": 1787697886082,
+        "monotonicTime": 25764,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787622277591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 189,
+        "timestamp": 1787697886131,
+        "monotonicTime": 25813,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1387
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 190,
+        "timestamp": 1787697886131,
+        "monotonicTime": 25814,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 191,
+        "timestamp": 1787697886131,
+        "monotonicTime": 25814,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 1
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 192,
+        "timestamp": 1787697886156,
+        "monotonicTime": 25838,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16",
+        "durationMs": 113
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 193,
+        "timestamp": 1787697886184,
+        "monotonicTime": 25866,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16",
+        "durationMs": 25,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 25,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 194,
+        "timestamp": 1787697886197,
+        "monotonicTime": 25879,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 195,
+        "timestamp": 1787697886197,
+        "monotonicTime": 25879,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 196,
+        "timestamp": 1787697886211,
+        "monotonicTime": 25893,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 197,
+        "timestamp": 1787697886227,
+        "monotonicTime": 25910,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16",
+        "durationMs": 17,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 30
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 198,
+        "timestamp": 1787697886227,
+        "monotonicTime": 25910,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-16",
+        "durationMs": 31,
+        "data": {
+          "pendingAfkMs": 75600000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 199,
+        "timestamp": 1787697886266,
+        "monotonicTime": 25948,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-17",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787627677591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 200,
+        "timestamp": 1787697886374,
+        "monotonicTime": 26056,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-17",
+        "durationMs": 146
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 201,
+        "timestamp": 1787697886374,
+        "monotonicTime": 26057.000000000004,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-17",
+        "durationMs": 16,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 16,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 202,
+        "timestamp": 1787697886375,
+        "monotonicTime": 26057.000000000004,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-17",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 203,
+        "timestamp": 1787697886375,
+        "monotonicTime": 26057.000000000004,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-17"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 204,
+        "timestamp": 1787697886375,
+        "monotonicTime": 26057.000000000004,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1387
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 205,
+        "timestamp": 1787697886375,
+        "monotonicTime": 26057.000000000004,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 206,
+        "timestamp": 1787697886375,
+        "monotonicTime": 26057.000000000004,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 207,
+        "timestamp": 1787697886389,
+        "monotonicTime": 26072,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-17",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 208,
+        "timestamp": 1787697886389,
+        "monotonicTime": 26072,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-17",
+        "durationMs": 14.999999999996362,
+        "data": {
+          "pendingAfkMs": 70200000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 209,
+        "timestamp": 1787697886432,
+        "monotonicTime": 26114,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787633077591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 210,
+        "timestamp": 1787697886481,
+        "monotonicTime": 26163,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1387
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 211,
+        "timestamp": 1787697886481,
+        "monotonicTime": 26163,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 212,
+        "timestamp": 1787697886481,
+        "monotonicTime": 26163,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 213,
+        "timestamp": 1787697886506,
+        "monotonicTime": 26189,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18",
+        "durationMs": 117
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 214,
+        "timestamp": 1787697886538,
+        "monotonicTime": 26221,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18",
+        "durationMs": 29,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 28,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114492
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 215,
+        "timestamp": 1787697886568,
+        "monotonicTime": 26251,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 216,
+        "timestamp": 1787697886568,
+        "monotonicTime": 26251,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 217,
+        "timestamp": 1787697886582,
+        "monotonicTime": 26264,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 218,
+        "timestamp": 1787697886602,
+        "monotonicTime": 26284,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18",
+        "durationMs": 20,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 28
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 219,
+        "timestamp": 1787697886602,
+        "monotonicTime": 26284,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-18",
+        "durationMs": 33,
+        "data": {
+          "pendingAfkMs": 64800000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 220,
+        "timestamp": 1787697886644,
+        "monotonicTime": 26327,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-19",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787638477591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 221,
+        "timestamp": 1787697886748,
+        "monotonicTime": 26430,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-19",
+        "durationMs": 146
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 222,
+        "timestamp": 1787697886749,
+        "monotonicTime": 26431,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-19",
+        "durationMs": 19.99999999999818,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 19.99999999999818,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114522
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 223,
+        "timestamp": 1787697886749,
+        "monotonicTime": 26432.000000000004,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-19",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 224,
+        "timestamp": 1787697886749,
+        "monotonicTime": 26432.000000000004,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-19"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 225,
+        "timestamp": 1787697886749,
+        "monotonicTime": 26432.000000000004,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1387
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 226,
+        "timestamp": 1787697886749,
+        "monotonicTime": 26432.000000000004,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 227,
+        "timestamp": 1787697886749,
+        "monotonicTime": 26432.000000000004,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 228,
+        "timestamp": 1787697886762,
+        "monotonicTime": 26445,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-19",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 229,
+        "timestamp": 1787697886762,
+        "monotonicTime": 26445,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-19",
+        "durationMs": 12.999999999996362,
+        "data": {
+          "pendingAfkMs": 59400000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 230,
+        "timestamp": 1787697886802,
+        "monotonicTime": 26485,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787643877591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 231,
+        "timestamp": 1787697886850,
+        "monotonicTime": 26532,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 232,
+        "timestamp": 1787697886850,
+        "monotonicTime": 26532,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 233,
+        "timestamp": 1787697886850,
+        "monotonicTime": 26532,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 234,
+        "timestamp": 1787697886865,
+        "monotonicTime": 26548,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20",
+        "durationMs": 103
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 235,
+        "timestamp": 1787697886909,
+        "monotonicTime": 26591,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20",
+        "durationMs": 31,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 31,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 236,
+        "timestamp": 1787697886941,
+        "monotonicTime": 26624.000000000004,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 237,
+        "timestamp": 1787697886941,
+        "monotonicTime": 26624.000000000004,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 238,
+        "timestamp": 1787697886952,
+        "monotonicTime": 26635,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 239,
+        "timestamp": 1787697886967,
+        "monotonicTime": 26649,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20",
+        "durationMs": 14,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 30
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 240,
+        "timestamp": 1787697886967,
+        "monotonicTime": 26649,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-20",
+        "durationMs": 24.999999999996362,
+        "data": {
+          "pendingAfkMs": 54000000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 241,
+        "timestamp": 1787697887015,
+        "monotonicTime": 26698,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-21",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787649277591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 242,
+        "timestamp": 1787697887113,
+        "monotonicTime": 26796,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-21",
+        "durationMs": 147
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 243,
+        "timestamp": 1787697887114,
+        "monotonicTime": 26796,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-21",
+        "durationMs": 15,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 15,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 244,
+        "timestamp": 1787697887114,
+        "monotonicTime": 26796,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-21",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 245,
+        "timestamp": 1787697887114,
+        "monotonicTime": 26797,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-21"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 246,
+        "timestamp": 1787697887114,
+        "monotonicTime": 26797,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 247,
+        "timestamp": 1787697887114,
+        "monotonicTime": 26797,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 248,
+        "timestamp": 1787697887114,
+        "monotonicTime": 26797,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 249,
+        "timestamp": 1787697887125,
+        "monotonicTime": 26807.000000000004,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-21",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 250,
+        "timestamp": 1787697887125,
+        "monotonicTime": 26807.000000000004,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-21",
+        "durationMs": 10.000000000003638,
+        "data": {
+          "pendingAfkMs": 48600000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 251,
+        "timestamp": 1787697887162,
+        "monotonicTime": 26844,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006612,
+          "simulatedCompletedAt": 1787654677591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 252,
+        "timestamp": 1787697887209,
+        "monotonicTime": 26891,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 253,
+        "timestamp": 1787697887209,
+        "monotonicTime": 26891,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 254,
+        "timestamp": 1787697887209,
+        "monotonicTime": 26891,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 255,
+        "timestamp": 1787697887238,
+        "monotonicTime": 26920,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22",
+        "durationMs": 112.99999999999636
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 256,
+        "timestamp": 1787697887316,
+        "monotonicTime": 26998,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22",
+        "durationMs": 68,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 68,
+          "inputTransferBytes": 6006612,
+          "outputTransferBytes": 114492
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 257,
+        "timestamp": 1787697887342,
+        "monotonicTime": 27025.000000000004,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 258,
+        "timestamp": 1787697887342,
+        "monotonicTime": 27025.000000000004,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 259,
+        "timestamp": 1787697887355,
+        "monotonicTime": 27038,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 260,
+        "timestamp": 1787697887373,
+        "monotonicTime": 27056,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22",
+        "durationMs": 18,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 28
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 261,
+        "timestamp": 1787697887373,
+        "monotonicTime": 27056,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-22",
+        "durationMs": 30.999999999996362,
+        "data": {
+          "pendingAfkMs": 43200000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 262,
+        "timestamp": 1787697887416,
+        "monotonicTime": 27099,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-23",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787660077591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 263,
+        "timestamp": 1787697887513,
+        "monotonicTime": 27195,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-23",
+        "durationMs": 139
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 264,
+        "timestamp": 1787697887513,
+        "monotonicTime": 27196,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-23",
+        "durationMs": 17,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 17,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114492
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 265,
+        "timestamp": 1787697887514,
+        "monotonicTime": 27196,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-23",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 266,
+        "timestamp": 1787697887514,
+        "monotonicTime": 27196,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-23"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 267,
+        "timestamp": 1787697887514,
+        "monotonicTime": 27196,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 268,
+        "timestamp": 1787697887514,
+        "monotonicTime": 27196,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 269,
+        "timestamp": 1787697887514,
+        "monotonicTime": 27196,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 270,
+        "timestamp": 1787697887525,
+        "monotonicTime": 27207,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-23",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 271,
+        "timestamp": 1787697887525,
+        "monotonicTime": 27207,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-23",
+        "durationMs": 11,
+        "data": {
+          "pendingAfkMs": 37800000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 272,
+        "timestamp": 1787697887564,
+        "monotonicTime": 27246.000000000004,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787665477591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 273,
+        "timestamp": 1787697887613,
+        "monotonicTime": 27295,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 274,
+        "timestamp": 1787697887613,
+        "monotonicTime": 27295,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 275,
+        "timestamp": 1787697887613,
+        "monotonicTime": 27295,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 276,
+        "timestamp": 1787697887646,
+        "monotonicTime": 27328,
+        "event": "game_save_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 23.999999999996362,
+        "data": {
+          "payloadLength": 5081610
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 277,
+        "timestamp": 1787697888932,
+        "monotonicTime": 28614,
+        "event": "game_save_compression",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 1286,
+        "data": {
+          "encodedLength": 306998
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 278,
+        "timestamp": 1787697888961,
+        "monotonicTime": 28644.000000000004,
+        "event": "game_save_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 30.000000000003638
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 279,
+        "timestamp": 1787697888961,
+        "monotonicTime": 28644.000000000004,
+        "event": "game_save_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "game_save",
+        "durationMs": 1340
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 280,
+        "timestamp": 1787697888961,
+        "monotonicTime": 28644.000000000004,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 281,
+        "timestamp": 1787697888961,
+        "monotonicTime": 28644.000000000004,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 282,
+        "timestamp": 1787697888961,
+        "monotonicTime": 28644.000000000004,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 283,
+        "timestamp": 1787697888962,
+        "monotonicTime": 28645,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1263,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 284,
+        "timestamp": 1787697888962,
+        "monotonicTime": 28645,
+        "event": "long_wait_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1398.9999999999964,
+        "data": {
+          "thresholdMs": 1000,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 285,
+        "timestamp": 1787697888964,
+        "monotonicTime": 28647.000000000004,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24",
+        "durationMs": 1440.0000000000036
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 286,
+        "timestamp": 1787697888964,
+        "monotonicTime": 28647.000000000004,
+        "event": "long_wait_end",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1401,
+        "data": {
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 287,
+        "timestamp": 1787697888965,
+        "monotonicTime": 28647.000000000004,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24",
+        "durationMs": 19,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 19,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 288,
+        "timestamp": 1787697889005,
+        "monotonicTime": 28687,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 289,
+        "timestamp": 1787697889005,
+        "monotonicTime": 28687,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 290,
+        "timestamp": 1787697889026,
+        "monotonicTime": 28708.000000000004,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 291,
+        "timestamp": 1787697889043,
+        "monotonicTime": 28725,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24",
+        "durationMs": 16.999999999996362,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 30
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 292,
+        "timestamp": 1787697889043,
+        "monotonicTime": 28725,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-24",
+        "durationMs": 38,
+        "data": {
+          "pendingAfkMs": 32400000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 293,
+        "timestamp": 1787697889081,
+        "monotonicTime": 28763,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-25",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787670877591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 294,
+        "timestamp": 1787697889183,
+        "monotonicTime": 28865.000000000004,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-25",
+        "durationMs": 140.00000000000364
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 295,
+        "timestamp": 1787697889183,
+        "monotonicTime": 28866,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-25",
+        "durationMs": 23.99999999999818,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 23.99999999999818,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114602
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 296,
+        "timestamp": 1787697889184,
+        "monotonicTime": 28866,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-25",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 297,
+        "timestamp": 1787697889184,
+        "monotonicTime": 28866,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-25"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 298,
+        "timestamp": 1787697889184,
+        "monotonicTime": 28866,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 299,
+        "timestamp": 1787697889184,
+        "monotonicTime": 28866,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 300,
+        "timestamp": 1787697889184,
+        "monotonicTime": 28866,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 301,
+        "timestamp": 1787697889196,
+        "monotonicTime": 28879,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-25",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 302,
+        "timestamp": 1787697889196,
+        "monotonicTime": 28879,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-25",
+        "durationMs": 13,
+        "data": {
+          "pendingAfkMs": 27000000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 303,
+        "timestamp": 1787697889235,
+        "monotonicTime": 28918,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787676277591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 304,
+        "timestamp": 1787697889279,
+        "monotonicTime": 28961.000000000004,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 305,
+        "timestamp": 1787697889279,
+        "monotonicTime": 28961.000000000004,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 306,
+        "timestamp": 1787697889279,
+        "monotonicTime": 28961.000000000004,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 307,
+        "timestamp": 1787697889297,
+        "monotonicTime": 28979,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26",
+        "durationMs": 100
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 308,
+        "timestamp": 1787697889324,
+        "monotonicTime": 29007,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26",
+        "durationMs": 21.99999999999818,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 21.99999999999818,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114522
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 309,
+        "timestamp": 1787697889338,
+        "monotonicTime": 29021,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 310,
+        "timestamp": 1787697889338,
+        "monotonicTime": 29021,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 311,
+        "timestamp": 1787697889348,
+        "monotonicTime": 29031.000000000004,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 312,
+        "timestamp": 1787697889368,
+        "monotonicTime": 29050,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26",
+        "durationMs": 18.999999999996362,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 28
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 313,
+        "timestamp": 1787697889368,
+        "monotonicTime": 29050,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-26",
+        "durationMs": 29,
+        "data": {
+          "pendingAfkMs": 21600000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 314,
+        "timestamp": 1787697889403,
+        "monotonicTime": 29085,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-27",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006612,
+          "simulatedCompletedAt": 1787681677591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 315,
+        "timestamp": 1787697889506,
+        "monotonicTime": 29188,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-27",
+        "durationMs": 136.99999999999636
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 316,
+        "timestamp": 1787697889506,
+        "monotonicTime": 29189,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-27",
+        "durationMs": 22,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 22,
+          "inputTransferBytes": 6006612,
+          "outputTransferBytes": 114492
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 317,
+        "timestamp": 1787697889507,
+        "monotonicTime": 29189,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-27",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 318,
+        "timestamp": 1787697889507,
+        "monotonicTime": 29189,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-27"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 319,
+        "timestamp": 1787697889507,
+        "monotonicTime": 29190,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 320,
+        "timestamp": 1787697889507,
+        "monotonicTime": 29190,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 321,
+        "timestamp": 1787697889507,
+        "monotonicTime": 29190,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 322,
+        "timestamp": 1787697889517,
+        "monotonicTime": 29200,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-27",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 323,
+        "timestamp": 1787697889517,
+        "monotonicTime": 29200,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-27",
+        "durationMs": 11,
+        "data": {
+          "pendingAfkMs": 16200000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 324,
+        "timestamp": 1787697889555,
+        "monotonicTime": 29238,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787687077591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 325,
+        "timestamp": 1787697889603,
+        "monotonicTime": 29285,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 326,
+        "timestamp": 1787697889603,
+        "monotonicTime": 29285,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 327,
+        "timestamp": 1787697889603,
+        "monotonicTime": 29285,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 328,
+        "timestamp": 1787697889632,
+        "monotonicTime": 29314,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28",
+        "durationMs": 114
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 329,
+        "timestamp": 1787697889662,
+        "monotonicTime": 29344,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28",
+        "durationMs": 35,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 35,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114572
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 330,
+        "timestamp": 1787697889673,
+        "monotonicTime": 29356,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 331,
+        "timestamp": 1787697889673,
+        "monotonicTime": 29356,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 332,
+        "timestamp": 1787697889683,
+        "monotonicTime": 29366,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 333,
+        "timestamp": 1787697889706,
+        "monotonicTime": 29388,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28",
+        "durationMs": 22,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 30
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 334,
+        "timestamp": 1787697889706,
+        "monotonicTime": 29388,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-28",
+        "durationMs": 32,
+        "data": {
+          "pendingAfkMs": 10800000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 335,
+        "timestamp": 1787697889745,
+        "monotonicTime": 29427,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-29",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006663,
+          "simulatedCompletedAt": 1787692477591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 336,
+        "timestamp": 1787697889850,
+        "monotonicTime": 29533,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-29",
+        "durationMs": 145
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 337,
+        "timestamp": 1787697889851,
+        "monotonicTime": 29533,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-29",
+        "durationMs": 23.99999999999818,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 23.99999999999818,
+          "inputTransferBytes": 6006663,
+          "outputTransferBytes": 114602
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 338,
+        "timestamp": 1787697889852,
+        "monotonicTime": 29534,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-29",
+        "data": {
+          "capturedSettingChanges": true,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 339,
+        "timestamp": 1787697889852,
+        "monotonicTime": 29534,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-29"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 340,
+        "timestamp": 1787697889852,
+        "monotonicTime": 29534,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1388
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 341,
+        "timestamp": 1787697889852,
+        "monotonicTime": 29534,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 342,
+        "timestamp": 1787697889852,
+        "monotonicTime": 29534,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 343,
+        "timestamp": 1787697889868,
+        "monotonicTime": 29550,
+        "event": "auto_equipment_skipped",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-29",
+        "data": {
+          "reason": "captured_setting_changes"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 344,
+        "timestamp": 1787697889868,
+        "monotonicTime": 29550,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-29",
+        "durationMs": 16,
+        "data": {
+          "pendingAfkMs": 5400000
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 345,
+        "timestamp": 1787697889906,
+        "monotonicTime": 29588,
+        "event": "worker_job_posted",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30",
+        "data": {
+          "activeJobCount": 1,
+          "workerPoolSize": 1,
+          "inputTransferBytes": 6006599,
+          "simulatedCompletedAt": 1787697877591
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 346,
+        "timestamp": 1787697889990,
+        "monotonicTime": 29672,
+        "event": "afk_checkpoint_serialization",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0,
+        "data": {
+          "payloadLength": 1386
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 347,
+        "timestamp": 1787697889990,
+        "monotonicTime": 29672,
+        "event": "afk_checkpoint_storage_write",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 348,
+        "timestamp": 1787697889990,
+        "monotonicTime": 29672,
+        "event": "afk_checkpoint_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "afk_checkpoint",
+        "durationMs": 0
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 349,
+        "timestamp": 1787697890003,
+        "monotonicTime": 29685.000000000004,
+        "event": "worker_job_started",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30",
+        "durationMs": 135.00000000000364
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 350,
+        "timestamp": 1787697890042,
+        "monotonicTime": 29725,
+        "event": "worker_job_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30",
+        "durationMs": 34.99999999999818,
+        "data": {
+          "workerStartupMs": 0,
+          "queueMs": 0,
+          "executionMs": 34.99999999999818,
+          "inputTransferBytes": 6006599,
+          "outputTransferBytes": 114522
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 351,
+        "timestamp": 1787697890059,
+        "monotonicTime": 29742,
+        "event": "commit_transaction_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_dispatch",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30",
+        "data": {
+          "capturedSettingChanges": false,
+          "completedResultCount": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 352,
+        "timestamp": 1787697890059,
+        "monotonicTime": 29742,
+        "event": "commit_reducer_dispatched",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 353,
+        "timestamp": 1787697890069,
+        "monotonicTime": 29751,
+        "event": "auto_equipment_start",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 354,
+        "timestamp": 1787697890089,
+        "monotonicTime": 29772.000000000004,
+        "event": "auto_equipment_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "auto_equipment",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30",
+        "durationMs": 21.000000000003638,
+        "data": {
+          "unequippedCount": 10,
+          "equippedCount": 10,
+          "upgradedCount": 1,
+          "jewelAssignmentCount": 28
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 355,
+        "timestamp": 1787697890089,
+        "monotonicTime": 29772.000000000004,
+        "event": "commit_transaction_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "partyId": 1,
+        "partyIndex": 0,
+        "jobId": "afk-1-30",
+        "durationMs": 30.000000000003638,
+        "data": {
+          "pendingAfkMs": 0
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 356,
+        "timestamp": 1787697890092,
+        "monotonicTime": 29775.000000000004,
+        "event": "worker_pool_terminated",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "commit_awaiting_react",
+        "durationMs": 1.000000000003638,
+        "data": {
+          "reason": "recovery-complete",
+          "workerCount": 1
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 357,
+        "timestamp": 1787697890166,
+        "monotonicTime": 29848,
+        "event": "recovery_complete",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "recovery_complete",
+        "data": {
+          "recoveredAfkMs": 162000000,
+          "partyCount": 6
+        }
+      }
+    ],
+    "anomalies": [
+      {
+        "schemaVersion": 1,
+        "sequence": 10,
+        "timestamp": 1787697877612,
+        "monotonicTime": 17294,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_queue",
+        "durationMs": 6600,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 21,
+        "timestamp": 1787697880398,
+        "monotonicTime": 20081,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 2537,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 23,
+        "timestamp": 1787697881409,
+        "monotonicTime": 21092,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 761,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 25,
+        "timestamp": 1787697881412,
+        "monotonicTime": 21095,
+        "event": "long_wait_end",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 3812,
+        "data": {
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 85,
+        "timestamp": 1787697884076,
+        "monotonicTime": 23759,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1349,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 88,
+        "timestamp": 1787697884079,
+        "monotonicTime": 23761,
+        "event": "long_wait_end",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1475,
+        "data": {
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 283,
+        "timestamp": 1787697888962,
+        "monotonicTime": 28645,
+        "event": "event_loop_lag",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1263,
+        "data": {
+          "thresholdMs": 250,
+          "visibility": "visible"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 286,
+        "timestamp": 1787697888964,
+        "monotonicTime": 28647.000000000004,
+        "event": "long_wait_end",
+        "recoveryId": "afk-1787697860868-1",
+        "phase": "worker_execution",
+        "durationMs": 1401,
+        "data": {
+          "visibility": "visible"
+        }
+      }
+    ]
+  }
+}

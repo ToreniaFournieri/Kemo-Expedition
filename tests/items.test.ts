@@ -63,3 +63,11 @@ test('Mythic specification IDs follow the runtime drop order', () => {
   assert.deepEqual(ids, Array.from({ length: 24 }, (_, index) => 8501 + index));
   assert.match(source, /const id = 8500 \+ index \+ 1;/);
 });
+
+test('runtime item lookup uses the first-declaration-preserving index', () => {
+  assert.match(source, /const ITEM_BY_ID = new Map<number, ItemDef>\(\);/);
+  assert.match(source, /if \(!ITEM_BY_ID\.has\(item\.id\)\) ITEM_BY_ID\.set\(item\.id, item\);/);
+  assert.match(source, /let activeItemLookup = indexedItemLookup;/);
+  assert.match(source, /export const getItemById = \(id: number\): ItemDef \| undefined => activeItemLookup\(id\);/);
+  assert.match(source, /finally \{\s*activeItemLookup = previous;\s*\}/);
+});

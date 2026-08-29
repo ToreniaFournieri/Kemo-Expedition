@@ -1,0 +1,670 @@
+{
+  "ja": {
+    "normal-domain-breaker-counter": {
+      "digest": "db8acaf1cc6a7bd4fc794d7c3852587021e7e65ec6e4bc74c53ac6378a3e4b09",
+      "randomDrawCount": 141,
+      "outcome": "victory",
+      "partyHp": 34266,
+      "enemyHp": 0,
+      "logCount": 11,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000013579bdf",
+        "randomDrawCount": 141
+      }
+    },
+    "elite-counter-recounter": {
+      "digest": "8d2f55996d6e6ccc3cc164579826ba712e25809a1b02b395364041d099f7f9bc",
+      "randomDrawCount": 127,
+      "outcome": "victory",
+      "partyHp": 24643,
+      "enemyHp": 0,
+      "logCount": 12,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000002468ace1",
+        "randomDrawCount": 127
+      }
+    },
+    "oblivion-and-reanimate": {
+      "digest": "7064bfef64c918d9e020406d9bc341736de5fa2bbab6bdb6e755a375b4778dc6",
+      "randomDrawCount": 155,
+      "outcome": "draw",
+      "partyHp": 20756,
+      "enemyHp": 28935,
+      "logCount": 25,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000010203040",
+        "randomDrawCount": 155
+      }
+    },
+    "mimic-and-resonance": {
+      "digest": "c886f0ed30c013032e4b1feaea5f73e2456faadc25f057342cdf3d1ac25a8890",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 11955,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000089abcdef",
+        "randomDrawCount": 64
+      }
+    },
+    "first-strike-defeat": {
+      "digest": "759909d662593639f72bb993227e499c9b2bb5bf78d51d1a1ec0b0bfd65ddc5f",
+      "randomDrawCount": 44,
+      "outcome": "defeat",
+      "partyHp": 0,
+      "enemyHp": 1000000000000,
+      "logCount": 4,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000055aa7711",
+        "randomDrawCount": 44
+      }
+    },
+    "saved-party-1-expedition-8-boss": {
+      "digest": "fa8af34deeb94943f9e4e1de93ee21d9263ee40f5320f49e7249b234486f7781",
+      "randomDrawCount": 258,
+      "outcome": "victory",
+      "partyHp": 24604,
+      "enemyHp": 0,
+      "logCount": 26,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710001",
+        "randomDrawCount": 258
+      }
+    },
+    "saved-party-2-expedition-7-boss": {
+      "digest": "e0c58874835532b8ce81bc9454e6e93c10fcc90f6510002e0104da549f9d7784",
+      "randomDrawCount": 190,
+      "outcome": "victory",
+      "partyHp": 30580,
+      "enemyHp": 0,
+      "logCount": 13,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710002",
+        "randomDrawCount": 190
+      }
+    },
+    "saved-party-3-expedition-6-boss": {
+      "digest": "1ccf5c7278dab81565c5b8eab1291f34e9fa100d3abd6728cf9fddd5d93d13a7",
+      "randomDrawCount": 107,
+      "outcome": "victory",
+      "partyHp": 20054,
+      "enemyHp": 0,
+      "logCount": 16,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710003",
+        "randomDrawCount": 107
+      }
+    },
+    "saved-party-4-expedition-5-boss": {
+      "digest": "05dd32fed572a40c6dff66d84f9aac44d733c37a79b66551e84dc4ca0a878e47",
+      "randomDrawCount": 49,
+      "outcome": "victory",
+      "partyHp": 15757,
+      "enemyHp": 0,
+      "logCount": 3,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710004",
+        "randomDrawCount": 49
+      }
+    },
+    "saved-party-5-expedition-4-boss": {
+      "digest": "04a594a482dd3d418c76adda8a60708d370417b656c31c861df5388647ea868b",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 1050,
+      "enemyHp": 0,
+      "logCount": 9,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710005",
+        "randomDrawCount": 64
+      }
+    },
+    "saved-party-6-expedition-3-boss": {
+      "digest": "cff8293578609930ba7d0ed33398a0b1bb68c8426f6c8894ec8b3fce768001b5",
+      "randomDrawCount": 41,
+      "outcome": "victory",
+      "partyHp": 15001,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710006",
+        "randomDrawCount": 41
+      }
+    }
+  },
+  "en": {
+    "normal-domain-breaker-counter": {
+      "digest": "ce9d9201b53010d95080bf35aac9306c4a6c1883bf7ef17c6c2ff21570a23f1e",
+      "randomDrawCount": 141,
+      "outcome": "victory",
+      "partyHp": 34266,
+      "enemyHp": 0,
+      "logCount": 11,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000013579bdf",
+        "randomDrawCount": 141
+      }
+    },
+    "elite-counter-recounter": {
+      "digest": "a8b127d0861266177602535d3a6d4f6c017c9b43b0c092a1777d2971fd626b9b",
+      "randomDrawCount": 127,
+      "outcome": "victory",
+      "partyHp": 24643,
+      "enemyHp": 0,
+      "logCount": 12,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000002468ace1",
+        "randomDrawCount": 127
+      }
+    },
+    "oblivion-and-reanimate": {
+      "digest": "9ce35106de599f3487c5a2fcc33d29feb477bc9dab93ffe014c0b1089f38d360",
+      "randomDrawCount": 155,
+      "outcome": "draw",
+      "partyHp": 20756,
+      "enemyHp": 28935,
+      "logCount": 25,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000010203040",
+        "randomDrawCount": 155
+      }
+    },
+    "mimic-and-resonance": {
+      "digest": "9771bdeb18e4eafea2088c7839bb6e9563bc4c4b83565d486c587e20c348d80f",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 11955,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000089abcdef",
+        "randomDrawCount": 64
+      }
+    },
+    "first-strike-defeat": {
+      "digest": "630541a21eca27d3e13c297102cc51d8dbbad3d11744d17fb6edbbc9f60611ff",
+      "randomDrawCount": 44,
+      "outcome": "defeat",
+      "partyHp": 0,
+      "enemyHp": 1000000000000,
+      "logCount": 4,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000055aa7711",
+        "randomDrawCount": 44
+      }
+    },
+    "saved-party-1-expedition-8-boss": {
+      "digest": "6181a4428516892d1aade41ea8efb5ccdf3e51263cceb86ee644ed1d3824f0d1",
+      "randomDrawCount": 258,
+      "outcome": "victory",
+      "partyHp": 24604,
+      "enemyHp": 0,
+      "logCount": 26,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710001",
+        "randomDrawCount": 258
+      }
+    },
+    "saved-party-2-expedition-7-boss": {
+      "digest": "944e2739a63c5fa3d303e8d7e8fade09b4d6aa0b3305436742c43aa8d7b21f1a",
+      "randomDrawCount": 190,
+      "outcome": "victory",
+      "partyHp": 30580,
+      "enemyHp": 0,
+      "logCount": 13,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710002",
+        "randomDrawCount": 190
+      }
+    },
+    "saved-party-3-expedition-6-boss": {
+      "digest": "9c0eb96e94c46c95d0e6a4dc6f3c5d89d9b44f0e57bb1a546606dd58f73d4ff5",
+      "randomDrawCount": 107,
+      "outcome": "victory",
+      "partyHp": 20054,
+      "enemyHp": 0,
+      "logCount": 16,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710003",
+        "randomDrawCount": 107
+      }
+    },
+    "saved-party-4-expedition-5-boss": {
+      "digest": "809f1be6dac95cd52f906665de9aef6f17eb39891af4768283eac03eac4c4ede",
+      "randomDrawCount": 49,
+      "outcome": "victory",
+      "partyHp": 15757,
+      "enemyHp": 0,
+      "logCount": 3,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710004",
+        "randomDrawCount": 49
+      }
+    },
+    "saved-party-5-expedition-4-boss": {
+      "digest": "e9727177f26a10e7da6f445f0bf9cfa92e8325f6a418090e90b0b765c264072e",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 1050,
+      "enemyHp": 0,
+      "logCount": 9,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710005",
+        "randomDrawCount": 64
+      }
+    },
+    "saved-party-6-expedition-3-boss": {
+      "digest": "f891662a52a8093ca1991b49e0752e219d1ae12130224df246cad43d32e7c600",
+      "randomDrawCount": 41,
+      "outcome": "victory",
+      "partyHp": 15001,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710006",
+        "randomDrawCount": 41
+      }
+    }
+  },
+  "zh-CN": {
+    "normal-domain-breaker-counter": {
+      "digest": "7cffee7d507c2612339a60fc817e7e1af3b11d22d5de5f35e80823ce4dc4fae3",
+      "randomDrawCount": 141,
+      "outcome": "victory",
+      "partyHp": 34266,
+      "enemyHp": 0,
+      "logCount": 11,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000013579bdf",
+        "randomDrawCount": 141
+      }
+    },
+    "elite-counter-recounter": {
+      "digest": "e707dec1eb35d13c079f99d57962db9825baa508b057fdf4c32cd4352b7b339b",
+      "randomDrawCount": 127,
+      "outcome": "victory",
+      "partyHp": 24643,
+      "enemyHp": 0,
+      "logCount": 12,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000002468ace1",
+        "randomDrawCount": 127
+      }
+    },
+    "oblivion-and-reanimate": {
+      "digest": "3185e4a4bf8d5f2cc3eeb8048c2bfd3574f2174753181d147f3225a409e729c2",
+      "randomDrawCount": 155,
+      "outcome": "draw",
+      "partyHp": 20756,
+      "enemyHp": 28935,
+      "logCount": 25,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000010203040",
+        "randomDrawCount": 155
+      }
+    },
+    "mimic-and-resonance": {
+      "digest": "dc3b193efe5009710cc06d338caf5e957f8e2c993192194e241b5fcc7a26ade7",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 11955,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000089abcdef",
+        "randomDrawCount": 64
+      }
+    },
+    "first-strike-defeat": {
+      "digest": "d87877f3396b2e9a0aabf3ab31bde15fad67b8033723d24e104f8fef36d13374",
+      "randomDrawCount": 44,
+      "outcome": "defeat",
+      "partyHp": 0,
+      "enemyHp": 1000000000000,
+      "logCount": 4,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000055aa7711",
+        "randomDrawCount": 44
+      }
+    },
+    "saved-party-1-expedition-8-boss": {
+      "digest": "f754ad29dcdd4a277a454e2030b4431dfe3233f3898764a8f7b3c9ce6aec74d8",
+      "randomDrawCount": 258,
+      "outcome": "victory",
+      "partyHp": 24604,
+      "enemyHp": 0,
+      "logCount": 26,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710001",
+        "randomDrawCount": 258
+      }
+    },
+    "saved-party-2-expedition-7-boss": {
+      "digest": "c8193832530070ab9ee0ac88927aba9ce2a85dd543d2585b0ed64acd609cf4c5",
+      "randomDrawCount": 190,
+      "outcome": "victory",
+      "partyHp": 30580,
+      "enemyHp": 0,
+      "logCount": 13,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710002",
+        "randomDrawCount": 190
+      }
+    },
+    "saved-party-3-expedition-6-boss": {
+      "digest": "54beecc9c706d886682633c31b06f7648dddedac91d62e016f024958e4135c40",
+      "randomDrawCount": 107,
+      "outcome": "victory",
+      "partyHp": 20054,
+      "enemyHp": 0,
+      "logCount": 16,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710003",
+        "randomDrawCount": 107
+      }
+    },
+    "saved-party-4-expedition-5-boss": {
+      "digest": "44123943b98d93c816be63f8040442031df35c821f54e672b59da8f4ad67c2af",
+      "randomDrawCount": 49,
+      "outcome": "victory",
+      "partyHp": 15757,
+      "enemyHp": 0,
+      "logCount": 3,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710004",
+        "randomDrawCount": 49
+      }
+    },
+    "saved-party-5-expedition-4-boss": {
+      "digest": "38636541565c34910783dc51954b927936f14492028a5fd1aa4026e7923fba2c",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 1050,
+      "enemyHp": 0,
+      "logCount": 9,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710005",
+        "randomDrawCount": 64
+      }
+    },
+    "saved-party-6-expedition-3-boss": {
+      "digest": "9019afe1ab8b3b05fc1495c69807c4c9251c7f8ad3715a5d88f6b1ce908fdb45",
+      "randomDrawCount": 41,
+      "outcome": "victory",
+      "partyHp": 15001,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710006",
+        "randomDrawCount": 41
+      }
+    }
+  },
+  "zh-TW": {
+    "normal-domain-breaker-counter": {
+      "digest": "5b41f4a6dc40d834d8df80013f72642462259b06ea64590693e5bd0d8a188efd",
+      "randomDrawCount": 141,
+      "outcome": "victory",
+      "partyHp": 34266,
+      "enemyHp": 0,
+      "logCount": 11,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000013579bdf",
+        "randomDrawCount": 141
+      }
+    },
+    "elite-counter-recounter": {
+      "digest": "963ff5d92bcb095e51fb1005a30d9461a45f62e1bd53e3dab5c994129e98115c",
+      "randomDrawCount": 127,
+      "outcome": "victory",
+      "partyHp": 24643,
+      "enemyHp": 0,
+      "logCount": 12,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000002468ace1",
+        "randomDrawCount": 127
+      }
+    },
+    "oblivion-and-reanimate": {
+      "digest": "11c265e0f80dd99d1c88b5db5f691c43ead48e0cd9f68cdb62955c048504b622",
+      "randomDrawCount": 155,
+      "outcome": "draw",
+      "partyHp": 20756,
+      "enemyHp": 28935,
+      "logCount": 25,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000010203040",
+        "randomDrawCount": 155
+      }
+    },
+    "mimic-and-resonance": {
+      "digest": "9e38b5250e3b0c9cdd874a39bdc17a0f9149a94cdb3430f4326eccfc626b8f05",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 11955,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000089abcdef",
+        "randomDrawCount": 64
+      }
+    },
+    "first-strike-defeat": {
+      "digest": "c012c431cd6e3b4137264fb0836f26aaed4abf527289e8b7e63e8c00349bd040",
+      "randomDrawCount": 44,
+      "outcome": "defeat",
+      "partyHp": 0,
+      "enemyHp": 1000000000000,
+      "logCount": 4,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "0000000055aa7711",
+        "randomDrawCount": 44
+      }
+    },
+    "saved-party-1-expedition-8-boss": {
+      "digest": "0a8ea2ad4d7e3d80ef241ad8545c8de85a5738559abb65f6fbfc68a0959523e0",
+      "randomDrawCount": 258,
+      "outcome": "victory",
+      "partyHp": 24604,
+      "enemyHp": 0,
+      "logCount": 26,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710001",
+        "randomDrawCount": 258
+      }
+    },
+    "saved-party-2-expedition-7-boss": {
+      "digest": "575b2066489cf1559522c5cdaf69c93ab22063ebf908dd867aaf06b1b5208d25",
+      "randomDrawCount": 190,
+      "outcome": "victory",
+      "partyHp": 30580,
+      "enemyHp": 0,
+      "logCount": 13,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710002",
+        "randomDrawCount": 190
+      }
+    },
+    "saved-party-3-expedition-6-boss": {
+      "digest": "ba7b4c8ef2387e25a710789b9fe9a5ebec98187c272f470530c7550f14c2da53",
+      "randomDrawCount": 107,
+      "outcome": "victory",
+      "partyHp": 20054,
+      "enemyHp": 0,
+      "logCount": 16,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710003",
+        "randomDrawCount": 107
+      }
+    },
+    "saved-party-4-expedition-5-boss": {
+      "digest": "31ef1c929633137271aa66536dca43229ecb71b16db963bc939dc9f43065fa73",
+      "randomDrawCount": 49,
+      "outcome": "victory",
+      "partyHp": 15757,
+      "enemyHp": 0,
+      "logCount": 3,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710004",
+        "randomDrawCount": 49
+      }
+    },
+    "saved-party-5-expedition-4-boss": {
+      "digest": "73b0ea54aeaad8cc2f3bab9ac0aa2866158c4beb862b7a8c53e1da874af0963f",
+      "randomDrawCount": 64,
+      "outcome": "victory",
+      "partyHp": 1050,
+      "enemyHp": 0,
+      "logCount": 9,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710005",
+        "randomDrawCount": 64
+      }
+    },
+    "saved-party-6-expedition-3-boss": {
+      "digest": "2b623838b599865233b03227bd5a302c8f9d0e9db4bed2be462919f665526374",
+      "randomDrawCount": 41,
+      "outcome": "victory",
+      "partyHp": 15001,
+      "enemyHp": 0,
+      "logCount": 5,
+      "replayMetadata": {
+        "protocolVersion": 3,
+        "abiVersion": 8,
+        "rngVersion": 1,
+        "seedHex": "000000008e710006",
+        "randomDrawCount": 41
+      }
+    }
+  }
+}

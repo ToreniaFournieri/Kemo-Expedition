@@ -7,6 +7,9 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const cpp = resolve(root, 'native/battle_kernel.cpp');
 const protocolCpp = resolve(root, 'native/battle_protocol.cpp');
+const rngCpp = resolve(root, 'native/battle_rng.cpp');
+const rulesCpp = resolve(root, 'native/battle_rules.cpp');
+const stateCpp = resolve(root, 'native/battle_state.cpp');
 const wasm = resolve(root, 'src/game/battleKernel.wasm');
 const generated = resolve(root, 'src/game/battleKernelBinary.ts');
 const llvmRoot = execFileSync('em-config', ['LLVM_ROOT'], { encoding: 'utf8' }).trim();
@@ -16,6 +19,9 @@ execFileSync(process.execPath, [resolve(root, 'scripts/generate-battle-protocol.
 execFileSync(resolve(llvmRoot, 'clang++'), [
   cpp,
   protocolCpp,
+  rngCpp,
+  rulesCpp,
+  stateCpp,
   '--target=wasm32',
   '-std=c++20',
   '-O3',
@@ -35,6 +41,24 @@ execFileSync(resolve(llvmRoot, 'clang++'), [
   '-Wl,--export=battle_hit_result_buffer',
   '-Wl,--export=battle_resolve_hit_sequence',
   '-Wl,--export=battle_apply_domain_damage_override',
+  '-Wl,--export=battle_rng_version',
+  '-Wl,--export=battle_rng_seed',
+  '-Wl,--export=battle_rng_next_u64',
+  '-Wl,--export=battle_rng_next_double',
+  '-Wl,--export=battle_normal_action_input_buffer',
+  '-Wl,--export=battle_normal_action_output_buffer',
+  '-Wl,--export=battle_normal_action_target_id_buffer',
+  '-Wl,--export=battle_normal_action_target_row_buffer',
+  '-Wl,--export=battle_normal_action_target_bulwark_buffer',
+  '-Wl,--export=battle_normal_action_bag_id_buffer',
+  '-Wl,--export=battle_normal_action_bag_ticket_buffer',
+  '-Wl,--export=battle_normal_action_value_capacity',
+  '-Wl,--export=battle_normal_action_target_capacity',
+  '-Wl,--export=battle_resolve_normal_action',
+  '-Wl,--export=battle_state_test_input_buffer',
+  '-Wl,--export=battle_state_test_output_buffer',
+  '-Wl,--export=battle_state_test_operation_capacity',
+  '-Wl,--export=battle_run_state_test_operations',
   '-Wl,--export=battle_protocol_input_arena',
   '-Wl,--export=battle_protocol_output_arena',
   '-Wl,--export=battle_protocol_arena_capacity',
@@ -44,6 +68,7 @@ execFileSync(resolve(llvmRoot, 'clang++'), [
   '-Wl,--export=battle_protocol_transform_abilities',
   '-Wl,--export=battle_protocol_initiative_random_count',
   '-Wl,--export=battle_protocol_prepare_initiative',
+  '-Wl,--export=battle_protocol_execute',
   '-o', wasm,
 ], {
   stdio: 'inherit',

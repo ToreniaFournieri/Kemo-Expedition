@@ -37,6 +37,7 @@ import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDispla
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
+import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
 import {
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 AFK_MAX_REAL_ELAPSED_MS,
@@ -54,7 +55,7 @@ REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -186,6 +187,7 @@ export interface HomeScreenProps {
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
+    simulateExpedition: (partyIndex: number, gameMode?: GameMode, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
     runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
     resolveInstantExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
     consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
@@ -201,6 +203,7 @@ export interface HomeScreenProps {
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
+    applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
     toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>, partyIndex?: number) => void;
@@ -226,13 +229,14 @@ export interface HomeScreenProps {
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
     };
     resetGame: () => void;
-    importGameState: (state: GameState) => { state: GameState | null; errorLog: string | null };
+    importGameState: (state: GameState) => Promise<{ state: GameState | null; errorLog: string | null }>;
+    getCompressedSavePayload: () => Promise<string>;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetCommonSuperRareBag: () => void;
     resetRareSuperRareBag: () => void;
     resetSideQuestBag: () => void;
-    setLanguage: (language: Language) => void;
+    setLanguage: (language: Language) => Promise<void>;
     unlockPartySlot: () => void;
     addNotification: (
       message: string,
@@ -242,7 +246,7 @@ export interface HomeScreenProps {
       options?: { rarity?: ItemRarity; isSuperRareItem?: boolean }
     ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
-    flushSave: () => void;
+    flushSave: () => Promise<void>;
   };
 }
 
@@ -559,10 +563,28 @@ export interface PersistedRuntimeSnapshot {
 
 
 export function rollPercentInclusive(min: number, max: number): number {
-  return min + Math.random() * (max - min + Number.EPSILON);
+  return min + gameplayRandom() * (max - min + Number.EPSILON);
 }
 
 export const PARTY_CYCLE_TICK_MS = 100;
+
+export function getNextPartyCycleCheckpointDelay(
+  cycles: Record<number, PartyCycleRuntime>,
+  now: number,
+  maximumDelayMs = 1_000,
+): number {
+  let nextDelay = Math.max(PARTY_CYCLE_TICK_MS, maximumDelayMs);
+  let hasActiveCycle = false;
+  Object.values(cycles).forEach((cycle) => {
+    if (cycle.state === 'idle' || cycle.state === 'reactivate') return;
+    hasActiveCycle = true;
+    const elapsed = Math.max(0, now - cycle.stateStartedAt);
+    const remaining = Math.max(PARTY_CYCLE_TICK_MS, cycle.durationMs - elapsed);
+    nextDelay = Math.min(nextDelay, remaining);
+  });
+  if (!hasActiveCycle && Object.keys(cycles).length === 0) return PARTY_CYCLE_TICK_MS;
+  return Math.max(PARTY_CYCLE_TICK_MS, Math.min(maximumDelayMs, Math.ceil(nextDelay)));
+}
 export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
@@ -741,6 +763,12 @@ export const RACE_ICON_SOURCES = RACES
 export function preloadRaceIcons(): void {
   RACE_ICON_SOURCES.forEach((iconSrc) => {
     const image = new Image();
+    const release = () => {
+      image.onload = null;
+      image.onerror = null;
+    };
+    image.onload = release;
+    image.onerror = release;
     image.src = iconSrc;
   });
 }
@@ -3146,3 +3174,4 @@ export function getNextMissingAutoEquipmentCategory(
 
   return null;
 }
+import { gameplayRandom } from '../../game/gameplayRandom';

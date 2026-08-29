@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { createExperimentalApi } = require('./experimental-api.cjs');
+const { normalizeAppMemoryMetrics } = require('./memory-metrics.cjs');
 
 const APP_HOST = 'bokemo';
 const APP_ORIGIN = `app://${APP_HOST}`;
@@ -356,6 +357,10 @@ ipcMain.handle('desktop:get-status', () => ({
   notificationSupported: Notification.isSupported(),
 }));
 ipcMain.handle('desktop:get-window-visibility', () => Boolean(mainWindow?.isVisible()));
+ipcMain.handle('desktop:get-memory-metrics', (event) => {
+  const processId = event.sender.getOSProcessId();
+  return normalizeAppMemoryMetrics(app.getAppMetrics(), processId);
+});
 ipcMain.handle('desktop:get-launch-at-login', () => app.getLoginItemSettings().openAtLogin);
 ipcMain.handle('desktop:set-launch-at-login', (_event, enabled) => {
   if (process.platform !== 'darwin') return false;

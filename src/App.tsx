@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGameState } from './hooks/useGameState';
-import { HomeScreen, preloadHomeTabs } from './components/HomeScreen';
+import { HomeScreen, preloadInitialHomeTab, preloadRemainingHomeTabs } from './components/HomeScreen';
 import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
 import { setLanguage, t } from './i18n';
 
@@ -112,11 +112,21 @@ export default function App() {
   }, [isLoading, state.global.language]);
 
   useEffect(() => {
-    // Fetch every lazy tab behind the startup screen so the first tab change does
-    // not suspend the whole HomeScreen while its JavaScript chunk is downloaded.
-    void preloadHomeTabs().catch((error) => {
-      console.warn('Unable to preload home tabs:', error);
+    // Fetch only the initial panel on the startup critical path. Remaining tabs
+    // fill the persistent cache when the browser becomes idle.
+    void preloadInitialHomeTab().catch((error) => {
+      console.warn('Unable to preload the initial home tab:', error);
     });
+
+    const preloadRemaining = () => void preloadRemainingHomeTabs().catch((error) => {
+      console.warn('Unable to preload inactive home tabs:', error);
+    });
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const idleHandle = idleWindow.requestIdleCallback?.(preloadRemaining, { timeout: 4_000 });
+    const fallbackHandle = idleHandle === undefined ? window.setTimeout(preloadRemaining, 1_500) : null;
 
     const timer = window.setTimeout(() => {
       setIsLoading(false);
@@ -124,6 +134,8 @@ export default function App() {
 
     return () => {
       window.clearTimeout(timer);
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
+      if (fallbackHandle !== null) window.clearTimeout(fallbackHandle);
     };
   }, []);
 

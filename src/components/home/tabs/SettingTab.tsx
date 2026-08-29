@@ -25,6 +25,7 @@ isDungeonEntryUnlocked
 } from '../../../game/clearGate';
 import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings } from '../../../game/colosseum';
 import { DebugSettings } from '../../../game/debugSettings';
+import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
 import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
@@ -34,7 +35,7 @@ import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRare
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
 import { computePartyStats } from '../../../game/partyComputation';
 import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
-import { decodePersistedState,encodePersistedState } from '../../../game/storageCompression';
+import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
 import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
@@ -93,6 +94,7 @@ export default function SettingTab({
   deityDonations,
   onResetGame,
   onImportGameState,
+  getCompressedSavePayload,
   getRuntimeSnapshot,
   onAddNotification,
   onGrantFeedbackReward,
@@ -125,7 +127,8 @@ export default function SettingTab({
   gameState: GameState;
   deityDonations: Record<string, number>;
   onResetGame: () => void;
-  onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => { state: GameState | null; errorLog: string | null };
+  onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => Promise<{ state: GameState | null; errorLog: string | null }>;
+  getCompressedSavePayload: () => Promise<string>;
   getRuntimeSnapshot: () => PersistedRuntimeSnapshot;
   onAddNotification: (
     message: string,
@@ -335,7 +338,7 @@ export default function SettingTab({
     setFeedbackFiles(selectedFiles.slice(0, 4));
   };
 
-  const buildBackupFile = (): File => {
+  const buildBackupFile = async (): Promise<File> => {
     const payload = {
       meta: {
         app: 'Kemo-Expedition',
@@ -344,7 +347,7 @@ export default function SettingTab({
         exportedAt: new Date().toISOString(),
         format: 'compressed-v1',
       },
-      saveDataCompressed: encodePersistedState(JSON.stringify(serializeGameState(gameState))),
+      saveDataCompressed: await getCompressedSavePayload(),
       runtimeSnapshot: getRuntimeSnapshot(),
     };
     return new File([JSON.stringify(payload)], getBackupFileName('compressed'), { type: 'application/json' });
@@ -384,7 +387,7 @@ export default function SettingTab({
       };
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
-      const generatedFiles: File[] = [buildBackupFile()];
+      const generatedFiles: File[] = [await buildBackupFile()];
       if (feedbackLatestBattleLogSelection !== 'None') {
         const latestBattleLogFile = buildLatestBattleLogHtml(feedbackLatestBattleLogSelection);
         if (latestBattleLogFile) {
@@ -624,7 +627,7 @@ export default function SettingTab({
 
   // SpecRef: 8.6 | UI_SETTING | 5.1 Backup (Export)
   const handleExportBackup = async () => {
-    const backupFile = buildBackupFile();
+    const backupFile = await buildBackupFile();
     const nav = navigator as Navigator & {
       canShare?: (data: ShareData) => boolean;
       share?: (data: ShareData) => Promise<void>;
@@ -743,7 +746,7 @@ export default function SettingTab({
       const runtimeSnapshot = parsed && typeof parsed === 'object' && 'runtimeSnapshot' in parsed
         ? (parsed as { runtimeSnapshot?: unknown }).runtimeSnapshot
         : undefined;
-      const importResult = onImportGameState(saveData as GameState, runtimeSnapshot);
+      const importResult = await onImportGameState(saveData as GameState, runtimeSnapshot);
       if (!importResult.state) {
         window.alert(`${t('setting.import.invalidFormat')}\n\n${importResult.errorLog ?? ''}`);
         return;
@@ -2728,6 +2731,8 @@ export default function SettingTab({
       {debugModeEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('debug', t('setting.debug'))}
         {settingPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
+          <button type="button" onClick={() => onUpdateDebugSettings({ runtimeDiagnosticsEnabled: !debugSettings.runtimeDiagnosticsEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">{t('setting.runtime.toggle', { state: t(debugSettings.runtimeDiagnosticsEnabled ? 'setting.runtime.on' : 'setting.runtime.off') })}</button>
+          {debugSettings.runtimeDiagnosticsEnabled && <RuntimeDiagnostics />}
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
           <div className="bg-white rounded border p-2">
             <div className="text-xs text-gray-500 mb-1">Speed of time</div>

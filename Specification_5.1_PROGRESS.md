@@ -20,6 +20,7 @@
   - **1 Chunk = 12 Cycles**.
   - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
   - Each Chunk continues using the party and global parameters captured when it begins.
+  - Party status is calculated once at the beginning of each Chunk and remains unchanged throughout all Cycles within that Chunk.
   - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
   - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
   - **Process:** At the end of a Chunk, the worker (representative of each PT) submits the Chunk results to the coordinator-managed global commit queue. The coordinator processes queued workers sequentially.
@@ -31,6 +32,8 @@
     - If setting changes were captured at the cutoff, the coordinator applies and commits those changes after the Chunk result.
     - The worker's commit transaction is complete, and the coordinator proceeds to the next queued worker.
     - Once a worker's transaction begins, it retains its coordinator processing slot until all required commits are complete. The worker does not re-enter or re-check the global commit queue during the transaction.
+- **AFK UI update policy**: During accelerated AFK processing, UI updates are throttled to **once every 100 ms**.
+
 
 ```
 PT1 transaction begins
@@ -290,9 +293,31 @@ Persistence should occur at controlled durable checkpoints, such as:
 
 Progress-only React updates must not trigger complete save serialization.
 
+Authoritative runtime game-state persistence uses log-segmented schema v1:
+
+- the bounded retained Diary entry bodies are immutable, independently compressed records;
+- the frequently rewritten compressed core stores Party Diary order, read state, and references to those records, while a latest-expedition value outside the retained Diary remains explicit;
+- ordinary and AFK checkpoints reuse existing retained records and compress only the core plus any newly inserted Diary records;
+- new records must be written before the referencing core manifest, and records made unreachable by retention or import replacement may be deleted only after that manifest is durable;
+- a checkpoint prepared while an import replacement generation is not yet durable must carry its own complete Diary record generation so later publication cannot reference records deleted by that replacement;
+- a failed write before the manifest commit must leave the prior save loadable, including during complete import replacement;
+- when loading a save produced by an earlier runtime that already references an absent Diary record, omit only that unrecoverable Diary entry, preserve the remaining authoritative state and retained history, and repair the manifest at the next successful checkpoint;
+- legacy monolithic saves remain loadable and migrate on the next successful checkpoint;
+- portable backup export remains one complete `compressed-v1` payload and does not expose the internal segmented storage representation.
+
 **Responsiveness**
 
 The application must remain interactive during AFK recovery.
+
+**Debug-only runtime trace**
+
+- Dev and beta automatically retain a bounded, session-scoped AFK runtime trace. Production must not retain AFK trace events or expose the trace UI.
+- The trace is observational and must not add worker or commit timeouts, cancel recovery, alter coordinator ordering, change deterministic gameplay, or persist into save data.
+- The trace records metadata-only lifecycle and timing for recovery, worker queue/start/completion/error/termination, canonical commit ordering, setting-change cutoff, reducer commit visibility, automatic equipment, interaction pauses, visibility, game-state persistence, and AFK runtime checkpoints.
+- A completed worker result that cannot commit because an earlier simulated completion-time job remains unfinished must be recorded explicitly as canonical-order waiting.
+- While AFK recovery is active, a 250 ms watchdog records event-loop scheduling delay of at least 250 ms and a classified long wait after 1,000 ms without coordinator progress. Resumption records the completed wait duration. These classifications are diagnostics and do not prove a deadlock.
+- Detailed trace history is limited to 2,048 events and anomaly history to 256 events per session. Exports include dropped-event counts, aggregate counts and maximum durations, and a current coordinator snapshot containing in-flight job ages.
+- Trace payloads may include version, build, environment, timestamps, visibility, hardware concurrency, party/job IDs, phases, durations, queue and backlog counts, transfer sizes, counters, and error text. They must exclude complete save state, random state, combat logs, reward details, character data, and User ID.
 
 
 **Notification**

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-const battleSource = readFileSync(new URL('../src/game/battle.ts', import.meta.url), 'utf8');
+const battleSource = readFileSync(new URL('../native/battle_protocol.cpp', import.meta.url), 'utf8');
 const magicSource = readFileSync(new URL('../src/game/magic.ts', import.meta.url), 'utf8');
 const homeSharedSource = readFileSync(new URL('../src/components/home/homeShared.tsx', import.meta.url), 'utf8');
 const partyTabSource = readFileSync(new URL('../src/components/home/tabs/PartyTab.tsx', import.meta.url), 'utf8');
@@ -15,13 +15,11 @@ test('special magic ability selection follows Gravity Well, Armor Break, Mana Br
 });
 
 test('defense break spells use terrain-adjusted thresholds and persistent battle amplifiers', () => {
-  assert.match(battleSource, /resolveSpecialMagicFromAbilities\(cs\.abilities, terrainAdjustedMagicalNoA\)/);
-  assert.match(battleSource, /resolveSpecialMagicFromAbilities\(enemy\.abilities, attempts\)/);
-  assert.match(battleSource, /enemyPhysicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /enemyMagicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /partyPhysicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /partyMagicalDefenseDebuffAmplifier \*= 4 \/ 3/);
-  assert.match(battleSource, /swarmAmplifier \* defenseDebuffAmplifier/);
+  assert.match(battleSource, /GravityWell\) > 0 && attempts >= 20[\s\S]*?ArmorBreak\) > 0 && attempts >= 12[\s\S]*?ManaBreak\) > 0 && attempts >= 10/);
+  assert.match(battleSource, /physical_defense_debuff \*= 4\.0 \/ 3\.0/);
+  assert.match(battleSource, /magical_defense_debuff \*= 4\.0 \/ 3\.0/);
+  assert.match(battleSource, /const double debuff = magical \? target\.temporary\.magical_defense_debuff : target\.temporary\.physical_defense_debuff/);
+  assert.match(battleSource, /elemental_attribute, swarm, debuff/);
 });
 
 test('status spell selection checks ideal magical NoA independently of runtime terrain modifiers', () => {

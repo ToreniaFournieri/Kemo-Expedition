@@ -1,5 +1,6 @@
 import { AttackType, BattleLogEntry } from '../types';
 import { t } from '../i18n';
+import { gameplayRandom } from './gameplayRandom';
 
 const CONFUSION_SUCCESS_LOGS = [
   'battleFlavor.confusion-success.1',
@@ -481,11 +482,79 @@ const UNFORGETTABLE_LOGS = [
   'battleFlavor.unforgettable.10',
 ] as const;
 
+export type BattleFlavorFamily =
+  | 'confusion-success' | 'confusion-failure' | 'confusion-no-target'
+  | 'antagonism-ranged' | 'antagonism-magical' | 'antagonism-melee'
+  | 'unstable-core-ranged' | 'unstable-core-magical'
+  | 'soul-reap' | 'regeneration' | 'self-destruct' | 'decompose' | 'free'
+  | 'pursuit' | 'illusion' | 'illusion-breaker' | 'shock' | 'null-shock'
+  | 'flying' | 'corrode' | 'null-corrode' | 'life-drain' | 'null-life-drain'
+  | 'death-touch' | 'null-death-touch' | 'burn' | 'null-burn' | 'bind'
+  | 'null-bind' | 'incapacitated' | 'resurrect' | 'reanimate' | 'requiem'
+  | 'null-requiem' | 'null-antagonism' | 'equation-breaker' | 'unforgettable';
+
+const INDEXED_BATTLE_FLAVORS: Record<BattleFlavorFamily, readonly string[]> = {
+  'confusion-success': CONFUSION_SUCCESS_LOGS,
+  'confusion-failure': CONFUSION_FAILURE_LOGS,
+  'confusion-no-target': CONFUSION_NO_TARGET_LOGS,
+  'antagonism-ranged': ANTAGONISM_LOGS.ranged,
+  'antagonism-magical': ANTAGONISM_LOGS.magical,
+  'antagonism-melee': ANTAGONISM_LOGS.melee,
+  'unstable-core-ranged': UNSTABLE_CORE_LOGS.ranged,
+  'unstable-core-magical': UNSTABLE_CORE_LOGS.magical,
+  'soul-reap': SOUL_REAP_LOGS,
+  'regeneration': REGENERATION_LOGS,
+  'self-destruct': SELF_DESTRUCT_LOGS,
+  'decompose': DECOMPOSE_LOGS,
+  'free': FREE_LOGS,
+  pursuit: PURSUIT_LOGS,
+  illusion: ILLUSION_LOGS,
+  'illusion-breaker': ILLUSION_BREAKER_LOGS,
+  shock: SHOCK_LOGS,
+  'null-shock': NULL_SHOCK_LOGS,
+  flying: FLYING_LOGS,
+  corrode: CORRODE_LOGS,
+  'null-corrode': NULL_CORRODE_LOGS,
+  'life-drain': LIFE_DRAIN_LOGS,
+  'null-life-drain': NULL_LIFE_DRAIN_LOGS,
+  'death-touch': DEATH_TOUCH_LOGS,
+  'null-death-touch': NULL_DEATH_TOUCH_LOGS,
+  burn: BURN_LOGS,
+  'null-burn': NULL_BURN_LOGS,
+  bind: BIND_LOGS,
+  'null-bind': NULL_BIND_LOGS,
+  incapacitated: INCAPACITATED_LOGS,
+  resurrect: RESURRECT_LOGS,
+  reanimate: REANIMATE_LOGS,
+  requiem: REQUIEM_LOGS,
+  'null-requiem': NULL_REQUIEM_LOGS,
+  'null-antagonism': NULL_ANTAGONISM_LOGS,
+  'equation-breaker': EQUATION_BREAKER_LOGS,
+  unforgettable: UNFORGETTABLE_LOGS,
+};
+
+export const BATTLE_FLAVOR_FAMILIES = Object.freeze(
+  Object.keys(INDEXED_BATTLE_FLAVORS) as BattleFlavorFamily[],
+);
+
+export function getBattleFlavorFamilySize(family: BattleFlavorFamily): number {
+  return INDEXED_BATTLE_FLAVORS[family].length;
+}
+
+/** Deterministic flavor lookup for semantic-event narration. */
+export function getBattleFlavorTemplateAtIndex(family: BattleFlavorFamily, index: number): string {
+  const entries = INDEXED_BATTLE_FLAVORS[family];
+  if (!Number.isInteger(index) || index < 0 || index >= entries.length) {
+    throw new RangeError(`Invalid ${family} battle flavor index ${index}; expected 0 through ${entries.length - 1}`);
+  }
+  return t(entries[index]!);
+}
+
 const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
 const battleNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
 function pickRandomEntry<T>(entries: readonly T[]): T {
-  return entries[Math.floor(Math.random() * entries.length)];
+  return entries[Math.floor(gameplayRandom() * entries.length)];
 }
 
 function pickRandomTranslatedEntry(entries: readonly string[]): string {
@@ -494,7 +563,8 @@ function pickRandomTranslatedEntry(entries: readonly string[]): string {
 
 export function buildConfusionAction(actorName: string, targetName: string, success: boolean): string {
   const template = pickRandomTranslatedEntry(success ? CONFUSION_SUCCESS_LOGS : CONFUSION_FAILURE_LOGS);
-  return `${actorName}${template.split('target').join(targetName)}`;
+  const resolved = template.replace(/\{actor\}/g, actorName).replace(/\{target\}/g, targetName).split('target').join(targetName);
+  return template.includes('{actor}') ? resolved : `${actorName}${resolved}`;
 }
 
 export function buildAntagonismAction(

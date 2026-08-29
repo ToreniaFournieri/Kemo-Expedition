@@ -50,6 +50,31 @@ and {condition ≥ 230}
     - `floor_name` uses the Japanese name from **Expedition Floor Concepts**.
     - Example: 2F-3 捕食者の縄張りまで, 2F-4 捕食者の縄張りまで, 3F-3 群生の巣盆地まで
 
+- **Simulation Run (シミュレーション実行)**
+  - Pressing the `予測実行` button triggers **1000** simulated expedition runs.
+  - Simulation runs have no effect on actual game progress or state:
+    - No EXP is gained.
+    - No items are obtained.
+    - No notifications are generated.
+    - Clear-Gate progress is not updated.
+  - Because each simulation run is resolved only inside a private clone and exposes only aggregated outcomes, its battles use the result-only production battle output mode:
+    - Preserve the authoritative C++ outcome, final HP, enemy hit count, updated threat bags, random consumption, seed, and replay metadata.
+    - Do not construct the TypeScript narration context, localize semantic events, or allocate `BattleLogEntry` objects.
+    - The private simulation may use empty per-room `details` arrays because neither its expedition log nor its cloned state may be retained or displayed.
+  - Online play, Gods Battles, AFK processing, Experimental AI API sorties, latest expedition logs, and Diary logs must continue using full narrated battle results. The result-only mode must not be selected merely because execution is batched or backgrounded.
+  - The simulation is processed asynchronously.
+  - When all runs are complete, display the aggregated result:
+    - If the run reaches the expedition completion condition: `Example: 踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
+    - If the run reaches the configured return depth limit: `Example: 帰還45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
+  - UI visual: 100% stacked horizontal bar
+    - 踏破 or 帰還: Sub color, 20% lighter
+    - 引分: Sub color, 50% lighter
+    - 撤退: Accent color, 50% lighter
+    - 敗北: Accent color, 20% lighter
+    - Segment widths correspond to their respective outcome percentages.
+    - Display a floating tooltip/bubble over the bar with the full result, e.g. `踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
+
+
 ```
 left-aligned                                    right-aligned
 PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
@@ -208,6 +233,7 @@ HP 2350 / 4680
 
 一任 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
 難易度: (Slider) +10
+予測実行   踏破45%/引分10%/撤退30%/敗北10%
 (Left-Aligned)                           (Right-Aligned)
 踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
 EXP: L489 | 自動売却額: 134G

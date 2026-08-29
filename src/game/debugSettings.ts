@@ -5,6 +5,7 @@ type DebugGodsBattleCondition = 'normal' | 'simple1';
 type DebugGodStrength = 'normal' | 'debug';
 
 export interface DebugSettings {
+  runtimeDiagnosticsEnabled: boolean;
   clairvoyanceEnabled: boolean;
   timeSpeed: DebugTimeSpeed;
   godsBattleCondition: DebugGodsBattleCondition;
@@ -22,6 +23,7 @@ export interface DebugSettings {
 const DEBUG_SETTINGS_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.debug-settings');
 
 const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
+  runtimeDiagnosticsEnabled: false,
   clairvoyanceEnabled: false,
   timeSpeed: 'realtime',
   godsBattleCondition: 'normal',
@@ -34,6 +36,9 @@ const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   displayAllCompendium: false,
   displayAllGlossary: false,
 };
+
+const RUNTIME_DIAGNOSTICS_STARTUP_ENABLED = typeof __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__ !== 'undefined'
+  && __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__;
 
 function enforceEnvironmentDebugPolicy(settings: DebugSettings): DebugSettings {
   // SpecRef: 9 | Environment | / Debug mode OFF
@@ -59,6 +64,8 @@ function canUseStorage(): boolean {
 function normalizeDebugSettings(raw: unknown): DebugSettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> & { displayMotivation?: boolean } : {};
   return enforceEnvironmentDebugPolicy({
+    // SpecRef: 8.6 | UI_SETTING | Runtime Diagnostics OFF/ON
+    runtimeDiagnosticsEnabled: parsed.runtimeDiagnosticsEnabled === true || RUNTIME_DIAGNOSTICS_STARTUP_ENABLED,
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
     timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x1_2' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x5' || parsed.timeSpeed === 'unlimited' ? parsed.timeSpeed : 'realtime',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
@@ -76,13 +83,13 @@ function normalizeDebugSettings(raw: unknown): DebugSettings {
 }
 
 export function getDebugSettings(): DebugSettings {
-  if (!canUseStorage()) return enforceEnvironmentDebugPolicy(DEFAULT_DEBUG_SETTINGS);
+  if (!canUseStorage()) return normalizeDebugSettings(DEFAULT_DEBUG_SETTINGS);
   try {
     const saved = window.localStorage.getItem(DEBUG_SETTINGS_STORAGE_KEY);
-    if (!saved) return enforceEnvironmentDebugPolicy(DEFAULT_DEBUG_SETTINGS);
+    if (!saved) return normalizeDebugSettings(DEFAULT_DEBUG_SETTINGS);
     return normalizeDebugSettings(JSON.parse(saved));
   } catch {
-    return enforceEnvironmentDebugPolicy(DEFAULT_DEBUG_SETTINGS);
+    return normalizeDebugSettings(DEFAULT_DEBUG_SETTINGS);
   }
 }
 

@@ -703,6 +703,14 @@ export interface ExpeditionLogEntry {
   attritionAmount?: number;
   gateInfo?: string;
   details: BattleLogEntry[];
+  /** Completed-battle replay data. Absent on legacy and non-battle entries. */
+  replayMetadata?: {
+    protocolVersion: number;
+    abiVersion: number;
+    rngVersion: number;
+    seedHex: string;
+    randomDrawCount: number;
+  };
 }
 
 export interface ExpeditionLog {
@@ -721,6 +729,15 @@ export interface ExpeditionLog {
   autoSellMultiplier?: number;
   remainingPartyHP: number;
   maxPartyHP: number;
+}
+
+export interface ExpeditionSimulationResult {
+  Clear: number;
+  Turned_Back: number;
+  Draw_Retreat: number;
+  Wounded_Retreat: number;
+  Defeat: number;
+  total: number;
 }
 
 // Game State
