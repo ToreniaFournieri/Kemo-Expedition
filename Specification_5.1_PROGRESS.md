@@ -16,6 +16,8 @@
   - A full Cycle always **ends at the end of `state.rest`**.
 - **`Chunk`**: A higher-level processing unit used for bulk AFK progression.
   - Each AFK worker process handles exactly one Chunk at a time. Workers are reusable execution slots and are not permanently assigned to a party.
+  - The AFK worker-pool limit scales conservatively with the reported logical-processor count: 1 worker for 1–3 processors, 2 for 4–7, 3 for 8–9, 4 for 10–11, 5 for 12–13, and 6 for 14 or more. Missing or invalid processor information uses 2 workers.
+  - The worker-pool limit must never exceed six or the number of unlocked Parties. Only Parties with remaining AFK backlog and no outstanding Chunk transaction are dispatch-eligible, so inactive or locked Parties must never create additional concurrent work.
   - A party may have only one outstanding Chunk transaction at a time. `Running`, `commit queued`, `committing`, and `automatic equipment` all count as outstanding.
   - **1 Chunk = 30 Cycles**.
   - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 30 Cycles in that Chunk complete.

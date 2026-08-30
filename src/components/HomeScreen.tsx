@@ -69,6 +69,7 @@ import {
 beginAfkLiveProfileMeasurement,
 canCompleteAfkLiveProfile,
 completeAfkLiveProfile,
+getAfkLiveProfileWorkerLimitOverride,
 observeAfkLiveProfilePending,
 recordAfkLiveProfileReactCommit,
 useAfkAtomicTransactionCandidate,
@@ -3089,7 +3090,11 @@ export function HomeScreen({
     const dispatchState = afkActiveCommitTransactionRef.current
       ? afkAuthoritativeDispatchStateRef.current
       : state;
-    const workerLimit = getAfkWorkerPoolLimit(navigator.hardwareConcurrency, dispatchState.parties.length);
+    const workerLimit = getAfkWorkerPoolLimit(
+      navigator.hardwareConcurrency,
+      dispatchState.parties.length,
+      getAfkLiveProfileWorkerLimitOverride(),
+    );
     let startedJob = false;
 
     const dispatchCandidates = dispatchState.parties.map((party, partyIndex) => {

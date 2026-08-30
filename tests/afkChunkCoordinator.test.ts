@@ -495,12 +495,30 @@ test('worker history hydration rejects incompatible schemas and invalid referenc
   );
 });
 
-test('AFK worker pool preserves renderer capacity and never exceeds party count', () => {
-  assert.equal(getAfkWorkerPoolLimit(2, 6), 1);
-  assert.equal(getAfkWorkerPoolLimit(4, 6), 2);
-  assert.equal(getAfkWorkerPoolLimit(8, 6), 2);
+test('AFK worker pool scales conservatively and never exceeds party count', () => {
+  const expectedByLogicalProcessors = new Map([
+    [1, 1], [2, 1], [3, 1],
+    [4, 2], [5, 2], [6, 2], [7, 2],
+    [8, 3], [9, 3],
+    [10, 4], [11, 4],
+    [12, 5], [13, 5],
+    [14, 6], [32, 6],
+  ]);
+  expectedByLogicalProcessors.forEach((expected, processors) => {
+    assert.equal(getAfkWorkerPoolLimit(processors, 6), expected, `${processors} logical processors`);
+  });
   assert.equal(getAfkWorkerPoolLimit(16, 2), 2);
+  assert.equal(getAfkWorkerPoolLimit(16, 0), 0);
   assert.equal(getAfkWorkerPoolLimit(undefined, 6), 2);
+  assert.equal(getAfkWorkerPoolLimit(Number.NaN, 6), 2);
+});
+
+test('AFK worker profile override remains bounded by one to six and party count', () => {
+  assert.equal(getAfkWorkerPoolLimit(6, 6, 1), 1);
+  assert.equal(getAfkWorkerPoolLimit(6, 6, 4), 4);
+  assert.equal(getAfkWorkerPoolLimit(6, 3, 6), 3);
+  assert.equal(getAfkWorkerPoolLimit(16, 6, 99), 6);
+  assert.equal(getAfkWorkerPoolLimit(16, 6, -1), 1);
 });
 
 test('isolated profile ordering remains simulated completion time then party ID', () => {

@@ -35,6 +35,7 @@ export interface AfkLiveProfileResult {
   readonly effectiveAfkMs: number;
   readonly mode: ProfileMode;
   readonly variant: AfkLiveProfileVariant;
+  readonly workerLimit: number | null;
   readonly wallMs: number;
   readonly heartbeatDelayMs: { p50: number; p95: number; maximum: number };
   readonly longTasks: readonly { startedAtMs: number; durationMs: number }[];
@@ -91,6 +92,7 @@ interface ProfileRuntime {
   effectiveAfkMs: number;
   mode: ProfileMode;
   variant: AfkLiveProfileVariant;
+  workerLimit: number | null;
   observedRecovery: boolean;
   startedAt: number | null;
   completing: boolean;
@@ -253,6 +255,10 @@ export function prepareAfkLiveProfile(): void {
   const rawAbsenceHours = RAW_HOUR_OPTIONS.has(requestedHours) ? requestedHours : 162;
   const mode: ProfileMode = params.get('afkProfileMode') === 'memory' ? 'memory' : 'timing';
   const variant: AfkLiveProfileVariant = params.get('afkProfileVariant') === 'baseline' ? 'baseline' : 'candidate';
+  const requestedWorkerLimit = Number(params.get('afkProfileWorkers'));
+  const workerLimit = Number.isInteger(requestedWorkerLimit) && requestedWorkerLimit >= 1 && requestedWorkerLimit <= 6
+    ? requestedWorkerLimit
+    : null;
   const effectiveAfkMs = getEffectiveAfkElapsedMs(rawAbsenceHours * 60 * 60 * 1_000);
   const envelope = JSON.parse(__AFK_LIVE_PROFILE_FIXTURE__) as {
     meta?: { format?: string };
@@ -296,6 +302,7 @@ export function prepareAfkLiveProfile(): void {
     effectiveAfkMs,
     mode,
     variant,
+    workerLimit,
     observedRecovery: false,
     startedAt: null,
     completing: false,
@@ -327,6 +334,11 @@ export function useAfkWorkerSimulationCandidate(): boolean {
   // The current live-profile baseline/candidate pair isolates worker work;
   // both variants use the production single-publication renderer transaction.
   return !__AFK_LIVE_PROFILE_ENABLED__ || runtime?.variant === 'candidate';
+}
+
+/** Returns a profile-only pool-width override; production always returns undefined. */
+export function getAfkLiveProfileWorkerLimitOverride(): number | undefined {
+  return __AFK_LIVE_PROFILE_ENABLED__ ? runtime?.workerLimit ?? undefined : undefined;
 }
 
 export function beginAfkLiveProfileMeasurement(): void {
@@ -423,6 +435,7 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
       effectiveAfkMs: runtime.effectiveAfkMs,
       mode: runtime.mode,
       variant: runtime.variant,
+      workerLimit: runtime.workerLimit,
       wallMs,
       heartbeatDelayMs: Object.freeze({
         p50: nearestRank(heartbeatDelays, 0.5),

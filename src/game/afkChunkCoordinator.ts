@@ -43,12 +43,29 @@ export function takeNextAfkFifoResult<T extends { jobId: string }>(
   return first.value;
 }
 
-/** Balanced recovery concurrency: limit synchronous full-state worker
- * submissions to two per renderer task while leaving capacity for the UI/OS. */
-export function getAfkWorkerPoolLimit(logicalProcessors: number | undefined, partyCount: number): number {
+/**
+ * Scales recovery concurrency conservatively while retaining logical-processor
+ * capacity for the renderer, Electron main process, persistence, and the OS.
+ * The optional override is profile-only and remains subject to every runtime
+ * safety cap.
+ */
+export function getAfkWorkerPoolLimit(
+  logicalProcessors: number | undefined,
+  partyCount: number,
+  workerLimitOverride?: number,
+): number {
+  const availableParties = Number.isFinite(partyCount) ? Math.max(0, Math.floor(partyCount)) : 0;
+  if (availableParties === 0) return 0;
   const processors = Number.isFinite(logicalProcessors) ? Math.max(1, Math.floor(logicalProcessors!)) : 4;
-  const hardwareLimit = processors <= 3 ? 1 : 2;
-  return Math.max(1, Math.min(Math.max(1, Math.floor(partyCount)), hardwareLimit));
+  const adaptiveHardwareLimit = processors <= 3
+    ? 1
+    : processors <= 7
+      ? 2
+      : Math.min(6, Math.floor(processors / 2) - 1);
+  const hardwareLimit = Number.isFinite(workerLimitOverride)
+    ? Math.max(1, Math.min(6, Math.floor(workerLimitOverride!)))
+    : adaptiveHardwareLimit;
+  return Math.min(availableParties, hardwareLimit);
 }
 
 export interface AfkPartyChunkJob {

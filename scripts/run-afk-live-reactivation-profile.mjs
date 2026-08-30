@@ -59,6 +59,8 @@ if (variants.length === 0 || variants.some((variant) => !['baseline', 'candidate
 }
 const samples = positive('samples', 1);
 const warmups = positive('warmups', 0, true);
+const workerLimit = positive('workers', 0, true);
+if (workerLimit > 6) throw new Error('workers must be between 1 and 6, or 0 for the production policy');
 const includeRuns = process.argv.includes('--include-runs');
 const temporaryDirectory = mkdtempSync(join(tmpdir(), 'bokemo-afk-live-'));
 const distPath = join(temporaryDirectory, 'dist');
@@ -91,6 +93,7 @@ const PRELOAD = ${JSON.stringify(preloadPath)};
 const hours = Number(process.argv.find(value => value.startsWith('--profile-hours='))?.slice(16) || 162);
 const mode = process.argv.find(value => value.startsWith('--profile-mode='))?.slice(15) || 'timing';
 const variant = process.argv.find(value => value.startsWith('--profile-variant='))?.slice(18) || 'candidate';
+const workers = Number(process.argv.find(value => value.startsWith('--profile-workers='))?.slice(18) || 0);
 const userData = process.argv.find(value => value.startsWith('--profile-user-data='))?.slice(20);
 if (userData) app.setPath('userData', userData);
 app.commandLine.appendSwitch('enable-precise-memory-info');
@@ -121,7 +124,7 @@ app.whenReady().then(async () => {
     app.exit(1);
   }, 300000);
   try {
-    await window.loadURL('app://bokemo/?afkProfileHours=' + hours + '&afkProfileMode=' + encodeURIComponent(mode) + '&afkProfileVariant=' + encodeURIComponent(variant));
+    await window.loadURL('app://bokemo/?afkProfileHours=' + hours + '&afkProfileMode=' + encodeURIComponent(mode) + '&afkProfileVariant=' + encodeURIComponent(variant) + '&afkProfileWorkers=' + workers);
     const result = await window.webContents.executeJavaScript('window.__BOKEMO_AFK_LIVE_PROFILE_RESULT__', true);
     const compactResult = { ...result, trace: { ...result.trace, events: [] } };
     clearTimeout(timeout);
@@ -147,6 +150,7 @@ app.whenReady().then(async () => {
             `--profile-hours=${rawAbsenceHours}`,
             `--profile-mode=${mode}`,
             `--profile-variant=${variant}`,
+            `--profile-workers=${workerLimit}`,
             `--profile-user-data=${userDataPath}`,
           ], { cwd: process.cwd(), encoding: 'utf8', maxBuffer: 100 * 1024 * 1024 });
           if (run.status !== 0) throw new Error(run.stderr || run.stdout || `AFK live ${mode}/${rawAbsenceHours}h failed`);
@@ -219,7 +223,7 @@ app.whenReady().then(async () => {
   process.stdout.write(`${JSON.stringify({
     schemaVersion: 2,
     generatedAt: new Date().toISOString(),
-    sampling: { hours, modes, variants, warmups, samples, freshElectronProcessPerRun: true, alternatingVariantOrder: variants.length > 1 },
+    sampling: { hours, modes, variants, workerLimit: workerLimit || null, warmups, samples, freshElectronProcessPerRun: true, alternatingVariantOrder: variants.length > 1 },
     workloads,
     comparisons,
   }, null, 2)}\n`);
