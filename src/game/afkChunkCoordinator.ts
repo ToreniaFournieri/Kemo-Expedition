@@ -3,6 +3,7 @@ import type { GameMode } from '../theme/theme';
 import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
 
 export const AFK_CHUNK_CYCLE_COUNT = 30;
+export type AfkWorkerSimulationStrategy = 'legacy' | 'optimized';
 
 // SpecRef: 5.1 | PROGRESS | Chunk
 // A terminal partial Chunk contains every complete Cycle that still fits in the
@@ -65,6 +66,7 @@ export interface AfkPartyChunkJob {
   workerCreatedAt?: number;
   isFirstWorkerJob?: boolean;
   inputTransferBytes?: number;
+  workerOptimization?: AfkWorkerSimulationStrategy;
 }
 
 export interface AfkPartyChunkColdWorkerJob extends AfkPartyChunkJob {

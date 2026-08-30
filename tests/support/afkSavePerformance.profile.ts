@@ -19,7 +19,11 @@ import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRando
 import { persistGameState } from '../../src/game/savePersistence.ts';
 import { serializeGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
-import { AfkInventoryOverlay, simulateAfkPartyChunkForWorker } from '../../src/hooks/useGameState.ts';
+import {
+  AfkInventoryOverlay,
+  simulateAfkPartyChunkForWorker,
+} from '../../src/hooks/useGameState.ts';
+import type { AfkWorkerSimulationStrategy } from '../../src/game/afkChunkCoordinator.ts';
 import type { GameState } from '../../src/types.ts';
 import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
 import { createAfkCompactInventoryCandidateState } from './afkCompactInventoryCandidate.ts';
@@ -51,6 +55,7 @@ function runDeterministicAfkWorkflow(
   baseState: GameState,
   compact: boolean = false,
   inventoryStrategy: 'immutable' | 'overlay' = 'overlay',
+  workerOptimization: AfkWorkerSimulationStrategy = 'optimized',
 ): GameState {
   const results: AfkPartyChunkResult[] = baseState.parties.map((party, partyIndex) => {
     const workerState = compact ? createAfkPartyChunkWorkerState(baseState, partyIndex) : baseState;
@@ -67,6 +72,7 @@ function runDeterministicAfkWorkflow(
           cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
           gameMode: 'm.kemo',
           inventoryStrategy,
+          workerOptimization,
         }),
       ),
     );
@@ -123,9 +129,11 @@ test('profiling wrappers preserve deterministic AFK worker and coordinator resul
   const second = runDeterministicAfkWorkflow(state);
   const compact = runDeterministicAfkWorkflow(state, true);
   const immutableInventory = runDeterministicAfkWorkflow(state, false, 'immutable');
+  const legacyWorker = runDeterministicAfkWorkflow(state, false, 'overlay', 'legacy');
   assert.deepEqual(serializeGameState(second), serializeGameState(first));
   assert.deepEqual(serializeGameState(compact), serializeGameState(first));
   assert.deepEqual(serializeGameState(immutableInventory), serializeGameState(first));
+  assert.deepEqual(serializeGameState(legacyWorker), serializeGameState(first));
 });
 
 test('AFK inventory overlay rolls back repeated Defeat mutations and releases successful journals', () => {

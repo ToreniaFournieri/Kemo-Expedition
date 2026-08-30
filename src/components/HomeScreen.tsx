@@ -72,6 +72,7 @@ completeAfkLiveProfile,
 observeAfkLiveProfilePending,
 recordAfkLiveProfileReactCommit,
 useAfkAtomicTransactionCandidate,
+useAfkWorkerSimulationCandidate,
 } from '../game/afkLiveProfile';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
@@ -3166,6 +3167,7 @@ export function HomeScreen({
         queuedAt: performance.timeOrigin + jobQueuedMonotonicAt,
         workerCreatedAt: poolSlot.createdEpochAt,
         isFirstWorkerJob: poolSlot.completedJobs === 0,
+        workerOptimization: useAfkWorkerSimulationCandidate() ? 'optimized' : 'legacy',
       };
       const inventoryJob: AfkPartyChunkInventoryWorkerJob = poolSlot.retainedInventory && poolSlot.retainedInventoryToken
         ? createAfkPartyChunkInventoryContinuationWorkerJob(

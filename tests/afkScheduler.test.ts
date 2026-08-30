@@ -183,6 +183,9 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(homeSource, /afkFinalRemainingMsByPartyRef\.current\[partyIndex\] \?\? 0/);
   assert.doesNotMatch(homeSource, /mutationCount === 0/);
   assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
+  assert.match(hookSource, /workerOptimization === 'optimized'[\s\S]{0,600}operationCount,[\s\S]{0,300}onOperationComplete: options\.onProgress/);
+  assert.match(hookSource, /const abilityLevels = workerOptimization === 'optimized' \? getProfitAbilityLevels\(party\) : undefined/);
+  assert.match(hookSource, /action\.workerOptimization === 'legacy'[\s\S]{0,180}computePartyStats\(postCycleParty\)\.partyStats\.hp[\s\S]{0,180}computePartyMaxHp\(postCycleParty\)/);
 });
 
 test('the canonical renderer profile accepts presentation-only worker progress', () => {

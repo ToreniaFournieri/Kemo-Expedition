@@ -53,6 +53,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) =>
       cycleDurationScale: job.cycleDurationScale,
       gameMode: job.gameMode,
       operationCount: job.operationCount,
+      workerOptimization: job.workerOptimization,
       onProgress: (completedOperations, operationCount) => {
         self.postMessage({ type: 'progress', jobId: job.jobId, partyIndex: job.partyIndex, completedOperations, operationCount });
       },

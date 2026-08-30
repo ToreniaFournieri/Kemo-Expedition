@@ -211,7 +211,7 @@ test('RUN_EXPEDITION derives one context and has no nested reward/unlock recompu
 test('mutation-aware stat consumers remain outside the transaction context', () => {
   const source = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
   assert.match(source, /function processAfkCycleProfit[\s\S]*calculatePrayerProfit\(partyAtPrayer/);
-  assert.match(source, /const \{ partyStats: postCycleStats \} = computePartyStats\(postCycleParty\)/);
+  assert.match(source, /action\.workerOptimization === 'legacy'[\s\S]*computePartyStats\(postCycleParty\)\.partyStats\.hp[\s\S]*computePartyMaxHp\(postCycleParty\)/);
   assert.match(source, /case 'HEAL_PARTY_HP':[\s\S]*computePartyStats\(currentParty\)/);
   assert.match(source, /const computed = computePartyStats\(beforeParty\)/);
   assert.match(source, /const computed = computePartyStats\(beforeParty\)[\s\S]*const maximumHp = computed\.partyStats\.hp/);

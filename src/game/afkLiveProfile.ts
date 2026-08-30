@@ -320,8 +320,12 @@ export function prepareAfkLiveProfile(): void {
 }
 
 export function useAfkAtomicTransactionCandidate(): boolean {
-  // Production uses the single-publication transaction. The profile build
-  // retains the legacy path as its explicit baseline for deterministic A/Bs.
+  return true;
+}
+
+export function useAfkWorkerSimulationCandidate(): boolean {
+  // The current live-profile baseline/candidate pair isolates worker work;
+  // both variants use the production single-publication renderer transaction.
   return !__AFK_LIVE_PROFILE_ENABLED__ || runtime?.variant === 'candidate';
 }
 

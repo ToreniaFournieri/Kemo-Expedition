@@ -143,6 +143,7 @@ import {
   commitAfkPartyChunk,
   type AfkInventoryDelta,
   type AfkPartyChunkResult,
+  type AfkWorkerSimulationStrategy,
 } from '../game/afkChunkCoordinator';
 import { afkRuntimeTrace } from '../game/afkRuntimeTrace';
 import { memoryMonitor } from '../game/memoryMonitoring';
@@ -2185,7 +2186,7 @@ type GameAction =
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }> }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }>; workerOptimization?: AfkWorkerSimulationStrategy; onOperationComplete?: (completedOperations: number, operationCount: number) => void }
   | { type: 'COMMIT_AFK_PARTY_CHUNK'; result: AfkPartyChunkResult }
   | { type: 'COMMIT_AFK_PARTY_TRANSACTION'; result: AfkPartyChunkResult; autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner; attribution?: AfkPartyTransactionAttribution }
   | { type: 'RESET_GAME' }
@@ -2625,11 +2626,39 @@ function getPartyAbilityLevel(party: Party, abilityId: string): number {
   }, 0);
 }
 
+type ProfitAbilityLevels = Readonly<{
+  cunning: number;
+  momentum: number;
+  squander: number;
+  tithe: number;
+}>;
+
+function getProfitAbilityLevels(party: Party): ProfitAbilityLevels {
+  const levels = { cunning: 0, momentum: 0, squander: 0, tithe: 0 };
+  const { characterStats } = computePartyStats(party);
+  for (const stats of characterStats) {
+    for (const ability of stats.abilities) {
+      if (ability.id === 'cunning') levels.cunning = Math.max(levels.cunning, ability.level);
+      else if (ability.id === 'momentum') levels.momentum = Math.max(levels.momentum, ability.level);
+      else if (ability.id === 'squander') levels.squander = Math.max(levels.squander, ability.level);
+      else if (ability.id === 'tithe') levels.tithe = Math.max(levels.tithe, ability.level);
+    }
+  }
+  return levels;
+}
+
+function getPrayerDepositMultiplierFromLevel(party: Party, momentumLevel: number): number {
+  const deityDepositMultiplier = getDeityDepositMultiplier(party.deity.name, party.deityGold ?? 0);
+  const momentumEmbezzlementRate = momentumLevel > 0 ? 0.1 : 0;
+  return Math.max(0, deityDepositMultiplier - momentumEmbezzlementRate);
+}
+
 function getCurrentPartyCunningMultiplier(party: Party): number {
-  const cunningLevel = getPartyAbilityLevel(party, 'cunning');
+  const abilityLevels = getProfitAbilityLevels(party);
+  const cunningLevel = abilityLevels.cunning;
   const abilityMultiplier = cunningLevel >= 2 ? 1.3 : cunningLevel >= 1 ? 1.2 : 1;
 
-  return abilityMultiplier * getPrayerDepositMultiplier(party);
+  return abilityMultiplier * getPrayerDepositMultiplierFromLevel(party, abilityLevels.momentum);
 }
 
 function getPrayerDepositMultiplier(party: Party): number {
@@ -2652,34 +2681,51 @@ type PrayerProfitResult = {
   embezzled: number;
 };
 
-function calculatePrayerProfit(party: Party, pendingProfit: number): PrayerProfitResult {
+function calculatePrayerProfit(
+  party: Party,
+  pendingProfit: number,
+  abilityLevels?: ProfitAbilityLevels,
+): PrayerProfitResult {
   // SpecRef: 5.1.1 | Party State Machine | state.pray
   const cyclePendingProfit = Math.max(0, Math.floor(pendingProfit));
   const isNoFaith = isNoFaithDeity(party.deity.name);
   const donationRate = rollPercentInclusive(10, 33);
   const baseDonation = Math.floor((cyclePendingProfit * donationRate) / 100);
-  const titheLevel = getPartyAbilityLevel(party, 'tithe');
+  const titheLevel = abilityLevels?.tithe ?? getPartyAbilityLevel(party, 'tithe');
   const titheBonusRate = isNoFaith ? 0 : (titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0);
   const titheBonus = Math.floor(cyclePendingProfit * titheBonusRate);
   const donation = isNoFaith ? 0 : Math.min(cyclePendingProfit, baseDonation + titheBonus);
   const rawDeposit = Math.max(0, cyclePendingProfit - donation);
-  const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
+  const deposit = Math.floor(rawDeposit * (
+    abilityLevels
+      ? getPrayerDepositMultiplierFromLevel(party, abilityLevels.momentum)
+      : getPrayerDepositMultiplier(party)
+  ));
   const embezzled = Math.max(0, rawDeposit - deposit);
 
   return { donation, deposit, embezzled };
 }
 
-function calculateFreeActionSpend(party: Party, pendingProfit: number): number {
+function calculateFreeActionSpend(
+  party: Party,
+  pendingProfit: number,
+  abilityLevels?: ProfitAbilityLevels,
+): number {
   // SpecRef: 5.1.1 | Party State Machine | state.free_action
   const cyclePendingProfit = Math.max(0, Math.floor(pendingProfit));
   const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(20, 40)) / 100);
-  const squanderLevel = getPartyAbilityLevel(party, 'squander');
+  const squanderLevel = abilityLevels?.squander ?? getPartyAbilityLevel(party, 'squander');
   const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
 
   return Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
 }
 
-function processAfkCycleProfit(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+function processAfkCycleProfit(
+  state: GameState,
+  partyIndex: number,
+  simulatedAt: number,
+  workerOptimization: AfkWorkerSimulationStrategy = 'optimized',
+): GameState {
   // SpecRef: 5.1.1 | Party State Machine | state.free_action
   // SpecRef: 5.1.1 | Party State Machine | state.pray
   const party = state.parties[partyIndex];
@@ -2688,7 +2734,11 @@ function processAfkCycleProfit(state: GameState, partyIndex: number, simulatedAt
   const pendingProfit = Math.max(0, Math.floor(party.pendingProfit ?? 0));
   if (pendingProfit <= 0) return state;
 
-  const spend = calculateFreeActionSpend(party, pendingProfit);
+  // Free action and prayer mutate only profit/global values. Equipment, level,
+  // deity, and every ability input remain unchanged between them, so one
+  // projection is authoritative for the complete Cycle profit transaction.
+  const abilityLevels = workerOptimization === 'optimized' ? getProfitAbilityLevels(party) : undefined;
+  const spend = calculateFreeActionSpend(party, pendingProfit, abilityLevels);
   let nextState = gameReducer(state, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
 
   if (party.sideQuest?.type === 'q.squander' && spend > 0) {
@@ -2698,7 +2748,7 @@ function processAfkCycleProfit(state: GameState, partyIndex: number, simulatedAt
   const partyAtPrayer = nextState.parties[partyIndex];
   if (!partyAtPrayer) return nextState;
   const prayerPendingProfit = Math.max(0, Math.floor(partyAtPrayer.pendingProfit ?? 0));
-  const { donation, deposit, embezzled } = calculatePrayerProfit(partyAtPrayer, prayerPendingProfit);
+  const { donation, deposit, embezzled } = calculatePrayerProfit(partyAtPrayer, prayerPendingProfit, abilityLevels);
   nextState = gameReducer(nextState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
 
   if (partyAtPrayer.sideQuest?.type === 'q.donation' && donation > 0) {
@@ -5272,6 +5322,7 @@ function gameReducer(
         operationStart,
         requestedOperationCount,
       );
+      let completedOperationCount = 0;
       for (const { runIndex, partyIndex, partyCycleDurationMs } of operationWindow) {
           const cycleCompletedAt = simulationStartAt + ((runIndex + 1) * partyCycleDurationMs);
           const simulatedAt = Math.min(
@@ -5350,18 +5401,31 @@ function gameReducer(
           }
 
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
-          workingState = processAfkCycleProfit(workingState, partyIndex, simulatedAt);
+          workingState = processAfkCycleProfit(
+            workingState,
+            partyIndex,
+            simulatedAt,
+            action.workerOptimization,
+          );
 
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty) {
-            const { partyStats: postCycleStats } = computePartyStats(postCycleParty);
-            const missingHp = Math.max(0, postCycleStats.hp - (postCycleParty.currentHp ?? 0));
+            const postCycleMaxHp = action.workerOptimization === 'legacy'
+              ? computePartyStats(postCycleParty).partyStats.hp
+              : computePartyMaxHp(postCycleParty);
+            const missingHp = Math.max(0, postCycleMaxHp - (postCycleParty.currentHp ?? 0));
             if (missingHp > 0) {
-              workingState = gameReducer(workingState, {
-                type: 'HEAL_PARTY_HP',
-                partyIndex,
-                amount: missingHp,
-              }, undefined, afkChunkContext);
+              if (action.workerOptimization === 'legacy') {
+                workingState = gameReducer(workingState, {
+                  type: 'HEAL_PARTY_HP',
+                  partyIndex,
+                  amount: missingHp,
+                }, undefined, afkChunkContext);
+              } else {
+                const healedParties = [...workingState.parties];
+                healedParties[partyIndex] = { ...postCycleParty, currentHp: postCycleMaxHp };
+                workingState = { ...workingState, parties: healedParties };
+              }
             }
           }
 
@@ -5382,6 +5446,8 @@ function gameReducer(
           ) {
             workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
           }
+          completedOperationCount += 1;
+          action.onOperationComplete?.(completedOperationCount, operationWindow.length);
       }
 
       if (action.finalizeChunk !== false || operationEnd >= totalOperationCount) {
@@ -5807,6 +5873,7 @@ export function simulateAfkPartyChunkForWorker(
     onProgress?: (completedOperations: number, operationCount: number) => void;
     chunkStatusScope?: 'target' | 'all';
     inventoryStrategy?: 'immutable' | 'overlay';
+    workerOptimization?: AfkWorkerSimulationStrategy;
   },
 ): GameState {
   const party = state.parties[options.partyIndex];
@@ -5839,6 +5906,29 @@ export function simulateAfkPartyChunkForWorker(
   const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable'
     ? undefined
     : { inventoryOverlay: new AfkInventoryOverlay(state.global.inventory) };
+  const workerOptimization = options.workerOptimization ?? 'optimized';
+  if (workerOptimization === 'optimized') {
+    const workingState = gameReducer(state, {
+      type: 'SIMULATE_AFK',
+      elapsedMs,
+      isAutoRepeatEnabled: true,
+      gameMode: options.gameMode,
+      simulatedEndAt: options.simulatedCompletedAt,
+      cycleDurationScale: options.cycleDurationScale,
+      cycleDurationByParty,
+      operationStart: 0,
+      operationCount,
+      finalizeChunk: true,
+      chunkPartyStatus,
+      workerOptimization,
+      onOperationComplete: options.onProgress,
+    }, undefined, afkChunkContext);
+    if (afkChunkContext) {
+      afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
+    }
+    return workingState;
+  }
+
   let workingState = state;
   for (let operationIndex = 0; operationIndex < operationCount; operationIndex += 1) {
     workingState = gameReducer(workingState, {
@@ -5853,6 +5943,7 @@ export function simulateAfkPartyChunkForWorker(
       operationCount: 1,
       finalizeChunk: operationIndex + 1 === operationCount,
       chunkPartyStatus,
+      workerOptimization,
     }, undefined, afkChunkContext);
     options.onProgress?.(operationIndex + 1, operationCount);
   }
