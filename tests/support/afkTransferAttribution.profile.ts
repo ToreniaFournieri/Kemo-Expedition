@@ -21,7 +21,7 @@ import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
 
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
-const EXPECTED_FINAL_HASH = '11fb8356c53d5087d8f220408a92c3c8b12ef276abf2898e9a7e19e7b88bfebc';
+const EXPECTED_FINAL_HASH = 'f6ef7db044508d6e86d359c438c9e6d5f2c3cd318c5c8643da9b0c06242bb795';
 
 function createSeededRandom(seed: number): () => number {
   let value = seed >>> 0 || 0x9e3779b9;

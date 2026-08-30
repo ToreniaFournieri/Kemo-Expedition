@@ -5280,12 +5280,16 @@ function gameReducer(
           );
 
           const partyForAfkChunk = workingState.parties[partyIndex];
-          const shouldTriggerAfkGodsBattle = partyForAfkChunk
+          const chunkStartParty = chunkPartyStatus[partyIndex]?.party ?? partyForAfkChunk;
+          const shouldTriggerAfkGodsBattle = chunkStartParty
             ? (
               // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
-              normalizePartyCondition(partyForAfkChunk.condition) >= 251
-              && !partyForAfkChunk.sideQuest
-              && isGodsBattleAvailable(partyForAfkChunk, partyForAfkChunk.selectedDungeonId)
+              // The prior Chunk's completed condition update is authoritative at
+              // this boundary. Do not re-check condition inside the current Chunk.
+              runIndex === 0
+              && normalizePartyCondition(chunkStartParty.condition) >= 251
+              && !chunkStartParty.sideQuest
+              && isGodsBattleAvailable(chunkStartParty, chunkStartParty.selectedDungeonId)
             )
             : false;
 
@@ -5307,7 +5311,13 @@ function gameReducer(
 
           const postFinalizeParty = workingState.parties[partyIndex];
           if (postFinalizeParty) {
-            const autoAdvanceDecision = shouldAutoAdvanceExpeditionDestination(postFinalizeParty);
+            // Condition changes accumulate inside the worker but become logical
+            // authority only at the Chunk boundary. Condition-driven decisions
+            // within this Chunk therefore retain its captured starting value.
+            const autoAdvanceDecision = shouldAutoAdvanceExpeditionDestination({
+              ...postFinalizeParty,
+              condition: chunkStartParty?.condition ?? postFinalizeParty.condition,
+            });
             if (autoAdvanceDecision.shouldAdvance && autoAdvanceDecision.nextDungeonId !== null) {
               workingState = gameReducer(workingState, {
                 type: 'SELECT_DUNGEON',
@@ -5778,7 +5788,7 @@ export function simulateAfkPartyChunkForWorker(
   } else {
     // SpecRef: 5.1 | Chunk | Party status is calculated once at the beginning of each Chunk.
     // A party-scoped worker cannot advance inactive parties, so retain only the
-    // one authoritative status snapshot consumed by its twelve target Cycles.
+    // one authoritative status snapshot consumed by its thirty target Cycles.
     chunkPartyStatus[options.partyIndex] = {
       party,
       computed: computePartyStats(party),

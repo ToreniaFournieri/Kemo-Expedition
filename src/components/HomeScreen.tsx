@@ -49,14 +49,16 @@ type PersistedAfkChunkCursor,
 } from '../game/afkScheduler';
 import {
 AFK_CHUNK_CYCLE_COUNT,
-compareAfkChunkResults,
+compareAfkPartyDispatchCandidates,
 createAfkPartyChunkWorkerState,
 createAfkPartyChunkInventoryColdWorkerJob,
 createAfkPartyChunkInventoryContinuationWorkerJob,
 commitAfkPartyChunk,
+getAfkChunkOperationCount,
 getAfkWorkerPoolLimit,
 hasPendingPartySettingChanges,
 hydrateAfkPartyChunkInventoryResult,
+takeNextAfkFifoResult,
 type AfkPartyChunkJob,
 type AfkPartyChunkResult,
 type AfkPartyChunkInventoryWorkerJob,
@@ -290,6 +292,7 @@ export function HomeScreen({
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
   const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
+  const afkFinalRemainingMsByPartyRef = useRef<Record<number, number>>({});
   const afkInFlightCompletedMsByPartyRef = useRef<Record<number, number>>({});
   const afkLastProgressRenderAtRef = useRef(0);
   const afkActiveChunkJobsRef = useRef(new Map<number, {
@@ -311,13 +314,17 @@ export function HomeScreen({
     retainedInventoryRevision: number;
   }>>([]);
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
+  const afkCompletedChunkArrivalSequenceRef = useRef(new Map<string, number>());
+  const afkPartyTransactionLocksRef = useRef(new Set<number>());
   const afkActiveCommitTransactionRef = useRef<{
     result: AfkPartyChunkResult;
+    arrivalSequence: number;
     startedAt: number;
     plannedActionCount: number;
     attribution: AfkPartyTransactionAttribution;
     mode: 'baseline' | 'candidate';
     capturedSettingChanges: boolean;
+    stage: 'chunk_dispatched' | 'auto_equipment_dispatched';
   } | null>(null);
   const afkAutoEquipmentVisibilityRef = useRef<{
     partyId: number;
@@ -327,9 +334,11 @@ export function HomeScreen({
   } | null>(null);
   const afkLiveProfileStateRef = useRef(state);
   afkLiveProfileStateRef.current = state;
+  const afkAuthoritativeDispatchStateRef = useRef(state);
   const afkWorkerJobSequenceRef = useRef(0);
+  const afkWorkerResultArrivalSequenceRef = useRef(0);
   const afkWorkerSlotSequenceRef = useRef(0);
-  const afkHeadOfLineWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
+  const afkFifoCommitWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
   const renderCommitDurationsRef = useRef<number[]>([]);
   const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
   const [, setAfkProgressPresentationVersion] = useState(0);
@@ -2252,13 +2261,13 @@ export function HomeScreen({
 
   apiAutoEquipmentRunnerRef.current = runAutoEquipment;
 
-  const updateAfkTraceCoordinator = useCallback((canonicalJobId: string | null = null) => {
+  const updateAfkTraceCoordinator = useCallback((fifoHeadJobId: string | null = null) => {
     const activeJobs = [...afkActiveChunkJobsRef.current.values()];
     afkRuntimeTrace.updateCoordinator({
       pendingAfkMs: pendingAfkMsRef.current,
       completedResultCount: afkCompletedChunkResultsRef.current.size,
       workerPoolSize: afkWorkerPoolRef.current.length,
-      canonicalJobId,
+      fifoHeadJobId,
       activeJobs: activeJobs.map(({ job, status, startedMonotonicAt }) => ({
         jobId: job.jobId,
         partyId: job.partyId,
@@ -2271,13 +2280,19 @@ export function HomeScreen({
   }, []);
 
   const completeAfkCommitTransaction = useCallback((result: AfkPartyChunkResult) => {
-    const transactionStartedAt = afkActiveCommitTransactionRef.current?.startedAt ?? performance.now();
+    const transaction = afkActiveCommitTransactionRef.current;
+    const transactionStartedAt = transaction?.startedAt ?? performance.now();
     const chunkElapsedMs = result.cycleDurationMs * result.operationCount;
     delete afkInFlightCompletedMsByPartyRef.current[result.partyIndex];
     afkRemainingMsByPartyRef.current[result.partyIndex] = Math.max(
       0,
       (afkRemainingMsByPartyRef.current[result.partyIndex] ?? 0) - chunkElapsedMs,
     );
+    // This callback runs only from the React effect that observes the final
+    // Chunk/settings/equipment state. Publish that immutable snapshot before
+    // releasing the Party-local transaction barrier.
+    afkAuthoritativeDispatchStateRef.current = afkLiveProfileStateRef.current;
+    afkPartyTransactionLocksRef.current.delete(result.partyIndex);
     afkActiveCommitTransactionRef.current = null;
     const remaining = Object.values(afkRemainingMsByPartyRef.current);
     pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
@@ -2292,7 +2307,10 @@ export function HomeScreen({
       jobId: result.jobId,
       durationMs: performance.now() - transactionStartedAt,
       progress: true,
-      data: { pendingAfkMs: pendingAfkMsRef.current },
+      data: {
+        pendingAfkMs: pendingAfkMsRef.current,
+        arrivalSequence: transaction?.arrivalSequence ?? null,
+      },
     });
     updateAfkTraceCoordinator();
     setAfkCoordinatorVersion((version) => version + 1);
@@ -2349,6 +2367,7 @@ export function HomeScreen({
     afkRecoveryTotalMsRef.current = 0;
     afkChunkCursorRef.current = null;
     afkRemainingMsByPartyRef.current = {};
+    afkFinalRemainingMsByPartyRef.current = {};
     afkInFlightCompletedMsByPartyRef.current = {};
     afkActiveChunkJobsRef.current.forEach(({ job }) => {
       memoryMonitor.releaseWorker(job.jobId);
@@ -2357,6 +2376,11 @@ export function HomeScreen({
     afkWorkerPoolRef.current = [];
     afkActiveChunkJobsRef.current.clear();
     afkCompletedChunkResultsRef.current.clear();
+    afkCompletedChunkArrivalSequenceRef.current.clear();
+    afkPartyTransactionLocksRef.current.clear();
+    afkActiveCommitTransactionRef.current = null;
+    afkWorkerResultArrivalSequenceRef.current = 0;
+    afkAuthoritativeDispatchStateRef.current = state;
     updateAfkTraceCoordinator();
     try {
       localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
@@ -2364,7 +2388,7 @@ export function HomeScreen({
       console.error('Failed to clear AFK runtime state:', error);
     }
     actions.resetGame();
-  }, [actions, updateAfkTraceCoordinator]);
+  }, [actions, state, updateAfkTraceCoordinator]);
 
   useEffect(() => {
     gameModeRef.current = gameMode;
@@ -2792,6 +2816,12 @@ export function HomeScreen({
     if (!transaction) return;
 
     if (transaction.mode === 'baseline') {
+      if (transaction.stage === 'auto_equipment_dispatched') {
+        // The preceding render made the equipment reducer authoritative. Only
+        // now may this Party's next Chunk become eligible.
+        completeAfkCommitTransaction(transaction.result);
+        return;
+      }
       afkRuntimeTrace.record('commit_react_visible', {
         phase: 'commit_awaiting_react',
         partyId: transaction.result.partyId,
@@ -2808,10 +2838,9 @@ export function HomeScreen({
           partyIndex: transaction.result.partyIndex,
           jobId: transaction.result.jobId,
         });
-        const summary = runAutoEquipment(
+        const plan = planAutoEquipment(
+          state,
           [transaction.result.partyIndex],
-          undefined,
-          { suppressNotifications: true },
         );
         afkRuntimeTrace.record('auto_equipment_complete', {
           phase: 'auto_equipment',
@@ -2821,19 +2850,26 @@ export function HomeScreen({
           durationMs: performance.now() - planningStartedAt,
           progress: true,
           data: {
-            processedCharacters: summary.processedCharacterIds.length,
-            unequippedCount: summary.unequippedCount,
-            equippedCount: summary.equippedCount,
-            upgradedCount: summary.upgradedCount,
-            jewelAssignmentCount: summary.jewelAssignmentCount,
+            processedCharacters: plan.summary.processedCharacterIds.length,
+            unequippedCount: plan.summary.unequippedCount,
+            equippedCount: plan.summary.equippedCount,
+            upgradedCount: plan.summary.upgradedCount,
+            jewelAssignmentCount: plan.summary.jewelAssignmentCount,
+            plannedActionCount: plan.actions.length,
           },
         });
-        afkAutoEquipmentVisibilityRef.current = {
-          partyId: transaction.result.partyId,
-          partyIndex: transaction.result.partyIndex,
-          jobId: transaction.result.jobId,
-          startedAt: performance.now(),
-        };
+        if (plan.actions.length > 0) {
+          transaction.stage = 'auto_equipment_dispatched';
+          transaction.plannedActionCount = plan.actions.length;
+          afkAutoEquipmentVisibilityRef.current = {
+            partyId: transaction.result.partyId,
+            partyIndex: transaction.result.partyIndex,
+            jobId: transaction.result.jobId,
+            startedAt: performance.now(),
+          };
+          actions.applyAutoEquipmentActions(plan.actions);
+          return;
+        }
       }
       completeAfkCommitTransaction(transaction.result);
       return;
@@ -2864,7 +2900,7 @@ export function HomeScreen({
     });
 
     completeAfkCommitTransaction(transaction.result);
-  }, [completeAfkCommitTransaction, runAutoEquipment, state]);
+  }, [actions, completeAfkCommitTransaction, planAutoEquipment, state]);
 
   useEffect(() => {
     if (pendingAfkMs <= 0) return;
@@ -2873,10 +2909,16 @@ export function HomeScreen({
       updateAfkTraceCoordinator();
       return;
     }
-    if (afkActiveCommitTransactionRef.current) {
+    const activeTransactionAtEffectStart = afkActiveCommitTransactionRef.current;
+    if (activeTransactionAtEffectStart) {
       afkRuntimeTrace.setPhase('commit_awaiting_react');
-      updateAfkTraceCoordinator(afkActiveCommitTransactionRef.current.result.jobId);
-      return;
+      updateAfkTraceCoordinator(
+        afkCompletedChunkResultsRef.current.values().next().value?.jobId ?? null,
+      );
+    } else {
+      // No Party transaction is partially published, so this render is a safe
+      // immutable base for future worker dispatches.
+      afkAuthoritativeDispatchStateRef.current = state;
     }
     // v0.9.2 persisted a cross-party operation cursor. Party-scoped workers
     // restart only the uncommitted legacy slice from its durable game-state save.
@@ -2895,24 +2937,13 @@ export function HomeScreen({
       );
     }
 
-    const activeJobs = Array.from(afkActiveChunkJobsRef.current.values()).map(({ job }) => job);
-    if (activeJobs.length > 0) {
-      const nextCanonicalJob = [...activeJobs].sort((left, right) => compareAfkChunkResults(left, right))[0];
-      updateAfkTraceCoordinator(nextCanonicalJob.jobId);
-      const completedResult = afkCompletedChunkResultsRef.current.get(nextCanonicalJob.jobId);
+    if (!activeTransactionAtEffectStart) {
+      const completedResult = takeNextAfkFifoResult(afkCompletedChunkResultsRef.current);
       if (completedResult) {
-        const headOfLineWait = afkHeadOfLineWaitRef.current;
-        if (headOfLineWait) {
-          afkRuntimeTrace.record('canonical_order_wait_end', {
-            phase: 'canonical_order_wait',
-            jobId: headOfLineWait.blockerJobId,
-            durationMs: performance.now() - headOfLineWait.startedAt,
-            progress: true,
-          });
-          afkHeadOfLineWaitRef.current = null;
-        }
+        const arrivalSequence = afkCompletedChunkArrivalSequenceRef.current.get(completedResult.jobId) ?? 0;
+        afkCompletedChunkArrivalSequenceRef.current.delete(completedResult.jobId);
         afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
-        afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
+        afkPartyTransactionLocksRef.current.add(completedResult.partyIndex);
         afkLastBatchCommittedAtRef.current = performance.now();
         const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile();
         afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
@@ -2936,6 +2967,7 @@ export function HomeScreen({
           progress: true,
           data: {
             capturedSettingChanges,
+            arrivalSequence,
             completedResultCount: afkCompletedChunkResultsRef.current.size,
           },
         });
@@ -2990,11 +3022,13 @@ export function HomeScreen({
         }
         afkActiveCommitTransactionRef.current = {
           result: completedResult,
+          arrivalSequence,
           startedAt: performance.now(),
           plannedActionCount: plannedActions.length,
           attribution: transactionAttribution,
           mode: useAtomicCandidate ? 'candidate' : 'baseline',
           capturedSettingChanges,
+          stage: 'chunk_dispatched',
         };
         if (useAtomicCandidate) {
           actions.commitAfkPartyTransaction(completedResult, plannedActions, transactionAttribution);
@@ -3006,41 +3040,87 @@ export function HomeScreen({
           partyId: completedResult.partyId,
           partyIndex: completedResult.partyIndex,
           jobId: completedResult.jobId,
+          data: { arrivalSequence },
         });
-        return;
       }
-      if (afkCompletedChunkResultsRef.current.size > 0) {
-        if (afkHeadOfLineWaitRef.current?.blockerJobId !== nextCanonicalJob.jobId) {
-          afkHeadOfLineWaitRef.current = {
-            blockerJobId: nextCanonicalJob.jobId,
-            startedAt: performance.now(),
-          };
-          afkRuntimeTrace.record('canonical_order_wait_start', {
-            phase: 'canonical_order_wait',
-            partyId: nextCanonicalJob.partyId,
-            partyIndex: nextCanonicalJob.partyIndex,
-            jobId: nextCanonicalJob.jobId,
-            data: { completedResultCount: afkCompletedChunkResultsRef.current.size },
-          });
-        } else {
-          afkRuntimeTrace.setPhase('canonical_order_wait');
-        }
+    }
+
+    const fifoHeadResult = afkCompletedChunkResultsRef.current.values().next().value;
+    const blockingTransaction = afkActiveCommitTransactionRef.current;
+    if (fifoHeadResult && blockingTransaction) {
+      if (afkFifoCommitWaitRef.current?.blockerJobId !== blockingTransaction.result.jobId) {
+        afkFifoCommitWaitRef.current = {
+          blockerJobId: blockingTransaction.result.jobId,
+          startedAt: performance.now(),
+        };
+        afkRuntimeTrace.record('fifo_commit_wait_start', {
+          phase: 'fifo_commit_wait',
+          partyId: fifoHeadResult.partyId,
+          partyIndex: fifoHeadResult.partyIndex,
+          jobId: fifoHeadResult.jobId,
+          data: {
+            blockerJobId: blockingTransaction.result.jobId,
+            arrivalSequence: afkCompletedChunkArrivalSequenceRef.current.get(fifoHeadResult.jobId) ?? null,
+            completedResultCount: afkCompletedChunkResultsRef.current.size,
+          },
+        });
       } else {
-        afkRuntimeTrace.setPhase('worker_execution');
+        afkRuntimeTrace.setPhase('fifo_commit_wait');
       }
+    } else if (afkFifoCommitWaitRef.current) {
+      const wait = afkFifoCommitWaitRef.current;
+      afkRuntimeTrace.record('fifo_commit_wait_end', {
+        phase: 'commit_dispatch',
+        jobId: wait.blockerJobId,
+        durationMs: performance.now() - wait.startedAt,
+        progress: true,
+      });
+      afkFifoCommitWaitRef.current = null;
+    } else if (afkActiveChunkJobsRef.current.size > 0 && !blockingTransaction) {
+      afkRuntimeTrace.setPhase('worker_execution');
     }
 
     const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
     const anchor = afkSimulationAnchorRef.current ?? Date.now();
-    const workerLimit = getAfkWorkerPoolLimit(navigator.hardwareConcurrency, state.parties.length);
+    const dispatchState = afkActiveCommitTransactionRef.current
+      ? afkAuthoritativeDispatchStateRef.current
+      : state;
+    const workerLimit = getAfkWorkerPoolLimit(navigator.hardwareConcurrency, dispatchState.parties.length);
     let startedJob = false;
 
-    state.parties.forEach((party, partyIndex) => {
-      if (afkActiveChunkJobsRef.current.has(partyIndex)) return;
+    const dispatchCandidates = dispatchState.parties.map((party, partyIndex) => {
+      if (
+        afkActiveChunkJobsRef.current.has(partyIndex)
+        || afkPartyTransactionLocksRef.current.has(partyIndex)
+      ) return null;
       const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale);
-      const chunkElapsedMs = cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
       const remainingMs = afkRemainingMsByPartyRef.current[partyIndex] ?? 0;
-      if (remainingMs < chunkElapsedMs) return;
+      // SpecRef: 5.1 | PROGRESS | Chunk
+      // Full Chunks contain 30 Cycles. At the end of recovery, every remaining
+      // complete Cycle is submitted as one partial Chunk through the same commit
+      // and automatic-equipment transaction as a full Chunk.
+      const operationCount = getAfkChunkOperationCount(remainingMs, cycleDurationMs);
+      if (operationCount <= 0) return null;
+      return {
+        party,
+        partyIndex,
+        partyId: party.id,
+        partyLocalEmulatedTime: anchor - remainingMs,
+        remainingMs,
+        cycleDurationMs,
+        operationCount,
+      };
+    }).filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
+      .sort(compareAfkPartyDispatchCandidates);
+
+    dispatchCandidates.forEach(({
+      party,
+      partyIndex,
+      remainingMs,
+      cycleDurationMs,
+      operationCount,
+    }) => {
+      const chunkElapsedMs = cycleDurationMs * operationCount;
 
       let poolSlot = afkWorkerPoolRef.current.find((slot) => slot.jobId === null);
       if (!poolSlot && afkWorkerPoolRef.current.length < workerLimit) {
@@ -3067,7 +3147,7 @@ export function HomeScreen({
 
       const constructionStartedAt = performance.now();
       const simulatedStartedAt = anchor - remainingMs;
-      const baseParty = state.parties[partyIndex];
+      const baseParty = dispatchState.parties[partyIndex];
       const jobQueuedMonotonicAt = performance.now();
       const job: AfkPartyChunkJob = {
         jobId: `afk-${party.id}-${++afkWorkerJobSequenceRef.current}`,
@@ -3076,8 +3156,8 @@ export function HomeScreen({
         simulatedStartedAt,
         simulatedCompletedAt: simulatedStartedAt + chunkElapsedMs,
         cycleDurationMs,
-        operationCount: AFK_CHUNK_CYCLE_COUNT,
-        baseState: createAfkPartyChunkWorkerState(state, partyIndex),
+        operationCount,
+        baseState: createAfkPartyChunkWorkerState(dispatchState, partyIndex),
         gameMode,
         cycleDurationScale: durationScale,
         queuedAt: performance.timeOrigin + jobQueuedMonotonicAt,
@@ -3200,7 +3280,9 @@ export function HomeScreen({
           memoryMonitor.releaseWorker(result.jobId);
           active.worker = null;
           active.status = 'completed';
+          const arrivalSequence = ++afkWorkerResultArrivalSequenceRef.current;
           afkCompletedChunkResultsRef.current.set(result.jobId, result);
+          afkCompletedChunkArrivalSequenceRef.current.set(result.jobId, arrivalSequence);
           afkRuntimeTrace.record('worker_job_complete', {
             phase: 'worker_execution',
             partyId: result.partyId,
@@ -3217,6 +3299,7 @@ export function HomeScreen({
               workerSlotId,
               slotDispatchGapMs,
               hydrationMs,
+              arrivalSequence,
               jobWallMs: Math.max(0, performance.now() - active.startedMonotonicAt),
             },
           });
@@ -3251,6 +3334,8 @@ export function HomeScreen({
           slotDispatchGapMs,
           inputTransferBytes: job.inputTransferBytes ?? null,
           simulatedCompletedAt: job.simulatedCompletedAt,
+          operationCount,
+          partialChunk: operationCount < AFK_CHUNK_CYCLE_COUNT,
         },
       });
       const submissionStartedAt = performance.now();
@@ -3266,9 +3351,17 @@ export function HomeScreen({
       startedJob = true;
     });
 
-    if (!startedJob && afkActiveChunkJobsRef.current.size === 0) {
+    if (
+      !startedJob
+      && afkActiveChunkJobsRef.current.size === 0
+      && afkCompletedChunkResultsRef.current.size === 0
+      && afkActiveCommitTransactionRef.current === null
+      && afkPartyTransactionLocksRef.current.size === 0
+    ) {
       terminateAfkWorkers(afkWorkerPoolRef.current.map(({ worker }) => worker), 'recovery-complete');
       afkWorkerPoolRef.current = [];
+      afkWorkerResultArrivalSequenceRef.current = 0;
+      afkFinalRemainingMsByPartyRef.current = { ...afkRemainingMsByPartyRef.current };
       afkRemainingMsByPartyRef.current = {};
       afkInFlightCompletedMsByPartyRef.current = {};
       pendingAfkMsRef.current = 0;
@@ -3287,6 +3380,10 @@ export function HomeScreen({
     terminateAfkWorkers(afkWorkerPoolRef.current.map(({ worker }) => worker), 'unmount');
     afkWorkerPoolRef.current = [];
     afkActiveChunkJobsRef.current.clear();
+    afkCompletedChunkResultsRef.current.clear();
+    afkCompletedChunkArrivalSequenceRef.current.clear();
+    afkPartyTransactionLocksRef.current.clear();
+    afkActiveCommitTransactionRef.current = null;
     afkInFlightCompletedMsByPartyRef.current = {};
     updateAfkTraceCoordinator();
   }, [updateAfkTraceCoordinator]);
@@ -3304,7 +3401,6 @@ export function HomeScreen({
       const runtimeNow = Date.now();
       const emulatedNow = afkSimulationAnchorRef.current ?? runtimeNow;
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      const recoveredAfkMs = Math.max(0, afkRecoveryTotalMsRef.current);
       const partialCycleSideEffects: Array<{ partyIndex: number; shouldFinalizeDiary: boolean; simulatedAt: number }> = [];
       const nextCycles: Record<number, PartyCycleRuntime> = {};
 
@@ -3344,7 +3440,13 @@ export function HomeScreen({
           1,
           Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * durationScale * exploreDurationMultiplier),
         );
-        const partialAfkMs = recoveredAfkMs % approximateCycleDurationMs;
+        const partialAfkMs = Math.max(
+          0,
+          Math.min(
+            approximateCycleDurationMs - 1,
+            afkFinalRemainingMsByPartyRef.current[partyIndex] ?? 0,
+          ),
+        );
         const moveDurationMs = getPartyTravelDurationMs(party, 'move');
         const exploreDurationMs = getExplorationDurationMs(undefined, exploreDurationMultiplier, durationScale);
         const returnDurationMs = getPartyTravelDurationMs(party, 'return');
@@ -3421,6 +3523,7 @@ export function HomeScreen({
     });
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
+    afkFinalRemainingMsByPartyRef.current = {};
   }, [actions, debugSettings, pendingAfkMs]);
 
   useEffect(() => {

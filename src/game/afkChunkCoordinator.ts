@@ -2,7 +2,45 @@ import type { Character, DiaryLog, ExpeditionLog, GameState, InventoryRecord, Pa
 import type { GameMode } from '../theme/theme';
 import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
 
-export const AFK_CHUNK_CYCLE_COUNT = 12;
+export const AFK_CHUNK_CYCLE_COUNT = 30;
+
+// SpecRef: 5.1 | PROGRESS | Chunk
+// A terminal partial Chunk contains every complete Cycle that still fits in the
+// party backlog. A sub-Cycle remainder stays available for online reconstruction.
+export function getAfkChunkOperationCount(remainingMs: number, cycleDurationMs: number): number {
+  if (!Number.isFinite(remainingMs) || remainingMs <= 0) return 0;
+  if (!Number.isFinite(cycleDurationMs) || cycleDurationMs <= 0) return 0;
+  return Math.min(AFK_CHUNK_CYCLE_COUNT, Math.floor(remainingMs / cycleDurationMs));
+}
+
+export interface AfkPartyDispatchCandidate {
+  partyId: number;
+  partyIndex: number;
+  partyLocalEmulatedTime: number;
+}
+
+/**
+ * Orders only currently eligible parties. Party-local emulated time is the
+ * performance-oriented catch-up priority; Party ID is the stable tie breaker.
+ */
+export function compareAfkPartyDispatchCandidates(
+  left: AfkPartyDispatchCandidate,
+  right: AfkPartyDispatchCandidate,
+): number {
+  return left.partyLocalEmulatedTime - right.partyLocalEmulatedTime
+    || left.partyId - right.partyId
+    || left.partyIndex - right.partyIndex;
+}
+
+/** Removes the first accepted result from a Map-backed arrival FIFO. */
+export function takeNextAfkFifoResult<T extends { jobId: string }>(
+  queue: Map<string, T>,
+): T | null {
+  const first = queue.values().next();
+  if (first.done) return null;
+  queue.delete(first.value.jobId);
+  return first.value;
+}
 
 /** Balanced recovery concurrency: limit synchronous full-state worker
  * submissions to two per renderer task while leaving capacity for the UI/OS. */
@@ -595,6 +633,8 @@ export function compareAfkChunkResults(
   left: Pick<AfkPartyChunkResult, 'simulatedCompletedAt' | 'partyId' | 'jobId'>,
   right: Pick<AfkPartyChunkResult, 'simulatedCompletedAt' | 'partyId' | 'jobId'>,
 ): number {
+  // Deterministic simulation-order helper retained for isolated profiles and
+  // fixtures. The live AFK coordinator uses arrival FIFO instead.
   return left.simulatedCompletedAt - right.simulatedCompletedAt
     || left.partyId - right.partyId
     || left.jobId.localeCompare(right.jobId);

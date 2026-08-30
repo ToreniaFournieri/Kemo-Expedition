@@ -161,7 +161,7 @@ app.whenReady().then(async () => {
   const workloads = Object.fromEntries(modes.flatMap((mode) => variants.flatMap((variant) => hours.map((rawAbsenceHours) => {
     const runs = rawRuns.filter((run) => run.mode === mode && run.variant === variant && run.rawAbsenceHours === rawAbsenceHours);
     const attributionFields = [
-      'jobConstructionMs', 'workerSubmissionMs', 'workerExecutionSumMs', 'hydrationMs', 'canonicalWaitMs',
+      'jobConstructionMs', 'workerSubmissionMs', 'workerExecutionSumMs', 'hydrationMs', 'fifoCommitWaitMs',
       'chunkCommitReactVisibilityMs', 'autoEquipmentMs', 'autoEquipmentReactVisibilityMs',
       'atomicTransactionReactVisibilityMs', 'chunkReducerMs', 'autoEquipmentReducerMs',
       'rendererTransactionBoundaryMs', 'rendererTransactionBoundarySharePercent', 'persistenceRendererMs',
@@ -174,8 +174,8 @@ app.whenReady().then(async () => {
       samples: runs.length,
       finalStateHashes: [...new Set(runs.map((run) => run.validation.finalStateSha256))],
       persistedStateHashes: [...new Set(runs.map((run) => run.validation.persistedStateSha256))],
-      deterministic: new Set(runs.map((run) => run.validation.finalStateSha256)).size === 1,
-      persistedStateIdenticalEveryRun: runs.every((run) => run.validation.persistedStateIdentical),
+      wholeRecoveryHashStable: new Set(runs.map((run) => run.validation.finalStateSha256)).size === 1,
+      persistedStateSemanticallyIdenticalEveryRun: runs.every((run) => run.validation.persistedStateSemanticallyIdentical),
       wallMs: distribution(runs.map((run) => run.wallMs)),
       heartbeatP95Ms: distribution(runs.map((run) => run.heartbeatDelayMs.p95)),
       heartbeatMaximumMs: distribution(runs.map((run) => run.heartbeatDelayMs.maximum)),
@@ -217,7 +217,7 @@ app.whenReady().then(async () => {
     }]];
   })));
   process.stdout.write(`${JSON.stringify({
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     sampling: { hours, modes, variants, warmups, samples, freshElectronProcessPerRun: true, alternatingVariantOrder: variants.length > 1 },
     workloads,

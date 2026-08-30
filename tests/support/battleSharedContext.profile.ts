@@ -90,7 +90,7 @@ test('API Cycles supply one fresh status from each sequential Cycle starting sta
   assert.equal(getBattlePreparationMeasurement().productionPartyStatusComputations, 0);
 });
 
-test('AFK reuses supplied chunk authority for all twelve Cycles', () => {
+test('AFK reuses supplied chunk authority for all thirty Cycles', () => {
   const state = loadState();
   const partyIndex = state.parties.length - 1;
   const party = state.parties[partyIndex]!;

@@ -1,6 +1,6 @@
 import { getEnvironmentId, isDebugModeEnabled, type EnvironmentId } from './environment.ts';
 
-export const AFK_TRACE_SCHEMA_VERSION = 1 as const;
+export const AFK_TRACE_SCHEMA_VERSION = 2 as const;
 export const AFK_TRACE_EVENT_LIMIT = 2_048;
 export const AFK_TRACE_ANOMALY_LIMIT = 256;
 export const AFK_TRACE_WATCHDOG_INTERVAL_MS = 250;
@@ -12,7 +12,7 @@ export type AfkTracePhase =
   | 'recovery_start'
   | 'worker_queue'
   | 'worker_execution'
-  | 'canonical_order_wait'
+  | 'fifo_commit_wait'
   | 'commit_dispatch'
   | 'commit_awaiting_react'
   | 'auto_equipment'
@@ -74,7 +74,7 @@ export interface AfkTraceCoordinatorInput {
   readonly activeJobs: readonly AfkTraceActiveJobInput[];
   readonly completedResultCount: number;
   readonly workerPoolSize: number;
-  readonly canonicalJobId: string | null;
+  readonly fifoHeadJobId: string | null;
 }
 
 export interface AfkTraceCurrentSnapshot {
@@ -88,7 +88,7 @@ export interface AfkTraceCurrentSnapshot {
   readonly pendingAfkMs: number;
   readonly completedResultCount: number;
   readonly workerPoolSize: number;
-  readonly canonicalJobId: string | null;
+  readonly fifoHeadJobId: string | null;
   readonly activeJobs: readonly AfkTraceActiveJobSnapshot[];
 }
 
@@ -187,7 +187,7 @@ export class AfkRuntimeTrace {
     activeJobs: [],
     completedResultCount: 0,
     workerPoolSize: 0,
-    canonicalJobId: null,
+    fifoHeadJobId: null,
   };
   private listeners = new Set<Listener>();
   private notifyTimer: ReturnType<typeof setTimeout> | null = null;
@@ -231,7 +231,7 @@ export class AfkRuntimeTrace {
       activeJobs: [],
       completedResultCount: 0,
       workerPoolSize: 0,
-      canonicalJobId: null,
+      fifoHeadJobId: null,
     };
     this.revision += 1;
     this.listeners.forEach((listener) => listener());
@@ -304,7 +304,7 @@ export class AfkRuntimeTrace {
       activeJobs: input.activeJobs.map((job) => ({ ...job })),
       completedResultCount: Math.max(0, Math.floor(input.completedResultCount)),
       workerPoolSize: Math.max(0, Math.floor(input.workerPoolSize)),
-      canonicalJobId: input.canonicalJobId,
+      fifoHeadJobId: input.fifoHeadJobId,
     };
     this.revision += 1;
     this.scheduleNotify();
@@ -379,7 +379,7 @@ export class AfkRuntimeTrace {
       pendingAfkMs: this.coordinator.pendingAfkMs,
       completedResultCount: this.coordinator.completedResultCount,
       workerPoolSize: this.coordinator.workerPoolSize,
-      canonicalJobId: this.coordinator.canonicalJobId,
+      fifoHeadJobId: this.coordinator.fifoHeadJobId,
       activeJobs: Object.freeze(this.coordinator.activeJobs.map(({ startedMonotonicAt, ...job }) => Object.freeze({
         ...job,
         ageMs: Math.max(0, now - startedMonotonicAt),
@@ -432,7 +432,7 @@ export class AfkRuntimeTrace {
         activeJobs: [],
         completedResultCount: 0,
         workerPoolSize: 0,
-        canonicalJobId: null,
+        fifoHeadJobId: null,
       };
     }
     this.notifyNow();

@@ -50,17 +50,17 @@ test('AFK efficiency is continuous inside bands and ignores time beyond 162 hour
   assert.equal(getEffectiveAfkElapsedMs(Number.POSITIVE_INFINITY), 0);
 });
 
-test('a logical AFK Chunk retains twelve Cycles per equal-duration party', () => {
+test('a logical AFK Chunk retains thirty Cycles per equal-duration party', () => {
   const durationMs = 450_000;
   const operations = getAfkOperationWindow(
     [durationMs, durationMs],
-    durationMs * 12,
+    durationMs * 30,
     0,
     Number.MAX_SAFE_INTEGER,
   );
 
-  assert.equal(operations.length, 24);
-  assert.equal(operations.at(-1)?.runIndex, 11);
+  assert.equal(operations.length, 60);
+  assert.equal(operations.at(-1)?.runIndex, 29);
 });
 
 test('partitioned operation windows preserve the unsliced chronological order', () => {
@@ -153,22 +153,32 @@ test('profiling aggregates batches in memory without per-Cycle output', () => {
   assert.equal(second.longestEventLoopDelayMs, 7);
 });
 
-test('runtime assigns one twelve-Cycle Chunk with per-Cycle presentation progress to each party worker', () => {
+test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycle presentation progress', () => {
   assert.match(hookSource, /options\.operationCount \?\? AFK_CHUNK_CYCLE_COUNT/);
   assert.match(hookSource, /options\.onProgress\?\.\(operationIndex \+ 1, operationCount\)/);
   assert.match(hookSource, /partyIndex === options\.partyIndex \? cycleDurationMs : inactiveDurationMs/);
-  assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
+  assert.match(homeSource, /const operationCount = getAfkChunkOperationCount\(remainingMs, cycleDurationMs\)/);
+  assert.match(homeSource, /const chunkElapsedMs = cycleDurationMs \* operationCount/);
+  assert.match(homeSource, /operationCount,\s*baseState: createAfkPartyChunkWorkerState/);
+  assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)[\s\S]{0,120}afkPartyTransactionLocksRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /new Worker\(new URL\('\.\.\/workers\/afkChunkWorker\.ts'/);
-  assert.match(homeSource, /baseState: createAfkPartyChunkWorkerState\(state, partyIndex\)/);
+  assert.match(homeSource, /baseState: createAfkPartyChunkWorkerState\(dispatchState, partyIndex\)/);
   assert.match(homeSource, /hydrateAfkPartyChunkInventoryResult\(event\.data\.result, active\.baseParty, inventoryJob\)/);
   assert.match(homeSource, /createAfkPartyChunkInventoryContinuationWorkerJob/);
   assert.match(homeSource, /now - afkLastProgressRenderAtRef\.current >= 100/);
   assert.match(homeSource, /afkPresentedRemainingByParty\.reduce[\s\S]{0,160}afkPresentedRemainingByParty\.length/);
-  assert.match(homeSource, /compareAfkChunkResults\(left, right\)/);
+  assert.match(homeSource, /\.sort\(compareAfkPartyDispatchCandidates\)/);
+  assert.match(homeSource, /takeNextAfkFifoResult\(afkCompletedChunkResultsRef\.current\)/);
+  assert.match(homeSource, /const arrivalSequence = \+\+afkWorkerResultArrivalSequenceRef\.current/);
+  assert.match(homeSource, /afkAuthoritativeDispatchStateRef\.current = afkLiveProfileStateRef\.current/);
   assert.match(homeSource, /afkActiveCommitTransactionRef\.current = \{/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
-  assert.match(homeSource, /runAutoEquipment\(\s*\[transaction\.result\.partyIndex\]/);
-  assert.match(homeSource, /const summary = runAutoEquipment\([\s\S]{0,1800}completeAfkCommitTransaction\(transaction\.result\)/);
+  assert.match(homeSource, /transaction\.stage === 'auto_equipment_dispatched'/);
+  assert.match(homeSource, /actions\.applyAutoEquipmentActions\(plan\.actions\)/);
+  assert.match(homeSource, /transaction\.stage = 'auto_equipment_dispatched'[\s\S]{0,500}return;/);
+  assert.match(homeSource, /afkPartyTransactionLocksRef\.current\.delete\(result\.partyIndex\)[\s\S]{0,160}afkActiveCommitTransactionRef\.current = null/);
+  assert.match(homeSource, /afkFinalRemainingMsByPartyRef\.current = \{ \.\.\.afkRemainingMsByPartyRef\.current \}/);
+  assert.match(homeSource, /afkFinalRemainingMsByPartyRef\.current\[partyIndex\] \?\? 0/);
   assert.doesNotMatch(homeSource, /mutationCount === 0/);
   assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
 });
@@ -180,7 +190,7 @@ test('the canonical renderer profile accepts presentation-only worker progress',
   assert.match(rendererProfileSource, /const workerState = createAfkPartyChunkWorkerState\(baseState, partyIndex\)/);
 });
 
-test('AFK Chunk party status is calculated once and reused by all twelve Cycles', () => {
+test('AFK Chunk party status is calculated once and reused by all thirty Cycles', () => {
   assert.match(hookSource, /const chunkPartyStatus = action\.chunkPartyStatus \?\? state\.parties\.map\(\(party\) => \(\{\s*party,\s*computed: computePartyStats\(party\),\s*\}\)\);/);
   assert.match(hookSource, /chunkPartyStatus\[options\.partyIndex\] = \{\s*party,\s*computed: computePartyStats\(party\),\s*\};/);
   assert.match(hookSource, /for \(const \{ runIndex, partyIndex, partyCycleDurationMs \} of operationWindow\)[\s\S]*chunkPartyStatus: chunkPartyStatus\[partyIndex\]/);
@@ -188,6 +198,13 @@ test('AFK Chunk party status is calculated once and reused by all twelve Cycles'
   assert.match(hookSource, /const partyStatus = suppliedPartyStatus\?\.computed \?\? computePartyStats\(statusParty\)/);
   assert.match(hookSource, /executeBattle\(statusParty, enemy, bags, roomStartHp, \{[\s\S]{0,160}partyStatus,/);
   assert.match(battleCandidateSource, /environment\.partyStatus \?\? computePartyStats\(party\)/);
+});
+
+test('AFK condition and automatic Gods Battle decisions use the thirty-Cycle boundary', () => {
+  assert.match(hookSource, /const chunkStartParty = chunkPartyStatus\[partyIndex\]\?\.party \?\? partyForAfkChunk/);
+  assert.match(hookSource, /runIndex === 0\s*&& normalizePartyCondition\(chunkStartParty\.condition\) >= 251/);
+  assert.match(hookSource, /shouldAutoAdvanceExpeditionDestination\(\{\s*\.\.\.postFinalizeParty,\s*condition: chunkStartParty\?\.condition \?\? postFinalizeParty\.condition/);
+  assert.doesNotMatch(hookSource, /normalizePartyCondition\(partyForAfkChunk\.condition\) >= 251/);
 });
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {

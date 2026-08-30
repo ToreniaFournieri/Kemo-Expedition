@@ -1,5 +1,6 @@
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import {
+  AFK_CHUNK_CYCLE_COUNT,
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkResult,
@@ -92,7 +93,7 @@ function runCandidate(state: GameState, candidate: Candidate) {
           () => simulateAfkPartyChunkForWorker(baseState, {
             partyIndex,
             cycleDurationMs,
-            simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * 12,
+            simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
             cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
             gameMode: 'm.kemo',
             inventoryStrategy,
@@ -103,10 +104,10 @@ function runCandidate(state: GameState, candidate: Candidate) {
         jobId: `journal-${waveIndex}-${party.id}`,
         partyIndex,
         partyId: party.id,
-        simulatedStartedAt: SIMULATED_END_AT + (waveIndex - 1) * cycleDurationMs * 12,
-        simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * 12,
+        simulatedStartedAt: SIMULATED_END_AT + (waveIndex - 1) * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
+        simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
         cycleDurationMs,
-        operationCount: 12,
+        operationCount: AFK_CHUNK_CYCLE_COUNT,
         baseState,
         gameMode: 'm.kemo',
         cycleDurationScale: DEV_CYCLE_DURATION_SCALE,

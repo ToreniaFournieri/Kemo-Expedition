@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   AFK_CHUNK_CYCLE_COUNT,
+  compareAfkPartyDispatchCandidates,
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkColdWorkerJob,
@@ -13,6 +14,7 @@ import {
   createAfkPartyChunkWorkerResult,
   createAfkPartyChunkWorkerResultV3,
   createAfkPartyChunkWorkerState,
+  getAfkChunkOperationCount,
   getAfkWorkerPoolLimit,
   hasPendingPartySettingChanges,
   hydrateAfkPartyChunkResult,
@@ -20,6 +22,7 @@ import {
   hydrateAfkPartyChunkInventoryWorkerState,
   hydrateAfkPartyChunkResultV3,
   hydrateAfkPartyChunkContinuationWorkerState,
+  takeNextAfkFifoResult,
   type AfkPartyChunkResult,
   type AfkPartyChunkWorkerResult,
 } from '../src/game/afkChunkCoordinator.ts';
@@ -93,8 +96,19 @@ function makeState(party: Party, gold: number, inventoryCount: number): GameStat
   };
 }
 
-test('party AFK Chunks contain exactly twelve Cycles', () => {
-  assert.equal(AFK_CHUNK_CYCLE_COUNT, 12);
+test('party AFK Chunks contain exactly thirty Cycles', () => {
+  assert.equal(AFK_CHUNK_CYCLE_COUNT, 30);
+});
+
+test('terminal AFK backlog becomes one bounded partial Chunk of completed Cycles', () => {
+  const cycleDurationMs = 1_000;
+  assert.equal(getAfkChunkOperationCount(999, cycleDurationMs), 0);
+  assert.equal(getAfkChunkOperationCount(1_000, cycleDurationMs), 1);
+  assert.equal(getAfkChunkOperationCount(29_999, cycleDurationMs), 29);
+  assert.equal(getAfkChunkOperationCount(30_000, cycleDurationMs), 30);
+  assert.equal(getAfkChunkOperationCount(90_000, cycleDurationMs), 30);
+  assert.equal(getAfkChunkOperationCount(Number.NaN, cycleDurationMs), 0);
+  assert.equal(getAfkChunkOperationCount(30_000, 0), 0);
 });
 
 test('unmeasured AFK transfer sizes remain unavailable', () => {
@@ -489,7 +503,7 @@ test('AFK worker pool preserves renderer capacity and never exceeds party count'
   assert.equal(getAfkWorkerPoolLimit(undefined, 6), 2);
 });
 
-test('coordinator order is simulated completion time then party ID', () => {
+test('isolated profile ordering remains simulated completion time then party ID', () => {
   const later = { simulatedCompletedAt: 200, partyId: 1, jobId: 'b' };
   const earlierHigherParty = { simulatedCompletedAt: 100, partyId: 2, jobId: 'c' };
   const earlierLowerParty = { simulatedCompletedAt: 100, partyId: 1, jobId: 'a' };
@@ -497,6 +511,31 @@ test('coordinator order is simulated completion time then party ID', () => {
     [later, earlierHigherParty, earlierLowerParty].sort(compareAfkChunkResults),
     [earlierLowerParty, earlierHigherParty, later],
   );
+});
+
+test('worker dispatch selects the oldest eligible Party and uses Party ID for ties', () => {
+  const candidates = [
+    { partyLocalEmulatedTime: 300, partyId: 1, partyIndex: 0 },
+    { partyLocalEmulatedTime: 100, partyId: 3, partyIndex: 2 },
+    { partyLocalEmulatedTime: 100, partyId: 2, partyIndex: 1 },
+  ];
+  assert.deepEqual(
+    candidates.sort(compareAfkPartyDispatchCandidates).map(({ partyId }) => partyId),
+    [2, 3, 1],
+  );
+});
+
+test('live coordinator FIFO follows worker arrival rather than simulated completion time', () => {
+  const arrivedFirst = { jobId: 'late-simulated-time', simulatedCompletedAt: 900 };
+  const arrivedSecond = { jobId: 'early-simulated-time', simulatedCompletedAt: 100 };
+  const fifo = new Map([
+    [arrivedFirst.jobId, arrivedFirst],
+    [arrivedSecond.jobId, arrivedSecond],
+  ]);
+
+  assert.equal(takeNextAfkFifoResult(fifo), arrivedFirst);
+  assert.equal(takeNextAfkFifoResult(fifo), arrivedSecond);
+  assert.equal(takeNextAfkFifoResult(fifo), null);
 });
 
 test('coordinator merges stale global deltas and lets pending PT settings win', () => {

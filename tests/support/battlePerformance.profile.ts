@@ -324,7 +324,7 @@ test('reports deterministic end-to-end AFK migration metrics', () => {
   assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'AFK battles must use chunk-start status');
   assert.equal(preparation.productionPartyStatusComputations, 0, 'AFK battles must not compute status locally');
   assert.equal(getProductionBattleTelemetry().runExpeditionStatusComputations, 0, 'AFK Cycles must not recompute RUN_EXPEDITION status');
-  assert.equal(getProductionBattleTelemetry().runExpeditionStatusSnapshots, state.parties.length * AFK_CHUNK_CYCLE_COUNT, 'AFK must reuse one supplied status for all 12 Cycles per party');
+  assert.equal(getProductionBattleTelemetry().runExpeditionStatusSnapshots, state.parties.length * AFK_CHUNK_CYCLE_COUNT, 'AFK must reuse one supplied status for all 30 Cycles per party');
   assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
   if (!RETROSPECTIVE_COMPARISON) assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
 });

@@ -30,7 +30,7 @@ export interface AfkLiveProfileMemoryPoint {
 }
 
 export interface AfkLiveProfileResult {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly rawAbsenceHours: number;
   readonly effectiveAfkMs: number;
   readonly mode: ProfileMode;
@@ -46,7 +46,7 @@ export interface AfkLiveProfileResult {
     readonly workerSubmissionMs: number;
     readonly workerExecutionSumMs: number;
     readonly hydrationMs: number;
-    readonly canonicalWaitMs: number;
+    readonly fifoCommitWaitMs: number;
     readonly chunkCommitReactVisibilityMs: number;
     readonly autoEquipmentMs: number;
     readonly autoEquipmentReactVisibilityMs: number;
@@ -74,7 +74,7 @@ export interface AfkLiveProfileResult {
   readonly validation: {
     readonly finalStateSha256: string;
     readonly persistedStateSha256: string | null;
-    readonly persistedStateIdentical: boolean;
+    readonly persistedStateSemanticallyIdentical: boolean;
     readonly finalComponentSha256: Readonly<Record<string, string>>;
     readonly persistedComponentSha256: Readonly<Record<string, string>> | null;
   };
@@ -173,8 +173,21 @@ function sampleExclusivePhase(now = performance.now()): void {
   runtime.sampledPhaseAt = now;
 }
 
+function canonicalizeHashValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalizeHashValue);
+  if (value === null || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.keys(value as Record<string, unknown>)
+      .sort()
+      .flatMap((key) => {
+        const next = canonicalizeHashValue((value as Record<string, unknown>)[key]);
+        return next === undefined ? [] : [[key, next]];
+      }),
+  );
+}
+
 async function sha256(value: unknown): Promise<string> {
-  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  const bytes = new TextEncoder().encode(JSON.stringify(canonicalizeHashValue(value)));
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
@@ -396,7 +409,7 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
     const heartbeatDelays = runtime.heartbeatDelays;
     const reactCommitDurations = runtime.reactCommitDurations;
     const result: AfkLiveProfileResult = Object.freeze({
-      schemaVersion: 1,
+      schemaVersion: 2,
       rawAbsenceHours: runtime.rawAbsenceHours,
       effectiveAfkMs: runtime.effectiveAfkMs,
       mode: runtime.mode,
@@ -418,7 +431,7 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
         workerSubmissionMs: sumEventDurations(trace, 'worker_job_submission'),
         workerExecutionSumMs: sumEventDurations(trace, 'worker_job_complete'),
         hydrationMs: sumEventDurations(trace, 'worker_result_hydration'),
-        canonicalWaitMs: sumEventDurations(trace, 'canonical_order_wait_end'),
+        fifoCommitWaitMs: sumEventDurations(trace, 'fifo_commit_wait_end'),
         chunkCommitReactVisibilityMs,
         autoEquipmentMs,
         autoEquipmentReactVisibilityMs,
@@ -451,7 +464,7 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
       validation: Object.freeze({
         finalStateSha256,
         persistedStateSha256,
-        persistedStateIdentical: persistedStateSha256 === finalStateSha256,
+        persistedStateSemanticallyIdentical: persistedStateSha256 === finalStateSha256,
         finalComponentSha256,
         persistedComponentSha256,
       }),
