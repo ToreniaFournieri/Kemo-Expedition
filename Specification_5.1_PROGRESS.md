@@ -18,7 +18,7 @@
   - Each AFK worker process handles exactly one Chunk for one party.
   - A party may have only one active or queued Chunk at a time.
   - **1 Chunk = 30 Cycles**.
-  - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
+  - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 30 Cycles in that Chunk complete.
   - Each Chunk continues using the party and global parameters captured when it begins.
   - Party status is calculated once at the beginning of each Chunk and remains unchanged throughout all Cycles within that Chunk.
   - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
@@ -69,9 +69,9 @@ PT1 transaction begins
   - Returning to the game resets AFK emulation efficiency to 100%.
   - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
   - **Auto equipment behavior:** `7.1.1 AUTO equipment logic` in @Specification_7.1_AUTOMATION.md
-    - During AFK emulation, auto-equipment logic runs only at the end of a complete Chunk (12 Cycles).
+    - During AFK emulation, auto-equipment logic runs only at the end of a complete Chunk (30 Cycles).
     - Ending Sound Sleep does not trigger auto-equipment logic.
-    - A partial Chunk (<12 Cycles) **does trigger auto-equipment logic**. 
+    - A partial Chunk (<30 Cycles) **does trigger auto-equipment logic**. 
 
 **f.afk-emulation-efficiency**
 
