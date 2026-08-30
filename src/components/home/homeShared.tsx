@@ -55,6 +55,7 @@ REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
+import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
 import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
@@ -226,8 +227,8 @@ export interface HomeScreenProps {
     commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
     commitAfkPartyTransaction: (
       result: AfkPartyChunkResult,
-      actions: AutoEquipmentProfileAction[],
-      attribution?: { chunkMergeMs: number; equipmentReducerMs: number },
+      autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner,
+      attribution?: AfkPartyTransactionAttribution,
     ) => void;
     runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
       state: GameState;

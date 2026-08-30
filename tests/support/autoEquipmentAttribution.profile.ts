@@ -19,6 +19,7 @@ import {
 import { JEWELS_BY_ITEM_CATEGORY } from '../../src/game/jewel.ts';
 import {
   applyAfkPartyTransactionForTesting,
+  applyPlannedAfkPartyTransactionForTesting,
   applyAutoEquipmentProfileActions,
   applyAutoEquipmentProfileActionsSequentially,
 } from '../../src/hooks/useGameState.ts';
@@ -157,6 +158,42 @@ test('atomic AFK transaction is byte-identical to the existing two-stage oracle'
     }
     if (name === 'Defeat rollback') assert.equal(atomic.parties[0].lastExpeditionLog?.finalOutcome, 'Defeat');
   });
+});
+
+test('single-publication AFK planner sees the committed state and matches the two-stage oracle', () => {
+  const baseState = loadFixture();
+  const resultState = structuredClone(baseState);
+  resultState.global.gold += 321;
+  resultState.parties[0].experience += 17;
+  const result = createAfkPartyChunkResult({
+    jobId: 'single-publication-planner-parity',
+    partyIndex: 0,
+    partyId: baseState.parties[0].id,
+    simulatedStartedAt: 0,
+    simulatedCompletedAt: 1_000,
+    cycleDurationMs: 100,
+    operationCount: 10,
+    baseState,
+    gameMode: 'm.kemo',
+    cycleDurationScale: 1,
+  }, resultState, 5);
+  const expectedCommitted = commitAfkPartyChunk(baseState, result);
+  const character = expectedCommitted.parties[0].characters.find((candidate) => candidate.equipment.some(Boolean));
+  assert.ok(character);
+  const slotIndex = character.equipment.findIndex(Boolean);
+  const actions: AutoEquipmentProfileAction[] = [
+    { type: 'EQUIP_ITEM', characterId: character.id, slotIndex, itemKey: null, partyIndex: 0 },
+  ];
+  let plannerCalls = 0;
+  const atomic = applyPlannedAfkPartyTransactionForTesting(baseState, result, (committedState) => {
+    plannerCalls += 1;
+    assert.equal(JSON.stringify(serializeGameState(committedState)), JSON.stringify(serializeGameState(expectedCommitted)));
+    return { actions };
+  });
+  const oracle = applyAutoEquipmentProfileActions(expectedCommitted, actions);
+
+  assert.equal(plannerCalls, 1);
+  assert.equal(JSON.stringify(serializeGameState(atomic)), JSON.stringify(serializeGameState(oracle)));
 });
 
 test('batched reducer preserves mixed inventory, upgrade, and Jewel action semantics', () => {

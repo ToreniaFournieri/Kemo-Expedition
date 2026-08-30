@@ -320,7 +320,9 @@ export function prepareAfkLiveProfile(): void {
 }
 
 export function useAfkAtomicTransactionCandidate(): boolean {
-  return __AFK_LIVE_PROFILE_ENABLED__ && runtime?.variant === 'candidate';
+  // Production uses the single-publication transaction. The profile build
+  // retains the legacy path as its explicit baseline for deterministic A/Bs.
+  return !__AFK_LIVE_PROFILE_ENABLED__ || runtime?.variant === 'candidate';
 }
 
 export function beginAfkLiveProfileMeasurement(): void {
@@ -394,7 +396,10 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
     const autoEquipmentReactVisibilityMs = sumEventDurations(trace, 'auto_equipment_react_visible');
     const atomicTransactionReactVisibilityMs = sumEventDurations(trace, 'atomic_transaction_react_visible');
     const rendererTransactionBoundaryMs = atomicTransactionReactVisibilityMs > 0
-      ? autoEquipmentMs + atomicTransactionReactVisibilityMs
+      // The single-publication timer starts before reducer dispatch, so it
+      // already contains Chunk merge, equipment planning/application, and the
+      // one React visibility wait.
+      ? atomicTransactionReactVisibilityMs
       : chunkCommitReactVisibilityMs + autoEquipmentMs + autoEquipmentReactVisibilityMs;
     const wallMs = Math.max(0, completedAt - runtime.startedAt);
     const finalState = canonicalProfileState(input.getState());

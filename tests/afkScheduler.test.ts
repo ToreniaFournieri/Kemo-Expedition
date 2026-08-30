@@ -173,6 +173,8 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(homeSource, /afkAuthoritativeDispatchStateRef\.current = afkLiveProfileStateRef\.current/);
   assert.match(homeSource, /afkActiveCommitTransactionRef\.current = \{/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
+  assert.match(homeSource, /actions\.commitAfkPartyTransaction\([\s\S]{0,500}\(committedState\) =>/);
+  assert.match(hookSource, /const committedState = commitAfkPartyChunk\(state, action\.result\)[\s\S]{0,500}action\.autoEquipment\(committedState\)/);
   assert.match(homeSource, /transaction\.stage === 'auto_equipment_dispatched'/);
   assert.match(homeSource, /actions\.applyAutoEquipmentActions\(plan\.actions\)/);
   assert.match(homeSource, /transaction\.stage = 'auto_equipment_dispatched'[\s\S]{0,500}return;/);
@@ -188,6 +190,12 @@ test('the canonical renderer profile accepts presentation-only worker progress',
   assert.match(rendererProfileSource, /event\.data\.type === 'started' \|\| event\.data\.type === 'progress'/);
   assert.match(rendererProfileSource, /baseState: workerState/);
   assert.match(rendererProfileSource, /const workerState = createAfkPartyChunkWorkerState\(baseState, partyIndex\)/);
+});
+
+test('the atomic renderer boundary includes planning without double-counting it', () => {
+  const liveProfileSource = readFileSync(new URL('../src/game/afkLiveProfile.ts', import.meta.url), 'utf8');
+  assert.match(liveProfileSource, /atomicTransactionReactVisibilityMs > 0[\s\S]{0,300}\? atomicTransactionReactVisibilityMs/);
+  assert.doesNotMatch(liveProfileSource, /\? autoEquipmentMs \+ atomicTransactionReactVisibilityMs/);
 });
 
 test('AFK Chunk party status is calculated once and reused by all thirty Cycles', () => {

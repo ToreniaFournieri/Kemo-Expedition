@@ -53,7 +53,6 @@ compareAfkPartyDispatchCandidates,
 createAfkPartyChunkWorkerState,
 createAfkPartyChunkInventoryColdWorkerJob,
 createAfkPartyChunkInventoryContinuationWorkerJob,
-commitAfkPartyChunk,
 getAfkChunkOperationCount,
 getAfkWorkerPoolLimit,
 hasPendingPartySettingChanges,
@@ -2882,8 +2881,27 @@ export function HomeScreen({
       jobId: transaction.result.jobId,
       durationMs: performance.now() - transaction.startedAt,
       progress: true,
-      data: { plannedActionCount: transaction.plannedActionCount },
+      data: { plannedActionCount: transaction.attribution.plannedActionCount },
     });
+    if (!transaction.capturedSettingChanges) {
+      const planSummary = transaction.attribution.summary;
+      afkRuntimeTrace.record('auto_equipment_complete', {
+        phase: 'auto_equipment',
+        partyId: transaction.result.partyId,
+        partyIndex: transaction.result.partyIndex,
+        jobId: transaction.result.jobId,
+        durationMs: transaction.attribution.autoEquipmentPlanningMs,
+        progress: true,
+        data: {
+          processedCharacters: planSummary?.processedCharacters ?? 0,
+          unequippedCount: planSummary?.unequippedCount ?? 0,
+          equippedCount: planSummary?.equippedCount ?? 0,
+          upgradedCount: planSummary?.upgradedCount ?? 0,
+          jewelAssignmentCount: planSummary?.jewelAssignmentCount ?? 0,
+          plannedActionCount: transaction.attribution.plannedActionCount,
+        },
+      });
+    }
     afkRuntimeTrace.record('chunk_transaction_reducer', {
       phase: 'commit_awaiting_react',
       partyId: transaction.result.partyId,
@@ -2972,46 +2990,13 @@ export function HomeScreen({
           },
         });
         const useAtomicCandidate = useAfkAtomicTransactionCandidate();
-        const plannedActions: AutoEquipmentProfileAction[] = [];
         const transactionAttribution: AfkPartyTransactionAttribution = {
           chunkMergeMs: 0,
+          autoEquipmentPlanningMs: 0,
           equipmentReducerMs: 0,
+          plannedActionCount: 0,
         };
-        let planningMs = 0;
-        if (useAtomicCandidate && !capturedSettingChanges) {
-          const planningStartedAt = performance.now();
-          const planningCollector = createAutoEquipmentAttributionCollector();
-          const committedSourceState = commitAfkPartyChunk(state, completedResult);
-          const { summary } = planAutoEquipment(
-            committedSourceState,
-            [completedResult.partyIndex],
-            undefined,
-            {
-              profile: {
-                collector: planningCollector,
-                actions: plannedActions,
-                candidateStrategy: 'indexed_prepared',
-              },
-            },
-          );
-          planningMs = performance.now() - planningStartedAt;
-          afkRuntimeTrace.record('auto_equipment_complete', {
-            phase: 'auto_equipment',
-            partyId: completedResult.partyId,
-            partyIndex: completedResult.partyIndex,
-            jobId: completedResult.jobId,
-            durationMs: planningMs,
-            progress: true,
-            data: {
-              processedCharacters: summary.processedCharacterIds.length,
-              unequippedCount: summary.unequippedCount,
-              equippedCount: summary.equippedCount,
-              upgradedCount: summary.upgradedCount,
-              jewelAssignmentCount: summary.jewelAssignmentCount,
-              plannedActionCount: plannedActions.length,
-            },
-          });
-        } else if (useAtomicCandidate) {
+        if (useAtomicCandidate && capturedSettingChanges) {
           afkRuntimeTrace.record('auto_equipment_skipped', {
             phase: 'commit_dispatch',
             partyId: completedResult.partyId,
@@ -3024,14 +3009,32 @@ export function HomeScreen({
           result: completedResult,
           arrivalSequence,
           startedAt: performance.now(),
-          plannedActionCount: plannedActions.length,
+          plannedActionCount: 0,
           attribution: transactionAttribution,
           mode: useAtomicCandidate ? 'candidate' : 'baseline',
           capturedSettingChanges,
           stage: 'chunk_dispatched',
         };
         if (useAtomicCandidate) {
-          actions.commitAfkPartyTransaction(completedResult, plannedActions, transactionAttribution);
+          actions.commitAfkPartyTransaction(
+            completedResult,
+            capturedSettingChanges
+              ? []
+              : (committedState) => {
+                const plan = planAutoEquipment(committedState, [completedResult.partyIndex]);
+                return {
+                  actions: plan.actions,
+                  summary: {
+                    processedCharacters: plan.summary.processedCharacterIds.length,
+                    unequippedCount: plan.summary.unequippedCount,
+                    equippedCount: plan.summary.equippedCount,
+                    upgradedCount: plan.summary.upgradedCount,
+                    jewelAssignmentCount: plan.summary.jewelAssignmentCount,
+                  },
+                };
+              },
+            transactionAttribution,
+          );
         } else {
           actions.commitAfkPartyChunk(completedResult);
         }
