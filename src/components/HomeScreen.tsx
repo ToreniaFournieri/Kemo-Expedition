@@ -53,6 +53,7 @@ compareAfkChunkResults,
 createAfkPartyChunkWorkerState,
 createAfkPartyChunkInventoryColdWorkerJob,
 createAfkPartyChunkInventoryContinuationWorkerJob,
+commitAfkPartyChunk,
 getAfkWorkerPoolLimit,
 hasPendingPartySettingChanges,
 hydrateAfkPartyChunkInventoryResult,
@@ -63,6 +64,14 @@ type AfkPartyChunkInventoryWorkerResult,
 } from '../game/afkChunkCoordinator';
 import { recordAfkWorkerJobTelemetry,terminateAfkWorkers } from '../game/afkWorkerTelemetry';
 import { AFK_TRACE_WATCHDOG_INTERVAL_MS,afkRuntimeTrace } from '../game/afkRuntimeTrace';
+import {
+beginAfkLiveProfileMeasurement,
+canCompleteAfkLiveProfile,
+completeAfkLiveProfile,
+observeAfkLiveProfilePending,
+recordAfkLiveProfileReactCommit,
+useAfkAtomicTransactionCandidate,
+} from '../game/afkLiveProfile';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
@@ -81,6 +90,7 @@ import { serializeGameState } from '../game/saveCodec';
 import {
 applyAutoEquipmentProfileActions,
 applyAutoEquipmentProfileActionsSequentially,
+type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
 import { Bonus,Character,ExpeditionDepthLimit,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
 import { NotificationToast } from './NotificationToast';
@@ -303,9 +313,20 @@ export function HomeScreen({
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
   const afkActiveCommitTransactionRef = useRef<{
     result: AfkPartyChunkResult;
+    startedAt: number;
+    plannedActionCount: number;
+    attribution: AfkPartyTransactionAttribution;
+    mode: 'baseline' | 'candidate';
     capturedSettingChanges: boolean;
+  } | null>(null);
+  const afkAutoEquipmentVisibilityRef = useRef<{
+    partyId: number;
+    partyIndex: number;
+    jobId: string;
     startedAt: number;
   } | null>(null);
+  const afkLiveProfileStateRef = useRef(state);
+  afkLiveProfileStateRef.current = state;
   const afkWorkerJobSequenceRef = useRef(0);
   const afkWorkerSlotSequenceRef = useRef(0);
   const afkHeadOfLineWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
@@ -331,8 +352,14 @@ export function HomeScreen({
   const lastPartyProgressSnapshotHashRef = useRef('');
 
   useEffect(() => {
+    if (__AFK_LIVE_PROFILE_ENABLED__) beginAfkLiveProfileMeasurement();
+  }, []);
+
+  useEffect(() => {
     const commits = renderCommitDurationsRef.current;
-    commits.push(Math.max(0, performance.now() - renderStartedAt));
+    const renderDurationMs = Math.max(0, performance.now() - renderStartedAt);
+    commits.push(renderDurationMs);
+    if (__AFK_LIVE_PROFILE_ENABLED__) recordAfkLiveProfileReactCommit(renderDurationMs);
     if (commits.length > 240) commits.splice(0, commits.length - 240);
     const ordered = [...commits].sort((left, right) => left - right);
     (window as Window & { __BOKEMO_RENDER_PROFILE__?: { commitCount: number; p95CommitDurationMs: number; longestCommitDurationMs: number } })
@@ -348,7 +375,8 @@ export function HomeScreen({
   const [apiControlActive, setApiControlActive] = useState(false);
 
   useEffect(() => {
-    const enabled = isDebugModeEnabled() && debugSettings.runtimeDiagnosticsEnabled;
+    const enabled = __AFK_LIVE_PROFILE_ENABLED__
+      || (isDebugModeEnabled() && debugSettings.runtimeDiagnosticsEnabled);
     afkRuntimeTrace.setEnabled(enabled);
     if (!enabled) {
       memoryMonitor.pause();
@@ -1154,13 +1182,12 @@ export function HomeScreen({
     return true;
   }, [state]);
 
-  const runAutoEquipment = useCallback((
+  const planAutoEquipment = useCallback((
+    sourceState: GameState,
     targetPartyIndexes?: number[],
     targetCharacterIds?: Array<number | string>,
     options?: {
-      suppressNotifications?: boolean;
       profile?: {
-        sourceState: GameState;
         collector: AutoEquipmentAttributionCollector;
         actions: AutoEquipmentProfileAction[];
         candidateStrategy?:
@@ -1171,7 +1198,11 @@ export function HomeScreen({
           | 'indexed_prepared';
       };
     },
-  ): AutoEquipmentRunSummary => {
+  ): {
+    summary: AutoEquipmentRunSummary;
+    actions: AutoEquipmentProfileAction[];
+    notifications: Array<{ message: string; partyIndex: number; startedFromEmpty: boolean }>;
+  } => {
     const plannedActions: AutoEquipmentProfileAction[] = [];
     const summary: AutoEquipmentRunSummary = {
       processedCharacterIds: [],
@@ -1181,7 +1212,6 @@ export function HomeScreen({
       jewelAssignmentCount: 0,
     };
     const profile = options?.profile;
-    const sourceState = profile?.sourceState ?? state;
     const candidateStrategy = profile?.candidateStrategy ?? 'indexed_prepared';
     const usesInventoryIndex = candidateStrategy !== 'legacy';
     const usesItemFactCache = candidateStrategy === 'indexed_item_facts' || candidateStrategy === 'indexed_prepared';
@@ -1985,24 +2015,57 @@ export function HomeScreen({
       });
     });
 
-    if (!profile && plannedActions.length > 0) actions.applyAutoEquipmentActions(plannedActions);
+    return {
+      summary,
+      actions: plannedActions,
+      notifications: [...slotNotifications.values()],
+    };
+  }, []);
 
-    const shouldSuppressAutoEquipmentNotifications = profile || options?.suppressNotifications
+  const runAutoEquipment = useCallback((
+    targetPartyIndexes?: number[],
+    targetCharacterIds?: Array<number | string>,
+    options?: {
+      suppressNotifications?: boolean;
+      profile?: {
+        sourceState: GameState;
+        collector: AutoEquipmentAttributionCollector;
+        actions: AutoEquipmentProfileAction[];
+        candidateStrategy?:
+          | 'legacy'
+          | 'indexed'
+          | 'indexed_multiplier_cache'
+          | 'indexed_item_facts'
+          | 'indexed_prepared';
+      };
+    },
+  ): AutoEquipmentRunSummary => {
+    const sourceState = options?.profile?.sourceState ?? state;
+    const plan = planAutoEquipment(sourceState, targetPartyIndexes, targetCharacterIds, {
+      profile: options?.profile ? {
+        collector: options.profile.collector,
+        actions: options.profile.actions,
+        candidateStrategy: options.profile.candidateStrategy,
+      } : undefined,
+    });
+    if (options?.profile) return plan.summary;
+
+    if (plan.actions.length > 0) actions.applyAutoEquipmentActions(plan.actions);
+    const shouldSuppressNotifications = options?.suppressNotifications
       || pendingAfkMsRef.current > 0
       || shouldShowAfkSummaryRef.current
       || justCompletedAfkRecoveryRef.current;
+    if (shouldSuppressNotifications) return plan.summary;
 
-    if (shouldSuppressAutoEquipmentNotifications) return summary;
-
-    slotNotifications.forEach(({ message, partyIndex }) => {
+    plan.notifications.forEach(({ message, partyIndex }) => {
       if (sourceState.parties[partyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) return;
-      measure('actionDispatch', () => actions.addNotification(message, 'normal', 'item', true, {
-          rarity: 'common',
-          isSuperRareItem: false,
-        }));
+      actions.addNotification(message, 'normal', 'item', true, {
+        rarity: 'common',
+        isSuperRareItem: false,
+      });
     });
-    return summary;
-  }, [actions, state.global.inventory, state.parties]);
+    return plan.summary;
+  }, [actions, planAutoEquipment, state]);
 
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
@@ -2711,50 +2774,94 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
+    const visibility = afkAutoEquipmentVisibilityRef.current;
+    if (!visibility) return;
+    afkAutoEquipmentVisibilityRef.current = null;
+    afkRuntimeTrace.record('auto_equipment_react_visible', {
+      phase: 'commit_awaiting_react',
+      partyId: visibility.partyId,
+      partyIndex: visibility.partyIndex,
+      jobId: visibility.jobId,
+      durationMs: performance.now() - visibility.startedAt,
+      progress: true,
+    });
+  });
+
+  useEffect(() => {
     const transaction = afkActiveCommitTransactionRef.current;
     if (!transaction) return;
 
-    if (!transaction.capturedSettingChanges) {
-      // React queues these equipment mutations before the coordinator version
-      // update below. Completing in this effect therefore retains the slot until
-      // the Chunk commit is visible, while avoiding a second state-change signal
-      // that may never arrive when an equipment action is rejected as a no-op.
-      const autoEquipmentStartedAt = performance.now();
-      afkRuntimeTrace.record('auto_equipment_start', {
-        phase: 'auto_equipment',
-        partyId: transaction.result.partyId,
-        partyIndex: transaction.result.partyIndex,
-        jobId: transaction.result.jobId,
-      });
-      const summary = runAutoEquipment(
-        [transaction.result.partyIndex],
-        undefined,
-        { suppressNotifications: true },
-      );
-      afkRuntimeTrace.record('auto_equipment_complete', {
-        phase: 'auto_equipment',
-        partyId: transaction.result.partyId,
-        partyIndex: transaction.result.partyIndex,
-        jobId: transaction.result.jobId,
-        durationMs: performance.now() - autoEquipmentStartedAt,
-        progress: true,
-        data: {
-          processedCharacters: summary.processedCharacterIds.length,
-          unequippedCount: summary.unequippedCount,
-          equippedCount: summary.equippedCount,
-          upgradedCount: summary.upgradedCount,
-          jewelAssignmentCount: summary.jewelAssignmentCount,
-        },
-      });
-    } else {
-      afkRuntimeTrace.record('auto_equipment_skipped', {
+    if (transaction.mode === 'baseline') {
+      afkRuntimeTrace.record('commit_react_visible', {
         phase: 'commit_awaiting_react',
         partyId: transaction.result.partyId,
         partyIndex: transaction.result.partyIndex,
         jobId: transaction.result.jobId,
-        data: { reason: 'captured_setting_changes' },
+        durationMs: performance.now() - transaction.startedAt,
+        progress: true,
       });
+      if (!transaction.capturedSettingChanges) {
+        const planningStartedAt = performance.now();
+        afkRuntimeTrace.record('auto_equipment_start', {
+          phase: 'auto_equipment',
+          partyId: transaction.result.partyId,
+          partyIndex: transaction.result.partyIndex,
+          jobId: transaction.result.jobId,
+        });
+        const summary = runAutoEquipment(
+          [transaction.result.partyIndex],
+          undefined,
+          { suppressNotifications: true },
+        );
+        afkRuntimeTrace.record('auto_equipment_complete', {
+          phase: 'auto_equipment',
+          partyId: transaction.result.partyId,
+          partyIndex: transaction.result.partyIndex,
+          jobId: transaction.result.jobId,
+          durationMs: performance.now() - planningStartedAt,
+          progress: true,
+          data: {
+            processedCharacters: summary.processedCharacterIds.length,
+            unequippedCount: summary.unequippedCount,
+            equippedCount: summary.equippedCount,
+            upgradedCount: summary.upgradedCount,
+            jewelAssignmentCount: summary.jewelAssignmentCount,
+          },
+        });
+        afkAutoEquipmentVisibilityRef.current = {
+          partyId: transaction.result.partyId,
+          partyIndex: transaction.result.partyIndex,
+          jobId: transaction.result.jobId,
+          startedAt: performance.now(),
+        };
+      }
+      completeAfkCommitTransaction(transaction.result);
+      return;
     }
+
+    afkRuntimeTrace.record('atomic_transaction_react_visible', {
+      phase: 'commit_awaiting_react',
+      partyId: transaction.result.partyId,
+      partyIndex: transaction.result.partyIndex,
+      jobId: transaction.result.jobId,
+      durationMs: performance.now() - transaction.startedAt,
+      progress: true,
+      data: { plannedActionCount: transaction.plannedActionCount },
+    });
+    afkRuntimeTrace.record('chunk_transaction_reducer', {
+      phase: 'commit_awaiting_react',
+      partyId: transaction.result.partyId,
+      partyIndex: transaction.result.partyIndex,
+      jobId: transaction.result.jobId,
+      durationMs: transaction.attribution.chunkMergeMs,
+    });
+    afkRuntimeTrace.record('auto_equipment_transaction_reducer', {
+      phase: 'commit_awaiting_react',
+      partyId: transaction.result.partyId,
+      partyIndex: transaction.result.partyIndex,
+      jobId: transaction.result.jobId,
+      durationMs: transaction.attribution.equipmentReducerMs,
+    });
 
     completeAfkCommitTransaction(transaction.result);
   }, [completeAfkCommitTransaction, runAutoEquipment, state]);
@@ -2832,12 +2939,68 @@ export function HomeScreen({
             completedResultCount: afkCompletedChunkResultsRef.current.size,
           },
         });
+        const useAtomicCandidate = useAfkAtomicTransactionCandidate();
+        const plannedActions: AutoEquipmentProfileAction[] = [];
+        const transactionAttribution: AfkPartyTransactionAttribution = {
+          chunkMergeMs: 0,
+          equipmentReducerMs: 0,
+        };
+        let planningMs = 0;
+        if (useAtomicCandidate && !capturedSettingChanges) {
+          const planningStartedAt = performance.now();
+          const planningCollector = createAutoEquipmentAttributionCollector();
+          const committedSourceState = commitAfkPartyChunk(state, completedResult);
+          const { summary } = planAutoEquipment(
+            committedSourceState,
+            [completedResult.partyIndex],
+            undefined,
+            {
+              profile: {
+                collector: planningCollector,
+                actions: plannedActions,
+                candidateStrategy: 'indexed_prepared',
+              },
+            },
+          );
+          planningMs = performance.now() - planningStartedAt;
+          afkRuntimeTrace.record('auto_equipment_complete', {
+            phase: 'auto_equipment',
+            partyId: completedResult.partyId,
+            partyIndex: completedResult.partyIndex,
+            jobId: completedResult.jobId,
+            durationMs: planningMs,
+            progress: true,
+            data: {
+              processedCharacters: summary.processedCharacterIds.length,
+              unequippedCount: summary.unequippedCount,
+              equippedCount: summary.equippedCount,
+              upgradedCount: summary.upgradedCount,
+              jewelAssignmentCount: summary.jewelAssignmentCount,
+              plannedActionCount: plannedActions.length,
+            },
+          });
+        } else if (useAtomicCandidate) {
+          afkRuntimeTrace.record('auto_equipment_skipped', {
+            phase: 'commit_dispatch',
+            partyId: completedResult.partyId,
+            partyIndex: completedResult.partyIndex,
+            jobId: completedResult.jobId,
+            data: { reason: 'captured_setting_changes' },
+          });
+        }
         afkActiveCommitTransactionRef.current = {
           result: completedResult,
-          capturedSettingChanges,
           startedAt: performance.now(),
+          plannedActionCount: plannedActions.length,
+          attribution: transactionAttribution,
+          mode: useAtomicCandidate ? 'candidate' : 'baseline',
+          capturedSettingChanges,
         };
-        actions.commitAfkPartyChunk(completedResult);
+        if (useAtomicCandidate) {
+          actions.commitAfkPartyTransaction(completedResult, plannedActions, transactionAttribution);
+        } else {
+          actions.commitAfkPartyChunk(completedResult);
+        }
         afkRuntimeTrace.record('commit_reducer_dispatched', {
           phase: 'commit_awaiting_react',
           partyId: completedResult.partyId,
@@ -2896,12 +3059,13 @@ export function HomeScreen({
         afkWorkerPoolRef.current.push(poolSlot);
         afkRuntimeTrace.record('worker_created', {
           phase: 'worker_queue',
-          durationMs: 0,
+          durationMs: performance.now() - createdAt,
           data: { workerPoolSize: afkWorkerPoolRef.current.length, workerLimit, workerSlotId: poolSlot.slotId },
         });
       }
       if (!poolSlot) return;
 
+      const constructionStartedAt = performance.now();
       const simulatedStartedAt = anchor - remainingMs;
       const baseParty = state.parties[partyIndex];
       const jobQueuedMonotonicAt = performance.now();
@@ -2930,6 +3094,13 @@ export function HomeScreen({
           poolSlot.retainedInventoryRevision + 1,
         )
         : createAfkPartyChunkInventoryColdWorkerJob(job, `${job.jobId}:inventory`, 1);
+      afkRuntimeTrace.record('worker_job_construction', {
+        phase: 'worker_queue',
+        partyId: party.id,
+        partyIndex,
+        jobId: job.jobId,
+        durationMs: performance.now() - constructionStartedAt,
+      });
       // Exact structured-clone sizing belongs in the opt-in Expedition 8 profiler.
       // The automatic dev/beta trace must remain observational and must not
       // stringify the complete state before every worker submission.
@@ -3012,6 +3183,13 @@ export function HomeScreen({
             return;
           }
           const hydrationMs = Math.max(0, performance.now() - hydrationStartedAt);
+          afkRuntimeTrace.record('worker_result_hydration', {
+            phase: 'worker_execution',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: hydrationMs,
+          });
           currentSlot.jobId = null;
           currentSlot.lastReleasedAt = performance.now();
           currentSlot.completedJobs += 1;
@@ -3075,7 +3253,15 @@ export function HomeScreen({
           simulatedCompletedAt: job.simulatedCompletedAt,
         },
       });
+      const submissionStartedAt = performance.now();
       worker.postMessage(inventoryJob);
+      afkRuntimeTrace.record('worker_job_submission', {
+        phase: 'worker_queue',
+        partyId: party.id,
+        partyIndex,
+        jobId,
+        durationMs: performance.now() - submissionStartedAt,
+      });
       updateAfkTraceCoordinator();
       startedJob = true;
     });
@@ -3112,6 +3298,7 @@ export function HomeScreen({
     );
     hasObservedActiveAfkRecoveryRef.current = backlogObservation.hasObservedActiveRecovery;
     if (!backlogObservation.didCompleteRecovery) return;
+    const finalizationStartedAt = performance.now();
 
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const runtimeNow = Date.now();
@@ -3223,6 +3410,11 @@ export function HomeScreen({
     }
 
     afkSimulationAnchorRef.current = null;
+    afkRuntimeTrace.record('recovery_finalization_complete', {
+      phase: 'recovery_complete',
+      durationMs: performance.now() - finalizationStartedAt,
+      progress: true,
+    });
     afkRuntimeTrace.completeRecovery({
       recoveredAfkMs: afkRecoveryTotalMsRef.current,
       partyCount: latestPartiesRef.current.length,
@@ -3230,6 +3422,24 @@ export function HomeScreen({
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
   }, [actions, debugSettings, pendingAfkMs]);
+
+  useEffect(() => {
+    if (!__AFK_LIVE_PROFILE_ENABLED__) return;
+    observeAfkLiveProfilePending(pendingAfkMs);
+    if (pendingAfkMs > 0 || !canCompleteAfkLiveProfile()) return;
+    if (shouldRebuildPartyCyclesAfterAfkRef.current
+      || afkActiveCommitTransactionRef.current
+      || afkActiveChunkJobsRef.current.size > 0
+      || afkWorkerPoolRef.current.length > 0) return;
+    const timeout = window.setTimeout(() => {
+      void completeAfkLiveProfile({
+        getState: () => afkLiveProfileStateRef.current,
+        flushSave: actions.flushSave,
+        scheduler: afkSchedulerProfileRef.current,
+      });
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, [actions.flushSave, partyCycles, pendingAfkMs, state]);
 
   useEffect(() => {
     const previousPendingAfkMs = previousPendingAfkMsRef.current;
@@ -4560,7 +4770,8 @@ export function HomeScreen({
       id="AFK recovery"
       onRender={(_id, _phase, actualDuration) => {
         const profile = afkSchedulerProfileRef.current;
-        if (!import.meta.env.DEV || !profile || profile.completedAt !== null || pendingAfkMsRef.current <= 0) return;
+        if ((!import.meta.env.DEV && !__AFK_LIVE_PROFILE_ENABLED__)
+          || !profile || profile.completedAt !== null || pendingAfkMsRef.current <= 0) return;
         afkSchedulerProfileRef.current = {
           ...profile,
           reactCommitCount: profile.reactCommitCount + 1,

@@ -5,6 +5,8 @@ declare const __BUILD_NUMBER__: number;
 declare const __PUBLIC_CHARACTER_IMAGE_FILES__: readonly string[];
 declare const __PUBLIC_CHIBI_IMAGE_FILES__: readonly string[];
 declare const __AUTO_EQUIPMENT_PROFILE_ENABLED__: boolean;
+declare const __AFK_LIVE_PROFILE_ENABLED__: boolean;
+declare const __AFK_LIVE_PROFILE_FIXTURE__: string;
 declare const __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__: boolean;
 
 type AutoEquipmentProfileWorkload = import('./game/autoEquipmentAttribution').AutoEquipmentProfileWorkload;
@@ -61,6 +63,16 @@ interface DesktopPartyProgressSnapshot {
 }
 
 interface Window {
+  __BOKEMO_RENDER_PROFILE__?: {
+    commitCount: number;
+    p95CommitDurationMs: number;
+    longestCommitDurationMs: number;
+  };
+  __BOKEMO_AFK_LIVE_PROFILE_RESULT__?: Promise<import('./game/afkLiveProfile').AfkLiveProfileResult>;
+  __BOKEMO_AFK_LIVE_PROFILE_MEMORY__?: {
+    sample: () => Promise<DesktopProcessMemoryMetrics>;
+    forceGc: () => Promise<void>;
+  };
   __BOKEMO_AUTO_EQUIPMENT_PROFILE__?: {
     run: (workload: AutoEquipmentProfileWorkload, scope?: AutoEquipmentProfileScope, candidateOrderOffset?: number) => Promise<{
       workload: AutoEquipmentProfileWorkload;

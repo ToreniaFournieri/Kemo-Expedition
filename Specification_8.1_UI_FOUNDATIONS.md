@@ -21,20 +21,22 @@
 
 * Light mode
 | Theme | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` | `--hp-track` |
-| ------------- | --------: | --------: | --------: | --------: | ----------------------: |
-| m.kemo light  | #3B82F6 | #EA580C | #93C5FD | #FCB786 |               #E2E8F0 |
-| m.luna light  | #C28832 | #0C3CEA | #E8B568 | #FFED91 | rgb(217 204 175 / 0.45) |
-| m.laika light | #08A645 | #DC2626 | #08A645 | #FFEBCD |               #D1D5DB |
-| m.orca light  | #269096 | #8bab2d | #2EB9C1 | #DDE89A | rgb(173 211 213 / 0.40) |
+| --------------- | --------: | --------: | --------: | --------: | ----------------------: |
+| m.kemo light    | #3B82F6 | #EA580C | #93C5FD | #FCB786 |               #E2E8F0 |
+| m.luna light    | #C28832 | #0C3CEA | #E8B568 | #FFED91 | rgb(217 204 175 / 0.45) |
+| m.laika light   | #08A645 | #DC2626 | #08A645 | #FFEBCD |               #D1D5DB |
+| m.orca light    | #269096 | #8bab2d | #2EB9C1 | #DDE89A | rgb(173 211 213 / 0.40) |
+| m.leonard light | #BF4264 | #EFA84C| #D95D7A | #F3B77E` | rgb(224 190 190 / 0.40) |
 
 * Dark mode
 
 | Theme | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` | `--hp-track` |
-| ------------ | --------: | --------: | --------: | --------: | -------------------: |
-| m.kemo dark  | #3B82F6 | #EA580C | #6A94C6 | #A5886D |            #374151 |
-| m.luna dark  | #C28832 | #60A5FA | #AA8D5D | #857255 | rgb(43 52 68 / 0.45) |
-| m.laika dark | #08A645 | #DC2626 | #08A645 | #92675B |            #374151 |
-| m.orca dark  | #45C1CA | #B3D355 | #4E9FA5 | #8A9160 | rgb(63 74 82 / 0.55) |
+| -------------- | --------: | --------: | --------: | --------: | -------------------: |
+| m.kemo dark    | #3B82F6 | #EA580C | #6A94C6 | #A5886D |            #374151 |
+| m.luna dark    | #C28832 | #60A5FA | #AA8D5D | #857255 | rgb(43 52 68 / 0.45) |
+| m.laika dark   | #08A645 | #DC2626 | #08A645 | #92675B |            #374151 |
+| m.orca dark    | #45C1CA | #B3D355 | #4E9FA5 | #8A9160 | rgb(63 74 82 / 0.55) |
+| m.leonard dark | #E06080 | #F2B35C | #B94E69 | #A87959 | rgb(74 57 65 / 0.55) |
 
 
 * regardless of theme

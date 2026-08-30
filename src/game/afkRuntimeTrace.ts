@@ -212,7 +212,9 @@ export class AfkRuntimeTrace {
   }
 
   setEnabled(enabled: boolean): void {
-    const next = enabled && this.environment !== 'prod';
+    const liveProfileEnabled = typeof __AFK_LIVE_PROFILE_ENABLED__ !== 'undefined'
+      && __AFK_LIVE_PROFILE_ENABLED__;
+    const next = enabled && (this.environment !== 'prod' || liveProfileEnabled);
     if (this.enabled === next) return;
     this.enabled = next;
     if (next) {

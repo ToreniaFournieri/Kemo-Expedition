@@ -38,3 +38,8 @@ export function withBattleSeedSourceForTesting<T>(source: BattleSeedSource, oper
     injectedSource = null;
   }
 }
+
+/** Installs a realm-local source for long-lived integration profiles. */
+export function resetBattleSeedSourceForTesting(source: BattleSeedSource | null = null): void {
+  injectedSource = source;
+}

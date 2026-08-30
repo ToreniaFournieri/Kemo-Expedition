@@ -224,6 +224,11 @@ export interface HomeScreenProps {
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => void;
     commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
+    commitAfkPartyTransaction: (
+      result: AfkPartyChunkResult,
+      actions: AutoEquipmentProfileAction[],
+      attribution?: { chunkMergeMs: number; equipmentReducerMs: number },
+    ) => void;
     runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
       state: GameState;
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;

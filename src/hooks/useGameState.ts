@@ -2187,6 +2187,7 @@ type GameAction =
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }> }
   | { type: 'COMMIT_AFK_PARTY_CHUNK'; result: AfkPartyChunkResult }
+  | { type: 'COMMIT_AFK_PARTY_TRANSACTION'; result: AfkPartyChunkResult; autoEquipmentActions: AutoEquipmentProfileAction[]; attribution?: AfkPartyTransactionAttribution }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'COMMIT_API_STATE'; state: GameState }
@@ -5392,6 +5393,22 @@ function gameReducer(
     case 'COMMIT_AFK_PARTY_CHUNK':
       return commitAfkPartyChunk(state, action.result);
 
+    case 'COMMIT_AFK_PARTY_TRANSACTION': {
+      // One authoritative AFK publication: Chunk merge, pending-setting overlay,
+      // then the already-ordered automatic-equipment batch.
+      const chunkStartedAt = action.attribution ? performance.now() : 0;
+      const committedState = commitAfkPartyChunk(state, action.result);
+      if (action.attribution) action.attribution.chunkMergeMs = Math.max(0, performance.now() - chunkStartedAt);
+      if (action.autoEquipmentActions.length === 0) return committedState;
+      const equipmentStartedAt = action.attribution ? performance.now() : 0;
+      const nextState = gameReducer(committedState, {
+        type: 'APPLY_AUTO_EQUIPMENT_ACTIONS',
+        actions: action.autoEquipmentActions,
+      });
+      if (action.attribution) action.attribution.equipmentReducerMs = Math.max(0, performance.now() - equipmentStartedAt);
+      return nextState;
+    }
+
     case 'MARK_ITEMS_SEEN': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const newInventory: InventoryRecord = {};
@@ -5678,6 +5695,23 @@ export function applyAutoEquipmentProfileActionsSequentially(
   actions: readonly AutoEquipmentProfileAction[],
 ): GameState {
   return actions.reduce((current, action) => gameReducer(current, action), state);
+}
+
+export interface AfkPartyTransactionAttribution {
+  chunkMergeMs: number;
+  equipmentReducerMs: number;
+}
+
+export function applyAfkPartyTransactionForTesting(
+  state: GameState,
+  result: AfkPartyChunkResult,
+  autoEquipmentActions: readonly AutoEquipmentProfileAction[],
+): GameState {
+  return gameReducer(state, {
+    type: 'COMMIT_AFK_PARTY_TRANSACTION',
+    result,
+    autoEquipmentActions: [...autoEquipmentActions],
+  });
 }
 
 /** Test seam for measuring one authoritative online/Gods Battle reducer transaction. */
@@ -6357,6 +6391,14 @@ export function useGameState() {
 
     commitAfkPartyChunk: useCallback((result: AfkPartyChunkResult) => {
       dispatch({ type: 'COMMIT_AFK_PARTY_CHUNK', result });
+    }, []),
+
+    commitAfkPartyTransaction: useCallback((
+      result: AfkPartyChunkResult,
+      autoEquipmentActions: AutoEquipmentProfileAction[],
+      attribution?: AfkPartyTransactionAttribution,
+    ) => {
+      dispatch({ type: 'COMMIT_AFK_PARTY_TRANSACTION', result, autoEquipmentActions, attribution });
     }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {

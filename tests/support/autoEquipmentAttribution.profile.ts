@@ -18,9 +18,11 @@ import {
 } from '../../src/game/partyComputation.ts';
 import { JEWELS_BY_ITEM_CATEGORY } from '../../src/game/jewel.ts';
 import {
+  applyAfkPartyTransactionForTesting,
   applyAutoEquipmentProfileActions,
   applyAutoEquipmentProfileActionsSequentially,
 } from '../../src/hooks/useGameState.ts';
+import { commitAfkPartyChunk, createAfkPartyChunkResult } from '../../src/game/afkChunkCoordinator.ts';
 import type { GameState } from '../../src/types.ts';
 
 function loadFixture(): GameState {
@@ -82,6 +84,79 @@ test('batched automatic-equipment reducer is byte-identical to sequential action
     const batched = applyAutoEquipmentProfileActions(state, actions, undefined, strategy);
     assert.equal(JSON.stringify(serializeGameState(batched)), expected);
   }
+});
+
+test('atomic AFK transaction is byte-identical to the existing two-stage oracle', () => {
+  const fixture = loadFixture();
+  const actionsFor = (state: GameState): AutoEquipmentProfileAction[] => {
+    const character = state.parties[0].characters.find((candidate) => candidate.equipment.some(Boolean));
+    if (!character) return [];
+    const slotIndex = character.equipment.findIndex(Boolean);
+    return [{ type: 'EQUIP_ITEM', characterId: character.id, slotIndex, itemKey: null, partyIndex: 0 }];
+  };
+  const makeCase = (
+    name: string,
+    baseState: GameState,
+    mutateResult: (resultState: GameState) => void,
+    actions: AutoEquipmentProfileAction[],
+    mutateCurrent?: (currentState: GameState) => void,
+  ) => {
+    const resultState = structuredClone(baseState);
+    mutateResult(resultState);
+    const currentState = structuredClone(baseState);
+    mutateCurrent?.(currentState);
+    return { name, baseState, currentState, resultState, actions };
+  };
+
+  const upgradeHeavy = createAutoEquipmentProfileState(fixture, 'upgrade_heavy');
+  const fullEquipment = createAutoEquipmentProfileState(fixture, 'full_rebuild');
+  const fiveParties = structuredClone(fixture);
+  fiveParties.parties = fiveParties.parties.slice(0, 5);
+  const cases = [
+    makeCase('no-op', fixture, (result) => { result.parties[0].experience += 1; }, []),
+    makeCase('upgrade-heavy', upgradeHeavy, (result) => { result.global.gold += 123; }, actionsFor(upgradeHeavy)),
+    makeCase('FULL equipment', fullEquipment, (result) => { result.parties[0].experience += 5; }, actionsFor(fullEquipment)),
+    makeCase('Defeat rollback', fixture, (result) => {
+      result.parties[0].currentHp = 1;
+      if (result.parties[0].lastExpeditionLog) result.parties[0].lastExpeditionLog.finalOutcome = 'Defeat';
+    }, []),
+    makeCase('Party unlock', fiveParties, (result) => { result.parties.push(structuredClone(fixture.parties[5])); }, []),
+    makeCase(
+      'pending-setting cutoff',
+      fixture,
+      (result) => { result.parties[0].experience += 10; },
+      [],
+      (current) => { current.parties[0].selectedDungeonId = current.parties[0].selectedDungeonId === 1 ? 2 : 1; },
+    ),
+    makeCase('worker failure/retry', fixture, (result) => { result.global.gold += 77; }, actionsFor(fixture)),
+    makeCase('recovery completion', fixture, (result) => {
+      result.parties[0].experience += 50;
+      result.parties[0].hasUnreadDiary = true;
+    }, actionsFor(fixture)),
+  ];
+  cases.forEach(({ name, baseState, currentState, resultState, actions }) => {
+    const result = createAfkPartyChunkResult({
+      jobId: `atomic-parity-${name}`,
+      partyIndex: 0,
+      partyId: baseState.parties[0].id,
+      simulatedStartedAt: 0,
+      simulatedCompletedAt: 1_000,
+      cycleDurationMs: 100,
+      operationCount: 12,
+      baseState,
+      gameMode: 'm.kemo',
+      cycleDurationScale: 1,
+    }, resultState, 5);
+    const current = currentState;
+    const oracle = applyAutoEquipmentProfileActions(commitAfkPartyChunk(current, result), actions);
+    const atomic = applyAfkPartyTransactionForTesting(current, result, actions);
+    assert.equal(JSON.stringify(serializeGameState(atomic)), JSON.stringify(serializeGameState(oracle)), name);
+    if (name === 'Party unlock') assert.equal(atomic.parties.length, 6);
+    if (name === 'pending-setting cutoff') {
+      assert.equal(atomic.parties[0].selectedDungeonId, current.parties[0].selectedDungeonId);
+    }
+    if (name === 'Defeat rollback') assert.equal(atomic.parties[0].lastExpeditionLog?.finalOutcome, 'Defeat');
+  });
 });
 
 test('batched reducer preserves mixed inventory, upgrade, and Jewel action semantics', () => {
