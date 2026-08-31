@@ -41,7 +41,7 @@ import {
 } from '../game/partyComputation';
 import { deriveExpeditionRewardContext } from '../game/expeditionRewardContext';
 import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
-import { executeBattle, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
+import { executeBattle, executeBattleWithSeed, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
 import { gameplayRandom } from '../game/gameplayRandom';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
@@ -85,7 +85,7 @@ import type {
 } from '../game/autoEquipmentAttribution';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityPartyHpMultiplier, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -999,6 +999,9 @@ export class AfkInventoryOverlay {
 
 interface AfkChunkReducerContext {
   inventoryOverlay: AfkInventoryOverlay;
+  encounterCache: Map<string, EnemyDef>;
+  profitAbilityCache: Map<number, { partyLevel: number; characters: Party['characters']; levels: ProfitAbilityLevels }>;
+  hpBaseCache: Map<number, { partyLevel: number; characters: Party['characters']; bonusHp: number }>;
 }
 
 const afkInventoryDeltaByState = new WeakMap<GameState, AfkInventoryDelta>();
@@ -2153,7 +2156,7 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus }; battleOutputMode?: 'full' | 'result-only'; resolutionMode?: ExpeditionResolutionMode }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus }; battleOutputMode?: 'full' | 'result-only'; compactBattleResultOutput?: boolean; resolutionMode?: ExpeditionResolutionMode }
   | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
@@ -2186,7 +2189,7 @@ type GameAction =
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }>; workerOptimization?: AfkWorkerSimulationStrategy; onOperationComplete?: (completedOperations: number, operationCount: number) => void }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }>; workerOptimization?: AfkWorkerSimulationStrategy; compactBattleResultOutput?: boolean; onOperationComplete?: (completedOperations: number, operationCount: number) => void }
   | { type: 'COMMIT_AFK_PARTY_CHUNK'; result: AfkPartyChunkResult }
   | { type: 'COMMIT_AFK_PARTY_TRANSACTION'; result: AfkPartyChunkResult; autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner; attribution?: AfkPartyTransactionAttribution }
   | { type: 'RESET_GAME' }
@@ -2634,9 +2637,12 @@ type ProfitAbilityLevels = Readonly<{
 }>;
 
 function getProfitAbilityLevels(party: Party): ProfitAbilityLevels {
+  return getProfitAbilityLevelsFromStatus(computePartyStats(party));
+}
+
+function getProfitAbilityLevelsFromStatus(status: ComputedPartyStatus): ProfitAbilityLevels {
   const levels = { cunning: 0, momentum: 0, squander: 0, tithe: 0 };
-  const { characterStats } = computePartyStats(party);
-  for (const stats of characterStats) {
+  for (const stats of status.characterStats) {
     for (const ability of stats.abilities) {
       if (ability.id === 'cunning') levels.cunning = Math.max(levels.cunning, ability.level);
       else if (ability.id === 'momentum') levels.momentum = Math.max(levels.momentum, ability.level);
@@ -2725,6 +2731,7 @@ function processAfkCycleProfit(
   partyIndex: number,
   simulatedAt: number,
   workerOptimization: AfkWorkerSimulationStrategy = 'optimized',
+  optimizedAbilityLevels?: ProfitAbilityLevels,
 ): GameState {
   // SpecRef: 5.1.1 | Party State Machine | state.free_action
   // SpecRef: 5.1.1 | Party State Machine | state.pray
@@ -2737,7 +2744,9 @@ function processAfkCycleProfit(
   // Free action and prayer mutate only profit/global values. Equipment, level,
   // deity, and every ability input remain unchanged between them, so one
   // projection is authoritative for the complete Cycle profit transaction.
-  const abilityLevels = workerOptimization === 'optimized' ? getProfitAbilityLevels(party) : undefined;
+  const abilityLevels = workerOptimization === 'optimized'
+    ? optimizedAbilityLevels ?? getProfitAbilityLevels(party)
+    : undefined;
   const spend = calculateFreeActionSpend(party, pendingProfit, abilityLevels);
   let nextState = gameReducer(state, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
 
@@ -3527,6 +3536,14 @@ function gameReducer(
       const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(effectiveDifficultyOffset);
 
       const entries: ExpeditionLogEntry[] = [];
+      // SpecRef: 5.1.1.1 | Preserve gameplay events while avoiding unnecessary AFK work
+      const deferredBattleNarrations: Array<{
+        entry: ExpeditionLogEntry;
+        enemy: EnemyDef;
+        bags: GameState['bags'];
+        initialPartyHp: number;
+        terrainEffect: TerrainEffectKey | null | undefined;
+      }> = [];
       const rewards: Item[] = [];
       const recoveredItems: Item[] = [];
       let totalExp = 0;
@@ -3644,10 +3661,17 @@ function gameReducer(
               tier: effectiveTier,
               enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, false),
             };
-            let enemy = getEncounterEnemyWithScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, {
-              isLunaMode: false,
-              difficultyOffset: effectiveDifficultyOffset,
-            });
+            const encounterCacheKey = afkChunkContext
+              ? `${baseEnemy.id}:${effectiveDungeon.id}:${effectiveDungeon.expLevel}:${effectiveTier}:${floor.floorNumber}:${roomDef.type}:${effectiveDifficultyOffset}`
+              : null;
+            let enemy = encounterCacheKey ? afkChunkContext!.encounterCache.get(encounterCacheKey) : undefined;
+            if (!enemy) {
+              enemy = getEncounterEnemyWithScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, {
+                isLunaMode: false,
+                difficultyOffset: effectiveDifficultyOffset,
+              });
+              if (encounterCacheKey) afkChunkContext!.encounterCache.set(encounterCacheKey, enemy);
+            }
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
               enemy = createGodEnemy(
                 enemy,
@@ -3667,6 +3691,7 @@ function gameReducer(
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;
+            const battleStartBags = bags;
             const colosseumTerrainEffect = dungeon.id === 99 ? getColosseumEnemySettings().terrainEffect : 'none';
             const terrainEffect = colosseumTerrainEffect !== 'none'
               ? colosseumTerrainEffect
@@ -3678,7 +3703,7 @@ function gameReducer(
               ? executeBattle(statusParty, enemy, bags, roomStartHp, {
                 terrainEffect,
                 partyStatus,
-              }, { outputMode: 'result-only' })
+              }, { outputMode: 'result-only', compactResultOutput: action.compactBattleResultOutput })
               : executeBattle(statusParty, enemy, bags, roomStartHp, {
                 terrainEffect,
                 partyStatus,
@@ -3722,6 +3747,15 @@ function gameReducer(
               details: 'log' in battleResult && Array.isArray(battleResult.log) ? battleResult.log : [],
               replayMetadata: battleResult.replayMetadata,
             };
+            if (action.isAfkSimulation && action.battleOutputMode === 'result-only') {
+              deferredBattleNarrations.push({
+                entry,
+                enemy,
+                bags: battleStartBags,
+                initialPartyHp: roomStartHp,
+                terrainEffect,
+              });
+            }
 
             const currentEnemyStats = nextEnemyBattleStats[enemy.id] ?? { defeats: 0, encounters: 0 };
             nextEnemyBattleStats[enemy.id] = {
@@ -4144,6 +4178,34 @@ function gameReducer(
         if (hasRareMatch) diaryTriggers.push('eliteRare');
       }
 
+      const currentUnlockedPartySlots = state.parties.length;
+      const unlockedState = getUnlockedStateFromEntries([log], currentUnlockedPartySlots);
+      const shouldRetainCompleteNarration = diaryTriggers.length > 0
+        || unlockedState.unlockedPartySlots > currentUnlockedPartySlots;
+      if (shouldRetainCompleteNarration && deferredBattleNarrations.length > 0) {
+        for (const deferred of deferredBattleNarrations) {
+          const replay = deferred.entry.replayMetadata;
+          if (!replay) throw new Error('Deferred AFK narration is missing replay metadata');
+          const replayed = executeBattleWithSeed(
+            statusParty,
+            deferred.enemy,
+            deferred.bags,
+            BigInt(`0x${replay.seedHex}`),
+            replay.rngVersion,
+            deferred.initialPartyHp,
+            { terrainEffect: deferred.terrainEffect, partyStatus },
+          );
+          if (
+            replayed.outcome !== deferred.entry.outcome
+            || replayed.partyHp !== deferred.entry.postBattlePartyHP
+            || replayed.replayMetadata.randomDrawCount !== replay.randomDrawCount
+          ) {
+            throw new Error('Deferred AFK narration replay diverged from its result-only battle');
+          }
+          deferred.entry.details = [...replayed.log, ...deferred.entry.details];
+        }
+      }
+
       // SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
       // Forecast state is private and discarded. Preserve the terminal Diary-ID
       // draw when a full resolution would create an entry, then stop before
@@ -4221,8 +4283,6 @@ function gameReducer(
         },
       };
 
-      const currentUnlockedPartySlots = state.parties.length;
-      const unlockedState = getUnlockedStateFromEntries([log], currentUnlockedPartySlots);
       const pendingUnlockState = (
         unlockedState.unlockedPartySlots > currentUnlockedPartySlots
       )
@@ -5344,6 +5404,8 @@ function gameReducer(
             )
             : false;
 
+          // SpecRef: 5.1 | Chunk deterministic execution and terminal partial Chunk
+          const isTerminalChunkOperation = completedOperationCount + 1 >= operationWindow.length;
           workingState = gameReducer(workingState, {
             type: 'RUN_EXPEDITION',
             partyIndex,
@@ -5352,6 +5414,10 @@ function gameReducer(
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
             chunkPartyStatus: chunkPartyStatus[partyIndex],
+            battleOutputMode: action.workerOptimization === 'optimized' && !isTerminalChunkOperation
+              ? 'result-only'
+              : 'full',
+            compactBattleResultOutput: action.compactBattleResultOutput,
           }, undefined, afkChunkContext);
           workingState = gameReducer(workingState, {
             type: 'FINALIZE_DIARY_LOG',
@@ -5401,18 +5467,60 @@ function gameReducer(
           }
 
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
+          let optimizedProfitAbilityLevels: ProfitAbilityLevels | undefined;
+          if (action.workerOptimization === 'optimized' && postFinalizeParty) {
+            const cached = afkChunkContext?.profitAbilityCache.get(postFinalizeParty.id);
+            if (cached?.partyLevel === postFinalizeParty.level && cached.characters === postFinalizeParty.characters) {
+              optimizedProfitAbilityLevels = cached.levels;
+            } else {
+              const chunkStatus = chunkPartyStatus[partyIndex]?.computed;
+              const levels = chunkStatus && chunkPartyStatus[partyIndex]?.party.level === postFinalizeParty.level
+                ? getProfitAbilityLevelsFromStatus(chunkStatus)
+                : getProfitAbilityLevels(postFinalizeParty);
+              optimizedProfitAbilityLevels = levels;
+              afkChunkContext?.profitAbilityCache.set(postFinalizeParty.id, {
+                partyLevel: postFinalizeParty.level,
+                characters: postFinalizeParty.characters,
+                levels,
+              });
+            }
+          }
           workingState = processAfkCycleProfit(
             workingState,
             partyIndex,
             simulatedAt,
             action.workerOptimization,
+            optimizedProfitAbilityLevels,
           );
 
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty) {
-            const postCycleMaxHp = action.workerOptimization === 'legacy'
-              ? computePartyStats(postCycleParty).partyStats.hp
-              : computePartyMaxHp(postCycleParty);
+            let postCycleMaxHp: number;
+            if (action.workerOptimization === 'legacy') {
+              postCycleMaxHp = computePartyStats(postCycleParty).partyStats.hp;
+            } else if (afkChunkContext) {
+              const cached = afkChunkContext.hpBaseCache.get(postCycleParty.id);
+              let bonusHp: number;
+              if (cached?.partyLevel === postCycleParty.level && cached.characters === postCycleParty.characters) {
+                bonusHp = cached.bonusHp;
+              } else {
+                bonusHp = postCycleParty.characters.reduce(
+                  (total, character) => total + computeCharacterHpContribution(character, postCycleParty.level).totalHpBonus,
+                  0,
+                );
+                afkChunkContext.hpBaseCache.set(postCycleParty.id, {
+                  partyLevel: postCycleParty.level,
+                  characters: postCycleParty.characters,
+                  bonusHp,
+                });
+              }
+              postCycleMaxHp = Math.floor(bonusHp * getDeityPartyHpMultiplier(
+                postCycleParty.deity.name,
+                postCycleParty.deityGold ?? 0,
+              ));
+            } else {
+              postCycleMaxHp = computePartyMaxHp(postCycleParty);
+            }
             const missingHp = Math.max(0, postCycleMaxHp - (postCycleParty.currentHp ?? 0));
             if (missingHp > 0) {
               if (action.workerOptimization === 'legacy') {
@@ -5874,6 +5982,7 @@ export function simulateAfkPartyChunkForWorker(
     chunkStatusScope?: 'target' | 'all';
     inventoryStrategy?: 'immutable' | 'overlay';
     workerOptimization?: AfkWorkerSimulationStrategy;
+    compactBattleResultOutput?: boolean;
   },
 ): GameState {
   const party = state.parties[options.partyIndex];
@@ -5905,7 +6014,12 @@ export function simulateAfkPartyChunkForWorker(
   }
   const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable'
     ? undefined
-    : { inventoryOverlay: new AfkInventoryOverlay(state.global.inventory) };
+    : {
+      inventoryOverlay: new AfkInventoryOverlay(state.global.inventory),
+      encounterCache: new Map(),
+      profitAbilityCache: new Map(),
+      hpBaseCache: new Map(),
+    };
   const workerOptimization = options.workerOptimization ?? 'optimized';
   if (workerOptimization === 'optimized') {
     const workingState = gameReducer(state, {
@@ -5921,6 +6035,7 @@ export function simulateAfkPartyChunkForWorker(
       finalizeChunk: true,
       chunkPartyStatus,
       workerOptimization,
+      compactBattleResultOutput: options.compactBattleResultOutput,
       onOperationComplete: options.onProgress,
     }, undefined, afkChunkContext);
     if (afkChunkContext) {
@@ -5944,6 +6059,7 @@ export function simulateAfkPartyChunkForWorker(
       finalizeChunk: operationIndex + 1 === operationCount,
       chunkPartyStatus,
       workerOptimization,
+      compactBattleResultOutput: options.compactBattleResultOutput,
     }, undefined, afkChunkContext);
     options.onProgress?.(operationIndex + 1, operationCount);
   }

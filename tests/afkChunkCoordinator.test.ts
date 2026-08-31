@@ -591,9 +591,21 @@ test('coordinator merges stale global deltas and lets pending PT settings win', 
   assert.deepEqual(result.workerTelemetry, {
     workerStartupMs: 1,
     queueMs: 2,
+    inputHydrationMs: 0,
+    languageReadyMs: 0,
     executionMs: 3,
     inputTransferBytes: 4,
     outputTransferBytes: 5,
+    battleCount: 0,
+    battleTotalMs: 0,
+    battlePreparationMs: 0,
+    battleInputWriteMs: 0,
+    battleNativeExecutionMs: 0,
+    battleBorrowedOutputValidationMs: 0,
+    battleOutputConsumeMs: 0,
+    battleInputBytes: 0,
+    battleOutputBytes: 0,
+    battleResultBagEntryAllocations: 0,
   });
   assert.equal(committed.global.gold, 135);
   assert.equal(committed.global.inventory['1-0-0'].count, 6);

@@ -29,6 +29,7 @@ import {
   BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT,
   BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT,
+  BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
   BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   BATTLE_ENGINE_FLAG_SEEDED_RNG,
   BATTLE_ENGINE_FLAG_START_CHECKPOINT,
@@ -147,6 +148,7 @@ test('stable protocol IDs map abilities, terrain, and event opcodes', () => {
   assert.equal(BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, 1 << 4);
   assert.equal(BATTLE_ENGINE_FLAG_END_CHECKPOINT, 1 << 5);
   assert.equal(BATTLE_ENGINE_FLAG_SEEDED_RNG, 1 << 6);
+  assert.equal(BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT, 1 << 7);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature, 7);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.seededModeConflict, 8);
   assert.equal(BATTLE_PROTOCOL_ERROR_CODES.unsupportedRngVersion, 9);
@@ -515,6 +517,40 @@ test('full seeded battle execution resets state and emits ordered phases', () =>
   assert.ok(first.events.some((event) => event.opcode === 'initiative'));
   assert.ok(first.physicalThreatBag.length > 0);
   assert.deepEqual(executeBattleProtocol(encodeBattleProtocolInput(input)), first);
+});
+
+test('compact seeded output preserves resolution and bags without serializing semantic records', () => {
+  const input = seededEndInput(0x1234n);
+  const full = executeBattleProtocolInput(input);
+  const compact = executeBattleProtocolInput({
+    ...input,
+    engineFlags: input.engineFlags! | BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
+  });
+  assert.deepEqual(compact.events, []);
+  assert.deepEqual({
+    outcome: compact.outcome,
+    partyHp: compact.partyHp,
+    enemyHp: compact.enemyHp,
+    enemyHitsReceived: compact.enemyHitsReceived,
+    randomConsumed: compact.randomConsumed,
+    diagnosticDrawCount: compact.diagnosticDrawCount,
+    physicalThreatBag: compact.physicalThreatBag,
+    magicalThreatBag: compact.magicalThreatBag,
+  }, {
+    outcome: full.outcome,
+    partyHp: full.partyHp,
+    enemyHp: full.enemyHp,
+    enemyHitsReceived: full.enemyHitsReceived,
+    randomConsumed: full.randomConsumed,
+    diagnosticDrawCount: full.diagnosticDrawCount,
+    physicalThreatBag: full.physicalThreatBag,
+    magicalThreatBag: full.magicalThreatBag,
+  });
+  assert.ok(compact.byteLength < full.byteLength * 0.25);
+  assert.equal(executeBattleProtocolInput({
+    ...input,
+    engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
+  }).protocolError, BATTLE_PROTOCOL_ERROR_CODES.unsupportedCombatFeature);
 });
 
 test('seeded mode rejects mixed tapes, unsupported versions, and non-END checkpoints transactionally', () => {

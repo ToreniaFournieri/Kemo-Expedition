@@ -74,6 +74,7 @@ observeAfkLiveProfilePending,
 recordAfkLiveProfileReactCommit,
 useAfkAtomicTransactionCandidate,
 useAfkWorkerSimulationCandidate,
+useAfkCompactBattleResultCandidate,
 } from '../game/afkLiveProfile';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
@@ -340,8 +341,8 @@ export function HomeScreen({
   const afkWorkerResultArrivalSequenceRef = useRef(0);
   const afkWorkerSlotSequenceRef = useRef(0);
   const afkFifoCommitWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
+  const afkCoordinatorPumpRef = useRef<(() => void) | null>(null);
   const renderCommitDurationsRef = useRef<number[]>([]);
-  const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
   const [, setAfkProgressPresentationVersion] = useState(0);
   const memoryPreviousAfkActiveRef = useRef(false);
   const memoryOnlineStartedRef = useRef(false);
@@ -2297,7 +2298,6 @@ export function HomeScreen({
     afkActiveCommitTransactionRef.current = null;
     const remaining = Object.values(afkRemainingMsByPartyRef.current);
     pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
-    setPendingAfkMs(pendingAfkMsRef.current);
     const battles = Object.values(result.globalDelta.enemyBattleStats)
       .reduce((total, value) => total + Math.max(0, value.encounters), 0);
     memoryMonitor.markChunkComplete(battles);
@@ -2314,7 +2314,7 @@ export function HomeScreen({
       },
     });
     updateAfkTraceCoordinator();
-    setAfkCoordinatorVersion((version) => version + 1);
+    window.setTimeout(() => afkCoordinatorPumpRef.current?.(), 0);
   }, [updateAfkTraceCoordinator]);
 
   useEffect(() => {
@@ -2922,8 +2922,17 @@ export function HomeScreen({
     completeAfkCommitTransaction(transaction.result);
   }, [actions, completeAfkCommitTransaction, planAutoEquipment, state]);
 
-  useEffect(() => {
-    if (pendingAfkMs <= 0) return;
+  // SpecRef: 5.1 | Coordinator process; 5.1.1.1 | React update frequency
+  const pumpAfkCoordinator = useCallback(() => {
+    const state = afkLiveProfileStateRef.current;
+    const pendingAfkMs = pendingAfkMsRef.current;
+    const hasOutstandingCoordinatorWork = pendingAfkMs > 0
+      || afkActiveChunkJobsRef.current.size > 0
+      || afkCompletedChunkResultsRef.current.size > 0
+      || afkActiveCommitTransactionRef.current !== null
+      || afkPartyTransactionLocksRef.current.size > 0
+      || afkWorkerPoolRef.current.length > 0;
+    if (!hasOutstandingCoordinatorWork) return;
     if (afkInteractionPausedRef.current) {
       afkRuntimeTrace.setPhase('interaction_pause');
       updateAfkTraceCoordinator();
@@ -3095,6 +3104,7 @@ export function HomeScreen({
       dispatchState.parties.length,
       getAfkLiveProfileWorkerLimitOverride(),
     );
+    const useCompactBattleCandidate = useAfkCompactBattleResultCandidate();
     let startedJob = false;
 
     const dispatchCandidates = dispatchState.parties.map((party, partyIndex) => {
@@ -3173,6 +3183,7 @@ export function HomeScreen({
         workerCreatedAt: poolSlot.createdEpochAt,
         isFirstWorkerJob: poolSlot.completedJobs === 0,
         workerOptimization: useAfkWorkerSimulationCandidate() ? 'optimized' : 'legacy',
+        compactBattleResultOutput: useCompactBattleCandidate,
       };
       const inventoryJob: AfkPartyChunkInventoryWorkerJob = poolSlot.retainedInventory && poolSlot.retainedInventoryToken
         ? createAfkPartyChunkInventoryContinuationWorkerJob(
@@ -3216,7 +3227,7 @@ export function HomeScreen({
         delete afkInFlightCompletedMsByPartyRef.current[partyIndex];
         memoryMonitor.releaseWorker(failedJobId);
         updateAfkTraceCoordinator();
-        setAfkCoordinatorVersion((version) => version + 1);
+        window.setTimeout(() => afkCoordinatorPumpRef.current?.(), 0);
       };
       poolSlot.jobId = jobId;
       memoryMonitor.registerWorker(jobId);
@@ -3304,6 +3315,12 @@ export function HomeScreen({
               workerStartupMs: result.workerTelemetry.workerStartupMs,
               queueMs: result.workerTelemetry.queueMs,
               executionMs: result.workerTelemetry.executionMs,
+              inputHydrationMs: result.workerTelemetry.inputHydrationMs,
+              languageReadyMs: result.workerTelemetry.languageReadyMs,
+              battleCount: result.workerTelemetry.battleCount,
+              battleInputBytes: result.workerTelemetry.battleInputBytes,
+              battleOutputBytes: result.workerTelemetry.battleOutputBytes,
+              battleResultBagEntryAllocations: result.workerTelemetry.battleResultBagEntryAllocations,
               inputTransferBytes: result.workerTelemetry.inputTransferBytes,
               outputTransferBytes: result.workerTelemetry.outputTransferBytes,
               workerSlotId,
@@ -3313,12 +3330,57 @@ export function HomeScreen({
               jobWallMs: Math.max(0, performance.now() - active.startedMonotonicAt),
             },
           });
+          afkRuntimeTrace.record('worker_input_queue', {
+            phase: 'worker_queue',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.queueMs,
+          });
+          afkRuntimeTrace.record('worker_input_hydration', {
+            phase: 'worker_queue',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.inputHydrationMs,
+          });
+          afkRuntimeTrace.record('worker_language_ready', {
+            phase: 'worker_queue',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.languageReadyMs,
+          });
+          afkRuntimeTrace.record('worker_simulation_execution', {
+            phase: 'worker_execution',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.executionMs,
+          });
+          const battleAttributionEvents = [
+            ['worker_battle_total', result.workerTelemetry.battleTotalMs],
+            ['worker_battle_preparation', result.workerTelemetry.battlePreparationMs],
+            ['worker_battle_input_write', result.workerTelemetry.battleInputWriteMs],
+            ['worker_battle_native_execution', result.workerTelemetry.battleNativeExecutionMs],
+            ['worker_battle_borrowed_output_validation', result.workerTelemetry.battleBorrowedOutputValidationMs],
+            ['worker_battle_output_consume', result.workerTelemetry.battleOutputConsumeMs],
+          ] as const;
+          battleAttributionEvents.forEach(([eventName, durationMs]) => {
+            afkRuntimeTrace.record(eventName, {
+              phase: 'worker_execution',
+              partyId: result.partyId,
+              partyIndex: result.partyIndex,
+              jobId: result.jobId,
+              durationMs,
+            });
+          });
         } else {
           failWorkerJob(event.data.jobId, event.data.message, 'worker-error-message');
           return;
         }
         updateAfkTraceCoordinator();
-        setAfkCoordinatorVersion((version) => version + 1);
+        window.setTimeout(() => afkCoordinatorPumpRef.current?.(), 0);
       };
       worker.onerror = (event) => {
         failWorkerJob(jobId, event.message, 'worker-error-event');
@@ -3378,7 +3440,12 @@ export function HomeScreen({
       setPendingAfkMs(0);
       updateAfkTraceCoordinator();
     }
-  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state, updateAfkTraceCoordinator]);
+  }, [actions, debugSettings, gameMode, planAutoEquipment, updateAfkTraceCoordinator]);
+  afkCoordinatorPumpRef.current = pumpAfkCoordinator;
+
+  useEffect(() => {
+    pumpAfkCoordinator();
+  }, [afkInteractionPauseVersion, pendingAfkMs, pumpAfkCoordinator, state]);
 
   useEffect(() => () => {
     afkRuntimeTrace.cancelRecovery('unmount', {

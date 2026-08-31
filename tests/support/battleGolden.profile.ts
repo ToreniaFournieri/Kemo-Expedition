@@ -479,19 +479,48 @@ test('result-only production execution preserves authoritative seeded results wi
     structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
     seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment, { outputMode: 'result-only' },
   );
+  const compactResultOnly = executeBattleWithSeed(
+    structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags),
+    seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
+    { outputMode: 'result-only', compactResultOutput: true },
+  );
   const measurement = endBattleKernelMeasurement();
   const { log: _log, ...expectedResolution } = full;
   assert.deepEqual(resultOnly, expectedResolution);
+  assert.deepEqual(compactResultOnly, expectedResolution);
   assert.equal('log' in resultOnly, false);
-  assert.equal(measurement.calls, 2);
-  assert.equal(measurement.encodedInputAllocations + measurement.inputArenaCopies + measurement.outputBufferCopies, 0);
+  assert.equal(measurement.calls, 3);
+  assert.equal(measurement.encodedInputAllocations, 1);
+  assert.equal(measurement.inputArenaCopies, 1);
+  assert.equal(measurement.outputBufferCopies, 0);
   assert.deepEqual(getBattlePreparationMeasurement(), {
-    combatantProjections: 2,
+    combatantProjections: 3,
     projectionPartyStatusFallbacks: 0,
-    productionPreparations: 2,
-    productionPartyStatusComputations: 2,
+    productionPreparations: 3,
+    productionPartyStatusComputations: 3,
     productionNarrations: 1,
-    productionResultOnlyResolutions: 1,
+    productionResultOnlyResolutions: 2,
     diagnosticNarrationPreparations: 0,
   });
+});
+
+test('prepared compact inputs patch changing HP, seeds, and threat bags without semantic drift', () => {
+  const fixture = createGoldenCases()[0]!;
+  const partyStatus = computePartyStats(fixture.party);
+  const environment = { ...fixture.environment, partyStatus };
+  let bags = structuredClone(fixture.bags);
+  for (let iteration = 0; iteration < 3; iteration += 1) {
+    const seed = naturalFixtureSeed(fixture) + BigInt(iteration);
+    const partyHp = Math.max(1, (fixture.initialPartyHp ?? partyStatus.partyStats.hp) - iteration * 17);
+    const baseline = executeBattleWithSeed(
+      fixture.party, fixture.enemy, bags, seed, getBattleRngVersion(), partyHp, environment,
+      { outputMode: 'result-only' },
+    );
+    const compact = executeBattleWithSeed(
+      fixture.party, fixture.enemy, bags, seed, getBattleRngVersion(), partyHp, environment,
+      { outputMode: 'result-only', compactResultOutput: true },
+    );
+    assert.deepEqual(compact, baseline);
+    bags = compact.updatedBags;
+  }
 });

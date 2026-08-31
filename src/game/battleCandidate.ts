@@ -11,8 +11,13 @@ import type {
 } from '../types/index.ts';
 import {
   BATTLE_DEITY_IDS,
+  BATTLE_BAG_OFFSETS,
+  BATTLE_COMBATANT_OFFSETS,
+  BATTLE_COMBATANT_RECORD_SIZE,
+  BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
   BATTLE_ENGINE_FLAG_END_CHECKPOINT,
   BATTLE_ENGINE_FLAG_SEEDED_RNG,
+  BATTLE_INPUT_OFFSETS,
 } from './generated/battleProtocol.generated.ts';
 import { computeCharacterStats } from './characterComputation.ts';
 import { getAbilityName } from './characterComputation.ts';
@@ -20,7 +25,7 @@ import { computePartyStats } from './partyComputation.ts';
 import type { ComputedPartyStatus } from './partyComputation.ts';
 import { getDeityKey } from './deity.ts';
 import { getBaseMultiplier } from './baseMultiplier.ts';
-import { consumeBattleProtocolInput, executeBattleProtocol, executeBattleProtocolInput } from './battleKernel.ts';
+import { consumeBattleProtocolInput, consumePreparedBattleProtocolInput, executeBattleProtocol, executeBattleProtocolInput } from './battleKernel.ts';
 import { getTerrainEffectGlossaryEntry } from '../data/glossary.ts';
 import { t } from '../i18n/index.ts';
 import { resolveMagicProfile } from './magic.ts';
@@ -306,13 +311,14 @@ export function prepareBattleExecution(
   engineFlags = 0,
   outputMode: BattleOutputMode = 'full',
 ): PreparedBattleExecution {
+  const attributionStartedAt = runtimeAttributionEnabled ? performance.now() : 0;
   preparationMeasurement.productionPreparations += 1;
   const partyStatus = environment.partyStatus ?? computePartyStats(party);
   if (!environment.partyStatus) preparationMeasurement.productionPartyStatusComputations += 1;
   const preparedEnvironment = { ...environment, partyStatus };
   const partyHp = initialPartyHp ?? partyStatus.partyStats.hp;
   const projection = projectBattleCombatants(party, enemy, partyHp, preparedEnvironment);
-  return {
+  const prepared = {
     input: createBattleProtocolInput(
       party, enemy, bags, randomValues, partyHp, preparedEnvironment, engineFlags, projection,
     ),
@@ -320,6 +326,8 @@ export function prepareBattleExecution(
       ? createBattleNarrationContext(projection, party, enemy, preparedEnvironment.terrainEffect)
       : null,
   };
+  if (runtimeAttributionEnabled) runtimePreparationMs += performance.now() - attributionStartedAt;
+  return prepared;
 }
 
 /** Encoded protocol-v3 execution used only by the retained tape diagnostic. */
@@ -357,6 +365,26 @@ export type BattlePreparationMeasurement = {
   productionResultOnlyResolutions: number;
   diagnosticNarrationPreparations: number;
 };
+
+export type BattleRuntimeAttribution = {
+  executionMs: number;
+  preparationMs: number;
+};
+
+let runtimeAttributionEnabled = false;
+let runtimeExecutionMs = 0;
+let runtimePreparationMs = 0;
+
+export function beginBattleRuntimeAttribution(): void {
+  runtimeExecutionMs = 0;
+  runtimePreparationMs = 0;
+  runtimeAttributionEnabled = true;
+}
+
+export function endBattleRuntimeAttribution(): BattleRuntimeAttribution {
+  runtimeAttributionEnabled = false;
+  return { executionMs: runtimeExecutionMs, preparationMs: runtimePreparationMs };
+}
 
 let preparationMeasurement: BattlePreparationMeasurement = {
   combatantProjections: 0,
@@ -436,6 +464,7 @@ type IndexedBattleProtocolOutput = Pick<BattleProtocolOutput,
   'flags' | 'outcome' | 'partyHp' | 'enemyHp' | 'randomConsumed' | 'enemyHitsReceived'
   | 'byteLength' | 'seed' | 'rngVersion' | 'diagnosticDrawCount' | 'protocolError'> & {
   eventCount: number;
+  generatedSemanticEventCount: number;
   physicalThreatBagCount: number;
   magicalThreatBagCount: number;
   eventOpcode(index: number): BattleProtocolEvent['opcode'];
@@ -475,6 +504,7 @@ class OwnedBattleProtocolOutputIndex implements IndexedBattleProtocolOutput {
   get diagnosticDrawCount() { return this.output.diagnosticDrawCount; }
   get protocolError() { return this.output.protocolError; }
   get eventCount() { return this.output.events.length; }
+  get generatedSemanticEventCount() { return this.output.events.length; }
   get physicalThreatBagCount() { return this.output.physicalThreatBag.length; }
   get magicalThreatBagCount() { return this.output.magicalThreatBag.length; }
   eventOpcode(index: number) { return this.output.events[index]!.opcode; }
@@ -595,8 +625,123 @@ export type SeededBattleCandidateResult<T extends BattleCandidateResolution = Ba
   Omit<BattleNativeExecutionResult, 'protocolOutput' | 'result'> & {
   result: T;
   seed: bigint;
-  rngVersion: number;
+    rngVersion: number;
 };
+
+// SpecRef: 6.1.8 | Universal C++ battle kernel | profile-only compact AFK candidate
+type PreparedCompactBattleInput = {
+  bytes: Uint8Array;
+  partyHpOffsets: readonly number[];
+  physicalBagOffset: number;
+  magicalBagOffset: number;
+  physicalBagCount: number;
+  magicalBagCount: number;
+};
+
+const compactBattleInputCache = new WeakMap<
+  ComputedPartyStatus,
+  WeakMap<Party, WeakMap<EnemyDef, Map<string, PreparedCompactBattleInput>>>
+>();
+
+function getPreparedCompactBattleInput(
+  party: Party,
+  enemy: EnemyDef,
+  bags: GameBags,
+  seed: bigint,
+  rngVersion: number,
+  initialPartyHp: number | undefined,
+  environment: BattleEnvironment,
+): PreparedCompactBattleInput {
+  const status = environment.partyStatus;
+  const cacheKey = `${environment.terrainEffect ?? 'none'}:${bags.physicalThreatBag.entries.length}:${bags.magicalThreatBag.entries.length}`;
+  let byEnemy: WeakMap<EnemyDef, Map<string, PreparedCompactBattleInput>> | undefined;
+  if (status) {
+    let byParty = compactBattleInputCache.get(status);
+    if (!byParty) {
+      byParty = new WeakMap();
+      compactBattleInputCache.set(status, byParty);
+    }
+    byEnemy = byParty.get(party);
+    if (!byEnemy) {
+      byEnemy = new WeakMap();
+      byParty.set(party, byEnemy);
+    }
+    const cached = byEnemy.get(enemy)?.get(cacheKey);
+    if (cached) {
+      preparationMeasurement.productionPreparations += 1;
+      return cached;
+    }
+  }
+
+  const prepared = prepareBattleExecution(
+    party,
+    enemy,
+    bags,
+    [],
+    initialPartyHp,
+    environment,
+    BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG | BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
+    'result-only',
+  );
+  prepared.input.seed = seed;
+  prepared.input.rngVersion = rngVersion;
+  const bytes = encodeBattleProtocolInput(prepared.input);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const combatantsOffset = view.getUint32(BATTLE_INPUT_OFFSETS.combatantsOffset, true);
+  const partyHpOffsets = prepared.input.combatants.flatMap((combatant, index) => (
+    combatant.kind === 'character'
+      ? [combatantsOffset + index * BATTLE_COMBATANT_RECORD_SIZE + BATTLE_COMBATANT_OFFSETS.hp]
+      : []
+  ));
+  const compact = {
+    bytes,
+    partyHpOffsets,
+    physicalBagOffset: view.getUint32(BATTLE_INPUT_OFFSETS.physicalBagOffset, true),
+    magicalBagOffset: view.getUint32(BATTLE_INPUT_OFFSETS.magicalBagOffset, true),
+    physicalBagCount: prepared.input.physicalThreatBag.length,
+    magicalBagCount: prepared.input.magicalThreatBag.length,
+  };
+  if (byEnemy) {
+    let byKey = byEnemy.get(enemy);
+    if (!byKey) {
+      byKey = new Map();
+      byEnemy.set(enemy, byKey);
+    }
+    byKey.set(cacheKey, compact);
+  }
+  return compact;
+}
+
+function patchPreparedCompactBattleInput(
+  prepared: PreparedCompactBattleInput,
+  bags: GameBags,
+  seed: bigint,
+  rngVersion: number,
+  partyHp: number,
+): Uint8Array {
+  if (
+    bags.physicalThreatBag.entries.length !== prepared.physicalBagCount
+    || bags.magicalThreatBag.entries.length !== prepared.magicalBagCount
+  ) {
+    throw new Error('Prepared compact battle input threat-bag shape changed');
+  }
+  const view = new DataView(prepared.bytes.buffer, prepared.bytes.byteOffset, prepared.bytes.byteLength);
+  view.setFloat64(BATTLE_INPUT_OFFSETS.partyHp, partyHp, true);
+  view.setUint32(BATTLE_INPUT_OFFSETS.seedLow, Number(seed & 0xffff_ffffn), true);
+  view.setUint32(BATTLE_INPUT_OFFSETS.seedHigh, Number(seed >> 32n), true);
+  view.setUint16(BATTLE_INPUT_OFFSETS.rngVersion, rngVersion, true);
+  prepared.partyHpOffsets.forEach((offset) => view.setFloat64(offset, partyHp, true));
+  const patchBag = (entries: GameBags['physicalThreatBag']['entries'], offset: number) => {
+    entries.forEach((entry, index) => {
+      const recordOffset = offset + index * 8;
+      view.setInt32(recordOffset + BATTLE_BAG_OFFSETS.id, entry.id, true);
+      view.setUint32(recordOffset + BATTLE_BAG_OFFSETS.tickets, entry.tickets, true);
+    });
+  };
+  patchBag(bags.physicalThreatBag.entries, prepared.physicalBagOffset);
+  patchBag(bags.magicalThreatBag.entries, prepared.magicalBagOffset);
+  return prepared.bytes;
+}
 
 // SpecRef: 6.1.8 | Universal C++ battle kernel | native tape diagnostic
 export function executeBattleTapeDiagnostic(
@@ -640,6 +785,7 @@ export function executeBattleCandidateFromSeed(
   initialPartyHp: number | undefined,
   environment: BattleEnvironment | undefined,
   outputMode: 'result-only',
+  compactResultOutput?: boolean,
 ): SeededBattleCandidateResult<BattleCandidateResolution>;
 export function executeBattleCandidateFromSeed(
   party: Party,
@@ -660,18 +806,13 @@ export function executeBattleCandidateFromSeed(
   initialPartyHp?: number,
   environment: BattleEnvironment = {},
   outputMode: BattleOutputMode = 'full',
+  compactResultOutput = false,
 ): SeededBattleCandidateResult<BattleCandidateResolution> | SeededBattleCandidateResult<BattleCandidateResult> {
+  const attributionStartedAt = runtimeAttributionEnabled ? performance.now() : 0;
   const normalizedSeed = requireBattleSeed(seed);
   requireBattleRngVersion(rngVersion);
-  const prepared = prepareBattleExecution(
-    party, enemy, bags, [], initialPartyHp, environment,
-    BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
-    outputMode,
-  );
-  const { input } = prepared;
-  input.seed = normalizedSeed;
-  input.rngVersion = rngVersion;
-  return consumeBattleProtocolInput(input, (output) => {
+  let narration: BattleNarrationContext | null = null;
+  const consumeOutput = (output: IndexedBattleProtocolOutput) => {
     if (output.protocolError !== 0) {
       throw new Error(`C++ seeded battle returned protocol error ${output.protocolError} after ${output.randomConsumed} draws`);
     }
@@ -689,15 +830,41 @@ export function executeBattleCandidateFromSeed(
     return {
       result: outputMode === 'result-only'
         ? createBattleCandidateResolution(output)
-        : convertIndexedBattleSemanticEvents(output, prepared.narration!),
+        : convertIndexedBattleSemanticEvents(output, narration!),
       randomConsumed: output.randomConsumed,
       diagnosticDrawCount: output.diagnosticDrawCount,
       protocolError: output.protocolError,
-      eventCount: output.eventCount,
+      eventCount: output.generatedSemanticEventCount,
       seed: output.seed,
       rngVersion: output.rngVersion,
     };
-  });
+  };
+  const result = outputMode === 'result-only' && compactResultOutput
+    ? consumePreparedBattleProtocolInput(
+      patchPreparedCompactBattleInput(
+        getPreparedCompactBattleInput(
+          party, enemy, bags, normalizedSeed, rngVersion, initialPartyHp, environment,
+        ),
+        bags,
+        normalizedSeed,
+        rngVersion,
+        initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp,
+      ),
+      consumeOutput,
+    )
+    : (() => {
+      const prepared = prepareBattleExecution(
+        party, enemy, bags, [], initialPartyHp, environment,
+        BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
+        outputMode,
+      );
+      narration = prepared.narration;
+      prepared.input.seed = normalizedSeed;
+      prepared.input.rngVersion = rngVersion;
+      return consumeBattleProtocolInput(prepared.input, consumeOutput);
+    })();
+  if (runtimeAttributionEnabled) runtimeExecutionMs += performance.now() - attributionStartedAt;
+  return result;
 }
 
 /** Diagnostic-only seeded execution with fully owned protocol materialization. */

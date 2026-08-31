@@ -46,6 +46,20 @@ export interface AfkLiveProfileResult {
     readonly jobConstructionMs: number;
     readonly workerSubmissionMs: number;
     readonly workerExecutionSumMs: number;
+    readonly workerInputQueueMs: number;
+    readonly workerInputHydrationMs: number;
+    readonly workerLanguageReadyMs: number;
+    readonly workerSimulationExecutionMs: number;
+    readonly workerBattleCount: number;
+    readonly workerBattleTotalMs: number;
+    readonly workerBattlePreparationMs: number;
+    readonly workerBattleInputWriteMs: number;
+    readonly workerBattleNativeExecutionMs: number;
+    readonly workerBattleBorrowedOutputValidationMs: number;
+    readonly workerBattleOutputConsumeMs: number;
+    readonly workerBattleInputBytes: number;
+    readonly workerBattleOutputBytes: number;
+    readonly workerBattleResultBagEntryAllocations: number;
     readonly hydrationMs: number;
     readonly fifoCommitWaitMs: number;
     readonly chunkCommitReactVisibilityMs: number;
@@ -143,6 +157,13 @@ function nearestRank(values: readonly number[], ratio: number): number {
 
 function sumEventDurations(trace: AfkTraceDiagnosticExport, eventName: string): number {
   return trace.aggregatesByEvent[eventName]?.totalDurationMs ?? 0;
+}
+
+function sumEventDataValue(trace: AfkTraceDiagnosticExport, eventName: string, key: string): number {
+  return trace.events.reduce((total, event) => {
+    const value = event.event === eventName ? event.data?.[key] : undefined;
+    return total + (typeof value === 'number' && Number.isFinite(value) ? value : 0);
+  }, 0);
 }
 
 function createExclusiveTimeline(events: readonly AfkTraceEvent[]): Readonly<Record<string, number>> {
@@ -331,9 +352,13 @@ export function useAfkAtomicTransactionCandidate(): boolean {
 }
 
 export function useAfkWorkerSimulationCandidate(): boolean {
-  // The current live-profile baseline/candidate pair isolates worker work;
-  // both variants use the production single-publication renderer transaction.
-  return !__AFK_LIVE_PROFILE_ENABLED__ || runtime?.variant === 'candidate';
+  return true;
+}
+
+export function useAfkCompactBattleResultCandidate(): boolean {
+  // The candidate remains profile-only because its faster workers increased
+  // FIFO coordinator wait beyond the promotion gate.
+  return __AFK_LIVE_PROFILE_ENABLED__ && runtime?.variant === 'candidate';
 }
 
 /** Returns a profile-only pool-width override; production always returns undefined. */
@@ -452,6 +477,20 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
         jobConstructionMs: sumEventDurations(trace, 'worker_job_construction'),
         workerSubmissionMs: sumEventDurations(trace, 'worker_job_submission'),
         workerExecutionSumMs: sumEventDurations(trace, 'worker_job_complete'),
+        workerInputQueueMs: sumEventDurations(trace, 'worker_input_queue'),
+        workerInputHydrationMs: sumEventDurations(trace, 'worker_input_hydration'),
+        workerLanguageReadyMs: sumEventDurations(trace, 'worker_language_ready'),
+        workerSimulationExecutionMs: sumEventDurations(trace, 'worker_simulation_execution'),
+        workerBattleCount: sumEventDataValue(trace, 'worker_job_complete', 'battleCount'),
+        workerBattleTotalMs: sumEventDurations(trace, 'worker_battle_total'),
+        workerBattlePreparationMs: sumEventDurations(trace, 'worker_battle_preparation'),
+        workerBattleInputWriteMs: sumEventDurations(trace, 'worker_battle_input_write'),
+        workerBattleNativeExecutionMs: sumEventDurations(trace, 'worker_battle_native_execution'),
+        workerBattleBorrowedOutputValidationMs: sumEventDurations(trace, 'worker_battle_borrowed_output_validation'),
+        workerBattleOutputConsumeMs: sumEventDurations(trace, 'worker_battle_output_consume'),
+        workerBattleInputBytes: sumEventDataValue(trace, 'worker_job_complete', 'battleInputBytes'),
+        workerBattleOutputBytes: sumEventDataValue(trace, 'worker_job_complete', 'battleOutputBytes'),
+        workerBattleResultBagEntryAllocations: sumEventDataValue(trace, 'worker_job_complete', 'battleResultBagEntryAllocations'),
         hydrationMs: sumEventDurations(trace, 'worker_result_hydration'),
         fifoCommitWaitMs: sumEventDurations(trace, 'fifo_commit_wait_end'),
         chunkCommitReactVisibilityMs,

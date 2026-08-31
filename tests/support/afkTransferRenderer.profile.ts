@@ -293,7 +293,7 @@ async function runCandidate(state: GameState, candidate: Candidate, sampleIndex:
   await new Promise((resolve) => setTimeout(resolve, 500));
   const settledMemory = await sampleProcessMemory();
   const hydratedResultsJson = JSON.stringify([...results].sort(compareAfkChunkResults).map((result) => ({ ...result, durationMs: 0, workerTelemetry: {
-    workerStartupMs: 0, queueMs: 0, executionMs: 0, inputTransferBytes: null, outputTransferBytes: null,
+    workerStartupMs: 0, queueMs: 0, inputHydrationMs: 0, languageReadyMs: 0, executionMs: 0, inputTransferBytes: null, outputTransferBytes: null,
   } })));
   const finalHash = await sha256(JSON.stringify(serializeGameState(finalState)));
   return {

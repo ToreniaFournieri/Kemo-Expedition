@@ -64,6 +64,7 @@ inline constexpr unsigned int kEngineFlagCombatReactiveCheckpoint = 1u << 3;
 inline constexpr unsigned int kEngineFlagCombatTimedCheckpoint = 1u << 4;
 inline constexpr unsigned int kEngineFlagEndCheckpoint = 1u << 5;
 inline constexpr unsigned int kEngineFlagSeededRng = 1u << 6;
+inline constexpr unsigned int kEngineFlagCompactResultOutput = 1u << 7;
 
 enum class ProtocolError : unsigned int {
   None = 0,
@@ -123,6 +124,7 @@ export const BATTLE_ENGINE_FLAG_COMBAT_REACTIVE_CHECKPOINT = 1 << 3;
 export const BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT = 1 << 4;
 export const BATTLE_ENGINE_FLAG_END_CHECKPOINT = 1 << 5;
 export const BATTLE_ENGINE_FLAG_SEEDED_RNG = 1 << 6;
+export const BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT = 1 << 7;
 
 ${tsMap('BATTLE_ABILITY_IDS', groups.ABILITY)}
 ${tsReverse('BATTLE_ABILITY_NAMES', 'BATTLE_ABILITY_IDS')}

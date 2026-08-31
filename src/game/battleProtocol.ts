@@ -521,6 +521,10 @@ export class BorrowedBattleProtocolOutputView {
 
   get byteLength(): number { this.requireActive(); return this.borrowedByteLength; }
   get eventCount(): number { this.requireActive(); return this.borrowedEventCount; }
+  get generatedSemanticEventCount(): number {
+    this.requireActive();
+    return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.reserved0, littleEndian);
+  }
   get physicalThreatBagCount(): number { this.requireActive(); return this.borrowedPhysicalThreatBagCount; }
   get magicalThreatBagCount(): number { this.requireActive(); return this.borrowedMagicalThreatBagCount; }
   get flags(): number { this.requireActive(); return this.view.getUint32(BATTLE_OUTPUT_OFFSETS.flags, littleEndian); }

@@ -18,6 +18,7 @@ import {
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
 const battleCandidateSource = readFileSync(new URL('../src/game/battleCandidate.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
+const liveProfileSource = readFileSync(new URL('../src/game/afkLiveProfile.ts', import.meta.url), 'utf8');
 const rendererProfileSource = readFileSync(
   new URL('./support/expedition8RendererBaseline.profile.ts', import.meta.url),
   'utf8',
@@ -179,13 +180,20 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(homeSource, /actions\.applyAutoEquipmentActions\(plan\.actions\)/);
   assert.match(homeSource, /transaction\.stage = 'auto_equipment_dispatched'[\s\S]{0,500}return;/);
   assert.match(homeSource, /afkPartyTransactionLocksRef\.current\.delete\(result\.partyIndex\)[\s\S]{0,160}afkActiveCommitTransactionRef\.current = null/);
+  assert.match(homeSource, /const hasOutstandingCoordinatorWork = pendingAfkMs > 0[\s\S]{0,350}afkWorkerPoolRef\.current\.length > 0/);
+  assert.match(homeSource, /window\.setTimeout\(\(\) => afkCoordinatorPumpRef\.current\?\.\(\), 0\)/);
+  assert.doesNotMatch(homeSource, /afkCoordinatorVersion|setAfkCoordinatorVersion/);
+  assert.doesNotMatch(homeSource, /setPendingAfkMs\(pendingAfkMsRef\.current\)/);
   assert.match(homeSource, /afkFinalRemainingMsByPartyRef\.current = \{ \.\.\.afkRemainingMsByPartyRef\.current \}/);
   assert.match(homeSource, /afkFinalRemainingMsByPartyRef\.current\[partyIndex\] \?\? 0/);
   assert.doesNotMatch(homeSource, /mutationCount === 0/);
   assert.doesNotMatch(homeSource, /previousPendingAfkMs <= pendingAfkMs[\s\S]{0,120}runAutoEquipment/);
   assert.match(hookSource, /workerOptimization === 'optimized'[\s\S]{0,600}operationCount,[\s\S]{0,300}onOperationComplete: options\.onProgress/);
-  assert.match(hookSource, /const abilityLevels = workerOptimization === 'optimized' \? getProfitAbilityLevels\(party\) : undefined/);
-  assert.match(hookSource, /action\.workerOptimization === 'legacy'[\s\S]{0,180}computePartyStats\(postCycleParty\)\.partyStats\.hp[\s\S]{0,180}computePartyMaxHp\(postCycleParty\)/);
+  assert.match(hookSource, /optimizedAbilityLevels \?\? getProfitAbilityLevels\(party\)/);
+  assert.match(hookSource, /profitAbilityCache\.get\(postFinalizeParty\.id\)/);
+  assert.match(hookSource, /hpBaseCache\.get\(postCycleParty\.id\)/);
+  assert.match(hookSource, /battleOutputMode: action\.workerOptimization === 'optimized'[\s\S]{0,120}\? 'result-only'/);
+  assert.match(hookSource, /shouldRetainCompleteNarration[\s\S]{0,800}executeBattleWithSeed/);
 });
 
 test('the canonical renderer profile accepts presentation-only worker progress', () => {
@@ -196,9 +204,16 @@ test('the canonical renderer profile accepts presentation-only worker progress',
 });
 
 test('the atomic renderer boundary includes planning without double-counting it', () => {
-  const liveProfileSource = readFileSync(new URL('../src/game/afkLiveProfile.ts', import.meta.url), 'utf8');
   assert.match(liveProfileSource, /atomicTransactionReactVisibilityMs > 0[\s\S]{0,300}\? atomicTransactionReactVisibilityMs/);
   assert.doesNotMatch(liveProfileSource, /\? autoEquipmentMs \+ atomicTransactionReactVisibilityMs/);
+});
+
+test('compact battle output remains isolated to the live-profile candidate', () => {
+  assert.match(liveProfileSource, /useAfkWorkerSimulationCandidate\(\): boolean \{\s*return true;/);
+  assert.match(
+    liveProfileSource,
+    /useAfkCompactBattleResultCandidate\(\): boolean \{[\s\S]{0,240}return __AFK_LIVE_PROFILE_ENABLED__ && runtime\?\.variant === 'candidate';/,
+  );
 });
 
 test('AFK Chunk party status is calculated once and reused by all thirty Cycles', () => {
@@ -220,7 +235,7 @@ test('AFK condition and automatic Gods Battle decisions use the thirty-Cycle bou
 
 test('AFK recovery pauses the next slice for live user input without cancelling the event', () => {
   assert.match(homeSource, /afkInteractionPausedRef\.current = true/);
-  assert.match(homeSource, /if \(pendingAfkMs <= 0\) return;[\s\S]{0,120}if \(afkInteractionPausedRef\.current\)/);
+  assert.match(homeSource, /if \(!hasOutstandingCoordinatorWork\) return;[\s\S]{0,120}if \(afkInteractionPausedRef\.current\)/);
   assert.match(homeSource, /afkActiveChunkJobsRef\.current\.has\(partyIndex\)/);
   assert.match(homeSource, /afkInteractionPausedRef\.current = false/);
   assert.doesNotMatch(homeSource, /event\.preventDefault\(\);\s*event\.stopPropagation\(\);/);

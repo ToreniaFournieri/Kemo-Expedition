@@ -165,7 +165,12 @@ app.whenReady().then(async () => {
   const workloads = Object.fromEntries(modes.flatMap((mode) => variants.flatMap((variant) => hours.map((rawAbsenceHours) => {
     const runs = rawRuns.filter((run) => run.mode === mode && run.variant === variant && run.rawAbsenceHours === rawAbsenceHours);
     const attributionFields = [
-      'jobConstructionMs', 'workerSubmissionMs', 'workerExecutionSumMs', 'hydrationMs', 'fifoCommitWaitMs',
+      'jobConstructionMs', 'workerSubmissionMs', 'workerExecutionSumMs',
+      'workerInputQueueMs', 'workerInputHydrationMs', 'workerLanguageReadyMs', 'workerSimulationExecutionMs',
+      'workerBattleCount', 'workerBattleTotalMs', 'workerBattlePreparationMs', 'workerBattleInputWriteMs',
+      'workerBattleNativeExecutionMs', 'workerBattleBorrowedOutputValidationMs', 'workerBattleOutputConsumeMs',
+      'workerBattleInputBytes', 'workerBattleOutputBytes', 'workerBattleResultBagEntryAllocations',
+      'hydrationMs', 'fifoCommitWaitMs',
       'chunkCommitReactVisibilityMs', 'autoEquipmentMs', 'autoEquipmentReactVisibilityMs',
       'atomicTransactionReactVisibilityMs', 'chunkReducerMs', 'autoEquipmentReducerMs',
       'rendererTransactionBoundaryMs', 'rendererTransactionBoundarySharePercent', 'persistenceRendererMs',

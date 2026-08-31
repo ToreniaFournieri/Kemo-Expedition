@@ -84,6 +84,7 @@ export interface AfkPartyChunkJob {
   isFirstWorkerJob?: boolean;
   inputTransferBytes?: number;
   workerOptimization?: AfkWorkerSimulationStrategy;
+  compactBattleResultOutput?: boolean;
 }
 
 export interface AfkPartyChunkColdWorkerJob extends AfkPartyChunkJob {
@@ -143,7 +144,19 @@ export type AfkPartyChunkInventoryWorkerJob =
 export interface AfkWorkerPerformanceTelemetry {
   workerStartupMs: number;
   queueMs: number;
+  inputHydrationMs: number;
+  languageReadyMs: number;
   executionMs: number;
+  battleCount: number;
+  battleTotalMs: number;
+  battlePreparationMs: number;
+  battleInputWriteMs: number;
+  battleNativeExecutionMs: number;
+  battleBorrowedOutputValidationMs: number;
+  battleOutputConsumeMs: number;
+  battleInputBytes: number;
+  battleOutputBytes: number;
+  battleResultBagEntryAllocations: number;
   inputTransferBytes: number | null;
   outputTransferBytes: number | null;
 }
@@ -803,7 +816,19 @@ export function createAfkPartyChunkResult(
     workerTelemetry: {
       workerStartupMs: Math.max(0, workerTelemetry.workerStartupMs ?? 0),
       queueMs: Math.max(0, workerTelemetry.queueMs ?? 0),
+      inputHydrationMs: Math.max(0, workerTelemetry.inputHydrationMs ?? 0),
+      languageReadyMs: Math.max(0, workerTelemetry.languageReadyMs ?? 0),
       executionMs: Math.max(0, workerTelemetry.executionMs ?? durationMs),
+      battleCount: Math.max(0, workerTelemetry.battleCount ?? 0),
+      battleTotalMs: Math.max(0, workerTelemetry.battleTotalMs ?? 0),
+      battlePreparationMs: Math.max(0, workerTelemetry.battlePreparationMs ?? 0),
+      battleInputWriteMs: Math.max(0, workerTelemetry.battleInputWriteMs ?? 0),
+      battleNativeExecutionMs: Math.max(0, workerTelemetry.battleNativeExecutionMs ?? 0),
+      battleBorrowedOutputValidationMs: Math.max(0, workerTelemetry.battleBorrowedOutputValidationMs ?? 0),
+      battleOutputConsumeMs: Math.max(0, workerTelemetry.battleOutputConsumeMs ?? 0),
+      battleInputBytes: Math.max(0, workerTelemetry.battleInputBytes ?? 0),
+      battleOutputBytes: Math.max(0, workerTelemetry.battleOutputBytes ?? 0),
+      battleResultBagEntryAllocations: Math.max(0, workerTelemetry.battleResultBagEntryAllocations ?? 0),
       inputTransferBytes: normalizeTransferBytes(workerTelemetry.inputTransferBytes ?? job.inputTransferBytes),
       outputTransferBytes: normalizeTransferBytes(workerTelemetry.outputTransferBytes),
     },
