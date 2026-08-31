@@ -174,7 +174,8 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(homeSource, /afkAuthoritativeDispatchStateRef\.current = afkLiveProfileStateRef\.current/);
   assert.match(homeSource, /afkActiveCommitTransactionRef\.current = \{/);
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
-  assert.match(homeSource, /actions\.commitAfkPartyTransaction\([\s\S]{0,500}\(committedState\) =>/);
+  assert.match(homeSource, /const autoEquipment = capturedSettingChanges[\s\S]{0,500}\(committedState: GameState\) =>/);
+  assert.match(homeSource, /actions\.commitAfkPartyTransaction\([\s\S]{0,200}autoEquipment/);
   assert.match(hookSource, /const committedState = commitAfkPartyChunk\(state, action\.result\)[\s\S]{0,500}action\.autoEquipment\(committedState\)/);
   assert.match(homeSource, /transaction\.stage === 'auto_equipment_dispatched'/);
   assert.match(homeSource, /actions\.applyAutoEquipmentActions\(plan\.actions\)/);
@@ -216,10 +217,27 @@ test('compact battle output remains isolated to the live-profile candidate', () 
   );
 });
 
+test('coordinator authority and bounded dispatch pacing remain isolated before promotion', () => {
+  assert.match(
+    liveProfileSource,
+    /useAfkCoordinatorAuthorityCandidate\(\): boolean \{[\s\S]{0,260}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,80}runtime\?\.variant === 'coordinator-paced'/,
+  );
+  assert.match(liveProfileSource, /useAfkCoordinatorDispatchPacingCandidate\(\): boolean \{[\s\S]{0,160}runtime\?\.variant === 'coordinator-paced'/);
+  assert.match(homeSource, /commitAfkPartyTransactionAuthoritatively[\s\S]{0,1800}completeAfkCommitTransaction\(completedResult\)/);
+  assert.match(homeSource, /coordinator_authority_react_publication/);
+  assert.match(homeSource, /afkAuthorityDispatchYieldedRef\.current = true[\s\S]{0,300}coordinator_authority_dispatch_pace/);
+  assert.match(homeSource, /coordinator_authority_ack_to_worker_post/);
+  assert.match(homeSource, /worker_slot_idle_before_dispatch/);
+  assert.match(hookSource, /new GameStateAuthority\(initialStateRef\.current\.state, gameReducer\)/);
+  assert.match(hookSource, /requestOrdinary\(latestGameStateRef\.current\)/);
+  assert.match(hookSource, /simulateExpeditionRuns\(latestGameStateRef\.current/);
+  assert.match(homeSource, /publishAfkAuthority\(\)[\s\S]{0,160}afkInteractionPauseStartedAtRef/);
+});
+
 test('renderer Party-status memoization is production-on and independently profileable', () => {
   assert.match(
     liveProfileSource,
-    /useAfkRendererPartyStatsMemo\(\): boolean \{\s*return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,160}runtime\?\.variant === 'renderer-memo'[\s\S]{0,80}runtime\?\.variant === 'candidate';/,
+    /useAfkRendererPartyStatsMemo\(\): boolean \{\s*return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,160}runtime\?\.variant === 'renderer-memo'[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,100}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,100}runtime\?\.variant === 'coordinator-paced';/,
   );
   assert.match(homeSource, /shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo\(\)[\s\S]{0,160}computePresentationPartyStats = shouldOptimizeAfkRenderer[\s\S]{0,80}computeRendererPartyStats/);
   assert.match(homeSource, /computePartyStatus=\{computePresentationPartyStats\}/);

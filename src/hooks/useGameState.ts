@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { GameMode } from '../theme/theme';
 import {
   GameState,
@@ -148,6 +148,8 @@ import {
 import { afkRuntimeTrace } from '../game/afkRuntimeTrace';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
+import { GameStateAuthority, type AuthorityReceipt } from '../game/gameStateAuthority';
+import { useAfkCoordinatorAuthorityCandidate } from '../game/afkLiveProfile';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -6291,9 +6293,48 @@ export function useGameState() {
   if (!initialStateRef.current) {
     initialStateRef.current = createInitialState();
   }
-  const [state, dispatch] = useReducer(gameReducer, initialStateRef.current.state);
+  const shouldUseCoordinatorAuthority = useAfkCoordinatorAuthorityCandidate();
+  const authorityRef = useRef<GameStateAuthority<GameState, GameAction> | null>(null);
+  if (!authorityRef.current) {
+    authorityRef.current = new GameStateAuthority(initialStateRef.current.state, gameReducer);
+  }
+  const authority = authorityRef.current;
+  const [reactState, reactDispatch] = useReducer(
+    (current: GameState | null, action: GameAction): GameState | null => gameReducer(
+      current ?? authority.getAuthoritativeSnapshot().state,
+      action,
+    ),
+    shouldUseCoordinatorAuthority ? null : initialStateRef.current.state,
+  );
+  const [presentedSnapshot, setPresentedSnapshot] = useState(authority.getPresentedSnapshot);
+  useEffect(() => authority.subscribe(() => {
+    setPresentedSnapshot(authority.getPresentedSnapshot());
+  }), [authority]);
+  const state = shouldUseCoordinatorAuthority ? presentedSnapshot.state : (reactState as GameState);
   const latestGameStateRef = useRef(state);
-  latestGameStateRef.current = state;
+  latestGameStateRef.current = shouldUseCoordinatorAuthority
+    ? authority.getAuthoritativeSnapshot().state
+    : (reactState as GameState);
+  // Do not pin the boot snapshot after either state owner has advanced. The
+  // coordinator candidate deliberately leaves its dormant React reducer null,
+  // so authority/presentation are its only retained GameState roots.
+  initialStateRef.current.state = latestGameStateRef.current;
+  const dispatchAuthoritative = useCallback((
+    action: GameAction,
+    publish: boolean = true,
+  ): AuthorityReceipt<GameState> => {
+    const receipt = authority.apply(action);
+    latestGameStateRef.current = receipt.state;
+    if (publish) authority.publishLatest();
+    return receipt;
+  }, [authority]);
+  const dispatch = useCallback((action: GameAction): void => {
+    if (shouldUseCoordinatorAuthority) {
+      dispatchAuthoritative(action);
+    } else {
+      reactDispatch(action);
+    }
+  }, [dispatchAuthoritative, shouldUseCoordinatorAuthority]);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
   const [saveErrorLog, setSaveErrorLog] = useState<string | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -6362,7 +6403,7 @@ export function useGameState() {
     const msSinceLastSave = now - lastSavedAtRef.current;
 
     const requestSave = () => {
-      persistenceCoordinatorRef.current?.requestOrdinary(state);
+      persistenceCoordinatorRef.current?.requestOrdinary(latestGameStateRef.current);
       lastSavedAtRef.current = Date.now();
     };
 
@@ -6505,8 +6546,8 @@ export function useGameState() {
     }, []),
 
     simulateExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', onProgress?: (completed: number, total: number) => void) => (
-      simulateExpeditionRuns(state, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress)
-    ), [state]),
+      simulateExpeditionRuns(latestGameStateRef.current, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress)
+    ), []),
 
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
@@ -6660,11 +6701,36 @@ export function useGameState() {
       dispatch({ type: 'COMMIT_AFK_PARTY_TRANSACTION', result, autoEquipment, attribution });
     }, []),
 
+    commitAfkPartyTransactionAuthoritatively: useCallback((
+      result: AfkPartyChunkResult,
+      autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner,
+      attribution?: AfkPartyTransactionAttribution,
+    ) => dispatchAuthoritative({
+      type: 'COMMIT_AFK_PARTY_TRANSACTION',
+      result,
+      autoEquipment,
+      attribution,
+    }, false), [dispatchAuthoritative]),
+
+    getAuthoritativeState: useCallback(() => authority.getAuthoritativeSnapshot(), [authority]),
+
+    publishAuthoritativeState: useCallback(() => {
+      const previousPresentedVersion = authority.getPresentedSnapshot().version;
+      const authoritative = authority.getAuthoritativeSnapshot();
+      const published = authority.publishLatest();
+      return {
+        published,
+        version: authoritative.version,
+        previousPresentedVersion,
+        delayMs: Math.max(0, performance.now() - authoritative.installedAt),
+      };
+    }, [authority]),
+
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {
-      const batch = simulateApiSortieBatchForTesting(state, partyIndex, count, gameMode, simulatedAt);
+      const batch = simulateApiSortieBatchForTesting(latestGameStateRef.current, partyIndex, count, gameMode, simulatedAt);
       dispatch({ type: 'COMMIT_API_STATE', state: batch.state });
       return batch;
-    }, [state]),
+    }, []),
 
     resetGame: useCallback(() => {
       dispatch({ type: 'RESET_GAME' });

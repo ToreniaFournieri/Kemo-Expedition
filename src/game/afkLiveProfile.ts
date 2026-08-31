@@ -22,7 +22,7 @@ const RUNTIME_STORAGE_KEY = 'kemo-expedition-afk-runtime';
 const AUTO_EQUIPMENT_STORAGE_KEY = 'kemo-expedition-auto-equipment';
 
 type ProfileMode = 'timing' | 'memory';
-export type AfkLiveProfileVariant = 'baseline' | 'candidate' | 'renderer-memo';
+export type AfkLiveProfileVariant = 'baseline' | 'candidate' | 'renderer-memo' | 'coordinator-authority' | 'coordinator-paced';
 
 export interface AfkLiveProfileMemoryPoint {
   readonly label: 'initial' | 'completion' | 'settled';
@@ -70,6 +70,15 @@ export interface AfkLiveProfileResult {
     readonly autoEquipmentMs: number;
     readonly autoEquipmentReactVisibilityMs: number;
     readonly atomicTransactionReactVisibilityMs: number;
+    readonly coordinatorAuthorityTransactionMs: number;
+    readonly coordinatorAuthorityTransactionMaximumMs: number;
+    readonly coordinatorAuthorityTransactionCount: number;
+    readonly coordinatorAuthorityPublicationCount: number;
+    readonly coordinatorAuthorityTransactionsPerPublication: number;
+    readonly coordinatorAuthorityPublicationDelayMs: number;
+    readonly coordinatorAuthorityDispatchPaceMs: number;
+    readonly coordinatorAuthorityAckToWorkerPostMs: number;
+    readonly workerSlotIdleBeforeDispatchMs: number;
     readonly chunkReducerMs: number;
     readonly autoEquipmentReducerMs: number;
     readonly rendererTransactionBoundaryMs: number;
@@ -165,6 +174,14 @@ function nearestRank(values: readonly number[], ratio: number): number {
 
 function sumEventDurations(trace: AfkTraceDiagnosticExport, eventName: string): number {
   return trace.aggregatesByEvent[eventName]?.totalDurationMs ?? 0;
+}
+
+function countEvents(trace: AfkTraceDiagnosticExport, eventName: string): number {
+  return trace.aggregatesByEvent[eventName]?.count ?? 0;
+}
+
+function maxEventDuration(trace: AfkTraceDiagnosticExport, eventName: string): number {
+  return trace.aggregatesByEvent[eventName]?.maxDurationMs ?? 0;
 }
 
 function sumEventDataValue(trace: AfkTraceDiagnosticExport, eventName: string, key: string): number {
@@ -284,7 +301,10 @@ export function prepareAfkLiveProfile(): void {
   const rawAbsenceHours = RAW_HOUR_OPTIONS.has(requestedHours) ? requestedHours : 162;
   const mode: ProfileMode = params.get('afkProfileMode') === 'memory' ? 'memory' : 'timing';
   const requestedVariant = params.get('afkProfileVariant');
-  const variant: AfkLiveProfileVariant = requestedVariant === 'baseline' || requestedVariant === 'renderer-memo'
+  const variant: AfkLiveProfileVariant = requestedVariant === 'baseline'
+    || requestedVariant === 'renderer-memo'
+    || requestedVariant === 'coordinator-authority'
+    || requestedVariant === 'coordinator-paced'
     ? requestedVariant
     : 'candidate';
   const requestedWorkerLimit = Number(params.get('afkProfileWorkers'));
@@ -373,11 +393,24 @@ export function useAfkCompactBattleResultCandidate(): boolean {
   return __AFK_LIVE_PROFILE_ENABLED__ && runtime?.variant === 'candidate';
 }
 
+/** Profile-only until authority, interaction, persistence, timing, and memory gates pass. */
+export function useAfkCoordinatorAuthorityCandidate(): boolean {
+  return __AFK_LIVE_PROFILE_ENABLED__
+    && (runtime?.variant === 'coordinator-authority' || runtime?.variant === 'coordinator-paced');
+}
+
+/** Yields briefly after authority acknowledgement while another worker is active. */
+export function useAfkCoordinatorDispatchPacingCandidate(): boolean {
+  return __AFK_LIVE_PROFILE_ENABLED__ && runtime?.variant === 'coordinator-paced';
+}
+
 /** Production uses immutable Party identity memoization; baseline profiles can disable it. */
 export function useAfkRendererPartyStatsMemo(): boolean {
   return !__AFK_LIVE_PROFILE_ENABLED__
     || runtime?.variant === 'renderer-memo'
-    || runtime?.variant === 'candidate';
+    || runtime?.variant === 'candidate'
+    || runtime?.variant === 'coordinator-authority'
+    || runtime?.variant === 'coordinator-paced';
 }
 
 /** Returns a profile-only pool-width override; production always returns undefined. */
@@ -455,7 +488,12 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
     const autoEquipmentMs = sumEventDurations(trace, 'auto_equipment_complete');
     const autoEquipmentReactVisibilityMs = sumEventDurations(trace, 'auto_equipment_react_visible');
     const atomicTransactionReactVisibilityMs = sumEventDurations(trace, 'atomic_transaction_react_visible');
-    const rendererTransactionBoundaryMs = atomicTransactionReactVisibilityMs > 0
+    const coordinatorAuthorityTransactionMs = sumEventDurations(trace, 'coordinator_authority_transaction');
+    const coordinatorAuthorityTransactionCount = countEvents(trace, 'coordinator_authority_transaction');
+    const coordinatorAuthorityPublicationCount = countEvents(trace, 'coordinator_authority_react_publication');
+    const rendererTransactionBoundaryMs = coordinatorAuthorityTransactionCount > 0
+      ? coordinatorAuthorityTransactionMs
+      : atomicTransactionReactVisibilityMs > 0
       // The single-publication timer starts before reducer dispatch, so it
       // already contains Chunk merge, equipment planning/application, and the
       // one React visibility wait.
@@ -517,6 +555,17 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
         autoEquipmentMs,
         autoEquipmentReactVisibilityMs,
         atomicTransactionReactVisibilityMs,
+        coordinatorAuthorityTransactionMs,
+        coordinatorAuthorityTransactionMaximumMs: maxEventDuration(trace, 'coordinator_authority_transaction'),
+        coordinatorAuthorityTransactionCount,
+        coordinatorAuthorityPublicationCount,
+        coordinatorAuthorityTransactionsPerPublication: coordinatorAuthorityPublicationCount > 0
+          ? coordinatorAuthorityTransactionCount / coordinatorAuthorityPublicationCount
+          : 0,
+        coordinatorAuthorityPublicationDelayMs: sumEventDurations(trace, 'coordinator_authority_react_publication'),
+        coordinatorAuthorityDispatchPaceMs: sumEventDurations(trace, 'coordinator_authority_dispatch_pace'),
+        coordinatorAuthorityAckToWorkerPostMs: sumEventDurations(trace, 'coordinator_authority_ack_to_worker_post'),
+        workerSlotIdleBeforeDispatchMs: sumEventDurations(trace, 'worker_slot_idle_before_dispatch'),
         chunkReducerMs: sumEventDurations(trace, 'chunk_transaction_reducer'),
         autoEquipmentReducerMs: sumEventDurations(trace, 'auto_equipment_transaction_reducer'),
         rendererTransactionBoundaryMs,

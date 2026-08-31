@@ -54,8 +54,8 @@ if (!['timing', 'memory', 'both'].includes(requestedMode)) throw new Error('mode
 const modes = requestedMode === 'both' ? ['timing', 'memory'] : [requestedMode];
 const requestedVariants = process.argv.find((value) => value.startsWith('--variants='))?.slice(11) ?? 'candidate';
 const variants = requestedVariants.split(',');
-if (variants.length === 0 || variants.some((variant) => !['baseline', 'candidate', 'renderer-memo'].includes(variant))) {
-  throw new Error('variants must use baseline, candidate, or renderer-memo');
+if (variants.length === 0 || variants.some((variant) => !['baseline', 'candidate', 'renderer-memo', 'coordinator-authority', 'coordinator-paced'].includes(variant))) {
+  throw new Error('variants must use baseline, candidate, renderer-memo, coordinator-authority, or coordinator-paced');
 }
 const samples = positive('samples', 1);
 const warmups = positive('warmups', 0, true);
@@ -173,6 +173,11 @@ app.whenReady().then(async () => {
       'hydrationMs', 'fifoCommitWaitMs',
       'chunkCommitReactVisibilityMs', 'autoEquipmentMs', 'autoEquipmentReactVisibilityMs',
       'atomicTransactionReactVisibilityMs', 'chunkReducerMs', 'autoEquipmentReducerMs',
+      'coordinatorAuthorityTransactionMs', 'coordinatorAuthorityTransactionMaximumMs', 'coordinatorAuthorityTransactionCount',
+      'coordinatorAuthorityPublicationCount', 'coordinatorAuthorityTransactionsPerPublication',
+      'coordinatorAuthorityPublicationDelayMs',
+      'coordinatorAuthorityDispatchPaceMs', 'coordinatorAuthorityAckToWorkerPostMs',
+      'workerSlotIdleBeforeDispatchMs',
       'rendererTransactionBoundaryMs', 'rendererTransactionBoundarySharePercent', 'persistenceRendererMs',
       'checkpointMs', 'recoveryFinalizationMs',
       'rendererPartyStatsCalls', 'rendererPartyStatsHits', 'rendererPartyStatsMisses', 'rendererPartyStatsComputeMs',

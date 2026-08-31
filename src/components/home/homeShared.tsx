@@ -230,6 +230,24 @@ export interface HomeScreenProps {
       autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner,
       attribution?: AfkPartyTransactionAttribution,
     ) => void;
+    commitAfkPartyTransactionAuthoritatively: (
+      result: AfkPartyChunkResult,
+      autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner,
+      attribution?: AfkPartyTransactionAttribution,
+    ) => {
+      version: number;
+      previousVersion: number;
+      changed: boolean;
+      state: GameState;
+      installedAt: number;
+    };
+    getAuthoritativeState: () => { version: number; state: GameState; installedAt: number };
+    publishAuthoritativeState: () => {
+      published: boolean;
+      version: number;
+      previousPresentedVersion: number;
+      delayMs: number;
+    };
     runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
       state: GameState;
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;

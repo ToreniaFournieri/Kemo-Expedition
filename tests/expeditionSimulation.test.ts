@@ -9,7 +9,7 @@ const simulationSource = readFileSync(new URL('../src/game/expeditionSimulation.
 test('expedition simulations resolve isolated authoritative runs and yield asynchronously', () => {
   assert.match(simulationSource, /EXPEDITION_SIMULATION_RUN_COUNT = 1_000/);
   assert.match(hookSource, /count = EXPEDITION_SIMULATION_RUN_COUNT/);
-  assert.match(hookSource, /simulateExpeditionRuns\(state, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress\)/);
+  assert.match(hookSource, /simulateExpeditionRuns\(latestGameStateRef\.current, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress\)/);
   assert.match(hookSource, /export async function simulateExpeditionRuns/);
   assert.match(hookSource, /export function createSimulationSandbox/);
   assert.match(hookSource, /const party = structuredClone\(sourceParty\)/);
