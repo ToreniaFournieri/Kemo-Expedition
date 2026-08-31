@@ -1,4 +1,4 @@
-import { Fragment,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
+import { Fragment,memo,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
 import {
 DUNGEONS,
 getEffectiveEnemyLevel,
@@ -12,7 +12,7 @@ import { getDifficultyOffsetItemChanceTickets,getDifficultyOffsetMax,getDifficul
 import { getItemDisplayName } from '../../../game/gameState';
 import { EXPEDITION_SIMULATION_RUN_COUNT } from '../../../game/expeditionSimulation';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
-import { computePartyStats } from '../../../game/partyComputation';
+import { computePartyStats,type ComputedPartyStatus } from '../../../game/partyComputation';
 import { t } from '../../../i18n';
 import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item,Party } from '../../../types';
 
@@ -63,28 +63,7 @@ STEP_BASED_STATES,
 UiIconKey
 } from '../homeShared';
 
-export default function ExpeditionTab({
-  state,
-  debugSettings,
-  emulatedNowMs,
-  onSelectDungeon,
-  onToggleExpeditionDestinationMode,
-  onSetExpeditionDepthLimit,
-  onSetExpeditionDifficultyOffset,
-  onResetExpeditionStats,
-  onSimulateExpedition,
-  isExpeditionStatsDisplayEnabled,
-  partyCycles,
-  afkRecoveryProgressPercent,
-  afkRecoveryCompletedMs,
-  afkRecoveryTotalMs,
-  onTriggerSortie,
-  expandedLogParty,
-  setExpandedLogParty,
-  expandedRoom,
-  setExpandedRoom,
-  isDarkModeEnabled,
-}: {
+interface ExpeditionTabProps {
   state: GameState;
   debugSettings: DebugSettings;
   emulatedNowMs: number;
@@ -105,7 +84,34 @@ export default function ExpeditionTab({
   expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
   isDarkModeEnabled: boolean;
-}) {
+  computePartyStatus?: (party: Party) => ComputedPartyStatus;
+  afkPresentationVersion: number;
+  throttleAfkPublications: boolean;
+}
+
+function ExpeditionTab({
+  state,
+  debugSettings,
+  emulatedNowMs,
+  onSelectDungeon,
+  onToggleExpeditionDestinationMode,
+  onSetExpeditionDepthLimit,
+  onSetExpeditionDifficultyOffset,
+  onResetExpeditionStats,
+  onSimulateExpedition,
+  isExpeditionStatsDisplayEnabled,
+  partyCycles,
+  afkRecoveryProgressPercent,
+  afkRecoveryCompletedMs,
+  afkRecoveryTotalMs,
+  onTriggerSortie,
+  expandedLogParty,
+  setExpandedLogParty,
+  expandedRoom,
+  setExpandedRoom,
+  isDarkModeEnabled,
+  computePartyStatus = computePartyStats,
+}: ExpeditionTabProps) {
   const [liveProgressNowMs, setLiveProgressNowMs] = useState(() => Date.now());
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -454,7 +460,7 @@ export default function ExpeditionTab({
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: progressNowMs, durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, progressNowMs - cycle.stateStartedAt);
-        const { partyStats } = computePartyStats(party);
+        const { partyStats } = computePartyStatus(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const disclosedLog = cycle.state === 'explore'
@@ -1401,5 +1407,13 @@ export default function ExpeditionTab({
     </div>
   );
 }
+
+function areExpeditionTabPropsEqual(previous: ExpeditionTabProps, next: ExpeditionTabProps): boolean {
+  if (!previous.throttleAfkPublications || !next.throttleAfkPublications) return false;
+  if (previous.afkRecoveryProgressPercent === null || next.afkRecoveryProgressPercent === null) return false;
+  return previous.afkPresentationVersion === next.afkPresentationVersion;
+}
+
+export default memo(ExpeditionTab, areExpeditionTabPropsEqual);
 
 // SpecRef: 8.4 | UI_BASE | Base(拠点)

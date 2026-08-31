@@ -12,8 +12,11 @@ import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.t
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import {
   computePartyMaxHp,
+  computeRendererPartyStats,
   computePartyStats,
   createPartyMaxHpLedger,
+  getRendererPartyStatsMemoTelemetry,
+  resetRendererPartyStatsMemoForProfiling,
   updatePartyMaxHpLedger,
 } from '../../src/game/partyComputation.ts';
 import { JEWELS_BY_ITEM_CATEGORY } from '../../src/game/jewel.ts';
@@ -51,6 +54,27 @@ test('HP-only party computation is exact for every save-backed party', () => {
   for (const party of state.parties) {
     assert.equal(computePartyMaxHp(party), computePartyStats(party).partyStats.hp);
   }
+});
+
+test('renderer Party-status memoization reuses immutable identities and invalidates replacements', () => {
+  const party = loadFixture().parties[0];
+  resetRendererPartyStatsMemoForProfiling();
+
+  const first = computeRendererPartyStats(party);
+  const second = computeRendererPartyStats(party);
+  const replacement = { ...party, level: party.level + 1 };
+  const replaced = computeRendererPartyStats(replacement);
+
+  assert.strictEqual(second, first);
+  assert.notStrictEqual(replaced, first);
+  assert.deepEqual(first, computePartyStats(party));
+  assert.deepEqual(replaced, computePartyStats(replacement));
+  assert.deepEqual(getRendererPartyStatsMemoTelemetry(), {
+    calls: 3,
+    hits: 1,
+    misses: 2,
+    computeMs: getRendererPartyStatsMemoTelemetry().computeMs,
+  });
 });
 
 test('incremental HP ledger rebuilds on party-wide HP input changes', () => {

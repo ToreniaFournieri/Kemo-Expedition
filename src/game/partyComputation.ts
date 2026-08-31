@@ -283,6 +283,21 @@ export interface ComputedPartyStatus {
   characterStats: ComputedCharacterStats[];
 }
 
+export interface RendererPartyStatsMemoTelemetry {
+  calls: number;
+  hits: number;
+  misses: number;
+  computeMs: number;
+}
+
+let rendererPartyStatsMemo = new WeakMap<Party, ComputedPartyStatus>();
+let rendererPartyStatsMemoTelemetry: RendererPartyStatsMemoTelemetry = {
+  calls: 0,
+  hits: 0,
+  misses: 0,
+  computeMs: 0,
+};
+
 // SpecRef: 2.1.2 | Party | computePartyStats
 export function computePartyStats(party: Party): ComputedPartyStatus {
   const baseCharacterStats: ComputedCharacterStats[] = party.characters.map((c, index) =>
@@ -364,6 +379,37 @@ export function computePartyStats(party: Party): ComputedPartyStatus {
     },
     characterStats,
   };
+}
+
+/**
+ * Reuses an immutable Party projection across renderer publications. Game
+ * reducers replace a Party whenever any stat input changes, so object identity
+ * is the exact invalidation boundary and the WeakMap cannot retain old saves.
+ * Worker and authoritative simulation code continue to call the uncached
+ * canonical function above.
+ */
+export function computeRendererPartyStats(party: Party): ComputedPartyStatus {
+  rendererPartyStatsMemoTelemetry.calls += 1;
+  const cached = rendererPartyStatsMemo.get(party);
+  if (cached) {
+    rendererPartyStatsMemoTelemetry.hits += 1;
+    return cached;
+  }
+  const startedAt = performance.now();
+  const computed = computePartyStats(party);
+  rendererPartyStatsMemoTelemetry.misses += 1;
+  rendererPartyStatsMemoTelemetry.computeMs += Math.max(0, performance.now() - startedAt);
+  rendererPartyStatsMemo.set(party, computed);
+  return computed;
+}
+
+export function resetRendererPartyStatsMemoForProfiling(): void {
+  rendererPartyStatsMemo = new WeakMap<Party, ComputedPartyStatus>();
+  rendererPartyStatsMemoTelemetry = { calls: 0, hits: 0, misses: 0, computeMs: 0 };
+}
+
+export function getRendererPartyStatsMemoTelemetry(): Readonly<RendererPartyStatsMemoTelemetry> {
+  return { ...rendererPartyStatsMemoTelemetry };
 }
 
 function getAbilityName(id: AbilityId, level: number): string {

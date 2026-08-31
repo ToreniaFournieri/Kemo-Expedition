@@ -216,6 +216,17 @@ test('compact battle output remains isolated to the live-profile candidate', () 
   );
 });
 
+test('renderer Party-status memoization is production-on and independently profileable', () => {
+  assert.match(
+    liveProfileSource,
+    /useAfkRendererPartyStatsMemo\(\): boolean \{\s*return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,160}runtime\?\.variant === 'renderer-memo'[\s\S]{0,80}runtime\?\.variant === 'candidate';/,
+  );
+  assert.match(homeSource, /shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo\(\)[\s\S]{0,160}computePresentationPartyStats = shouldOptimizeAfkRenderer[\s\S]{0,80}computeRendererPartyStats/);
+  assert.match(homeSource, /computePartyStatus=\{computePresentationPartyStats\}/);
+  assert.match(homeSource, /afkPresentationVersion=\{afkProgressPresentationVersion\}/);
+  assert.match(homeSource, /throttleAfkPublications=\{shouldOptimizeAfkRenderer\}/);
+});
+
 test('AFK Chunk party status is calculated once and reused by all thirty Cycles', () => {
   assert.match(hookSource, /const chunkPartyStatus = action\.chunkPartyStatus \?\? state\.parties\.map\(\(party\) => \(\{\s*party,\s*computed: computePartyStats\(party\),\s*\}\)\);/);
   assert.match(hookSource, /chunkPartyStatus\[options\.partyIndex\] = \{\s*party,\s*computed: computePartyStats\(party\),\s*\};/);

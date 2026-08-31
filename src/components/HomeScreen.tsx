@@ -75,6 +75,7 @@ recordAfkLiveProfileReactCommit,
 useAfkAtomicTransactionCandidate,
 useAfkWorkerSimulationCandidate,
 useAfkCompactBattleResultCandidate,
+useAfkRendererPartyStatsMemo,
 } from '../game/afkLiveProfile';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
@@ -85,7 +86,7 @@ import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from 
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { JEWELS_BY_ITEM_CATEGORY,planAutoJewelAssignmentsForCharacter } from '../game/jewel';
-import { computePartyStats } from '../game/partyComputation';
+import { computePartyStats,computeRendererPartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
@@ -224,6 +225,10 @@ export function HomeScreen({
   onDismissAllNotifications,
 }: HomeScreenProps) {
   const renderStartedAt = performance.now();
+  const shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo();
+  const computePresentationPartyStats = shouldOptimizeAfkRenderer
+    ? computeRendererPartyStats
+    : computePartyStats;
   const prefersDocumentScroll = false;
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [tabTransitionDirection, setTabTransitionDirection] = useState<'forward' | 'backward'>('forward');
@@ -282,6 +287,7 @@ export function HomeScreen({
   const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
   const gameModeRef = useRef(gameMode);
+  const debugSettingsRef = useRef(debugSettings);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
   const [afkInteractionPauseVersion, setAfkInteractionPauseVersion] = useState(0);
 
@@ -343,7 +349,7 @@ export function HomeScreen({
   const afkFifoCommitWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
   const afkCoordinatorPumpRef = useRef<(() => void) | null>(null);
   const renderCommitDurationsRef = useRef<number[]>([]);
-  const [, setAfkProgressPresentationVersion] = useState(0);
+  const [afkProgressPresentationVersion, setAfkProgressPresentationVersion] = useState(0);
   const memoryPreviousAfkActiveRef = useRef(false);
   const memoryOnlineStartedRef = useRef(false);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
@@ -431,6 +437,7 @@ export function HomeScreen({
   apiActionsRef.current = actions;
   apiAutoRunRef.current = isAutoRepeatEnabled;
   apiCyclesRef.current = partyCycles;
+  debugSettingsRef.current = debugSettings;
 
   useEffect(() => {
     if (!isDebugModeEnabled()) return;
@@ -2404,7 +2411,7 @@ export function HomeScreen({
 
   const afkSummaryBaselineRef = useRef<AfkSummaryStats[] | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
-  const { partyStats, characterStats } = computePartyStats(currentParty);
+  const { partyStats, characterStats } = computePresentationPartyStats(currentParty);
 
   useEffect(() => {
     preloadRaceIcons();
@@ -4703,6 +4710,25 @@ export function HomeScreen({
       },
     }));
   };
+  const triggerSortieRef = useRef(triggerSortie);
+  triggerSortieRef.current = triggerSortie;
+  const handleTriggerSortie = useCallback((partyIndex: number, triggerGodsBattle: boolean = false) => {
+    triggerSortieRef.current(partyIndex, triggerGodsBattle);
+  }, []);
+  const handleSimulateExpedition = useCallback(async (
+    partyIndex: number,
+    onProgress?: (completed: number, total: number) => void,
+  ) => {
+    memoryMonitor.setRuntime('simulation', debugSettingsRef.current.timeSpeed);
+    try {
+      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress);
+    } finally {
+      memoryMonitor.setRuntime(
+        pendingAfkMsRef.current > 0 ? 'afk' : autoRepeatEnabledRef.current ? 'online' : 'idle',
+        debugSettingsRef.current.timeSpeed,
+      );
+    }
+  }, []);
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
@@ -4833,25 +4859,21 @@ export function HomeScreen({
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
           onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
           onResetExpeditionStats={actions.resetExpeditionStats}
-          onSimulateExpedition={async (partyIndex, onProgress) => {
-            memoryMonitor.setRuntime('simulation', debugSettings.timeSpeed);
-            try {
-              return await actions.simulateExpedition(partyIndex, gameModeRef.current, onProgress);
-            } finally {
-              memoryMonitor.setRuntime(pendingAfkMsRef.current > 0 ? 'afk' : isAutoRepeatEnabled ? 'online' : 'idle', debugSettings.timeSpeed);
-            }
-          }}
+          onSimulateExpedition={handleSimulateExpedition}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
           afkRecoveryCompletedMs={afkRecoveryCompletedMs}
           afkRecoveryTotalMs={afkRecoveryTotalMs}
-          onTriggerSortie={triggerSortie}
+          onTriggerSortie={handleTriggerSortie}
           expandedLogParty={expeditionExpandedLogParty}
           setExpandedLogParty={setExpeditionExpandedLogParty}
           expandedRoom={expeditionExpandedRoom}
           setExpandedRoom={setExpeditionExpandedRoom}
           isDarkModeEnabled={isDarkModeEnabled}
+          computePartyStatus={computePresentationPartyStats}
+          afkPresentationVersion={afkProgressPresentationVersion}
+          throttleAfkPublications={shouldOptimizeAfkRenderer}
         />
       );
     }
@@ -4990,6 +5012,7 @@ export function HomeScreen({
           });
           afkInteractionPauseStartedAtRef.current = null;
           setAfkInteractionPauseVersion((version) => version + 1);
+          setAfkProgressPresentationVersion((version) => version + 1);
         }, 0);
       }}
       onKeyDownCapture={(event) => {
@@ -5016,6 +5039,7 @@ export function HomeScreen({
           });
           afkInteractionPauseStartedAtRef.current = null;
           setAfkInteractionPauseVersion((version) => version + 1);
+          setAfkProgressPresentationVersion((version) => version + 1);
         }, 0);
       }}
     >

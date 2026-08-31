@@ -54,8 +54,8 @@ if (!['timing', 'memory', 'both'].includes(requestedMode)) throw new Error('mode
 const modes = requestedMode === 'both' ? ['timing', 'memory'] : [requestedMode];
 const requestedVariants = process.argv.find((value) => value.startsWith('--variants='))?.slice(11) ?? 'candidate';
 const variants = requestedVariants.split(',');
-if (variants.length === 0 || variants.some((variant) => !['baseline', 'candidate'].includes(variant))) {
-  throw new Error('variants must use baseline or candidate');
+if (variants.length === 0 || variants.some((variant) => !['baseline', 'candidate', 'renderer-memo'].includes(variant))) {
+  throw new Error('variants must use baseline, candidate, or renderer-memo');
 }
 const samples = positive('samples', 1);
 const warmups = positive('warmups', 0, true);
@@ -175,6 +175,7 @@ app.whenReady().then(async () => {
       'atomicTransactionReactVisibilityMs', 'chunkReducerMs', 'autoEquipmentReducerMs',
       'rendererTransactionBoundaryMs', 'rendererTransactionBoundarySharePercent', 'persistenceRendererMs',
       'checkpointMs', 'recoveryFinalizationMs',
+      'rendererPartyStatsCalls', 'rendererPartyStatsHits', 'rendererPartyStatsMisses', 'rendererPartyStatsComputeMs',
     ];
     return [`${variant}-${mode}-${rawAbsenceHours}h`, {
       mode,

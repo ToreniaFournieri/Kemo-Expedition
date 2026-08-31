@@ -5,6 +5,10 @@ import { resetBattleSeedSourceForTesting } from './battleSeedSource.ts';
 import { createEnvironmentStorageKey } from './environment.ts';
 import { resetGameplayRandomForTesting } from './gameplayRandom.ts';
 import { hydrateLogSegmentedSave } from './logSegmentedSave.ts';
+import {
+  getRendererPartyStatsMemoTelemetry,
+  resetRendererPartyStatsMemoForProfiling,
+} from './partyComputation.ts';
 import { hydrateGameState, serializeGameState } from './saveCodec.ts';
 import { decodePersistedState } from './storageCompression.ts';
 import type { GameState } from '../types';
@@ -18,7 +22,7 @@ const RUNTIME_STORAGE_KEY = 'kemo-expedition-afk-runtime';
 const AUTO_EQUIPMENT_STORAGE_KEY = 'kemo-expedition-auto-equipment';
 
 type ProfileMode = 'timing' | 'memory';
-export type AfkLiveProfileVariant = 'baseline' | 'candidate';
+export type AfkLiveProfileVariant = 'baseline' | 'candidate' | 'renderer-memo';
 
 export interface AfkLiveProfileMemoryPoint {
   readonly label: 'initial' | 'completion' | 'settled';
@@ -73,6 +77,10 @@ export interface AfkLiveProfileResult {
     readonly persistenceRendererMs: number;
     readonly checkpointMs: number;
     readonly recoveryFinalizationMs: number;
+    readonly rendererPartyStatsCalls: number;
+    readonly rendererPartyStatsHits: number;
+    readonly rendererPartyStatsMisses: number;
+    readonly rendererPartyStatsComputeMs: number;
   };
   readonly react: {
     readonly commitCount: number;
@@ -275,7 +283,10 @@ export function prepareAfkLiveProfile(): void {
   const requestedHours = Number(params.get('afkProfileHours') ?? 162);
   const rawAbsenceHours = RAW_HOUR_OPTIONS.has(requestedHours) ? requestedHours : 162;
   const mode: ProfileMode = params.get('afkProfileMode') === 'memory' ? 'memory' : 'timing';
-  const variant: AfkLiveProfileVariant = params.get('afkProfileVariant') === 'baseline' ? 'baseline' : 'candidate';
+  const requestedVariant = params.get('afkProfileVariant');
+  const variant: AfkLiveProfileVariant = requestedVariant === 'baseline' || requestedVariant === 'renderer-memo'
+    ? requestedVariant
+    : 'candidate';
   const requestedWorkerLimit = Number(params.get('afkProfileWorkers'));
   const workerLimit = Number.isInteger(requestedWorkerLimit) && requestedWorkerLimit >= 1 && requestedWorkerLimit <= 6
     ? requestedWorkerLimit
@@ -344,6 +355,7 @@ export function prepareAfkLiveProfile(): void {
     resolve,
     reject,
   };
+  resetRendererPartyStatsMemoForProfiling();
   beginAfkLiveProfileMeasurement();
 }
 
@@ -359,6 +371,13 @@ export function useAfkCompactBattleResultCandidate(): boolean {
   // The candidate remains profile-only because its faster workers increased
   // FIFO coordinator wait beyond the promotion gate.
   return __AFK_LIVE_PROFILE_ENABLED__ && runtime?.variant === 'candidate';
+}
+
+/** Production uses immutable Party identity memoization; baseline profiles can disable it. */
+export function useAfkRendererPartyStatsMemo(): boolean {
+  return !__AFK_LIVE_PROFILE_ENABLED__
+    || runtime?.variant === 'renderer-memo'
+    || runtime?.variant === 'candidate';
 }
 
 /** Returns a profile-only pool-width override; production always returns undefined. */
@@ -452,6 +471,7 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
       ? await componentHashes(canonicalProfileState(persistedState))
       : null;
     const scheduler = input.scheduler;
+    const rendererPartyStatsMemo = getRendererPartyStatsMemoTelemetry();
     const heartbeatDelays = runtime.heartbeatDelays;
     const reactCommitDurations = runtime.reactCommitDurations;
     const result: AfkLiveProfileResult = Object.freeze({
@@ -509,6 +529,10 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
         ].reduce((total, eventName) => total + sumEventDurations(trace, eventName), 0),
         checkpointMs: sumEventDurations(trace, 'afk_checkpoint_complete'),
         recoveryFinalizationMs: sumEventDurations(trace, 'recovery_finalization_complete'),
+        rendererPartyStatsCalls: rendererPartyStatsMemo.calls,
+        rendererPartyStatsHits: rendererPartyStatsMemo.hits,
+        rendererPartyStatsMisses: rendererPartyStatsMemo.misses,
+        rendererPartyStatsComputeMs: rendererPartyStatsMemo.computeMs,
       }),
       react: Object.freeze({
         commitCount: reactCommitDurations.length,
