@@ -1,6 +1,7 @@
 import { GameBags, RandomBag, WeightedBagEntry } from '../types';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { gameplayRandom } from './gameplayRandom';
+import { drawFromBagWithRandom } from './weightedBag';
 
 function cloneEntries(entries: WeightedBagEntry[]): WeightedBagEntry[] {
   return entries.map((entry) => ({ ...entry }));
@@ -266,31 +267,7 @@ function getTotalTickets(bag: RandomBag): number {
 
 // SpecRef: 6.1.6 | REWARD | drawFromBag
 export function drawFromBag(bag: RandomBag): { ticket: number; newBag: RandomBag } {
-  const totalTickets = getTotalTickets(bag);
-  if (totalTickets <= 0) {
-    throw new Error('Bag is empty');
-  }
-
-  const sortedEntries = sortEntriesStable(bag.entries);
-  const roll = Math.floor(gameplayRandom() * totalTickets) + 1;
-  let cumulative = 0;
-
-  const newEntries = sortedEntries.map((entry) => ({ ...entry }));
-  for (let i = 0; i < newEntries.length; i++) {
-    const entry = newEntries[i];
-    if (entry.tickets <= 0) continue;
-
-    cumulative += entry.tickets;
-    if (roll <= cumulative) {
-      newEntries[i] = { ...entry, tickets: entry.tickets - 1 };
-      return {
-        ticket: entry.id,
-        newBag: { entries: newEntries },
-      };
-    }
-  }
-
-  throw new Error('Failed to draw from weighted bag');
+  return drawFromBagWithRandom(bag, gameplayRandom);
 }
 
 // SpecRef: 6.1.6 | REWARD | refillBagIfEmpty

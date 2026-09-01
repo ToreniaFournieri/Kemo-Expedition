@@ -1,5 +1,4 @@
-import { Party } from '../types';
-import { t } from '../i18n';
+import type { Party } from '../types';
 import { getDebugSettings } from './debugSettings';
 import {
   getBossGateKey,
@@ -19,7 +18,7 @@ export type ClearGateCheckResult =
       blocked: true;
       required: number;
       current: number;
-      label: string;
+      labelKey: 'home.gate.bossDefeated' | 'home.gate.consecutiveSuccesses';
     };
 
 export const ENTRY_GATE_REQUIRED = 1;
@@ -73,7 +72,7 @@ export function checkClearGateRequirement(params: {
         blocked: true,
         required: ENTRY_GATE_REQUIRED,
         current,
-        label: t('home.gate.bossDefeated'),
+        labelKey: 'home.gate.bossDefeated',
       };
     }
     return { blocked: false };
@@ -87,6 +86,6 @@ export function checkClearGateRequirement(params: {
     blocked: true,
     required: getClearGateRequired(gateKey),
     current: getClearGateProgress(party, gateKey),
-    label: t('home.gate.consecutiveSuccesses'),
+    labelKey: 'home.gate.consecutiveSuccesses',
   };
 }

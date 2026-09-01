@@ -17,6 +17,12 @@ import {
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
 const battleCandidateSource = readFileSync(new URL('../src/game/battleCandidate.ts', import.meta.url), 'utf8');
+const expeditionBattleRoomSource = readFileSync(new URL('../src/game/expeditionBattleRoom.ts', import.meta.url), 'utf8');
+const expeditionServiceSource = readFileSync(new URL('../src/game/expeditionService.ts', import.meta.url), 'utf8');
+const expeditionNarrationReplaySource = readFileSync(
+  new URL('../src/game/expeditionNarrationReplay.ts', import.meta.url),
+  'utf8',
+);
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
 const liveProfileSource = readFileSync(new URL('../src/game/afkLiveProfile.ts', import.meta.url), 'utf8');
 const rendererProfileSource = readFileSync(
@@ -194,7 +200,8 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(hookSource, /profitAbilityCache\.get\(postFinalizeParty\.id\)/);
   assert.match(hookSource, /hpBaseCache\.get\(postCycleParty\.id\)/);
   assert.match(hookSource, /battleOutputMode: action\.workerOptimization === 'optimized'[\s\S]{0,120}\? 'result-only'/);
-  assert.match(hookSource, /shouldRetainCompleteNarration[\s\S]{0,800}executeBattleWithSeed/);
+  assert.match(hookSource, /shouldRetainCompleteNarration[\s\S]{0,500}replayDeferredExpeditionNarrations/);
+  assert.match(expeditionNarrationReplaySource, /executeBattleWithSeed\(/);
 });
 
 test('the canonical renderer profile accepts presentation-only worker progress', () => {
@@ -251,7 +258,9 @@ test('AFK Chunk party status is calculated once and reused by all thirty Cycles'
   assert.match(hookSource, /for \(const \{ runIndex, partyIndex, partyCycleDurationMs \} of operationWindow\)[\s\S]*chunkPartyStatus: chunkPartyStatus\[partyIndex\]/);
   assert.match(hookSource, /const suppliedPartyStatus = action\.chunkPartyStatus \?\? action\.authoritativePartyStatus/);
   assert.match(hookSource, /const partyStatus = suppliedPartyStatus\?\.computed \?\? computePartyStats\(statusParty\)/);
-  assert.match(hookSource, /executeBattle\(statusParty, enemy, bags, roomStartHp, \{[\s\S]{0,160}partyStatus,/);
+  assert.match(hookSource, /runExpeditionService\(\{[\s\S]{0,160}context: expeditionContext,/);
+  assert.match(expeditionServiceSource, /resolveExpeditionBattleRoom\(\{[\s\S]{0,160}context: input\.context,/);
+  assert.match(expeditionBattleRoomSource, /executeBattle\([\s\S]{0,100}input\.context\.statusParty,[\s\S]{0,220}partyStatus: input\.context\.partyStatus/);
   assert.match(battleCandidateSource, /environment\.partyStatus \?\? computePartyStats\(party\)/);
 });
 

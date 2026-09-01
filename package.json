@@ -11,6 +11,8 @@
     "battle:cxx": "node scripts/build-battle-kernel.mjs",
     "battle:protocol": "node scripts/generate-battle-protocol.mjs",
     "battle:protocol:check": "node scripts/generate-battle-protocol.mjs --check",
+    "mechanics:inventory": "node --experimental-strip-types scripts/generate-mechanic-inventory.mjs",
+    "mechanics:inventory:check": "node --experimental-strip-types scripts/generate-mechanic-inventory.mjs --check",
     "battle:golden:verify": "node --test tests/battleGolden.test.cjs",
     "battle:benchmark": "node --test tests/battlePerformance.test.cjs",
     "memory:benchmark": "npm run memory:benchmark:node && npm run memory:benchmark:renderer",

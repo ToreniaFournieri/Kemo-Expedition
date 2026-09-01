@@ -107,9 +107,9 @@ function isBossRareItem(itemId: number): boolean {
 }
 
 export function addRecoveredBossRaresToGodsBattleProgress(
-  currentProgress: Record<string, number>,
+  currentProgress: Readonly<Record<string, number>>,
   dungeonId: number,
-  recoveredItems: Item[],
+  recoveredItems: readonly Item[],
 ): Record<string, number> {
   const nextProgress = { ...currentProgress };
   const recoveredBossRares = recoveredItems.filter((item) => isBossRareItem(item.id)).length;

@@ -16,14 +16,12 @@ import {
   DiarySettings,
   DiaryDefeatNotificationMode,
   ExpeditionLogEntry,
-  BattleLogEntry,
   InventoryRecord,
   JewelInventory,
   getVariantKey,
   GameNotification,
   NotificationStyle,
   NotificationCategory,
-  RoomType,
   TerrainEffectKey,
   EnemyDef,
   ExpeditionDepthLimit,
@@ -39,19 +37,34 @@ import {
   type ComputedPartyStatus,
   type PartyMaxHpLedger,
 } from '../game/partyComputation';
-import { deriveExpeditionRewardContext } from '../game/expeditionRewardContext';
+import {
+  createExpeditionRunContext,
+} from '../game/expeditionRunContext';
+import {
+  getPartyUnlockSlotForBossVictory,
+  planExpeditionFinalization,
+} from '../game/expeditionTransaction';
+import { runExpeditionService } from '../game/expeditionService';
+import { renderExpeditionServiceResult } from '../game/expeditionPresentation';
+import { planCompletedExpeditionPresentation } from '../game/expeditionCompletionPresentation';
+import {
+  getRewardRarityByItemId,
+  getRewardRarityRank,
+} from '../game/expeditionEffects/rewardDrops';
 import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
-import { executeBattle, executeBattleWithSeed, calculateEnemyAttackValues, recordRunExpeditionStatusAuthority } from '../game/battle';
+import { recordRunExpeditionStatusAuthority } from '../game/battle';
+import { replayDeferredExpeditionNarrations } from '../game/expeditionNarrationReplay';
+import {
+  planCommittedExpeditionState,
+  planForecastExpeditionState,
+} from '../game/expeditionStateInstallation';
+import { planPendingExpeditionDiaryLog } from '../game/expeditionDiary';
 import { gameplayRandom } from '../game/gameplayRandom';
-import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
-import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
+import { getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
-import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
-import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
-import { getGodProfileForDungeon } from '../data/dropTables';
-import { buildGodRuntimeEnemy } from '../game/godEnemy';
-import { getDifficultyOffsetItemChanceTickets, getDifficultyOffsetMax, getDifficultyOffsetSuperRareChanceTickets, normalizeDifficultyOffset } from '../game/difficultyOffset';
-import { formatEnemyDefName } from '../game/enemyDisplay';
+import { DUNGEONS, getDungeonById } from '../data/dungeons';
+import { ENEMIES } from '../data/enemies';
+import { getDifficultyOffsetMax, normalizeDifficultyOffset } from '../game/difficultyOffset';
 import {
   drawFromBag,
   refillBagIfEmpty,
@@ -85,7 +98,7 @@ import type {
 } from '../game/autoEquipmentAttribution';
 import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityKey, getDeityPartyHpMultiplier, getDeityRank, getDeityRewardDrawBonuses, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityPartyHpMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -95,21 +108,17 @@ import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../data/glossary';
 import {
   getGodsBattleRequired,
   getGodsBattleProgress,
-  getGodsBattleProgressKey,
   getEliteGateKey,
   getBossGateKey,
-  getClearGateRequired,
   isClearGateUnlocked,
-  checkClearGateRequirement,
-  addRecoveredBossRaresToGodsBattleProgress,
-  applyClearGateOutcome,
   hasDefeatedDungeonBoss,
   isDungeonEntryUnlocked,
 } from '../game/clearGate';
-import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
+import { resolveSideQuestOutcome } from '../game/expeditionEffects/sideQuestOutcome';
+import { getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
-import { addDiaryLogs, getDiaryOutcomeTrigger } from '../game/diary';
+import { addDiaryLogs } from '../game/diary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopItemPrice,
@@ -136,7 +145,7 @@ import {
   PersistenceCoordinator,
   type PersistenceTelemetryEvent,
 } from '../game/savePersistence';
-import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, getRandomTranslation, t, translate } from '../i18n';
+import { Language, ensureLanguageLoaded, normalizeLanguage, persistLanguage, resolveInitialLanguage, setLanguage as setActiveLanguage, t, translate } from '../i18n';
 import { AFK_MAX_EFFECTIVE_ELAPSED_MS, getAfkOperationWindow, getApproxAfkCycleDurationMs, type AfkSimulationBatchSlice } from '../game/afkScheduler';
 import {
   AFK_CHUNK_CYCLE_COUNT,
@@ -306,19 +315,11 @@ function revealGlossaryFromEncounter(
   };
 }
 
-const PARTY_UNLOCK_BY_DUNGEON_ID: Record<number, number> = {
-  3: 2,
-  4: 3,
-  5: 4,
-  6: 5,
-  7: 6,
-};
-
 function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry, dungeonId?: number): number | null {
   // SpecRef: 5.1.3.2 | Unlock party | Party unlock condition
   if (entry.outcome !== 'victory' || entry.roomType !== 'battle_Boss') return null;
   if (typeof dungeonId !== 'number') return null;
-  return PARTY_UNLOCK_BY_DUNGEON_ID[dungeonId] ?? null;
+  return getPartyUnlockSlotForBossVictory(dungeonId);
 }
 
 const DEFAULT_UNLOCKED_DEITIES: string[] = DEITY_OPTIONS
@@ -876,27 +877,12 @@ function normalizeJewelAutoEquipPriorityPartyId(value: unknown, unlockedPartyCou
   return normalizedPartyId;
 }
 
-function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
-  if (threshold === 'none') return false;
-  if (threshold === 'all') return true;
-  return item.enhancement >= threshold;
-}
-
 // SpecRef: 8.5 | UI_DIARY | Setting.
 function matchesSideQuestDiaryThreshold(rewardRank: number, threshold: DiarySettings['sideQuestThreshold']): boolean {
   if (threshold === 'none') return false;
   if (threshold === 'all') return true;
   if (threshold === 8) return rewardRank === 8;
   return rewardRank >= threshold;
-}
-
-function getItemRarityCode(item: Item): 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' {
-  const rarityCode = item.id % 1000;
-  if (rarityCode >= 500) return 'mythicRare';
-  if (rarityCode >= 400) return 'bossRare';
-  if (rarityCode >= 300) return 'eliteRare';
-  if (rarityCode >= 200) return 'uncommon';
-  return 'common';
 }
 
 type InventoryVariant = InventoryRecord[string];
@@ -2205,176 +2191,28 @@ type GameAction =
   | { type: 'SET_LANGUAGE'; language: Language }
   | { type: 'UNLOCK_PARTY_SLOT' };
 
-// Select enemy based on room type and pool
-function selectEnemyForRoom(
-  roomType: RoomType,
-  poolId?: number,
-  bossId?: number,
-  floorNumber?: number,
-  roomIndex?: number,
-  roomEnemyIds: number[] = [],
-  usedEnemyIdsInRange: ReadonlySet<number> = new Set(),
-): EnemyDef | null {
-  if (poolId === 99 || bossId === 9901) {
-    return buildColosseumEnemy(getColosseumEnemySettings());
-  }
-
-  if (roomType === 'battle_Boss' && bossId) {
-    return getBossEnemy(bossId) ?? null;
-  }
-
-  if (roomEnemyIds.length > 0) {
-    // SpecRef: 4.2 | EXPEDITION_&_ENEMY_MASTER_DATA | Room range enemy uniqueness
-    const explicitEnemies = roomEnemyIds
-      .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
-      .filter((enemy): enemy is EnemyDef => enemy !== undefined)
-      .sort((a, b) => a.id - b.id);
-    const availableEnemies = explicitEnemies.filter((enemy) => !usedEnemyIdsInRange.has(enemy.id));
-    const selectableEnemies = availableEnemies.length > 0 ? availableEnemies : explicitEnemies;
-    if (selectableEnemies.length > 0) {
-      const randomIndex = Math.floor(gameplayRandom() * selectableEnemies.length);
-      return selectableEnemies[randomIndex] ?? selectableEnemies[0] ?? null;
-    }
-  }
-
-  if (!poolId) return null;
-
-  if (roomType === 'battle_Elite') {
-    const elites = getElitesByPool(poolId).sort((a, b) => a.id - b.id);
-    if (elites.length === 0) return null;
-    if (floorNumber && floorNumber <= elites.length) {
-      return elites[floorNumber - 1] ?? null;
-    }
-    const randomIndex = Math.floor(gameplayRandom() * elites.length);
-    return elites[randomIndex];
-  }
-
-  const enemies = getEnemiesByPool(poolId).sort((a, b) => a.id - b.id);
-  if (enemies.length === 0) return null;
-
-  if (floorNumber && roomIndex !== undefined) {
-    // Fixed pools: each floor uses 5 unique normal enemies (pool_1 ... pool_6)
-    const poolOffset = Math.max(0, Math.min(5, floorNumber - 1)) * 5;
-    const floorPool = enemies.slice(poolOffset, poolOffset + 5);
-    if (floorPool.length > 0) {
-      // Normal rooms select randomly from the corresponding floor pool
-      const randomFloorIndex = Math.floor(gameplayRandom() * floorPool.length);
-      return floorPool[randomFloorIndex] ?? floorPool[0] ?? null;
-    }
-  }
-
-  const randomIndex = Math.floor(gameplayRandom() * enemies.length);
-  return enemies[randomIndex];
-}
-
-function getGodShortName(displayName: string): string {
-  return displayName.split(/[ ,]/)[0] ?? displayName;
-}
-
-function createGodEnemy(
-  enemy: EnemyDef,
-  dungeonId: number,
-  dungeonName: string,
-  difficultyOffset: number,
-): EnemyDef {
-  const godProfile = getGodProfileForDungeon(dungeonId, dungeonName);
-  const godName = godProfile ? getGodShortName(godProfile.displayName) : enemy.name;
-
-  if (!godProfile) {
-    return {
-      ...enemy,
-      name: godName,
-      hp: Math.max(1, Math.floor(enemy.hp * 2.6)),
-      rangedAttack: Math.max(0, Math.floor(enemy.rangedAttack * 1.7)),
-      magicalAttack: Math.max(0, Math.floor(enemy.magicalAttack * 1.7)),
-      meleeAttack: Math.max(0, Math.floor(enemy.meleeAttack * 1.7)),
-      rangedNoA: Math.max(1, Math.ceil(enemy.rangedNoA * 1.2)),
-      magicalNoA: Math.max(1, Math.ceil(enemy.magicalNoA * 1.2)),
-      meleeNoA: Math.max(1, Math.ceil(enemy.meleeNoA * 1.2)),
-      rangedAttackAmplifier: enemy.rangedAttackAmplifier * 1.25,
-      magicalAttackAmplifier: enemy.magicalAttackAmplifier * 1.25,
-      meleeAttackAmplifier: enemy.meleeAttackAmplifier * 1.25,
-      physicalDefense: Math.max(0, Math.floor(enemy.physicalDefense * 1.6)),
-      magicalDefense: Math.max(0, Math.floor(enemy.magicalDefense * 1.6)),
-      physicalDefenseAmplifier: enemy.physicalDefenseAmplifier * 1.15,
-      magicalDefenseAmplifier: enemy.magicalDefenseAmplifier * 1.15,
-      experience: Math.floor(enemy.experience * 2.2),
-    };
-  }
-
-  const godItemIds = godProfile.itemIds;
-
-  const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, difficultyOffset);
-
-  if (!runtimeGodEnemy) {
-    return {
-      ...enemy,
-      name: godName,
-      nameKey: undefined,
-      enemyClass: godProfile.enemyClass,
-      abilities: godProfile.abilities,
-      itemIds: godItemIds,
-      isGodEnemy: true,
-    };
-  }
-
-  return {
-    ...enemy,
-    ...runtimeGodEnemy,
-    id: godProfile.enemyId,
-    type: enemy.type,
-    spawnTier: enemy.spawnTier,
-    spawnPool: enemy.spawnPool,
-    poolId: enemy.poolId,
-    itemIds: godItemIds,
-    isGodEnemy: true,
-  };
-}
-
-function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' {
-  const rarityCode = itemId % 1000;
-  if (rarityCode >= 500) return 'mythicRare';
-  if (rarityCode >= 400) return 'bossRare';
-  if (rarityCode >= 300) return 'eliteRare';
-  if (rarityCode >= 200) return 'uncommon';
-  return 'common';
-}
-
-
-function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+function applyAfkExpeditionSideQuestOutcome(state: GameState, partyIndex: number, simulatedAt: number): GameState {
   const party = state.parties[partyIndex];
-  const sideQuestType = party?.sideQuest?.type;
   const afkLog = party?.lastExpeditionLog;
-  if (!sideQuestType || !afkLog) return state;
-
-  switch (sideQuestType) {
-    case 'q.treasure_super_rare':
-    case 'q.treasure-super-rare': {
-      const gained = afkLog.rewards.filter((item) => item.superRare > 0).length;
-      return gained > 0 ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt }) : state;
-    }
-    case 'q.treasure_boss_rare':
-    case 'q.treasure-boss-rare': {
-      const gained = afkLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
-      return gained > 0 ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt }) : state;
-    }
-    case 'q.poor_kid':
-    case 'q.poor-kid':
-      return (afkLog.rewards.length ?? 0) === 0
-        ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
-        : state;
-    case 'q.consecutive_wins':
-    case 'q.consecutive-wins':
-      return afkLog.finalOutcome === 'Clear'
-        ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
-        : gameReducer(state, { type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 });
-    case 'q.losers':
-      return afkLog.finalOutcome === 'Defeat'
-        ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
-        : state;
-    default:
-      return state;
-  }
+  if (!party?.sideQuest || !afkLog) return state;
+  const decision = resolveSideQuestOutcome({
+    sideQuestType: party.sideQuest.type,
+    finalOutcome: afkLog.finalOutcome,
+    rewards: afkLog.rewards,
+  });
+  if (!decision) return state;
+  return decision.type === 'advance'
+    ? gameReducer(state, {
+        type: 'ADVANCE_SIDE_QUEST',
+        partyIndex,
+        amount: decision.amount,
+        simulatedAt,
+      })
+    : gameReducer(state, {
+        type: 'SET_SIDE_QUEST_PROGRESS',
+        partyIndex,
+        progress: decision.progress,
+      });
 }
 
 
@@ -2441,46 +2279,13 @@ function hasActiveNonGodBattleClearGateCondition(party: Party): boolean {
 
 
 
-type RewardBagType = 'commonRewardBag' | 'uncommonRewardBag' | 'eliteRareRewardBag' | 'bossRareRewardBag' | 'mythicRareRewardBag';
-
-
-
-
-function getRewardBagTypeForRarity(rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare'): RewardBagType {
-  if (rarity === 'uncommon') return 'uncommonRewardBag';
-  if (rarity === 'eliteRare') return 'eliteRareRewardBag';
-  if (rarity === 'bossRare') return 'bossRareRewardBag';
-  if (rarity === 'mythicRare') return 'mythicRareRewardBag';
-  return 'commonRewardBag';
-}
-
-function getRarityRank(rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare'): number {
-  if (rarity === 'mythicRare') return 5;
-  if (rarity === 'bossRare') return 4;
-  if (rarity === 'eliteRare') return 3;
-  if (rarity === 'uncommon') return 2;
-  return 1;
-}
-
-function getSuperRareBagTypeForRarity(rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare'): 'commonSuperRareBag' | 'rareSuperRareBag' {
-  return rarity === 'common' ? 'commonSuperRareBag' : 'rareSuperRareBag';
-}
-
-function resolveEnemyRewards(
-  enemy: EnemyDef,
-  currentBags: GameState['bags'],
+function installRecoveredEnemyRewards(
+  recoveredDropItems: readonly Item[],
   currentInventory: InventoryRecord,
   currentGold: number,
-  hasUnlock: boolean,
   autoSellMultiplier: number,
-  terrainEffect: TerrainEffectKey | undefined,
-  deityItemChanceTickets: number = 0,
-  auriferousBonusRolls: number = 0,
-  difficultyItemChanceTickets: number = 0,
-  difficultySuperRareChanceTickets: number = 0,
   mutateInventory: boolean = false,
 ): {
-  bags: GameState['bags'];
   inventory: InventoryRecord;
   gold: number;
   autoSellProfit: number;
@@ -2491,9 +2296,8 @@ function resolveEnemyRewards(
   autoSellItemCount: number;
   highestRewardRarity?: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
   hasSuperRareReward: boolean;
-  autoSellItems: { itemName: string; autoSellProfit: number }[];
+  autoSellItems: { item: Item; itemName: string; autoSellProfit: number }[];
 } {
-  let bags = currentBags;
   let inventory = currentInventory;
   let gold = currentGold;
   let autoSellProfit = 0;
@@ -2501,66 +2305,13 @@ function resolveEnemyRewards(
   const recoveredItems: Item[] = [];
   const rewardNames: string[] = [];
   const rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
-  const autoSellItems: { itemName: string; autoSellProfit: number }[] = [];
+  const autoSellItems: { item: Item; itemName: string; autoSellProfit: number }[] = [];
   let autoSellItemCount = 0;
   let highestRewardRarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' | undefined;
   let hasSuperRareReward = false;
 
-  const dropCandidates = getEnemyDropCandidates(enemy);
-  const baseDropItems = dropCandidates;
-
-  for (const baseItem of baseDropItems) {
-    const baseRarity = getItemRarityById(baseItem.id);
-    const rewardBagType = getRewardBagTypeForRarity(baseRarity);
-    const superRareBagType = getSuperRareBagTypeForRarity(baseRarity);
-    const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
-
-    bags = refillBagIfEmpty(bags, rewardBagType);
-    const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags[rewardBagType]);
-    bags = { ...bags, [rewardBagType]: newRewardBag };
-
-    let gotReward = rewardTicket === 1;
-
-    // SpecRef: 6.1.6 | REWARD | Ticket calculation
-    const totalTicketCount =
-      2
-      + (hasUnlock ? 1 : 0)
-      + (terrainEffect !== 'terrain.gehenna' ? Math.max(0, deityItemChanceTickets) : 0)
-      + difficultyItemChanceTickets
-      + auriferousBonusRolls;
-    const bonusRollCount = Math.max(0, totalTicketCount - 1);
-    for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
-      bags = refillBagIfEmpty(bags, rewardBagType);
-      const { ticket: bonusTicket, newBag } = drawFromBag(bags[rewardBagType]);
-      bags = { ...bags, [rewardBagType]: newBag };
-      gotReward = gotReward || bonusTicket === 1;
-    }
-
-    if (!gotReward) continue;
-
-    bags = refillBagIfEmpty(bags, enhancementBagType);
-    const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
-    bags = { ...bags, [enhancementBagType]: newEnhBag };
-
-    const normalizedEnhancement = enhVal;
-
-    // SpecRef: 6.1.6 | REWARD | A Super Rare draw is only available when the
-    // rarity-specific enhancement threshold has been met.
-    let srVal = 0;
-    const qualifiesForSuperRare = baseRarity === 'common'
-      ? normalizedEnhancement >= 2
-      : normalizedEnhancement >= 1;
-    const superRareRollCount = qualifiesForSuperRare
-      ? 1 + Math.max(0, difficultySuperRareChanceTickets)
-      : 0;
-    for (let srRollIndex = 0; srRollIndex < superRareRollCount; srRollIndex++) {
-      bags = refillBagIfEmpty(bags, superRareBagType);
-      const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags[superRareBagType]);
-      bags = { ...bags, [superRareBagType]: newSRBag };
-      srVal = Math.max(srVal, drawnSrVal);
-    }
-
-    const newItem: Item = { ...baseItem, enhancement: normalizedEnhancement, superRare: srVal };
+  for (const newItem of recoveredDropItems) {
+    const baseRarity = getRewardRarityByItemId(newItem.id);
     const itemName = getItemDisplayName(newItem);
     const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier, mutateInventory);
     recoveredItems.push(newItem);
@@ -2575,13 +2326,13 @@ function resolveEnemyRewards(
 
     if (result.wasAutoSold) {
       autoSellItemCount += 1;
-      autoSellItems.push({ itemName, autoSellProfit: result.autoSellProfit });
+      autoSellItems.push({ item: newItem, itemName, autoSellProfit: result.autoSellProfit });
     }
 
     if (!result.wasAutoSold) {
       rewards.push(newItem);
       rewardNames.push(itemName);
-      if (!highestRewardRarity || getRarityRank(baseRarity) > getRarityRank(highestRewardRarity)) {
+      if (!highestRewardRarity || getRewardRarityRank(baseRarity) > getRewardRarityRank(highestRewardRarity)) {
         highestRewardRarity = baseRarity;
       }
       if (newItem.superRare > 0) hasSuperRareReward = true;
@@ -2589,7 +2340,6 @@ function resolveEnemyRewards(
   }
 
   return {
-    bags,
     inventory,
     gold,
     autoSellProfit,
@@ -2773,390 +2523,6 @@ function processAfkCycleProfit(
   }
 
   return nextState;
-}
-
-function applyPeriodicDeityHpEffect(
-  deityName: string,
-  totalDonatedGold: number,
-  floorNumber: number,
-  roomInFloor: number,
-  roomType: RoomType,
-  terrainEffect: TerrainEffectKey | undefined,
-  currentHp: number,
-  maxHp: number
-): { hp: number; healAmount?: number; attritionAmount?: number } {
-  const isEliteRoom = floorNumber >= 1 && floorNumber <= 5
-    && roomInFloor === 4
-    && roomType === 'battle_Elite';
-  if (!isEliteRoom) {
-    return { hp: currentHp };
-  }
-
-  const deityKey = getDeityKey(deityName);
-  if (terrainEffect === 'terrain.gehenna') {
-    return { hp: currentHp };
-  }
-  const isHealingBlockedByTerrain = terrainEffect === 'terrain.rotwood';
-  if (deityKey === 'Goddess of Restoration') {
-    if (isHealingBlockedByTerrain) {
-      return { hp: currentHp };
-    }
-    const missingHp = maxHp - currentHp;
-    const healRate = 0.2 + 0.001 * getDeityRank(totalDonatedGold);
-    const healAmount = Math.floor(missingHp * healRate);
-    return {
-      hp: Math.min(maxHp, currentHp + healAmount),
-      healAmount: healAmount > 0 ? healAmount : undefined,
-    };
-  }
-
-  if (deityKey === 'God of Attrition') {
-    const hpLossPct = 0.05;
-    const nextHp = Math.max(1, Math.floor(currentHp * (1 - hpLossPct)));
-    const attritionAmount = Math.max(0, currentHp - nextHp);
-    return {
-      hp: nextHp,
-      attritionAmount: attritionAmount > 0 ? attritionAmount : undefined,
-    };
-  }
-
-  return { hp: currentHp };
-}
-
-function buildDeityEffectLogEntry(
-  deityName: string,
-  healAmount?: number,
-  attritionAmount?: number
-): BattleLogEntry | null {
-  const deityKey = getDeityKey(deityName);
-  if (deityKey === 'Goddess of Restoration' && healAmount && healAmount > 0) {
-    return {
-      phase: 'end',
-      actor: 'effect',
-      action: t('auto.jp.b871f82e74'),
-      note: t('game.log.hpHeal', { amount: healAmount }),
-    };
-  }
-
-  if (deityKey === 'God of Attrition' && attritionAmount && attritionAmount > 0) {
-    return {
-      phase: 'end',
-      actor: 'effect',
-      action: t('auto.jp.f8c08c2728'),
-      note: t('game.log.hpAttrition', { amount: attritionAmount }),
-    };
-  }
-
-  return null;
-}
-
-const TERRAIN_REJUVENATION_LOG_COUNT = 10;
-const TERRAIN_ROTWOOD_LOG_COUNT = 10;
-const TERRAIN_ABUNDANT_LOG_COUNT = 10;
-const TERRAIN_DECAY_LOG_COUNT = 10;
-const TERRAIN_LEAKAGE_LOG_COUNT = 10;
-const TERRAIN_HEATWAVE_LOG_COUNT = 10;
-const FIRST_AID_LOG_COUNT = 10;
-
-function getFirstAidHealRate(level: number): number {
-  if (level >= 5) return 0.06;
-  if (level === 4) return 0.05;
-  if (level === 3) return 0.04;
-  if (level === 2) return 0.03;
-  if (level === 1) return 0.02;
-  return 0;
-}
-
-// SpecRef: 6.1.5 | Outcome | a.first-aid
-function applyFirstAidHpEffect(
-  party: Party,
-  characterStats: ReturnType<typeof computePartyStats>['characterStats'],
-  floorNumber: number,
-  roomInFloor: number,
-  roomType: RoomType,
-  currentHp: number,
-  maxHp: number,
-): { hp: number; logs: BattleLogEntry[] } {
-  const isEliteRoom = floorNumber >= 1 && floorNumber <= 5
-    && roomInFloor === 4
-    && roomType === 'battle_Elite';
-  if (!isEliteRoom) {
-    return { hp: currentHp, logs: [] };
-  }
-
-  let nextHp = currentHp;
-  const logs: BattleLogEntry[] = [];
-
-  for (const character of party.characters) {
-    const stats = characterStats.find((entry) => entry.characterId === character.id);
-    const firstAidLevel = stats?.abilities
-      .filter((ability) => ability.id === 'first_aid')
-      .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0)
-      ?? 0;
-    if (firstAidLevel <= 0) continue;
-
-    const healRate = getFirstAidHealRate(firstAidLevel);
-    if (healRate <= 0) continue;
-
-    const hpContribution = computeCharacterHpContribution(character, party.level);
-    const healAmount = Math.floor(hpContribution.totalHpBonus * healRate);
-    if (healAmount <= 0) continue;
-
-    const flavorText = getRandomTranslation('battleFlavor.passive.firstAid', FIRST_AID_LOG_COUNT, { actor: character.name });
-    logs.push({
-      phase: 'end',
-      actor: 'effect',
-      action: flavorText,
-      note: t('game.log.hpHeal', { amount: healAmount }),
-    });
-
-    nextHp = Math.min(maxHp, nextHp + healAmount);
-  }
-
-  return { hp: nextHp, logs };
-}
-
-// SpecRef: 6.1.5 | Outcome | terrain.rejuvenation
-function applyTerrainRejuvenationHpEffect(
-  terrainEffect: TerrainEffectKey | undefined,
-  roomType: RoomType,
-  currentHp: number,
-  maxHp: number
-): { hp: number; healAmount?: number } {
-  if (terrainEffect === 'terrain.rotwood') {
-    return { hp: currentHp };
-  }
-  if (terrainEffect !== 'terrain.rejuvenation') {
-    return { hp: currentHp };
-  }
-  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
-    return { hp: currentHp };
-  }
-
-  const missingHp = Math.max(0, maxHp - currentHp);
-  const healAmount = missingHp > 0 ? Math.max(1, Math.floor(missingHp * 0.02)) : 0;
-  if (healAmount <= 0) {
-    return { hp: currentHp };
-  }
-
-  return {
-    hp: Math.min(maxHp, currentHp + healAmount),
-    healAmount,
-  };
-}
-
-// SpecRef: 6.1.5 | Outcome | terrain.abundant
-function applyTerrainAbundantHpEffect(
-  terrainEffect: TerrainEffectKey | undefined,
-  roomType: RoomType,
-  currentHp: number,
-  maxHp: number
-): { hp: number; healAmount?: number } {
-  if (terrainEffect === 'terrain.rotwood') {
-    return { hp: currentHp };
-  }
-  if (terrainEffect !== 'terrain.abundant') {
-    return { hp: currentHp };
-  }
-  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
-    return { hp: currentHp };
-  }
-
-  const healAmount = Math.floor(maxHp * 0.02);
-  if (healAmount <= 0) {
-    return { hp: currentHp };
-  }
-
-  return {
-    hp: Math.min(maxHp, currentHp + healAmount),
-    healAmount,
-  };
-}
-
-// SpecRef: 6.1.5 | Outcome | terrain.decay
-function applyTerrainDecayHpEffect(
-  terrainEffect: TerrainEffectKey | undefined,
-  roomType: RoomType,
-  currentHp: number,
-  maxHp: number
-): { hp: number; damageAmount?: number } {
-  if (terrainEffect !== 'terrain.decay') {
-    return { hp: currentHp };
-  }
-  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
-    return { hp: currentHp };
-  }
-
-  const damageAmount = Math.floor(maxHp * 0.02);
-  if (damageAmount <= 0) {
-    return { hp: currentHp };
-  }
-
-  return {
-    hp: Math.max(1, currentHp - damageAmount),
-    damageAmount,
-  };
-}
-
-function buildTerrainAbundantLogEntry(healAmount?: number): BattleLogEntry | null {
-  if (!healAmount || healAmount <= 0) return null;
-  const flavorText = getRandomTranslation('battleFlavor.environment.abundant', TERRAIN_ABUNDANT_LOG_COUNT);
-  return {
-    phase: 'end',
-    actor: 'effect',
-    action: flavorText,
-    note: t('game.log.hpHeal', { amount: healAmount }),
-  };
-}
-
-function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null {
-  if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = getRandomTranslation('battleFlavor.environment.decay', TERRAIN_DECAY_LOG_COUNT);
-  return {
-    phase: 'end',
-    actor: 'effect',
-    action: flavorText,
-    note: t('game.log.hpDamage', { amount: damageAmount }),
-  };
-}
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rejuvenation
-function buildTerrainRejuvenationLogEntry(actorName: string, healAmount?: number): BattleLogEntry | null {
-  if (!healAmount || healAmount <= 0) return null;
-  const flavorText = getRandomTranslation('battleFlavor.environment.regeneration', TERRAIN_REJUVENATION_LOG_COUNT, { actor: actorName });
-  return {
-    phase: 'end',
-    actor: 'effect',
-    action: flavorText,
-    note: t('game.log.hpHeal', { amount: healAmount }),
-  };
-}
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rotwood
-function buildTerrainRotwoodLogEntry(): BattleLogEntry {
-  const flavorText = getRandomTranslation('battleFlavor.environment.decayBlocked', TERRAIN_ROTWOOD_LOG_COUNT);
-  return {
-    phase: 'end',
-    actor: 'effect',
-    action: flavorText,
-  };
-}
-
-
-// SpecRef: 6.1.5 | Outcome | terrain.heatwave
-function applyTerrainHeatwaveHpEffect(
-  terrainEffect: TerrainEffectKey | undefined,
-  roomType: RoomType,
-  currentHp: number
-): { hp: number; damageAmount?: number } {
-  if (terrainEffect !== 'terrain.heatwave') {
-    return { hp: currentHp };
-  }
-  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite' && roomType !== 'battle_Boss') {
-    return { hp: currentHp };
-  }
-
-  const damageAmount = Math.floor(Math.max(0, currentHp) * 0.05);
-  if (damageAmount <= 0) {
-    return { hp: currentHp };
-  }
-
-  return {
-    hp: Math.max(1, currentHp - damageAmount),
-    damageAmount,
-  };
-}
-
-// SpecRef: 6.1.5 | Outcome | terrain.leakage
-function applyTerrainLeakageHpEffect(
-  terrainEffect: TerrainEffectKey | undefined,
-  roomType: RoomType,
-  currentHp: number,
-  thunderResistance: number
-): { hp: number; damageAmount?: number } {
-  if (terrainEffect !== 'terrain.leakage') {
-    return { hp: currentHp };
-  }
-  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
-    return { hp: currentHp };
-  }
-  const damageAmount = Math.floor(Math.max(0, currentHp) * 0.03 * thunderResistance);
-  if (damageAmount <= 0) {
-    return { hp: currentHp };
-  }
-
-  return {
-    hp: Math.max(1, currentHp - damageAmount),
-    damageAmount,
-  };
-}
-
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.heatwave
-function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number): BattleLogEntry | null {
-  if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = getRandomTranslation('battleFlavor.environment.heatwave', TERRAIN_HEATWAVE_LOG_COUNT, { actor: actorName });
-  return {
-    phase: 'end',
-    actor: 'effect',
-    effectKind: 'terrain',
-    action: flavorText,
-    note: t('game.log.hpDamage', { amount: damageAmount }),
-  };
-}
-
-// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.leakage
-function buildTerrainLeakageLogEntry(targetName: string, damageAmount?: number): BattleLogEntry | null {
-  if (!damageAmount || damageAmount <= 0) return null;
-  const flavorText = getRandomTranslation('battleFlavor.environment.shock', TERRAIN_LEAKAGE_LOG_COUNT, { target: targetName });
-  return {
-    phase: 'end',
-    actor: 'effect',
-    action: flavorText,
-    note: t('game.log.hpThunderDamage', { amount: damageAmount }),
-  };
-}
-
-function buildRewardLogEntries(
-  rewardLogEntries: { itemName: string; autoSellProfit?: number }[]
-): BattleLogEntry[] {
-  return rewardLogEntries.map((rewardEntry) => ({
-    phase: 'end',
-    actor: 'effect',
-    action: t('game.log.itemObtained', { item: rewardEntry.itemName }),
-    note: rewardEntry.autoSellProfit && rewardEntry.autoSellProfit > 0
-      ? t('game.log.autoSellTarget', { amount: rewardEntry.autoSellProfit })
-      : undefined,
-  }));
-}
-
-const AURIFEROUS_LOGS = [
-  t('auto.jp.6210566513'),
-  t('auto.jp.fe83eae722'),
-  t('auto.jp.ca50cc6a99'),
-  t('auto.jp.24a6922d44'),
-  t('auto.jp.cd3b6f0501'),
-  t('auto.jp.daafdc6596'),
-  t('auto.jp.9932e8fabf'),
-  t('auto.jp.8a3caa810b'),
-  t('auto.jp.01bba62abd'),
-  t('auto.jp.dc0d0cd51a'),
-] as const;
-
-function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
-  const flavorText = AURIFEROUS_LOGS[Math.floor(gameplayRandom() * AURIFEROUS_LOGS.length)]
-    ?? t('auto.jp.dc0d0cd51a');
-
-  return {
-    phase: 'end',
-    actor: 'effect',
-    action: flavorText.replace('{actor}', actorName),
-    note: t('game.log.auriferousBonus', { totalHits: totalHitsReceived, bonusRolls }),
-  };
-}
-
-function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean {
-  return currentHp <= maxHp * 0.3;
 }
 
 interface AutoEquipmentReducerContext {
@@ -3518,694 +2884,150 @@ function gameReducer(
       const suppliedPartyStatus = action.chunkPartyStatus ?? action.authoritativePartyStatus;
       const statusParty = suppliedPartyStatus?.party ?? currentParty;
       const partyStatus = suppliedPartyStatus?.computed ?? computePartyStats(statusParty);
-      const rewardContext = deriveExpeditionRewardContext(statusParty, partyStatus);
       recordRunExpeditionStatusAuthority(suppliedPartyStatus !== undefined);
-      const { partyStats, characterStats } = partyStatus;
-      const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
-      if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
+      const persistedCurrentHp = currentParty.currentHp ?? partyStatus.partyStats.hp;
+      if (persistedCurrentHp <= 0 || partyStatus.partyStats.hp <= 0) {
         return state;
       }
+      const colosseumTerrainEffect = dungeon.id === 99
+        ? getColosseumEnemySettings().terrainEffect
+        : 'none';
+      const expeditionContext = createExpeditionRunContext({
+        currentParty,
+        statusParty,
+        partyStatus,
+        dungeon,
+        deityDonations: state.global.deityDonations,
+        ...(colosseumTerrainEffect !== 'none'
+          ? { terrainOverride: colosseumTerrainEffect }
+          : {}),
+      });
+      const { partyStats, characterStats } = expeditionContext;
+      const rewardContext = expeditionContext.reward;
       // SpecRef: 5.1.1 | Party State Machine | state.explore
       // RUN_EXPEDITION is shared by Online and AFK resolution, so restoring HP
       // here guarantees that every exploration begins at the party's current MaxHP.
-      let currentHp = partyStats.hp;
       // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
-      const difficultyOffsetMax = getDifficultyOffsetMax(dungeon.expLevel);
-      const effectiveDifficultyOffset = hasDefeatedDungeonBoss(currentParty, dungeon.id)
-        ? normalizeExpeditionDifficultyOffset(currentParty.expeditionDifficultyOffsetByDungeon?.[dungeon.id] ?? currentParty.expeditionDifficultyOffset, difficultyOffsetMax)
-        : 0;
-      const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(effectiveDifficultyOffset);
-      const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(effectiveDifficultyOffset);
+      const effectiveDifficultyOffset = expeditionContext.difficulty.offset;
 
-      const entries: ExpeditionLogEntry[] = [];
-      // SpecRef: 5.1.1.1 | Preserve gameplay events while avoiding unnecessary AFK work
-      const deferredBattleNarrations: Array<{
-        entry: ExpeditionLogEntry;
-        enemy: EnemyDef;
-        bags: GameState['bags'];
-        initialPartyHp: number;
-        terrainEffect: TerrainEffectKey | null | undefined;
-      }> = [];
-      const rewards: Item[] = [];
-      const recoveredItems: Item[] = [];
-      let totalExp = 0;
-      let bags = normalizeImportedBags(currentParty.bags);
-      let finalOutcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' = 'Clear';
       const afkInventoryCheckpoint = afkChunkContext?.inventoryOverlay.checkpoint();
       let currentInventory = afkChunkContext?.inventoryOverlay.record ?? state.global.inventory;
       let currentGold = state.global.gold;
-      let totalAutoSellProfit = 0;
-      let totalAutoSellItemCount = 0;
-      let totalAutoSellItems: { itemName: string; autoSellProfit: number }[] = [];
-      let roomCounter = 0;
-      let expeditionEnded = false;
-      let nextEnemyBattleStats = { ...(state.global.enemyBattleStats ?? {}) };
-      const revealedItemCompendiumItemIds = new Set<number>(state.global.revealedItemCompendiumItemIds ?? []);
-      const revealedAbilityIds = new Set<string>(state.global.revealedGlossaryAbilityIds);
-      characterStats.forEach((stats) => {
-        stats.abilities.forEach((ability) => {
-          revealedAbilityIds.add(ability.id);
-        });
-      });
-      const revealedTerrainKeys = new Set<TerrainEffectKey>(state.global.revealedGlossaryTerrainKeys);
-
-      // Use new floor structure if available
-      if (dungeon.floors && dungeon.floors.length > 0) {
-        // New v0.2.0 floor-based expedition
-        for (const floor of dungeon.floors) {
-          if (expeditionEnded) break;
-
-          const selectedEnemyIdsByRoomRange = new Map<string, Set<number>>();
-
-          for (let roomIndex = 0; roomIndex < floor.rooms.length; roomIndex++) {
-            if (expeditionEnded) break;
-
-            const roomDef = floor.rooms[roomIndex];
-            roomCounter++;
-
-            // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Gate `x.floor`,`x.room`
-            const gateCheck = checkClearGateRequirement({
-              dungeonId: dungeon.id,
-              floorNumber: floor.floorNumber,
-              roomInFloor: roomIndex + 1,
-              roomType: roomDef.type,
-              party: currentParty,
-            });
-            if (gateCheck.blocked) {
-              const gateEntry: ExpeditionLogEntry = {
-                room: roomCounter,
-                floor: floor.floorNumber,
-                roomInFloor: roomIndex + 1,
-                roomType: roomDef.type,
-                floorMultiplier: getRoomMultiplier(
-                  dungeon.expLevel,
-                  floor.floorNumber,
-                  roomDef.type,
-                  false,
-                  effectiveDifficultyOffset,
-                ),
-                enemyName: t('auto.jp.270d06353e'),
-                enemyHP: 0,
-                enemyAttackValues: '',
-                outcome: 'draw', // Not a battle - displayed as 未到達
-                damageDealt: 0,
-                damageTaken: 0,
-                remainingPartyHP: currentHp,
-                maxPartyHP: partyStats.hp,
-                details: [],
-                gateInfo: roomDef.type === 'battle_Boss'
-                  ? t('game.log.gateInfo.boss', { label: gateCheck.label, required: gateCheck.required })
-                  : roomIndex === 0
-                    ? t('game.log.gateInfo.dungeon', { label: gateCheck.label, current: gateCheck.current, required: gateCheck.required, dungeon: dungeon.name })
-                    : t('game.log.gateInfo.floor', { label: gateCheck.label, required: gateCheck.required, floor: floor.floorNumber }),
-              };
-              entries.push(gateEntry);
-              finalOutcome = 'Escape';
-              expeditionEnded = true;
-              break;
-            }
-
-            // Select enemy for this room
-            // SpecRef: 4.2 | EXPEDITION_&_ENEMY_MASTER_DATA | Room range enemy uniqueness
-            const explicitRoomEnemyIds = roomDef.enemyIds ?? [];
-            const roomRangeKey = explicitRoomEnemyIds.length > 1
-              ? `${floor.floorNumber}:${explicitRoomEnemyIds.slice().sort((a, b) => a - b).join(',')}`
-              : null;
-            const usedEnemyIdsInRange = roomRangeKey
-              ? (selectedEnemyIdsByRoomRange.get(roomRangeKey) ?? new Set<number>())
-              : new Set<number>();
-            const baseEnemy = selectEnemyForRoom(
-              roomDef.type,
-              roomDef.poolId,
-              roomDef.bossId,
-              floor.floorNumber,
-              roomIndex,
-              explicitRoomEnemyIds,
-              usedEnemyIdsInRange,
-            );
-            if (!baseEnemy) continue;
-            if (roomRangeKey) {
-              const nextUsedEnemyIds = selectedEnemyIdsByRoomRange.get(roomRangeKey) ?? new Set<number>();
-              nextUsedEnemyIds.add(baseEnemy.id);
-              selectedEnemyIdsByRoomRange.set(roomRangeKey, nextUsedEnemyIds);
-            }
-
-            const roomMultiplier = getRoomMultiplier(
-              dungeon.expLevel,
-              floor.floorNumber,
-              roomDef.type,
-              false,
-              effectiveDifficultyOffset,
-            );
-            const effectiveTier = getEffectiveExpeditionTier(dungeon.id, false);
-            const effectiveDungeon = {
-              ...dungeon,
-              tier: effectiveTier,
-              enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, false),
-            };
-            const encounterCacheKey = afkChunkContext
-              ? `${baseEnemy.id}:${effectiveDungeon.id}:${effectiveDungeon.expLevel}:${effectiveTier}:${floor.floorNumber}:${roomDef.type}:${effectiveDifficultyOffset}`
-              : null;
-            let enemy = encounterCacheKey ? afkChunkContext!.encounterCache.get(encounterCacheKey) : undefined;
-            if (!enemy) {
-              enemy = getEncounterEnemyWithScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, {
-                isLunaMode: false,
-                difficultyOffset: effectiveDifficultyOffset,
-              });
-              if (encounterCacheKey) afkChunkContext!.encounterCache.set(encounterCacheKey, enemy);
-            }
-            if (isGodsBattle && roomDef.type === 'battle_Boss') {
-              enemy = createGodEnemy(
-                enemy,
-                dungeon.id,
-                dungeon.name,
-                effectiveDifficultyOffset,
-              );
-            }
-            enemy.abilities.forEach((ability) => {
-              revealedAbilityIds.add(ability.id);
-            });
-            // SpecRef: 3.1 | ITEM | Item Compendium (アイテム図鑑)
-            // SpecRef: 3.1 | ITEM | Item Reveal Rule
-            getEnemyDropCandidates(enemy).forEach((item) => {
-              revealedItemCompendiumItemIds.add(item.id);
-            });
-
-            // Pass currentHp to maintain HP persistence during expedition
-            const roomStartHp = currentHp;
-            const battleStartBags = bags;
-            const colosseumTerrainEffect = dungeon.id === 99 ? getColosseumEnemySettings().terrainEffect : 'none';
-            const terrainEffect = colosseumTerrainEffect !== 'none'
-              ? colosseumTerrainEffect
-              : floor.terrainEffect;
-            if (terrainEffect) {
-              revealedTerrainKeys.add(terrainEffect);
-            }
-            const battleResult = action.battleOutputMode === 'result-only'
-              ? executeBattle(statusParty, enemy, bags, roomStartHp, {
-                terrainEffect,
-                partyStatus,
-              }, { outputMode: 'result-only', compactResultOutput: action.compactBattleResultOutput })
-              : executeBattle(statusParty, enemy, bags, roomStartHp, {
-                terrainEffect,
-                partyStatus,
-              });
-
-            // Update threat bags from battle result
-            bags = {
-              ...bags,
-              physicalThreatBag: battleResult.updatedBags.physicalThreatBag,
-              magicalThreatBag: battleResult.updatedBags.magicalThreatBag,
-            };
-
-            const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
-            const damageTaken = Math.max(0, roomStartHp - battleResult.partyHp);
-
-            const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
-
-            // Room type suffix for display
-            let roomSuffix = '';
-            if (roomDef.type === 'battle_Elite') roomSuffix = ' (ELITE)';
-            if (roomDef.type === 'battle_Boss') roomSuffix = isGodsBattle ? ` ${getGodsBattleSuffix()}` : ' (BOSS)';
-
-            const entry: ExpeditionLogEntry = {
-              room: roomCounter,
-              floor: floor.floorNumber,
-              roomInFloor: roomIndex + 1,
-              roomType: roomDef.type,
-              startPartyHP: roomStartHp,
-              postBattlePartyHP: battleResult.partyHp,
-              floorMultiplier: roomMultiplier,
-              enemyId: enemy.id,
-              enemySnapshot: enemy,
-              enemyName: formatEnemyDefName(enemy) + roomSuffix,
-              enemyHP: enemy.hp,
-              enemyAttackValues,
-              outcome: battleResult.outcome!,
-              damageDealt,
-              damageTaken,
-              remainingPartyHP: battleResult.partyHp,
-              maxPartyHP: partyStats.hp,
-              details: 'log' in battleResult && Array.isArray(battleResult.log) ? battleResult.log : [],
-              replayMetadata: battleResult.replayMetadata,
-            };
-            if (action.isAfkSimulation && action.battleOutputMode === 'result-only') {
-              deferredBattleNarrations.push({
-                entry,
-                enemy,
-                bags: battleStartBags,
-                initialPartyHp: roomStartHp,
-                terrainEffect,
-              });
-            }
-
-            const currentEnemyStats = nextEnemyBattleStats[enemy.id] ?? { defeats: 0, encounters: 0 };
-            nextEnemyBattleStats[enemy.id] = {
-              defeats: currentEnemyStats.defeats + (battleResult.outcome === 'victory' ? 1 : 0),
-              encounters: currentEnemyStats.encounters + 1,
-            };
-
-            if (battleResult.outcome === 'victory') {
-              const isColosseumBattle = dungeon.id === 99;
-              if (!isColosseumBattle) {
-                const enemyLevelFinal = getEffectiveEnemyLevel(
-                  dungeon.expLevel,
-                  floor.floorNumber,
-                  roomDef.type,
-                  false,
-                  effectiveDifficultyOffset,
-                );
-                totalExp += calculateExperience(
-                  enemy.experience,
-                  roomDef.type,
-                  statusParty.level,
-                  enemyLevelFinal,
-                  isGodsBattle,
-                );
-              }
-
-              const unlockActorName = rewardContext.unlockActorName;
-              const hasUnlock = !!unlockActorName;
-              const autoSellMultiplier = rewardContext.autoSellMultiplier;
-              const deityDonation =
-                state.global.deityDonations[normalizeDeityName(statusParty.deity.name)]
-                ?? statusParty.deityGold
-                ?? 0;
-              // SpecRef: 1.1.7 | g. gods, religions | God of Oblivion
-              // SpecRef: 1.1.7 | g. gods, religions | Goddess of Discord
-              const deityRewardDrawBonuses = getDeityRewardDrawBonuses(statusParty.deity.name, deityDonation);
-              let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
-              if (!isColosseumBattle) {
-                const enemyAuriferousLevel = enemy.abilities
-                  .filter((ability) => ability.id === 'auriferous')
-                  .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
-                const auriferousBonusRolls = enemyAuriferousLevel > 0
-                  ? Math.floor(battleResult.enemyHitsReceived / 10)
-                  : 0;
-                const rewardResult = resolveEnemyRewards(
-                  enemy,
-                  bags,
-                  currentInventory,
-                  currentGold,
-                  hasUnlock,
-                  autoSellMultiplier,
-                  terrainEffect,
-                  deityRewardDrawBonuses.itemChanceTickets,
-                  auriferousBonusRolls,
-                  difficultyItemChanceTickets,
-                  difficultySuperRareChanceTickets
-                    + (terrainEffect !== 'terrain.gehenna' ? deityRewardDrawBonuses.superRareChanceTickets : 0),
-                  afkChunkContext !== undefined,
-                );
-                bags = rewardResult.bags;
-                currentInventory = rewardResult.inventory;
-                currentGold = rewardResult.gold;
-                totalAutoSellProfit += rewardResult.autoSellProfit;
-                totalAutoSellItemCount += rewardResult.autoSellItemCount;
-                totalAutoSellItems.push(...rewardResult.autoSellItems);
-                rewards.push(...rewardResult.rewards);
-                recoveredItems.push(...rewardResult.recoveredItems);
-                if (rewardResult.rewardNames.length > 0) {
-                  entry.reward = rewardResult.rewardNames.join(' / ');
-                  entry.rewardItems = [...rewardResult.rewards];
-                  entry.rewardRarity = rewardResult.highestRewardRarity;
-                  entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
-                }
-                rewardLogEntries = rewardResult.rewardLogEntries;
-                const auriferousLogEntry = enemyAuriferousLevel > 0
-                  ? buildAuriferousLogEntry(
-                    enemy.name,
-                    battleResult.enemyHitsReceived,
-                    auriferousBonusRolls,
-                  )
-                  : null;
-                if (auriferousLogEntry) {
-                  entry.details.push(auriferousLogEntry);
-                }
-              }
-
-              currentHp = battleResult.partyHp;
-              entries.push(entry);
-
-              const deityHpEffect = applyPeriodicDeityHpEffect(
-                statusParty.deity.name,
-                deityDonation,
-                floor.floorNumber,
-                roomIndex + 1,
-                roomDef.type,
-                terrainEffect,
-                currentHp,
-                partyStats.hp
-              );
-              currentHp = deityHpEffect.hp;
-              entry.postBattlePartyHP = battleResult.partyHp;
-              entry.remainingPartyHP = currentHp;
-              if (deityHpEffect.healAmount) {
-                entry.healAmount = deityHpEffect.healAmount;
-              }
-              if (deityHpEffect.attritionAmount) {
-                entry.attritionAmount = deityHpEffect.attritionAmount;
-              }
-              const deityLogEntry = buildDeityEffectLogEntry(
-                statusParty.deity.name,
-                deityHpEffect.healAmount,
-                deityHpEffect.attritionAmount
-              );
-              if (deityLogEntry) {
-                entry.details.push(deityLogEntry);
-              }
-
-              const firstAidHpEffect = applyFirstAidHpEffect(
-                statusParty,
-                characterStats,
-                floor.floorNumber,
-                roomIndex + 1,
-                roomDef.type,
-                currentHp,
-                partyStats.hp
-              );
-              currentHp = firstAidHpEffect.hp;
-              entry.remainingPartyHP = currentHp;
-              if (firstAidHpEffect.logs.length > 0) {
-                entry.details.push(...firstAidHpEffect.logs);
-              }
-
-              const rejuvenationActorName = statusParty.characters[
-                Math.floor(gameplayRandom() * statusParty.characters.length)
-              ]?.name ?? statusParty.name;
-              const terrainHpEffect = applyTerrainRejuvenationHpEffect(
-                terrainEffect,
-                roomDef.type,
-                currentHp,
-                partyStats.hp
-              );
-              currentHp = terrainHpEffect.hp;
-              entry.remainingPartyHP = currentHp;
-              const terrainLogEntry = buildTerrainRejuvenationLogEntry(
-                rejuvenationActorName,
-                terrainHpEffect.healAmount
-              );
-              if (terrainLogEntry) {
-                entry.details.push(terrainLogEntry);
-              }
-
-              const abundantHpEffect = applyTerrainAbundantHpEffect(
-                terrainEffect,
-                roomDef.type,
-                currentHp,
-                partyStats.hp
-              );
-              currentHp = abundantHpEffect.hp;
-              entry.remainingPartyHP = currentHp;
-              const abundantLogEntry = buildTerrainAbundantLogEntry(abundantHpEffect.healAmount);
-              if (abundantLogEntry) {
-                entry.details.push(abundantLogEntry);
-              }
-
-              const isNormalOrEliteRoom = roomDef.type === 'battle_Normal' || roomDef.type === 'battle_Elite';
-              const restorationBlockedByRotwood = terrainEffect === 'terrain.rotwood'
-                && isNormalOrEliteRoom
-                && getDeityKey(statusParty.deity.name) === 'Goddess of Restoration'
-                && floor.floorNumber >= 1
-                && floor.floorNumber <= 5
-                && roomIndex + 1 === 4;
-              if (restorationBlockedByRotwood) {
-                entry.details.push(buildTerrainRotwoodLogEntry());
-              }
-
-              const leakageTargetIndex = Math.floor(gameplayRandom() * statusParty.characters.length);
-              const leakageTarget = statusParty.characters[leakageTargetIndex];
-              const leakageTargetStats = characterStats.find(
-                (stats) => stats.characterId === leakageTarget?.id
-              );
-              const leakageThunderResistance = leakageTargetStats?.elementalDefenseMultipliers.thunder ?? 1.0;
-              const leakageHpEffect = applyTerrainLeakageHpEffect(
-                terrainEffect,
-                roomDef.type,
-                currentHp,
-                leakageThunderResistance
-              );
-              currentHp = leakageHpEffect.hp;
-              entry.remainingPartyHP = currentHp;
-              const leakageLogEntry = buildTerrainLeakageLogEntry(
-                leakageTarget?.name ?? statusParty.name,
-                leakageHpEffect.damageAmount
-              );
-              if (leakageLogEntry) {
-                entry.details.push(leakageLogEntry);
-              }
-
-              const heatwaveActorName = statusParty.characters[
-                Math.floor(gameplayRandom() * statusParty.characters.length)
-              ]?.name ?? statusParty.name;
-              const heatwaveHpEffect = applyTerrainHeatwaveHpEffect(
-                terrainEffect,
-                roomDef.type,
-                currentHp
-              );
-              currentHp = heatwaveHpEffect.hp;
-              entry.remainingPartyHP = currentHp;
-              const heatwaveLogEntry = buildTerrainHeatwaveLogEntry(
-                heatwaveActorName,
-                heatwaveHpEffect.damageAmount
-              );
-              if (heatwaveLogEntry) {
-                entry.details.push(heatwaveLogEntry);
-              }
-
-              if (rewardLogEntries.length > 0) {
-                entry.details.push(...buildRewardLogEntries(rewardLogEntries));
-              }
-
-              const isFinalBossRoom =
-                roomDef.type === 'battle_Boss'
-                && floor.floorNumber === dungeon.floors.length
-                && roomIndex === floor.rooms.length - 1;
-
-              if (!isFinalBossRoom && isRetreatHpThresholdReached(currentHp, partyStats.hp)) {
-                finalOutcome = 'Retreat';
-                expeditionEnded = true;
-                entry.details.push({
-                  phase: 'end',
-                  actor: 'deity',
-                  action: t('auto.jp.2660ad39fa'),
-                  note: t('auto.jp.36cbc2e27f'),
-                });
-              } else {
-                const decayHpEffect = applyTerrainDecayHpEffect(
-                  terrainEffect,
-                  roomDef.type,
-                  currentHp,
-                  partyStats.hp
-                );
-                currentHp = decayHpEffect.hp;
-                entry.remainingPartyHP = currentHp;
-                const decayLogEntry = buildTerrainDecayLogEntry(decayHpEffect.damageAmount);
-                if (decayLogEntry) {
-                  entry.details.push(decayLogEntry);
-                }
-
-                const reachedDepthLimit =
-                  (currentParty.expeditionDepthLimit === '1f-3' && floor.floorNumber === 1 && roomIndex === 2)
-                  || (currentParty.expeditionDepthLimit === '1f-4' && floor.floorNumber === 1 && roomIndex === 3)
-                  || (currentParty.expeditionDepthLimit === '2f-3' && floor.floorNumber === 2 && roomIndex === 2)
-                  || (currentParty.expeditionDepthLimit === '2f-4' && floor.floorNumber === 2 && roomIndex === 3)
-                  || (currentParty.expeditionDepthLimit === '3f-3' && floor.floorNumber === 3 && roomIndex === 2)
-                  || (currentParty.expeditionDepthLimit === '3f-4' && floor.floorNumber === 3 && roomIndex === 3)
-                  || (currentParty.expeditionDepthLimit === '4f-3' && floor.floorNumber === 4 && roomIndex === 2)
-                  || (currentParty.expeditionDepthLimit === '4f-4' && floor.floorNumber === 4 && roomIndex === 3)
-                  || (currentParty.expeditionDepthLimit === '5f-3' && floor.floorNumber === 5 && roomIndex === 2)
-                  || (currentParty.expeditionDepthLimit === '5f-4' && floor.floorNumber === 5 && roomIndex === 3)
-                  || (currentParty.expeditionDepthLimit === 'beforeBoss' && floor.floorNumber === 6 && roomIndex === 2);
-
-                if (reachedDepthLimit) {
-                  finalOutcome = 'Escape';
-                  expeditionEnded = true;
-                  entry.details.push({
-                    phase: 'end',
-                    actor: 'deity',
-                    action: t('auto.jp.96b6003d0c'),
-                  });
-                }
-              }
-            } else if (battleResult.outcome === 'defeat') {
-              entries.push(entry);
-              finalOutcome = 'Defeat';
-              expeditionEnded = true;
-            } else {
-              // Draw
-              entries.push(entry);
-              finalOutcome = 'Retreat';
-              expeditionEnded = true;
-            }
+      const serviceResult = runExpeditionService({
+        context: expeditionContext,
+        party: currentParty,
+        dungeon,
+        transaction: {
+          initialHp: partyStats.hp,
+          bags: normalizeImportedBags(currentParty.bags),
+          enemyBattleStats: state.global.enemyBattleStats,
+          revealedItemIds: state.global.revealedItemCompendiumItemIds,
+          revealedAbilityIds: [
+            ...state.global.revealedGlossaryAbilityIds,
+            ...characterStats.flatMap((stats) => stats.abilities.map((ability) => ability.id)),
+          ],
+          revealedTerrainKeys: state.global.revealedGlossaryTerrainKeys,
+        },
+        isGodsBattle,
+        random: gameplayRandom,
+        refillBag: refillBagIfEmpty,
+        installRecoveredItems: (recoveredItems) => {
+          const rewardResult = installRecoveredEnemyRewards(
+            recoveredItems,
+            currentInventory,
+            currentGold,
+            rewardContext.autoSellMultiplier,
+            afkChunkContext !== undefined,
+          );
+          currentInventory = rewardResult.inventory;
+          currentGold = rewardResult.gold;
+          return {
+            retainedItems: rewardResult.rewards,
+            autoSoldItems: rewardResult.autoSellItems.map(({ item, autoSellProfit }) => ({
+              item,
+              profit: autoSellProfit,
+            })),
+            presentation: rewardResult,
+          };
+        },
+        ...(afkChunkContext ? { encounterCache: afkChunkContext.encounterCache } : {}),
+        ...(action.battleOutputMode === 'result-only'
+          ? {
+            battleOptions: {
+              outputMode: 'result-only' as const,
+              compactResultOutput: action.compactBattleResultOutput,
+            },
           }
-        }
-      }
+          : {}),
+      });
 
-      // On defeat: revert inventory and gold (no item rewards), but keep experience
-      const isDefeat = finalOutcome === 'Defeat';
-      if (isDefeat && afkChunkContext && afkInventoryCheckpoint !== undefined) {
+      const transactionResult = serviceResult.transaction;
+      const { bags, finalOutcome } = transactionResult;
+      const assignedMimorianEnemyTypes = finalOutcome === 'Clear'
+        ? statusParty.characters
+            .filter((character) => character.raceId === 'mimorian')
+            .map((character) => ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType)
+            .filter((enemyType): enemyType is string => Boolean(enemyType))
+        : [];
+      const finalization = planExpeditionFinalization({
+        transaction: transactionResult,
+        initialGold: state.global.gold,
+        installedGold: currentGold,
+        isGodsBattle,
+        dungeonId: dungeon.id,
+        clearGateProgress: currentParty.clearGateProgress ?? {},
+        clearGateStatus: currentParty.clearGateStatus ?? {},
+        defeatedBossExpeditions: currentParty.defeatedBossExpeditions ?? {},
+        expeditionStats: currentParty.expeditionStats,
+        altarVictoriesByEnemyType: state.global.altarVictoriesByEnemyType ?? {},
+        assignedMimorianEnemyTypes,
+        currentUnlockedPartySlots: state.parties.length,
+        completedBossVictory: serviceResult.completedBossVictory,
+      });
+      // SpecRef: 5.1.1.1 | Preserve gameplay events while avoiding unnecessary AFK work.
+      // Presentation is a random-free projection after the complete domain run
+      // and finalization, including a gate unlocked by this turned-back run.
+      const { entries, deferredBattleNarrations } = renderExpeditionServiceResult({
+        result: serviceResult,
+        dungeon,
+        maxPartyHp: partyStats.hp,
+        isGodsBattle,
+        deferBattleNarration: action.isAfkSimulation === true
+          && action.battleOutputMode === 'result-only',
+        newlyUnlockedGateKey: finalization.outcome.newlyUnlockedGateKey,
+      });
+      // On defeat: the application-owned AFK overlay performs the planned
+      // rollback; the domain transaction never clones or mutates that overlay.
+      if (finalization.shouldRollbackInventory && afkChunkContext && afkInventoryCheckpoint !== undefined) {
         afkChunkContext.inventoryOverlay.rollback(afkInventoryCheckpoint);
       }
       const finalInventory = afkChunkContext?.inventoryOverlay.record
-        ?? (isDefeat ? state.global.inventory : currentInventory);
+        ?? (finalization.shouldRollbackInventory ? state.global.inventory : currentInventory);
       afkChunkContext?.inventoryOverlay.releaseCheckpoint();
-      const finalRewards = isDefeat ? [] : rewards;
-      const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
-      const finalAutoSellItemCount = isDefeat ? 0 : totalAutoSellItemCount;
-      const finalGold = isDefeat ? state.global.gold : (currentGold - finalAutoSellProfit);
-      const finalAutoSellItems = isDefeat ? [] : totalAutoSellItems;
-
-      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
-      const canonicalGateOutcome = finalOutcome === 'Clear'
-        ? 'Clear'
-        : finalOutcome === 'Escape'
-          ? 'Turned_Back'
-          : finalOutcome === 'Defeat'
-            ? 'Defeat'
-            : endedWithDrawRetreat
-              ? 'Draw_Retreat'
-              : 'Wounded_Retreat';
-      const progressWithGodsBattleItems = isDefeat
-        ? { ...(currentParty.clearGateProgress ?? {}) }
-        : addRecoveredBossRaresToGodsBattleProgress(
-            currentParty.clearGateProgress ?? {},
-            dungeon.id,
-            recoveredItems,
-          );
-      const clearGateOutcomeState = isGodsBattle
-        ? {
-            progress: progressWithGodsBattleItems,
-            status: { ...(currentParty.clearGateStatus ?? {}) },
-            gateKey: null,
-          }
-        : applyClearGateOutcome(
-            {
-              clearGateProgress: progressWithGodsBattleItems,
-              clearGateStatus: currentParty.clearGateStatus ?? {},
-            },
-            dungeon.id,
-            canonicalGateOutcome,
-          );
-      const nextClearGateProgress = { ...clearGateOutcomeState.progress };
-      if (isGodsBattle && finalOutcome === 'Clear') {
-        nextClearGateProgress[getGodsBattleProgressKey(dungeon.id)] = 0;
-      }
-      const nextDefeatedBossExpeditions = {
-        ...(currentParty.defeatedBossExpeditions ?? {}),
-      };
-      if (!isGodsBattle && finalOutcome === 'Clear') {
-        nextDefeatedBossExpeditions[dungeon.id] = true;
-      }
-      const nextClearGateStatus = clearGateOutcomeState.status;
-
-      // SpecRef: 5.1.3.1 | A gate completed by this turned-back run remains
-      // unreachable until the next expedition, but its retained locked-room text
-      // must immediately disclose that the route has now been unlocked.
-      const clearedGateKey = clearGateOutcomeState.gateKey;
-      if (
-        clearedGateKey !== null
-        && !isClearGateUnlocked(currentParty, clearedGateKey)
-        && isClearGateUnlocked(
-          {
-            clearGateProgress: nextClearGateProgress,
-            clearGateStatus: nextClearGateStatus,
-          },
-          clearedGateKey,
-        )
-      ) {
-        const gatePosition = clearedGateKey % 1000;
-        const clearedBossGate = gatePosition === 604;
-        const clearedFloor = clearedBossGate ? 6 : Math.floor(gatePosition / 10);
-        for (let entryIndex = entries.length - 1; entryIndex >= 0; entryIndex -= 1) {
-          const entry = entries[entryIndex];
-          if (!entry.gateInfo || entry.floor !== clearedFloor || entry.roomInFloor !== 4) continue;
-          entry.gateInfo = clearedBossGate
-            ? t('game.log.gateInfo.bossCleared', {
-                label: t('home.gate.consecutiveSuccesses'),
-                required: getClearGateRequired(clearedGateKey),
-              })
-            : t('game.log.gateInfo.floorCleared', {
-                label: t('home.gate.consecutiveSuccesses'),
-                required: getClearGateRequired(clearedGateKey),
-                floor: clearedFloor,
-              });
-          break;
-        }
-      }
-
-      const totalExpGain = Math.ceil(totalExp);
-
-      const finalRemainingPartyHP = entries.length > 0
-        ? entries[entries.length - 1].remainingPartyHP
-        : currentHp;
-      const expeditionAutoSellMultiplier = rewardContext.autoSellMultiplier;
-
-      const log: ExpeditionLog = {
-        dungeonId: dungeon.id,
-        dungeonName: dungeon.name,
-        difficultyOffset: effectiveDifficultyOffset,
-        totalExperience: totalExpGain,
-        totalRooms: dungeon.floors.reduce((sum, f) => sum + f.rooms.length, 0),
-        completedRooms: entries.length,
-        finalOutcome,
-        entries,
-        rewards: finalRewards,
-        autoSellProfit: finalAutoSellProfit,
-        autoSellCount: finalAutoSellItemCount,
-        autoSellItems: finalAutoSellItems,
-        autoSellMultiplier: expeditionAutoSellMultiplier > 1 ? expeditionAutoSellMultiplier : undefined,
-        remainingPartyHP: finalRemainingPartyHP,
-        maxPartyHP: partyStats.hp,
-      };
-
+      const finalGold = finalization.gold;
       const diarySettings = getDiarySettingsWithDefaults(currentParty.diarySettings);
-      const hasSuperRareMatch = finalRewards.some((item) => item.superRare > 0 && matchesDiaryThreshold(item, diarySettings.superRareThreshold));
-      const hasBossMatch = finalRewards.some((item) => getItemRarityCode(item) === 'bossRare' && matchesDiaryThreshold(item, diarySettings.bossThreshold));
-      const hasMythicMatch = finalRewards.some((item) => getItemRarityCode(item) === 'mythicRare' && matchesDiaryThreshold(item, diarySettings.mythicThreshold));
-      const hasRareMatch = finalRewards.some((item) => getItemRarityCode(item) === 'eliteRare' && matchesDiaryThreshold(item, diarySettings.rareThreshold));
-
-      const diaryTriggers: DiaryLog['triggers'] = [];
-      // SpecRef: 8.5 | UI_DIARY | Setting.
-      const outcomeTrigger = getDiaryOutcomeTrigger(finalOutcome, endedWithDrawRetreat, diarySettings.defeatNotificationMode);
-      if (outcomeTrigger) diaryTriggers.push(outcomeTrigger);
-      // SpecRef: 8.5 | UI_DIARY | Setting.
-      if (isGodsBattle && diarySettings.notifyGodsBattle) diaryTriggers.push('godsBattle');
-
-      if (hasSuperRareMatch) {
-        diaryTriggers.push('superRare');
-      } else {
-        if (hasMythicMatch) diaryTriggers.push('mythicRare');
-        if (hasBossMatch) diaryTriggers.push('bossRare');
-        if (hasRareMatch) diaryTriggers.push('eliteRare');
-      }
-
-      const currentUnlockedPartySlots = state.parties.length;
-      const unlockedState = getUnlockedStateFromEntries([log], currentUnlockedPartySlots);
-      const shouldRetainCompleteNarration = diaryTriggers.length > 0
-        || unlockedState.unlockedPartySlots > currentUnlockedPartySlots;
+      const {
+        log,
+        diaryTriggers,
+        shouldRetainCompleteNarration,
+      } = planCompletedExpeditionPresentation({
+        dungeon,
+        difficultyOffset: effectiveDifficultyOffset,
+        entries,
+        transaction: transactionResult,
+        finalization,
+        maxPartyHp: partyStats.hp,
+        autoSellMultiplier: rewardContext.autoSellMultiplier,
+        diarySettings,
+        isGodsBattle,
+      });
+      const finalRemainingPartyHP = log.remainingPartyHP;
       if (shouldRetainCompleteNarration && deferredBattleNarrations.length > 0) {
-        for (const deferred of deferredBattleNarrations) {
-          const replay = deferred.entry.replayMetadata;
-          if (!replay) throw new Error('Deferred AFK narration is missing replay metadata');
-          const replayed = executeBattleWithSeed(
-            statusParty,
-            deferred.enemy,
-            deferred.bags,
-            BigInt(`0x${replay.seedHex}`),
-            replay.rngVersion,
-            deferred.initialPartyHp,
-            { terrainEffect: deferred.terrainEffect, partyStatus },
-          );
-          if (
-            replayed.outcome !== deferred.entry.outcome
-            || replayed.partyHp !== deferred.entry.postBattlePartyHP
-            || replayed.replayMetadata.randomDrawCount !== replay.randomDrawCount
-          ) {
-            throw new Error('Deferred AFK narration replay diverged from its result-only battle');
-          }
-          deferred.entry.details = [...replayed.log, ...deferred.entry.details];
-        }
+        replayDeferredExpeditionNarrations({
+          narrations: deferredBattleNarrations,
+          party: statusParty,
+          partyStatus,
+        });
       }
 
       // SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
@@ -4214,105 +3036,50 @@ function gameReducer(
       // allocating its retained Diary/unlock/compendium projections.
       if (action.resolutionMode === 'forecast') {
         if (diaryTriggers.length > 0) gameplayRandom();
-        const updatedParties = [...state.parties];
-        updatedParties[action.partyIndex] = {
-          ...currentParty,
+        const forecastState = planForecastExpeditionState({
+          state,
+          partyIndex: action.partyIndex,
+          party: currentParty,
           bags,
-          lastExpeditionLog: null,
-          pendingDiaryLog: null,
-          currentHp: finalRemainingPartyHP,
-        };
-        const forecastState = {
-          ...state,
-          parties: updatedParties,
-        };
+          finalPartyHp: finalRemainingPartyHP,
+        });
         forecastResolutionByState.set(forecastState, createForecastResolution(log));
         return forecastState;
       }
 
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
-
-      const pendingDiaryLog = diaryTriggers.length > 0
-        ? {
-            id: `${diaryCreatedAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
-            expeditionLog: log,
-            triggers: diaryTriggers,
-            createdAt: diaryCreatedAt,
-            isRead: false,
-          }
+      const diaryIdToken = diaryTriggers.length > 0
+        ? gameplayRandom().toString(36).slice(2, 8)
         : null;
+      const pendingDiaryLog = planPendingExpeditionDiaryLog({
+        log,
+        triggers: diaryTriggers,
+        createdAt: diaryCreatedAt,
+        idToken: diaryIdToken,
+      });
 
-      // SpecRef: 8.4.5 | Altar (祭壇) | Alter level
-      const nextAltarVictoriesByEnemyType = { ...(state.global.altarVictoriesByEnemyType ?? {}) };
-      if (finalOutcome === 'Clear') {
-        const assignedEnemyTypes = new Set(
-          statusParty.characters
-            .filter((character) => character.raceId === 'mimorian')
-            .map((character) => ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType)
-            .filter((enemyType): enemyType is string => Boolean(enemyType)),
-        );
-        assignedEnemyTypes.forEach((enemyType) => {
-          nextAltarVictoriesByEnemyType[enemyType] = (nextAltarVictoriesByEnemyType[enemyType] ?? 0) + 1;
-        });
-      }
-
-      const updatedParties = [...state.parties];
-      updatedParties[action.partyIndex] = {
-        ...currentParty,
+      const committedProjection = planCommittedExpeditionState({
+        state,
+        partyIndex: action.partyIndex,
+        party: currentParty,
         bags,
-        expeditionRewardsPending: true,
-        pendingClearGateSnapshot: {
-          progress: { ...(currentParty.clearGateProgress ?? {}) },
-          status: { ...(currentParty.clearGateStatus ?? {}) },
-          defeatedBossExpeditions: { ...(currentParty.defeatedBossExpeditions ?? {}) },
-        },
-        defeatedBossExpeditions: nextDefeatedBossExpeditions,
-        clearGateProgress: nextClearGateProgress,
-        clearGateStatus: nextClearGateStatus,
-        lastExpeditionLog: log,
+        log,
         pendingDiaryLog,
-        currentHp: finalRemainingPartyHP,
-        // Party-cycle spending/donation is defined from the *latest* expedition's
-        // auto-sell profit, so this should not accumulate across expeditions.
-        pendingProfit: finalAutoSellProfit,
-        expeditionStats: {
-          ...currentParty.expeditionStats,
-          Clear: currentParty.expeditionStats.Clear + (finalOutcome === 'Clear' ? 1 : 0),
-          Turned_Back: currentParty.expeditionStats.Turned_Back + (finalOutcome === 'Escape' ? 1 : 0),
-          Draw_Retreat: currentParty.expeditionStats.Draw_Retreat + (finalOutcome === 'Retreat' && endedWithDrawRetreat ? 1 : 0),
-          Wounded_Retreat: currentParty.expeditionStats.Wounded_Retreat + (finalOutcome === 'Retreat' && !endedWithDrawRetreat ? 1 : 0),
-          Defeat: currentParty.expeditionStats.Defeat + (finalOutcome === 'Defeat' ? 1 : 0),
-        },
-      };
-
-      const pendingUnlockState = (
-        unlockedState.unlockedPartySlots > currentUnlockedPartySlots
-      )
-        ? {
-            deityNames: [...DEFAULT_UNLOCKED_DEITIES],
-            partySlotCount: Math.max(1, Math.min(6, unlockedState.unlockedPartySlots)),
-          }
-        : null;
-
-      const nextParties = [...updatedParties];
-      nextParties[action.partyIndex] = {
-        ...nextParties[action.partyIndex],
-        pendingUnlockState,
-      };
+        inventory: finalInventory,
+        gold: finalGold,
+        revealedGlossaryAbilityIds: revealGlossaryFromEncounter(
+          state.global,
+          transactionResult.revealedAbilityIds,
+          undefined,
+        ).revealedGlossaryAbilityIds,
+        transaction: transactionResult,
+        finalization,
+        defaultUnlockedDeities: DEFAULT_UNLOCKED_DEITIES,
+      });
 
       return {
         ...state,
-        parties: nextParties,
-        global: {
-          ...state.global,
-          inventory: finalInventory,
-          gold: finalGold,
-          revealedItemCompendiumItemIds: Array.from(revealedItemCompendiumItemIds),
-          ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
-          revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
-          enemyBattleStats: nextEnemyBattleStats,
-          altarVictoriesByEnemyType: nextAltarVictoriesByEnemyType,
-        },
+        ...committedProjection,
       };
     }
 
@@ -5468,7 +4235,7 @@ function gameReducer(
             }
           }
 
-          workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
+          workingState = applyAfkExpeditionSideQuestOutcome(workingState, partyIndex, simulatedAt);
           let optimizedProfitAbilityLevels: ProfitAbilityLevels | undefined;
           if (action.workerOptimization === 'optimized' && postFinalizeParty) {
             const cached = afkChunkContext?.profitAbilityCache.get(postFinalizeParty.id);
