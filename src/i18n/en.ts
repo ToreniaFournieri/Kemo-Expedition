@@ -3372,7 +3372,7 @@ const en = {
   'character.default.n9': 'Hagakure',
   'character.default.n10': 'Sougaha',
   'character.default.n11': 'Finn',
-  'character.default.n12': 'Mare',
+  'character.default.n12': 'Merle',
   'character.default.n13': 'Kuzunoha',
   'character.default.n14': 'Lop',
   'character.default.n15': 'Sota',

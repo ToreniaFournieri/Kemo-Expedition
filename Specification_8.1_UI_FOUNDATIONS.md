@@ -20,20 +20,21 @@
 - **Color Scheme**
 
 * Light mode
+
 | Theme | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` | `--hp-track` |
 | --------------- | --------: | --------: | --------: | --------: | ----------------------: |
 | m.kemo light    | #3B82F6 | #EA580C | #93C5FD | #FCB786 |               #E2E8F0 |
-| m.luna light    | #C28832 | #0C3CEA | #E8B568 | #FFED91 | rgb(217 204 175 / 0.45) |
 | m.laika light   | #08A645 | #DC2626 | #08A645 | #FFEBCD |               #D1D5DB |
-| m.orca light    | #269096 | #8bab2d | #2EB9C1 | #DDE89A | rgb(173 211 213 / 0.40) |
 | m.leonard light | #BF4264 | #EFA84C| #D95D7A | #F3B77E` | rgb(224 190 190 / 0.40) |
-| m.finn light    | #7255A5 | #B58A3C | #9276BE | #D6BD8A | rgb(207 196 220 / 0.45) |
-| m.hagakure light| #71845A | #9A704F | #91A875 | #D8B99A | rgb(195 204 176 / 0.45) |
-| m.merle light   | #438DC4 | #6F9B69 | #72AFD5 | #A9C99D | rgb(184 207 220 / 0.45) |
-| m.mishka light  | #1769C2 | #665C87 | #438CD4 | #A59BB7 | rgb(177 190 207 / 0.45) |
+| m.orca light    | #269096 | #8bab2d | #2EB9C1 | #DDE89A | rgb(173 211 213 / 0.40) |
 | m.nox light     | #9E2923 | #D58B20 | #B94A3E | #E0A85C | rgb(218 190 166 / 0.45) |
+| m.luna light    | #C28832 | #0C3CEA | #E8B568 | #FFED91 | rgb(217 204 175 / 0.45) |
+| m.mishka light  | #1769C2 | #665C87 | #438CD4 | #A59BB7 | rgb(177 190 207 / 0.45) |
 | m.puchitsa light| #C94B32 | #167D8D | #DF6A45 | #75A9A4 | rgb(218 188 171 / 0.45) |
+| m.hagakure light| #71845A | #9A704F | #91A875 | #D8B99A | rgb(195 204 176 / 0.45) |
 | m.souga-ha light| #557A9D | #D13C4C | #789AB8 | #D99A9F | rgb(190 202 214 / 0.45) |
+| m.finn light    | #7255A5 | #B58A3C | #9276BE | #D6BD8A | rgb(207 196 220 / 0.45) |
+| m.merle light   | #438DC4 | #6F9B69 | #72AFD5 | #A9C99D | rgb(184 207 220 / 0.45) |
 | m.rosaria light | #762E4B | #514078 | #9B526B | #A98AA5 | rgb(207 185 200 / 0.45) |
 | m.milly light   | #C94F78 | #B8862F | #E17E9D | #E5B98D | rgb(224 194 204 / 0.45) |
 | m.guabi light   | #78952F | #D95F68 | #9DBB50 | #E7A09B | rgb(202 211 172 / 0.45) |
@@ -49,17 +50,17 @@
 | Theme | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` | `--hp-track` |
 | -------------- | --------: | --------: | --------: | --------: | -------------------: |
 | m.kemo dark    | #3B82F6 | #EA580C | #6A94C6 | #A5886D |            #374151 |
-| m.luna dark    | #C28832 | #60A5FA | #AA8D5D | #857255 | rgb(43 52 68 / 0.45) |
 | m.laika dark   | #08A645 | #DC2626 | #08A645 | #92675B |            #374151 |
-| m.orca dark    | #45C1CA | #B3D355 | #4E9FA5 | #8A9160 | rgb(63 74 82 / 0.55) |
 | m.leonard dark | #E06080 | #F2B35C | #B94E69 | #A87959 | rgb(74 57 65 / 0.55) |
-| m.finn dark    | #A88BD2 | #D8B764 | #8D75B0 | #A08B68 | rgb(68 59 79 / 0.55) |
-| m.hagakure dark| #A4BA82 | #C69A72 | #849B6C | #9B8069 | rgb(63 72 57 / 0.55) |
-| m.merle dark   | #72B9E2 | #9BC58C | #679FC2 | #7F9D78 | rgb(54 70 82 / 0.55) |
-| m.mishka dark  | #4B9CFF | #9589B8 | #397FC5 | #776E8A | rgb(48 55 69 / 0.55) |
+| m.orca dark    | #45C1CA | #B3D355 | #4E9FA5 | #8A9160 | rgb(63 74 82 / 0.55) |
 | m.nox dark     | #D65A4F | #F0B84A | #A94740 | #A77B4A | rgb(77 55 50 / 0.55) |
+| m.luna dark    | #C28832 | #60A5FA | #AA8D5D | #857255 | rgb(43 52 68 / 0.45) |
+| m.mishka dark  | #4B9CFF | #9589B8 | #397FC5 | #776E8A | rgb(48 55 69 / 0.55) |
 | m.puchitsa dark| #F07855 | #42A9B5 | #B95640 | #628F8F | rgb(76 57 52 / 0.55) |
+| m.hagakure dark| #A4BA82 | #C69A72 | #849B6C | #9B8069 | rgb(63 72 57 / 0.55) |
 | m.souga-ha dark| #83A9CA | #F06470 | #6E8FAE | #A86D74 | rgb(55 65 76 / 0.55) |
+| m.finn dark    | #A88BD2 | #D8B764 | #8D75B0 | #A08B68 | rgb(68 59 79 / 0.55) |
+| m.merle dark   | #72B9E2 | #9BC58C | #679FC2 | #7F9D78 | rgb(54 70 82 / 0.55) |
 | m.rosaria dark | #B65B7C | #8B78B5 | #8D4962 | #806A7D | rgb(70 53 67 / 0.55) |
 | m.milly dark   | #F080A3 | #DDB45B | #BD6683 | #A98568 | rgb(78 56 66 / 0.55) |
 | m.guabi dark   | #A9C957 | #F08387 | #839E48 | #A66F70 | rgb(63 72 51 / 0.55) |

@@ -317,14 +317,34 @@ HP: 312                 タイプ: 神魔
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
 
-- "テーマカラー"
-  - Switch to ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`, オルカ `m.orca`
-  - Default: `m.kemo`
-  - Description:
-    - `m.kemo` "青を基調としたテーマです"
-    - `m.luna` "黄色を基調としたテーマです"
-    - `m.laika` "緑を基調としたテーマです"
-    - `m.orca` "オルカのテーマカラーです"
+- "Theme color"
+
+| theme color | label (i18n) |
+|-------|--------------|
+| m.kemo | character.default.n1 |
+| m.laika | character.default.n2 |
+| m.leonard | character.default.n3 |
+| m.orca | character.default.n4 |
+| m.nox | character.default.n5 |
+| m.luna | character.default.n6 |
+| m.mishka | character.default.n7 |
+| m.puchitsa | character.default.n8 |
+| m.hagakure | character.default.n9 |
+| m.souga-ha | character.default.n10 |
+| m.finn | character.default.n11 |
+| m.merle | character.default.n12 |
+| m.rosaria | masterData.enemyName.171 |
+| m.milly | masterData.enemyName.17 |
+| m.guabi | masterData.enemyName.173 |
+| m.nemea | masterData.enemyName.239 |
+| m.bernetta | masterData.enemyName.259 |
+| m.yone | masterData.enemyName.305 |
+| m.niv | masterData.enemyName.348 |
+| m.nave | masterData.enemyName.375 |
+
+- Default: `m.kemo`
+- Description: `label (i18n)` のテーマカラーです
+  - Example “ケモのテーマカラーです”
 
 
 **Feedback フィードバック**
