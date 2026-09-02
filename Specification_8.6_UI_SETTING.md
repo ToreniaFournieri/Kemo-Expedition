@@ -317,35 +317,40 @@ HP: 312                 タイプ: 神魔
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
 
-- "Theme color"
+- Theme color
 
-| theme color | label (i18n) |
-|-------|--------------|
-| m.kemo | character.default.n1 |
-| m.laika | character.default.n2 |
-| m.leonard | character.default.n3 |
-| m.orca | character.default.n4 |
-| m.nox | character.default.n5 |
-| m.luna | character.default.n6 |
-| m.mishka | character.default.n7 |
-| m.puchitsa | character.default.n8 |
-| m.hagakure | character.default.n9 |
-| m.souga-ha | character.default.n10 |
-| m.finn | character.default.n11 |
-| m.merle | character.default.n12 |
-| m.rosaria | masterData.enemyName.171 |
-| m.milly | masterData.enemyName.17 |
-| m.guabi | masterData.enemyName.173 |
-| m.nemea | masterData.enemyName.239 |
-| m.bernetta | masterData.enemyName.259 |
-| m.yone | masterData.enemyName.305 |
-| m.niv | masterData.enemyName.348 |
-| m.nave | masterData.enemyName.375 |
+| theme color | label (i18n) | Available in production |
+|-------|--------------|-----|
+| `theme.kemo` | `character.default.n1` | true |
+| `theme.laika` | `character.default.n2` | true |
+| `theme.leonard` | `character.default.n3` | false |
+| `theme.orca` | `character.default.n4` | false |
+| `theme.nox` | `character.default.n5` | false |
+| `theme.luna` | `character.default.n6` | true |
+| `theme.mishka` | `character.default.n7` | false |
+| `theme.puchitsa` | `character.default.n8` | false |
+| `theme.hagakure` | `character.default.n9` | false |
+| `theme.souga-ha` | `character.default.n10` | false |
+| `theme.finn` | `character.default.n11` | false |
+| `theme.merle` | `character.default.n12` | false |
+| `theme.rosaria` | `masterData.enemyName.171` | false |
+| `theme.milly` | `masterData.enemyName.17` | false |
+| `theme.guabi` | `masterData.enemyName.173` | false |
+| `theme.nemea` | `masterData.enemyName.239` | false |
+| `theme.bernetta` | `masterData.enemyName.259` | false |
+| `theme.yone` | `masterData.enemyName.305` | false |
+| `theme.niv` | `masterData.enemyName.348` | false |
+| `theme.nave` | `masterData.enemyName.375` | false |
 
-- Default: `m.kemo`
-- Description: `label (i18n)` のテーマカラーです
-  - Example “ケモのテーマカラーです”
+- Default: `theme.kemo`
+- Description: Displays the theme color associated with Label (i18n).
+  - Example: ケモのテーマカラーです
+- Availability:
+  - If Available in production is true, the theme color can be selected in the production environment.
+  - All theme colors are always selectable in the development environment.
 
+- Game mode
+  - Default: Normal
 
 **Feedback フィードバック**
   - Send feedback to the development team.
