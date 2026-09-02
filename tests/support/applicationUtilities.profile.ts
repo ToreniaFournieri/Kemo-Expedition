@@ -11,6 +11,11 @@ import {
   calculateSellPrice,
   ITEM_MAX_STACK,
 } from '../../src/game/inventoryMutation.ts';
+import {
+  migrateLegacyBag,
+  normalizeImportedBags,
+} from '../../src/game/bagMigration.ts';
+import { createCommonRewardBag } from '../../src/game/bags.ts';
 import { getVariantKey } from '../../src/types/index.ts';
 import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
 
@@ -81,6 +86,7 @@ test('inventory addition auto-sells marked and overflow variants without mutatio
 
 test('shared utility ownership leaves imported-bag migration in hydration', () => {
   const hookSource = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
+  const migrationSource = readFileSync(resolve(process.cwd(), 'src/game/bagMigration.ts'), 'utf8');
   const adapterSource = readFileSync(
     resolve(process.cwd(), 'src/game/expeditionApplicationAdapters.ts'),
     'utf8',
@@ -91,7 +97,52 @@ test('shared utility ownership leaves imported-bag migration in hydration', () =
     hookSource,
     /function (getDiarySettingsWithDefaults|normalizeDiaryDefeatNotificationMode|addItemToInventory|calculateSellPrice)\(/,
   );
-  assert.match(hookSource, /function normalizeImportedBags\(/);
-  assert.match(hookSource, /migrateLegacyBag\(/);
+  assert.match(hookSource, /from '\.\.\/game\/bagMigration'/);
+  assert.doesNotMatch(hookSource, /function (normalizeImportedBags|migrateLegacyBag)\(/);
+  assert.match(hookSource, /parsed\.bags = normalizeImportedBags\(parsed\.bags\)/);
+  assert.match(migrationSource, /commonSuperRareBag: migrateLegacyBag\(/);
   assert.doesNotMatch(adapterSource, /migrateLegacyBag|createCommonRewardBag|hydrateGameState/);
+});
+
+test('legacy bag migration preserves entries, ticket arrays, and fallbacks', () => {
+  assert.deepEqual(
+    migrateLegacyBag({ tickets: [1, 0, 1, 'invalid'] }, createCommonRewardBag, 'commonRewardBag'),
+    { entries: [{ id: 0, tickets: 1 }, { id: 1, tickets: 2 }] },
+  );
+  assert.deepEqual(
+    migrateLegacyBag({ entries: [[0, 2.9], [1, -3], ['invalid', 4]] }, createCommonRewardBag, 'commonRewardBag'),
+    { entries: [{ id: 0, tickets: 2 }, { id: 1, tickets: 0 }] },
+  );
+  assert.deepEqual(
+    migrateLegacyBag(null, createCommonRewardBag, 'commonRewardBag'),
+    createCommonRewardBag(),
+  );
+});
+
+test('save bag normalization migrates every bag and preserves Super Rare fallback input', () => {
+  const normalized = normalizeImportedBags({
+    commonRewardBag: { tickets: [1, 0, 1] },
+    superRareBag: { tickets: [0, 1, 1] },
+  });
+
+  assert.deepEqual(normalized.commonRewardBag, {
+    entries: [{ id: 0, tickets: 1 }, { id: 1, tickets: 2 }],
+  });
+  assert.deepEqual(normalized.commonSuperRareBag.entries, normalized.superRareBag.entries);
+  assert.deepEqual(normalized.rareSuperRareBag.entries, normalized.superRareBag.entries);
+  assert.deepEqual(Object.keys(normalized).sort(), [
+    'bossRareRewardBag',
+    'commonEnhancementBag',
+    'commonRewardBag',
+    'commonSuperRareBag',
+    'eliteRareRewardBag',
+    'enhancementBag',
+    'magicalThreatBag',
+    'mythicRareRewardBag',
+    'physicalThreatBag',
+    'rareSuperRareBag',
+    'sideQuestBag',
+    'superRareBag',
+    'uncommonRewardBag',
+  ]);
 });
