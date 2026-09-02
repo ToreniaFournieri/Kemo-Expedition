@@ -51,8 +51,11 @@ import { getDiarySettingsWithDefaults } from '../game/diarySettings';
 import { normalizeImportedBags } from '../game/bagMigration';
 import {
   addItemToInventory,
-  calculateSellPrice,
   ITEM_MAX_STACK,
+  removeItemFromInventory,
+  sellAllOwnedInventory,
+  sellInventoryStack,
+  setInventoryVariantStatus,
 } from '../game/inventoryMutation';
 import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { recordRunExpeditionStatusAuthority } from '../game/battle';
@@ -891,25 +894,6 @@ const afkInventoryDeltaByState = new WeakMap<GameState, AfkInventoryDelta>();
 
 export function getAfkInventoryDeltaForState(state: GameState): AfkInventoryDelta | undefined {
   return afkInventoryDeltaByState.get(state);
-}
-
-// Helper to remove one item from inventory
-function removeItemFromInventory(
-  inventory: InventoryRecord,
-  key: string,
-  mutateInventory: boolean = false,
-): InventoryRecord {
-  const existing = inventory[key];
-  if (!existing || existing.count <= 0) return inventory;
-
-  const newInventory = mutateInventory ? inventory : { ...inventory };
-  if (existing.count === 1) {
-    // Last item - mark as notown instead of deleting
-    newInventory[key] = { ...existing, count: 0, status: 'notown' };
-  } else {
-    newInventory[key] = { ...existing, count: existing.count - 1 };
-  }
-  return newInventory;
 }
 
 // Helper to convert old inventory format to new format
@@ -3290,18 +3274,14 @@ function gameReducer(
 
     case 'SELL_STACK': {
       const currentParty = state.parties[state.selectedPartyIndex];
-      const variant = state.global.inventory[action.variantKey];
-      if (!variant || variant.count <= 0) return state;
-
-      const sellPrice = calculateSellPrice(variant.item) * variant.count;
-      const pranaGranted = getSuperRareItemPrana(variant.item) * variant.count;
-
-      const newInventory = { ...state.global.inventory };
-      newInventory[action.variantKey] = {
-        ...variant,
-        count: 0,
-        status: 'sold',
-      };
+      const sale = sellInventoryStack(
+        state.global.inventory,
+        action.variantKey,
+        state.global.gold,
+        state.global.prana,
+        { getPrana: getSuperRareItemPrana },
+      );
+      if (sale.soldCount === 0) return state;
 
       const updatedParties = [...state.parties];
       updatedParties[state.selectedPartyIndex] = {
@@ -3313,40 +3293,29 @@ function gameReducer(
         parties: updatedParties,
         global: {
           ...state.global,
-          inventory: newInventory,
-          gold: state.global.gold + (pranaGranted > 0 ? 0 : sellPrice),
-          prana: state.global.prana + pranaGranted,
+          inventory: sale.inventory,
+          gold: sale.gold,
+          prana: sale.prana,
         },
       };
     }
 
     case 'SELL_ALL_OWNED': {
-      let totalSellPrice = 0;
-      const newInventory = { ...state.global.inventory };
-
-      let totalPrana = 0;
-
-      for (const [variantKey, variant] of Object.entries(state.global.inventory)) {
-        if (variant.status !== 'owned' || variant.count <= 0) continue;
-        const pranaGranted = getSuperRareItemPrana(variant.item) * variant.count;
-        if (pranaGranted > 0) totalPrana += pranaGranted;
-        else totalSellPrice += calculateSellPrice(variant.item) * variant.count;
-        newInventory[variantKey] = {
-          ...variant,
-          count: 0,
-          status: 'sold',
-        };
-      }
-
-      if (totalSellPrice <= 0 && totalPrana <= 0) return state;
+      const sale = sellAllOwnedInventory(
+        state.global.inventory,
+        state.global.gold,
+        state.global.prana,
+        { getPrana: getSuperRareItemPrana },
+      );
+      if (sale.soldCount === 0) return state;
 
       return {
         ...state,
         global: {
           ...state.global,
-          inventory: newInventory,
-          gold: state.global.gold + totalSellPrice,
-          prana: state.global.prana + totalPrana,
+          inventory: sale.inventory,
+          gold: sale.gold,
+          prana: sale.prana,
         },
       };
     }
@@ -3504,14 +3473,12 @@ function gameReducer(
 
     case 'SET_VARIANT_STATUS': {
       const currentParty = state.parties[state.selectedPartyIndex];
-      const variant = state.global.inventory[action.variantKey];
-      if (!variant) return state;
-
-      const newInventory = { ...state.global.inventory };
-      newInventory[action.variantKey] = {
-        ...variant,
-        status: action.status,
-      };
+      const newInventory = setInventoryVariantStatus(
+        state.global.inventory,
+        action.variantKey,
+        action.status,
+      );
+      if (newInventory === state.global.inventory) return state;
 
       const updatedParties = [...state.parties];
       updatedParties[state.selectedPartyIndex] = {

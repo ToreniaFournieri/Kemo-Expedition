@@ -71,3 +71,99 @@ export function addItemToInventory(
     autoSellProfit: 0,
   };
 }
+
+export function removeItemFromInventory(
+  inventory: InventoryRecord,
+  key: string,
+  mutateInventory = false,
+): InventoryRecord {
+  const existing = inventory[key];
+  if (!existing || existing.count <= 0) return inventory;
+
+  const nextInventory = mutateInventory ? inventory : { ...inventory };
+  nextInventory[key] = existing.count === 1
+    ? { ...existing, count: 0, status: 'notown' }
+    : { ...existing, count: existing.count - 1 };
+  return nextInventory;
+}
+
+export function setInventoryVariantStatus(
+  inventory: InventoryRecord,
+  key: string,
+  status: InventoryRecord[string]['status'],
+  mutateInventory = false,
+): InventoryRecord {
+  const existing = inventory[key];
+  if (!existing) return inventory;
+  const nextInventory = mutateInventory ? inventory : { ...inventory };
+  nextInventory[key] = { ...existing, status };
+  return nextInventory;
+}
+
+export interface InventorySaleResult {
+  readonly inventory: InventoryRecord;
+  readonly gold: number;
+  readonly prana: number;
+  readonly soldCount: number;
+}
+
+export interface InventorySaleAuthorities {
+  readonly getPrana: (item: Item) => number;
+}
+
+export function sellInventoryStack(
+  inventory: InventoryRecord,
+  key: string,
+  currentGold: number,
+  currentPrana: number,
+  authorities: InventorySaleAuthorities,
+): InventorySaleResult {
+  const variant = inventory[key];
+  if (!variant || variant.count <= 0) {
+    return { inventory, gold: currentGold, prana: currentPrana, soldCount: 0 };
+  }
+
+  const soldCount = variant.count;
+  const pranaGranted = authorities.getPrana(variant.item) * soldCount;
+  const sellPrice = calculateSellPrice(variant.item) * soldCount;
+  return {
+    inventory: {
+      ...inventory,
+      [key]: { ...variant, count: 0, status: 'sold' },
+    },
+    gold: currentGold + (pranaGranted > 0 ? 0 : sellPrice),
+    prana: currentPrana + pranaGranted,
+    soldCount,
+  };
+}
+
+export function sellAllOwnedInventory(
+  inventory: InventoryRecord,
+  currentGold: number,
+  currentPrana: number,
+  authorities: InventorySaleAuthorities,
+): InventorySaleResult {
+  let totalSellPrice = 0;
+  let totalPrana = 0;
+  let soldCount = 0;
+  const nextInventory = { ...inventory };
+
+  for (const [key, variant] of Object.entries(inventory)) {
+    if (variant.status !== 'owned' || variant.count <= 0) continue;
+    const pranaGranted = authorities.getPrana(variant.item) * variant.count;
+    if (pranaGranted > 0) totalPrana += pranaGranted;
+    else totalSellPrice += calculateSellPrice(variant.item) * variant.count;
+    soldCount += variant.count;
+    nextInventory[key] = { ...variant, count: 0, status: 'sold' };
+  }
+
+  if (totalSellPrice <= 0 && totalPrana <= 0) {
+    return { inventory, gold: currentGold, prana: currentPrana, soldCount: 0 };
+  }
+  return {
+    inventory: nextInventory,
+    gold: currentGold + totalSellPrice,
+    prana: currentPrana + totalPrana,
+    soldCount,
+  };
+}
