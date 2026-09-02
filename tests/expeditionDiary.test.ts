@@ -66,17 +66,25 @@ test('RUN_EXPEDITION retains time and random allocation before the Diary adapter
     new URL('../src/game/expeditionDiary.ts', import.meta.url),
     'utf8',
   );
+  const commitSource = readFileSync(
+    new URL('../src/game/expeditionCommit.ts', import.meta.url),
+    'utf8',
+  );
   const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
+  const applicationSource = readFileSync(new URL('../src/game/expeditionApplication.ts', import.meta.url), 'utf8');
   const runExpedition = hookSource.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
 
   assert.match(
-    runExpedition,
-    /const diaryCreatedAt = action\.simulatedAt \?\? Date\.now\(\);[\s\S]{0,240}gameplayRandom\(\)\.toString\(36\)\.slice\(2, 8\)[\s\S]{0,240}planPendingExpeditionDiaryLog\(/,
+    applicationSource,
+    /const diaryCreatedAt = command\.simulatedAt \?\? authorities\.getCommittedAt\(\);[\s\S]{0,240}authorities\.random\(\)\.toString\(36\)\.slice\(2, 8\)[\s\S]{0,500}planExpeditionCommit\(/,
   );
   assert.match(
-    runExpedition,
-    /if \(action\.resolutionMode === 'forecast'\)[\s\S]{0,700}return forecastState;[\s\S]{0,240}const diaryCreatedAt/,
+    applicationSource,
+    /if \(command\.resolutionMode === 'forecast'\)[\s\S]{0,900}kind: 'forecast'[\s\S]{0,300}const diaryCreatedAt/,
   );
-  assert.doesNotMatch(runExpedition, /id: `\$\{diaryCreatedAt\}-\$\{/);
+  assert.match(runExpedition, /getCommittedAt: \(\) => Date\.now\(\)/);
+  assert.doesNotMatch(applicationSource, /id: `\$\{diaryCreatedAt\}-\$\{/);
+  assert.match(commitSource, /planPendingExpeditionDiaryLog\(/);
   assert.doesNotMatch(adapterSource, /gameplayRandom|Math\.random|Date\.now|forecastResolutionByState/);
+  assert.doesNotMatch(commitSource, /gameplayRandom|Math\.random|Date\.now|forecastResolutionByState/);
 });

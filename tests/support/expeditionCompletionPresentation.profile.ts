@@ -4,8 +4,11 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { getItemById } from '../../src/data/items.ts';
+import { completeExpeditionPresentation } from '../../src/game/expeditionCompletion.ts';
 import { planCompletedExpeditionPresentation } from '../../src/game/expeditionCompletionPresentation.ts';
-import type { DiarySettings, ExpeditionLogEntry, Item } from '../../src/types/index.ts';
+import type { DeferredExpeditionBattleNarration } from '../../src/game/expeditionPresentation.ts';
+import type { ComputedPartyStatus } from '../../src/game/partyComputation.ts';
+import type { DiarySettings, ExpeditionLogEntry, Item, Party } from '../../src/types/index.ts';
 
 const BASE_DIARY_SETTINGS: DiarySettings = {
   superRareThreshold: 'all',
@@ -114,18 +117,71 @@ test('unlock narration can require full replay without creating a Diary trigger'
   assert.equal(result.log.autoSellMultiplier, undefined);
 });
 
+test('completion coordinator skips replay unless retained narration is required', () => {
+  const dungeon = getDungeonById(1);
+  assert.ok(dungeon);
+  const entry = createEntry(490);
+  const deferredBattleNarrations = [{ entry }] as unknown as DeferredExpeditionBattleNarration[];
+  const input = {
+    dungeon,
+    difficultyOffset: 3,
+    entries: [entry],
+    transaction: { totalExperience: 25, finalOutcome: 'Clear' as const, currentHp: 480 },
+    finalization: {
+      rewards: [],
+      autoSoldItems: [],
+      autoSellProfit: 0,
+      autoSellItemCount: 0,
+      endedWithDrawRetreat: false,
+      requiresUnlockNarration: false,
+    },
+    maxPartyHp: 500,
+    autoSellMultiplier: 1,
+    diarySettings: {
+      ...BASE_DIARY_SETTINGS,
+      notifyGodsBattle: false,
+      defeatNotificationMode: 'none' as const,
+    },
+    isGodsBattle: false,
+    deferredBattleNarrations,
+    party: {} as Party,
+    partyStatus: {} as ComputedPartyStatus,
+  };
+
+  const result = completeExpeditionPresentation(input);
+  assert.deepEqual(result.diaryTriggers, []);
+  assert.equal(result.log.entries[0], entry);
+  assert.throws(() => completeExpeditionPresentation({
+    ...input,
+    finalization: { ...input.finalization, requiresUnlockNarration: true },
+  }), /missing replay metadata/);
+});
+
 test('completion planner owns log and trigger projection without RNG or state mutation', () => {
   const plannerSource = readFileSync(
     resolve(process.cwd(), 'src/game/expeditionCompletionPresentation.ts'),
     'utf8',
   );
+  const completionSource = readFileSync(
+    resolve(process.cwd(), 'src/game/expeditionCompletion.ts'),
+    'utf8',
+  );
   const hookSource = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
+  const applicationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionApplication.ts'), 'utf8');
   const runExpedition = hookSource.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
-  assert.match(runExpedition, /planCompletedExpeditionPresentation\(/);
+  assert.match(applicationSource, /completeExpeditionPresentation\(/);
+  assert.doesNotMatch(runExpedition, /planCompletedExpeditionPresentation\(|replayDeferredExpeditionNarrations\(/);
   assert.doesNotMatch(runExpedition, /const log: ExpeditionLog/);
   assert.doesNotMatch(runExpedition, /has(SuperRare|Boss|Mythic|Rare)Match/);
   assert.doesNotMatch(runExpedition, /diaryTriggers\.push\(/);
   assert.match(plannerSource, /const log: ExpeditionLog/);
   assert.match(plannerSource, /getDiaryOutcomeTrigger\(/);
   assert.doesNotMatch(plannerSource, /gameplayRandom|Math\.random|executeBattleWithSeed|Date\.now|GameState/);
+  const plannerIndex = completionSource.indexOf('planCompletedExpeditionPresentation(');
+  const replayIndex = completionSource.indexOf('replayDeferredExpeditionNarrations({');
+  assert.ok(plannerIndex >= 0 && plannerIndex < replayIndex);
+  assert.doesNotMatch(
+    completionSource,
+    /gameplayRandom|Math\.random|Date\.now|forecastResolutionByState|inventoryCoordinator|planExpeditionCommit/,
+  );
 });

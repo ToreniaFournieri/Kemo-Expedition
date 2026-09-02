@@ -195,22 +195,32 @@ test('reward contexts are frozen snapshots and fresh derivations observe explici
 
 test('RUN_EXPEDITION derives one run context and has no nested reward/unlock recomputation', () => {
   const source = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
+  const preparationSource = readFileSync(
+    resolve(process.cwd(), 'src/game/expeditionPreparation.ts'),
+    'utf8',
+  );
   const completionSource = readFileSync(
     resolve(process.cwd(), 'src/game/expeditionCompletionPresentation.ts'),
     'utf8',
   );
+  const applicationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionApplication.ts'), 'utf8');
+  const rewardInstallationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionRewardInstallation.ts'), 'utf8');
   const runExpedition = source.slice(
     source.indexOf("case 'RUN_EXPEDITION':"),
     source.indexOf("case 'FINALIZE_DIARY_LOG':"),
   );
 
-  assert.equal((runExpedition.match(/createExpeditionRunContext\(/g) ?? []).length, 1);
+  assert.equal((applicationSource.match(/prepareExpeditionRun\(/g) ?? []).length, 1);
+  assert.equal((preparationSource.match(/createExpeditionRunContext\(/g) ?? []).length, 1);
   assert.equal((runExpedition.match(/deriveExpeditionRewardContext\(/g) ?? []).length, 0);
-  assert.equal((runExpedition.match(/computePartyStats\(/g) ?? []).length, 1);
+  assert.equal((runExpedition.match(/computePartyStats\(/g) ?? []).length, 0);
+  assert.equal((preparationSource.match(/computePartyStats\(/g) ?? []).length, 1);
   assert.doesNotMatch(runExpedition, /getCurrentPartyCunningMultiplier\(/);
   assert.doesNotMatch(runExpedition, /getCurrentPartyUnlockActorName\(/);
-  assert.match(runExpedition, /installRecoveredEnemyRewards\([\s\S]{0,220}rewardContext\.autoSellMultiplier/);
-  assert.match(runExpedition, /planCompletedExpeditionPresentation\([\s\S]{0,400}autoSellMultiplier: rewardContext\.autoSellMultiplier/);
+  assert.match(runExpedition, /createExpeditionApplicationAdapters\(/);
+  assert.match(rewardInstallationSource, /input\.autoSellMultiplier/);
+  assert.match(applicationSource, /autoSellMultiplier: rewardContext\.autoSellMultiplier/);
+  assert.match(applicationSource, /completeExpeditionPresentation\([\s\S]{0,400}autoSellMultiplier: rewardContext\.autoSellMultiplier/);
   assert.match(completionSource, /autoSellMultiplier: input\.autoSellMultiplier > 1/);
 });
 

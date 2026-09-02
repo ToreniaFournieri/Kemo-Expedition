@@ -22,7 +22,6 @@ import {
   GameNotification,
   NotificationStyle,
   NotificationCategory,
-  TerrainEffectKey,
   EnemyDef,
   ExpeditionDepthLimit,
   ExpeditionDestinationMode,
@@ -37,30 +36,25 @@ import {
   type ComputedPartyStatus,
   type PartyMaxHpLedger,
 } from '../game/partyComputation';
+import { getPartyUnlockSlotForBossVictory } from '../game/expeditionTransaction';
 import {
-  createExpeditionRunContext,
-} from '../game/expeditionRunContext';
+  createExpeditionForecastResolution,
+  type ExpeditionForecastResolution,
+  type ExpeditionResolutionMode,
+  type RunExpeditionApplicationCommand,
+} from '../game/expeditionApplicationContract';
+import { runExpeditionApplication } from '../game/expeditionApplication';
 import {
-  getPartyUnlockSlotForBossVictory,
-  planExpeditionFinalization,
-} from '../game/expeditionTransaction';
-import { runExpeditionService } from '../game/expeditionService';
-import { renderExpeditionServiceResult } from '../game/expeditionPresentation';
-import { planCompletedExpeditionPresentation } from '../game/expeditionCompletionPresentation';
-import {
-  getRewardRarityByItemId,
-  getRewardRarityRank,
-} from '../game/expeditionEffects/rewardDrops';
+  createDefaultExpeditionApplicationAdapterFactory,
+  DEFAULT_UNLOCKED_DEITIES,
+} from '../game/expeditionApplicationAdapters';
 import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { recordRunExpeditionStatusAuthority } from '../game/battle';
-import { replayDeferredExpeditionNarrations } from '../game/expeditionNarrationReplay';
 import {
-  planCommittedExpeditionState,
-  planForecastExpeditionState,
-} from '../game/expeditionStateInstallation';
-import { planPendingExpeditionDiaryLog } from '../game/expeditionDiary';
+  normalizeRevealedGlossaryAbilityIds,
+  normalizeRevealedGlossaryTerrainKeys,
+} from '../game/glossaryDisclosure';
 import { gameplayRandom } from '../game/gameplayRandom';
-import { getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById } from '../data/dungeons';
 import { ENEMIES } from '../data/enemies';
@@ -96,23 +90,18 @@ import type {
   AutoEquipmentReducerAttribution,
   AutoEquipmentStateStrategy,
 } from '../game/autoEquipmentAttribution';
-import { getItemDisplayName } from '../game/gameState';
 import { INSTANT_EXPEDITION_MAX_STOCK, consumeInstantExpeditionStock, getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { DEITY_OPTIONS, getDeityDepositMultiplier, getDeityPartyHpMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
-import { BONUS_ABILITY_GLOSSARY_ENTRIES } from '../data/bonusAbilityGlossary';
-import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../data/glossary';
 import {
-  getGodsBattleRequired,
-  getGodsBattleProgress,
   getEliteGateKey,
   getBossGateKey,
   isClearGateUnlocked,
-  hasDefeatedDungeonBoss,
   isDungeonEntryUnlocked,
+  isGodsBattleAvailable,
 } from '../game/clearGate';
 import { resolveSideQuestOutcome } from '../game/expeditionEffects/sideQuestOutcome';
 import { getXpToNextLevel } from '../game/partyLevel';
@@ -176,10 +165,6 @@ function generateUserId(): string {
 }
 const APPROX_CYCLE_STEP_COUNT = 30;
 const SAVE_LOAD_WARNING_KEY = 'save.loadWarning';
-const VALID_GLOSSARY_ABILITY_IDS = new Set(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
-const VALID_GLOSSARY_TERRAIN_KEYS = new Set(
-  (TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []).map((entry) => entry.key as TerrainEffectKey),
-);
 
 type SideQuestScaleByLevel = {
   1: number;
@@ -237,26 +222,6 @@ function normalizeSideQuestType(type: string): string {
   return legacyToCurrentTypeMap[type] ?? type;
 }
 
-// SpecRef: 1.0.3 | Glossary Reveal Rule | revealed
-function normalizeRevealedGlossaryAbilityIds(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return Array.from(new Set(
-    value.filter((abilityId): abilityId is string => (
-      typeof abilityId === 'string' && VALID_GLOSSARY_ABILITY_IDS.has(abilityId as typeof BONUS_ABILITY_GLOSSARY_ENTRIES[number]['abilityId'])
-    )),
-  ));
-}
-
-// SpecRef: 1.0.3 | Glossary Reveal Rule | revealed
-function normalizeRevealedGlossaryTerrainKeys(value: unknown): TerrainEffectKey[] {
-  if (!Array.isArray(value)) return [];
-  return Array.from(new Set(
-    value.filter((terrainKey): terrainKey is TerrainEffectKey => (
-      typeof terrainKey === 'string' && VALID_GLOSSARY_TERRAIN_KEYS.has(terrainKey as TerrainEffectKey)
-    )),
-  ));
-}
-
 function normalizeRevealedItemCompendiumItemIds(value: unknown): number[] {
   if (!Array.isArray(value)) return [];
   return Array.from(new Set(
@@ -291,40 +256,12 @@ function collectRevealedItemIdsFromOwnedData(
   return Array.from(revealedIds);
 }
 
-// SpecRef: 1.0.3 | Glossary Reveal Rule | reveal by encounter
-function revealGlossaryFromEncounter(
-  global: GameState['global'],
-  abilityIds: Iterable<string>,
-  terrainEffect?: TerrainEffectKey | 'none',
-): Pick<GameState['global'], 'revealedGlossaryAbilityIds' | 'revealedGlossaryTerrainKeys'> {
-  const nextAbilityIds = new Set(global.revealedGlossaryAbilityIds);
-  const nextTerrainKeys = new Set(global.revealedGlossaryTerrainKeys);
-
-  for (const abilityId of abilityIds) {
-    if (VALID_GLOSSARY_ABILITY_IDS.has(abilityId as typeof BONUS_ABILITY_GLOSSARY_ENTRIES[number]['abilityId'])) {
-      nextAbilityIds.add(abilityId);
-    }
-  }
-  if (terrainEffect && terrainEffect !== 'none' && VALID_GLOSSARY_TERRAIN_KEYS.has(terrainEffect)) {
-    nextTerrainKeys.add(terrainEffect);
-  }
-
-  return {
-    revealedGlossaryAbilityIds: Array.from(nextAbilityIds),
-    revealedGlossaryTerrainKeys: Array.from(nextTerrainKeys),
-  };
-}
-
 function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry, dungeonId?: number): number | null {
   // SpecRef: 5.1.3.2 | Unlock party | Party unlock condition
   if (entry.outcome !== 'victory' || entry.roomType !== 'battle_Boss') return null;
   if (typeof dungeonId !== 'number') return null;
   return getPartyUnlockSlotForBossVictory(dungeonId);
 }
-
-const DEFAULT_UNLOCKED_DEITIES: string[] = DEITY_OPTIONS
-  .map((deity) => normalizeDeityName(deity.name))
-  .filter((deityName) => !isNoFaithDeity(deityName));
 
 function normalizeUnlockedDeities(unlockedDeities: unknown): string[] {
   if (!Array.isArray(unlockedDeities)) return [];
@@ -560,12 +497,6 @@ const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet
 const RANGED_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalyst']);
 
-
-function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Gods battle gate
-  return getGodsBattleProgress(party, dungeonId) >= getGodsBattleRequired()
-    && hasDefeatedDungeonBoss(party, dungeonId);
-}
 
 function normalizePartyCondition(raw: unknown): number {
   if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
@@ -2088,22 +2019,11 @@ function createInitialState(): InitialStateResult {
 }
 
 
-export type ExpeditionResolutionMode = 'full' | 'forecast';
-
-export interface ExpeditionForecastBattleDiagnostic {
-  enemyId: number | undefined;
-  outcome: ExpeditionLogEntry['outcome'];
-  remainingPartyHP: number;
-  replayMetadata: ExpeditionLogEntry['replayMetadata'];
-}
-
-export interface ExpeditionForecastResolution {
-  outcome: ExpeditionLog['finalOutcome'];
-  completedRooms: number;
-  finalHp: number;
-  terminalBattleOutcome: ExpeditionLogEntry['outcome'] | null;
-  battleDiagnostics: ExpeditionForecastBattleDiagnostic[];
-}
+export type {
+  ExpeditionForecastBattleDiagnostic,
+  ExpeditionForecastResolution,
+  ExpeditionResolutionMode,
+} from '../game/expeditionApplicationContract';
 
 export interface SimulationSandbox {
   partyIndex: number;
@@ -2112,21 +2032,6 @@ export interface SimulationSandbox {
 }
 
 const forecastResolutionByState = new WeakMap<GameState, ExpeditionForecastResolution>();
-
-function createForecastResolution(log: ExpeditionLog): ExpeditionForecastResolution {
-  return {
-    outcome: log.finalOutcome,
-    completedRooms: log.completedRooms,
-    finalHp: log.remainingPartyHP,
-    terminalBattleOutcome: log.entries[log.entries.length - 1]?.outcome ?? null,
-    battleDiagnostics: log.entries.map((entry) => ({
-      enemyId: entry.enemyId,
-      outcome: entry.outcome,
-      remainingPartyHP: entry.remainingPartyHP,
-      replayMetadata: entry.replayMetadata,
-    })),
-  };
-}
 
 export type AfkBatchTestOptions = AfkSimulationBatchSlice & {
   elapsedMs: number;
@@ -2144,7 +2049,7 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean; chunkPartyStatus?: { party: Party; computed: ComputedPartyStatus }; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus }; battleOutputMode?: 'full' | 'result-only'; compactBattleResultOutput?: boolean; resolutionMode?: ExpeditionResolutionMode }
+  | ({ type: 'RUN_EXPEDITION' } & RunExpeditionApplicationCommand)
   | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
@@ -2279,80 +2184,11 @@ function hasActiveNonGodBattleClearGateCondition(party: Party): boolean {
 
 
 
-function installRecoveredEnemyRewards(
-  recoveredDropItems: readonly Item[],
-  currentInventory: InventoryRecord,
-  currentGold: number,
-  autoSellMultiplier: number,
-  mutateInventory: boolean = false,
-): {
-  inventory: InventoryRecord;
-  gold: number;
-  autoSellProfit: number;
-  rewards: Item[];
-  recoveredItems: Item[];
-  rewardNames: string[];
-  rewardLogEntries: { itemName: string; autoSellProfit?: number }[];
-  autoSellItemCount: number;
-  highestRewardRarity?: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
-  hasSuperRareReward: boolean;
-  autoSellItems: { item: Item; itemName: string; autoSellProfit: number }[];
-} {
-  let inventory = currentInventory;
-  let gold = currentGold;
-  let autoSellProfit = 0;
-  const rewards: Item[] = [];
-  const recoveredItems: Item[] = [];
-  const rewardNames: string[] = [];
-  const rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
-  const autoSellItems: { item: Item; itemName: string; autoSellProfit: number }[] = [];
-  let autoSellItemCount = 0;
-  let highestRewardRarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' | undefined;
-  let hasSuperRareReward = false;
-
-  for (const newItem of recoveredDropItems) {
-    const baseRarity = getRewardRarityByItemId(newItem.id);
-    const itemName = getItemDisplayName(newItem);
-    const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier, mutateInventory);
-    recoveredItems.push(newItem);
-    inventory = result.inventory;
-    gold = result.gold;
-    autoSellProfit += result.autoSellProfit;
-
-    rewardLogEntries.push({
-      itemName,
-      autoSellProfit: result.wasAutoSold ? result.autoSellProfit : undefined,
-    });
-
-    if (result.wasAutoSold) {
-      autoSellItemCount += 1;
-      autoSellItems.push({ item: newItem, itemName, autoSellProfit: result.autoSellProfit });
-    }
-
-    if (!result.wasAutoSold) {
-      rewards.push(newItem);
-      rewardNames.push(itemName);
-      if (!highestRewardRarity || getRewardRarityRank(baseRarity) > getRewardRarityRank(highestRewardRarity)) {
-        highestRewardRarity = baseRarity;
-      }
-      if (newItem.superRare > 0) hasSuperRareReward = true;
-    }
-  }
-
-  return {
-    inventory,
-    gold,
-    autoSellProfit,
-    rewards,
-    recoveredItems,
-    rewardNames,
-    rewardLogEntries,
-    autoSellItemCount,
-    highestRewardRarity,
-    hasSuperRareReward,
-    autoSellItems,
-  };
-}
+const createExpeditionApplicationAdapters = createDefaultExpeditionApplicationAdapterFactory({
+  normalizeBags: normalizeImportedBags,
+  getDiarySettings: getDiarySettingsWithDefaults,
+  addItemToInventory,
+});
 
 function drawGuaranteedEnhancement(
   bags: GameState['bags'],
@@ -2874,212 +2710,31 @@ function gameReducer(
     }
 
     case 'RUN_EXPEDITION': {
-      const currentParty = state.parties[action.partyIndex];
-      const dungeon = getDungeonById(currentParty.selectedDungeonId);
-      if (!dungeon) return state;
-      const isGodsBattle = action.triggerGodsBattle === true && isGodsBattleAvailable(currentParty, dungeon.id);
-      // SpecRef: 5.1 | Chunk | Party status is calculated once at Chunk start.
-      // AFK progression supplies the immutable status source captured before its
-      // first Cycle. Mutable progress continues to come from currentParty.
-      const suppliedPartyStatus = action.chunkPartyStatus ?? action.authoritativePartyStatus;
-      const statusParty = suppliedPartyStatus?.party ?? currentParty;
-      const partyStatus = suppliedPartyStatus?.computed ?? computePartyStats(statusParty);
-      recordRunExpeditionStatusAuthority(suppliedPartyStatus !== undefined);
-      const persistedCurrentHp = currentParty.currentHp ?? partyStatus.partyStats.hp;
-      if (persistedCurrentHp <= 0 || partyStatus.partyStats.hp <= 0) {
-        return state;
-      }
-      const colosseumTerrainEffect = dungeon.id === 99
-        ? getColosseumEnemySettings().terrainEffect
-        : 'none';
-      const expeditionContext = createExpeditionRunContext({
-        currentParty,
-        statusParty,
-        partyStatus,
-        dungeon,
-        deityDonations: state.global.deityDonations,
-        ...(colosseumTerrainEffect !== 'none'
-          ? { terrainOverride: colosseumTerrainEffect }
-          : {}),
-      });
-      const { partyStats, characterStats } = expeditionContext;
-      const rewardContext = expeditionContext.reward;
-      // SpecRef: 5.1.1 | Party State Machine | state.explore
-      // RUN_EXPEDITION is shared by Online and AFK resolution, so restoring HP
-      // here guarantees that every exploration begins at the party's current MaxHP.
-      // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
-      const effectiveDifficultyOffset = expeditionContext.difficulty.offset;
-
-      const afkInventoryCheckpoint = afkChunkContext?.inventoryOverlay.checkpoint();
-      let currentInventory = afkChunkContext?.inventoryOverlay.record ?? state.global.inventory;
-      let currentGold = state.global.gold;
-      const serviceResult = runExpeditionService({
-        context: expeditionContext,
-        party: currentParty,
-        dungeon,
-        transaction: {
-          initialHp: partyStats.hp,
-          bags: normalizeImportedBags(currentParty.bags),
-          enemyBattleStats: state.global.enemyBattleStats,
-          revealedItemIds: state.global.revealedItemCompendiumItemIds,
-          revealedAbilityIds: [
-            ...state.global.revealedGlossaryAbilityIds,
-            ...characterStats.flatMap((stats) => stats.abilities.map((ability) => ability.id)),
-          ],
-          revealedTerrainKeys: state.global.revealedGlossaryTerrainKeys,
-        },
-        isGodsBattle,
-        random: gameplayRandom,
-        refillBag: refillBagIfEmpty,
-        installRecoveredItems: (recoveredItems) => {
-          const rewardResult = installRecoveredEnemyRewards(
-            recoveredItems,
-            currentInventory,
-            currentGold,
-            rewardContext.autoSellMultiplier,
-            afkChunkContext !== undefined,
-          );
-          currentInventory = rewardResult.inventory;
-          currentGold = rewardResult.gold;
-          return {
-            retainedItems: rewardResult.rewards,
-            autoSoldItems: rewardResult.autoSellItems.map(({ item, autoSellProfit }) => ({
-              item,
-              profit: autoSellProfit,
-            })),
-            presentation: rewardResult,
-          };
-        },
-        ...(afkChunkContext ? { encounterCache: afkChunkContext.encounterCache } : {}),
-        ...(action.battleOutputMode === 'result-only'
-          ? {
-            battleOptions: {
-              outputMode: 'result-only' as const,
-              compactResultOutput: action.compactBattleResultOutput,
-            },
-          }
-          : {}),
-      });
-
-      const transactionResult = serviceResult.transaction;
-      const { bags, finalOutcome } = transactionResult;
-      const assignedMimorianEnemyTypes = finalOutcome === 'Clear'
-        ? statusParty.characters
-            .filter((character) => character.raceId === 'mimorian')
-            .map((character) => ENEMIES.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType)
-            .filter((enemyType): enemyType is string => Boolean(enemyType))
-        : [];
-      const finalization = planExpeditionFinalization({
-        transaction: transactionResult,
-        initialGold: state.global.gold,
-        installedGold: currentGold,
-        isGodsBattle,
-        dungeonId: dungeon.id,
-        clearGateProgress: currentParty.clearGateProgress ?? {},
-        clearGateStatus: currentParty.clearGateStatus ?? {},
-        defeatedBossExpeditions: currentParty.defeatedBossExpeditions ?? {},
-        expeditionStats: currentParty.expeditionStats,
-        altarVictoriesByEnemyType: state.global.altarVictoriesByEnemyType ?? {},
-        assignedMimorianEnemyTypes,
-        currentUnlockedPartySlots: state.parties.length,
-        completedBossVictory: serviceResult.completedBossVictory,
-      });
-      // SpecRef: 5.1.1.1 | Preserve gameplay events while avoiding unnecessary AFK work.
-      // Presentation is a random-free projection after the complete domain run
-      // and finalization, including a gate unlocked by this turned-back run.
-      const { entries, deferredBattleNarrations } = renderExpeditionServiceResult({
-        result: serviceResult,
-        dungeon,
-        maxPartyHp: partyStats.hp,
-        isGodsBattle,
-        deferBattleNarration: action.isAfkSimulation === true
-          && action.battleOutputMode === 'result-only',
-        newlyUnlockedGateKey: finalization.outcome.newlyUnlockedGateKey,
-      });
-      // On defeat: the application-owned AFK overlay performs the planned
-      // rollback; the domain transaction never clones or mutates that overlay.
-      if (finalization.shouldRollbackInventory && afkChunkContext && afkInventoryCheckpoint !== undefined) {
-        afkChunkContext.inventoryOverlay.rollback(afkInventoryCheckpoint);
-      }
-      const finalInventory = afkChunkContext?.inventoryOverlay.record
-        ?? (finalization.shouldRollbackInventory ? state.global.inventory : currentInventory);
-      afkChunkContext?.inventoryOverlay.releaseCheckpoint();
-      const finalGold = finalization.gold;
-      const diarySettings = getDiarySettingsWithDefaults(currentParty.diarySettings);
-      const {
-        log,
-        diaryTriggers,
-        shouldRetainCompleteNarration,
-      } = planCompletedExpeditionPresentation({
-        dungeon,
-        difficultyOffset: effectiveDifficultyOffset,
-        entries,
-        transaction: transactionResult,
-        finalization,
-        maxPartyHp: partyStats.hp,
-        autoSellMultiplier: rewardContext.autoSellMultiplier,
-        diarySettings,
-        isGodsBattle,
-      });
-      const finalRemainingPartyHP = log.remainingPartyHP;
-      if (shouldRetainCompleteNarration && deferredBattleNarrations.length > 0) {
-        replayDeferredExpeditionNarrations({
-          narrations: deferredBattleNarrations,
-          party: statusParty,
-          partyStatus,
-        });
-      }
-
-      // SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
-      // Forecast state is private and discarded. Preserve the terminal Diary-ID
-      // draw when a full resolution would create an entry, then stop before
-      // allocating its retained Diary/unlock/compendium projections.
-      if (action.resolutionMode === 'forecast') {
-        if (diaryTriggers.length > 0) gameplayRandom();
-        const forecastState = planForecastExpeditionState({
-          state,
-          partyIndex: action.partyIndex,
-          party: currentParty,
-          bags,
-          finalPartyHp: finalRemainingPartyHP,
-        });
-        forecastResolutionByState.set(forecastState, createForecastResolution(log));
-        return forecastState;
-      }
-
-      const diaryCreatedAt = action.simulatedAt ?? Date.now();
-      const diaryIdToken = diaryTriggers.length > 0
-        ? gameplayRandom().toString(36).slice(2, 8)
-        : null;
-      const pendingDiaryLog = planPendingExpeditionDiaryLog({
-        log,
-        triggers: diaryTriggers,
-        createdAt: diaryCreatedAt,
-        idToken: diaryIdToken,
-      });
-
-      const committedProjection = planCommittedExpeditionState({
+      const result = runExpeditionApplication({
         state,
-        partyIndex: action.partyIndex,
-        party: currentParty,
-        bags,
-        log,
-        pendingDiaryLog,
-        inventory: finalInventory,
-        gold: finalGold,
-        revealedGlossaryAbilityIds: revealGlossaryFromEncounter(
-          state.global,
-          transactionResult.revealedAbilityIds,
-          undefined,
-        ).revealedGlossaryAbilityIds,
-        transaction: transactionResult,
-        finalization,
-        defaultUnlockedDeities: DEFAULT_UNLOCKED_DEITIES,
+        command: action,
+        authorities: {
+          random: gameplayRandom,
+          getCommittedAt: () => Date.now(),
+        },
+        adapters: createExpeditionApplicationAdapters(
+          afkChunkContext ? {
+            inventoryOverlay: afkChunkContext.inventoryOverlay,
+            encounterCache: afkChunkContext.encounterCache,
+          } : undefined,
+        ),
       });
-
+      if ('statusAuthoritySupplied' in result) {
+        recordRunExpeditionStatusAuthority(result.statusAuthoritySupplied);
+      }
+      if (result.kind === 'unchanged') return state;
+      if (result.kind === 'forecast') {
+        forecastResolutionByState.set(result.state, result.resolution);
+        return result.state;
+      }
       return {
         ...state,
-        ...committedProjection,
+        ...result.projection,
       };
     }
 
@@ -4977,7 +4632,7 @@ export function resolveSimulationRunForTesting(
   });
   const log = resolvedState.parties[partyIndex]?.lastExpeditionLog;
   if (!log) throw new Error('simulation_failed');
-  return { state: resolvedState, resolution: createForecastResolution(log) };
+  return { state: resolvedState, resolution: createExpeditionForecastResolution(log) };
 }
 
 /**

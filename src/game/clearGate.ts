@@ -4,6 +4,7 @@ import {
   getBossGateKey,
   getClearGateRequired,
   getClearGateProgress,
+  getGodsBattleProgress,
   getEliteGateKey,
   isClearGateUnlocked,
 } from './clearGateCore';
@@ -28,6 +29,11 @@ const GODS_BATTLE_REQUIRED = 3;
 export function getGodsBattleRequired(): number {
   const settings = getDebugSettings();
   return settings.godsBattleCondition === 'simple1' ? 1 : GODS_BATTLE_REQUIRED;
+}
+
+export function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
+  return getGodsBattleProgress(party, dungeonId) >= getGodsBattleRequired()
+    && hasDefeatedDungeonBoss(party, dungeonId);
 }
 
 export function hasDefeatedDungeonBoss(

@@ -27,7 +27,8 @@ const BASE_FINALIZATION_STATE = {
     savedGold: 7,
   },
   altarVictoriesByEnemyType: {},
-  assignedMimorianEnemyTypes: [],
+  partyCharacters: [],
+  enemyDefinitions: [],
   currentUnlockedPartySlots: 1,
   completedBossVictory: false,
 } as const;
@@ -164,7 +165,19 @@ test('finalization plans statistics, unique Altar victories, and Boss party unlo
     defeatedBossExpeditions: {},
     ...BASE_FINALIZATION_STATE,
     altarVictoriesByEnemyType: { beast: 9, flying: 2 },
-    assignedMimorianEnemyTypes: ['beast', 'beast', 'undead'],
+    partyCharacters: [
+      { raceId: 'mimorian', mimorianEnemyId: 101 },
+      { raceId: 'mimorian', mimorianEnemyId: 102 },
+      { raceId: 'mimorian', mimorianEnemyId: 103 },
+      { raceId: 'caninian', mimorianEnemyId: 104 },
+      { raceId: 'mimorian', mimorianEnemyId: 999 },
+    ],
+    enemyDefinitions: [
+      { id: 101, enemyType: 'beast' },
+      { id: 102, enemyType: 'beast' },
+      { id: 103, enemyType: 'undead' },
+      { id: 104, enemyType: 'flying' },
+    ],
     completedBossVictory: true,
   });
 
@@ -180,6 +193,27 @@ test('finalization plans statistics, unique Altar victories, and Boss party unlo
   assert.deepEqual(plan.altarVictoriesByEnemyType, { beast: 10, flying: 2, undead: 1 });
   assert.equal(plan.pendingUnlockPartySlot, 2);
   assert.equal(plan.requiresUnlockNarration, true);
+});
+
+test('non-Clear finalization does not derive or increment assigned Mimorian categories', () => {
+  const transaction = new ExpeditionTransactionAccumulator({ initialHp: 500, bags: createOpaqueBags() });
+  transaction.recordDefeat(0);
+  const plan = planExpeditionFinalization({
+    transaction: transaction.finish(),
+    initialGold: 0,
+    installedGold: 0,
+    isGodsBattle: false,
+    dungeonId: 1,
+    clearGateProgress: {},
+    clearGateStatus: {},
+    defeatedBossExpeditions: {},
+    ...BASE_FINALIZATION_STATE,
+    altarVictoriesByEnemyType: { beast: 9 },
+    partyCharacters: [{ raceId: 'mimorian', mimorianEnemyId: 101 }],
+    enemyDefinitions: [{ id: 101, enemyType: 'beast' }],
+  });
+
+  assert.deepEqual(plan.altarVictoriesByEnemyType, { beast: 9 });
 });
 
 test('an already available party slot does not request unlock narration', () => {
@@ -250,18 +284,23 @@ test('defeat and draw retain their distinct terminal outcome and HP facts', () =
 
 test('RUN_EXPEDITION delegates one transaction to the expedition service without parallel mechanic locals', () => {
   const source = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
+  const applicationSource = readFileSync(new URL('../src/game/expeditionApplication.ts', import.meta.url), 'utf8');
+  const adapterSource = readFileSync(new URL('../src/game/expeditionApplicationAdapters.ts', import.meta.url), 'utf8');
   const runExpedition = source.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
-  assert.equal((runExpedition.match(/runExpeditionService\(/g) ?? []).length, 1);
-  assert.doesNotMatch(runExpedition, /new ExpeditionTransactionAccumulator\(/);
-  assert.doesNotMatch(runExpedition, /transaction\.record(BattleRoom|VictoryRewards|RecoveredItems|PostReward|Defeat|Draw)\(/);
-  assert.match(runExpedition, /const transactionResult = serviceResult\.transaction/);
-  assert.match(runExpedition, /planExpeditionFinalization\(/);
-  assert.match(runExpedition, /planCommittedExpeditionState\(/);
-  assert.match(runExpedition, /planCompletedExpeditionPresentation\(/);
-  assert.doesNotMatch(runExpedition, /resolveExpeditionOutcome\(/);
-  assert.doesNotMatch(runExpedition, /const nextAltarVictoriesByEnemyType/);
-  assert.doesNotMatch(runExpedition, /let (currentHp|totalExp|bags|finalOutcome|roomCounter|expeditionEnded|nextEnemyBattleStats|totalAutoSellProfit|totalAutoSellItemCount|totalAutoSellItems)\b/);
-  assert.doesNotMatch(runExpedition, /const (rewards|recoveredItems): Item\[\]/);
-  assert.doesNotMatch(runExpedition, /new Set<number>\(state\.global\.revealedItemCompendiumItemIds/);
+  assert.match(runExpedition, /runExpeditionApplication\(/);
+  assert.equal((applicationSource.match(/runExpeditionService\(/g) ?? []).length, 1);
+  assert.doesNotMatch(applicationSource, /new ExpeditionTransactionAccumulator\(/);
+  assert.doesNotMatch(applicationSource, /transaction\.record(BattleRoom|VictoryRewards|RecoveredItems|PostReward|Defeat|Draw)\(/);
+  assert.match(applicationSource, /const transactionResult = serviceResult\.transaction/);
+  assert.match(applicationSource, /planExpeditionPostService\(/);
+  assert.doesNotMatch(applicationSource, /planExpeditionFinalization\(/);
+  assert.match(applicationSource, /planExpeditionCommit\(/);
+  assert.doesNotMatch(applicationSource, /planCommittedExpeditionState\(/);
+  assert.match(applicationSource, /completeExpeditionPresentation\(/);
+  assert.doesNotMatch(applicationSource, /planCompletedExpeditionPresentation\(/);
+  assert.doesNotMatch(applicationSource, /resolveExpeditionOutcome\(/);
+  assert.doesNotMatch(applicationSource, /const nextAltarVictoriesByEnemyType|assignedMimorianEnemyTypes/);
+  assert.match(applicationSource, /statusParty,/);
+  assert.match(adapterSource, /enemyDefinitions: ENEMIES/);
   assert.doesNotMatch(runExpedition, /selectedEnemyIdsByRoomRange/);
 });

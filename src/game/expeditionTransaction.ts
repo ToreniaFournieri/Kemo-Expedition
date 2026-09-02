@@ -1,4 +1,10 @@
-import type { GameBags, Item, TerrainEffectKey } from '../types/index.ts';
+import type {
+  Character,
+  EnemyDef,
+  GameBags,
+  Item,
+  TerrainEffectKey,
+} from '../types/index.ts';
 import {
   resolveExpeditionOutcome,
   type ExpeditionOutcomeResult,
@@ -76,7 +82,8 @@ export interface PlanExpeditionFinalizationInput {
   readonly defeatedBossExpeditions: Readonly<Record<number, boolean>>;
   readonly expeditionStats: Readonly<ExpeditionStatistics>;
   readonly altarVictoriesByEnemyType: Readonly<Record<string, number>>;
-  readonly assignedMimorianEnemyTypes: readonly string[];
+  readonly partyCharacters: readonly Pick<Character, 'raceId' | 'mimorianEnemyId'>[];
+  readonly enemyDefinitions: readonly Pick<EnemyDef, 'id' | 'enemyType'>[];
   readonly currentUnlockedPartySlots: number;
   readonly completedBossVictory: boolean;
 }
@@ -260,7 +267,15 @@ export function planExpeditionFinalization(
   };
   const altarVictoriesByEnemyType = { ...input.altarVictoriesByEnemyType };
   if (input.transaction.finalOutcome === 'Clear') {
-    new Set(input.assignedMimorianEnemyTypes).forEach((enemyType) => {
+    const assignedEnemyTypes = new Set(
+      input.partyCharacters
+        .filter((character) => character.raceId === 'mimorian')
+        .map((character) => (
+          input.enemyDefinitions.find((enemy) => enemy.id === character.mimorianEnemyId)?.enemyType
+        ))
+        .filter((enemyType): enemyType is string => Boolean(enemyType)),
+    );
+    assignedEnemyTypes.forEach((enemyType) => {
       altarVictoriesByEnemyType[enemyType] = (altarVictoriesByEnemyType[enemyType] ?? 0) + 1;
     });
   }

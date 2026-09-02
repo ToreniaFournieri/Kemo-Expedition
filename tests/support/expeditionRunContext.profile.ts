@@ -147,13 +147,15 @@ test('post-battle character preparation preserves First Aid room gating and HP i
 
 test('RUN_EXPEDITION consumes the shared context instead of recomputing inline facts', () => {
   const hookSource = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
+  const preparationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionPreparation.ts'), 'utf8');
   const serviceSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionService.ts'), 'utf8');
+  const applicationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionApplication.ts'), 'utf8');
   const runExpedition = hookSource.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
-  assert.match(runExpedition, /createExpeditionRunContext\(/);
-  assert.match(runExpedition, /runExpeditionService\(\{/);
+  assert.match(runExpedition, /runExpeditionApplication\(/);
+  assert.match(applicationSource, /prepareExpeditionRun\(/);
+  assert.match(preparationSource, /createExpeditionRunContext\(/);
+  assert.match(applicationSource, /runExpeditionService\(\{/);
   assert.match(serviceSource, /resolveExpeditionBattleRoom\(\{[\s\S]{0,120}context: input\.context/);
   assert.match(serviceSource, /resolveExpeditionRoomPostReward\(\{[\s\S]{0,120}context: input\.context/);
-  assert.doesNotMatch(runExpedition, /deriveExpeditionRewardContext\(/);
-  assert.doesNotMatch(runExpedition, /const isFirstAidRoom/);
-  assert.doesNotMatch(runExpedition, /getDeityRewardDrawBonuses\(/);
+  assert.doesNotMatch(applicationSource, /deriveExpeditionRewardContext\(|const isFirstAidRoom|getDeityRewardDrawBonuses\(/);
 });

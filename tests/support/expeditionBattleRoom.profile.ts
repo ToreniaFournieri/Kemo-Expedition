@@ -145,14 +145,20 @@ test('room resolution returns neutral battle facts and only replaces threat bags
 
 test('RUN_EXPEDITION delegates room mechanics and localized room presentation', () => {
   const hookSource = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
+  const applicationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionApplication.ts'), 'utf8');
+  const postServiceSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionPostService.ts'), 'utf8');
+  const rewardInstallationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionRewardInstallation.ts'), 'utf8');
   const runExpedition = hookSource.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
-  assert.match(runExpedition, /runExpeditionService\(/);
-  assert.match(runExpedition, /renderExpeditionServiceResult\(/);
+  assert.match(runExpedition, /runExpeditionApplication\(/);
+  assert.match(applicationSource, /runExpeditionService\(/);
+  assert.match(applicationSource, /planExpeditionPostService\(/);
+  assert.match(postServiceSource, /renderExpeditionServiceResult\(/);
   assert.doesNotMatch(runExpedition, /selectEnemyForRoom\(/);
   assert.doesNotMatch(runExpedition, /executeBattle\(/);
   assert.doesNotMatch(runExpedition, /getEncounterEnemyWithScaling\(/);
   assert.doesNotMatch(runExpedition, /const entry: ExpeditionLogEntry/);
-  assert.match(runExpedition, /installRecoveredEnemyRewards\(/);
+  assert.match(runExpedition, /createExpeditionApplicationAdapters\(/);
+  assert.match(rewardInstallationSource, /installRecoveredExpeditionRewards\(/);
   assert.doesNotMatch(runExpedition, /buildPostBattleEffectLogs\(/);
   assert.doesNotMatch(runExpedition, /selectedEnemyIdsByRoomRange/);
 });
@@ -366,7 +372,11 @@ test('deferred narration adapter owns replay validation without gameplay RNG aut
   const source = readFileSync(resolve(process.cwd(), 'src/game/expeditionNarrationReplay.ts'), 'utf8');
   const hookSource = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
   const runExpedition = hookSource.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
-  assert.match(runExpedition, /shouldRetainCompleteNarration[\s\S]{0,300}replayDeferredExpeditionNarrations\(/);
+  const completionSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionCompletion.ts'), 'utf8');
+  const applicationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionApplication.ts'), 'utf8');
+  assert.match(applicationSource, /completeExpeditionPresentation\(/);
+  assert.doesNotMatch(runExpedition, /replayDeferredExpeditionNarrations\(/);
+  assert.match(completionSource, /shouldRetainCompleteNarration[\s\S]{0,300}replayDeferredExpeditionNarrations\(/);
   assert.doesNotMatch(runExpedition, /executeBattleWithSeed\(/);
   assert.match(source, /executeBattleWithSeed\(/);
   assert.match(source, /randomDrawCount !== replay\.randomDrawCount/);

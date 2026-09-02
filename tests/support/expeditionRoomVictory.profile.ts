@@ -134,6 +134,9 @@ test('expedition service keeps inventory installation between the two room-victo
   const hookSource = readFileSync(resolve(process.cwd(), 'src/hooks/useGameState.ts'), 'utf8');
   const serviceSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionService.ts'), 'utf8');
   const presentationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionPresentation.ts'), 'utf8');
+  const postServiceSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionPostService.ts'), 'utf8');
+  const applicationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionApplication.ts'), 'utf8');
+  const rewardInstallationSource = readFileSync(resolve(process.cwd(), 'src/game/expeditionRewardInstallation.ts'), 'utf8');
   const runExpedition = hookSource.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
   const rewardIndex = serviceSource.indexOf('resolveExpeditionRoomVictoryRewards({');
   const installIndex = serviceSource.indexOf('input.installRecoveredItems(');
@@ -144,8 +147,10 @@ test('expedition service keeps inventory installation between the two room-victo
   assert.doesNotMatch(runExpedition, /drawAuriferousNarrationFact\(/);
   assert.doesNotMatch(runExpedition, /buildRewardLogEntries\(/);
   assert.doesNotMatch(runExpedition, /buildPostBattleEffectLogs\(/);
-  assert.match(runExpedition, /renderExpeditionServiceResult\(/);
-  assert.match(runExpedition, /installRecoveredEnemyRewards\(/);
+  assert.match(applicationSource, /planExpeditionPostService\(/);
+  assert.match(postServiceSource, /renderExpeditionServiceResult\(/);
+  assert.match(runExpedition, /createExpeditionApplicationAdapters\(/);
+  assert.match(rewardInstallationSource, /installRecoveredExpeditionRewards\(/);
   assert.match(presentationSource, /buildRewardLogEntries\(/);
   assert.match(presentationSource, /buildPostBattleEffectLogs\(/);
 });

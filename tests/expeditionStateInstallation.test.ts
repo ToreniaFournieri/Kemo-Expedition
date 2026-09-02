@@ -178,11 +178,19 @@ test('committed state planner source owns installation without random or publica
     new URL('../src/game/expeditionStateInstallation.ts', import.meta.url),
     'utf8',
   );
+  const commitSource = readFileSync(
+    new URL('../src/game/expeditionCommit.ts', import.meta.url),
+    'utf8',
+  );
   const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
+  const applicationSource = readFileSync(new URL('../src/game/expeditionApplication.ts', import.meta.url), 'utf8');
   const runExpedition = hookSource.match(/case 'RUN_EXPEDITION':[\s\S]*?case 'FINALIZE_DIARY_LOG':/)?.[0] ?? '';
-  assert.match(runExpedition, /planCommittedExpeditionState\(/);
-  assert.match(runExpedition, /gameplayRandom\(\)[\s\S]{0,300}planForecastExpeditionState\(/);
-  assert.match(runExpedition, /planForecastExpeditionState\([\s\S]{0,300}forecastResolutionByState\.set/);
+  assert.match(applicationSource, /planExpeditionCommit\(/);
+  assert.doesNotMatch(runExpedition, /planCommittedExpeditionState\(/);
+  assert.match(commitSource, /planCommittedExpeditionState\(/);
+  assert.match(applicationSource, /authorities\.random\(\)[\s\S]{0,300}planForecastExpeditionState\(/);
+  assert.match(applicationSource, /planForecastExpeditionState\(/);
+  assert.match(runExpedition, /forecastResolutionByState\.set\(result\.state, result\.resolution\)/);
   assert.doesNotMatch(runExpedition, /const updatedParties = \[\.\.\.state\.parties\]/);
   assert.doesNotMatch(runExpedition, /expeditionRewardsPending: true/);
   assert.doesNotMatch(runExpedition, /pendingClearGateSnapshot:/);
@@ -190,4 +198,5 @@ test('committed state planner source owns installation without random or publica
   assert.match(plannerSource, /expeditionRewardsPending: true/);
   assert.match(plannerSource, /pendingClearGateSnapshot:/);
   assert.doesNotMatch(plannerSource, /gameplayRandom|Math\.random|Date\.now|forecastResolutionByState/);
+  assert.doesNotMatch(commitSource, /gameplayRandom|Math\.random|Date\.now|forecastResolutionByState/);
 });
