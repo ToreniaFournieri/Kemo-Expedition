@@ -49,7 +49,7 @@ function withGold(state: GameState, gold: number): GameState {
   return { ...state, global: { ...state.global, gold } };
 }
 
-function harness(options: { failWrites?: number } = {}) {
+function harness(options: { failWrites?: number; quotaBlockerKey?: string } = {}) {
   const workers: ControlledWorker[] = [];
   const writes: string[] = [];
   const values = new Map<string, string>();
@@ -59,6 +59,9 @@ function harness(options: { failWrites?: number } = {}) {
     getItem: (key: string) => values.get(key) ?? null,
     setItem: (key: string, value: string) => {
       if (remainingFailures-- > 0) throw new Error('quota');
+      if (options.quotaBlockerKey && key !== options.quotaBlockerKey && values.has(options.quotaBlockerKey)) {
+        throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+      }
       values.set(key, value);
       if (key === 'save') writes.push(value);
     },
@@ -170,6 +173,65 @@ test('localStorage failure retains encoded bytes and retries without recompressi
   await durable;
   assert.equal(writes.length, 1);
   assert.equal(workers[0]!.requests.length, 1);
+  coordinator.shutdown();
+});
+
+test('a retry reclaims unreachable Diary records before a quota-sensitive commit', async () => {
+  const state = loadFixture();
+  const orphanKey = 'save:diary:partial-uncommitted-record';
+  const { coordinator, workers, storage } = harness({ quotaBlockerKey: orphanKey });
+  const initial = coordinator.requestDurable(state);
+  workers[0]!.complete();
+  await initial;
+
+  storage.setItem(orphanKey, 'partial encoded Diary payload');
+  const durable = coordinator.requestDurable(withGold(state, 123));
+  workers[0]!.complete();
+  await durable;
+
+  assert.equal(storage.getItem(orphanKey), null);
+  assert.equal(coordinator.getSnapshotForTesting().durableRevision, 2);
+  coordinator.shutdown();
+});
+
+test('a failed transaction removes its partial records while preserving the prior manifest', async () => {
+  const base = loadFixture();
+  const { coordinator, workers, storage, writes } = harness();
+  const initial = coordinator.requestDurable(base);
+  workers[0]!.complete();
+  await initial;
+  const priorCore = writes.at(-1)!;
+
+  const targetParty = base.parties.find((party) => party.diaryLogs.length > 0)!;
+  const addedLog = {
+    ...targetParty.diaryLogs[0]!,
+    id: `${targetParty.diaryLogs[0]!.id}-quota-failure`,
+    createdAt: targetParty.diaryLogs[0]!.createdAt + 1,
+  };
+  const changed: GameState = {
+    ...base,
+    parties: base.parties.map((party) => party.id === targetParty.id
+      ? { ...party, diaryLogs: [addedLog, ...party.diaryLogs.slice(0, -1)] }
+      : party),
+  };
+  const request = coordinator.requestDurable(changed);
+  const nextWorkerRequest = workers[0]!.requests.at(-1)!;
+  const newRecordKey = nextWorkerRequest.logRecords?.[0]?.key;
+  assert.ok(newRecordKey);
+
+  const originalSetItem = storage.setItem;
+  let writesBeforeQuota = 1;
+  storage.setItem = (key: string, value: string) => {
+    if (writesBeforeQuota-- === 0) throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+    originalSetItem(key, value);
+  };
+  workers[0]!.complete();
+
+  assert.equal(storage.getItem(newRecordKey), null);
+  assert.deepEqual(hydrateLogSegmentedSave(priorCore, storage, 'save'), serializeGameState(base));
+  storage.setItem = originalSetItem;
+  coordinator.retry();
+  await request;
   coordinator.shutdown();
 });
 
