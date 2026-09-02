@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { getDiarySettingsWithDefaults } from '../src/game/diarySettings.ts';
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
+const diarySettingsSource = readFileSync(new URL('../src/game/diarySettings.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
 const diaryTabSource = readFileSync(new URL('../src/components/home/tabs/DiaryTab.tsx', import.meta.url), 'utf8');
 const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW'].map((locale) =>
@@ -17,10 +19,14 @@ const popupSettingKeys = [
 ] as const;
 
 test('Diary popup settings default to enabled and migrate older saves', () => {
+  const defaults = getDiarySettingsWithDefaults(undefined);
   for (const key of popupSettingKeys) {
-    assert.match(hookSource, new RegExp(`${key}: true`));
-    assert.match(hookSource, new RegExp(`${key}: typeof raw\\?\\.${key} === 'boolean' \\? raw\\.${key} : true`));
+    assert.equal(defaults[key], true);
+    assert.equal(getDiarySettingsWithDefaults({ [key]: false })[key], false);
+    assert.match(diarySettingsSource, new RegExp(`${key}:`));
   }
+  assert.match(hookSource, /from '\.\.\/game\/diarySettings'/);
+  assert.doesNotMatch(hookSource, /const DEFAULT_DIARY_SETTINGS|function getDiarySettingsWithDefaults/);
 });
 
 test('Diary UI renders all four persisted popup controls with localized labels', () => {

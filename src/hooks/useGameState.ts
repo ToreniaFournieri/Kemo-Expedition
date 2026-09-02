@@ -14,7 +14,6 @@ import {
   ExpeditionLog,
   DiaryLog,
   DiarySettings,
-  DiaryDefeatNotificationMode,
   ExpeditionLogEntry,
   InventoryRecord,
   JewelInventory,
@@ -48,6 +47,12 @@ import {
   createDefaultExpeditionApplicationAdapterFactory,
   DEFAULT_UNLOCKED_DEITIES,
 } from '../game/expeditionApplicationAdapters';
+import { getDiarySettingsWithDefaults } from '../game/diarySettings';
+import {
+  addItemToInventory,
+  calculateSellPrice,
+  ITEM_MAX_STACK,
+} from '../game/inventoryMutation';
 import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { recordRunExpeditionStatusAuthority } from '../game/battle';
 import {
@@ -117,7 +122,6 @@ import {
   countElapsedShopRefreshes,
   getCurrentShopRefreshDate,
 } from '../game/shop';
-import { calculateItemSellPrice } from '../game/pricing';
 import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getSuperRareItemPrana } from '../game/prana';
 import {
   addJewelToInventory,
@@ -154,7 +158,6 @@ const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = AFK_MAX_EFFECTIVE_ELAPSED_MS;
 const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.05;
-const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 function generateUserId(): string {
   // SpecRef: 1.2 | CONSTANTS_GLOBAL | User ID (UUID)
@@ -479,20 +482,6 @@ function translatePartyCharacterNames(
   }));
 }
 
-const DEFAULT_DIARY_SETTINGS: DiarySettings = {
-  superRareThreshold: 'all',
-  bossThreshold: 'all',
-  mythicThreshold: 'all',
-  rareThreshold: 5,
-  sideQuestThreshold: 'all',
-  notifyGodsBattle: true,
-  defeatNotificationMode: 'defeatOnly',
-  notifyCyclePopup: true,
-  notifyItemDropPopup: true,
-  notifyAutoEquipmentPopup: true,
-  notifySideQuestPopup: true,
-};
-
 const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalyst']);
@@ -702,29 +691,6 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
   };
 }
 
-function normalizeDiaryDefeatNotificationMode(
-  value: unknown,
-  legacyNotifyDefeat: unknown,
-): DiaryDefeatNotificationMode {
-  if (value === 'defeatOnly' || value === 'defeatAndDraw' || value === 'defeatDrawRetreat' || value === 'all' || value === 'none') return value;
-  if (legacyNotifyDefeat === false) return 'none';
-  return 'defeatOnly';
-}
-
-// SpecRef: 8.5 | UI_DIARY | Setting.
-function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined): DiarySettings {
-  const raw = value as (Partial<DiarySettings> & { notifyDefeat?: unknown }) | undefined;
-  return {
-    ...DEFAULT_DIARY_SETTINGS,
-    ...(value ?? {}),
-    defeatNotificationMode: normalizeDiaryDefeatNotificationMode(raw?.defeatNotificationMode, raw?.notifyDefeat),
-    notifyCyclePopup: typeof raw?.notifyCyclePopup === 'boolean' ? raw.notifyCyclePopup : true,
-    notifyItemDropPopup: typeof raw?.notifyItemDropPopup === 'boolean' ? raw.notifyItemDropPopup : true,
-    notifyAutoEquipmentPopup: typeof raw?.notifyAutoEquipmentPopup === 'boolean' ? raw.notifyAutoEquipmentPopup : true,
-    notifySideQuestPopup: typeof raw?.notifySideQuestPopup === 'boolean' ? raw.notifySideQuestPopup : true,
-  };
-}
-
 function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
   if (!value || typeof value !== 'object') return {};
   return Object.entries(value as Record<string, unknown>).reduce<Record<string, number>>((totals, [name, donation]) => {
@@ -927,65 +893,6 @@ const afkInventoryDeltaByState = new WeakMap<GameState, AfkInventoryDelta>();
 
 export function getAfkInventoryDeltaForState(state: GameState): AfkInventoryDelta | undefined {
   return afkInventoryDeltaByState.get(state);
-}
-
-// Helper to calculate sell price for an item
-function calculateSellPrice(item: Item, autoSellMultiplier: number = 1): number {
-  return calculateItemSellPrice(item, autoSellMultiplier);
-}
-
-// Helper to add item to inventory (handles stacking and auto-sell)
-function addItemToInventory(
-  inventory: InventoryRecord,
-  item: Item,
-  currentGold: number,
-  autoSellMultiplier: number = 1,
-  mutateInventory: boolean = false,
-): { inventory: InventoryRecord; gold: number; wasAutoSold: boolean; autoSellProfit: number } {
-  const key = getVariantKey(item);
-  const existing = inventory[key];
-
-  // If this variant is marked as sold, auto-sell it
-  if (existing?.status === 'sold') {
-    const sellPrice = calculateSellPrice(item, autoSellMultiplier);
-    return {
-      inventory,
-      gold: currentGold + sellPrice,
-      wasAutoSold: true,
-      autoSellProfit: sellPrice,
-    };
-  }
-
-  // Stack overflow handling: treat excess copies as auto-sell items.
-  if (existing?.status === 'owned' && existing.count >= ITEM_MAX_STACK) {
-    const sellPrice = calculateSellPrice(item, autoSellMultiplier);
-    return {
-      inventory,
-      gold: currentGold + sellPrice,
-      wasAutoSold: true,
-      autoSellProfit: sellPrice,
-    };
-  }
-
-  // Otherwise add to inventory
-  const newInventory = mutateInventory ? inventory : { ...inventory };
-  if (existing) {
-    newInventory[key] = {
-      ...existing,
-      count: existing.count + 1,
-      status: 'owned',
-      isNew: existing.isNew ?? false,
-    };
-  } else {
-    newInventory[key] = {
-      item: { ...item, isNew: undefined },
-      count: 1,
-      status: 'owned',
-      isNew: true,
-    };
-  }
-
-  return { inventory: newInventory, gold: currentGold, wasAutoSold: false, autoSellProfit: 0 };
 }
 
 // Helper to remove one item from inventory
