@@ -357,10 +357,15 @@ HP: 312                 タイプ: 神魔
 | `mode.normal` | same spec. |
 | `mode.orca` | All enemies have `a.first-strike`0, `a.upgrade-all-abilities`1, +`N` level. `Speed of time` is `x5 boost`, theme color is set to `theme.orca`. |
 
-  - Enemy Level Offset
-    - `N` is configurable using a level-offset bar.
-    - Range: 0 to +20.
-    - The selected `N` value is added to the level of all enemies in `mode.orca`.
+- `Speed of Time`:
+  - Speed of time can still be changed through the Debug Pane.
+  - The Progress Report bonus multiplies the current Speed of time by x1.2.
+  - Example: if the current speed is `x5 boost`, the effective speed becomes x6.
+
+- Enemy Level Offset
+  - `N` is configurable using a level-offset bar.
+  - Range: 0 to +20.
+  - The selected `N` value is added to the level of all enemies in `mode.orca`.
 
 **Feedback フィードバック**
   - Send feedback to the development team.

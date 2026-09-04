@@ -193,6 +193,7 @@ WideModeSecondaryTab
 const loadPartyTab = () => import('./home/tabs/PartyTab');
 const loadExpeditionTab = () => import('./home/tabs/ExpeditionTab');
 const loadBaseTab = () => import('./home/tabs/BaseTab');
+const ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.orca-time-speed-override');
 const loadDiaryTab = () => import('./home/tabs/DiaryTab');
 const loadSettingTab = () => import('./home/tabs/SettingTab');
 
@@ -276,6 +277,13 @@ export function HomeScreen({
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
+  const [hasOrcaTimeSpeedOverride, setHasOrcaTimeSpeedOverride] = useState(() => {
+    try {
+      return localStorage.getItem(ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const autoEquipmentProfileBaseStateRef = useRef<GameState | null>(null);
   if (__AUTO_EQUIPMENT_PROFILE_ENABLED__ && autoEquipmentProfileBaseStateRef.current === null) {
@@ -466,9 +474,9 @@ export function HomeScreen({
   apiAutoRunRef.current = isAutoRepeatEnabled;
   apiCyclesRef.current = partyCycles;
   debugSettingsRef.current = debugSettings;
-  const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca'
+  const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca' && !hasOrcaTimeSpeedOverride
     ? { ...debugSettings, timeSpeed: 'x5' }
-    : debugSettings, [debugSettings, runtimeGameMode]);
+    : debugSettings, [debugSettings, hasOrcaTimeSpeedOverride, runtimeGameMode]);
 
   useEffect(() => {
     if (!isDebugModeEnabled()) return;
@@ -930,12 +938,31 @@ export function HomeScreen({
 
 
   const updateDebugSettings = useCallback((updates: Partial<DebugSettings>) => {
+    if (runtimeGameMode === 'mode.orca' && updates.timeSpeed !== undefined) {
+      setHasOrcaTimeSpeedOverride(true);
+      try {
+        localStorage.setItem(ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY, 'true');
+      } catch {
+        // noop
+      }
+    }
     setDebugSettings((prev) => {
       const next = { ...prev, ...updates };
       saveDebugSettings(next);
       return next;
     });
-  }, []);
+  }, [runtimeGameMode]);
+  const updateRuntimeGameMode = useCallback((mode: RuntimeGameMode) => {
+    if (mode === 'mode.orca' && runtimeGameMode !== 'mode.orca') {
+      setHasOrcaTimeSpeedOverride(false);
+      try {
+        localStorage.removeItem(ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY);
+      } catch {
+        // noop
+      }
+    }
+    setRuntimeGameMode(mode);
+  }, [runtimeGameMode]);
   const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(() => {
     try {
       const raw = localStorage.getItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY);
@@ -949,6 +976,7 @@ export function HomeScreen({
     }
   });
   const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
+  const hasActiveTimeSpeedBonus = timeSpeedBonusUntilMs !== null && timeSpeedNowMs < timeSpeedBonusUntilMs;
 
   useEffect(() => {
     try {
@@ -971,42 +999,31 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs]);
 
   useEffect(() => {
-    // SpecRef: 8.1.2 | Header | Speed of Time
-    // Keep x1.2 active only while a valid bonus duration exists.
-    if (timeSpeedBonusUntilMs === null) {
-      setDebugSettings((prev) => {
-        if (prev.timeSpeed !== 'x1_2') return prev;
-        const next = { ...prev, timeSpeed: 'realtime' as const };
-        saveDebugSettings(next);
-        return next;
-      });
-      return;
-    }
+    // SpecRef: 8.6 | UI_SETTING | Speed of Time
+    // Expiring the report bonus must not replace the Debug-pane base speed.
+    if (timeSpeedBonusUntilMs === null) return;
     if (timeSpeedNowMs < timeSpeedBonusUntilMs) return;
     setTimeSpeedBonusUntilMs(null);
-    setDebugSettings((prev) => {
-      if (prev.timeSpeed !== 'x1_2') return prev;
-      const next = { ...prev, timeSpeed: 'realtime' as const };
-      saveDebugSettings(next);
-      return next;
-    });
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeLabel = useMemo(() => {
-    if (runtimeGameMode === 'mode.orca') return '(x5)';
     if (effectiveDebugSettings.timeSpeed === 'unlimited') return '(∞)';
-    const isBonusSpeed = effectiveDebugSettings.timeSpeed === 'x1_2';
-    if (!isBonusSpeed) return '';
-    const remainingHours = timeSpeedBonusUntilMs === null
-      ? 0
-      : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
-    return `(${formatNumber(remainingHours)}h)`;
-  }, [effectiveDebugSettings.timeSpeed, runtimeGameMode, timeSpeedBonusUntilMs, timeSpeedNowMs]);
+    const remainingHours = hasActiveTimeSpeedBonus && timeSpeedBonusUntilMs !== null
+      ? Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)))
+      : null;
+    if (runtimeGameMode === 'mode.orca' && effectiveDebugSettings.timeSpeed === 'x5') {
+      const modeSpeed = hasActiveTimeSpeedBonus ? 'x6' : 'x5';
+      return remainingHours === null
+        ? `(${modeSpeed})`
+        : `(${modeSpeed}) (${formatNumber(remainingHours)}h)`;
+    }
+    return remainingHours === null ? '' : `(${formatNumber(remainingHours)}h)`;
+  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus, runtimeGameMode, timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeSymbol = useMemo(() => {
-    if (effectiveDebugSettings.timeSpeed === 'realtime') return '▷';
+    if (!hasActiveTimeSpeedBonus && effectiveDebugSettings.timeSpeed !== 'x1_2' && effectiveDebugSettings.timeSpeed !== 'unlimited') return '▷';
     return '▶︎';
-  }, [effectiveDebugSettings.timeSpeed]);
+  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus]);
 
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
@@ -2669,7 +2686,7 @@ export function HomeScreen({
       const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(party, now));
       const compactProgressItems = getCompactProgressItems(
         party,
-        getTimeSpeedScale(effectiveDebugSettings),
+        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
         now,
         cycle.state,
       ).map((item) => ({ text: item.compactText, progressRatio: item.progressRatio }));
@@ -2716,7 +2733,7 @@ export function HomeScreen({
       lastPartyProgressSnapshotHashRef.current = '';
       console.error('Failed to publish Party Progress pane snapshot:', error);
     });
-  }, [gameMode, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
+  }, [gameMode, hasActiveTimeSpeedBonus, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
 
   // SpecRef: 9.1.1 | macOS background lifecycle and native notifications | Diary-filtered native notifications
   useEffect(() => {
@@ -3208,7 +3225,7 @@ export function HomeScreen({
       afkRuntimeTrace.setPhase('worker_execution');
     }
 
-    const durationScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings));
+    const durationScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
     const anchor = afkSimulationAnchorRef.current ?? Date.now();
     const dispatchState = afkActiveCommitTransactionRef.current
       ? afkAuthoritativeDispatchStateRef.current
@@ -3605,6 +3622,7 @@ export function HomeScreen({
     actions,
     completeAfkCommitTransaction,
     effectiveDebugSettings,
+    hasActiveTimeSpeedBonus,
     runtimeGameMode,
     orcaEnemyLevelOffset,
     planAutoEquipment,
@@ -3687,7 +3705,7 @@ export function HomeScreen({
           return;
         }
 
-        const durationScale = getTimeSpeedScale(effectiveDebugSettings);
+        const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
         const exploreDurationMultiplier = getPartyStateDurationMultiplier(party, 'explore');
         const approximateCycleDurationMs = Math.max(
           1,
@@ -3777,7 +3795,7 @@ export function HomeScreen({
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
     afkFinalRemainingMsByPartyRef.current = {};
-  }, [actions, debugSettings, pendingAfkMs]);
+  }, [actions, effectiveDebugSettings, hasActiveTimeSpeedBonus, orcaEnemyLevelOffset, pendingAfkMs]);
 
   useEffect(() => {
     if (!__AFK_LIVE_PROFILE_ENABLED__) return;
@@ -4048,7 +4066,7 @@ export function HomeScreen({
     }
 
     const unlimitedTimeSpeed = isUnlimitedTimeSpeed(effectiveDebugSettings);
-    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings));
+    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
 
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
@@ -4134,7 +4152,7 @@ export function HomeScreen({
           updated.durationMs = getExplorationDurationMs(
             exploredRooms,
             getPartyStateDurationMultiplier(party, 'explore'),
-            getTimeSpeedScale(effectiveDebugSettings),
+            getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
           );
         }
 
@@ -4317,7 +4335,7 @@ export function HomeScreen({
               updated.durationMs = getExplorationDurationMs(
                 undefined,
                 getPartyStateDurationMultiplier(party, 'explore'),
-                getTimeSpeedScale(effectiveDebugSettings),
+                getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
               );
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
             } else if (updated.state === 'explore') {
@@ -4360,7 +4378,7 @@ export function HomeScreen({
 
     lastCheckpointAtRef.current = now;
     persistAfkRuntimeState(now);
-  }, [actions, persistAfkRuntimeState]);
+  }, [actions, effectiveDebugSettings, hasActiveTimeSpeedBonus, persistAfkRuntimeState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -4750,7 +4768,7 @@ export function HomeScreen({
 
   // SpecRef: 5.1 | PROGRESS | Step
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray'): number => {
-    const durationScale = getTimeSpeedScale(effectiveDebugSettings);
+    const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
     const baseStepCount = cycleState === 'rest'
       ? 1
       : cycleState === 'sell'
@@ -4773,7 +4791,7 @@ export function HomeScreen({
       : travelState === 'move'
         ? 1 + getExpeditionTierDurationFactor(party.selectedDungeonId)
         : 5 + getExpeditionTierDurationFactor(party.selectedDungeonId);
-    const durationScale = getTimeSpeedScale(effectiveDebugSettings);
+    const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
     const baseDurationMs = baseStepCount * BASE_STEP_DURATION_MS * durationScale;
     const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
     return getPeddlerTravelDurationMs(baseDurationMs, peddlerLevel);
@@ -5116,7 +5134,7 @@ export function HomeScreen({
         gameMode={gameMode}
         onSetGameMode={setGameMode}
         runtimeGameMode={runtimeGameMode}
-        onSetRuntimeGameMode={setRuntimeGameMode}
+        onSetRuntimeGameMode={updateRuntimeGameMode}
         orcaEnemyLevelOffset={orcaEnemyLevelOffset}
         onSetOrcaEnemyLevelOffset={setOrcaEnemyLevelOffset}
         darkModeSetting={darkModeSetting}
@@ -5125,7 +5143,7 @@ export function HomeScreen({
         onSetAutoRepeatEnabled={setAutoRepeatEnabled}
         isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
         onSetExpeditionStatsDisplayEnabled={setIsExpeditionStatsDisplayEnabled}
-        debugSettings={debugSettings}
+        debugSettings={effectiveDebugSettings}
         onUpdateDebugSettings={updateDebugSettings}
         partyCount={state.parties.length}
         onPartyUnlock={actions.unlockPartySlot}
@@ -5258,9 +5276,9 @@ export function HomeScreen({
                       window.alert(t('home.debug.reportProgressUnset'));
                       return;
                     }
-                    const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
-                    setTimeSpeedBonusUntilMs(bonusUntilMs);
-                    updateDebugSettings({ timeSpeed: 'x1_2' });
+                    const bonusStartedAt = Date.now();
+                    setTimeSpeedNowMs(bonusStartedAt);
+                    setTimeSpeedBonusUntilMs(bonusStartedAt + SPEED_OF_TIME_BONUS_DURATION_MS);
                     actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
                   } catch (error) {
                     console.error('Failed to report progress for Speed of Time:', error);

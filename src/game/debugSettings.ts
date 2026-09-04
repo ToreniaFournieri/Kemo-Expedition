@@ -1,4 +1,4 @@
-import { createEnvironmentStorageKey, isDebugModeEnabled } from './environment';
+import { createEnvironmentStorageKey, isDebugModeEnabled } from './environment.ts';
 
 type DebugTimeSpeed = 'realtime' | 'x1_2' | 'x5' | 'x20' | 'x100' | 'unlimited';
 type DebugGodsBattleCondition = 'normal' | 'simple1';
@@ -43,13 +43,11 @@ const RUNTIME_DIAGNOSTICS_STARTUP_ENABLED = typeof __RUNTIME_DIAGNOSTICS_DEFAULT
 function enforceEnvironmentDebugPolicy(settings: DebugSettings): DebugSettings {
   // SpecRef: 9 | Environment | / Debug mode OFF
   if (!isDebugModeEnabled()) {
-    // SpecRef: 8.1.2 | Header | Speed of Time
-    // Keep the production Debug pane locked OFF, but preserve the legitimate
-    // Speed of Time report reward while its separate duration record is valid.
-    const prodTimeSpeed: DebugTimeSpeed = settings.timeSpeed === 'x1_2' ? 'x1_2' : 'realtime';
+    // SpecRef: 8.6 | UI_SETTING | Speed of Time
+    // The report reward is tracked separately from the Debug-pane base speed.
     return {
       ...DEFAULT_DEBUG_SETTINGS,
-      timeSpeed: prodTimeSpeed,
+      timeSpeed: 'realtime',
       godsBattleCondition: 'normal',
       godStrength: 'normal',
     };
@@ -102,14 +100,22 @@ export function saveDebugSettings(settings: DebugSettings): void {
   }
 }
 
-export function getTimeSpeedScale(settings: DebugSettings): number {
+export function getTimeSpeedScale(settings: DebugSettings, hasProgressReportBonus = false): number {
   // SpecRef: 5.1 | PROGRESS | Debug Scaling
-  if (settings.timeSpeed === 'realtime') return 1;
-  if (settings.timeSpeed === 'x1_2') return 1 / 1.2;
-  if (settings.timeSpeed === 'x20') return 0.05;
-  if (settings.timeSpeed === 'x100') return 0.01;
-  if (settings.timeSpeed === 'unlimited') return 0;
-  return 0.2;
+  // SpecRef: 8.6 | UI_SETTING | Progress Report multiplies the current speed by x1.2
+  const baseScale = settings.timeSpeed === 'realtime'
+    ? 1
+    : settings.timeSpeed === 'x1_2'
+      ? 1 / 1.2
+      : settings.timeSpeed === 'x20'
+        ? 0.05
+        : settings.timeSpeed === 'x100'
+          ? 0.01
+          : settings.timeSpeed === 'unlimited'
+            ? 0
+            : 0.2;
+  if (!hasProgressReportBonus || baseScale === 0) return baseScale;
+  return baseScale / 1.2;
 }
 
 export function isUnlimitedTimeSpeed(settings: DebugSettings): boolean {
