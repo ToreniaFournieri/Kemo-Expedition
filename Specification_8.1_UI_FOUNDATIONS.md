@@ -168,9 +168,11 @@
   - Use this specification's version
 
 - Speed of Time: `▶︎ (23h)`
-  - Displays the current game speed state symbol and the remaining boost duration in hours without the `x1.0` or `x1.2` multiplier text.
+  - Displays the current game speed state symbol and the remaining boost duration in hours.
     - x1.0 -> `▷`
-    - x1.2 or higher -> `▶︎`
+    - x1.2 -> `▶︎`
+    - x5.0 -> `▷`
+    - x6.0 -> `▶︎`
 
 - **Progress Report:** When the player presses the Speed of Time button:
   - Show the following confirmation dialog:

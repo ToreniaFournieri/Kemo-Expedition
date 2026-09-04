@@ -350,7 +350,13 @@ HP: 312                 タイプ: 神魔
   - All theme colors are always selectable in the development environment.
 
 - Game mode
-  - Default: Normal
+  - Default: `mode.normal`
+
+| Mode | concept |
+|--|--|
+| `mode.normal` | same spec. |
+| `mode.hard` | All enemies have `a.first-strike`0, `a.upgrade-all-abilities`1, +5 level. `Speed of time` is `x5 boost`. |
+
 
 **Feedback フィードバック**
   - Send feedback to the development team.
