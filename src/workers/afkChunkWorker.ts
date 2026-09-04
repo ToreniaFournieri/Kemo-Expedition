@@ -76,6 +76,10 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) =>
         inventoryCompletionMs: 0,
         presentationCompletionMs: 0,
         commitProjectionMs: 0,
+        expeditionCount: 0,
+        expeditionRoomCount: 0,
+        expeditionRetainedNarrationCount: 0,
+        expeditionReplayedBattleCount: 0,
       }
       : undefined;
     const simulate = () => simulateAfkPartyChunkForWorker(baseState, {

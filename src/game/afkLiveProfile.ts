@@ -86,6 +86,10 @@ export interface AfkLiveProfileResult {
     readonly workerExpeditionInventoryCompletionMs: number;
     readonly workerExpeditionPresentationCompletionMs: number;
     readonly workerExpeditionCommitProjectionMs: number;
+    readonly workerExpeditionCount: number;
+    readonly workerExpeditionRoomCount: number;
+    readonly workerExpeditionRetainedNarrationCount: number;
+    readonly workerExpeditionReplayedBattleCount: number;
     readonly hydrationMs: number;
     readonly fifoCommitWaitMs: number;
     readonly chunkCommitReactVisibilityMs: number;
@@ -622,6 +626,10 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
         workerExpeditionInventoryCompletionMs: sumEventDurations(trace, 'worker_expedition_inventory_completion'),
         workerExpeditionPresentationCompletionMs: sumEventDurations(trace, 'worker_expedition_presentation_completion'),
         workerExpeditionCommitProjectionMs: sumEventDurations(trace, 'worker_expedition_commit_projection'),
+        workerExpeditionCount: sumEventDataValue(trace, 'worker_expedition_counts', 'expeditionCount'),
+        workerExpeditionRoomCount: sumEventDataValue(trace, 'worker_expedition_counts', 'roomCount'),
+        workerExpeditionRetainedNarrationCount: sumEventDataValue(trace, 'worker_expedition_counts', 'retainedNarrationCount'),
+        workerExpeditionReplayedBattleCount: sumEventDataValue(trace, 'worker_expedition_counts', 'replayedBattleCount'),
         hydrationMs: sumEventDurations(trace, 'worker_result_hydration'),
         fifoCommitWaitMs: sumEventDurations(trace, 'fifo_commit_wait_end'),
         chunkCommitReactVisibilityMs,

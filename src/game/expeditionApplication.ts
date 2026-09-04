@@ -64,6 +64,10 @@ export interface ExpeditionApplicationAttribution {
   inventoryCompletionMs: number;
   presentationCompletionMs: number;
   commitProjectionMs: number;
+  expeditionCount: number;
+  expeditionRoomCount: number;
+  expeditionRetainedNarrationCount: number;
+  expeditionReplayedBattleCount: number;
 }
 
 const EXPEDITION_PROFILE_ENABLED = typeof __AFK_LIVE_PROFILE_ENABLED__ !== 'undefined'
@@ -167,6 +171,10 @@ export function runExpeditionApplication(
       : {}),
   });
   endExpeditionPhase(attribution, 'serviceMs', serviceStartedAt);
+  if (attribution) {
+    attribution.expeditionCount += 1;
+    attribution.expeditionRoomCount += serviceResult.rooms.length;
+  }
   const transactionResult = serviceResult.transaction;
   const { bags } = transactionResult;
   const postServiceStartedAt = beginExpeditionPhase(attribution);
@@ -209,6 +217,10 @@ export function runExpeditionApplication(
     partyStatus,
   });
   endExpeditionPhase(attribution, 'presentationCompletionMs', presentationStartedAt);
+  if (attribution && (diaryTriggers.length > 0 || finalization.requiresUnlockNarration)) {
+    attribution.expeditionRetainedNarrationCount += 1;
+    attribution.expeditionReplayedBattleCount += deferredBattleNarrations.length;
+  }
 
   if (command.resolutionMode === 'forecast') {
     if (diaryTriggers.length > 0) authorities.random();

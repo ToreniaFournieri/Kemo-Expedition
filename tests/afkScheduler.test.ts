@@ -233,7 +233,7 @@ test('coordinator authority is production-on with pre-promotion and authority pr
     /useAfkCoordinatorAuthorityCandidate\(\): boolean \{[\s\S]{0,80}return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,320}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,100}runtime\?\.variant === 'authority-production'[\s\S]{0,100}runtime\?\.variant === 'coordinator-paced'/,
   );
   assert.match(liveProfileSource, /useAfkCoordinatorDispatchPacingCandidate\(\): boolean \{[\s\S]{0,160}runtime\?\.variant === 'coordinator-paced'/);
-  assert.match(homeSource, /commitAfkPartyTransactionAuthoritatively[\s\S]{0,1800}completeAfkCommitTransaction\(completedResult\)/);
+  assert.match(homeSource, /commitAfkPartyTransactionAuthoritatively[\s\S]{0,3200}completeAfkCommitTransaction\(completedResult\)/);
   assert.match(homeSource, /coordinator_authority_react_publication/);
   assert.match(homeSource, /afkAuthorityDispatchYieldedRef\.current = true[\s\S]{0,300}coordinator_authority_dispatch_pace/);
   assert.match(homeSource, /coordinator_authority_ack_to_worker_post/);

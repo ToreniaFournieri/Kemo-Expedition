@@ -3169,6 +3169,25 @@ export function HomeScreen({
               jobId: completedResult.jobId,
               durationMs: transactionAttribution.equipmentReducerMs,
             });
+            if (!capturedSettingChanges) {
+              const planSummary = transactionAttribution.summary;
+              afkRuntimeTrace.record('auto_equipment_complete', {
+                phase: 'commit_dispatch',
+                partyId: completedResult.partyId,
+                partyIndex: completedResult.partyIndex,
+                jobId: completedResult.jobId,
+                durationMs: transactionAttribution.autoEquipmentPlanningMs,
+                progress: true,
+                data: {
+                  processedCharacters: planSummary?.processedCharacters ?? 0,
+                  unequippedCount: planSummary?.unequippedCount ?? 0,
+                  equippedCount: planSummary?.equippedCount ?? 0,
+                  upgradedCount: planSummary?.upgradedCount ?? 0,
+                  jewelAssignmentCount: planSummary?.jewelAssignmentCount ?? 0,
+                  plannedActionCount: transactionAttribution.plannedActionCount,
+                },
+              });
+            }
             completeAfkCommitTransaction(completedResult);
           } else {
             actions.commitAfkPartyTransaction(
@@ -3590,6 +3609,18 @@ export function HomeScreen({
                 jobId: result.jobId,
                 durationMs,
               });
+            });
+            afkRuntimeTrace.record('worker_expedition_counts', {
+              phase: 'worker_execution',
+              partyId: result.partyId,
+              partyIndex: result.partyIndex,
+              jobId: result.jobId,
+              data: {
+                expeditionCount: result.workerTelemetry.expeditionCount ?? 0,
+                roomCount: result.workerTelemetry.expeditionRoomCount ?? 0,
+                retainedNarrationCount: result.workerTelemetry.expeditionRetainedNarrationCount ?? 0,
+                replayedBattleCount: result.workerTelemetry.expeditionReplayedBattleCount ?? 0,
+              },
             });
           }
         } else {

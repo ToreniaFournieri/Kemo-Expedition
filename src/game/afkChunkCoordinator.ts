@@ -159,6 +159,10 @@ export interface AfkWorkerPhaseAttribution {
   inventoryCompletionMs: number;
   presentationCompletionMs: number;
   commitProjectionMs: number;
+  expeditionCount: number;
+  expeditionRoomCount: number;
+  expeditionRetainedNarrationCount: number;
+  expeditionReplayedBattleCount: number;
 }
 
 export interface AfkWorkerPerformanceTelemetry extends Partial<AfkWorkerPhaseAttribution> {
