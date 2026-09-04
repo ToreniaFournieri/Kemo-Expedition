@@ -80,6 +80,7 @@ useAfkCompactBattleResultCandidate,
 useAfkRendererPartyStatsMemo,
 } from '../game/afkLiveProfile';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
+import { getPeddlerTravelDurationMs } from '../game/expeditionAbilityPolicies';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
 import { isExperimentalApiCommandType } from '../game/experimentalApiContracts';
@@ -4742,9 +4743,7 @@ export function HomeScreen({
     const durationScale = getTimeSpeedScale(debugSettings);
     const baseDurationMs = baseStepCount * BASE_STEP_DURATION_MS * durationScale;
     const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
-    if (peddlerLevel >= 2) return Math.max(100, Math.ceil((baseDurationMs * 3) / 5));
-    if (peddlerLevel >= 1) return Math.max(100, Math.ceil((baseDurationMs * 2) / 3));
-    return Math.max(100, Math.ceil(baseDurationMs));
+    return getPeddlerTravelDurationMs(baseDurationMs, peddlerLevel);
   };
 
   const notifyExpeditionRewardsIfNeeded = (party: Party, partyIndex: number) => {

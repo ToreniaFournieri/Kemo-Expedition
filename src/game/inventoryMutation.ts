@@ -72,6 +72,31 @@ export function addItemToInventory(
   };
 }
 
+/** Explicit grants revive a variant and never apply its automatic-sale status. */
+export function grantItemToInventory(
+  inventory: InventoryRecord,
+  item: Item,
+  requestedCount = 1,
+  mutateInventory = false,
+): { inventory: InventoryRecord; grantedCount: number } {
+  const count = Number.isFinite(requestedCount) ? Math.max(0, Math.floor(requestedCount)) : 0;
+  if (count === 0) return { inventory, grantedCount: 0 };
+
+  const key = getVariantKey(item);
+  const existing = inventory[key];
+  const grantedCount = Math.min(count, Math.max(0, ITEM_MAX_STACK - (existing?.count ?? 0)));
+  if (grantedCount === 0) return { inventory, grantedCount: 0 };
+
+  const nextInventory = mutateInventory ? inventory : { ...inventory };
+  nextInventory[key] = {
+    item,
+    count: (existing?.count ?? 0) + grantedCount,
+    status: 'owned',
+    isNew: existing?.isNew ?? true,
+  };
+  return { inventory: nextInventory, grantedCount };
+}
+
 export function removeItemFromInventory(
   inventory: InventoryRecord,
   key: string,

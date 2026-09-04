@@ -78,9 +78,11 @@ test('expedition mechanics identify their actual implementation boundaries', () 
   ]);
   assert.deepEqual(expeditionBinding('core:peddler').implementationFiles, [
     'src/components/HomeScreen.tsx',
+    'src/game/expeditionAbilityPolicies.ts',
   ]);
   assert.deepEqual(expeditionBinding('core:prophecy').implementationFiles, [
     'src/components/home/tabs/SettingTab.tsx',
+    'src/game/expeditionAbilityPolicies.ts',
     'src/hooks/useGameState.ts',
   ]);
   assert.deepEqual(expeditionBinding('core:terrain.chill').implementationFiles, [

@@ -30,6 +30,7 @@ import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeit
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
+import { getProphecyControlAccess } from '../../../game/expeditionAbilityPolicies';
 import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewardEligibility,parseFeedbackSubmissionTimestamp,type FeedbackRewardState } from '../../../game/feedbackRewards';
 import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRareTitle } from '../../../game/gameState';
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
@@ -1578,17 +1579,22 @@ export default function SettingTab({
       </div>
 
       {/* SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視) */}
-      {(debugSettings.clairvoyanceEnabled || gameState.parties.some((party) => getSettingPartyAbilityLevel(party, 'prophecy') >= 1)) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {gameState.parties.some((party) => getProphecyControlAccess(
+        getSettingPartyAbilityLevel(party, 'prophecy'),
+        debugSettings.clairvoyanceEnabled,
+      ).isVisible) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('clairvoyance', t('setting.clairvoyance.title'))}
         {settingPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
           {gameState.parties.map((party, partyIndex) => {
             const prophecyLevel = getSettingPartyAbilityLevel(party, 'prophecy');
-            const isPaneVisible = debugSettings.clairvoyanceEnabled || prophecyLevel >= 1;
+            const { isVisible: isPaneVisible, canResetBags } = getProphecyControlAccess(
+              prophecyLevel,
+              debugSettings.clairvoyanceEnabled,
+            );
             if (!isPaneVisible) {
               return null;
             }
 
-            const canResetBags = debugSettings.clairvoyanceEnabled || prophecyLevel >= 2;
             const partyBags = party.bags;
             const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
             return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">

@@ -49,9 +49,10 @@ import {
 } from '../game/expeditionApplicationAdapters';
 import { getDiarySettingsWithDefaults } from '../game/diarySettings';
 import { normalizeImportedBags } from '../game/bagMigration';
+import { migrateLegacyInventory } from '../game/inventoryMigration';
 import {
   addItemToInventory,
-  ITEM_MAX_STACK,
+  grantItemToInventory,
   removeItemFromInventory,
   sellAllOwnedInventory,
   sellInventoryStack,
@@ -896,32 +897,6 @@ export function getAfkInventoryDeltaForState(state: GameState): AfkInventoryDelt
   return afkInventoryDeltaByState.get(state);
 }
 
-// Helper to convert old inventory format to new format
-function migrateOldInventory(oldInventory: Item[] | InventoryRecord): InventoryRecord {
-  // Check if already in new format
-  if (!Array.isArray(oldInventory)) {
-    return oldInventory;
-  }
-
-  // Convert array to record
-  const newInventory: InventoryRecord = {};
-  for (const item of oldInventory) {
-    const key = getVariantKey(item);
-    if (newInventory[key]) {
-      newInventory[key].count++;
-    } else {
-      newInventory[key] = {
-        item: { ...item, isNew: undefined },
-        count: 1,
-        status: 'owned',
-        isNew: item.isNew,
-      };
-    }
-  }
-  return newInventory;
-}
-
-
 function normalizeExpeditionFinalOutcome(rawOutcome: unknown): 'Clear' | 'Escape' | 'Retreat' | 'Defeat' {
   if (rawOutcome === 'Clear' || rawOutcome === 'Escape' || rawOutcome === 'Retreat' || rawOutcome === 'Defeat') {
     return rawOutcome;
@@ -996,7 +971,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           const firstParty = parsed.parties?.[0];
           parsed.global = {
             gold: firstParty?.gold ?? 200,
-            inventory: migrateOldInventory(firstParty?.inventory ?? []),
+            inventory: migrateLegacyInventory(firstParty?.inventory ?? []),
             userId: generateUserId(),
             deityDonations: {},
             unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
@@ -1016,7 +991,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
-          parsed.global.inventory = migrateOldInventory(parsed.global.inventory);
+          parsed.global.inventory = migrateLegacyInventory(parsed.global.inventory);
         }
         if (typeof parsed.global.userId !== 'string' || parsed.global.userId.trim().length === 0) {
           parsed.global.userId = generateUserId();
@@ -3422,25 +3397,15 @@ function gameReducer(
         enhancement: 0,
         superRare: 0,
       };
-      const variantKey = getVariantKey(debugStoreItem);
-      const previousVariant = state.global.inventory[variantKey];
-      const nextCount = Math.min(ITEM_MAX_STACK, (previousVariant?.count ?? 0) + 1);
-      if ((previousVariant?.count ?? 0) >= ITEM_MAX_STACK) return state;
+      const grant = grantItemToInventory(state.global.inventory, debugStoreItem);
+      if (grant.grantedCount === 0) return state;
 
       return {
         ...state,
         global: {
           ...state.global,
           gold: state.global.gold - DEBUG_STORE_PRICE,
-          inventory: {
-            ...state.global.inventory,
-            [variantKey]: {
-              item: debugStoreItem,
-              count: nextCount,
-              status: 'owned',
-              isNew: previousVariant?.isNew ?? true,
-            },
-          },
+          inventory: grant.inventory,
           jewelShopPurchases: {
             ...state.global.jewelShopPurchases,
             [purchaseKey]: purchasedCount + 1,

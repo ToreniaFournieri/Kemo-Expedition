@@ -9,12 +9,14 @@ import {
 import {
   addItemToInventory,
   calculateSellPrice,
+  grantItemToInventory,
   ITEM_MAX_STACK,
   removeItemFromInventory,
   sellAllOwnedInventory,
   sellInventoryStack,
   setInventoryVariantStatus,
 } from '../../src/game/inventoryMutation.ts';
+import { migrateLegacyInventory } from '../../src/game/inventoryMigration.ts';
 import {
   migrateLegacyBag,
   normalizeImportedBags,
@@ -86,6 +88,61 @@ test('inventory addition auto-sells marked and overflow variants without mutatio
     assert.equal(result.gold, 100 + expectedProfit);
     assert.equal(inventory[key].count, variant.count);
   }
+});
+
+test('explicit inventory grants revive statuses without auto-selling and preserve identity policy', () => {
+  const { state } = loadAndValidateExpedition8Fixture();
+  const sourceItem = Object.values(state.global.inventory).find((variant) => variant.count > 0)?.item;
+  assert.ok(sourceItem);
+  const item = { ...sourceItem, enhancement: 4, superRare: 0 };
+  const key = getVariantKey(item);
+
+  for (const status of ['sold', 'notown'] as const) {
+    const inventory = { [key]: { item, count: 0, status, isNew: false } };
+    const result = grantItemToInventory(inventory, item);
+    assert.notEqual(result.inventory, inventory);
+    assert.equal(result.grantedCount, 1);
+    assert.deepEqual(result.inventory[key], { item, count: 1, status: 'owned', isNew: false });
+    assert.equal(inventory[key].status, status);
+  }
+
+  const capped = { [key]: { item, count: ITEM_MAX_STACK, status: 'owned' as const, isNew: true } };
+  const cappedResult = grantItemToInventory(capped, item);
+  assert.equal(cappedResult.inventory, capped);
+  assert.equal(cappedResult.grantedCount, 0);
+
+  const nearlyCapped = { [key]: { item, count: ITEM_MAX_STACK - 1, status: 'notown' as const, isNew: true } };
+  const partialResult = grantItemToInventory(nearlyCapped, item, 3);
+  assert.equal(partialResult.grantedCount, 1);
+  assert.equal(partialResult.inventory[key].count, ITEM_MAX_STACK);
+  assert.equal(partialResult.inventory[key].status, 'owned');
+
+  const mutable = { [key]: { item, count: 1, status: 'owned' as const } };
+  const mutableResult = grantItemToInventory(mutable, item, 2, true);
+  assert.equal(mutableResult.inventory, mutable);
+  assert.equal(mutable[key].count, 3);
+  assert.equal(mutable[key].isNew, true);
+});
+
+test('legacy inventory migration preserves record identity and historical variant folding', () => {
+  const { state } = loadAndValidateExpedition8Fixture();
+  const sourceItem = Object.values(state.global.inventory).find((variant) => variant.count > 0)?.item;
+  assert.ok(sourceItem);
+  const record = state.global.inventory;
+  assert.equal(migrateLegacyInventory(record), record);
+
+  const first = { ...sourceItem, enhancement: 3, superRare: 0, isNew: false,
+    jewel: { key: 'might' as const, rank: 1 as const } };
+  const second = { ...first, isNew: true, jewel: { key: 'ward' as const, rank: 2 as const } };
+  const key = getVariantKey(first);
+  assert.equal(getVariantKey(second), key);
+  const migrated = migrateLegacyInventory([first, second]);
+  assert.deepEqual(Object.keys(migrated), [key]);
+  assert.equal(migrated[key].count, 2);
+  assert.equal(migrated[key].status, 'owned');
+  assert.equal(migrated[key].isNew, false);
+  assert.deepEqual(migrated[key].item.jewel, first.jewel);
+  assert.equal(migrated[key].item.isNew, undefined);
 });
 
 test('inventory removal preserves missing, last-copy, multi-copy, and mutable semantics', () => {
@@ -184,9 +241,10 @@ test('shared utility ownership leaves imported-bag migration in hydration', () =
   );
   assert.match(hookSource, /from '\.\.\/game\/diarySettings'/);
   assert.match(hookSource, /from '\.\.\/game\/inventoryMutation'/);
+  assert.match(hookSource, /from '\.\.\/game\/inventoryMigration'/);
   assert.doesNotMatch(
     hookSource,
-    /function (getDiarySettingsWithDefaults|normalizeDiaryDefeatNotificationMode|addItemToInventory|calculateSellPrice)\(/,
+    /function (getDiarySettingsWithDefaults|normalizeDiaryDefeatNotificationMode|addItemToInventory|calculateSellPrice|migrateOldInventory)\(/,
   );
   assert.match(hookSource, /from '\.\.\/game\/bagMigration'/);
   assert.doesNotMatch(hookSource, /function (normalizeImportedBags|migrateLegacyBag)\(/);
@@ -196,9 +254,14 @@ test('shared utility ownership leaves imported-bag migration in hydration', () =
   assert.match(hookSource, /const sale = sellInventoryStack\(/);
   assert.match(hookSource, /const sale = sellAllOwnedInventory\(/);
   assert.match(hookSource, /setInventoryVariantStatus\(/);
+  assert.match(hookSource, /grantItemToInventory\(/);
+  assert.match(hookSource, /migrateLegacyInventory\(/);
+  assert.match(hookSource, /case 'BUY_SHOP_ITEM':[\s\S]{0,1800}addItemToInventory\(/);
+  assert.match(hookSource, /case 'EQUIP_ITEM':[\s\S]{0,2200}addItemToInventory\([\s\S]{0,1600}removeItemFromInventory\(/);
+  assert.doesNotMatch(hookSource, /case 'ATTACH_JEWEL':[\s\S]{0,3200}inventory:\s*[^,]*state\.global\.inventory/);
   assert.doesNotMatch(
     hookSource,
-    /function removeItemFromInventory\(|case 'SELL_ALL_OWNED':[\s\S]{0,500}for \(const \[/,
+    /function removeItemFromInventory\(|case 'SELL_ALL_OWNED':[\s\S]{0,500}for \(const \[|case 'BUY_DEBUG_STORE_ITEM':[\s\S]{0,900}inventory:\s*\{\s*\.\.\.state\.global\.inventory/,
   );
 });
 

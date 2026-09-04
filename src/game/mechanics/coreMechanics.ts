@@ -203,12 +203,16 @@ const EXPEDITION_ABILITY_BINDING_LOCATIONS: Partial<Record<AbilityId, Expedition
     testFiles: ['tests/afkScheduler.test.ts', 'tests/expeditionSimulation.test.ts'],
   },
   peddler: {
-    implementationFiles: ['src/components/HomeScreen.tsx'],
-    testFiles: ['tests/mechanicRegistry.test.ts'],
+    implementationFiles: ['src/components/HomeScreen.tsx', 'src/game/expeditionAbilityPolicies.ts'],
+    testFiles: ['tests/expeditionAbilityPolicies.test.ts', 'tests/mechanicRegistry.test.ts'],
   },
   prophecy: {
-    implementationFiles: ['src/components/home/tabs/SettingTab.tsx', 'src/hooks/useGameState.ts'],
-    testFiles: ['tests/mechanicRegistry.test.ts'],
+    implementationFiles: [
+      'src/components/home/tabs/SettingTab.tsx',
+      'src/game/expeditionAbilityPolicies.ts',
+      'src/hooks/useGameState.ts',
+    ],
+    testFiles: ['tests/expeditionAbilityPolicies.test.ts', 'tests/mechanicRegistry.test.ts'],
   },
   unlock: {
     implementationFiles: [
