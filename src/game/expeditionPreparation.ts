@@ -14,6 +14,7 @@ import {
   computePartyStats,
   type ComputedPartyStatus,
 } from './partyComputation.ts';
+import { normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from './runtimeGameMode.ts';
 
 export interface ExpeditionPartyStatusAuthority {
   readonly party: Party;
@@ -31,6 +32,8 @@ export interface PrepareExpeditionRunInput {
     | 'revealedGlossaryTerrainKeys'
   >;
   readonly triggerGodsBattle?: boolean;
+  readonly gameMode?: RuntimeGameMode;
+  readonly enemyLevelOffset?: number;
   readonly chunkPartyStatus?: ExpeditionPartyStatusAuthority;
   readonly authoritativePartyStatus?: ExpeditionPartyStatusAuthority;
   readonly normalizeBags: (bags: Party['bags']) => GameBags;
@@ -84,6 +87,8 @@ export function prepareExpeditionRun(
     partyStatus,
     dungeon,
     deityDonations: input.global.deityDonations,
+    gameMode: input.gameMode ?? 'mode.normal',
+    enemyLevelOffset: normalizeOrcaEnemyLevelOffset(input.enemyLevelOffset),
     ...(terrainOverride !== undefined ? { terrainOverride } : {}),
   });
 

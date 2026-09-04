@@ -63,6 +63,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) =>
       simulatedCompletedAt: job.simulatedCompletedAt,
       cycleDurationScale: job.cycleDurationScale,
       gameMode: job.gameMode,
+      enemyLevelOffset: job.enemyLevelOffset,
       operationCount: job.operationCount,
       workerOptimization: job.workerOptimization,
       compactBattleResultOutput: job.compactBattleResultOutput,

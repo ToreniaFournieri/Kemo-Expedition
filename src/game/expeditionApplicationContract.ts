@@ -1,4 +1,4 @@
-import type { GameMode } from '../theme/theme.ts';
+import type { RuntimeGameMode } from './runtimeGameMode.ts';
 import type {
   ExpeditionLog,
   ExpeditionLogEntry,
@@ -19,7 +19,8 @@ export interface ExpeditionPartyStatusAuthority {
 export interface RunExpeditionApplicationCommand {
   readonly partyIndex: number;
   readonly simulatedAt?: number;
-  readonly gameMode?: GameMode;
+  readonly gameMode?: RuntimeGameMode;
+  readonly enemyLevelOffset?: number;
   readonly triggerGodsBattle?: boolean;
   readonly isAfkSimulation?: boolean;
   readonly chunkPartyStatus?: ExpeditionPartyStatusAuthority;

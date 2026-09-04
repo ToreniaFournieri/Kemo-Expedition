@@ -188,9 +188,9 @@ export interface HomeScreenProps {
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
-    simulateExpedition: (partyIndex: number, gameMode?: GameMode, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
-    runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
-    resolveInstantExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
+    simulateExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, onProgress?: (completed: number, total: number) => void, enemyLevelOffset?: number) => Promise<ExpeditionSimulationResult>;
+    runExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
+    resolveInstantExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
     consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
     finalizeDiaryLog: (partyIndex: number, simulatedAt?: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
@@ -223,7 +223,7 @@ export interface HomeScreenProps {
     markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
-    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: RuntimeGameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice, enemyLevelOffset?: number) => void;
     commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
     commitAfkPartyTransaction: (
       result: AfkPartyChunkResult,
@@ -248,7 +248,7 @@ export interface HomeScreenProps {
       previousPresentedVersion: number;
       delayMs: number;
     };
-    runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
+    runApiSortieBatch: (partyIndex: number, count: number, gameMode?: RuntimeGameMode, simulatedAt?: number, enemyLevelOffset?: number) => {
       state: GameState;
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
     };
@@ -718,7 +718,10 @@ export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-t
 export type { DarkModeSetting, GameMode } from '../../theme/theme';
 import type { DarkModeSetting, GameMode } from '../../theme/theme';
 import { isGameModeAvailable, THEME_CLASS_NAMES } from '../../theme/theme';
+import type { RuntimeGameMode } from '../../game/runtimeGameMode';
 export const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
+export const RUNTIME_GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-runtime-game-mode');
+export const ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-orca-enemy-level-offset');
 export const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 export const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-expedition-stats-display');
 export const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');

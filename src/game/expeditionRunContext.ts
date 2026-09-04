@@ -19,6 +19,7 @@ import {
   type ExpeditionRewardContext,
 } from './expeditionRewardContext.ts';
 import type { PostBattleEffectCharacter } from './expeditionEffects/postBattleEffects.ts';
+import type { RuntimeGameMode } from './runtimeGameMode.ts';
 
 export interface ExpeditionDifficultyContext {
   readonly offset: number;
@@ -46,6 +47,8 @@ export interface ExpeditionRunContext {
   readonly dungeonId: number;
   readonly dungeonFloorCount: number;
   readonly difficulty: ExpeditionDifficultyContext;
+  readonly gameMode: RuntimeGameMode;
+  readonly enemyLevelOffset: number;
   readonly deity: ExpeditionDeityContext;
   readonly reward: ExpeditionRewardContext;
   readonly terrainOverride?: TerrainEffectKey;
@@ -58,6 +61,8 @@ export interface CreateExpeditionRunContextInput {
   readonly partyStatus: ComputedPartyStatus;
   readonly dungeon: Dungeon;
   readonly deityDonations: Readonly<Record<string, number>>;
+  readonly gameMode: RuntimeGameMode;
+  readonly enemyLevelOffset: number;
   readonly terrainOverride?: TerrainEffectKey;
 }
 
@@ -125,6 +130,8 @@ export function createExpeditionRunContext(
     dungeonId: input.dungeon.id,
     dungeonFloorCount: input.dungeon.floors.length,
     difficulty,
+    gameMode: input.gameMode,
+    enemyLevelOffset: input.enemyLevelOffset,
     deity,
     reward: deriveExpeditionRewardContext(input.statusParty, input.partyStatus),
     ...(input.terrainOverride !== undefined ? { terrainOverride: input.terrainOverride } : {}),

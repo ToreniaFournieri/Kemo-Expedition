@@ -26,9 +26,11 @@ isDungeonEntryUnlocked
 import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings } from '../../../game/colosseum';
 import { DebugSettings } from '../../../game/debugSettings';
 import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
+import { addOrcaEnemyAbilities, ORCA_ENEMY_LEVEL_OFFSET_MAX, ORCA_ENEMY_LEVEL_OFFSET_MIN, RUNTIME_GAME_MODES, type RuntimeGameMode } from '../../../game/runtimeGameMode';
 import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
+import { resolveEnemyPassiveAbilities } from '../../../game/enemyPassiveAbilities';
 import { createEnvironmentStorageKey,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
 import { getProphecyControlAccess } from '../../../game/expeditionAbilityPolicies';
 import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewardEligibility,parseFeedbackSubmissionTimestamp,type FeedbackRewardState } from '../../../game/feedbackRewards';
@@ -111,6 +113,10 @@ export default function SettingTab({
   onSetBestiaryScrollTop,
   gameMode,
   onSetGameMode,
+  runtimeGameMode,
+  onSetRuntimeGameMode,
+  orcaEnemyLevelOffset,
+  onSetOrcaEnemyLevelOffset,
   darkModeSetting,
   onSetDarkModeSetting,
   isAutoRepeatEnabled,
@@ -150,6 +156,10 @@ export default function SettingTab({
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
   gameMode: GameMode;
   onSetGameMode: Dispatch<SetStateAction<GameMode>>;
+  runtimeGameMode: RuntimeGameMode;
+  onSetRuntimeGameMode: Dispatch<SetStateAction<RuntimeGameMode>>;
+  orcaEnemyLevelOffset: number;
+  onSetOrcaEnemyLevelOffset: Dispatch<SetStateAction<number>>;
   darkModeSetting: DarkModeSetting;
   onSetDarkModeSetting: Dispatch<SetStateAction<DarkModeSetting>>;
   isAutoRepeatEnabled: boolean;
@@ -503,7 +513,7 @@ export default function SettingTab({
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
   const debugModeEnabled = isDebugModeEnabled();
-  const modeSelectionLocked = isBetaEnvironment;
+  const modeSelectionLocked = isBetaEnvironment || runtimeGameMode === 'mode.orca';
   useEffect(() => {
     try {
       localStorage.setItem(SETTING_PANEL_STORAGE_KEY, JSON.stringify(settingPanelExpanded));
@@ -1402,11 +1412,22 @@ export default function SettingTab({
       tier: effectiveTier,
       enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, false),
     };
-    return getEncounterEnemyWithScaling(enemy, effectiveDungeon, floorNumber, roomType, { isLunaMode: false });
+    return getEncounterEnemyWithScaling(enemy, effectiveDungeon, floorNumber, roomType, {
+      isLunaMode: false,
+      gameMode: runtimeGameMode,
+      enemyLevelOffset: orcaEnemyLevelOffset,
+    });
   };
 
-  const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
-    buildGodRuntimeEnemy(god);
+  const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null => {
+    const enemy = buildGodRuntimeEnemy(
+      god,
+      runtimeGameMode === 'mode.orca' ? orcaEnemyLevelOffset : 0,
+    );
+    if (!enemy || runtimeGameMode !== 'mode.orca') return enemy;
+    const withModeAbilities = addOrcaEnemyAbilities(enemy);
+    return { ...withModeAbilities, abilities: resolveEnemyPassiveAbilities(withModeAbilities.abilities) };
+  };
 
   const getGodDropCandidates = (godName: string): string => {
     const drops = GOD_MYTHIC_DROPS
@@ -2681,6 +2702,44 @@ export default function SettingTab({
                   ? t('setting.darkMode.description.on')
                   : t('setting.darkMode.description.off')}
             </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.gameMode')}</div>
+            <div className="grid grid-cols-2 gap-2">
+              {RUNTIME_GAME_MODES.map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onSetRuntimeGameMode(mode)}
+                  className={`py-2 rounded border text-sm font-medium ${
+                    runtimeGameMode === mode
+                      ? 'bg-selection text-content-inverse border-selection pane-button-shadow-soft'
+                      : 'bg-surface-interactive text-content-default border-line-strong pane-button-shadow'
+                  }`}
+                >
+                  {t(mode === 'mode.orca' ? 'setting.gameMode.orca' : 'setting.gameMode.normal')}
+                </button>
+              ))}
+            </div>
+            {runtimeGameMode === 'mode.orca' && (
+              <label className="mt-3 block rounded bg-white p-2 pane-button-shadow">
+                <span className="flex items-center justify-between text-xs text-gray-600">
+                  <span>{t('setting.gameMode.enemyLevelOffset')}</span>
+                  <span className="font-semibold text-gray-700">+{orcaEnemyLevelOffset}</span>
+                </span>
+                <input
+                  type="range"
+                  min={ORCA_ENEMY_LEVEL_OFFSET_MIN}
+                  max={ORCA_ENEMY_LEVEL_OFFSET_MAX}
+                  step={1}
+                  value={orcaEnemyLevelOffset}
+                  onChange={(event) => onSetOrcaEnemyLevelOffset(Number(event.target.value))}
+                  className={`mt-2 w-full ${IOS_GLASS_SLIDER_CLASS}`}
+                  style={getSliderProgressStyle(orcaEnemyLevelOffset, ORCA_ENEMY_LEVEL_OFFSET_MIN, ORCA_ENEMY_LEVEL_OFFSET_MAX)}
+                />
+              </label>
+            )}
           </div>
 
           <div>

@@ -1,5 +1,5 @@
 import type { Character, DiaryLog, ExpeditionLog, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
-import type { GameMode } from '../theme/theme';
+import type { RuntimeGameMode } from './runtimeGameMode';
 import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
 
 export const AFK_CHUNK_CYCLE_COUNT = 30;
@@ -77,7 +77,8 @@ export interface AfkPartyChunkJob {
   cycleDurationMs: number;
   operationCount?: number;
   baseState: GameState;
-  gameMode: GameMode;
+  gameMode: RuntimeGameMode;
+  enemyLevelOffset?: number;
   cycleDurationScale: number;
   queuedAt?: number;
   workerCreatedAt?: number;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import type { GameMode } from '../theme/theme';
+import type { RuntimeGameMode } from '../game/runtimeGameMode';
 import {
   GameState,
   Item,
@@ -1814,7 +1814,7 @@ const forecastResolutionByState = new WeakMap<GameState, ExpeditionForecastResol
 export type AfkBatchTestOptions = AfkSimulationBatchSlice & {
   elapsedMs: number;
   isAutoRepeatEnabled: boolean;
-  gameMode?: GameMode;
+  gameMode?: RuntimeGameMode;
   simulatedEndAt?: number;
   cycleDurationScale?: number;
 };
@@ -1828,7 +1828,7 @@ type GameAction =
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | ({ type: 'RUN_EXPEDITION' } & RunExpeditionApplicationCommand)
-  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: GameMode; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
+  | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: RuntimeGameMode; enemyLevelOffset?: number; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
   | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
@@ -1860,7 +1860,7 @@ type GameAction =
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }>; workerOptimization?: AfkWorkerSimulationStrategy; compactBattleResultOutput?: boolean; onOperationComplete?: (completedOperations: number, operationCount: number) => void }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: RuntimeGameMode; enemyLevelOffset?: number; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }>; workerOptimization?: AfkWorkerSimulationStrategy; compactBattleResultOutput?: boolean; onOperationComplete?: (completedOperations: number, operationCount: number) => void }
   | { type: 'COMMIT_AFK_PARTY_CHUNK'; result: AfkPartyChunkResult }
   | { type: 'COMMIT_AFK_PARTY_TRANSACTION'; result: AfkPartyChunkResult; autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner; attribution?: AfkPartyTransactionAttribution }
   | { type: 'RESET_GAME' }
@@ -2477,6 +2477,7 @@ function gameReducer(
         partyIndex: action.partyIndex,
         simulatedAt: action.simulatedAt,
         gameMode: action.gameMode,
+        enemyLevelOffset: action.enemyLevelOffset,
         triggerGodsBattle: action.triggerGodsBattle,
         authoritativePartyStatus: action.authoritativePartyStatus,
       });
@@ -3519,7 +3520,7 @@ function gameReducer(
     }
 
     case 'SIMULATE_AFK': {
-      const gameMode = action.gameMode ?? 'm.kemo';
+      const gameMode = action.gameMode ?? 'mode.normal';
       if (!action.isAutoRepeatEnabled) return state;
 
       const cappedElapsedMs = Math.max(0, Math.min(action.elapsedMs, AFK_MAX_SIMULATION_MS));
@@ -3586,6 +3587,7 @@ function gameReducer(
             partyIndex,
             simulatedAt,
             gameMode,
+            enemyLevelOffset: action.enemyLevelOffset,
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
             chunkPartyStatus: chunkPartyStatus[partyIndex],
@@ -4120,7 +4122,7 @@ export function runExpeditionTransactionForTesting(
   state: GameState,
   partyIndex: number,
   options: {
-    gameMode?: GameMode;
+    gameMode?: RuntimeGameMode;
     triggerGodsBattle?: boolean;
     simulatedAt?: number;
     battleOutputMode?: 'full' | 'result-only';
@@ -4151,7 +4153,8 @@ export function simulateAfkPartyChunkForWorker(
     cycleDurationMs: number;
     simulatedCompletedAt: number;
     cycleDurationScale: number;
-    gameMode?: GameMode;
+    gameMode?: RuntimeGameMode;
+    enemyLevelOffset?: number;
     operationCount?: number;
     onProgress?: (completedOperations: number, operationCount: number) => void;
     chunkStatusScope?: 'target' | 'all';
@@ -4202,6 +4205,7 @@ export function simulateAfkPartyChunkForWorker(
       elapsedMs,
       isAutoRepeatEnabled: true,
       gameMode: options.gameMode,
+      enemyLevelOffset: options.enemyLevelOffset,
       simulatedEndAt: options.simulatedCompletedAt,
       cycleDurationScale: options.cycleDurationScale,
       cycleDurationByParty,
@@ -4226,6 +4230,7 @@ export function simulateAfkPartyChunkForWorker(
       elapsedMs,
       isAutoRepeatEnabled: true,
       gameMode: options.gameMode,
+      enemyLevelOffset: options.enemyLevelOffset,
       simulatedEndAt: options.simulatedCompletedAt,
       cycleDurationScale: options.cycleDurationScale,
       cycleDurationByParty,
@@ -4249,8 +4254,9 @@ export function simulateApiSortieBatchForTesting(
   state: GameState,
   partyIndex: number,
   count: number,
-  gameMode: GameMode = 'm.kemo',
+  gameMode: RuntimeGameMode = 'mode.normal',
   simulatedAt: number = Date.now(),
+  enemyLevelOffset: number = 0,
 ): { state: GameState; runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }> } {
   let stagedState = state;
   const initialParty = stagedState.parties[partyIndex];
@@ -4267,7 +4273,7 @@ export function simulateApiSortieBatchForTesting(
     const maximumHp = computed.partyStats.hp;
     stagedState = gameReducer(stagedState, { type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
     stagedState = gameReducer(stagedState, {
-      type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle: false,
+      type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, enemyLevelOffset, triggerGodsBattle: false,
       simulatedAt: simulatedAt + index * APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS,
       authoritativePartyStatus: { party: beforeParty, computed },
     });
@@ -4396,9 +4402,10 @@ export function resolveSimulationRunForTesting(
 export async function simulateExpeditionRuns(
   state: GameState,
   partyIndex: number,
-  gameMode: GameMode = 'm.kemo',
+  gameMode: RuntimeGameMode = 'mode.normal',
   count = EXPEDITION_SIMULATION_RUN_COUNT,
   onProgress?: (completed: number, total: number) => void,
+  enemyLevelOffset: number = 0,
 ): Promise<ExpeditionSimulationResult> {
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
@@ -4421,6 +4428,7 @@ export async function simulateExpeditionRuns(
       type: 'RUN_EXPEDITION',
       partyIndex,
       gameMode,
+      enemyLevelOffset,
       triggerGodsBattle: false,
       battleOutputMode: 'result-only',
       resolutionMode: 'forecast',
@@ -4718,20 +4726,20 @@ export function useGameState() {
       dispatch({ type: 'RESET_EXPEDITION_STATS', partyIndex });
     }, []),
 
-    simulateExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', onProgress?: (completed: number, total: number) => void) => (
-      simulateExpeditionRuns(latestGameStateRef.current, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress)
+    simulateExpedition: useCallback((partyIndex: number, gameMode: RuntimeGameMode = 'mode.normal', onProgress?: (completed: number, total: number) => void, enemyLevelOffset?: number) => (
+      simulateExpeditionRuns(latestGameStateRef.current, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress, enemyLevelOffset)
     ), []),
 
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }, []),
 
-    runExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt?: number) => {
-      dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
+    runExpedition: useCallback((partyIndex: number, gameMode: RuntimeGameMode = 'mode.normal', triggerGodsBattle: boolean = false, simulatedAt?: number, enemyLevelOffset?: number) => {
+      dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt, enemyLevelOffset });
     }, []),
 
-    resolveInstantExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt: number = Date.now()) => {
-      dispatch({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
+    resolveInstantExpedition: useCallback((partyIndex: number, gameMode: RuntimeGameMode = 'mode.normal', triggerGodsBattle: boolean = false, simulatedAt: number = Date.now(), enemyLevelOffset?: number) => {
+      dispatch({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt, enemyLevelOffset });
     }, []),
 
     consumeInstantExpeditionStock: useCallback((partyIndex: number, now?: number) => {
@@ -4858,8 +4866,8 @@ export function useGameState() {
       dispatch({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId });
     }, []),
 
-    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => {
-      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale, ...batchSlice });
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: RuntimeGameMode = 'mode.normal', simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice, enemyLevelOffset?: number) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, enemyLevelOffset, simulatedEndAt, cycleDurationScale, ...batchSlice });
     }, []),
 
     commitAfkPartyChunk: useCallback((result: AfkPartyChunkResult) => {
@@ -4899,8 +4907,8 @@ export function useGameState() {
       };
     }, [authority]),
 
-    runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: GameMode = 'm.kemo', simulatedAt: number = Date.now()) => {
-      const batch = simulateApiSortieBatchForTesting(latestGameStateRef.current, partyIndex, count, gameMode, simulatedAt);
+    runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: RuntimeGameMode = 'mode.normal', simulatedAt: number = Date.now(), enemyLevelOffset?: number) => {
+      const batch = simulateApiSortieBatchForTesting(latestGameStateRef.current, partyIndex, count, gameMode, simulatedAt, enemyLevelOffset);
       dispatch({ type: 'COMMIT_API_STATE', state: batch.state });
       return batch;
     }, []),

@@ -24,9 +24,11 @@ import {
   type BattleResolution,
 } from './battle.ts';
 import { buildColosseumEnemy, getColosseumEnemySettings } from './colosseum.ts';
+import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities.ts';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from './enemyScaling.ts';
 import { getExpeditionRoomTerrainEffect, type ExpeditionRunContext } from './expeditionRunContext.ts';
 import { buildGodRuntimeEnemy } from './godEnemy.ts';
+import { addOrcaEnemyAbilities, normalizeOrcaEnemyLevelOffset } from './runtimeGameMode.ts';
 
 export interface ExpeditionBattleRoomDefinition {
   readonly type: RoomType;
@@ -186,16 +188,24 @@ function createGodEnemy(
 export function resolveExpeditionBattleRoom(
   input: ResolveExpeditionBattleRoomInput,
 ): ExpeditionBattleRoomResult | null {
-  const baseEnemy = selectExpeditionRoomEnemy(input);
+  let baseEnemy = selectExpeditionRoomEnemy(input);
   if (!baseEnemy) return null;
 
   const difficultyOffset = input.context.difficulty.offset;
+  const modeLevelOffset = input.context.gameMode === 'mode.orca' ? input.context.enemyLevelOffset : 0;
+  if (baseEnemy.poolId === 99 && input.context.gameMode === 'mode.orca' && modeLevelOffset > 0) {
+    const colosseumSettings = getColosseumEnemySettings();
+    baseEnemy = buildColosseumEnemy({
+      ...colosseumSettings,
+      level: Math.min(99, colosseumSettings.level + normalizeOrcaEnemyLevelOffset(modeLevelOffset)),
+    });
+  }
   const roomMultiplier = getRoomMultiplier(
     input.dungeon.expLevel,
     input.floorNumber,
     input.room.type,
     false,
-    difficultyOffset,
+    difficultyOffset + modeLevelOffset,
   );
   const effectiveTier = getEffectiveExpeditionTier(input.dungeon.id, false);
   const effectiveDungeon = {
@@ -213,12 +223,21 @@ export function resolveExpeditionBattleRoom(
       effectiveDungeon,
       input.floorNumber,
       input.room.type,
-      { isLunaMode: false, difficultyOffset },
+      {
+        isLunaMode: false,
+        difficultyOffset,
+        gameMode: input.context.gameMode,
+        enemyLevelOffset: input.context.enemyLevelOffset,
+      },
     );
     if (encounterCacheKey) input.encounterCache!.set(encounterCacheKey, enemy);
   }
   if (input.isGodsBattle && input.room.type === 'battle_Boss') {
-    enemy = createGodEnemy(enemy, input.dungeon.id, input.dungeon.name, difficultyOffset);
+    enemy = createGodEnemy(enemy, input.dungeon.id, input.dungeon.name, difficultyOffset + modeLevelOffset);
+    if (input.context.gameMode === 'mode.orca') {
+      const withModeAbilities = addOrcaEnemyAbilities(enemy);
+      enemy = { ...withModeAbilities, abilities: resolveEnemyPassiveAbilities(withModeAbilities.abilities) };
+    }
   }
 
   const terrainEffect = getExpeditionRoomTerrainEffect(input.context, input.floorTerrainEffect);

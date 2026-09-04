@@ -93,6 +93,7 @@ import { computePartyStats,computeRendererPartyStats } from '../game/partyComput
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
+import { isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import {
@@ -162,6 +163,7 @@ IOS_GLASS_TOP_TAB_CLASS,
 MAIN_TAB_ORDER,
 normalizeAutoEquipmentMode,
 normalizeRuntimeSnapshot,
+ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY,
 PARTY_CYCLE_TICK_MS,
 PARTY_EXPEDITION_SPLIT_MIN_WIDTH,
 PartyCycleRuntime,
@@ -171,6 +173,7 @@ PRAY_STEP_COUNT,
 preloadRaceIcons,
 PROD_DISCORD_WEBHOOK_URL,
 REDUCER_CATCHUP_THRESHOLD_MS,
+RUNTIME_GAME_MODE_STORAGE_KEY,
 resolveSideQuestShortText,
 REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
@@ -255,6 +258,21 @@ export function HomeScreen({
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode());
+  const [runtimeGameMode, setRuntimeGameMode] = useState<RuntimeGameMode>(() => {
+    try {
+      const saved = localStorage.getItem(RUNTIME_GAME_MODE_STORAGE_KEY);
+      return isRuntimeGameMode(saved) ? saved : 'mode.normal';
+    } catch {
+      return 'mode.normal';
+    }
+  });
+  const [orcaEnemyLevelOffset, setOrcaEnemyLevelOffset] = useState(() => {
+    try {
+      return normalizeOrcaEnemyLevelOffset(localStorage.getItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY));
+    } catch {
+      return 0;
+    }
+  });
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
@@ -290,7 +308,7 @@ export function HomeScreen({
   const latestPartiesRef = useRef(state.parties);
   const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
-  const gameModeRef = useRef(gameMode);
+  const gameModeRef = useRef(runtimeGameMode);
   const debugSettingsRef = useRef(debugSettings);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
   const [afkInteractionPauseVersion, setAfkInteractionPauseVersion] = useState(0);
@@ -448,6 +466,9 @@ export function HomeScreen({
   apiAutoRunRef.current = isAutoRepeatEnabled;
   apiCyclesRef.current = partyCycles;
   debugSettingsRef.current = debugSettings;
+  const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca'
+    ? { ...debugSettings, timeSpeed: 'x5' }
+    : debugSettings, [debugSettings, runtimeGameMode]);
 
   useEffect(() => {
     if (!isDebugModeEnabled()) return;
@@ -472,7 +493,7 @@ export function HomeScreen({
   useEffect(() => {
     const afkActive = pendingAfkMs > 0;
     const runtimeMode = afkActive ? 'afk' : isAutoRepeatEnabled ? 'online' : 'idle';
-    memoryMonitor.setRuntime(runtimeMode, debugSettings.timeSpeed);
+    memoryMonitor.setRuntime(runtimeMode, effectiveDebugSettings.timeSpeed);
     if (isAutoRepeatEnabled && !afkActive && !memoryOnlineStartedRef.current) {
       memoryOnlineStartedRef.current = true;
       void memoryMonitor.recordEvent('online_processing_start');
@@ -483,7 +504,7 @@ export function HomeScreen({
       void memoryMonitor.recordEvent('afk_emulation_complete');
     }
     memoryPreviousAfkActiveRef.current = afkActive;
-  }, [debugSettings.timeSpeed, isAutoRepeatEnabled, pendingAfkMs]);
+  }, [effectiveDebugSettings.timeSpeed, isAutoRepeatEnabled, pendingAfkMs]);
 
   useEffect(() => {
     apiStateVersionRef.current += 1;
@@ -720,7 +741,7 @@ export function HomeScreen({
       } else if (type === 'god_battle' && party) {
         if (!party.defeatedBossExpeditions[party.selectedDungeonId] || (party.instantExpeditionStock ?? 0) <= 0 || apiAutoRunRef.current) return apiFailure(422, 'god_battle_unavailable', 'Gods Battle is unavailable.');
         apiActionsRef.current.consumeInstantExpeditionStock(partyIndex, apiSimulatedAtRef.current);
-        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current);
+        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current, orcaEnemyLevelOffset);
         apiSimulatedAtRef.current += APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS;
         effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
       }
@@ -747,7 +768,7 @@ export function HomeScreen({
       const runs: Array<Record<string, unknown>> = [];
       let elapsed = 0;
       const beforeVersion = apiStateVersionRef.current;
-      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current);
+      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current, orcaEnemyLevelOffset);
       await waitForApiStateUpdate(beforeVersion);
       for (const [zeroBasedIndex, batchRun] of batch.runs.entries()) {
         const index = zeroBasedIndex + 1;
@@ -781,7 +802,7 @@ export function HomeScreen({
       return { sortie: { partyId: Number(payload.partyId), dungeonId, requestedCount: Number(payload.count), completedCount: Number(payload.count), previousRevision, revision: apiRevisionRef.current, partyElapsedStartMs: 0, partyElapsedEndMs: elapsed }, prelude: null, outcomes, totals, charge: { before: chargeBefore, after: chargeAfter }, sideQuests: { assigned: 0, completed: 0, cancelled: 0, expired: 0 }, unlocks: { bossDungeonIds: [], godBattleDungeonIds: [], partyIds: [], deityIds: [], otherIds: [] }, runs, observation: buildApiObservation() };
     }
     return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
-  }, [buildApiObservation, waitForApiStateUpdate]);
+  }, [buildApiObservation, orcaEnemyLevelOffset, waitForApiStateUpdate]);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
@@ -972,19 +993,20 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeLabel = useMemo(() => {
-    if (debugSettings.timeSpeed === 'unlimited') return '(∞)';
-    const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
+    if (runtimeGameMode === 'mode.orca') return '(x5)';
+    if (effectiveDebugSettings.timeSpeed === 'unlimited') return '(∞)';
+    const isBonusSpeed = effectiveDebugSettings.timeSpeed === 'x1_2';
     if (!isBonusSpeed) return '';
     const remainingHours = timeSpeedBonusUntilMs === null
       ? 0
       : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
     return `(${formatNumber(remainingHours)}h)`;
-  }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
+  }, [effectiveDebugSettings.timeSpeed, runtimeGameMode, timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeSymbol = useMemo(() => {
-    if (debugSettings.timeSpeed === 'realtime') return '▷';
+    if (effectiveDebugSettings.timeSpeed === 'realtime') return '▷';
     return '▶︎';
-  }, [debugSettings.timeSpeed]);
+  }, [effectiveDebugSettings.timeSpeed]);
 
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
@@ -2427,8 +2449,18 @@ export function HomeScreen({
   }, [actions, state, updateAfkTraceCoordinator]);
 
   useEffect(() => {
-    gameModeRef.current = gameMode;
-  }, [gameMode]);
+    gameModeRef.current = runtimeGameMode;
+  }, [runtimeGameMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(RUNTIME_GAME_MODE_STORAGE_KEY, runtimeGameMode);
+      localStorage.setItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY, String(orcaEnemyLevelOffset));
+    } catch (error) {
+      console.error('Failed to persist runtime game mode:', error);
+    }
+    if (getEnvironmentId() !== 'beta' && runtimeGameMode === 'mode.orca' && gameMode !== 'm.orca') setGameMode('m.orca');
+  }, [gameMode, orcaEnemyLevelOffset, runtimeGameMode]);
 
   useEffect(() => {
     if (state.parties.length === 0) return;
@@ -2637,7 +2669,7 @@ export function HomeScreen({
       const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(party, now));
       const compactProgressItems = getCompactProgressItems(
         party,
-        getTimeSpeedScale(debugSettings),
+        getTimeSpeedScale(effectiveDebugSettings),
         now,
         cycle.state,
       ).map((item) => ({ text: item.compactText, progressRatio: item.progressRatio }));
@@ -3176,7 +3208,7 @@ export function HomeScreen({
       afkRuntimeTrace.setPhase('worker_execution');
     }
 
-    const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    const durationScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings));
     const anchor = afkSimulationAnchorRef.current ?? Date.now();
     const dispatchState = afkActiveCommitTransactionRef.current
       ? afkAuthoritativeDispatchStateRef.current
@@ -3286,7 +3318,8 @@ export function HomeScreen({
         cycleDurationMs,
         operationCount,
         baseState: createAfkPartyChunkWorkerState(dispatchState, partyIndex),
-        gameMode,
+        gameMode: runtimeGameMode,
+        enemyLevelOffset: orcaEnemyLevelOffset,
         cycleDurationScale: durationScale,
         queuedAt: performance.timeOrigin + jobQueuedMonotonicAt,
         workerCreatedAt: poolSlot.createdEpochAt,
@@ -3571,8 +3604,9 @@ export function HomeScreen({
   }, [
     actions,
     completeAfkCommitTransaction,
-    debugSettings,
-    gameMode,
+    effectiveDebugSettings,
+    runtimeGameMode,
+    orcaEnemyLevelOffset,
     planAutoEquipment,
     publishAfkAuthority,
     shouldUseCoordinatorAuthority,
@@ -3653,7 +3687,7 @@ export function HomeScreen({
           return;
         }
 
-        const durationScale = getTimeSpeedScale(debugSettings);
+        const durationScale = getTimeSpeedScale(effectiveDebugSettings);
         const exploreDurationMultiplier = getPartyStateDurationMultiplier(party, 'explore');
         const approximateCycleDurationMs = Math.max(
           1,
@@ -3720,7 +3754,7 @@ export function HomeScreen({
       partialCycleSideEffects.forEach(({ partyIndex, shouldFinalizeDiary, simulatedAt }) => {
         const party = latestPartiesRef.current[partyIndex];
         const triggerGodsBattle = party ? shouldAutoTriggerGodsBattle(party) : false;
-        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt);
+        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt, orcaEnemyLevelOffset);
         if (shouldFinalizeDiary) {
           actions.finalizeDiaryLog(partyIndex, simulatedAt);
         }
@@ -4013,8 +4047,8 @@ export function HomeScreen({
       return;
     }
 
-    const unlimitedTimeSpeed = isUnlimitedTimeSpeed(debugSettings);
-    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    const unlimitedTimeSpeed = isUnlimitedTimeSpeed(effectiveDebugSettings);
+    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings));
 
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
@@ -4100,7 +4134,7 @@ export function HomeScreen({
           updated.durationMs = getExplorationDurationMs(
             exploredRooms,
             getPartyStateDurationMultiplier(party, 'explore'),
-            getTimeSpeedScale(debugSettings),
+            getTimeSpeedScale(effectiveDebugSettings),
           );
         }
 
@@ -4278,12 +4312,12 @@ export function HomeScreen({
                 }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
-              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow);
+              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow, orcaEnemyLevelOffset);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(
                 undefined,
                 getPartyStateDurationMultiplier(party, 'explore'),
-                getTimeSpeedScale(debugSettings),
+                getTimeSpeedScale(effectiveDebugSettings),
               );
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
             } else if (updated.state === 'explore') {
@@ -4716,7 +4750,7 @@ export function HomeScreen({
 
   // SpecRef: 5.1 | PROGRESS | Step
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray'): number => {
-    const durationScale = getTimeSpeedScale(debugSettings);
+    const durationScale = getTimeSpeedScale(effectiveDebugSettings);
     const baseStepCount = cycleState === 'rest'
       ? 1
       : cycleState === 'sell'
@@ -4739,7 +4773,7 @@ export function HomeScreen({
       : travelState === 'move'
         ? 1 + getExpeditionTierDurationFactor(party.selectedDungeonId)
         : 5 + getExpeditionTierDurationFactor(party.selectedDungeonId);
-    const durationScale = getTimeSpeedScale(debugSettings);
+    const durationScale = getTimeSpeedScale(effectiveDebugSettings);
     const baseDurationMs = baseStepCount * BASE_STEP_DURATION_MS * durationScale;
     const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
     return getPeddlerTravelDurationMs(baseDurationMs, peddlerLevel);
@@ -4826,7 +4860,7 @@ export function HomeScreen({
     actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
     instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
-    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
+    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now, orcaEnemyLevelOffset);
     actions.rollPartySleepiness(partyIndex);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
     // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
@@ -4852,16 +4886,16 @@ export function HomeScreen({
     partyIndex: number,
     onProgress?: (completed: number, total: number) => void,
   ) => {
-    memoryMonitor.setRuntime('simulation', debugSettingsRef.current.timeSpeed);
+    memoryMonitor.setRuntime('simulation', effectiveDebugSettings.timeSpeed);
     try {
-      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress);
+      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress, orcaEnemyLevelOffset);
     } finally {
       memoryMonitor.setRuntime(
         pendingAfkMsRef.current > 0 ? 'afk' : autoRepeatEnabledRef.current ? 'online' : 'idle',
-        debugSettingsRef.current.timeSpeed,
+        effectiveDebugSettings.timeSpeed,
       );
     }
-  }, []);
+  }, [effectiveDebugSettings.timeSpeed, orcaEnemyLevelOffset]);
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
@@ -5081,6 +5115,10 @@ export function HomeScreen({
         onSetBestiaryScrollTop={setBestiaryScrollTop}
         gameMode={gameMode}
         onSetGameMode={setGameMode}
+        runtimeGameMode={runtimeGameMode}
+        onSetRuntimeGameMode={setRuntimeGameMode}
+        orcaEnemyLevelOffset={orcaEnemyLevelOffset}
+        onSetOrcaEnemyLevelOffset={setOrcaEnemyLevelOffset}
         darkModeSetting={darkModeSetting}
         onSetDarkModeSetting={setDarkModeSetting}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
@@ -5202,6 +5240,7 @@ export function HomeScreen({
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
                   <span>{t('setting.theme.kemo')}</span>
+                  {runtimeGameMode === 'mode.orca' && <span>orca</span>}
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>

@@ -68,6 +68,8 @@ export function runExpeditionApplication(
     currentParty,
     global: state.global,
     triggerGodsBattle: command.triggerGodsBattle,
+    gameMode: command.gameMode,
+    enemyLevelOffset: command.enemyLevelOffset,
     chunkPartyStatus: command.chunkPartyStatus,
     authoritativePartyStatus: command.authoritativePartyStatus,
     normalizeBags: adapters.normalizeBags,
