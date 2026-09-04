@@ -1,6 +1,16 @@
 # AFK Compact Battle Result Screening — 2026/08/31
 
-## Decision
+## Current decision — 2026/09/04
+
+Promote compact result-only battle execution to the production AFK runtime in v0.9.5 Build 58. The original Build 15 rejection below was re-evaluated after the competing BoKemo instance that contaminated the first current-code spot-check was stopped. A clean-machine three-sample screen showed a 10.3% wall-p50 improvement, and the promotion-grade confirmation plus memory gate passed.
+
+The final confirmation used one warm-up and five alternating measured pairs in fresh Electron processes. Compact output reduced wall p50 from 5,909.0 ms to 5,317.7 ms (-10.0%), wall p95 from 6,115.4 ms to 5,460.9 ms (-10.7%), worker-simulation p50 from 5,808.5 ms to 4,519.7 ms (-22.2%), battle p50 from 3,090.5 ms to 1,917.8 ms (-37.9%), and battle output from 123,909,568 to 18,448,512 bytes (-85.1%). Heartbeat p95 moved from 57.5 to 59.2 ms, React-commit p95 from 23.2 to 23.4 ms, and Long Task maximum p95 from 355 to 358 ms; these bounded changes remained within the responsiveness guardrail. Cumulative FIFO wait increased from 106.7 to 184.0 ms p50, but correct FIFO ordering, Party barriers, end-to-end speed, and persisted semantic equality were preserved.
+
+The three-pair fresh-process memory gate reduced peak application working set by 7.8%, peak renderer working set by 11.4%, peak renderer heap by 5.3%, settled application working set by 10.0%, and settled renderer working set by 12.9%. Every timing and memory run produced a final in-memory state semantically identical to its reloaded persisted state.
+
+Production now enables the compact path by default. The live-profile `renderer-memo` variant retains the former complete result-only battle output as the paired baseline, while `candidate` represents the promoted compact path.
+
+## Historical Build 15 decision — 2026/08/31
 
 Do not promote the compact battle candidate to production. Keep the current Build 14 AFK battle path as the production path and retain this candidate only inside the live A/B profiler.
 

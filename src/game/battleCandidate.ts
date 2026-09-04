@@ -628,7 +628,7 @@ export type SeededBattleCandidateResult<T extends BattleCandidateResolution = Ba
     rngVersion: number;
 };
 
-// SpecRef: 6.1.8 | Universal C++ battle kernel | profile-only compact AFK candidate
+// SpecRef: 6.1.8 | Universal C++ battle kernel | compact AFK result-only execution
 type PreparedCompactBattleInput = {
   bytes: Uint8Array;
   partyHpOffsets: readonly number[];

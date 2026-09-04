@@ -219,11 +219,11 @@ test('the atomic renderer boundary includes planning without double-counting it'
   assert.doesNotMatch(liveProfileSource, /\? autoEquipmentMs \+ atomicTransactionReactVisibilityMs/);
 });
 
-test('compact battle output remains isolated to the live-profile candidate', () => {
+test('compact battle output is production-default with a live-profile complete-output baseline', () => {
   assert.match(liveProfileSource, /useAfkWorkerSimulationCandidate\(\): boolean \{\s*return true;/);
   assert.match(
     liveProfileSource,
-    /useAfkCompactBattleResultCandidate\(\): boolean \{[\s\S]{0,240}return __AFK_LIVE_PROFILE_ENABLED__ && runtime\?\.variant === 'candidate';/,
+    /useAfkCompactBattleResultCandidate\(\): boolean \{[\s\S]{0,320}return !__AFK_LIVE_PROFILE_ENABLED__ \|\| runtime\?\.variant === 'candidate';/,
   );
 });
 

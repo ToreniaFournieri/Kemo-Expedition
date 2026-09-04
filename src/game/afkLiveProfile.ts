@@ -388,9 +388,9 @@ export function useAfkWorkerSimulationCandidate(): boolean {
 }
 
 export function useAfkCompactBattleResultCandidate(): boolean {
-  // The candidate remains profile-only because its faster workers increased
-  // FIFO coordinator wait beyond the promotion gate.
-  return __AFK_LIVE_PROFILE_ENABLED__ && runtime?.variant === 'candidate';
+  // Production uses compact result-only battle output. The live profiler keeps
+  // renderer-memo as the former complete-output baseline for paired screening.
+  return !__AFK_LIVE_PROFILE_ENABLED__ || runtime?.variant === 'candidate';
 }
 
 /** Profile-only until authority, interaction, persistence, timing, and memory gates pass. */
