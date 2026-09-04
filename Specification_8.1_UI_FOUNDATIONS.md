@@ -159,6 +159,7 @@
 		  - The character 「冒」 is emphasized:   
       - Scale: Larger than surrounding text
       - Rotation: −22.5° (counterclockwise)
+  - If `mode.orca`, adding "orca" (for all languages)
 
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
