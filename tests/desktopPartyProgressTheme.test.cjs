@@ -23,5 +23,5 @@ test('desktop Party Progress pane uses the exact UI foundation theme colors and 
   assert.match(css, /--theme-sub-soft:\s*rgb\(8 166 69 \/ 0\.2\)/);
   assert.doesNotMatch(css, /linear-gradient|radial-gradient|backdrop-filter|color-mix|text-shadow|box-shadow/);
   assert.match(renderer, /document\.documentElement\.style\.colorScheme\s*=\s*theme/);
-  assert.match(desktopMain, /'orca', 'orca-dark'/);
+  assert.match(desktopMain, /laika\|leonard\|orca\|nox\|luna[\s\S]*nave/);
 });

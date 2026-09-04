@@ -717,7 +717,7 @@ export function getAutoSellStepCount(party: Party): number {
 export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))]';
 export type { DarkModeSetting, GameMode } from '../../theme/theme';
 import type { DarkModeSetting, GameMode } from '../../theme/theme';
-import { isGameMode } from '../../theme/theme';
+import { isGameModeAvailable, THEME_CLASS_NAMES } from '../../theme/theme';
 export const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 export const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 export const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-expedition-stats-display');
@@ -935,9 +935,9 @@ export function getEnemyClassSummary(enemy: EnemyDef): string {
 export function FloatingBubblePortal({ children }: { children: ReactNode }) {
   if (typeof document === 'undefined') return null;
   const portalThemeClasses = [
-    document.documentElement.classList.contains('theme-luna') || document.body.classList.contains('theme-luna') ? 'theme-luna' : '',
-    document.documentElement.classList.contains('theme-laika') || document.body.classList.contains('theme-laika') ? 'theme-laika' : '',
-    document.documentElement.classList.contains('theme-orca') || document.body.classList.contains('theme-orca') ? 'theme-orca' : '',
+    ...THEME_CLASS_NAMES.filter((className) => (
+      document.documentElement.classList.contains(className) || document.body.classList.contains(className)
+    )),
     document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark') ? 'theme-dark' : '',
   ].filter(Boolean).join(' ');
 
@@ -3099,7 +3099,7 @@ export function getInitialGameMode(): GameMode {
 
   try {
     const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-    if (isGameMode(savedMode)) {
+    if (isGameModeAvailable(savedMode, getEnvironmentId())) {
       return savedMode;
     }
   } catch (error) {

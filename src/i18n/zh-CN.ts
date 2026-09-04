@@ -1812,6 +1812,7 @@ const zhCN = {
   'setting.theme.description.luna': '以黄色为基调的主题',
   'setting.theme.description.laika': '以绿色为基调的主题',
   'setting.theme.description.orca': '奥尔卡的主题配色',
+  'setting.theme.description.named': '{name}的主题配色',
   'setting.debug': '调试',
   'setting.feedback': '反馈',
   'setting.feedback.description': '向开发团队发送反馈。',

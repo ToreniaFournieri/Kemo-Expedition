@@ -1810,6 +1810,7 @@ const zhTW = {
   'setting.theme.description.luna': '以黃色為基調的主題',
   'setting.theme.description.laika': '以綠色為基調的主題',
   'setting.theme.description.orca': '奧爾卡的主題配色',
+  'setting.theme.description.named': '{name}的主題配色',
   'setting.debug': '除錯',
   'setting.feedback': '回饋',
   'setting.feedback.description': '向開發團隊傳送回饋。',

@@ -39,7 +39,7 @@ import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
 import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
 import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
-import { GAME_MODES } from '../../../theme/theme';
+import { GAME_MODES, THEME_DEFINITIONS } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
 import { ExperimentalApiSettings } from '../../ExperimentalApiSettings';
 
@@ -2686,14 +2686,12 @@ export default function SettingTab({
           <div>
             <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.themeColor')}</div>
             <div className="grid grid-cols-4 gap-2">
-              {GAME_MODES.map((mode) => {
-                const labelKey = mode === 'm.kemo'
-                  ? 'setting.theme.kemo'
-                  : mode === 'm.luna'
-                    ? 'setting.theme.luna'
-                    : mode === 'm.laika'
-                      ? 'setting.theme.laika'
-                      : 'setting.theme.orca';
+              {GAME_MODES.filter((mode) => {
+                const environment = getEnvironmentId();
+                if (environment === 'beta') return mode === 'm.laika';
+                return environment === 'dev' || THEME_DEFINITIONS[mode].availableInProduction;
+              }).map((mode) => {
+                const labelKey = THEME_DEFINITIONS[mode].labelKey;
                 return (
                   <button
                     key={mode}
@@ -2711,13 +2709,7 @@ export default function SettingTab({
               })}
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
-              {gameMode === 'm.kemo'
-                ? t('setting.theme.description.kemo')
-                : gameMode === 'm.luna'
-                  ? t('setting.theme.description.luna')
-                  : gameMode === 'm.laika'
-                    ? t('setting.theme.description.laika')
-                    : t('setting.theme.description.orca')}
+              {t('setting.theme.description.named', { name: t(THEME_DEFINITIONS[gameMode].labelKey) })}
             </div>
           </div>
 

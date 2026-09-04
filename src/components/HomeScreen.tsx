@@ -102,7 +102,7 @@ type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
 import { Bonus,Character,ExpeditionDepthLimit,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
 import { NotificationToast } from './NotificationToast';
-import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameMode } from '../theme/theme';
+import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
 
 
 import {
@@ -825,8 +825,7 @@ export function HomeScreen({
 
   useEffect(() => {
     const themeClassName = getThemeClassName(gameMode);
-    const themeClassNames = ['theme-luna', 'theme-laika', 'theme-orca'] as const;
-    themeClassNames.forEach((className) => {
+    THEME_CLASS_NAMES.forEach((className) => {
       const enabled = className === themeClassName;
       document.body.classList.toggle(className, enabled);
       document.documentElement.classList.toggle(className, enabled);
@@ -837,7 +836,7 @@ export function HomeScreen({
     document.documentElement.classList.toggle('theme-dark', isDarkModeEnabled);
 
     return () => {
-      themeClassNames.forEach((className) => {
+      THEME_CLASS_NAMES.forEach((className) => {
         document.body.classList.remove(className);
         document.documentElement.classList.remove(className);
       });
@@ -2453,7 +2452,7 @@ export function HomeScreen({
         return;
       }
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-      if (isGameMode(savedMode)) {
+      if (isGameModeAvailable(savedMode, getEnvironmentId())) {
         setGameMode(savedMode);
       }
     } catch (error) {

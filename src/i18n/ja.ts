@@ -1813,6 +1813,7 @@ const ja = {
   'setting.theme.description.luna': '黄色を基調としたテーマです',
   'setting.theme.description.laika': '緑を基調としたテーマです',
   'setting.theme.description.orca': 'オルカのテーマカラーです',
+  'setting.theme.description.named': '{name}のテーマカラーです',
   'setting.debug': 'デバッグ',
   'setting.feedback': 'フィードバック',
   'setting.feedback.description': '開発チームにフィードバックを送信します。',

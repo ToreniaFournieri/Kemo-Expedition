@@ -58,7 +58,7 @@ interface DesktopPartyProgressSnapshot {
   language: 'ja' | 'en' | 'zh-CN' | 'zh-TW';
   updatedAt: number;
   unreadDiaryCount: number;
-  theme: 'light' | 'dark' | 'laika' | 'laika-dark' | 'luna' | 'luna-dark' | 'orca' | 'orca-dark';
+  theme: import('./theme/theme').DesktopTheme;
   parties: DesktopPartyProgressPartySnapshot[];
 }
 

@@ -2101,6 +2101,7 @@ const en = {
   'setting.theme.description.luna': 'A yellow-based theme.',
   'setting.theme.description.laika': 'A green-based theme.',
   'setting.theme.description.orca': "Orca's theme colors.",
+  'setting.theme.description.named': "{name}'s theme colors.",
   'setting.debug': 'Debug',
   'setting.feedback': 'Feedback',
   'setting.feedback.description': 'Send feedback to the development team.',

@@ -55,9 +55,9 @@
   --hp-current: 147 197 253;
   --hp-current-strong: var(--hp-current);
   --hp-damage-taken: 252 183 134;
-  --hp-healed: 184 237 178;
-  --hp-track: 226 232 240;
-  --hp-track-alpha: 1;
+  --hp-healed: var(--theme-sub);
+  --hp-track: var(--theme-sub);
+  --hp-track-alpha: 0.5;
   --progress-primary: var(--theme-sub);
   --progress-secondary: var(--theme-sub);
   --progress-track: 226 232 240;
@@ -116,47 +116,59 @@
   --glass-tint: var(--glass-surface);
 }
 
-.theme-luna {
-  --theme-sub: 194 136 50;
-  --theme-accent: 12 60 234;
-  --hp-current: 232 181 104;
-  --hp-damage-taken: 255 237 145;
-  --hp-track: 217 204 175;
-  --hp-track-alpha: 0.45;
-  --progress-track: 217 204 175;
-  --icon-theme-sub-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
-  --icon-theme-accent-filter: brightness(0) saturate(100%) invert(32%) sepia(87%) saturate(2961%) hue-rotate(223deg) brightness(95%) contrast(91%);
-}
-
 .theme-laika {
   --theme-sub: 8 166 69;
   --theme-accent: 220 38 38;
-  --hp-current: 8 166 69;
-  /* SpecRef: 8.1 | UI_FOUNDATIONS | Damage taken color */
+  --hp-current: 13 195 83;
   --hp-damage-taken: 255 235 205;
-  --hp-track: 209 213 219;
-  --progress-track: 209 213 219;
   /* SpecRef: 8.1 | UI_FOUNDATIONS | Emoji Display Rule */
   --icon-theme-sub-filter: brightness(0) saturate(100%) invert(55%) sepia(54%) saturate(312%) hue-rotate(108deg) brightness(88%) contrast(88%);
   --icon-theme-accent-filter: brightness(0) saturate(100%) invert(28%) sepia(74%) saturate(2140%) hue-rotate(356deg) brightness(90%) contrast(86%);
 }
+
+.theme-leonard { --theme-sub: 191 66 100; --theme-accent: 239 168 76; --hp-current: 217 93 122; --hp-damage-taken: 243 183 126; }
 
 .theme-orca {
   --theme-sub: 38 144 150;
   --theme-accent: 139 171 45;
   --hp-current: 46 185 193;
   --hp-damage-taken: 221 232 154;
-  --hp-track: 173 211 213;
-  --hp-track-alpha: 0.4;
-  --progress-track: 173 211 213;
   --icon-theme-sub-filter: brightness(0) saturate(100%) invert(70%) sepia(36%) saturate(957%) hue-rotate(134deg) brightness(88%) contrast(87%);
   --icon-theme-accent-filter: brightness(0) saturate(100%) invert(75%) sepia(44%) saturate(732%) hue-rotate(28deg) brightness(94%) contrast(82%);
 }
+
+.theme-nox { --theme-sub: 158 41 35; --theme-accent: 213 139 32; --hp-current: 185 74 62; --hp-damage-taken: 224 168 92; }
+
+.theme-luna {
+  --theme-sub: 194 136 50;
+  --theme-accent: 12 60 234;
+  --hp-current: 232 181 104;
+  --hp-damage-taken: 255 237 145;
+  --icon-theme-sub-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
+  --icon-theme-accent-filter: brightness(0) saturate(100%) invert(32%) sepia(87%) saturate(2961%) hue-rotate(223deg) brightness(95%) contrast(91%);
+}
+
+.theme-mishka { --theme-sub: 23 105 194; --theme-accent: 102 92 135; --hp-current: 67 140 212; --hp-damage-taken: 165 155 183; }
+.theme-puchitsa { --theme-sub: 201 75 50; --theme-accent: 22 125 141; --hp-current: 223 106 69; --hp-damage-taken: 117 169 164; }
+.theme-hagakure { --theme-sub: 113 132 90; --theme-accent: 154 112 79; --hp-current: 145 168 117; --hp-damage-taken: 216 185 154; }
+.theme-souga-ha { --theme-sub: 85 122 157; --theme-accent: 209 60 76; --hp-current: 120 154 184; --hp-damage-taken: 217 154 159; }
+.theme-finn { --theme-sub: 114 85 165; --theme-accent: 181 138 60; --hp-current: 146 118 190; --hp-damage-taken: 214 189 138; }
+.theme-merle { --theme-sub: 67 141 196; --theme-accent: 111 155 105; --hp-current: 114 175 213; --hp-damage-taken: 169 201 157; }
+.theme-rosaria { --theme-sub: 118 46 75; --theme-accent: 81 64 120; --hp-current: 155 82 107; --hp-damage-taken: 169 138 165; }
+.theme-milly { --theme-sub: 201 79 120; --theme-accent: 184 134 47; --hp-current: 225 126 157; --hp-damage-taken: 229 185 141; }
+.theme-guabi { --theme-sub: 120 149 47; --theme-accent: 217 95 104; --hp-current: 157 187 80; --hp-damage-taken: 231 160 155; }
+.theme-nemea { --theme-sub: 39 140 140; --theme-accent: 180 119 50; --hp-current: 85 170 165; --hp-damage-taken: 211 166 111; }
+.theme-bernetta { --theme-sub: 142 52 56; --theme-accent: 154 101 53; --hp-current: 178 85 85; --hp-damage-taken: 198 154 114; }
+.theme-yone { --theme-sub: 75 71 69; --theme-accent: 197 103 46; --hp-current: 119 112 108; --hp-damage-taken: 213 154 114; }
+.theme-niv { --theme-sub: 70 95 125; --theme-accent: 128 95 67; --hp-current: 113 137 162; --hp-damage-taken: 179 154 130; }
+.theme-nave { --theme-sub: 53 69 140; --theme-accent: 232 97 24; --hp-current: 100 117 181; --hp-damage-taken: 233 154 109; }
 
 .theme-dark {
   color-scheme: dark;
   background-color: #111827;
   color: rgb(229 231 235);
+  --theme-sub: 59 130 246;
+  --theme-accent: 234 88 12;
   --surface-canvas: 17 24 39;
   --surface-card: 31 41 55;
   --surface-pane: 30 41 59;
@@ -189,8 +201,9 @@
   --external-discord-hover-surface: 49 46 129;
   --hp-current: 106 148 198;
   --hp-damage-taken: 165 136 109;
-  --hp-healed: 94 140 91;
-  --hp-track: 55 65 81;
+  --hp-healed: var(--theme-sub);
+  --hp-track: var(--theme-sub);
+  --hp-track-alpha: 0.5;
   --progress-track: 55 65 81;
   --icon-on-dark-filter: brightness(0) invert(0.82);
   --glass-highlight: rgb(255 255 255 / 0.18);
@@ -432,44 +445,51 @@ body.app-dark {
 
 
 .theme-luna.theme-dark {
+  --theme-sub: 194 136 50;
   --theme-accent: 96 165 250;
   --icon-theme-accent-filter: brightness(0) saturate(100%) invert(67%) sepia(56%) saturate(2024%) hue-rotate(188deg) brightness(102%) contrast(96%);
   --hp-current: 170 141 93;
   --hp-damage-taken: 133 114 85;
-  --hp-track: 43 52 68;
-  --hp-track-alpha: 0.45;
-  --progress-track: 43 52 68;
 }
 
 .theme-laika.theme-dark {
   --theme-sub: 8 166 69;
   --theme-accent: 220 38 38;
-  --hp-current: 8 166 69;
+  --hp-current: 13 195 83;
   --hp-damage-taken: 146 103 91;
-  --hp-track: 55 65 81;
-  --progress-track: 55 65 81;
 }
 
+.theme-leonard.theme-dark { --theme-sub: 224 96 128; --theme-accent: 242 179 92; --hp-current: 185 78 105; --hp-damage-taken: 168 121 89; }
 .theme-orca.theme-dark {
   --theme-sub: 69 193 202;
   --theme-accent: 179 211 85;
   --hp-current: 78 159 165;
   --hp-damage-taken: 138 145 96;
-  --hp-track: 63 74 82;
-  --hp-track-alpha: 0.55;
-  --progress-track: 63 74 82;
 }
+
+.theme-nox.theme-dark { --theme-sub: 214 90 79; --theme-accent: 240 184 74; --hp-current: 169 71 64; --hp-damage-taken: 167 123 74; }
+.theme-mishka.theme-dark { --theme-sub: 75 156 255; --theme-accent: 149 137 184; --hp-current: 57 127 197; --hp-damage-taken: 119 110 138; }
+.theme-puchitsa.theme-dark { --theme-sub: 240 120 85; --theme-accent: 66 169 181; --hp-current: 185 86 64; --hp-damage-taken: 98 143 143; }
+.theme-hagakure.theme-dark { --theme-sub: 164 186 130; --theme-accent: 198 154 114; --hp-current: 132 155 108; --hp-damage-taken: 155 128 105; }
+.theme-souga-ha.theme-dark { --theme-sub: 131 169 202; --theme-accent: 240 100 112; --hp-current: 110 143 174; --hp-damage-taken: 168 109 116; }
+.theme-finn.theme-dark { --theme-sub: 168 139 210; --theme-accent: 216 183 100; --hp-current: 141 117 176; --hp-damage-taken: 160 139 104; }
+.theme-merle.theme-dark { --theme-sub: 114 185 226; --theme-accent: 155 197 140; --hp-current: 103 159 194; --hp-damage-taken: 127 157 120; }
+.theme-rosaria.theme-dark { --theme-sub: 182 91 124; --theme-accent: 139 120 181; --hp-current: 141 73 98; --hp-damage-taken: 128 106 125; }
+.theme-milly.theme-dark { --theme-sub: 240 128 163; --theme-accent: 221 180 91; --hp-current: 189 102 131; --hp-damage-taken: 169 133 104; }
+.theme-guabi.theme-dark { --theme-sub: 169 201 87; --theme-accent: 240 131 135; --hp-current: 131 158 72; --hp-damage-taken: 166 111 112; }
+.theme-nemea.theme-dark { --theme-sub: 85 192 187; --theme-accent: 217 161 92; --hp-current: 74 149 146; --hp-damage-taken: 155 121 86; }
+.theme-bernetta.theme-dark { --theme-sub: 199 90 95; --theme-accent: 200 144 85; --hp-current: 152 73 76; --hp-damage-taken: 146 112 82; }
+.theme-yone.theme-dark { --theme-sub: 139 133 129; --theme-accent: 232 138 76; --hp-current: 105 99 95; --hp-damage-taken: 158 115 88; }
+.theme-niv.theme-dark { --theme-sub: 120 150 184; --theme-accent: 176 138 104; --hp-current: 100 125 152; --hp-damage-taken: 139 117 99; }
+.theme-nave.theme-dark { --theme-sub: 113 134 224; --theme-accent: 255 138 61; --hp-current: 93 110 173; --hp-damage-taken: 174 115 85; }
 
 /*
  * CSS custom-property aliases resolve at computed-value time. Refresh every
  * semantic alias on the element that owns a theme/appearance class so it uses
- * that element's final Kemo/Luna/Laika/Orca and light/dark foundation values rather
+ * that element's final named-theme and light/dark foundation values rather
  * than inheriting the already-resolved :root Kemo value.
  */
-.theme-luna,
-.theme-laika,
-.theme-orca,
-.theme-dark {
+:where(.theme-dark, [class*='theme-']) {
   --selection-fill: var(--theme-sub);
   --selection-fill-soft: var(--theme-sub);
   --selection-border: var(--theme-sub);

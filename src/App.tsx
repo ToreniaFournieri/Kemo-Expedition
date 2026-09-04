@@ -3,7 +3,7 @@ import { useGameState } from './hooks/useGameState';
 import { HomeScreen, preloadInitialHomeTab, preloadRemainingHomeTabs } from './components/HomeScreen';
 import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
 import { setLanguage, t } from './i18n';
-import { getThemeClassName, isGameMode } from './theme/theme';
+import { getThemeClassName, isGameModeAvailable } from './theme/theme';
 
 const LOADING_MESSAGE_KEYS = [
   'loading.kemoDream',
@@ -31,9 +31,10 @@ function getRandomLoadingMessage() {
 
 function getInitialGameModeClass() {
   if (typeof window === 'undefined') return '';
-  if (getEnvironmentId() === 'beta') return 'theme-laika';
+  const environment = getEnvironmentId();
+  if (environment === 'beta') return 'theme-laika';
   const saved = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-  return isGameMode(saved) ? getThemeClassName(saved) : '';
+  return isGameModeAvailable(saved, environment) ? getThemeClassName(saved) : '';
 }
 function getInitialDarkModeEnabled() {
   if (typeof window === 'undefined') return false;
@@ -72,7 +73,7 @@ export default function App() {
       if (getEnvironmentId() === 'beta') {
         setGameModeClass('theme-laika');
       } else {
-        setGameModeClass(isGameMode(savedMode) ? getThemeClassName(savedMode) : '');
+        setGameModeClass(isGameModeAvailable(savedMode, getEnvironmentId()) ? getThemeClassName(savedMode) : '');
       }
     };
 

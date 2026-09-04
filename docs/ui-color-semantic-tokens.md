@@ -8,34 +8,20 @@ This document records the runtime color meanings before similar values are merge
 
 The color system has three layers:
 
-1. Theme identity: the Kemo, Luna, Laika, or Orca sub/accent pair and theme-specific visualization colors.
+1. Theme identity: one of the twenty character/enemy sub/accent pairs and its theme-specific visualization colors.
 2. UI semantics: canvas, surfaces, content, borders, status, interaction, and glass roles.
 3. Game semantics: HP, progress, outcome, condition, rarity, and notification roles.
 
-Light/dark appearance is independent from theme identity. The four themes therefore produce eight browser variants. The macOS Party Progress pane consumes the same semantic names in its isolated stylesheet.
+Light/dark appearance is independent from theme identity. The twenty themes therefore produce forty browser variants. The macOS Party Progress pane consumes the same theme identities in its isolated stylesheet.
 
 ## Actual theme identity values
 
-| Token | Kemo light | Luna light | Laika light | Orca light |
-|---|---:|---:|---:|---:|
-| `--theme-sub` | `#3B82F6` | `#C28832` | `#08A645` | `#2EB9C1` |
-| `--theme-accent` | `#EA580C` | `#0C3CEA` | `#DC2626` | `#A6C83D` |
-| `--surface-pane` | `#EEF5F5` | `#EEF5F5` | `#EEF5F5` | `#EEF5F5` |
-| `--hp-current-strong` | `var(--hp-current)` | `var(--hp-current)` | `var(--hp-current)` | `var(--hp-current)` |
-| `--hp-current` | `#93C5FD` | `#E8B568` | `#08A645` | `#7DD4D8` |
-| `--hp-damage-taken` | `#FCB786` | `#FFED91` | `#FFEBCD` | `#DDE89A` |
-| `--hp-healed` | `#B8EDB2` | `#B8EDB2` | `#B8EDB2` | `#B8EDB2` |
-| `--hp-track` | `#E2E8F0` | `rgb(217 204 175 / 0.45)` | `#D1D5DB` | `rgb(173 211 213 / 0.40)` |
+The exact twenty-theme light and dark palette is defined in `Specification_8.1_UI_FOUNDATIONS.md` and implemented in `src/index.css`. Across every theme:
 
-| Token | Kemo dark | Luna dark | Laika dark | Orca dark |
-|---|---:|---:|---:|---:|
-| `--theme-sub` | `#3B82F6` | `#C28832` | `#08A645` | `#45C1CA` |
-| `--theme-accent` | `#EA580C` | `#60A5FA` | `#DC2626` | `#B3D355` |
-| `--surface-pane` | `#1E293B` | `#1E293B` | `#1E293B` | `#1E293B` |
-| `--hp-current` | `#6A94C6` | `#AA8D5D` | `#08A645` | `#4E9FA5` |
-| `--hp-damage-taken` | `#A5886D` | `#857255` | `#92675B` | `#8A9160` |
-| `--hp-healed` | `#5E8C5B` | `#5E8C5B` | `#5E8C5B` | `#5E8C5B` |
-| `--hp-track` | `#374151` | `rgb(43 52 68 / 0.45)` | `#374151` | `rgb(63 74 82 / 0.55)` |
+- `--surface-pane` is `#EEF5F5` in light mode and `#1E293B` in dark mode.
+- `--hp-healed` resolves to `--theme-sub`.
+- `--hp-track` resolves to `--theme-sub` at `0.50` opacity.
+- `--hp-current-strong` resolves to `--hp-current`.
 
 ## Foundation tokens
 
