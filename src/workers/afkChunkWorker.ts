@@ -6,6 +6,7 @@ import {
   createAfkPartyChunkInventoryWorkerResult,
   hydrateAfkPartyChunkInventoryWorkerState,
   type AfkPartyChunkInventoryWorkerJob,
+  type AfkWorkerPhaseAttribution,
 } from '../game/afkChunkCoordinator';
 import type { InventoryRecord } from '../types';
 import { ensureLanguageLoaded } from '../i18n';
@@ -57,6 +58,19 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) =>
       beginBattleKernelMeasurement();
     }
     self.postMessage({ type: 'started', jobId: job.jobId, partyIndex: job.partyIndex });
+    const workerAttribution: AfkWorkerPhaseAttribution | undefined = __AFK_LIVE_PROFILE_ENABLED__
+      ? {
+        statusSnapshotMs: 0,
+        expeditionMs: 0,
+        diaryFinalizationMs: 0,
+        sideQuestAutomationMs: 0,
+        profitProcessingMs: 0,
+        hpRecoveryMs: 0,
+        progressCallbackMs: 0,
+        chunkFinalizationMs: 0,
+        inventoryDeltaMs: 0,
+      }
+      : undefined;
     const simulate = () => simulateAfkPartyChunkForWorker(baseState, {
       partyIndex: job.partyIndex,
       cycleDurationMs: job.cycleDurationMs,
@@ -67,6 +81,7 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) =>
       operationCount: job.operationCount,
       workerOptimization: job.workerOptimization,
       compactBattleResultOutput: job.compactBattleResultOutput,
+      workerAttribution,
       onProgress: (completedOperations, operationCount) => {
         self.postMessage({ type: 'progress', jobId: job.jobId, partyIndex: job.partyIndex, completedOperations, operationCount });
       },
@@ -107,6 +122,9 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) =>
       battleResultBagEntryAllocations: battleKernel?.resultBagEntryObjectAllocations ?? 0,
       inputTransferBytes: job.inputTransferBytes,
     }, getAfkInventoryDeltaForState(resultState));
+    if (__AFK_LIVE_PROFILE_ENABLED__ && workerAttribution) {
+      Object.assign(completeResult.workerTelemetry, workerAttribution);
+    }
     const result = createAfkPartyChunkInventoryWorkerResult(completeResult, job);
     if (job.inputTransferBytes !== undefined) {
       result.workerTelemetry.outputTransferBytes = new TextEncoder().encode(JSON.stringify(result)).byteLength;

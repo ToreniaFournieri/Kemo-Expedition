@@ -3498,6 +3498,17 @@ export function HomeScreen({
               battleInputBytes: result.workerTelemetry.battleInputBytes,
               battleOutputBytes: result.workerTelemetry.battleOutputBytes,
               battleResultBagEntryAllocations: result.workerTelemetry.battleResultBagEntryAllocations,
+              ...(__AFK_LIVE_PROFILE_ENABLED__ ? {
+                statusSnapshotMs: result.workerTelemetry.statusSnapshotMs ?? 0,
+                expeditionMs: result.workerTelemetry.expeditionMs ?? 0,
+                diaryFinalizationMs: result.workerTelemetry.diaryFinalizationMs ?? 0,
+                sideQuestAutomationMs: result.workerTelemetry.sideQuestAutomationMs ?? 0,
+                profitProcessingMs: result.workerTelemetry.profitProcessingMs ?? 0,
+                hpRecoveryMs: result.workerTelemetry.hpRecoveryMs ?? 0,
+                progressCallbackMs: result.workerTelemetry.progressCallbackMs ?? 0,
+                chunkFinalizationMs: result.workerTelemetry.chunkFinalizationMs ?? 0,
+                inventoryDeltaMs: result.workerTelemetry.inventoryDeltaMs ?? 0,
+              } : {}),
               inputTransferBytes: result.workerTelemetry.inputTransferBytes,
               outputTransferBytes: result.workerTelemetry.outputTransferBytes,
               workerSlotId,
@@ -3552,6 +3563,28 @@ export function HomeScreen({
               durationMs,
             });
           });
+          if (__AFK_LIVE_PROFILE_ENABLED__) {
+            const workerPhaseAttributionEvents = [
+              ['worker_status_snapshot', result.workerTelemetry.statusSnapshotMs ?? 0],
+              ['worker_expedition', result.workerTelemetry.expeditionMs ?? 0],
+              ['worker_diary_finalization', result.workerTelemetry.diaryFinalizationMs ?? 0],
+              ['worker_side_quest_automation', result.workerTelemetry.sideQuestAutomationMs ?? 0],
+              ['worker_profit_processing', result.workerTelemetry.profitProcessingMs ?? 0],
+              ['worker_hp_recovery', result.workerTelemetry.hpRecoveryMs ?? 0],
+              ['worker_progress_callback', result.workerTelemetry.progressCallbackMs ?? 0],
+              ['worker_chunk_finalization', result.workerTelemetry.chunkFinalizationMs ?? 0],
+              ['worker_inventory_delta', result.workerTelemetry.inventoryDeltaMs ?? 0],
+            ] as const;
+            workerPhaseAttributionEvents.forEach(([eventName, durationMs]) => {
+              afkRuntimeTrace.record(eventName, {
+                phase: 'worker_execution',
+                partyId: result.partyId,
+                partyIndex: result.partyIndex,
+                jobId: result.jobId,
+                durationMs,
+              });
+            });
+          }
         } else {
           failWorkerJob(event.data.jobId, event.data.message, 'worker-error-message');
           return;

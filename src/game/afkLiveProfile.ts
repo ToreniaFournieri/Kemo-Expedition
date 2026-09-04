@@ -64,10 +64,22 @@ export interface AfkLiveProfileResult {
     readonly workerBattleInputBytes: number;
     readonly workerBattleOutputBytes: number;
     readonly workerBattleResultBagEntryAllocations: number;
+    readonly workerStatusSnapshotMs: number;
+    readonly workerExpeditionMs: number;
+    readonly workerDiaryFinalizationMs: number;
+    readonly workerSideQuestAutomationMs: number;
+    readonly workerProfitProcessingMs: number;
+    readonly workerHpRecoveryMs: number;
+    readonly workerProgressCallbackMs: number;
+    readonly workerChunkFinalizationMs: number;
+    readonly workerInventoryDeltaMs: number;
     readonly hydrationMs: number;
     readonly fifoCommitWaitMs: number;
     readonly chunkCommitReactVisibilityMs: number;
     readonly autoEquipmentMs: number;
+    readonly autoEquipmentPlanningCount: number;
+    readonly autoEquipmentNoopCount: number;
+    readonly autoEquipmentPlannedActionCount: number;
     readonly autoEquipmentReactVisibilityMs: number;
     readonly atomicTransactionReactVisibilityMs: number;
     readonly coordinatorAuthorityTransactionMs: number;
@@ -189,6 +201,17 @@ function sumEventDataValue(trace: AfkTraceDiagnosticExport, eventName: string, k
     const value = event.event === eventName ? event.data?.[key] : undefined;
     return total + (typeof value === 'number' && Number.isFinite(value) ? value : 0);
   }, 0);
+}
+
+function countEventsByDataValue(
+  trace: AfkTraceDiagnosticExport,
+  eventName: string,
+  key: string,
+  expectedValue: unknown,
+): number {
+  return trace.events.reduce((count, event) => (
+    event.event === eventName && event.data?.[key] === expectedValue ? count + 1 : count
+  ), 0);
 }
 
 function createExclusiveTimeline(events: readonly AfkTraceEvent[]): Readonly<Record<string, number>> {
@@ -486,6 +509,13 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
     const events = trace.events;
     const chunkCommitReactVisibilityMs = sumEventDurations(trace, 'commit_react_visible');
     const autoEquipmentMs = sumEventDurations(trace, 'auto_equipment_complete');
+    const autoEquipmentPlanningCount = countEvents(trace, 'auto_equipment_complete');
+    const autoEquipmentNoopCount = countEventsByDataValue(
+      trace,
+      'auto_equipment_complete',
+      'plannedActionCount',
+      0,
+    );
     const autoEquipmentReactVisibilityMs = sumEventDurations(trace, 'auto_equipment_react_visible');
     const atomicTransactionReactVisibilityMs = sumEventDurations(trace, 'atomic_transaction_react_visible');
     const coordinatorAuthorityTransactionMs = sumEventDurations(trace, 'coordinator_authority_transaction');
@@ -549,10 +579,22 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
         workerBattleInputBytes: sumEventDataValue(trace, 'worker_job_complete', 'battleInputBytes'),
         workerBattleOutputBytes: sumEventDataValue(trace, 'worker_job_complete', 'battleOutputBytes'),
         workerBattleResultBagEntryAllocations: sumEventDataValue(trace, 'worker_job_complete', 'battleResultBagEntryAllocations'),
+        workerStatusSnapshotMs: sumEventDurations(trace, 'worker_status_snapshot'),
+        workerExpeditionMs: sumEventDurations(trace, 'worker_expedition'),
+        workerDiaryFinalizationMs: sumEventDurations(trace, 'worker_diary_finalization'),
+        workerSideQuestAutomationMs: sumEventDurations(trace, 'worker_side_quest_automation'),
+        workerProfitProcessingMs: sumEventDurations(trace, 'worker_profit_processing'),
+        workerHpRecoveryMs: sumEventDurations(trace, 'worker_hp_recovery'),
+        workerProgressCallbackMs: sumEventDurations(trace, 'worker_progress_callback'),
+        workerChunkFinalizationMs: sumEventDurations(trace, 'worker_chunk_finalization'),
+        workerInventoryDeltaMs: sumEventDurations(trace, 'worker_inventory_delta'),
         hydrationMs: sumEventDurations(trace, 'worker_result_hydration'),
         fifoCommitWaitMs: sumEventDurations(trace, 'fifo_commit_wait_end'),
         chunkCommitReactVisibilityMs,
         autoEquipmentMs,
+        autoEquipmentPlanningCount,
+        autoEquipmentNoopCount,
+        autoEquipmentPlannedActionCount: sumEventDataValue(trace, 'auto_equipment_complete', 'plannedActionCount'),
         autoEquipmentReactVisibilityMs,
         atomicTransactionReactVisibilityMs,
         coordinatorAuthorityTransactionMs,

@@ -142,7 +142,19 @@ export type AfkPartyChunkInventoryWorkerJob =
   | AfkPartyChunkInventoryColdWorkerJob
   | AfkPartyChunkInventoryContinuationWorkerJob;
 
-export interface AfkWorkerPerformanceTelemetry {
+export interface AfkWorkerPhaseAttribution {
+  statusSnapshotMs: number;
+  expeditionMs: number;
+  diaryFinalizationMs: number;
+  sideQuestAutomationMs: number;
+  profitProcessingMs: number;
+  hpRecoveryMs: number;
+  progressCallbackMs: number;
+  chunkFinalizationMs: number;
+  inventoryDeltaMs: number;
+}
+
+export interface AfkWorkerPerformanceTelemetry extends Partial<AfkWorkerPhaseAttribution> {
   workerStartupMs: number;
   queueMs: number;
   inputHydrationMs: number;
