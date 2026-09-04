@@ -71,7 +71,7 @@
 | `theme.nave` dark    | #7186E0 | #FF8A3D | #5D6EAD | #AE7355 |
 
 * regardless of theme
-- `--hp-track` is derived from `--theme-sub` with an opacity of 0.50.
+- `--hp-track` is derived from `--theme-sub` with an opacity of 0.10.
 - `--hp-healed` is `--theme-sub` 
 - In Light mode, `--surface-pane` is #EEF5F5.
 - In Dark mode, `--surface-pane` is #1E293B.

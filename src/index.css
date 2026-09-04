@@ -57,7 +57,7 @@
   --hp-damage-taken: 252 183 134;
   --hp-healed: var(--theme-sub);
   --hp-track: var(--theme-sub);
-  --hp-track-alpha: 0.5;
+  --hp-track-alpha: 0.1;
   --progress-primary: var(--theme-sub);
   --progress-secondary: var(--theme-sub);
   --progress-track: 226 232 240;
@@ -203,7 +203,7 @@
   --hp-damage-taken: 165 136 109;
   --hp-healed: var(--theme-sub);
   --hp-track: var(--theme-sub);
-  --hp-track-alpha: 0.5;
+  --hp-track-alpha: 0.1;
   --progress-track: 55 65 81;
   --icon-on-dark-filter: brightness(0) invert(0.82);
   --glass-highlight: rgb(255 255 255 / 0.18);

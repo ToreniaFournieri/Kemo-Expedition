@@ -100,8 +100,8 @@ test('UI foundation palette implements every exact light and dark theme color', 
       declarations.forEach((declaration, index) => assert.match(block, new RegExp(`${declaration}:\\s*${palette[appearance][index]};`), `${name} ${appearance} ${declaration}`));
     }
   }
-  assert.match(css, /:root\s*\{[\s\S]*--surface-pane:\s*238 245 245;[\s\S]*--hp-healed:\s*var\(--theme-sub\);[\s\S]*--hp-track:\s*var\(--theme-sub\);[\s\S]*--hp-track-alpha:\s*0\.5;/);
-  assert.match(css, /\.theme-dark\s*\{[\s\S]*--surface-pane:\s*30 41 59;[\s\S]*--hp-healed:\s*var\(--theme-sub\);[\s\S]*--hp-track:\s*var\(--theme-sub\);[\s\S]*--hp-track-alpha:\s*0\.5;/);
+  assert.match(css, /:root\s*\{[\s\S]*--surface-pane:\s*238 245 245;[\s\S]*--hp-healed:\s*var\(--theme-sub\);[\s\S]*--hp-track:\s*var\(--theme-sub\);[\s\S]*--hp-track-alpha:\s*0\.1;/);
+  assert.match(css, /\.theme-dark\s*\{[\s\S]*--surface-pane:\s*30 41 59;[\s\S]*--hp-healed:\s*var\(--theme-sub\);[\s\S]*--hp-track:\s*var\(--theme-sub\);[\s\S]*--hp-track-alpha:\s*0\.1;/);
 });
 
 test('theme-scoped aliases and document portals resolve the active theme instead of inherited Kemo defaults', () => {

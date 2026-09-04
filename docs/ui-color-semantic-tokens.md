@@ -20,7 +20,7 @@ The exact twenty-theme light and dark palette is defined in `Specification_8.1_U
 
 - `--surface-pane` is `#EEF5F5` in light mode and `#1E293B` in dark mode.
 - `--hp-healed` resolves to `--theme-sub`.
-- `--hp-track` resolves to `--theme-sub` at `0.50` opacity.
+- `--hp-track` resolves to `--theme-sub` at `0.10` opacity.
 - `--hp-current-strong` resolves to `--hp-current`.
 
 ## Foundation tokens
