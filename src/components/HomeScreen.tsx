@@ -3574,6 +3574,13 @@ export function HomeScreen({
               ['worker_progress_callback', result.workerTelemetry.progressCallbackMs ?? 0],
               ['worker_chunk_finalization', result.workerTelemetry.chunkFinalizationMs ?? 0],
               ['worker_inventory_delta', result.workerTelemetry.inventoryDeltaMs ?? 0],
+              ['worker_expedition_preparation', result.workerTelemetry.preparationMs ?? 0],
+              ['worker_expedition_inventory_coordinator', result.workerTelemetry.inventoryCoordinatorMs ?? 0],
+              ['worker_expedition_service', result.workerTelemetry.serviceMs ?? 0],
+              ['worker_expedition_post_service', result.workerTelemetry.postServiceMs ?? 0],
+              ['worker_expedition_inventory_completion', result.workerTelemetry.inventoryCompletionMs ?? 0],
+              ['worker_expedition_presentation_completion', result.workerTelemetry.presentationCompletionMs ?? 0],
+              ['worker_expedition_commit_projection', result.workerTelemetry.commitProjectionMs ?? 0],
             ] as const;
             workerPhaseAttributionEvents.forEach(([eventName, durationMs]) => {
               afkRuntimeTrace.record(eventName, {

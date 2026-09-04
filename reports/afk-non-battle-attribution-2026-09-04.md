@@ -43,4 +43,4 @@ Every measured run persisted a state semantically identical to its final in-memo
 
 ## Next target
 
-The next useful screen should subdivide expedition application itself—preparation/status authority, service traversal and rewards outside battle, post-service presentation/finalization, inventory completion, and committed projection—before another production candidate is selected.
+Completed in Build 60. The deeper profile identified expedition service as the dominant stage, and the accepted indexed enemy-pool candidate is documented in `afk-enemy-pool-index-2026-09-04.md`.

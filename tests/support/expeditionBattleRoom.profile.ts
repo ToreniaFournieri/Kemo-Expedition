@@ -3,7 +3,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { getDungeonById } from '../../src/data/dungeons.ts';
-import { ENEMIES, getElitesByPool, getEnemiesByPool } from '../../src/data/enemies.ts';
+import {
+  ENEMIES,
+  getElitesByPool,
+  getEnemiesByPool,
+  getSortedElitesByPool,
+  getSortedEnemiesByPool,
+} from '../../src/data/enemies.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import {
   resolveExpeditionBattleRoom,
@@ -30,6 +36,23 @@ function loadSampleState(): GameState {
   const envelope = JSON.parse(readFileSync(savePath, 'utf8')) as { saveDataCompressed: string };
   return hydrateGameState(JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState);
 }
+
+test('indexed enemy-pool views preserve the sorted legacy selections', () => {
+  const poolIds = [...new Set(ENEMIES.map((enemy) => enemy.poolId)
+    .filter((poolId): poolId is number => typeof poolId === 'number'))];
+  for (const poolId of poolIds) {
+    assert.deepEqual(
+      getSortedEnemiesByPool(poolId).map((enemy) => enemy.id),
+      getEnemiesByPool(poolId).map((enemy) => enemy.id).sort((left, right) => left - right),
+    );
+    assert.deepEqual(
+      getSortedElitesByPool(poolId).map((enemy) => enemy.id),
+      getElitesByPool(poolId).map((enemy) => enemy.id).sort((left, right) => left - right),
+    );
+  }
+  assert.equal(getSortedEnemiesByPool(-1), getSortedEnemiesByPool(-1));
+  assert.equal(getSortedElitesByPool(-1), getSortedElitesByPool(-1));
+});
 
 test('explicit room candidates remain sorted, unique until exhausted, and consume one draw', () => {
   const enemyIds = ENEMIES.slice(0, 3).map((enemy) => enemy.id).reverse();

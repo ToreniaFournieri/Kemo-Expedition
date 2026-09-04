@@ -69,6 +69,13 @@ self.onmessage = async (event: MessageEvent<AfkPartyChunkInventoryWorkerJob>) =>
         progressCallbackMs: 0,
         chunkFinalizationMs: 0,
         inventoryDeltaMs: 0,
+        preparationMs: 0,
+        inventoryCoordinatorMs: 0,
+        serviceMs: 0,
+        postServiceMs: 0,
+        inventoryCompletionMs: 0,
+        presentationCompletionMs: 0,
+        commitProjectionMs: 0,
       }
       : undefined;
     const simulate = () => simulateAfkPartyChunkForWorker(baseState, {

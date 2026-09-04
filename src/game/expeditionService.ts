@@ -149,7 +149,7 @@ export function runExpeditionService<TPresentation>(
         : null;
       const usedEnemyIdsInRange = roomRangeKey
         ? (selectedEnemyIdsByRoomRange.get(roomRangeKey) ?? new Set<number>())
-        : new Set<number>();
+        : undefined;
       const resolution = resolveExpeditionBattleRoom({
         context: input.context,
         dungeon: input.dungeon,

@@ -73,6 +73,13 @@ export interface AfkLiveProfileResult {
     readonly workerProgressCallbackMs: number;
     readonly workerChunkFinalizationMs: number;
     readonly workerInventoryDeltaMs: number;
+    readonly workerExpeditionPreparationMs: number;
+    readonly workerExpeditionInventoryCoordinatorMs: number;
+    readonly workerExpeditionServiceMs: number;
+    readonly workerExpeditionPostServiceMs: number;
+    readonly workerExpeditionInventoryCompletionMs: number;
+    readonly workerExpeditionPresentationCompletionMs: number;
+    readonly workerExpeditionCommitProjectionMs: number;
     readonly hydrationMs: number;
     readonly fifoCommitWaitMs: number;
     readonly chunkCommitReactVisibilityMs: number;
@@ -588,6 +595,13 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
         workerProgressCallbackMs: sumEventDurations(trace, 'worker_progress_callback'),
         workerChunkFinalizationMs: sumEventDurations(trace, 'worker_chunk_finalization'),
         workerInventoryDeltaMs: sumEventDurations(trace, 'worker_inventory_delta'),
+        workerExpeditionPreparationMs: sumEventDurations(trace, 'worker_expedition_preparation'),
+        workerExpeditionInventoryCoordinatorMs: sumEventDurations(trace, 'worker_expedition_inventory_coordinator'),
+        workerExpeditionServiceMs: sumEventDurations(trace, 'worker_expedition_service'),
+        workerExpeditionPostServiceMs: sumEventDurations(trace, 'worker_expedition_post_service'),
+        workerExpeditionInventoryCompletionMs: sumEventDurations(trace, 'worker_expedition_inventory_completion'),
+        workerExpeditionPresentationCompletionMs: sumEventDurations(trace, 'worker_expedition_presentation_completion'),
+        workerExpeditionCommitProjectionMs: sumEventDurations(trace, 'worker_expedition_commit_projection'),
         hydrationMs: sumEventDurations(trace, 'worker_result_hydration'),
         fifoCommitWaitMs: sumEventDurations(trace, 'fifo_commit_wait_end'),
         chunkCommitReactVisibilityMs,

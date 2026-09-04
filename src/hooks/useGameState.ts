@@ -157,6 +157,8 @@ import { GameStateAuthority, type AuthorityReceipt } from '../game/gameStateAuth
 import { useAfkCoordinatorAuthorityCandidate } from '../game/afkLiveProfile';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
+const AFK_LIVE_PROFILE_BUILD_ENABLED = typeof __AFK_LIVE_PROFILE_ENABLED__ !== 'undefined'
+  && __AFK_LIVE_PROFILE_ENABLED__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = AFK_MAX_EFFECTIVE_ELAPSED_MS;
 const STATE_SAVE_THROTTLE_MS = 5000;
@@ -890,6 +892,7 @@ interface AfkChunkReducerContext {
   encounterCache: Map<string, EnemyDef>;
   profitAbilityCache: Map<number, { partyLevel: number; characters: Party['characters']; levels: ProfitAbilityLevels }>;
   hpBaseCache: Map<number, { partyLevel: number; characters: Party['characters']; bonusHp: number }>;
+  workerAttribution?: AfkWorkerPhaseAttribution;
 }
 
 function addAfkWorkerPhaseDuration(
@@ -2511,6 +2514,9 @@ function gameReducer(
             encounterCache: afkChunkContext.encounterCache,
           } : undefined,
         ),
+        ...(AFK_LIVE_PROFILE_BUILD_ENABLED && afkChunkContext?.workerAttribution
+          ? { attribution: afkChunkContext.workerAttribution }
+          : {}),
       });
       if ('statusAuthoritySupplied' in result) {
         recordRunExpeditionStatusAuthority(result.statusAuthoritySupplied);
@@ -3591,7 +3597,7 @@ function gameReducer(
 
           // SpecRef: 5.1 | Chunk deterministic execution and terminal partial Chunk
           const isTerminalChunkOperation = completedOperationCount + 1 >= operationWindow.length;
-          const expeditionStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+          const expeditionStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           workingState = gameReducer(workingState, {
             type: 'RUN_EXPEDITION',
             partyIndex,
@@ -3606,17 +3612,17 @@ function gameReducer(
               : 'full',
             compactBattleResultOutput: action.compactBattleResultOutput,
           }, undefined, afkChunkContext);
-          if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'expeditionMs', expeditionStartedAt);
-          const diaryStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+          if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'expeditionMs', expeditionStartedAt);
+          const diaryStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           workingState = gameReducer(workingState, {
             type: 'FINALIZE_DIARY_LOG',
             partyIndex,
             simulatedAt,
             isAfkSimulation: true,
           }, undefined, afkChunkContext);
-          if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'diaryFinalizationMs', diaryStartedAt);
+          if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'diaryFinalizationMs', diaryStartedAt);
 
-          const preProfitAutomationStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+          const preProfitAutomationStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           const postFinalizeParty = workingState.parties[partyIndex];
           if (postFinalizeParty) {
             // Condition changes accumulate inside the worker but become logical
@@ -3658,9 +3664,9 @@ function gameReducer(
           }
 
           workingState = applyAfkExpeditionSideQuestOutcome(workingState, partyIndex, simulatedAt);
-          if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'sideQuestAutomationMs', preProfitAutomationStartedAt);
+          if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'sideQuestAutomationMs', preProfitAutomationStartedAt);
           let optimizedProfitAbilityLevels: ProfitAbilityLevels | undefined;
-          const profitStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+          const profitStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           if (action.workerOptimization === 'optimized' && postFinalizeParty) {
             const cached = afkChunkContext?.profitAbilityCache.get(postFinalizeParty.id);
             if (cached?.partyLevel === postFinalizeParty.level && cached.characters === postFinalizeParty.characters) {
@@ -3685,9 +3691,9 @@ function gameReducer(
             action.workerOptimization,
             optimizedProfitAbilityLevels,
           );
-          if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'profitProcessingMs', profitStartedAt);
+          if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'profitProcessingMs', profitStartedAt);
 
-          const hpStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+          const hpStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty) {
             let postCycleMaxHp: number;
@@ -3731,9 +3737,9 @@ function gameReducer(
               }
             }
           }
-          if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'hpRecoveryMs', hpStartedAt);
+          if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'hpRecoveryMs', hpStartedAt);
 
-          const postProfitAutomationStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+          const postProfitAutomationStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleClearGateCondition(postCycleParty)) {
             workingState = gameReducer(workingState, {
               type: 'ROLL_SIDE_QUEST',
@@ -3751,15 +3757,15 @@ function gameReducer(
           ) {
             workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
           }
-          if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'sideQuestAutomationMs', postProfitAutomationStartedAt);
+          if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'sideQuestAutomationMs', postProfitAutomationStartedAt);
           completedOperationCount += 1;
-          const progressStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+          const progressStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           action.onOperationComplete?.(completedOperationCount, operationWindow.length);
-          if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'progressCallbackMs', progressStartedAt);
+          if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'progressCallbackMs', progressStartedAt);
       }
 
       if (action.finalizeChunk !== false || operationEnd >= totalOperationCount) {
-        const finalizationStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && action.workerAttribution ? performance.now() : 0;
+        const finalizationStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
         const clampedParties = workingState.parties.map((party) => ({
           ...party,
           // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
@@ -3770,7 +3776,7 @@ function gameReducer(
           ...workingState,
           parties: clampedParties,
         };
-        if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(action.workerAttribution, 'chunkFinalizationMs', finalizationStartedAt);
+        if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'chunkFinalizationMs', finalizationStartedAt);
       }
 
       return workingState;
@@ -4199,7 +4205,7 @@ export function simulateAfkPartyChunkForWorker(
   const cycleDurationByParty = state.parties.map((_, partyIndex) => (
     partyIndex === options.partyIndex ? cycleDurationMs : inactiveDurationMs
   ));
-  const statusSnapshotStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && options.workerAttribution ? performance.now() : 0;
+  const statusSnapshotStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution ? performance.now() : 0;
   const chunkPartyStatus: Array<{ party: Party; computed: ComputedPartyStatus }> = [];
   if (options.chunkStatusScope === 'all') {
     state.parties.forEach((candidate, candidateIndex) => {
@@ -4217,7 +4223,7 @@ export function simulateAfkPartyChunkForWorker(
       computed: computePartyStats(party),
     };
   }
-  if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(options.workerAttribution, 'statusSnapshotMs', statusSnapshotStartedAt);
+  if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'statusSnapshotMs', statusSnapshotStartedAt);
   const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable'
     ? undefined
     : {
@@ -4225,6 +4231,9 @@ export function simulateAfkPartyChunkForWorker(
       encounterCache: new Map(),
       profitAbilityCache: new Map(),
       hpBaseCache: new Map(),
+      ...(AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution
+        ? { workerAttribution: options.workerAttribution }
+        : {}),
     };
   const workerOptimization = options.workerOptimization ?? 'optimized';
   if (workerOptimization === 'optimized') {
@@ -4247,9 +4256,9 @@ export function simulateAfkPartyChunkForWorker(
       onOperationComplete: options.onProgress,
     }, undefined, afkChunkContext);
     if (afkChunkContext) {
-      const inventoryDeltaStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && options.workerAttribution ? performance.now() : 0;
+      const inventoryDeltaStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution ? performance.now() : 0;
       afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
-      if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);
+      if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);
     }
     return workingState;
   }
@@ -4276,9 +4285,9 @@ export function simulateAfkPartyChunkForWorker(
     options.onProgress?.(operationIndex + 1, operationCount);
   }
   if (afkChunkContext) {
-    const inventoryDeltaStartedAt = __AFK_LIVE_PROFILE_ENABLED__ && options.workerAttribution ? performance.now() : 0;
+    const inventoryDeltaStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution ? performance.now() : 0;
     afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
-    if (__AFK_LIVE_PROFILE_ENABLED__) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);
+    if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);
   }
   return workingState;
 }

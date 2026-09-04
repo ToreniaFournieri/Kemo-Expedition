@@ -6,10 +6,10 @@ import type {
   TerrainEffectKey,
 } from '../types/index.ts';
 import {
-  ENEMIES,
+  getEnemyById,
   getBossEnemy,
-  getElitesByPool,
-  getEnemiesByPool,
+  getSortedElitesByPool,
+  getSortedEnemiesByPool,
   getEnemyDropCandidates,
 } from '../data/enemies.ts';
 import {
@@ -89,7 +89,7 @@ export function selectExpeditionRoomEnemy(
 
   if ((room.enemyIds?.length ?? 0) > 0) {
     const explicitEnemies = room.enemyIds!
-      .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
+      .map((enemyId) => getEnemyById(enemyId))
       .filter((enemy): enemy is EnemyDef => enemy !== undefined)
       .sort((a, b) => a.id - b.id);
     const usedEnemyIds = input.usedEnemyIdsInRange ?? new Set<number>();
@@ -104,7 +104,7 @@ export function selectExpeditionRoomEnemy(
   if (!room.poolId) return null;
 
   if (room.type === 'battle_Elite') {
-    const elites = getElitesByPool(room.poolId).sort((a, b) => a.id - b.id);
+    const elites = getSortedElitesByPool(room.poolId);
     if (elites.length === 0) return null;
     if (floorNumber <= elites.length) {
       return elites[floorNumber - 1] ?? null;
@@ -112,7 +112,7 @@ export function selectExpeditionRoomEnemy(
     return elites[Math.floor(random() * elites.length)] ?? null;
   }
 
-  const enemies = getEnemiesByPool(room.poolId).sort((a, b) => a.id - b.id);
+  const enemies = getSortedEnemiesByPool(room.poolId);
   if (enemies.length === 0) return null;
 
   const poolOffset = Math.max(0, Math.min(5, floorNumber - 1)) * 5;

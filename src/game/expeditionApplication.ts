@@ -53,6 +53,34 @@ export interface RunExpeditionApplicationInput {
   readonly command: RunExpeditionApplicationCommand;
   readonly authorities: RunExpeditionApplicationAuthorities;
   readonly adapters: ExpeditionApplicationAdapters;
+  readonly attribution?: ExpeditionApplicationAttribution;
+}
+
+export interface ExpeditionApplicationAttribution {
+  preparationMs: number;
+  inventoryCoordinatorMs: number;
+  serviceMs: number;
+  postServiceMs: number;
+  inventoryCompletionMs: number;
+  presentationCompletionMs: number;
+  commitProjectionMs: number;
+}
+
+const EXPEDITION_PROFILE_ENABLED = typeof __AFK_LIVE_PROFILE_ENABLED__ !== 'undefined'
+  && __AFK_LIVE_PROFILE_ENABLED__;
+
+function beginExpeditionPhase(attribution: ExpeditionApplicationAttribution | undefined): number {
+  return EXPEDITION_PROFILE_ENABLED && attribution ? performance.now() : 0;
+}
+
+function endExpeditionPhase(
+  attribution: ExpeditionApplicationAttribution | undefined,
+  phase: keyof ExpeditionApplicationAttribution,
+  startedAt: number,
+): void {
+  if (EXPEDITION_PROFILE_ENABLED && attribution) {
+    attribution[phase] += Math.max(0, performance.now() - startedAt);
+  }
 }
 
 /**
@@ -63,7 +91,9 @@ export function runExpeditionApplication(
   input: RunExpeditionApplicationInput,
 ): RunExpeditionApplicationResult {
   const { state, command, authorities, adapters } = input;
+  const attribution = EXPEDITION_PROFILE_ENABLED ? input.attribution : undefined;
   const currentParty = state.parties[command.partyIndex];
+  const preparationStartedAt = beginExpeditionPhase(attribution);
   const preparation = prepareExpeditionRun({
     currentParty,
     global: state.global,
@@ -77,6 +107,7 @@ export function runExpeditionApplication(
     getTerrainOverride: adapters.getTerrainOverride,
     isGodsBattleAvailable: adapters.isGodsBattleAvailable,
   });
+  endExpeditionPhase(attribution, 'preparationMs', preparationStartedAt);
   if (preparation.status === 'dungeon-unavailable') {
     return { kind: 'unchanged', reason: 'dungeon-unavailable' };
   }
@@ -99,6 +130,7 @@ export function runExpeditionApplication(
   } = preparation;
   const { partyStats } = expeditionContext;
   const rewardContext = expeditionContext.reward;
+  const inventoryCoordinatorStartedAt = beginExpeditionPhase(attribution);
   const inventoryCoordinator = new ExpeditionInventoryCoordinator({
     inventory: state.global.inventory,
     gold: state.global.gold,
@@ -113,6 +145,8 @@ export function runExpeditionApplication(
       })
     ),
   });
+  endExpeditionPhase(attribution, 'inventoryCoordinatorMs', inventoryCoordinatorStartedAt);
+  const serviceStartedAt = beginExpeditionPhase(attribution);
   const serviceResult = runExpeditionService({
     context: expeditionContext,
     party: currentParty,
@@ -132,8 +166,10 @@ export function runExpeditionApplication(
       }
       : {}),
   });
+  endExpeditionPhase(attribution, 'serviceMs', serviceStartedAt);
   const transactionResult = serviceResult.transaction;
   const { bags } = transactionResult;
+  const postServiceStartedAt = beginExpeditionPhase(attribution);
   const {
     finalization,
     presentation: { entries, deferredBattleNarrations },
@@ -150,10 +186,14 @@ export function runExpeditionApplication(
     deferBattleNarration: command.isAfkSimulation === true
       && command.battleOutputMode === 'result-only',
   });
+  endExpeditionPhase(attribution, 'postServiceMs', postServiceStartedAt);
+  const inventoryCompletionStartedAt = beginExpeditionPhase(attribution);
   const { inventory: finalInventory } = inventoryCoordinator.complete(
     finalization.shouldRollbackInventory,
   );
+  endExpeditionPhase(attribution, 'inventoryCompletionMs', inventoryCompletionStartedAt);
   const finalGold = finalization.gold;
+  const presentationStartedAt = beginExpeditionPhase(attribution);
   const { log, diaryTriggers } = completeExpeditionPresentation({
     dungeon,
     difficultyOffset: expeditionContext.difficulty.offset,
@@ -168,6 +208,7 @@ export function runExpeditionApplication(
     party: statusParty,
     partyStatus,
   });
+  endExpeditionPhase(attribution, 'presentationCompletionMs', presentationStartedAt);
 
   if (command.resolutionMode === 'forecast') {
     if (diaryTriggers.length > 0) authorities.random();
@@ -190,6 +231,7 @@ export function runExpeditionApplication(
   const diaryIdToken = diaryTriggers.length > 0
     ? authorities.random().toString(36).slice(2, 8)
     : null;
+  const commitStartedAt = beginExpeditionPhase(attribution);
   const projection = planExpeditionCommit({
     state,
     partyIndex: command.partyIndex,
@@ -205,6 +247,7 @@ export function runExpeditionApplication(
     finalization,
     defaultUnlockedDeities: adapters.defaultUnlockedDeities,
   });
+  endExpeditionPhase(attribution, 'commitProjectionMs', commitStartedAt);
 
   return { kind: 'committed', projection, statusAuthoritySupplied };
 }

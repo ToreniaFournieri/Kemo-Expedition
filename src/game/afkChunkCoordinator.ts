@@ -152,6 +152,13 @@ export interface AfkWorkerPhaseAttribution {
   progressCallbackMs: number;
   chunkFinalizationMs: number;
   inventoryDeltaMs: number;
+  preparationMs: number;
+  inventoryCoordinatorMs: number;
+  serviceMs: number;
+  postServiceMs: number;
+  inventoryCompletionMs: number;
+  presentationCompletionMs: number;
+  commitProjectionMs: number;
 }
 
 export interface AfkWorkerPerformanceTelemetry extends Partial<AfkWorkerPhaseAttribution> {
