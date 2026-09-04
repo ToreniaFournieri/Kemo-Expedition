@@ -223,14 +223,14 @@ test('compact battle output is production-default with a live-profile complete-o
   assert.match(liveProfileSource, /useAfkWorkerSimulationCandidate\(\): boolean \{\s*return true;/);
   assert.match(
     liveProfileSource,
-    /useAfkCompactBattleResultCandidate\(\): boolean \{[\s\S]{0,320}return !__AFK_LIVE_PROFILE_ENABLED__ \|\| runtime\?\.variant === 'candidate';/,
+    /useAfkCompactBattleResultCandidate\(\): boolean \{[\s\S]{0,520}return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,80}runtime\?\.variant === 'authority-production';/,
   );
 });
 
-test('coordinator authority and bounded dispatch pacing remain isolated before promotion', () => {
+test('coordinator authority is production-on with pre-promotion and authority profile controls', () => {
   assert.match(
     liveProfileSource,
-    /useAfkCoordinatorAuthorityCandidate\(\): boolean \{[\s\S]{0,260}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,80}runtime\?\.variant === 'coordinator-paced'/,
+    /useAfkCoordinatorAuthorityCandidate\(\): boolean \{[\s\S]{0,80}return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,320}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,100}runtime\?\.variant === 'authority-production'[\s\S]{0,100}runtime\?\.variant === 'coordinator-paced'/,
   );
   assert.match(liveProfileSource, /useAfkCoordinatorDispatchPacingCandidate\(\): boolean \{[\s\S]{0,160}runtime\?\.variant === 'coordinator-paced'/);
   assert.match(homeSource, /commitAfkPartyTransactionAuthoritatively[\s\S]{0,1800}completeAfkCommitTransaction\(completedResult\)/);
@@ -247,7 +247,7 @@ test('coordinator authority and bounded dispatch pacing remain isolated before p
 test('renderer Party-status memoization is production-on and independently profileable', () => {
   assert.match(
     liveProfileSource,
-    /useAfkRendererPartyStatsMemo\(\): boolean \{\s*return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,160}runtime\?\.variant === 'renderer-memo'[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,100}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,100}runtime\?\.variant === 'coordinator-paced';/,
+    /useAfkRendererPartyStatsMemo\(\): boolean \{\s*return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,160}runtime\?\.variant === 'renderer-memo'[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,100}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,100}runtime\?\.variant === 'authority-production'[\s\S]{0,100}runtime\?\.variant === 'coordinator-paced';/,
   );
   assert.match(homeSource, /shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo\(\)[\s\S]{0,160}computePresentationPartyStats = shouldOptimizeAfkRenderer[\s\S]{0,80}computeRendererPartyStats/);
   assert.match(homeSource, /computePartyStatus=\{computePresentationPartyStats\}/);

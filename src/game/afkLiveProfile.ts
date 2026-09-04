@@ -22,7 +22,13 @@ const RUNTIME_STORAGE_KEY = 'kemo-expedition-afk-runtime';
 const AUTO_EQUIPMENT_STORAGE_KEY = 'kemo-expedition-auto-equipment';
 
 type ProfileMode = 'timing' | 'memory';
-export type AfkLiveProfileVariant = 'baseline' | 'candidate' | 'renderer-memo' | 'coordinator-authority' | 'coordinator-paced';
+export type AfkLiveProfileVariant =
+  | 'baseline'
+  | 'candidate'
+  | 'renderer-memo'
+  | 'coordinator-authority'
+  | 'authority-production'
+  | 'coordinator-paced';
 
 export interface AfkLiveProfileMemoryPoint {
   readonly label: 'initial' | 'completion' | 'settled';
@@ -334,6 +340,7 @@ export function prepareAfkLiveProfile(): void {
   const variant: AfkLiveProfileVariant = requestedVariant === 'baseline'
     || requestedVariant === 'renderer-memo'
     || requestedVariant === 'coordinator-authority'
+    || requestedVariant === 'authority-production'
     || requestedVariant === 'coordinator-paced'
     ? requestedVariant
     : 'candidate';
@@ -419,14 +426,26 @@ export function useAfkWorkerSimulationCandidate(): boolean {
 
 export function useAfkCompactBattleResultCandidate(): boolean {
   // Production uses compact result-only battle output. The live profiler keeps
-  // renderer-memo as the former complete-output baseline for paired screening.
-  return !__AFK_LIVE_PROFILE_ENABLED__ || runtime?.variant === 'candidate';
+  // renderer-memo and the legacy authority variants as complete-output
+  // counterfactuals. authority-production composes the authority design with
+  // every currently promoted worker optimization for a valid promotion screen.
+  return !__AFK_LIVE_PROFILE_ENABLED__
+    || runtime?.variant === 'candidate'
+    || runtime?.variant === 'authority-production';
 }
 
-/** Profile-only until authority, interaction, persistence, timing, and memory gates pass. */
+/**
+ * Production commits AFK transactions to coordinator-owned authority. The live
+ * profile keeps candidate as the pre-promotion control and exposes the authority
+ * variants for repeatable production-equivalent and counterfactual screens.
+ */
 export function useAfkCoordinatorAuthorityCandidate(): boolean {
-  return __AFK_LIVE_PROFILE_ENABLED__
-    && (runtime?.variant === 'coordinator-authority' || runtime?.variant === 'coordinator-paced');
+  return !__AFK_LIVE_PROFILE_ENABLED__
+    || (
+      runtime?.variant === 'coordinator-authority'
+      || runtime?.variant === 'authority-production'
+      || runtime?.variant === 'coordinator-paced'
+    );
 }
 
 /** Yields briefly after authority acknowledgement while another worker is active. */
@@ -440,6 +459,7 @@ export function useAfkRendererPartyStatsMemo(): boolean {
     || runtime?.variant === 'renderer-memo'
     || runtime?.variant === 'candidate'
     || runtime?.variant === 'coordinator-authority'
+    || runtime?.variant === 'authority-production'
     || runtime?.variant === 'coordinator-paced';
 }
 

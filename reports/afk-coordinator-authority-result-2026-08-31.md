@@ -1,5 +1,7 @@
 # AFK Coordinator Authority Result — 2026/08/31
 
+> Update (2026/09/04): Build 61 promoted coordinator-owned authority after a production-equivalent screen combined it with the compact battle-result and renderer optimizations that now ship. The earlier result below remains the historical Build 16/18 decision. See `reports/afk-coordinator-authority-production-promotion-2026-09-04.md` for the current result.
+
 ## Outcome
 
 The coordinator-owned authority design is implemented and correctness-validated as the profile-only `coordinator-authority` variant. It is not enabled as the production default because the 162-hour wall-time promotion gate failed.
