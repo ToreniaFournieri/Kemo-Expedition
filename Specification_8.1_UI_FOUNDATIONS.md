@@ -183,6 +183,7 @@
     - Generate **format of progress data** and send to:
       - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+      - `/orca/` : ORCA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/`: PROD_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
       - Set Speed of Time to x1.2. and the text is `▶︎`

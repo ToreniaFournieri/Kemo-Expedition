@@ -70,9 +70,10 @@ export function isGameMode(value: unknown): value is GameMode {
   return typeof value === 'string' && GAME_MODES.includes(value as GameMode);
 }
 
-export function isGameModeAvailable(value: unknown, environment: 'dev' | 'beta' | 'prod'): value is GameMode {
+export function isGameModeAvailable(value: unknown, environment: 'dev' | 'beta' | 'orca' | 'prod'): value is GameMode {
   if (!isGameMode(value)) return false;
   if (environment === 'beta') return value === 'm.laika';
+  if (environment === 'orca') return value === 'm.orca';
   return environment === 'dev' || THEME_DEFINITIONS[value].availableInProduction;
 }
 

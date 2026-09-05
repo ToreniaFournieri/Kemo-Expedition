@@ -14,7 +14,7 @@ const APP_ICON_PATH = path.resolve(DIST_ROOT, 'app_icon.png');
 const START_HIDDEN_ARG = '--hidden';
 const PARTY_PROGRESS_SCHEMA_VERSION = 1;
 const DESKTOP_ENVIRONMENT_ARG_PREFIX = '--environment=';
-const DESKTOP_ENVIRONMENTS = new Set(['dev', 'beta', 'prod']);
+const DESKTOP_ENVIRONMENTS = new Set(['dev', 'beta', 'orca', 'prod']);
 const desktopEnvironment = resolveDesktopEnvironment(process.argv);
 const desktopEnvironmentPath = desktopEnvironment === 'prod' ? '/' : `/${desktopEnvironment}/`;
 let mainWindow = null;
@@ -72,7 +72,7 @@ function resolveDesktopEnvironment(argv) {
 }
 
 function stripEnvironmentPrefix(pathname) {
-  for (const environment of ['dev', 'beta']) {
+  for (const environment of ['dev', 'beta', 'orca']) {
     const prefix = `/${environment}`;
     if (pathname === prefix || pathname === `${prefix}/`) return '/';
     if (pathname.startsWith(`${prefix}/`)) return pathname.slice(prefix.length);
@@ -308,7 +308,7 @@ function normalizePartyProgress(value) {
 
 function normalizePartyProgressSnapshot(value) {
   if (!value || typeof value !== 'object' || value.schemaVersion !== PARTY_PROGRESS_SCHEMA_VERSION) return null;
-  if (value.environment !== desktopEnvironment || !['dev', 'beta', 'prod'].includes(value.environment)) return null;
+  if (value.environment !== desktopEnvironment || !['dev', 'beta', 'orca', 'prod'].includes(value.environment)) return null;
   if (!['ja', 'en', 'zh-CN', 'zh-TW'].includes(value.language) || !Array.isArray(value.parties)) return null;
   const parties = value.parties.slice(0, 6).flatMap((party) => {
     if (!party || typeof party !== 'object' || !Number.isInteger(party.id)) return [];

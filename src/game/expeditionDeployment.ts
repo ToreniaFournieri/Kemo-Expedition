@@ -1,5 +1,5 @@
 export type ExpeditionDeployStatus = 'prod' | 'test' | 'no';
-export type ExpeditionEnvironmentId = 'dev' | 'beta' | 'prod';
+export type ExpeditionEnvironmentId = 'dev' | 'beta' | 'orca' | 'prod';
 
 // SpecRef: 4.1.1 | Expedition Definitions | deploy status
 export function isExpeditionDeployed(

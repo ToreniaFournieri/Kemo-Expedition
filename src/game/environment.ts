@@ -1,4 +1,4 @@
-export type EnvironmentId = 'dev' | 'beta' | 'prod';
+export type EnvironmentId = 'dev' | 'beta' | 'orca' | 'prod';
 
 function getPathname(): string {
   if (typeof window !== 'undefined') return window.location.pathname;
@@ -11,6 +11,7 @@ export function getEnvironmentIdFromPathname(pathname: string): EnvironmentId {
   const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
   if (normalizedPath.includes('/dev/')) return 'dev';
   if (normalizedPath.includes('/beta/')) return 'beta';
+  if (normalizedPath.includes('/orca/')) return 'orca';
   return 'prod';
 }
 
@@ -23,12 +24,14 @@ export function getEnvLabel(): string {
   const env = getEnvironmentId();
   if (env === 'dev') return 'D';
   if (env === 'beta') return 'β';
+  if (env === 'orca') return 'O';
   return '';
 }
 
 // SpecRef: 9 | Environment | Debug mode
 export function isDebugModeEnabled(): boolean {
-  return getEnvironmentId() !== 'prod';
+  const environment = getEnvironmentId();
+  return environment === 'dev' || environment === 'beta';
 }
 
 // SpecRef: 9 | Environment | createEnvironmentStorageKey
