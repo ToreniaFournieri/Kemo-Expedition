@@ -283,6 +283,33 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
 - **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
 - Status updates in real time
+- **Remove All Equipment button:** (全装備解除)
+  - When this button is pressed, all currently equipped items are unequipped.
+- **Save Equipment Set button:** (装備記憶)
+  - When this button is pressed, the current equipment set is saved to a new empty saved slot.
+- **Load Equipment Set button:** (装備呼出▲)
+  - When this button is pressed, expand the pane and display the saved equipment slots.
+  - Pressing a saved slot attempts to apply the corresponding equipment set.
+  - If some items in the saved set are unavailable, display the following message:
+    - `一部アイテムは装備できません`
+  - Options:
+    - equipSimilar: `類似のものを装備`: Equip matching items where available, and substitute unavailable items with similar items.
+    - equipExactMatchesOnly:`一致するものだけ装備`: Equip only items that exactly match the saved equipment set.
+  - **Similar-item assignment:**
+    - Super Rare prefix is excluded from substitution.
+    - An item with a lower enhancement level may be used as a substitute.
+    - Jewels do not need to match exactly; suitable jewels are assigned using the same logic as Auto Equipment.
+  - **Note:** items and jewels are stored separately in the inventory and should therefore be matched and assigned independently.
+- **Saved equipment slots:**
+  - By default, each slot name consists of:
+    - Character name
+    - Main class and subclass abbreviations
+    - Creation date (`MM/DD`)
+  - The slot name can be edited.
+  - Example: `リタ 剣(巡), 砂/好 09/05`
+  - Each slot can be expanded to display its equipment details.
+    - Available items are displayed in black.
+    - Unavailable items are displayed in gray.
 - **Auto equipment button(自動装備):** When the player presses the “自動装備” button, the auto-equipment logic is triggered immediately. This button is visible only when `m.auto_equipment` = 2 (FULL mode).
 - **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `2` FULL
   - If the player performs any manual equipment change while `m.auto_equipment = 2` (FULL), then automatically set `m.auto_equipment = 1` (SEMI).
@@ -336,7 +363,8 @@ The toggle cycles through the following modes:
 - Equipment List (Collapsed State)
 
 ```
-装備  4 / 4 スロット 自動装備 手動?
+装備  4 / 4 スロット  自動装備 手動?
+全装備解除 装備記憶 装備呼出▲
 🔒白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
 🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
 🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
@@ -346,6 +374,7 @@ The toggle cycles through the following modes:
 
 ```
 装備  4 / 4 スロット 自動装備 手動?
+全装備解除 装備記憶 装備呼出▲
 🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
  堅牢: 1 2 3 4 **5** 6 7 8
  障壁: 1 2 3 4 5 6 7 8 
@@ -464,3 +493,72 @@ displays [遠距離攻撃:矢,ボ,弓]
 🐶伝説のショートソード　x1 [C] 近攻+22
 名工のショートソード x4 [C] 近攻+10
 ```   
+
+**8. Image of equipment pane**
+
+
+```
+装備  4 / 4 スロット 自動装備 手動?
+全装備解除 装備記憶 装備呼出▲
+🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▲
+🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+
+↓(Taps "装備呼出▲", ▲ rotates to ▼)
+
+```
+装備  4 / 4 スロット 自動装備 手動?
+全装備解除 装備記憶 装備呼出▼
+  01 リタ 剣(巡), 砂/好 09/05 ▲
+  02 レイ 魔(師), 桃/内 09/05 ▲
+  03 (空) ▲
+  ...
+  99 (空) ▲
+🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▲
+🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+
+↓(Taps "01 リタ 剣(巡), 砂/好 09/05 ▲", ▲ rotates to ▼)
+
+If all of items are available:
+
+```
+装備  4 / 4 スロット 自動装備 手動?
+全装備解除 装備記憶 装備呼出▼
+  01 `リタ 剣(巡), 砂/好 09/05`▼ 
+    装備する 
+    🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧]
+    🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]
+    🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]
+  02 `レイ 魔(師), 桃/内 09/05` ▲
+  03 `(空)` ▲
+  ...
+  99 `(空)` ▲
+🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▲
+🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+
+
+If some of items are not available:
+
+
+```
+装備  4 / 4 スロット 自動装備 手動?
+全装備解除 装備記憶 装備呼出▼
+  01 `リタ 剣(巡), 砂/好 09/05`▼ 
+    一部アイテムは装備できません: 類似のものを装備  一致するものだけ装備 
+    🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧]
+    🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]
+    🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド] <- gray color if it is unavailable.
+  02 `レイ 魔(師), 桃/内 09/05` ▲
+  03 `(空)` ▲
+  ...
+  99 `(空)` ▲
+🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▲
+🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+
