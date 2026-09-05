@@ -16,6 +16,9 @@
   - Remove the notification badge when no unread news items remain.
   - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
   - When a new news item is added, display the notification badge again.
+- language: ALL
+  - Link:"https://toreniafournieri.github.io/Kemo-Expedition/orca/"
+  - Open the link in a new tab.
 - language: zh-CN
   - 冒兽交流群(Telegram Community) (中文) "https://t.me/+exLhrX12vn5iMmI1"
 - language: Others 
