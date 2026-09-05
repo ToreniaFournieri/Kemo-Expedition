@@ -588,7 +588,11 @@ function ExpeditionTab({
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
-        const instantChargeState = getInstantExpeditionChargeState(party, progressNowMs);
+        const instantChargeState = getInstantExpeditionChargeState(
+          party,
+          progressNowMs,
+          getTimeSpeedScale(debugSettings),
+        );
         const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
         const instantChargeLabel = instantChargeDisplay.label;
         const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;

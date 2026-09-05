@@ -191,7 +191,7 @@ export interface HomeScreenProps {
     simulateExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, onProgress?: (completed: number, total: number) => void, enemyLevelOffset?: number) => Promise<ExpeditionSimulationResult>;
     runExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
     resolveInstantExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
-    consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
+    consumeInstantExpeditionStock: (partyIndex: number, now?: number, chargeDurationScale?: number) => void;
     finalizeDiaryLog: (partyIndex: number, simulatedAt?: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;

@@ -1841,7 +1841,7 @@ type GameAction =
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | ({ type: 'RUN_EXPEDITION' } & RunExpeditionApplicationCommand)
   | { type: 'RESOLVE_INSTANT_EXPEDITION'; partyIndex: number; simulatedAt: number; gameMode?: RuntimeGameMode; enemyLevelOffset?: number; triggerGodsBattle?: boolean; authoritativePartyStatus?: { party: Party; computed: ComputedPartyStatus } }
-  | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number }
+  | { type: 'CONSUME_INSTANT_EXPEDITION_STOCK'; partyIndex: number; now?: number; chargeDurationScale?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; simulatedAt?: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -2467,7 +2467,7 @@ function gameReducer(
       const currentParty = state.parties[action.partyIndex];
       if (!currentParty) return state;
       const now = action.now ?? Date.now();
-      const nextParty = consumeInstantExpeditionStock(currentParty, now);
+      const nextParty = consumeInstantExpeditionStock(currentParty, now, action.chargeDurationScale);
       if (nextParty.instantExpeditionStock === currentParty.instantExpeditionStock
         && nextParty.instantExpeditionChargeStartedAt === currentParty.instantExpeditionChargeStartedAt) {
         return state;
@@ -4785,8 +4785,8 @@ export function useGameState() {
       dispatch({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt, enemyLevelOffset });
     }, []),
 
-    consumeInstantExpeditionStock: useCallback((partyIndex: number, now?: number) => {
-      dispatch({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now });
+    consumeInstantExpeditionStock: useCallback((partyIndex: number, now?: number, chargeDurationScale?: number) => {
+      dispatch({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now, chargeDurationScale });
     }, []),
 
     finalizeDiaryLog: useCallback((partyIndex: number, simulatedAt?: number) => {
