@@ -292,13 +292,20 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - Pressing a saved slot attempts to apply the corresponding equipment set.
   - If some items in the saved set are unavailable, display the following message:
     - `一部アイテムは装備できません`
+    - An item is considered unavailable if:
+      - The item is not present in the inventory.
+      - The character does not have the required equipment bonus, such as `c.equip_melee`, `c.equip_ranged`, or `c.equip_magic`.
+      - If the number of candidate items exceeds the character's available equipment slots, any excess items are not equipped.
   - Options:
+    - equipSet: `装備する` : Equip items, this option is visible only when all of items are available.
     - equipSimilar: `類似のものを装備`: Equip matching items where available, and substitute unavailable items with similar items.
     - equipExactMatchesOnly:`一致するものだけ装備`: Equip only items that exactly match the saved equipment set.
+    - deleteSet: `セットを削除する`: Delete the selected set.
   - **Similar-item assignment:**
     - Super Rare prefix is excluded from substitution.
     - An item with a lower enhancement level may be used as a substitute.
     - Jewels do not need to match exactly; suitable jewels are assigned using the same logic as Auto Equipment.
+  - The saved equipment slot preserves the lock status of each item and restores it when the equipment set is loaded.
   - **Note:** items and jewels are stored separately in the inventory and should therefore be matched and assigned independently.
 - **Saved equipment slots:**
   - By default, each slot name consists of:
@@ -496,7 +503,6 @@ displays [遠距離攻撃:矢,ボ,弓]
 
 **8. Image of equipment pane**
 
-
 ```
 装備  4 / 4 スロット 自動装備 手動?
 全装備解除 装備記憶 装備呼出▲
@@ -528,7 +534,7 @@ If all of items are available:
 装備  4 / 4 スロット 自動装備 手動?
 全装備解除 装備記憶 装備呼出▼
   01 `リタ 剣(巡), 砂/好 09/05`▼ 
-    装備する 
+    装備する セットを削除する
     🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧]
     🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]
     🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]
@@ -541,15 +547,13 @@ If all of items are available:
 🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
 ```
 
-
 If some of items are not available:
-
 
 ```
 装備  4 / 4 スロット 自動装備 手動?
 全装備解除 装備記憶 装備呼出▼
   01 `リタ 剣(巡), 砂/好 09/05`▼ 
-    一部アイテムは装備できません: 類似のものを装備  一致するものだけ装備 
+    一部アイテムは装備できません: 類似のものを装備  一致するものだけ装備 セットを削除する
     🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧]
     🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]
     🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド] <- gray color if it is unavailable.
