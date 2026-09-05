@@ -1271,7 +1271,14 @@ export function HomeScreen({
     const reportTargetPartyLabel = reportTargetPartyIndex >= 0 ? `PT${reportTargetPartyIndex + 1}` as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6' : null;
     const latestBattleLogFile = reportTargetPartyLabel ? buildLatestBattleLogHtml(reportTargetPartyLabel) : null;
     const reportFiles = [htmlFile, ...(latestBattleLogFile ? [latestBattleLogFile] : [])];
-    await postWebhookWithFiles(reportMessage, reportFiles, `KEMO EXPEDITION ${environmentId.toUpperCase()}`);
+    const reportUsername = environmentId === 'dev'
+      ? 'KEMO dev'
+      : environmentId === 'beta'
+        ? 'KEMO beta'
+        : environmentId === 'orca'
+          ? 'KEMO orca'
+          : 'KEMO prod';
+    await postWebhookWithFiles(reportMessage, reportFiles, reportUsername);
     localStorage.setItem(reportCounterKey, String(nextReportCount));
     localStorage.setItem(lastReportAtKey, String(reportCreatedAtMs));
     localStorage.setItem(superRareTotalKey, String(superRareTotal));

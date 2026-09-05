@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.6 | 6 | 2026/09/05 | Update Speed of Time progress-report Discord usernames to the specification-defined `KEMO dev`, `KEMO beta`, `KEMO orca`, and `KEMO prod` values for their respective environments. |
 | 0.9.6 | 5 | 2026/09/05 | Add bounded profile-only AFK automatic-equipment phase totals, default the isolated live profiler to the production coordinator-authority path, support the Orca environment, and report document-load and startup-to-result timings plus clearer Electron launch failures; diagnose the sandboxed macOS registration abort and validate equipment notification suppression and streamed application against exact action-prefix and input-isolation oracles; reject and remove both candidates after the five-sample 162-hour screen missed the 8% recovery improvement threshold, with streaming also exceeding the 50 ms transaction limit; retain existing production equipment, FIFO, worker, save, and gameplay behavior. |
 | 0.9.6 | 4 | 2026/09/05 | Fix the `/orca/` Enemy Level Offset at +5 across initialization, persisted-state projection, Settings, live expeditions, AFK processing, simulations, and Experimental API actions so no saved or in-app value can change Orca enemy levels. |
 | 0.9.6 | 3 | 2026/09/05 | Make `mode.orca` fixed in the `/orca/` environment by disabling both mode choices in Settings and rejecting any in-app runtime-mode change before it can alter the enforced Orca state. |
