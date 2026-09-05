@@ -5,6 +5,7 @@ import { resolveEnemyPassiveAbilities } from '../src/game/enemyPassiveAbilities.
 
 import {
   addOrcaEnemyAbilities,
+  DEFAULT_ORCA_ENEMY_LEVEL_OFFSET,
   isRuntimeGameMode,
   normalizeOrcaEnemyLevelOffset,
 } from '../src/game/runtimeGameMode.ts';
@@ -14,6 +15,8 @@ test('runtime game mode and Orca offset normalization keep the specified bounds'
   assert.equal(isRuntimeGameMode('mode.orca'), true);
   assert.equal(isRuntimeGameMode('m.orca'), false);
   assert.equal(normalizeOrcaEnemyLevelOffset(-1), 0);
+  assert.equal(DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, 5);
+  assert.equal(normalizeOrcaEnemyLevelOffset(undefined), DEFAULT_ORCA_ENEMY_LEVEL_OFFSET);
   assert.equal(normalizeOrcaEnemyLevelOffset(7.9), 7);
   assert.equal(normalizeOrcaEnemyLevelOffset(99), 20);
 });

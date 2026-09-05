@@ -205,6 +205,9 @@ HP 2350 / 4680
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
   - **Special boost:** 
     - Each cleared expedition tier increases the maximum charge time that can be accumulated for each stock slot.
+    - Charge duration is affected by Speed of Time.
+      - Example: If `Speed of Time` is `x5`, the 6th stock charge time is 38.4 min instead of 192 min.
+      - The displayed duration is rounded up to the nearest minute, so 38.4 min is displayed as 39 min.
     - If the max charge is 3, display ▰▰▰MAX.
 
 | Stock Level | initial | After clearing expedition 1 | After clearing expedition 2 | After clearing expedition 3 |

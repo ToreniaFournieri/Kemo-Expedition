@@ -1548,6 +1548,14 @@ export default function SettingTab({
         {settingPanelExpanded.news && (
           <div className="mt-3 space-y-3">
             <a
+              href="https://toreniafournieri.github.io/Kemo-Expedition/orca/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="discord-community-link block rounded border p-3 text-sm font-semibold underline underline-offset-2 pane-button-shadow"
+            >
+              {t('app.title')}orca
+            </a>
+            <a
               href={gameState.global.language === 'zh-CN'
                 ? 'https://t.me/+exLhrX12vn5iMmI1'
                 : 'https://discord.gg/k9VSf2ghM'}
@@ -2734,8 +2742,11 @@ export default function SettingTab({
                   max={ORCA_ENEMY_LEVEL_OFFSET_MAX}
                   step={1}
                   value={orcaEnemyLevelOffset}
-                  onChange={(event) => onSetOrcaEnemyLevelOffset(Number(event.target.value))}
-                  className={`mt-2 w-full ${IOS_GLASS_SLIDER_CLASS}`}
+                  disabled={!debugModeEnabled}
+                  onChange={(event) => {
+                    if (debugModeEnabled) onSetOrcaEnemyLevelOffset(Number(event.target.value));
+                  }}
+                  className={`mt-2 w-full disabled:cursor-not-allowed disabled:opacity-50 ${IOS_GLASS_SLIDER_CLASS}`}
                   style={getSliderProgressStyle(orcaEnemyLevelOffset, ORCA_ENEMY_LEVEL_OFFSET_MIN, ORCA_ENEMY_LEVEL_OFFSET_MAX)}
                 />
               </label>

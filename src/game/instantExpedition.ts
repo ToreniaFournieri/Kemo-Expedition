@@ -53,10 +53,15 @@ function getChargeDurationMs(stock: number, chargeDurationsMs: readonly number[]
   return chargeDurationsMs[stock] ?? null;
 }
 
+function normalizeChargeDurationScale(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, value) : 1;
+}
+
 // SpecRef: 8.3 | UI_EXPEDITION | Charge
 export function getInstantExpeditionChargeState(
   party: InstantExpeditionChargeParty,
   now: number = Date.now(),
+  chargeDurationScale: number = 1,
 ): InstantExpeditionChargeState {
   const chargeDurationsMs = getChargeDurationsMs(party.defeatedBossExpeditions);
   const maxStock = chargeDurationsMs.length;
@@ -79,9 +84,20 @@ export function getInstantExpeditionChargeState(
     chargeStartedAt = now;
   }
 
+  const normalizedChargeDurationScale = normalizeChargeDurationScale(chargeDurationScale);
+  if (normalizedChargeDurationScale === 0) {
+    return {
+      stock: maxStock,
+      maxStock,
+      chargeStartedAt: null,
+      remainingMs: 0,
+      nextChargeDurationMs: null,
+    };
+  }
+
   let elapsedMs = Math.max(0, now - chargeStartedAt);
   while (stock < maxStock) {
-    const durationMs = getChargeDurationMs(stock, chargeDurationsMs) ?? 0;
+    const durationMs = (getChargeDurationMs(stock, chargeDurationsMs) ?? 0) * normalizedChargeDurationScale;
     if (elapsedMs < durationMs) {
       return {
         stock,
@@ -109,8 +125,10 @@ export function getInstantExpeditionChargeState(
 export function consumeInstantExpeditionStock<T extends InstantExpeditionChargeParty>(
   party: T,
   now: number = Date.now(),
+  chargeDurationScale: number = 1,
 ): T & { instantExpeditionStock: number; instantExpeditionChargeStartedAt: number | null } {
-  const chargeState = getInstantExpeditionChargeState(party, now);
+  const normalizedChargeDurationScale = normalizeChargeDurationScale(chargeDurationScale);
+  const chargeState = getInstantExpeditionChargeState(party, now, normalizedChargeDurationScale);
   if (chargeState.stock <= 0) return {
     ...party,
     instantExpeditionStock: 0,
@@ -118,13 +136,14 @@ export function consumeInstantExpeditionStock<T extends InstantExpeditionChargeP
   };
 
   const nextStock = chargeState.stock - 1;
-  const nextChargeDurationMs = getChargeDurationMs(nextStock, getChargeDurationsMs(party.defeatedBossExpeditions));
+  const nextChargeDurationMs = (getChargeDurationMs(nextStock, getChargeDurationsMs(party.defeatedBossExpeditions)) ?? null);
   let nextChargeStartedAt: number | null = null;
   if (nextChargeDurationMs !== null) {
+    const scaledNextChargeDurationMs = nextChargeDurationMs * normalizedChargeDurationScale;
     const nextRemainingMs = chargeState.nextChargeDurationMs === null
-      ? nextChargeDurationMs
-      : Math.min(chargeState.remainingMs, nextChargeDurationMs);
-    nextChargeStartedAt = now - Math.max(0, nextChargeDurationMs - nextRemainingMs);
+      ? scaledNextChargeDurationMs
+      : Math.min(chargeState.remainingMs, scaledNextChargeDurationMs);
+    nextChargeStartedAt = now - Math.max(0, scaledNextChargeDurationMs - nextRemainingMs);
   }
 
   return {

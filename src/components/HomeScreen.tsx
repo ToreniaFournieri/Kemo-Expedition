@@ -93,7 +93,7 @@ import { computePartyStats,computeRendererPartyStats } from '../game/partyComput
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
-import { isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
+import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import {
@@ -273,7 +273,7 @@ export function HomeScreen({
     try {
       return normalizeOrcaEnemyLevelOffset(localStorage.getItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY));
     } catch {
-      return 0;
+      return DEFAULT_ORCA_ENEMY_LEVEL_OFFSET;
     }
   });
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
@@ -750,7 +750,17 @@ export function HomeScreen({
         effects = { previousEnabled: !command.enabled, enabled: command.enabled };
       } else if (type === 'god_battle' && party) {
         if (!party.defeatedBossExpeditions[party.selectedDungeonId] || (party.instantExpeditionStock ?? 0) <= 0 || apiAutoRunRef.current) return apiFailure(422, 'god_battle_unavailable', 'Gods Battle is unavailable.');
-        apiActionsRef.current.consumeInstantExpeditionStock(partyIndex, apiSimulatedAtRef.current);
+        let apiHasActiveTimeSpeedBonus = false;
+        try {
+          apiHasActiveTimeSpeedBonus = Number(localStorage.getItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY)) > Date.now();
+        } catch {
+          // The base time speed remains valid when storage is unavailable.
+        }
+        apiActionsRef.current.consumeInstantExpeditionStock(
+          partyIndex,
+          apiSimulatedAtRef.current,
+          getTimeSpeedScale(effectiveDebugSettings, apiHasActiveTimeSpeedBonus),
+        );
         apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current, orcaEnemyLevelOffset);
         apiSimulatedAtRef.current += APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS;
         effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
@@ -812,7 +822,7 @@ export function HomeScreen({
       return { sortie: { partyId: Number(payload.partyId), dungeonId, requestedCount: Number(payload.count), completedCount: Number(payload.count), previousRevision, revision: apiRevisionRef.current, partyElapsedStartMs: 0, partyElapsedEndMs: elapsed }, prelude: null, outcomes, totals, charge: { before: chargeBefore, after: chargeAfter }, sideQuests: { assigned: 0, completed: 0, cancelled: 0, expired: 0 }, unlocks: { bossDungeonIds: [], godBattleDungeonIds: [], partyIds: [], deityIds: [], otherIds: [] }, runs, observation: buildApiObservation() };
     }
     return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
-  }, [buildApiObservation, orcaEnemyLevelOffset, waitForApiStateUpdate]);
+  }, [buildApiObservation, effectiveDebugSettings, orcaEnemyLevelOffset, waitForApiStateUpdate]);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
@@ -2696,7 +2706,11 @@ export function HomeScreen({
         : disclosedLog?.dungeonName
           ?? DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId)?.name
           ?? '-';
-      const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(party, now));
+      const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(
+        party,
+        now,
+        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
+      ));
       const compactProgressItems = getCompactProgressItems(
         party,
         getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
@@ -4915,7 +4929,11 @@ export function HomeScreen({
     if (!party) return;
     const { partyStats } = computePartyStats(party);
     const now = Date.now();
-    const instantChargeState = getInstantExpeditionChargeState(party, now);
+    const instantChargeState = getInstantExpeditionChargeState(
+      party,
+      now,
+      getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
+    );
 
     const isColosseumSortie = party.selectedDungeonId === 99;
 
@@ -4953,7 +4971,11 @@ export function HomeScreen({
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
     if (!isColosseumSortie) {
-      actions.consumeInstantExpeditionStock(partyIndex, now);
+      actions.consumeInstantExpeditionStock(
+        partyIndex,
+        now,
+        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
+      );
     }
     if (cycle?.state === 'explore') {
       actions.finalizeDiaryLog(partyIndex);
@@ -5121,7 +5143,7 @@ export function HomeScreen({
       return (
         <ExpeditionTab
           state={state}
-          debugSettings={debugSettings}
+          debugSettings={effectiveDebugSettings}
           emulatedNowMs={emulatedNowMs}
           onSelectDungeon={actions.selectDungeon}
           onToggleExpeditionDestinationMode={actions.setExpeditionDestinationMode}
