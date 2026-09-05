@@ -2734,8 +2734,11 @@ export default function SettingTab({
                   max={ORCA_ENEMY_LEVEL_OFFSET_MAX}
                   step={1}
                   value={orcaEnemyLevelOffset}
-                  onChange={(event) => onSetOrcaEnemyLevelOffset(Number(event.target.value))}
-                  className={`mt-2 w-full ${IOS_GLASS_SLIDER_CLASS}`}
+                  disabled={!debugModeEnabled}
+                  onChange={(event) => {
+                    if (debugModeEnabled) onSetOrcaEnemyLevelOffset(Number(event.target.value));
+                  }}
+                  className={`mt-2 w-full disabled:cursor-not-allowed disabled:opacity-50 ${IOS_GLASS_SLIDER_CLASS}`}
                   style={getSliderProgressStyle(orcaEnemyLevelOffset, ORCA_ENEMY_LEVEL_OFFSET_MIN, ORCA_ENEMY_LEVEL_OFFSET_MAX)}
                 />
               </label>

@@ -6,6 +6,7 @@ export type RuntimeGameMode = typeof RUNTIME_GAME_MODES[number];
 export const DEFAULT_RUNTIME_GAME_MODE: RuntimeGameMode = 'mode.normal';
 export const ORCA_ENEMY_LEVEL_OFFSET_MIN = 0;
 export const ORCA_ENEMY_LEVEL_OFFSET_MAX = 20;
+export const DEFAULT_ORCA_ENEMY_LEVEL_OFFSET = 5;
 
 export function isRuntimeGameMode(value: unknown): value is RuntimeGameMode {
   return typeof value === 'string' && RUNTIME_GAME_MODES.includes(value as RuntimeGameMode);
@@ -13,7 +14,7 @@ export function isRuntimeGameMode(value: unknown): value is RuntimeGameMode {
 
 export function normalizeOrcaEnemyLevelOffset(value: unknown): number {
   const numeric = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(numeric)) return ORCA_ENEMY_LEVEL_OFFSET_MIN;
+  if (!Number.isFinite(numeric)) return DEFAULT_ORCA_ENEMY_LEVEL_OFFSET;
   return Math.max(
     ORCA_ENEMY_LEVEL_OFFSET_MIN,
     Math.min(ORCA_ENEMY_LEVEL_OFFSET_MAX, Math.floor(numeric)),

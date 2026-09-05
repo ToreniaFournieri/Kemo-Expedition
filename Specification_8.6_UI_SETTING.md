@@ -364,7 +364,8 @@ HP: 312                 タイプ: 神魔
 
 - Enemy Level Offset
   - `N` is configurable using a level-offset bar.
-  - Range: 0 to +20.
+  - Range: 0 to +20. Default 5.
+  - The Enemy Level Offset can be changed only when Debug Mode is enabled.
   - The selected `N` value is added to the level of all enemies in `mode.orca`.
 
 **Feedback フィードバック**
