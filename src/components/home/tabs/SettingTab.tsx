@@ -512,6 +512,7 @@ export default function SettingTab({
   };
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
+  const isOrcaEnvironment = currentEnv === 'orca';
   const debugModeEnabled = isDebugModeEnabled();
   const modeSelectionLocked = isBetaEnvironment || runtimeGameMode === 'mode.orca';
   useEffect(() => {
@@ -1553,7 +1554,7 @@ export default function SettingTab({
               rel="noopener noreferrer"
               className="discord-community-link block rounded border p-3 text-sm font-semibold underline underline-offset-2 pane-button-shadow"
             >
-              {t('app.title')}orca
+              {t('app.title')} orca
             </a>
             <a
               href={gameState.global.language === 'zh-CN'
@@ -2719,12 +2720,13 @@ export default function SettingTab({
                 <button
                   key={mode}
                   type="button"
-                  onClick={() => onSetRuntimeGameMode(mode)}
+                  onClick={() => !isOrcaEnvironment && onSetRuntimeGameMode(mode)}
+                  disabled={isOrcaEnvironment}
                   className={`py-2 rounded border text-sm font-medium ${
                     runtimeGameMode === mode
                       ? 'bg-selection text-content-inverse border-selection pane-button-shadow-soft'
                       : 'bg-surface-interactive text-content-default border-line-strong pane-button-shadow'
-                  }`}
+                  } ${isOrcaEnvironment ? 'cursor-not-allowed opacity-60' : ''}`}
                 >
                   {t(mode === 'mode.orca' ? 'setting.gameMode.orca' : 'setting.gameMode.normal')}
                 </button>

@@ -965,6 +965,11 @@ export function HomeScreen({
     });
   }, [runtimeGameMode]);
   const updateRuntimeGameMode = useCallback((mode: RuntimeGameMode) => {
+    // SpecRef: 9 | Environment | /orca/ mode.orca fixed
+    if (getEnvironmentId() === 'orca') {
+      setRuntimeGameMode('mode.orca');
+      return;
+    }
     if (mode === 'mode.orca' && runtimeGameMode !== 'mode.orca') {
       setHasOrcaTimeSpeedOverride(false);
       try {
