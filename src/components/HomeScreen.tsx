@@ -5160,6 +5160,12 @@ export function HomeScreen({
           onSelectParty={actions.selectParty}
           onUpdatePartyDeity={actions.updatePartyDeity}
           onRunAutoEquipmentForCharacter={(characterId) => runAutoEquipment([safeSelectedPartyIndex], [characterId])}
+          onRemoveAllEquipment={actions.removeAllEquipment}
+          onSaveEquipmentSet={actions.saveEquipmentSet}
+          onRenameEquipmentSet={actions.renameEquipmentSet}
+          onDeleteEquipmentSet={actions.deleteEquipmentSet}
+          onLoadEquipmentSet={actions.loadEquipmentSet}
+          savedEquipmentSets={state.global.savedEquipmentSets}
           inventory={state.global.inventory}
           jewels={state.global.jewels}
           deityDonations={state.global.deityDonations}

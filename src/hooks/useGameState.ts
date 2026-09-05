@@ -25,6 +25,7 @@ import {
   ExpeditionDepthLimit,
   ExpeditionDestinationMode,
   ExpeditionSimulationResult,
+  SavedEquipmentSet,
 } from '../types';
 import {
   computeCharacterHpContribution,
@@ -66,6 +67,12 @@ import {
 } from '../game/glossaryDisclosure';
 import { gameplayRandom } from '../game/gameplayRandom';
 import { replaceCharacterEquipment } from '../game/equipment';
+import {
+  applyEquipmentSet,
+  MAX_SAVED_EQUIPMENT_SETS,
+  normalizeSavedEquipmentSets,
+  type EquipmentSetLoadMode,
+} from '../game/equipmentSets';
 import { DUNGEONS, getDungeonById } from '../data/dungeons';
 import { ENEMIES } from '../data/enemies';
 import { getDifficultyOffsetMax, normalizeDifficultyOffset } from '../game/difficultyOffset';
@@ -997,6 +1004,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
             shopIntimacy: 0,
             shopIntimacyLastDecayAt: Date.now(),
             jewels: createStarterJewelInventory(),
+            savedEquipmentSets: [],
             enemyBattleStats: {},
             altarVictoriesByEnemyType: {},
             readDeveloperNewsItemIds: [],
@@ -1067,6 +1075,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
               return acc;
             }, {})
           : createStarterJewelInventory();
+        parsed.global.savedEquipmentSets = normalizeSavedEquipmentSets(parsed.global.savedEquipmentSets);
 
         const defaultParties = createDefaultParties();
         if (!Array.isArray(parsed.parties)) {
@@ -1769,6 +1778,7 @@ function createInitialState(): InitialStateResult {
       inventory: createStarterInventory(),
       userId: generateUserId(),
       jewels: createStarterJewelInventory(),
+      savedEquipmentSets: [],
       jewelAutoEquipPriorityPartyId: 1,
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
@@ -1853,6 +1863,11 @@ type GameAction =
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
+  | { type: 'REMOVE_ALL_EQUIPMENT'; characterId: number; partyIndex?: number }
+  | { type: 'SAVE_EQUIPMENT_SET'; characterId: number; name: string; createdAt: number; partyIndex?: number }
+  | { type: 'RENAME_EQUIPMENT_SET'; slot: number; name: string }
+  | { type: 'DELETE_EQUIPMENT_SET'; slot: number }
+  | { type: 'LOAD_EQUIPMENT_SET'; characterId: number; slot: number; mode: EquipmentSetLoadMode; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
@@ -3007,6 +3022,94 @@ function gameReducer(
       };
     }
 
+    case 'REMOVE_ALL_EQUIPMENT':
+    case 'LOAD_EQUIPMENT_SET': {
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[targetPartyIndex];
+      if (!currentParty) return state;
+      const charIndex = currentParty.characters.findIndex((candidate) => candidate.id === action.characterId);
+      if (charIndex === -1) return state;
+      const character = currentParty.characters[charIndex];
+      const set = action.type === 'LOAD_EQUIPMENT_SET'
+        ? state.global.savedEquipmentSets.find((candidate) => candidate.slot === action.slot)
+        : { slot: 0, name: '', createdAt: Date.now(), equipment: [] } satisfies SavedEquipmentSet;
+      if (!set) return state;
+      const maxSlots = computeCharacterStats(character, currentParty.level).maxEquipSlots;
+      const result = applyEquipmentSet(
+        set,
+        character,
+        state.global.inventory,
+        state.global.jewels,
+        state.global.gold,
+        maxSlots,
+        action.type === 'LOAD_EQUIPMENT_SET' ? action.mode : 'exact',
+      );
+      const characters = [...currentParty.characters];
+      characters[charIndex] = result.character;
+      const parties = [...state.parties];
+      parties[targetPartyIndex] = syncPartyCurrentHpAfterMaxHpChange(currentParty, {
+        ...currentParty,
+        characters,
+      }, character.id);
+      return {
+        ...state,
+        parties,
+        global: {
+          ...state.global,
+          gold: result.gold,
+          inventory: result.inventory,
+          jewels: result.jewels,
+        },
+      };
+    }
+
+    case 'SAVE_EQUIPMENT_SET': {
+      if (state.global.savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) return state;
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const character = state.parties[targetPartyIndex]?.characters.find((candidate) => candidate.id === action.characterId);
+      if (!character) return state;
+      const occupied = new Set(state.global.savedEquipmentSets.map((set) => set.slot));
+      const slot = Array.from({ length: MAX_SAVED_EQUIPMENT_SETS }, (_, index) => index + 1)
+        .find((candidate) => !occupied.has(candidate));
+      if (!slot) return state;
+      const savedSet: SavedEquipmentSet = {
+        slot,
+        name: action.name.slice(0, 80),
+        createdAt: action.createdAt,
+        equipment: character.equipment
+          .filter((item): item is Item => item != null)
+          .map((item) => ({ item: structuredClone(item), isLocked: item.isLocked === true })),
+      };
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          savedEquipmentSets: [...state.global.savedEquipmentSets, savedSet].sort((a, b) => a.slot - b.slot),
+        },
+      };
+    }
+
+    case 'RENAME_EQUIPMENT_SET': {
+      const name = action.name.trim().slice(0, 80);
+      if (!name) return state;
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          savedEquipmentSets: state.global.savedEquipmentSets.map((set) => set.slot === action.slot ? { ...set, name } : set),
+        },
+      };
+    }
+
+    case 'DELETE_EQUIPMENT_SET':
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          savedEquipmentSets: state.global.savedEquipmentSets.filter((set) => set.slot !== action.slot),
+        },
+      };
+
     case 'TOGGLE_EQUIPMENT_LOCK': {
       const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
       const currentParty = state.parties[targetPartyIndex];
@@ -3850,6 +3953,7 @@ function gameReducer(
           inventory: createStarterInventory(),
           userId: generateUserId(),
           jewels: createStarterJewelInventory(),
+          savedEquipmentSets: [],
           jewelAutoEquipPriorityPartyId: 1,
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
@@ -4831,6 +4935,26 @@ export function useGameState() {
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => {
       dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey, partyIndex });
+    }, []),
+
+    removeAllEquipment: useCallback((characterId: number, partyIndex?: number) => {
+      dispatch({ type: 'REMOVE_ALL_EQUIPMENT', characterId, partyIndex });
+    }, []),
+
+    saveEquipmentSet: useCallback((characterId: number, name: string, createdAt: number, partyIndex?: number) => {
+      dispatch({ type: 'SAVE_EQUIPMENT_SET', characterId, name, createdAt, partyIndex });
+    }, []),
+
+    renameEquipmentSet: useCallback((slot: number, name: string) => {
+      dispatch({ type: 'RENAME_EQUIPMENT_SET', slot, name });
+    }, []),
+
+    deleteEquipmentSet: useCallback((slot: number) => {
+      dispatch({ type: 'DELETE_EQUIPMENT_SET', slot });
+    }, []),
+
+    loadEquipmentSet: useCallback((characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => {
+      dispatch({ type: 'LOAD_EQUIPMENT_SET', characterId, slot, mode, partyIndex });
     }, []),
 
     applyAutoEquipmentActions: useCallback((actions: AutoEquipmentProfileAction[]) => {

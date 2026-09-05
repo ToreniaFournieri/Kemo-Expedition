@@ -282,6 +282,18 @@ export interface Character {
   equipment: (Item | null)[];
 }
 
+export interface SavedEquipmentEntry {
+  item: Item;
+  isLocked: boolean;
+}
+
+export interface SavedEquipmentSet {
+  slot: number;
+  name: string;
+  createdAt: number;
+  equipment: SavedEquipmentEntry[];
+}
+
 // Computed character stats for battle
 export interface ComputedCharacterStats {
   characterId: number;
@@ -464,6 +476,7 @@ interface GlobalState {
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   jewels: JewelInventory;
+  savedEquipmentSets: SavedEquipmentSet[];
   jewelAutoEquipPriorityPartyId?: number | null;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   altarVictoriesByEnemyType?: Record<string, number>;

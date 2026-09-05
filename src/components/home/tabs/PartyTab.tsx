@@ -14,6 +14,7 @@ import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
+import { evaluateEquipmentSet,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
@@ -21,7 +22,7 @@ import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../g
 import { computeCharacterHpContribution,computePartyStats } from '../../../game/partyComputation';
 import { getXpToNextLevel } from '../../../game/partyLevel';
 import { t } from '../../../i18n';
-import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Party,Race,RaceId,type EnemyAbility } from '../../../types';
+import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Party,Race,RaceId,SavedEquipmentSet,getVariantKey,type EnemyAbility } from '../../../types';
 
 
 import {
@@ -97,6 +98,12 @@ export default function PartyTab({
   onSelectParty,
   onUpdatePartyDeity,
   onRunAutoEquipmentForCharacter,
+  onRemoveAllEquipment,
+  onSaveEquipmentSet,
+  onRenameEquipmentSet,
+  onDeleteEquipmentSet,
+  onLoadEquipmentSet,
+  savedEquipmentSets,
   inventory,
   jewels,
   deityDonations,
@@ -122,6 +129,12 @@ export default function PartyTab({
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
   onRunAutoEquipmentForCharacter: (characterId: number) => void;
+  onRemoveAllEquipment: (characterId: number) => void;
+  onSaveEquipmentSet: (characterId: number, name: string, createdAt: number) => void;
+  onRenameEquipmentSet: (slot: number, name: string) => void;
+  onDeleteEquipmentSet: (slot: number) => void;
+  onLoadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode) => void;
+  savedEquipmentSets: SavedEquipmentSet[];
   inventory: InventoryRecord;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
@@ -490,6 +503,8 @@ export default function PartyTab({
   const [editingDeity, setEditingDeity] = useState(false);
   const [pendingDeityName, setPendingDeityName] = useState(getDeityKey(party.deity.name) ?? party.deity.name);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
+  const [showSavedEquipmentSets, setShowSavedEquipmentSets] = useState(false);
+  const [expandedSavedEquipmentSlot, setExpandedSavedEquipmentSlot] = useState<number | null>(null);
 
   // Handle equipment slot tap with double-tap detection for removal
   const handleSlotTap = (slotIndex: number) => {
@@ -701,6 +716,24 @@ export default function PartyTab({
     // SpecRef: 8.2.4 | Equipment management | Auto equipment button(自動装備)
     if (autoEquipmentMode !== 2) return;
     onRunAutoEquipmentForCharacter(char.id);
+  };
+
+  const createDefaultEquipmentSetName = (createdAt: number): string => {
+    const date = new Date(createdAt);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const mainShort = CLASS_SHORT_NAMES[char.mainClassId] ?? char.mainClassId;
+    const subShort = CLASS_SHORT_NAMES[char.subClassId] ?? char.subClassId;
+    const lineageShort = lineage.shortName ?? lineage.name;
+    const predispositionShort = predisposition.shortName ?? predisposition.name;
+    return `${char.name} ${mainShort}(${subShort}), ${lineageShort}/${predispositionShort} ${month}/${day}`;
+  };
+
+  const handleSaveEquipmentSet = () => {
+    if (savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) return;
+    const createdAt = Date.now();
+    onSaveEquipmentSet(char.id, createDefaultEquipmentSetName(createdAt), createdAt);
+    setShowSavedEquipmentSets(true);
   };
 
   const handleAutoEquipmentHelpToggle = (event: MouseEvent<HTMLButtonElement>) => {
@@ -2596,6 +2629,88 @@ export default function PartyTab({
             <div key={line}>{line}</div>
           ))}
         </div>
+        )}
+        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-sub">
+          <button type="button" onClick={() => onRemoveAllEquipment(char.id)}>
+            {t('party.equipment.removeAll')}
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveEquipmentSet}
+            disabled={savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS}
+            className="disabled:opacity-40"
+          >
+            {t('party.equipment.saveSet')}
+          </button>
+          <button type="button" onClick={() => setShowSavedEquipmentSets((value) => !value)}>
+            {t('party.equipment.loadSet')}{showSavedEquipmentSets ? '▼' : '▲'}
+          </button>
+        </div>
+        {showSavedEquipmentSets && (
+          <div className="mb-3 max-h-80 space-y-1 overflow-y-auto rounded border border-gray-200 bg-white/70 p-2">
+            {Array.from({ length: MAX_SAVED_EQUIPMENT_SETS }, (_, index) => index + 1).map((slot) => {
+              const set = savedEquipmentSets.find((candidate) => candidate.slot === slot);
+              const isExpanded = expandedSavedEquipmentSlot === slot;
+              const availability = set ? evaluateEquipmentSet(set, char, inventory, stats.maxEquipSlots) : null;
+              return (
+                <div key={slot} className="text-xs">
+                  <button
+                    type="button"
+                    disabled={!set}
+                    onClick={() => set && setExpandedSavedEquipmentSlot(isExpanded ? null : slot)}
+                    className="flex w-full items-center gap-2 rounded px-1 py-1 text-left hover:bg-gray-100 disabled:cursor-default"
+                  >
+                    <span className="w-6 tabular-nums text-gray-500">{String(slot).padStart(2, '0')}</span>
+                    <span className={set ? 'text-gray-900' : 'text-gray-400'}>{set?.name ?? t('party.equipment.emptySet')}</span>
+                    <span className="ml-auto text-gray-400">{isExpanded ? '▼' : '▲'}</span>
+                  </button>
+                  {set && isExpanded && availability && (
+                    <div className="ml-8 space-y-1 border-l border-gray-200 py-1 pl-2">
+                      <input
+                        key={`${set.slot}:${set.name}`}
+                        defaultValue={set.name}
+                        maxLength={80}
+                        aria-label={t('party.equipment.setNameAria')}
+                        onBlur={(event) => onRenameEquipmentSet(set.slot, event.currentTarget.value)}
+                        className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-gray-900"
+                      />
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        {availability.allAvailable ? (
+                          <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'exact')}>
+                            {t('party.equipment.equipSet')}
+                          </button>
+                        ) : (
+                          <>
+                            <span className="text-warning">{t('party.equipment.someUnavailable')}</span>
+                            <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'similar')}>
+                              {t('party.equipment.equipSimilar')}
+                            </button>
+                            <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'exact')}>
+                              {t('party.equipment.equipExactOnly')}
+                            </button>
+                          </>
+                        )}
+                        <button type="button" className="font-semibold text-danger" onClick={() => {
+                          onDeleteEquipmentSet(set.slot);
+                          setExpandedSavedEquipmentSlot(null);
+                        }}>
+                          {t('party.equipment.deleteSet')}
+                        </button>
+                      </div>
+                      {availability.entries.map(({ entry, available }, entryIndex) => (
+                        <div key={`${getVariantKey(entry.item)}:${entryIndex}`} className={available ? 'text-gray-900' : 'text-gray-400'}>
+                          <span>{entry.isLocked ? '🔒' : '🔓'}</span>
+                          <span className={getItemNameFontWeightClass(entry.item)}>{getItemDisplayName(entry.item)}</span>
+                          <span> {getRarityShortLabel(entry.item.id, entry.item.name)} {renderTextWithRaceIcons(getItemStats(entry.item, getCharacterCategoryMultiplier(char, entry.item.category), hpDisplayMultiplier))}</span>
+                          <span> [{t(CATEGORY_NAME_KEYS[entry.item.category] ?? 'party.categoryName.unknown')}]</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       <div className="space-y-1">
         {(() => {
