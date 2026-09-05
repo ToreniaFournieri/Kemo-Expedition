@@ -270,12 +270,17 @@ export function HomeScreen({
     }
   });
   const [orcaEnemyLevelOffset, setOrcaEnemyLevelOffset] = useState(() => {
+    // SpecRef: 9 | Environment | /orca/ Enemy Level Offset fixed at +5
+    if (getEnvironmentId() === 'orca') return DEFAULT_ORCA_ENEMY_LEVEL_OFFSET;
     try {
       return normalizeOrcaEnemyLevelOffset(localStorage.getItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY));
     } catch {
       return DEFAULT_ORCA_ENEMY_LEVEL_OFFSET;
     }
   });
+  const effectiveOrcaEnemyLevelOffset = getEnvironmentId() === 'orca'
+    ? DEFAULT_ORCA_ENEMY_LEVEL_OFFSET
+    : orcaEnemyLevelOffset;
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
@@ -761,7 +766,7 @@ export function HomeScreen({
           apiSimulatedAtRef.current,
           getTimeSpeedScale(effectiveDebugSettings, apiHasActiveTimeSpeedBonus),
         );
-        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current, orcaEnemyLevelOffset);
+        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current, effectiveOrcaEnemyLevelOffset);
         apiSimulatedAtRef.current += APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS;
         effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
       }
@@ -788,7 +793,7 @@ export function HomeScreen({
       const runs: Array<Record<string, unknown>> = [];
       let elapsed = 0;
       const beforeVersion = apiStateVersionRef.current;
-      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current, orcaEnemyLevelOffset);
+      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current, effectiveOrcaEnemyLevelOffset);
       await waitForApiStateUpdate(beforeVersion);
       for (const [zeroBasedIndex, batchRun] of batch.runs.entries()) {
         const index = zeroBasedIndex + 1;
@@ -822,7 +827,7 @@ export function HomeScreen({
       return { sortie: { partyId: Number(payload.partyId), dungeonId, requestedCount: Number(payload.count), completedCount: Number(payload.count), previousRevision, revision: apiRevisionRef.current, partyElapsedStartMs: 0, partyElapsedEndMs: elapsed }, prelude: null, outcomes, totals, charge: { before: chargeBefore, after: chargeAfter }, sideQuests: { assigned: 0, completed: 0, cancelled: 0, expired: 0 }, unlocks: { bossDungeonIds: [], godBattleDungeonIds: [], partyIds: [], deityIds: [], otherIds: [] }, runs, observation: buildApiObservation() };
     }
     return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
-  }, [buildApiObservation, effectiveDebugSettings, orcaEnemyLevelOffset, waitForApiStateUpdate]);
+  }, [buildApiObservation, effectiveDebugSettings, effectiveOrcaEnemyLevelOffset, waitForApiStateUpdate]);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
@@ -980,6 +985,11 @@ export function HomeScreen({
     }
     setRuntimeGameMode(mode);
   }, [runtimeGameMode]);
+  const updateOrcaEnemyLevelOffset = useCallback((offset: number) => {
+    setOrcaEnemyLevelOffset(getEnvironmentId() === 'orca'
+      ? DEFAULT_ORCA_ENEMY_LEVEL_OFFSET
+      : normalizeOrcaEnemyLevelOffset(offset));
+  }, []);
   const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(() => {
     try {
       const raw = localStorage.getItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY);
@@ -2493,12 +2503,12 @@ export function HomeScreen({
   useEffect(() => {
     try {
       localStorage.setItem(RUNTIME_GAME_MODE_STORAGE_KEY, runtimeGameMode);
-      localStorage.setItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY, String(orcaEnemyLevelOffset));
+      localStorage.setItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY, String(effectiveOrcaEnemyLevelOffset));
     } catch (error) {
       console.error('Failed to persist runtime game mode:', error);
     }
     if (getEnvironmentId() !== 'beta' && runtimeGameMode === 'mode.orca' && gameMode !== 'm.orca') setGameMode('m.orca');
-  }, [gameMode, orcaEnemyLevelOffset, runtimeGameMode]);
+  }, [effectiveOrcaEnemyLevelOffset, gameMode, runtimeGameMode]);
 
   useEffect(() => {
     if (state.parties.length === 0) return;
@@ -3387,7 +3397,7 @@ export function HomeScreen({
         operationCount,
         baseState: createAfkPartyChunkWorkerState(dispatchState, partyIndex),
         gameMode: runtimeGameMode,
-        enemyLevelOffset: orcaEnemyLevelOffset,
+        enemyLevelOffset: effectiveOrcaEnemyLevelOffset,
         cycleDurationScale: durationScale,
         queuedAt: performance.timeOrigin + jobQueuedMonotonicAt,
         workerCreatedAt: poolSlot.createdEpochAt,
@@ -3727,7 +3737,7 @@ export function HomeScreen({
     effectiveDebugSettings,
     hasActiveTimeSpeedBonus,
     runtimeGameMode,
-    orcaEnemyLevelOffset,
+    effectiveOrcaEnemyLevelOffset,
     planAutoEquipment,
     publishAfkAuthority,
     shouldUseCoordinatorAuthority,
@@ -3875,7 +3885,7 @@ export function HomeScreen({
       partialCycleSideEffects.forEach(({ partyIndex, shouldFinalizeDiary, simulatedAt }) => {
         const party = latestPartiesRef.current[partyIndex];
         const triggerGodsBattle = party ? shouldAutoTriggerGodsBattle(party) : false;
-        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt, orcaEnemyLevelOffset);
+        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt, effectiveOrcaEnemyLevelOffset);
         if (shouldFinalizeDiary) {
           actions.finalizeDiaryLog(partyIndex, simulatedAt);
         }
@@ -3898,7 +3908,7 @@ export function HomeScreen({
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
     afkFinalRemainingMsByPartyRef.current = {};
-  }, [actions, effectiveDebugSettings, hasActiveTimeSpeedBonus, orcaEnemyLevelOffset, pendingAfkMs]);
+  }, [actions, effectiveDebugSettings, effectiveOrcaEnemyLevelOffset, hasActiveTimeSpeedBonus, pendingAfkMs]);
 
   useEffect(() => {
     if (!__AFK_LIVE_PROFILE_ENABLED__) return;
@@ -4433,7 +4443,7 @@ export function HomeScreen({
                 }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
-              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow, orcaEnemyLevelOffset);
+              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow, effectiveOrcaEnemyLevelOffset);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(
                 undefined,
@@ -4989,7 +4999,7 @@ export function HomeScreen({
     actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
     instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
-    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now, orcaEnemyLevelOffset);
+    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now, effectiveOrcaEnemyLevelOffset);
     actions.rollPartySleepiness(partyIndex);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
     // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
@@ -5017,14 +5027,14 @@ export function HomeScreen({
   ) => {
     memoryMonitor.setRuntime('simulation', effectiveDebugSettings.timeSpeed);
     try {
-      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress, orcaEnemyLevelOffset);
+      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress, effectiveOrcaEnemyLevelOffset);
     } finally {
       memoryMonitor.setRuntime(
         pendingAfkMsRef.current > 0 ? 'afk' : autoRepeatEnabledRef.current ? 'online' : 'idle',
         effectiveDebugSettings.timeSpeed,
       );
     }
-  }, [effectiveDebugSettings.timeSpeed, orcaEnemyLevelOffset]);
+  }, [effectiveDebugSettings.timeSpeed, effectiveOrcaEnemyLevelOffset]);
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
@@ -5246,8 +5256,8 @@ export function HomeScreen({
         onSetGameMode={setGameMode}
         runtimeGameMode={runtimeGameMode}
         onSetRuntimeGameMode={updateRuntimeGameMode}
-        orcaEnemyLevelOffset={orcaEnemyLevelOffset}
-        onSetOrcaEnemyLevelOffset={setOrcaEnemyLevelOffset}
+        orcaEnemyLevelOffset={effectiveOrcaEnemyLevelOffset}
+        onSetOrcaEnemyLevelOffset={updateOrcaEnemyLevelOffset}
         darkModeSetting={darkModeSetting}
         onSetDarkModeSetting={setDarkModeSetting}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
