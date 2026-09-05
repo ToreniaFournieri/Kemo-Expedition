@@ -100,7 +100,7 @@
     - Speed of time: x1
   - `/orca/`: 本番環境(variant)
     - Debug mode: OFF
-    - Game mode: `mode.orca`
+    - Game mode: `mode.orca`　(fixed)
   - `/` : 本番環境
     - Debug mode: OFF
     - Game mode: `mode.normal` (fixed)
