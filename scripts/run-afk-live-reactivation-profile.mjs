@@ -49,10 +49,12 @@ function compactRun(run) {
 }
 
 const hours = parseHours();
+const environment = process.argv.find(value => value.startsWith('--environment='))?.slice(14) ?? 'prod';
+if (!['prod', 'orca'].includes(environment)) throw new Error('environment must be prod or orca');
 const requestedMode = process.argv.find((value) => value.startsWith('--mode='))?.slice(7) ?? 'timing';
 if (!['timing', 'memory', 'both'].includes(requestedMode)) throw new Error('mode must be timing, memory, or both');
 const modes = requestedMode === 'both' ? ['timing', 'memory'] : [requestedMode];
-const requestedVariants = process.argv.find((value) => value.startsWith('--variants='))?.slice(11) ?? 'candidate';
+const requestedVariants = process.argv.find((value) => value.startsWith('--variants='))?.slice(11) ?? 'authority-production';
 const variants = requestedVariants.split(',');
 if (variants.length === 0 || variants.some((variant) => !['baseline', 'candidate', 'renderer-memo', 'coordinator-authority', 'authority-production', 'coordinator-paced'].includes(variant))) {
   throw new Error('variants must use baseline, candidate, renderer-memo, coordinator-authority, authority-production, or coordinator-paced');
@@ -92,7 +94,7 @@ const DIST_ROOT = ${JSON.stringify(distPath)};
 const PRELOAD = ${JSON.stringify(preloadPath)};
 const hours = Number(process.argv.find(value => value.startsWith('--profile-hours='))?.slice(16) || 162);
 const mode = process.argv.find(value => value.startsWith('--profile-mode='))?.slice(15) || 'timing';
-const variant = process.argv.find(value => value.startsWith('--profile-variant='))?.slice(18) || 'candidate';
+const variant = process.argv.find(value => value.startsWith('--profile-variant='))?.slice(18) || 'authority-production';
 const workers = Number(process.argv.find(value => value.startsWith('--profile-workers='))?.slice(18) || 0);
 const userData = process.argv.find(value => value.startsWith('--profile-user-data='))?.slice(20);
 if (userData) app.setPath('userData', userData);
@@ -101,7 +103,8 @@ app.commandLine.appendSwitch('js-flags', '--expose-gc');
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }]);
 function resolveFile(requestUrl) {
   const url = new URL(requestUrl);
-  const requested = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
+  const pathname = url.pathname.startsWith('/orca/') ? url.pathname.slice(5) : url.pathname;
+  const requested = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
   const file = path.resolve(DIST_ROOT, '.' + requested);
   const relative = path.relative(DIST_ROOT, file);
   return relative.startsWith('..') || path.isAbsolute(relative) ? null : file;
@@ -124,9 +127,11 @@ app.whenReady().then(async () => {
     app.exit(1);
   }, 300000);
   try {
-    await window.loadURL('app://bokemo/?afkProfileHours=' + hours + '&afkProfileMode=' + encodeURIComponent(mode) + '&afkProfileVariant=' + encodeURIComponent(variant) + '&afkProfileWorkers=' + workers);
+    const startupStartedAt = performance.now();
+    await window.loadURL('app://bokemo/' + ${JSON.stringify(environment === 'orca' ? 'orca/' : '')} + '?afkProfileHours=' + hours + '&afkProfileMode=' + encodeURIComponent(mode) + '&afkProfileVariant=' + encodeURIComponent(variant) + '&afkProfileWorkers=' + workers);
+    const documentLoadedMs = performance.now() - startupStartedAt;
     const result = await window.webContents.executeJavaScript('window.__BOKEMO_AFK_LIVE_PROFILE_RESULT__', true);
-    const compactResult = { ...result, trace: { ...result.trace, events: [] } };
+    const compactResult = { ...result, variant, environment: ${JSON.stringify(environment)}, documentLoadedMs, startupToResultMs: performance.now() - startupStartedAt, trace: { ...result.trace, events: [] } };
     clearTimeout(timeout);
     process.stdout.write(${JSON.stringify(RESULT_PREFIX)} + JSON.stringify(compactResult) + '\\n');
     app.exit(0);
@@ -153,7 +158,12 @@ app.whenReady().then(async () => {
             `--profile-workers=${workerLimit}`,
             `--profile-user-data=${userDataPath}`,
           ], { cwd: process.cwd(), encoding: 'utf8', maxBuffer: 100 * 1024 * 1024 });
-          if (run.status !== 0) throw new Error(run.stderr || run.stdout || `AFK live ${mode}/${rawAbsenceHours}h failed`);
+          if (run.status !== 0) {
+            throw new Error(`AFK live ${variant}/${mode}/${rawAbsenceHours}h failed (status ${run.status}, signal ${run.signal ?? 'none'}).\n`
+              + (run.error?.message || run.stderr || run.stdout || 'No process output')
+              + (run.signal === 'SIGABRT' || run.stderr?.includes('SIGABRT')
+                ? '\nOn macOS, a SIGABRT in _RegisterApplication before window creation may indicate a sandbox launch restriction; inspect the Electron crash report.' : ''));
+          }
           const line = run.stdout.split('\n').find((value) => value.startsWith(RESULT_PREFIX));
           if (!line) throw new Error(`Missing AFK live result for ${mode}/${rawAbsenceHours}h`);
           if (index >= 0) rawRuns.push(JSON.parse(line.slice(RESULT_PREFIX.length)));
@@ -194,12 +204,16 @@ app.whenReady().then(async () => {
     return [`${variant}-${mode}-${rawAbsenceHours}h`, {
       mode,
       variant,
+      environment,
       rawAbsenceHours,
       samples: runs.length,
       finalStateHashes: [...new Set(runs.map((run) => run.validation.finalStateSha256))],
       persistedStateHashes: [...new Set(runs.map((run) => run.validation.persistedStateSha256))],
       wholeRecoveryHashStable: new Set(runs.map((run) => run.validation.finalStateSha256)).size === 1,
       persistedStateSemanticallyIdenticalEveryRun: runs.every((run) => run.validation.persistedStateSemanticallyIdentical),
+      documentLoadedMs: distribution(runs.map(run => run.documentLoadedMs)),
+      startupToResultMs: distribution(runs.map((run) => run.startupToResultMs)),
+      equipmentPlanningPhasesMs: Object.fromEntries(Object.keys(runs[0]?.attribution.autoEquipmentPlanningPhasesMs ?? {}).map(key => [key, distribution(runs.map(run => run.attribution.autoEquipmentPlanningPhasesMs[key]))])),
       wallMs: distribution(runs.map((run) => run.wallMs)),
       heartbeatP95Ms: distribution(runs.map((run) => run.heartbeatDelayMs.p95)),
       heartbeatMaximumMs: distribution(runs.map((run) => run.heartbeatDelayMs.maximum)),
@@ -243,7 +257,7 @@ app.whenReady().then(async () => {
   process.stdout.write(`${JSON.stringify({
     schemaVersion: 2,
     generatedAt: new Date().toISOString(),
-    sampling: { hours, modes, variants, workerLimit: workerLimit || null, warmups, samples, freshElectronProcessPerRun: true, alternatingVariantOrder: variants.length > 1 },
+    sampling: { environment, hours, modes, variants, workerLimit: workerLimit || null, warmups, samples, freshElectronProcessPerRun: true, alternatingVariantOrder: variants.length > 1 },
     workloads,
     comparisons,
   }, null, 2)}\n`);

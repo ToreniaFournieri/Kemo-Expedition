@@ -182,9 +182,13 @@
   - If the player selects YES: 
     - Generate **format of progress data** and send to:
       - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+        - username: `KEMO dev`
       - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+        - username: `KEMO beta`
       - `/orca/` : ORCA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+        - username: `KEMO orca`
       - `/`: PROD_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+        - username: `KEMO prod`      
     - If the webhook request succeeds:
       - Set Speed of Time to x1.2. and the text is `▶︎`
       - The boost effect lasts for 24 hours 45 minites.

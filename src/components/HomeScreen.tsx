@@ -66,6 +66,7 @@ type AfkPartyChunkInventoryWorkerResult,
 import { recordAfkWorkerJobTelemetry,terminateAfkWorkers } from '../game/afkWorkerTelemetry';
 import { AFK_TRACE_WATCHDOG_INTERVAL_MS,afkRuntimeTrace } from '../game/afkRuntimeTrace';
 import {
+recordAfkEquipmentPlanningPhases,
 beginAfkLiveProfileMeasurement,
 canCompleteAfkLiveProfile,
 completeAfkLiveProfile,
@@ -3158,7 +3159,18 @@ export function HomeScreen({
           const autoEquipment = capturedSettingChanges
             ? []
             : (committedState: GameState) => {
-                const plan = planAutoEquipment(committedState, [completedResult.partyIndex]);
+                // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Debug-only runtime trace
+                const collector = __AFK_LIVE_PROFILE_ENABLED__ ? createAutoEquipmentAttributionCollector() : undefined;
+                const planningStartedAt = collector ? performance.now() : 0;
+                const plan = collector
+                  ? planAutoEquipment(committedState, [completedResult.partyIndex], undefined, {
+                      profile: { collector, actions: [] },
+                    })
+                  : planAutoEquipment(committedState, [completedResult.partyIndex]);
+                if (collector) {
+                  const attribution = collector.finish(performance.now() - planningStartedAt);
+                  recordAfkEquipmentPlanningPhases({ ...attribution.phasesMs, unclassifiedMs: attribution.unclassifiedMs });
+                }
                 return {
                   actions: plan.actions,
                   summary: {

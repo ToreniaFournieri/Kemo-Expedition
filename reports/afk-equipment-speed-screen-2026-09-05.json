@@ -1,0 +1,4502 @@
+{
+  "confirmation": {
+    "schemaVersion": 2,
+    "generatedAt": "2026-09-05T03:59:49.768Z",
+    "sampling": {
+      "hours": [
+        162
+      ],
+      "modes": [
+        "timing"
+      ],
+      "variants": [
+        "authority-production",
+        "equipment-quiet",
+        "equipment-stream"
+      ],
+      "workerLimit": null,
+      "warmups": 1,
+      "samples": 5,
+      "freshElectronProcessPerRun": true,
+      "alternatingVariantOrder": true
+    },
+    "workloads": {
+      "authority-production-timing-162h": {
+        "mode": "timing",
+        "variant": "authority-production",
+        "rawAbsenceHours": 162,
+        "samples": 5,
+        "finalStateHashes": [
+          "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+          "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+          "a606efa4b12f2639588f9513814318e1cd0b30e2b4304f757c095f0c863e95f2"
+        ],
+        "persistedStateHashes": [
+          "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+          "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+          "a606efa4b12f2639588f9513814318e1cd0b30e2b4304f757c095f0c863e95f2"
+        ],
+        "wholeRecoveryHashStable": false,
+        "persistedStateSemanticallyIdenticalEveryRun": true,
+        "startupToResultMs": {
+          "samples": 5,
+          "minimum": 6456.541584,
+          "p50": 7443.423207999999,
+          "p95": 7969.7005420000005,
+          "maximum": 7969.7005420000005
+        },
+        "equipmentPlanningPhasesMs": {
+          "inventoryClone": {
+            "samples": 5,
+            "minimum": 31.900000005960464,
+            "p50": 37.19999969005585,
+            "p95": 39.5,
+            "maximum": 39.5
+          },
+          "inventoryIndexBuild": {
+            "samples": 5,
+            "minimum": 55.199999898672104,
+            "p50": 65.49999997019768,
+            "p95": 69.20000004768372,
+            "maximum": 69.20000004768372
+          },
+          "inventoryScan": {
+            "samples": 5,
+            "minimum": 404.2000007033348,
+            "p50": 482.60000044107437,
+            "p95": 494.50000005960464,
+            "maximum": 494.50000005960464
+          },
+          "nativeRanking": {
+            "samples": 5,
+            "minimum": 21.100000023841858,
+            "p50": 27.099999874830246,
+            "p95": 29.299999982118607,
+            "maximum": 29.299999982118607
+          },
+          "statComputation": {
+            "samples": 5,
+            "minimum": 27.599999994039536,
+            "p50": 31.999999940395355,
+            "p95": 36.400000244379044,
+            "maximum": 36.400000244379044
+          },
+          "jewelPlanning": {
+            "samples": 5,
+            "minimum": 2.1999999582767487,
+            "p50": 2.999999910593033,
+            "p95": 3.899999886751175,
+            "maximum": 3.899999886751175
+          },
+          "notificationPlanning": {
+            "samples": 5,
+            "minimum": 3.6000000536441803,
+            "p50": 4.199999928474426,
+            "p95": 5.699999898672104,
+            "maximum": 5.699999898672104
+          },
+          "actionDispatch": {
+            "samples": 5,
+            "minimum": 3.3999999165534973,
+            "p50": 4.300000011920929,
+            "p95": 4.5,
+            "maximum": 4.5
+          },
+          "reducerApplication": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "unclassifiedMs": {
+            "samples": 5,
+            "minimum": 117.7999994456768,
+            "p50": 141.89999967813492,
+            "p95": 148.60000011324883,
+            "maximum": 148.60000011324883
+          }
+        },
+        "wallMs": {
+          "samples": 5,
+          "minimum": 5666.4000000059605,
+          "p50": 6513.300000011921,
+          "p95": 7049.0999999940395,
+          "maximum": 7049.0999999940395
+        },
+        "heartbeatP95Ms": {
+          "samples": 5,
+          "minimum": 29.099999994039536,
+          "p50": 36.60000002384186,
+          "p95": 40.19999998807907,
+          "maximum": 40.19999998807907
+        },
+        "heartbeatMaximumMs": {
+          "samples": 5,
+          "minimum": 398.5,
+          "p50": 436.40000000596046,
+          "p95": 570.0999999940395,
+          "maximum": 570.0999999940395
+        },
+        "reactCommitCount": {
+          "samples": 5,
+          "minimum": 48,
+          "p50": 54,
+          "p95": 58,
+          "maximum": 58
+        },
+        "reactCommitP95Ms": {
+          "samples": 5,
+          "minimum": 30.69999998807907,
+          "p50": 36.099999994039536,
+          "p95": 38.400000005960464,
+          "maximum": 38.400000005960464
+        },
+        "longTaskMaximumMs": {
+          "samples": 5,
+          "minimum": 361,
+          "p50": 397,
+          "p95": 518,
+          "maximum": 518
+        },
+        "attribution": {
+          "jobConstructionMs": {
+            "samples": 5,
+            "minimum": 50.000000059604645,
+            "p50": 59.40000006556511,
+            "p95": 66.60000002384186,
+            "maximum": 66.60000002384186
+          },
+          "workerSubmissionMs": {
+            "samples": 5,
+            "minimum": 71.79999989271164,
+            "p50": 82,
+            "p95": 84.79999992251396,
+            "maximum": 84.79999992251396
+          },
+          "workerExecutionSumMs": {
+            "samples": 5,
+            "minimum": 4418.800000041723,
+            "p50": 5413.000000059605,
+            "p95": 6099.999999940395,
+            "maximum": 6099.999999940395
+          },
+          "workerInputQueueMs": {
+            "samples": 5,
+            "minimum": 525.898681640625,
+            "p50": 590.799560546875,
+            "p95": 718.206787109375,
+            "maximum": 718.206787109375
+          },
+          "workerInputHydrationMs": {
+            "samples": 5,
+            "minimum": 3.400000035762787,
+            "p50": 3.7999999821186066,
+            "p95": 6.4000000059604645,
+            "maximum": 6.4000000059604645
+          },
+          "workerLanguageReadyMs": {
+            "samples": 5,
+            "minimum": 0.7000000178813934,
+            "p50": 0.9000000059604645,
+            "p95": 2.099999964237213,
+            "maximum": 2.099999964237213
+          },
+          "workerSimulationExecutionMs": {
+            "samples": 5,
+            "minimum": 4410.300000071526,
+            "p50": 5406.599999934435,
+            "p95": 6095.399999886751,
+            "maximum": 6095.399999886751
+          },
+          "workerBattleCount": {
+            "samples": 5,
+            "minimum": 24885,
+            "p50": 24885,
+            "p95": 25083,
+            "maximum": 25083
+          },
+          "workerBattleTotalMs": {
+            "samples": 5,
+            "minimum": 2058.1000014543533,
+            "p50": 2478.5999987721443,
+            "p95": 2761.800000011921,
+            "maximum": 2761.800000011921
+          },
+          "workerBattlePreparationMs": {
+            "samples": 5,
+            "minimum": 221.0000001192093,
+            "p50": 234.69999998807907,
+            "p95": 279.99999955296516,
+            "maximum": 279.99999955296516
+          },
+          "workerBattleInputWriteMs": {
+            "samples": 5,
+            "minimum": 201.29999947547913,
+            "p50": 236.09999987483025,
+            "p95": 274.7000002563,
+            "maximum": 274.7000002563
+          },
+          "workerBattleNativeExecutionMs": {
+            "samples": 5,
+            "minimum": 884.7000005543232,
+            "p50": 1080.2000005543232,
+            "p95": 1159.4999995529652,
+            "maximum": 1159.4999995529652
+          },
+          "workerBattleBorrowedOutputValidationMs": {
+            "samples": 5,
+            "minimum": 72.90000030398369,
+            "p50": 86.39999988675117,
+            "p95": 118.60000026226044,
+            "maximum": 118.60000026226044
+          },
+          "workerBattleOutputConsumeMs": {
+            "samples": 5,
+            "minimum": 404.6000010073185,
+            "p50": 492.3999989926815,
+            "p95": 536.4000008106232,
+            "maximum": 536.4000008106232
+          },
+          "workerBattleInputBytes": {
+            "samples": 5,
+            "minimum": 72188760,
+            "p50": 72188760,
+            "p95": 72734256,
+            "maximum": 72734256
+          },
+          "workerBattleOutputBytes": {
+            "samples": 5,
+            "minimum": 12612864,
+            "p50": 12914048,
+            "p95": 12914048,
+            "maximum": 12914048
+          },
+          "workerBattleResultBagEntryAllocations": {
+            "samples": 5,
+            "minimum": 298620,
+            "p50": 298620,
+            "p95": 300996,
+            "maximum": 300996
+          },
+          "workerStatusSnapshotMs": {
+            "samples": 5,
+            "minimum": 92.80000007152557,
+            "p50": 122.29999989271164,
+            "p95": 155.60000005364418,
+            "maximum": 155.60000005364418
+          },
+          "workerExpeditionMs": {
+            "samples": 5,
+            "minimum": 3945.800000220537,
+            "p50": 4818.400000333786,
+            "p95": 5398.800000995398,
+            "maximum": 5398.800000995398
+          },
+          "workerDiaryFinalizationMs": {
+            "samples": 5,
+            "minimum": 26.69999995827675,
+            "p50": 39.59999951720238,
+            "p95": 48.099999606609344,
+            "maximum": 48.099999606609344
+          },
+          "workerSideQuestAutomationMs": {
+            "samples": 5,
+            "minimum": 165.50000002980232,
+            "p50": 207.80000033974648,
+            "p95": 240.9999995827675,
+            "maximum": 240.9999995827675
+          },
+          "workerProfitProcessingMs": {
+            "samples": 5,
+            "minimum": 17.600000083446503,
+            "p50": 23.599999845027924,
+            "p95": 35.29999986290932,
+            "maximum": 35.29999986290932
+          },
+          "workerHpRecoveryMs": {
+            "samples": 5,
+            "minimum": 59.599999845027924,
+            "p50": 69.39999988675117,
+            "p95": 79.8000001013279,
+            "maximum": 79.8000001013279
+          },
+          "workerProgressCallbackMs": {
+            "samples": 5,
+            "minimum": 35.600000232458115,
+            "p50": 43.800000101327896,
+            "p95": 56.800000071525574,
+            "maximum": 56.800000071525574
+          },
+          "workerChunkFinalizationMs": {
+            "samples": 5,
+            "minimum": 0.09999999403953552,
+            "p50": 0.3999999761581421,
+            "p95": 0.4000000059604645,
+            "maximum": 0.4000000059604645
+          },
+          "workerInventoryDeltaMs": {
+            "samples": 5,
+            "minimum": 37.40000006556511,
+            "p50": 47.80000019073486,
+            "p95": 52.800000071525574,
+            "maximum": 52.800000071525574
+          },
+          "workerExpeditionPreparationMs": {
+            "samples": 5,
+            "minimum": 292.0999999344349,
+            "p50": 352.10000044107437,
+            "p95": 399.5,
+            "maximum": 399.5
+          },
+          "workerExpeditionInventoryCoordinatorMs": {
+            "samples": 5,
+            "minimum": 5.199999958276749,
+            "p50": 7.600000113248825,
+            "p95": 12.599999994039536,
+            "maximum": 12.599999994039536
+          },
+          "workerExpeditionServiceMs": {
+            "samples": 5,
+            "minimum": 2728.800000935793,
+            "p50": 3387.2999996244907,
+            "p95": 3764.3000006079674,
+            "maximum": 3764.3000006079674
+          },
+          "workerExpeditionPostServiceMs": {
+            "samples": 5,
+            "minimum": 239.79999873042107,
+            "p50": 291.10000067949295,
+            "p95": 354.30000069737434,
+            "maximum": 354.30000069737434
+          },
+          "workerExpeditionInventoryCompletionMs": {
+            "samples": 5,
+            "minimum": 2.5,
+            "p50": 3.099999964237213,
+            "p95": 4.300000071525574,
+            "maximum": 4.300000071525574
+          },
+          "workerExpeditionPresentationCompletionMs": {
+            "samples": 5,
+            "minimum": 542.1000001728535,
+            "p50": 636.9000000655651,
+            "p95": 713.6999999880791,
+            "maximum": 713.6999999880791
+          },
+          "workerExpeditionCommitProjectionMs": {
+            "samples": 5,
+            "minimum": 100.79999992251396,
+            "p50": 117.09999972581863,
+            "p95": 139.19999969005585,
+            "maximum": 139.19999969005585
+          },
+          "workerExpeditionCount": {
+            "samples": 5,
+            "minimum": 1410,
+            "p50": 1410,
+            "p95": 1440,
+            "maximum": 1440
+          },
+          "workerExpeditionRoomCount": {
+            "samples": 5,
+            "minimum": 23087,
+            "p50": 23087,
+            "p95": 23561,
+            "maximum": 23561
+          },
+          "workerExpeditionRetainedNarrationCount": {
+            "samples": 5,
+            "minimum": 158,
+            "p50": 161,
+            "p95": 162,
+            "maximum": 162
+          },
+          "workerExpeditionReplayedBattleCount": {
+            "samples": 5,
+            "minimum": 1798,
+            "p50": 1798,
+            "p95": 1848,
+            "maximum": 1848
+          },
+          "hydrationMs": {
+            "samples": 5,
+            "minimum": 0.800000011920929,
+            "p50": 1,
+            "p95": 1.300000011920929,
+            "maximum": 1.300000011920929
+          },
+          "fifoCommitWaitMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "chunkCommitReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "autoEquipmentMs": {
+            "samples": 5,
+            "minimum": 673.4999998807907,
+            "p50": 801.0999999344349,
+            "p95": 833.1000000536442,
+            "maximum": 833.1000000536442
+          },
+          "autoEquipmentPlanningCount": {
+            "samples": 5,
+            "minimum": 70,
+            "p50": 70,
+            "p95": 70,
+            "maximum": 70
+          },
+          "autoEquipmentNoopCount": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "autoEquipmentPlannedActionCount": {
+            "samples": 5,
+            "minimum": 7075,
+            "p50": 7075,
+            "p95": 7098,
+            "maximum": 7098
+          },
+          "autoEquipmentReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "atomicTransactionReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "chunkReducerMs": {
+            "samples": 5,
+            "minimum": 52.20000007748604,
+            "p50": 55.1000000834465,
+            "p95": 60.70000007748604,
+            "maximum": 60.70000007748604
+          },
+          "autoEquipmentReducerMs": {
+            "samples": 5,
+            "minimum": 438.1000000834465,
+            "p50": 517.000000089407,
+            "p95": 557.0999999642372,
+            "maximum": 557.0999999642372
+          },
+          "coordinatorAuthorityTransactionMs": {
+            "samples": 5,
+            "minimum": 1165.900000065565,
+            "p50": 1380.2000000178814,
+            "p95": 1453.500000089407,
+            "maximum": 1453.500000089407
+          },
+          "coordinatorAuthorityTransactionMaximumMs": {
+            "samples": 5,
+            "minimum": 27.900000005960464,
+            "p50": 34.5,
+            "p95": 42.29999998211861,
+            "maximum": 42.29999998211861
+          },
+          "coordinatorAuthorityTransactionCount": {
+            "samples": 5,
+            "minimum": 70,
+            "p50": 70,
+            "p95": 70,
+            "maximum": 70
+          },
+          "coordinatorAuthorityPublicationCount": {
+            "samples": 5,
+            "minimum": 30,
+            "p50": 36,
+            "p95": 38,
+            "maximum": 38
+          },
+          "coordinatorAuthorityTransactionsPerPublication": {
+            "samples": 5,
+            "minimum": 1.8421052631578947,
+            "p50": 1.9444444444444444,
+            "p95": 2.3333333333333335,
+            "maximum": 2.3333333333333335
+          },
+          "coordinatorAuthorityPublicationDelayMs": {
+            "samples": 5,
+            "minimum": 279.1999999284744,
+            "p50": 456.7999998629093,
+            "p95": 521.5999998748302,
+            "maximum": 521.5999998748302
+          },
+          "coordinatorAuthorityDispatchPaceMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "coordinatorAuthorityAckToWorkerPostMs": {
+            "samples": 5,
+            "minimum": 57.60000002384186,
+            "p50": 67.09999990463257,
+            "p95": 75.10000002384186,
+            "maximum": 75.10000002384186
+          },
+          "workerSlotIdleBeforeDispatchMs": {
+            "samples": 5,
+            "minimum": 1294.6000000238419,
+            "p50": 1480.0999999642372,
+            "p95": 1572.0000002086163,
+            "maximum": 1572.0000002086163
+          },
+          "rendererTransactionBoundaryMs": {
+            "samples": 5,
+            "minimum": 1165.900000065565,
+            "p50": 1380.2000000178814,
+            "p95": 1453.500000089407,
+            "maximum": 1453.500000089407
+          },
+          "rendererTransactionBoundarySharePercent": {
+            "samples": 5,
+            "minimum": 20.209817608104157,
+            "p50": 20.619653574082307,
+            "p95": 21.190487157283638,
+            "maximum": 21.190487157283638
+          },
+          "persistenceRendererMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "checkpointMs": {
+            "samples": 5,
+            "minimum": 0.09999999403953552,
+            "p50": 0.19999998807907104,
+            "p95": 0.20000001788139343,
+            "maximum": 0.20000001788139343
+          },
+          "recoveryFinalizationMs": {
+            "samples": 5,
+            "minimum": 6.9000000059604645,
+            "p50": 7.800000011920929,
+            "p95": 11.099999994039536,
+            "maximum": 11.099999994039536
+          },
+          "rendererPartyStatsCalls": {
+            "samples": 5,
+            "minimum": 432,
+            "p50": 504,
+            "p95": 544,
+            "maximum": 544
+          },
+          "rendererPartyStatsHits": {
+            "samples": 5,
+            "minimum": 356,
+            "p50": 428,
+            "p95": 468,
+            "maximum": 468
+          },
+          "rendererPartyStatsMisses": {
+            "samples": 5,
+            "minimum": 76,
+            "p50": 76,
+            "p95": 76,
+            "maximum": 76
+          },
+          "rendererPartyStatsComputeMs": {
+            "samples": 5,
+            "minimum": 55.600000113248825,
+            "p50": 64.80000004172325,
+            "p95": 67.70000007748604,
+            "maximum": 67.70000007748604
+          }
+        },
+        "memory": {
+          "peakApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "peakRendererWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "peakRendererHeapBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "completionApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "settledApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "settledRendererWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          }
+        },
+        "runs": [
+          {
+            "variant": "authority-production",
+            "rawAbsenceHours": 162,
+            "wallMs": 5666.4000000059605,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 29.099999994039536,
+              "maximum": 398.5
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 31.900000005960464,
+                "inventoryIndexBuild": 55.199999898672104,
+                "inventoryScan": 404.2000007033348,
+                "nativeRanking": 21.100000023841858,
+                "statComputation": 27.599999994039536,
+                "jewelPlanning": 2.1999999582767487,
+                "notificationPlanning": 5.699999898672104,
+                "actionDispatch": 3.7999999821186066,
+                "reducerApplication": 0,
+                "unclassifiedMs": 117.7999994456768
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 449.19999998807907,
+                "worker_execution": 2887.4000000059605,
+                "commit_awaiting_react": 46.19999998807907
+              },
+              "jobConstructionMs": 50.000000059604645,
+              "workerSubmissionMs": 71.79999989271164,
+              "workerExecutionSumMs": 4418.800000041723,
+              "workerInputQueueMs": 527.098876953125,
+              "workerInputHydrationMs": 6.4000000059604645,
+              "workerLanguageReadyMs": 2.099999964237213,
+              "workerSimulationExecutionMs": 4410.300000071526,
+              "workerBattleCount": 24885,
+              "workerBattleTotalMs": 2058.1000014543533,
+              "workerBattlePreparationMs": 221.0000001192093,
+              "workerBattleInputWriteMs": 201.29999947547913,
+              "workerBattleNativeExecutionMs": 884.7000005543232,
+              "workerBattleBorrowedOutputValidationMs": 73.59999972581863,
+              "workerBattleOutputConsumeMs": 404.6000010073185,
+              "workerBattleInputBytes": 72188760,
+              "workerBattleOutputBytes": 12914048,
+              "workerBattleResultBagEntryAllocations": 298620,
+              "workerStatusSnapshotMs": 92.80000007152557,
+              "workerExpeditionMs": 3945.800000220537,
+              "workerDiaryFinalizationMs": 26.69999995827675,
+              "workerSideQuestAutomationMs": 165.50000002980232,
+              "workerProfitProcessingMs": 17.600000083446503,
+              "workerHpRecoveryMs": 59.599999845027924,
+              "workerProgressCallbackMs": 43.800000101327896,
+              "workerChunkFinalizationMs": 0.4000000059604645,
+              "workerInventoryDeltaMs": 37.40000006556511,
+              "workerExpeditionPreparationMs": 292.0999999344349,
+              "workerExpeditionInventoryCoordinatorMs": 7.200000107288361,
+              "workerExpeditionServiceMs": 2728.800000935793,
+              "workerExpeditionPostServiceMs": 239.79999873042107,
+              "workerExpeditionInventoryCompletionMs": 3.099999964237213,
+              "workerExpeditionPresentationCompletionMs": 551.900000333786,
+              "workerExpeditionCommitProjectionMs": 100.79999992251396,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23087,
+              "workerExpeditionRetainedNarrationCount": 161,
+              "workerExpeditionReplayedBattleCount": 1798,
+              "hydrationMs": 0.800000011920929,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 673.4999998807907,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7075,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1165.900000065565,
+              "coordinatorAuthorityTransactionMaximumMs": 27.900000005960464,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 30,
+              "coordinatorAuthorityTransactionsPerPublication": 2.3333333333333335,
+              "coordinatorAuthorityPublicationDelayMs": 279.1999999284744,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 59.40000003576279,
+              "workerSlotIdleBeforeDispatchMs": 1294.6000000238419,
+              "chunkReducerMs": 52.20000007748604,
+              "autoEquipmentReducerMs": 438.1000000834465,
+              "rendererTransactionBoundaryMs": 1165.900000065565,
+              "rendererTransactionBoundarySharePercent": 20.57567415050718,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.20000001788139343,
+              "recoveryFinalizationMs": 6.9000000059604645,
+              "rendererPartyStatsCalls": 432,
+              "rendererPartyStatsHits": 356,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 55.600000113248825
+            },
+            "validation": {
+              "finalStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              },
+              "persistedComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              }
+            }
+          },
+          {
+            "variant": "authority-production",
+            "rawAbsenceHours": 162,
+            "wallMs": 7049.0999999940395,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 40.19999998807907,
+              "maximum": 415.7999999821186
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 39.5,
+                "inventoryIndexBuild": 69.20000004768372,
+                "inventoryScan": 494.50000005960464,
+                "nativeRanking": 27.099999874830246,
+                "statComputation": 36.400000244379044,
+                "jewelPlanning": 3.899999886751175,
+                "notificationPlanning": 4.199999928474426,
+                "actionDispatch": 4.300000011920929,
+                "reducerApplication": 0,
+                "unclassifiedMs": 148.60000011324883
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 869.7999999523163,
+                "worker_execution": 3667.8000000715256,
+                "commit_awaiting_react": 43.19999998807907
+              },
+              "jobConstructionMs": 66.60000002384186,
+              "workerSubmissionMs": 84.79999992251396,
+              "workerExecutionSumMs": 6099.999999940395,
+              "workerInputQueueMs": 718.206787109375,
+              "workerInputHydrationMs": 3.400000035762787,
+              "workerLanguageReadyMs": 1.0000000298023224,
+              "workerSimulationExecutionMs": 6095.399999886751,
+              "workerBattleCount": 24885,
+              "workerBattleTotalMs": 2761.800000011921,
+              "workerBattlePreparationMs": 279.99999955296516,
+              "workerBattleInputWriteMs": 274.7000002563,
+              "workerBattleNativeExecutionMs": 1159.4999995529652,
+              "workerBattleBorrowedOutputValidationMs": 118.60000026226044,
+              "workerBattleOutputConsumeMs": 536.4000008106232,
+              "workerBattleInputBytes": 72188760,
+              "workerBattleOutputBytes": 12914048,
+              "workerBattleResultBagEntryAllocations": 298620,
+              "workerStatusSnapshotMs": 155.60000005364418,
+              "workerExpeditionMs": 5398.800000995398,
+              "workerDiaryFinalizationMs": 48.099999606609344,
+              "workerSideQuestAutomationMs": 240.9999995827675,
+              "workerProfitProcessingMs": 35.29999986290932,
+              "workerHpRecoveryMs": 79.8000001013279,
+              "workerProgressCallbackMs": 56.800000071525574,
+              "workerChunkFinalizationMs": 0.4000000059604645,
+              "workerInventoryDeltaMs": 51.29999998211861,
+              "workerExpeditionPreparationMs": 376.6999999284744,
+              "workerExpeditionInventoryCoordinatorMs": 12.599999994039536,
+              "workerExpeditionServiceMs": 3764.3000006079674,
+              "workerExpeditionPostServiceMs": 354.30000069737434,
+              "workerExpeditionInventoryCompletionMs": 4.300000071525574,
+              "workerExpeditionPresentationCompletionMs": 713.6999999880791,
+              "workerExpeditionCommitProjectionMs": 139.19999969005585,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23087,
+              "workerExpeditionRetainedNarrationCount": 161,
+              "workerExpeditionReplayedBattleCount": 1798,
+              "hydrationMs": 1.300000011920929,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 833.1000000536442,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7075,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1453.500000089407,
+              "coordinatorAuthorityTransactionMaximumMs": 36.400000005960464,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 38,
+              "coordinatorAuthorityTransactionsPerPublication": 1.8421052631578947,
+              "coordinatorAuthorityPublicationDelayMs": 480.5000001192093,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 75.10000002384186,
+              "workerSlotIdleBeforeDispatchMs": 1572.0000002086163,
+              "chunkReducerMs": 60.70000007748604,
+              "autoEquipmentReducerMs": 557.0999999642372,
+              "rendererTransactionBoundaryMs": 1453.500000089407,
+              "rendererTransactionBoundarySharePercent": 20.619653574082307,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.09999999403953552,
+              "recoveryFinalizationMs": 7.799999982118607,
+              "rendererPartyStatsCalls": 544,
+              "rendererPartyStatsHits": 468,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 67.70000007748604
+            },
+            "validation": {
+              "finalStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              },
+              "persistedComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              }
+            }
+          },
+          {
+            "variant": "authority-production",
+            "rawAbsenceHours": 162,
+            "wallMs": 6513.300000011921,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 36.60000002384186,
+              "maximum": 463.30000001192093
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 36.099999994039536,
+                "inventoryIndexBuild": 65.49999997019768,
+                "inventoryScan": 482.60000044107437,
+                "nativeRanking": 28,
+                "statComputation": 31.999999940395355,
+                "jewelPlanning": 3.3999998569488525,
+                "notificationPlanning": 3.6000000536441803,
+                "actionDispatch": 4.5,
+                "reducerApplication": 0,
+                "unclassifiedMs": 141.89999967813492
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 656.2000000476837,
+                "worker_execution": 3317.299999922514,
+                "commit_awaiting_react": 131.60000002384186
+              },
+              "jobConstructionMs": 59.40000006556511,
+              "workerSubmissionMs": 82,
+              "workerExecutionSumMs": 5413.000000059605,
+              "workerInputQueueMs": 590.799560546875,
+              "workerInputHydrationMs": 5.300000041723251,
+              "workerLanguageReadyMs": 0.8000000715255737,
+              "workerSimulationExecutionMs": 5406.599999934435,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2478.5999987721443,
+              "workerBattlePreparationMs": 234.69999998807907,
+              "workerBattleInputWriteMs": 236.09999987483025,
+              "workerBattleNativeExecutionMs": 1081.1999990046024,
+              "workerBattleBorrowedOutputValidationMs": 86.39999988675117,
+              "workerBattleOutputConsumeMs": 492.3999989926815,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 122.29999989271164,
+              "workerExpeditionMs": 4818.400000333786,
+              "workerDiaryFinalizationMs": 39.59999963641167,
+              "workerSideQuestAutomationMs": 224.70000019669533,
+              "workerProfitProcessingMs": 23.599999845027924,
+              "workerHpRecoveryMs": 69.39999988675117,
+              "workerProgressCallbackMs": 35.600000232458115,
+              "workerChunkFinalizationMs": 0.3999999761581421,
+              "workerInventoryDeltaMs": 52.800000071525574,
+              "workerExpeditionPreparationMs": 352.10000044107437,
+              "workerExpeditionInventoryCoordinatorMs": 8.299999833106995,
+              "workerExpeditionServiceMs": 3387.2999996244907,
+              "workerExpeditionPostServiceMs": 291.10000067949295,
+              "workerExpeditionInventoryCompletionMs": 3.099999964237213,
+              "workerExpeditionPresentationCompletionMs": 636.9000000655651,
+              "workerExpeditionCommitProjectionMs": 117.09999972581863,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23235,
+              "workerExpeditionRetainedNarrationCount": 162,
+              "workerExpeditionReplayedBattleCount": 1848,
+              "hydrationMs": 1,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 801.0999999344349,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1380.2000000178814,
+              "coordinatorAuthorityTransactionMaximumMs": 42.29999998211861,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 36,
+              "coordinatorAuthorityTransactionsPerPublication": 1.9444444444444444,
+              "coordinatorAuthorityPublicationDelayMs": 412.29999992251396,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 67.09999990463257,
+              "workerSlotIdleBeforeDispatchMs": 1480.0999999642372,
+              "chunkReducerMs": 55.1000000834465,
+              "autoEquipmentReducerMs": 521.8999999463558,
+              "rendererTransactionBoundaryMs": 1380.2000000178814,
+              "rendererTransactionBoundarySharePercent": 21.190487157283638,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.19999998807907104,
+              "recoveryFinalizationMs": 7.800000011920929,
+              "rendererPartyStatsCalls": 504,
+              "rendererPartyStatsHits": 428,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 67.00000008940697
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "authority-production",
+            "rawAbsenceHours": 162,
+            "wallMs": 6891.700000017881,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 38.19999998807907,
+              "maximum": 436.40000000596046
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 37.19999969005585,
+                "inventoryIndexBuild": 67.19999980926514,
+                "inventoryScan": 487.00000035762787,
+                "nativeRanking": 29.299999982118607,
+                "statComputation": 34.20000037550926,
+                "jewelPlanning": 2.999999910593033,
+                "notificationPlanning": 4.200000017881393,
+                "actionDispatch": 3.3999999165534973,
+                "reducerApplication": 0,
+                "unclassifiedMs": 145.4999998807907
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 755.200000077486,
+                "worker_execution": 3249.6999999284744,
+                "commit_awaiting_react": 216.89999997615814
+              },
+              "jobConstructionMs": 59.800000071525574,
+              "workerSubmissionMs": 82.59999996423721,
+              "workerExecutionSumMs": 5552.500000149012,
+              "workerInputQueueMs": 602.599365234375,
+              "workerInputHydrationMs": 3.7999999821186066,
+              "workerLanguageReadyMs": 0.9000000059604645,
+              "workerSimulationExecutionMs": 5547.6000001728535,
+              "workerBattleCount": 24885,
+              "workerBattleTotalMs": 2565.2000002861023,
+              "workerBattlePreparationMs": 246.90000036358833,
+              "workerBattleInputWriteMs": 254.1999998986721,
+              "workerBattleNativeExecutionMs": 1080.2000005543232,
+              "workerBattleBorrowedOutputValidationMs": 104.79999986290932,
+              "workerBattleOutputConsumeMs": 530.0999999046326,
+              "workerBattleInputBytes": 72188760,
+              "workerBattleOutputBytes": 12914048,
+              "workerBattleResultBagEntryAllocations": 298620,
+              "workerStatusSnapshotMs": 122.40000003576279,
+              "workerExpeditionMs": 4964.5000005066395,
+              "workerDiaryFinalizationMs": 39.59999951720238,
+              "workerSideQuestAutomationMs": 202.69999954104424,
+              "workerProfitProcessingMs": 24.200000017881393,
+              "workerHpRecoveryMs": 77.00000002980232,
+              "workerProgressCallbackMs": 47.500000298023224,
+              "workerChunkFinalizationMs": 0.09999999403953552,
+              "workerInventoryDeltaMs": 47.80000019073486,
+              "workerExpeditionPreparationMs": 399.5,
+              "workerExpeditionInventoryCoordinatorMs": 7.600000113248825,
+              "workerExpeditionServiceMs": 3407.7000002563,
+              "workerExpeditionPostServiceMs": 316.3000003397465,
+              "workerExpeditionInventoryCompletionMs": 2.5,
+              "workerExpeditionPresentationCompletionMs": 681.1000002324581,
+              "workerExpeditionCommitProjectionMs": 122.9999997317791,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23087,
+              "workerExpeditionRetainedNarrationCount": 161,
+              "workerExpeditionReplayedBattleCount": 1798,
+              "hydrationMs": 0.8999999761581421,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 815.9999999701977,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7075,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1392.800000101328,
+              "coordinatorAuthorityTransactionMaximumMs": 31.299999982118607,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 37,
+              "coordinatorAuthorityTransactionsPerPublication": 1.8918918918918919,
+              "coordinatorAuthorityPublicationDelayMs": 521.5999998748302,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 69.19999995827675,
+              "workerSlotIdleBeforeDispatchMs": 1522.0999999046326,
+              "chunkReducerMs": 57.700000047683716,
+              "autoEquipmentReducerMs": 517.000000089407,
+              "rendererTransactionBoundaryMs": 1392.800000101328,
+              "rendererTransactionBoundarySharePercent": 20.209817608104157,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.19999998807907104,
+              "recoveryFinalizationMs": 11.099999994039536,
+              "rendererPartyStatsCalls": 523,
+              "rendererPartyStatsHits": 447,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 64.80000004172325
+            },
+            "validation": {
+              "finalStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              },
+              "persistedComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              }
+            }
+          },
+          {
+            "variant": "authority-production",
+            "rawAbsenceHours": 162,
+            "wallMs": 6131.199999988079,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 35,
+              "maximum": 570.0999999940395
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 37.19999998807907,
+                "inventoryIndexBuild": 59.899999886751175,
+                "inventoryScan": 443.30000019073486,
+                "nativeRanking": 22.599999725818634,
+                "statComputation": 29.599999725818634,
+                "jewelPlanning": 2.7000001072883606,
+                "notificationPlanning": 3.6999999582767487,
+                "actionDispatch": 4.399999916553497,
+                "reducerApplication": 0,
+                "unclassifiedMs": 131.50000044703484
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 529.5999999046326,
+                "worker_execution": 3096.6000000834465,
+                "commit_awaiting_react": 34.60000002384186
+              },
+              "jobConstructionMs": 53.70000001788139,
+              "workerSubmissionMs": 76.90000006556511,
+              "workerExecutionSumMs": 4691.299999952316,
+              "workerInputQueueMs": 525.898681640625,
+              "workerInputHydrationMs": 3.4000000655651093,
+              "workerLanguageReadyMs": 0.7000000178813934,
+              "workerSimulationExecutionMs": 4686.999999880791,
+              "workerBattleCount": 25021,
+              "workerBattleTotalMs": 2162.5000000298023,
+              "workerBattlePreparationMs": 223.80000001192093,
+              "workerBattleInputWriteMs": 223.1000006198883,
+              "workerBattleNativeExecutionMs": 942.700000077486,
+              "workerBattleBorrowedOutputValidationMs": 72.90000030398369,
+              "workerBattleOutputConsumeMs": 406.59999892115593,
+              "workerBattleInputBytes": 72556384,
+              "workerBattleOutputBytes": 12612864,
+              "workerBattleResultBagEntryAllocations": 300252,
+              "workerStatusSnapshotMs": 111.39999997615814,
+              "workerExpeditionMs": 4159.399999350309,
+              "workerDiaryFinalizationMs": 27.499999850988388,
+              "workerSideQuestAutomationMs": 207.80000033974648,
+              "workerProfitProcessingMs": 20.199999928474426,
+              "workerHpRecoveryMs": 59.700000286102295,
+              "workerProgressCallbackMs": 40.700000286102295,
+              "workerChunkFinalizationMs": 0.30000001192092896,
+              "workerInventoryDeltaMs": 40.90000009536743,
+              "workerExpeditionPreparationMs": 312.49999859929085,
+              "workerExpeditionInventoryCoordinatorMs": 5.199999958276749,
+              "workerExpeditionServiceMs": 2901.0000003278255,
+              "workerExpeditionPostServiceMs": 267.49999994039536,
+              "workerExpeditionInventoryCompletionMs": 4.000000089406967,
+              "workerExpeditionPresentationCompletionMs": 542.1000001728535,
+              "workerExpeditionCommitProjectionMs": 107.50000017881393,
+              "workerExpeditionCount": 1440,
+              "workerExpeditionRoomCount": 23561,
+              "workerExpeditionRetainedNarrationCount": 158,
+              "workerExpeditionReplayedBattleCount": 1817,
+              "hydrationMs": 1,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 739,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7098,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1289.5000000298023,
+              "coordinatorAuthorityTransactionMaximumMs": 34.5,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 33,
+              "coordinatorAuthorityTransactionsPerPublication": 2.121212121212121,
+              "coordinatorAuthorityPublicationDelayMs": 456.7999998629093,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 57.60000002384186,
+              "workerSlotIdleBeforeDispatchMs": 1403.400000065565,
+              "chunkReducerMs": 55.000000059604645,
+              "autoEquipmentReducerMs": 492.89999997615814,
+              "rendererTransactionBoundaryMs": 1289.5000000298023,
+              "rendererTransactionBoundarySharePercent": 21.031771921195027,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.19999998807907104,
+              "recoveryFinalizationMs": 9.400000005960464,
+              "rendererPartyStatsCalls": 471,
+              "rendererPartyStatsHits": 395,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 60.299999952316284
+            },
+            "validation": {
+              "finalStateSha256": "a606efa4b12f2639588f9513814318e1cd0b30e2b4304f757c095f0c863e95f2",
+              "persistedStateSha256": "a606efa4b12f2639588f9513814318e1cd0b30e2b4304f757c095f0c863e95f2",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "d248e8eaaa0d0dc3edd1dda48d66b9e12775f0f95bff5b7b6956d18c94aedd4e",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "366192aebb9c8a1a16be5a19ac748e68436a395f9ef740d5c4a47168a59f902f",
+                "party-2": "ff7e026f27b1423318a6ca9180ec0d8ea3428609e7af33cc74b5e0ebf0cb9348",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "1dc6058667891250e32a7f2bf484d9f0ddd2f876fae85b4ed6da8ad9579c42cc",
+                "party-5": "c516ebfe21560f68cbe28fc42743dcc5691a3adf80ef7ac20a07e6244b558158",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "d248e8eaaa0d0dc3edd1dda48d66b9e12775f0f95bff5b7b6956d18c94aedd4e",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "366192aebb9c8a1a16be5a19ac748e68436a395f9ef740d5c4a47168a59f902f",
+                "party-2": "ff7e026f27b1423318a6ca9180ec0d8ea3428609e7af33cc74b5e0ebf0cb9348",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "1dc6058667891250e32a7f2bf484d9f0ddd2f876fae85b4ed6da8ad9579c42cc",
+                "party-5": "c516ebfe21560f68cbe28fc42743dcc5691a3adf80ef7ac20a07e6244b558158",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          }
+        ]
+      },
+      "equipment-quiet-timing-162h": {
+        "mode": "timing",
+        "variant": "equipment-quiet",
+        "rawAbsenceHours": 162,
+        "samples": 5,
+        "finalStateHashes": [
+          "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39"
+        ],
+        "persistedStateHashes": [
+          "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39"
+        ],
+        "wholeRecoveryHashStable": true,
+        "persistedStateSemanticallyIdenticalEveryRun": true,
+        "startupToResultMs": {
+          "samples": 5,
+          "minimum": 6789.517459000001,
+          "p50": 6961.296375,
+          "p95": 6969.922625,
+          "maximum": 6969.922625
+        },
+        "equipmentPlanningPhasesMs": {
+          "inventoryClone": {
+            "samples": 5,
+            "minimum": 33.80000004172325,
+            "p50": 35.200000047683716,
+            "p95": 35.69999995827675,
+            "maximum": 35.69999995827675
+          },
+          "inventoryIndexBuild": {
+            "samples": 5,
+            "minimum": 59.79999992251396,
+            "p50": 62.40000009536743,
+            "p95": 63.20000001788139,
+            "maximum": 63.20000001788139
+          },
+          "inventoryScan": {
+            "samples": 5,
+            "minimum": 423.7000000476837,
+            "p50": 452.8999991118908,
+            "p95": 476.6999996006489,
+            "maximum": 476.6999996006489
+          },
+          "nativeRanking": {
+            "samples": 5,
+            "minimum": 24.200000077486038,
+            "p50": 24.90000009536743,
+            "p95": 29.09999966621399,
+            "maximum": 29.09999966621399
+          },
+          "statComputation": {
+            "samples": 5,
+            "minimum": 28.000000178813934,
+            "p50": 31.799999743700027,
+            "p95": 33.400000005960464,
+            "maximum": 33.400000005960464
+          },
+          "jewelPlanning": {
+            "samples": 5,
+            "minimum": 2.3000000417232513,
+            "p50": 2.6999999582767487,
+            "p95": 3.4999998807907104,
+            "maximum": 3.4999998807907104
+          },
+          "notificationPlanning": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "actionDispatch": {
+            "samples": 5,
+            "minimum": 3.9000000059604645,
+            "p50": 4.400000095367432,
+            "p95": 4.600000023841858,
+            "maximum": 4.600000023841858
+          },
+          "reducerApplication": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "unclassifiedMs": {
+            "samples": 5,
+            "minimum": 113.19999983906746,
+            "p50": 125.79999995231628,
+            "p95": 126.80000054836273,
+            "maximum": 126.80000054836273
+          }
+        },
+        "wallMs": {
+          "samples": 5,
+          "minimum": 5910.899999976158,
+          "p50": 6037,
+          "p95": 6099.799999982119,
+          "maximum": 6099.799999982119
+        },
+        "heartbeatP95Ms": {
+          "samples": 5,
+          "minimum": 32.099999994039536,
+          "p50": 34.400000005960464,
+          "p95": 38.29999998211861,
+          "maximum": 38.29999998211861
+        },
+        "heartbeatMaximumMs": {
+          "samples": 5,
+          "minimum": 403.09999999403954,
+          "p50": 445.90000000596046,
+          "p95": 534.5999999940395,
+          "maximum": 534.5999999940395
+        },
+        "reactCommitCount": {
+          "samples": 5,
+          "minimum": 50,
+          "p50": 50,
+          "p95": 50,
+          "maximum": 50
+        },
+        "reactCommitP95Ms": {
+          "samples": 5,
+          "minimum": 25.900000005960464,
+          "p50": 28,
+          "p95": 39.099999994039536,
+          "maximum": 39.099999994039536
+        },
+        "longTaskMaximumMs": {
+          "samples": 5,
+          "minimum": 366,
+          "p50": 407,
+          "p95": 480,
+          "maximum": 480
+        },
+        "attribution": {
+          "jobConstructionMs": {
+            "samples": 5,
+            "minimum": 51.49999997019768,
+            "p50": 54.90000003576279,
+            "p95": 60.50000008940697,
+            "maximum": 60.50000008940697
+          },
+          "workerSubmissionMs": {
+            "samples": 5,
+            "minimum": 73.49999997019768,
+            "p50": 77.09999999403954,
+            "p95": 79.5,
+            "maximum": 79.5
+          },
+          "workerExecutionSumMs": {
+            "samples": 5,
+            "minimum": 4582.099999964237,
+            "p50": 4781.000000029802,
+            "p95": 4834.900000035763,
+            "maximum": 4834.900000035763
+          },
+          "workerInputQueueMs": {
+            "samples": 5,
+            "minimum": 537.2958984375,
+            "p50": 559.008544921875,
+            "p95": 638.9072265625,
+            "maximum": 638.9072265625
+          },
+          "workerInputHydrationMs": {
+            "samples": 5,
+            "minimum": 3.800000011920929,
+            "p50": 4.5,
+            "p95": 6.900000065565109,
+            "maximum": 6.900000065565109
+          },
+          "workerLanguageReadyMs": {
+            "samples": 5,
+            "minimum": 0.4999999701976776,
+            "p50": 0.9000000059604645,
+            "p95": 1.2000000774860382,
+            "maximum": 1.2000000774860382
+          },
+          "workerSimulationExecutionMs": {
+            "samples": 5,
+            "minimum": 4577.600000053644,
+            "p50": 4772.399999946356,
+            "p95": 4827.599999964237,
+            "maximum": 4827.599999964237
+          },
+          "workerBattleCount": {
+            "samples": 5,
+            "minimum": 25083,
+            "p50": 25083,
+            "p95": 25083,
+            "maximum": 25083
+          },
+          "workerBattleTotalMs": {
+            "samples": 5,
+            "minimum": 2119.29999768734,
+            "p50": 2226.3000003397465,
+            "p95": 2257.500000447035,
+            "maximum": 2257.500000447035
+          },
+          "workerBattlePreparationMs": {
+            "samples": 5,
+            "minimum": 208.50000008940697,
+            "p50": 217.8999996483326,
+            "p95": 232.50000005960464,
+            "maximum": 232.50000005960464
+          },
+          "workerBattleInputWriteMs": {
+            "samples": 5,
+            "minimum": 212.60000005364418,
+            "p50": 214.69999977946281,
+            "p95": 224.99999904632568,
+            "maximum": 224.99999904632568
+          },
+          "workerBattleNativeExecutionMs": {
+            "samples": 5,
+            "minimum": 905.4999996721745,
+            "p50": 948.9000001251698,
+            "p95": 965.7000012099743,
+            "maximum": 965.7000012099743
+          },
+          "workerBattleBorrowedOutputValidationMs": {
+            "samples": 5,
+            "minimum": 67.90000042319298,
+            "p50": 88.00000029802322,
+            "p95": 90.7000000178814,
+            "maximum": 90.7000000178814
+          },
+          "workerBattleOutputConsumeMs": {
+            "samples": 5,
+            "minimum": 421.19999903440475,
+            "p50": 448.4000005722046,
+            "p95": 471.3000001013279,
+            "maximum": 471.3000001013279
+          },
+          "workerBattleInputBytes": {
+            "samples": 5,
+            "minimum": 72734256,
+            "p50": 72734256,
+            "p95": 72734256,
+            "maximum": 72734256
+          },
+          "workerBattleOutputBytes": {
+            "samples": 5,
+            "minimum": 12896704,
+            "p50": 12896704,
+            "p95": 12896704,
+            "maximum": 12896704
+          },
+          "workerBattleResultBagEntryAllocations": {
+            "samples": 5,
+            "minimum": 300996,
+            "p50": 300996,
+            "p95": 300996,
+            "maximum": 300996
+          },
+          "workerStatusSnapshotMs": {
+            "samples": 5,
+            "minimum": 102.90000003576279,
+            "p50": 113.99999985098839,
+            "p95": 118.00000011920929,
+            "maximum": 118.00000011920929
+          },
+          "workerExpeditionMs": {
+            "samples": 5,
+            "minimum": 4072.400000035763,
+            "p50": 4261.1000001728535,
+            "p95": 4304.400000333786,
+            "maximum": 4304.400000333786
+          },
+          "workerDiaryFinalizationMs": {
+            "samples": 5,
+            "minimum": 29.600000023841858,
+            "p50": 31.800000309944153,
+            "p95": 34.09999966621399,
+            "maximum": 34.09999966621399
+          },
+          "workerSideQuestAutomationMs": {
+            "samples": 5,
+            "minimum": 185.00000023841858,
+            "p50": 194.49999997019768,
+            "p95": 201.39999997615814,
+            "maximum": 201.39999997615814
+          },
+          "workerProfitProcessingMs": {
+            "samples": 5,
+            "minimum": 19.500000208616257,
+            "p50": 20.400000005960464,
+            "p95": 21.200000077486038,
+            "maximum": 21.200000077486038
+          },
+          "workerHpRecoveryMs": {
+            "samples": 5,
+            "minimum": 52.299999952316284,
+            "p50": 58.90000006556511,
+            "p95": 62.700000047683716,
+            "maximum": 62.700000047683716
+          },
+          "workerProgressCallbackMs": {
+            "samples": 5,
+            "minimum": 30.100000083446503,
+            "p50": 36.79999980330467,
+            "p95": 38.19999986886978,
+            "maximum": 38.19999986886978
+          },
+          "workerChunkFinalizationMs": {
+            "samples": 5,
+            "minimum": 0.19999998807907104,
+            "p50": 0.29999998211860657,
+            "p95": 0.9000000357627869,
+            "maximum": 0.9000000357627869
+          },
+          "workerInventoryDeltaMs": {
+            "samples": 5,
+            "minimum": 39.19999998807907,
+            "p50": 40.29999992251396,
+            "p95": 41.89999997615814,
+            "maximum": 41.89999997615814
+          },
+          "workerExpeditionPreparationMs": {
+            "samples": 5,
+            "minimum": 303.60000041127205,
+            "p50": 309.20000088214874,
+            "p95": 320.6000010073185,
+            "maximum": 320.6000010073185
+          },
+          "workerExpeditionInventoryCoordinatorMs": {
+            "samples": 5,
+            "minimum": 5.200000077486038,
+            "p50": 6.900000065565109,
+            "p95": 11.300000131130219,
+            "maximum": 11.300000131130219
+          },
+          "workerExpeditionServiceMs": {
+            "samples": 5,
+            "minimum": 2821.7999997138977,
+            "p50": 2966.2999989688396,
+            "p95": 2996.9000002741814,
+            "maximum": 2996.9000002741814
+          },
+          "workerExpeditionPostServiceMs": {
+            "samples": 5,
+            "minimum": 245.19999915361404,
+            "p50": 260.80000004172325,
+            "p95": 268.0999993085861,
+            "maximum": 268.0999993085861
+          },
+          "workerExpeditionInventoryCompletionMs": {
+            "samples": 5,
+            "minimum": 1.5999999940395355,
+            "p50": 3.0999999344348907,
+            "p95": 3.8999999463558197,
+            "maximum": 3.8999999463558197
+          },
+          "workerExpeditionPresentationCompletionMs": {
+            "samples": 5,
+            "minimum": 563.8000004589558,
+            "p50": 571.5000002384186,
+            "p95": 606.2000001370907,
+            "maximum": 606.2000001370907
+          },
+          "workerExpeditionCommitProjectionMs": {
+            "samples": 5,
+            "minimum": 97.50000032782555,
+            "p50": 109.60000014305115,
+            "p95": 110.1999998986721,
+            "maximum": 110.1999998986721
+          },
+          "workerExpeditionCount": {
+            "samples": 5,
+            "minimum": 1410,
+            "p50": 1410,
+            "p95": 1440,
+            "maximum": 1440
+          },
+          "workerExpeditionRoomCount": {
+            "samples": 5,
+            "minimum": 23235,
+            "p50": 23235,
+            "p95": 23534,
+            "maximum": 23534
+          },
+          "workerExpeditionRetainedNarrationCount": {
+            "samples": 5,
+            "minimum": 162,
+            "p50": 162,
+            "p95": 167,
+            "maximum": 167
+          },
+          "workerExpeditionReplayedBattleCount": {
+            "samples": 5,
+            "minimum": 1848,
+            "p50": 1848,
+            "p95": 1906,
+            "maximum": 1906
+          },
+          "hydrationMs": {
+            "samples": 5,
+            "minimum": 0.7000000178813934,
+            "p50": 1.0999999940395355,
+            "p95": 1.199999988079071,
+            "maximum": 1.199999988079071
+          },
+          "fifoCommitWaitMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "chunkCommitReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "autoEquipmentMs": {
+            "samples": 5,
+            "minimum": 694.1999999582767,
+            "p50": 741.6000000536442,
+            "p95": 768.7999998927116,
+            "maximum": 768.7999998927116
+          },
+          "autoEquipmentPlanningCount": {
+            "samples": 5,
+            "minimum": 70,
+            "p50": 70,
+            "p95": 70,
+            "maximum": 70
+          },
+          "autoEquipmentNoopCount": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "autoEquipmentPlannedActionCount": {
+            "samples": 5,
+            "minimum": 7096,
+            "p50": 7096,
+            "p95": 7096,
+            "maximum": 7096
+          },
+          "autoEquipmentReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "atomicTransactionReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "chunkReducerMs": {
+            "samples": 5,
+            "minimum": 51.30000019073486,
+            "p50": 52.90000009536743,
+            "p95": 53.29999998211861,
+            "maximum": 53.29999998211861
+          },
+          "autoEquipmentReducerMs": {
+            "samples": 5,
+            "minimum": 461.50000005960464,
+            "p50": 478.40000012516975,
+            "p95": 504.2000001370907,
+            "maximum": 504.2000001370907
+          },
+          "coordinatorAuthorityTransactionMs": {
+            "samples": 5,
+            "minimum": 1208.9000001847744,
+            "p50": 1274.8000000715256,
+            "p95": 1328.3000000715256,
+            "maximum": 1328.3000000715256
+          },
+          "coordinatorAuthorityTransactionMaximumMs": {
+            "samples": 5,
+            "minimum": 28.80000001192093,
+            "p50": 33.80000001192093,
+            "p95": 37.20000001788139,
+            "maximum": 37.20000001788139
+          },
+          "coordinatorAuthorityTransactionCount": {
+            "samples": 5,
+            "minimum": 70,
+            "p50": 70,
+            "p95": 70,
+            "maximum": 70
+          },
+          "coordinatorAuthorityPublicationCount": {
+            "samples": 5,
+            "minimum": 32,
+            "p50": 32,
+            "p95": 32,
+            "maximum": 32
+          },
+          "coordinatorAuthorityTransactionsPerPublication": {
+            "samples": 5,
+            "minimum": 2.1875,
+            "p50": 2.1875,
+            "p95": 2.1875,
+            "maximum": 2.1875
+          },
+          "coordinatorAuthorityPublicationDelayMs": {
+            "samples": 5,
+            "minimum": 307.80000016093254,
+            "p50": 426.4999999701977,
+            "p95": 516.7000000178814,
+            "maximum": 516.7000000178814
+          },
+          "coordinatorAuthorityDispatchPaceMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "coordinatorAuthorityAckToWorkerPostMs": {
+            "samples": 5,
+            "minimum": 60.59999993443489,
+            "p50": 63.99999985098839,
+            "p95": 67.19999992847443,
+            "maximum": 67.19999992847443
+          },
+          "workerSlotIdleBeforeDispatchMs": {
+            "samples": 5,
+            "minimum": 1303.2999999821186,
+            "p50": 1359.3000001311302,
+            "p95": 1431.1000000536442,
+            "maximum": 1431.1000000536442
+          },
+          "rendererTransactionBoundaryMs": {
+            "samples": 5,
+            "minimum": 1208.9000001847744,
+            "p50": 1274.8000000715256,
+            "p95": 1328.3000000715256,
+            "maximum": 1328.3000000715256
+          },
+          "rendererTransactionBoundarySharePercent": {
+            "samples": 5,
+            "minimum": 20.452046222904304,
+            "p50": 21.23958680559023,
+            "p95": 22.002650324192903,
+            "maximum": 22.002650324192903
+          },
+          "persistenceRendererMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "checkpointMs": {
+            "samples": 5,
+            "minimum": 0.09999999403953552,
+            "p50": 0.09999999403953552,
+            "p95": 0.30000001192092896,
+            "maximum": 0.30000001192092896
+          },
+          "recoveryFinalizationMs": {
+            "samples": 5,
+            "minimum": 7.300000011920929,
+            "p50": 7.5,
+            "p95": 8.099999994039536,
+            "maximum": 8.099999994039536
+          },
+          "rendererPartyStatsCalls": {
+            "samples": 5,
+            "minimum": 458,
+            "p50": 458,
+            "p95": 458,
+            "maximum": 458
+          },
+          "rendererPartyStatsHits": {
+            "samples": 5,
+            "minimum": 382,
+            "p50": 382,
+            "p95": 382,
+            "maximum": 382
+          },
+          "rendererPartyStatsMisses": {
+            "samples": 5,
+            "minimum": 76,
+            "p50": 76,
+            "p95": 76,
+            "maximum": 76
+          },
+          "rendererPartyStatsComputeMs": {
+            "samples": 5,
+            "minimum": 54.49999988079071,
+            "p50": 58.00000011920929,
+            "p95": 62.90000021457672,
+            "maximum": 62.90000021457672
+          }
+        },
+        "memory": {
+          "peakApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "peakRendererWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "peakRendererHeapBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "completionApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "settledApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "settledRendererWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          }
+        },
+        "runs": [
+          {
+            "variant": "equipment-quiet",
+            "rawAbsenceHours": 162,
+            "wallMs": 5910.899999976158,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 32.099999994039536,
+              "maximum": 403.09999999403954
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 33.80000004172325,
+                "inventoryIndexBuild": 60.40000009536743,
+                "inventoryScan": 423.7000000476837,
+                "nativeRanking": 24.499999970197678,
+                "statComputation": 29.000000029802322,
+                "jewelPlanning": 2.5000000298023224,
+                "notificationPlanning": 0,
+                "actionDispatch": 3.9999999701976776,
+                "reducerApplication": 0,
+                "unclassifiedMs": 113.19999983906746
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 580,
+                "worker_execution": 2967.2000000178814,
+                "commit_awaiting_react": 75.2999999821186
+              },
+              "jobConstructionMs": 51.49999997019768,
+              "workerSubmissionMs": 73.49999997019768,
+              "workerExecutionSumMs": 4781.000000029802,
+              "workerInputQueueMs": 548.50244140625,
+              "workerInputHydrationMs": 6.900000065565109,
+              "workerLanguageReadyMs": 1.100000023841858,
+              "workerSimulationExecutionMs": 4772.399999946356,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2231.199999332428,
+              "workerBattlePreparationMs": 208.50000008940697,
+              "workerBattleInputWriteMs": 224.99999904632568,
+              "workerBattleNativeExecutionMs": 958.3999997079372,
+              "workerBattleBorrowedOutputValidationMs": 90.7000000178814,
+              "workerBattleOutputConsumeMs": 471.00000005960464,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 112.6999998986721,
+              "workerExpeditionMs": 4261.1000001728535,
+              "workerDiaryFinalizationMs": 32.69999986886978,
+              "workerSideQuestAutomationMs": 185.00000023841858,
+              "workerProfitProcessingMs": 20.599999845027924,
+              "workerHpRecoveryMs": 62.700000047683716,
+              "workerProgressCallbackMs": 38.19999986886978,
+              "workerChunkFinalizationMs": 0.9000000357627869,
+              "workerInventoryDeltaMs": 39.19999998807907,
+              "workerExpeditionPreparationMs": 305.70000115036964,
+              "workerExpeditionInventoryCoordinatorMs": 7.700000107288361,
+              "workerExpeditionServiceMs": 2966.2999989688396,
+              "workerExpeditionPostServiceMs": 260.80000004172325,
+              "workerExpeditionInventoryCompletionMs": 3.8999999463558197,
+              "workerExpeditionPresentationCompletionMs": 583.4999995231628,
+              "workerExpeditionCommitProjectionMs": 109.60000014305115,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23235,
+              "workerExpeditionRetainedNarrationCount": 162,
+              "workerExpeditionReplayedBattleCount": 1848,
+              "hydrationMs": 0.7000000178813934,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 694.1999999582767,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1208.9000001847744,
+              "coordinatorAuthorityTransactionMaximumMs": 29.799999982118607,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 32,
+              "coordinatorAuthorityTransactionsPerPublication": 2.1875,
+              "coordinatorAuthorityPublicationDelayMs": 516.7000000178814,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 60.59999993443489,
+              "workerSlotIdleBeforeDispatchMs": 1303.2999999821186,
+              "chunkReducerMs": 51.30000019073486,
+              "autoEquipmentReducerMs": 461.50000005960464,
+              "rendererTransactionBoundaryMs": 1208.9000001847744,
+              "rendererTransactionBoundarySharePercent": 20.452046222904304,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.10000002384185791,
+              "recoveryFinalizationMs": 7.300000011920929,
+              "rendererPartyStatsCalls": 458,
+              "rendererPartyStatsHits": 382,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 55.89999997615814
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "equipment-quiet",
+            "rawAbsenceHours": 162,
+            "wallMs": 6002,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 33,
+              "maximum": 445.90000000596046
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 33.99999991059303,
+                "inventoryIndexBuild": 59.79999992251396,
+                "inventoryScan": 452.20000064373016,
+                "nativeRanking": 25.800000101327896,
+                "statComputation": 32.40000009536743,
+                "jewelPlanning": 2.3000000417232513,
+                "notificationPlanning": 0,
+                "actionDispatch": 4.600000023841858,
+                "reducerApplication": 0,
+                "unclassifiedMs": 126.79999920725822
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 574.9000000357628,
+                "worker_execution": 2996.2999999821186,
+                "commit_awaiting_react": 99
+              },
+              "jobConstructionMs": 54.49999991059303,
+              "workerSubmissionMs": 76.7999999821186,
+              "workerExecutionSumMs": 4834.900000035763,
+              "workerInputQueueMs": 559.008544921875,
+              "workerInputHydrationMs": 5.9000000059604645,
+              "workerLanguageReadyMs": 1.2000000774860382,
+              "workerSimulationExecutionMs": 4827.599999964237,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2257.500000447035,
+              "workerBattlePreparationMs": 232.50000005960464,
+              "workerBattleInputWriteMs": 212.60000005364418,
+              "workerBattleNativeExecutionMs": 965.7000012099743,
+              "workerBattleBorrowedOutputValidationMs": 83.99999967217445,
+              "workerBattleOutputConsumeMs": 471.3000001013279,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 113.99999985098839,
+              "workerExpeditionMs": 4304.400000333786,
+              "workerDiaryFinalizationMs": 30.499999821186066,
+              "workerSideQuestAutomationMs": 201.39999997615814,
+              "workerProfitProcessingMs": 20.100000023841858,
+              "workerHpRecoveryMs": 56.8999999165535,
+              "workerProgressCallbackMs": 37.90000003576279,
+              "workerChunkFinalizationMs": 0.29999998211860657,
+              "workerInventoryDeltaMs": 40.29999992251396,
+              "workerExpeditionPreparationMs": 309.20000088214874,
+              "workerExpeditionInventoryCoordinatorMs": 5.400000184774399,
+              "workerExpeditionServiceMs": 2977.799999654293,
+              "workerExpeditionPostServiceMs": 268.0999993085861,
+              "workerExpeditionInventoryCompletionMs": 3.1999999582767487,
+              "workerExpeditionPresentationCompletionMs": 606.2000001370907,
+              "workerExpeditionCommitProjectionMs": 109.60000014305115,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23235,
+              "workerExpeditionRetainedNarrationCount": 162,
+              "workerExpeditionReplayedBattleCount": 1848,
+              "hydrationMs": 0.9999999701976776,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 741.5999998450279,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1274.8000000715256,
+              "coordinatorAuthorityTransactionMaximumMs": 28.80000001192093,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 32,
+              "coordinatorAuthorityTransactionsPerPublication": 2.1875,
+              "coordinatorAuthorityPublicationDelayMs": 346.6999999284744,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 63.99999985098839,
+              "workerSlotIdleBeforeDispatchMs": 1340.299999922514,
+              "chunkReducerMs": 52.90000009536743,
+              "autoEquipmentReducerMs": 478.40000012516975,
+              "rendererTransactionBoundaryMs": 1274.8000000715256,
+              "rendererTransactionBoundarySharePercent": 21.23958680559023,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.09999999403953552,
+              "recoveryFinalizationMs": 7.5,
+              "rendererPartyStatsCalls": 458,
+              "rendererPartyStatsHits": 382,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 54.49999988079071
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "equipment-quiet",
+            "rawAbsenceHours": 162,
+            "wallMs": 6037,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 38.29999998211861,
+              "maximum": 534.5999999940395
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 35.200000047683716,
+                "inventoryIndexBuild": 63.10000014305115,
+                "inventoryScan": 476.6999996006489,
+                "nativeRanking": 29.09999966621399,
+                "statComputation": 31.799999743700027,
+                "jewelPlanning": 3.4999998807907104,
+                "notificationPlanning": 0,
+                "actionDispatch": 4.5000001192092896,
+                "reducerApplication": 0,
+                "unclassifiedMs": 120.80000069737434
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 715.2999999523163,
+                "worker_execution": 2636.600000053644,
+                "commit_awaiting_react": 253.30000001192093
+              },
+              "jobConstructionMs": 60.50000008940697,
+              "workerSubmissionMs": 79.5,
+              "workerExecutionSumMs": 4582.099999964237,
+              "workerInputQueueMs": 537.2958984375,
+              "workerInputHydrationMs": 3.8999999463558197,
+              "workerLanguageReadyMs": 0.4999999701976776,
+              "workerSimulationExecutionMs": 4577.600000053644,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2119.29999768734,
+              "workerBattlePreparationMs": 217.8999996483326,
+              "workerBattleInputWriteMs": 218.7999992966652,
+              "workerBattleNativeExecutionMs": 905.4999996721745,
+              "workerBattleBorrowedOutputValidationMs": 67.90000042319298,
+              "workerBattleOutputConsumeMs": 421.19999903440475,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 114.80000007152557,
+              "workerExpeditionMs": 4072.400000035763,
+              "workerDiaryFinalizationMs": 29.600000023841858,
+              "workerSideQuestAutomationMs": 194.40000000596046,
+              "workerProfitProcessingMs": 21.200000077486038,
+              "workerHpRecoveryMs": 52.299999952316284,
+              "workerProgressCallbackMs": 30.100000083446503,
+              "workerChunkFinalizationMs": 0.19999998807907104,
+              "workerInventoryDeltaMs": 41.79999998211861,
+              "workerExpeditionPreparationMs": 303.60000041127205,
+              "workerExpeditionInventoryCoordinatorMs": 5.200000077486038,
+              "workerExpeditionServiceMs": 2821.7999997138977,
+              "workerExpeditionPostServiceMs": 247.4999994635582,
+              "workerExpeditionInventoryCompletionMs": 2.5000000298023224,
+              "workerExpeditionPresentationCompletionMs": 563.8000004589558,
+              "workerExpeditionCommitProjectionMs": 104.10000011324883,
+              "workerExpeditionCount": 1440,
+              "workerExpeditionRoomCount": 23534,
+              "workerExpeditionRetainedNarrationCount": 167,
+              "workerExpeditionReplayedBattleCount": 1906,
+              "hydrationMs": 1.199999988079071,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 768.7999998927116,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1328.3000000715256,
+              "coordinatorAuthorityTransactionMaximumMs": 33.80000001192093,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 32,
+              "coordinatorAuthorityTransactionsPerPublication": 2.1875,
+              "coordinatorAuthorityPublicationDelayMs": 426.4999999701977,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 67.19999992847443,
+              "workerSlotIdleBeforeDispatchMs": 1431.1000000536442,
+              "chunkReducerMs": 52.99999997019768,
+              "autoEquipmentReducerMs": 504.2000001370907,
+              "rendererTransactionBoundaryMs": 1328.3000000715256,
+              "rendererTransactionBoundarySharePercent": 22.002650324192903,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.09999999403953552,
+              "recoveryFinalizationMs": 7.600000023841858,
+              "rendererPartyStatsCalls": 458,
+              "rendererPartyStatsHits": 382,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 58.40000003576279
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "equipment-quiet",
+            "rawAbsenceHours": 162,
+            "wallMs": 6099.799999982119,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 36.70000001788139,
+              "maximum": 450.69999998807907
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 35.49999988079071,
+                "inventoryIndexBuild": 63.20000001788139,
+                "inventoryScan": 469.0999999642372,
+                "nativeRanking": 24.200000077486038,
+                "statComputation": 33.400000005960464,
+                "jewelPlanning": 2.6999999582767487,
+                "notificationPlanning": 0,
+                "actionDispatch": 4.400000095367432,
+                "reducerApplication": 0,
+                "unclassifiedMs": 125.79999995231628
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 750.4000000357628,
+                "worker_execution": 2965.9999999701977,
+                "commit_awaiting_react": 50
+              },
+              "jobConstructionMs": 57.69999995827675,
+              "workerSubmissionMs": 77.70000007748604,
+              "workerExecutionSumMs": 4815.799999862909,
+              "workerInputQueueMs": 606.395751953125,
+              "workerInputHydrationMs": 3.800000011920929,
+              "workerLanguageReadyMs": 0.9000000059604645,
+              "workerSimulationExecutionMs": 4810.999999821186,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2226.3000003397465,
+              "workerBattlePreparationMs": 228.30000004172325,
+              "workerBattleInputWriteMs": 213.09999951720238,
+              "workerBattleNativeExecutionMs": 948.9000001251698,
+              "workerBattleBorrowedOutputValidationMs": 88.99999979138374,
+              "workerBattleOutputConsumeMs": 448.4000005722046,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 102.90000003576279,
+              "workerExpeditionMs": 4290.400000035763,
+              "workerDiaryFinalizationMs": 31.800000309944153,
+              "workerSideQuestAutomationMs": 199.39999970793724,
+              "workerProfitProcessingMs": 20.400000005960464,
+              "workerHpRecoveryMs": 61.400000005960464,
+              "workerProgressCallbackMs": 35.99999997019768,
+              "workerChunkFinalizationMs": 0.30000001192092896,
+              "workerInventoryDeltaMs": 41.89999997615814,
+              "workerExpeditionPreparationMs": 314.1000004708767,
+              "workerExpeditionInventoryCoordinatorMs": 11.300000131130219,
+              "workerExpeditionServiceMs": 2996.9000002741814,
+              "workerExpeditionPostServiceMs": 265.39999905228615,
+              "workerExpeditionInventoryCompletionMs": 1.5999999940395355,
+              "workerExpeditionPresentationCompletionMs": 571.5000002384186,
+              "workerExpeditionCommitProjectionMs": 110.1999998986721,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23235,
+              "workerExpeditionRetainedNarrationCount": 162,
+              "workerExpeditionReplayedBattleCount": 1848,
+              "hydrationMs": 1.199999988079071,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 761.4999998807907,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1318.3999999165535,
+              "coordinatorAuthorityTransactionMaximumMs": 34.099999994039536,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 32,
+              "coordinatorAuthorityTransactionsPerPublication": 2.1875,
+              "coordinatorAuthorityPublicationDelayMs": 307.80000016093254,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 66.00000014901161,
+              "workerSlotIdleBeforeDispatchMs": 1427.700000166893,
+              "chunkReducerMs": 52.800000101327896,
+              "autoEquipmentReducerMs": 502.0999999344349,
+              "rendererTransactionBoundaryMs": 1318.3999999165535,
+              "rendererTransactionBoundarySharePercent": 21.613823402741374,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.09999999403953552,
+              "recoveryFinalizationMs": 8.099999994039536,
+              "rendererPartyStatsCalls": 458,
+              "rendererPartyStatsHits": 382,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 62.90000021457672
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "equipment-quiet",
+            "rawAbsenceHours": 162,
+            "wallMs": 6051.299999982119,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 34.400000005960464,
+              "maximum": 425.7999999821186
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 35.69999995827675,
+                "inventoryIndexBuild": 62.40000009536743,
+                "inventoryScan": 452.8999991118908,
+                "nativeRanking": 24.90000009536743,
+                "statComputation": 28.000000178813934,
+                "jewelPlanning": 3.1000000834465027,
+                "notificationPlanning": 0,
+                "actionDispatch": 3.9000000059604645,
+                "reducerApplication": 0,
+                "unclassifiedMs": 126.80000054836273
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 703.5,
+                "worker_execution": 2851.199999988079,
+                "commit_awaiting_react": 136.90000000596046
+              },
+              "jobConstructionMs": 54.90000003576279,
+              "workerSubmissionMs": 77.09999999403954,
+              "workerExecutionSumMs": 4710.699999988079,
+              "workerInputQueueMs": 638.9072265625,
+              "workerInputHydrationMs": 4.5,
+              "workerLanguageReadyMs": 0.6000000238418579,
+              "workerSimulationExecutionMs": 4705.299999982119,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2170.699999988079,
+              "workerBattlePreparationMs": 209.99999925494194,
+              "workerBattleInputWriteMs": 214.69999977946281,
+              "workerBattleNativeExecutionMs": 913.2000007629395,
+              "workerBattleBorrowedOutputValidationMs": 88.00000029802322,
+              "workerBattleOutputConsumeMs": 446.20000088214874,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 118.00000011920929,
+              "workerExpeditionMs": 4185.400000602007,
+              "workerDiaryFinalizationMs": 34.09999966621399,
+              "workerSideQuestAutomationMs": 194.49999997019768,
+              "workerProfitProcessingMs": 19.500000208616257,
+              "workerHpRecoveryMs": 58.90000006556511,
+              "workerProgressCallbackMs": 36.79999980330467,
+              "workerChunkFinalizationMs": 0.29999998211860657,
+              "workerInventoryDeltaMs": 39.799999833106995,
+              "workerExpeditionPreparationMs": 320.6000010073185,
+              "workerExpeditionInventoryCoordinatorMs": 6.900000065565109,
+              "workerExpeditionServiceMs": 2919.4999996721745,
+              "workerExpeditionPostServiceMs": 245.19999915361404,
+              "workerExpeditionInventoryCompletionMs": 3.0999999344348907,
+              "workerExpeditionPresentationCompletionMs": 568.9000000953674,
+              "workerExpeditionCommitProjectionMs": 97.50000032782555,
+              "workerExpeditionCount": 1440,
+              "workerExpeditionRoomCount": 23534,
+              "workerExpeditionRetainedNarrationCount": 167,
+              "workerExpeditionReplayedBattleCount": 1906,
+              "hydrationMs": 1.0999999940395355,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 741.6000000536442,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1270.4000000059605,
+              "coordinatorAuthorityTransactionMaximumMs": 37.20000001788139,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 32,
+              "coordinatorAuthorityTransactionsPerPublication": 2.1875,
+              "coordinatorAuthorityPublicationDelayMs": 446.49999991059303,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 63.19999998807907,
+              "workerSlotIdleBeforeDispatchMs": 1359.3000001311302,
+              "chunkReducerMs": 53.29999998211861,
+              "autoEquipmentReducerMs": 473.7999999821186,
+              "rendererTransactionBoundaryMs": 1270.4000000059605,
+              "rendererTransactionBoundarySharePercent": 20.993836035392636,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.30000001192092896,
+              "recoveryFinalizationMs": 7.4000000059604645,
+              "rendererPartyStatsCalls": 458,
+              "rendererPartyStatsHits": 382,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 58.00000011920929
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          }
+        ]
+      },
+      "equipment-stream-timing-162h": {
+        "mode": "timing",
+        "variant": "equipment-stream",
+        "rawAbsenceHours": 162,
+        "samples": 5,
+        "finalStateHashes": [
+          "0f58e3ff80794c38108a48b6b2e704867d453296df0522d96ceaab3b9bab0f8e",
+          "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+          "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+          "3fe01011953381defab599913378cbd479b51eff7a80280f5701f92d7820608d"
+        ],
+        "persistedStateHashes": [
+          "0f58e3ff80794c38108a48b6b2e704867d453296df0522d96ceaab3b9bab0f8e",
+          "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+          "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+          "3fe01011953381defab599913378cbd479b51eff7a80280f5701f92d7820608d"
+        ],
+        "wholeRecoveryHashStable": false,
+        "persistedStateSemanticallyIdenticalEveryRun": true,
+        "startupToResultMs": {
+          "samples": 5,
+          "minimum": 6468.295958,
+          "p50": 6859.140291000001,
+          "p95": 7998.093542,
+          "maximum": 7998.093542
+        },
+        "equipmentPlanningPhasesMs": {
+          "inventoryClone": {
+            "samples": 5,
+            "minimum": 32.99999997019768,
+            "p50": 34.400000005960464,
+            "p95": 46.00000002980232,
+            "maximum": 46.00000002980232
+          },
+          "inventoryIndexBuild": {
+            "samples": 5,
+            "minimum": 57.20000007748604,
+            "p50": 62.400000154972076,
+            "p95": 72.30000007152557,
+            "maximum": 72.30000007152557
+          },
+          "inventoryScan": {
+            "samples": 5,
+            "minimum": 421.2000004053116,
+            "p50": 453.200001090765,
+            "p95": 527.7999998927116,
+            "maximum": 527.7999998927116
+          },
+          "nativeRanking": {
+            "samples": 5,
+            "minimum": 23,
+            "p50": 24.90000021457672,
+            "p95": 28.79999989271164,
+            "maximum": 28.79999989271164
+          },
+          "statComputation": {
+            "samples": 5,
+            "minimum": 22.799999713897705,
+            "p50": 25.500000327825546,
+            "p95": 27.79999989271164,
+            "maximum": 27.79999989271164
+          },
+          "jewelPlanning": {
+            "samples": 5,
+            "minimum": 1.9000000357627869,
+            "p50": 2.8000000417232513,
+            "p95": 3.3999999165534973,
+            "maximum": 3.3999999165534973
+          },
+          "notificationPlanning": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "actionDispatch": {
+            "samples": 5,
+            "minimum": 460.19999957084656,
+            "p50": 512.8999993503094,
+            "p95": 596.8999999761581,
+            "maximum": 596.8999999761581
+          },
+          "reducerApplication": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "unclassifiedMs": {
+            "samples": 5,
+            "minimum": 112.19999986886978,
+            "p50": 124.5999990105629,
+            "p95": 142.90000015497208,
+            "maximum": 142.90000015497208
+          }
+        },
+        "wallMs": {
+          "samples": 5,
+          "minimum": 5657.4000000059605,
+          "p50": 5996.200000017881,
+          "p95": 7065.5999999940395,
+          "maximum": 7065.5999999940395
+        },
+        "heartbeatP95Ms": {
+          "samples": 5,
+          "minimum": 30.19999998807907,
+          "p50": 35.099999994039536,
+          "p95": 38.69999998807907,
+          "maximum": 38.69999998807907
+        },
+        "heartbeatMaximumMs": {
+          "samples": 5,
+          "minimum": 400,
+          "p50": 414,
+          "p95": 586,
+          "maximum": 586
+        },
+        "reactCommitCount": {
+          "samples": 5,
+          "minimum": 48,
+          "p50": 51,
+          "p95": 58,
+          "maximum": 58
+        },
+        "reactCommitP95Ms": {
+          "samples": 5,
+          "minimum": 27.69999998807907,
+          "p50": 31.400000005960464,
+          "p95": 37.89999997615814,
+          "maximum": 37.89999997615814
+        },
+        "longTaskMaximumMs": {
+          "samples": 5,
+          "minimum": 363,
+          "p50": 376,
+          "p95": 527,
+          "maximum": 527
+        },
+        "attribution": {
+          "jobConstructionMs": {
+            "samples": 5,
+            "minimum": 51.19999995827675,
+            "p50": 56.90000006556511,
+            "p95": 65.39999997615814,
+            "maximum": 65.39999997615814
+          },
+          "workerSubmissionMs": {
+            "samples": 5,
+            "minimum": 69,
+            "p50": 76.00000008940697,
+            "p95": 87.70000013709068,
+            "maximum": 87.70000013709068
+          },
+          "workerExecutionSumMs": {
+            "samples": 5,
+            "minimum": 4314.3999999165535,
+            "p50": 4735,
+            "p95": 6017.09999987483,
+            "maximum": 6017.09999987483
+          },
+          "workerInputQueueMs": {
+            "samples": 5,
+            "minimum": 505.49560546875,
+            "p50": 544.000732421875,
+            "p95": 673.593017578125,
+            "maximum": 673.593017578125
+          },
+          "workerInputHydrationMs": {
+            "samples": 5,
+            "minimum": 3,
+            "p50": 3.900000035762787,
+            "p95": 4.799999952316284,
+            "maximum": 4.799999952316284
+          },
+          "workerLanguageReadyMs": {
+            "samples": 5,
+            "minimum": 0.3999999761581421,
+            "p50": 0.5999999940395355,
+            "p95": 0.8000000417232513,
+            "maximum": 0.8000000417232513
+          },
+          "workerSimulationExecutionMs": {
+            "samples": 5,
+            "minimum": 4310.099999725819,
+            "p50": 4730.399999976158,
+            "p95": 6012.6999998390675,
+            "maximum": 6012.6999998390675
+          },
+          "workerBattleCount": {
+            "samples": 5,
+            "minimum": 24885,
+            "p50": 25083,
+            "p95": 25083,
+            "maximum": 25083
+          },
+          "workerBattleTotalMs": {
+            "samples": 5,
+            "minimum": 2054.9000004827976,
+            "p50": 2209.2000008523464,
+            "p95": 2761.8999992311,
+            "maximum": 2761.8999992311
+          },
+          "workerBattlePreparationMs": {
+            "samples": 5,
+            "minimum": 205.19999992847443,
+            "p50": 224.5999994277954,
+            "p95": 285.10000002384186,
+            "maximum": 285.10000002384186
+          },
+          "workerBattleInputWriteMs": {
+            "samples": 5,
+            "minimum": 204.30000039935112,
+            "p50": 236.40000054240227,
+            "p95": 265.6999996602535,
+            "maximum": 265.6999996602535
+          },
+          "workerBattleNativeExecutionMs": {
+            "samples": 5,
+            "minimum": 860.4999993741512,
+            "p50": 922.5999993681908,
+            "p95": 1107.5000000596046,
+            "maximum": 1107.5000000596046
+          },
+          "workerBattleBorrowedOutputValidationMs": {
+            "samples": 5,
+            "minimum": 74.99999976158142,
+            "p50": 78.2000000178814,
+            "p95": 119.6000003516674,
+            "maximum": 119.6000003516674
+          },
+          "workerBattleOutputConsumeMs": {
+            "samples": 5,
+            "minimum": 409.1000002026558,
+            "p50": 425.19999954104424,
+            "p95": 583.2999991178513,
+            "maximum": 583.2999991178513
+          },
+          "workerBattleInputBytes": {
+            "samples": 5,
+            "minimum": 72188760,
+            "p50": 72734256,
+            "p95": 72734256,
+            "maximum": 72734256
+          },
+          "workerBattleOutputBytes": {
+            "samples": 5,
+            "minimum": 12896704,
+            "p50": 12896704,
+            "p95": 12914048,
+            "maximum": 12914048
+          },
+          "workerBattleResultBagEntryAllocations": {
+            "samples": 5,
+            "minimum": 298620,
+            "p50": 300996,
+            "p95": 300996,
+            "maximum": 300996
+          },
+          "workerStatusSnapshotMs": {
+            "samples": 5,
+            "minimum": 102.89999973773956,
+            "p50": 105.79999995231628,
+            "p95": 114.60000014305115,
+            "maximum": 114.60000014305115
+          },
+          "workerExpeditionMs": {
+            "samples": 5,
+            "minimum": 3858.2999995350838,
+            "p50": 4222.600000023842,
+            "p95": 5378.700000196695,
+            "maximum": 5378.700000196695
+          },
+          "workerDiaryFinalizationMs": {
+            "samples": 5,
+            "minimum": 28.60000029206276,
+            "p50": 33.19999980926514,
+            "p95": 46.10000017285347,
+            "maximum": 46.10000017285347
+          },
+          "workerSideQuestAutomationMs": {
+            "samples": 5,
+            "minimum": 159.20000004768372,
+            "p50": 191.5999998152256,
+            "p95": 257.30000019073486,
+            "maximum": 257.30000019073486
+          },
+          "workerProfitProcessingMs": {
+            "samples": 5,
+            "minimum": 17.899999886751175,
+            "p50": 20.399999976158142,
+            "p95": 32.99999985098839,
+            "maximum": 32.99999985098839
+          },
+          "workerHpRecoveryMs": {
+            "samples": 5,
+            "minimum": 55.49999997019768,
+            "p50": 57.59999993443489,
+            "p95": 70.49999982118607,
+            "maximum": 70.49999982118607
+          },
+          "workerProgressCallbackMs": {
+            "samples": 5,
+            "minimum": 30.20000034570694,
+            "p50": 32.799999594688416,
+            "p95": 45.4999997317791,
+            "maximum": 45.4999997317791
+          },
+          "workerChunkFinalizationMs": {
+            "samples": 5,
+            "minimum": 0.09999999403953552,
+            "p50": 0.30000001192092896,
+            "p95": 0.800000011920929,
+            "maximum": 0.800000011920929
+          },
+          "workerInventoryDeltaMs": {
+            "samples": 5,
+            "minimum": 37.5,
+            "p50": 40.70000007748604,
+            "p95": 45.299999952316284,
+            "maximum": 45.299999952316284
+          },
+          "workerExpeditionPreparationMs": {
+            "samples": 5,
+            "minimum": 287.30000004172325,
+            "p50": 315.2000008225441,
+            "p95": 392.90000039339066,
+            "maximum": 392.90000039339066
+          },
+          "workerExpeditionInventoryCoordinatorMs": {
+            "samples": 5,
+            "minimum": 4.100000023841858,
+            "p50": 6.0999999940395355,
+            "p95": 8.000000029802322,
+            "maximum": 8.000000029802322
+          },
+          "workerExpeditionServiceMs": {
+            "samples": 5,
+            "minimum": 2658.699999511242,
+            "p50": 2913.0000006258488,
+            "p95": 3781.499999552965,
+            "maximum": 3781.499999552965
+          },
+          "workerExpeditionPostServiceMs": {
+            "samples": 5,
+            "minimum": 227.10000032186508,
+            "p50": 256.8000011444092,
+            "p95": 352.1000002026558,
+            "maximum": 352.1000002026558
+          },
+          "workerExpeditionInventoryCompletionMs": {
+            "samples": 5,
+            "minimum": 2.300000101327896,
+            "p50": 2.9000000059604645,
+            "p95": 5.999999970197678,
+            "maximum": 5.999999970197678
+          },
+          "workerExpeditionPresentationCompletionMs": {
+            "samples": 5,
+            "minimum": 540.1999997198582,
+            "p50": 603.700000077486,
+            "p95": 680.6999997794628,
+            "maximum": 680.6999997794628
+          },
+          "workerExpeditionCommitProjectionMs": {
+            "samples": 5,
+            "minimum": 93.40000000596046,
+            "p50": 108.09999987483025,
+            "p95": 132.1000000834465,
+            "maximum": 132.1000000834465
+          },
+          "workerExpeditionCount": {
+            "samples": 5,
+            "minimum": 1410,
+            "p50": 1410,
+            "p95": 1440,
+            "maximum": 1440
+          },
+          "workerExpeditionRoomCount": {
+            "samples": 5,
+            "minimum": 23087,
+            "p50": 23235,
+            "p95": 23534,
+            "maximum": 23534
+          },
+          "workerExpeditionRetainedNarrationCount": {
+            "samples": 5,
+            "minimum": 161,
+            "p50": 162,
+            "p95": 167,
+            "maximum": 167
+          },
+          "workerExpeditionReplayedBattleCount": {
+            "samples": 5,
+            "minimum": 1798,
+            "p50": 1848,
+            "p95": 1906,
+            "maximum": 1906
+          },
+          "hydrationMs": {
+            "samples": 5,
+            "minimum": 0.6999999582767487,
+            "p50": 0.8999999761581421,
+            "p95": 1.199999988079071,
+            "maximum": 1.199999988079071
+          },
+          "fifoCommitWaitMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "chunkCommitReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "autoEquipmentMs": {
+            "samples": 5,
+            "minimum": 1138.2999999821186,
+            "p50": 1243.799999922514,
+            "p95": 1450.2000000178814,
+            "maximum": 1450.2000000178814
+          },
+          "autoEquipmentPlanningCount": {
+            "samples": 5,
+            "minimum": 70,
+            "p50": 70,
+            "p95": 70,
+            "maximum": 70
+          },
+          "autoEquipmentNoopCount": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "autoEquipmentPlannedActionCount": {
+            "samples": 5,
+            "minimum": 7075,
+            "p50": 7096,
+            "p95": 7096,
+            "maximum": 7096
+          },
+          "autoEquipmentReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "atomicTransactionReactVisibilityMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "chunkReducerMs": {
+            "samples": 5,
+            "minimum": 49.40000003576279,
+            "p50": 54.09999996423721,
+            "p95": 62.20000001788139,
+            "maximum": 62.20000001788139
+          },
+          "autoEquipmentReducerMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "coordinatorAuthorityTransactionMs": {
+            "samples": 5,
+            "minimum": 1190.3999999761581,
+            "p50": 1299.699999898672,
+            "p95": 1514.9000000357628,
+            "maximum": 1514.9000000357628
+          },
+          "coordinatorAuthorityTransactionMaximumMs": {
+            "samples": 5,
+            "minimum": 27.80000001192093,
+            "p50": 32,
+            "p95": 51.30000001192093,
+            "maximum": 51.30000001192093
+          },
+          "coordinatorAuthorityTransactionCount": {
+            "samples": 5,
+            "minimum": 70,
+            "p50": 70,
+            "p95": 70,
+            "maximum": 70
+          },
+          "coordinatorAuthorityPublicationCount": {
+            "samples": 5,
+            "minimum": 30,
+            "p50": 33,
+            "p95": 39,
+            "maximum": 39
+          },
+          "coordinatorAuthorityTransactionsPerPublication": {
+            "samples": 5,
+            "minimum": 1.794871794871795,
+            "p50": 2.121212121212121,
+            "p95": 2.3333333333333335,
+            "maximum": 2.3333333333333335
+          },
+          "coordinatorAuthorityPublicationDelayMs": {
+            "samples": 5,
+            "minimum": 368.80000001192093,
+            "p50": 507.79999992251396,
+            "p95": 607.1000000536442,
+            "maximum": 607.1000000536442
+          },
+          "coordinatorAuthorityDispatchPaceMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "coordinatorAuthorityAckToWorkerPostMs": {
+            "samples": 5,
+            "minimum": 53.900000005960464,
+            "p50": 63.799999952316284,
+            "p95": 73.59999993443489,
+            "maximum": 73.59999993443489
+          },
+          "workerSlotIdleBeforeDispatchMs": {
+            "samples": 5,
+            "minimum": 1270.5999999940395,
+            "p50": 1392.5,
+            "p95": 1638.8000000715256,
+            "maximum": 1638.8000000715256
+          },
+          "rendererTransactionBoundaryMs": {
+            "samples": 5,
+            "minimum": 1190.3999999761581,
+            "p50": 1299.699999898672,
+            "p95": 1514.9000000357628,
+            "maximum": 1514.9000000357628
+          },
+          "rendererTransactionBoundarySharePercent": {
+            "samples": 5,
+            "minimum": 19.611205557460785,
+            "p50": 21.100822868756396,
+            "p95": 21.675394414709253,
+            "maximum": 21.675394414709253
+          },
+          "persistenceRendererMs": {
+            "samples": 5,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "checkpointMs": {
+            "samples": 5,
+            "minimum": 0.09999999403953552,
+            "p50": 0.19999998807907104,
+            "p95": 0.30000001192092896,
+            "maximum": 0.30000001192092896
+          },
+          "recoveryFinalizationMs": {
+            "samples": 5,
+            "minimum": 7.399999976158142,
+            "p50": 7.799999982118607,
+            "p95": 12.300000011920929,
+            "maximum": 12.300000011920929
+          },
+          "rendererPartyStatsCalls": {
+            "samples": 5,
+            "minimum": 432,
+            "p50": 471,
+            "p95": 556,
+            "maximum": 556
+          },
+          "rendererPartyStatsHits": {
+            "samples": 5,
+            "minimum": 356,
+            "p50": 395,
+            "p95": 480,
+            "maximum": 480
+          },
+          "rendererPartyStatsMisses": {
+            "samples": 5,
+            "minimum": 76,
+            "p50": 76,
+            "p95": 76,
+            "maximum": 76
+          },
+          "rendererPartyStatsComputeMs": {
+            "samples": 5,
+            "minimum": 57,
+            "p50": 57.59999990463257,
+            "p95": 67.00000005960464,
+            "maximum": 67.00000005960464
+          }
+        },
+        "memory": {
+          "peakApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "peakRendererWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "peakRendererHeapBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "completionApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "settledApplicationWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          },
+          "settledRendererWorkingSetBytes": {
+            "samples": 0,
+            "minimum": 0,
+            "p50": 0,
+            "p95": 0,
+            "maximum": 0
+          }
+        },
+        "runs": [
+          {
+            "variant": "equipment-stream",
+            "rawAbsenceHours": 162,
+            "wallMs": 5821.0999999940395,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 33.39999997615814,
+              "maximum": 407.69999998807907
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 32.99999997019768,
+                "inventoryIndexBuild": 57.900000125169754,
+                "inventoryScan": 429.9999995827675,
+                "nativeRanking": 25.799999862909317,
+                "statComputation": 27.79999989271164,
+                "jewelPlanning": 2.7000001072883606,
+                "notificationPlanning": 0,
+                "actionDispatch": 475.0000002980232,
+                "reducerApplication": 0,
+                "unclassifiedMs": 121.3000001013279
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 646.5,
+                "worker_execution": 2832.800000011921,
+                "commit_awaiting_react": 52.19999998807907
+              },
+              "jobConstructionMs": 51.19999995827675,
+              "workerSubmissionMs": 70.10000002384186,
+              "workerExecutionSumMs": 4551.600000053644,
+              "workerInputQueueMs": 505.49560546875,
+              "workerInputHydrationMs": 3,
+              "workerLanguageReadyMs": 0.8000000417232513,
+              "workerSimulationExecutionMs": 4547.5999999940395,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2092.699998706579,
+              "workerBattlePreparationMs": 206.29999995231628,
+              "workerBattleInputWriteMs": 204.30000039935112,
+              "workerBattleNativeExecutionMs": 908.1999985575676,
+              "workerBattleBorrowedOutputValidationMs": 74.99999976158142,
+              "workerBattleOutputConsumeMs": 419.70000073313713,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 105.79999995231628,
+              "workerExpeditionMs": 4041.5999998748302,
+              "workerDiaryFinalizationMs": 33.39999973773956,
+              "workerSideQuestAutomationMs": 190.70000022649765,
+              "workerProfitProcessingMs": 23.800000071525574,
+              "workerHpRecoveryMs": 58.89999994635582,
+              "workerProgressCallbackMs": 35.900000125169754,
+              "workerChunkFinalizationMs": 0.09999999403953552,
+              "workerInventoryDeltaMs": 37.5,
+              "workerExpeditionPreparationMs": 299.49999991059303,
+              "workerExpeditionInventoryCoordinatorMs": 6.0999999940395355,
+              "workerExpeditionServiceMs": 2818.3000000417233,
+              "workerExpeditionPostServiceMs": 243.30000030994415,
+              "workerExpeditionInventoryCompletionMs": 2.9000000059604645,
+              "workerExpeditionPresentationCompletionMs": 540.1999997198582,
+              "workerExpeditionCommitProjectionMs": 111.29999992251396,
+              "workerExpeditionCount": 1440,
+              "workerExpeditionRoomCount": 23534,
+              "workerExpeditionRetainedNarrationCount": 167,
+              "workerExpeditionReplayedBattleCount": 1906,
+              "hydrationMs": 0.7000000476837158,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 1176.9999999403954,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1228.300000011921,
+              "coordinatorAuthorityTransactionMaximumMs": 36.599999994039536,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 32,
+              "coordinatorAuthorityTransactionsPerPublication": 2.1875,
+              "coordinatorAuthorityPublicationDelayMs": 507.79999992251396,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 53.900000005960464,
+              "workerSlotIdleBeforeDispatchMs": 1362.1999999284744,
+              "chunkReducerMs": 49.40000003576279,
+              "autoEquipmentReducerMs": 0,
+              "rendererTransactionBoundaryMs": 1228.300000011921,
+              "rendererTransactionBoundarySharePercent": 21.100822868756396,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.09999999403953552,
+              "recoveryFinalizationMs": 7.800000011920929,
+              "rendererPartyStatsCalls": 458,
+              "rendererPartyStatsHits": 382,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 57
+            },
+            "validation": {
+              "finalStateSha256": "0f58e3ff80794c38108a48b6b2e704867d453296df0522d96ceaab3b9bab0f8e",
+              "persistedStateSha256": "0f58e3ff80794c38108a48b6b2e704867d453296df0522d96ceaab3b9bab0f8e",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "cd66375ae78b805a8ff7cee886249c6e1c49cbd1762ca014a6ba4e20340ac904",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "0cca795e89ee87639748e88d50c5613954a307cedee1ce004562fbe44e981049",
+                "party-5": "c575a135689774ee7cafd58b7beb7bc74607d9deec96edad3ea356e1c67755f6",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "cd66375ae78b805a8ff7cee886249c6e1c49cbd1762ca014a6ba4e20340ac904",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "0cca795e89ee87639748e88d50c5613954a307cedee1ce004562fbe44e981049",
+                "party-5": "c575a135689774ee7cafd58b7beb7bc74607d9deec96edad3ea356e1c67755f6",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "equipment-stream",
+            "rawAbsenceHours": 162,
+            "wallMs": 5657.4000000059605,
+            "heartbeatDelayMs": {
+              "p50": 0,
+              "p95": 30.19999998807907,
+              "maximum": 400
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 33.700000047683716,
+                "inventoryIndexBuild": 57.20000007748604,
+                "inventoryScan": 421.2000004053116,
+                "nativeRanking": 24.90000021457672,
+                "statComputation": 22.799999713897705,
+                "jewelPlanning": 1.9000000357627869,
+                "notificationPlanning": 0,
+                "actionDispatch": 460.19999957084656,
+                "reducerApplication": 0,
+                "unclassifiedMs": 112.19999986886978
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 542.3999999463558,
+                "worker_execution": 2808.5000000596046,
+                "commit_awaiting_react": 11.599999994039536
+              },
+              "jobConstructionMs": 53.39999997615814,
+              "workerSubmissionMs": 69,
+              "workerExecutionSumMs": 4314.3999999165535,
+              "workerInputQueueMs": 533.398193359375,
+              "workerInputHydrationMs": 3.60000017285347,
+              "workerLanguageReadyMs": 0.5999999940395355,
+              "workerSimulationExecutionMs": 4310.099999725819,
+              "workerBattleCount": 24885,
+              "workerBattleTotalMs": 2054.9000004827976,
+              "workerBattlePreparationMs": 205.19999992847443,
+              "workerBattleInputWriteMs": 219.00000062584877,
+              "workerBattleNativeExecutionMs": 860.4999993741512,
+              "workerBattleBorrowedOutputValidationMs": 76.60000026226044,
+              "workerBattleOutputConsumeMs": 409.1000002026558,
+              "workerBattleInputBytes": 72188760,
+              "workerBattleOutputBytes": 12914048,
+              "workerBattleResultBagEntryAllocations": 298620,
+              "workerStatusSnapshotMs": 102.89999973773956,
+              "workerExpeditionMs": 3858.2999995350838,
+              "workerDiaryFinalizationMs": 28.60000029206276,
+              "workerSideQuestAutomationMs": 159.20000004768372,
+              "workerProfitProcessingMs": 18.299999862909317,
+              "workerHpRecoveryMs": 55.49999997019768,
+              "workerProgressCallbackMs": 32.20000007748604,
+              "workerChunkFinalizationMs": 0.29999998211860657,
+              "workerInventoryDeltaMs": 37.79999992251396,
+              "workerExpeditionPreparationMs": 287.30000004172325,
+              "workerExpeditionInventoryCoordinatorMs": 4.100000023841858,
+              "workerExpeditionServiceMs": 2658.699999511242,
+              "workerExpeditionPostServiceMs": 227.10000032186508,
+              "workerExpeditionInventoryCompletionMs": 2.300000101327896,
+              "workerExpeditionPresentationCompletionMs": 565.9999995827675,
+              "workerExpeditionCommitProjectionMs": 93.40000000596046,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23087,
+              "workerExpeditionRetainedNarrationCount": 161,
+              "workerExpeditionReplayedBattleCount": 1798,
+              "hydrationMs": 0.9999999403953552,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 1138.2999999821186,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7075,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1190.3999999761581,
+              "coordinatorAuthorityTransactionMaximumMs": 27.80000001192093,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 30,
+              "coordinatorAuthorityTransactionsPerPublication": 2.3333333333333335,
+              "coordinatorAuthorityPublicationDelayMs": 430.6000000536442,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 61.299999952316284,
+              "workerSlotIdleBeforeDispatchMs": 1270.5999999940395,
+              "chunkReducerMs": 49.900000005960464,
+              "autoEquipmentReducerMs": 0,
+              "rendererTransactionBoundaryMs": 1190.3999999761581,
+              "rendererTransactionBoundarySharePercent": 21.04146781162555,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.30000001192092896,
+              "recoveryFinalizationMs": 7.399999976158142,
+              "rendererPartyStatsCalls": 432,
+              "rendererPartyStatsHits": 356,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 57.30000004172325
+            },
+            "validation": {
+              "finalStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSha256": "c19b869d596ce5a441b634d841e6b21c7fd4db5b8cb6c0ca7b7e97007a917dfa",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              },
+              "persistedComponentSha256": {
+                "global": "0a7d5f9a5c608e826d3130c6d3f376581e3993b2f8ffa1873c460c76747e6dcb",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "f6575ebefda3b3656a5111d08601bb391cd02aaaf353ef9844083fbd0bcfb796",
+                "party-2": "ad428519228c34c169e2f3fe310fd0b00ae5568983d67f700e9695b3f46713b1",
+                "party-3": "ca5c2b7c784d18ac13d2ef71d731651044a85b1ccf8d07d0fc11bbc537f07603",
+                "party-4": "f4c15f721a2819fc841ef04ca66625080c21f31cd2abc4d30c89af2c906eed99",
+                "party-5": "ef39c5218de8cf7f314799c418479d278659d6b02c765c0fb03ab2ab87b8015f",
+                "party-6": "bcc4c1956d5eb924990ee3769d2c01ab6a8cd27bdc8b60f75d4a2cbb04f88797"
+              }
+            }
+          },
+          {
+            "variant": "equipment-stream",
+            "rawAbsenceHours": 162,
+            "wallMs": 6764.5,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 35.099999994039536,
+              "maximum": 448.59999999403954
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 35.50000014901161,
+                "inventoryIndexBuild": 64.20000007748604,
+                "inventoryScan": 459.69999980926514,
+                "nativeRanking": 23.400000154972076,
+                "statComputation": 25.399999797344208,
+                "jewelPlanning": 3.2999999821186066,
+                "notificationPlanning": 0,
+                "actionDispatch": 522.9999995529652,
+                "reducerApplication": 0,
+                "unclassifiedMs": 127.40000051259995
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 775.5999999940395,
+                "worker_execution": 2850.0999999940395,
+                "commit_awaiting_react": 114.90000000596046
+              },
+              "jobConstructionMs": 56.90000006556511,
+              "workerSubmissionMs": 76.00000008940697,
+              "workerExecutionSumMs": 4814.6000000834465,
+              "workerInputQueueMs": 589.09130859375,
+              "workerInputHydrationMs": 4.799999952316284,
+              "workerLanguageReadyMs": 0.800000011920929,
+              "workerSimulationExecutionMs": 4808.900000095367,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2245.6999998390675,
+              "workerBattlePreparationMs": 224.5999994277954,
+              "workerBattleInputWriteMs": 242.00000050663948,
+              "workerBattleNativeExecutionMs": 974.0000005662441,
+              "workerBattleBorrowedOutputValidationMs": 84.60000026226044,
+              "workerBattleOutputConsumeMs": 425.19999954104424,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 114.60000014305115,
+              "workerExpeditionMs": 4293.700000524521,
+              "workerDiaryFinalizationMs": 31.900000005960464,
+              "workerSideQuestAutomationMs": 191.5999998152256,
+              "workerProfitProcessingMs": 20.399999976158142,
+              "workerHpRecoveryMs": 55.700000166893005,
+              "workerProgressCallbackMs": 32.799999594688416,
+              "workerChunkFinalizationMs": 0.30000001192092896,
+              "workerInventoryDeltaMs": 44.999999940395355,
+              "workerExpeditionPreparationMs": 332.5000002980232,
+              "workerExpeditionInventoryCoordinatorMs": 6.799999922513962,
+              "workerExpeditionServiceMs": 2959.999999165535,
+              "workerExpeditionPostServiceMs": 256.8000011444092,
+              "workerExpeditionInventoryCompletionMs": 2.7000001072883606,
+              "workerExpeditionPresentationCompletionMs": 605.7000002563,
+              "workerExpeditionCommitProjectionMs": 108.09999987483025,
+              "workerExpeditionCount": 1440,
+              "workerExpeditionRoomCount": 23534,
+              "workerExpeditionRetainedNarrationCount": 167,
+              "workerExpeditionReplayedBattleCount": 1906,
+              "hydrationMs": 0.6999999582767487,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 1268.099999934435,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1326.599999934435,
+              "coordinatorAuthorityTransactionMaximumMs": 32,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 33,
+              "coordinatorAuthorityTransactionsPerPublication": 2.121212121212121,
+              "coordinatorAuthorityPublicationDelayMs": 368.80000001192093,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 63.799999952316284,
+              "workerSlotIdleBeforeDispatchMs": 1406.000000089407,
+              "chunkReducerMs": 57,
+              "autoEquipmentReducerMs": 0,
+              "rendererTransactionBoundaryMs": 1326.599999934435,
+              "rendererTransactionBoundarySharePercent": 19.611205557460785,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.09999999403953552,
+              "recoveryFinalizationMs": 12.300000011920929,
+              "rendererPartyStatsCalls": 471,
+              "rendererPartyStatsHits": 395,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 57.59999990463257
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "equipment-stream",
+            "rawAbsenceHours": 162,
+            "wallMs": 7065.5999999940395,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 38.69999998807907,
+              "maximum": 586
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 46.00000002980232,
+                "inventoryIndexBuild": 72.30000007152557,
+                "inventoryScan": 527.7999998927116,
+                "nativeRanking": 28.79999989271164,
+                "statComputation": 27.600000113248825,
+                "jewelPlanning": 3.3999999165534973,
+                "notificationPlanning": 0,
+                "actionDispatch": 596.8999999761581,
+                "reducerApplication": 0,
+                "unclassifiedMs": 142.90000015497208
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 621.7999999523163,
+                "worker_execution": 3771.300000011921,
+                "commit_awaiting_react": 120.90000003576279
+              },
+              "jobConstructionMs": 65.39999997615814,
+              "workerSubmissionMs": 87.70000013709068,
+              "workerExecutionSumMs": 6017.09999987483,
+              "workerInputQueueMs": 673.593017578125,
+              "workerInputHydrationMs": 3.900000035762787,
+              "workerLanguageReadyMs": 0.5,
+              "workerSimulationExecutionMs": 6012.6999998390675,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2761.8999992311,
+              "workerBattlePreparationMs": 285.10000002384186,
+              "workerBattleInputWriteMs": 265.6999996602535,
+              "workerBattleNativeExecutionMs": 1107.5000000596046,
+              "workerBattleBorrowedOutputValidationMs": 119.6000003516674,
+              "workerBattleOutputConsumeMs": 583.2999991178513,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 112.29999965429306,
+              "workerExpeditionMs": 5378.700000196695,
+              "workerDiaryFinalizationMs": 46.10000017285347,
+              "workerSideQuestAutomationMs": 257.30000019073486,
+              "workerProfitProcessingMs": 32.99999985098839,
+              "workerHpRecoveryMs": 70.49999982118607,
+              "workerProgressCallbackMs": 45.4999997317791,
+              "workerChunkFinalizationMs": 0.5000000298023224,
+              "workerInventoryDeltaMs": 45.299999952316284,
+              "workerExpeditionPreparationMs": 392.90000039339066,
+              "workerExpeditionInventoryCoordinatorMs": 8.000000029802322,
+              "workerExpeditionServiceMs": 3781.499999552965,
+              "workerExpeditionPostServiceMs": 352.1000002026558,
+              "workerExpeditionInventoryCompletionMs": 5.999999970197678,
+              "workerExpeditionPresentationCompletionMs": 680.6999997794628,
+              "workerExpeditionCommitProjectionMs": 132.1000000834465,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23235,
+              "workerExpeditionRetainedNarrationCount": 162,
+              "workerExpeditionReplayedBattleCount": 1848,
+              "hydrationMs": 1.199999988079071,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 1450.2000000178814,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1514.9000000357628,
+              "coordinatorAuthorityTransactionMaximumMs": 51.30000001192093,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 39,
+              "coordinatorAuthorityTransactionsPerPublication": 1.794871794871795,
+              "coordinatorAuthorityPublicationDelayMs": 607.1000000536442,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 73.59999993443489,
+              "workerSlotIdleBeforeDispatchMs": 1638.8000000715256,
+              "chunkReducerMs": 62.20000001788139,
+              "autoEquipmentReducerMs": 0,
+              "rendererTransactionBoundaryMs": 1514.9000000357628,
+              "rendererTransactionBoundarySharePercent": 21.440500453422793,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.19999998807907104,
+              "recoveryFinalizationMs": 7.799999982118607,
+              "rendererPartyStatsCalls": 556,
+              "rendererPartyStatsHits": 480,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 67.00000005960464
+            },
+            "validation": {
+              "finalStateSha256": "3fe01011953381defab599913378cbd479b51eff7a80280f5701f92d7820608d",
+              "persistedStateSha256": "3fe01011953381defab599913378cbd479b51eff7a80280f5701f92d7820608d",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "62567aa415bce6716bc18078b5dab3cab540fcd589bf53d4ef91cef2f30d6773",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "8d869e4403430c4c7e456b3f38c03161a3c6c89f212557c78428760229e2a6d4",
+                "party-5": "17c64bc4318aba85597a4893f1b87cfc4a883f66e25a09fe31f208dcf6630e8a",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "62567aa415bce6716bc18078b5dab3cab540fcd589bf53d4ef91cef2f30d6773",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "8d869e4403430c4c7e456b3f38c03161a3c6c89f212557c78428760229e2a6d4",
+                "party-5": "17c64bc4318aba85597a4893f1b87cfc4a883f66e25a09fe31f208dcf6630e8a",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          },
+          {
+            "variant": "equipment-stream",
+            "rawAbsenceHours": 162,
+            "wallMs": 5996.200000017881,
+            "heartbeatDelayMs": {
+              "p50": 0.09999999403953552,
+              "p95": 36.10000002384186,
+              "maximum": 414
+            },
+            "attribution": {
+              "autoEquipmentPlanningPhasesMs": {
+                "inventoryClone": 34.400000005960464,
+                "inventoryIndexBuild": 62.400000154972076,
+                "inventoryScan": 453.200001090765,
+                "nativeRanking": 23,
+                "statComputation": 25.500000327825546,
+                "jewelPlanning": 2.8000000417232513,
+                "notificationPlanning": 0,
+                "actionDispatch": 512.8999993503094,
+                "reducerApplication": 0,
+                "unclassifiedMs": 124.5999990105629
+              },
+              "exclusiveTimelineByPhaseMs": {
+                "worker_queue": 661.7999999821186,
+                "worker_execution": 2932.3000000417233,
+                "commit_awaiting_react": 90.69999998807907
+              },
+              "jobConstructionMs": 60.500000059604645,
+              "workerSubmissionMs": 77.10000005364418,
+              "workerExecutionSumMs": 4735,
+              "workerInputQueueMs": 544.000732421875,
+              "workerInputHydrationMs": 4.10000005364418,
+              "workerLanguageReadyMs": 0.3999999761581421,
+              "workerSimulationExecutionMs": 4730.399999976158,
+              "workerBattleCount": 25083,
+              "workerBattleTotalMs": 2209.2000008523464,
+              "workerBattlePreparationMs": 231.0000004172325,
+              "workerBattleInputWriteMs": 236.40000054240227,
+              "workerBattleNativeExecutionMs": 922.5999993681908,
+              "workerBattleBorrowedOutputValidationMs": 78.2000000178814,
+              "workerBattleOutputConsumeMs": 444.09999987483025,
+              "workerBattleInputBytes": 72734256,
+              "workerBattleOutputBytes": 12896704,
+              "workerBattleResultBagEntryAllocations": 300996,
+              "workerStatusSnapshotMs": 104.00000002980232,
+              "workerExpeditionMs": 4222.600000023842,
+              "workerDiaryFinalizationMs": 33.19999980926514,
+              "workerSideQuestAutomationMs": 201.9000001847744,
+              "workerProfitProcessingMs": 17.899999886751175,
+              "workerHpRecoveryMs": 57.59999993443489,
+              "workerProgressCallbackMs": 30.20000034570694,
+              "workerChunkFinalizationMs": 0.800000011920929,
+              "workerInventoryDeltaMs": 40.70000007748604,
+              "workerExpeditionPreparationMs": 315.2000008225441,
+              "workerExpeditionInventoryCoordinatorMs": 5.500000029802322,
+              "workerExpeditionServiceMs": 2913.0000006258488,
+              "workerExpeditionPostServiceMs": 263.4999989569187,
+              "workerExpeditionInventoryCompletionMs": 3.299999952316284,
+              "workerExpeditionPresentationCompletionMs": 603.700000077486,
+              "workerExpeditionCommitProjectionMs": 99.09999960660934,
+              "workerExpeditionCount": 1410,
+              "workerExpeditionRoomCount": 23235,
+              "workerExpeditionRetainedNarrationCount": 162,
+              "workerExpeditionReplayedBattleCount": 1848,
+              "hydrationMs": 0.8999999761581421,
+              "fifoCommitWaitMs": 0,
+              "chunkCommitReactVisibilityMs": 0,
+              "autoEquipmentMs": 1243.799999922514,
+              "autoEquipmentPlanningCount": 70,
+              "autoEquipmentNoopCount": 0,
+              "autoEquipmentPlannedActionCount": 7096,
+              "autoEquipmentReactVisibilityMs": 0,
+              "atomicTransactionReactVisibilityMs": 0,
+              "coordinatorAuthorityTransactionMs": 1299.699999898672,
+              "coordinatorAuthorityTransactionMaximumMs": 29.69999998807907,
+              "coordinatorAuthorityTransactionCount": 70,
+              "coordinatorAuthorityPublicationCount": 33,
+              "coordinatorAuthorityTransactionsPerPublication": 2.121212121212121,
+              "coordinatorAuthorityPublicationDelayMs": 510.2000000476837,
+              "coordinatorAuthorityDispatchPaceMs": 0,
+              "coordinatorAuthorityAckToWorkerPostMs": 67.2000000178814,
+              "workerSlotIdleBeforeDispatchMs": 1392.5,
+              "chunkReducerMs": 54.09999996423721,
+              "autoEquipmentReducerMs": 0,
+              "rendererTransactionBoundaryMs": 1299.699999898672,
+              "rendererTransactionBoundarySharePercent": 21.675394414709253,
+              "persistenceRendererMs": 0,
+              "checkpointMs": 0.19999998807907104,
+              "recoveryFinalizationMs": 7.600000023841858,
+              "rendererPartyStatsCalls": 471,
+              "rendererPartyStatsHits": 395,
+              "rendererPartyStatsMisses": 76,
+              "rendererPartyStatsComputeMs": 59.20000010728836
+            },
+            "validation": {
+              "finalStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSha256": "a8e97e670469ab0290d86f648f90b4dea2dc5902217964b145010c23b093be39",
+              "persistedStateSemanticallyIdentical": true,
+              "finalComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              },
+              "persistedComponentSha256": {
+                "global": "583bfede1c132ba099cd9faafd6a669331cf2d54babd76d707932dbb0df911e5",
+                "bags": "6ae9f35ba87441533ff92ae843c7f3c8fcf7bae39a11f5f66bade8f60cd7d00a",
+                "shell": "6bdbf3b6c161a97e1fd65b66d21ab75513d55d1c72c00fad4ff95088b4ba40b2",
+                "party-1": "fffa61788a702bb3bdb606bec6f0657cee5865ce7f3dee2d2cafb349dde7392a",
+                "party-2": "588da2a7b938fcc4287ec4cd4e14d3b794ceaef041b41a81b0e87d7d09ef9a15",
+                "party-3": "dde88692eaba6eb24a3c494ee01f85e9f3c22e5670752ba3be290fa34249a2f4",
+                "party-4": "428abc5b093226e65acf262ea263ceeb9d3ebeef9e6dd50c67214ef2c38eb9e2",
+                "party-5": "46b95a16a7e504a1ee69d81d281aa35badf668ea5153c01fc97be77c3efc4f9f",
+                "party-6": "72db3f452308125ffa0f24afe2b8851783b0b2a9e1373f1bc637c4da28f10f29"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "comparisons": {}
+  },
+  "candidateValidation": {
+    "workloads": [
+      "no_op",
+      "upgrade_heavy",
+      "full_rebuild",
+      "locked_equipment",
+      "jewel_priority",
+      "max_inventory"
+    ],
+    "target": "first party, currentHp=1",
+    "verified": true,
+    "persistedStateSemanticallyIdentical": true
+  },
+  "environmentRegressions": {
+    "normal": {
+      "sampling": {
+        "environment": "prod",
+        "hours": [
+          9,
+          24,
+          162
+        ],
+        "modes": [
+          "timing"
+        ],
+        "variants": [
+          "authority-production"
+        ],
+        "workerLimit": null,
+        "warmups": 0,
+        "samples": 1,
+        "freshElectronProcessPerRun": true,
+        "alternatingVariantOrder": false
+      },
+      "workloads": [
+        {
+          "environment": "prod",
+          "rawAbsenceHours": 9,
+          "samples": 1,
+          "wallMs": {
+            "samples": 1,
+            "minimum": 2960.800000011921,
+            "p50": 2960.800000011921,
+            "p95": 2960.800000011921,
+            "maximum": 2960.800000011921
+          },
+          "documentLoadedMs": {
+            "samples": 1,
+            "minimum": 169.34200000000004,
+            "p50": 169.34200000000004,
+            "p95": 169.34200000000004,
+            "maximum": 169.34200000000004
+          },
+          "startupToResultMs": {
+            "samples": 1,
+            "minimum": 3741.975125,
+            "p50": 3741.975125,
+            "p95": 3741.975125,
+            "maximum": 3741.975125
+          },
+          "persistedStateSemanticallyIdenticalEveryRun": true,
+          "equipmentPlanningPhasesMs": {
+            "inventoryClone": {
+              "samples": 1,
+              "minimum": 6.5,
+              "p50": 6.5,
+              "p95": 6.5,
+              "maximum": 6.5
+            },
+            "inventoryIndexBuild": {
+              "samples": 1,
+              "minimum": 13.500000029802322,
+              "p50": 13.500000029802322,
+              "p95": 13.500000029802322,
+              "maximum": 13.500000029802322
+            },
+            "inventoryScan": {
+              "samples": 1,
+              "minimum": 91.69999951124191,
+              "p50": 91.69999951124191,
+              "p95": 91.69999951124191,
+              "maximum": 91.69999951124191
+            },
+            "nativeRanking": {
+              "samples": 1,
+              "minimum": 7.099999904632568,
+              "p50": 7.099999904632568,
+              "p95": 7.099999904632568,
+              "maximum": 7.099999904632568
+            },
+            "statComputation": {
+              "samples": 1,
+              "minimum": 7.5000002682209015,
+              "p50": 7.5000002682209015,
+              "p95": 7.5000002682209015,
+              "maximum": 7.5000002682209015
+            },
+            "jewelPlanning": {
+              "samples": 1,
+              "minimum": 0.4999999701976776,
+              "p50": 0.4999999701976776,
+              "p95": 0.4999999701976776,
+              "maximum": 0.4999999701976776
+            },
+            "notificationPlanning": {
+              "samples": 1,
+              "minimum": 0.7000000178813934,
+              "p50": 0.7000000178813934,
+              "p95": 0.7000000178813934,
+              "maximum": 0.7000000178813934
+            },
+            "actionDispatch": {
+              "samples": 1,
+              "minimum": 0.699999988079071,
+              "p50": 0.699999988079071,
+              "p95": 0.699999988079071,
+              "maximum": 0.699999988079071
+            },
+            "reducerApplication": {
+              "samples": 1,
+              "minimum": 0,
+              "p50": 0,
+              "p95": 0,
+              "maximum": 0
+            },
+            "unclassifiedMs": {
+              "samples": 1,
+              "minimum": 29.800000309944153,
+              "p50": 29.800000309944153,
+              "p95": 29.800000309944153,
+              "maximum": 29.800000309944153
+            }
+          }
+        },
+        {
+          "environment": "prod",
+          "rawAbsenceHours": 24,
+          "samples": 1,
+          "wallMs": {
+            "samples": 1,
+            "minimum": 3542.0999999940395,
+            "p50": 3542.0999999940395,
+            "p95": 3542.0999999940395,
+            "maximum": 3542.0999999940395
+          },
+          "documentLoadedMs": {
+            "samples": 1,
+            "minimum": 135.974333,
+            "p50": 135.974333,
+            "p95": 135.974333,
+            "maximum": 135.974333
+          },
+          "startupToResultMs": {
+            "samples": 1,
+            "minimum": 4346.70425,
+            "p50": 4346.70425,
+            "p95": 4346.70425,
+            "maximum": 4346.70425
+          },
+          "persistedStateSemanticallyIdenticalEveryRun": true,
+          "equipmentPlanningPhasesMs": {
+            "inventoryClone": {
+              "samples": 1,
+              "minimum": 11.60000005364418,
+              "p50": 11.60000005364418,
+              "p95": 11.60000005364418,
+              "maximum": 11.60000005364418
+            },
+            "inventoryIndexBuild": {
+              "samples": 1,
+              "minimum": 22.199999898672104,
+              "p50": 22.199999898672104,
+              "p95": 22.199999898672104,
+              "maximum": 22.199999898672104
+            },
+            "inventoryScan": {
+              "samples": 1,
+              "minimum": 159.59999984502792,
+              "p50": 159.59999984502792,
+              "p95": 159.59999984502792,
+              "maximum": 159.59999984502792
+            },
+            "nativeRanking": {
+              "samples": 1,
+              "minimum": 9.200000137090683,
+              "p50": 9.200000137090683,
+              "p95": 9.200000137090683,
+              "maximum": 9.200000137090683
+            },
+            "statComputation": {
+              "samples": 1,
+              "minimum": 11.900000035762787,
+              "p50": 11.900000035762787,
+              "p95": 11.900000035762787,
+              "maximum": 11.900000035762787
+            },
+            "jewelPlanning": {
+              "samples": 1,
+              "minimum": 0.7999999821186066,
+              "p50": 0.7999999821186066,
+              "p95": 0.7999999821186066,
+              "maximum": 0.7999999821186066
+            },
+            "notificationPlanning": {
+              "samples": 1,
+              "minimum": 1.9000000059604645,
+              "p50": 1.9000000059604645,
+              "p95": 1.9000000059604645,
+              "maximum": 1.9000000059604645
+            },
+            "actionDispatch": {
+              "samples": 1,
+              "minimum": 1.5999999642372131,
+              "p50": 1.5999999642372131,
+              "p95": 1.5999999642372131,
+              "maximum": 1.5999999642372131
+            },
+            "reducerApplication": {
+              "samples": 1,
+              "minimum": 0,
+              "p50": 0,
+              "p95": 0,
+              "maximum": 0
+            },
+            "unclassifiedMs": {
+              "samples": 1,
+              "minimum": 49.50000014901161,
+              "p50": 49.50000014901161,
+              "p95": 49.50000014901161,
+              "maximum": 49.50000014901161
+            }
+          }
+        },
+        {
+          "environment": "prod",
+          "rawAbsenceHours": 162,
+          "samples": 1,
+          "wallMs": {
+            "samples": 1,
+            "minimum": 5424.5999999940395,
+            "p50": 5424.5999999940395,
+            "p95": 5424.5999999940395,
+            "maximum": 5424.5999999940395
+          },
+          "documentLoadedMs": {
+            "samples": 1,
+            "minimum": 138.66625000000002,
+            "p50": 138.66625000000002,
+            "p95": 138.66625000000002,
+            "maximum": 138.66625000000002
+          },
+          "startupToResultMs": {
+            "samples": 1,
+            "minimum": 6229.592125,
+            "p50": 6229.592125,
+            "p95": 6229.592125,
+            "maximum": 6229.592125
+          },
+          "persistedStateSemanticallyIdenticalEveryRun": true,
+          "equipmentPlanningPhasesMs": {
+            "inventoryClone": {
+              "samples": 1,
+              "minimum": 28.799999922513962,
+              "p50": 28.799999922513962,
+              "p95": 28.799999922513962,
+              "maximum": 28.799999922513962
+            },
+            "inventoryIndexBuild": {
+              "samples": 1,
+              "minimum": 51.40000006556511,
+              "p50": 51.40000006556511,
+              "p95": 51.40000006556511,
+              "maximum": 51.40000006556511
+            },
+            "inventoryScan": {
+              "samples": 1,
+              "minimum": 372.8000002205372,
+              "p50": 372.8000002205372,
+              "p95": 372.8000002205372,
+              "maximum": 372.8000002205372
+            },
+            "nativeRanking": {
+              "samples": 1,
+              "minimum": 19.30000004172325,
+              "p50": 19.30000004172325,
+              "p95": 19.30000004172325,
+              "maximum": 19.30000004172325
+            },
+            "statComputation": {
+              "samples": 1,
+              "minimum": 25.0999998152256,
+              "p50": 25.0999998152256,
+              "p95": 25.0999998152256,
+              "maximum": 25.0999998152256
+            },
+            "jewelPlanning": {
+              "samples": 1,
+              "minimum": 2.100000023841858,
+              "p50": 2.100000023841858,
+              "p95": 2.100000023841858,
+              "maximum": 2.100000023841858
+            },
+            "notificationPlanning": {
+              "samples": 1,
+              "minimum": 2.699999988079071,
+              "p50": 2.699999988079071,
+              "p95": 2.699999988079071,
+              "maximum": 2.699999988079071
+            },
+            "actionDispatch": {
+              "samples": 1,
+              "minimum": 3.9000000655651093,
+              "p50": 3.9000000655651093,
+              "p95": 3.9000000655651093,
+              "maximum": 3.9000000655651093
+            },
+            "reducerApplication": {
+              "samples": 1,
+              "minimum": 0,
+              "p50": 0,
+              "p95": 0,
+              "maximum": 0
+            },
+            "unclassifiedMs": {
+              "samples": 1,
+              "minimum": 102.99999985098839,
+              "p50": 102.99999985098839,
+              "p95": 102.99999985098839,
+              "maximum": 102.99999985098839
+            }
+          }
+        }
+      ]
+    },
+    "orca": {
+      "sampling": {
+        "environment": "orca",
+        "hours": [
+          9,
+          24,
+          162
+        ],
+        "modes": [
+          "timing"
+        ],
+        "variants": [
+          "authority-production"
+        ],
+        "workerLimit": null,
+        "warmups": 0,
+        "samples": 1,
+        "freshElectronProcessPerRun": true,
+        "alternatingVariantOrder": false
+      },
+      "workloads": [
+        {
+          "environment": "orca",
+          "rawAbsenceHours": 9,
+          "samples": 1,
+          "wallMs": {
+            "samples": 1,
+            "minimum": 4331.299999982119,
+            "p50": 4331.299999982119,
+            "p95": 4331.299999982119,
+            "maximum": 4331.299999982119
+          },
+          "documentLoadedMs": {
+            "samples": 1,
+            "minimum": 174.63475,
+            "p50": 174.63475,
+            "p95": 174.63475,
+            "maximum": 174.63475
+          },
+          "startupToResultMs": {
+            "samples": 1,
+            "minimum": 4895.055208000001,
+            "p50": 4895.055208000001,
+            "p95": 4895.055208000001,
+            "maximum": 4895.055208000001
+          },
+          "persistedStateSemanticallyIdenticalEveryRun": true,
+          "equipmentPlanningPhasesMs": {
+            "inventoryClone": {
+              "samples": 1,
+              "minimum": 25.19999986886978,
+              "p50": 25.19999986886978,
+              "p95": 25.19999986886978,
+              "maximum": 25.19999986886978
+            },
+            "inventoryIndexBuild": {
+              "samples": 1,
+              "minimum": 46.900000005960464,
+              "p50": 46.900000005960464,
+              "p95": 46.900000005960464,
+              "maximum": 46.900000005960464
+            },
+            "inventoryScan": {
+              "samples": 1,
+              "minimum": 364.8999997675419,
+              "p50": 364.8999997675419,
+              "p95": 364.8999997675419,
+              "maximum": 364.8999997675419
+            },
+            "nativeRanking": {
+              "samples": 1,
+              "minimum": 21.09999993443489,
+              "p50": 21.09999993443489,
+              "p95": 21.09999993443489,
+              "maximum": 21.09999993443489
+            },
+            "statComputation": {
+              "samples": 1,
+              "minimum": 25.100000143051147,
+              "p50": 25.100000143051147,
+              "p95": 25.100000143051147,
+              "maximum": 25.100000143051147
+            },
+            "jewelPlanning": {
+              "samples": 1,
+              "minimum": 2.1999999582767487,
+              "p50": 2.1999999582767487,
+              "p95": 2.1999999582767487,
+              "maximum": 2.1999999582767487
+            },
+            "notificationPlanning": {
+              "samples": 1,
+              "minimum": 3.2000000178813934,
+              "p50": 3.2000000178813934,
+              "p95": 3.2000000178813934,
+              "maximum": 3.2000000178813934
+            },
+            "actionDispatch": {
+              "samples": 1,
+              "minimum": 2.4999999403953552,
+              "p50": 2.4999999403953552,
+              "p95": 2.4999999403953552,
+              "maximum": 2.4999999403953552
+            },
+            "reducerApplication": {
+              "samples": 1,
+              "minimum": 0,
+              "p50": 0,
+              "p95": 0,
+              "maximum": 0
+            },
+            "unclassifiedMs": {
+              "samples": 1,
+              "minimum": 105.40000027418137,
+              "p50": 105.40000027418137,
+              "p95": 105.40000027418137,
+              "maximum": 105.40000027418137
+            }
+          }
+        },
+        {
+          "environment": "orca",
+          "rawAbsenceHours": 24,
+          "samples": 1,
+          "wallMs": {
+            "samples": 1,
+            "minimum": 7302.300000011921,
+            "p50": 7302.300000011921,
+            "p95": 7302.300000011921,
+            "maximum": 7302.300000011921
+          },
+          "documentLoadedMs": {
+            "samples": 1,
+            "minimum": 141.42554199999998,
+            "p50": 141.42554199999998,
+            "p95": 141.42554199999998,
+            "maximum": 141.42554199999998
+          },
+          "startupToResultMs": {
+            "samples": 1,
+            "minimum": 7798.266125,
+            "p50": 7798.266125,
+            "p95": 7798.266125,
+            "maximum": 7798.266125
+          },
+          "persistedStateSemanticallyIdenticalEveryRun": true,
+          "equipmentPlanningPhasesMs": {
+            "inventoryClone": {
+              "samples": 1,
+              "minimum": 65.19999983906746,
+              "p50": 65.19999983906746,
+              "p95": 65.19999983906746,
+              "maximum": 65.19999983906746
+            },
+            "inventoryIndexBuild": {
+              "samples": 1,
+              "minimum": 110.10000020265579,
+              "p50": 110.10000020265579,
+              "p95": 110.10000020265579,
+              "maximum": 110.10000020265579
+            },
+            "inventoryScan": {
+              "samples": 1,
+              "minimum": 777.9000010490417,
+              "p50": 777.9000010490417,
+              "p95": 777.9000010490417,
+              "maximum": 777.9000010490417
+            },
+            "nativeRanking": {
+              "samples": 1,
+              "minimum": 41.99999958276749,
+              "p50": 41.99999958276749,
+              "p95": 41.99999958276749,
+              "maximum": 41.99999958276749
+            },
+            "statComputation": {
+              "samples": 1,
+              "minimum": 55.499999672174454,
+              "p50": 55.499999672174454,
+              "p95": 55.499999672174454,
+              "maximum": 55.499999672174454
+            },
+            "jewelPlanning": {
+              "samples": 1,
+              "minimum": 4.900000125169754,
+              "p50": 4.900000125169754,
+              "p95": 4.900000125169754,
+              "maximum": 4.900000125169754
+            },
+            "notificationPlanning": {
+              "samples": 1,
+              "minimum": 6.700000047683716,
+              "p50": 6.700000047683716,
+              "p95": 6.700000047683716,
+              "maximum": 6.700000047683716
+            },
+            "actionDispatch": {
+              "samples": 1,
+              "minimum": 4.60000005364418,
+              "p50": 4.60000005364418,
+              "p95": 4.60000005364418,
+              "maximum": 4.60000005364418
+            },
+            "reducerApplication": {
+              "samples": 1,
+              "minimum": 0,
+              "p50": 0,
+              "p95": 0,
+              "maximum": 0
+            },
+            "unclassifiedMs": {
+              "samples": 1,
+              "minimum": 220.09999945759773,
+              "p50": 220.09999945759773,
+              "p95": 220.09999945759773,
+              "maximum": 220.09999945759773
+            }
+          }
+        },
+        {
+          "environment": "orca",
+          "rawAbsenceHours": 162,
+          "samples": 1,
+          "wallMs": {
+            "samples": 1,
+            "minimum": 13451.90000000596,
+            "p50": 13451.90000000596,
+            "p95": 13451.90000000596,
+            "maximum": 13451.90000000596
+          },
+          "documentLoadedMs": {
+            "samples": 1,
+            "minimum": 162.31158399999998,
+            "p50": 162.31158399999998,
+            "p95": 162.31158399999998,
+            "maximum": 162.31158399999998
+          },
+          "startupToResultMs": {
+            "samples": 1,
+            "minimum": 13949.697209,
+            "p50": 13949.697209,
+            "p95": 13949.697209,
+            "maximum": 13949.697209
+          },
+          "persistedStateSemanticallyIdenticalEveryRun": true,
+          "equipmentPlanningPhasesMs": {
+            "inventoryClone": {
+              "samples": 1,
+              "minimum": 161.69999986886978,
+              "p50": 161.69999986886978,
+              "p95": 161.69999986886978,
+              "maximum": 161.69999986886978
+            },
+            "inventoryIndexBuild": {
+              "samples": 1,
+              "minimum": 293.40000039339066,
+              "p50": 293.40000039339066,
+              "p95": 293.40000039339066,
+              "maximum": 293.40000039339066
+            },
+            "inventoryScan": {
+              "samples": 1,
+              "minimum": 2097.6000011861324,
+              "p50": 2097.6000011861324,
+              "p95": 2097.6000011861324,
+              "maximum": 2097.6000011861324
+            },
+            "nativeRanking": {
+              "samples": 1,
+              "minimum": 91.30000054836273,
+              "p50": 91.30000054836273,
+              "p95": 91.30000054836273,
+              "maximum": 91.30000054836273
+            },
+            "statComputation": {
+              "samples": 1,
+              "minimum": 131.799999833107,
+              "p50": 131.799999833107,
+              "p95": 131.799999833107,
+              "maximum": 131.799999833107
+            },
+            "jewelPlanning": {
+              "samples": 1,
+              "minimum": 14.199999749660492,
+              "p50": 14.199999749660492,
+              "p95": 14.199999749660492,
+              "maximum": 14.199999749660492
+            },
+            "notificationPlanning": {
+              "samples": 1,
+              "minimum": 15.799999862909317,
+              "p50": 15.799999862909317,
+              "p95": 15.799999862909317,
+              "maximum": 15.799999862909317
+            },
+            "actionDispatch": {
+              "samples": 1,
+              "minimum": 19.599999994039536,
+              "p50": 19.599999994039536,
+              "p95": 19.599999994039536,
+              "maximum": 19.599999994039536
+            },
+            "reducerApplication": {
+              "samples": 1,
+              "minimum": 0,
+              "p50": 0,
+              "p95": 0,
+              "maximum": 0
+            },
+            "unclassifiedMs": {
+              "samples": 1,
+              "minimum": 582.4999984800816,
+              "p50": 582.4999984800816,
+              "p95": 582.4999984800816,
+              "maximum": 582.4999984800816
+            }
+          }
+        }
+      ]
+    }
+  },
+  "memorySmoke": {
+    "profile": "smoke",
+    "gate": {
+      "absoluteAllowanceBytes": 33554432,
+      "percentageAllowance": 20
+    },
+    "reports": [
+      {
+        "workload": "idle",
+        "settledGrowthBytes": 16384,
+        "settledGrowthPercent": 0.01988862370723946,
+        "regression": false
+      },
+      {
+        "workload": "normal-play",
+        "settledGrowthBytes": -8323072,
+        "settledGrowthPercent": -3.3573458462758574,
+        "regression": false
+      },
+      {
+        "workload": "x100",
+        "settledGrowthBytes": -8830976,
+        "settledGrowthPercent": -3.1562920887743746,
+        "regression": false
+      },
+      {
+        "workload": "afk-24h",
+        "settledGrowthBytes": 25624576,
+        "settledGrowthPercent": 13.973018851067632,
+        "regression": false
+      },
+      {
+        "workload": "simulation-100",
+        "settledGrowthBytes": 7716864,
+        "settledGrowthPercent": 4.10743873724601,
+        "regression": false
+      },
+      {
+        "workload": "pane-switching",
+        "settledGrowthBytes": 425984,
+        "settledGrowthPercent": 0.494296577946768,
+        "regression": false
+      }
+    ]
+  }
+}

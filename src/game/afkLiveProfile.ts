@@ -1,3 +1,4 @@
+import { AfkEquipmentPlanningTotals } from './afkEquipmentAttribution';
 import type { AfkSchedulerProfile } from './afkScheduler.ts';
 import { getEffectiveAfkElapsedMs } from './afkScheduler.ts';
 import { afkRuntimeTrace, type AfkTraceDiagnosticExport, type AfkTraceEvent } from './afkRuntimeTrace.ts';
@@ -29,6 +30,13 @@ export type AfkLiveProfileVariant =
   | 'coordinator-authority'
   | 'authority-production'
   | 'coordinator-paced';
+
+// Profile-only totals survive bounded trace eviction without retaining per-transaction objects.
+const equipmentPlanningPhasesMs = typeof __AFK_LIVE_PROFILE_ENABLED__ !== 'undefined' && __AFK_LIVE_PROFILE_ENABLED__
+  ? new AfkEquipmentPlanningTotals() : null;
+export function recordAfkEquipmentPlanningPhases(phases: Record<string, number>): void {
+  equipmentPlanningPhasesMs?.record(phases);
+}
 
 export interface AfkLiveProfileMemoryPoint {
   readonly label: 'initial' | 'completion' | 'settled';
@@ -93,6 +101,7 @@ export interface AfkLiveProfileResult {
     readonly hydrationMs: number;
     readonly fifoCommitWaitMs: number;
     readonly chunkCommitReactVisibilityMs: number;
+    readonly autoEquipmentPlanningPhasesMs: Readonly<Record<string, number>>;
     readonly autoEquipmentMs: number;
     readonly autoEquipmentPlanningCount: number;
     readonly autoEquipmentNoopCount: number;
@@ -361,6 +370,7 @@ export function prepareAfkLiveProfile(): void {
     throw new Error('Invalid AFK live profile fixture');
   }
 
+  equipmentPlanningPhasesMs?.reset();
   Date.now = () => PROFILE_NOW_MS;
   resetGameplayRandomForTesting(createSeededRandom(0xafc0_9503));
   let battleSeedCursor = 0n;
@@ -590,6 +600,7 @@ export async function completeAfkLiveProfile(input: CompletionInput): Promise<vo
       scheduler,
       trace,
       attribution: Object.freeze({
+        autoEquipmentPlanningPhasesMs: equipmentPlanningPhasesMs?.snapshot() ?? {},
         exclusiveTimelineByPhaseMs: Object.keys(runtime.exclusiveTimelineByPhaseMs).length > 0
           ? Object.freeze({ ...runtime.exclusiveTimelineByPhaseMs })
           : createExclusiveTimeline(events),
