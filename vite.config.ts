@@ -4,6 +4,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const buildNumber = Number.parseInt(readFileSync(resolve(__dirname, 'build_number.txt'), 'utf8').trim(), 10);
+const afkLiveProfileEnabled = process.env.BOKEMO_AFK_LIVE_PROFILE === '1';
+const afkLiveProfileFixture = afkLiveProfileEnabled
+  ? readFileSync(resolve(__dirname, 'sample_savedata/ALL_Exp8_v0.9.3_dev_20260816.kemoz'), 'utf8')
+  : '';
 const getPublicPngFileNames = (directory: string): string[] => (
   readdirSync(resolve(__dirname, 'public', directory), { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.png'))
@@ -48,6 +52,8 @@ export default defineConfig({
     __PUBLIC_CHARACTER_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('character')),
     __PUBLIC_CHIBI_IMAGE_FILES__: JSON.stringify(getPublicPngFileNames('chibi')),
     __AUTO_EQUIPMENT_PROFILE_ENABLED__: JSON.stringify(process.env.BOKEMO_AUTO_EQUIPMENT_PROFILE === '1'),
+    __AFK_LIVE_PROFILE_ENABLED__: JSON.stringify(afkLiveProfileEnabled),
+    __AFK_LIVE_PROFILE_FIXTURE__: JSON.stringify(afkLiveProfileFixture),
     __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__: JSON.stringify(process.env.BOKEMO_RUNTIME_DIAGNOSTICS === '1'),
   },
   build: {

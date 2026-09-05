@@ -258,8 +258,24 @@ export class PersistenceCoordinator {
   private writeEncodedPayload(retry: StorageRetry): void {
     if (this.stopped || this.storageRetry?.requestId !== retry.requestId) return;
     const started = this.now();
+    let preflightDiaryRecordsRemoved = 0;
     let removedDiaryRecords = 0;
     const retained = new Set(retry.retainedLogKeys);
+    // A prior failed transaction may have written some immutable records but
+    // failed before its manifest commit. They are unreachable from the
+    // currently durable core and can otherwise consume the quota forever,
+    // causing every automatic retry to fail at the same point.
+    try {
+      preflightDiaryRecordsRemoved = removeOrphanedDiaryLogRecords(
+        this.options.storageKey,
+        this.options.storage,
+        this.persistedLogKeys,
+      );
+    } catch (error) {
+      const normalized = error instanceof Error ? error : new Error(String(error));
+      this.emit({ event: 'storage_error', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - started,
+        data: { message: normalized.message, maintenance: true, phase: 'preflight' } });
+    }
     try {
       // New immutable records become durable before the core starts referencing
       // them. The core key is one atomic manifest-last commit.
@@ -271,6 +287,15 @@ export class PersistenceCoordinator {
       const normalized = error instanceof Error ? error : new Error(String(error));
       this.emit({ event: 'storage_error', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - started,
         data: { message: normalized.message } });
+      // The old manifest remains authoritative because setItem is atomic and
+      // the manifest write did not complete. Reclaim any partial records now so
+      // they do not make the next retry less likely to fit.
+      try {
+        removeOrphanedDiaryLogRecords(this.options.storageKey, this.options.storage, this.persistedLogKeys);
+      } catch {
+        // The original storage failure is the actionable error. A later retry
+        // repeats the same safe preflight cleanup.
+      }
       this.options.onError?.(normalized); return;
     }
     // Garbage collection is deliberately outside the durability transaction:
@@ -284,7 +309,7 @@ export class PersistenceCoordinator {
         data: { message: normalized.message, maintenance: true } });
     }
     this.emit({ event: 'storage_write', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - started,
-      data: { diaryRecordsWritten: retry.encodedLogRecords.length, diaryRecordsRemoved: removedDiaryRecords } });
+      data: { diaryRecordsWritten: retry.encodedLogRecords.length, preflightDiaryRecordsRemoved, diaryRecordsRemoved: removedDiaryRecords } });
     this.emit({ event: 'durability_latency', revision: retry.revision, requestId: retry.requestId, durationMs: this.now() - retry.requestedAt });
     this.durableRevision = Math.max(this.durableRevision, retry.revision);
     this.storageRetry = null;

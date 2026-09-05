@@ -320,11 +320,17 @@ test('reports deterministic end-to-end AFK migration metrics', () => {
   assert.ok(report.projectedParallelWorkerMs < AFK_PROJECTED_PARALLEL_CEILING_MS, `AFK projected parallel ${report.projectedParallelWorkerMs}ms must remain below ${AFK_PROJECTED_PARALLEL_CEILING_MS}ms`);
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
   assert.equal(preparation.combatantProjections, report.battles, 'AFK production must project once per battle');
-  assert.equal(preparation.productionNarrations, report.battles, 'AFK production must narrate each prepared projection once');
+  assert.ok(preparation.productionResultOnlyResolutions > 0, 'AFK must skip narration for non-retained intermediate battles');
+  assert.ok(preparation.productionNarrations > 0, 'AFK must retain narration for terminal, Diary, and unlock battles');
+  assert.equal(
+    preparation.productionNarrations + preparation.productionResultOnlyResolutions,
+    report.battles,
+    'every AFK battle must resolve through exactly one full or result-only production output',
+  );
   assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'AFK battles must use chunk-start status');
   assert.equal(preparation.productionPartyStatusComputations, 0, 'AFK battles must not compute status locally');
   assert.equal(getProductionBattleTelemetry().runExpeditionStatusComputations, 0, 'AFK Cycles must not recompute RUN_EXPEDITION status');
-  assert.equal(getProductionBattleTelemetry().runExpeditionStatusSnapshots, state.parties.length * AFK_CHUNK_CYCLE_COUNT, 'AFK must reuse one supplied status for all 12 Cycles per party');
+  assert.equal(getProductionBattleTelemetry().runExpeditionStatusSnapshots, state.parties.length * AFK_CHUNK_CYCLE_COUNT, 'AFK must reuse one supplied status for all 30 Cycles per party');
   assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
   if (!RETROSPECTIVE_COMPARISON) assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
 });

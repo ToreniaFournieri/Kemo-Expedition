@@ -3096,10 +3096,12 @@ int battle_protocol_execute(u32 byte_length) {
   const bool timed_checkpoint = (input->engine_flags & protocol::kEngineFlagCombatTimedCheckpoint) != 0;
   const bool end_checkpoint = (input->engine_flags & protocol::kEngineFlagEndCheckpoint) != 0;
   const bool seeded_rng = (input->engine_flags & protocol::kEngineFlagSeededRng) != 0;
+  const bool compact_result_output = (input->engine_flags & protocol::kEngineFlagCompactResultOutput) != 0;
   const u32 known_engine_flags = protocol::kEngineFlagStartCheckpoint |
       protocol::kEngineFlagCombatBaseCheckpoint | protocol::kEngineFlagCombatNormalCheckpoint |
       protocol::kEngineFlagCombatReactiveCheckpoint | protocol::kEngineFlagCombatTimedCheckpoint |
-      protocol::kEngineFlagEndCheckpoint | protocol::kEngineFlagSeededRng;
+      protocol::kEngineFlagEndCheckpoint | protocol::kEngineFlagSeededRng |
+      protocol::kEngineFlagCompactResultOutput;
   if ((input->engine_flags & ~known_engine_flags) != 0) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
@@ -3121,6 +3123,9 @@ int battle_protocol_execute(u32 byte_length) {
   }
   if (seeded_rng && input->rng_version != bokemo::battle::kBattleRngVersion) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedRngVersion);
+  }
+  if (compact_result_output && (!end_checkpoint || !seeded_rng)) {
+    return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
   }
   if (combat_checkpoint && !base_combat_domain_is_supported(*input, records, physical_bag, magical_bag)) {
     return initialize_error_output(*input, protocol::ProtocolError::UnsupportedCombatFeature);
@@ -3272,14 +3277,16 @@ int battle_protocol_execute(u32 byte_length) {
         return initialize_error_output_at_cursor(*input, protocol::ProtocolError::EventCapacity, state.random_cursor);
       }
     }
-    const u64 output_size = sizeof(OutputHeader) + static_cast<u64>(state.event_count) * sizeof(EventRecord) +
+    const u32 serialized_event_count = compact_result_output ? 0 : state.event_count;
+    const u64 output_size = sizeof(OutputHeader) + static_cast<u64>(serialized_event_count) * sizeof(EventRecord) +
         static_cast<u64>(state.physical_bag_count + state.magical_bag_count) * sizeof(BagRecord);
     if (output_size > protocol::kArenaCapacity) {
       return initialize_error_output_at_cursor(*input, protocol::ProtocolError::OutputCapacity, state.random_cursor);
     }
     auto* output = reinterpret_cast<OutputHeader*>(output_arena);
-    initialize_output(*input, output, state.event_count, state.random_cursor);
+    initialize_output(*input, output, serialized_event_count, state.random_cursor);
     output->total_size = static_cast<u32>(output_size);
+    output->reserved0 = state.event_count;
     output->outcome = select_checkpoint_outcome(state, end_checkpoint);
     output->party_hp = state.party_hp;
     output->enemy_hp = state.enemy_hp;
@@ -3289,7 +3296,7 @@ int battle_protocol_execute(u32 byte_length) {
     }
     output->enemy_hits_received = resolved_enemy ? resolved_enemy->enemy_hits_received : 0;
     auto* output_events = reinterpret_cast<EventRecord*>(output_arena + sizeof(OutputHeader));
-    for (u32 index = 0; index < state.event_count; ++index) {
+    for (u32 index = 0; index < serialized_event_count; ++index) {
       const SemanticEvent& source = state.events[index];
       EventRecord& event = output_events[index]; event = {};
       event.opcode = static_cast<u16>(source.opcode); event.phase = static_cast<u8>(source.phase);
@@ -3301,7 +3308,7 @@ int battle_protocol_execute(u32 byte_length) {
       event.aux1 = source.aux1; event.aux2 = source.aux2;
     }
     output->physical_bag_count = state.physical_bag_count;
-    output->physical_bag_offset = sizeof(OutputHeader) + state.event_count * sizeof(EventRecord);
+    output->physical_bag_offset = sizeof(OutputHeader) + serialized_event_count * sizeof(EventRecord);
     output->magical_bag_count = state.magical_bag_count;
     output->magical_bag_offset = output->physical_bag_offset + state.physical_bag_count * sizeof(BagRecord);
     auto* output_physical = reinterpret_cast<BagRecord*>(output_arena + output->physical_bag_offset);

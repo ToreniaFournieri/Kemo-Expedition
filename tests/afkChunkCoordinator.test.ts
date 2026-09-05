@@ -2,19 +2,27 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   AFK_CHUNK_CYCLE_COUNT,
+  compareAfkPartyDispatchCandidates,
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkColdWorkerJob,
   createAfkPartyChunkContinuationWorkerJob,
   createAfkPartyChunkResult,
+  createAfkPartyChunkInventoryColdWorkerJob,
+  createAfkPartyChunkInventoryContinuationWorkerJob,
+  createAfkPartyChunkInventoryWorkerResult,
   createAfkPartyChunkWorkerResult,
   createAfkPartyChunkWorkerResultV3,
   createAfkPartyChunkWorkerState,
+  getAfkChunkOperationCount,
   getAfkWorkerPoolLimit,
   hasPendingPartySettingChanges,
   hydrateAfkPartyChunkResult,
+  hydrateAfkPartyChunkInventoryResult,
+  hydrateAfkPartyChunkInventoryWorkerState,
   hydrateAfkPartyChunkResultV3,
   hydrateAfkPartyChunkContinuationWorkerState,
+  takeNextAfkFifoResult,
   type AfkPartyChunkResult,
   type AfkPartyChunkWorkerResult,
 } from '../src/game/afkChunkCoordinator.ts';
@@ -88,8 +96,19 @@ function makeState(party: Party, gold: number, inventoryCount: number): GameStat
   };
 }
 
-test('party AFK Chunks contain exactly twelve Cycles', () => {
-  assert.equal(AFK_CHUNK_CYCLE_COUNT, 12);
+test('party AFK Chunks contain exactly thirty Cycles', () => {
+  assert.equal(AFK_CHUNK_CYCLE_COUNT, 30);
+});
+
+test('terminal AFK backlog becomes one bounded partial Chunk of completed Cycles', () => {
+  const cycleDurationMs = 1_000;
+  assert.equal(getAfkChunkOperationCount(999, cycleDurationMs), 0);
+  assert.equal(getAfkChunkOperationCount(1_000, cycleDurationMs), 1);
+  assert.equal(getAfkChunkOperationCount(29_999, cycleDurationMs), 29);
+  assert.equal(getAfkChunkOperationCount(30_000, cycleDurationMs), 30);
+  assert.equal(getAfkChunkOperationCount(90_000, cycleDurationMs), 30);
+  assert.equal(getAfkChunkOperationCount(Number.NaN, cycleDurationMs), 0);
+  assert.equal(getAfkChunkOperationCount(30_000, 0), 0);
 });
 
 test('unmeasured AFK transfer sizes remain unavailable', () => {
@@ -303,6 +322,94 @@ test('schema v3 worker results validate continuation acknowledgements', () => {
   );
 });
 
+test('schema v4 inventory continuation transfers only changed and deleted variants', () => {
+  const party = makeParty();
+  const retainedState = makeState(party, 100, 1);
+  retainedState.global.inventory['2-0-0'] = {
+    item: { id: 2, category: 'sword', name: 'Old', enhancement: 0, superRare: 0 },
+    count: 2,
+    status: 'owned',
+    isNew: false,
+  };
+  const authoritativeState = structuredClone(retainedState);
+  authoritativeState.global.inventory['1-0-0'] = {
+    ...authoritativeState.global.inventory['1-0-0']!,
+    count: 4,
+  };
+  delete authoritativeState.global.inventory['2-0-0'];
+  authoritativeState.global.inventory['3-0-0'] = {
+    item: { id: 3, category: 'sword', name: 'New', enhancement: 0, superRare: 0 },
+    count: 1,
+    status: 'owned',
+    isNew: true,
+  };
+  const baseJob: import('../src/game/afkChunkCoordinator.ts').AfkPartyChunkJob = {
+    jobId: 'inventory-v4', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: authoritativeState, gameMode: 'm.kemo', cycleDurationScale: 1,
+  };
+  const job = createAfkPartyChunkInventoryContinuationWorkerJob(
+    baseJob,
+    retainedState.global.inventory,
+    'inventory-1',
+    1,
+    'inventory-2',
+    2,
+  );
+
+  assert.deepEqual(job.baseState.global.inventory, {});
+  assert.equal(job.inventoryChanges['1-0-0']?.count, 4);
+  assert.equal(job.inventoryChanges['2-0-0'], null);
+  assert.equal(job.inventoryChanges['3-0-0']?.count, 1);
+  const retainedWorkerInventory = structuredClone(retainedState.global.inventory);
+  const hydrated = hydrateAfkPartyChunkInventoryWorkerState(job, retainedWorkerInventory, 'inventory-1', 1);
+  assert.equal(JSON.stringify(hydrated.state), JSON.stringify(authoritativeState));
+  assert.equal(hydrated.inventory, retainedWorkerInventory);
+});
+
+test('schema v4 inventory reconciliation rejects stale state and acknowledgement replay', () => {
+  const party = makeParty();
+  const state = makeState(party, 100, 1);
+  const baseJob: import('../src/game/afkChunkCoordinator.ts').AfkPartyChunkJob = {
+    jobId: 'inventory-v4-invalid', partyIndex: 0, partyId: 1,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1_000, cycleDurationMs: 100,
+    baseState: state, gameMode: 'm.kemo', cycleDurationScale: 1,
+  };
+  const cold = createAfkPartyChunkInventoryColdWorkerJob(baseJob, 'inventory-1', 1);
+  const coldHydrated = hydrateAfkPartyChunkInventoryWorkerState(cold, null, null, 0);
+  const continuation = createAfkPartyChunkInventoryContinuationWorkerJob(
+    baseJob,
+    state.global.inventory,
+    'inventory-1',
+    1,
+    'inventory-2',
+    2,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryWorkerState(continuation, coldHydrated.inventory, 'stale', 1),
+    /state mismatch/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryWorkerState(continuation, coldHydrated.inventory, 'inventory-1', 2),
+    /state mismatch/,
+  );
+
+  const complete = createAfkPartyChunkResult({ ...continuation, baseState: state }, state, 5);
+  const workerResult = createAfkPartyChunkInventoryWorkerResult(complete, continuation);
+  assert.equal(
+    JSON.stringify(hydrateAfkPartyChunkInventoryResult(workerResult, party, continuation)),
+    JSON.stringify(complete),
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryResult({ ...workerResult, nextInventoryToken: 'replayed' }, party, continuation),
+    /acknowledgement/,
+  );
+  assert.throws(
+    () => hydrateAfkPartyChunkInventoryResult({ ...workerResult, consumedInventoryToken: 'stale' }, party, continuation),
+    /consumed token acknowledgement/,
+  );
+});
+
 test('worker history transfer references the renderer-owned retained Diary suffix', () => {
   const retainedLog = { id: 'retained', expeditionLog: { dungeonId: 8 }, createdAt: 1 } as Party['diaryLogs'][number];
   const newLog = { id: 'new', expeditionLog: { dungeonId: 8 }, createdAt: 2 } as Party['diaryLogs'][number];
@@ -388,15 +495,33 @@ test('worker history hydration rejects incompatible schemas and invalid referenc
   );
 });
 
-test('AFK worker pool preserves renderer capacity and never exceeds party count', () => {
-  assert.equal(getAfkWorkerPoolLimit(2, 6), 1);
-  assert.equal(getAfkWorkerPoolLimit(4, 6), 2);
-  assert.equal(getAfkWorkerPoolLimit(8, 6), 2);
+test('AFK worker pool scales conservatively and never exceeds party count', () => {
+  const expectedByLogicalProcessors = new Map([
+    [1, 1], [2, 1], [3, 1],
+    [4, 2], [5, 2], [6, 2], [7, 2],
+    [8, 3], [9, 3],
+    [10, 4], [11, 4],
+    [12, 5], [13, 5],
+    [14, 6], [32, 6],
+  ]);
+  expectedByLogicalProcessors.forEach((expected, processors) => {
+    assert.equal(getAfkWorkerPoolLimit(processors, 6), expected, `${processors} logical processors`);
+  });
   assert.equal(getAfkWorkerPoolLimit(16, 2), 2);
+  assert.equal(getAfkWorkerPoolLimit(16, 0), 0);
   assert.equal(getAfkWorkerPoolLimit(undefined, 6), 2);
+  assert.equal(getAfkWorkerPoolLimit(Number.NaN, 6), 2);
 });
 
-test('coordinator order is simulated completion time then party ID', () => {
+test('AFK worker profile override remains bounded by one to six and party count', () => {
+  assert.equal(getAfkWorkerPoolLimit(6, 6, 1), 1);
+  assert.equal(getAfkWorkerPoolLimit(6, 6, 4), 4);
+  assert.equal(getAfkWorkerPoolLimit(6, 3, 6), 3);
+  assert.equal(getAfkWorkerPoolLimit(16, 6, 99), 6);
+  assert.equal(getAfkWorkerPoolLimit(16, 6, -1), 1);
+});
+
+test('isolated profile ordering remains simulated completion time then party ID', () => {
   const later = { simulatedCompletedAt: 200, partyId: 1, jobId: 'b' };
   const earlierHigherParty = { simulatedCompletedAt: 100, partyId: 2, jobId: 'c' };
   const earlierLowerParty = { simulatedCompletedAt: 100, partyId: 1, jobId: 'a' };
@@ -404,6 +529,31 @@ test('coordinator order is simulated completion time then party ID', () => {
     [later, earlierHigherParty, earlierLowerParty].sort(compareAfkChunkResults),
     [earlierLowerParty, earlierHigherParty, later],
   );
+});
+
+test('worker dispatch selects the oldest eligible Party and uses Party ID for ties', () => {
+  const candidates = [
+    { partyLocalEmulatedTime: 300, partyId: 1, partyIndex: 0 },
+    { partyLocalEmulatedTime: 100, partyId: 3, partyIndex: 2 },
+    { partyLocalEmulatedTime: 100, partyId: 2, partyIndex: 1 },
+  ];
+  assert.deepEqual(
+    candidates.sort(compareAfkPartyDispatchCandidates).map(({ partyId }) => partyId),
+    [2, 3, 1],
+  );
+});
+
+test('live coordinator FIFO follows worker arrival rather than simulated completion time', () => {
+  const arrivedFirst = { jobId: 'late-simulated-time', simulatedCompletedAt: 900 };
+  const arrivedSecond = { jobId: 'early-simulated-time', simulatedCompletedAt: 100 };
+  const fifo = new Map([
+    [arrivedFirst.jobId, arrivedFirst],
+    [arrivedSecond.jobId, arrivedSecond],
+  ]);
+
+  assert.equal(takeNextAfkFifoResult(fifo), arrivedFirst);
+  assert.equal(takeNextAfkFifoResult(fifo), arrivedSecond);
+  assert.equal(takeNextAfkFifoResult(fifo), null);
 });
 
 test('coordinator merges stale global deltas and lets pending PT settings win', () => {
@@ -441,9 +591,21 @@ test('coordinator merges stale global deltas and lets pending PT settings win', 
   assert.deepEqual(result.workerTelemetry, {
     workerStartupMs: 1,
     queueMs: 2,
+    inputHydrationMs: 0,
+    languageReadyMs: 0,
     executionMs: 3,
     inputTransferBytes: 4,
     outputTransferBytes: 5,
+    battleCount: 0,
+    battleTotalMs: 0,
+    battlePreparationMs: 0,
+    battleInputWriteMs: 0,
+    battleNativeExecutionMs: 0,
+    battleBorrowedOutputValidationMs: 0,
+    battleOutputConsumeMs: 0,
+    battleInputBytes: 0,
+    battleOutputBytes: 0,
+    battleResultBagEntryAllocations: 0,
   });
   assert.equal(committed.global.gold, 135);
   assert.equal(committed.global.inventory['1-0-0'].count, 6);

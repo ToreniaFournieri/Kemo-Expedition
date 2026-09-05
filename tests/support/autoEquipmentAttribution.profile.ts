@@ -12,15 +12,21 @@ import { hydrateGameState, serializeGameState } from '../../src/game/saveCodec.t
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import {
   computePartyMaxHp,
+  computeRendererPartyStats,
   computePartyStats,
   createPartyMaxHpLedger,
+  getRendererPartyStatsMemoTelemetry,
+  resetRendererPartyStatsMemoForProfiling,
   updatePartyMaxHpLedger,
 } from '../../src/game/partyComputation.ts';
 import { JEWELS_BY_ITEM_CATEGORY } from '../../src/game/jewel.ts';
 import {
+  applyAfkPartyTransactionForTesting,
+  applyPlannedAfkPartyTransactionForTesting,
   applyAutoEquipmentProfileActions,
   applyAutoEquipmentProfileActionsSequentially,
 } from '../../src/hooks/useGameState.ts';
+import { commitAfkPartyChunk, createAfkPartyChunkResult } from '../../src/game/afkChunkCoordinator.ts';
 import type { GameState } from '../../src/types.ts';
 
 function loadFixture(): GameState {
@@ -48,6 +54,27 @@ test('HP-only party computation is exact for every save-backed party', () => {
   for (const party of state.parties) {
     assert.equal(computePartyMaxHp(party), computePartyStats(party).partyStats.hp);
   }
+});
+
+test('renderer Party-status memoization reuses immutable identities and invalidates replacements', () => {
+  const party = loadFixture().parties[0];
+  resetRendererPartyStatsMemoForProfiling();
+
+  const first = computeRendererPartyStats(party);
+  const second = computeRendererPartyStats(party);
+  const replacement = { ...party, level: party.level + 1 };
+  const replaced = computeRendererPartyStats(replacement);
+
+  assert.strictEqual(second, first);
+  assert.notStrictEqual(replaced, first);
+  assert.deepEqual(first, computePartyStats(party));
+  assert.deepEqual(replaced, computePartyStats(replacement));
+  assert.deepEqual(getRendererPartyStatsMemoTelemetry(), {
+    calls: 3,
+    hits: 1,
+    misses: 2,
+    computeMs: getRendererPartyStatsMemoTelemetry().computeMs,
+  });
 });
 
 test('incremental HP ledger rebuilds on party-wide HP input changes', () => {
@@ -82,6 +109,115 @@ test('batched automatic-equipment reducer is byte-identical to sequential action
     const batched = applyAutoEquipmentProfileActions(state, actions, undefined, strategy);
     assert.equal(JSON.stringify(serializeGameState(batched)), expected);
   }
+});
+
+test('atomic AFK transaction is byte-identical to the existing two-stage oracle', () => {
+  const fixture = loadFixture();
+  const actionsFor = (state: GameState): AutoEquipmentProfileAction[] => {
+    const character = state.parties[0].characters.find((candidate) => candidate.equipment.some(Boolean));
+    if (!character) return [];
+    const slotIndex = character.equipment.findIndex(Boolean);
+    return [{ type: 'EQUIP_ITEM', characterId: character.id, slotIndex, itemKey: null, partyIndex: 0 }];
+  };
+  const makeCase = (
+    name: string,
+    baseState: GameState,
+    mutateResult: (resultState: GameState) => void,
+    actions: AutoEquipmentProfileAction[],
+    mutateCurrent?: (currentState: GameState) => void,
+  ) => {
+    const resultState = structuredClone(baseState);
+    mutateResult(resultState);
+    const currentState = structuredClone(baseState);
+    mutateCurrent?.(currentState);
+    return { name, baseState, currentState, resultState, actions };
+  };
+
+  const upgradeHeavy = createAutoEquipmentProfileState(fixture, 'upgrade_heavy');
+  const fullEquipment = createAutoEquipmentProfileState(fixture, 'full_rebuild');
+  const fiveParties = structuredClone(fixture);
+  fiveParties.parties = fiveParties.parties.slice(0, 5);
+  const cases = [
+    makeCase('no-op', fixture, (result) => { result.parties[0].experience += 1; }, []),
+    makeCase('upgrade-heavy', upgradeHeavy, (result) => { result.global.gold += 123; }, actionsFor(upgradeHeavy)),
+    makeCase('FULL equipment', fullEquipment, (result) => { result.parties[0].experience += 5; }, actionsFor(fullEquipment)),
+    makeCase('Defeat rollback', fixture, (result) => {
+      result.parties[0].currentHp = 1;
+      if (result.parties[0].lastExpeditionLog) result.parties[0].lastExpeditionLog.finalOutcome = 'Defeat';
+    }, []),
+    makeCase('Party unlock', fiveParties, (result) => { result.parties.push(structuredClone(fixture.parties[5])); }, []),
+    makeCase(
+      'pending-setting cutoff',
+      fixture,
+      (result) => { result.parties[0].experience += 10; },
+      [],
+      (current) => { current.parties[0].selectedDungeonId = current.parties[0].selectedDungeonId === 1 ? 2 : 1; },
+    ),
+    makeCase('worker failure/retry', fixture, (result) => { result.global.gold += 77; }, actionsFor(fixture)),
+    makeCase('recovery completion', fixture, (result) => {
+      result.parties[0].experience += 50;
+      result.parties[0].hasUnreadDiary = true;
+    }, actionsFor(fixture)),
+  ];
+  cases.forEach(({ name, baseState, currentState, resultState, actions }) => {
+    const result = createAfkPartyChunkResult({
+      jobId: `atomic-parity-${name}`,
+      partyIndex: 0,
+      partyId: baseState.parties[0].id,
+      simulatedStartedAt: 0,
+      simulatedCompletedAt: 1_000,
+      cycleDurationMs: 100,
+      operationCount: 12,
+      baseState,
+      gameMode: 'm.kemo',
+      cycleDurationScale: 1,
+    }, resultState, 5);
+    const current = currentState;
+    const oracle = applyAutoEquipmentProfileActions(commitAfkPartyChunk(current, result), actions);
+    const atomic = applyAfkPartyTransactionForTesting(current, result, actions);
+    assert.equal(JSON.stringify(serializeGameState(atomic)), JSON.stringify(serializeGameState(oracle)), name);
+    if (name === 'Party unlock') assert.equal(atomic.parties.length, 6);
+    if (name === 'pending-setting cutoff') {
+      assert.equal(atomic.parties[0].selectedDungeonId, current.parties[0].selectedDungeonId);
+    }
+    if (name === 'Defeat rollback') assert.equal(atomic.parties[0].lastExpeditionLog?.finalOutcome, 'Defeat');
+  });
+});
+
+test('single-publication AFK planner sees the committed state and matches the two-stage oracle', () => {
+  const baseState = loadFixture();
+  const resultState = structuredClone(baseState);
+  resultState.global.gold += 321;
+  resultState.parties[0].experience += 17;
+  const result = createAfkPartyChunkResult({
+    jobId: 'single-publication-planner-parity',
+    partyIndex: 0,
+    partyId: baseState.parties[0].id,
+    simulatedStartedAt: 0,
+    simulatedCompletedAt: 1_000,
+    cycleDurationMs: 100,
+    operationCount: 10,
+    baseState,
+    gameMode: 'm.kemo',
+    cycleDurationScale: 1,
+  }, resultState, 5);
+  const expectedCommitted = commitAfkPartyChunk(baseState, result);
+  const character = expectedCommitted.parties[0].characters.find((candidate) => candidate.equipment.some(Boolean));
+  assert.ok(character);
+  const slotIndex = character.equipment.findIndex(Boolean);
+  const actions: AutoEquipmentProfileAction[] = [
+    { type: 'EQUIP_ITEM', characterId: character.id, slotIndex, itemKey: null, partyIndex: 0 },
+  ];
+  let plannerCalls = 0;
+  const atomic = applyPlannedAfkPartyTransactionForTesting(baseState, result, (committedState) => {
+    plannerCalls += 1;
+    assert.equal(JSON.stringify(serializeGameState(committedState)), JSON.stringify(serializeGameState(expectedCommitted)));
+    return { actions };
+  });
+  const oracle = applyAutoEquipmentProfileActions(expectedCommitted, actions);
+
+  assert.equal(plannerCalls, 1);
+  assert.equal(JSON.stringify(serializeGameState(atomic)), JSON.stringify(serializeGameState(oracle)));
 });
 
 test('batched reducer preserves mixed inventory, upgrade, and Jewel action semantics', () => {

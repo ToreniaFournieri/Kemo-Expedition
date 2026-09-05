@@ -3,6 +3,7 @@ import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 import { applyEnemyMeleeConversionAttack, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+import { addOrcaEnemyAbilities, type RuntimeGameMode } from './runtimeGameMode';
 
 type GodEnemyMultipliers = {
   hp: number;
@@ -55,6 +56,8 @@ type EnemyScalingOptions = {
   isGodEnemy?: boolean;
   isLunaMode?: boolean;
   difficultyOffset?: number;
+  gameMode?: RuntimeGameMode;
+  enemyLevelOffset?: number;
 };
 
 const ENEMY_TYPE_C_BONUS_TYPES = new Set<BonusType>([
@@ -179,12 +182,14 @@ export function applyEnemyEncounterScaling(
   const roomEnemyLevel = getEnemyLevelForRoom(dungeon.expLevel, floorNumber, roomType);
   const effectiveEnemyLevel = roomEnemyLevel
     + (options.isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0)
-    + (options.difficultyOffset ?? 0);
+    + (options.difficultyOffset ?? 0)
+    + (options.gameMode === 'mode.orca' ? (options.enemyLevelOffset ?? 0) : 0);
   const expeditionMult = getEnemyMultipliersForLevel(effectiveEnemyLevel);
   const godMult = options.isGodEnemy ? getGodEnemyMultipliers() : DEFAULT_MULTIPLIERS;
   const enemyTypeAbilitiesForLevel = getEnemyTypeAbilities(enemy.enemyType, effectiveEnemyLevel);
   // SpecRef: 4.1.2 | Enemy | x.level and x.ability
-  const scaledAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(enemy.abilities, enemyTypeAbilitiesForLevel));
+  const modeEnemy = options.gameMode === 'mode.orca' ? addOrcaEnemyAbilities(enemy) : enemy;
+  const scaledAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(modeEnemy.abilities, enemyTypeAbilitiesForLevel));
 
   const finalMultipliers = {
     hp: expeditionMult.hp * godMult.hp,
@@ -241,7 +246,9 @@ export function getEncounterEnemyWithScaling(
   options: EnemyScalingOptions = {},
 ): EnemyDef {
   if (isPreScaledEncounterEnemy(enemy)) {
-    return enemy;
+    if (options.gameMode !== 'mode.orca') return enemy;
+    const withModeAbilities = addOrcaEnemyAbilities(enemy);
+    return { ...withModeAbilities, abilities: resolveEnemyPassiveAbilities(withModeAbilities.abilities) };
   }
 
   return applyEnemyEncounterScaling(enemy, dungeon, floorNumber, roomType, options);

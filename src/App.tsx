@@ -3,6 +3,7 @@ import { useGameState } from './hooks/useGameState';
 import { HomeScreen, preloadInitialHomeTab, preloadRemainingHomeTabs } from './components/HomeScreen';
 import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
 import { setLanguage, t } from './i18n';
+import { getThemeClassName, isGameModeAvailable } from './theme/theme';
 
 const LOADING_MESSAGE_KEYS = [
   'loading.kemoDream',
@@ -30,9 +31,11 @@ function getRandomLoadingMessage() {
 
 function getInitialGameModeClass() {
   if (typeof window === 'undefined') return '';
-  if (getEnvironmentId() === 'beta') return 'theme-laika';
+  const environment = getEnvironmentId();
+  if (environment === 'beta') return 'theme-laika';
+  if (environment === 'orca') return 'theme-orca';
   const saved = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-  return saved === 'm.luna' ? 'theme-luna' : saved === 'm.laika' ? 'theme-laika' : '';
+  return isGameModeAvailable(saved, environment) ? getThemeClassName(saved) : '';
 }
 function getInitialDarkModeEnabled() {
   if (typeof window === 'undefined') return false;
@@ -70,8 +73,10 @@ export default function App() {
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
       if (getEnvironmentId() === 'beta') {
         setGameModeClass('theme-laika');
+      } else if (getEnvironmentId() === 'orca') {
+        setGameModeClass('theme-orca');
       } else {
-        setGameModeClass(savedMode === 'm.luna' ? 'theme-luna' : savedMode === 'm.laika' ? 'theme-laika' : '');
+        setGameModeClass(isGameModeAvailable(savedMode, getEnvironmentId()) ? getThemeClassName(savedMode) : '');
       }
     };
 
@@ -153,7 +158,7 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-white text-black flex items-center justify-center px-6 text-center ${appThemeClasses}`}>
+      <div className={`min-h-screen bg-surface-canvas text-content-primary flex items-center justify-center px-6 text-center ${appThemeClasses}`}>
         <p className="text-lg font-medium">{loadingMessage}</p>
       </div>
     );
@@ -161,11 +166,11 @@ export default function App() {
 
   if (saveLoadWarning) {
     return (
-      <div className={`min-h-screen bg-white text-black flex items-center justify-center px-6 ${appThemeClasses}`}>
-        <div className="w-full max-w-3xl rounded-lg border border-red-300 bg-red-50 p-5 shadow">
-          <h1 className="text-lg font-bold text-red-700">{saveLoadWarning.message}</h1>
-          <p className="mt-2 text-sm text-red-700">{t('save.errorLog')}</p>
-          <pre className="mt-2 max-h-[60vh] overflow-auto whitespace-pre-wrap break-words rounded border border-red-200 bg-white p-3 text-xs text-red-900">
+      <div className={`min-h-screen bg-surface-canvas text-content-primary flex items-center justify-center px-6 ${appThemeClasses}`}>
+        <div className="w-full max-w-3xl rounded-lg border border-status-error-border bg-status-error-surface p-5 shadow">
+          <h1 className="text-lg font-bold text-status-error">{saveLoadWarning.message}</h1>
+          <p className="mt-2 text-sm text-status-error">{t('save.errorLog')}</p>
+          <pre className="mt-2 max-h-[60vh] overflow-auto whitespace-pre-wrap break-words rounded border border-status-error-border/70 bg-surface-card p-3 text-xs text-status-error-strong">
             {saveLoadWarning.errorLog}
           </pre>
         </div>
@@ -174,7 +179,7 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen bg-white text-black ${appThemeClasses}`}>
+    <div className={`min-h-screen bg-surface-canvas text-content-primary ${appThemeClasses}`}>
       <HomeScreen
         state={state}
         actions={actions}

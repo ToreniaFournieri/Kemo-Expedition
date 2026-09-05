@@ -17,12 +17,15 @@ const expeditionDefinitions = [
 test('expedition deploy statuses follow the environment policy', () => {
   assert.equal(isExpeditionDeployed('prod', 'prod'), true);
   assert.equal(isExpeditionDeployed('prod', 'beta'), true);
+  assert.equal(isExpeditionDeployed('prod', 'orca'), true);
   assert.equal(isExpeditionDeployed('prod', 'dev'), true);
   assert.equal(isExpeditionDeployed('test', 'prod'), false);
   assert.equal(isExpeditionDeployed('test', 'beta'), false);
+  assert.equal(isExpeditionDeployed('test', 'orca'), false);
   assert.equal(isExpeditionDeployed('test', 'dev'), true);
   assert.equal(isExpeditionDeployed('no', 'prod'), false);
   assert.equal(isExpeditionDeployed('no', 'beta'), false);
+  assert.equal(isExpeditionDeployed('no', 'orca'), false);
   assert.equal(isExpeditionDeployed('no', 'dev'), false);
 });
 
@@ -54,5 +57,7 @@ test('browser and worker pathnames resolve the same active environment', () => {
   assert.equal(getEnvironmentIdFromPathname('/dev/'), 'dev');
   assert.equal(getEnvironmentIdFromPathname('/dev/assets/afkChunkWorker.js'), 'dev');
   assert.equal(getEnvironmentIdFromPathname('/beta/'), 'beta');
+  assert.equal(getEnvironmentIdFromPathname('/orca/'), 'orca');
+  assert.equal(getEnvironmentIdFromPathname('/orca/assets/afkChunkWorker.js'), 'orca');
   assert.equal(getEnvironmentIdFromPathname('/'), 'prod');
 });

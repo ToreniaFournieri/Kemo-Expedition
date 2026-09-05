@@ -48,6 +48,10 @@ let measuredInputArenaCopies = 0;
 let measuredInputArenaCopyBytes = 0;
 let measuredOutputBufferCopies = 0;
 let measuredOutputBufferCopyBytes = 0;
+let measuredInputWriteMs = 0;
+let measuredNativeExecutionMs = 0;
+let measuredBorrowedOutputValidationMs = 0;
+let measuredOutputConsumeMs = 0;
 let protocolInvocationActive = false;
 
 export type BattleKernelMeasurement = {
@@ -63,6 +67,10 @@ export type BattleKernelMeasurement = {
   decodedEventObjectAllocations: number;
   decodedBagEntryObjectAllocations: number;
   resultBagEntryObjectAllocations: number;
+  inputWriteMs: number;
+  nativeExecutionMs: number;
+  borrowedOutputValidationMs: number;
+  outputConsumeMs: number;
 };
 
 function recordKernelCall(inputBytes = 0, outputBytes = 0): void {
@@ -80,6 +88,10 @@ export function beginBattleKernelMeasurement(): void {
   measuredInputArenaCopyBytes = 0;
   measuredOutputBufferCopies = 0;
   measuredOutputBufferCopyBytes = 0;
+  measuredInputWriteMs = 0;
+  measuredNativeExecutionMs = 0;
+  measuredBorrowedOutputValidationMs = 0;
+  measuredOutputConsumeMs = 0;
   resetBattleProtocolEncodingMeasurement();
   measurementEnabled = true;
 }
@@ -100,6 +112,10 @@ export function endBattleKernelMeasurement(): BattleKernelMeasurement {
     decodedEventObjectAllocations: encoding.decodedEventObjectAllocations,
     decodedBagEntryObjectAllocations: encoding.decodedBagEntryObjectAllocations,
     resultBagEntryObjectAllocations: encoding.resultBagEntryObjectAllocations,
+    inputWriteMs: measuredInputWriteMs,
+    nativeExecutionMs: measuredNativeExecutionMs,
+    borrowedOutputValidationMs: measuredBorrowedOutputValidationMs,
+    outputConsumeMs: measuredOutputConsumeMs,
   };
 }
 if (kernel.battle_kernel_abi_version() !== ABI_VERSION) {
@@ -323,20 +339,29 @@ function invokeBattleProtocolWithWriterAndConsumer<T>(
   protocolInvocationActive = true;
   try {
     let arena = getProtocolArenaCache();
+    const inputWriteStartedAt = measurementEnabled ? performance.now() : 0;
     const inputByteLength = writeInput(arena);
+    if (measurementEnabled) measuredInputWriteMs += performance.now() - inputWriteStartedAt;
     if (!Number.isInteger(inputByteLength) || inputByteLength < 0 || inputByteLength > arena.capacity) {
       throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
     }
+    const nativeExecutionStartedAt = measurementEnabled ? performance.now() : 0;
     const outputByteLength = operation(inputByteLength);
+    if (measurementEnabled) measuredNativeExecutionMs += performance.now() - nativeExecutionStartedAt;
     if (!Number.isInteger(outputByteLength) || outputByteLength < 0) {
       throw new Error(`C++ battle protocol rejected input (${outputByteLength})`);
     }
     arena = getProtocolArenaCache();
     if (outputByteLength > arena.capacity) throw new Error('C++ battle protocol returned an oversized output');
     recordKernelCall(inputByteLength, outputByteLength);
+    const borrowedValidationStartedAt = measurementEnabled ? performance.now() : 0;
     const borrowed = new BorrowedBattleProtocolOutputView(arena.output.subarray(0, outputByteLength));
+    if (measurementEnabled) measuredBorrowedOutputValidationMs += performance.now() - borrowedValidationStartedAt;
     try {
-      return consumer(borrowed);
+      const outputConsumeStartedAt = measurementEnabled ? performance.now() : 0;
+      const result = consumer(borrowed);
+      if (measurementEnabled) measuredOutputConsumeMs += performance.now() - outputConsumeStartedAt;
+      return result;
     } finally {
       borrowed.invalidate();
     }
@@ -369,6 +394,28 @@ export function consumeBattleProtocolInput<T>(
 ): T {
   return invokeBattleProtocolWithWriterAndConsumer(
     (arena) => writeBattleProtocolInput(input, arena.input),
+    (byteLength) => kernel.battle_protocol_execute(byteLength),
+    consumer,
+  );
+}
+
+/** Consumes a previously validated immutable-layout input after one bounded arena copy. */
+export function consumePreparedBattleProtocolInput<T>(
+  input: Uint8Array,
+  consumer: (output: BorrowedBattleProtocolOutputView) => T,
+): T {
+  return invokeBattleProtocolWithWriterAndConsumer(
+    (arena) => {
+      if (input.byteLength > arena.capacity) {
+        throw new RangeError(`Battle protocol input exceeds the ${arena.capacity}-byte arena`);
+      }
+      arena.input.subarray(0, input.byteLength).set(input);
+      if (measurementEnabled) {
+        measuredInputArenaCopies += 1;
+        measuredInputArenaCopyBytes += input.byteLength;
+      }
+      return input.byteLength;
+    },
     (byteLength) => kernel.battle_protocol_execute(byteLength),
     consumer,
   );

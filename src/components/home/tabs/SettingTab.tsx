@@ -26,10 +26,13 @@ isDungeonEntryUnlocked
 import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings } from '../../../game/colosseum';
 import { DebugSettings } from '../../../game/debugSettings';
 import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
+import { addOrcaEnemyAbilities, ORCA_ENEMY_LEVEL_OFFSET_MAX, ORCA_ENEMY_LEVEL_OFFSET_MIN, RUNTIME_GAME_MODES, type RuntimeGameMode } from '../../../game/runtimeGameMode';
 import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
+import { resolveEnemyPassiveAbilities } from '../../../game/enemyPassiveAbilities';
 import { createEnvironmentStorageKey,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
+import { getProphecyControlAccess } from '../../../game/expeditionAbilityPolicies';
 import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewardEligibility,parseFeedbackSubmissionTimestamp,type FeedbackRewardState } from '../../../game/feedbackRewards';
 import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRareTitle } from '../../../game/gameState';
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
@@ -38,6 +41,7 @@ import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
 import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
 import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
+import { GAME_MODES, THEME_DEFINITIONS } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
 import { ExperimentalApiSettings } from '../../ExperimentalApiSettings';
 
@@ -109,6 +113,10 @@ export default function SettingTab({
   onSetBestiaryScrollTop,
   gameMode,
   onSetGameMode,
+  runtimeGameMode,
+  onSetRuntimeGameMode,
+  orcaEnemyLevelOffset,
+  onSetOrcaEnemyLevelOffset,
   darkModeSetting,
   onSetDarkModeSetting,
   isAutoRepeatEnabled,
@@ -148,6 +156,10 @@ export default function SettingTab({
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
   gameMode: GameMode;
   onSetGameMode: Dispatch<SetStateAction<GameMode>>;
+  runtimeGameMode: RuntimeGameMode;
+  onSetRuntimeGameMode: (mode: RuntimeGameMode) => void;
+  orcaEnemyLevelOffset: number;
+  onSetOrcaEnemyLevelOffset: Dispatch<SetStateAction<number>>;
   darkModeSetting: DarkModeSetting;
   onSetDarkModeSetting: Dispatch<SetStateAction<DarkModeSetting>>;
   isAutoRepeatEnabled: boolean;
@@ -501,7 +513,7 @@ export default function SettingTab({
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
   const debugModeEnabled = isDebugModeEnabled();
-  const modeSelectionLocked = isBetaEnvironment;
+  const modeSelectionLocked = isBetaEnvironment || runtimeGameMode === 'mode.orca';
   useEffect(() => {
     try {
       localStorage.setItem(SETTING_PANEL_STORAGE_KEY, JSON.stringify(settingPanelExpanded));
@@ -552,7 +564,7 @@ export default function SettingTab({
         <span className="inline-flex items-center gap-2">
           <span>{title}</span>
           {panelKey === 'news' && hasUnreadDeveloperNews && (
-            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-500" aria-label="Unread developer news" />
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-status-unread" aria-label="Unread developer news" />
           )}
         </span>
         <span className={`text-xs text-gray-500 transform transition-transform ${expanded ? 'rotate-180' : ''}`}>▼</span>
@@ -1400,11 +1412,22 @@ export default function SettingTab({
       tier: effectiveTier,
       enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, false),
     };
-    return getEncounterEnemyWithScaling(enemy, effectiveDungeon, floorNumber, roomType, { isLunaMode: false });
+    return getEncounterEnemyWithScaling(enemy, effectiveDungeon, floorNumber, roomType, {
+      isLunaMode: false,
+      gameMode: runtimeGameMode,
+      enemyLevelOffset: orcaEnemyLevelOffset,
+    });
   };
 
-  const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
-    buildGodRuntimeEnemy(god);
+  const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null => {
+    const enemy = buildGodRuntimeEnemy(
+      god,
+      runtimeGameMode === 'mode.orca' ? orcaEnemyLevelOffset : 0,
+    );
+    if (!enemy || runtimeGameMode !== 'mode.orca') return enemy;
+    const withModeAbilities = addOrcaEnemyAbilities(enemy);
+    return { ...withModeAbilities, abilities: resolveEnemyPassiveAbilities(withModeAbilities.abilities) };
+  };
 
   const getGodDropCandidates = (godName: string): string => {
     const drops = GOD_MYTHIC_DROPS
@@ -1525,12 +1548,20 @@ export default function SettingTab({
         {settingPanelExpanded.news && (
           <div className="mt-3 space-y-3">
             <a
+              href="https://toreniafournieri.github.io/Kemo-Expedition/orca/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="discord-community-link block rounded border p-3 text-sm font-semibold underline underline-offset-2 pane-button-shadow"
+            >
+              {t('app.title')}orca
+            </a>
+            <a
               href={gameState.global.language === 'zh-CN'
                 ? 'https://t.me/+exLhrX12vn5iMmI1'
                 : 'https://discord.gg/k9VSf2ghM'}
               target="_blank"
               rel="noopener noreferrer"
-              className="discord-community-link block rounded border border-indigo-200 bg-indigo-50 p-3 text-sm font-semibold text-indigo-700 underline decoration-indigo-300 underline-offset-2 pane-button-shadow"
+              className="discord-community-link block rounded border p-3 text-sm font-semibold underline underline-offset-2 pane-button-shadow"
             >
               {t('setting.developerNews.discordCommunity')}
             </a>
@@ -1577,17 +1608,22 @@ export default function SettingTab({
       </div>
 
       {/* SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視) */}
-      {(debugSettings.clairvoyanceEnabled || gameState.parties.some((party) => getSettingPartyAbilityLevel(party, 'prophecy') >= 1)) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {gameState.parties.some((party) => getProphecyControlAccess(
+        getSettingPartyAbilityLevel(party, 'prophecy'),
+        debugSettings.clairvoyanceEnabled,
+      ).isVisible) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('clairvoyance', t('setting.clairvoyance.title'))}
         {settingPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
           {gameState.parties.map((party, partyIndex) => {
             const prophecyLevel = getSettingPartyAbilityLevel(party, 'prophecy');
-            const isPaneVisible = debugSettings.clairvoyanceEnabled || prophecyLevel >= 1;
+            const { isVisible: isPaneVisible, canResetBags } = getProphecyControlAccess(
+              prophecyLevel,
+              debugSettings.clairvoyanceEnabled,
+            );
             if (!isPaneVisible) {
               return null;
             }
 
-            const canResetBags = debugSettings.clairvoyanceEnabled || prophecyLevel >= 2;
             const partyBags = party.bags;
             const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
             return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
@@ -2232,7 +2268,7 @@ export default function SettingTab({
                               <button
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
-                                className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                className="rounded px-1 text-left hover:bg-selection/[0.12] focus:outline-none focus:ring-1 focus:ring-focus"
                                 aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
@@ -2317,7 +2353,7 @@ export default function SettingTab({
                               <button
                                 type="button"
                                 onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
-                                className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                className="rounded px-1 text-left hover:bg-selection/[0.12] focus:outline-none focus:ring-1 focus:ring-focus"
                                 aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                               >
                                 {token.label}
@@ -2463,7 +2499,7 @@ export default function SettingTab({
                                   <button
                                     type="button"
                                     onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
-                                    className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                    className="rounded px-1 text-left hover:bg-selection/[0.12] focus:outline-none focus:ring-1 focus:ring-focus"
                                     aria-label={t('setting.bestiary.showAbilityDescription', { ability: token.label })}
                                   >
                                     {token.label}
@@ -2677,48 +2713,73 @@ export default function SettingTab({
           </div>
 
           <div>
+            <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.gameMode')}</div>
+            <div className="grid grid-cols-2 gap-2">
+              {RUNTIME_GAME_MODES.map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onSetRuntimeGameMode(mode)}
+                  className={`py-2 rounded border text-sm font-medium ${
+                    runtimeGameMode === mode
+                      ? 'bg-selection text-content-inverse border-selection pane-button-shadow-soft'
+                      : 'bg-surface-interactive text-content-default border-line-strong pane-button-shadow'
+                  }`}
+                >
+                  {t(mode === 'mode.orca' ? 'setting.gameMode.orca' : 'setting.gameMode.normal')}
+                </button>
+              ))}
+            </div>
+            {runtimeGameMode === 'mode.orca' && (
+              <label className="mt-3 block rounded bg-white p-2 pane-button-shadow">
+                <span className="flex items-center justify-between text-xs text-gray-600">
+                  <span>{t('setting.gameMode.enemyLevelOffset')}</span>
+                  <span className="font-semibold text-gray-700">+{orcaEnemyLevelOffset}</span>
+                </span>
+                <input
+                  type="range"
+                  min={ORCA_ENEMY_LEVEL_OFFSET_MIN}
+                  max={ORCA_ENEMY_LEVEL_OFFSET_MAX}
+                  step={1}
+                  value={orcaEnemyLevelOffset}
+                  disabled={!debugModeEnabled}
+                  onChange={(event) => {
+                    if (debugModeEnabled) onSetOrcaEnemyLevelOffset(Number(event.target.value));
+                  }}
+                  className={`mt-2 w-full disabled:cursor-not-allowed disabled:opacity-50 ${IOS_GLASS_SLIDER_CLASS}`}
+                  style={getSliderProgressStyle(orcaEnemyLevelOffset, ORCA_ENEMY_LEVEL_OFFSET_MIN, ORCA_ENEMY_LEVEL_OFFSET_MAX)}
+                />
+              </label>
+            )}
+          </div>
+
+          <div>
             <div className="text-xs text-gray-600 font-medium mb-2">{t('setting.themeColor')}</div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
-                disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.kemo'
-                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
-                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
-                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-              >
-                {t('setting.theme.kemo')}
-              </button>
-              <button
-                onClick={() => onSetGameMode('m.luna')}
-                disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.luna'
-                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
-                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
-                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-              >
-                {t('setting.theme.luna')}
-              </button>
-              <button
-                onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
-                disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.laika'
-                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
-                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
-                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-              >
-                {t('setting.theme.laika')}
-              </button>
+            <div className="grid grid-cols-4 gap-2">
+              {GAME_MODES.filter((mode) => {
+                const environment = getEnvironmentId();
+                if (environment === 'beta') return mode === 'm.laika';
+                return environment === 'dev' || THEME_DEFINITIONS[mode].availableInProduction;
+              }).map((mode) => {
+                const labelKey = THEME_DEFINITIONS[mode].labelKey;
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => !modeSelectionLocked && onSetGameMode(mode)}
+                    disabled={modeSelectionLocked}
+                    className={`py-2 rounded border text-sm font-medium ${
+                      gameMode === mode
+                        ? 'bg-selection text-content-inverse border-selection pane-button-shadow-soft'
+                        : 'bg-surface-interactive text-content-default border-line-strong pane-button-shadow'
+                    } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
-              {gameMode === 'm.kemo'
-                ? t('setting.theme.description.kemo')
-                : gameMode === 'm.luna'
-                  ? t('setting.theme.description.luna')
-                  : t('setting.theme.description.laika')}
+              {t('setting.theme.description.named', { name: t(THEME_DEFINITIONS[gameMode].labelKey) })}
             </div>
           </div>
 

@@ -49,18 +49,38 @@ type PersistedAfkChunkCursor,
 } from '../game/afkScheduler';
 import {
 AFK_CHUNK_CYCLE_COUNT,
-compareAfkChunkResults,
+compareAfkPartyDispatchCandidates,
 createAfkPartyChunkWorkerState,
+createAfkPartyChunkInventoryColdWorkerJob,
+createAfkPartyChunkInventoryContinuationWorkerJob,
+getAfkChunkOperationCount,
 getAfkWorkerPoolLimit,
 hasPendingPartySettingChanges,
-hydrateAfkPartyChunkResult,
+hydrateAfkPartyChunkInventoryResult,
+takeNextAfkFifoResult,
 type AfkPartyChunkJob,
 type AfkPartyChunkResult,
-type AfkPartyChunkWorkerResult,
+type AfkPartyChunkInventoryWorkerJob,
+type AfkPartyChunkInventoryWorkerResult,
 } from '../game/afkChunkCoordinator';
 import { recordAfkWorkerJobTelemetry,terminateAfkWorkers } from '../game/afkWorkerTelemetry';
 import { AFK_TRACE_WATCHDOG_INTERVAL_MS,afkRuntimeTrace } from '../game/afkRuntimeTrace';
+import {
+beginAfkLiveProfileMeasurement,
+canCompleteAfkLiveProfile,
+completeAfkLiveProfile,
+getAfkLiveProfileWorkerLimitOverride,
+observeAfkLiveProfilePending,
+  recordAfkLiveProfileReactCommit,
+  useAfkAtomicTransactionCandidate,
+  useAfkCoordinatorAuthorityCandidate,
+  useAfkCoordinatorDispatchPacingCandidate,
+useAfkWorkerSimulationCandidate,
+useAfkCompactBattleResultCandidate,
+useAfkRendererPartyStatsMemo,
+} from '../game/afkLiveProfile';
 import { getDifficultyOffsetMax } from '../game/difficultyOffset';
+import { getPeddlerTravelDurationMs } from '../game/expeditionAbilityPolicies';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
 import { buildExperimentalObservation,deityNameFromId,getDeityAssignmentConflict,getUnlockedDeityKeys,outcomeFromParty } from '../game/experimentalApi';
 import { isExperimentalApiCommandType } from '../game/experimentalApiContracts';
@@ -69,18 +89,21 @@ import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from 
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { JEWELS_BY_ITEM_CATEGORY,planAutoJewelAssignmentsForCharacter } from '../game/jewel';
-import { computePartyStats } from '../game/partyComputation';
+import { computePartyStats,computeRendererPartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
+import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import {
 applyAutoEquipmentProfileActions,
 applyAutoEquipmentProfileActionsSequentially,
+type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
 import { Bonus,Character,ExpeditionDepthLimit,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
 import { NotificationToast } from './NotificationToast';
+import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
 
 
 import {
@@ -140,6 +163,8 @@ IOS_GLASS_TOP_TAB_CLASS,
 MAIN_TAB_ORDER,
 normalizeAutoEquipmentMode,
 normalizeRuntimeSnapshot,
+ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY,
+ORCA_DISCORD_WEBHOOK_URL,
 PARTY_CYCLE_TICK_MS,
 PARTY_EXPEDITION_SPLIT_MIN_WIDTH,
 PartyCycleRuntime,
@@ -149,6 +174,7 @@ PRAY_STEP_COUNT,
 preloadRaceIcons,
 PROD_DISCORD_WEBHOOK_URL,
 REDUCER_CATCHUP_THRESHOLD_MS,
+RUNTIME_GAME_MODE_STORAGE_KEY,
 resolveSideQuestShortText,
 REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
@@ -168,6 +194,7 @@ WideModeSecondaryTab
 const loadPartyTab = () => import('./home/tabs/PartyTab');
 const loadExpeditionTab = () => import('./home/tabs/ExpeditionTab');
 const loadBaseTab = () => import('./home/tabs/BaseTab');
+const ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.orca-time-speed-override');
 const loadDiaryTab = () => import('./home/tabs/DiaryTab');
 const loadSettingTab = () => import('./home/tabs/SettingTab');
 
@@ -206,6 +233,11 @@ export function HomeScreen({
   onDismissAllNotifications,
 }: HomeScreenProps) {
   const renderStartedAt = performance.now();
+  const shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo();
+  const shouldUseCoordinatorAuthority = useAfkCoordinatorAuthorityCandidate();
+  const computePresentationPartyStats = shouldOptimizeAfkRenderer
+    ? computeRendererPartyStats
+    : computePartyStats;
   const prefersDocumentScroll = false;
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [tabTransitionDirection, setTabTransitionDirection] = useState<'forward' | 'backward'>('forward');
@@ -228,9 +260,32 @@ export function HomeScreen({
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode());
+  const [runtimeGameMode, setRuntimeGameMode] = useState<RuntimeGameMode>(() => {
+    if (getEnvironmentId() === 'orca') return 'mode.orca';
+    try {
+      const saved = localStorage.getItem(RUNTIME_GAME_MODE_STORAGE_KEY);
+      return isRuntimeGameMode(saved) ? saved : 'mode.normal';
+    } catch {
+      return 'mode.normal';
+    }
+  });
+  const [orcaEnemyLevelOffset, setOrcaEnemyLevelOffset] = useState(() => {
+    try {
+      return normalizeOrcaEnemyLevelOffset(localStorage.getItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY));
+    } catch {
+      return DEFAULT_ORCA_ENEMY_LEVEL_OFFSET;
+    }
+  });
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
+  const [hasOrcaTimeSpeedOverride, setHasOrcaTimeSpeedOverride] = useState(() => {
+    try {
+      return localStorage.getItem(ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const autoEquipmentProfileBaseStateRef = useRef<GameState | null>(null);
   if (__AUTO_EQUIPMENT_PROFILE_ENABLED__ && autoEquipmentProfileBaseStateRef.current === null) {
@@ -263,7 +318,8 @@ export function HomeScreen({
   const latestPartiesRef = useRef(state.parties);
   const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
-  const gameModeRef = useRef(gameMode);
+  const gameModeRef = useRef(runtimeGameMode);
+  const debugSettingsRef = useRef(debugSettings);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
   const [afkInteractionPauseVersion, setAfkInteractionPauseVersion] = useState(0);
 
@@ -276,6 +332,7 @@ export function HomeScreen({
   const afkRecoveryCompletedMsRef = useRef(0);
   const afkChunkCursorRef = useRef<PersistedAfkChunkCursor | null>(null);
   const afkRemainingMsByPartyRef = useRef<Record<number, number>>({});
+  const afkFinalRemainingMsByPartyRef = useRef<Record<number, number>>({});
   const afkInFlightCompletedMsByPartyRef = useRef<Record<number, number>>({});
   const afkLastProgressRenderAtRef = useRef(0);
   const afkActiveChunkJobsRef = useRef(new Map<number, {
@@ -292,19 +349,45 @@ export function HomeScreen({
     createdEpochAt: number;
     lastReleasedAt: number;
     completedJobs: number;
+    retainedInventory: InventoryRecord | null;
+    retainedInventoryToken: string | null;
+    retainedInventoryRevision: number;
   }>>([]);
   const afkCompletedChunkResultsRef = useRef(new Map<string, AfkPartyChunkResult>());
+  const afkCompletedChunkArrivalSequenceRef = useRef(new Map<string, number>());
+  const afkPartyTransactionLocksRef = useRef(new Set<number>());
   const afkActiveCommitTransactionRef = useRef<{
     result: AfkPartyChunkResult;
+    arrivalSequence: number;
+    startedAt: number;
+    plannedActionCount: number;
+    attribution: AfkPartyTransactionAttribution;
+    mode: 'baseline' | 'candidate';
     capturedSettingChanges: boolean;
+    stage: 'chunk_dispatched' | 'auto_equipment_dispatched';
+  } | null>(null);
+  const afkAutoEquipmentVisibilityRef = useRef<{
+    partyId: number;
+    partyIndex: number;
+    jobId: string;
     startedAt: number;
   } | null>(null);
+  const afkLiveProfileStateRef = useRef(state);
+  afkLiveProfileStateRef.current = shouldUseCoordinatorAuthority
+    ? actions.getAuthoritativeState().state
+    : state;
+  const afkAuthoritativeDispatchStateRef = useRef(state);
   const afkWorkerJobSequenceRef = useRef(0);
+  const afkWorkerResultArrivalSequenceRef = useRef(0);
   const afkWorkerSlotSequenceRef = useRef(0);
-  const afkHeadOfLineWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
+  const afkFifoCommitWaitRef = useRef<{ blockerJobId: string; startedAt: number } | null>(null);
+  const afkCoordinatorPumpRef = useRef<(() => void) | null>(null);
+  const afkAuthorityTransactionsSincePublicationRef = useRef(0);
+  const afkAuthorityAcknowledgedAtRef = useRef<number | null>(null);
+  const afkAuthorityDispatchYieldedRef = useRef(false);
+  const afkAuthorityDispatchPaceChannelRef = useRef<MessageChannel | null>(null);
   const renderCommitDurationsRef = useRef<number[]>([]);
-  const [afkCoordinatorVersion, setAfkCoordinatorVersion] = useState(0);
-  const [, setAfkProgressPresentationVersion] = useState(0);
+  const [afkProgressPresentationVersion, setAfkProgressPresentationVersion] = useState(0);
   const memoryPreviousAfkActiveRef = useRef(false);
   const memoryOnlineStartedRef = useRef(false);
   const afkAverageOperationDurationMsRef = useRef<number | null>(null);
@@ -324,8 +407,14 @@ export function HomeScreen({
   const lastPartyProgressSnapshotHashRef = useRef('');
 
   useEffect(() => {
+    if (__AFK_LIVE_PROFILE_ENABLED__) beginAfkLiveProfileMeasurement();
+  }, []);
+
+  useEffect(() => {
     const commits = renderCommitDurationsRef.current;
-    commits.push(Math.max(0, performance.now() - renderStartedAt));
+    const renderDurationMs = Math.max(0, performance.now() - renderStartedAt);
+    commits.push(renderDurationMs);
+    if (__AFK_LIVE_PROFILE_ENABLED__) recordAfkLiveProfileReactCommit(renderDurationMs);
     if (commits.length > 240) commits.splice(0, commits.length - 240);
     const ordered = [...commits].sort((left, right) => left - right);
     (window as Window & { __BOKEMO_RENDER_PROFILE__?: { commitCount: number; p95CommitDurationMs: number; longestCommitDurationMs: number } })
@@ -341,7 +430,8 @@ export function HomeScreen({
   const [apiControlActive, setApiControlActive] = useState(false);
 
   useEffect(() => {
-    const enabled = isDebugModeEnabled() && debugSettings.runtimeDiagnosticsEnabled;
+    const enabled = __AFK_LIVE_PROFILE_ENABLED__
+      || (isDebugModeEnabled() && debugSettings.runtimeDiagnosticsEnabled);
     afkRuntimeTrace.setEnabled(enabled);
     if (!enabled) {
       memoryMonitor.pause();
@@ -385,6 +475,10 @@ export function HomeScreen({
   apiActionsRef.current = actions;
   apiAutoRunRef.current = isAutoRepeatEnabled;
   apiCyclesRef.current = partyCycles;
+  debugSettingsRef.current = debugSettings;
+  const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca' && !hasOrcaTimeSpeedOverride
+    ? { ...debugSettings, timeSpeed: 'x5' }
+    : debugSettings, [debugSettings, hasOrcaTimeSpeedOverride, runtimeGameMode]);
 
   useEffect(() => {
     if (!isDebugModeEnabled()) return;
@@ -409,7 +503,7 @@ export function HomeScreen({
   useEffect(() => {
     const afkActive = pendingAfkMs > 0;
     const runtimeMode = afkActive ? 'afk' : isAutoRepeatEnabled ? 'online' : 'idle';
-    memoryMonitor.setRuntime(runtimeMode, debugSettings.timeSpeed);
+    memoryMonitor.setRuntime(runtimeMode, effectiveDebugSettings.timeSpeed);
     if (isAutoRepeatEnabled && !afkActive && !memoryOnlineStartedRef.current) {
       memoryOnlineStartedRef.current = true;
       void memoryMonitor.recordEvent('online_processing_start');
@@ -420,7 +514,7 @@ export function HomeScreen({
       void memoryMonitor.recordEvent('afk_emulation_complete');
     }
     memoryPreviousAfkActiveRef.current = afkActive;
-  }, [debugSettings.timeSpeed, isAutoRepeatEnabled, pendingAfkMs]);
+  }, [effectiveDebugSettings.timeSpeed, isAutoRepeatEnabled, pendingAfkMs]);
 
   useEffect(() => {
     apiStateVersionRef.current += 1;
@@ -656,8 +750,18 @@ export function HomeScreen({
         effects = { previousEnabled: !command.enabled, enabled: command.enabled };
       } else if (type === 'god_battle' && party) {
         if (!party.defeatedBossExpeditions[party.selectedDungeonId] || (party.instantExpeditionStock ?? 0) <= 0 || apiAutoRunRef.current) return apiFailure(422, 'god_battle_unavailable', 'Gods Battle is unavailable.');
-        apiActionsRef.current.consumeInstantExpeditionStock(partyIndex, apiSimulatedAtRef.current);
-        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current);
+        let apiHasActiveTimeSpeedBonus = false;
+        try {
+          apiHasActiveTimeSpeedBonus = Number(localStorage.getItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY)) > Date.now();
+        } catch {
+          // The base time speed remains valid when storage is unavailable.
+        }
+        apiActionsRef.current.consumeInstantExpeditionStock(
+          partyIndex,
+          apiSimulatedAtRef.current,
+          getTimeSpeedScale(effectiveDebugSettings, apiHasActiveTimeSpeedBonus),
+        );
+        apiActionsRef.current.resolveInstantExpedition(partyIndex, gameModeRef.current, true, apiSimulatedAtRef.current, orcaEnemyLevelOffset);
         apiSimulatedAtRef.current += APPROX_CYCLE_STEP_COUNT * BASE_STEP_DURATION_MS;
         effects = { partyId: party.id, dungeonId: party.selectedDungeonId };
       }
@@ -684,7 +788,7 @@ export function HomeScreen({
       const runs: Array<Record<string, unknown>> = [];
       let elapsed = 0;
       const beforeVersion = apiStateVersionRef.current;
-      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current);
+      const batch = apiActionsRef.current.runApiSortieBatch(partyIndex, Number(payload.count), gameModeRef.current, apiSimulatedAtRef.current, orcaEnemyLevelOffset);
       await waitForApiStateUpdate(beforeVersion);
       for (const [zeroBasedIndex, batchRun] of batch.runs.entries()) {
         const index = zeroBasedIndex + 1;
@@ -718,7 +822,7 @@ export function HomeScreen({
       return { sortie: { partyId: Number(payload.partyId), dungeonId, requestedCount: Number(payload.count), completedCount: Number(payload.count), previousRevision, revision: apiRevisionRef.current, partyElapsedStartMs: 0, partyElapsedEndMs: elapsed }, prelude: null, outcomes, totals, charge: { before: chargeBefore, after: chargeAfter }, sideQuests: { assigned: 0, completed: 0, cancelled: 0, expired: 0 }, unlocks: { bossDungeonIds: [], godBattleDungeonIds: [], partyIds: [], deityIds: [], otherIds: [] }, runs, observation: buildApiObservation() };
     }
     return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
-  }, [buildApiObservation, waitForApiStateUpdate]);
+  }, [buildApiObservation, effectiveDebugSettings, orcaEnemyLevelOffset, waitForApiStateUpdate]);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
@@ -761,21 +865,33 @@ export function HomeScreen({
   const isDarkModeEnabled = darkModeSetting === 'on' || (darkModeSetting === 'system' && isSystemDarkMode);
 
   useEffect(() => {
+    const themeClassName = getThemeClassName(gameMode);
+    THEME_CLASS_NAMES.forEach((className) => {
+      const enabled = className === themeClassName;
+      document.body.classList.toggle(className, enabled);
+      document.documentElement.classList.toggle(className, enabled);
+    });
     document.body.classList.toggle('app-dark', isDarkModeEnabled);
     document.documentElement.classList.toggle('app-dark', isDarkModeEnabled);
+    document.body.classList.toggle('theme-dark', isDarkModeEnabled);
+    document.documentElement.classList.toggle('theme-dark', isDarkModeEnabled);
 
     return () => {
+      THEME_CLASS_NAMES.forEach((className) => {
+        document.body.classList.remove(className);
+        document.documentElement.classList.remove(className);
+      });
       document.body.classList.remove('app-dark');
       document.documentElement.classList.remove('app-dark');
+      document.body.classList.remove('theme-dark');
+      document.documentElement.classList.remove('theme-dark');
     };
-  }, [isDarkModeEnabled]);
+  }, [gameMode, isDarkModeEnabled]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    const lightTint = gameMode === 'm.luna' ? '#f6efe2' : gameMode === 'm.laika' ? '#e6efe7' : '#f3f4f6';
-    const darkTint = gameMode === 'm.luna' ? '#2f2620' : gameMode === 'm.laika' ? '#17281f' : '#1f2937';
-    const resolvedTint = isDarkModeEnabled ? darkTint : lightTint;
+    const resolvedTint = getBrowserChromeColor(gameMode, isDarkModeEnabled);
 
     // iOS Safari sometimes ignores in-place content updates.
     // Replacing the node restores immediate, no-refresh tint switching.
@@ -834,12 +950,31 @@ export function HomeScreen({
 
 
   const updateDebugSettings = useCallback((updates: Partial<DebugSettings>) => {
+    if (runtimeGameMode === 'mode.orca' && updates.timeSpeed !== undefined) {
+      setHasOrcaTimeSpeedOverride(true);
+      try {
+        localStorage.setItem(ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY, 'true');
+      } catch {
+        // noop
+      }
+    }
     setDebugSettings((prev) => {
       const next = { ...prev, ...updates };
       saveDebugSettings(next);
       return next;
     });
-  }, []);
+  }, [runtimeGameMode]);
+  const updateRuntimeGameMode = useCallback((mode: RuntimeGameMode) => {
+    if (mode === 'mode.orca' && runtimeGameMode !== 'mode.orca') {
+      setHasOrcaTimeSpeedOverride(false);
+      try {
+        localStorage.removeItem(ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY);
+      } catch {
+        // noop
+      }
+    }
+    setRuntimeGameMode(mode);
+  }, [runtimeGameMode]);
   const [timeSpeedBonusUntilMs, setTimeSpeedBonusUntilMs] = useState<number | null>(() => {
     try {
       const raw = localStorage.getItem(SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY);
@@ -853,6 +988,7 @@ export function HomeScreen({
     }
   });
   const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
+  const hasActiveTimeSpeedBonus = timeSpeedBonusUntilMs !== null && timeSpeedNowMs < timeSpeedBonusUntilMs;
 
   useEffect(() => {
     try {
@@ -875,41 +1011,31 @@ export function HomeScreen({
   }, [timeSpeedBonusUntilMs]);
 
   useEffect(() => {
-    // SpecRef: 8.1.2 | Header | Speed of Time
-    // Keep x1.2 active only while a valid bonus duration exists.
-    if (timeSpeedBonusUntilMs === null) {
-      setDebugSettings((prev) => {
-        if (prev.timeSpeed !== 'x1_2') return prev;
-        const next = { ...prev, timeSpeed: 'realtime' as const };
-        saveDebugSettings(next);
-        return next;
-      });
-      return;
-    }
+    // SpecRef: 8.6 | UI_SETTING | Speed of Time
+    // Expiring the report bonus must not replace the Debug-pane base speed.
+    if (timeSpeedBonusUntilMs === null) return;
     if (timeSpeedNowMs < timeSpeedBonusUntilMs) return;
     setTimeSpeedBonusUntilMs(null);
-    setDebugSettings((prev) => {
-      if (prev.timeSpeed !== 'x1_2') return prev;
-      const next = { ...prev, timeSpeed: 'realtime' as const };
-      saveDebugSettings(next);
-      return next;
-    });
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeLabel = useMemo(() => {
-    if (debugSettings.timeSpeed === 'unlimited') return '(∞)';
-    const isBonusSpeed = debugSettings.timeSpeed === 'x1_2';
-    if (!isBonusSpeed) return '';
-    const remainingHours = timeSpeedBonusUntilMs === null
-      ? 0
-      : Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)));
-    return `(${formatNumber(remainingHours)}h)`;
-  }, [debugSettings.timeSpeed, timeSpeedBonusUntilMs, timeSpeedNowMs]);
+    if (effectiveDebugSettings.timeSpeed === 'unlimited') return '(∞)';
+    const remainingHours = hasActiveTimeSpeedBonus && timeSpeedBonusUntilMs !== null
+      ? Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)))
+      : null;
+    if (runtimeGameMode === 'mode.orca' && effectiveDebugSettings.timeSpeed === 'x5') {
+      const modeSpeed = hasActiveTimeSpeedBonus ? 'x6' : 'x5';
+      return remainingHours === null
+        ? `(${modeSpeed})`
+        : `(${modeSpeed}) (${formatNumber(remainingHours)}h)`;
+    }
+    return remainingHours === null ? '' : `(${formatNumber(remainingHours)}h)`;
+  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus, runtimeGameMode, timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
   const speedOfTimeSymbol = useMemo(() => {
-    if (debugSettings.timeSpeed === 'realtime') return '▷';
+    if (!hasActiveTimeSpeedBonus && effectiveDebugSettings.timeSpeed !== 'x1_2' && effectiveDebugSettings.timeSpeed !== 'unlimited') return '▷';
     return '▶︎';
-  }, [debugSettings.timeSpeed]);
+  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus]);
 
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
@@ -940,13 +1066,17 @@ export function HomeScreen({
       ? DEV_DISCORD_WEBHOOK_URL
       : environmentId === 'beta'
         ? BETA_DISCORD_WEBHOOK_URL
-        : PROD_DISCORD_WEBHOOK_URL;
+        : environmentId === 'orca'
+          ? ORCA_DISCORD_WEBHOOK_URL
+          : PROD_DISCORD_WEBHOOK_URL;
     if (!webhookUrl) {
       const requiredEnvName = environmentId === 'dev'
         ? 'VITE_DEV_DISCORD_WEBHOOK_URL'
         : environmentId === 'beta'
           ? 'VITE_BETA_DISCORD_WEBHOOK_URL'
-          : 'VITE_PROD_DISCORD_WEBHOOK_URL';
+          : environmentId === 'orca'
+            ? 'VITE_ORCA_DISCORD_WEBHOOK_URL'
+            : 'VITE_PROD_DISCORD_WEBHOOK_URL';
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
@@ -1134,13 +1264,12 @@ export function HomeScreen({
     return true;
   }, [state]);
 
-  const runAutoEquipment = useCallback((
+  const planAutoEquipment = useCallback((
+    sourceState: GameState,
     targetPartyIndexes?: number[],
     targetCharacterIds?: Array<number | string>,
     options?: {
-      suppressNotifications?: boolean;
       profile?: {
-        sourceState: GameState;
         collector: AutoEquipmentAttributionCollector;
         actions: AutoEquipmentProfileAction[];
         candidateStrategy?:
@@ -1151,7 +1280,11 @@ export function HomeScreen({
           | 'indexed_prepared';
       };
     },
-  ): AutoEquipmentRunSummary => {
+  ): {
+    summary: AutoEquipmentRunSummary;
+    actions: AutoEquipmentProfileAction[];
+    notifications: Array<{ message: string; partyIndex: number; startedFromEmpty: boolean }>;
+  } => {
     const plannedActions: AutoEquipmentProfileAction[] = [];
     const summary: AutoEquipmentRunSummary = {
       processedCharacterIds: [],
@@ -1161,7 +1294,6 @@ export function HomeScreen({
       jewelAssignmentCount: 0,
     };
     const profile = options?.profile;
-    const sourceState = profile?.sourceState ?? state;
     const candidateStrategy = profile?.candidateStrategy ?? 'indexed_prepared';
     const usesInventoryIndex = candidateStrategy !== 'legacy';
     const usesItemFactCache = candidateStrategy === 'indexed_item_facts' || candidateStrategy === 'indexed_prepared';
@@ -1965,24 +2097,57 @@ export function HomeScreen({
       });
     });
 
-    if (!profile && plannedActions.length > 0) actions.applyAutoEquipmentActions(plannedActions);
+    return {
+      summary,
+      actions: plannedActions,
+      notifications: [...slotNotifications.values()],
+    };
+  }, []);
 
-    const shouldSuppressAutoEquipmentNotifications = profile || options?.suppressNotifications
+  const runAutoEquipment = useCallback((
+    targetPartyIndexes?: number[],
+    targetCharacterIds?: Array<number | string>,
+    options?: {
+      suppressNotifications?: boolean;
+      profile?: {
+        sourceState: GameState;
+        collector: AutoEquipmentAttributionCollector;
+        actions: AutoEquipmentProfileAction[];
+        candidateStrategy?:
+          | 'legacy'
+          | 'indexed'
+          | 'indexed_multiplier_cache'
+          | 'indexed_item_facts'
+          | 'indexed_prepared';
+      };
+    },
+  ): AutoEquipmentRunSummary => {
+    const sourceState = options?.profile?.sourceState ?? state;
+    const plan = planAutoEquipment(sourceState, targetPartyIndexes, targetCharacterIds, {
+      profile: options?.profile ? {
+        collector: options.profile.collector,
+        actions: options.profile.actions,
+        candidateStrategy: options.profile.candidateStrategy,
+      } : undefined,
+    });
+    if (options?.profile) return plan.summary;
+
+    if (plan.actions.length > 0) actions.applyAutoEquipmentActions(plan.actions);
+    const shouldSuppressNotifications = options?.suppressNotifications
       || pendingAfkMsRef.current > 0
       || shouldShowAfkSummaryRef.current
       || justCompletedAfkRecoveryRef.current;
+    if (shouldSuppressNotifications) return plan.summary;
 
-    if (shouldSuppressAutoEquipmentNotifications) return summary;
-
-    slotNotifications.forEach(({ message, partyIndex }) => {
+    plan.notifications.forEach(({ message, partyIndex }) => {
       if (sourceState.parties[partyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) return;
-      measure('actionDispatch', () => actions.addNotification(message, 'normal', 'item', true, {
-          rarity: 'common',
-          isSuperRareItem: false,
-        }));
+      actions.addNotification(message, 'normal', 'item', true, {
+        rarity: 'common',
+        isSuperRareItem: false,
+      });
     });
-    return summary;
-  }, [actions, state.global.inventory, state.parties]);
+    return plan.summary;
+  }, [actions, planAutoEquipment, state]);
 
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
@@ -2169,13 +2334,13 @@ export function HomeScreen({
 
   apiAutoEquipmentRunnerRef.current = runAutoEquipment;
 
-  const updateAfkTraceCoordinator = useCallback((canonicalJobId: string | null = null) => {
+  const updateAfkTraceCoordinator = useCallback((fifoHeadJobId: string | null = null) => {
     const activeJobs = [...afkActiveChunkJobsRef.current.values()];
     afkRuntimeTrace.updateCoordinator({
       pendingAfkMs: pendingAfkMsRef.current,
       completedResultCount: afkCompletedChunkResultsRef.current.size,
       workerPoolSize: afkWorkerPoolRef.current.length,
-      canonicalJobId,
+      fifoHeadJobId,
       activeJobs: activeJobs.map(({ job, status, startedMonotonicAt }) => ({
         jobId: job.jobId,
         partyId: job.partyId,
@@ -2187,18 +2352,42 @@ export function HomeScreen({
     });
   }, []);
 
+  const publishAfkAuthority = useCallback(() => {
+    if (!shouldUseCoordinatorAuthority) return;
+    const transactionCount = afkAuthorityTransactionsSincePublicationRef.current;
+    const publication = actions.publishAuthoritativeState();
+    if (!publication.published) return;
+    afkAuthorityTransactionsSincePublicationRef.current = 0;
+    afkRuntimeTrace.record('coordinator_authority_react_publication', {
+      phase: 'commit_awaiting_react',
+      durationMs: publication.delayMs,
+      progress: true,
+      data: {
+        authoritativeVersion: publication.version,
+        previousPresentedVersion: publication.previousPresentedVersion,
+        transactionCount,
+      },
+    });
+  }, [actions, shouldUseCoordinatorAuthority]);
+
   const completeAfkCommitTransaction = useCallback((result: AfkPartyChunkResult) => {
-    const transactionStartedAt = afkActiveCommitTransactionRef.current?.startedAt ?? performance.now();
+    const transaction = afkActiveCommitTransactionRef.current;
+    const transactionStartedAt = transaction?.startedAt ?? performance.now();
     const chunkElapsedMs = result.cycleDurationMs * result.operationCount;
     delete afkInFlightCompletedMsByPartyRef.current[result.partyIndex];
     afkRemainingMsByPartyRef.current[result.partyIndex] = Math.max(
       0,
       (afkRemainingMsByPartyRef.current[result.partyIndex] ?? 0) - chunkElapsedMs,
     );
+    // The baseline reaches this callback from the React visibility effect; the
+    // authority candidate reaches it immediately after installing the complete
+    // transaction snapshot. In either path, publish the immutable state used by
+    // the next dispatch before releasing the Party-local barrier.
+    afkAuthoritativeDispatchStateRef.current = afkLiveProfileStateRef.current;
+    afkPartyTransactionLocksRef.current.delete(result.partyIndex);
     afkActiveCommitTransactionRef.current = null;
     const remaining = Object.values(afkRemainingMsByPartyRef.current);
     pendingAfkMsRef.current = remaining.length > 0 ? Math.max(...remaining) : 0;
-    setPendingAfkMs(pendingAfkMsRef.current);
     const battles = Object.values(result.globalDelta.enemyBattleStats)
       .reduce((total, value) => total + Math.max(0, value.encounters), 0);
     memoryMonitor.markChunkComplete(battles);
@@ -2209,10 +2398,13 @@ export function HomeScreen({
       jobId: result.jobId,
       durationMs: performance.now() - transactionStartedAt,
       progress: true,
-      data: { pendingAfkMs: pendingAfkMsRef.current },
+      data: {
+        pendingAfkMs: pendingAfkMsRef.current,
+        arrivalSequence: transaction?.arrivalSequence ?? null,
+      },
     });
     updateAfkTraceCoordinator();
-    setAfkCoordinatorVersion((version) => version + 1);
+    window.setTimeout(() => afkCoordinatorPumpRef.current?.(), 0);
   }, [updateAfkTraceCoordinator]);
 
   useEffect(() => {
@@ -2266,6 +2458,7 @@ export function HomeScreen({
     afkRecoveryTotalMsRef.current = 0;
     afkChunkCursorRef.current = null;
     afkRemainingMsByPartyRef.current = {};
+    afkFinalRemainingMsByPartyRef.current = {};
     afkInFlightCompletedMsByPartyRef.current = {};
     afkActiveChunkJobsRef.current.forEach(({ job }) => {
       memoryMonitor.releaseWorker(job.jobId);
@@ -2274,6 +2467,11 @@ export function HomeScreen({
     afkWorkerPoolRef.current = [];
     afkActiveChunkJobsRef.current.clear();
     afkCompletedChunkResultsRef.current.clear();
+    afkCompletedChunkArrivalSequenceRef.current.clear();
+    afkPartyTransactionLocksRef.current.clear();
+    afkActiveCommitTransactionRef.current = null;
+    afkWorkerResultArrivalSequenceRef.current = 0;
+    afkAuthoritativeDispatchStateRef.current = state;
     updateAfkTraceCoordinator();
     try {
       localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
@@ -2281,11 +2479,21 @@ export function HomeScreen({
       console.error('Failed to clear AFK runtime state:', error);
     }
     actions.resetGame();
-  }, [actions, updateAfkTraceCoordinator]);
+  }, [actions, state, updateAfkTraceCoordinator]);
 
   useEffect(() => {
-    gameModeRef.current = gameMode;
-  }, [gameMode]);
+    gameModeRef.current = runtimeGameMode;
+  }, [runtimeGameMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(RUNTIME_GAME_MODE_STORAGE_KEY, runtimeGameMode);
+      localStorage.setItem(ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY, String(orcaEnemyLevelOffset));
+    } catch (error) {
+      console.error('Failed to persist runtime game mode:', error);
+    }
+    if (getEnvironmentId() !== 'beta' && runtimeGameMode === 'mode.orca' && gameMode !== 'm.orca') setGameMode('m.orca');
+  }, [gameMode, orcaEnemyLevelOffset, runtimeGameMode]);
 
   useEffect(() => {
     if (state.parties.length === 0) return;
@@ -2296,7 +2504,7 @@ export function HomeScreen({
 
   const afkSummaryBaselineRef = useRef<AfkSummaryStats[] | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
-  const { partyStats, characterStats } = computePartyStats(currentParty);
+  const { partyStats, characterStats } = computePresentationPartyStats(currentParty);
 
   useEffect(() => {
     preloadRaceIcons();
@@ -2308,8 +2516,12 @@ export function HomeScreen({
         setGameMode('m.laika');
         return;
       }
+      if (getEnvironmentId() === 'orca') {
+        setGameMode('m.orca');
+        return;
+      }
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-      if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
+      if (isGameModeAvailable(savedMode, getEnvironmentId())) {
         setGameMode(savedMode);
       }
     } catch (error) {
@@ -2319,9 +2531,12 @@ export function HomeScreen({
 
   useEffect(() => {
     try {
-      const storedMode = getEnvironmentId() === 'beta' ? 'm.laika' : gameMode;
+      const storedMode = getEnvironmentId() === 'beta' ? 'm.laika' : getEnvironmentId() === 'orca' ? 'm.orca' : gameMode;
       if (getEnvironmentId() === 'beta' && gameMode !== 'm.laika') {
         setGameMode('m.laika');
+      }
+      if (getEnvironmentId() === 'orca' && gameMode !== 'm.orca') {
+        setGameMode('m.orca');
       }
       localStorage.setItem(GAME_MODE_STORAGE_KEY, storedMode);
       window.dispatchEvent(new Event(THEME_SYNC_EVENT));
@@ -2491,10 +2706,14 @@ export function HomeScreen({
         : disclosedLog?.dungeonName
           ?? DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId)?.name
           ?? '-';
-      const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(party, now));
+      const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(
+        party,
+        now,
+        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
+      ));
       const compactProgressItems = getCompactProgressItems(
         party,
-        getTimeSpeedScale(debugSettings),
+        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
         now,
         cycle.state,
       ).map((item) => ({ text: item.compactText, progressRatio: item.progressRatio }));
@@ -2523,13 +2742,7 @@ export function HomeScreen({
       unreadDiaryCount: state.parties.reduce((count, party) => (
         count + party.diaryLogs.reduce((partyCount, log) => partyCount + (log.isRead ? 0 : 1), 0)
       ), 0),
-      theme: (
-        gameMode === 'm.laika'
-          ? (isDarkModeEnabled ? 'laika-dark' : 'laika')
-          : gameMode === 'm.luna'
-            ? (isDarkModeEnabled ? 'luna-dark' : 'luna')
-            : isDarkModeEnabled ? 'dark' : 'light'
-      ) as DesktopPartyProgressSnapshot['theme'],
+      theme: getDesktopTheme(gameMode, isDarkModeEnabled),
       parties,
     };
     const snapshotHash = JSON.stringify(snapshotWithoutTimestamp);
@@ -2547,7 +2760,7 @@ export function HomeScreen({
       lastPartyProgressSnapshotHashRef.current = '';
       console.error('Failed to publish Party Progress pane snapshot:', error);
     });
-  }, [gameMode, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
+  }, [gameMode, hasActiveTimeSpeedBonus, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
 
   // SpecRef: 9.1.1 | macOS background lifecycle and native notifications | Diary-filtered native notifications
   useEffect(() => {
@@ -2697,65 +2910,157 @@ export function HomeScreen({
   }, [state]);
 
   useEffect(() => {
+    const visibility = afkAutoEquipmentVisibilityRef.current;
+    if (!visibility) return;
+    afkAutoEquipmentVisibilityRef.current = null;
+    afkRuntimeTrace.record('auto_equipment_react_visible', {
+      phase: 'commit_awaiting_react',
+      partyId: visibility.partyId,
+      partyIndex: visibility.partyIndex,
+      jobId: visibility.jobId,
+      durationMs: performance.now() - visibility.startedAt,
+      progress: true,
+    });
+  });
+
+  useEffect(() => {
     const transaction = afkActiveCommitTransactionRef.current;
     if (!transaction) return;
 
-    if (!transaction.capturedSettingChanges) {
-      // React queues these equipment mutations before the coordinator version
-      // update below. Completing in this effect therefore retains the slot until
-      // the Chunk commit is visible, while avoiding a second state-change signal
-      // that may never arrive when an equipment action is rejected as a no-op.
-      const autoEquipmentStartedAt = performance.now();
-      afkRuntimeTrace.record('auto_equipment_start', {
-        phase: 'auto_equipment',
+    if (transaction.mode === 'baseline') {
+      if (transaction.stage === 'auto_equipment_dispatched') {
+        // The preceding render made the equipment reducer authoritative. Only
+        // now may this Party's next Chunk become eligible.
+        completeAfkCommitTransaction(transaction.result);
+        return;
+      }
+      afkRuntimeTrace.record('commit_react_visible', {
+        phase: 'commit_awaiting_react',
         partyId: transaction.result.partyId,
         partyIndex: transaction.result.partyIndex,
         jobId: transaction.result.jobId,
+        durationMs: performance.now() - transaction.startedAt,
+        progress: true,
       });
-      const summary = runAutoEquipment(
-        [transaction.result.partyIndex],
-        undefined,
-        { suppressNotifications: true },
-      );
+      if (!transaction.capturedSettingChanges) {
+        const planningStartedAt = performance.now();
+        afkRuntimeTrace.record('auto_equipment_start', {
+          phase: 'auto_equipment',
+          partyId: transaction.result.partyId,
+          partyIndex: transaction.result.partyIndex,
+          jobId: transaction.result.jobId,
+        });
+        const plan = planAutoEquipment(
+          state,
+          [transaction.result.partyIndex],
+        );
+        afkRuntimeTrace.record('auto_equipment_complete', {
+          phase: 'auto_equipment',
+          partyId: transaction.result.partyId,
+          partyIndex: transaction.result.partyIndex,
+          jobId: transaction.result.jobId,
+          durationMs: performance.now() - planningStartedAt,
+          progress: true,
+          data: {
+            processedCharacters: plan.summary.processedCharacterIds.length,
+            unequippedCount: plan.summary.unequippedCount,
+            equippedCount: plan.summary.equippedCount,
+            upgradedCount: plan.summary.upgradedCount,
+            jewelAssignmentCount: plan.summary.jewelAssignmentCount,
+            plannedActionCount: plan.actions.length,
+          },
+        });
+        if (plan.actions.length > 0) {
+          transaction.stage = 'auto_equipment_dispatched';
+          transaction.plannedActionCount = plan.actions.length;
+          afkAutoEquipmentVisibilityRef.current = {
+            partyId: transaction.result.partyId,
+            partyIndex: transaction.result.partyIndex,
+            jobId: transaction.result.jobId,
+            startedAt: performance.now(),
+          };
+          actions.applyAutoEquipmentActions(plan.actions);
+          return;
+        }
+      }
+      completeAfkCommitTransaction(transaction.result);
+      return;
+    }
+
+    afkRuntimeTrace.record('atomic_transaction_react_visible', {
+      phase: 'commit_awaiting_react',
+      partyId: transaction.result.partyId,
+      partyIndex: transaction.result.partyIndex,
+      jobId: transaction.result.jobId,
+      durationMs: performance.now() - transaction.startedAt,
+      progress: true,
+      data: { plannedActionCount: transaction.attribution.plannedActionCount },
+    });
+    if (!transaction.capturedSettingChanges) {
+      const planSummary = transaction.attribution.summary;
       afkRuntimeTrace.record('auto_equipment_complete', {
         phase: 'auto_equipment',
         partyId: transaction.result.partyId,
         partyIndex: transaction.result.partyIndex,
         jobId: transaction.result.jobId,
-        durationMs: performance.now() - autoEquipmentStartedAt,
+        durationMs: transaction.attribution.autoEquipmentPlanningMs,
         progress: true,
         data: {
-          processedCharacters: summary.processedCharacterIds.length,
-          unequippedCount: summary.unequippedCount,
-          equippedCount: summary.equippedCount,
-          upgradedCount: summary.upgradedCount,
-          jewelAssignmentCount: summary.jewelAssignmentCount,
+          processedCharacters: planSummary?.processedCharacters ?? 0,
+          unequippedCount: planSummary?.unequippedCount ?? 0,
+          equippedCount: planSummary?.equippedCount ?? 0,
+          upgradedCount: planSummary?.upgradedCount ?? 0,
+          jewelAssignmentCount: planSummary?.jewelAssignmentCount ?? 0,
+          plannedActionCount: transaction.attribution.plannedActionCount,
         },
       });
-    } else {
-      afkRuntimeTrace.record('auto_equipment_skipped', {
-        phase: 'commit_awaiting_react',
-        partyId: transaction.result.partyId,
-        partyIndex: transaction.result.partyIndex,
-        jobId: transaction.result.jobId,
-        data: { reason: 'captured_setting_changes' },
-      });
     }
+    afkRuntimeTrace.record('chunk_transaction_reducer', {
+      phase: 'commit_awaiting_react',
+      partyId: transaction.result.partyId,
+      partyIndex: transaction.result.partyIndex,
+      jobId: transaction.result.jobId,
+      durationMs: transaction.attribution.chunkMergeMs,
+    });
+    afkRuntimeTrace.record('auto_equipment_transaction_reducer', {
+      phase: 'commit_awaiting_react',
+      partyId: transaction.result.partyId,
+      partyIndex: transaction.result.partyIndex,
+      jobId: transaction.result.jobId,
+      durationMs: transaction.attribution.equipmentReducerMs,
+    });
 
     completeAfkCommitTransaction(transaction.result);
-  }, [completeAfkCommitTransaction, runAutoEquipment, state]);
+  }, [actions, completeAfkCommitTransaction, planAutoEquipment, state]);
 
-  useEffect(() => {
-    if (pendingAfkMs <= 0) return;
+  // SpecRef: 5.1 | Coordinator process; 5.1.1.1 | React update frequency
+  const pumpAfkCoordinator = useCallback(() => {
+    let state = shouldUseCoordinatorAuthority
+      ? actions.getAuthoritativeState().state
+      : afkLiveProfileStateRef.current;
+    const pendingAfkMs = pendingAfkMsRef.current;
+    const hasOutstandingCoordinatorWork = pendingAfkMs > 0
+      || afkActiveChunkJobsRef.current.size > 0
+      || afkCompletedChunkResultsRef.current.size > 0
+      || afkActiveCommitTransactionRef.current !== null
+      || afkPartyTransactionLocksRef.current.size > 0
+      || afkWorkerPoolRef.current.length > 0;
+    if (!hasOutstandingCoordinatorWork) return;
     if (afkInteractionPausedRef.current) {
       afkRuntimeTrace.setPhase('interaction_pause');
       updateAfkTraceCoordinator();
       return;
     }
-    if (afkActiveCommitTransactionRef.current) {
+    const activeTransactionAtEffectStart = afkActiveCommitTransactionRef.current;
+    if (activeTransactionAtEffectStart) {
       afkRuntimeTrace.setPhase('commit_awaiting_react');
-      updateAfkTraceCoordinator(afkActiveCommitTransactionRef.current.result.jobId);
-      return;
+      updateAfkTraceCoordinator(
+        afkCompletedChunkResultsRef.current.values().next().value?.jobId ?? null,
+      );
+    } else {
+      // No Party transaction is partially published, so this render is a safe
+      // immutable base for future worker dispatches.
+      afkAuthoritativeDispatchStateRef.current = state;
     }
     // v0.9.2 persisted a cross-party operation cursor. Party-scoped workers
     // restart only the uncommitted legacy slice from its durable game-state save.
@@ -2774,24 +3079,13 @@ export function HomeScreen({
       );
     }
 
-    const activeJobs = Array.from(afkActiveChunkJobsRef.current.values()).map(({ job }) => job);
-    if (activeJobs.length > 0) {
-      const nextCanonicalJob = [...activeJobs].sort((left, right) => compareAfkChunkResults(left, right))[0];
-      updateAfkTraceCoordinator(nextCanonicalJob.jobId);
-      const completedResult = afkCompletedChunkResultsRef.current.get(nextCanonicalJob.jobId);
+    if (!activeTransactionAtEffectStart) {
+      const completedResult = takeNextAfkFifoResult(afkCompletedChunkResultsRef.current);
       if (completedResult) {
-        const headOfLineWait = afkHeadOfLineWaitRef.current;
-        if (headOfLineWait) {
-          afkRuntimeTrace.record('canonical_order_wait_end', {
-            phase: 'canonical_order_wait',
-            jobId: headOfLineWait.blockerJobId,
-            durationMs: performance.now() - headOfLineWait.startedAt,
-            progress: true,
-          });
-          afkHeadOfLineWaitRef.current = null;
-        }
+        const arrivalSequence = afkCompletedChunkArrivalSequenceRef.current.get(completedResult.jobId) ?? 0;
+        afkCompletedChunkArrivalSequenceRef.current.delete(completedResult.jobId);
         afkActiveChunkJobsRef.current.delete(completedResult.partyIndex);
-        afkCompletedChunkResultsRef.current.delete(completedResult.jobId);
+        afkPartyTransactionLocksRef.current.add(completedResult.partyIndex);
         afkLastBatchCommittedAtRef.current = performance.now();
         const profile = afkSchedulerProfileRef.current ?? createAfkSchedulerProfile();
         afkSchedulerProfileRef.current = recordAfkSchedulerBatch(
@@ -2815,55 +3109,241 @@ export function HomeScreen({
           progress: true,
           data: {
             capturedSettingChanges,
+            arrivalSequence,
             completedResultCount: afkCompletedChunkResultsRef.current.size,
           },
         });
+        const useAtomicCandidate = useAfkAtomicTransactionCandidate();
+        const transactionAttribution: AfkPartyTransactionAttribution = {
+          chunkMergeMs: 0,
+          autoEquipmentPlanningMs: 0,
+          equipmentReducerMs: 0,
+          plannedActionCount: 0,
+        };
+        if (useAtomicCandidate && capturedSettingChanges) {
+          afkRuntimeTrace.record('auto_equipment_skipped', {
+            phase: 'commit_dispatch',
+            partyId: completedResult.partyId,
+            partyIndex: completedResult.partyIndex,
+            jobId: completedResult.jobId,
+            data: { reason: 'captured_setting_changes' },
+          });
+        }
         afkActiveCommitTransactionRef.current = {
           result: completedResult,
-          capturedSettingChanges,
+          arrivalSequence,
           startedAt: performance.now(),
+          plannedActionCount: 0,
+          attribution: transactionAttribution,
+          mode: useAtomicCandidate ? 'candidate' : 'baseline',
+          capturedSettingChanges,
+          stage: 'chunk_dispatched',
         };
-        actions.commitAfkPartyChunk(completedResult);
+        if (useAtomicCandidate) {
+          const autoEquipment = capturedSettingChanges
+            ? []
+            : (committedState: GameState) => {
+                const plan = planAutoEquipment(committedState, [completedResult.partyIndex]);
+                return {
+                  actions: plan.actions,
+                  summary: {
+                    processedCharacters: plan.summary.processedCharacterIds.length,
+                    unequippedCount: plan.summary.unequippedCount,
+                    equippedCount: plan.summary.equippedCount,
+                    upgradedCount: plan.summary.upgradedCount,
+                    jewelAssignmentCount: plan.summary.jewelAssignmentCount,
+                  },
+                };
+              };
+          if (shouldUseCoordinatorAuthority) {
+            const authorityStartedAt = performance.now();
+            const receipt = actions.commitAfkPartyTransactionAuthoritatively(
+              completedResult,
+              autoEquipment,
+              transactionAttribution,
+            );
+            afkLiveProfileStateRef.current = receipt.state;
+            afkAuthoritativeDispatchStateRef.current = receipt.state;
+            state = receipt.state;
+            afkAuthorityAcknowledgedAtRef.current = performance.now();
+            afkAuthorityDispatchYieldedRef.current = false;
+            afkAuthorityTransactionsSincePublicationRef.current += 1;
+            afkRuntimeTrace.record('coordinator_authority_transaction', {
+              phase: 'commit_dispatch',
+              partyId: completedResult.partyId,
+              partyIndex: completedResult.partyIndex,
+              jobId: completedResult.jobId,
+              durationMs: performance.now() - authorityStartedAt,
+              progress: true,
+              data: {
+                arrivalSequence,
+                previousVersion: receipt.previousVersion,
+                authoritativeVersion: receipt.version,
+                changed: receipt.changed,
+              },
+            });
+            afkRuntimeTrace.record('chunk_transaction_reducer', {
+              phase: 'commit_dispatch',
+              partyId: completedResult.partyId,
+              partyIndex: completedResult.partyIndex,
+              jobId: completedResult.jobId,
+              durationMs: transactionAttribution.chunkMergeMs,
+            });
+            afkRuntimeTrace.record('auto_equipment_transaction_reducer', {
+              phase: 'commit_dispatch',
+              partyId: completedResult.partyId,
+              partyIndex: completedResult.partyIndex,
+              jobId: completedResult.jobId,
+              durationMs: transactionAttribution.equipmentReducerMs,
+            });
+            if (!capturedSettingChanges) {
+              const planSummary = transactionAttribution.summary;
+              afkRuntimeTrace.record('auto_equipment_complete', {
+                phase: 'commit_dispatch',
+                partyId: completedResult.partyId,
+                partyIndex: completedResult.partyIndex,
+                jobId: completedResult.jobId,
+                durationMs: transactionAttribution.autoEquipmentPlanningMs,
+                progress: true,
+                data: {
+                  processedCharacters: planSummary?.processedCharacters ?? 0,
+                  unequippedCount: planSummary?.unequippedCount ?? 0,
+                  equippedCount: planSummary?.equippedCount ?? 0,
+                  upgradedCount: planSummary?.upgradedCount ?? 0,
+                  jewelAssignmentCount: planSummary?.jewelAssignmentCount ?? 0,
+                  plannedActionCount: transactionAttribution.plannedActionCount,
+                },
+              });
+            }
+            completeAfkCommitTransaction(completedResult);
+          } else {
+            actions.commitAfkPartyTransaction(
+              completedResult,
+              autoEquipment,
+              transactionAttribution,
+            );
+          }
+        } else {
+          actions.commitAfkPartyChunk(completedResult);
+        }
         afkRuntimeTrace.record('commit_reducer_dispatched', {
-          phase: 'commit_awaiting_react',
+          phase: shouldUseCoordinatorAuthority ? 'commit_dispatch' : 'commit_awaiting_react',
           partyId: completedResult.partyId,
           partyIndex: completedResult.partyIndex,
           jobId: completedResult.jobId,
+          data: { arrivalSequence },
         });
-        return;
-      }
-      if (afkCompletedChunkResultsRef.current.size > 0) {
-        if (afkHeadOfLineWaitRef.current?.blockerJobId !== nextCanonicalJob.jobId) {
-          afkHeadOfLineWaitRef.current = {
-            blockerJobId: nextCanonicalJob.jobId,
-            startedAt: performance.now(),
-          };
-          afkRuntimeTrace.record('canonical_order_wait_start', {
-            phase: 'canonical_order_wait',
-            partyId: nextCanonicalJob.partyId,
-            partyIndex: nextCanonicalJob.partyIndex,
-            jobId: nextCanonicalJob.jobId,
-            data: { completedResultCount: afkCompletedChunkResultsRef.current.size },
-          });
-        } else {
-          afkRuntimeTrace.setPhase('canonical_order_wait');
-        }
-      } else {
-        afkRuntimeTrace.setPhase('worker_execution');
       }
     }
 
-    const durationScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    const fifoHeadResult = afkCompletedChunkResultsRef.current.values().next().value;
+    const blockingTransaction = afkActiveCommitTransactionRef.current;
+    if (fifoHeadResult && blockingTransaction) {
+      if (afkFifoCommitWaitRef.current?.blockerJobId !== blockingTransaction.result.jobId) {
+        afkFifoCommitWaitRef.current = {
+          blockerJobId: blockingTransaction.result.jobId,
+          startedAt: performance.now(),
+        };
+        afkRuntimeTrace.record('fifo_commit_wait_start', {
+          phase: 'fifo_commit_wait',
+          partyId: fifoHeadResult.partyId,
+          partyIndex: fifoHeadResult.partyIndex,
+          jobId: fifoHeadResult.jobId,
+          data: {
+            blockerJobId: blockingTransaction.result.jobId,
+            arrivalSequence: afkCompletedChunkArrivalSequenceRef.current.get(fifoHeadResult.jobId) ?? null,
+            completedResultCount: afkCompletedChunkResultsRef.current.size,
+          },
+        });
+      } else {
+        afkRuntimeTrace.setPhase('fifo_commit_wait');
+      }
+    } else if (afkFifoCommitWaitRef.current) {
+      const wait = afkFifoCommitWaitRef.current;
+      afkRuntimeTrace.record('fifo_commit_wait_end', {
+        phase: 'commit_dispatch',
+        jobId: wait.blockerJobId,
+        durationMs: performance.now() - wait.startedAt,
+        progress: true,
+      });
+      afkFifoCommitWaitRef.current = null;
+    } else if (afkActiveChunkJobsRef.current.size > 0 && !blockingTransaction) {
+      afkRuntimeTrace.setPhase('worker_execution');
+    }
+
+    const durationScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
     const anchor = afkSimulationAnchorRef.current ?? Date.now();
-    const workerLimit = getAfkWorkerPoolLimit(navigator.hardwareConcurrency, state.parties.length);
+    const dispatchState = afkActiveCommitTransactionRef.current
+      ? afkAuthoritativeDispatchStateRef.current
+      : state;
+    const workerLimit = getAfkWorkerPoolLimit(
+      navigator.hardwareConcurrency,
+      dispatchState.parties.length,
+      getAfkLiveProfileWorkerLimitOverride(),
+    );
+    const useCompactBattleCandidate = useAfkCompactBattleResultCandidate();
+    const shouldPaceAuthorityDispatch = useAfkCoordinatorDispatchPacingCandidate();
+    if (
+      shouldPaceAuthorityDispatch
+      && afkAuthorityAcknowledgedAtRef.current !== null
+      && afkActiveChunkJobsRef.current.size > 0
+      && !afkAuthorityDispatchYieldedRef.current
+    ) {
+      const now = performance.now();
+      if (afkAuthorityDispatchPaceChannelRef.current === null) {
+        const channel = new MessageChannel();
+        afkAuthorityDispatchPaceChannelRef.current = channel;
+        channel.port1.onmessage = () => {
+          channel.port1.close();
+          channel.port2.close();
+          afkAuthorityDispatchPaceChannelRef.current = null;
+          afkAuthorityDispatchYieldedRef.current = true;
+          afkRuntimeTrace.record('coordinator_authority_dispatch_pace', {
+            phase: 'worker_queue',
+            durationMs: performance.now() - now,
+            progress: true,
+          });
+          afkCoordinatorPumpRef.current?.();
+        };
+        channel.port2.postMessage(null);
+      }
+      return;
+    }
     let startedJob = false;
 
-    state.parties.forEach((party, partyIndex) => {
-      if (afkActiveChunkJobsRef.current.has(partyIndex)) return;
+    const dispatchCandidates = dispatchState.parties.map((party, partyIndex) => {
+      if (
+        afkActiveChunkJobsRef.current.has(partyIndex)
+        || afkPartyTransactionLocksRef.current.has(partyIndex)
+      ) return null;
       const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale);
-      const chunkElapsedMs = cycleDurationMs * AFK_CHUNK_CYCLE_COUNT;
       const remainingMs = afkRemainingMsByPartyRef.current[partyIndex] ?? 0;
-      if (remainingMs < chunkElapsedMs) return;
+      // SpecRef: 5.1 | PROGRESS | Chunk
+      // Full Chunks contain 30 Cycles. At the end of recovery, every remaining
+      // complete Cycle is submitted as one partial Chunk through the same commit
+      // and automatic-equipment transaction as a full Chunk.
+      const operationCount = getAfkChunkOperationCount(remainingMs, cycleDurationMs);
+      if (operationCount <= 0) return null;
+      return {
+        party,
+        partyIndex,
+        partyId: party.id,
+        partyLocalEmulatedTime: anchor - remainingMs,
+        remainingMs,
+        cycleDurationMs,
+        operationCount,
+      };
+    }).filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
+      .sort(compareAfkPartyDispatchCandidates);
+
+    dispatchCandidates.forEach(({
+      party,
+      partyIndex,
+      remainingMs,
+      cycleDurationMs,
+      operationCount,
+    }) => {
+      const chunkElapsedMs = cycleDurationMs * operationCount;
 
       let poolSlot = afkWorkerPoolRef.current.find((slot) => slot.jobId === null);
       if (!poolSlot && afkWorkerPoolRef.current.length < workerLimit) {
@@ -2875,18 +3355,22 @@ export function HomeScreen({
           createdEpochAt: performance.timeOrigin + createdAt,
           lastReleasedAt: createdAt,
           completedJobs: 0,
+          retainedInventory: null,
+          retainedInventoryToken: null,
+          retainedInventoryRevision: 0,
         };
         afkWorkerPoolRef.current.push(poolSlot);
         afkRuntimeTrace.record('worker_created', {
           phase: 'worker_queue',
-          durationMs: 0,
+          durationMs: performance.now() - createdAt,
           data: { workerPoolSize: afkWorkerPoolRef.current.length, workerLimit, workerSlotId: poolSlot.slotId },
         });
       }
       if (!poolSlot) return;
 
+      const constructionStartedAt = performance.now();
       const simulatedStartedAt = anchor - remainingMs;
-      const baseParty = state.parties[partyIndex];
+      const baseParty = dispatchState.parties[partyIndex];
       const jobQueuedMonotonicAt = performance.now();
       const job: AfkPartyChunkJob = {
         jobId: `afk-${party.id}-${++afkWorkerJobSequenceRef.current}`,
@@ -2895,20 +3379,57 @@ export function HomeScreen({
         simulatedStartedAt,
         simulatedCompletedAt: simulatedStartedAt + chunkElapsedMs,
         cycleDurationMs,
-        operationCount: AFK_CHUNK_CYCLE_COUNT,
-        baseState: createAfkPartyChunkWorkerState(state, partyIndex),
-        gameMode,
+        operationCount,
+        baseState: createAfkPartyChunkWorkerState(dispatchState, partyIndex),
+        gameMode: runtimeGameMode,
+        enemyLevelOffset: orcaEnemyLevelOffset,
         cycleDurationScale: durationScale,
         queuedAt: performance.timeOrigin + jobQueuedMonotonicAt,
         workerCreatedAt: poolSlot.createdEpochAt,
         isFirstWorkerJob: poolSlot.completedJobs === 0,
+        workerOptimization: useAfkWorkerSimulationCandidate() ? 'optimized' : 'legacy',
+        compactBattleResultOutput: useCompactBattleCandidate,
       };
+      const inventoryJob: AfkPartyChunkInventoryWorkerJob = poolSlot.retainedInventory && poolSlot.retainedInventoryToken
+        ? createAfkPartyChunkInventoryContinuationWorkerJob(
+          job,
+          poolSlot.retainedInventory,
+          poolSlot.retainedInventoryToken,
+          poolSlot.retainedInventoryRevision,
+          `${job.jobId}:inventory`,
+          poolSlot.retainedInventoryRevision + 1,
+        )
+        : createAfkPartyChunkInventoryColdWorkerJob(job, `${job.jobId}:inventory`, 1);
+      afkRuntimeTrace.record('worker_job_construction', {
+        phase: 'worker_queue',
+        partyId: party.id,
+        partyIndex,
+        jobId: job.jobId,
+        durationMs: performance.now() - constructionStartedAt,
+      });
       // Exact structured-clone sizing belongs in the opt-in Expedition 8 profiler.
       // The automatic dev/beta trace must remain observational and must not
       // stringify the complete state before every worker submission.
       const worker = poolSlot.worker;
       const workerSlotId = poolSlot.slotId;
       const slotDispatchGapMs = Math.max(0, performance.now() - poolSlot.lastReleasedAt);
+      afkRuntimeTrace.record('worker_slot_idle_before_dispatch', {
+        phase: 'worker_queue',
+        partyId: party.id,
+        partyIndex,
+        durationMs: slotDispatchGapMs,
+        data: { workerSlotId: poolSlot.slotId },
+      });
+      if (afkAuthorityAcknowledgedAtRef.current !== null) {
+        afkRuntimeTrace.record('coordinator_authority_ack_to_worker_post', {
+          phase: 'worker_queue',
+          partyId: party.id,
+          partyIndex,
+          durationMs: Math.max(0, performance.now() - afkAuthorityAcknowledgedAtRef.current),
+        });
+        afkAuthorityAcknowledgedAtRef.current = null;
+        afkAuthorityDispatchYieldedRef.current = false;
+      }
       const { baseState: _releasedBaseState, ...jobMetadata } = job;
       const jobId = job.jobId;
       const failWorkerJob = (failedJobId: string, message: string, reason: string) => {
@@ -2928,14 +3449,14 @@ export function HomeScreen({
         delete afkInFlightCompletedMsByPartyRef.current[partyIndex];
         memoryMonitor.releaseWorker(failedJobId);
         updateAfkTraceCoordinator();
-        setAfkCoordinatorVersion((version) => version + 1);
+        window.setTimeout(() => afkCoordinatorPumpRef.current?.(), 0);
       };
       poolSlot.jobId = jobId;
       memoryMonitor.registerWorker(jobId);
       worker.onmessage = (event: MessageEvent<
         | { type: 'started'; jobId: string; partyIndex: number }
         | { type: 'progress'; jobId: string; partyIndex: number; completedOperations: number; operationCount: number }
-        | { type: 'complete'; result: AfkPartyChunkWorkerResult }
+        | { type: 'complete'; result: AfkPartyChunkInventoryWorkerResult }
         | { type: 'error'; jobId: string; message: string }
       >) => {
         const eventJobId = event.data.type === 'complete' ? event.data.result.jobId : event.data.jobId;
@@ -2965,6 +3486,7 @@ export function HomeScreen({
           const now = performance.now();
           if (now - afkLastProgressRenderAtRef.current >= 100) {
             afkLastProgressRenderAtRef.current = now;
+            publishAfkAuthority();
             setAfkProgressPresentationVersion((version) => version + 1);
           }
           return;
@@ -2975,7 +3497,7 @@ export function HomeScreen({
           let result: AfkPartyChunkResult;
           const hydrationStartedAt = performance.now();
           try {
-            result = hydrateAfkPartyChunkResult(event.data.result, active.baseParty);
+            result = hydrateAfkPartyChunkInventoryResult(event.data.result, active.baseParty, inventoryJob);
           } catch (error) {
             failWorkerJob(
               event.data.result.jobId,
@@ -2985,14 +3507,26 @@ export function HomeScreen({
             return;
           }
           const hydrationMs = Math.max(0, performance.now() - hydrationStartedAt);
+          afkRuntimeTrace.record('worker_result_hydration', {
+            phase: 'worker_execution',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: hydrationMs,
+          });
           currentSlot.jobId = null;
           currentSlot.lastReleasedAt = performance.now();
           currentSlot.completedJobs += 1;
+          currentSlot.retainedInventory = job.baseState.global.inventory;
+          currentSlot.retainedInventoryToken = inventoryJob.nextInventoryToken;
+          currentSlot.retainedInventoryRevision = inventoryJob.inventoryRevision;
           recordAfkWorkerJobTelemetry(result.jobId, result.workerTelemetry);
           memoryMonitor.releaseWorker(result.jobId);
           active.worker = null;
           active.status = 'completed';
+          const arrivalSequence = ++afkWorkerResultArrivalSequenceRef.current;
           afkCompletedChunkResultsRef.current.set(result.jobId, result);
+          afkCompletedChunkArrivalSequenceRef.current.set(result.jobId, arrivalSequence);
           afkRuntimeTrace.record('worker_job_complete', {
             phase: 'worker_execution',
             partyId: result.partyId,
@@ -3004,20 +3538,124 @@ export function HomeScreen({
               workerStartupMs: result.workerTelemetry.workerStartupMs,
               queueMs: result.workerTelemetry.queueMs,
               executionMs: result.workerTelemetry.executionMs,
+              inputHydrationMs: result.workerTelemetry.inputHydrationMs,
+              languageReadyMs: result.workerTelemetry.languageReadyMs,
+              battleCount: result.workerTelemetry.battleCount,
+              battleInputBytes: result.workerTelemetry.battleInputBytes,
+              battleOutputBytes: result.workerTelemetry.battleOutputBytes,
+              battleResultBagEntryAllocations: result.workerTelemetry.battleResultBagEntryAllocations,
+              ...(__AFK_LIVE_PROFILE_ENABLED__ ? {
+                statusSnapshotMs: result.workerTelemetry.statusSnapshotMs ?? 0,
+                expeditionMs: result.workerTelemetry.expeditionMs ?? 0,
+                diaryFinalizationMs: result.workerTelemetry.diaryFinalizationMs ?? 0,
+                sideQuestAutomationMs: result.workerTelemetry.sideQuestAutomationMs ?? 0,
+                profitProcessingMs: result.workerTelemetry.profitProcessingMs ?? 0,
+                hpRecoveryMs: result.workerTelemetry.hpRecoveryMs ?? 0,
+                progressCallbackMs: result.workerTelemetry.progressCallbackMs ?? 0,
+                chunkFinalizationMs: result.workerTelemetry.chunkFinalizationMs ?? 0,
+                inventoryDeltaMs: result.workerTelemetry.inventoryDeltaMs ?? 0,
+              } : {}),
               inputTransferBytes: result.workerTelemetry.inputTransferBytes,
               outputTransferBytes: result.workerTelemetry.outputTransferBytes,
               workerSlotId,
               slotDispatchGapMs,
               hydrationMs,
+              arrivalSequence,
               jobWallMs: Math.max(0, performance.now() - active.startedMonotonicAt),
             },
           });
+          afkRuntimeTrace.record('worker_input_queue', {
+            phase: 'worker_queue',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.queueMs,
+          });
+          afkRuntimeTrace.record('worker_input_hydration', {
+            phase: 'worker_queue',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.inputHydrationMs,
+          });
+          afkRuntimeTrace.record('worker_language_ready', {
+            phase: 'worker_queue',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.languageReadyMs,
+          });
+          afkRuntimeTrace.record('worker_simulation_execution', {
+            phase: 'worker_execution',
+            partyId: result.partyId,
+            partyIndex: result.partyIndex,
+            jobId: result.jobId,
+            durationMs: result.workerTelemetry.executionMs,
+          });
+          const battleAttributionEvents = [
+            ['worker_battle_total', result.workerTelemetry.battleTotalMs],
+            ['worker_battle_preparation', result.workerTelemetry.battlePreparationMs],
+            ['worker_battle_input_write', result.workerTelemetry.battleInputWriteMs],
+            ['worker_battle_native_execution', result.workerTelemetry.battleNativeExecutionMs],
+            ['worker_battle_borrowed_output_validation', result.workerTelemetry.battleBorrowedOutputValidationMs],
+            ['worker_battle_output_consume', result.workerTelemetry.battleOutputConsumeMs],
+          ] as const;
+          battleAttributionEvents.forEach(([eventName, durationMs]) => {
+            afkRuntimeTrace.record(eventName, {
+              phase: 'worker_execution',
+              partyId: result.partyId,
+              partyIndex: result.partyIndex,
+              jobId: result.jobId,
+              durationMs,
+            });
+          });
+          if (__AFK_LIVE_PROFILE_ENABLED__) {
+            const workerPhaseAttributionEvents = [
+              ['worker_status_snapshot', result.workerTelemetry.statusSnapshotMs ?? 0],
+              ['worker_expedition', result.workerTelemetry.expeditionMs ?? 0],
+              ['worker_diary_finalization', result.workerTelemetry.diaryFinalizationMs ?? 0],
+              ['worker_side_quest_automation', result.workerTelemetry.sideQuestAutomationMs ?? 0],
+              ['worker_profit_processing', result.workerTelemetry.profitProcessingMs ?? 0],
+              ['worker_hp_recovery', result.workerTelemetry.hpRecoveryMs ?? 0],
+              ['worker_progress_callback', result.workerTelemetry.progressCallbackMs ?? 0],
+              ['worker_chunk_finalization', result.workerTelemetry.chunkFinalizationMs ?? 0],
+              ['worker_inventory_delta', result.workerTelemetry.inventoryDeltaMs ?? 0],
+              ['worker_expedition_preparation', result.workerTelemetry.preparationMs ?? 0],
+              ['worker_expedition_inventory_coordinator', result.workerTelemetry.inventoryCoordinatorMs ?? 0],
+              ['worker_expedition_service', result.workerTelemetry.serviceMs ?? 0],
+              ['worker_expedition_post_service', result.workerTelemetry.postServiceMs ?? 0],
+              ['worker_expedition_inventory_completion', result.workerTelemetry.inventoryCompletionMs ?? 0],
+              ['worker_expedition_presentation_completion', result.workerTelemetry.presentationCompletionMs ?? 0],
+              ['worker_expedition_commit_projection', result.workerTelemetry.commitProjectionMs ?? 0],
+            ] as const;
+            workerPhaseAttributionEvents.forEach(([eventName, durationMs]) => {
+              afkRuntimeTrace.record(eventName, {
+                phase: 'worker_execution',
+                partyId: result.partyId,
+                partyIndex: result.partyIndex,
+                jobId: result.jobId,
+                durationMs,
+              });
+            });
+            afkRuntimeTrace.record('worker_expedition_counts', {
+              phase: 'worker_execution',
+              partyId: result.partyId,
+              partyIndex: result.partyIndex,
+              jobId: result.jobId,
+              data: {
+                expeditionCount: result.workerTelemetry.expeditionCount ?? 0,
+                roomCount: result.workerTelemetry.expeditionRoomCount ?? 0,
+                retainedNarrationCount: result.workerTelemetry.expeditionRetainedNarrationCount ?? 0,
+                replayedBattleCount: result.workerTelemetry.expeditionReplayedBattleCount ?? 0,
+              },
+            });
+          }
         } else {
           failWorkerJob(event.data.jobId, event.data.message, 'worker-error-message');
           return;
         }
         updateAfkTraceCoordinator();
-        setAfkCoordinatorVersion((version) => version + 1);
+        window.setTimeout(() => afkCoordinatorPumpRef.current?.(), 0);
       };
       worker.onerror = (event) => {
         failWorkerJob(jobId, event.message, 'worker-error-event');
@@ -3043,23 +3681,58 @@ export function HomeScreen({
           slotDispatchGapMs,
           inputTransferBytes: job.inputTransferBytes ?? null,
           simulatedCompletedAt: job.simulatedCompletedAt,
+          operationCount,
+          partialChunk: operationCount < AFK_CHUNK_CYCLE_COUNT,
         },
       });
-      worker.postMessage(job);
+      const submissionStartedAt = performance.now();
+      worker.postMessage(inventoryJob);
+      afkRuntimeTrace.record('worker_job_submission', {
+        phase: 'worker_queue',
+        partyId: party.id,
+        partyIndex,
+        jobId,
+        durationMs: performance.now() - submissionStartedAt,
+      });
       updateAfkTraceCoordinator();
       startedJob = true;
     });
 
-    if (!startedJob && afkActiveChunkJobsRef.current.size === 0) {
+    if (
+      !startedJob
+      && afkActiveChunkJobsRef.current.size === 0
+      && afkCompletedChunkResultsRef.current.size === 0
+      && afkActiveCommitTransactionRef.current === null
+      && afkPartyTransactionLocksRef.current.size === 0
+    ) {
       terminateAfkWorkers(afkWorkerPoolRef.current.map(({ worker }) => worker), 'recovery-complete');
       afkWorkerPoolRef.current = [];
+      afkWorkerResultArrivalSequenceRef.current = 0;
+      afkFinalRemainingMsByPartyRef.current = { ...afkRemainingMsByPartyRef.current };
       afkRemainingMsByPartyRef.current = {};
       afkInFlightCompletedMsByPartyRef.current = {};
       pendingAfkMsRef.current = 0;
+      publishAfkAuthority();
       setPendingAfkMs(0);
       updateAfkTraceCoordinator();
     }
-  }, [actions, afkCoordinatorVersion, afkInteractionPauseVersion, debugSettings, gameMode, pendingAfkMs, state, updateAfkTraceCoordinator]);
+  }, [
+    actions,
+    completeAfkCommitTransaction,
+    effectiveDebugSettings,
+    hasActiveTimeSpeedBonus,
+    runtimeGameMode,
+    orcaEnemyLevelOffset,
+    planAutoEquipment,
+    publishAfkAuthority,
+    shouldUseCoordinatorAuthority,
+    updateAfkTraceCoordinator,
+  ]);
+  afkCoordinatorPumpRef.current = pumpAfkCoordinator;
+
+  useEffect(() => {
+    pumpAfkCoordinator();
+  }, [afkInteractionPauseVersion, pendingAfkMs, pumpAfkCoordinator, state]);
 
   useEffect(() => () => {
     afkRuntimeTrace.cancelRecovery('unmount', {
@@ -3071,7 +3744,16 @@ export function HomeScreen({
     terminateAfkWorkers(afkWorkerPoolRef.current.map(({ worker }) => worker), 'unmount');
     afkWorkerPoolRef.current = [];
     afkActiveChunkJobsRef.current.clear();
+    afkCompletedChunkResultsRef.current.clear();
+    afkCompletedChunkArrivalSequenceRef.current.clear();
+    afkPartyTransactionLocksRef.current.clear();
+    afkActiveCommitTransactionRef.current = null;
     afkInFlightCompletedMsByPartyRef.current = {};
+    if (afkAuthorityDispatchPaceChannelRef.current !== null) {
+      afkAuthorityDispatchPaceChannelRef.current.port1.close();
+      afkAuthorityDispatchPaceChannelRef.current.port2.close();
+      afkAuthorityDispatchPaceChannelRef.current = null;
+    }
     updateAfkTraceCoordinator();
   }, [updateAfkTraceCoordinator]);
 
@@ -3082,12 +3764,12 @@ export function HomeScreen({
     );
     hasObservedActiveAfkRecoveryRef.current = backlogObservation.hasObservedActiveRecovery;
     if (!backlogObservation.didCompleteRecovery) return;
+    const finalizationStartedAt = performance.now();
 
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const runtimeNow = Date.now();
       const emulatedNow = afkSimulationAnchorRef.current ?? runtimeNow;
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      const recoveredAfkMs = Math.max(0, afkRecoveryTotalMsRef.current);
       const partialCycleSideEffects: Array<{ partyIndex: number; shouldFinalizeDiary: boolean; simulatedAt: number }> = [];
       const nextCycles: Record<number, PartyCycleRuntime> = {};
 
@@ -3121,13 +3803,19 @@ export function HomeScreen({
           return;
         }
 
-        const durationScale = getTimeSpeedScale(debugSettings);
+        const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
         const exploreDurationMultiplier = getPartyStateDurationMultiplier(party, 'explore');
         const approximateCycleDurationMs = Math.max(
           1,
           Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * durationScale * exploreDurationMultiplier),
         );
-        const partialAfkMs = recoveredAfkMs % approximateCycleDurationMs;
+        const partialAfkMs = Math.max(
+          0,
+          Math.min(
+            approximateCycleDurationMs - 1,
+            afkFinalRemainingMsByPartyRef.current[partyIndex] ?? 0,
+          ),
+        );
         const moveDurationMs = getPartyTravelDurationMs(party, 'move');
         const exploreDurationMs = getExplorationDurationMs(undefined, exploreDurationMultiplier, durationScale);
         const returnDurationMs = getPartyTravelDurationMs(party, 'return');
@@ -3182,7 +3870,7 @@ export function HomeScreen({
       partialCycleSideEffects.forEach(({ partyIndex, shouldFinalizeDiary, simulatedAt }) => {
         const party = latestPartiesRef.current[partyIndex];
         const triggerGodsBattle = party ? shouldAutoTriggerGodsBattle(party) : false;
-        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt);
+        actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulatedAt, orcaEnemyLevelOffset);
         if (shouldFinalizeDiary) {
           actions.finalizeDiaryLog(partyIndex, simulatedAt);
         }
@@ -3193,13 +3881,37 @@ export function HomeScreen({
     }
 
     afkSimulationAnchorRef.current = null;
+    afkRuntimeTrace.record('recovery_finalization_complete', {
+      phase: 'recovery_complete',
+      durationMs: performance.now() - finalizationStartedAt,
+      progress: true,
+    });
     afkRuntimeTrace.completeRecovery({
       recoveredAfkMs: afkRecoveryTotalMsRef.current,
       partyCount: latestPartiesRef.current.length,
     });
     afkRecoveryTotalMsRef.current = 0;
     afkRecoveryCompletedMsRef.current = 0;
-  }, [actions, debugSettings, pendingAfkMs]);
+    afkFinalRemainingMsByPartyRef.current = {};
+  }, [actions, effectiveDebugSettings, hasActiveTimeSpeedBonus, orcaEnemyLevelOffset, pendingAfkMs]);
+
+  useEffect(() => {
+    if (!__AFK_LIVE_PROFILE_ENABLED__) return;
+    observeAfkLiveProfilePending(pendingAfkMs);
+    if (pendingAfkMs > 0 || !canCompleteAfkLiveProfile()) return;
+    if (shouldRebuildPartyCyclesAfterAfkRef.current
+      || afkActiveCommitTransactionRef.current
+      || afkActiveChunkJobsRef.current.size > 0
+      || afkWorkerPoolRef.current.length > 0) return;
+    const timeout = window.setTimeout(() => {
+      void completeAfkLiveProfile({
+        getState: () => afkLiveProfileStateRef.current,
+        flushSave: actions.flushSave,
+        scheduler: afkSchedulerProfileRef.current,
+      });
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, [actions.flushSave, partyCycles, pendingAfkMs, state]);
 
   useEffect(() => {
     const previousPendingAfkMs = previousPendingAfkMsRef.current;
@@ -3451,8 +4163,8 @@ export function HomeScreen({
       return;
     }
 
-    const unlimitedTimeSpeed = isUnlimitedTimeSpeed(debugSettings);
-    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    const unlimitedTimeSpeed = isUnlimitedTimeSpeed(effectiveDebugSettings);
+    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
 
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
@@ -3538,7 +4250,7 @@ export function HomeScreen({
           updated.durationMs = getExplorationDurationMs(
             exploredRooms,
             getPartyStateDurationMultiplier(party, 'explore'),
-            getTimeSpeedScale(debugSettings),
+            getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
           );
         }
 
@@ -3716,12 +4428,12 @@ export function HomeScreen({
                 }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
-              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow);
+              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow, orcaEnemyLevelOffset);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(
                 undefined,
                 getPartyStateDurationMultiplier(party, 'explore'),
-                getTimeSpeedScale(debugSettings),
+                getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
               );
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
             } else if (updated.state === 'explore') {
@@ -3764,7 +4476,7 @@ export function HomeScreen({
 
     lastCheckpointAtRef.current = now;
     persistAfkRuntimeState(now);
-  }, [actions, persistAfkRuntimeState]);
+  }, [actions, effectiveDebugSettings, hasActiveTimeSpeedBonus, persistAfkRuntimeState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -4154,7 +4866,7 @@ export function HomeScreen({
 
   // SpecRef: 5.1 | PROGRESS | Step
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'free_action' | 'sound_sleep' | 'pray'): number => {
-    const durationScale = getTimeSpeedScale(debugSettings);
+    const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
     const baseStepCount = cycleState === 'rest'
       ? 1
       : cycleState === 'sell'
@@ -4177,12 +4889,10 @@ export function HomeScreen({
       : travelState === 'move'
         ? 1 + getExpeditionTierDurationFactor(party.selectedDungeonId)
         : 5 + getExpeditionTierDurationFactor(party.selectedDungeonId);
-    const durationScale = getTimeSpeedScale(debugSettings);
+    const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
     const baseDurationMs = baseStepCount * BASE_STEP_DURATION_MS * durationScale;
     const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
-    if (peddlerLevel >= 2) return Math.max(100, Math.ceil((baseDurationMs * 3) / 5));
-    if (peddlerLevel >= 1) return Math.max(100, Math.ceil((baseDurationMs * 2) / 3));
-    return Math.max(100, Math.ceil(baseDurationMs));
+    return getPeddlerTravelDurationMs(baseDurationMs, peddlerLevel);
   };
 
   const notifyExpeditionRewardsIfNeeded = (party: Party, partyIndex: number) => {
@@ -4219,7 +4929,11 @@ export function HomeScreen({
     if (!party) return;
     const { partyStats } = computePartyStats(party);
     const now = Date.now();
-    const instantChargeState = getInstantExpeditionChargeState(party, now);
+    const instantChargeState = getInstantExpeditionChargeState(
+      party,
+      now,
+      getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
+    );
 
     const isColosseumSortie = party.selectedDungeonId === 99;
 
@@ -4257,7 +4971,11 @@ export function HomeScreen({
 
     pendingGodsBattleByPartyRef.current[partyIndex] = false;
     if (!isColosseumSortie) {
-      actions.consumeInstantExpeditionStock(partyIndex, now);
+      actions.consumeInstantExpeditionStock(
+        partyIndex,
+        now,
+        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
+      );
     }
     if (cycle?.state === 'explore') {
       actions.finalizeDiaryLog(partyIndex);
@@ -4266,7 +4984,7 @@ export function HomeScreen({
     actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
     instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
-    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now);
+    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now, orcaEnemyLevelOffset);
     actions.rollPartySleepiness(partyIndex);
     // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
     // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
@@ -4283,6 +5001,25 @@ export function HomeScreen({
       },
     }));
   };
+  const triggerSortieRef = useRef(triggerSortie);
+  triggerSortieRef.current = triggerSortie;
+  const handleTriggerSortie = useCallback((partyIndex: number, triggerGodsBattle: boolean = false) => {
+    triggerSortieRef.current(partyIndex, triggerGodsBattle);
+  }, []);
+  const handleSimulateExpedition = useCallback(async (
+    partyIndex: number,
+    onProgress?: (completed: number, total: number) => void,
+  ) => {
+    memoryMonitor.setRuntime('simulation', effectiveDebugSettings.timeSpeed);
+    try {
+      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress, orcaEnemyLevelOffset);
+    } finally {
+      memoryMonitor.setRuntime(
+        pendingAfkMsRef.current > 0 ? 'afk' : autoRepeatEnabledRef.current ? 'online' : 'idle',
+        effectiveDebugSettings.timeSpeed,
+      );
+    }
+  }, [effectiveDebugSettings.timeSpeed, orcaEnemyLevelOffset]);
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
@@ -4406,32 +5143,28 @@ export function HomeScreen({
       return (
         <ExpeditionTab
           state={state}
-          debugSettings={debugSettings}
+          debugSettings={effectiveDebugSettings}
           emulatedNowMs={emulatedNowMs}
           onSelectDungeon={actions.selectDungeon}
           onToggleExpeditionDestinationMode={actions.setExpeditionDestinationMode}
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
           onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
           onResetExpeditionStats={actions.resetExpeditionStats}
-          onSimulateExpedition={async (partyIndex, onProgress) => {
-            memoryMonitor.setRuntime('simulation', debugSettings.timeSpeed);
-            try {
-              return await actions.simulateExpedition(partyIndex, gameModeRef.current, onProgress);
-            } finally {
-              memoryMonitor.setRuntime(pendingAfkMsRef.current > 0 ? 'afk' : isAutoRepeatEnabled ? 'online' : 'idle', debugSettings.timeSpeed);
-            }
-          }}
+          onSimulateExpedition={handleSimulateExpedition}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
           afkRecoveryCompletedMs={afkRecoveryCompletedMs}
           afkRecoveryTotalMs={afkRecoveryTotalMs}
-          onTriggerSortie={triggerSortie}
+          onTriggerSortie={handleTriggerSortie}
           expandedLogParty={expeditionExpandedLogParty}
           setExpandedLogParty={setExpeditionExpandedLogParty}
           expandedRoom={expeditionExpandedRoom}
           setExpandedRoom={setExpeditionExpandedRoom}
           isDarkModeEnabled={isDarkModeEnabled}
+          computePartyStatus={computePresentationPartyStats}
+          afkPresentationVersion={afkProgressPresentationVersion}
+          throttleAfkPublications={shouldOptimizeAfkRenderer}
         />
       );
     }
@@ -4506,13 +5239,17 @@ export function HomeScreen({
         onSetBestiaryScrollTop={setBestiaryScrollTop}
         gameMode={gameMode}
         onSetGameMode={setGameMode}
+        runtimeGameMode={runtimeGameMode}
+        onSetRuntimeGameMode={updateRuntimeGameMode}
+        orcaEnemyLevelOffset={orcaEnemyLevelOffset}
+        onSetOrcaEnemyLevelOffset={setOrcaEnemyLevelOffset}
         darkModeSetting={darkModeSetting}
         onSetDarkModeSetting={setDarkModeSetting}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
         onSetAutoRepeatEnabled={setAutoRepeatEnabled}
         isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
         onSetExpeditionStatsDisplayEnabled={setIsExpeditionStatsDisplayEnabled}
-        debugSettings={debugSettings}
+        debugSettings={effectiveDebugSettings}
         onUpdateDebugSettings={updateDebugSettings}
         partyCount={state.parties.length}
         onPartyUnlock={actions.unlockPartySlot}
@@ -4530,7 +5267,8 @@ export function HomeScreen({
       id="AFK recovery"
       onRender={(_id, _phase, actualDuration) => {
         const profile = afkSchedulerProfileRef.current;
-        if (!import.meta.env.DEV || !profile || profile.completedAt !== null || pendingAfkMsRef.current <= 0) return;
+        if ((!import.meta.env.DEV && !__AFK_LIVE_PROFILE_ENABLED__)
+          || !profile || profile.completedAt !== null || pendingAfkMsRef.current <= 0) return;
         afkSchedulerProfileRef.current = {
           ...profile,
           reactCommitCount: profile.reactCommitCount + 1,
@@ -4540,7 +5278,7 @@ export function HomeScreen({
       }}
     >
     <div
-      className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}
+      className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${getThemeClassName(gameMode)} ${isDarkModeEnabled ? 'theme-dark' : ''}`}
       aria-busy={pendingAfkMs > 0}
       onClickCapture={(event) => {
         if (pendingAfkMs <= 0) return;
@@ -4552,6 +5290,7 @@ export function HomeScreen({
         // Pause before the next scheduler slice, but leave the event live so the
         // normal UI mutation can commit at a safe boundary.
         afkInteractionPausedRef.current = true;
+        publishAfkAuthority();
         afkInteractionPauseStartedAtRef.current = performance.now();
         afkRuntimeTrace.record('interaction_pause_start', {
           phase: 'interaction_pause',
@@ -4569,6 +5308,7 @@ export function HomeScreen({
           });
           afkInteractionPauseStartedAtRef.current = null;
           setAfkInteractionPauseVersion((version) => version + 1);
+          setAfkProgressPresentationVersion((version) => version + 1);
         }, 0);
       }}
       onKeyDownCapture={(event) => {
@@ -4578,6 +5318,7 @@ export function HomeScreen({
           : null;
         if (!target || target.closest('nav[aria-label="Main navigation"]') || target.closest('[data-afk-readonly="true"]')) return;
         afkInteractionPausedRef.current = true;
+        publishAfkAuthority();
         afkInteractionPauseStartedAtRef.current = performance.now();
         afkRuntimeTrace.record('interaction_pause_start', {
           phase: 'interaction_pause',
@@ -4595,6 +5336,7 @@ export function HomeScreen({
           });
           afkInteractionPauseStartedAtRef.current = null;
           setAfkInteractionPauseVersion((version) => version + 1);
+          setAfkProgressPresentationVersion((version) => version + 1);
         }, 0);
       }}
     >
@@ -4602,7 +5344,7 @@ export function HomeScreen({
         <div className="fixed inset-0 z-[100] cursor-wait bg-transparent" aria-label="Experimental AI API control active">
           <button
             type="button"
-            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-red-300 bg-white px-3 py-2 text-xs text-red-700 shadow"
+            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-status-error-border bg-surface-card px-3 py-2 text-xs text-status-error shadow"
             onClick={() => void window.bokemoDesktop?.setExperimentalApiEnabled(false).then((settings) => {
               window.dispatchEvent(new CustomEvent('bokemo-experimental-api-settings', { detail: settings }));
             })}
@@ -4622,6 +5364,7 @@ export function HomeScreen({
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
                   <span>{t('setting.theme.kemo')}</span>
+                  {runtimeGameMode === 'mode.orca' && <span>orca</span>}
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
@@ -4639,9 +5382,9 @@ export function HomeScreen({
                       window.alert(t('home.debug.reportProgressUnset'));
                       return;
                     }
-                    const bonusUntilMs = Date.now() + SPEED_OF_TIME_BONUS_DURATION_MS;
-                    setTimeSpeedBonusUntilMs(bonusUntilMs);
-                    updateDebugSettings({ timeSpeed: 'x1_2' });
+                    const bonusStartedAt = Date.now();
+                    setTimeSpeedNowMs(bonusStartedAt);
+                    setTimeSpeedBonusUntilMs(bonusStartedAt + SPEED_OF_TIME_BONUS_DURATION_MS);
                     actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
                   } catch (error) {
                     console.error('Failed to report progress for Speed of Time:', error);
@@ -4699,12 +5442,12 @@ export function HomeScreen({
               >
                 <span className="relative z-10">{tab.label}</span>
                 {tab.id === 'diary' && hasUnreadDiary && (
-                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] leading-none text-white">
+                  <span className="absolute -top-1 right-1 z-50 rounded-full bg-status-unread px-1.5 py-0.5 text-[10px] leading-none text-content-inverse">
                     {unreadDiaryBadgeLabel}
                   </span>
                 )}
                 {tab.id === 'setting' && hasUnreadDeveloperNews && (
-                  <span className="absolute -top-1 right-1 z-50 inline-flex h-2.5 w-2.5 rounded-full bg-red-500" aria-label="Unread developer news" />
+                  <span className="absolute -top-1 right-1 z-50 inline-flex h-2.5 w-2.5 rounded-full bg-status-unread" aria-label="Unread developer news" />
                 )}
               </button>
             );

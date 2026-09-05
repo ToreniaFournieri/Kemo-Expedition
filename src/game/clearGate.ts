@@ -1,10 +1,10 @@
-import { Party } from '../types';
-import { t } from '../i18n';
+import type { Party } from '../types';
 import { getDebugSettings } from './debugSettings';
 import {
   getBossGateKey,
   getClearGateRequired,
   getClearGateProgress,
+  getGodsBattleProgress,
   getEliteGateKey,
   isClearGateUnlocked,
 } from './clearGateCore';
@@ -19,7 +19,7 @@ export type ClearGateCheckResult =
       blocked: true;
       required: number;
       current: number;
-      label: string;
+      labelKey: 'home.gate.bossDefeated' | 'home.gate.consecutiveSuccesses';
     };
 
 export const ENTRY_GATE_REQUIRED = 1;
@@ -29,6 +29,11 @@ const GODS_BATTLE_REQUIRED = 3;
 export function getGodsBattleRequired(): number {
   const settings = getDebugSettings();
   return settings.godsBattleCondition === 'simple1' ? 1 : GODS_BATTLE_REQUIRED;
+}
+
+export function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
+  return getGodsBattleProgress(party, dungeonId) >= getGodsBattleRequired()
+    && hasDefeatedDungeonBoss(party, dungeonId);
 }
 
 export function hasDefeatedDungeonBoss(
@@ -73,7 +78,7 @@ export function checkClearGateRequirement(params: {
         blocked: true,
         required: ENTRY_GATE_REQUIRED,
         current,
-        label: t('home.gate.bossDefeated'),
+        labelKey: 'home.gate.bossDefeated',
       };
     }
     return { blocked: false };
@@ -87,6 +92,6 @@ export function checkClearGateRequirement(params: {
     blocked: true,
     required: getClearGateRequired(gateKey),
     current: getClearGateProgress(party, gateKey),
-    label: t('home.gate.consecutiveSuccesses'),
+    labelKey: 'home.gate.consecutiveSuccesses',
   };
 }

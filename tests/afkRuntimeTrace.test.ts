@@ -167,7 +167,7 @@ test('active-job snapshots expose age without retaining prohibited payload field
     pendingAfkMs: 50_000,
     completedResultCount: 1,
     workerPoolSize: 3,
-    canonicalJobId: 'job-1',
+    fifoHeadJobId: 'job-1',
     activeJobs: [{
       jobId: 'job-1',
       partyId: 2,
@@ -189,6 +189,7 @@ test('active-job snapshots expose age without retaining prohibited payload field
   const exported = trace.getDiagnosticExport();
   assert.equal(exported.current.activeJobs[0].ageMs, 400);
   assert.equal(exported.current.activeJobs[0].status, 'running');
+  assert.equal(exported.current.fifoHeadJobId, 'job-1');
   const serialized = JSON.stringify(exported);
   assert.doesNotMatch(serialized, /secret save payload|secret state payload/);
   assert.match(serialized, /safe error metadata/);
@@ -212,9 +213,11 @@ test('runtime wiring covers worker, ordering, commit, equipment, persistence, an
   assert.match(homeSource, /jobWallMs/);
   assert.match(homeSource, /worker-invalid-result/);
   assert.match(workerSource, /if \(job\.inputTransferBytes !== undefined\)/);
-  assert.match(workerSource, /createAfkPartyChunkWorkerResult\(completeResult\)/);
-  assert.match(homeSource, /canonical_order_wait_start/);
-  assert.match(homeSource, /canonical_order_wait_end/);
+  assert.match(workerSource, /createAfkPartyChunkInventoryWorkerResult\(completeResult, job\)/);
+  assert.match(workerSource, /hydrateAfkPartyChunkInventoryWorkerState/);
+  assert.match(homeSource, /fifo_commit_wait_start/);
+  assert.match(homeSource, /fifo_commit_wait_end/);
+  assert.match(homeSource, /arrivalSequence/);
   assert.match(homeSource, /commit_transaction_start/);
   assert.match(homeSource, /commit_reducer_dispatched/);
   assert.match(homeSource, /commit_transaction_complete/);

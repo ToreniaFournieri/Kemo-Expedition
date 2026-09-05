@@ -16,7 +16,7 @@ export type BattleEnvironment = {
 };
 export type BattleResult = BattleCandidateResult & { replayMetadata: BattleReplayMetadata };
 export type BattleResolution = BattleCandidateResolution & { replayMetadata: BattleReplayMetadata };
-export type BattleExecutionOptions = { outputMode?: BattleOutputMode };
+export type BattleExecutionOptions = { outputMode?: BattleOutputMode; compactResultOutput?: boolean };
 
 export type ProductionBattleTelemetry = {
   battles: number;
@@ -43,7 +43,7 @@ export function executeBattle(
   bags: GameBags,
   initialPartyHp: number | undefined,
   environment: BattleEnvironment | undefined,
-  options: { outputMode: 'result-only' },
+  options: { outputMode: 'result-only'; compactResultOutput?: boolean },
 ): BattleResolution;
 export function executeBattle(
   party: Party,
@@ -64,7 +64,7 @@ export function executeBattle(
   if (options.outputMode === 'result-only') {
     return executeBattleWithSeed(
       party, enemy, bags, acquireBattleSeed(), getBattleRngVersion(), initialPartyHp, environment,
-      { outputMode: 'result-only' },
+      { outputMode: 'result-only', compactResultOutput: options.compactResultOutput },
     );
   }
   return executeBattleWithSeed(
@@ -81,7 +81,7 @@ export function executeBattleWithSeed(
   rngVersion: unknown,
   initialPartyHp: number | undefined,
   environment: BattleEnvironment | undefined,
-  options: { outputMode: 'result-only' },
+  options: { outputMode: 'result-only'; compactResultOutput?: boolean },
 ): BattleResolution;
 export function executeBattleWithSeed(
   party: Party,
@@ -108,6 +108,7 @@ export function executeBattleWithSeed(
   const execution = options.outputMode === 'result-only'
     ? executeBattleCandidateFromSeed(
       party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment, 'result-only',
+      options.compactResultOutput,
     )
     : executeBattleCandidateFromSeed(
       party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment,

@@ -42,14 +42,14 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
 
   const isItem = notification.category === 'item';
   const itemTextColor = notification.isSuperRareItem
-    ? 'text-accent'
+    ? 'text-rarity-super-rare'
     : notification.rarity === 'eliteRare'
-      ? 'text-sub'
+      ? 'text-rarity-elite'
       : notification.rarity === 'bossRare' || notification.rarity === 'mythicRare'
-        ? 'text-accent'
+        ? notification.rarity === 'bossRare' ? 'text-rarity-boss' : 'text-rarity-mythic'
         : notification.rarity === 'common' || notification.rarity === 'uncommon'
-          ? 'text-gray-800'
-          : 'text-gray-800';
+          ? notification.rarity === 'common' ? 'text-rarity-common' : 'text-rarity-uncommon'
+          : 'text-content-strong';
 
   // For drop notifications: Super Rare overrides to bold dark orange.
   const fontWeight = isItem
@@ -60,7 +60,7 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
         ? 'font-normal'
         : 'font-medium';
 
-  const nonItemColor = notification.style === 'rare' ? 'text-accent' : 'text-sub';
+  const nonItemColor = notification.style === 'rare' ? 'text-notification-rare' : 'text-notification-normal';
 
   return (
     <button
@@ -70,7 +70,7 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
         px-3 py-1.5 rounded-lg shadow-md cursor-pointer
         text-xs ${fontWeight} w-fit text-left
         transition-opacity duration-300
-        bg-white/80 ${isItem ? itemTextColor : nonItemColor}
+        border border-notification-border ${isItem ? itemTextColor : nonItemColor}
       `}
     >
       {notification.message}

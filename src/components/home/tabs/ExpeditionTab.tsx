@@ -1,4 +1,4 @@
-import { Fragment,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
+import { Fragment,memo,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
 import {
 DUNGEONS,
 getEffectiveEnemyLevel,
@@ -12,7 +12,7 @@ import { getDifficultyOffsetItemChanceTickets,getDifficultyOffsetMax,getDifficul
 import { getItemDisplayName } from '../../../game/gameState';
 import { EXPEDITION_SIMULATION_RUN_COUNT } from '../../../game/expeditionSimulation';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
-import { computePartyStats } from '../../../game/partyComputation';
+import { computePartyStats,type ComputedPartyStatus } from '../../../game/partyComputation';
 import { t } from '../../../i18n';
 import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item,Party } from '../../../types';
 
@@ -63,28 +63,7 @@ STEP_BASED_STATES,
 UiIconKey
 } from '../homeShared';
 
-export default function ExpeditionTab({
-  state,
-  debugSettings,
-  emulatedNowMs,
-  onSelectDungeon,
-  onToggleExpeditionDestinationMode,
-  onSetExpeditionDepthLimit,
-  onSetExpeditionDifficultyOffset,
-  onResetExpeditionStats,
-  onSimulateExpedition,
-  isExpeditionStatsDisplayEnabled,
-  partyCycles,
-  afkRecoveryProgressPercent,
-  afkRecoveryCompletedMs,
-  afkRecoveryTotalMs,
-  onTriggerSortie,
-  expandedLogParty,
-  setExpandedLogParty,
-  expandedRoom,
-  setExpandedRoom,
-  isDarkModeEnabled,
-}: {
+interface ExpeditionTabProps {
   state: GameState;
   debugSettings: DebugSettings;
   emulatedNowMs: number;
@@ -105,7 +84,34 @@ export default function ExpeditionTab({
   expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
   isDarkModeEnabled: boolean;
-}) {
+  computePartyStatus?: (party: Party) => ComputedPartyStatus;
+  afkPresentationVersion: number;
+  throttleAfkPublications: boolean;
+}
+
+function ExpeditionTab({
+  state,
+  debugSettings,
+  emulatedNowMs,
+  onSelectDungeon,
+  onToggleExpeditionDestinationMode,
+  onSetExpeditionDepthLimit,
+  onSetExpeditionDifficultyOffset,
+  onResetExpeditionStats,
+  onSimulateExpedition,
+  isExpeditionStatsDisplayEnabled,
+  partyCycles,
+  afkRecoveryProgressPercent,
+  afkRecoveryCompletedMs,
+  afkRecoveryTotalMs,
+  onTriggerSortie,
+  expandedLogParty,
+  setExpandedLogParty,
+  expandedRoom,
+  setExpandedRoom,
+  isDarkModeEnabled,
+  computePartyStatus = computePartyStats,
+}: ExpeditionTabProps) {
   const [liveProgressNowMs, setLiveProgressNowMs] = useState(() => Date.now());
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -454,7 +460,7 @@ export default function ExpeditionTab({
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: progressNowMs, durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, progressNowMs - cycle.stateStartedAt);
-        const { partyStats } = computePartyStats(party);
+        const { partyStats } = computePartyStatus(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const disclosedLog = cycle.state === 'explore'
@@ -582,7 +588,11 @@ export default function ExpeditionTab({
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
-        const instantChargeState = getInstantExpeditionChargeState(party, progressNowMs);
+        const instantChargeState = getInstantExpeditionChargeState(
+          party,
+          progressNowMs,
+          getTimeSpeedScale(debugSettings),
+        );
         const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
         const instantChargeLabel = instantChargeDisplay.label;
         const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
@@ -1007,28 +1017,28 @@ export default function ExpeditionTab({
                         className="h-full"
                         style={{
                           width: `${((simulationUsesClearLabel ? simulation.result.Clear : simulation.result.Turned_Back) / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 80%, white)',
+                          backgroundColor: 'var(--outcome-success)',
                         }}
                       />
                       <span
                         className="h-full"
                         style={{
                           width: `${(simulation.result.Draw_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-sub)) 50%, white)',
+                          backgroundColor: 'var(--outcome-draw)',
                         }}
                       />
                       <span
                         className="h-full"
                         style={{
                           width: `${(simulation.result.Wounded_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 50%, white)',
+                          backgroundColor: 'var(--outcome-retreat)',
                         }}
                       />
                       <span
                         className="h-full"
                         style={{
                           width: `${(simulation.result.Defeat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'color-mix(in srgb, rgb(var(--color-accent)) 80%, white)',
+                          backgroundColor: 'var(--outcome-defeat)',
                         }}
                       />
                     </span>
@@ -1173,7 +1183,7 @@ export default function ExpeditionTab({
                                       event.currentTarget,
                                     );
                                   }}
-                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
+                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus"
                                 >
                                   {renderEnemyNameWithMutedClass(entry.enemyName)}
                                 </span>
@@ -1195,16 +1205,16 @@ export default function ExpeditionTab({
                               <div className="relative z-10 mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
                                   <div className="mb-0.5">{t('home.battle.partyHpLabel')} {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
-                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
-                                    <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--color-heal-bar))' }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--color-hp-taken))' }} />
+                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--hp-track) / var(--hp-track-alpha, 1))" }}>
+                                    <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--hp-current))' }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: 'rgb(var(--hp-healed))' }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--hp-damage-taken))' }} />
                                   </div>
                                 </div>
                                 <div>
                                   <div className="mb-0.5">{t('home.battle.enemyHpLabel')} {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
-                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--color-hp-bar-empty) / var(--color-hp-bar-empty-alpha, 1))" }}>
-                                    <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
+                                  <div className="flex h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: "rgb(var(--hp-track) / var(--hp-track-alpha, 1))" }}>
+                                    <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--hp-current))' }} />
                                   </div>
                                 </div>
                               </div>
@@ -1401,5 +1411,13 @@ export default function ExpeditionTab({
     </div>
   );
 }
+
+function areExpeditionTabPropsEqual(previous: ExpeditionTabProps, next: ExpeditionTabProps): boolean {
+  if (!previous.throttleAfkPublications || !next.throttleAfkPublications) return false;
+  if (previous.afkRecoveryProgressPercent === null || next.afkRecoveryProgressPercent === null) return false;
+  return previous.afkPresentationVersion === next.afkPresentationVersion;
+}
+
+export default memo(ExpeditionTab, areExpeditionTabPropsEqual);
 
 // SpecRef: 8.4 | UI_BASE | Base(拠点)

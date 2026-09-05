@@ -1,5 +1,6 @@
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import {
+  AFK_CHUNK_CYCLE_COUNT,
   commitAfkPartyChunk,
   compareAfkChunkResults,
   createAfkPartyChunkResult,
@@ -15,14 +16,18 @@ import {
 } from '../../src/hooks/useGameState.ts';
 import { setLanguage } from '../../src/i18n/index.ts';
 import type { GameState } from '../../src/types.ts';
+import {
+  createAfkCompactInventoryCandidateState,
+  materializeAfkCompactInventoryCandidateDelta,
+} from './afkCompactInventoryCandidate.ts';
 import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
 
 declare const __PROFILE_SAMPLE_COUNT__: number;
 declare const __PROFILE_WARMUP_COUNT__: number;
 
-type Candidate = 'legacy' | 'diary-journal' | 'inventory-overlay' | 'combined';
+type Candidate = 'legacy' | 'diary-journal' | 'inventory-overlay' | 'combined' | 'compact-inventory';
 
-const CANDIDATES: Candidate[] = ['legacy', 'diary-journal', 'inventory-overlay', 'combined'];
+const CANDIDATES: Candidate[] = ['legacy', 'diary-journal', 'inventory-overlay', 'combined', 'compact-inventory'];
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
 const BACKLOG_WAVES = 3;
@@ -64,6 +69,7 @@ function rotate<T>(values: readonly T[], offset: number): T[] {
 function runCandidate(state: GameState, candidate: Candidate) {
   const historyStrategy = candidate === 'legacy' || candidate === 'inventory-overlay' ? 'full' : 'placeholders';
   const inventoryStrategy = candidate === 'legacy' || candidate === 'diary-journal' ? 'immutable' : 'overlay';
+  const inputInventoryStrategy = candidate === 'compact-inventory' ? 'compact' : 'full';
   const inputBytes: number[] = [];
   const outputBytes: number[] = [];
   const partyMs: number[] = [];
@@ -73,7 +79,9 @@ function runCandidate(state: GameState, candidate: Candidate) {
   for (let waveIndex = 0; waveIndex < BACKLOG_WAVES; waveIndex += 1) {
     const waveBaseState = finalState;
     const waveResults = waveBaseState.parties.map((party, partyIndex) => {
-      const baseState = createAfkPartyChunkWorkerState(waveBaseState, partyIndex, historyStrategy);
+      const baseState = inputInventoryStrategy === 'compact'
+        ? createAfkCompactInventoryCandidateState(waveBaseState, partyIndex, historyStrategy)
+        : createAfkPartyChunkWorkerState(waveBaseState, partyIndex, historyStrategy);
       inputBytes.push(utf8Bytes(baseState));
       const cycleDurationMs = getApproxAfkCycleDurationMs(party, DEV_CYCLE_DURATION_SCALE);
       let seedCursor = 0n;
@@ -85,7 +93,7 @@ function runCandidate(state: GameState, candidate: Candidate) {
           () => simulateAfkPartyChunkForWorker(baseState, {
             partyIndex,
             cycleDurationMs,
-            simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * 12,
+            simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
             cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
             gameMode: 'm.kemo',
             inventoryStrategy,
@@ -96,14 +104,16 @@ function runCandidate(state: GameState, candidate: Candidate) {
         jobId: `journal-${waveIndex}-${party.id}`,
         partyIndex,
         partyId: party.id,
-        simulatedStartedAt: SIMULATED_END_AT + (waveIndex - 1) * cycleDurationMs * 12,
-        simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * 12,
+        simulatedStartedAt: SIMULATED_END_AT + (waveIndex - 1) * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
+        simulatedCompletedAt: SIMULATED_END_AT + waveIndex * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
         cycleDurationMs,
-        operationCount: 12,
+        operationCount: AFK_CHUNK_CYCLE_COUNT,
         baseState,
         gameMode: 'm.kemo',
         cycleDurationScale: DEV_CYCLE_DURATION_SCALE,
-      }, resultState, 0, {}, getAfkInventoryDeltaForState(resultState));
+      }, resultState, 0, {}, candidate === 'compact-inventory'
+        ? materializeAfkCompactInventoryCandidateDelta(getAfkInventoryDeltaForState(resultState)!)
+        : getAfkInventoryDeltaForState(resultState));
       const workerResult = createAfkPartyChunkWorkerResult(complete);
       partyMs.push(performance.now() - startedAt);
       outputBytes.push(utf8Bytes(workerResult));
@@ -159,6 +169,11 @@ const legacy = measured.legacy;
 const improvement = (candidate: Candidate, field: 'cpuMs' | 'slowestPartyMs' | 'inputBytes') => (
   legacy.map((sample, index) => (1 - measured[candidate][index]![field] / sample[field]) * 100)
 );
+const build72Improvement = (field: 'cpuMs' | 'slowestPartyMs' | 'inputBytes') => (
+  measured.combined.map((sample, index) => (
+    (1 - measured['compact-inventory'][index]![field] / sample[field]) * 100
+  ))
+);
 
 process.stdout.write(`${JSON.stringify({
   schemaVersion: 1,
@@ -168,6 +183,11 @@ process.stdout.write(`${JSON.stringify({
     warmups: __PROFILE_WARMUP_COUNT__, samples: __PROFILE_SAMPLE_COUNT__, backlogWaves: BACKLOG_WAVES, candidateOrder: 'rotating',
   },
   validation: { hydratedResultsByteIdenticalEverySample: true, finalStateByteIdenticalEverySample: true },
+  build72ToCompactInventoryPairedImprovementPercent: {
+    cpuMs: distribution(build72Improvement('cpuMs')),
+    slowestPartyMs: distribution(build72Improvement('slowestPartyMs')),
+    inputBytes: distribution(build72Improvement('inputBytes')),
+  },
   candidates: Object.fromEntries(CANDIDATES.map((candidate) => [candidate, {
     cpuMs: distribution(measured[candidate].map((sample) => sample.cpuMs)),
     slowestPartyMs: distribution(measured[candidate].map((sample) => sample.slowestPartyMs)),

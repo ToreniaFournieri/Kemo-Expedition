@@ -16,11 +16,18 @@
   - Remove the notification badge when no unread news items remain.
   - Persist the read/unread state in save data so previously read items do not become unread again after refreshing or restarting the game.
   - When a new news item is added, display the notification badge again.
-- language: zh-CN
-  - 冒兽交流群(Telegram Community) (中文) "https://t.me/+exLhrX12vn5iMmI1"
-- language: Others 
-  - Official Discord Community (日本語・English) "https://discord.gg/k9VSf2ghM"
-  - Localize the hyperlink text for the active language.
+- Link1: orca mode link 
+  - language: ALL
+  - Link:"https://toreniafournieri.github.io/Kemo-Expedition/orca/"
+  - Name: 'app.title' + `orca`
+    - Example. language:ja,  "冒ケモorca" 
+  - Open the link in a new tab.
+- Link2: Community link
+  - language: zh-CN
+    - 冒兽交流群(Telegram Community) (中文) "https://t.me/+exLhrX12vn5iMmI1"
+  - language: Others 
+    - Official Discord Community (日本語・English) "https://discord.gg/k9VSf2ghM"
+    - Localize the hyperlink text for the active language.
 - News list: @Specification_11.2_NEWS.md 
 
 
@@ -317,15 +324,56 @@ HP: 312                 タイプ: 神魔
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
 
-- "テーマカラー"
-  - Switch to "ケモ", "ルナ", "ライカ"
-  - ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`
-  - Default: `m.kemo`
-  - Description:
-    - `m.kemo` "青を基調としたテーマです"
-    - `m.luna` "黄色を基調としたテーマです"
-    - `m.laika` "緑を基調としたテーマです"
+- Theme color
 
+| theme color | label (i18n) | Available in production |
+|-------|--------------|-----|
+| `theme.kemo` | `character.default.n1` | true |
+| `theme.laika` | `character.default.n2` | true |
+| `theme.leonard` | `character.default.n3` | false |
+| `theme.orca` | `character.default.n4` | false |
+| `theme.nox` | `character.default.n5` | false |
+| `theme.luna` | `character.default.n6` | true |
+| `theme.mishka` | `character.default.n7` | false |
+| `theme.puchitsa` | `character.default.n8` | false |
+| `theme.hagakure` | `character.default.n9` | false |
+| `theme.souga-ha` | `character.default.n10` | false |
+| `theme.finn` | `character.default.n11` | false |
+| `theme.merle` | `character.default.n12` | false |
+| `theme.rosaria` | `masterData.enemyName.171` | false |
+| `theme.milly` | `masterData.enemyName.17` | false |
+| `theme.guabi` | `masterData.enemyName.173` | false |
+| `theme.nemea` | `masterData.enemyName.239` | false |
+| `theme.bernetta` | `masterData.enemyName.259` | false |
+| `theme.yone` | `masterData.enemyName.305` | false |
+| `theme.niv` | `masterData.enemyName.348` | false |
+| `theme.nave` | `masterData.enemyName.375` | false |
+
+- Default: `theme.kemo`
+- Description: Displays the theme color associated with Label (i18n).
+  - Example: ケモのテーマカラーです
+- Availability:
+  - If Available in production is true, the theme color can be selected in the production environment.
+  - All theme colors are always selectable in the development environment.
+
+- Game mode
+  - Default: `mode.normal`
+
+| Mode | concept |
+|--|--|
+| `mode.normal` | same spec. |
+| `mode.orca` | All enemies have `a.first-strike`0, `a.upgrade-all-abilities`1, +`N` level. `Speed of time` is `x5 boost`, theme color is set to `theme.orca`. |
+
+- `Speed of Time`:
+  - Speed of time can still be changed through the Debug Pane.
+  - The Progress Report bonus multiplies the current Speed of time by x1.2.
+  - Example: if the current speed is `x5 boost`, the effective speed becomes x6.
+
+- Enemy Level Offset
+  - `N` is configurable using a level-offset bar.
+  - Range: 0 to +20. Default 5.
+  - The Enemy Level Offset can be changed only when Debug Mode is enabled.
+  - The selected `N` value is added to the level of all enemies in `mode.orca`.
 
 **Feedback フィードバック**
   - Send feedback to the development team.

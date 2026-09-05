@@ -19,38 +19,66 @@
 
 - **Color Scheme**
 
-  - `m.kemo` mode:
-	- Base colors
-	  - Text: Black
-	  - Pane / card background: Gray
-	  - Page background: White
-	- Sub color (~30%)
-	  - Blue `#3B82F6` (information, selection, links)
-	- Accent color (~5%)
-	  - Dark Orange `#EA580C` (important actions, warnings, highlights)
+* Light mode
 
-  - `m.luna` mode:
-    - Base colors:
-      - Text: Black
-      - Pane / card background: Gray
-      - Page background: White
-    - Sub color (~30%):
-      - Yellow-Orange `#c28832` (information, selection, links)
-    - Accent color (~5%):
-      - Blue `#0c3cea`  (important actions, warnings, highlights)
-     
-  - `m.laika` mode:
-    - Base colors:
-      - Text: Black
-      - Pane / card background: Gray
-      - Page background: White
-  - Sub color (~30%)
-    - Green `#08A645`
-      (information, selection, links)
-  - Accent color (~5%)
-    - Crimson Red `#DC2626`
-      (important actions, warnings, highlights)
-  - Damage taken color: `#ffebcd`
+| Theme | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` |
+| --------------- | --------: | --------: | --------: | --------: |
+| `theme.kemo` light    | #3B82F6 | #EA580C | #93C5FD | #FCB786 |
+| `theme.laika` light   | #08A645 | #DC2626 | #0dc353 | #FFEBCD |
+| `theme.leonard` light | #BF4264 | #EFA84C | #D95D7A | #F3B77E |
+| `theme.orca` light    | #269096 | #8bab2d | #2EB9C1 | #DDE89A |
+| `theme.nox` light     | #9E2923 | #D58B20 | #B94A3E | #E0A85C |
+| `theme.luna` light    | #C28832 | #0C3CEA | #E8B568 | #FFED91 |
+| `theme.mishka` light  | #1769C2 | #665C87 | #438CD4 | #A59BB7 |
+| `theme.puchitsa` light| #C94B32 | #167D8D | #DF6A45 | #75A9A4 |
+| `theme.hagakure` light| #71845A | #9A704F | #91A875 | #D8B99A |
+| `theme.souga-ha` light| #557A9D | #D13C4C | #789AB8 | #D99A9F |
+| `theme.finn` light    | #7255A5 | #B58A3C | #9276BE | #D6BD8A |
+| `theme.merle` light   | #438DC4 | #6F9B69 | #72AFD5 | #A9C99D |
+| `theme.rosaria` light | #762E4B | #514078 | #9B526B | #A98AA5 |
+| `theme.milly` light   | #C94F78 | #B8862F | #E17E9D | #E5B98D |
+| `theme.guabi` light   | #78952F | #D95F68 | #9DBB50 | #E7A09B |
+| `theme.nemea` light   | #278C8C | #B47732 | #55AAA5 | #D3A66F |
+| `theme.bernetta` light| #8E3438 | #9A6535 | #B25555 | #C69A72 |
+| `theme.yone` light    | #4B4745 | #C5672E | #77706C | #D59A72 |
+| `theme.niv` light     | #465F7D | #805F43 | #7189A2 | #B39A82 |
+| `theme.nave` light    | #35458C | #E86118 | #6475B5 | #E99A6D |
+
+
+* Dark mode
+
+| Theme | `--theme-sub` | `--theme-accent` | `--hp-current` | `--hp-damage-taken` |
+| -------------- | --------: | --------: | --------: | --------: |
+| `theme.kemo` dark    | #3B82F6 | #EA580C | #6A94C6 | #A5886D |
+| `theme.laika` dark   | #08A645 | #DC2626 | #0dc353 | #92675B |
+| `theme.leonard` dark | #E06080 | #F2B35C | #B94E69 | #A87959 |
+| `theme.orca` dark    | #45C1CA | #B3D355 | #4E9FA5 | #8A9160 |
+| `theme.nox` dark     | #D65A4F | #F0B84A | #A94740 | #A77B4A |
+| `theme.luna` dark    | #C28832 | #60A5FA | #AA8D5D | #857255 |
+| `theme.mishka` dark  | #4B9CFF | #9589B8 | #397FC5 | #776E8A |
+| `theme.puchitsa` dark| #F07855 | #42A9B5 | #B95640 | #628F8F |
+| `theme.hagakure` dark| #A4BA82 | #C69A72 | #849B6C | #9B8069 |
+| `theme.souga-ha` dark| #83A9CA | #F06470 | #6E8FAE | #A86D74 |
+| `theme.finn` dark    | #A88BD2 | #D8B764 | #8D75B0 | #A08B68 |
+| `theme.merle` dark   | #72B9E2 | #9BC58C | #679FC2 | #7F9D78 |
+| `theme.rosaria` dark | #B65B7C | #8B78B5 | #8D4962 | #806A7D |
+| `theme.milly` dark   | #F080A3 | #DDB45B | #BD6683 | #A98568 |
+| `theme.guabi` dark   | #A9C957 | #F08387 | #839E48 | #A66F70 |
+| `theme.nemea` dark   | #55C0BB | #D9A15C | #4A9592 | #9B7956 |
+| `theme.bernetta` dark| #C75A5F | #C89055 | #98494C | #927052 |
+| `theme.yone` dark    | #8B8581 | #E88A4C | #69635F | #9E7358 |
+| `theme.niv` dark     | #7896B8 | #B08A68 | #647D98 | #8B7563 |
+| `theme.nave` dark    | #7186E0 | #FF8A3D | #5D6EAD | #AE7355 |
+
+* regardless of theme
+- `--hp-track` is derived from `--theme-sub` with an opacity of 0.10.
+- `--hp-healed` is `--theme-sub` 
+- In Light mode, `--surface-pane` is #EEF5F5.
+- In Dark mode, `--surface-pane` is #1E293B.
+
+// OBSOLATE - In Light mode, `--hp-healed` is #B8EDB2.
+// OBSOLATE - In Dark mode, `--hp-healed` is #5E8C5B.
+
 
 **Emoji Icon Replacement**
 - All emoji used in UI, logs, and text outputs must be replaced with their corresponding icon image assets.
@@ -131,6 +159,7 @@
 		  - The character 「冒」 is emphasized:   
       - Scale: Larger than surrounding text
       - Rotation: −22.5° (counterclockwise)
+  - If `mode.orca`, adding "orca" (for all languages)
 
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
@@ -140,9 +169,11 @@
   - Use this specification's version
 
 - Speed of Time: `▶︎ (23h)`
-  - Displays the current game speed state symbol and the remaining boost duration in hours without the `x1.0` or `x1.2` multiplier text.
+  - Displays the current game speed state symbol and the remaining boost duration in hours.
     - x1.0 -> `▷`
-    - x1.2 or higher -> `▶︎`
+    - x1.2 -> `▶︎`
+    - x5.0 -> `▷`
+    - x6.0 -> `▶︎`
 
 - **Progress Report:** When the player presses the Speed of Time button:
   - Show the following confirmation dialog:
@@ -152,6 +183,7 @@
     - Generate **format of progress data** and send to:
       - `/dev/`: DEV_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/beta/`: BETA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
+      - `/orca/` : ORCA_DISCORD_WEBHOOK_URL environment variable defined in this repository.
       - `/`: PROD_DISCORD_WEBHOOK_URL environment variable defined in this repository.
     - If the webhook request succeeds:
       - Set Speed of Time to x1.2. and the text is `▶︎`

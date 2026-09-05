@@ -12,6 +12,7 @@
 | `FULL` | Automatically **Removes all equipment**, **Fills empty slots** and **Upgrades existing equipment**. |                             |
 
 - Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
+- At an AFK Chunk boundary, automatic equipment targets only the Party whose FIFO coordinator transaction is being processed, and processes that Party's members from front to rear. It uses the coordinator's then-authoritative inventory and must finish committing before that Party becomes eligible for its next Chunk, as defined in Spec 5.1.
 - Item categories of already equipped items are not changed.
 - The system only fills empty slots or upgrades existing equipment without replacing it with a different item category.
 - No other policy exist in this version.
@@ -330,7 +331,7 @@
 
 - AFK (during `state.reactivate`)
   - Process AFK progression as completed expedition-cycle chunks only.
-  - Here, `chunk` means the logical 12-Cycle gameplay Chunk defined in Spec 5.1. Scheduler batches may yield within a Chunk for responsiveness, but a scheduler yield is not a Chunk boundary and must not trigger the rules below.
+  - Here, `chunk` means the logical 30-Cycle gameplay Chunk defined in Spec 5.1. Scheduler batches may yield within a Chunk for responsiveness, but a scheduler yield is not a Chunk boundary and must not trigger the rules below.
   - At the end of each logical Chunk:
   - 1. Update `condition`:
     - Recalculate `condition` once at the end of the chunk.

@@ -5,8 +5,11 @@ import {
   createAfkPartyChunkWorkerResult,
   createAfkPartyChunkWorkerResultV3,
   hydrateAfkPartyChunkContinuationWorkerState,
+  createAfkPartyChunkInventoryWorkerResult,
+  hydrateAfkPartyChunkInventoryWorkerState,
   type AfkPartyChunkJob,
   type AfkPartyChunkWorkerJob,
+  type AfkPartyChunkInventoryWorkerJob,
 } from '../../src/game/afkChunkCoordinator.ts';
 import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { withGameplayRandomSourceForTesting } from '../../src/game/gameplayRandom.ts';
@@ -16,12 +19,16 @@ import {
 } from '../../src/hooks/useGameState.ts';
 import { ensureLanguageLoaded } from '../../src/i18n/index.ts';
 import { withItemLookupStrategyForTesting } from '../../src/data/items.ts';
+import { materializeAfkCompactInventoryCandidateDelta } from './afkCompactInventoryCandidate.ts';
 
 declare const self: DedicatedWorkerGlobalScope;
 
-type Candidate = 'full' | 'build62' | 'build71' | 'linear' | 'production' | 'continuation';
+type Candidate = 'full' | 'build62' | 'build71' | 'build72' | 'linear' | 'production' | 'continuation' | 'inventory';
 const epochNow = () => performance.timeOrigin + performance.now();
 const retainedParties = new Map<number, { party: import('../../src/types.ts').Party; stateToken: string; revision: number }>();
+let retainedInventory: import('../../src/types.ts').InventoryRecord | null = null;
+let retainedInventoryToken: string | null = null;
+let retainedInventoryRevision = 0;
 
 function createSeededRandom(seed: number): () => number {
   let value = seed >>> 0 || 0x9e3779b9;
@@ -36,12 +43,25 @@ function createSeededRandom(seed: number): () => number {
 self.onmessage = async (event: MessageEvent<{
   candidate: Candidate;
   correlationId: string;
-  job: AfkPartyChunkJob | AfkPartyChunkWorkerJob;
+  job: AfkPartyChunkJob | AfkPartyChunkWorkerJob | AfkPartyChunkInventoryWorkerJob;
 }>) => {
   const { candidate, correlationId, job } = event.data;
   const receivedAt = epochNow();
   try {
-    const baseState = candidate === 'continuation' && 'transferKind' in job && job.transferKind === 'continuation'
+    const baseState = candidate === 'inventory' && 'inventoryTransferKind' in job
+      ? (() => {
+        const hydrated = hydrateAfkPartyChunkInventoryWorkerState(
+          job,
+          retainedInventory,
+          retainedInventoryToken,
+          retainedInventoryRevision,
+        );
+        retainedInventory = hydrated.inventory;
+        retainedInventoryToken = job.nextInventoryToken;
+        retainedInventoryRevision = job.inventoryRevision;
+        return hydrated.state;
+      })()
+      : candidate === 'continuation' && 'transferKind' in job && job.transferKind === 'continuation'
       ? (() => {
         const retained = retainedParties.get(job.partyId);
         if (!retained) throw new Error('AFK continuation state mismatch');
@@ -68,13 +88,19 @@ self.onmessage = async (event: MessageEvent<{
         ),
       )
     ));
+    const inventoryDelta = getAfkInventoryDeltaForState(resultState);
     const completeResult = createAfkPartyChunkResult(
       { ...job, baseState },
       resultState,
       0,
-      getAfkInventoryDeltaForState(resultState),
+      {},
+      candidate === 'production' || candidate === 'linear'
+        ? materializeAfkCompactInventoryCandidateDelta(inventoryDelta!)
+        : inventoryDelta,
     );
-    const result = candidate === 'continuation' && 'transferKind' in job
+    const result = candidate === 'inventory' && 'inventoryTransferKind' in job
+      ? createAfkPartyChunkInventoryWorkerResult(completeResult, job)
+      : candidate === 'continuation' && 'transferKind' in job
       ? (() => {
         retainedParties.set(job.partyId, {
           party: resultState.parties[job.partyIndex],
@@ -87,7 +113,7 @@ self.onmessage = async (event: MessageEvent<{
           reconciliationRevision: job.reconciliationRevision,
         });
       })()
-      : candidate === 'production' || candidate === 'linear' || candidate === 'build71'
+      : candidate === 'production' || candidate === 'linear' || candidate === 'build71' || candidate === 'build72'
       ? createAfkPartyChunkWorkerResult(completeResult)
       : candidate === 'build62'
         ? (({ baseParty: _baseParty, ...build62Result }) => build62Result)(completeResult)

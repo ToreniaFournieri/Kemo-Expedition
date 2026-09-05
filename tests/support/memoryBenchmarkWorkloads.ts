@@ -78,7 +78,7 @@ export async function runMemoryWorkload(name: string, smoke: boolean, observe: O
     const effectiveElapsedMs = getEffectiveAfkElapsedMs(24 * 60 * 60_000);
     const chunkTargets = state.parties.map((party) => {
       const cycleDurationMs = getApproxAfkCycleDurationMs(party, 0.05);
-      return smoke ? 1 : Math.floor(effectiveElapsedMs / (cycleDurationMs * 12));
+      return smoke ? 1 : Math.floor(effectiveElapsedMs / (cycleDurationMs * AFK_CHUNK_CYCLE_COUNT));
     });
     const chunks = Math.max(...chunkTargets);
     for (let chunk = 0; chunk < chunks; chunk += 1) {
@@ -88,7 +88,7 @@ export async function runMemoryWorkload(name: string, smoke: boolean, observe: O
         state = simulateAfkPartyChunkForWorker(state, {
           partyIndex,
           cycleDurationMs,
-          simulatedCompletedAt: Date.UTC(2026, 7, 25) + chunk * cycleDurationMs * 12,
+          simulatedCompletedAt: Date.UTC(2026, 7, 25) + chunk * cycleDurationMs * AFK_CHUNK_CYCLE_COUNT,
           cycleDurationScale: 0.05,
           gameMode: 'm.kemo',
         });

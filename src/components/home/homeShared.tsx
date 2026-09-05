@@ -55,6 +55,7 @@ REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
+import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
 import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
@@ -187,10 +188,10 @@ export interface HomeScreenProps {
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
-    simulateExpedition: (partyIndex: number, gameMode?: GameMode, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
-    runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
-    resolveInstantExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
-    consumeInstantExpeditionStock: (partyIndex: number, now?: number) => void;
+    simulateExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, onProgress?: (completed: number, total: number) => void, enemyLevelOffset?: number) => Promise<ExpeditionSimulationResult>;
+    runExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
+    resolveInstantExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
+    consumeInstantExpeditionStock: (partyIndex: number, now?: number, chargeDurationScale?: number) => void;
     finalizeDiaryLog: (partyIndex: number, simulatedAt?: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
@@ -222,9 +223,32 @@ export interface HomeScreenProps {
     markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
-    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: RuntimeGameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice, enemyLevelOffset?: number) => void;
     commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
-    runApiSortieBatch: (partyIndex: number, count: number, gameMode?: GameMode, simulatedAt?: number) => {
+    commitAfkPartyTransaction: (
+      result: AfkPartyChunkResult,
+      autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner,
+      attribution?: AfkPartyTransactionAttribution,
+    ) => void;
+    commitAfkPartyTransactionAuthoritatively: (
+      result: AfkPartyChunkResult,
+      autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner,
+      attribution?: AfkPartyTransactionAttribution,
+    ) => {
+      version: number;
+      previousVersion: number;
+      changed: boolean;
+      state: GameState;
+      installedAt: number;
+    };
+    getAuthoritativeState: () => { version: number; state: GameState; installedAt: number };
+    publishAuthoritativeState: () => {
+      published: boolean;
+      version: number;
+      previousPresentedVersion: number;
+      delayMs: number;
+    };
+    runApiSortieBatch: (partyIndex: number, count: number, gameMode?: RuntimeGameMode, simulatedAt?: number, enemyLevelOffset?: number) => {
       state: GameState;
       runs: Array<{ party: Party; log: ExpeditionLog | null; beforeState: GameState; afterState: GameState }>;
     };
@@ -592,7 +616,7 @@ export const SOUND_SLEEP_STEP_COUNT = 16;
 export const PRAY_STEP_COUNT = 4;
 export const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
 export const APPROX_CYCLE_STEP_COUNT = 30;
-export const CHUNK_CYCLE_COUNT = 12;
+export const CHUNK_CYCLE_COUNT = 30;
 export const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 export const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 export const AFK_MAX_ELAPSED_MS = AFK_MAX_REAL_ELAPSED_MS;
@@ -691,9 +715,13 @@ export function getAutoSellStepCount(party: Party): number {
 
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
 export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))]';
-export type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
-export type DarkModeSetting = 'off' | 'on' | 'system';
+export type { DarkModeSetting, GameMode } from '../../theme/theme';
+import type { DarkModeSetting, GameMode } from '../../theme/theme';
+import { isGameModeAvailable, THEME_CLASS_NAMES } from '../../theme/theme';
+import type { RuntimeGameMode } from '../../game/runtimeGameMode';
 export const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
+export const RUNTIME_GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-runtime-game-mode');
+export const ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-orca-enemy-level-offset');
 export const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 export const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-expedition-stats-display');
 export const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
@@ -909,12 +937,15 @@ export function getEnemyClassSummary(enemy: EnemyDef): string {
 
 export function FloatingBubblePortal({ children }: { children: ReactNode }) {
   if (typeof document === 'undefined') return null;
-  const portalThemeClass = document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark')
-    ? 'theme-dark'
-    : '';
+  const portalThemeClasses = [
+    ...THEME_CLASS_NAMES.filter((className) => (
+      document.documentElement.classList.contains(className) || document.body.classList.contains(className)
+    )),
+    document.documentElement.classList.contains('app-dark') || document.body.classList.contains('app-dark') ? 'theme-dark' : '',
+  ].filter(Boolean).join(' ');
 
   return createPortal(
-    <div className={portalThemeClass}>
+    <div className={portalThemeClasses}>
       {children}
     </div>,
     document.body,
@@ -1532,6 +1563,7 @@ export const SPEED_OF_TIME_BONUS_DURATION_MS = (24 * 60 + 45) * 60 * 1000;
 export const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 export const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 export const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
+export const ORCA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_ORCA_DISCORD_WEBHOOK_URL;
 export const PROD_DISCORD_WEBHOOK_URL = import.meta.env.VITE_PROD_DISCORD_WEBHOOK_URL;
 export const FEEDBACK_DISCORD_WEBHOOK_URL = import.meta.env.VITE_FEEDBACK_DISCORD_WEBHOOK_URL;
 
@@ -3068,10 +3100,11 @@ export function sortInventoryItems(items: [string, InventoryVariant][]): [string
 export function getInitialGameMode(): GameMode {
   if (typeof window === 'undefined') return 'm.kemo';
   if (getEnvironmentId() === 'beta') return 'm.laika';
+  if (getEnvironmentId() === 'orca') return 'm.orca';
 
   try {
     const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-    if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
+    if (isGameModeAvailable(savedMode, getEnvironmentId())) {
       return savedMode;
     }
   } catch (error) {

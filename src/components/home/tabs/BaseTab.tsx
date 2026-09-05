@@ -1277,14 +1277,14 @@ function InventoryTab({
                 <button
                   type="button"
                   onClick={() => setSellStackConfirmation(null)}
-                  className="rounded-full px-4 py-2 text-sm font-semibold text-sub hover:bg-blue-50"
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-link hover:bg-selection/[0.12]"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={confirmSellStack}
-                  className="rounded-full bg-sub px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600"
+                  className="rounded-full bg-selection px-4 py-2 text-sm font-semibold text-content-inverse shadow-sm hover:bg-selection/90"
                 >
                   OK
                 </button>

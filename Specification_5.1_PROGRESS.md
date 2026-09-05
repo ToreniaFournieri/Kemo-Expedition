@@ -15,24 +15,44 @@
   - A Cycle always **begins at `state.rest`**.
   - A full Cycle always **ends at the end of `state.rest`**.
 - **`Chunk`**: A higher-level processing unit used for bulk AFK progression.
-  - Each AFK worker process handles exactly one Chunk for one party.
-  - A party may have only one active or queued Chunk at a time.
-  - **1 Chunk = 12 Cycles**.
-  - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 12 Cycles in that Chunk complete.
+  - Each AFK worker process handles exactly one Chunk at a time. Workers are reusable execution slots and are not permanently assigned to a party.
+  - The AFK worker-pool limit scales conservatively with the reported logical-processor count: 1 worker for 1–3 processors, 2 for 4–7, 3 for 8–9, 4 for 10–11, 5 for 12–13, and 6 for 14 or more. Missing or invalid processor information uses 2 workers.
+  - The worker-pool limit must never exceed six or the number of unlocked Parties. Only Parties with remaining AFK backlog and no outstanding Chunk transaction are dispatch-eligible, so inactive or locked Parties must never create additional concurrent work.
+  - A party may have only one outstanding Chunk transaction at a time. `Running`, `commit queued`, `committing`, and `automatic equipment` all count as outstanding.
+  - **1 Chunk = 30 Cycles**.
+  - A Chunk is a logical gameplay aggregation boundary. Rules specified to run at the end of a Chunk run only after all 30 Cycles in that Chunk complete.
   - Each Chunk continues using the party and global parameters captured when it begins.
   - Party status is calculated once at the beginning of each Chunk and remains unchanged throughout all Cycles within that Chunk.
-  - At the end of a Chunk, the worker submits its results to the global commit queue managed by the coordinator process.
-  - A single coordinator process applies queued Chunk results sequentially in simulated completion-time order, using party ID to resolve ties. This ensures deterministic global-state updates.
-  - **Process:** At the end of a Chunk, the worker (representative of each PT) submits the Chunk results to the coordinator-managed global commit queue. The coordinator processes queued workers sequentially.
-    - For each worker, the coordinator:
-    - Captures the pending setting changes for the worker's PT at the start of the transaction. This defines the transaction cutoff.
-    - Commits the Chunk results and returns the committed state to that worker.
-    - If no setting changes were captured at the cutoff, the worker performs **auto equipment** for its own PT using the committed state and returns the resulting update to the coordinator.
-    - If auto equipment was performed, the coordinator commits the auto-equipment update.
+  - At the end of a Chunk, the worker submits its result to the global commit queue managed by the coordinator process. The coordinator assigns a monotonically increasing arrival sequence when it accepts the result.
+  - The coordinator applies accepted Chunk results sequentially in arrival-sequence FIFO order. Simulated completion time and party ID do not reorder accepted results.
+  - After its result is accepted into the FIFO queue, the worker slot is immediately reusable for another eligible party. The submitting party remains ineligible until its complete coordinator transaction finishes.
+  - **Authoritative coordinator state:**
+    - The coordinator owns the authoritative AFK game state independently of React presentation. Its state is a sequence of immutable, monotonically versioned snapshots.
+    - A Party transaction is authoritatively published when the coordinator synchronously installs its complete next snapshot and version. That installation is the transaction completion acknowledgement.
+    - Scheduling, rendering, or committing a React update is not required for a coordinator completion acknowledgement. Merely scheduling an asynchronous coordinator-state update without installing its snapshot is not an acknowledgement.
+    - Worker dispatch, subsequent FIFO transactions, state-mutating UI actions, and recovery checkpoints must consume the newest applicable authoritative coordinator snapshot, not a potentially stale React presentation snapshot.
+  - **Worker dispatch:** When a worker slot is available, the scheduler selects from parties that have remaining AFK backlog and no outstanding Chunk transaction.
+    - Select the eligible party with the oldest party-local emulated time so parties furthest behind catch up first.
+    - If multiple eligible parties have the same party-local emulated time, select the lowest party ID (`PT1`, `PT2`, ... `PT6`).
+    - A party with a Chunk running, waiting in the FIFO commit queue, committing, applying captured settings, or performing automatic equipment is not eligible.
+    - Capture the newest completely published authoritative coordinator snapshot available at dispatch. A worker may begin another eligible party's Chunk while an unrelated Party transaction is still committing, but it must never receive a partially committed state. It may therefore begin from the immutable snapshot published before that unrelated transaction. The snapshot need not have been presented by React.
+    - If every party with remaining backlog is ineligible, the available worker slots wait until a party transaction finishes.
+  - **Coordinator process:** For each FIFO entry, the coordinator:
+    - Captures the pending setting changes for the entry's PT at the start of the transaction. This defines the transaction cutoff.
+    - Commits the Chunk result.
+    - If no setting changes were captured at the cutoff, performs **auto equipment** for that PT using the then-authoritative committed state and commits the resulting update.
     - If setting changes were captured at the cutoff, the coordinator applies and commits those changes after the Chunk result.
-    - The worker's commit transaction is complete, and the coordinator proceeds to the next queued worker.
-    - Once a worker's transaction begins, it retains its coordinator processing slot until all required commits are complete. The worker does not re-enter or re-check the global commit queue during the transaction.
+    - Marks the party's Chunk transaction complete only after its Chunk result, captured setting changes or automatic equipment, inventory effects, and derived state are synchronously installed in a distinct authoritative coordinator snapshot and version used by subsequent transactions and dispatches. A React presentation commit and a durable-storage checkpoint are not required at every transaction.
+    - Makes the party eligible for its next Chunk only after that completion acknowledgement, then proceeds to the next FIFO entry.
+    - Once a party transaction begins, it retains the coordinator processing slot until all required commits are complete. Another Party transaction must not interleave with it.
+    - The coordinator may process multiple FIFO transactions sequentially within one time-budgeted scheduler batch. Each transaction must consume the complete authoritative snapshot installed by its predecessor, install and acknowledge its own distinct next snapshot and version before the following transaction begins, and retain its own replay identity plus its diagnostic trace identity when tracing is enabled. This is sequential processing, not transaction interleaving or one combined authoritative transaction.
+    - Multiple acknowledged coordinator versions may be coalesced into one React presentation update that renders only the newest included version. Coalescing presentation must not coalesce, omit, reorder, or alter the underlying authoritative transactions or their acknowledgements.
+  - The coordinator's authoritative inventory at the time a transaction is processed controls that transaction's automatic-equipment choices. Because FIFO arrival order is determined by actual worker completion, an item produced by a party at a later party-local emulated time may be available to another party whose next transaction represents an earlier party-local emulated time. This is intentional; AFK recovery does not strictly emulate one global timetable.
+  - Equal Chunk inputs and RNG seeds must produce equal worker results, but independent parallel AFK recoveries are not required to produce the same FIFO arrival order or final whole-recovery hash. Regression requirements are defined in section 5.1.1.1.
 - **AFK UI update policy**: During accelerated AFK processing, UI updates are throttled to **once every 100 ms**.
+  - React is a presentation subscriber to the authoritative coordinator state during AFK recovery. It may skip rendering intermediate acknowledged versions and present only the newest version available at the next update boundary.
+  - Recovery completion, cancellation, interruption, unrecoverable errors, and state transitions requiring user attention may publish immediately.
+  - Before a state-mutating UI action is applied, AFK processing must pause and the action must be evaluated against the newest authoritative coordinator snapshot. State from an older rendered version must never overwrite a newer coordinator version.
 
 
 ```
@@ -47,12 +67,11 @@ PT1 transaction begins
         │      apply and commit captured user changes ← coordinator
         │
         ├─ Otherwise:
-        │      run auto equipment ← PT1 worker
-        │      commit auto-equipment update ← coordinator
+        │      run and commit auto equipment ← coordinator
         │
         └─ PT1 transaction ends
-               coordinator task for PT1 is complete
-               coordinator proceeds to next queued worker         
+               PT1 becomes eligible for its next Chunk
+               coordinator proceeds to next FIFO entry
 ```
 
   - **Party Setting Updates**
@@ -69,9 +88,9 @@ PT1 transaction begins
   - Returning to the game resets AFK emulation efficiency to 100%.
   - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
   - **Auto equipment behavior:** `7.1.1 AUTO equipment logic` in @Specification_7.1_AUTOMATION.md
-    - During AFK emulation, auto-equipment logic runs only at the end of a complete Chunk (12 Cycles).
+    - During AFK emulation, auto-equipment logic runs at the end of each complete Chunk (30 Cycles) and at the end of the terminal partial Chunk.
     - Ending Sound Sleep does not trigger auto-equipment logic.
-    - A partial Chunk (<12 Cycles) does not trigger auto-equipment logic. 
+    - A partial Chunk (<30 Cycles) **does trigger auto-equipment logic**.
 
 **f.afk-emulation-efficiency**
 
@@ -183,7 +202,7 @@ PT1 transaction begins
 - `simulated_elapsed` = min(elapsed, maximum X hours per catch-up simulation)
 - Process `simulated_elapsed` sequentially in chunks.
 - For each chunk, resolve all completed state transitions in chronological order until no further transition is completed within that chunk.
-- A scheduler yield inside a logical Chunk must preserve the exact Cycle offset and simulation state. Resuming must continue that same Chunk without repeating or skipping any gameplay event, and Chunk-end rules must wait until its twelfth Cycle completes.
+- A scheduler yield inside a logical Chunk must preserve the exact Cycle offset and simulation state. Resuming must continue that same Chunk without repeating or skipping any gameplay event, and complete-Chunk rules must wait until its thirtieth Cycle completes.
 - 'state_started_at' must be updated only when the party state changes (at each transition boundary), never on a plain tick without transition.
 - If a transition completes exactly at a chunk boundary, treat it as completed in that chunk and carry remaining time (if any) into the next state/chunk.
 - Multiple state transitions within a single update tick are valid and must be applied deterministically in order.
@@ -205,7 +224,7 @@ PT1 transaction begins
 
 ##### 5.1.1.1 AFK Recovery Performance Requirements
 
-- AFK recovery must preserve all existing gameplay rules and deterministic behavior while avoiding prolonged main-thread blocking and unnecessary UI updates.
+- AFK recovery must preserve all existing gameplay rules, deterministic Chunk execution, and FIFO coordinator semantics while avoiding prolonged main-thread blocking and unnecessary UI updates. The permitted whole-recovery variance caused by worker completion order is not a gameplay error.
 
 - While AFK recovery is pending, user input remains accepted. If a user interaction targets a
 state-mutating control, the scheduler pauses before starting the next AFK batch, allows the
@@ -279,6 +298,8 @@ The following events may cause an immediate UI update regardless of the normal p
 
 React progress updates are presentation updates. Reducing their frequency must not reduce the number of simulated gameplay events.
 
+React game-state presentation follows the same policy. One React commit may present the newest of multiple sequentially acknowledged authoritative coordinator versions. Every underlying FIFO transaction must still have its own ordered coordinator snapshot, version, completion acknowledgement, replay identity, and diagnostic trace identity when tracing is enabled. React presentation coalescing must not be used as the authoritative transaction boundary.
+
 **Saving and persistence**
 
 Save serialization and persistent-storage writes must not occur after every AFK batch.
@@ -309,15 +330,24 @@ Authoritative runtime game-state persistence uses log-segmented schema v1:
 
 The application must remain interactive during AFK recovery.
 
+**AFK regression requirements**
+
+- **Individual Chunk determinism:** Given the same complete hydrated Chunk input and RNG seeds, a worker must produce the same complete Chunk result. The regression identity must include at least the party ID, party-local Chunk sequence, captured Party and authoritative global/inventory snapshot, operation count or duration, simulated start/end bounds, active settings and modes, protocol versions, and RNG seeds. Input and result hashes must use a canonical, property-order-independent serialization.
+- **Coordinator replay determinism:** Given the same initial authoritative state, accepted Chunk results, captured user-setting changes, and recorded FIFO arrival sequence, replaying the coordinator transactions must produce the same canonical final state. A different valid FIFO arrival sequence may produce a different final state.
+- **Runtime invariants:** Every successfully completed worker job must be accepted exactly once, and every accepted Chunk must be committed exactly once. Failed jobs may be retried with the same logical job identity, but stale or duplicate results must be rejected. No accepted Chunk may be lost; a party's Chunk sequence must commit in order; FIFO arrival sequence must equal coordinator commit order; Party transactions must not interleave; and a Party must not start its next Chunk before its prior authoritative coordinator snapshot and version are installed and acknowledged. React may present several such acknowledged versions in one commit, but React presentation must not define or reorder those acknowledgements.
+- **Persistence equivalence:** The final in-memory authoritative state and the state reloaded from its successful durable checkpoint must be semantically equal after canonicalization. Raw `JSON.stringify` byte equality is not required when object property insertion order differs.
+- **Whole-recovery hashes:** A single final hash shared by independent parallel AFK runs must not be used as a regression gate unless those runs replay the same recorded FIFO arrival sequence. Tests may instead pin individual Chunk hashes and coordinator replay hashes.
+
 **Debug-only runtime trace**
 
 - Dev and beta automatically retain a bounded, session-scoped AFK runtime trace. Production must not retain AFK trace events or expose the trace UI.
-- The trace is observational and must not add worker or commit timeouts, cancel recovery, alter coordinator ordering, change deterministic gameplay, or persist into save data.
-- The trace records metadata-only lifecycle and timing for recovery, worker queue/start/completion/error/termination, canonical commit ordering, setting-change cutoff, reducer commit visibility, automatic equipment, interaction pauses, visibility, game-state persistence, and AFK runtime checkpoints.
-- A completed worker result that cannot commit because an earlier simulated completion-time job remains unfinished must be recorded explicitly as canonical-order waiting.
+- The trace is observational and must not add worker or commit timeouts, cancel recovery, alter FIFO coordinator ordering, change Chunk results, or persist into save data.
+- The trace records metadata-only lifecycle and timing for recovery, worker queue/start/completion/error/termination, per-Party Chunk sequence, FIFO arrival and commit sequence, setting-change cutoff, reducer commit visibility, automatic equipment, interaction pauses, visibility, game-state persistence, and AFK runtime checkpoints.
+- A completed worker result waiting behind an earlier FIFO entry whose Party transaction remains incomplete must be recorded explicitly as FIFO commit waiting.
+- Dev and beta regression diagnostics may record canonical Chunk input/result hashes, the canonical authoritative-state hash after each completed Party transaction, and a final coordinator-replay hash. Hashes must not expose their source state and remain subject to the trace retention bounds.
 - While AFK recovery is active, a 250 ms watchdog records event-loop scheduling delay of at least 250 ms and a classified long wait after 1,000 ms without coordinator progress. Resumption records the completed wait duration. These classifications are diagnostics and do not prove a deadlock.
 - Detailed trace history is limited to 2,048 events and anomaly history to 256 events per session. Exports include dropped-event counts, aggregate counts and maximum durations, and a current coordinator snapshot containing in-flight job ages.
-- Trace payloads may include version, build, environment, timestamps, visibility, hardware concurrency, party/job IDs, phases, durations, queue and backlog counts, transfer sizes, counters, and error text. They must exclude complete save state, random state, combat logs, reward details, character data, and User ID.
+- Trace payloads may include version, build, environment, timestamps, visibility, hardware concurrency, party/job IDs, Party-local Chunk sequence, FIFO arrival sequence, canonical hashes, phases, durations, queue and backlog counts, transfer sizes, counters, and error text. They must exclude complete save state, random state, combat logs, reward details, character data, and User ID.
 
 
 **Notification**

@@ -9,7 +9,7 @@ const simulationSource = readFileSync(new URL('../src/game/expeditionSimulation.
 test('expedition simulations resolve isolated authoritative runs and yield asynchronously', () => {
   assert.match(simulationSource, /EXPEDITION_SIMULATION_RUN_COUNT = 1_000/);
   assert.match(hookSource, /count = EXPEDITION_SIMULATION_RUN_COUNT/);
-  assert.match(hookSource, /simulateExpeditionRuns\(state, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress\)/);
+  assert.match(hookSource, /simulateExpeditionRuns\(latestGameStateRef\.current, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress, enemyLevelOffset\)/);
   assert.match(hookSource, /export async function simulateExpeditionRuns/);
   assert.match(hookSource, /export function createSimulationSandbox/);
   assert.match(hookSource, /const party = structuredClone\(sourceParty\)/);
@@ -36,10 +36,10 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /simulation\.result\.Turned_Back === 0/);
   assert.match(tabSource, /activeSimulationResultBubble/);
   assert.match(tabSource, /role="tooltip"/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-sub\)\) 80%, white\)/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-sub\)\) 50%, white\)/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-accent\)\) 50%, white\)/);
-  assert.match(tabSource, /color-mix\(in srgb, rgb\(var\(--color-accent\)\) 80%, white\)/);
+  assert.match(tabSource, /var\(--outcome-success\)/);
+  assert.match(tabSource, /var\(--outcome-draw\)/);
+  assert.match(tabSource, /var\(--outcome-retreat\)/);
+  assert.match(tabSource, /var\(--outcome-defeat\)/);
   assert.match(tabSource, /simulation\.result\.Draw_Retreat \/ simulation\.result\.total/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Draw_Retreat \/ simulation\.result\.total \* 100, 1\)/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Wounded_Retreat \/ simulation\.result\.total \* 100, 1\)/);

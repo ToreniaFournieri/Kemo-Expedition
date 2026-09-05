@@ -23,6 +23,7 @@ inline constexpr unsigned int kEngineFlagCombatReactiveCheckpoint = 1u << 3;
 inline constexpr unsigned int kEngineFlagCombatTimedCheckpoint = 1u << 4;
 inline constexpr unsigned int kEngineFlagEndCheckpoint = 1u << 5;
 inline constexpr unsigned int kEngineFlagSeededRng = 1u << 6;
+inline constexpr unsigned int kEngineFlagCompactResultOutput = 1u << 7;
 
 enum class ProtocolError : unsigned int {
   None = 0,

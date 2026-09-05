@@ -5,6 +5,8 @@ declare const __BUILD_NUMBER__: number;
 declare const __PUBLIC_CHARACTER_IMAGE_FILES__: readonly string[];
 declare const __PUBLIC_CHIBI_IMAGE_FILES__: readonly string[];
 declare const __AUTO_EQUIPMENT_PROFILE_ENABLED__: boolean;
+declare const __AFK_LIVE_PROFILE_ENABLED__: boolean;
+declare const __AFK_LIVE_PROFILE_FIXTURE__: string;
 declare const __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__: boolean;
 
 type AutoEquipmentProfileWorkload = import('./game/autoEquipmentAttribution').AutoEquipmentProfileWorkload;
@@ -14,6 +16,7 @@ type AutoEquipmentAttributionResult = import('./game/autoEquipmentAttribution').
 interface ImportMetaEnv {
   readonly VITE_DEV_DISCORD_WEBHOOK_URL?: string;
   readonly VITE_BETA_DISCORD_WEBHOOK_URL?: string;
+  readonly VITE_ORCA_DISCORD_WEBHOOK_URL?: string;
   readonly VITE_PROD_DISCORD_WEBHOOK_URL?: string;
   readonly VITE_FEEDBACK_DISCORD_WEBHOOK_URL?: string;
 }
@@ -52,15 +55,25 @@ interface DesktopPartyProgressPartySnapshot {
 
 interface DesktopPartyProgressSnapshot {
   schemaVersion: 1;
-  environment: 'dev' | 'beta' | 'prod';
+  environment: 'dev' | 'beta' | 'orca' | 'prod';
   language: 'ja' | 'en' | 'zh-CN' | 'zh-TW';
   updatedAt: number;
   unreadDiaryCount: number;
-  theme: 'light' | 'dark' | 'laika' | 'laika-dark' | 'luna' | 'luna-dark';
+  theme: import('./theme/theme').DesktopTheme;
   parties: DesktopPartyProgressPartySnapshot[];
 }
 
 interface Window {
+  __BOKEMO_RENDER_PROFILE__?: {
+    commitCount: number;
+    p95CommitDurationMs: number;
+    longestCommitDurationMs: number;
+  };
+  __BOKEMO_AFK_LIVE_PROFILE_RESULT__?: Promise<import('./game/afkLiveProfile').AfkLiveProfileResult>;
+  __BOKEMO_AFK_LIVE_PROFILE_MEMORY__?: {
+    sample: () => Promise<DesktopProcessMemoryMetrics>;
+    forceGc: () => Promise<void>;
+  };
   __BOKEMO_AUTO_EQUIPMENT_PROFILE__?: {
     run: (workload: AutoEquipmentProfileWorkload, scope?: AutoEquipmentProfileScope, candidateOrderOffset?: number) => Promise<{
       workload: AutoEquipmentProfileWorkload;

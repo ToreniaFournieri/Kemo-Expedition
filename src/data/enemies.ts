@@ -603,6 +603,40 @@ function generateEnemyFormOnlyEnemies(): EnemyDef[] {
 
 export const ENEMIES: EnemyDef[] = [...generateEnemyFormOnlyEnemies(), ...generateEnemies()];
 
+const ENEMY_BY_ID = new Map<number, EnemyDef>();
+const NORMAL_ENEMIES_BY_POOL = new Map<number, EnemyDef[]>();
+const ELITE_ENEMIES_BY_POOL = new Map<number, EnemyDef[]>();
+const BOSS_ENEMY_BY_ID = new Map<number, EnemyDef>();
+const EMPTY_ENEMY_POOL: readonly EnemyDef[] = Object.freeze([]);
+
+for (const enemy of ENEMIES) {
+  if (!ENEMY_BY_ID.has(enemy.id)) ENEMY_BY_ID.set(enemy.id, enemy);
+  if (enemy.type === 'boss' && !BOSS_ENEMY_BY_ID.has(enemy.id)) BOSS_ENEMY_BY_ID.set(enemy.id, enemy);
+  const poolIndex = enemy.type === 'normal'
+    ? NORMAL_ENEMIES_BY_POOL
+    : enemy.type === 'elite'
+      ? ELITE_ENEMIES_BY_POOL
+      : null;
+  if (poolIndex) {
+    const pool = poolIndex.get(enemy.poolId) ?? [];
+    pool.push(enemy);
+    poolIndex.set(enemy.poolId, pool);
+  }
+}
+
+NORMAL_ENEMIES_BY_POOL.forEach((pool) => pool.sort((left, right) => left.id - right.id));
+ELITE_ENEMIES_BY_POOL.forEach((pool) => pool.sort((left, right) => left.id - right.id));
+
+/** Stable first-declaration lookup used by expedition room selection. */
+export const getEnemyById = (id: number): EnemyDef | undefined => ENEMY_BY_ID.get(id);
+
+/** Immutable, ID-sorted hot-path views; callers must not mutate these arrays. */
+export const getSortedEnemiesByPool = (poolId: number): readonly EnemyDef[] =>
+  NORMAL_ENEMIES_BY_POOL.get(poolId) ?? EMPTY_ENEMY_POOL;
+
+export const getSortedElitesByPool = (poolId: number): readonly EnemyDef[] =>
+  ELITE_ENEMIES_BY_POOL.get(poolId) ?? EMPTY_ENEMY_POOL;
+
 export const getEnemiesByPool = (poolId: number): EnemyDef[] =>
   ENEMIES.filter(e => e.poolId === poolId && e.type === 'normal');
 
@@ -610,7 +644,7 @@ export const getElitesByPool = (poolId: number): EnemyDef[] =>
   ENEMIES.filter(e => e.poolId === poolId && e.type === 'elite');
 
 export const getBossEnemy = (id: number): EnemyDef | undefined =>
-  ENEMIES.find(e => e.id === id && e.type === 'boss');
+  BOSS_ENEMY_BY_ID.get(id);
 
 
 export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {

@@ -1,14 +1,71 @@
 import type { Character, DiaryLog, ExpeditionLog, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
+import type { RuntimeGameMode } from './runtimeGameMode';
 import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
 
-export const AFK_CHUNK_CYCLE_COUNT = 12;
+export const AFK_CHUNK_CYCLE_COUNT = 30;
+export type AfkWorkerSimulationStrategy = 'legacy' | 'optimized';
 
-/** Balanced recovery concurrency: limit synchronous full-state worker
- * submissions to two per renderer task while leaving capacity for the UI/OS. */
-export function getAfkWorkerPoolLimit(logicalProcessors: number | undefined, partyCount: number): number {
+// SpecRef: 5.1 | PROGRESS | Chunk
+// A terminal partial Chunk contains every complete Cycle that still fits in the
+// party backlog. A sub-Cycle remainder stays available for online reconstruction.
+export function getAfkChunkOperationCount(remainingMs: number, cycleDurationMs: number): number {
+  if (!Number.isFinite(remainingMs) || remainingMs <= 0) return 0;
+  if (!Number.isFinite(cycleDurationMs) || cycleDurationMs <= 0) return 0;
+  return Math.min(AFK_CHUNK_CYCLE_COUNT, Math.floor(remainingMs / cycleDurationMs));
+}
+
+export interface AfkPartyDispatchCandidate {
+  partyId: number;
+  partyIndex: number;
+  partyLocalEmulatedTime: number;
+}
+
+/**
+ * Orders only currently eligible parties. Party-local emulated time is the
+ * performance-oriented catch-up priority; Party ID is the stable tie breaker.
+ */
+export function compareAfkPartyDispatchCandidates(
+  left: AfkPartyDispatchCandidate,
+  right: AfkPartyDispatchCandidate,
+): number {
+  return left.partyLocalEmulatedTime - right.partyLocalEmulatedTime
+    || left.partyId - right.partyId
+    || left.partyIndex - right.partyIndex;
+}
+
+/** Removes the first accepted result from a Map-backed arrival FIFO. */
+export function takeNextAfkFifoResult<T extends { jobId: string }>(
+  queue: Map<string, T>,
+): T | null {
+  const first = queue.values().next();
+  if (first.done) return null;
+  queue.delete(first.value.jobId);
+  return first.value;
+}
+
+/**
+ * Scales recovery concurrency conservatively while retaining logical-processor
+ * capacity for the renderer, Electron main process, persistence, and the OS.
+ * The optional override is profile-only and remains subject to every runtime
+ * safety cap.
+ */
+export function getAfkWorkerPoolLimit(
+  logicalProcessors: number | undefined,
+  partyCount: number,
+  workerLimitOverride?: number,
+): number {
+  const availableParties = Number.isFinite(partyCount) ? Math.max(0, Math.floor(partyCount)) : 0;
+  if (availableParties === 0) return 0;
   const processors = Number.isFinite(logicalProcessors) ? Math.max(1, Math.floor(logicalProcessors!)) : 4;
-  const hardwareLimit = processors <= 3 ? 1 : 2;
-  return Math.max(1, Math.min(Math.max(1, Math.floor(partyCount)), hardwareLimit));
+  const adaptiveHardwareLimit = processors <= 3
+    ? 1
+    : processors <= 7
+      ? 2
+      : Math.min(6, Math.floor(processors / 2) - 1);
+  const hardwareLimit = Number.isFinite(workerLimitOverride)
+    ? Math.max(1, Math.min(6, Math.floor(workerLimitOverride!)))
+    : adaptiveHardwareLimit;
+  return Math.min(availableParties, hardwareLimit);
 }
 
 export interface AfkPartyChunkJob {
@@ -20,12 +77,15 @@ export interface AfkPartyChunkJob {
   cycleDurationMs: number;
   operationCount?: number;
   baseState: GameState;
-  gameMode: 'm.kemo' | 'm.luna' | 'm.laika';
+  gameMode: RuntimeGameMode;
+  enemyLevelOffset?: number;
   cycleDurationScale: number;
   queuedAt?: number;
   workerCreatedAt?: number;
   isFirstWorkerJob?: boolean;
   inputTransferBytes?: number;
+  workerOptimization?: AfkWorkerSimulationStrategy;
+  compactBattleResultOutput?: boolean;
 }
 
 export interface AfkPartyChunkColdWorkerJob extends AfkPartyChunkJob {
@@ -61,10 +121,66 @@ export interface AfkPartyChunkContinuationWorkerJob extends AfkPartyChunkJob {
 
 export type AfkPartyChunkWorkerJob = AfkPartyChunkColdWorkerJob | AfkPartyChunkContinuationWorkerJob;
 
-export interface AfkWorkerPerformanceTelemetry {
+export interface AfkPartyChunkInventoryColdWorkerJob extends AfkPartyChunkJob {
+  inventoryTransferSchemaVersion: 4;
+  inventoryTransferKind: 'cold';
+  nextInventoryToken: string;
+  inventoryRevision: number;
+}
+
+export interface AfkPartyChunkInventoryContinuationWorkerJob extends AfkPartyChunkJob {
+  inventoryTransferSchemaVersion: 4;
+  inventoryTransferKind: 'continuation';
+  retainedInventoryToken: string;
+  nextInventoryToken: string;
+  retainedInventoryRevision: number;
+  inventoryRevision: number;
+  inventoryChanges: Record<string, InventoryRecord[string] | null>;
+}
+
+export type AfkPartyChunkInventoryWorkerJob =
+  | AfkPartyChunkInventoryColdWorkerJob
+  | AfkPartyChunkInventoryContinuationWorkerJob;
+
+export interface AfkWorkerPhaseAttribution {
+  statusSnapshotMs: number;
+  expeditionMs: number;
+  diaryFinalizationMs: number;
+  sideQuestAutomationMs: number;
+  profitProcessingMs: number;
+  hpRecoveryMs: number;
+  progressCallbackMs: number;
+  chunkFinalizationMs: number;
+  inventoryDeltaMs: number;
+  preparationMs: number;
+  inventoryCoordinatorMs: number;
+  serviceMs: number;
+  postServiceMs: number;
+  inventoryCompletionMs: number;
+  presentationCompletionMs: number;
+  commitProjectionMs: number;
+  expeditionCount: number;
+  expeditionRoomCount: number;
+  expeditionRetainedNarrationCount: number;
+  expeditionReplayedBattleCount: number;
+}
+
+export interface AfkWorkerPerformanceTelemetry extends Partial<AfkWorkerPhaseAttribution> {
   workerStartupMs: number;
   queueMs: number;
+  inputHydrationMs: number;
+  languageReadyMs: number;
   executionMs: number;
+  battleCount: number;
+  battleTotalMs: number;
+  battlePreparationMs: number;
+  battleInputWriteMs: number;
+  battleNativeExecutionMs: number;
+  battleBorrowedOutputValidationMs: number;
+  battleOutputConsumeMs: number;
+  battleInputBytes: number;
+  battleOutputBytes: number;
+  battleResultBagEntryAllocations: number;
   inputTransferBytes: number | null;
   outputTransferBytes: number | null;
 }
@@ -121,6 +237,13 @@ export type AfkPartyChunkWorkerResultV3 = Omit<AfkPartyChunkWorkerResult, 'trans
   consumedStateToken: string | null;
   nextStateToken: string;
   reconciliationRevision: number;
+};
+
+export type AfkPartyChunkInventoryWorkerResult = Omit<AfkPartyChunkWorkerResult, 'transferSchemaVersion'> & {
+  transferSchemaVersion: 4;
+  consumedInventoryToken: string | null;
+  nextInventoryToken: string;
+  inventoryRevision: number;
 };
 
 function createAfkBaseDiaryPlaceholder(diaryLog: DiaryLog, index: number): DiaryLog {
@@ -283,6 +406,131 @@ export function hydrateAfkPartyChunkResultV3(
   return hydrateAfkPartyChunkResult({ ...result, transferSchemaVersion: 2 }, baseParty);
 }
 
+export function hydrateAfkPartyChunkInventoryResult(
+  result: AfkPartyChunkInventoryWorkerResult,
+  baseParty: Party,
+  expected: AfkPartyChunkInventoryWorkerJob,
+): AfkPartyChunkResult {
+  if (result.transferSchemaVersion !== 4
+    || result.nextInventoryToken !== expected.nextInventoryToken
+    || result.inventoryRevision !== expected.inventoryRevision) {
+    throw new Error('Invalid AFK inventory reconciliation acknowledgement');
+  }
+  if (result.consumedInventoryToken !== null && typeof result.consumedInventoryToken !== 'string') {
+    throw new Error('Invalid AFK inventory reconciliation consumed token');
+  }
+  const expectedConsumedToken = expected.inventoryTransferKind === 'continuation'
+    ? expected.retainedInventoryToken
+    : null;
+  if (result.consumedInventoryToken !== expectedConsumedToken) {
+    throw new Error('Invalid AFK inventory reconciliation consumed token acknowledgement');
+  }
+  return hydrateAfkPartyChunkResult({ ...result, transferSchemaVersion: 2 }, baseParty);
+}
+
+export function createAfkPartyChunkInventoryColdWorkerJob(
+  job: AfkPartyChunkJob,
+  nextInventoryToken: string,
+  inventoryRevision: number,
+): AfkPartyChunkInventoryColdWorkerJob {
+  if (!nextInventoryToken || !Number.isInteger(inventoryRevision) || inventoryRevision < 1) {
+    throw new Error('Invalid AFK inventory cold transfer');
+  }
+  return {
+    ...job,
+    inventoryTransferSchemaVersion: 4,
+    inventoryTransferKind: 'cold',
+    nextInventoryToken,
+    inventoryRevision,
+  };
+}
+
+export function createAfkPartyChunkInventoryContinuationWorkerJob(
+  job: AfkPartyChunkJob,
+  retainedInventory: InventoryRecord,
+  retainedInventoryToken: string,
+  retainedInventoryRevision: number,
+  nextInventoryToken: string,
+  inventoryRevision: number,
+): AfkPartyChunkInventoryContinuationWorkerJob {
+  if (!retainedInventoryToken || !nextInventoryToken
+    || !Number.isInteger(retainedInventoryRevision) || retainedInventoryRevision < 1
+    || !Number.isInteger(inventoryRevision) || inventoryRevision <= retainedInventoryRevision) {
+    throw new Error('Invalid AFK inventory continuation transfer');
+  }
+  const authoritativeInventory = job.baseState.global.inventory;
+  const inventoryChanges: Record<string, InventoryRecord[string] | null> = {};
+  Object.entries(authoritativeInventory).forEach(([key, variant]) => {
+    if (retainedInventory[key] !== variant) inventoryChanges[key] = variant;
+  });
+  Object.keys(retainedInventory).forEach((key) => {
+    if (!(key in authoritativeInventory)) inventoryChanges[key] = null;
+  });
+  return {
+    ...job,
+    baseState: {
+      ...job.baseState,
+      global: { ...job.baseState.global, inventory: {} },
+    },
+    inventoryTransferSchemaVersion: 4,
+    inventoryTransferKind: 'continuation',
+    retainedInventoryToken,
+    nextInventoryToken,
+    retainedInventoryRevision,
+    inventoryRevision,
+    inventoryChanges,
+  };
+}
+
+export function hydrateAfkPartyChunkInventoryWorkerState(
+  job: AfkPartyChunkInventoryWorkerJob,
+  retainedInventory: InventoryRecord | null,
+  retainedInventoryToken: string | null,
+  retainedInventoryRevision: number,
+): { state: GameState; inventory: InventoryRecord } {
+  if (job.inventoryTransferSchemaVersion !== 4) {
+    throw new Error('Invalid AFK inventory transfer schema');
+  }
+  if (job.inventoryTransferKind === 'cold') {
+    if (!job.nextInventoryToken || !Number.isInteger(job.inventoryRevision) || job.inventoryRevision < 1) {
+      throw new Error('Invalid AFK inventory cold state');
+    }
+    return { state: job.baseState, inventory: job.baseState.global.inventory };
+  }
+  if (!retainedInventory
+    || job.retainedInventoryToken !== retainedInventoryToken
+    || job.retainedInventoryRevision !== retainedInventoryRevision) {
+    throw new Error('AFK inventory reconciliation state mismatch');
+  }
+  if (!job.nextInventoryToken || job.inventoryRevision <= retainedInventoryRevision) {
+    throw new Error('AFK inventory reconciliation revision mismatch');
+  }
+  Object.entries(job.inventoryChanges).forEach(([key, variant]) => {
+    if (variant === null) delete retainedInventory[key];
+    else retainedInventory[key] = variant;
+  });
+  return {
+    state: {
+      ...job.baseState,
+      global: { ...job.baseState.global, inventory: retainedInventory },
+    },
+    inventory: retainedInventory,
+  };
+}
+
+export function createAfkPartyChunkInventoryWorkerResult(
+  result: AfkPartyChunkResult,
+  job: AfkPartyChunkInventoryWorkerJob,
+): AfkPartyChunkInventoryWorkerResult {
+  return {
+    ...createAfkPartyChunkWorkerResult(result),
+    transferSchemaVersion: 4,
+    consumedInventoryToken: job.inventoryTransferKind === 'continuation' ? job.retainedInventoryToken : null,
+    nextInventoryToken: job.nextInventoryToken,
+    inventoryRevision: job.inventoryRevision,
+  };
+}
+
 function diaryLogEqual(left: DiaryLog, right: DiaryLog): boolean {
   return left.id === right.id && JSON.stringify(left) === JSON.stringify(right);
 }
@@ -441,6 +689,8 @@ export function compareAfkChunkResults(
   left: Pick<AfkPartyChunkResult, 'simulatedCompletedAt' | 'partyId' | 'jobId'>,
   right: Pick<AfkPartyChunkResult, 'simulatedCompletedAt' | 'partyId' | 'jobId'>,
 ): number {
+  // Deterministic simulation-order helper retained for isolated profiles and
+  // fixtures. The live AFK coordinator uses arrival FIFO instead.
   return left.simulatedCompletedAt - right.simulatedCompletedAt
     || left.partyId - right.partyId
     || left.jobId.localeCompare(right.jobId);
@@ -590,7 +840,19 @@ export function createAfkPartyChunkResult(
     workerTelemetry: {
       workerStartupMs: Math.max(0, workerTelemetry.workerStartupMs ?? 0),
       queueMs: Math.max(0, workerTelemetry.queueMs ?? 0),
+      inputHydrationMs: Math.max(0, workerTelemetry.inputHydrationMs ?? 0),
+      languageReadyMs: Math.max(0, workerTelemetry.languageReadyMs ?? 0),
       executionMs: Math.max(0, workerTelemetry.executionMs ?? durationMs),
+      battleCount: Math.max(0, workerTelemetry.battleCount ?? 0),
+      battleTotalMs: Math.max(0, workerTelemetry.battleTotalMs ?? 0),
+      battlePreparationMs: Math.max(0, workerTelemetry.battlePreparationMs ?? 0),
+      battleInputWriteMs: Math.max(0, workerTelemetry.battleInputWriteMs ?? 0),
+      battleNativeExecutionMs: Math.max(0, workerTelemetry.battleNativeExecutionMs ?? 0),
+      battleBorrowedOutputValidationMs: Math.max(0, workerTelemetry.battleBorrowedOutputValidationMs ?? 0),
+      battleOutputConsumeMs: Math.max(0, workerTelemetry.battleOutputConsumeMs ?? 0),
+      battleInputBytes: Math.max(0, workerTelemetry.battleInputBytes ?? 0),
+      battleOutputBytes: Math.max(0, workerTelemetry.battleOutputBytes ?? 0),
+      battleResultBagEntryAllocations: Math.max(0, workerTelemetry.battleResultBagEntryAllocations ?? 0),
       inputTransferBytes: normalizeTransferBytes(workerTelemetry.inputTransferBytes ?? job.inputTransferBytes),
       outputTransferBytes: normalizeTransferBytes(workerTelemetry.outputTransferBytes),
     },
