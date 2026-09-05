@@ -1,4 +1,4 @@
-# BOKEMO v0.9.5 - SPECIFICATION
+# BOKEMO v0.9.6 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
@@ -86,16 +86,24 @@
 **Branch:**
   - `main` → `/dev/`
   - `beta` → `/beta/`
+  - `orca` → `/orca/`
   - `prod` → `/`
 **Environment:**
   - `/dev/`: 開発環境
     - Debug mode: ON
-    - Speed of time: x20 hyper 
+    - Speed of time: x1
+    - Game mode: `mode.normal` (changeable)
   - `/beta/`: 検証機
     - Debug mode: ON
     - Theme: `m.laika` (fixed; not user-configurable)
+    - Game mode: `mode.normal` (fixed)
+    - Speed of time: x1
+  - `/orca/`: 本番環境(variant)
+    - Debug mode: OFF
+    - Game mode: `mode.orca`
   - `/` : 本番環境
     - Debug mode: OFF
+    - Game mode: `mode.normal` (fixed)
     - Speed of time: x1
 **Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/`, `/beta/`, and `/`) and never shared between them.
 - **Desktop launch mapping:** `npm run desktop:dev` must load `/dev/`, `npm run desktop:beta` must load `/beta/`, and `npm run desktop:prod` plus packaged desktop releases must load `/`. The desktop custom protocol must serve the same built assets beneath each environment path without sharing their persisted save data.

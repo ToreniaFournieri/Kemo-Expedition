@@ -164,6 +164,7 @@ MAIN_TAB_ORDER,
 normalizeAutoEquipmentMode,
 normalizeRuntimeSnapshot,
 ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY,
+ORCA_DISCORD_WEBHOOK_URL,
 PARTY_CYCLE_TICK_MS,
 PARTY_EXPEDITION_SPLIT_MIN_WIDTH,
 PartyCycleRuntime,
@@ -260,6 +261,7 @@ export function HomeScreen({
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode());
   const [runtimeGameMode, setRuntimeGameMode] = useState<RuntimeGameMode>(() => {
+    if (getEnvironmentId() === 'orca') return 'mode.orca';
     try {
       const saved = localStorage.getItem(RUNTIME_GAME_MODE_STORAGE_KEY);
       return isRuntimeGameMode(saved) ? saved : 'mode.normal';
@@ -1054,13 +1056,17 @@ export function HomeScreen({
       ? DEV_DISCORD_WEBHOOK_URL
       : environmentId === 'beta'
         ? BETA_DISCORD_WEBHOOK_URL
-        : PROD_DISCORD_WEBHOOK_URL;
+        : environmentId === 'orca'
+          ? ORCA_DISCORD_WEBHOOK_URL
+          : PROD_DISCORD_WEBHOOK_URL;
     if (!webhookUrl) {
       const requiredEnvName = environmentId === 'dev'
         ? 'VITE_DEV_DISCORD_WEBHOOK_URL'
         : environmentId === 'beta'
           ? 'VITE_BETA_DISCORD_WEBHOOK_URL'
-          : 'VITE_PROD_DISCORD_WEBHOOK_URL';
+          : environmentId === 'orca'
+            ? 'VITE_ORCA_DISCORD_WEBHOOK_URL'
+            : 'VITE_PROD_DISCORD_WEBHOOK_URL';
       console.warn(`Speed of Time progress report skipped: ${requiredEnvName} is not configured.`);
       return false;
     }
@@ -2500,6 +2506,10 @@ export function HomeScreen({
         setGameMode('m.laika');
         return;
       }
+      if (getEnvironmentId() === 'orca') {
+        setGameMode('m.orca');
+        return;
+      }
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
       if (isGameModeAvailable(savedMode, getEnvironmentId())) {
         setGameMode(savedMode);
@@ -2511,9 +2521,12 @@ export function HomeScreen({
 
   useEffect(() => {
     try {
-      const storedMode = getEnvironmentId() === 'beta' ? 'm.laika' : gameMode;
+      const storedMode = getEnvironmentId() === 'beta' ? 'm.laika' : getEnvironmentId() === 'orca' ? 'm.orca' : gameMode;
       if (getEnvironmentId() === 'beta' && gameMode !== 'm.laika') {
         setGameMode('m.laika');
+      }
+      if (getEnvironmentId() === 'orca' && gameMode !== 'm.orca') {
+        setGameMode('m.orca');
       }
       localStorage.setItem(GAME_MODE_STORAGE_KEY, storedMode);
       window.dispatchEvent(new Event(THEME_SYNC_EVENT));

@@ -33,6 +33,7 @@ function getInitialGameModeClass() {
   if (typeof window === 'undefined') return '';
   const environment = getEnvironmentId();
   if (environment === 'beta') return 'theme-laika';
+  if (environment === 'orca') return 'theme-orca';
   const saved = localStorage.getItem(GAME_MODE_STORAGE_KEY);
   return isGameModeAvailable(saved, environment) ? getThemeClassName(saved) : '';
 }
@@ -72,6 +73,8 @@ export default function App() {
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
       if (getEnvironmentId() === 'beta') {
         setGameModeClass('theme-laika');
+      } else if (getEnvironmentId() === 'orca') {
+        setGameModeClass('theme-orca');
       } else {
         setGameModeClass(isGameModeAvailable(savedMode, getEnvironmentId()) ? getThemeClassName(savedMode) : '');
       }

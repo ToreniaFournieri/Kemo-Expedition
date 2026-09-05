@@ -16,6 +16,7 @@ type AutoEquipmentAttributionResult = import('./game/autoEquipmentAttribution').
 interface ImportMetaEnv {
   readonly VITE_DEV_DISCORD_WEBHOOK_URL?: string;
   readonly VITE_BETA_DISCORD_WEBHOOK_URL?: string;
+  readonly VITE_ORCA_DISCORD_WEBHOOK_URL?: string;
   readonly VITE_PROD_DISCORD_WEBHOOK_URL?: string;
   readonly VITE_FEEDBACK_DISCORD_WEBHOOK_URL?: string;
 }
@@ -54,7 +55,7 @@ interface DesktopPartyProgressPartySnapshot {
 
 interface DesktopPartyProgressSnapshot {
   schemaVersion: 1;
-  environment: 'dev' | 'beta' | 'prod';
+  environment: 'dev' | 'beta' | 'orca' | 'prod';
   language: 'ja' | 'en' | 'zh-CN' | 'zh-TW';
   updatedAt: number;
   unreadDiaryCount: number;

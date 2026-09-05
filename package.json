@@ -33,6 +33,7 @@
     "performance:auto-equipment": "node scripts/run-auto-equipment-attribution.mjs",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",
+    "desktop:orca": "npm run build && electron . --environment=orca",
     "desktop:prod": "npm run build && electron . --environment=prod",
     "desktop:pack": "npm run build && electron-builder --mac --dir",
     "desktop:build": "npm run build && electron-builder --mac --x64 --arm64 --publish never",

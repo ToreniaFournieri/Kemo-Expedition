@@ -1563,6 +1563,7 @@ export const SPEED_OF_TIME_BONUS_DURATION_MS = (24 * 60 + 45) * 60 * 1000;
 export const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 export const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
 export const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOOK_URL;
+export const ORCA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_ORCA_DISCORD_WEBHOOK_URL;
 export const PROD_DISCORD_WEBHOOK_URL = import.meta.env.VITE_PROD_DISCORD_WEBHOOK_URL;
 export const FEEDBACK_DISCORD_WEBHOOK_URL = import.meta.env.VITE_FEEDBACK_DISCORD_WEBHOOK_URL;
 
@@ -3099,6 +3100,7 @@ export function sortInventoryItems(items: [string, InventoryVariant][]): [string
 export function getInitialGameMode(): GameMode {
   if (typeof window === 'undefined') return 'm.kemo';
   if (getEnvironmentId() === 'beta') return 'm.laika';
+  if (getEnvironmentId() === 'orca') return 'm.orca';
 
   try {
     const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
