@@ -1,3 +1,4 @@
+import { abilityLevelValue } from '../../../game/abilityLevelScales';
 import { Fragment,useCallback,useEffect,useMemo,useRef,useState,type Dispatch,type MouseEvent,type ReactNode,type SetStateAction } from 'react';
 import {
 BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID
@@ -2310,7 +2311,7 @@ export default function PartyTab({
               const seekerAbilityLevel = seekerBaseLevel > 0
                 ? seekerBaseLevel + seekerUpgradeLevel
                 : seekerBaseLevel;
-              const seekerPerLevelBonus = seekerAbilityLevel >= 2 ? 0.0035 : seekerAbilityLevel >= 1 ? 0.0025 : 0;
+              const seekerPerLevelBonus = abilityLevelValue('seeker', seekerAbilityLevel);
               const seekerMultiplier = seekerAbilityLevel > 0 ? 1 + (party.level * seekerPerLevelBonus) : 1;
 
               // Format display

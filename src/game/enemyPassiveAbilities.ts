@@ -1,7 +1,8 @@
+import { abilityLevelValue } from './abilityLevelScales.ts';
 import type { EnemyAbility } from '../types';
 
 const MAX_ABILITY_LEVEL = 5;
-const MAX_UPGRADE_ALL_ABILITIES_BONUS = 4;
+const MAX_UPGRADE_ALL_ABILITIES_BONUS = 5;
 
 function getUpgradeAllAbilitiesBonus(level: number): number {
   return Math.max(0, Math.min(MAX_UPGRADE_ALL_ABILITIES_BONUS, Math.floor(level)));
@@ -25,23 +26,11 @@ export function resolveEnemyPassiveAbilities(abilities: EnemyAbility[]): EnemyAb
 }
 
 export function getEnemyCyborgizationAdjustment(level: number): { accuracyBonus: number; evasionBonus: number } {
-  if (level >= 2) {
-    return { accuracyBonus: 0.04, evasionBonus: -0.015 };
-  }
-  if (level >= 1) {
-    return { accuracyBonus: 0.03, evasionBonus: -0.02 };
-  }
-  return { accuracyBonus: 0, evasionBonus: 0 };
+  return { accuracyBonus: abilityLevelValue('cyborg_accuracy', level), evasionBonus: abilityLevelValue('cyborg_evasion', level) };
 }
 
 function getEnemyMeleeConversionRate(level: number): number {
-  if (level >= 2) {
-    return 0.4;
-  }
-  if (level >= 1) {
-    return 0.3;
-  }
-  return 0;
+  return abilityLevelValue('melee_conversion', level);
 }
 
 export function applyEnemyMeleeConversionAttack(

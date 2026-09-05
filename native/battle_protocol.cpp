@@ -1,3 +1,4 @@
+#include "ability_level_scales.h"
 #include "generated/battle_protocol.generated.h"
 #include "battle_rng.h"
 #include "battle_state.h"
@@ -623,13 +624,14 @@ bool action_precedes(const BattleStateCore& state, const NormalActionEntry& left
 }
 
 bool prepare_state_initiative(const InputHeader& input, BattleStateCore& state) {
-  bool party_has_frostbite = false;
-  bool enemy_has_frostbite = false;
+  int party_has_frostbite = 0;
+  int enemy_has_frostbite = 0;
   for (int index = 0; index < state.combatant_count; ++index) {
     const auto& combatant = state.combatants[index];
-    if (state_abilities_suppressed(input, combatant) || active_ability_level(combatant, protocol::AbilityId::Frostbite) == 0) continue;
-    if (combatant.side == Side::Party) party_has_frostbite = true;
-    else enemy_has_frostbite = true;
+    if (state_abilities_suppressed(input, combatant)) continue;
+    const int frostbite_level = active_ability_level(combatant, protocol::AbilityId::Frostbite);
+    if (combatant.side == Side::Party) party_has_frostbite = frostbite_level > party_has_frostbite ? frostbite_level : party_has_frostbite;
+    else enemy_has_frostbite = frostbite_level > enemy_has_frostbite ? frostbite_level : enemy_has_frostbite;
   }
   for (u8 attack_type = 1; attack_type <= 3; ++attack_type) {
     for (int index = 0; index < state.combatant_count; ++index) {
@@ -656,8 +658,8 @@ bool prepare_state_initiative(const InputHeader& input, BattleStateCore& state) 
       const int boost = active_ability_level(combatant, protocol::AbilityId::Boost);
       if (!machine_logic && slow > 0) timing = timing - slow < 1 ? 1 : timing - slow;
       if (!machine_logic && boost > 0) timing = timing + boost > 49 ? 49 : timing + boost;
-      const bool frostbite = combatant.side == Side::Party ? enemy_has_frostbite : party_has_frostbite;
-      if (!machine_logic && frostbite && active_ability_level(combatant, protocol::AbilityId::Coldproof) == 0) timing = timing - 1 < 1 ? 1 : timing - 1;
+      const int frostbite = combatant.side == Side::Party ? enemy_has_frostbite : party_has_frostbite;
+      if (!machine_logic && frostbite && active_ability_level(combatant, protocol::AbilityId::Coldproof) == 0) timing = timing - frostbite < 1 ? 1 : timing - frostbite;
       for (u32 die = 0; die < terrain_dice; ++die) {
         double random = 0.0;
         if (!bokemo::battle_state::consume_random(state, random)) return false;
@@ -1462,7 +1464,7 @@ double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
     const double original = profile_index == 0 ? actor.attacks.original_ranged_noa
         : profile_index == 1 ? actor.attacks.original_magical_noa : actor.attacks.original_melee_noa;
     const double current = action_noa(actor, profile_index);
-    penetration += (original > current ? original - current : 0.0) * (heavy >= 2 ? 0.015 : 0.01);
+    penetration += (original > current ? original - current : 0.0) * (ability_scales::value(heavy, ability_scales::heavy));
   }
   // Heavy Strike's NoA-loss penetration applies to enemies as well as party
   // combatants. Only the static equipment/stat penetration above is
@@ -1475,11 +1477,11 @@ double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
   offense *= actor.offense_multiplier;
   const int iaigiri = active_ability_level(actor, protocol::AbilityId::Iaigiri);
   // The frozen coordinator applies Iaigiri only through character damage.
-  if (actor.side == Side::Party && !magical && iaigiri > 0) offense *= iaigiri >= 3 ? 2.0 : iaigiri == 2 ? 1.8 : 1.6;
+  if (actor.side == Side::Party && !magical && iaigiri > 0) offense *= ability_scales::value(iaigiri, ability_scales::iaigiri);
   if (heavy > 0) offense *= 1.4;
   if (magical) {
     const int arc = active_ability_level(actor, protocol::AbilityId::ArcMagic);
-    if (arc > 0) offense *= arc >= 3 ? 4.2 : arc == 2 ? 3.6 : 3.0;
+    if (arc > 0) offense *= ability_scales::value(arc, ability_scales::arc);
   }
   double defense_amp = target.profile.defense_amplifier[family];
   if (target.side == Side::Party) defense_amp *= target.profile.deity_bonus[magical ? 2 : 1];
@@ -1498,11 +1500,11 @@ double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
   double rage = 1.0;
   const int rage_level = active_ability_level(actor, protocol::AbilityId::Rage);
   if (rage_level > 0 && active_ability_level(target, protocol::AbilityId::RageBreaker) == 0)
-    rage = 1.0 + (rage_level >= 2 ? 0.6 : 0.5) * (1.0 - hp_ratio(actor_hp, actor_max));
+    rage = 1.0 + (ability_scales::value(rage_level, ability_scales::rage)) * (1.0 - hp_ratio(actor_hp, actor_max));
   double momentum = 1.0;
   const int momentum_level = active_ability_level(actor, protocol::AbilityId::Momentum);
   if (momentum_level > 0 && active_ability_level(target, protocol::AbilityId::MomentumBreaker) == 0)
-    momentum = 1.25 - (1.0 - hp_ratio(actor_hp, actor_max)) * (momentum_level >= 2 ? 0.4 : 0.5);
+    momentum = 1.25 - (1.0 - hp_ratio(actor_hp, actor_max)) * (ability_scales::value(momentum_level, ability_scales::momentum));
   double swarm = 1.0;
   if (active_ability_level(actor, protocol::AbilityId::Swarm) > 0) swarm *= 1.0 - (1.0 - hp_ratio(actor_hp, actor_max)) * 0.5;
   if (active_ability_level(target, protocol::AbilityId::Swarm) > 0) swarm *= 1.0 + (1.0 - hp_ratio(target_hp, target_max)) * 0.5;
@@ -1535,7 +1537,7 @@ double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
   if (!opponent_acted && !ally_acted && overwatch > 0 && active_ability_level(target, protocol::AbilityId::AntiOverwatch) == 0) runtime *= level_multiplier(overwatch, action_amplify);
   const int execution = active_ability_level(actor, protocol::AbilityId::Execution);
   if (execution > 0 && active_ability_level(target, protocol::AbilityId::ExecutionNull) == 0 && target_max > 0.0 &&
-      target_hp <= target_max * (execution >= 2 ? 0.5 : 0.4)) runtime *= execution >= 2 ? 1.8 : 1.5;
+      target_hp <= target_max * (ability_scales::value(execution, ability_scales::execution_threshold))) runtime *= ability_scales::value(execution, ability_scales::execution);
   double per_hit = battle_calculate_per_hit_damage(
       attack_value(actor, profile_index), effective_defense, offense, runtime,
       actor.profile.elemental_offense_value, elemental_resistance(target, actor.profile.elemental_offense),
@@ -1860,7 +1862,7 @@ CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& st
         const double target_max = result.target->side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
         const bool stealth_negated = result.hits > 0 && stealth > 0 &&
             active_ability_level(*actor, protocol::AbilityId::Pursuit) == 0 && target_max > 0.0 &&
-            current_target_hp / target_max <= (stealth >= 2 ? 0.18 : 0.12);
+            current_target_hp / target_max <= (ability_scales::value(stealth, ability_scales::stealth));
         if (stealth_negated) {
           result.hits = 0;
           result.calculated = 0.0;
@@ -1926,9 +1928,10 @@ struct ReactiveStrikeResult {
 
 double reactive_profile_multiplier(int level, int kind) {
   if (level <= 0) return 0.0;
-  if (kind == 1) return level >= 3 ? 1.0 : level == 2 ? 0.7 : 0.5; // re-attack
-  if (kind == 2) return level >= 3 ? 2.0 : level == 2 ? 1.0 : 0.5; // counter
-  return level >= 2 ? 1.0 : 0.5; // re-counter / magical counter / covering fire
+  if (kind == 1) return ability_scales::value(level, ability_scales::re_attack);
+  if (kind == 2) return ability_scales::value(level, ability_scales::counter);
+  if (kind == 4) return ability_scales::value(level, ability_scales::covering);
+  return ability_scales::value(level, ability_scales::re_counter);
 }
 
 double apply_checkpoint_damage(BattleStateCore& state, CombatantState& target, double amount) {
@@ -1969,7 +1972,7 @@ CombatResult recover_checkpoint_target(BattleStateCore& state, CombatantState& t
     opcode = protocol::EventOpcode::Resurrected;
     ability = protocol::AbilityId::Resurrect;
     const double maximum = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
-    amount = resurrect >= 2 ? __builtin_ceil(maximum * 0.01) : 1.0;
+    amount = resurrect >= 2 ? __builtin_ceil(maximum * ability_scales::value(resurrect, ability_scales::resurrect)) : 1.0;
   } else if (reanimate > 0 && !target.recovery.reanimate_consumed) {
     target.recovery.reanimate_consumed = true;
     opcode = protocol::EventOpcode::Reanimated;
@@ -2092,12 +2095,12 @@ CombatResult emit_presentation_facts(const InputHeader& input, BattleStateCore& 
   const double target_max = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
   const int rage = active_ability_level(actor, protocol::AbilityId::Rage);
   if (rage > 0) {
-    const double percent = __builtin_floor((rage >= 2 ? 0.6 : 0.5) * (1.0 - hp_ratio(actor_hp, actor_max)) * 100.0 + 0.5);
+    const double percent = __builtin_floor((ability_scales::value(rage, ability_scales::rage)) * (1.0 - hp_ratio(actor_hp, actor_max)) * 100.0 + 0.5);
     if (percent > 0.0 && !fact(1, protocol::AbilityId::Rage, percent)) return CombatResult::EventCapacity;
   }
   const int momentum = active_ability_level(actor, protocol::AbilityId::Momentum);
   if (!action_scope && momentum > 0) {
-    const double multiplier = 1.25 - (1.0 - hp_ratio(actor_hp, actor_max)) * (momentum >= 2 ? 0.4 : 0.5);
+    const double multiplier = 1.25 - (1.0 - hp_ratio(actor_hp, actor_max)) * (ability_scales::value(momentum, ability_scales::momentum));
     const double percent = __builtin_floor((multiplier - 1.0) * 100.0 + 0.5);
     if (!fact(2, protocol::AbilityId::Momentum, percent > 0.0 ? percent : 0.0)) return CombatResult::EventCapacity;
   }
@@ -2132,8 +2135,8 @@ CombatResult emit_presentation_facts(const InputHeader& input, BattleStateCore& 
         !fact(6, protocol::AbilityId::Overwatch, level_multiplier(overwatch, action_amplify))) return CombatResult::EventCapacity;
     const int execution = active_ability_level(actor, protocol::AbilityId::Execution);
     if (execution > 0 && active_ability_level(target, protocol::AbilityId::ExecutionNull) == 0 && target_max > 0.0 &&
-        target_hp <= target_max * (execution >= 2 ? 0.5 : 0.4) &&
-        !fact(7, protocol::AbilityId::Execution, execution >= 2 ? 1.8 : 1.5)) return CombatResult::EventCapacity;
+        target_hp <= target_max * (ability_scales::value(execution, ability_scales::execution_threshold)) &&
+        !fact(7, protocol::AbilityId::Execution, ability_scales::value(execution, ability_scales::execution))) return CombatResult::EventCapacity;
   }
   if (!action_scope && active_ability_level(actor, protocol::AbilityId::Swarm) > 0) {
     const double percent = __builtin_floor((1.0 - hp_ratio(actor_hp, actor_max)) * 0.5 * 100.0 + 0.5);
@@ -2515,7 +2518,7 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
     else parties[party_count++] = &combatant;
     const int null_counter = active_ability_level(combatant, protocol::AbilityId::NullCounter);
     combatant.counters = combatant.side == Side::Party && null_counter > 0
-        ? static_cast<u32>(null_counter > 3 ? 3 : null_counter) : 0;
+        ? static_cast<u32>(null_counter > 5 ? 5 : null_counter) : 0;
   }
   for (u32 index = 1; index < party_count; ++index) {
     auto* current = parties[index]; u32 cursor = index;
@@ -2562,7 +2565,7 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
     const double stealth_hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
     const double stealth_max = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
     if (result.hits > 0 && stealth > 0 && active_ability_level(actor, protocol::AbilityId::Pursuit) == 0 &&
-        stealth_max > 0.0 && stealth_hp / stealth_max <= (stealth >= 2 ? 0.18 : 0.12)) {
+        stealth_max > 0.0 && stealth_hp / stealth_max <= (ability_scales::value(stealth, ability_scales::stealth))) {
       result.calculated = 0.0;
       result.hits = 0;
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target.id, actor.id,
@@ -2728,7 +2731,7 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
               if (owner->id == actor->id) continue;
               const int level = active_ability_level(*owner, protocol::AbilityId::CoveringFire);
               if (level <= 0) continue;
-              auto covering = roll_reactive_strike(input, state, *owner, *enemy, 0, reactive_profile_multiplier(level, 3));
+              auto covering = roll_reactive_strike(input, state, *owner, *enemy, 0, reactive_profile_multiplier(level, 4));
               status = emit_reactive_strike(input, state, *owner, *enemy, 1, timing,
                   static_cast<u32>(protocol::ActionId::CoveringFire), protocol::AbilityId::CoveringFire, covering);
               if (status != CombatResult::Ok) return status;
@@ -2802,7 +2805,7 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
           bool eligible = false; for (u32 index = 0; index < magical_counter_count; ++index) if (magical_counter_targets[index] == owner) eligible = true;
           if (!eligible) continue;
           const int level = active_ability_level(*owner, protocol::AbilityId::MagicalCounter);
-          auto counter = roll_reactive_strike(input, state, *owner, *enemy, 1, reactive_profile_multiplier(level, 3));
+          auto counter = roll_reactive_strike(input, state, *owner, *enemy, 1, reactive_profile_multiplier(level, 2));
           const auto status = emit_reactive_strike(input, state, *owner, *enemy, 2, timing,
               static_cast<u32>(protocol::ActionId::MagicalCounter), protocol::AbilityId::MagicalCounter, counter);
           if (status != CombatResult::Ok) return status;
@@ -3014,13 +3017,14 @@ int battle_protocol_prepare_initiative(u32 byte_length) {
   u32 random_cursor = 0;
   u32 event_cursor = 0;
 
-  bool party_has_frostbite = false;
-  bool enemy_has_frostbite = false;
+  int party_has_frostbite = 0;
+  int enemy_has_frostbite = 0;
   for (u32 index = 0; index < input->combatant_count; ++index) {
     if (abilities_suppressed(*input, combatants[index], abilities)) continue;
-    if (prepared_ability_level(*input, combatants[index], abilities, protocol::AbilityId::Frostbite) == 0) continue;
-    if (combatants[index].kind == 1) party_has_frostbite = true;
-    if (combatants[index].kind == 2) enemy_has_frostbite = true;
+    const int frostbite_level = prepared_ability_level(*input, combatants[index], abilities, protocol::AbilityId::Frostbite);
+    if (frostbite_level == 0) continue;
+    if (combatants[index].kind == 1) party_has_frostbite = frostbite_level > party_has_frostbite ? frostbite_level : party_has_frostbite;
+    if (combatants[index].kind == 2) enemy_has_frostbite = frostbite_level > enemy_has_frostbite ? frostbite_level : enemy_has_frostbite;
   }
 
   for (u8 attack_type = 1; attack_type <= 3; ++attack_type) {
@@ -3044,8 +3048,8 @@ int battle_protocol_prepare_initiative(u32 byte_length) {
       if (!machine_logic && slow > 0) result = result - slow < 1 ? 1 : result - slow;
       if (!machine_logic && boost > 0) result = result + boost > 49 ? 49 : result + boost;
       const bool coldproof = prepared_ability_level(*input, combatant, abilities, protocol::AbilityId::Coldproof) > 0;
-      const bool frostbite_penalty = combatant.kind == 1 ? enemy_has_frostbite : party_has_frostbite;
-      if (!machine_logic && frostbite_penalty && !coldproof) result = result - 1 < 1 ? 1 : result - 1;
+      const int frostbite_penalty = combatant.kind == 1 ? enemy_has_frostbite : party_has_frostbite;
+      if (!machine_logic && frostbite_penalty && !coldproof) result = result - frostbite_penalty < 1 ? 1 : result - frostbite_penalty;
       for (u32 die = 0; die < terrain_dice; ++die) {
         result += static_cast<int>(random_values[random_cursor++] * 3.0) + 1;
         if (result > 49) result = 49;

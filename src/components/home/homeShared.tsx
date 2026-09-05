@@ -1,3 +1,4 @@
+import { abilityLevelValue } from '../../game/abilityLevelScales';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ABILITY_BASE_NAMES } from '../../data/abilityNames';
@@ -856,7 +857,7 @@ export function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): str
 export function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
   const focusLevel = abilities.find(a => a.id === 'focus')?.level ?? 0;
   if (focusLevel <= 0) return accuracyBonus;
-  const focusMultiplier = focusLevel >= 2 ? 1.3 : 1.2;
+  const focusMultiplier = abilityLevelValue('focus', focusLevel);
   return Math.ceil((accuracyBonus * focusMultiplier + Number.EPSILON) * 1000) / 1000;
 }
 
@@ -2343,10 +2344,7 @@ export function getEnemyArcMagicAbilityLevel(enemy: EnemyDef): number {
 }
 
 export function getArcMagicOffenseAmplifier(level: number): number {
-  if (level >= 3) return 4.2;
-  if (level >= 2) return 3.6;
-  if (level >= 1) return 3.0;
-  return 1.0;
+  return abilityLevelValue('arc_magic', level);
 }
 
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier

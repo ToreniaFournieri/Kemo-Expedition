@@ -54,23 +54,26 @@ const ABILITY_CATEGORY_BY_ID = Object.fromEntries(
 ) as Record<AbilityId, MechanicCategory>;
 
 const ABILITY_MAX_LEVELS: Partial<Record<AbilityId, number>> = {
-  iaigiri: 3, heavy_strike: 2, arcane_stability: 2, arc_magic: 3, melee_conversion: 2,
-  hunter: 3, seeker: 2, cyborgization: 2, composure: 2, focus: 2,
-  upgrade_all_abilities: 4, tithe: 2, squander: 2, prophecy: 2, cunning: 2, peddler: 2,
-  resonance: 5, ambush: 5, overwatch: 5, execution: 2, rage: 2, momentum: 2, stealth: 2,
-  illusion: 2, flying: 3, bulwark: 2, re_attack: 3, corrode: 5, life_drain: 7,
-  death_touch: 5, burn: 5, bind: 5, counter: 3, magical_counter: 2, resurrect: 2,
-  reanimate: 5, re_counter: 2, null_counter: 3, covering_fire: 2, defender: 3, command: 3,
+  iaigiri: 5, heavy_strike: 5, arcane_stability: 5, arc_magic: 5, melee_conversion: 5,
+  hunter: 5, seeker: 5, cyborgization: 5, composure: 5, focus: 5,
+  upgrade_all_abilities: 5, tithe: 2, squander: 2, prophecy: 2, cunning: 2, peddler: 2,
+  resonance: 5, ambush: 5, overwatch: 5, execution: 5, rage: 5, momentum: 5, stealth: 3,
+  illusion: 2, flying: 3, bulwark: 2, re_attack: 5, corrode: 5, life_drain: 7,
+  death_touch: 5, burn: 5, bind: 5, counter: 5, magical_counter: 5, resurrect: 5,
+  reanimate: 5, re_counter: 5, null_counter: 5, covering_fire: 5, defender: 3, command: 3,
   m_barrier: 3, ice_absorb: 5, fire_absorb: 5, thunder_absorb: 5, magical_absorb: 5,
   ice_reflect: 5, fire_reflect: 5, thunder_reflect: 5, magical_reflect: 5, ranged_reflect: 5,
   melee_reflect: 5, deflection: 2, mutual_magic_amplify: 5, mutual_magic_restraint: 5,
-  mutual_physical_amplify: 5, mutual_physical_restraint: 5, first_strike: 3, slow: 3,
-  boost: 3, howl: 5, ranged_confusion: 5, magic_confusion: 5, melee_confusion: 5,
+  mutual_physical_amplify: 5, mutual_physical_restraint: 5, first_strike: 3, slow: 5,
+  boost: 5, frostbite: 5, howl: 5, ranged_confusion: 5, magic_confusion: 5, melee_confusion: 5,
   unstable_core: 5, soul_reap: 5, regeneration: 5, predator_sense: 5, decompose: 5,
   self_destruct: 5, free: 5, first_aid: 5,
 };
 
 const ABILITY_TIMINGS: Partial<Record<AbilityId, MechanicTiming>> = {
+  boost: { phase: 'START', priority: 3 },
+  slow: { phase: 'START', priority: 3 },
+  frostbite: { phase: 'START', priority: 3 },
   flying: { phase: 'COMBAT', priority: 3 },
   fading_memory: { phase: 'START', priority: 8 },
   howl: { phase: 'COMBAT', priority: 2 },

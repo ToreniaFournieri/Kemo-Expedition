@@ -1,3 +1,4 @@
+#include "ability_level_scales.h"
 #include "battle_state.h"
 
 // Legacy primitive exports below remain ABI-8 diagnostic seams. Production
@@ -213,9 +214,7 @@ double battle_hit_chance(
     int actor_focus_level,
     int actor_arcane_stability_level,
     int terrain_modifier) {
-  const double focus_multiplier = actor_focus_level >= 2
-      ? 1.3
-      : actor_focus_level >= 1 ? 1.2 : 1.0;
+  const double focus_multiplier = actor_focus_level > 0 ? ability_scales::value(actor_focus_level, ability_scales::focus) : 1.0;
   double effective_accuracy_bonus = actor_accuracy_bonus;
   if (actor_focus_level > 0) {
     effective_accuracy_bonus =
@@ -241,9 +240,7 @@ double battle_hit_chance(
   double decay_multiplier = 1.0;
   for (int hit = 1; hit < nth_hit; ++hit) decay_multiplier *= decay;
   const double chance = clamped_base_chance * decay_multiplier;
-  const double stability_floor = actor_arcane_stability_level >= 2
-      ? 0.60
-      : actor_arcane_stability_level >= 1 ? 0.55 : 0.0;
+  const double stability_floor = actor_arcane_stability_level > 0 ? ability_scales::value(actor_arcane_stability_level, ability_scales::stability) : 0.0;
   return chance > stability_floor ? chance : stability_floor;
 }
 
@@ -268,9 +265,7 @@ int battle_resolve_hit_sequence(
     int terrain_modifier) {
   if (hit_count < 0 || hit_count > kHitBufferCapacity || first_hit < 1) return -1;
 
-  const double focus_multiplier = actor_focus_level >= 2
-      ? 1.3
-      : actor_focus_level >= 1 ? 1.2 : 1.0;
+  const double focus_multiplier = actor_focus_level > 0 ? ability_scales::value(actor_focus_level, ability_scales::focus) : 1.0;
   double effective_accuracy_bonus = actor_accuracy_bonus;
   if (actor_focus_level > 0) {
     effective_accuracy_bonus =
@@ -288,9 +283,7 @@ int battle_resolve_hit_sequence(
     else if (opponent_deflection_level >= 1) base_chance -= 0.10;
   }
   base_chance = base_chance < 0.0 ? 0.0 : base_chance > 1.0 ? 1.0 : base_chance;
-  const double stability_floor = actor_arcane_stability_level >= 2
-      ? 0.60
-      : actor_arcane_stability_level >= 1 ? 0.55 : 0.0;
+  const double stability_floor = actor_arcane_stability_level > 0 ? ability_scales::value(actor_arcane_stability_level, ability_scales::stability) : 0.0;
 
   double decay_multiplier = 1.0;
   for (int hit = 1; hit < first_hit; ++hit) decay_multiplier *= decay;
