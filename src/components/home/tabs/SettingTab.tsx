@@ -1553,7 +1553,17 @@ export default function SettingTab({
               rel="noopener noreferrer"
               className="discord-community-link block rounded border p-3 text-sm font-semibold underline underline-offset-2 pane-button-shadow"
             >
-              Kemo Expedition Orca
+              {t('app.title')}orca
+            </a>
+            <a
+              href={gameState.global.language === 'zh-CN'
+                ? 'https://t.me/+exLhrX12vn5iMmI1'
+                : 'https://discord.gg/k9VSf2ghM'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="discord-community-link block rounded border p-3 text-sm font-semibold underline underline-offset-2 pane-button-shadow"
+            >
+              {t('setting.developerNews.discordCommunity')}
             </a>
             <div className="max-h-96 overflow-y-auto overscroll-contain rounded border border-gray-200 bg-white text-sm pane-button-shadow">
               {DEVELOPER_NEWS_ITEMS.map((item) => (
