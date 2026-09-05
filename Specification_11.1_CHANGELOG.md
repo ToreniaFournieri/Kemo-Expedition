@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.6 | 4 | 2026/09/05 | Fix the `/orca/` Enemy Level Offset at +5 across initialization, persisted-state projection, Settings, live expeditions, AFK processing, simulations, and Experimental API actions so no saved or in-app value can change Orca enemy levels. |
 | 0.9.6 | 3 | 2026/09/05 | Make `mode.orca` fixed in the `/orca/` environment by disabling both mode choices in Settings and rejecting any in-app runtime-mode change before it can alter the enforced Orca state. |
 | 0.9.6 | 2 | 2026/09/05 | Restore the localized Community link alongside the separate Orca link in Developer News: show the Orca link as the localized application title followed by `orca`, route Simplified Chinese to Telegram, and route all other languages to the localized Discord community label. |
 | 0.9.6 | 1 | 2026/09/05 | Apply the effective Speed of Time multiplier to Instant Expedition Charge accumulation and display, including the rounded-up x5 sixth-slot duration of 39 minutes; retain compact MAX charge indicators; update the all-language Developer News community link to the Orca page; and verify environment-scoped persistence for runtime mode and Orca enemy-level offset. |

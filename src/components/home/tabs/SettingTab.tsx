@@ -159,7 +159,7 @@ export default function SettingTab({
   runtimeGameMode: RuntimeGameMode;
   onSetRuntimeGameMode: (mode: RuntimeGameMode) => void;
   orcaEnemyLevelOffset: number;
-  onSetOrcaEnemyLevelOffset: Dispatch<SetStateAction<number>>;
+  onSetOrcaEnemyLevelOffset: (offset: number) => void;
   darkModeSetting: DarkModeSetting;
   onSetDarkModeSetting: Dispatch<SetStateAction<DarkModeSetting>>;
   isAutoRepeatEnabled: boolean;
