@@ -59,7 +59,8 @@
 ## 7. AUTOMATION
 
 ### 7.1 AUTOMATION
-- @Specification_7.1_AUTOMATION.md
+- @Specification_7.1_AUTOMATION_EQUIPMENT.md
+- @Specification_7.2_AUTOMATION_OTHERS.md
 
 ## 8. UI
 
@@ -309,5 +310,11 @@
 
 - @Specification_11.1_CHANGELOG.md
 
+
+## 12. AI Play
+
+### 12.1 AI play reguration
+
+- @Specification_12.1_AI_PLAY_REGURATION.md
 
 **END OF SPECIFICATION**
