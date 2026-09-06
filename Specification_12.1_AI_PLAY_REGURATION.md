@@ -74,10 +74,10 @@
 
   `<Score>_<Version>(<Build>)_<Concept>_<YYYYMMDD>.md`
 
-* Example:
-
+  * Format Score as a six-digit, zero-padded integer.
+    * Example: a score of `87649` becomes `087649`.
+* Example filename:
   `105653_v0.9.6(7)_TestRun_20260906.md`
-
 
 #### 12.1.3 API accounting and session lifecycle
 
