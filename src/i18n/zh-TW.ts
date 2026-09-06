@@ -4078,6 +4078,8 @@ const zhTW = {
   'home.inventory.sellResultGold': '獲得了 {gold} 金幣。',
 
   'setting.desktopNotifications.title': 'macOS通知',
+  'setting.experimentalApi.aiPlayFinished': 'AI Play 已結束。最終得分：{score}。仍可透過 API 查看評估結果。',
+  'setting.experimentalApi.aiPlayReady': 'AI Play 已暫停。請透過 API 連線以開始或繼續。',
   'setting.experimentalApi.title': '實驗性AI API',
   'setting.experimentalApi.helpBeforeLink': '此功能可讓AI操作冒獸。使用方法請查看官方GitHub（',
   'setting.experimentalApi.helpAfterLink': '）。請妥善保管Bearer權杖。',

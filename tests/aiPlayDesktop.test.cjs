@@ -1,0 +1,22 @@
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { prepareAiPlay, writeAiPlayReport } = require('../desktop/ai-play.cjs');
+test('organizer creates isolated profiles, resumes exact builds, and writes credential-free reports', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-ai-play-'));
+  const base = { userData: root, environment: 'orca', version: '0.9.6', build: 12, reportDirectory: path.join(root, 'AI_play_report') };
+  const first = prepareAiPlay({ ...base, argv: ['--ai-play=Smoke'] });
+  const second = prepareAiPlay({ ...base, argv: ['--ai-play=Smoke'] });
+  assert.notEqual(first.profile, second.profile);
+  const resumed = prepareAiPlay({ ...base, argv: [`--resume-ai-play=${first.evaluationId}`] });
+  assert.equal(resumed.profile, first.profile); assert.equal(resumed.resume, true);
+  assert.throws(() => prepareAiPlay({ ...base, build: 13, argv: [`--resume-ai-play=${first.evaluationId}`] }));
+  assert.throws(() => prepareAiPlay({ ...base, environment: 'dev', argv: ['--ai-play=Smoke'] }));
+  assert.throws(() => prepareAiPlay({ ...base, argv: ['--ai-play=../unsafe'] }));
+  const report = writeAiPlayReport(first, { evaluationId: first.evaluationId, status: 'succeeded', finalScore: 53, countedApiCalls: 5, actualSorties: 3, firstWinningSortie: 3, ledger: [{ call: 5, operation: 'sortie', actualSorties: 3, error: null }] });
+  assert.match(path.basename(report), /^53_v0\.9\.6\(12\)_Smoke_\d{8}\.md$/);
+  assert.match(fs.readFileSync(report, 'utf8'), /Score: 53/);
+  assert.doesNotMatch(fs.readFileSync(report, 'utf8'), /Bearer|token|randomState/);
+});

@@ -148,9 +148,9 @@
 
 **Purpose and availability**
 - The packaged desktop application must provide an experimental localhost HTTP/JSON API for AI-controlled play of the active BoKemo save.
-- The API must be available in the `dev`, `beta`, and production desktop environments, disabled by default, and enabled through an `Experimental AI API` toggle in Settings.
+- The API must be available in the `dev`, `beta`, `orca`, and production desktop environments, disabled by default, and enabled through an `Experimental AI API` toggle in Settings.
 - The API server must bind only to a loopback address, select an available local port, and require a generated bearer token displayed in Settings.
-- API state and access must follow the environment and save-data isolation rules in section 9. An API running in `/dev/`, `/beta/`, or `/` must access only the active save belonging to that environment.
+- API state and access must follow the environment and save-data isolation rules in section 9. An API running in `/dev/`, `/beta/`, `/orca/`, or `/` must access only the active save belonging to that environment.
 - The browser distribution must not expose the localhost API.
 - All endpoints must use JSON and be versioned under `/experimental/v1`.
 
@@ -181,6 +181,10 @@
 - `POST /experimental/v1/sortie`
   - Synchronously resolves 1 to 100 API-only normal expedition Cycles for one specified party.
 
+**AI Play additions**
+- Simulation, party preview, atomic party configuration, catalog, evaluation accounting, lease renewal and idempotent mutations follow the additive contracts in @Specification_9.1.3_API_ENDPOINTS.md and the rules in @Specification_12.1_AI_PLAY_REGURATION.md.
+- An evaluation profile remains frozen outside explicit API operations, including lease gaps and after termination. This overrides ordinary progression restoration on lease release for evaluation profiles only.
+
 **Observation**
 - The observation must include:
   - schema version, revision, simulated timestamp, and active environment;
@@ -196,6 +200,7 @@
 
 **Strategic commands**
 - The API may expose only the following strategic commands, subject to the same availability and validation rules as the UI and the explicit API exceptions in section 9.1.3:
+  - atomically configure one party using the existing legal strategic controls;
   - change a character's selectable race, gender, lineage, predisposition, main class, sub class, Mimorian form, or name; race and gender must satisfy the same paired uniqueness, availability, and Mimorian restrictions as the UI;
   - reorder party members;
   - change a party's deity;

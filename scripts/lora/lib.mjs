@@ -24,7 +24,8 @@ const SOURCE_FILES = [
   'Specification_4.1_EXPEDITION_&_ENEMY.md',
   'Specification_5.1_PROGRESS.md',
   'Specification_6.1_BATTLE.md',
-  'Specification_7.1_AUTOMATION.md',
+  'Specification_7.1_AUTOMATION_EQUIPMENT.md',
+  'Specification_7.2_AUTOMATION_OTHERS.md',
   'Specification_9.1.3_API_ENDPOINTS.md',
   'src/data/classes.ts',
   'src/data/dungeons.ts',
@@ -274,7 +275,7 @@ function authoritativeFamilies(entities, legacySeeds) {
         return record({
           groupId, locale, category: 'authoritative', strategyType: seed.strategy_type === 'calculation' ? 'calculation' : 'rule', taskType: 'knowledge',
           user: localized.user, assistant: typeof localized.assistant === 'string' ? localized.assistant : JSON.stringify(localized.assistant),
-          sourceRefs: [...new Set(seed.source_refs.map((ref) => ref.split('#')[0]))], stableIds: [`legacy.${seed.id}`], relatedIds: seed.related_ids, legacyIds: [seed.id],
+          sourceRefs: [...new Set(seed.source_refs.flatMap((ref) => ref.split('#')[0] === 'Specification_7.1_AUTOMATION.md' ? ['Specification_7.1_AUTOMATION_EQUIPMENT.md', 'Specification_7.2_AUTOMATION_OTHERS.md'] : [ref.split('#')[0]]))], stableIds: [`legacy.${seed.id}`], relatedIds: seed.related_ids, legacyIds: [seed.id],
         });
       }
       const aspect = `${TEXT[locale].aspects[index % TEXT[locale].aspects.length]} (PT${1 + (index % 6)}, level ${1 + (index % 99)})`;

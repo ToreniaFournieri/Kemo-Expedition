@@ -2351,3 +2351,61 @@ Each `runs` entry contains:
 
 - Revision comparison occurs before party and expedition validation so stale requests cannot probe current state.
 - Errors MUST NOT return partial run results, random state, candidate enemies or items, undisclosed outcomes, or staged resource values.
+
+## AI Play API additions
+
+The following additive contracts implement section 12.1. They extend the existing schema version 1. Orca is a supported desktop environment everywhere `game.environment` is described. Ordinary non-evaluation API play remains available.
+
+### Evaluation transactions
+
+* All gameplay operations stage changes in a private state. Only a successful atomic save installs gameplay state. Persistence failure must not queue the rejected state for later background retry.
+* Each evaluation gameplay request reserves its counted call durably before executing. The final state, evaluation ledger, revision and idempotency receipt commit together. Errors retain the reserved call but do not commit staged gameplay. The reservation's `operation_interrupted` ledger value is replaced with the final result on successful persistence.
+* `Idempotency-Key` is an optional 1–128 character ASCII letters/digits/underscore/hyphen header for `command` and `sortie`. A repeated key with the same canonical operation/body replays the original response with `replayed: true`; a different body returns `409 idempotency_conflict`. Keys are scoped to the active save, persist across restart, and must not contain credentials. Evaluation sessions retain all receipts; ordinary play retains the most recent 32 successful keyed operations. Clients must not reuse evicted keys.
+* Replay occurs before revision validation. A received replay counts as a call in an active evaluation but adds zero sorties. After evaluation termination, retrieve `/evaluation` instead; further gameplay and replays are rejected with `evaluation_finished`.
+* The response-level `evaluation` is `null` outside evaluation, otherwise it contains `evaluationId`, `concept`, `version`, `build`, `regulationVersion`, `status` (`active`, `succeeded`, `failed`), `countedApiCalls`, `remainingApiCalls`, `actualSorties`, `goalAchieved`, `firstWinningSortie`, `startedAt`, `scoreSoFar`, `finalScore`, and an ordered `ledger`. Each ledger entry contains `call`, `operation`, `actualSorties`, and nullable error code. Final score is null until termination.
+* The evaluation clock is persisted and remains fixed across restarts; selected-party Cycle elapsed time re-anchors its deadlines without advancing any other party.
+* API-owned random draws are transaction-local and persisted only upon commit. Forecast randomness is independent and cannot consume the live stream. Random state remains private.
+* Observation includes each party's `defeatedBossDungeonIds`. Evaluation observations must not advertise `god_battle` as a legal action.
+
+### `POST /experimental/v1/control/renew`
+
+Bearer and owner lease required. Accept an omitted body or `{}`. Renew the lease without advancing gameplay, incrementing revision or counting a call. Return `{ "renewed": true }` with the standard API envelope. Status remains non-renewing.
+
+### `GET /experimental/v1/evaluation`
+
+Bearer authentication required; no lease required. Return the evaluation summary or null without counting a call. This endpoint exposes no strategic observation or credentials, and remains available after completion. No query parameters are accepted.
+
+### `POST /experimental/v1/simulation`
+
+Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional `configuration`. Reject unknown fields, stale revisions and unavailable parties. A configuration uses the Party configuration schema below.
+
+Execute exactly 1,000 independent private forecast trials with the current or hypothetical party, full departure HP, selected normal dungeon/depth/difficulty and effective runtime mode/offset, using the same result-only production kernel as the UI simulator. Forecasts do not advance progression, return rewards, consume live randomness, write Diary entries or alter equipment/charge. No client seed, debug flag, live bag or internal transition may be supplied. Each successful response contains `revision`, `partyId`, evaluated party `configuration`, and `simulation: { total: 1000, outcomes: { Clear, Turned_Back, Draw_Retreat, Wounded_Retreat, Defeat, total } }`. Outcome rates are the counts divided by total.
+
+Execution is asynchronous internally, serialized as one request and pins the lease. Each request costs one counted call and zero actual sorties. No separate total forecast quota applies.
+
+### Party configuration
+
+A `configuration` object accepts only these optional properties:
+
+* `characters`: at most the party size, each `{ characterId, changes?, autoEquipmentMode? }`, without duplicate character IDs. `changes` contains only the existing selectable build fields; mode is 0, 1 or 2. Unique-character restrictions, paired race/gender uniqueness, selectable lineages/predispositions, female-only Mimorian forms, unlocked forms and global form uniqueness apply. Validate final assignments before applying any change.
+* `order`: every member ID exactly once, in final order.
+* `deityId`: an unlocked deity available to this party.
+* `destination`: `{ mode: "auto" | "fixed", dungeonId? }`; fixed requires an available dungeon.
+* `depthLimit`: an existing legal depth enum.
+* `difficultyOffset`: an even integer within the selected dungeon's normal limit.
+* `locks`: `{ characterId, slotIndex, locked }[]`, bounded to 200 entries, targeting currently equipped items in FULL mode.
+* `autoEquip`: boolean; run configured automatic equipment after builds, order, deity, destination, depth, difficulty and locks have been applied. It never permits direct equipment-slot selection or Jewel attachment.
+
+Apply configuration in the order above within one private staged state. Any invalid field rejects the entire configuration. Existing `build-options` and individual build commands use the same validation. Race changes without a supplied name use the normal default-name pool; preview reports a possible name, and the committed name may differ if a different live random draw is used.
+
+### `POST /experimental/v1/party-preview`
+
+Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional configuration. Return `{ revision, partyId, party }` containing the hypothetical party's builds, computed combat values and resulting equipment. Does not change live gameplay or revision. Costs one counted call. Invalid configurations return `invalid_build` with field-specific violations in the diagnostic message.
+
+### `configure_party` command
+
+`POST /command` accepts `{ "expectedRevision": 123, "command": { "type": "configure_party", "partyId": 1, "configuration": {} } }`. Commit the same validated configuration atomically, increment revision once, and return the normal command response with complete observation. Costs one counted call and zero sorties.
+
+### `GET /experimental/v1/catalog`
+
+Bearer and owner lease required. No query parameters. Return `catalog` containing races, classes, selectable lineages/predispositions and their public bonuses, deity IDs/display names, automatic-equipment modes and depth enums. Costs one counted call. The catalog contains static player-visible information, not live hidden enemies, bags or future outcomes.

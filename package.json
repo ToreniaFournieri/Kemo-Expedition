@@ -44,6 +44,7 @@
     "lora:train": "python3 training/lora/run_training.py",
     "lora:train:smoke": "python3 training/lora/run_training.py --smoke",
     "preview": "vite preview",
+    "test:api:desktop": "npm run build && electron scripts/run-api-desktop-smoke.cjs --environment=orca --ai-play=ApiSmoke",
     "test": "node --experimental-strip-types --test --test-concurrency=1 tests/*.test.ts tests/*.test.cjs"
   },
   "dependencies": {

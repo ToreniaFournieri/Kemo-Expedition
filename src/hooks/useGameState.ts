@@ -1,3 +1,4 @@
+import { createApiRuntime, createEvaluation } from '../game/experimentalApiSession';
 import { hasNewAvailability } from '../game/inventoryAvailability';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { RuntimeGameMode } from '../game/runtimeGameMode';
@@ -66,7 +67,7 @@ import {
   normalizeRevealedGlossaryAbilityIds,
   normalizeRevealedGlossaryTerrainKeys,
 } from '../game/glossaryDisclosure';
-import { gameplayRandom } from '../game/gameplayRandom';
+import { gameplayRandom, createApiRandom, withGameplayRandomSource } from '../game/gameplayRandom';
 import { replaceCharacterEquipment } from '../game/equipment';
 import {
   applyEquipmentSet,
@@ -972,6 +973,9 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
       console.warn(`Recovered segmented save without ${missingDiaryRecords.length} missing Diary record(s): ${missingDiaryRecords.join(', ')}`);
     }
     const parsed = segmentedState ?? JSON.parse(decodePersistedState(saved));
+    if (typeof window !== 'undefined' && window.bokemoDesktop?.aiPlay && parsed?.apiRuntime?.evaluation) {
+      return { state: hydrateGameState(parsed), errorLog: null };
+    }
     // Validate it has required properties and migrate legacy saves.
     const hasParties = Array.isArray(parsed?.parties);
     const hasBags = parsed?.bags && typeof parsed.bags === 'object';
@@ -1748,7 +1752,26 @@ type InitialStateResult = {
   loadErrorLog: string | null;
 };
 
+// SpecRef: 12.1.1 | AI Play Regulation | Starting conditions
 function createInitialState(): InitialStateResult {
+  const result = createInitialStateBase();
+  const config = typeof window !== 'undefined' ? window.bokemoDesktop?.aiPlay : null;
+  if (!config) return result;
+  const existing = result.state.apiRuntime?.evaluation;
+  if (existing) {
+    if (existing.evaluationId !== config.evaluationId || existing.version !== config.version || existing.build !== config.build)
+      return { ...result, loadErrorLog: 'AI Play identity or build mismatch.' };
+    // A crash after the final call reservation still exhausts the call budget.
+    if (existing.status === 'active' && existing.countedApiCalls >= 200) existing.status = 'failed';
+    return result;
+  }
+  if (config.resume || localStorage.getItem(STORAGE_KEY) || getEnvironmentId() !== 'orca')
+    return { ...result, loadErrorLog: 'AI Play requires a fresh organizer-created Orca profile or its matching checkpoint.' };
+  result.state.apiRuntime = { ...createApiRuntime(), evaluation: createEvaluation(config.evaluationId, config.concept, config.version, config.build) };
+  return result;
+}
+
+export function createInitialStateBase(): InitialStateResult {
   // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Language URL parameter
   const initialLanguage = resolveInitialLanguage();
   persistLanguage(initialLanguage);
@@ -1862,7 +1885,7 @@ export type AfkBatchTestOptions = AfkSimulationBatchSlice & {
   cycleDurationScale?: number;
 };
 
-type GameAction =
+export type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number; selectionMode?: 'manual' | 'auto' }
   | { type: 'SET_EXPEDITION_DESTINATION_MODE'; partyIndex: number; mode: ExpeditionDestinationMode }
@@ -1893,7 +1916,7 @@ type GameAction =
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'STAMP_FULL_AUTO_EQUIPMENT'; partyIndex: number; equipmentRevision: number; jewelRevision: number }
   | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
-  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
+  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number; validatedMimorianAssignments?: boolean }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
@@ -1990,7 +2013,7 @@ function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDuratio
   return sideQuest.assignedAt + Math.floor(deadlineWindowMs * safeScale);
 }
 
-function hasActiveNonGodBattleClearGateCondition(party: Party): boolean {
+export function hasActiveNonGodBattleClearGateCondition(party: Party): boolean {
   // SpecRef: 5.1.2 | Side Quest | Trigger Condition
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
@@ -2034,7 +2057,7 @@ function drawGuaranteedEnhancement(
 }
 
 
-function getPartyAbilityLevel(party: Party, abilityId: string): number {
+export function getPartyAbilityLevel(party: Party, abilityId: string): number {
   const { characterStats } = computePartyStats(party);
   return characterStats.reduce((maxLevel, stats) => {
     const abilityLevel = stats.abilities
@@ -2102,7 +2125,7 @@ type PrayerProfitResult = {
   embezzled: number;
 };
 
-function calculatePrayerProfit(
+export function calculatePrayerProfit(
   party: Party,
   pendingProfit: number,
   abilityLevels?: ProfitAbilityLevels,
@@ -2127,7 +2150,7 @@ function calculatePrayerProfit(
   return { donation, deposit, embezzled };
 }
 
-function calculateFreeActionSpend(
+export function calculateFreeActionSpend(
   party: Party,
   pendingProfit: number,
   abilityLevels?: ProfitAbilityLevels,
@@ -3308,7 +3331,7 @@ function reduceGameState(
       const requestedMimorianEnemyId = sanitizedUpdates.mimorianEnemyId ?? oldChar.mimorianEnemyId;
       const isChangingMimorianAssignment = requestedRaceId === 'mimorian'
         && (oldChar.raceId !== 'mimorian' || requestedMimorianEnemyId !== oldChar.mimorianEnemyId);
-      if (isChangingMimorianAssignment) {
+      if (isChangingMimorianAssignment && !action.validatedMimorianAssignments) {
         const isUnlockedForm = requestedMimorianEnemyId != null
           && state.global.unlockedMimorianEnemyIds.includes(requestedMimorianEnemyId)
           && ENEMIES.some((enemy) => enemy.id === requestedMimorianEnemyId);
@@ -4254,7 +4277,7 @@ function reduceGameState(
 }
 
 /** Top-level reducer boundary: availability revisions are derived from committed state. */
-function gameReducer(
+export function gameReducer(
   state: GameState,
   action: GameAction,
   autoEquipmentContext?: AutoEquipmentReducerContext,
@@ -4263,7 +4286,7 @@ function gameReducer(
   const reduced = reduceGameState(state, action, autoEquipmentContext, afkChunkContext);
   // AFK commits already account for the Chunk and equipment stages separately.
   // Rechecking the whole transaction here would count new availability twice.
-  if (action.type === 'COMMIT_AFK_PARTY_TRANSACTION' || action.type === 'COMMIT_AFK_PARTY_CHUNK') return reduced;
+  if (action.type === 'COMMIT_API_STATE' || action.type === 'COMMIT_AFK_PARTY_TRANSACTION' || action.type === 'COMMIT_AFK_PARTY_CHUNK') return reduced;
   const next = applyInventoryAvailabilityRevisions(state, reduced);
   if (action.type !== 'APPLY_AUTO_EQUIPMENT_ACTIONS') return next;
   const stampedPartyIndexes = action.actions
@@ -4672,6 +4695,8 @@ export async function simulateExpeditionRuns(
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
   const sandbox = createSimulationSandbox(state, partyIndex);
+  const seed = new Uint32Array(1); crypto.getRandomValues(seed);
+  const forecastRandom = createApiRandom(seed[0]);
 
   const result: ExpeditionSimulationResult = {
     Clear: 0,
@@ -4686,7 +4711,7 @@ export async function simulateExpeditionRuns(
   let lastProgressAt = sliceStartedAt - EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS;
   for (let index = 0; index < total; index += 1) {
     const runState = createSimulationRunState(sandbox);
-    const resolvedState = gameReducer(runState, {
+    const resolvedState = withGameplayRandomSource(forecastRandom.next, () => gameReducer(runState, {
       type: 'RUN_EXPEDITION',
       partyIndex,
       gameMode,
@@ -4698,7 +4723,7 @@ export async function simulateExpeditionRuns(
         party: sandbox.baseline.parties[partyIndex],
         computed: sandbox.authoritativePartyStatus,
       },
-    });
+    }));
     const resolution = forecastResolutionByState.get(resolvedState);
     if (!resolution) throw new Error('simulation_failed');
     memoryMonitor.incrementBattleCount(resolution.completedRooms);
@@ -5188,6 +5213,16 @@ export function useGameState() {
         delayMs: Math.max(0, performance.now() - authoritative.installedAt),
       };
     }, [authority]),
+
+    // SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+    getApiReadiness: () => isSaveBlockedByLoadFailure ? 'save_error' as const : 'ready' as const,
+    commitApiState: useCallback(async (nextState: GameState) => {
+      const coordinator = persistenceCoordinatorRef.current;
+      if (!coordinator) throw new Error('persistence_unavailable');
+      coordinator.commitAtomic(nextState);
+      latestGameStateRef.current = nextState;
+      dispatch({ type: 'COMMIT_API_STATE', state: nextState });
+    }, []),
 
     runApiSortieBatch: useCallback((partyIndex: number, count: number, gameMode: RuntimeGameMode = 'mode.normal', simulatedAt: number = Date.now(), enemyLevelOffset?: number) => {
       const batch = simulateApiSortieBatchForTesting(latestGameStateRef.current, partyIndex, count, gameMode, simulatedAt, enemyLevelOffset);

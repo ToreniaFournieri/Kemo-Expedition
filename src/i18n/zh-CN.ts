@@ -4083,6 +4083,8 @@ const zhCN = {
   'home.inventory.sellResultGold': '获得了 {gold} 金币。',
 
   'setting.desktopNotifications.title': 'macOS通知',
+  'setting.experimentalApi.aiPlayFinished': 'AI Play 已结束。最终得分：{score}。仍可通过 API 查看评估结果。',
+  'setting.experimentalApi.aiPlayReady': 'AI Play 已暂停。请通过 API 连接以开始或继续。',
   'setting.experimentalApi.title': '实验性AI API',
   'setting.experimentalApi.helpBeforeLink': '此功能可让AI操作冒兽。使用方法请查看官方GitHub（',
   'setting.experimentalApi.helpAfterLink': '）。请妥善保管Bearer令牌。',

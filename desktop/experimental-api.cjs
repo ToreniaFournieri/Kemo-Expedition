@@ -27,6 +27,7 @@ function createExperimentalApi(options) {
   let shuttingDown = false;
   let lease = null;
   let expiryTimer = null;
+  let lastRuntime = { status: 'loading', revision: null };
 
   const nowMonotonic = () => Number(process.hrtime.bigint() / 1_000_000n);
   const jsonHeaders = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
@@ -97,6 +98,8 @@ function createExperimentalApi(options) {
   async function rendererCall(operation, payload) {
     const result = await options.invokeRenderer(operation, payload);
     if (!result || typeof result !== 'object') throw new Error('invalid_renderer_response');
+    const revision = result.revision ?? result.observation?.revision ?? result.sortie?.revision;
+    if (Number.isInteger(revision)) lastRuntime = { status: 'ready', revision };
     return result;
   }
 
@@ -108,7 +111,7 @@ function createExperimentalApi(options) {
     }
     if (!authenticate(request)) return send(response, 401, apiError('authentication_failed', 'The supplied bearer token is invalid.'));
     let runtime;
-    try { runtime = await rendererCall('status', {}); } catch {
+    try { runtime = busy ? lastRuntime : await rendererCall('status', {}); } catch {
       return send(response, 503, apiError('runtime_unavailable', 'The authoritative renderer is unavailable.', true));
     }
     const owned = lease && timingSafeEqualString(request.headers['x-bokemo-control-lease'], lease.token);
@@ -137,9 +140,10 @@ function createExperimentalApi(options) {
     if (busy) return send(response, 409, apiError('runtime_busy', 'The runtime is busy.', true));
     if (lease) return send(response, 409, apiError('control_already_leased', 'Experimental API control is already leased.', true, { leaseExpiresAt: lease.expiresAt }));
     let runtime;
+    busy = true;
     try { runtime = await rendererCall('set-control', { active: true, reason: 'acquire' }); } catch {
       return send(response, 503, apiError('runtime_unavailable', 'The renderer could not enter API-controlled mode.', true));
-    }
+    } finally { busy = false; }
     if (runtime.status !== 'ready') return send(response, 503, apiError(runtime.status === 'save_error' ? 'save_error' : 'runtime_loading', 'The runtime is not ready.', runtime.status !== 'save_error'));
     const acquiredAt = Date.now();
     lease = { token: crypto.randomBytes(32).toString('base64url'), acquiredAt, expiresAt: acquiredAt + LEASE_IDLE_TIMEOUT_MS, deadline: nowMonotonic() + LEASE_IDLE_TIMEOUT_MS, releasing: false };
@@ -148,30 +152,52 @@ function createExperimentalApi(options) {
   }
 
   async function handleOwned(request, response, operation, routePayload = {}) {
-    const isGet = ['observation', 'latest-battle-log', 'diary-entries', 'diary-battle-log'].includes(operation);
-    if (request.method !== (isGet ? 'GET' : 'POST')) {
-      const allow = isGet ? 'GET' : 'POST';
-      return send(response, 405, apiError('method_not_allowed', `This endpoint requires ${allow}.`), { Allow: allow });
-    }
+    const isGet = ['observation', 'latest-battle-log', 'diary-entries', 'diary-battle-log', 'catalog', 'evaluation'].includes(operation);
     if (!authenticate(request)) return send(response, 401, apiError('authentication_failed', 'Bearer authentication is required.'));
+    if (operation === 'evaluation') {
+      if (busy) return send(response, 409, apiError('runtime_busy', 'An operation is executing.', true));
+      if (request.method !== 'GET') return send(response, 405, apiError('method_not_allowed', 'This endpoint requires GET.'), { Allow: 'GET' });
+      if (new URL(request.url, 'http://127.0.0.1').search.length) return send(response, 400, apiError('invalid_request', 'Query parameters are not supported.'));
+      const result = await rendererCall('evaluation', {});
+      if (result.evaluation?.finalScore != null) result.reportPath = await options.onEvaluationFinished?.(result.evaluation);
+      return send(response, 200, { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...result });
+    }
     const leaseFailure = validateLease(request);
     if (leaseFailure) return send(response, leaseFailure.status, leaseFailure.body);
     if (busy) return send(response, 409, apiError('runtime_busy', 'Another API operation is executing.', true));
-    let body;
-    try {
-      body = isGet ? undefined : await readJson(request, operation === 'release');
-      if (isGet && new URL(request.url, 'http://127.0.0.1').search.length > 0) throw new Error('query');
-    } catch { return send(response, 400, apiError('invalid_request', 'The request input is invalid.')); }
-    if (operation === 'release' && body !== undefined && (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length)) return send(response, 400, apiError('invalid_request', 'Release accepts only an empty object.'));
+    // SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+    // Lock before reading an asynchronous body; two accepted requests cannot interleave.
     busy = true;
-    if (operation === 'release') lease.releasing = true;
+    if (expiryTimer) clearTimeout(expiryTimer);
+    const pinTimer = setInterval(() => renewLease(), 30_000);
+    let effectiveOperation = operation;
+    let body;
+    let inputFailure = null;
     try {
-      const result = await rendererCall(operation, isGet ? routePayload : body ?? {});
-      if (result.error) return send(response, result.status ?? 500, result);
+      if (request.method !== (isGet ? 'GET' : 'POST')) inputFailure = { status: 405, code: 'method_not_allowed' };
+      try {
+        body = isGet ? routePayload : await readJson(request, ['release', 'renew'].includes(operation));
+        if (new URL(request.url, 'http://127.0.0.1').search.length > 0) throw new Error('query');
+        if (body !== undefined && (!body || typeof body !== 'object' || Array.isArray(body) || '__idempotencyKey' in body)) throw new Error('body');
+        if (['release', 'renew'].includes(operation) && Object.keys(body ?? {}).length) throw new Error('body');
+      } catch { inputFailure ??= { status: 400, code: 'invalid_request' }; }
+      if (inputFailure) {
+        if (['release', 'renew'].includes(operation)) return send(response, inputFailure.status, apiError(inputFailure.code, 'Invalid request input.'));
+        effectiveOperation = 'invalid-request'; body = {};
+      }
+      if (operation === 'release') lease.releasing = true;
+      const idempotencyKey = request.headers['idempotency-key'];
+      const payload = { ...(body ?? {}) };
+      if (idempotencyKey !== undefined && ['command', 'sortie'].includes(operation)) payload.__idempotencyKey = idempotencyKey;
+      const result = await rendererCall(effectiveOperation, payload);
+      if (result.evaluation?.finalScore != null) result.reportPath = await options.onEvaluationFinished?.(result.evaluation);
+      if (result.error) {
+        if (operation === 'release' && lease) { lease.releasing = false; renewLease(); }
+        return send(response, inputFailure?.status ?? result.status ?? 500, inputFailure ? { ...result, error: { ...result.error, code: inputFailure.code } } : result,
+          inputFailure?.status === 405 ? { Allow: isGet ? 'GET' : 'POST' } : {});
+      }
       if (operation === 'release') {
-        const releasedAt = Date.now();
-        lease = null;
-        if (expiryTimer) clearTimeout(expiryTimer);
+        const releasedAt = Date.now(); lease = null;
         return send(response, 200, { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, release: { releasedAt, reason: 'client_request', statePersisted: true }, runtime: { status: 'ready', revision: result.revision, controlStatus: 'available' } });
       }
       renewLease();
@@ -180,8 +206,7 @@ function createExperimentalApi(options) {
       if (operation === 'release' && lease) { lease.releasing = false; renewLease(); }
       return send(response, 503, apiError('runtime_unavailable', 'The authoritative renderer is unavailable.', true));
     } finally {
-      busy = false;
-      scheduleExpiry();
+      clearInterval(pinTimer); busy = false; scheduleExpiry();
     }
   }
 
@@ -197,6 +222,11 @@ function createExperimentalApi(options) {
       [`${API_PREFIX}/diary-entries`, 'diary-entries'],
       [`${API_PREFIX}/command`, 'command'],
       [`${API_PREFIX}/sortie`, 'sortie'],
+      [ `${API_PREFIX}/simulation`, 'simulation'],
+      [ `${API_PREFIX}/party-preview`, 'party-preview'],
+      [ `${API_PREFIX}/catalog`, 'catalog'],
+      [ `${API_PREFIX}/evaluation`, 'evaluation'],
+      [ `${API_PREFIX}/control/renew`, 'renew'],
     ]);
     const operation = routes.get(pathname);
     if (operation) return handleOwned(request, response, operation);
@@ -220,7 +250,7 @@ function createExperimentalApi(options) {
   async function enable() {
     if (enabled) return getSettings();
     bearerToken = crypto.randomBytes(32).toString('base64url');
-    server = http.createServer((request, response) => void handle(request, response));
+    server = http.createServer((request, response) => void handle(request, response).catch(() => { if (!response.headersSent) send(response, 503, apiError('runtime_unavailable', 'The API is unavailable.', true)); }));
     await new Promise((resolve, reject) => {
       server.once('error', reject);
       server.listen(0, '127.0.0.1', resolve);

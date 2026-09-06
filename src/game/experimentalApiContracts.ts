@@ -1,4 +1,5 @@
 export const EXPERIMENTAL_API_COMMAND_TYPES = [
+  'configure_party',
   'update_character_build',
   'reorder_character',
   'set_deity',
@@ -17,6 +18,8 @@ export type ExperimentalApiCommandType = typeof EXPERIMENTAL_API_COMMAND_TYPES[n
 
 export const EXPERIMENTAL_API_TRAINING_PATHS = [
   '/experimental/v1/build-options',
+  '/experimental/v1/simulation',
+  '/experimental/v1/party-preview',
   '/experimental/v1/command',
   '/experimental/v1/sortie',
 ] as const;
@@ -67,6 +70,12 @@ export function validateExperimentalApiTrainingRequest(
     if (!Number.isInteger(body.partyId) || !Number.isInteger(body.characterId)) {
       errors.push('build-options requires integer partyId and characterId');
     }
+    return errors;
+  }
+
+  if (request.path === '/experimental/v1/simulation' || request.path === '/experimental/v1/party-preview') {
+    if (body.revision !== revision) errors.push('revision must match the observation');
+    if (!Number.isInteger(body.partyId) || !legalActions.some(action => action.partyId === body.partyId)) errors.push('party is not available');
     return errors;
   }
 

@@ -25,6 +25,7 @@ export type ExperimentalPartyCycle = {
   stateStartedAt: number;
   durationMs: number;
   restInitialTotalSteps?: number;
+  isCurrentExpeditionGodsBattle?: boolean;
 };
 
 const itemCategories = ['armor', 'robe', 'shield', 'sword', 'katana', 'gauntlet', 'arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst'] as const;
@@ -212,6 +213,7 @@ export function buildExperimentalObservation(
           && !autoRun
         ),
       },
+      defeatedBossDungeonIds: Object.keys(party.defeatedBossExpeditions).map(Number).filter(id => party.defeatedBossExpeditions[id]),
       clearGates,
       sideQuest: party.sideQuest ? { ...party.sideQuest } : null,
       characters: party.characters.map((character, row) => {
@@ -226,9 +228,10 @@ export function buildExperimentalObservation(
           equipment: character.equipment.slice(0, stats?.maxEquipSlots ?? character.equipment.length).map((item, slotIndex) => ({ slotIndex, locked: Boolean(item?.isLocked), item: item ? { itemId: item.id, variantId: getVariantKey(item), category: item.category, tier: Math.max(1, Math.floor(item.id / 1000)), rarity: rarity(item), enhancement: item.enhancement, superRare: item.superRare, rawStats: { ...item, jewel: undefined, isLocked: undefined, isNew: undefined }, jewel: item.jewel ?? null } : null })),
         };
       }),
-      latestExpedition: latestExpedition(party),
+      latestExpedition: cycles[partyIndex]?.state === 'explore' ? null : latestExpedition(party),
       _legalActions: [
         ...characterActions,
+        { type: 'configure_party', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: assignableDeityIds } },
         { type: 'run_auto_equipment', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_jewel_priority_party', partyId: party.id, characterId: null, constraints: {} },
@@ -249,7 +252,7 @@ export function buildExperimentalObservation(
     };
   });
   const legalActions: Array<{ type: string; partyId: number | null; characterId: number | null; constraints: Record<string, unknown> }> = [
-    ...parties.flatMap((party) => party._legalActions),
+    ...parties.flatMap((party) => party._legalActions).filter(action => !state.apiRuntime?.evaluation || action.type !== 'god_battle'),
     { type: 'set_auto_run', partyId: null, characterId: null, constraints: { enabled: [true, false] } },
   ];
   return {

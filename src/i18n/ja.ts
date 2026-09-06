@@ -4087,6 +4087,8 @@ const ja = {
   'home.inventory.sellResultGold': '{gold}ゴールドを獲得しました。',
 
   'setting.desktopNotifications.title': 'macOS通知',
+  'setting.experimentalApi.aiPlayFinished': 'AI Play は終了しました。最終スコア: {score}。評価結果は API で確認できます。',
+  'setting.experimentalApi.aiPlayReady': 'AI Play は停止中です。API に接続して開始・再開してください。',
   'setting.experimentalApi.title': '実験的AI API',
   'setting.experimentalApi.helpBeforeLink': 'AIに冒ケモを操作させる仕組みです。利用方法は公式GitHub(',
   'setting.experimentalApi.helpAfterLink': ')より確認ください。Bearerトークンは秘密にしてください。',

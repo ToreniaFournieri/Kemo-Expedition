@@ -11,6 +11,7 @@ test('Experimental AI API enforces authentication and an exclusive lease', async
     build: 42,
     invokeRenderer: async (operation, payload) => {
       rendererRequests.push({ operation, payload });
+      if (operation === 'invalid-request') return { status: 400, error: { code: 'invalid_request' } };
       if (operation === 'status') return { status: 'ready', revision: 7 };
       if (operation === 'set-control') {
         controlled = true;

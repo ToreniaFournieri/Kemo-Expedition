@@ -78,3 +78,18 @@
 
   `105653_v0.9.6(7)_TestRun_20260906.md`
 
+
+#### 12.1.3 API accounting and session lifecycle
+
+* Regulation version: `1`. Each session records the game version/build and regulation version.
+* Count one call for each authenticated, lease-owned gameplay request accepted by the serialized API dispatcher. Observation, build-options, retained logs, command, sortie, simulation, party-preview and catalog requests are gameplay requests. Invalid input, stale revisions, illegal actions and received idempotent retries count.
+* Public/authenticated status, control acquisition/renewal/release, and evaluation-summary retrieval do not count. Authentication/lease failures and busy rejections occur before dispatcher acceptance and do not count. Exempt endpoints must not provide strategic game observations.
+* One simulation request executes exactly 1,000 forecasts. There is no separate total forecast quota; every request still consumes a counted call.
+* A sortie batch executes its exact requested count. If the boss is defeated before the batch ends, all completed sorties in that operation count. Finalize success after the complete operation, including on counted call 200.
+* No background or AFK progression is allowed before the first request, between requests, during lease gaps, or after the evaluation ends. Normal saves created during this evaluation may be used to resume the same evaluation; they must not initialize a different evaluation.
+* Organizer setup uses a new isolated desktop profile. `--ai-play=<Concept>` creates a new session; `--resume-ai-play=<EvaluationUUID>` opens its checkpoint on the identical version/build. Both require `--environment=orca`. The playing agent has no reset/import/start-evaluation API.
+* Calls are reserved durably before execution. An interrupted reserved call still counts. Gameplay, random state, score results and idempotency receipts commit atomically; an uncommitted operation adds no actual sorties. Repeating a committed mutation with the same `Idempotency-Key` and identical request replays its result without executing gameplay again, but consumes another call while the evaluation remains active.
+* Requests after termination are rejected without changing the frozen score. The final summary remains readable without an active lease.
+* The desktop application writes an authoritative operation-ledger report into `AI_play_report` (packaged application: `Documents/BoKemo/AI_play_report`). The player may add strategy commentary after completion. Reports contain no tokens or hidden random state.
+
+* Report filenames use the evaluation start date. If another evaluation already occupies the same filename, append the evaluation UUID to the Concept portion so neither report is overwritten.

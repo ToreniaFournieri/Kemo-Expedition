@@ -4087,6 +4087,8 @@ const en = {
   'home.inventory.sellResultGold': 'Received {gold} Gold.',
 
   'setting.desktopNotifications.title': 'macOS notifications',
+  'setting.experimentalApi.aiPlayFinished': 'AI Play has ended. Final score: {score}. The evaluation summary remains available through the API.',
+  'setting.experimentalApi.aiPlayReady': 'AI Play is paused. Connect through the API to begin or resume.',
   'setting.experimentalApi.title': 'Experimental AI API',
   'setting.experimentalApi.helpBeforeLink': 'This feature lets AI control BoKemo. See the official GitHub (',
   'setting.experimentalApi.helpAfterLink': ') for instructions. Keep the bearer token private.',

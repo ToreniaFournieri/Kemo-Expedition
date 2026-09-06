@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, Notification, Tray, ipcMain, nativeImage, net,
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
+const { prepareAiPlay, writeAiPlayReport } = require('./ai-play.cjs');
 const { createExperimentalApi } = require('./experimental-api.cjs');
 const { normalizeAppMemoryMetrics } = require('./memory-metrics.cjs');
 
@@ -25,8 +26,14 @@ let isExperimentalApiShutdownComplete = false;
 let experimentalApiShutdownPromise = null;
 let latestPartyProgressSnapshot = null;
 let experimentalApiRequestId = 0;
+let experimentalApiRendererReady = false;
 const experimentalApiPendingRequests = new Map();
 const buildNumber = Number.parseInt(fs.readFileSync(path.resolve(__dirname, '..', 'build_number.txt'), 'utf8').trim(), 10);
+
+const aiPlay = prepareAiPlay({ argv: process.argv, userData: app.getPath('userData'), environment: desktopEnvironment,
+  version: app.getVersion(), build: buildNumber,
+  reportDirectory: app.isPackaged ? path.join(app.getPath('documents'), 'BoKemo', 'AI_play_report') : path.resolve(__dirname, '..', 'AI_play_report') });
+if (aiPlay) app.setPath('userData', aiPlay.profile);
 
 function invokeExperimentalApiRenderer(operation, payload) {
   return new Promise((resolve, reject) => {
@@ -34,11 +41,15 @@ function invokeExperimentalApiRenderer(operation, payload) {
       reject(new Error('Renderer unavailable'));
       return;
     }
+    if (!experimentalApiRendererReady) {
+      resolve({ status: 'loading', revision: null });
+      return;
+    }
     const requestId = ++experimentalApiRequestId;
-    const timeout = setTimeout(() => {
+    const timeout = operation === 'status' ? setTimeout(() => {
       experimentalApiPendingRequests.delete(requestId);
       reject(new Error('Renderer request timed out'));
-    }, operation === 'sortie' ? 120_000 : 15_000);
+    }, 15_000) : null;
     experimentalApiPendingRequests.set(requestId, { resolve, reject, timeout });
     mainWindow.webContents.send('desktop:experimental-api-request', { requestId, operation, payload });
   });
@@ -49,6 +60,7 @@ const experimentalApi = createExperimentalApi({
   version: app.getVersion(),
   build: buildNumber,
   invokeRenderer: invokeExperimentalApiRenderer,
+  onEvaluationFinished: (evaluation) => writeAiPlayReport(aiPlay, evaluation),
 });
 
 // SpecRef: 9.1 | Desktop distribution | stable application origin and profile
@@ -106,11 +118,18 @@ function createWindow(options = {}) {
       nodeIntegration: false,
       sandbox: true,
       preload: PRELOAD_PATH,
+      additionalArguments: aiPlay ? ['--bokemo-ai-play=' + JSON.stringify({ evaluationId: aiPlay.evaluationId, concept: aiPlay.concept, version: aiPlay.version, build: aiPlay.build, resume: aiPlay.resume })] : [],
       backgroundThrottling: false,
     },
   });
 
   mainWindow = window;
+  window.webContents.on('did-start-loading', () => { experimentalApiRendererReady = false; });
+  window.webContents.on('render-process-gone', () => {
+    experimentalApiRendererReady = false;
+    for (const pending of experimentalApiPendingRequests.values()) { clearTimeout(pending.timeout); pending.reject(new Error('Renderer stopped')); }
+    experimentalApiPendingRequests.clear();
+  });
 
   window.on('close', (event) => {
     if (isQuitting || process.platform !== 'darwin') return;
@@ -418,8 +437,11 @@ ipcMain.handle('desktop:get-experimental-api-settings', () => experimentalApi.ge
 ipcMain.handle('desktop:set-experimental-api-enabled', async (_event, enabled) => (
   enabled === true ? experimentalApi.enable() : experimentalApi.disable()
 ));
+ipcMain.on('desktop:experimental-api-ready', (event) => {
+  if (event.sender === mainWindow?.webContents) experimentalApiRendererReady = true;
+});
 ipcMain.on('desktop:experimental-api-response', (_event, message) => {
-  if (!message || !Number.isInteger(message.requestId)) return;
+  if (_event.sender !== mainWindow?.webContents || !message || !Number.isInteger(message.requestId)) return;
   const pending = experimentalApiPendingRequests.get(message.requestId);
   if (!pending) return;
   clearTimeout(pending.timeout);
@@ -428,6 +450,7 @@ ipcMain.on('desktop:experimental-api-response', (_event, message) => {
 });
 
 app.whenReady().then(() => {
+  if (aiPlay) void experimentalApi.enable();
   // Serving the packaged Vite output through a standard, secure custom scheme gives
   // localStorage a stable origin while preserving relative assets and query strings.
   protocol.handle('app', (request) => {

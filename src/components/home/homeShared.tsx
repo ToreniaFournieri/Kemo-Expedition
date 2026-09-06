@@ -183,6 +183,8 @@ export interface HomeScreenProps {
   onDismissAllNotifications: () => void;
   bags: GameBags;
   actions: {
+    getApiReadiness: () => 'ready' | 'save_error';
+    commitApiState: (state: GameState) => Promise<void>;
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     autoSelectDungeon: (partyIndex: number, dungeonId: number) => void;

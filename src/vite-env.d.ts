@@ -103,6 +103,7 @@ interface Window {
     sample: () => Promise<import('./game/memoryMonitoring').MemoryDiagnosticExport>;
   };
   bokemoDesktop?: {
+    aiPlay?: { evaluationId: string; concept: string; version: string; build: number; resume: boolean } | null;
     getStatus: () => Promise<{ isMacDesktop: boolean; notificationSupported: boolean }>;
     getWindowVisibility: () => Promise<boolean>;
     getMemoryMetrics: () => Promise<DesktopProcessMemoryMetrics>;
