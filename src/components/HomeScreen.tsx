@@ -1352,7 +1352,15 @@ export function HomeScreen({
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
     const forceFull = options?.forceFull === true;
-    const simulatedInventory: InventoryRecord = measure('inventoryClone', () => ({ ...sourceState.global.inventory }));
+    // SpecRef: 7.1.2.2 | Simulation: the equipment change | Initialize the simulation memory.
+    // Reads can share the immutable source; allocate scratch inventory only
+    // when a selected equipment change actually mutates the decision view.
+    let simulatedInventory: InventoryRecord = sourceState.global.inventory;
+    const prepareInventoryMutation = () => {
+      if (simulatedInventory === sourceState.global.inventory) {
+        simulatedInventory = measure('inventoryClone', () => ({ ...simulatedInventory }));
+      }
+    };
     let inventoryIndex: AutoEquipmentInventoryIndex | null = null;
     const getInventoryIndex = (): AutoEquipmentInventoryIndex | null => {
       if (!usesInventoryIndex) return null;
@@ -1401,6 +1409,7 @@ export function HomeScreen({
 
     const addItemToSimulatedInventory = (item: Item) => {
       const key = getVariantKey(item);
+      prepareInventoryMutation();
       const existing = simulatedInventory[key];
       if (existing) {
         simulatedInventory[key] = { ...existing, count: existing.count + 1, status: 'owned' };
@@ -1414,6 +1423,7 @@ export function HomeScreen({
     const removeItemFromSimulatedInventory = (key: string) => {
       const existing = simulatedInventory[key];
       if (!existing || existing.count <= 0) return;
+      prepareInventoryMutation();
       if (existing.count <= 1) {
         delete simulatedInventory[key];
         inventoryIndex?.remove(key, existing);
@@ -1770,13 +1780,23 @@ export function HomeScreen({
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
       const isJewelPriorityParty = sourceState.global.jewelAutoEquipPriorityPartyId === party.id;
-      const partyHasEmptySlot = party.characters.some((character) => {
-        const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
-        return Array.from({ length: maxSlots }, (_, slotIndex) => character.equipment[slotIndex] == null).some(Boolean);
-      });
+      const maxSlotsByCharacter = new Map<Character, number>();
+      const getMaxSlots = (character: Character): number => {
+        const cached = maxSlotsByCharacter.get(character);
+        if (cached !== undefined) return cached;
+        const slots = measure('statComputation', () => computeCharacterStats(character, party.level).maxEquipSlots);
+        maxSlotsByCharacter.set(character, slots);
+        return slots;
+      };
       const fullRevisionIsDirty = party.lastFullEquipmentRevision !== (sourceState.global.equipmentInventoryRevision ?? 0)
         || (isJewelPriorityParty && party.lastFullJewelRevision !== (sourceState.global.jewelInventoryRevision ?? 0));
-      const shouldRunFull = forceFull || fullRevisionIsDirty || partyHasEmptySlot;
+      const shouldRunFull = forceFull || fullRevisionIsDirty || party.characters.some((character) => {
+        const maxSlots = getMaxSlots(character);
+        for (let slotIndex = 0; slotIndex < maxSlots; slotIndex += 1) {
+          if (character.equipment[slotIndex] == null) return true;
+        }
+        return false;
+      });
 
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
@@ -1789,7 +1809,7 @@ export function HomeScreen({
         // SpecRef: 7.1.1.2 | Equipping into empty slots | Item selection from a specific item category
         const combatStyle = decideAutoEquipmentCombatStyle(character);
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.guardian;
-        const { maxEquipSlots } = measure('statComputation', () => computeCharacterStats(character, party.level));
+        const maxEquipSlots = getMaxSlots(character);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
         const memoryItemIds = new Set<number>();
         const memoryCBonusNames = new Set<string>();

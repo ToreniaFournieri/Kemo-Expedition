@@ -184,7 +184,7 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(homeSource, /actions\.commitAfkPartyChunk\(completedResult\)/);
   assert.match(homeSource, /const autoEquipment = capturedSettingChanges[\s\S]{0,500}\(committedState: GameState\) =>/);
   assert.match(homeSource, /actions\.commitAfkPartyTransaction\([\s\S]{0,200}autoEquipment/);
-  assert.match(hookSource, /const committedState = commitAfkPartyChunk\(state, action\.result\)[\s\S]{0,500}action\.autoEquipment\(committedState\)/);
+  assert.match(hookSource, /const committedState = commitAfkChunkWithAvailabilityRevisions\(state, action\.result\)[\s\S]{0,500}action\.autoEquipment\(committedState\)/);
   assert.match(homeSource, /transaction\.stage === 'auto_equipment_dispatched'/);
   assert.match(homeSource, /actions\.applyAutoEquipmentActions\(plan\.actions\)/);
   assert.match(homeSource, /transaction\.stage = 'auto_equipment_dispatched'[\s\S]{0,500}return;/);

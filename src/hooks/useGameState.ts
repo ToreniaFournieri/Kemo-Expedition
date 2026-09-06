@@ -1,3 +1,4 @@
+import { hasNewAvailability } from '../game/inventoryAvailability';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { RuntimeGameMode } from '../game/runtimeGameMode';
 import {
@@ -2349,24 +2350,14 @@ function syncPartyCurrentHpAfterMaxHpChange(
   };
 }
 
-function hasNewAvailability(
-  previous: Record<string, unknown> | undefined,
-  next: Record<string, unknown> | undefined,
-): boolean {
-  const countOf = (value: unknown): number => {
-    if (typeof value === 'number') return value;
-    if (value && typeof value === 'object' && typeof (value as { count?: unknown }).count === 'number') {
-      return (value as { count: number }).count;
-    }
-    return 0;
-  };
-  return Object.keys(next ?? {}).some((key) => countOf(previous?.[key]) <= 0 && countOf(next?.[key]) > 0);
-}
-
-function applyInventoryAvailabilityRevisions(previous: GameState, next: GameState): GameState {
+function applyInventoryAvailabilityRevisions(
+  previous: GameState,
+  next: GameState,
+  changedKeys?: { equipment: readonly string[]; jewels: readonly string[] },
+): GameState {
   if (previous === next) return next;
-  const equipmentChanged = hasNewAvailability(previous.global.inventory, next.global.inventory);
-  const jewelChanged = hasNewAvailability(previous.global.jewels, next.global.jewels);
+  const equipmentChanged = hasNewAvailability(previous.global.inventory, next.global.inventory, changedKeys?.equipment);
+  const jewelChanged = hasNewAvailability(previous.global.jewels, next.global.jewels, changedKeys?.jewels);
   if (!equipmentChanged && !jewelChanged) return next;
   return {
     ...next,
@@ -2376,6 +2367,17 @@ function applyInventoryAvailabilityRevisions(previous: GameState, next: GameStat
       jewelInventoryRevision: (next.global.jewelInventoryRevision ?? 0) + (jewelChanged ? 1 : 0),
     },
   };
+}
+
+function commitAfkChunkWithAvailabilityRevisions(state: GameState, result: AfkPartyChunkResult): GameState {
+  // SpecRef: 5.1 | Chunk | Coordinator process
+  // SpecRef: 7.1.2.1 | Dirty check | equipmentInventoryRevision
+  // Only the committed delta can change availability. Compare against current
+  // authority, never the stale worker snapshot, before invoking the planner.
+  return applyInventoryAvailabilityRevisions(state, commitAfkPartyChunk(state, result), {
+    equipment: Object.keys(result.globalDelta.inventory),
+    jewels: Object.keys(result.globalDelta.jewels),
+  });
 }
 
 function reduceGameState(
@@ -3947,7 +3949,7 @@ function reduceGameState(
     }
 
     case 'COMMIT_AFK_PARTY_CHUNK':
-      return commitAfkPartyChunk(state, action.result);
+      return commitAfkChunkWithAvailabilityRevisions(state, action.result);
 
     case 'COMMIT_AFK_PARTY_TRANSACTION': {
       // One authoritative AFK publication: Chunk merge, pending-setting overlay,
@@ -3956,7 +3958,7 @@ function reduceGameState(
       // intermediate Chunk-only state just so React can feed it back to the
       // planner on the following effect.
       const chunkStartedAt = action.attribution ? performance.now() : 0;
-      const committedState = commitAfkPartyChunk(state, action.result);
+      const committedState = commitAfkChunkWithAvailabilityRevisions(state, action.result);
       if (action.attribution) action.attribution.chunkMergeMs = Math.max(0, performance.now() - chunkStartedAt);
       const planningStartedAt = action.attribution ? performance.now() : 0;
       const plan: AfkPartyTransactionPlan = typeof action.autoEquipment === 'function'
@@ -3969,7 +3971,7 @@ function reduceGameState(
       }
       if (plan.actions.length === 0) return committedState;
       const equipmentStartedAt = action.attribution ? performance.now() : 0;
-      const nextState = reduceGameState(committedState, {
+      const nextState = gameReducer(committedState, {
         type: 'APPLY_AUTO_EQUIPMENT_ACTIONS',
         actions: [...plan.actions],
       });
@@ -4258,10 +4260,11 @@ function gameReducer(
   autoEquipmentContext?: AutoEquipmentReducerContext,
   afkChunkContext?: AfkChunkReducerContext,
 ): GameState {
-  const next = applyInventoryAvailabilityRevisions(
-    state,
-    reduceGameState(state, action, autoEquipmentContext, afkChunkContext),
-  );
+  const reduced = reduceGameState(state, action, autoEquipmentContext, afkChunkContext);
+  // AFK commits already account for the Chunk and equipment stages separately.
+  // Rechecking the whole transaction here would count new availability twice.
+  if (action.type === 'COMMIT_AFK_PARTY_TRANSACTION' || action.type === 'COMMIT_AFK_PARTY_CHUNK') return reduced;
+  const next = applyInventoryAvailabilityRevisions(state, reduced);
   if (action.type !== 'APPLY_AUTO_EQUIPMENT_ACTIONS') return next;
   const stampedPartyIndexes = action.actions
     .filter((nestedAction): nestedAction is Extract<AutoEquipmentProfileAction, { type: 'STAMP_FULL_AUTO_EQUIPMENT' }> => nestedAction.type === 'STAMP_FULL_AUTO_EQUIPMENT')
@@ -4297,11 +4300,24 @@ export function applyAutoEquipmentProfileActionsSequentially(
   state: GameState,
   actions: readonly AutoEquipmentProfileAction[],
 ): GameState {
-  // Test/profile oracle for one logical automatic-equipment transaction.
-  return applyInventoryAvailabilityRevisions(
+  // Test/profile oracle: apply every action independently, then finalize the
+  // logical batch's revisions and FULL stamps just like an ordinary commit.
+  const next = applyInventoryAvailabilityRevisions(
     state,
     actions.reduce((current, action) => reduceGameState(current, action), state),
   );
+  const stampedParties = new Set(actions.flatMap((action) => (
+    action.type === 'STAMP_FULL_AUTO_EQUIPMENT' ? [action.partyIndex] : []
+  )));
+  if (stampedParties.size === 0) return next;
+  return {
+    ...next,
+    parties: next.parties.map((party, partyIndex) => stampedParties.has(partyIndex) ? {
+      ...party,
+      lastFullEquipmentRevision: next.global.equipmentInventoryRevision ?? 0,
+      lastFullJewelRevision: next.global.jewelInventoryRevision ?? 0,
+    } : party),
+  };
 }
 
 export interface AfkPartyTransactionAttribution {

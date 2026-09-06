@@ -1,0 +1,677 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-06T06:56:53.671Z",
+  "sampling": {
+    "environment": "orca",
+    "hours": [
+      162
+    ],
+    "modes": [
+      "timing"
+    ],
+    "variants": [
+      "authority-production"
+    ],
+    "workerLimit": null,
+    "warmups": 1,
+    "samples": 3,
+    "freshElectronProcessPerRun": true,
+    "alternatingVariantOrder": false
+  },
+  "workloads": {
+    "authority-production-timing-162h": {
+      "mode": "timing",
+      "variant": "authority-production",
+      "environment": "orca",
+      "rawAbsenceHours": 162,
+      "samples": 3,
+      "finalStateHashes": [
+        "e19c89243f115a23ce670a0662b3a326d63f06109889d89b188283e618f60bf3",
+        "422f7bebd5cfeec2c6aaff1354dd72b56aa82b1689f55a654a6cabd7b1dcc223"
+      ],
+      "persistedStateHashes": [
+        "e19c89243f115a23ce670a0662b3a326d63f06109889d89b188283e618f60bf3",
+        "422f7bebd5cfeec2c6aaff1354dd72b56aa82b1689f55a654a6cabd7b1dcc223"
+      ],
+      "wholeRecoveryHashStable": false,
+      "persistedStateSemanticallyIdenticalEveryRun": true,
+      "documentLoadedMs": {
+        "samples": 3,
+        "minimum": 148.5615,
+        "p50": 162.339875,
+        "p95": 172.36587499999996,
+        "maximum": 172.36587499999996
+      },
+      "startupToResultMs": {
+        "samples": 3,
+        "minimum": 15057.72075,
+        "p50": 16714.526166,
+        "p95": 16757.062791,
+        "maximum": 16757.062791
+      },
+      "equipmentPlanningPhasesMs": {
+        "inventoryClone": {
+          "samples": 3,
+          "minimum": 138.299999833107,
+          "p50": 156.4000001847744,
+          "p95": 162.6000002026558,
+          "maximum": 162.6000002026558
+        },
+        "inventoryIndexBuild": {
+          "samples": 3,
+          "minimum": 36.60000014305115,
+          "p50": 44.99999997019768,
+          "p95": 45.09999990463257,
+          "maximum": 45.09999990463257
+        },
+        "inventoryScan": {
+          "samples": 3,
+          "minimum": 264.39999973773956,
+          "p50": 287.2000005245209,
+          "p95": 306.50000005960464,
+          "maximum": 306.50000005960464
+        },
+        "nativeRanking": {
+          "samples": 3,
+          "minimum": 13.19999971985817,
+          "p50": 14.199999988079071,
+          "p95": 15.099999994039536,
+          "maximum": 15.099999994039536
+        },
+        "statComputation": {
+          "samples": 3,
+          "minimum": 14.89999982714653,
+          "p50": 16.899999916553497,
+          "p95": 17.500000059604645,
+          "maximum": 17.500000059604645
+        },
+        "jewelPlanning": {
+          "samples": 3,
+          "minimum": 2.8999999463558197,
+          "p50": 2.9000000059604645,
+          "p95": 3.3999998569488525,
+          "maximum": 3.3999998569488525
+        },
+        "notificationPlanning": {
+          "samples": 3,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0.20000001788139343,
+          "maximum": 0.20000001788139343
+        },
+        "actionDispatch": {
+          "samples": 3,
+          "minimum": 0.09999999403953552,
+          "p50": 0.19999998807907104,
+          "p95": 0.7000000178813934,
+          "maximum": 0.7000000178813934
+        },
+        "reducerApplication": {
+          "samples": 3,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "unclassifiedMs": {
+          "samples": 3,
+          "minimum": 185.40000048279762,
+          "p50": 205.69999942183495,
+          "p95": 216.79999974370003,
+          "maximum": 216.79999974370003
+        }
+      },
+      "wallMs": {
+        "samples": 3,
+        "minimum": 14622.300000011921,
+        "p50": 16255.09999999404,
+        "p95": 16284.40000000596,
+        "maximum": 16284.40000000596
+      },
+      "heartbeatP95Ms": {
+        "samples": 3,
+        "minimum": 16.100000023841858,
+        "p50": 17.19999998807907,
+        "p95": 19.19999998807907,
+        "maximum": 19.19999998807907
+      },
+      "heartbeatMaximumMs": {
+        "samples": 3,
+        "minimum": 375.5,
+        "p50": 407.30000001192093,
+        "p95": 415.40000000596046,
+        "maximum": 415.40000000596046
+      },
+      "reactCommitCount": {
+        "samples": 3,
+        "minimum": 140,
+        "p50": 155,
+        "p95": 155,
+        "maximum": 155
+      },
+      "reactCommitP95Ms": {
+        "samples": 3,
+        "minimum": 21.599999994039536,
+        "p50": 23.700000017881393,
+        "p95": 25.400000005960464,
+        "maximum": 25.400000005960464
+      },
+      "longTaskMaximumMs": {
+        "samples": 3,
+        "minimum": 341,
+        "p50": 368,
+        "p95": 376,
+        "maximum": 376
+      },
+      "attribution": {
+        "jobConstructionMs": {
+          "samples": 3,
+          "minimum": 183.60000002384186,
+          "p50": 202.4999997317791,
+          "p95": 213.00000002980232,
+          "maximum": 213.00000002980232
+        },
+        "workerSubmissionMs": {
+          "samples": 3,
+          "minimum": 308.6999998688698,
+          "p50": 340.8000001013279,
+          "p95": 355.3999999165535,
+          "maximum": 355.3999999165535
+        },
+        "workerExecutionSumMs": {
+          "samples": 3,
+          "minimum": 21374.600000083447,
+          "p50": 24089.20000010729,
+          "p95": 24158.100000202656,
+          "maximum": 24158.100000202656
+        },
+        "workerInputQueueMs": {
+          "samples": 3,
+          "minimum": 1404.494140625,
+          "p50": 1497.366455078125,
+          "p95": 1535.191650390625,
+          "maximum": 1535.191650390625
+        },
+        "workerInputHydrationMs": {
+          "samples": 3,
+          "minimum": 11.10000017285347,
+          "p50": 11.599999994039536,
+          "p95": 11.600000202655792,
+          "maximum": 11.600000202655792
+        },
+        "workerLanguageReadyMs": {
+          "samples": 3,
+          "minimum": 2.4999999701976776,
+          "p50": 2.5999999046325684,
+          "p95": 3.899999976158142,
+          "maximum": 3.899999976158142
+        },
+        "workerSimulationExecutionMs": {
+          "samples": 3,
+          "minimum": 21360.40000000596,
+          "p50": 24073.100000172853,
+          "p95": 24143.500000029802,
+          "maximum": 24143.500000029802
+        },
+        "workerBattleCount": {
+          "samples": 3,
+          "minimum": 5743,
+          "p50": 5743,
+          "p95": 5743,
+          "maximum": 5743
+        },
+        "workerBattleTotalMs": {
+          "samples": 3,
+          "minimum": 3410.799998998642,
+          "p50": 3719.2000004649162,
+          "p95": 3786.3000008165836,
+          "maximum": 3786.3000008165836
+        },
+        "workerBattlePreparationMs": {
+          "samples": 3,
+          "minimum": 319.8000004887581,
+          "p50": 351.40000000596046,
+          "p95": 363.6999993920326,
+          "maximum": 363.6999993920326
+        },
+        "workerBattleInputWriteMs": {
+          "samples": 3,
+          "minimum": 587.1999986469746,
+          "p50": 630.0000003874302,
+          "p95": 658.6999993622303,
+          "maximum": 658.6999993622303
+        },
+        "workerBattleNativeExecutionMs": {
+          "samples": 3,
+          "minimum": 1196.0000002086163,
+          "p50": 1277.3000023663044,
+          "p95": 1306.2000004053116,
+          "maximum": 1306.2000004053116
+        },
+        "workerBattleBorrowedOutputValidationMs": {
+          "samples": 3,
+          "minimum": 90.20000031590462,
+          "p50": 98.90000003576279,
+          "p95": 117.79999977350235,
+          "maximum": 117.79999977350235
+        },
+        "workerBattleOutputConsumeMs": {
+          "samples": 3,
+          "minimum": 892.6999996006489,
+          "p50": 972.8999999463558,
+          "p95": 1023.1999992728233,
+          "maximum": 1023.1999992728233
+        },
+        "workerBattleInputBytes": {
+          "samples": 3,
+          "minimum": 16752960,
+          "p50": 16752960,
+          "p95": 16752960,
+          "maximum": 16752960
+        },
+        "workerBattleOutputBytes": {
+          "samples": 3,
+          "minimum": 7682432,
+          "p50": 7682432,
+          "p95": 7682432,
+          "maximum": 7682432
+        },
+        "workerBattleResultBagEntryAllocations": {
+          "samples": 3,
+          "minimum": 68916,
+          "p50": 68916,
+          "p95": 68916,
+          "maximum": 68916
+        },
+        "workerStatusSnapshotMs": {
+          "samples": 3,
+          "minimum": 357.3000000715256,
+          "p50": 379.9999996125698,
+          "p95": 395.39999997615814,
+          "maximum": 395.39999997615814
+        },
+        "workerExpeditionMs": {
+          "samples": 3,
+          "minimum": 6940.499998062849,
+          "p50": 7712.4999986588955,
+          "p95": 7815.700001686811,
+          "maximum": 7815.700001686811
+        },
+        "workerDiaryFinalizationMs": {
+          "samples": 3,
+          "minimum": 75.0000002682209,
+          "p50": 87.5999998152256,
+          "p95": 91.4999997317791,
+          "maximum": 91.4999997317791
+        },
+        "workerSideQuestAutomationMs": {
+          "samples": 3,
+          "minimum": 863.7000008821487,
+          "p50": 948.4000023603439,
+          "p95": 960.3999986350536,
+          "maximum": 960.3999986350536
+        },
+        "workerProfitProcessingMs": {
+          "samples": 3,
+          "minimum": 12264.800000458956,
+          "p50": 13912.199999839067,
+          "p95": 13962.199999690056,
+          "maximum": 13962.199999690056
+        },
+        "workerHpRecoveryMs": {
+          "samples": 3,
+          "minimum": 197.00000017881393,
+          "p50": 217.89999985694885,
+          "p95": 224.89999988675117,
+          "maximum": 224.89999988675117
+        },
+        "workerProgressCallbackMs": {
+          "samples": 3,
+          "minimum": 153.7000007033348,
+          "p50": 175.29999974370003,
+          "p95": 176.9000001847744,
+          "maximum": 176.9000001847744
+        },
+        "workerChunkFinalizationMs": {
+          "samples": 3,
+          "minimum": 1.100000023841858,
+          "p50": 1.199999988079071,
+          "p95": 1.9000000357627869,
+          "maximum": 1.9000000357627869
+        },
+        "workerInventoryDeltaMs": {
+          "samples": 3,
+          "minimum": 109.89999982714653,
+          "p50": 119.700000166893,
+          "p95": 123.1999998986721,
+          "maximum": 123.1999998986721
+        },
+        "workerExpeditionPreparationMs": {
+          "samples": 3,
+          "minimum": 1132.7000002264977,
+          "p50": 1284.2999975383282,
+          "p95": 1303.3000001609325,
+          "maximum": 1303.3000001609325
+        },
+        "workerExpeditionInventoryCoordinatorMs": {
+          "samples": 3,
+          "minimum": 18.90000006556511,
+          "p50": 19.09999993443489,
+          "p95": 20.09999993443489,
+          "maximum": 20.09999993443489
+        },
+        "workerExpeditionServiceMs": {
+          "samples": 3,
+          "minimum": 2840.9999995827675,
+          "p50": 3181.500001192093,
+          "p95": 3217.099999934435,
+          "maximum": 3217.099999934435
+        },
+        "workerExpeditionPostServiceMs": {
+          "samples": 3,
+          "minimum": 615.3999987542629,
+          "p50": 665.700000166893,
+          "p95": 673.9000005424023,
+          "maximum": 673.9000005424023
+        },
+        "workerExpeditionInventoryCompletionMs": {
+          "samples": 3,
+          "minimum": 9.799999952316284,
+          "p50": 10.000000029802322,
+          "p95": 10.099999994039536,
+          "maximum": 10.099999994039536
+        },
+        "workerExpeditionPresentationCompletionMs": {
+          "samples": 3,
+          "minimum": 1872.8999996185303,
+          "p50": 2035.8999997377396,
+          "p95": 2084.1000013947487,
+          "maximum": 2084.1000013947487
+        },
+        "workerExpeditionCommitProjectionMs": {
+          "samples": 3,
+          "minimum": 374.6999996602535,
+          "p50": 420.19999995827675,
+          "p95": 429.29999989271164,
+          "maximum": 429.29999989271164
+        },
+        "workerExpeditionCount": {
+          "samples": 3,
+          "minimum": 1470,
+          "p50": 1470,
+          "p95": 1470,
+          "maximum": 1470
+        },
+        "workerExpeditionRoomCount": {
+          "samples": 3,
+          "minimum": 4255,
+          "p50": 4255,
+          "p95": 4271,
+          "maximum": 4271
+        },
+        "workerExpeditionRetainedNarrationCount": {
+          "samples": 3,
+          "minimum": 626,
+          "p50": 634,
+          "p95": 634,
+          "maximum": 634
+        },
+        "workerExpeditionReplayedBattleCount": {
+          "samples": 3,
+          "minimum": 1558,
+          "p50": 1568,
+          "p95": 1568,
+          "maximum": 1568
+        },
+        "hydrationMs": {
+          "samples": 3,
+          "minimum": 2.700000047683716,
+          "p50": 3.199999988079071,
+          "p95": 3.400000125169754,
+          "maximum": 3.400000125169754
+        },
+        "fifoCommitWaitMs": {
+          "samples": 3,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "chunkCommitReactVisibilityMs": {
+          "samples": 3,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "autoEquipmentMs": {
+          "samples": 3,
+          "minimum": 660.2999997735023,
+          "p50": 732.0000000596046,
+          "p95": 770.8999999165535,
+          "maximum": 770.8999999165535
+        },
+        "autoEquipmentPlanningCount": {
+          "samples": 3,
+          "minimum": 350,
+          "p50": 350,
+          "p95": 350,
+          "maximum": 350
+        },
+        "autoEquipmentNoopCount": {
+          "samples": 3,
+          "minimum": 45,
+          "p50": 46,
+          "p95": 47,
+          "maximum": 47
+        },
+        "autoEquipmentPlannedActionCount": {
+          "samples": 3,
+          "minimum": 5,
+          "p50": 5,
+          "p95": 6,
+          "maximum": 6
+        },
+        "autoEquipmentReactVisibilityMs": {
+          "samples": 3,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "atomicTransactionReactVisibilityMs": {
+          "samples": 3,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "chunkReducerMs": {
+          "samples": 3,
+          "minimum": 208.19999998807907,
+          "p50": 234.10000017285347,
+          "p95": 244.69999986886978,
+          "maximum": 244.69999986886978
+        },
+        "autoEquipmentReducerMs": {
+          "samples": 3,
+          "minimum": 26.899999916553497,
+          "p50": 30.200000047683716,
+          "p95": 32.80000001192093,
+          "maximum": 32.80000001192093
+        },
+        "coordinatorAuthorityTransactionMs": {
+          "samples": 3,
+          "minimum": 960.6999998986721,
+          "p50": 1070.0000000298023,
+          "p95": 1123.7999998629093,
+          "maximum": 1123.7999998629093
+        },
+        "coordinatorAuthorityTransactionMaximumMs": {
+          "samples": 3,
+          "minimum": 25.099999994039536,
+          "p50": 27.30000001192093,
+          "p95": 29.900000005960464,
+          "maximum": 29.900000005960464
+        },
+        "coordinatorAuthorityTransactionCount": {
+          "samples": 3,
+          "minimum": 350,
+          "p50": 350,
+          "p95": 350,
+          "maximum": 350
+        },
+        "coordinatorAuthorityPublicationCount": {
+          "samples": 3,
+          "minimum": 123,
+          "p50": 137,
+          "p95": 138,
+          "maximum": 138
+        },
+        "coordinatorAuthorityTransactionsPerPublication": {
+          "samples": 3,
+          "minimum": 2.536231884057971,
+          "p50": 2.5547445255474455,
+          "p95": 2.845528455284553,
+          "maximum": 2.845528455284553
+        },
+        "coordinatorAuthorityPublicationDelayMs": {
+          "samples": 3,
+          "minimum": 2801.699999988079,
+          "p50": 3037.5000000298023,
+          "p95": 3538.199999898672,
+          "maximum": 3538.199999898672
+        },
+        "coordinatorAuthorityDispatchPaceMs": {
+          "samples": 3,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "coordinatorAuthorityAckToWorkerPostMs": {
+          "samples": 3,
+          "minimum": 207.90000015497208,
+          "p50": 227.99999994039536,
+          "p95": 243.99999994039536,
+          "maximum": 243.99999994039536
+        },
+        "workerSlotIdleBeforeDispatchMs": {
+          "samples": 3,
+          "minimum": 1426.5000000298023,
+          "p50": 1603.000000089407,
+          "p95": 1604.000000178814,
+          "maximum": 1604.000000178814
+        },
+        "rendererTransactionBoundaryMs": {
+          "samples": 3,
+          "minimum": 960.6999998986721,
+          "p50": 1070.0000000298023,
+          "p95": 1123.7999998629093,
+          "maximum": 1123.7999998629093
+        },
+        "rendererTransactionBoundarySharePercent": {
+          "samples": 3,
+          "minimum": 6.570101830067013,
+          "p50": 6.582549476965351,
+          "p95": 6.901083244470155,
+          "maximum": 6.901083244470155
+        },
+        "persistenceRendererMs": {
+          "samples": 3,
+          "minimum": 24.19999998807907,
+          "p50": 27.700000017881393,
+          "p95": 28.700000017881393,
+          "maximum": 28.700000017881393
+        },
+        "checkpointMs": {
+          "samples": 3,
+          "minimum": 0.29999998211860657,
+          "p50": 0.4000000059604645,
+          "p95": 0.5,
+          "maximum": 0.5
+        },
+        "recoveryFinalizationMs": {
+          "samples": 3,
+          "minimum": 5.800000011920929,
+          "p50": 6.299999982118607,
+          "p95": 9.400000005960464,
+          "maximum": 9.400000005960464
+        },
+        "rendererPartyStatsCalls": {
+          "samples": 3,
+          "minimum": 1640,
+          "p50": 1829,
+          "p95": 1835,
+          "maximum": 1835
+        },
+        "rendererPartyStatsHits": {
+          "samples": 3,
+          "minimum": 1284,
+          "p50": 1473,
+          "p95": 1479,
+          "maximum": 1479
+        },
+        "rendererPartyStatsMisses": {
+          "samples": 3,
+          "minimum": 356,
+          "p50": 356,
+          "p95": 356,
+          "maximum": 356
+        },
+        "rendererPartyStatsComputeMs": {
+          "samples": 3,
+          "minimum": 233.49999997019768,
+          "p50": 251.29999992251396,
+          "p95": 264.8999999463558,
+          "maximum": 264.8999999463558
+        }
+      },
+      "memory": {
+        "peakApplicationWorkingSetBytes": {
+          "samples": 0,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "peakRendererWorkingSetBytes": {
+          "samples": 0,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "peakRendererHeapBytes": {
+          "samples": 0,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "completionApplicationWorkingSetBytes": {
+          "samples": 0,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "settledApplicationWorkingSetBytes": {
+          "samples": 0,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        },
+        "settledRendererWorkingSetBytes": {
+          "samples": 0,
+          "minimum": 0,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0
+        }
+      }
+    }
+  },
+  "comparisons": {}
+}
