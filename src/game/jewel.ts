@@ -188,31 +188,27 @@ export function planAutoJewelAssignmentsForCharacter(
   character: Character,
   jewelInventory: JewelInventory,
 ): AutoJewelAssignment[] {
-  const availableByJewelKeyAndRank: Record<JewelKey, boolean[]> = {
-    might: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'might', i + 1) > 0),
-    arcana: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'arcana', i + 1) > 0),
-    fort: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'fort', i + 1) > 0),
-    ward: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'ward', i + 1) > 0),
-    shade: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'shade', i + 1) > 0),
-    focus: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'focus', i + 1) > 0),
+  // SpecRef: 7.1.2.2 | Evaluate jewel allocation | 8-2
+  // Jewels in Inventory and jewels already equipped by this character form one
+  // candidate pool.  In particular, an equipped top-rank jewel must remain a
+  // candidate for its current slot; excluding it here caused repeated FULL
+  // auto-equipment runs to alternate between two allocations.
+  const candidateCountByJewelKeyAndRank: Record<JewelKey, number[]> = {
+    might: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'might', i + 1)),
+    arcana: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'arcana', i + 1)),
+    fort: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'fort', i + 1)),
+    ward: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'ward', i + 1)),
+    shade: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'shade', i + 1)),
+    focus: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'focus', i + 1)),
   };
 
-  const memoryJewelSet = new Set<string>();
   character.equipment.forEach((item) => {
     if (!item?.jewel) return;
-    memoryJewelSet.add(`${item.jewel.key}:${item.jewel.rank}`);
-  });
-
-  memoryJewelSet.forEach((memoryJewel) => {
-    const [key, rankText] = memoryJewel.split(':');
-    const rank = Number(rankText);
-    if (!Number.isInteger(rank) || rank < 1 || rank > 8) return;
-    if (!(key in availableByJewelKeyAndRank)) return;
-    const jewelKey = key as JewelKey;
-    availableByJewelKeyAndRank[jewelKey][rank - 1] = false;
+    candidateCountByJewelKeyAndRank[item.jewel.key][item.jewel.rank - 1] += 1;
   });
 
   const assignments: AutoJewelAssignment[] = [];
+  const memoryJewelSet = new Set<string>();
 
   AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER.forEach((category) => {
     const targetJewelKey = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[category];
@@ -223,15 +219,21 @@ export function planAutoJewelAssignmentsForCharacter(
 
       let selectedRank: number | null = null;
       for (let rank = 8; rank >= 1; rank -= 1) {
-        if (availableByJewelKeyAndRank[targetJewelKey][rank - 1] === true) {
+        const jewelId = `${targetJewelKey}:${rank}`;
+        if (
+          candidateCountByJewelKeyAndRank[targetJewelKey][rank - 1] > 0
+          && !memoryJewelSet.has(jewelId)
+        ) {
           selectedRank = rank;
           break;
         }
       }
       if (selectedRank == null) return;
-      if (item.jewel && item.jewel.key === targetJewelKey && item.jewel.rank === selectedRank) return;
 
-      availableByJewelKeyAndRank[targetJewelKey][selectedRank - 1] = false;
+      // Memory J prevents a second assignment of the same jewel type/rank for
+      // this character, including when Inventory contains duplicate copies.
+      memoryJewelSet.add(`${targetJewelKey}:${selectedRank}`);
+      if (item.jewel && item.jewel.key === targetJewelKey && item.jewel.rank === selectedRank) return;
       assignments.push({ slotIndex, key: targetJewelKey, rank: selectedRank });
     });
   });

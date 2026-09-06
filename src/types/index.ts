@@ -388,6 +388,9 @@ export interface Party {
   currentSleepiness: SleepinessState;
   condition: number;
   sideQuest: SideQuestState | null;
+  /** Inventory revisions observed by the most recent scheduled FULL run. */
+  lastFullEquipmentRevision?: number;
+  lastFullJewelRevision?: number;
 }
 
 export type ExpeditionDestinationMode = 'auto' | 'fixed';
@@ -478,6 +481,9 @@ interface GlobalState {
   jewels: JewelInventory;
   savedEquipmentSets: SavedEquipmentSet[];
   jewelAutoEquipPriorityPartyId?: number | null;
+  /** Monotonic availability revisions used by automatic equipment dirty checks. */
+  equipmentInventoryRevision?: number;
+  jewelInventoryRevision?: number;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];

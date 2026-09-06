@@ -89,7 +89,7 @@ import { buildExperimentalBattleLog,buildExperimentalDiaryEntries } from '../gam
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { JEWELS_BY_ITEM_CATEGORY,planAutoJewelAssignmentsForCharacter } from '../game/jewel';
+import { planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { computePartyStats,computeRendererPartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
@@ -703,7 +703,7 @@ export function HomeScreen({
       } else if (type === 'run_auto_equipment' && party) {
         const runner = apiAutoEquipmentRunnerRef.current;
         if (!runner) return apiFailure(503, 'runtime_unavailable', 'Automatic equipment is unavailable.', true);
-        const summary = runner([partyIndex], character ? [character.id] : undefined);
+        const summary = runner([partyIndex], character ? [character.id] : undefined, { forceFull: true });
         const changeCount = summary.unequippedCount + summary.equippedCount + summary.upgradedCount + summary.jewelAssignmentCount;
         if (changeCount === 0) return apiFailure(409, 'no_change', 'Automatic equipment produced no effective change.');
         effects = {
@@ -1292,6 +1292,7 @@ export function HomeScreen({
     targetPartyIndexes?: number[],
     targetCharacterIds?: Array<number | string>,
     options?: {
+      forceFull?: boolean;
       profile?: {
         collector: AutoEquipmentAttributionCollector;
         actions: AutoEquipmentProfileAction[];
@@ -1350,6 +1351,7 @@ export function HomeScreen({
     });
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
+    const forceFull = options?.forceFull === true;
     const simulatedInventory: InventoryRecord = measure('inventoryClone', () => ({ ...sourceState.global.inventory }));
     let inventoryIndex: AutoEquipmentInventoryIndex | null = null;
     const getInventoryIndex = (): AutoEquipmentInventoryIndex | null => {
@@ -1395,80 +1397,6 @@ export function HomeScreen({
       measure('notificationPlanning', () => setSlotNotification(
         partyName, characterName, characterId, slotIndex, partyIndex, item, previousItem,
       ));
-    };
-
-    const areEquipmentEntitiesEqual = (a: Item | null, b: Item | null): boolean => {
-      if (a == null && b == null) return true;
-      if (a == null || b == null) return false;
-
-      const isSameVariant = getVariantKey(a) === getVariantKey(b);
-      if (!isSameVariant) return false;
-      if ((a.isLocked === true) !== (b.isLocked === true)) return false;
-
-      const aJewel = a.jewel;
-      const bJewel = b.jewel;
-      if (!aJewel && !bJewel) return true;
-      if (!aJewel || !bJewel) return false;
-
-      return aJewel.key === bJewel.key && aJewel.rank === bJewel.rank;
-    };
-
-    const getEquipmentEntityKey = (item: Item): string => {
-      const jewelSuffix = item.jewel ? `:${item.jewel.key}:${item.jewel.rank}` : '';
-      const lockSuffix = item.isLocked === true ? ':locked' : ':unlocked';
-      return `${getVariantKey(item)}${jewelSuffix}${lockSuffix}`;
-    };
-
-    const collectEquipmentDiff = (before: Array<Item | null>, after: Array<Item | null>) => {
-      const beforeCounts = new Map<string, { count: number; item: Item }>();
-      const afterCounts = new Map<string, { count: number; item: Item }>();
-
-      before.forEach((item) => {
-        if (!item) return;
-        const key = getEquipmentEntityKey(item);
-        const existing = beforeCounts.get(key);
-        if (existing) {
-          existing.count += 1;
-        } else {
-          beforeCounts.set(key, { count: 1, item });
-        }
-      });
-
-      after.forEach((item) => {
-        if (!item) return;
-        const key = getEquipmentEntityKey(item);
-        const existing = afterCounts.get(key);
-        if (existing) {
-          existing.count += 1;
-        } else {
-          afterCounts.set(key, { count: 1, item });
-        }
-      });
-
-      const removedItems: Item[] = [];
-      const addedItems: Item[] = [];
-      const allKeys = new Set([...beforeCounts.keys(), ...afterCounts.keys()]);
-
-      allKeys.forEach((key) => {
-        const beforeEntry = beforeCounts.get(key);
-        const afterEntry = afterCounts.get(key);
-        const beforeCount = beforeEntry?.count ?? 0;
-        const afterCount = afterEntry?.count ?? 0;
-
-        if (beforeCount > afterCount && beforeEntry) {
-          for (let i = 0; i < beforeCount - afterCount; i += 1) {
-            removedItems.push(beforeEntry.item);
-          }
-        }
-
-        if (afterCount > beforeCount && afterEntry) {
-          for (let i = 0; i < afterCount - beforeCount; i += 1) {
-            addedItems.push(afterEntry.item);
-          }
-        }
-      });
-
-      return { removedItems, addedItems };
     };
 
     const addItemToSimulatedInventory = (item: Item) => {
@@ -1609,17 +1537,6 @@ export function HomeScreen({
       const signatures = cachedFacts?.cBonusSignatures ?? getItemCBonusSignatures(item);
       signatures.forEach((bonusName) => memory.add(bonusName));
     };
-
-    const compareItemsByTierAndEnhancement = (a: Item, b: Item): number => {
-      const tierDiff = getItemTier(a) - getItemTier(b);
-      if (tierDiff !== 0) return tierDiff;
-
-      const enhancementDiff = a.enhancement - b.enhancement;
-      if (enhancementDiff !== 0) return enhancementDiff;
-
-      return a.id - b.id;
-    };
-
 
     const getCharacterAutoEquipBonuses = (character: Character): Bonus[] => {
       const race = RACES.find((r) => r.id === character.raceId);
@@ -1849,86 +1766,35 @@ export function HomeScreen({
       return selectedIndex == null ? null : optionKeys[selectedIndex] ?? null;
     };
 
-    const compareMemoryCJewelPriority = (
-      a: { key: JewelKey; rank: number },
-      b: { key: JewelKey; rank: number },
-    ): number => {
-      const rankDiff = b.rank - a.rank;
-      if (rankDiff !== 0) return rankDiff;
-      return a.key.localeCompare(b.key);
-    };
-
-    const compareJewelAttachTarget = (a: Item, b: Item): number => {
-      const enhancementDiff = b.enhancement - a.enhancement;
-      if (enhancementDiff !== 0) return enhancementDiff;
-
-      const superRareDiff = b.superRare - a.superRare;
-      if (superRareDiff !== 0) return superRareDiff;
-
-      const coreConceptDiff = getItemCoreConceptValue(b) - getItemCoreConceptValue(a);
-      if (coreConceptDiff !== 0) return coreConceptDiff;
-
-      return compareItemsByTierAndEnhancement(b, a);
-    };
-
     sourceState.parties.forEach((party, partyIndex) => {
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
       const isJewelPriorityParty = sourceState.global.jewelAutoEquipPriorityPartyId === party.id;
+      const partyHasEmptySlot = party.characters.some((character) => {
+        const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
+        return Array.from({ length: maxSlots }, (_, slotIndex) => character.equipment[slotIndex] == null).some(Boolean);
+      });
+      const fullRevisionIsDirty = party.lastFullEquipmentRevision !== (sourceState.global.equipmentInventoryRevision ?? 0)
+        || (isJewelPriorityParty && party.lastFullJewelRevision !== (sourceState.global.jewelInventoryRevision ?? 0));
+      const shouldRunFull = forceFull || fullRevisionIsDirty || partyHasEmptySlot;
 
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
         summary.processedCharacterIds.push(character.id);
 
         const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);
-        if (autoEquipmentMode === 0) {
-          // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
-          if (isJewelPriorityParty) {
-            const assignments = measure('jewelPlanning', () => (
-              planAutoJewelAssignmentsForCharacter(character, sourceState.global.jewels)
-            ));
-            assignments.forEach((assignment) => {
-              dispatchAttachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
-              summary.jewelAssignmentCount += 1;
-            });
-          }
-          return;
-        }
+        if (autoEquipmentMode === 0) return;
+        if (autoEquipmentMode === 2 && !shouldRunFull) return;
 
         // SpecRef: 7.1.1.2 | Equipping into empty slots | Item selection from a specific item category
         const combatStyle = decideAutoEquipmentCombatStyle(character);
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.guardian;
         const { maxEquipSlots } = measure('statComputation', () => computeCharacterStats(character, party.level));
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
-        const memoryDEquipmentSlots = autoEquipmentMode === 2
-          ? simulatedEquipmentSlots.map((item) => (item ? { ...item } : null))
-          : null;
-        const memoryCJewelsByCategory: Partial<Record<ItemCategory, Array<{ key: JewelKey; rank: number }>>> = {};
-
-        if (autoEquipmentMode === 2) {
-          // SpecRef: 7.1.1.1 | Removes all equipment | Record Memory C
-          simulatedEquipmentSlots.forEach((equippedItem) => {
-            if (!equippedItem?.jewel) return;
-            const currentCategoryJewels = memoryCJewelsByCategory[equippedItem.category] ?? [];
-            memoryCJewelsByCategory[equippedItem.category] = [...currentCategoryJewels, equippedItem.jewel];
-          });
-
-          // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
-          // SpecRef: 7.1.1.1 | Removes all equipment | Exception
-          simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
-            if (!equippedItem) return;
-            if (equippedItem.isLocked === true) return;
-            if (equippedItem.superRare > 0) return;
-            addItemToSimulatedInventory(equippedItem);
-            dispatchEquipItem(character.id, slotIndex, null, partyIndex);
-            summary.unequippedCount += 1;
-            simulatedEquipmentSlots[slotIndex] = null;
-          });
-        }
         const memoryItemIds = new Set<number>();
         const memoryCBonusNames = new Set<string>();
-        const emptySlotIndexes = simulatedEquipmentSlots
-          .map((item, slotIndex) => (item ? -1 : slotIndex))
+        const replaceableSlotIndexes = simulatedEquipmentSlots
+          .map((item, slotIndex) => (!item || (item.isLocked !== true && item.superRare <= 0)) ? slotIndex : -1)
           .filter((index) => index >= 0);
         const equippedCategoryCounts: Partial<Record<ItemCategory, number>> = {};
         const resolvedFallbackTargetCounts: Partial<Record<'i.weapon' | 'i.NoA', number>> = {
@@ -1950,11 +1816,13 @@ export function HomeScreen({
           if (!item) return;
           memoryItemIds.add(item.id);
           addItemCBonusSignaturesToMemory(item, memoryCBonusNames);
-          equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
+          if (item.isLocked === true || item.superRare > 0) {
+            equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
+          }
         });
 
         if (autoEquipmentMode === 2) {
-          emptySlotIndexes.forEach((slotIndex) => {
+          replaceableSlotIndexes.forEach((slotIndex) => {
             const skippedCategories = new Set<AutoEquipmentTargetCategory>();
             let resolvedSelection: { itemKey: string; targetCategory: AutoEquipmentTargetCategory } | null = null;
 
@@ -1987,6 +1855,14 @@ export function HomeScreen({
             const variant = simulatedInventory[resolvedSelection.itemKey];
             if (!variant) return;
 
+            const previousItem = simulatedEquipmentSlots[slotIndex];
+            const candidateValue = getAutoEquipmentSelectionValueForCharacter(character, variant.item);
+            const previousValue = previousItem ? getAutoEquipmentSelectionValueForCharacter(character, previousItem) : Number.NEGATIVE_INFINITY;
+            if (previousItem && candidateValue <= previousValue) {
+              equippedCategoryCounts[previousItem.category] = (equippedCategoryCounts[previousItem.category] ?? 0) + 1;
+              return;
+            }
+
             equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
             if (
               combatStyle == null
@@ -2000,6 +1876,15 @@ export function HomeScreen({
             addItemCBonusSignaturesToMemory(variant.item, memoryCBonusNames);
             dispatchEquipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
             summary.equippedCount += 1;
+            queueAutoEquipmentNotification(
+              party.name,
+              character.name,
+              character.id,
+              slotIndex,
+              variant.item,
+              previousItem,
+              partyIndex,
+            );
           });
         }
 
@@ -2036,34 +1921,7 @@ export function HomeScreen({
           }
         });
 
-        Object.entries(memoryCJewelsByCategory).forEach(([category, jewels]) => {
-          if (!jewels || jewels.length <= 0) return;
-
-          const sortedJewels = [...jewels].sort(compareMemoryCJewelPriority);
-          const attachTargets = simulatedEquipmentSlots
-            .map((item, slotIndex) => ({ item, slotIndex }))
-            .filter((entry): entry is { item: Item; slotIndex: number } => !!entry.item && entry.item.category === category)
-            .sort((a, b) => compareJewelAttachTarget(a.item, b.item));
-
-          const categoryAllowedJewels = new Set(JEWELS_BY_ITEM_CATEGORY[category as ItemCategory] ?? []);
-
-          let jewelIndex = 0;
-          attachTargets.forEach(({ slotIndex, item }) => {
-            while (jewelIndex < sortedJewels.length && !categoryAllowedJewels.has(sortedJewels[jewelIndex].key)) {
-              jewelIndex += 1;
-            }
-            if (jewelIndex >= sortedJewels.length) return;
-
-            const jewel = sortedJewels[jewelIndex];
-            jewelIndex += 1;
-            simulatedEquipmentSlots[slotIndex] = { ...item, jewel };
-            dispatchAttachJewel(character.id, slotIndex, jewel.key, jewel.rank, partyIndex);
-            summary.jewelAssignmentCount += 1;
-          });
-        });
-
-        // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
-        if (isJewelPriorityParty) {
+        if (autoEquipmentMode === 2 && isJewelPriorityParty) {
           const simulatedCharacterForJewel = {
             ...character,
             equipment: simulatedEquipmentSlots,
@@ -2071,6 +1929,20 @@ export function HomeScreen({
           const assignments = measure('jewelPlanning', () => (
             planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, sourceState.global.jewels)
           ));
+          // A planned jewel can originate from another equipped slot. Detach
+          // every replaced jewel first so ATTACH_JEWEL can draw that combined
+          // character-and-inventory candidate pool from Inventory.
+          assignments.forEach((assignment) => {
+            const slotItem = simulatedEquipmentSlots[assignment.slotIndex];
+            if (!slotItem?.jewel) return;
+            dispatchAttachJewel(
+              character.id,
+              assignment.slotIndex,
+              slotItem.jewel.key,
+              slotItem.jewel.rank,
+              partyIndex,
+            );
+          });
           assignments.forEach((assignment) => {
             const slotItem = simulatedEquipmentSlots[assignment.slotIndex];
             if (!slotItem) return;
@@ -2083,41 +1955,15 @@ export function HomeScreen({
           });
         }
 
-        if (autoEquipmentMode === 2 && memoryDEquipmentSlots) {
-          const hasSlotChange = simulatedEquipmentSlots.some((equippedItem, slotIndex) => {
-            const previousItem = memoryDEquipmentSlots[slotIndex] ?? null;
-            return !areEquipmentEntitiesEqual(previousItem, equippedItem);
-          });
-          if (!hasSlotChange) return;
-
-          const { removedItems, addedItems } = collectEquipmentDiff(memoryDEquipmentSlots, simulatedEquipmentSlots);
-
-          const replacementCount = Math.min(removedItems.length, addedItems.length);
-          for (let index = 0; index < replacementCount; index += 1) {
-            queueAutoEquipmentNotification(
-              party.name,
-              character.name,
-              character.id,
-              index,
-              addedItems[index],
-              removedItems[index],
-              partyIndex,
-            );
-          }
-
-          for (let index = replacementCount; index < addedItems.length; index += 1) {
-            queueAutoEquipmentNotification(
-              party.name,
-              character.name,
-              character.id,
-              replacementCount * 1000 + index,
-              addedItems[index],
-              null,
-              partyIndex,
-            );
-          }
-        }
       });
+      if (shouldRunFull && !targetCharacterIdSet) {
+        queueAutoEquipmentAction({
+          type: 'STAMP_FULL_AUTO_EQUIPMENT',
+          partyIndex,
+          equipmentRevision: sourceState.global.equipmentInventoryRevision ?? 0,
+          jewelRevision: sourceState.global.jewelInventoryRevision ?? 0,
+        });
+      }
     });
 
     return {
@@ -2132,6 +1978,7 @@ export function HomeScreen({
     targetCharacterIds?: Array<number | string>,
     options?: {
       suppressNotifications?: boolean;
+      forceFull?: boolean;
       profile?: {
         sourceState: GameState;
         collector: AutoEquipmentAttributionCollector;
@@ -2147,6 +1994,7 @@ export function HomeScreen({
   ): AutoEquipmentRunSummary => {
     const sourceState = options?.profile?.sourceState ?? state;
     const plan = planAutoEquipment(sourceState, targetPartyIndexes, targetCharacterIds, {
+      forceFull: options?.forceFull,
       profile: options?.profile ? {
         collector: options.profile.collector,
         actions: options.profile.actions,
@@ -5159,7 +5007,7 @@ export function HomeScreen({
           onAddStatNotifications={actions.addStatNotifications}
           onSelectParty={actions.selectParty}
           onUpdatePartyDeity={actions.updatePartyDeity}
-          onRunAutoEquipmentForCharacter={(characterId) => runAutoEquipment([safeSelectedPartyIndex], [characterId])}
+          onRunAutoEquipmentForCharacter={(characterId) => runAutoEquipment([safeSelectedPartyIndex], [characterId], { forceFull: true })}
           onRemoveAllEquipment={actions.removeAllEquipment}
           onSaveEquipmentSet={actions.saveEquipmentSet}
           onRenameEquipmentSet={actions.renameEquipmentSet}

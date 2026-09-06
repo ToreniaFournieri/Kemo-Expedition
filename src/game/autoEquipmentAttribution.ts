@@ -27,7 +27,8 @@ export type AutoEquipmentAttributionPhase =
 
 export type AutoEquipmentProfileAction =
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex: number }
-  | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: JewelKey; rank: number; partyIndex: number };
+  | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: JewelKey; rank: number; partyIndex: number }
+  | { type: 'STAMP_FULL_AUTO_EQUIPMENT'; partyIndex: number; equipmentRevision: number; jewelRevision: number };
 
 export interface AutoEquipmentAttributionResult {
   totalMs: number;

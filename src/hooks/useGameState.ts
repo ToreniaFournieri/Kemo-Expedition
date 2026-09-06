@@ -1076,6 +1076,12 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
             }, {})
           : createStarterJewelInventory();
         parsed.global.savedEquipmentSets = normalizeSavedEquipmentSets(parsed.global.savedEquipmentSets);
+        parsed.global.equipmentInventoryRevision = Number.isSafeInteger(parsed.global.equipmentInventoryRevision)
+          ? Math.max(0, parsed.global.equipmentInventoryRevision)
+          : 0;
+        parsed.global.jewelInventoryRevision = Number.isSafeInteger(parsed.global.jewelInventoryRevision)
+          ? Math.max(0, parsed.global.jewelInventoryRevision)
+          : 0;
 
         const defaultParties = createDefaultParties();
         if (!Array.isArray(parsed.parties)) {
@@ -1102,6 +1108,12 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           party.deity.name = normalizeDeityName(party.deity.name);
           if (typeof party.level !== 'number') party.level = 1;
           if (typeof party.experience !== 'number') party.experience = 0;
+          party.lastFullEquipmentRevision = Number.isSafeInteger(party.lastFullEquipmentRevision)
+            ? Math.max(-1, party.lastFullEquipmentRevision)
+            : -1;
+          party.lastFullJewelRevision = Number.isSafeInteger(party.lastFullJewelRevision)
+            ? Math.max(-1, party.lastFullJewelRevision)
+            : -1;
           if (!party.defeatedBossExpeditions) party.defeatedBossExpeditions = {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.pendingDiaryLog === 'undefined') party.pendingDiaryLog = null;
@@ -1302,6 +1314,12 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
+    lastFullEquipmentRevision: Number.isSafeInteger(party.lastFullEquipmentRevision)
+      ? Math.max(-1, party.lastFullEquipmentRevision!)
+      : -1,
+    lastFullJewelRevision: Number.isSafeInteger(party.lastFullJewelRevision)
+      ? Math.max(-1, party.lastFullJewelRevision!)
+      : -1,
     condition: normalizePartyCondition(party.condition),
     sideQuest: normalizedSideQuest,
   };
@@ -1780,6 +1798,8 @@ function createInitialState(): InitialStateResult {
       jewels: createStarterJewelInventory(),
       savedEquipmentSets: [],
       jewelAutoEquipPriorityPartyId: 1,
+      equipmentInventoryRevision: 0,
+      jewelInventoryRevision: 0,
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
       challengedGodNames: [],
@@ -1870,6 +1890,7 @@ type GameAction =
   | { type: 'LOAD_EQUIPMENT_SET'; characterId: number; slot: number; mode: EquipmentSetLoadMode; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
+  | { type: 'STAMP_FULL_AUTO_EQUIPMENT'; partyIndex: number; equipmentRevision: number; jewelRevision: number }
   | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
@@ -2328,7 +2349,36 @@ function syncPartyCurrentHpAfterMaxHpChange(
   };
 }
 
-function gameReducer(
+function hasNewAvailability(
+  previous: Record<string, unknown> | undefined,
+  next: Record<string, unknown> | undefined,
+): boolean {
+  const countOf = (value: unknown): number => {
+    if (typeof value === 'number') return value;
+    if (value && typeof value === 'object' && typeof (value as { count?: unknown }).count === 'number') {
+      return (value as { count: number }).count;
+    }
+    return 0;
+  };
+  return Object.keys(next ?? {}).some((key) => countOf(previous?.[key]) <= 0 && countOf(next?.[key]) > 0);
+}
+
+function applyInventoryAvailabilityRevisions(previous: GameState, next: GameState): GameState {
+  if (previous === next) return next;
+  const equipmentChanged = hasNewAvailability(previous.global.inventory, next.global.inventory);
+  const jewelChanged = hasNewAvailability(previous.global.jewels, next.global.jewels);
+  if (!equipmentChanged && !jewelChanged) return next;
+  return {
+    ...next,
+    global: {
+      ...next.global,
+      equipmentInventoryRevision: (next.global.equipmentInventoryRevision ?? 0) + (equipmentChanged ? 1 : 0),
+      jewelInventoryRevision: (next.global.jewelInventoryRevision ?? 0) + (jewelChanged ? 1 : 0),
+    },
+  };
+}
+
+function reduceGameState(
   state: GameState,
   action: GameAction,
   autoEquipmentContext?: AutoEquipmentReducerContext,
@@ -2346,7 +2396,7 @@ function gameReducer(
         attribution: action.attribution,
       };
       const startedAt = action.attribution ? performance.now() : 0;
-      const nextState = action.actions.reduce((current, nestedAction) => gameReducer(current, nestedAction, context), state);
+      const nextState = action.actions.reduce((current, nestedAction) => reduceGameState(current, nestedAction, context), state);
       if (action.attribution) {
         const totalMs = Math.max(0, performance.now() - startedAt);
         action.attribution.structuralAndControlMs = Math.max(
@@ -2359,6 +2409,17 @@ function gameReducer(
         );
       }
       return nextState;
+    }
+    case 'STAMP_FULL_AUTO_EQUIPMENT': {
+      const party = state.parties[action.partyIndex];
+      if (!party) return state;
+      const parties = [...state.parties];
+      parties[action.partyIndex] = {
+        ...party,
+        lastFullEquipmentRevision: Math.max(0, Math.floor(action.equipmentRevision)),
+        lastFullJewelRevision: Math.max(0, Math.floor(action.jewelRevision)),
+      };
+      return { ...state, parties };
     }
     case 'SET_LANGUAGE': {
       // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
@@ -2499,7 +2560,7 @@ function gameReducer(
       // SpecRef: 8.5 | UI_DIARY | When a party was defeated, the diary updates.
       // Resolve and finalize as one reducer transaction so another sortie cannot
       // replace the pending defeat entry before it reaches the diary.
-      const expeditionState = gameReducer(state, {
+      const expeditionState = reduceGameState(state, {
         type: 'RUN_EXPEDITION',
         partyIndex: action.partyIndex,
         simulatedAt: action.simulatedAt,
@@ -2508,7 +2569,7 @@ function gameReducer(
         triggerGodsBattle: action.triggerGodsBattle,
         authoritativePartyStatus: action.authoritativePartyStatus,
       });
-      return gameReducer(expeditionState, {
+      return reduceGameState(expeditionState, {
         type: 'FINALIZE_DIARY_LOG',
         partyIndex: action.partyIndex,
         simulatedAt: action.simulatedAt,
@@ -3701,7 +3762,7 @@ function gameReducer(
           // SpecRef: 5.1 | Chunk deterministic execution and terminal partial Chunk
           const isTerminalChunkOperation = completedOperationCount + 1 >= operationWindow.length;
           const expeditionStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
-          workingState = gameReducer(workingState, {
+          workingState = reduceGameState(workingState, {
             type: 'RUN_EXPEDITION',
             partyIndex,
             simulatedAt,
@@ -3717,7 +3778,7 @@ function gameReducer(
           }, undefined, afkChunkContext);
           if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'expeditionMs', expeditionStartedAt);
           const diaryStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
-          workingState = gameReducer(workingState, {
+          workingState = reduceGameState(workingState, {
             type: 'FINALIZE_DIARY_LOG',
             partyIndex,
             simulatedAt,
@@ -3736,7 +3797,7 @@ function gameReducer(
               condition: chunkStartParty?.condition ?? postFinalizeParty.condition,
             });
             if (autoAdvanceDecision.shouldAdvance && autoAdvanceDecision.nextDungeonId !== null) {
-              workingState = gameReducer(workingState, {
+              workingState = reduceGameState(workingState, {
                 type: 'SELECT_DUNGEON',
                 partyIndex,
                 dungeonId: autoAdvanceDecision.nextDungeonId,
@@ -3757,7 +3818,7 @@ function gameReducer(
               resolvedCycleDurationScale,
             );
             if (approximateProgress > 0) {
-              workingState = gameReducer(workingState, {
+              workingState = reduceGameState(workingState, {
                 type: 'ADVANCE_SIDE_QUEST',
                 partyIndex,
                 amount: approximateProgress,
@@ -3828,7 +3889,7 @@ function gameReducer(
             const missingHp = Math.max(0, postCycleMaxHp - (postCycleParty.currentHp ?? 0));
             if (missingHp > 0) {
               if (action.workerOptimization === 'legacy') {
-                workingState = gameReducer(workingState, {
+                workingState = reduceGameState(workingState, {
                   type: 'HEAL_PARTY_HP',
                   partyIndex,
                   amount: missingHp,
@@ -3844,7 +3905,7 @@ function gameReducer(
 
           const postProfitAutomationStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleClearGateCondition(postCycleParty)) {
-            workingState = gameReducer(workingState, {
+            workingState = reduceGameState(workingState, {
               type: 'ROLL_SIDE_QUEST',
               partyIndex,
               rolledTier: postCycleParty.selectedDungeonId,
@@ -3858,7 +3919,7 @@ function gameReducer(
             latestParty?.sideQuest
             && simulatedAt >= getScaledSideQuestExpiresAt(latestParty.sideQuest, resolvedCycleDurationScale)
           ) {
-            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
+            workingState = reduceGameState(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
           }
           if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'sideQuestAutomationMs', postProfitAutomationStartedAt);
           completedOperationCount += 1;
@@ -3908,7 +3969,7 @@ function gameReducer(
       }
       if (plan.actions.length === 0) return committedState;
       const equipmentStartedAt = action.attribution ? performance.now() : 0;
-      const nextState = gameReducer(committedState, {
+      const nextState = reduceGameState(committedState, {
         type: 'APPLY_AUTO_EQUIPMENT_ACTIONS',
         actions: [...plan.actions],
       });
@@ -3955,6 +4016,8 @@ function gameReducer(
           jewels: createStarterJewelInventory(),
           savedEquipmentSets: [],
           jewelAutoEquipPriorityPartyId: 1,
+          equipmentInventoryRevision: 0,
+          jewelInventoryRevision: 0,
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
           challengedGodNames: [],
@@ -4051,6 +4114,12 @@ function gameReducer(
             hydrated.global.jewelAutoEquipPriorityPartyId,
             trimmedParties.length,
           ),
+          equipmentInventoryRevision: Number.isSafeInteger(hydrated.global.equipmentInventoryRevision)
+            ? Math.max(0, hydrated.global.equipmentInventoryRevision!)
+            : 0,
+          jewelInventoryRevision: Number.isSafeInteger(hydrated.global.jewelInventoryRevision)
+            ? Math.max(0, hydrated.global.jewelInventoryRevision!)
+            : 0,
         },
         parties: trimmedParties,
         selectedPartyIndex: normalizedSelectedPartyIndex,
@@ -4182,6 +4251,32 @@ function gameReducer(
   }
 }
 
+/** Top-level reducer boundary: availability revisions are derived from committed state. */
+function gameReducer(
+  state: GameState,
+  action: GameAction,
+  autoEquipmentContext?: AutoEquipmentReducerContext,
+  afkChunkContext?: AfkChunkReducerContext,
+): GameState {
+  const next = applyInventoryAvailabilityRevisions(
+    state,
+    reduceGameState(state, action, autoEquipmentContext, afkChunkContext),
+  );
+  if (action.type !== 'APPLY_AUTO_EQUIPMENT_ACTIONS') return next;
+  const stampedPartyIndexes = action.actions
+    .filter((nestedAction): nestedAction is Extract<AutoEquipmentProfileAction, { type: 'STAMP_FULL_AUTO_EQUIPMENT' }> => nestedAction.type === 'STAMP_FULL_AUTO_EQUIPMENT')
+    .map((nestedAction) => nestedAction.partyIndex);
+  if (stampedPartyIndexes.length === 0) return next;
+  const parties = next.parties.map((party, partyIndex) => stampedPartyIndexes.includes(partyIndex)
+    ? {
+      ...party,
+      lastFullEquipmentRevision: next.global.equipmentInventoryRevision ?? 0,
+      lastFullJewelRevision: next.global.jewelInventoryRevision ?? 0,
+    }
+    : party);
+  return { ...next, parties };
+}
+
 export function applyAutoEquipmentProfileActions(
   state: GameState,
   actions: readonly AutoEquipmentProfileAction[],
@@ -4202,7 +4297,11 @@ export function applyAutoEquipmentProfileActionsSequentially(
   state: GameState,
   actions: readonly AutoEquipmentProfileAction[],
 ): GameState {
-  return actions.reduce((current, action) => gameReducer(current, action), state);
+  // Test/profile oracle for one logical automatic-equipment transaction.
+  return applyInventoryAvailabilityRevisions(
+    state,
+    actions.reduce((current, action) => reduceGameState(current, action), state),
+  );
 }
 
 export interface AfkPartyTransactionAttribution {

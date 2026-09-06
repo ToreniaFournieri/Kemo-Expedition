@@ -320,7 +320,7 @@ at least one party member has an empty equipment slot.
    - Record these equipped jewels as **Memory J**.
 
 8-2. Determine the corresponding jewel category based on the table below.
-   - Check Inventory for available jewels.
+   - Check Inventory for available jewels and **jewels currently equipped by the character**. Treat both sources as one candidate pool.
    - Exclude jewels with the same item type and rank.
    - Exclude jewels already stored in **Memory J**.
    - Internally store the remaining valid jewels as the list of potential jewel candidates.

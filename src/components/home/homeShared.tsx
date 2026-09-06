@@ -3160,7 +3160,7 @@ export type AutoEquipmentRunSummary = {
 export type AutoEquipmentRunner = (
   targetPartyIndexes?: number[],
   targetCharacterIds?: Array<number | string>,
-  options?: { suppressNotifications?: boolean },
+  options?: { suppressNotifications?: boolean; forceFull?: boolean },
 ) => AutoEquipmentRunSummary;
 
 export const getAutoEquipmentModeLabel = (mode: AutoEquipmentMode): string => t(`party.equipment.autoMode.${mode}`);
