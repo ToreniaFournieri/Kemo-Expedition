@@ -8,8 +8,8 @@
 | Mode     | Description                    |
 | -------- | ------------------------------ |
 | `OFF`  | No automatic equipment processing is performed. Characters keep their current equipment unless changed manually.  |
-| `SEMI` | Automatically **Run `7.1.1.2 SEMI: Upgrading existing equipment`**. |
-| `FULL` | Automatically **Run `7.1.1.1 FULL: Equipment logic`**.    |
+| `SEMI` | Automatically **Run `7.1.3 SEMI: Upgrading existing equipment`**. |
+| `FULL` | Automatically **Run `7.1.2 FULL: Equipment logic`**.    |
 
 - Processing priority: Characters are processed sequentially in party order: Row1 → Row2 → … → Row6…
 
@@ -20,11 +20,15 @@
 **1. Compare the current Inventory revision numbers with the revision numbers recorded at the party's previous FULL Auto Equipment run.**
 - For each individual item, ignore quantity changes while the item remains available.
   - Example: 1 → 2 does not count as a change.
-- Treat newly available items as relevant changes..
+- Treat newly available items as relevant changes.
   - Example: 0 → 1+ counts as a change.
   - Example: 1+ → 0 **does not** count as a change.
 - When a relevant equipment Inventory change occurs, increment `equipmentInventoryRevision`.
 - When a relevant jewel Inventory change occurs, always increment `jewelInventoryRevision`.
+  - Example: 
+    - 0 → 1+ = relevant
+    - 1 → 2 = irrelevant
+    - 1+ → 0 = irrelevant
 - A party checks jewelInventoryRevision only when that party is `Jewel Priority Party: true`.
 - Each party records the revision numbers used during its most recent FULL Auto Equipment run.
 
@@ -43,13 +47,17 @@ at least one party member has an empty equipment slot.
 - Otherwise, skip the FULL Auto Equipment process.
 - After completing a FULL Auto Equipment run, update the party's recorded revision numbers to the current global revision numbers.
 
-##### 7.1.2.2 Simululation: the equipment change 
+##### 7.1.2.2 Simulation: the equipment change 
 **1. `<TBA>`**
 - This step is not required in the current version and is omitted at runtime.
-- Reserved for a future implementation of **Memory D**, which would record the character's complete equipment set before simulation.
+- This Step ID is reserved for future implementation.
 
-**2. Determine the combat style**
-- When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
+**2. Determine the target item categories**
+- For each replaceable equipment slot, determine the target item category according to the class's ideal equipment build order.
+  - A replaceable equipment slot is either:
+    - an empty equipment slot, or
+    - a slot containing an item that is neither locked nor Super Rare.
+- Empty slots are treated as missing categories. Existing replaceable equipment slots are also reevaluated against the corresponding category.
 - This order represents the target balance of equipment categories for that class.
 - The system checks the character’s current equipment and selects the earliest category in the order that is still missing.
 - In other words, auto-equipment attempts to move the character’s equipment composition closer to the ideal category balance defined by the class.
@@ -251,30 +259,30 @@ at least one party member has an empty equipment slot.
   - If Ranged: target `i.weapon` item categories are `i.arrow` and `i.bolt`, and target `i.NoA` item category is `i.archery`.
   - If Magic: target `i.weapon` item categories are `i.wand` and `i.grimoire`, and target `i.NoA` item category is `i.catalyst`.
   - If Melee: target `i.weapon` item categories are `i.sword` and `i.katana`, and target `i.NoA` item category is `i.gauntlet`.
-  - If no `c.equip_ranged`,`c.equip_magic`, `c.equip_melee`: resolve i.weapon and i.NoA to shield. 
+  - If no `c.equip_ranged`,`c.equip_magic`, `c.equip_melee`: resolve `i.weapon`, `i.archery`, `i.catalyst`, and `i.gauntlet` (`i.NoA`) to `i.shield`. 
    
 
 **3. Initialize the simulation memory.**
 - Record the **item IDs** of all currently equipped items as **Memory A**.
 - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
-- **Note:**
-  - Super rare item is not replaced. 
-  - Locked items are not replaced. (but still participate in Memory A/B)
-
+  - Intention: Prevent duplicate bonuses in the final simulated equipment set.
+- Initialize the `simulated equipment set` as a copy of the character's current equipment set.
+- All equipment and jewel changes during this section are applied only to the `simulated equipment set` until the Commit phase.
+  
 **4. Search for candidate items**
-- Exclude any item that satisfies either of the following conditions:
-  - Its **item ID** already exists in **Memory A**.
-  - Its **`c.*` bonus** already exists in **Memory B**.
-  - It has `c.antagonism`. (to prevent the selection of items that introduce harmful effects.)
+- Exclude any candidate item that satisfies any of the following conditions:
+  - Its item ID already exists in **Memory A**.
+  - At least one of its `c.*` bonuses already exists in **Memory B**.
+  - It has `c.antagonism` (to prevent the selection of items that introduce harmful effects).
 - **For `i.gauntlet`, `i.archery`, and `i.catalyst`:**
   - From the inventory, search for the **highest ( modfied `target d. bonus` + `c.N_NoA+X`) bonus value item** in the target item category.
-  - the value is including enhancement, super rare multiplier calculation.
+  - the value includes enhancement, super rare multiplier calculation.
 - **Other item categories:**
   - From the inventory, search for the **highest modified `target d. bonus` value item** in the target item category.
   - the value includes enhancement, super rare multiplier calculation.
 - `modified core concept`:
   - Respect corresponding c bonus for item like `c.sword_x1.x`.
-  - the value is exact the same value of displaying item list of character (with `c.sword_x2.0`) "究極の神鋼の短剣 近攻+1111" -> Use: 1111.
+  - Use exactly the same modified value displayed in the character's item list. (with `c.sword_x2.0`) "究極の神鋼の短剣 近攻+1111" -> Use: 1111.
   - "究極の神鋼の短剣" in inventory is "近攻+555", not use this value.
  
 |category | `target d. bonus` |
@@ -294,26 +302,31 @@ at least one party member has an empty equipment slot.
 
 **5. Register the selected candidate item**
 - Add the selected item's **item ID** to **Memory A**.
-- Add the selected item's **`c.*` bonus** to **Memory B**.
+- Add **each `c.*` bonus** of the selected item to **Memory B**.
 
 **6. Repeat**
-- Repeat Step 2-4 and Step 2-5 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
+- Repeat Steps 4 and 5 until all potential equipment slots for the target item category have been evaluated or no eligible items remain.
 
-**7. Evaluate jewel allocation for the simulated equipment set**
+**7. Upgrade equipment evaluation**
+- For each item currently present in the `simulated equipment set`, check whether another eligible item with the same item ID exists in Inventory with a higher enhancement level.
+- If a higher-enhancement version exists, replace the corresponding item in the `simulated equipment set` with the eligible version having the highest enhancement level.
+- Locked items and Super Rare items are not replaced by this process.
+
+**8. Evaluate jewel allocation for the simulated equipment set**
 - Consider jewels currently assigned to the character.
 - If the target party is the `Jewel Priority Party`, also consider eligible jewels available in Inventory.
 
-7-1. Check all jewels currently owned by that party member.
+8-1. Check all jewels currently owned by that party member.
    - Record these equipped jewels as **Memory J**.
 
-7-2. Determine the corresponding jewel category based on the table below.
+8-2. Determine the corresponding jewel category based on the table below.
    - Check Inventory for available jewels.
    - Exclude jewels with the same item type and rank.
    - Exclude jewels already stored in **Memory J**.
    - Internally store the remaining valid jewels as the list of potential jewel candidates.
-   - Only one jewel is allowed per combination of item type and rank.
+   - Only one jewel is allowed per combination of item type and rank, per character.
 
-7-3. Evaluate jewel assignment.
+8-3. Evaluate jewel assignment.
    - Compare the resulting candidate jewel set with **Memory J**. If the candidate jewel set is identical to Memory J, skip the assignment process.
    - Start from `i.armor`, following the Jewel Category Mapping order. 
    - Jewel assignment priority is from higher-grade jewels to lower-grade jewels.
