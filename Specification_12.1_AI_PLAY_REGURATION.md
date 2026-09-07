@@ -79,6 +79,11 @@
 * Example filename:
   `105653_v0.9.6(7)_TestRun_20260906.md`
 
+* Report content must include:
+  * A summary of the AI Play run.
+  * A complete chronological list of API call commands issued during the run (approximately 200 calls).
+
+
 #### 12.1.3 API accounting and session lifecycle
 
 * Regulation version: `1`. Each session records the game version/build and regulation version.
