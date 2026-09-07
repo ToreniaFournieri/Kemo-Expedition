@@ -27,7 +27,7 @@
 
 3. Goal
 
-   * Defeat the normal Expedition 1 boss within 20,000 counted API calls.
+   * Defeat the normal Expedition 1 boss within **20,000 counted API calls**.
    * Gods Battles are prohibited.
 
 4. Score
