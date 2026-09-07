@@ -1,5 +1,8 @@
 import type { GameState } from '../types';
 
+// SpecRef: 12.1.1 | AI Play Regulation | End condition
+export const AI_PLAY_API_CALL_LIMIT = 20_000;
+
 export type ApiResponse = Record<string, unknown>;
 export type Evaluation = {
   evaluationId: string; concept: string; version: string; build: number; regulationVersion: 1;
@@ -18,8 +21,8 @@ export const apiError = (code: string, message: string, status = 400): ApiRespon
 export function evaluationSummary(e?: Evaluation) {
   if (!e) return null;
   const scoreSoFar = e.countedApiCalls * 10 + e.actualSorties;
-  const status = e.status === 'active' && e.countedApiCalls >= 200 ? 'failed' : e.status;
-  return { ...e, status, remainingApiCalls: Math.max(0, 200 - e.countedApiCalls), scoreSoFar,
+  const status = e.status === 'active' && e.countedApiCalls >= AI_PLAY_API_CALL_LIMIT ? 'failed' : e.status;
+  return { ...e, status, remainingApiCalls: Math.max(0, AI_PLAY_API_CALL_LIMIT - e.countedApiCalls), scoreSoFar,
     finalScore: status === 'active' ? null : scoreSoFar + (e.goalAchieved ? 0 : 100_000) };
 }
 export function createApiRuntime(): ApiRuntime {
@@ -49,7 +52,7 @@ export async function transactApiRequest(options: {
   const { operation, payload, persist, execute, idempotencyKey } = options;
   const runtime = structuredClone(options.state.apiRuntime ?? createApiRuntime());
   const evaluation = runtime.evaluation;
-  if (evaluation && (evaluation.status !== 'active' || evaluation.countedApiCalls >= 200)) return { ...apiError('evaluation_finished', 'This evaluation has ended.', 409), evaluation: evaluationSummary(evaluation) };
+  if (evaluation && (evaluation.status !== 'active' || evaluation.countedApiCalls >= AI_PLAY_API_CALL_LIMIT)) return { ...apiError('evaluation_finished', 'This evaluation has ended.', 409), evaluation: evaluationSummary(evaluation) };
   if (evaluation) {
     evaluation.countedApiCalls += 1;
     evaluation.ledger.push({ call: evaluation.countedApiCalls, operation, actualSorties: 0, error: 'operation_interrupted' });
@@ -83,7 +86,7 @@ export async function transactApiRequest(options: {
     finalEvaluation.actualSorties += added;
     finalEvaluation.goalAchieved = staged.state.parties.some(p => Boolean(p.defeatedBossExpeditions[1]));
     if (finalEvaluation.goalAchieved) finalEvaluation.status = 'succeeded';
-    else if (finalEvaluation.countedApiCalls >= 200) finalEvaluation.status = 'failed';
+    else if (finalEvaluation.countedApiCalls >= AI_PLAY_API_CALL_LIMIT) finalEvaluation.status = 'failed';
     const err = staged.response.error as { code?: string } | undefined;
     finalEvaluation.ledger[finalEvaluation.ledger.length - 1] = { call: finalEvaluation.countedApiCalls, operation, actualSorties: added, error: err?.code ?? null };
   }
@@ -102,7 +105,7 @@ export async function transactApiRequest(options: {
   catch {
     // The reservation is already durable; gameplay, RNG and receipts remain at that baseline.
     const failedEvaluation = runtime.evaluation ? structuredClone(runtime.evaluation) : undefined;
-    if (failedEvaluation && failedEvaluation.countedApiCalls >= 200) failedEvaluation.status = 'failed';
+    if (failedEvaluation && failedEvaluation.countedApiCalls >= AI_PLAY_API_CALL_LIMIT) failedEvaluation.status = 'failed';
 
     return { ...apiError('persistence_failed', 'Gameplay was not committed.', 503), evaluation: evaluationSummary(failedEvaluation) };
   }

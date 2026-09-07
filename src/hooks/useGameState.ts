@@ -1,4 +1,4 @@
-import { createApiRuntime, createEvaluation } from '../game/experimentalApiSession';
+import { AI_PLAY_API_CALL_LIMIT, createApiRuntime, createEvaluation } from '../game/experimentalApiSession';
 import { hasNewAvailability } from '../game/inventoryAvailability';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { RuntimeGameMode } from '../game/runtimeGameMode';
@@ -1762,7 +1762,7 @@ function createInitialState(): InitialStateResult {
     if (existing.evaluationId !== config.evaluationId || existing.version !== config.version || existing.build !== config.build)
       return { ...result, loadErrorLog: 'AI Play identity or build mismatch.' };
     // A crash after the final call reservation still exhausts the call budget.
-    if (existing.status === 'active' && existing.countedApiCalls >= 200) existing.status = 'failed';
+    if (existing.status === 'active' && existing.countedApiCalls >= AI_PLAY_API_CALL_LIMIT) existing.status = 'failed';
     return result;
   }
   if (config.resume || localStorage.getItem(STORAGE_KEY) || getEnvironmentId() !== 'orca')

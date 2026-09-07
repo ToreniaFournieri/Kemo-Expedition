@@ -21,23 +21,23 @@ function fresh(): GameState {
   return state;
 }
 const deps = { reduce: gameReducer, equip: (s: GameState) => s, ability: getPartyAbilityLevel, freeSpend: calculateFreeActionSpend, prayer: calculatePrayerProfit, hasGate: hasActiveNonGodBattleClearGateCondition };
-test('call 200 may win, exact batch counts and terminal requests are enforced', async () => {
-  let state = fresh(); state.apiRuntime!.evaluation!.countedApiCalls = 199;
+test('call 20,000 may win, exact batch counts and terminal requests are enforced', async () => {
+  let state = fresh(); state.apiRuntime!.evaluation!.countedApiCalls = 19_999;
   let executed = 0;
   const result = await transactApiRequest({ state, operation: 'sortie', payload: { count: 100 }, persist: async s => { state = structuredClone(s); }, execute: async s => {
     executed++; s.parties[0].defeatedBossExpeditions[1] = true;
     return { state: s, actualSorties: 100, firstWinningSortie: 30, response: {} };
   } });
   assert.equal(executed, 1);
-  assert.equal((result.evaluation as { finalScore: number }).finalScore, 2100);
+  assert.equal((result.evaluation as { finalScore: number }).finalScore, 200_100);
   assert.equal(state.apiRuntime!.evaluation!.firstWinningSortie, 30);
   const denied = await transactApiRequest({ state, operation: 'observation', payload: {}, persist: async () => assert.fail('terminal write'), execute: async () => { throw new Error('should not execute'); } });
   assert.equal((denied.error as { code: string }).code, 'evaluation_finished');
 });
-test('failed request 200 exhausts budget and applies failure penalty', async () => {
-  let state = fresh(); state.apiRuntime!.evaluation!.countedApiCalls = 199;
+test('failed request 20,000 exhausts budget and applies failure penalty', async () => {
+  let state = fresh(); state.apiRuntime!.evaluation!.countedApiCalls = 19_999;
   const response = await transactApiRequest({ state, operation: 'command', payload: {}, persist: async s => { state = structuredClone(s); }, execute: async () => { throw new Error('failed'); } });
-  assert.equal((response.evaluation as { finalScore: number }).finalScore, 102000);
+  assert.equal((response.evaluation as { finalScore: number }).finalScore, 300_000);
 });
 test('idempotent retries cost a call but never reexecute sorties; conflicting bodies reject', async () => {
   let state = fresh(); let executed = 0;
@@ -106,4 +106,25 @@ test('atomic persistence throws on quota failure and never installs the rejected
 test('evaluation score does not charge simulations as actual sorties', () => {
   const e = createEvaluation('id', 'Forecast', '0.9.6', 12); e.countedApiCalls = 1;
   assert.equal(evaluationSummary(e)!.scoreSoFar, 10);
+});
+
+test('evaluation remains active across the former 200-call limit', async () => {
+  let state = fresh(); state.apiRuntime!.evaluation!.countedApiCalls = 199;
+  for (const expected of [200, 201]) {
+    const response = await transactApiRequest({ state, operation: 'observation', payload: {}, persist: async s => { state = structuredClone(s); }, execute: async s => ({ state: s, response: {} }) });
+    const evaluation = response.evaluation as ReturnType<typeof evaluationSummary>;
+    assert.equal(evaluation!.status, 'active');
+    assert.equal(evaluation!.countedApiCalls, expected);
+    assert.equal(evaluation!.remainingApiCalls, 20_000 - expected);
+    assert.equal(evaluation!.finalScore, null);
+  }
+});
+test('interrupted final reservation exhausts the 20,000-call budget without executing again', async () => {
+  const state = fresh(); state.apiRuntime!.evaluation!.countedApiCalls = 20_000;
+  const summary = evaluationSummary(state.apiRuntime!.evaluation)!;
+  assert.equal(summary.status, 'failed');
+  assert.equal(summary.remainingApiCalls, 0);
+  assert.equal(summary.finalScore, 300_000);
+  const response = await transactApiRequest({ state, operation: 'observation', payload: {}, persist: async () => assert.fail('terminal write'), execute: async () => assert.fail('terminal execution') });
+  assert.equal((response.error as { code: string }).code, 'evaluation_finished');
 });

@@ -8,9 +8,16 @@
 
    * Start from a fresh Desktop Orca play session.
    * Do not import or reuse any existing save data.
-   * Game mode: `mode.orca`
-   * Enemy Level Offset: `+5`
-   * Debug Mode: `OFF`
+
+   * **BoKemo orca:**
+     * Game mode: `mode.orca`
+     * Enemy Level Offset: `+5`
+     * Debug Mode: `OFF`
+
+   * **BoKemo normal:**
+     * Game mode: `mode.normal`
+     * Enemy Level Offset: `0`
+     * Debug Mode: `OFF`
 
 2. Access restrictions
 
@@ -72,12 +79,12 @@
 
 * Report filename format:
 
-  `<Score>_<Version>(<Build>)_<Concept>_<YYYYMMDD>.md`
+  `<Score>_<Version>(<Build>)_<mode>_<Concept>_<YYYYMMDD>.md`
 
   * Format Score as a six-digit, zero-padded integer.
     * Example: a score of `87649` becomes `087649`.
 * Example filename:
-  `105653_v0.9.6(7)_TestRun_20260906.md`
+  `105653_v0.9.6(7)_orca_TestRun_20260906.md`
 
 * Report content must include:
   * A summary of the AI Play run.
