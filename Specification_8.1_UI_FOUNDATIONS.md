@@ -175,6 +175,9 @@
     - x5.0 -> `▷`
     - x6.0 -> `▶︎`
 
+
+#### 8.1.2.1 Progress Report
+
 - **Progress Report:** When the player presses the Speed of Time button:
   - Show the following confirmation dialog:
     - "現在の進捗を開発へ報告します。（報酬として、ゲーム進行速度が1日の間、1.2倍になります）"
@@ -219,6 +222,8 @@
 -IF 自動周回 is OFF, display "静止中" in the header (right-aligned: 200G 静止中) with Sub color
  and tap "静止中", then 自動周回 is ON.
 
+
+#### 8.1.2.2 Format of progress data
 
 **Format of progress data**
 - Readable format for discord channel post.
@@ -270,6 +275,8 @@
     2. Highest experience points
     3. Smallest PT number (PT1 → PT6) when tied
 
+
+#### 8.1.2.3 Status table format
 
 - Status table
   - `PT-列`: PT number and row, bold (1-1, 1-2...)

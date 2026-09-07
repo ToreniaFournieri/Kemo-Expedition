@@ -27,7 +27,7 @@
 
 3. Goal
 
-   * Defeat the normal Expedition 1 boss within 200 counted API calls.
+   * Defeat the normal Expedition 1 boss within 20,000 counted API calls.
    * Gods Battles are prohibited.
 
 4. Score
@@ -37,7 +37,7 @@
    * Lower scores are better.
    * Failure penalty:
 
-     * `100,000` if the goal is not achieved within the 200-call limit.
+     * `100,000` if the goal is not achieved within the 20,000-call limit.
      * `0` if the goal is achieved within the limit.
    * Actual sorties:
 
@@ -63,8 +63,8 @@
 6. End condition
 
    * End the AI Play immediately after the API operation that successfully defeats the normal Expedition 1 boss.
-   * If the goal has not been achieved, end immediately after the 200th counted API call.
-   * Success on the 200th counted API call is valid.
+   * If the goal has not been achieved, end immediately after the 20,000th counted API call.
+   * Success on the 20,000th counted API call is valid.
 
 #### 12.1.2 Reporting
 
@@ -81,7 +81,9 @@
 
 * Report content must include:
   * A summary of the AI Play run.
-  * A complete chronological list of API call commands issued during the run (approximately 200 calls).
+  * The final build configuration of each party member.
+    * Use the status table format defined in `@Specification_8.1_UI_FOUNDATIONS.md` , section `8.1.2.3 Status table format`.
+  * A summary of API call commands issued during the run.
 
 
 #### 12.1.3 API accounting and session lifecycle
@@ -90,7 +92,7 @@
 * Count one call for each authenticated, lease-owned gameplay request accepted by the serialized API dispatcher. Observation, build-options, retained logs, command, sortie, simulation, party-preview and catalog requests are gameplay requests. Invalid input, stale revisions, illegal actions and received idempotent retries count.
 * Public/authenticated status, control acquisition/renewal/release, and evaluation-summary retrieval do not count. Authentication/lease failures and busy rejections occur before dispatcher acceptance and do not count. Exempt endpoints must not provide strategic game observations.
 * One simulation request executes exactly 1,000 forecasts. There is no separate total forecast quota; every request still consumes a counted call.
-* A sortie batch executes its exact requested count. If the boss is defeated before the batch ends, all completed sorties in that operation count. Finalize success after the complete operation, including on counted call 200.
+* A sortie batch executes its exact requested count. If the boss is defeated before the batch ends, all completed sorties in that operation count. Finalize success after the complete operation, including on counted call 20,000.
 * No background or AFK progression is allowed before the first request, between requests, during lease gaps, or after the evaluation ends. Normal saves created during this evaluation may be used to resume the same evaluation; they must not initialize a different evaluation.
 * Organizer setup uses a new isolated desktop profile. `--ai-play=<Concept>` creates a new session; `--resume-ai-play=<EvaluationUUID>` opens its checkpoint on the identical version/build. Both require `--environment=orca`. The playing agent has no reset/import/start-evaluation API.
 * Calls are reserved durably before execution. An interrupted reserved call still counts. Gameplay, random state, score results and idempotency receipts commit atomically; an uncommitted operation adds no actual sorties. Repeating a committed mutation with the same `Idempotency-Key` and identical request replays its result without executing gameplay again, but consumes another call while the evaluation remains active.
