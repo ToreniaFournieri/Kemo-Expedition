@@ -26,6 +26,8 @@ Read only the organizer's connection handoff for setup. Do not inspect save/prof
 
 ## 3. Check readiness and acquire control
 
+For the recommended managed connection, use the [reference client](ai-play-client.md) after launcher readiness. It handles credentials, leases, revisions and mutation keys. Follow the [operator guide](../Specification_12.2_AI_PLAY_OPERATOR_GUIDE.md) for opening builds and play decisions. The manual HTTP instructions below are an alternative; do not acquire a second controller while the reference client owns control.
+
 The connection file's `endpoint` already ends in `/experimental/v1`. Do not append that prefix twice. The port and token are generated for the running API; never assume an old connection still works.
 
 For macOS zsh or bash, load the private handoff without displaying credentials or putting them in shell history:
