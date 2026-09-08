@@ -2,13 +2,16 @@ import type { GameState } from '../types';
 
 // SpecRef: 12.1.1 | AI Play Regulation | End condition
 export const AI_PLAY_API_CALL_LIMIT = 20_000;
+export const AI_PLAY_REGULATION_VERSION = 2;
+export const AI_PLAY_RULES_ID = "ai-play-v2-calls20000-score10-sortie1-penalty100000-exactbatch";
 
 export type ApiResponse = Record<string, unknown>;
 export type Evaluation = {
-  evaluationId: string; concept: string; version: string; build: number; regulationVersion: 1;
+  evaluationId: string; concept: string; version: string; build: number; regulationVersion: 1 | 2; mode?: "normal" | "orca"; rulesId?: string;
+  winningOperation?: { call: number; firstWinningSortie: number; sortie: unknown; outcomes: unknown };
   status: 'active' | 'succeeded' | 'failed'; countedApiCalls: number; actualSorties: number;
   goalAchieved: boolean; firstWinningSortie: number | null; startedAt: number;
-  ledger: Array<{ call: number; operation: string; actualSorties: number; error: string | null }>;
+  ledger: Array<{ call: number; operation: string; actualSorties: number; error: string | null; commandType?: string }>;
 };
 export type ApiRuntime = {
   revision: number; randomState: number; autoRun: boolean; simulatedAt: number;
@@ -22,7 +25,8 @@ export function evaluationSummary(e?: Evaluation) {
   if (!e) return null;
   const scoreSoFar = e.countedApiCalls * 10 + e.actualSorties;
   const status = e.status === 'active' && e.countedApiCalls >= AI_PLAY_API_CALL_LIMIT ? 'failed' : e.status;
-  return { ...e, status, remainingApiCalls: Math.max(0, AI_PLAY_API_CALL_LIMIT - e.countedApiCalls), scoreSoFar,
+  const { ledger: _ledger, ...summary } = e;
+  return { ...summary, status, remainingApiCalls: Math.max(0, AI_PLAY_API_CALL_LIMIT - e.countedApiCalls), scoreSoFar,
     finalScore: status === 'active' ? null : scoreSoFar + (e.goalAchieved ? 0 : 100_000) };
 }
 export function createApiRuntime(): ApiRuntime {
@@ -30,8 +34,8 @@ export function createApiRuntime(): ApiRuntime {
   crypto.getRandomValues(bytes);
   return { revision: 0, randomState: bytes[0] || 1, autoRun: false, simulatedAt: Date.now(), receipts: {} };
 }
-export function createEvaluation(evaluationId: string, concept: string, version: string, build: number): Evaluation {
-  return { evaluationId, concept, version, build, regulationVersion: 1, status: 'active',
+export function createEvaluation(evaluationId: string, concept: string, version: string, build: number, mode: "normal" | "orca" = "orca"): Evaluation {
+  return { evaluationId, concept, version, build, mode, rulesId: AI_PLAY_RULES_ID, regulationVersion: AI_PLAY_REGULATION_VERSION, status: 'active',
     countedApiCalls: 0, actualSorties: 0, goalAchieved: false, firstWinningSortie: null,
     startedAt: Date.now(), ledger: [] };
 }
@@ -82,16 +86,19 @@ export async function transactApiRequest(options: {
   const finalRuntime = { ...(staged.state.apiRuntime ?? runtime), evaluation: finalEvaluation, receipts: { ...runtime.receipts } };
   const added = staged.actualSorties ?? 0;
   if (finalEvaluation) {
-    if (staged.firstWinningSortie !== undefined) finalEvaluation.firstWinningSortie ??= finalEvaluation.actualSorties + staged.firstWinningSortie;
+    if (staged.firstWinningSortie !== undefined) {
+      finalEvaluation.firstWinningSortie ??= finalEvaluation.actualSorties + staged.firstWinningSortie;
+      finalEvaluation.winningOperation ??= { call: finalEvaluation.countedApiCalls, firstWinningSortie: finalEvaluation.firstWinningSortie, sortie: staged.response.sortie ?? null, outcomes: staged.response.outcomes ?? null };
+    }
     finalEvaluation.actualSorties += added;
     finalEvaluation.goalAchieved = staged.state.parties.some(p => Boolean(p.defeatedBossExpeditions[1]));
     if (finalEvaluation.goalAchieved) finalEvaluation.status = 'succeeded';
     else if (finalEvaluation.countedApiCalls >= AI_PLAY_API_CALL_LIMIT) finalEvaluation.status = 'failed';
     const err = staged.response.error as { code?: string } | undefined;
-    finalEvaluation.ledger[finalEvaluation.ledger.length - 1] = { call: finalEvaluation.countedApiCalls, operation, actualSorties: added, error: err?.code ?? null };
+    finalEvaluation.ledger[finalEvaluation.ledger.length - 1] = { call: finalEvaluation.countedApiCalls, operation, actualSorties: added, error: err?.code ?? null, ...(!err && operation === 'command' ? { commandType: String((staged.response.command as { type?: string })?.type ?? 'unknown') } : {}) };
   }
   if (finalEvaluation && finalEvaluation.status !== 'active' && staged.response.observation) {
-    staged.response = { ...staged.response, observation: { ...staged.response.observation as Record<string, unknown>, legalActions: [] } };
+    staged.response = { ...staged.response, observation: { ...freezeEvaluationObservation(staged.response.observation as Record<string, unknown>) } };
   }
   const response: ApiResponse = { ...staged.response, evaluation: evaluationSummary(finalEvaluation) };
   if (idempotencyKey && !receipt && !response.error) {
@@ -116,4 +123,18 @@ export class ApiValidationError extends Error {
 }
 export function requireApi(condition: unknown, code: string, message: string, status = 422): asserts condition {
   if (!condition) throw new ApiValidationError(apiError(code, message, status));
+}
+
+export function freezeEvaluationObservation(observation: Record<string, unknown>) {
+  return { ...observation, legalActions: [], parties: (observation.parties as Array<Record<string, unknown>> | undefined)?.map(p => ({ ...p, expedition: { ...p.expedition as Record<string, unknown>, normalSortieAvailable: false, godBattleAvailable: false } })) ?? [] };
+}
+
+// Exempt reads must never evaluate strategic projections during an active run.
+export function readEvaluation(state: GameState, operation: string, snapshot: () => Record<string, unknown>): ApiResponse {
+  const evaluation = evaluationSummary(state.apiRuntime?.evaluation);
+  if (operation === 'evaluation') return { evaluation };
+  if (operation === 'evaluation-ledger') return { ledger: state.apiRuntime?.evaluation?.ledger ?? null };
+  if (!evaluation) return { report: null };
+  if (evaluation.finalScore == null) return apiError('evaluation_active', 'The final report is available after termination.', 409);
+  return { report: { evaluation, ledger: state.apiRuntime!.evaluation!.ledger, ...snapshot() } };
 }

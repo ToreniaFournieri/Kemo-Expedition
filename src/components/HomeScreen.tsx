@@ -1,7 +1,7 @@
 import { ExperimentalApiSettings } from './ExperimentalApiSettings';
 import { withBattleSeedSource } from '../game/battleSeedSource';
 import { gameReducer, simulateExpeditionRuns, calculateFreeActionSpend, calculatePrayerProfit, getPartyAbilityLevel as apiPartyAbility, hasActiveNonGodBattleClearGateCondition as apiHasGate } from '../hooks/useGameState';
-import { transactApiRequest, evaluationSummary, requireApi, canonicalRequest, ApiValidationError, type ApiStage } from '../game/experimentalApiSession';
+import { transactApiRequest, readEvaluation, evaluationSummary, requireApi, canonicalRequest, ApiValidationError, type ApiStage } from '../game/experimentalApiSession';
 import { applyApiCommand, configureParty, buildOptions, mechanicsCatalog, record as apiRecord, keys as apiKeys } from '../game/experimentalApiStrategy';
 import { resolveApiCycles } from '../game/experimentalApiCycle';
 import { createApiRandom, withGameplayRandomSource } from '../game/gameplayRandom';
@@ -629,7 +629,13 @@ export function HomeScreen({
   const processExperimentalApiRequest = useCallback(async (operation: string, raw: unknown) => {
     if (['status', 'set-control', 'release'].includes(operation)) return handleExperimentalApiRequest(operation, raw);
     if (operation === 'renew') return { renewed: true };
-    if (operation === 'evaluation') return { evaluation: evaluationSummary(apiStateRef.current.apiRuntime?.evaluation) };
+    if (['evaluation', 'evaluation-ledger', 'evaluation-report'].includes(operation)) {
+      const current = apiStateRef.current;
+      return readEvaluation(current, operation, () => ({
+        observation: { ...buildExperimentalObservation(current, current.apiRuntime!.revision, current.apiRuntime!.autoRun, {}, current.apiRuntime!.simulatedAt), observedAt: current.apiRuntime!.simulatedAt },
+        statusTable: { headers: ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属性耐性', 'アビリティ'], rows: buildStatusTableRows(current.parties) }
+      }));
+    }
     if (!apiLeaseActiveRef.current) return apiFailure(409, 'no_active_lease', 'API control is required.');
     if (apiActionsRef.current.getApiReadiness() !== 'ready') return apiFailure(503, 'save_error', 'Save loading failed.');
     const envelope = raw && typeof raw === 'object' ? raw as Record<string, unknown> : {};

@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createInitialStateBase, gameReducer, calculateFreeActionSpend, calculatePrayerProfit, getPartyAbilityLevel, hasActiveNonGodBattleClearGateCondition, simulateExpeditionRuns } from '../../src/hooks/useGameState';
-import { createApiRuntime, createEvaluation, transactApiRequest, evaluationSummary } from '../../src/game/experimentalApiSession';
+import { createApiRuntime, createEvaluation, transactApiRequest, readEvaluation, evaluationSummary } from '../../src/game/experimentalApiSession';
 import { applyApiCommand, configureParty, validateBuild } from '../../src/game/experimentalApiStrategy';
+import { buildExperimentalObservation, returnReasonFromParty } from '../../src/game/experimentalApi';
 import { resolveApiCycles } from '../../src/game/experimentalApiCycle';
 import { createApiRandom, withGameplayRandomSource, gameplayRandom } from '../../src/game/gameplayRandom';
 import { withBattleSeedSource } from '../../src/game/battleSeedSource';
@@ -26,11 +27,17 @@ test('call 20,000 may win, exact batch counts and terminal requests are enforced
   let executed = 0;
   const result = await transactApiRequest({ state, operation: 'sortie', payload: { count: 100 }, persist: async s => { state = structuredClone(s); }, execute: async s => {
     executed++; s.parties[0].defeatedBossExpeditions[1] = true;
-    return { state: s, actualSorties: 100, firstWinningSortie: 30, response: {} };
+    return { state: s, actualSorties: 100, firstWinningSortie: 30, response: { sortie: { requestedCount: 100, completedCount: 100 }, outcomes: { Clear: 1, Defeat: 99 }, observation: { legalActions: [{ type: 'sortie' }], parties: [{ expedition: { normalSortieAvailable: true, godBattleAvailable: true } }] } } };
   } });
   assert.equal(executed, 1);
   assert.equal((result.evaluation as { finalScore: number }).finalScore, 200_100);
   assert.equal(state.apiRuntime!.evaluation!.firstWinningSortie, 30);
+  assert.equal(state.apiRuntime!.evaluation!.winningOperation!.call, 20000);
+  assert.deepEqual(state.apiRuntime!.evaluation!.winningOperation!.outcomes, { Clear: 1, Defeat: 99 });
+  const terminalObservation = result.observation as { legalActions: unknown[]; parties: Array<{ expedition: { normalSortieAvailable: boolean; godBattleAvailable: boolean } }> };
+  assert.deepEqual(terminalObservation.legalActions, []);
+  assert.equal(terminalObservation.parties[0].expedition.normalSortieAvailable, false);
+  assert.equal(terminalObservation.parties[0].expedition.godBattleAvailable, false);
   const denied = await transactApiRequest({ state, operation: 'observation', payload: {}, persist: async () => assert.fail('terminal write'), execute: async () => { throw new Error('should not execute'); } });
   assert.equal((denied.error as { code: string }).code, 'evaluation_finished');
 });
@@ -127,4 +134,46 @@ test('interrupted final reservation exhausts the 20,000-call budget without exec
   assert.equal(summary.finalScore, 300_000);
   const response = await transactApiRequest({ state, operation: 'observation', payload: {}, persist: async () => assert.fail('terminal write'), execute: async () => assert.fail('terminal execution') });
   assert.equal((response.error as { code: string }).code, 'evaluation_finished');
+});
+
+test('compact exempt reads reveal final strategy only after termination and do not alter accounting', () => {
+  const state = fresh();
+  const before = structuredClone(state);
+  assert.equal('ledger' in evaluationSummary(state.apiRuntime!.evaluation)!, false);
+  const denied = readEvaluation(state, 'evaluation-report', () => assert.fail('active strategic projection'));
+  assert.equal((denied.error as { code: string }).code, 'evaluation_active');
+  assert.deepEqual(readEvaluation(state, 'evaluation-ledger', () => assert.fail('ledger strategic projection')), { ledger: [] });
+  assert.deepEqual(state, before);
+  state.apiRuntime!.evaluation!.status = 'succeeded';
+  state.apiRuntime!.evaluation!.goalAchieved = true;
+  const report = readEvaluation(state, 'evaluation-report', () => ({ observation: { revision: 0 } })).report as { evaluation: { finalScore: number }; ledger: unknown[] };
+  assert.equal(report.evaluation.finalScore, 0);
+  assert.deepEqual(report.ledger, []);
+});
+test('public race choices and validation agree, with evaluation-effective availability', () => {
+  const state = fresh();
+  const observation = buildExperimentalObservation(state, 0, false, {}, 0);
+  assert.equal(observation.catalogs.selectableRaceIds.includes('kemoria'), false);
+  assert.equal(observation.catalogs.selectableRaceIds.includes('orcinian'), false);
+  const member = state.parties[0].characters.find(c => !c.isUnique)!;
+  for (const raceId of ['kemoria', 'orcinian']) assert.ok(validateBuild(state, 0, member, { raceId }).some(v => v.field === 'raceId'));
+  assert.ok(observation.parties.every(p => !p.expedition.godBattleAvailable));
+  state.apiRuntime!.evaluation!.status = 'failed';
+  const terminal = buildExperimentalObservation(state, 0, false, {}, 0);
+  assert.deepEqual(terminal.legalActions, []);
+  assert.ok(terminal.parties.every(p => !p.expedition.normalSortieAvailable && !p.expedition.godBattleAvailable));
+});
+test('completed return reasons distinguish depth limit, gate and draw without changing legacy counts', () => {
+  const state = fresh();
+  const result = resolveApiCycles(state, 0, 1, state.apiRuntime!.simulatedAt, 'mode.orca', 5, deps);
+  const party = result.state.parties[0];
+  assert.ok(party.lastExpeditionLog);
+  party.lastExpeditionLog!.finalOutcome = 'Escape';
+  party.lastExpeditionLog!.entries.at(-1)!.gateInfo = undefined;
+  assert.equal(returnReasonFromParty(party), 'depth_limit');
+  party.lastExpeditionLog!.entries.at(-1)!.gateInfo = 'blocked';
+  assert.equal(returnReasonFromParty(party), 'clear_gate');
+  party.lastExpeditionLog!.finalOutcome = 'Retreat';
+  party.lastExpeditionLog!.entries.at(-1)!.outcome = 'draw';
+  assert.equal(returnReasonFromParty(party), 'draw');
 });

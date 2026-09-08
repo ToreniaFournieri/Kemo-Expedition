@@ -99,3 +99,46 @@ test('Experimental AI API enforces authentication and an exclusive lease', async
 
   await api.disable();
 });
+
+test('evaluation report and ledger routes require authentication but no lease and expose capabilities privately', async () => {
+  let calls = 0;
+  const capabilities = { mode: 'normal', regulationVersion: 2, rulesId: 'test', countedApiCallLimit: 20000 };
+  const api = createExperimentalApi({ environment: 'prod', version: '0.9.6', build: 14, aiPlayCapabilities: capabilities,
+    invokeRenderer: async operation => {
+      calls++;
+      if (operation === 'status') return { status: 'ready', revision: 0 };
+      if (operation === 'evaluation-report') return { status: 409, error: { code: 'evaluation_active' } };
+      if (operation === 'evaluation-ledger') return { ledger: [] };
+      return {};
+    } });
+  try {
+    const settings = await api.enable();
+    const base = `http://${settings.host}:${settings.port}/experimental/v1`;
+    const headers = { Authorization: `Bearer ${settings.token}` };
+    assert.equal((await fetch(`${base}/evaluation/report`)).status, 401);
+    assert.equal(calls, 0);
+    assert.equal((await fetch(`${base}/status`).then(r => r.json())).capabilities, undefined);
+    assert.deepEqual((await fetch(`${base}/status`, { headers }).then(r => r.json())).capabilities.aiPlay, capabilities);
+    assert.equal((await fetch(`${base}/evaluation/report`, { headers })).status, 409);
+    assert.deepEqual(await fetch(`${base}/evaluation/ledger`, { headers }).then(r => r.json()), { apiVersion: 'experimental/v1', schemaVersion: 1, ledger: [] });
+    const before = calls;
+    assert.equal((await fetch(`${base}/evaluation/report?extra=1`, { headers })).status, 400);
+    assert.equal((await fetch(`${base}/evaluation/ledger`, { headers, method: 'POST' })).status, 405);
+    assert.equal(calls, before);
+  } finally { await api.shutdown(); }
+});
+
+test('report storage failure preserves the committed evaluation response', async () => {
+  const api = createExperimentalApi({ environment: 'orca', version: '0.9.6', build: 14,
+    invokeRenderer: async operation => operation === 'evaluation' ? { evaluation: { status: 'succeeded', finalScore: 42 } } : {},
+    onEvaluationFinished: async () => { throw new Error('disk unavailable'); } });
+  try {
+    const settings = await api.enable();
+    const response = await fetch(`http://${settings.host}:${settings.port}/experimental/v1/evaluation`, { headers: { Authorization: `Bearer ${settings.token}` } });
+    const result = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(result.evaluation.finalScore, 42);
+    assert.equal(result.error, undefined);
+    assert.equal(result.reportError.code, 'report_write_failed');
+  } finally { await api.shutdown(); }
+});

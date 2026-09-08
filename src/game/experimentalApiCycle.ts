@@ -2,7 +2,7 @@ import { getRestHealPerStep } from './restHealing';
 import type { GameState, Party } from '../types';
 import type { GameAction } from '../hooks/useGameState';
 import type { ExperimentalPartyCycle } from './experimentalApi';
-import { outcomeFromParty } from './experimentalApi';
+import { returnReasonFromParty, outcomeFromParty } from './experimentalApi';
 import type { RuntimeGameMode } from './runtimeGameMode';
 import { computePartyStats } from './partyComputation';
 import { getDeityStateDurationMultiplier, normalizeDeityName } from './deity';
@@ -131,7 +131,7 @@ export function resolveApiCycles(input: GameState, partyIndex: number, count: nu
     const godBattleDungeonIds = DUNGEONS.filter(d => isGodsBattleAvailable(p, d.id) && !isGodsBattleAvailable(before.parties[partyIndex], d.id)).map(d => d.id);
     const partyIds = state.parties.filter(p => !before.parties.some(old => old.id === p.id)).map(p => p.id);
     const gateIds = [...Array.from({ length: 5 }, (_, n) => getEliteGateKey(dungeonId, n + 1)), getBossGateKey(dungeonId)].filter(g => isClearGateUnlocked(p, g) && !isClearGateUnlocked(before.parties[partyIndex], g));
-    return { index, dungeonId, partyElapsedStartMs: start, partyElapsedEndMs: elapsed, outcome: outcomeFromParty(p),
+    return { index, dungeonId, partyElapsedStartMs: start, partyElapsedEndMs: elapsed, outcome: outcomeFromParty(p), returnReason: returnReasonFromParty(p),
       completedRooms: log?.completedRooms ?? 0, totalRooms: log?.totalRooms ?? 0, latestDisclosedFloor: log?.entries.at(-1)?.floor ?? null,
       experienceGained: log?.totalExperience ?? 0, goldGained: state.global.gold - before.global.gold,
       goldDonated: donated, goldSaved: saved, itemsObtained: log?.rewards.length ?? 0, itemsByRarity,

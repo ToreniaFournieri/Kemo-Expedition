@@ -6,7 +6,7 @@
 
 1. Starting conditions
 
-   * Start from a fresh Desktop Orca play session.
+   * Start from a fresh isolated Desktop session in the selected `orca` or `normal` mode.
    * Do not import or reuse any existing save data.
 
    * **BoKemo orca:**
@@ -95,15 +95,19 @@
 
 #### 12.1.3 API accounting and session lifecycle
 
-* Regulation version: `1`. Each session records the game version/build and regulation version.
+* Regulation version: `2`. Each session records the game version/build, mode, regulation version and immutable rules ID `ai-play-v2-calls20000-score10-sortie1-penalty100000-exactbatch`. Resume must match all these fields; historical evaluations retain their original rules and are never reinterpreted.
 * Count one call for each authenticated, lease-owned gameplay request accepted by the serialized API dispatcher. Observation, build-options, retained logs, command, sortie, simulation, party-preview and catalog requests are gameplay requests. Invalid input, stale revisions, illegal actions and received idempotent retries count.
-* Public/authenticated status, control acquisition/renewal/release, and evaluation-summary retrieval do not count. Authentication/lease failures and busy rejections occur before dispatcher acceptance and do not count. Exempt endpoints must not provide strategic game observations.
+* Public/authenticated status, control acquisition/renewal/release, and evaluation-summary retrieval do not count. Authentication/lease failures and busy rejections occur before dispatcher acceptance and do not count. Exempt endpoints must not provide strategic game observations while the evaluation is active. After termination, `/evaluation/report` provides the frozen final public observation, required status table, winning-operation summary and full ledger; `/evaluation/ledger` provides accounting entries only. Ordinary responses and `/evaluation` omit the ledger.
 * One simulation request executes exactly 1,000 forecasts. There is no separate total forecast quota; every request still consumes a counted call.
 * A sortie batch executes its exact requested count. If the boss is defeated before the batch ends, all completed sorties in that operation count. Finalize success after the complete operation, including on counted call 20,000.
 * No background or AFK progression is allowed before the first request, between requests, during lease gaps, or after the evaluation ends. Normal saves created during this evaluation may be used to resume the same evaluation; they must not initialize a different evaluation.
-* Organizer setup uses a new isolated desktop profile. `--ai-play=<Concept>` creates a new session; `--resume-ai-play=<EvaluationUUID>` opens its checkpoint on the identical version/build. Both require `--environment=orca`. The playing agent has no reset/import/start-evaluation API.
+* Organizer setup uses a new isolated desktop profile. `--ai-play=<Concept>` creates a new session; `--resume-ai-play=<EvaluationUUID>` opens its checkpoint on the identical version/build. Use `--environment=orca` for Orca and `--environment=prod` for Normal. The launcher mode must match the checkpoint. The playing agent has no reset/import/start-evaluation API.
 * Calls are reserved durably before execution. An interrupted reserved call still counts. Gameplay, random state, score results and idempotency receipts commit atomically; an uncommitted operation adds no actual sorties. Repeating a committed mutation with the same `Idempotency-Key` and identical request replays its result without executing gameplay again, but consumes another call while the evaluation remains active.
 * Requests after termination are rejected without changing the frozen score. The final summary remains readable without an active lease.
 * The desktop application writes an authoritative operation-ledger report into `AI_play_report` (packaged application: `Documents/BoKemo/AI_play_report`). The player may add strategy commentary after completion. Reports contain no tokens or hidden random state.
 
 * Report filenames use the evaluation start date. If another evaluation already occupies the same filename, append the evaluation UUID to the Concept portion so neither report is overwritten.
+
+* Organizer setup may launch/resume the application, read its private connection handoff, and check authenticated readiness. This exception does not permit UI gameplay, DevTools, save inspection or hidden-state access. The official `npm run ai-play -- --mode=orca --concept=Example` launcher builds and starts the isolated session; `--mode=normal` selects Normal. Use `--resume=<UUID>` instead of `--concept` to resume. It prints only the path to a private credentials file and readiness information, never credentials. The file is created with exclusive ownership and mode 0600 in a private temporary directory and removed on exit. Wait for authenticated `runtime.status=ready` before acquiring control.
+* After the end condition, report retrieval, commentary, lease release and application shutdown remain allowed. They cannot change gameplay or score. Automatic reports include the final status table and the first winning operation even when the last sortie in that batch was a defeat.
+* Available-action flags reflect evaluation restrictions: Gods Battles are unavailable throughout evaluation; all gameplay actions are unavailable after termination. Selectable race catalogs and build validation must match UI selectability. Existing unique members may retain their own race.

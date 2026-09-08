@@ -60,7 +60,12 @@ const experimentalApi = createExperimentalApi({
   version: app.getVersion(),
   build: buildNumber,
   invokeRenderer: invokeExperimentalApiRenderer,
-  onEvaluationFinished: (evaluation) => writeAiPlayReport(aiPlay, evaluation),
+  aiPlayCapabilities: aiPlay ? { mode: aiPlay.mode, regulationVersion: aiPlay.regulationVersion, rulesId: aiPlay.rulesId, countedApiCallLimit: 20000 } : null,
+  onEvaluationFinished: async () => {
+    if (!aiPlay) return;
+    const result = await invokeExperimentalApiRenderer('evaluation-report', {});
+    return result.report ? writeAiPlayReport(aiPlay, result.report) : undefined;
+  },
 });
 
 // SpecRef: 9.1 | Desktop distribution | stable application origin and profile
@@ -118,7 +123,7 @@ function createWindow(options = {}) {
       nodeIntegration: false,
       sandbox: true,
       preload: PRELOAD_PATH,
-      additionalArguments: aiPlay ? ['--bokemo-ai-play=' + JSON.stringify({ evaluationId: aiPlay.evaluationId, concept: aiPlay.concept, version: aiPlay.version, build: aiPlay.build, resume: aiPlay.resume })] : [],
+      additionalArguments: aiPlay ? ['--bokemo-ai-play=' + JSON.stringify({ evaluationId: aiPlay.evaluationId, concept: aiPlay.concept, version: aiPlay.version, build: aiPlay.build, mode: aiPlay.mode, regulationVersion: aiPlay.regulationVersion, rulesId: aiPlay.rulesId, resume: aiPlay.resume })] : [],
       backgroundThrottling: false,
     },
   });
@@ -450,7 +455,10 @@ ipcMain.on('desktop:experimental-api-response', (_event, message) => {
 });
 
 app.whenReady().then(() => {
-  if (aiPlay) void experimentalApi.enable();
+  if (aiPlay) void experimentalApi.enable().then(settings => {
+    if (process.send) process.send({ type: 'ai-play-connection', endpoint: `http://${settings.host}:${settings.port}/experimental/v1`, token: settings.token,
+      evaluationId: aiPlay.evaluationId, mode: aiPlay.mode, version: aiPlay.version, build: aiPlay.build, regulationVersion: aiPlay.regulationVersion, rulesId: aiPlay.rulesId });
+  });
   // Serving the packaged Vite output through a standard, secure custom scheme gives
   // localStorage a stable origin while preserving relative assets and query strings.
   protocol.handle('app', (request) => {

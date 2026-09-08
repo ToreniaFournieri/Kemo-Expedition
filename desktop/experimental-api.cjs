@@ -103,6 +103,12 @@ function createExperimentalApi(options) {
     return result;
   }
 
+  async function attachFinalReport(result) {
+    if (result.evaluation?.finalScore == null || !options.onEvaluationFinished) return;
+    try { result.reportPath = await options.onEvaluationFinished(result.evaluation); }
+    catch { result.reportError = { code: 'report_write_failed', message: 'The evaluation is committed. Retrieve /evaluation/report and retry /evaluation to save the report.' }; }
+  }
+
   async function handleStatus(request, response) {
     if (request.method !== 'GET') return send(response, 405, apiError('method_not_allowed', 'This endpoint requires GET.'), { Allow: 'GET' });
     if (request.url !== `${API_PREFIX}/status`) return send(response, 400, apiError('invalid_request', 'Query parameters are not supported.'));
@@ -119,6 +125,7 @@ function createExperimentalApi(options) {
       apiVersion: API_VERSION,
       schemaVersion: SCHEMA_VERSION,
       game: { version: options.version, build: options.build, environment: options.environment },
+      capabilities: { aiPlay: options.aiPlayCapabilities ?? null },
       runtime: { status: busy ? 'busy' : runtime.status, revision: runtime.revision ?? null },
       control: { status: lease ? 'leased' : 'available', ownedByCaller: Boolean(owned), leaseExpiresAt: lease?.expiresAt ?? null },
     });
@@ -154,13 +161,13 @@ function createExperimentalApi(options) {
   async function handleOwned(request, response, operation, routePayload = {}) {
     const isGet = ['observation', 'latest-battle-log', 'diary-entries', 'diary-battle-log', 'catalog', 'evaluation'].includes(operation);
     if (!authenticate(request)) return send(response, 401, apiError('authentication_failed', 'Bearer authentication is required.'));
-    if (operation === 'evaluation') {
+    if (['evaluation', 'evaluation-ledger', 'evaluation-report'].includes(operation)) {
       if (busy) return send(response, 409, apiError('runtime_busy', 'An operation is executing.', true));
       if (request.method !== 'GET') return send(response, 405, apiError('method_not_allowed', 'This endpoint requires GET.'), { Allow: 'GET' });
       if (new URL(request.url, 'http://127.0.0.1').search.length) return send(response, 400, apiError('invalid_request', 'Query parameters are not supported.'));
-      const result = await rendererCall('evaluation', {});
-      if (result.evaluation?.finalScore != null) result.reportPath = await options.onEvaluationFinished?.(result.evaluation);
-      return send(response, 200, { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...result });
+      const result = await rendererCall(operation, {});
+      await attachFinalReport(result);
+      return send(response, result.error ? result.status ?? 500 : 200, { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...result });
     }
     const leaseFailure = validateLease(request);
     if (leaseFailure) return send(response, leaseFailure.status, leaseFailure.body);
@@ -190,7 +197,7 @@ function createExperimentalApi(options) {
       const payload = { ...(body ?? {}) };
       if (idempotencyKey !== undefined && ['command', 'sortie'].includes(operation)) payload.__idempotencyKey = idempotencyKey;
       const result = await rendererCall(effectiveOperation, payload);
-      if (result.evaluation?.finalScore != null) result.reportPath = await options.onEvaluationFinished?.(result.evaluation);
+      await attachFinalReport(result);
       if (result.error) {
         if (operation === 'release' && lease) { lease.releasing = false; renewLease(); }
         return send(response, inputFailure?.status ?? result.status ?? 500, inputFailure ? { ...result, error: { ...result.error, code: inputFailure.code } } : result,
@@ -226,6 +233,8 @@ function createExperimentalApi(options) {
       [ `${API_PREFIX}/party-preview`, 'party-preview'],
       [ `${API_PREFIX}/catalog`, 'catalog'],
       [ `${API_PREFIX}/evaluation`, 'evaluation'],
+      [`${API_PREFIX}/evaluation/ledger`, 'evaluation-ledger'],
+      [`${API_PREFIX}/evaluation/report`, 'evaluation-report'],
       [ `${API_PREFIX}/control/renew`, 'renew'],
     ]);
     const operation = routes.get(pathname);

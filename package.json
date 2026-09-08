@@ -31,6 +31,7 @@
     "performance:afk-item-lookup": "node scripts/run-afk-item-lookup-attribution.mjs",
     "performance:afk-chunk-journal": "node scripts/run-afk-chunk-journal-attribution.mjs",
     "performance:auto-equipment": "node scripts/run-auto-equipment-attribution.mjs",
+    "ai-play": "npm run build && node scripts/launch-ai-play.mjs",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",
     "desktop:orca": "npm run build && electron . --environment=orca",

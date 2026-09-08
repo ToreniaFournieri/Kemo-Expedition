@@ -38,7 +38,15 @@ app.on('browser-window-created', (_event, win) => {
       }
       assert.ok(acquired, 'renderer ready'); lease = acquired.lease.token;
       let observed = await call('/observation');
-      assert.equal(observed.observation.environment,'orca');
+      const environment = process.argv.includes('--environment=prod') ? 'prod' : 'orca';
+      assert.equal(observed.observation.environment,environment);
+      assert.equal(observed.evaluation.mode, environment === 'prod' ? 'normal' : 'orca');
+      assert.equal(observed.evaluation.regulationVersion, 2);
+      assert.equal(observed.evaluation.ledger, undefined);
+      const status = await call('/status');
+      assert.equal(status.capabilities.aiPlay.countedApiCallLimit, 20000);
+      const earlyReport = await fetch(base + '/evaluation/report', { headers: { Authorization: `Bearer ${settings.token}` } });
+      assert.equal(earlyReport.status, 409);
       assert.equal(observed.evaluation.countedApiCalls,1);
       const p = observed.observation.parties[0];
       let revision=observed.observation.revision;
@@ -57,6 +65,10 @@ app.on('browser-window-created', (_event, win) => {
       await call('/control/release',{}); lease=null;
       const summary=await call('/evaluation');
       assert.equal(summary.evaluation.scoreSoFar,62);
+      const ledger = await call('/evaluation/ledger');
+      assert.equal(ledger.ledger.length, 6);
+      assert.equal(ledger.ledger[2].commandType, 'configure_party');
+      assert.ok(batch.runs.every(r => typeof r.returnReason === 'string'));
 
       console.log(JSON.stringify({smoke:'passed',calls:6,sorties:2,score:62}));
       clearTimeout(timeout); app.quit();

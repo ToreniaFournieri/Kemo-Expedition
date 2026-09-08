@@ -42,7 +42,7 @@ export function validateBuild(state: GameState, partyIndex: number, character: C
   const c = { ...character, ...changes };
   if (typeof c.name !== 'string' || !c.name.trim() || c.name.length > 64) add('name');
   if (!['male', 'female'].includes(c.gender)) add('gender');
-  if (!RACES.some(r => r.id === c.raceId)) add('raceId');
+  if (!RACES.some(r => r.id === c.raceId && (r.selectable !== false || (character.isUnique && r.id === character.raceId)))) add('raceId');
   for (const field of ['mainClassId', 'subClassId'] as const) if (!CLASSES.some(v => v.id === c[field])) add(field);
   if (c.raceId === 'mimorian') {
     if (c.gender !== 'female') add('gender');

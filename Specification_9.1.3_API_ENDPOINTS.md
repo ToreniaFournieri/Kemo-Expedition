@@ -132,7 +132,7 @@ The public response MUST NOT reveal the environment, game version, build number,
 |-|-|-|-|-|
 | `game.version` | string | Yes | Semantic version string | Running application version from `package.json`. |
 | `game.build` | integer | Yes | `>= 1` | Running build number from `build_number.txt`. |
-| `game.environment` | string | Yes | `dev`, `beta`, or `prod` | Active desktop environment and save namespace defined in section 9. |
+| `game.environment` | string | Yes | `dev`, `beta`, `orca`, or `prod` | Active desktop environment and save namespace defined in section 9. |
 
 #### `runtime` fields
 
@@ -909,7 +909,7 @@ The following non-normative example illustrates the response structure. Empty re
 | `observation.revision` | integer | Yes | `>= 0` | Authoritative game-state revision to supply as `expectedRevision` in the next mutating request. |
 | `observation.observedAt` | integer | Yes | Unix timestamp in milliseconds | Server wall-clock time at which snapshot construction completed. |
 | `observation.simulatedAt` | integer | Yes | Unix timestamp in milliseconds | Current authoritative global in-game timestamp. It remains frozen except for API operations that explicitly advance global time. Party-local simulation performed by `/sortie` does not change it. |
-| `observation.environment` | string | Yes | `dev`, `beta`, or `prod` | Active desktop environment and save namespace. |
+| `observation.environment` | string | Yes | `dev`, `beta`, `orca`, or `prod` | Active desktop environment and save namespace. |
 | `observation.language` | string | Yes | `ja`, `en`, `zh-CN`, or `zh-TW` | Active display language used for optional display metadata. Stable IDs remain authoritative. |
 
 ### Resources and progression
@@ -2362,7 +2362,7 @@ The following additive contracts implement section 12.1. They extend the existin
 * Each evaluation gameplay request reserves its counted call durably before executing. The final state, evaluation ledger, revision and idempotency receipt commit together. Errors retain the reserved call but do not commit staged gameplay. The reservation's `operation_interrupted` ledger value is replaced with the final result on successful persistence.
 * `Idempotency-Key` is an optional 1–128 character ASCII letters/digits/underscore/hyphen header for `command` and `sortie`. A repeated key with the same canonical operation/body replays the original response with `replayed: true`; a different body returns `409 idempotency_conflict`. Keys are scoped to the active save, persist across restart, and must not contain credentials. Evaluation sessions retain all receipts; ordinary play retains the most recent 32 successful keyed operations. Clients must not reuse evicted keys.
 * Replay occurs before revision validation. A received replay counts as a call in an active evaluation but adds zero sorties. After evaluation termination, retrieve `/evaluation` instead; further gameplay and replays are rejected with `evaluation_finished`.
-* The response-level `evaluation` is `null` outside evaluation, otherwise it contains `evaluationId`, `concept`, `version`, `build`, `regulationVersion`, `status` (`active`, `succeeded`, `failed`), `countedApiCalls`, `remainingApiCalls`, `actualSorties`, `goalAchieved`, `firstWinningSortie`, `startedAt`, `scoreSoFar`, `finalScore`, and an ordered `ledger`. Each ledger entry contains `call`, `operation`, `actualSorties`, and nullable error code. Final score is null until termination.
+* The response-level `evaluation` is `null` outside evaluation, otherwise it contains `evaluationId`, `concept`, `version`, `build`, `regulationVersion`, `status` (`active`, `succeeded`, `failed`), `countedApiCalls`, `remainingApiCalls`, `actualSorties`, `goalAchieved`, `firstWinningSortie`, `startedAt`, `scoreSoFar`, `finalScore`, `mode`, `rulesId`, and optional `winningOperation`. The ordered `ledger` is retrieved separately from `/evaluation/ledger` or the final report. Each ledger entry contains `call`, `operation`, `actualSorties`, nullable error code, and optional successful `commandType`. Final score is null until termination.
 * The evaluation clock is persisted and remains fixed across restarts; selected-party Cycle elapsed time re-anchors its deadlines without advancing any other party.
 * API-owned random draws are transaction-local and persisted only upon commit. Forecast randomness is independent and cannot consume the live stream. Random state remains private.
 * Observation includes each party's `defeatedBossDungeonIds`. Evaluation observations must not advertise `god_battle` as a legal action.
@@ -2409,3 +2409,13 @@ Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "config
 ### `GET /experimental/v1/catalog`
 
 Bearer and owner lease required. No query parameters. Return `catalog` containing races, classes, selectable lineages/predispositions and their public bonuses, deity IDs/display names, automatic-equipment modes and depth enums. Costs one counted call. The catalog contains static player-visible information, not live hidden enemies, bags or future outcomes.
+
+### AI Play regulation version 2 convenience contract
+
+Authenticated status includes `capabilities.aiPlay` with mode, regulationVersion, rulesId and countedApiCallLimit (20000). Public status remains minimal. Ordinary evaluation summaries omit the cumulative ledger; `GET /evaluation/ledger` is authenticated, lease-free and uncounted and returns only accounting entries. `GET /evaluation/report` is authenticated, lease-free and uncounted, rejects active evaluations with 409 `evaluation_active`, and returns the frozen final public observation, the 8.1.2.3 status table, full ledger and first winning operation. Both endpoints reject query parameters. Report retrieval cannot advance gameplay. No evaluation returns null.
+
+Session identity includes mode (`normal` on prod `/`, `orca` on `/orca/`), regulation version and rules ID. The terminal operation records the first winning batch summary independently of its final sortie outcome. Character computed data includes physical/magical offense multipliers, defense amplifiers, penetration multiplier and elemental offense value. Terminal observations expose no available gameplay actions; Gods Battles remain unavailable for all evaluations. Selectable races exclude non-selectable definitions; retained unique character races remain legal.
+
+Each actual sortie run and latest-expedition summary adds `returnReason`: `clear`, `defeat`, `clear_gate`, `depth_limit`, `draw`, `wounded`, or `unknown` (no retained log). This is derived from completed public log facts; existing outcome counters remain unchanged for compatibility.
+
+A report-file write failure adds `reportError.code=report_write_failed` to the otherwise committed terminal response; it must not turn committed gameplay into an operation error. Retrieve `/evaluation/report` for the data and retry `/evaluation` to save the file. Final report observations use the frozen evaluation clock and idle completed-Cycle state, without wall-clock progress.

@@ -19,6 +19,7 @@ import {
   isDungeonEntryUnlocked,
 } from './clearGate';
 import { getEnvironmentId } from './environment';
+import { evaluationSummary } from './experimentalApiSession';
 
 export type ExperimentalPartyCycle = {
   state: string;
@@ -77,6 +78,7 @@ function latestExpedition(party: Party) {
     dungeonId: log.dungeonId,
     difficultyOffset: log.difficultyOffset,
     finalOutcome: log.finalOutcome,
+    returnReason: returnReasonFromParty(party),
     completedRooms: log.completedRooms,
     totalRooms: log.totalRooms,
     totalExperience: log.totalExperience,
@@ -205,9 +207,9 @@ export function buildExperimentalObservation(
         maximumDifficultyOffset,
         instantExpeditionStock: party.instantExpeditionStock ?? 0,
         instantExpeditionChargeStartedAt: party.instantExpeditionChargeStartedAt ?? null,
-        normalSortieAvailable: unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0,
+        normalSortieAvailable: !(evaluationSummary(state.apiRuntime?.evaluation)?.finalScore != null) && unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0,
         godBattleAvailable: Boolean(
-          party.defeatedBossExpeditions[party.selectedDungeonId]
+          !state.apiRuntime?.evaluation && party.defeatedBossExpeditions[party.selectedDungeonId]
           && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
           && (party.instantExpeditionStock ?? 0) > 0
           && !autoRun
@@ -224,7 +226,7 @@ export function buildExperimentalObservation(
           isUnique: Boolean(character.isUnique),
           build: { name: character.name, gender: character.gender, raceId: character.raceId, lineageId: character.raceId === 'mimorian' ? null : character.lineageId, predispositionId: character.raceId === 'mimorian' ? null : character.predispositionId, mainClassId: character.mainClassId, subClassId: character.subClassId, mimorianEnemyId: character.raceId === 'mimorian' ? character.mimorianEnemyId ?? null : null },
           autoEquipmentMode: character.autoEquipmentMode ?? 0,
-          computed: stats ? { maximumEquipmentSlots: stats.maxEquipSlots, baseStats: stats.baseStats, rangedAttack: stats.rangedAttack, rangedNumberOfAttacks: stats.rangedNoA, magicalAttack: stats.magicalAttack, magicalNumberOfAttacks: stats.magicalNoA, meleeAttack: stats.meleeAttack, meleeNumberOfAttacks: stats.meleeNoA, physicalDefense: stats.physicalDefense, magicalDefense: stats.magicalDefense, accuracy: stats.accuracyBonus, evasion: stats.evasionBonus, elementalOffense: stats.elementalOffense, elementalResistance: stats.elementalDefenseMultipliers, abilities: stats.abilities.map((ability) => ({ id: ability.id, level: ability.level })) } : null,
+          computed: stats ? { physicalOffenseMultiplier: stats.physicalOffenseMultiplier, magicalOffenseMultiplier: stats.magicalOffenseMultiplier, physicalDefenseAmplifier: stats.physicalDefenseAmplifier, magicalDefenseAmplifier: stats.magicalDefenseAmplifier, penetrationMultiplier: stats.penetMultiplier, elementalOffenseValue: stats.elementalOffenseValue, maximumEquipmentSlots: stats.maxEquipSlots, baseStats: stats.baseStats, rangedAttack: stats.rangedAttack, rangedNumberOfAttacks: stats.rangedNoA, magicalAttack: stats.magicalAttack, magicalNumberOfAttacks: stats.magicalNoA, meleeAttack: stats.meleeAttack, meleeNumberOfAttacks: stats.meleeNoA, physicalDefense: stats.physicalDefense, magicalDefense: stats.magicalDefense, accuracy: stats.accuracyBonus, evasion: stats.evasionBonus, elementalOffense: stats.elementalOffense, elementalResistance: stats.elementalDefenseMultipliers, abilities: stats.abilities.map((ability) => ({ id: ability.id, level: ability.level })) } : null,
           equipment: character.equipment.slice(0, stats?.maxEquipSlots ?? character.equipment.length).map((item, slotIndex) => ({ slotIndex, locked: Boolean(item?.isLocked), item: item ? { itemId: item.id, variantId: getVariantKey(item), category: item.category, tier: Math.max(1, Math.floor(item.id / 1000)), rarity: rarity(item), enhancement: item.enhancement, superRare: item.superRare, rawStats: { ...item, jewel: undefined, isLocked: undefined, isNew: undefined }, jewel: item.jewel ?? null } : null })),
         };
       }),
@@ -265,7 +267,7 @@ export function buildExperimentalObservation(
     automation: { autoRun },
     progression: { unlockedPartyIds: parties.map((party) => party.id), unlockedDungeonIds, unlockedDeityIds: unlockedDeityKeys.map(deityId) },
     catalogs: {
-      selectableRaceIds: RACES.map((race) => race.id),
+      selectableRaceIds: RACES.filter(r => r.selectable !== false).map((race) => race.id),
       selectableClassIds: CLASSES.map((entry) => entry.id),
       selectablePredispositionIds: PREDISPOSITIONS.filter((entry) => entry.selectable).map((entry) => entry.id),
       selectableLineageIds: LINEAGES.filter((entry) => entry.selectable).map((entry) => entry.id),
@@ -285,7 +287,7 @@ export function buildExperimentalObservation(
     },
     inventory: { equipmentByCategory },
     parties: parties.map(({ _legalActions: _discard, ...party }) => party),
-    legalActions,
+    legalActions: evaluationSummary(state.apiRuntime?.evaluation)?.finalScore != null ? [] : legalActions,
   };
 }
 
@@ -296,4 +298,15 @@ export function outcomeFromParty(party: Party): 'Clear' | 'Turned_Back' | 'Draw_
   if (log.finalOutcome === 'Defeat') return 'Defeat';
   if (log.entries[log.entries.length - 1]?.outcome === 'draw') return 'Draw_Retreat';
   return log.completedRooms === 0 ? 'Turned_Back' : 'Wounded_Retreat';
+}
+
+// Public completed-log facts only; preserve the legacy outcome counters.
+export function returnReasonFromParty(party: Party): 'clear' | 'defeat' | 'clear_gate' | 'depth_limit' | 'draw' | 'wounded' | 'unknown' {
+  const log = party.lastExpeditionLog;
+  if (!log) return 'unknown';
+  if (log.finalOutcome === 'Clear') return 'clear';
+  if (log.finalOutcome === 'Defeat') return 'defeat';
+  if (log.finalOutcome === 'Escape') return log.entries.at(-1)?.gateInfo ? 'clear_gate' : 'depth_limit';
+  if (log.finalOutcome === 'Retreat') return log.entries.at(-1)?.outcome === 'draw' ? 'draw' : 'wounded';
+  return 'unknown';
 }

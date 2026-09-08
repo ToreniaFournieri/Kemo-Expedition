@@ -17,35 +17,24 @@ Install dependencies once for a fresh checkout, or again when the lockfile chang
 ## 2. Start exactly one fresh evaluation
 
 ```sh
-npm run desktop:orca -- --ai-play=MyConcept
+npm run ai-play -- --mode=orca --concept=MyConcept
 ```
 
-Replace `MyConcept` with 1–64 letters, numbers, underscores or hyphens. Do not include angle brackets. The `--` passes the evaluation option through npm to Electron. This command builds the game, then opens a fresh isolated Desktop Orca profile. It does not import the ordinary Orca save.
+Replace `MyConcept` with 1–64 letters, numbers, underscores or hyphens. Use `--mode=normal` for Normal (prod `/`, enemy offset 0); Orca uses `/orca/`, offset +5. Both keep Debug OFF. The launcher builds, creates an isolated profile, and prints a private connection-file path followed by readiness. Keep that process running in its terminal. It removes the credentials file when the application exits.
 
-Wait for the build to finish and the **AI Play connection panel** to appear. Keep this process running; use another terminal for API requests. Record the evaluation UUID, endpoint and bearer token from this panel. Reading connection details is setup; gameplay and game-state inspection must use the API exclusively. Do not navigate the gameplay UI, use DevTools, inspect save/profile contents, or call renderer/internal functions.
-
-The environment must be `orca`, with `mode.orca`, enemy offset +5 and Debug OFF. These are fixed by the evaluation launch. The game is deliberately frozen until explicit API operations advance it; the paused panel is expected.
-
-If the exact current build was already produced successfully, the equivalent launch without rebuilding is:
-
-```sh
-./node_modules/.bin/electron . --environment=orca --ai-play=MyConcept
-```
-
-Do not run both commands: every `--ai-play` launch creates a different evaluation. Do not launch the internal desktop smoke test as a play client; it creates a test evaluation and performs its own actions.
+Read only the organizer's connection handoff for setup. Do not inspect save/profile contents, use DevTools, navigate gameplay UI or call runtime internals. Every new concept launch creates a new evaluation; use resume after interruptions. Tests are separate from play clients.
 
 ## 3. Check readiness and acquire control
 
-The panel's endpoint already ends in `/experimental/v1`. Do not append that prefix twice. The port and token are generated for the running API; never assume an old connection still works.
+The connection file's `endpoint` already ends in `/experimental/v1`. Do not append that prefix twice. The port and token are generated for the running API; never assume an old connection still works.
 
-For macOS zsh or bash, read credentials without putting the token in shell history:
+For macOS zsh or bash, load the private handoff without displaying credentials or putting them in shell history:
 
 ```sh
-printf 'Endpoint: '
-read -r BOKEMO_BASE
-printf 'Bearer token (hidden): '
-read -r -s BOKEMO_TOKEN
-printf '\n'
+printf 'Connection file path: '
+read -r BOKEMO_CONNECTION
+BOKEMO_BASE=$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).endpoint)' "$BOKEMO_CONNECTION")
+BOKEMO_TOKEN=$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).token)' "$BOKEMO_CONNECTION")
 
 curl --silent --show-error "$BOKEMO_BASE/status" \
   --header "Authorization: Bearer $BOKEMO_TOKEN"
@@ -105,15 +94,15 @@ curl --silent --show-error "$BOKEMO_BASE/control/renew" \
   --header 'Content-Type: application/json' --data '{}'
 ```
 
-If the lease expires, acquire a new one and replace the lease token. Do not restart the evaluation. The profile remains frozen during the gap. If the app itself was closed, resume its checkpoint on the **identical version/build**:
+If the lease expires, acquire a new one and replace the lease token. Do not restart the evaluation. The profile remains frozen during the gap. If the app itself was closed, resume its checkpoint on the **identical version/build, mode and rules ID**:
 
 ```sh
-npm run desktop:orca -- --resume-ai-play=YOUR_EVALUATION_UUID
+npm run ai-play -- --mode=orca --resume=YOUR_EVALUATION_UUID
 ```
 
-Replace `YOUR_EVALUATION_UUID` with the recorded UUID. Obtain the newly displayed endpoint/token and reacquire control. Do not use `--ai-play` to resume, import a save, reset the profile, or change the game build mid-run.
+Replace `YOUR_EVALUATION_UUID` with the recorded UUID. Load the newly generated private connection file and reacquire control. Do not use `--ai-play` to resume, import a save, reset the profile, or change the game build mid-run.
 
-At termination, authenticated `GET /evaluation` remains available without a lease and returns the final accounting/report path. Source-checkout reports are under `AI_play_report/`; packaged reports are under `Documents/BoKemo/AI_play_report/`. Complete the report with strategy notes, final party status tables and command summaries required by the regulation. The automatic report currently supplies the ledger, not all of those details.
+At termination, authenticated `GET /evaluation` remains available without a lease and returns the final accounting/report path. Source-checkout reports are under `AI_play_report/`; packaged reports are under `Documents/BoKemo/AI_play_report/`. The automatic report includes final party configurations, status tables, winning-operation evidence and the full ledger. Add strategy notes and usability findings. `GET /evaluation/report` returns these final public facts without a lease or counted call; it rejects active runs. `GET /evaluation/ledger` retrieves accounting entries. Ordinary responses omit the growing ledger. Report retrieval, release and app shutdown are allowed after termination.
 
 Release control with `POST /control/release` and an empty JSON object when finished. Evaluation progression remains frozen. Remove credentials from the client environment with `unset BOKEMO_TOKEN BOKEMO_LEASE`.
 
@@ -123,14 +112,16 @@ Release control with `POST /control/release` and an empty JSON object when finis
 |---|---|
 | `Missing script`, missing `package.json`, or Electron not found | Run from the repository root; install dependencies with `npm ci`. |
 | The build is still printing output | Wait for the build to complete; launch occurs afterward. |
-| A browser opens but there is no API panel | Use Desktop Orca with `--ai-play`, not the browser distribution or plain Vite. |
+| A browser opens but there is no API panel | Use `npm run ai-play` from the checkout; the API requires Desktop. |
 | Electron aborts or localhost returns `EPERM` in an agent sandbox | Request the host's normal approval for GUI launch/localhost access and rerun there. Do not disable the Electron sandbox or enable debug tools. |
 | `runtime_loading` / `runtime_unavailable` | Check authenticated status and allow initialization to finish. Do not spend observation calls polling for startup. |
-| `authentication_failed` / connection refused | Re-read the active panel's endpoint/token. The port and credentials can change after relaunch or API restart. |
+| `authentication_failed` / connection refused | Reload the active private connection file. The port and credentials can change after relaunch or API restart. |
 | `no_active_lease` / `control_lease_expired` | Acquire a new lease; leave the evaluation/profile intact. |
 | `control_already_leased` | Use the existing owning client, release it there, or let it expire. Do not create another evaluation to bypass it. |
 | `stale_revision` | Use the latest returned revision. After a lost mutation response, preserve the original idempotency request. |
 | `runtime_busy` | Let the outstanding operation finish; serialize requests. |
 | `save_error` / identity or build mismatch | Stop and preserve the checkpoint. Do not reset, import, or overwrite it. |
 
-This guide was checked against a live v0.9.6 build 13 Desktop Orca launch. It does not establish that a specific earlier agent failure had the same cause.
+This guide was checked against v0.9.6 build 14 Normal and Orca desktop smoke tests and the private launcher handoff. It does not establish that a specific earlier agent failure had the same cause.
+
+The completed [build 13 playtest findings](ai-play-usability-findings-20260908.md) cover equipment, outcome labels and report limitations encountered while using this workflow.

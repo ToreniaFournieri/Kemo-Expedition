@@ -1759,15 +1759,15 @@ function createInitialState(): InitialStateResult {
   if (!config) return result;
   const existing = result.state.apiRuntime?.evaluation;
   if (existing) {
-    if (existing.evaluationId !== config.evaluationId || existing.version !== config.version || existing.build !== config.build)
+    if (existing.evaluationId !== config.evaluationId || existing.version !== config.version || existing.build !== config.build || existing.mode !== config.mode || existing.regulationVersion !== config.regulationVersion || existing.rulesId !== config.rulesId)
       return { ...result, loadErrorLog: 'AI Play identity or build mismatch.' };
     // A crash after the final call reservation still exhausts the call budget.
     if (existing.status === 'active' && existing.countedApiCalls >= AI_PLAY_API_CALL_LIMIT) existing.status = 'failed';
     return result;
   }
-  if (config.resume || localStorage.getItem(STORAGE_KEY) || getEnvironmentId() !== 'orca')
-    return { ...result, loadErrorLog: 'AI Play requires a fresh organizer-created Orca profile or its matching checkpoint.' };
-  result.state.apiRuntime = { ...createApiRuntime(), evaluation: createEvaluation(config.evaluationId, config.concept, config.version, config.build) };
+  if (config.resume || localStorage.getItem(STORAGE_KEY) || getEnvironmentId() !== (config.mode === 'normal' ? 'prod' : 'orca'))
+    return { ...result, loadErrorLog: 'AI Play requires a fresh organizer-created matching profile or its matching checkpoint.' };
+  result.state.apiRuntime = { ...createApiRuntime(), evaluation: createEvaluation(config.evaluationId, config.concept, config.version, config.build, config.mode) };
   return result;
 }
 
