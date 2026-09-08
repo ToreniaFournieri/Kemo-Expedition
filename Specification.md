@@ -321,5 +321,6 @@
 ### 12.1 AI play reguration
 
 - @Specification_12.1_AI_PLAY_REGURATION.md
+- @Specification_12.2_AI_PLAY_OPERATOR_GUIDE.md
 
 **END OF SPECIFICATION**
