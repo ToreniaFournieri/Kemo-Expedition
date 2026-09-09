@@ -14,6 +14,14 @@ test('training action contracts accept a current legal command', () => {
   const legal = [{ type: 'run_auto_equipment', partyId: 1, characterId: 2, constraints: {} }];
   assert.deepEqual(validateExperimentalApiTrainingRequest(request, 7, legal), []);
   assert.equal(isExperimentalApiCommandType('run_auto_equipment'), true);
+  const removeRequest = {
+    method: 'POST' as const,
+    path: '/experimental/v1/command' as const,
+    body: { expectedRevision: 7, command: { type: 'remove_all_equipment', partyId: 1, characterId: 2 } },
+  };
+  const removeLegal = [{ type: 'remove_all_equipment', partyId: 1, characterId: 2, constraints: {} }];
+  assert.deepEqual(validateExperimentalApiTrainingRequest(removeRequest, 7, removeLegal), []);
+  assert.equal(isExperimentalApiCommandType('remove_all_equipment'), true);
 });
 
 test('training action contracts reject stale, unsupported, and absent actions', () => {

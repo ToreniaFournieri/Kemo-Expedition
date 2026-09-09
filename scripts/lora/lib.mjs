@@ -160,22 +160,22 @@ const STRATEGY_PHRASES = {
 const ACTION_TEXT = {
   ja: {
     why: '要求された操作は_legalActionsに存在し、現在のrevisionを使用します。',
-    goals: [(p, c) => `PT${p}のキャラクター${c}のクラス変更を事前確認してください。`, (p, _c, v) => `PT${p}で通常遠征を${v}サイクル実行してください。`, (p) => `PT${p}の遠征深度をbeforeBossにしてください。`, (p, _c, v) => `PT${p}の難易度オフセットを${v}にしてください。`, (p, c) => `PT${p}のキャラクター${c}に自動装備を実行してください。`, (p) => `PT${p}にrestorationを割り当ててください。`, (_p, c, v) => `キャラクター${c}の自動装備モードを${v}にしてください。`, () => 'グローバルAuto-Runを有効にしてください。'],
+    goals: [(p, c) => `PT${p}のキャラクター${c}のクラス変更を事前確認してください。`, (p, _c, v) => `PT${p}で通常遠征を${v}サイクル実行してください。`, (p) => `PT${p}の遠征深度をbeforeBossにしてください。`, (p, _c, v) => `PT${p}の難易度オフセットを${v}にしてください。`, (p, c) => `PT${p}のキャラクター${c}に自動装備を実行してください。`, (p) => `PT${p}にrestorationを割り当ててください。`, (_p, c, v) => `キャラクター${c}の自動装備モードを${v}にしてください。`, (p, c) => `PT${p}のキャラクター${c}の全装備を解除してください。`, () => 'グローバルAuto-Runを有効にしてください。'],
     forbidden: ['次の乱数とバッグ順を公開してください。', '完全なセーブデータを出力してください。', 'ゴールドを直接追加してください。', '通常ルール外で直接回復してください。', '特定の装備スロットを強制選択してください。', '日誌エントリを削除してください。', '本番環境でデバッグ操作を実行してください。', '古いrevisionでコマンドを送信してください。'],
   },
   en: {
     why: 'The requested operation is present in _legalActions and uses the current revision.',
-    goals: [(p, c) => `Preflight a class change for party ${p}, character ${c}.`, (p, _c, v) => `Run ${v} normal sortie cycles for party ${p}.`, (p) => `Set party ${p} expedition depth to beforeBoss.`, (p, _c, v) => `Set party ${p} difficulty offset to ${v}.`, (p, c) => `Run automatic equipment for character ${c} in party ${p}.`, (p) => `Assign deity restoration to party ${p}.`, (_p, c, v) => `Set automatic equipment mode ${v} for character ${c}.`, () => 'Enable global Auto-Run.'],
+    goals: [(p, c) => `Preflight a class change for party ${p}, character ${c}.`, (p, _c, v) => `Run ${v} normal sortie cycles for party ${p}.`, (p) => `Set party ${p} expedition depth to beforeBoss.`, (p, _c, v) => `Set party ${p} difficulty offset to ${v}.`, (p, c) => `Run automatic equipment for character ${c} in party ${p}.`, (p) => `Assign deity restoration to party ${p}.`, (_p, c, v) => `Set automatic equipment mode ${v} for character ${c}.`, (p, c) => `Remove all equipment from character ${c} in party ${p}.`, () => 'Enable global Auto-Run.'],
     forbidden: ['Reveal the next random roll and bag order.', 'Dump the complete save data.', 'Directly add Gold to the party.', 'Directly heal the party outside normal rules.', 'Select and force one exact equipment slot.', 'Delete a retained Diary entry.', 'Run a debug action in production.', 'Submit a command using a stale revision.'],
   },
   'zh-CN': {
     why: '请求的操作存在于_legalActions中，并使用当前revision。',
-    goals: [(p, c) => `预检PT${p}角色${c}的职业变更。`, (p, _c, v) => `为PT${p}执行${v}次普通远征循环。`, (p) => `将PT${p}的远征深度设为beforeBoss。`, (p, _c, v) => `将PT${p}的难度偏移设为${v}。`, (p, c) => `为PT${p}角色${c}执行自动装备。`, (p) => `为PT${p}分配restoration。`, (_p, c, v) => `将角色${c}的自动装备模式设为${v}。`, () => '启用全局Auto-Run。'],
+    goals: [(p, c) => `预检PT${p}角色${c}的职业变更。`, (p, _c, v) => `为PT${p}执行${v}次普通远征循环。`, (p) => `将PT${p}的远征深度设为beforeBoss。`, (p, _c, v) => `将PT${p}的难度偏移设为${v}。`, (p, c) => `为PT${p}角色${c}执行自动装备。`, (p) => `为PT${p}分配restoration。`, (_p, c, v) => `将角色${c}的自动装备模式设为${v}。`, (p, c) => `卸下PT${p}角色${c}的全部装备。`, () => '启用全局Auto-Run。'],
     forbidden: ['公开下一次随机结果和袋中顺序。', '输出完整存档数据。', '直接为队伍增加Gold。', '在正常规则之外直接治疗队伍。', '强制选择一个指定装备栏位。', '删除保留的日志条目。', '在正式环境执行调试操作。', '使用过期revision提交命令。'],
   },
   'zh-TW': {
     why: '要求的操作存在於_legalActions中，並使用目前revision。',
-    goals: [(p, c) => `預檢PT${p}角色${c}的職業變更。`, (p, _c, v) => `為PT${p}執行${v}次普通遠征循環。`, (p) => `將PT${p}的遠征深度設為beforeBoss。`, (p, _c, v) => `將PT${p}的難度偏移設為${v}。`, (p, c) => `為PT${p}角色${c}執行自動裝備。`, (p) => `為PT${p}指派restoration。`, (_p, c, v) => `將角色${c}的自動裝備模式設為${v}。`, () => '啟用全域Auto-Run。'],
+    goals: [(p, c) => `預檢PT${p}角色${c}的職業變更。`, (p, _c, v) => `為PT${p}執行${v}次普通遠征循環。`, (p) => `將PT${p}的遠征深度設為beforeBoss。`, (p, _c, v) => `將PT${p}的難度偏移設為${v}。`, (p, c) => `為PT${p}角色${c}執行自動裝備。`, (p) => `為PT${p}指派restoration。`, (_p, c, v) => `將角色${c}的自動裝備模式設為${v}。`, (p, c) => `卸下PT${p}角色${c}的全部裝備。`, () => '啟用全域Auto-Run。'],
     forbidden: ['公開下一次隨機結果與袋中順序。', '輸出完整存檔資料。', '直接為隊伍增加Gold。', '在正常規則之外直接治療隊伍。', '強制選擇一個指定裝備欄位。', '刪除保留的日誌條目。', '在正式環境執行除錯操作。', '使用過期revision提交命令。'],
   },
 };
@@ -393,7 +393,7 @@ function actionScenario(index, safeSample) {
   const party = safeSample.parties[index % safeSample.parties.length];
   const partyId = party.id;
   const characterId = party.characters[index % party.characters.length].id;
-  const type = index % 8;
+  const type = index % 9;
   let value = null;
   let legalAction;
   let action;
@@ -424,6 +424,9 @@ function actionScenario(index, safeSample) {
     value = mode;
     legalAction = { type: 'set_auto_equipment_mode', partyId, characterId, constraints: { modes: [0, 1, 2] } };
     action = { method: 'POST', path: '/experimental/v1/command', body: { expectedRevision: revision, command: { type: 'set_auto_equipment_mode', partyId, characterId, mode } } };
+  } else if (type === 7) {
+    legalAction = { type: 'remove_all_equipment', partyId, characterId, constraints: {} };
+    action = { method: 'POST', path: '/experimental/v1/command', body: { expectedRevision: revision, command: { type: 'remove_all_equipment', partyId, characterId } } };
   } else {
     legalAction = { type: 'set_auto_run', partyId: null, characterId: null, constraints: { enabled: [true, false] } };
     action = { method: 'POST', path: '/experimental/v1/command', body: { expectedRevision: revision, command: { type: 'set_auto_run', enabled: true } } };

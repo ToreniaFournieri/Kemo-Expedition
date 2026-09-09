@@ -1100,7 +1100,7 @@ Each entry contains:
 | `constraints` | object | Yes | Command-specific allowed values, ranges, or target IDs. |
 
 - The list MUST include only actions legal at the current revision.
-- At minimum it may contain `update_character_build`, `reorder_character`, `set_deity`, `set_auto_equipment_mode`, `toggle_equipment_lock`, `set_jewel_priority_party`, `set_expedition_destination`, `set_expedition_depth`, `set_expedition_difficulty`, `set_auto_run`, `god_battle`, and `sortie`.
+- At minimum it may contain `update_character_build`, `reorder_character`, `set_deity`, `set_auto_equipment_mode`, `run_auto_equipment`, `remove_all_equipment`, `toggle_equipment_lock`, `set_jewel_priority_party`, `set_expedition_destination`, `set_expedition_depth`, `set_expedition_difficulty`, `set_auto_run`, `god_battle`, and `sortie`.
 - A `sortie` action's constraints MUST include `minimumCount: 1` and `maximumCount: 100`.
 - A command omitted from `legalActions` MUST be rejected as `illegal_action` if submitted against the same revision.
 - `legalActions` is advisory across revisions. Clients MUST still supply `expectedRevision`, and the server MUST revalidate every command.
@@ -1586,6 +1586,7 @@ Content-Type: application/json
 | `set_deity` | Assign a deity to one party. | No | No |
 | `set_auto_equipment_mode` | Set one character's automation mode. Does not immediately trigger auto-equipment. | No | No |
 | `run_auto_equipment` | Immediately run configured automatic equipment for one party or character. | No | Yes, for the selected target |
+| `remove_all_equipment` | Remove every equipped item from one character. | No | No |
 | `toggle_equipment_lock` | Toggle one equipped item's automatic-equipment lock. | No | No |
 | `set_jewel_priority_party` | Select the global Jewel Priority Party or manual mode. | No | No |
 | `set_expedition_destination` | Set one party's automatic or fixed destination. | No | No |
@@ -1824,6 +1825,29 @@ Single-character example:
 - Equipment, inventory, Jewels, HP synchronization, derived values, and notifications are committed as one transaction. Any failure rolls back the complete selected target and leaves the revision unchanged.
 - If the run changes no equipment slot, Jewel assignment, inventory ownership, HP value, or other derived state, return `no_change` without saving or incrementing the revision.
 - `effects` contains `partyId`, `characterId` (`null` for a whole-party run), `processedCharacterIds` in processing order, `autoEquipmentTriggered: true`, `unequippedCount`, `equippedCount`, `upgradedCount`, and `jewelAssignmentCount`. Counts summarize committed changes without exposing candidate rankings or hidden comparison data.
+
+### `remove_all_equipment`
+
+```json
+{
+  "type": "remove_all_equipment",
+  "partyId": 1,
+  "characterId": 101
+}
+```
+
+| Field | Type | Required | Constraints | Description |
+|-|-|-|-|-|
+| `partyId` | integer | Yes | Unlocked party ID | Party containing the character. |
+| `characterId` | integer | Yes | Member of `partyId` | Character whose equipment is removed. |
+
+- This command MUST execute the same authoritative operation as the character-level UI `Remove All Equipment` control.
+- Remove every currently equipped item, including locked and Super Rare items. Return each attached Jewel separately to Jewel inventory and return each Jewel-free item through the normal inventory stacking and overflow/auto-sell rules.
+- If the character's automatic-equipment mode is `FULL`, change it to `SEMI`; preserve `OFF` and `SEMI` unchanged. Do not run automatic equipment or automatic Jewel assignment.
+- Recompute derived character and party state and synchronize current HP through the normal maximum-HP-change rule.
+- The command MUST NOT advance simulated time, state-machine progress, side-quest time, or Instant Expedition charge time, and MUST NOT consume randomness.
+- If the character has no equipped items and the operation produces no other effective state change, return `no_change` without saving or incrementing the revision.
+- `effects` contains `partyId`, `characterId`, `removedItemCount`, `returnedJewelCount`, `previousAutoEquipmentMode`, `autoEquipmentMode`, and raw previous/final current and maximum HP under `hp`.
 
 ### `toggle_equipment_lock`
 

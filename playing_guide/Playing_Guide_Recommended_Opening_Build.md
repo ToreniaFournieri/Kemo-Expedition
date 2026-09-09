@@ -197,14 +197,11 @@ A properly configured party may produce results similar to:
 A high defeat rate is still acceptable at this stage as long as the party can occasionally defeat enemies and begin gaining EXP and items.
 
 
+## 5. Run 100 sorties
 
-## 5. Run 200 sorties
-
-Run approximately 200 sorties using the opening configuration.
+Run approximately 100 sorties using the opening configuration.
 
 The purpose of this phase is to accumulate EXP, gold, and equipment drops rather than to clear the expedition immediately.
-
-
 
 
 ## 6. Run SEMI Auto Equipment

@@ -92,6 +92,11 @@ test('Experimental AI API enforces authentication and an exclusive lease', async
   assert.equal(characterResponse.status, 200);
   assert.deepEqual(rendererRequests.at(-1), { operation: 'command', payload: characterAutoEquipment });
 
+  const removeAllEquipment = { expectedRevision: 9, command: { type: 'remove_all_equipment', partyId: 1, characterId: 101 } };
+  const removeAllResponse = await fetch(`${origin}/experimental/v1/command`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(removeAllEquipment) });
+  assert.equal(removeAllResponse.status, 200);
+  assert.deepEqual(rendererRequests.at(-1), { operation: 'command', payload: removeAllEquipment });
+
   const released = await fetch(`${origin}/experimental/v1/control/release`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(released.status, 200);
   assert.equal(controlled, false);

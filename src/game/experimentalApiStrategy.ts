@@ -195,6 +195,7 @@ export function applyApiCommand(state: GameState, raw: unknown, deps: StrategyDe
     configure_party: ['partyId', 'configuration'], update_character_build: ['partyId', 'characterId', 'changes'],
     reorder_character: ['partyId', 'characterId', 'targetRow'], set_deity: ['partyId', 'deityId'],
     set_auto_equipment_mode: ['partyId', 'characterId', 'mode'], run_auto_equipment: ['partyId'],
+    remove_all_equipment: ['partyId', 'characterId'],
     toggle_equipment_lock: ['partyId', 'characterId', 'slotIndex'], set_jewel_priority_party: ['partyId'],
     set_expedition_destination: ['partyId', 'mode'], set_expedition_depth: ['partyId', 'depthLimit'],
     set_expedition_difficulty: ['partyId', 'difficultyOffset'], set_auto_run: ['enabled'], god_battle: ['partyId'],
@@ -222,6 +223,12 @@ export function applyApiCommand(state: GameState, raw: unknown, deps: StrategyDe
   if (type === 'run_auto_equipment') {
     keys(c, ['type', 'partyId', 'characterId']); requireApi(c.characterId === undefined || char, 'character_not_found', 'Character not found.', 404);
     return deps.equip(state, partyIndex, char?.id);
+  }
+  if (type === 'remove_all_equipment') {
+    keys(c, ['type', 'partyId', 'characterId']);
+    requireApi(char, 'character_not_found', 'Character not found.', 404);
+    // SpecRef: 9.1.3 | Experimental AI API | remove_all_equipment
+    return deps.reduce(state, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId: char.id });
   }
   if (type === 'reorder_character') {
     keys(c, ['type', 'partyId', 'characterId', 'targetRow']);

@@ -206,6 +206,7 @@
   - change a party's deity;
   - set each character's automatic-equipment mode;
   - immediately run configured automatic equipment for every member of one party or for one specified character;
+  - remove all equipment from one specified character, using the same behavior as the UI's Remove All Equipment control;
   - toggle locks on currently equipped items;
   - select the Jewel Priority Party;
   - set a party's expedition destination mode or dungeon, depth limit, and difficulty offset;

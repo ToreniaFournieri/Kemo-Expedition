@@ -90,7 +90,7 @@ useAfkRendererPartyStatsMemo,
 } from '../game/afkLiveProfile';
 import { getPeddlerTravelDurationMs } from '../game/expeditionAbilityPolicies';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
-import { buildExperimentalObservation, } from '../game/experimentalApi';
+import { buildExperimentalObservation, buildRemoveAllEquipmentEffects } from '../game/experimentalApi';
 import { buildExperimentalBattleLog,buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { memoryMonitor } from '../game/memoryMonitoring';
@@ -667,10 +667,20 @@ export function HomeScreen({
         const observation = (s: GameState, cycles = apiCyclesRef.current) => buildExperimentalObservation(s, s.apiRuntime!.revision, s.apiRuntime!.autoRun, cycles, apiSimulatedAtRef.current);
         if (operation === 'command') {
           apiKeys(payload, ['expectedRevision', 'command']);
+          const command = apiRecord(payload.command);
+          const commandType = command.type;
+          const beforeObservation = commandType === 'remove_all_equipment' ? observation(baseline) : null;
           const next = withGameplayRandomSource(random.next, () => applyApiCommand(baseline, payload.command, deps, apiSimulatedAtRef.current, strategyDeps.mode, strategyDeps.offset));
           requireApi(canonicalRequest(next) !== canonicalRequest(baseline), 'no_change', 'The command makes no effective change.', 409);
           next.apiRuntime = { ...next.apiRuntime!, revision: revision + 1, randomState: random.state };
-          return { state: next, response: { command: { type: apiRecord(payload.command).type, status: 'applied', previousRevision: revision, revision: revision + 1 }, effects: {}, observation: observation(next) } };
+          const afterObservation = observation(next);
+          let effects: Record<string, unknown> = {};
+          if (commandType === 'remove_all_equipment') {
+            const partyId = Number(command.partyId);
+            const characterId = Number(command.characterId);
+            effects = buildRemoveAllEquipmentEffects(beforeObservation!, afterObservation, partyId, characterId);
+          }
+          return { state: next, response: { command: { type: commandType, status: 'applied', previousRevision: revision, revision: revision + 1 }, effects, observation: afterObservation } };
         }
         requireApi(Number.isInteger(payload.partyId), 'invalid_request', 'partyId must be an integer.', 400);
         const partyIndex = baseline.parties.findIndex(p => p.id === payload.partyId);

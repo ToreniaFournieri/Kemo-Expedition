@@ -3,14 +3,14 @@ import test from 'node:test';
 import { createInitialStateBase, gameReducer, calculateFreeActionSpend, calculatePrayerProfit, getPartyAbilityLevel, hasActiveNonGodBattleClearGateCondition, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { createApiRuntime, createEvaluation, transactApiRequest, readEvaluation, evaluationSummary } from '../../src/game/experimentalApiSession';
 import { applyApiCommand, configureParty, validateBuild } from '../../src/game/experimentalApiStrategy';
-import { buildExperimentalObservation, returnReasonFromParty } from '../../src/game/experimentalApi';
+import { buildExperimentalObservation, buildRemoveAllEquipmentEffects, returnReasonFromParty } from '../../src/game/experimentalApi';
 import { resolveApiCycles } from '../../src/game/experimentalApiCycle';
 import { createApiRandom, withGameplayRandomSource, gameplayRandom } from '../../src/game/gameplayRandom';
 import { withBattleSeedSource } from '../../src/game/battleSeedSource';
 import { ensureLanguageLoaded, setLanguage } from '../../src/i18n';
 import { PersistenceCoordinator } from '../../src/game/savePersistence';
 import { decodePersistedState } from '../../src/game/storageCompression';
-import type { GameState } from '../../src/types';
+import { getVariantKey, type GameState } from '../../src/types';
 const values = new Map<string, string>();
 const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, v: string) => { values.set(key, v); }, removeItem: (key: string) => { values.delete(key); }, key: (i: number) => [...values.keys()][i] ?? null, get length() { return values.size; } };
 Object.defineProperty(globalThis, 'localStorage', { value: storage });
@@ -79,6 +79,61 @@ test('build validation rejects injected equipment and duplicate pairs, and confi
   assert.equal(next.parties[0].expeditionDepthLimit, '1f-3');
   assert.equal(state.parties[0].expeditionDepthLimit, before.parties[0].expeditionDepthLimit);
   assert.throws(() => applyApiCommand(state, { type: 'set_deity', partyId: 1 }, deps, Date.now()));
+});
+test('remove_all_equipment reuses UI semantics and is exposed per character', () => {
+  const state = fresh();
+  const party = state.parties[0];
+  const character = party.characters.find(candidate => candidate.equipment.some(Boolean))!;
+  const slotIndex = character.equipment.findIndex(Boolean);
+  const original = character.equipment[slotIndex]!;
+  character.equipment[slotIndex] = { ...original, isLocked: true, superRare: Math.max(1, original.superRare), jewel: { key: 'might', rank: 8 } };
+  character.autoEquipmentMode = 2;
+  const detached = { ...character.equipment[slotIndex]!, jewel: null };
+  const inventoryKey = getVariantKey(detached);
+  const beforeItemCount = state.global.inventory[inventoryKey]?.count ?? 0;
+  const beforeJewelCount = state.global.jewels['might:8'] ?? 0;
+  const next = applyApiCommand(state, { type: 'remove_all_equipment', partyId: party.id, characterId: character.id }, deps, Date.now());
+  const result = next.parties[0].characters.find(candidate => candidate.id === character.id)!;
+  assert.ok(result.equipment.every(item => item === null));
+  assert.equal(result.autoEquipmentMode, 1);
+  assert.equal(next.global.inventory[inventoryKey]?.count, beforeItemCount + 1);
+  assert.equal(next.global.jewels['might:8'], beforeJewelCount + 1);
+  const beforeObservation = buildExperimentalObservation(state, 0, false, {}, 0);
+  const afterObservation = buildExperimentalObservation(next, 1, false, {}, 0);
+  assert.ok(next.parties[0].currentHp <= afterObservation.parties[0].hp.maximum);
+  assert.deepEqual(buildRemoveAllEquipmentEffects(beforeObservation, afterObservation, party.id, character.id), {
+    partyId: party.id,
+    characterId: character.id,
+    removedItemCount: character.equipment.filter(Boolean).length,
+    returnedJewelCount: character.equipment.filter(item => item?.jewel != null).length,
+    previousAutoEquipmentMode: 2,
+    autoEquipmentMode: 1,
+    hp: {
+      previousCurrent: beforeObservation.parties[0].hp.current,
+      previousMaximum: beforeObservation.parties[0].hp.maximum,
+      current: afterObservation.parties[0].hp.current,
+      maximum: afterObservation.parties[0].hp.maximum,
+    },
+  });
+  const legal = beforeObservation.legalActions;
+  assert.ok(legal.some(action => action.type === 'remove_all_equipment' && action.partyId === party.id && action.characterId === character.id));
+  assert.throws(() => applyApiCommand(state, { type: 'remove_all_equipment', partyId: party.id, characterId: 999999 }, deps, Date.now()));
+  assert.throws(() => applyApiCommand(state, { type: 'remove_all_equipment', partyId: party.id, characterId: character.id, slotIndex: 0 }, deps, Date.now()));
+});
+test('remove_all_equipment preserves OFF and SEMI and is a no-op for an empty SEMI character', () => {
+  for (const mode of [0, 1] as const) {
+    const state = fresh();
+    const character = state.parties[0].characters[0];
+    character.autoEquipmentMode = mode;
+    const next = applyApiCommand(state, { type: 'remove_all_equipment', partyId: state.parties[0].id, characterId: character.id }, deps, Date.now());
+    assert.equal(next.parties[0].characters[0].autoEquipmentMode, mode);
+  }
+  const state = fresh();
+  const character = state.parties[0].characters[0];
+  character.equipment = character.equipment.map(() => null);
+  character.autoEquipmentMode = 1;
+  const next = applyApiCommand(state, { type: 'remove_all_equipment', partyId: state.parties[0].id, characterId: character.id }, deps, Date.now());
+  assert.deepEqual(next, state);
 });
 test('actual engine Cycles reconcile XP, outcomes, durations and preserve non-target parties and charge', () => {
   const state = fresh(); const clone = structuredClone(state.parties[0]); clone.id = 2; state.parties.push(clone);

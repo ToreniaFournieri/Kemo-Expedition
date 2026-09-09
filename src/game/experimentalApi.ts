@@ -187,6 +187,7 @@ export function buildExperimentalObservation(
       { type: 'reorder_character', partyId: party.id, characterId: character.id, constraints: { minimumRow: 1, maximumRow: party.characters.length } },
       { type: 'set_auto_equipment_mode', partyId: party.id, characterId: character.id, constraints: { modes: [0, 1, 2] } },
       { type: 'run_auto_equipment', partyId: party.id, characterId: character.id, constraints: {} },
+      { type: 'remove_all_equipment', partyId: party.id, characterId: character.id, constraints: {} },
     ]);
     return {
       id: party.id,
@@ -288,6 +289,33 @@ export function buildExperimentalObservation(
     inventory: { equipmentByCategory },
     parties: parties.map(({ _legalActions: _discard, ...party }) => party),
     legalActions: evaluationSummary(state.apiRuntime?.evaluation)?.finalScore != null ? [] : legalActions,
+  };
+}
+
+export function buildRemoveAllEquipmentEffects(
+  before: ReturnType<typeof buildExperimentalObservation>,
+  after: ReturnType<typeof buildExperimentalObservation>,
+  partyId: number,
+  characterId: number,
+) {
+  const beforeParty = before.parties.find(party => party.id === partyId)!;
+  const afterParty = after.parties.find(party => party.id === partyId)!;
+  const beforeCharacter = beforeParty.characters.find(character => character.id === characterId)!;
+  const afterCharacter = afterParty.characters.find(character => character.id === characterId)!;
+  const removedEquipment = beforeCharacter.equipment.filter(slot => slot.item !== null);
+  return {
+    partyId,
+    characterId,
+    removedItemCount: removedEquipment.length,
+    returnedJewelCount: removedEquipment.filter(slot => slot.item?.jewel != null).length,
+    previousAutoEquipmentMode: beforeCharacter.autoEquipmentMode,
+    autoEquipmentMode: afterCharacter.autoEquipmentMode,
+    hp: {
+      previousCurrent: beforeParty.hp.current,
+      previousMaximum: beforeParty.hp.maximum,
+      current: afterParty.hp.current,
+      maximum: afterParty.hp.maximum,
+    },
   };
 }
 

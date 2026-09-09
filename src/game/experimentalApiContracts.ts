@@ -5,6 +5,7 @@ export const EXPERIMENTAL_API_COMMAND_TYPES = [
   'set_deity',
   'set_auto_equipment_mode',
   'run_auto_equipment',
+  'remove_all_equipment',
   'toggle_equipment_lock',
   'set_jewel_priority_party',
   'set_expedition_destination',
