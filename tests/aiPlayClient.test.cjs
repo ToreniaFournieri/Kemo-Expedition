@@ -44,6 +44,19 @@ test('serializes operations, injects latest revision and never persists credenti
   assert(!contents.includes('PRIVATE_BEARER')); assert(!contents.includes('PRIVATE_LEASE'));
 });
 
+test('equipment shortcuts issue revision-guarded character commands', async t => {
+  const f = await fixture(t); await f.client.connect();
+  await f.client.run({ action: 'remove-all-equipment', partyId: 1, characterId: 5 });
+  await f.client.run({ action: 'run-auto-equipment', partyId: 1, characterId: 5 });
+  const commands = f.calls.filter(c => c.route === '/command');
+  assert.deepEqual(commands.map(c => c.body), [
+    { command: { type: 'remove_all_equipment', partyId: 1, characterId: 5 }, expectedRevision: 7 },
+    { command: { type: 'run_auto_equipment', partyId: 1, characterId: 5 }, expectedRevision: 8 },
+  ]);
+  assert.notEqual(commands[0].headers['Idempotency-Key'], commands[1].headers['Idempotency-Key']);
+  await assert.rejects(f.client.run({ action: 'remove-all-equipment', characterId: 0 }), /characterId/);
+});
+
 test('lost response blocks new gameplay and explicit retry survives restart with exact request', async t => {
   let lost = true;
   const f = await fixture(t, c => { if (c.route === '/sortie' && lost) { lost = false; throw new Error('connection lost'); } });

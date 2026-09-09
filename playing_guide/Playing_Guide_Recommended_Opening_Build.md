@@ -1,129 +1,109 @@
+# Recommended Opening Build — Experimental API
 
-# Recommended Opening Build
-
-Version: v0.9.6 (14)
+Version: v0.9.6 (19)
 
 Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 
-The opening phase of Orca mode is extremely difficult. With the default initial build, the party may be unable to defeat even the first enemy, resulting in no EXP or item gains.
+This is an API-only opening strategy for a fresh AI Play evaluation. It uses only public observations and supported strategic commands. It does not purchase shop items or select exact equipment slots; those operations are unavailable through the Experimental API.
 
-This guide provides a recommended opening setup intended to establish a viable farming loop as quickly as possible.
+Follow [Specification 12.2](../Specification_12.2_AI_PLAY_OPERATOR_GUIDE.md) for launch, lease, revision, accounting, recovery, and shutdown rules. Every action below must use IDs and choices present in the current observation and `_legalActions`.
 
-## 1. Change PT1 to the following build
+## 1. Observe and validate the candidate
 
+Start the reference client, then observe the fresh state:
 
 ```json
-[
-  {
-    "id": 1,
-    "level": 1,
-    "deityId": "fortification",
-    "expedition": {
-      "destinationMode": "fixed",
-      "selectedDungeonId": 1,
-      "depthLimit": "all",
-      "difficultyOffset": 0,
-      "maximumDifficultyOffset": 80,
-      "instantExpeditionStock": 6,
-      "instantExpeditionChargeStartedAt": null,
-      "normalSortieAvailable": false,
-      "godBattleAvailable": false
-    },
-    "characters": [
-      {
-        "id": 1,
-        "row": 1,
-        "build": {
-          "name": "Kemo",
-          "gender": "male",
-          "raceId": "kemoria",
-          "lineageId": "unascertained",
-          "predispositionId": "none",
-          "mainClassId": "guardian",
-          "subClassId": "sword-saint",
-          "mimorianEnemyId": null
-        },
-        "autoEquipmentMode": 1
-      },
-      {
-        "id": 5,
-        "row": 2,
-        "build": {
-          "name": "Selfin",
-          "gender": "female",
-          "raceId": "cervin",
-          "lineageId": "adaptation",
-          "predispositionId": "introspective",
-          "mainClassId": "pilgrim",
-          "subClassId": "wizard",
-          "mimorianEnemyId": null
-        },
-        "autoEquipmentMode": 1
-      },
-      {
-        "id": 6,
-        "row": 3,
-        "build": {
-          "name": "Laika",
-          "gender": "female",
-          "raceId": "caninian",
-          "lineageId": "pioneer",
-          "predispositionId": "none",
-          "mainClassId": "lord",
-          "subClassId": "alchemist",
-          "mimorianEnemyId": null
-        },
-        "autoEquipmentMode": 1
-      },
-      {
-        "id": 3,
-        "row": 4,
-        "build": {
-          "name": "Lop",
-          "gender": "female",
-          "raceId": "leporian",
-          "lineageId": "adaptation",
-          "predispositionId": "resourceful",
-          "mainClassId": "ranger",
-          "subClassId": "pilgrim",
-          "mimorianEnemyId": null
-        },
-        "autoEquipmentMode": 1
-      },
-      {
-        "id": 4,
-        "row": 6,
-        "build": {
-          "name": "Grun",
-          "gender": "male",
-          "raceId": "ursan",
-          "lineageId": "adaptation",
-          "predispositionId": "introspective",
-          "mainClassId": "wizard",
-          "subClassId": "alchemist",
-          "mimorianEnemyId": null
-        },
-        "autoEquipmentMode": 1
-      },
-      {
-        "id": 2,
-        "row": 5,
-        "build": {
-          "name": "Borg",
-          "gender": "female",
-          "raceId": "ursan",
-          "lineageId": "adaptation",
-          "predispositionId": "serene",
-          "mainClassId": "sage",
-          "subClassId": "alchemist",
-          "mimorianEnemyId": null
-        },
-        "autoEquipmentMode": 1
-      },
-    ]
-  }
-]
+{"action":"observe"}
 ```
+
+Confirm PT1 is party `1`, record its current revision, and verify the character IDs below. Use `build-options` for any non-unique character whose race, gender, lineage, or predisposition differs from the observed value. Unique characters must not be sent immutable fields.
+
+Save the following **configuration object** as `/tmp/bokemo-opening-build.json`. It deliberately contains only writable configuration fields.
+
+```json
+{
+  "characters": [
+    {
+      "characterId": 1,
+      "changes": {"mainClassId": "guardian", "subClassId": "sword-saint"},
+      "autoEquipmentMode": 1
+    },
+    {
+      "characterId": 5,
+      "changes": {
+        "name": "Selfin",
+        "gender": "female",
+        "raceId": "cervin",
+        "lineageId": "adaptation",
+        "predispositionId": "introspective",
+        "mainClassId": "pilgrim",
+        "subClassId": "wizard"
+      },
+      "autoEquipmentMode": 1
+    },
+    {
+      "characterId": 6,
+      "changes": {"mainClassId": "lord", "subClassId": "alchemist"},
+      "autoEquipmentMode": 1
+    },
+    {
+      "characterId": 3,
+      "changes": {
+        "name": "Lop",
+        "gender": "female",
+        "raceId": "leporian",
+        "lineageId": "adaptation",
+        "predispositionId": "resourceful",
+        "mainClassId": "ranger",
+        "subClassId": "pilgrim"
+      },
+      "autoEquipmentMode": 1
+    },
+    {
+      "characterId": 2,
+      "changes": {
+        "name": "Borg",
+        "gender": "female",
+        "raceId": "ursan",
+        "lineageId": "adaptation",
+        "predispositionId": "serene",
+        "mainClassId": "sage",
+        "subClassId": "alchemist"
+      },
+      "autoEquipmentMode": 1
+    },
+    {
+      "characterId": 4,
+      "changes": {
+        "name": "Grun",
+        "gender": "male",
+        "raceId": "ursan",
+        "lineageId": "adaptation",
+        "predispositionId": "introspective",
+        "mainClassId": "wizard",
+        "subClassId": "alchemist"
+      },
+      "autoEquipmentMode": 1
+    }
+  ],
+  "order": [1, 5, 6, 3, 2, 4],
+  "deityId": "fortification",
+  "destination": {"mode": "fixed", "dungeonId": 1},
+  "depthLimit": "1f-3",
+  "difficultyOffset": 0
+}
+```
+
+Preview and simulate the unchanged file before committing it:
+
+```json
+{"action":"preview","partyId":1,"configurationFile":"/tmp/bokemo-opening-build.json"}
+{"action":"simulate","partyId":1,"configurationFile":"/tmp/bokemo-opening-build.json"}
+{"action":"configure","partyId":1,"configurationFile":"/tmp/bokemo-opening-build.json"}
+```
+
+If validation rejects the candidate, inspect `error.details.violations`, correct only the rejected fields using current `build-options`, then preview and simulate the revised candidate again. Do not continue with a partially assumed build.
+
 
 ## 2. Purchase items from the shop
 
@@ -184,28 +164,45 @@ For this reason, offensive resources should initially be concentrated on a small
 
 **Kemo (Kemoria)** is particularly suitable as the main melee attacker because he has many equipment slots, allowing multiple offensive items to be stacked on a single character.
 
-## 4. Run a simulation
 
-Run a simulation to evaluate whether the opening build is viable.
+## 4. Verify productive farming
 
-A properly configured party may produce results similar to:
+Save `{}` as `/tmp/bokemo-current-state.json` and simulate the committed state:
 
-`Return 15.6% / Draw 54.6% / Retreat 29.8% / Defeat 0.0%`
+```json
+{"action":"simulate","partyId":1,"configurationFile":"/tmp/bokemo-current-state.json"}
+```
 
-## 5. Run 100 sorties
+Forecast percentages are evidence for this exact state, not guaranteed live results. Record the current build, equipment, attack values/counts, and simulation outcomes rather than relying on a historical fixed percentage.
 
-Run approximately 100 sorties using the opening configuration.
+Run exactly one diagnostic sortie:
 
-The purpose of this phase is to accumulate EXP, gold, and equipment drops rather than to clear the expedition immediately.
+```json
+{"action":"sortie","partyId":1,"count":1}
+```
 
+Check room progress, total XP, items, and `returnReason`. If the party draws in room one without gains, inspect the retained battle log and revise the build or targeted equipment order:
 
-## 6. Run SEMI Auto Equipment
+```json
+{"action":"read","path":"/parties/1/battle-log/latest"}
+```
 
-After farming, run **SEMI Auto Equipment** for all characters.
+Do not start a large batch until the simulation or diagnostic sortie demonstrates productive early-room progress.
 
-By this point, the party should have accumulated many trophies and enhanced items. Replacing weaker equipment with higher-enhancement alternatives should significantly improve the party's combat performance.
+## 5. Farm and improve
 
+Once productivity is established, increase sortie batches gradually. Each accepted request runs exactly its requested `count` from 1 through 100, even if a winning result occurs before the batch ends.
 
-## 7. Continue farming
+```json
+{"action":"sortie","partyId":1,"count":20}
+```
 
-Good luck!
+After farming produces enhanced copies, run targeted SEMI automatic equipment for characters that already hold the categories you want to preserve:
+
+```json
+{"action":"run-auto-equipment","partyId":1,"characterId":1}
+```
+
+SEMI upgrades compatible equipped categories; it does not fill empty slots. Use a deliberate FULL run only when you accept category and attack-count changes, and inspect the resulting observation before continuing.
+
+Re-simulate after meaningful build or equipment changes, use single sorties near a likely boss clear, and stop gameplay immediately when `evaluation.status` becomes `succeeded` or `failed`. Retrieve the final report and quit according to the operator guide.

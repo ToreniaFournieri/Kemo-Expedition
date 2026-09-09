@@ -39,6 +39,8 @@ Inspect and evaluate it before committing. Send these one at a time, reviewing e
 {"action":"preview","partyId":1,"configurationFile":"/tmp/opening-build.json"}
 {"action":"simulate","partyId":1,"configurationFile":"/tmp/opening-build.json"}
 {"action":"configure","partyId":1,"configurationFile":"/tmp/opening-build.json"}
+{"action":"remove-all-equipment","partyId":1,"characterId":1}
+{"action":"run-auto-equipment","partyId":1,"characterId":1}
 {"action":"sortie","partyId":1,"count":1}
 ```
 
@@ -48,6 +50,8 @@ Do not modify the file between preview, simulation and commit unless you intend 
 | --- | --- |
 | `observe` | Current public observation. |
 | `preview`, `simulate`, `configure` | `partyId` (default 1), and `configurationFile`; `configuration` is allowed inside an action file. |
+| `remove-all-equipment` | `partyId` (default 1) and required `characterId`; invokes the API's character-level `remove_all_equipment` command. |
+| `run-auto-equipment` | `partyId` (default 1) and required `characterId`; immediately runs that character's configured automatic-equipment mode. |
 | `sortie` | `partyId` (default 1), explicit integer `count` from 1 to 100. |
 | `build-options` | `body` containing the endpoint's character/candidate fields. The client supplies `revision`. See the [API contract](../Specification_9.1.3_API_ENDPOINTS.md). |
 | `read` | `path`: `/catalog`, `/diary-entries`, `/parties/1/battle-log/latest`, or `/diary-entries/ID/battle-log`. |
@@ -57,7 +61,7 @@ Do not modify the file between preview, simulation and commit unless you intend 
 | `release` | Persist and release control while leaving the client open. |
 | `quit` | Stop renewal immediately, discard queued actions, settle the outstanding response and attempt release, then exit. |
 
-No generic mutation action is provided; `configure` is the existing atomic `configure_party` command. Gods Battles and direct equipment selection are not available through this client.
+No generic mutation action is provided. `configure`, `remove-all-equipment`, and `run-auto-equipment` are narrow wrappers around their existing API commands. Gods Battles, shop purchases, and direct equipment selection are not available through this client.
 
 ## Read results
 

@@ -3,7 +3,7 @@
   "dataset": "BoKemo Gameplay-Assistant LoRA",
   "source_snapshot": {
     "version": "0.9.6",
-    "build": 18
+    "build": 19
   },
   "generated_at": "deterministic",
   "generation_seed": 903007,
@@ -62,7 +62,7 @@
     "scripts/lora/validate.mjs": "cf046fccd2ebe96c7809d9cef8aeb6efe58e6b865f8e23912b12a360c87459ba",
     "training/lora/model.lock.json": "2707594ea1e7ab2339caceae6ae601c63e83f5e5a44cb1acd4aec4c7144523be",
     "training/lora/qwen3_4b_qlora.yaml": "3dbf4c3b45c7b1d18c46aa7d57c4e2ce469d98af95a1df425de585956a441bdd",
-    "build_number.txt": "7ee29791fc17e986b97128845622b077fb45e349fdb80523fac9dba879b4ad60",
+    "build_number.txt": "a9742eb8ee320e006666aef25ae9aeed948247f3125c9cafa7cf97b7e7467dd5",
     "src/i18n/ja.ts": "235dcf608ef61b1b87b78e95ff3cbba18e8c2989e15c4b7866c4799e66696b83",
     "src/i18n/en.ts": "dbff0588601b093c2ec3370c7e4540978de814592f0d492ef201b1f32237b728",
     "src/i18n/zh-CN.ts": "a5fabacae4bde510a1009311aad10dea236394e3767648c794e21e805a77d89d",

@@ -179,10 +179,16 @@ export class AiPlayClient {
       mutation = action === 'configure';
       body = mutation ? { command: { type: 'configure_party', partyId, configuration: input.configuration } } : { partyId, configuration: input.configuration };
     } else if (action === 'build-options') { path = '/build-options'; body = { ...input.body }; }
+    else if (action === 'remove-all-equipment' || action === 'run-auto-equipment') {
+      if (!Number.isInteger(input.characterId) || input.characterId < 1) throw new Error('characterId must be a positive integer.');
+      path = '/command';
+      body = { command: { type: action === 'remove-all-equipment' ? 'remove_all_equipment' : 'run_auto_equipment', partyId, characterId: input.characterId } };
+      mutation = true;
+    }
     else if (action === 'sortie') {
       if (!Number.isInteger(input.count) || input.count < 1 || input.count > 100) throw new Error('count must be an explicit integer from 1 to 100.');
       path = '/sortie'; body = { partyId, count: input.count }; mutation = true;
-    } else throw new Error('Unknown action. Use observe, read, build-options, preview, simulate, configure, sortie, retry, status, evaluation, report, ledger or release.');
+    } else throw new Error('Unknown action. Use observe, read, build-options, preview, simulate, configure, remove-all-equipment, run-auto-equipment, sortie, retry, status, evaluation, report, ledger or release.');
     await this.ensureLease();
     if (action === 'retry') ({ path, body } = this.state.pending);
     else if (body) {

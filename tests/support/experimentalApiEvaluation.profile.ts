@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { createInitialStateBase, gameReducer, calculateFreeActionSpend, calculatePrayerProfit, getPartyAbilityLevel, hasActiveNonGodBattleClearGateCondition, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { createApiRuntime, createEvaluation, transactApiRequest, readEvaluation, evaluationSummary } from '../../src/game/experimentalApiSession';
@@ -293,4 +294,19 @@ test('configuration structural errors retain codes and identify nested fields', 
     });
     assert.deepEqual(state, original);
   }
+});
+
+test('recommended opening guide contains valid JSON and a legal fresh-state configuration', () => {
+  const guide = readFileSync('playing_guide/Playing_Guide_Recommended_Opening_Build.md', 'utf8');
+  const blocks = [...guide.matchAll(/```json\n([\s\S]*?)\n```/g)].flatMap(match => {
+    try { return [JSON.parse(match[1])]; }
+    catch { return match[1].split('\n').filter(Boolean).map(line => JSON.parse(line)); }
+  });
+  assert.ok(blocks.length >= 10);
+  const configuration = blocks.find(value => value?.characters && value?.order);
+  assert.ok(configuration);
+  const state = fresh();
+  const next = configureParty(state, 0, configuration, deps);
+  assert.deepEqual(next.parties[0].characters.map(character => character.id), configuration.order);
+  assert.equal(next.parties[0].expeditionDepthLimit, '1f-3');
 });

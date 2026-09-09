@@ -47,6 +47,8 @@ The client checks evaluation identity, acquires and renews control, serializes r
 
 For party changes, use `{"action":"preview","partyId":1,"configurationFile":"/absolute/path/to/build.json"}`, then `simulate` and `configure` with the same file. The file contains only the `configuration` object illustrated in section 3. Actual play still requires an explicit action such as `{"action":"sortie","partyId":1,"count":1}`.
 
+For supported equipment concentration, use `{"action":"remove-all-equipment","partyId":1,"characterId":1}` and `{"action":"run-auto-equipment","partyId":1,"characterId":1}` only when those commands are present in the current `_legalActions`. These actions remain revision-guarded mutations and use the client's normal idempotency and recovery handling. They do not enable shop purchases or direct equipment-slot selection.
+
 The client must preserve a pending mutation's exact body and key before dispatch. An uncertain response blocks new gameplay until explicit `retry`; retry checks termination first and can consume a counted call. It must never retry a mutation automatically or choose builds or batch counts. Full sanitized API responses are retained separately from compact output; client notes are not game saves. Terminal gameplay remains blocked. Only one client may own its local directory at a time. Credentials must remain in memory and the organizer handoff, outside client artifacts.
 
 The client prints its process ID and request progress. `dispatching` records an attempt, not proof of API acceptance; a missing response, unchanged revision or absent pending mutation does **not** establish that a simulation was uncounted. Check exempt `evaluation` and `ledger` actions and the local `requests.jsonl` journal when uncertain.
