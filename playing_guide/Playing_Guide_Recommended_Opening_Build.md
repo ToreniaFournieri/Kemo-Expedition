@@ -124,6 +124,21 @@ If validation rejects the candidate, inspect `error.details.violations`, correct
     * Four swords: `1104`  (one sword must have +1 or more enhancement)
     * Two gauntlets: `1106` and `1211`
 
+* Make **Grun (Ursan, Wizard)** the primary magic attacker.
+
+  * Equip:
+
+    * Two wands: `1110` (one wand must have +1 or more enhancement)
+    * Two catalysts: `1112`
+
+* Make **Borg (Ursan, Sage)** the secondary magic attacker.
+
+  * Equip:
+    * One robe: `1102`
+    * Two grimorie: `1111` (one grimorie must have +1 or more enhancement)
+    * One catalyst: `1112`
+
+
 * Make **Selfin (Cervin, Pilgrim)** the support magic attacker.
 
   * Equip:
@@ -139,19 +154,6 @@ If validation rejects the candidate, inspect `error.details.violations`, correct
     * Two arrows: `1107`
     * Two bows: `1109`
 
-* Make **Grun (Ursan, Wizard)** the primary magic attacker.
-
-  * Equip:
-
-    * Two wands: `1110` (one wand must have +1 or more enhancement)
-    * Two catalysts: `1112`
-
-* Make **Borg (Ursan, Sage)** the secondary magic attacker.
-
-  * Equip:
-    * One robe: `1102`
-    * Two grimorie: `1111` (one grimorie must have +1 or more enhancement)
-    * One catalyst: `1112`
 
 * Run Auto Equipment for **Laika (Caninian, characterId = 6)** after all manual equipment assignments above are complete.
 
