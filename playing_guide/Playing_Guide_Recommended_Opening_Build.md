@@ -16,8 +16,8 @@ This guide provides a recommended opening setup intended to establish a viable f
 [
   {
     "id": 1,
-    "level": 10,
-    "deityId": "restoration",
+    "level": 1,
+    "deityId": "fortification",
     "expedition": {
       "destinationMode": "fixed",
       "selectedDungeonId": 1,
@@ -184,18 +184,13 @@ For this reason, offensive resources should initially be concentrated on a small
 
 **Kemo (Kemoria)** is particularly suitable as the main melee attacker because he has many equipment slots, allowing multiple offensive items to be stacked on a single character.
 
-
-
 ## 4. Run a simulation
 
 Run a simulation to evaluate whether the opening build is viable.
 
 A properly configured party may produce results similar to:
 
-`Return 5.4% / Draw 28.4% / Retreat 55.2% / Defeat 11.0%`
-
-A high defeat rate is still acceptable at this stage as long as the party can occasionally defeat enemies and begin gaining EXP and items.
-
+`Return 15.6% / Draw 54.6% / Retreat 29.8% / Defeat 0.0%`
 
 ## 5. Run 100 sorties
 
