@@ -1,6 +1,6 @@
 // SpecRef: 12.2 | AI Play Operator Guide | Reference client
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, openSync, closeSync, unlinkSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, openSync, closeSync, unlinkSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
 const terminal = e => e && e.status !== 'active';
@@ -19,6 +19,7 @@ export function compactResponse(data, previous = []) {
   return {
     evaluation: data.evaluation, revision: data.observation?.revision ?? data.revision ?? data.sortie?.revision,
     error: data.error, reportPath: data.reportPath, reportError: data.reportError,
+    runtime: data.runtime, control: data.control, release: data.release,
     comparison: data.comparison, simulation: data.simulation, outcomes: data.outcomes, totals: data.totals,
     returnReasons: data.runs?.reduce((counts, r) => { const k = r.returnReason ?? 'unknown'; counts[k] = (counts[k] ?? 0) + 1; return counts; }, {}),
     parties: parties.map(p => {
@@ -35,12 +36,13 @@ export function compactResponse(data, previous = []) {
 }
 
 export class AiPlayClient {
-  constructor({ connection, directory, fetchImpl = fetch, timeoutMs = 120000 }) {
+  constructor({ connection, directory, fetchImpl = fetch, timeoutMs = 120000, releaseTimeoutMs = 5000, onEvent = () => {} }) {
     const url = new URL(connection.endpoint);
     if (url.protocol !== 'http:' || !['127.0.0.1', '[::1]'].includes(url.hostname) || url.pathname !== '/experimental/v1' || url.search || url.hash || url.username || url.password)
       throw new Error('Connection must use the official loopback /experimental/v1 endpoint.');
     if (!connection.token || !connection.evaluationId) throw new Error('Invalid connection handoff.');
     this.connection = connection; this.fetch = fetchImpl; this.timeoutMs = timeoutMs;
+    this.releaseTimeoutMs = releaseTimeoutMs; this.onEvent = onEvent;
     this.directory = resolve(directory); mkdirSync(this.directory, { recursive: true, mode: 0o700 });
     this.lockPath = join(this.directory, 'client.lock');
     this.lock = openSync(this.lockPath, 'wx', 0o600);
@@ -51,6 +53,8 @@ export class AiPlayClient {
       if (this.state.identity && this.state.identity.evaluationId !== connection.evaluationId) throw new Error('Client directory belongs to another evaluation.');
     } catch (error) { closeSync(this.lock); unlinkSync(this.lockPath); throw error; }
     this.lease = null; this.tail = Promise.resolve(); this.parties = []; this.closed = false;
+    this.stopping = false; this.closePromise = null; this.inFlight = null;
+    this.journalPath = join(this.directory, 'requests.jsonl');
   }
   save() {
     const temp = this.statePath + '.tmp';
@@ -58,21 +62,47 @@ export class AiPlayClient {
     renameSync(temp, this.statePath);
   }
   serialize(fn) {
-    const next = this.tail.then(() => { if (this.closed) throw new Error('Client is closed.'); return fn(); });
+    const next = this.tail.then(() => { if (this.closed || this.stopping) throw new Error('Client is shutting down; queued action discarded.'); return fn(); });
     this.tail = next.catch(() => {}); return next;
   }
-  async request(path, body, key) {
+  emit(event) {
+    try { this.onEvent(sanitize(event, [this.connection.token, this.lease])); } catch { /* Logging cannot change request outcome. */ }
+  }
+  progress(request, stage, extra = {}) {
+    const event = { event: 'request_progress', ...request, stage, at: Date.now(), ...extra };
+    appendFileSync(this.journalPath, JSON.stringify(event) + '\n', { mode: 0o600 });
+    if (request.gameplay) { this.state.lastGameplayRequest = event; this.save(); }
+    if ((request.gameplay && stage !== 'response_received') || stage === 'response_uncertain') this.emit(event);
+  }
+  beginShutdown(reason = 'close') {
+    if (this.stopping) return;
+    this.stopping = true;
+    this.emit({ event: 'shutdown_started', reason, pid: process.pid, queuedActions: 'discarded' });
+    if (this.inFlight) this.emit({ event: 'waiting_for_request', requestId: this.inFlight.requestId,
+      path: this.inFlight.path, message: 'Waiting for the outstanding response or its timeout; no further renewal will be sent.' });
+  }
+  async request(path, body, key, timeoutMs = this.timeoutMs) {
+    if (this.stopping && path !== '/control/release') throw new Error('Client is shutting down; request not dispatched.');
     const headers = { Authorization: `Bearer ${this.connection.token}` };
     if (this.lease) headers['X-BoKemo-Control-Lease'] = this.lease;
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (key) headers['Idempotency-Key'] = key;
+    const request = { requestId: randomUUID(), path,
+      gameplay: !['/status', '/evaluation', '/evaluation/report', '/evaluation/ledger', '/control/acquire', '/control/renew', '/control/release'].includes(path),
+      countedApiCallsBefore: this.state.evaluation?.countedApiCalls ?? null };
+    this.progress(request, 'dispatching'); // Intent recorded before fetch; this does not prove server acceptance.
+    this.inFlight = request;
     let response, data;
     try {
       response = await this.fetch(this.connection.endpoint + path, { method: body === undefined ? 'GET' : 'POST', headers,
-        body: body === undefined ? undefined : JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(this.timeoutMs) });
+        body: body === undefined ? undefined : JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
       data = await response.json();
       if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid response');
-    } catch { throw new Error('Response uncertain. Pending mutations are preserved; use retry after checking evaluation.'); }
+    } catch {
+      this.progress(request, 'response_uncertain', { recovery: 'Read /evaluation and /evaluation/ledger; no response does not mean uncounted. Pending mutations retain their exact retry request.' });
+      throw new Error('Response uncertain. Check evaluation and ledger for accounting; pending mutations are preserved for explicit retry.');
+    } finally { this.inFlight = null; }
+    this.progress(request, 'response_received', { status: response.status });
     if (path === '/control/acquire' && response.ok) this.lease = data.lease?.token;
     if (path === '/control/release' && response.ok) this.lease = null;
     const safe = sanitize(data, [this.connection.token, this.lease]);
@@ -90,6 +120,7 @@ export class AiPlayClient {
     const artifact = join(this.directory, `${String(sequence).padStart(6, '0')}.json`);
     writeFileSync(artifact, JSON.stringify({ path, status: response.status, response: safe }, null, 2) + '\n', { flag: 'wx', mode: 0o600 });
     this.save();
+    this.progress(request, 'response_saved', { status: response.status, artifact, countedApiCallsAfter: safe.evaluation?.countedApiCalls ?? null });
     if (key && response.ok && !Number.isInteger(revision))
       throw new Error('Mutation response lacks a revision. Pending request preserved; check evaluation, then retry if active.');
     const summary = compactResponse(safe, this.parties);
@@ -170,9 +201,32 @@ export class AiPlayClient {
     }
     return { ...r.summary, pendingMutation: Boolean(this.state.pending) };
   }); }
-  async close() {
-    await this.tail;
-    try { if (this.lease) await this.request('/control/release', {}); }
-    finally { this.closed = true; this.lease = null; closeSync(this.lock); unlinkSync(this.lockPath); }
+  close() {
+    this.beginShutdown();
+    if (this.closePromise) return this.closePromise;
+    this.closePromise = (async () => {
+      await this.tail; // In-flight request settles; queued work observes stopping and cannot dispatch.
+      let result;
+      try {
+        if (this.lease) {
+          this.emit({ event: 'releasing_control' });
+          const response = await this.request('/control/release', {}, undefined, this.releaseTimeoutMs);
+          if (response.ok && response.data.release?.statePersisted === true) {
+            result = { event: 'control_released', statePersisted: true };
+          } else if (['no_active_lease', 'control_lease_expired'].includes(response.data.error?.code)) {
+            result = { event: 'control_inactive', message: 'The server reports no active owned lease.' };
+          } else throw new Error(`Release not confirmed (${response.data.error?.code ?? response.status}). Check authenticated status; a busy server operation may still pin the lease.`);
+        } else result = { event: 'no_client_lease', message: 'No lease token held by this client; this does not prove the server has no active lease.' };
+        this.emit(result);
+        return result;
+      } catch (error) {
+        this.emit({ event: 'release_unconfirmed', message: error.message });
+        throw error;
+      } finally {
+        this.closed = true; this.lease = null; closeSync(this.lock); unlinkSync(this.lockPath);
+        this.emit({ event: 'client_closed', pid: process.pid, journal: this.journalPath });
+      }
+    })();
+    return this.closePromise;
   }
 }

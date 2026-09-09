@@ -36,10 +36,10 @@ Authenticated requests require the bearer header. Owned gameplay requests also r
 After the launcher reports readiness, use the official client in another terminal:
 
 ```sh
-npm run ai-play:client -- --connection=/path/from/launcher/connection.json --directory=/tmp/my-ai-play-client
+node scripts/ai-play-client.mjs --connection=/path/from/launcher/connection.json --directory=/tmp/my-ai-play-client
 ```
 
-The client checks evaluation identity, acquires and renews control, serializes requests, supplies the latest revision and assigns mutation keys. Keep it running; enter one action per line or `@/absolute/path/to/action.json`. See [client examples and recovery](docs/ai-play-client.md).
+The client checks evaluation identity, acquires and renews control, serializes requests, supplies the latest revision and assigns mutation keys. Keep it running; enter short control actions or `@/absolute/path/to/action.json`. Build configurations must use `configurationFile` or an action file; do not paste long JSON into the terminal. See [client examples and recovery](docs/ai-play-client.md).
 
 ```json
 {"action":"observe"}
@@ -48,6 +48,10 @@ The client checks evaluation identity, acquires and renews control, serializes r
 For party changes, use `{"action":"preview","partyId":1,"configurationFile":"/absolute/path/to/build.json"}`, then `simulate` and `configure` with the same file. The file contains only the `configuration` object illustrated in section 3. Actual play still requires an explicit action such as `{"action":"sortie","partyId":1,"count":1}`.
 
 The client must preserve a pending mutation's exact body and key before dispatch. An uncertain response blocks new gameplay until explicit `retry`; retry checks termination first and can consume a counted call. It must never retry a mutation automatically or choose builds or batch counts. Full sanitized API responses are retained separately from compact output; client notes are not game saves. Terminal gameplay remains blocked. Only one client may own its local directory at a time. Credentials must remain in memory and the organizer handoff, outside client artifacts.
+
+The client prints its process ID and request progress. `dispatching` records an attempt, not proof of API acceptance; a missing response, unchanged revision or absent pending mutation does **not** establish that a simulation was uncounted. Check exempt `evaluation` and `ledger` actions and the local `requests.jsonl` journal when uncertain.
+
+Use `{"action":"quit"}`, Ctrl-C or SIGTERM to stop. The client immediately stops scheduling renewals, rejects queued actions, waits for its outstanding request to respond or time out, then attempts release with a five-second timeout. It reports `control_released` only on server-confirmed persistence, or reports `release_unconfirmed`; `client_closed` means local cleanup completed, not that release necessarily succeeded. An accepted server operation can still pin its lease after the client loses contact. EOF finishes supplied input before closing. Do not wait indefinitely for a surviving client that is still renewing: use its owning terminal or verify its printed PID and stop that client. Never terminate an unrelated client or reset the evaluation.
 
 #### 3. Prepare the opening party before farming
 
@@ -139,6 +143,6 @@ Status, control and evaluation-summary requests are exempt. Gameplay reads, prev
 1. After termination, make no more gameplay requests.
 2. Read `GET /evaluation` for final accounting and the report path. Read `GET /evaluation/report` for the frozen final public snapshot, status table, winning operation and ledger. These are exempt; the report endpoint is terminal-only.
 3. Add strategy notes and convenience findings to the report. Preserve its authoritative results and required final member status table. Exclude credentials and hidden random state.
-4. Release control with `POST /control/release`, body `{}`, then close the evaluation application and discard client credentials.
+4. With the reference client, use `quit` and check its release result. With manual HTTP, release control with `POST /control/release`, body `{}`. Then close the evaluation application and discard client credentials.
 
 The report filename uses the evaluation **start date**, mode and six-digit score, as specified in Regulation 12.1. A forecast alone never establishes success; the final evaluation and winning-operation evidence do.
