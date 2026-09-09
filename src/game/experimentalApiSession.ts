@@ -121,8 +121,12 @@ export async function transactApiRequest(options: {
 export class ApiValidationError extends Error {
   constructor(public response: ApiResponse) { super(String((response.error as { message: string }).message)); }
 }
-export function requireApi(condition: unknown, code: string, message: string, status = 422): asserts condition {
-  if (!condition) throw new ApiValidationError(apiError(code, message, status));
+export function requireApi(condition: unknown, code: string, message: string, status = 422, details?: Record<string, unknown>): asserts condition {
+  if (!condition) {
+    const response = apiError(code, message, status);
+    if (details) (response.error as Record<string, unknown>).details = details;
+    throw new ApiValidationError(response);
+  }
 }
 
 export function freezeEvaluationObservation(observation: Record<string, unknown>) {

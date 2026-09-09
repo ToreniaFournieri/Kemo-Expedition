@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.6 | 16 | 2026/09/09 | Add public before/after party comparisons to API simulations and previews, structured configuration field violations across party members, and reference-client display of evaluated combat values and comparisons. Preserve candidate evaluation, atomic validation, forecast count and scoring. |
 | 0.9.6 | 15 | 2026/09/09 | Add an API-only AI Play reference client with file-based configuration input, serialized requests, lease maintenance, revision tracking, durable explicit mutation retry, terminal guards, compact summaries and sanitized response artifacts. Document opening party rebuilds, client operation and recovery. Preserve API contracts, equipment selection and scoring. |
 | 0.9.6 | 14 | 2026/09/08 | Refine AI Play regulation v2 with mode-bound Normal/Orca sessions and immutable rules identity, private launcher handoff and readiness checks, compact accounting with separate ledger and terminal reports, final status/configuration tables and winning-batch evidence, explicit return reasons, and evaluation-effective availability and race validation. Preserve equipment selection and exact-batch scoring. |
 | 0.9.6 | 13 | 2026/09/08 | Increase the AI Play evaluation budget to 20,000 counted API calls across transaction accounting, remaining-call summaries, failure handling, and checkpoint recovery. Preserve success on the final allowed call and reject gameplay after termination. |

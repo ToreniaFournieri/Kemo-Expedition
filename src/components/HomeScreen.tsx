@@ -1,3 +1,4 @@
+import { compareApiParties } from '../game/experimentalApiComparison';
 import { ExperimentalApiSettings } from './ExperimentalApiSettings';
 import { withBattleSeedSource } from '../game/battleSeedSource';
 import { gameReducer, simulateExpeditionRuns, calculateFreeActionSpend, calculatePrayerProfit, getPartyAbilityLevel as apiPartyAbility, hasActiveNonGodBattleClearGateCondition as apiHasGate } from '../hooks/useGameState';
@@ -682,10 +683,12 @@ export function HomeScreen({
         if (operation === 'party-preview' || operation === 'simulation') {
           apiKeys(payload, ['revision', 'partyId', 'configuration']);
           const candidate = payload.configuration === undefined ? baseline : withGameplayRandomSource(random.next, () => configureParty(structuredClone(baseline), partyIndex, payload.configuration, deps));
-          const preview = observation(candidate).parties.find(p => p.id === payload.partyId);
-          if (operation === 'party-preview') return { state: baseline, response: { revision, partyId: payload.partyId, party: preview } };
+          const preview = observation(candidate).parties.find(p => p.id === payload.partyId)!;
+          const previous = candidate === baseline ? preview : observation(baseline).parties.find(p => p.id === payload.partyId)!;
+          const comparison = compareApiParties(previous, preview);
+          if (operation === 'party-preview') return { state: baseline, response: { revision, partyId: payload.partyId, party: preview, comparison } };
           const outcomes = await simulateExpeditionRuns(candidate, partyIndex, gameModeRef.current, 1_000, undefined, effectiveOrcaEnemyLevelOffset);
-          return { state: baseline, response: { revision, partyId: payload.partyId, configuration: preview, simulation: { outcomes, total: outcomes.total } } };
+          return { state: baseline, response: { revision, partyId: payload.partyId, configuration: preview, comparison, simulation: { outcomes, total: outcomes.total } } };
         }
         if (operation === 'sortie') {
           apiKeys(payload, ['expectedRevision', 'partyId', 'count']);

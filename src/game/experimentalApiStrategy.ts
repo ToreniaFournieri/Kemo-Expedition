@@ -20,13 +20,22 @@ export type StrategyDependencies = {
   equip: (state: GameState, partyIndex: number, characterId?: number) => GameState;
 };
 export const depthLimits: ExpeditionDepthLimit[] = ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'];
-export function record(value: unknown): Record<string, unknown> {
-  requireApi(value && typeof value === 'object' && !Array.isArray(value), 'invalid_request', 'An object is required.', 400);
+export function record(value: unknown, field?: string): Record<string, unknown> {
+  requireApi(value && typeof value === 'object' && !Array.isArray(value), 'invalid_request', 'An object is required.', 400, field ? diagnostic(field, 'object_required') : undefined);
   return value as Record<string, unknown>;
 }
-export function keys(value: Record<string, unknown>, allowed: string[]) {
-  requireApi(Object.keys(value).every(k => allowed.includes(k)), 'invalid_request', 'Unknown request property.', 400);
+export function keys(value: Record<string, unknown>, allowed: string[], field?: string) {
+  requireApi(Object.keys(value).every(k => allowed.includes(k)), 'invalid_request', 'Unknown request property.', 400, field ? diagnostic(`${field}.${Object.keys(value).find(k => !allowed.includes(k))}`, 'unknown_field') : undefined);
 }
+
+// SpecRef: 9.1.3 | Experimental AI API | Structured configuration errors
+function diagnostic(field: string, code: string) {
+  return { field, violations: [{ field, code }] };
+}
+function checkConfig(condition: unknown, field: string, code: string, message: string, status = 422, reason = code): asserts condition {
+  requireApi(condition, code, message, status, diagnostic(field, reason));
+}
+
 const buildFields = ['name', 'gender', 'raceId', 'lineageId', 'predispositionId', 'mainClassId', 'subClassId', 'mimorianEnemyId'];
 export function characterBuild(c: Character) {
   return Object.fromEntries(buildFields.map(k => [k, (c.raceId === 'mimorian' && ['lineageId', 'predispositionId'].includes(k)) || (c.raceId !== 'mimorian' && k === 'mimorianEnemyId') ? null : c[k as keyof Character] ?? null]));
@@ -81,32 +90,36 @@ export function buildOptions(state: GameState, partyIndex: number, characterId: 
 }
 
 export function configureParty(input: GameState, partyIndex: number, raw: unknown, deps: StrategyDependencies): GameState {
-  const config = record(raw);
-  keys(config, ['characters', 'order', 'deityId', 'destination', 'depthLimit', 'difficultyOffset', 'locks', 'autoEquip']);
+  const config = record(raw, 'configuration');
+  keys(config, ['characters', 'order', 'deityId', 'destination', 'depthLimit', 'difficultyOffset', 'locks', 'autoEquip'], 'configuration');
   let state = input;
   const apply = (action: GameAction) => { state = deps.reduce(state, action); };
   const party = state.parties[partyIndex];
   const edits = config.characters === undefined ? [] : config.characters;
-  requireApi(Array.isArray(edits) && edits.length <= party.characters.length, 'invalid_request', 'Invalid character list.', 400);
+  checkConfig(Array.isArray(edits) && edits.length <= party.characters.length, 'configuration.characters', 'invalid_request', 'Invalid character list.', 400, 'invalid_character_list');
   const seen = new Set<number>();
   const candidates = party.characters.map(c => ({ ...c }));
   const updates: Array<{ id: number; changes: Record<string, unknown>; mode?: 0 | 1 | 2 }> = [];
-  for (const rawEdit of edits) {
-    const edit = record(rawEdit); keys(edit, ['characterId', 'changes', 'autoEquipmentMode']);
+  for (const [editIndex, rawEdit] of edits.entries()) {
+    const field = `configuration.characters[${editIndex}]`;
+    const edit = record(rawEdit, field); keys(edit, ['characterId', 'changes', 'autoEquipmentMode'], field);
     const index = candidates.findIndex(c => c.id === edit.characterId);
-    requireApi(index >= 0 && !seen.has(Number(edit.characterId)), 'invalid_request', 'Invalid or duplicate character.', 400);
+    checkConfig(index >= 0 && !seen.has(Number(edit.characterId)), `${field}.characterId`, 'invalid_request', 'Invalid or duplicate character.', 400, index < 0 ? 'character_not_found' : 'duplicate_character');
     seen.add(Number(edit.characterId));
-    const changes = edit.changes === undefined ? {} : record(edit.changes);
+    const changes = edit.changes === undefined ? {} : record(edit.changes, `${field}.changes`);
     candidates[index] = { ...candidates[index], ...changes } as Character;
-    if (edit.autoEquipmentMode !== undefined) requireApi([0, 1, 2].includes(Number(edit.autoEquipmentMode)) && typeof edit.autoEquipmentMode === 'number', 'invalid_request', 'Invalid equipment mode.', 400);
+    if (edit.autoEquipmentMode !== undefined) checkConfig([0, 1, 2].includes(Number(edit.autoEquipmentMode)) && typeof edit.autoEquipmentMode === 'number', `${field}.autoEquipmentMode`, 'invalid_request', 'Invalid equipment mode.', 400, 'invalid_equipment_mode');
     updates.push({ id: Number(edit.characterId), changes, mode: edit.autoEquipmentMode as 0 | 1 | 2 | undefined });
   }
   const validationState = { ...state, parties: state.parties.map((p, i) => i === partyIndex ? { ...p, characters: candidates } : p) };
-  for (const edit of updates) {
+  const buildViolations = updates.flatMap((edit, index) => {
     const original = party.characters.find(c => c.id === edit.id)!;
-    const violations = validateBuild(validationState, partyIndex, original, edit.changes);
-    requireApi(!violations.length, 'invalid_build', JSON.stringify(violations));
-  }
+    return validateBuild(validationState, partyIndex, original, edit.changes).map(v => ({
+      field: `configuration.characters[${index}].changes.${v.field}`, code: v.code, characterId: edit.id,
+    }));
+  });
+  requireApi(!buildViolations.length, 'invalid_build', 'One or more character build fields are invalid.', 422,
+    { field: buildViolations[0]?.field, violations: buildViolations });
   // Validate the final assignment before applying edits, allowing race/gender swaps.
   for (const edit of updates) {
     const original = party.characters.find(c => c.id === edit.id)!;
@@ -123,50 +136,54 @@ export function configureParty(input: GameState, partyIndex: number, raw: unknow
   }
   if (config.order !== undefined) {
     const order = config.order;
-    requireApi(Array.isArray(order) && order.length === party.characters.length && new Set(order).size === order.length && order.every(id => party.characters.some(c => c.id === id)), 'invalid_request', 'Order must contain every character exactly once.', 400);
+    checkConfig(Array.isArray(order) && order.length === party.characters.length && new Set(order).size === order.length && order.every(id => party.characters.some(c => c.id === id)), 'configuration.order', 'invalid_request', 'Order must contain every character exactly once.', 400, 'invalid_order');
     for (let i = 0; i < order.length; i++) apply({ type: 'REORDER_PARTY_CHARACTER', partyIndex, fromIndex: state.parties[partyIndex].characters.findIndex(c => c.id === order[i]), toIndex: i });
   }
   if (config.deityId !== undefined) {
     const name = typeof config.deityId === 'string' ? deityNameFromId(config.deityId) : null;
-    requireApi(name && getUnlockedDeityKeys(state.global.unlockedDeities).includes(name), 'deity_unavailable', 'This deity is locked. Choose an unlocked deity.');
+    checkConfig(name && getUnlockedDeityKeys(state.global.unlockedDeities).includes(name), 'configuration.deityId', 'deity_unavailable', 'This deity is locked. Choose an unlocked deity.');
     const assignedParty = getDeityAssignmentConflict(state.parties, party.id, name);
     if (assignedParty) {
       const assignedPartySlot = `PT${assignedParty.id}`;
       const assignedPartyLabel = assignedParty.name ? `${assignedPartySlot}: ${assignedParty.name}` : assignedPartySlot;
       const response = apiError('deity_unavailable', `This deity is already used by another party (${assignedPartyLabel}). Choose another deity.`, 422);
-      (response.error as Record<string, unknown>).details = { reason: 'assigned_to_party', assignedPartyId: assignedParty.id, assignedPartyName: assignedParty.name };
+      (response.error as Record<string, unknown>).details = { ...diagnostic('configuration.deityId', 'assigned_to_party'), deityId: config.deityId, reason: 'assigned_to_party', assignedPartyId: assignedParty.id, assignedPartyName: assignedParty.name };
       throw new ApiValidationError(response);
     }
     apply({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName: name });
   }
   if (config.destination !== undefined) {
-    const d = record(config.destination); keys(d, ['mode', 'dungeonId']);
-    requireApi(d.mode === 'auto' || d.mode === 'fixed', 'invalid_request', 'Invalid destination mode.', 400);
+    const d = record(config.destination, 'configuration.destination'); keys(d, ['mode', 'dungeonId'], 'configuration.destination');
+    checkConfig(d.mode === 'auto' || d.mode === 'fixed', 'configuration.destination.mode', 'invalid_request', 'Invalid destination mode.', 400, 'invalid_destination_mode');
     if (d.dungeonId !== undefined || d.mode === 'fixed') {
-      requireApi(Number.isInteger(d.dungeonId) && DUNGEONS.some(v => v.id === d.dungeonId && isDungeonEntryUnlocked(state.parties[partyIndex], v.id)), 'normal_sortie_unavailable', 'Dungeon unavailable.');
+      checkConfig(Number.isInteger(d.dungeonId) && DUNGEONS.some(v => v.id === d.dungeonId && isDungeonEntryUnlocked(state.parties[partyIndex], v.id)), 'configuration.destination.dungeonId', 'normal_sortie_unavailable', 'Dungeon unavailable.');
       apply({ type: 'SELECT_DUNGEON', partyIndex, dungeonId: Number(d.dungeonId) });
     }
     apply({ type: 'SET_EXPEDITION_DESTINATION_MODE', partyIndex, mode: d.mode });
   }
   if (config.depthLimit !== undefined) {
-    requireApi(depthLimits.includes(config.depthLimit as ExpeditionDepthLimit), 'invalid_request', 'Invalid depth limit.', 400);
+    checkConfig(depthLimits.includes(config.depthLimit as ExpeditionDepthLimit), 'configuration.depthLimit', 'invalid_request', 'Invalid depth limit.', 400, 'invalid_depth_limit');
     apply({ type: 'SET_EXPEDITION_DEPTH_LIMIT', partyIndex, depthLimit: config.depthLimit as ExpeditionDepthLimit });
   }
   if (config.difficultyOffset !== undefined) {
     const max = getDifficultyOffsetMax(DUNGEONS.find(d => d.id === state.parties[partyIndex].selectedDungeonId)?.expLevel ?? 1);
-    requireApi(Number.isInteger(config.difficultyOffset) && Number(config.difficultyOffset) >= 0 && Number(config.difficultyOffset) <= max && Number(config.difficultyOffset) % 2 === 0, 'difficulty_unavailable', 'Invalid difficulty offset.');
+    checkConfig(Number.isInteger(config.difficultyOffset) && Number(config.difficultyOffset) >= 0 && Number(config.difficultyOffset) <= max && Number(config.difficultyOffset) % 2 === 0, 'configuration.difficultyOffset', 'difficulty_unavailable', 'Invalid difficulty offset.');
     apply({ type: 'SET_EXPEDITION_DIFFICULTY_OFFSET', partyIndex, difficultyOffset: Number(config.difficultyOffset) });
   }
   if (config.locks !== undefined) {
-    requireApi(Array.isArray(config.locks) && config.locks.length <= 200, 'invalid_request', 'Invalid locks.', 400);
-    for (const rawLock of config.locks) {
-      const lock = record(rawLock); keys(lock, ['characterId', 'slotIndex', 'locked']);
+    checkConfig(Array.isArray(config.locks) && config.locks.length <= 200, 'configuration.locks', 'invalid_request', 'Invalid locks.', 400, 'invalid_lock_list');
+    for (const [lockIndex, rawLock] of config.locks.entries()) {
+      const field = `configuration.locks[${lockIndex}]`;
+      const lock = record(rawLock, field); keys(lock, ['characterId', 'slotIndex', 'locked'], field);
       const c = state.parties[partyIndex].characters.find(c => c.id === lock.characterId);
-      requireApi(c && Number.isInteger(lock.slotIndex) && c.equipment[Number(lock.slotIndex)] && typeof lock.locked === 'boolean' && c.autoEquipmentMode === 2, 'equipment_lock_unavailable', 'Lock requires an equipped item in FULL mode.');
+      checkConfig(c, `${field}.characterId`, 'equipment_lock_unavailable', 'Lock requires an equipped item in FULL mode.', 422, 'character_not_found');
+      checkConfig(Number.isInteger(lock.slotIndex) && c.equipment[Number(lock.slotIndex)], `${field}.slotIndex`, 'equipment_lock_unavailable', 'Lock requires an equipped item in FULL mode.', 422, 'occupied_slot_required');
+      checkConfig(typeof lock.locked === 'boolean', `${field}.locked`, 'equipment_lock_unavailable', 'Lock requires an equipped item in FULL mode.', 422, 'boolean_required');
+      checkConfig(c.autoEquipmentMode === 2, field, 'equipment_lock_unavailable', 'Lock requires an equipped item in FULL mode.', 422, 'full_mode_required');
       if (Boolean(c.equipment[Number(lock.slotIndex)]?.isLocked) !== lock.locked) apply({ type: 'TOGGLE_EQUIPMENT_LOCK', partyIndex, characterId: c.id, slotIndex: Number(lock.slotIndex) });
     }
   }
-  if (config.autoEquip !== undefined) requireApi(typeof config.autoEquip === 'boolean', 'invalid_request', 'autoEquip must be boolean.', 400);
+  if (config.autoEquip !== undefined) checkConfig(typeof config.autoEquip === 'boolean', 'configuration.autoEquip', 'invalid_request', 'autoEquip must be boolean.', 400, 'boolean_required');
   if (config.autoEquip) state = deps.equip(state, partyIndex);
   return state;
 }

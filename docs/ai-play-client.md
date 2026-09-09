@@ -60,6 +60,8 @@ No generic mutation action is provided; `configure` is the existing atomic `conf
 
 ## Read results
 
+Simulation and preview output includes the server’s `comparison` against the current live party at the same revision, including build, combat and equipment changes. Simulation also displays the evaluated party; no separate preview call is needed just to retrieve its combat values.
+
 Compact output includes evaluation accounting, revision, party level/XP/condition, computed combat values including attack counts, changed equipment, sortie totals and return reasons. XP difference is the change in the party's current XP field, which can decrease on leveling; use sortie XP totals for actual gains. Preview changes are compared with the last live observation held by this client and do not replace that observation.
 
 Every response also has an `artifact` path to its complete sanitized JSON. Read that file for catalogs, detailed battle logs, legal actions or final status tables that compact output omits. A missing summary field does not mean zero. Credentials and completed-battle replay metadata are excluded. These are client records of official API responses, not game-save files. No source/profile inspection is performed.
@@ -70,7 +72,7 @@ Every response also has an `artifact` path to its complete sanitized JSON. Read 
 - **Terminal result:** use `report` and `evaluation`, then `release`. Pending winning requests must not be retried. Add strategy notes to the authoritative report path returned by `evaluation`.
 - **Restart:** resume the game on the identical build/mode/rules if needed, obtain the new handoff, and restart the client with the same directory. It verifies evaluation identity. A previous lease may need to expire before a new client can acquire it; credentials are deliberately not saved in client state.
 - **Directory already in use:** `client.lock` contains the owning process ID. First verify that process has exited. Only then remove this client lock file and retry. Do not delete `client-state.json` or response artifacts to bypass an unresolved request.
-- **API validation error:** inspect `error` and the artifact, correct the candidate and submit a new action. The rejected accepted request still counts. The client does not silently retry errors or change strategy.
+- **API validation error:** inspect `error.details.violations` for configuration field paths and reason codes (and the artifact for full details), correct the candidate and submit a new action. The rejected accepted request still counts. The client does not silently retry errors or change strategy.
 - **Save error, identity mismatch or artifact write failure:** stop and preserve the checkpoint and client directory. Resolve the reported problem before recovery.
 
 The client keeps the process alive during planning and may make exempt lease/status requests. Closing it does not shut down the game launcher. Shut down the evaluation application after final reporting to remove its private connection handoff.

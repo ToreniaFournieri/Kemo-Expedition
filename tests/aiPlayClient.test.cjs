@@ -157,3 +157,11 @@ test('malformed successful mutation response preserves recovery request', async 
   assert.equal(f.client.state.pending.body.count, 1);
   await assert.rejects(f.client.run({ action: 'observe' }), /pending/);
 });
+
+test('simulation compact output includes evaluated party and server comparison', async () => {
+  const { compactResponse } = await import('../scripts/lib/ai-play-client.mjs');
+  const comparison = { maximumHp: { before: 100, after: 120, delta: 20 }, characters: [] };
+  const result = compactResponse({ configuration: { id: 1, characters: [{ id: 2, computed: { magicalNumberOfAttacks: 4 } }] }, comparison, simulation: { total: 1000 } });
+  assert.deepEqual(result.comparison, comparison);
+  assert.equal(result.parties[0].characters[0].computed.magicalNumberOfAttacks, 4);
+});

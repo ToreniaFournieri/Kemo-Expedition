@@ -82,8 +82,8 @@ Use the identical `configuration` in `/simulation`, then inside the `configure_p
 | Step | What to do |
 | --- | --- |
 | Propose | After establishing a productive opening, change one strategic idea at a time. Use observed IDs and legal choices; consult `/build-options` for coupled build restrictions. Keep the candidate configuration in a JSON file. |
-| Simulate | `POST /simulation` with the current `revision`, `partyId` and candidate `configuration`. Each request runs exactly 1,000 forecasts, costs one call and does not advance live progression. |
-| Inspect equipment | When equipment effects are unclear, use `POST /party-preview` with the same body. Inspect attack **counts**, attack values, defenses and equipment. This costs another call. |
+| Simulate | `POST /simulation` with the current `revision`, `partyId` and candidate `configuration`. Each request runs exactly 1,000 forecasts, costs one call and does not advance live progression. Inspect its evaluated party and `comparison` for attack-count, build and equipment changes. |
+| Inspect equipment | For equipment inspection without running a forecast, use `POST /party-preview` with the same body. Inspect attack **counts**, attack values, defenses and equipment. This costs another call. |
 | Commit | If the evidence supports the candidate, send `configure_party` with the same configuration and current `expectedRevision`. Use the returned revision afterward. |
 | Play | Start with a small sortie batch. Increase only after productive results. Use single sorties when attempting a likely boss clear. |
 | Review | Read XP/rewards, condition, defeats, room progress and `returnReason`. Reconsider after zero progress or repeated defeats. Read the retained battle log when the cause is unclear. |
@@ -127,7 +127,7 @@ Accepted batches complete exactly their requested 1–100 sorties, even if victo
 | Expired lease | Acquire a new lease and replace its token. Keep the same evaluation. |
 | Lost mutation response | Preserve its exact body, revision and idempotency key. Check `/evaluation` for termination first. If active, retry the original request; never invent a new key for the same uncertain action. A replay still costs a call. |
 | `stale_revision` | For a confirmed rejected request, use the returned current revision and reassess the candidate. Do not rewrite an uncertain request before resolving its outcome. |
-| Validation error | Read the error details and correct the specified field. Accepted invalid gameplay requests consume calls. |
+| Validation error | Read `error.details.violations` and correct its configuration paths; build errors can identify several members at once. Accepted invalid gameplay requests consume calls. |
 | `runtime_busy` | Wait for the outstanding operation; do not send concurrent gameplay requests. |
 | App closed | Resume with `npm run ai-play -- --mode=orca --resume=YOUR_EVALUATION_UUID` using the original mode, identical version/build and rules. Load the new handoff. |
 | Save error or identity mismatch | Stop and preserve the checkpoint. Do not reset or overwrite it. |

@@ -177,3 +177,65 @@ test('completed return reasons distinguish depth limit, gate and draw without ch
   party.lastExpeditionLog!.entries.at(-1)!.outcome = 'draw';
   assert.equal(returnReasonFromParty(party), 'draw');
 });
+
+test('candidate comparison matches stable members across rows and includes removed slots without mutation', async () => {
+  const { compareApiParties } = await import('../../src/game/experimentalApiComparison');
+  const state = fresh();
+  const before = buildExperimentalObservation(state, 0, false, {}, 0).parties[0];
+  const preserved = structuredClone(before);
+  const after = structuredClone(before);
+  after.hp.maximum += 10;
+  const c = after.characters[0];
+  assert.ok(c.computed);
+  c.computed.meleeNumberOfAttacks += 3;
+  c.build.mainClassId = c.build.mainClassId === 'wizard' ? 'guardian' : 'wizard';
+  const removed = c.equipment.pop();
+  after.characters.reverse(); after.characters.forEach((v, index) => { v.row = index + 1; });
+  const result = compareApiParties(before, after);
+  assert.equal(result.maximumHp.delta, 10);
+  const change = result.characters.find(v => v.characterId === c.id)!;
+  assert.ok(change.combatChanges.some(v => v.field === 'meleeNumberOfAttacks' && v.delta === 3));
+  assert.ok(change.buildChanges.some(v => v.field === 'mainClassId'));
+  assert.equal(change.row.before, 1); assert.equal(change.row.after, after.characters.length);
+  if (removed) assert.deepEqual(change.equipmentChanges.find(v => v.slotIndex === removed.slotIndex), { slotIndex: removed.slotIndex, before: removed, after: null });
+  assert.deepEqual(before, preserved);
+  const unchanged = compareApiParties(before, before);
+  assert.equal(unchanged.maximumHp.delta, 0);
+  assert(unchanged.characters.every(v => !v.combatChanges.length && !v.equipmentChanges.length && !v.buildChanges.length));
+});
+
+test('invalid builds expose all member paths and preserve gameplay with one counted rejection', async () => {
+  let state = fresh(); const initial = structuredClone(state);
+  const ids = state.parties[0].characters.slice(0, 2).map(c => c.id);
+  const configuration = { characters: ids.map(characterId => ({ characterId, changes: { mainClassId: 'not-a-class' } })) };
+  const response = await transactApiRequest({ state, operation: 'command', payload: {}, persist: async s => { state = structuredClone(s); }, execute: async s => ({ state: configureParty(s, 0, configuration, deps), response: {} }) });
+  const error = response.error as { code: string; details: { field: string; violations: Array<{ field: string; code: string; characterId: number }> } };
+  assert.equal(error.code, 'invalid_build');
+  assert.deepEqual(error.details.violations, ids.map((characterId, index) => ({ field: `configuration.characters[${index}].changes.mainClassId`, code: 'unavailable_selection', characterId })));
+  assert.equal(error.details.field, 'configuration.characters[0].changes.mainClassId');
+  assert.deepEqual(state.parties, initial.parties); assert.deepEqual(state.global, initial.global);
+  assert.equal(state.apiRuntime!.randomState, initial.apiRuntime!.randomState);
+  assert.equal(state.apiRuntime!.revision, initial.apiRuntime!.revision);
+  assert.equal(state.apiRuntime!.evaluation!.countedApiCalls, 1); assert.equal(state.apiRuntime!.evaluation!.actualSorties, 0);
+});
+
+test('configuration structural errors retain codes and identify nested fields', () => {
+  const state = fresh(); const id = state.parties[0].characters[0].id;
+  const cases = [
+    { configuration: { characters: [{ characterId: id, autoEquipmentMode: 'FULL' }] }, field: 'configuration.characters[0].autoEquipmentMode', code: 'invalid_equipment_mode' },
+    { configuration: { characters: [{ characterId: id, changes: null }] }, field: 'configuration.characters[0].changes', code: 'object_required' },
+    { configuration: { destination: { mode: 'typo' } }, field: 'configuration.destination.mode', code: 'invalid_destination_mode' },
+    { configuration: { depthLimit: 'typo' }, field: 'configuration.depthLimit', code: 'invalid_depth_limit' },
+    { configuration: { autoEquip: 'true' }, field: 'configuration.autoEquip', code: 'boolean_required' },
+    { configuration: { surprise: true }, field: 'configuration.surprise', code: 'unknown_field' },
+    { configuration: { locks: [{ characterId: id, slotIndex: -1, locked: true }] }, field: 'configuration.locks[0].slotIndex', code: 'occupied_slot_required' },
+  ];
+  for (const entry of cases) {
+    const original = structuredClone(state);
+    assert.throws(() => configureParty(state, 0, entry.configuration, deps), (e: unknown) => {
+      const error = (e as { response: { error: { details: { field: string; violations: Array<{ code: string }> } } } }).response.error;
+      assert.equal(error.details.field, entry.field); assert.equal(error.details.violations[0].code, entry.code); return true;
+    });
+    assert.deepEqual(state, original);
+  }
+});

@@ -15,11 +15,11 @@ export function sanitize(value, secrets = []) {
   return value;
 }
 export function compactResponse(data, previous = []) {
-  const parties = data.observation?.parties ?? (data.party ? [data.party] : []);
+  const parties = data.observation?.parties ?? (data.party ? [data.party] : data.configuration?.characters ? [data.configuration] : []);
   return {
     evaluation: data.evaluation, revision: data.observation?.revision ?? data.revision ?? data.sortie?.revision,
     error: data.error, reportPath: data.reportPath, reportError: data.reportError,
-    simulation: data.simulation, outcomes: data.outcomes, totals: data.totals,
+    comparison: data.comparison, simulation: data.simulation, outcomes: data.outcomes, totals: data.totals,
     returnReasons: data.runs?.reduce((counts, r) => { const k = r.returnReason ?? 'unknown'; counts[k] = (counts[k] ?? 0) + 1; return counts; }, {}),
     parties: parties.map(p => {
       const old = previous.find(x => x.id === p.id);

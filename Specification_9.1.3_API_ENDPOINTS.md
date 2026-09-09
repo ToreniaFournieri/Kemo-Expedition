@@ -2383,6 +2383,19 @@ Execute exactly 1,000 independent private forecast trials with the current or hy
 
 Execution is asynchronous internally, serialized as one request and pins the lease. Each request costs one counted call and zero actual sorties. No separate total forecast quota applies.
 
+### Candidate comparison
+
+Successful `/simulation` and `/party-preview` responses also include `comparison`, derived only from the live and candidate public party observations at the requested revision. The existing `configuration` (simulation) and `party` (preview) fields retain their meanings and include the complete evaluated combat values and equipment.
+
+* `partyId`: target party ID.
+* `maximumHp`: `{ before, after, delta }` for maximum party HP; this is not a prediction of remaining battle HP.
+* `strategyChanges`: changed deity and expedition fields as `{ field, before, after, delta? }`.
+* `characters`: every member in candidate order, matched to the live member by stable ID. Each entry contains `characterId`, `row: { before, after }`, `autoEquipmentMode: { before, after }`, `buildChanges`, `combatChanges`, and `equipmentChanges`.
+* Build/combat changes use `{ field, before, after, delta? }`. `delta` is included only when both values are numeric and equals `after - before`. Unchanged fields are omitted. An unavailable value is `null`; it is not treated as zero. Array-valued combat fields, such as abilities, are compared as complete values.
+* Equipment changes use `{ slotIndex, before, after }`, with the existing public slot representation on each side. A missing slot is `null`; an existing empty slot retains its representation with `item: null`. Include added, removed, replaced, upgraded and lock-changed slots, ordered by slot index.
+
+Comparison does not run equipment selection or combat a second time, consume live randomness, advance state/revision, or cost an additional call. It compares the same candidate used by the forecast. It does not compare forecast win rates against an additional baseline simulation. A request without configuration returns empty change arrays and zero maximum-HP delta. Default-name differences between hypothetical and committed race changes remain possible under the existing rules.
+
 ### Party configuration
 
 A `configuration` object accepts only these optional properties:
@@ -2400,7 +2413,17 @@ Apply configuration in the order above within one private staged state. Any inva
 
 ### `POST /experimental/v1/party-preview`
 
-Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional configuration. Return `{ revision, partyId, party }` containing the hypothetical party's builds, computed combat values and resulting equipment. Does not change live gameplay or revision. Costs one counted call. Invalid configurations return `invalid_build` with field-specific violations in the diagnostic message.
+Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional configuration. Return `{ revision, partyId, party, comparison }` containing the hypothetical party's builds, computed combat values and resulting equipment. Does not change live gameplay or revision. Costs one counted call. Invalid character builds return `invalid_build`; configuration errors include structured diagnostics as defined below. Other existing error codes and HTTP statuses remain unchanged.
+
+### Structured configuration errors
+
+Configuration validation shared by preview, simulation and `configure_party` adds `error.details.field` and `error.details.violations`. Each violation has `{ field, code, characterId? }`. `field` is a canonical configuration path, for example `configuration.characters[0].changes.mainClassId`; indexes are zero-based request-array positions, not formation rows. For `configure_party`, resolve this path beneath `command.configuration`; for individual commands translated into a configuration internally, it names the equivalent configuration field. Character build violations also identify the stable `characterId`.
+
+Collect all build violations across submitted members before applying character edits. Structural and non-build validation may stop at the first failing field or record. `details.field` names the first violation. A coupled restriction may name a field that needs to be added to the candidate, such as gender when changing race. Clients must use codes/fields instead of parsing `error.message` and must tolerate additional future codes.
+
+Stable violation codes include existing build reasons (`unavailable_selection`, `unknown_field`, `immutable_character_field`, `mimorian_field_unavailable`, `duplicate_race_gender`), structural reasons (`object_required`, `invalid_character_list`, `character_not_found`, `duplicate_character`, `invalid_equipment_mode`, `invalid_order`, `invalid_destination_mode`, `invalid_depth_limit`, `invalid_lock_list`, `boolean_required`), lock reasons (`occupied_slot_required`, `full_mode_required`), and availability reasons (`deity_unavailable`, `assigned_to_party`, `normal_sortie_unavailable`, `difficulty_unavailable`). A FULL-mode violation targets the lock record because the required mode belongs to its referenced character. Existing deity-assignment details remain available.
+
+These diagnostics expose no hidden choices, inventory rankings or partial staged results. Rejected configuration still commits no gameplay changes; normal counted-request accounting is unchanged. Top-level request-envelope errors continue to use their existing contracts. This is an additive schema-version-1 extension.
 
 ### `configure_party` command
 
