@@ -1,10 +1,10 @@
 # Recommended Opening Build — Experimental API
 
-Version: v0.9.6 (19)
+Version: v0.9.6 (20)
 
 Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 
-This is an API-only opening strategy for a fresh AI Play evaluation. It uses only public observations and supported strategic commands. It does not purchase shop items or select exact equipment slots; those operations are unavailable through the Experimental API.
+This is an API-only opening strategy for a fresh AI Play evaluation. It uses only public observations and supported strategic commands, including current-lineup shop purchases and atomic ordered equipment configuration by base item ID.
 
 Follow [Specification 12.2](../Specification_12.2_AI_PLAY_OPERATOR_GUIDE.md) for launch, lease, revision, accounting, recovery, and shutdown rules. Every action below must use IDs and choices present in the current observation and `_legalActions`.
 
@@ -111,12 +111,24 @@ If validation rejects the candidate, inspect `error.details.violations`, correct
 * The expected total cost is approximately `180G`.
 * Shop-purchased items are always enhanced by at least `+1`, making them stronger than equivalent initial equipment.
 
+Read `observation.shop`. For each desired category that appears and has `canPurchase: true`, send the observed lineup and stock-entry IDs. Reuse neither value after a lineup refresh.
+
+```json
+{"action":"buy-shop-item","partyId":1,"lineupId":"<observed-lineupId>","stockEntryId":"<observed-sword-stockEntryId>"}
+{"action":"buy-shop-item","partyId":1,"lineupId":"<observed-lineupId>","stockEntryId":"<observed-wand-stockEntryId>"}
+{"action":"buy-shop-item","partyId":1,"lineupId":"<observed-lineupId>","stockEntryId":"<observed-grimoire-stockEntryId>"}
+```
+
+Each successful purchase returns a new revision and complete observation. Use the returned current `lineupId` and remaining `stockEntryId` values for the next purchase. Skip a category that is not present rather than guessing an item or stock ID.
+
 
 ## 3. Equip the party
 
-* Remove all equipment from all six characters.
+* Remove all equipment from all six characters as part of the atomic configuration below.
 
 * Equip items to each character like this.
+
+Save this configuration object as `/tmp/bokemo-opening-equipment.json`:
 
 ```json
 {
@@ -174,12 +186,22 @@ If validation rejects the candidate, inspect `error.details.violations`, correct
 }
 ```
 
+The server first removes equipment from every listed character, then allocates items by character request order and `itemIds` order. For each base item ID it selects the available copy with the highest enhancement, so Kemo, Grun, and Borg receive the purchased enhanced sword, wand, and grimoire before later characters consume remaining copies. Laika's configured FULL Auto Equipment runs only after all manual assignments are complete.
+
+Preview and simulate the exact equipment candidate before committing it:
+
+```json
+{"action":"preview","partyId":1,"configurationFile":"/tmp/bokemo-opening-equipment.json"}
+{"action":"simulate","partyId":1,"configurationFile":"/tmp/bokemo-opening-equipment.json"}
+{"action":"configure","partyId":1,"configurationFile":"/tmp/bokemo-opening-equipment.json"}
+```
+
 Note:
 `1`: Kemo (Kemoria): One sword `1104` would have +1 or more enhancement
 `4`: Grun (Ursan, Wizard): One wand `1110` would have +1 or more enhancement
 `2`: Borg (Ursan, Sage): One grimorie `1111` must have +1 or more enhancement
 `5`: Selfin (Cervin, Pilgrim)
-`3`: Lop (Leporian, Ninja)
+`3`: Lop (Leporian, Ranger)
 `6`: Laika (Caninian)
 
 

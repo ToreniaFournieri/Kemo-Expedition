@@ -20,6 +20,7 @@ import {
 } from './clearGate';
 import { getEnvironmentId } from './environment';
 import { evaluationSummary } from './experimentalApiSession';
+import { buildShopLineup } from './shop';
 
 export type ExperimentalPartyCycle = {
   state: string;
@@ -54,11 +55,11 @@ export function getDeityAssignmentConflict(parties: Party[], targetPartyId: numb
 }
 
 function rarity(item: Item): ItemRarity {
-  const suffix = item.id % 100;
-  if (suffix >= 81) return 'mythicRare';
-  if (suffix >= 61) return 'bossRare';
-  if (suffix >= 41) return 'eliteRare';
-  return suffix >= 21 ? 'uncommon' : 'common';
+  const suffix = item.id % 1000;
+  if (suffix >= 500) return 'mythicRare';
+  if (suffix >= 400) return 'bossRare';
+  if (suffix >= 300) return 'eliteRare';
+  return suffix >= 200 ? 'uncommon' : 'common';
 }
 
 function conditionKey(value: number): string {
@@ -107,6 +108,7 @@ export function buildExperimentalObservation(
   cycles: Record<number, ExperimentalPartyCycle>,
   simulatedAt: number,
 ) {
+  const observedAt = Date.now();
   const unlockedDungeonIds = DUNGEONS.filter((dungeon) => dungeon.id !== 99 && state.parties.some((party) => isDungeonEntryUnlocked(party, dungeon.id))).map((dungeon) => dungeon.id);
   const unlockedDeityKeys = getUnlockedDeityKeys(state.global.unlockedDeities);
   const inventoryEntries = Object.entries(state.global.inventory).filter(([, variant]) => variant.count > 0 && variant.status === 'owned');
@@ -119,6 +121,35 @@ export function buildExperimentalObservation(
       bestCandidate: best ? { itemId: best[1].item.id, variantId: best[0], tier: Math.max(1, Math.floor(best[1].item.id / 1000)), rarity: rarity(best[1].item), enhancement: best[1].item.enhancement, superRare: best[1].item.superRare } : null,
     }];
   }));
+  const equipmentVariants = inventoryEntries
+    .slice()
+    .sort(([keyA, a], [keyB, b]) => (a.item.id - b.item.id) || (b.item.enhancement - a.item.enhancement) || keyA.localeCompare(keyB))
+    .map(([variantId, variant]) => ({
+      variantId,
+      itemId: variant.item.id,
+      category: variant.item.category,
+      count: variant.count,
+      tier: Math.max(1, Math.floor(variant.item.id / 1000)),
+      rarity: rarity(variant.item),
+      enhancement: variant.item.enhancement,
+      superRare: variant.item.superRare,
+      rawStats: { ...variant.item, jewel: undefined, isLocked: undefined, isNew: undefined },
+    }));
+  const shopLineup = buildShopLineup({ parties: state.parties, gold: state.global.gold, shopPurchases: state.global.shopPurchases, shopRefreshCounts: state.global.shopRefreshCounts, shopIntimacy: state.global.shopIntimacy, shopIntimacyLastDecayAt: state.global.shopIntimacyLastDecayAt }, new Date(observedAt));
+  const shop = {
+    lineupId: shopLineup.lineupId,
+    refreshesAt: shopLineup.refreshesAt,
+    items: shopLineup.entries.map((entry) => ({
+      stockEntryId: entry.stockEntryId,
+      itemId: entry.itemId,
+      category: entry.item.category,
+      tier: Math.max(1, Math.floor(entry.itemId / 1000)),
+      rarity: entry.rarity,
+      price: entry.price,
+      soldOut: entry.soldOut,
+      canPurchase: entry.canPurchase,
+    })),
+  };
 
   const parties = state.parties.slice().sort((a, b) => a.id - b.id).map((party, partyIndex) => {
     const computed = computePartyStats(party);
@@ -238,6 +269,7 @@ export function buildExperimentalObservation(
         { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: assignableDeityIds } },
         { type: 'run_auto_equipment', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_jewel_priority_party', partyId: party.id, characterId: null, constraints: {} },
+        ...(shopLineup.entries.some(entry => entry.canPurchase) ? [{ type: 'purchase_shop_item', partyId: party.id, characterId: null, constraints: { lineupId: shopLineup.lineupId, stockEntryIds: shopLineup.entries.filter(entry => entry.canPurchase).map(entry => entry.stockEntryId) } }] : []),
         { type: 'set_expedition_destination', partyId: party.id, characterId: null, constraints: { modes: ['auto', 'fixed'], dungeonIds: unlockedDungeonIds } },
         { type: 'set_expedition_depth', partyId: party.id, characterId: null, constraints: { depthLimits: ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'] } },
         { type: 'set_expedition_difficulty', partyId: party.id, characterId: null, constraints: { minimum: 0, maximum: maximumDifficultyOffset, step: 2 } },
@@ -260,7 +292,7 @@ export function buildExperimentalObservation(
   ];
   return {
     revision,
-    observedAt: Date.now(),
+    observedAt,
     simulatedAt,
     environment: getEnvironmentId(),
     language: state.global.language,
@@ -286,7 +318,8 @@ export function buildExperimentalObservation(
         };
       }),
     },
-    inventory: { equipmentByCategory },
+    inventory: { equipmentByCategory, equipmentVariants },
+    shop,
     parties: parties.map(({ _legalActions: _discard, ...party }) => party),
     legalActions: evaluationSummary(state.apiRuntime?.evaluation)?.finalScore != null ? [] : legalActions,
   };
@@ -316,6 +349,30 @@ export function buildRemoveAllEquipmentEffects(
       current: afterParty.hp.current,
       maximum: afterParty.hp.maximum,
     },
+  };
+}
+
+export function buildPurchaseShopItemEffects(
+  before: ReturnType<typeof buildExperimentalObservation>,
+  after: ReturnType<typeof buildExperimentalObservation>,
+  partyId: number,
+  lineupId: string,
+  stockEntryId: string,
+) {
+  const stock = before.shop.items.find(entry => entry.stockEntryId === stockEntryId)!;
+  const beforeCounts = new Map(before.inventory.equipmentVariants.map(variant => [variant.variantId, variant.count]));
+  const retainedItem = after.inventory.equipmentVariants.find(variant => (
+    variant.itemId === stock.itemId && variant.count > (beforeCounts.get(variant.variantId) ?? 0)
+  )) ?? null;
+  return {
+    partyId,
+    lineupId,
+    stockEntryId,
+    itemId: stock.itemId,
+    price: stock.price,
+    retainedItem,
+    autoSold: retainedItem === null,
+    gold: { before: before.resources.gold, after: after.resources.gold },
   };
 }
 

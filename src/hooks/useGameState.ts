@@ -1922,7 +1922,7 @@ export type GameAction =
   | { type: 'SELL_ALL_OWNED' }
   | { type: 'GRANT_FEEDBACK_REWARD' }
   | { type: 'UNLOCK_MIMORIAN_ENEMY'; enemyId: number }
-  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string }
+  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string; partyIndex?: number }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
@@ -3528,12 +3528,12 @@ function reduceGameState(
     case 'BUY_SHOP_ITEM': {
       // SpecRef: 8.4.1 | Shop (お店) | Lineup
       // SpecRef: 8.4.1 | Shop (お店) | Mystery enhancement (same as item drop logic)
-      const now = new Date();
+      const now = new Date(Date.now());
       const globalState = applyShopIntimacyDecay(state.global, now);
       const baseItem = getItemById(action.itemId);
       const shopPrice = getShopItemPrice(action.itemId);
       if (!baseItem || globalState.gold < shopPrice) return state;
-      const selectedPartyIndex = state.selectedPartyIndex;
+      const selectedPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
       const currentParty = state.parties[selectedPartyIndex];
       let partyBags = normalizeImportedBags(currentParty.bags);
 

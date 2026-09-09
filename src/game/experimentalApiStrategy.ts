@@ -14,6 +14,9 @@ import { getDeityKey, DEITY_OPTIONS } from './deity';
 import { requireApi, ApiValidationError, apiError } from './experimentalApiSession';
 import { getPotentialDefaultNamesByPt } from '../components/home/homeShared';
 import { gameplayRandom } from './gameplayRandom';
+import { computeCharacterStats } from './characterComputation';
+import { canCharacterEquipCategory } from './equipmentSets';
+import { buildShopLineup } from './shop';
 
 export type StrategyDependencies = {
   reduce: (state: GameState, action: GameAction) => GameState;
@@ -91,7 +94,7 @@ export function buildOptions(state: GameState, partyIndex: number, characterId: 
 
 export function configureParty(input: GameState, partyIndex: number, raw: unknown, deps: StrategyDependencies): GameState {
   const config = record(raw, 'configuration');
-  keys(config, ['characters', 'order', 'deityId', 'destination', 'depthLimit', 'difficultyOffset', 'locks', 'autoEquip'], 'configuration');
+  keys(config, ['characters', 'order', 'deityId', 'destination', 'depthLimit', 'difficultyOffset', 'locks', 'autoEquip', 'autoEquipCharacterIds'], 'configuration');
   let state = input;
   const apply = (action: GameAction) => { state = deps.reduce(state, action); };
   const party = state.parties[partyIndex];
@@ -99,17 +102,26 @@ export function configureParty(input: GameState, partyIndex: number, raw: unknow
   checkConfig(Array.isArray(edits) && edits.length <= party.characters.length, 'configuration.characters', 'invalid_request', 'Invalid character list.', 400, 'invalid_character_list');
   const seen = new Set<number>();
   const candidates = party.characters.map(c => ({ ...c }));
-  const updates: Array<{ id: number; changes: Record<string, unknown>; mode?: 0 | 1 | 2 }> = [];
+  const updates: Array<{ id: number; changes: Record<string, unknown>; mode?: 0 | 1 | 2; equipmentItemIds?: number[]; field: string }> = [];
   for (const [editIndex, rawEdit] of edits.entries()) {
     const field = `configuration.characters[${editIndex}]`;
-    const edit = record(rawEdit, field); keys(edit, ['characterId', 'changes', 'autoEquipmentMode'], field);
+    const edit = record(rawEdit, field); keys(edit, ['characterId', 'changes', 'autoEquipmentMode', 'equipment'], field);
     const index = candidates.findIndex(c => c.id === edit.characterId);
     checkConfig(index >= 0 && !seen.has(Number(edit.characterId)), `${field}.characterId`, 'invalid_request', 'Invalid or duplicate character.', 400, index < 0 ? 'character_not_found' : 'duplicate_character');
     seen.add(Number(edit.characterId));
     const changes = edit.changes === undefined ? {} : record(edit.changes, `${field}.changes`);
     candidates[index] = { ...candidates[index], ...changes } as Character;
     if (edit.autoEquipmentMode !== undefined) checkConfig([0, 1, 2].includes(Number(edit.autoEquipmentMode)) && typeof edit.autoEquipmentMode === 'number', `${field}.autoEquipmentMode`, 'invalid_request', 'Invalid equipment mode.', 400, 'invalid_equipment_mode');
-    updates.push({ id: Number(edit.characterId), changes, mode: edit.autoEquipmentMode as 0 | 1 | 2 | undefined });
+    let equipmentItemIds: number[] | undefined;
+    if (edit.equipment !== undefined) {
+      const equipment = record(edit.equipment, `${field}.equipment`);
+      keys(equipment, ['mode', 'itemIds'], `${field}.equipment`);
+      checkConfig(equipment.mode === 'replace_all', `${field}.equipment.mode`, 'invalid_request', 'Only replace_all equipment configuration is supported.', 400, 'invalid_equipment_mode');
+      checkConfig(Array.isArray(equipment.itemIds), `${field}.equipment.itemIds`, 'invalid_request', 'itemIds must be an array.', 400, 'invalid_equipment_list');
+      checkConfig(equipment.itemIds.every(itemId => Number.isInteger(itemId) && Number(itemId) > 0), `${field}.equipment.itemIds`, 'invalid_request', 'Every item ID must be a positive integer.', 400, 'invalid_item_id');
+      equipmentItemIds = equipment.itemIds.map(Number);
+    }
+    updates.push({ id: Number(edit.characterId), changes, mode: edit.autoEquipmentMode as 0 | 1 | 2 | undefined, equipmentItemIds, field });
   }
   const validationState = { ...state, parties: state.parties.map((p, i) => i === partyIndex ? { ...p, characters: candidates } : p) };
   const buildViolations = updates.flatMap((edit, index) => {
@@ -131,8 +143,40 @@ export function configureParty(input: GameState, partyIndex: number, raw: unknow
       const choices = available.length ? available : pool;
       if (choices.length) changes.name = choices[Math.floor(gameplayRandom() * choices.length)];
     }
-    if (edit.mode !== undefined) changes.autoEquipmentMode = edit.mode;
     apply({ type: 'UPDATE_CHARACTER', partyIndex, characterId: edit.id, updates: changes, validatedMimorianAssignments: true });
+  }
+  // SpecRef: 9.1.3 | Experimental AI API | Ordered exact equipment configuration
+  const equipmentUpdates = updates.filter((edit) => edit.equipmentItemIds !== undefined);
+  for (const edit of equipmentUpdates) {
+    apply({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId: edit.id });
+  }
+  const availableCounts = new Map(Object.entries(state.global.inventory).map(([key, variant]) => [key, variant.status === 'owned' ? variant.count : 0]));
+  const resolvedEquipment: Array<{ characterId: number; assignments: Array<{ slotIndex: number; itemKey: string }> }> = [];
+  for (const edit of equipmentUpdates) {
+    const character = state.parties[partyIndex].characters.find(candidate => candidate.id === edit.id)!;
+    const maxSlots = computeCharacterStats(character, state.parties[partyIndex].level).maxEquipSlots;
+    checkConfig(edit.equipmentItemIds!.length <= maxSlots, `${edit.field}.equipment.itemIds`, 'equipment_slot_unavailable', 'The requested equipment exceeds the character slot count.', 422, 'equipment_slot_unavailable');
+    const assignments: Array<{ slotIndex: number; itemKey: string }> = [];
+    for (const [slotIndex, itemId] of edit.equipmentItemIds!.entries()) {
+      const candidatesForItem = Object.entries(state.global.inventory)
+        .filter(([key, variant]) => (availableCounts.get(key) ?? 0) > 0 && variant.status === 'owned' && variant.item.id === itemId)
+        .sort(([keyA, a], [keyB, b]) => (b.item.enhancement - a.item.enhancement) || keyA.localeCompare(keyB));
+      const selected = candidatesForItem[0];
+      checkConfig(selected, `${edit.field}.equipment.itemIds[${slotIndex}]`, 'equipment_item_unavailable', 'The requested item is unavailable.', 422, 'equipment_item_unavailable');
+      checkConfig(canCharacterEquipCategory(character, selected[1].item.category), `${edit.field}.equipment.itemIds[${slotIndex}]`, 'equipment_item_incompatible', 'The character cannot equip the requested item.', 422, 'equipment_item_incompatible');
+      availableCounts.set(selected[0], (availableCounts.get(selected[0]) ?? 0) - 1);
+      assignments.push({ slotIndex, itemKey: selected[0] });
+    }
+    resolvedEquipment.push({ characterId: edit.id, assignments });
+  }
+  for (const resolved of resolvedEquipment) {
+    for (const assignment of resolved.assignments) {
+      apply({ type: 'EQUIP_ITEM', partyIndex, characterId: resolved.characterId, slotIndex: assignment.slotIndex, itemKey: assignment.itemKey });
+    }
+  }
+  // Explicit modes are final configuration and therefore apply after replace_all's UI-equivalent FULL-to-SEMI transition.
+  for (const edit of updates) {
+    if (edit.mode !== undefined) apply({ type: 'UPDATE_CHARACTER', partyIndex, characterId: edit.id, updates: { autoEquipmentMode: edit.mode }, validatedMimorianAssignments: true });
   }
   if (config.order !== undefined) {
     const order = config.order;
@@ -184,7 +228,14 @@ export function configureParty(input: GameState, partyIndex: number, raw: unknow
     }
   }
   if (config.autoEquip !== undefined) checkConfig(typeof config.autoEquip === 'boolean', 'configuration.autoEquip', 'invalid_request', 'autoEquip must be boolean.', 400, 'boolean_required');
+  const autoEquipCharacterIds = config.autoEquipCharacterIds === undefined ? [] : config.autoEquipCharacterIds;
+  checkConfig(Array.isArray(autoEquipCharacterIds), 'configuration.autoEquipCharacterIds', 'invalid_request', 'autoEquipCharacterIds must be an array.', 400, 'invalid_auto_equip_character_list');
+  checkConfig(autoEquipCharacterIds.length <= party.characters.length && new Set(autoEquipCharacterIds).size === autoEquipCharacterIds.length
+    && autoEquipCharacterIds.every(id => Number.isInteger(id) && state.parties[partyIndex].characters.some(character => character.id === id)),
+  'configuration.autoEquipCharacterIds', 'invalid_request', 'Auto Equipment targets must be unique party character IDs.', 400, 'invalid_auto_equip_character_list');
+  checkConfig(!(config.autoEquip && autoEquipCharacterIds.length), 'configuration.autoEquipCharacterIds', 'invalid_request', 'Choose whole-party or targeted Auto Equipment, not both.', 400, 'conflicting_auto_equip_targets');
   if (config.autoEquip) state = deps.equip(state, partyIndex);
+  for (const characterId of autoEquipCharacterIds) state = deps.equip(state, partyIndex, Number(characterId));
   return state;
 }
 
@@ -196,6 +247,7 @@ export function applyApiCommand(state: GameState, raw: unknown, deps: StrategyDe
     reorder_character: ['partyId', 'characterId', 'targetRow'], set_deity: ['partyId', 'deityId'],
     set_auto_equipment_mode: ['partyId', 'characterId', 'mode'], run_auto_equipment: ['partyId'],
     remove_all_equipment: ['partyId', 'characterId'],
+    purchase_shop_item: ['partyId', 'lineupId', 'stockEntryId'],
     toggle_equipment_lock: ['partyId', 'characterId', 'slotIndex'], set_jewel_priority_party: ['partyId'],
     set_expedition_destination: ['partyId', 'mode'], set_expedition_depth: ['partyId', 'depthLimit'],
     set_expedition_difficulty: ['partyId', 'difficultyOffset'], set_auto_run: ['enabled'], god_battle: ['partyId'],
@@ -215,6 +267,17 @@ export function applyApiCommand(state: GameState, raw: unknown, deps: StrategyDe
   const p = state.parties[partyIndex];
   const char = p.characters.find(v => v.id === c.characterId);
   if (type === 'configure_party') { keys(c, ['type', 'partyId', 'configuration']); return configureParty(state, partyIndex, c.configuration, deps); }
+  if (type === 'purchase_shop_item') {
+    keys(c, ['type', 'partyId', 'lineupId', 'stockEntryId']);
+    requireApi(typeof c.lineupId === 'string' && typeof c.stockEntryId === 'string', 'invalid_request', 'lineupId and stockEntryId must be strings.', 400);
+    const lineup = buildShopLineup({ parties: state.parties, gold: state.global.gold, shopPurchases: state.global.shopPurchases, shopRefreshCounts: state.global.shopRefreshCounts, shopIntimacy: state.global.shopIntimacy, shopIntimacyLastDecayAt: state.global.shopIntimacyLastDecayAt }, new Date(Date.now()));
+    requireApi(c.lineupId === lineup.lineupId, 'shop_lineup_changed', 'The observed shop lineup has changed.', 409, { currentLineupId: lineup.lineupId });
+    const entry = lineup.entries.find(candidate => candidate.stockEntryId === c.stockEntryId);
+    requireApi(entry && !entry.soldOut, 'shop_item_unavailable', 'The shop stock entry is unavailable.', 422);
+    requireApi(state.global.gold >= entry.price, 'insufficient_gold', 'There is not enough Gold for this purchase.', 422, { requiredGold: entry.price, currentGold: state.global.gold });
+    // SpecRef: 9.1.3 | Experimental AI API | purchase_shop_item
+    return deps.reduce(state, { type: 'BUY_SHOP_ITEM', itemId: entry.itemId, stockItemKey: entry.stockEntryId, partyIndex });
+  }
   if (type === 'update_character_build' || type === 'set_auto_equipment_mode') {
     keys(c, type === 'update_character_build' ? ['type', 'partyId', 'characterId', 'changes'] : ['type', 'partyId', 'characterId', 'mode']);
     requireApi(char, 'character_not_found', 'Character not found.', 404);

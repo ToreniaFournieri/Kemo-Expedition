@@ -12,6 +12,7 @@ import { ensureLanguageLoaded, setLanguage } from '../../src/i18n';
 import { PersistenceCoordinator } from '../../src/game/savePersistence';
 import { decodePersistedState } from '../../src/game/storageCompression';
 import { getVariantKey, type GameState } from '../../src/types';
+import { ITEMS } from '../../src/data/items';
 const values = new Map<string, string>();
 const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, v: string) => { values.set(key, v); }, removeItem: (key: string) => { values.delete(key); }, key: (i: number) => [...values.keys()][i] ?? null, get length() { return values.size; } };
 Object.defineProperty(globalThis, 'localStorage', { value: storage });
@@ -135,6 +136,65 @@ test('remove_all_equipment preserves OFF and SEMI and is a no-op for an empty SE
   character.autoEquipmentMode = 1;
   const next = applyApiCommand(state, { type: 'remove_all_equipment', partyId: state.parties[0].id, characterId: character.id }, deps, Date.now());
   assert.deepEqual(next, state);
+});
+test('shop observation and purchase expose only current stock and commit a guaranteed enhanced item', () => {
+  const realNow = Date.now;
+  Date.now = () => Date.UTC(2026, 8, 10, 3, 0, 0);
+  try {
+    const state = fresh(); state.global.gold = 10_000;
+    const before = buildExperimentalObservation(state, 0, false, {}, 0);
+    assert.equal(before.shop.items.length, 5);
+    assert.ok(before.shop.items.every(entry => !('enhancement' in entry) && !('superRare' in entry)));
+    const stock = before.shop.items.find(entry => entry.canPurchase)!;
+    assert.ok(stock);
+    assert.ok(before.legalActions.some(action => action.type === 'purchase_shop_item' && action.partyId === state.parties[0].id));
+    const next = applyApiCommand(state, { type: 'purchase_shop_item', partyId: state.parties[0].id, lineupId: before.shop.lineupId, stockEntryId: stock.stockEntryId }, deps, 0);
+    const after = buildExperimentalObservation(next, 1, false, {}, 0);
+    assert.equal(after.shop.items.find(entry => entry.stockEntryId === stock.stockEntryId)!.soldOut, true);
+    assert.ok(after.inventory.equipmentVariants.some(variant => variant.itemId === stock.itemId && variant.enhancement >= 1));
+    assert.throws(() => applyApiCommand(state, { type: 'purchase_shop_item', partyId: 1, lineupId: 'stale', stockEntryId: stock.stockEntryId }, deps, 0), (error: unknown) => {
+      assert.equal((error as { response: { error: { code: string } } }).response.error.code, 'shop_lineup_changed'); return true;
+    });
+  } finally { Date.now = realNow; }
+});
+
+test('ordered item-ID equipment configuration allocates highest enhancements first and auto-equips last', () => {
+  let state = fresh();
+  const guide = readFileSync('playing_guide/Playing_Guide_Recommended_Opening_Build.md', 'utf8');
+  const blocks = [...guide.matchAll(/```json\n([\s\S]*?)\n```/g)].flatMap(match => {
+    try { return [JSON.parse(match[1])]; } catch { return []; }
+  });
+  const build = blocks.find(value => value?.characters && value?.order)!;
+  const equipment = blocks.find(value => value?.characters?.some((entry: { equipment?: unknown }) => entry.equipment))!;
+  state = configureParty(state, 0, build, deps);
+  state.parties[0].characters.forEach(character => { character.equipment = character.equipment.map(() => null); });
+  state.global.inventory = {};
+  const add = (itemId: number, enhancement: number, count: number) => {
+    const base = ITEMS.find(item => item.id === itemId)!;
+    const item = { ...base, enhancement, superRare: 0 };
+    state.global.inventory[getVariantKey(item)] = { item, count, status: 'owned' };
+  };
+  add(1101, 0, 2); add(1104, 0, 3); add(1104, 2, 1); add(1106, 0, 1); add(1211, 0, 1);
+  add(1110, 0, 2); add(1110, 3, 1); add(1112, 0, 3); add(1102, 0, 2); add(1111, 0, 1); add(1111, 1, 1);
+  add(1107, 0, 2); add(1109, 0, 2);
+  const autoTargets: number[] = [];
+  const orderedDeps = { ...deps, equip: (candidate: GameState, partyIndex: number, characterId?: number) => {
+    const kemo = candidate.parties[partyIndex].characters.find(character => character.id === 1)!;
+    assert.deepEqual(kemo.equipment.filter(Boolean).map(item => item!.id), [1101, 1104, 1104, 1104, 1104, 1106, 1211]);
+    autoTargets.push(characterId!); return candidate;
+  } };
+  const next = configureParty(state, 0, equipment, orderedDeps);
+  const member = (id: number) => next.parties[0].characters.find(character => character.id === id)!;
+  assert.deepEqual(member(1).equipment.filter(item => item?.id === 1104).map(item => item!.enhancement), [2, 0, 0, 0]);
+  assert.deepEqual(member(4).equipment.filter(item => item?.id === 1110).map(item => item!.enhancement), [3, 0]);
+  assert.deepEqual(member(2).equipment.filter(item => item?.id === 1111).map(item => item!.enhancement), [1, 0]);
+  assert.deepEqual(member(5).equipment.filter(item => item?.id === 1110).map(item => item!.enhancement), [0]);
+  assert.equal(member(6).autoEquipmentMode, 2);
+  assert.deepEqual(autoTargets, [6]);
+
+  const beforeFailure = structuredClone(state);
+  assert.throws(() => configureParty(state, 0, { characters: [{ characterId: 1, equipment: { mode: 'replace_all', itemIds: [1104, 1104, 1104, 1104, 1104] } }] }, deps));
+  assert.deepEqual(state, beforeFailure);
 });
 test('actual engine Cycles reconcile XP, outcomes, durations and preserve non-target parties and charge', () => {
   const state = fresh(); const clone = structuredClone(state.parties[0]); clone.id = 2; state.parties.push(clone);

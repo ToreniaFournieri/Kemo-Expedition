@@ -21,6 +21,7 @@ export function compactResponse(data, previous = []) {
     error: data.error, reportPath: data.reportPath, reportError: data.reportError,
     runtime: data.runtime, control: data.control, release: data.release,
     comparison: data.comparison, simulation: data.simulation, outcomes: data.outcomes, totals: data.totals,
+    shop: data.observation?.shop, inventory: data.observation?.inventory,
     returnReasons: data.runs?.reduce((counts, r) => { const k = r.returnReason ?? 'unknown'; counts[k] = (counts[k] ?? 0) + 1; return counts; }, {}),
     parties: parties.map(p => {
       const old = previous.find(x => x.id === p.id);
@@ -179,6 +180,12 @@ export class AiPlayClient {
       mutation = action === 'configure';
       body = mutation ? { command: { type: 'configure_party', partyId, configuration: input.configuration } } : { partyId, configuration: input.configuration };
     } else if (action === 'build-options') { path = '/build-options'; body = { ...input.body }; }
+    else if (action === 'buy-shop-item') {
+      if (typeof input.lineupId !== 'string' || !input.lineupId || typeof input.stockEntryId !== 'string' || !input.stockEntryId) throw new Error('lineupId and stockEntryId are required strings.');
+      path = '/command';
+      body = { command: { type: 'purchase_shop_item', partyId, lineupId: input.lineupId, stockEntryId: input.stockEntryId } };
+      mutation = true;
+    }
     else if (action === 'remove-all-equipment' || action === 'run-auto-equipment') {
       if (!Number.isInteger(input.characterId) || input.characterId < 1) throw new Error('characterId must be a positive integer.');
       path = '/command';
@@ -188,7 +195,7 @@ export class AiPlayClient {
     else if (action === 'sortie') {
       if (!Number.isInteger(input.count) || input.count < 1 || input.count > 100) throw new Error('count must be an explicit integer from 1 to 100.');
       path = '/sortie'; body = { partyId, count: input.count }; mutation = true;
-    } else throw new Error('Unknown action. Use observe, read, build-options, preview, simulate, configure, remove-all-equipment, run-auto-equipment, sortie, retry, status, evaluation, report, ledger or release.');
+    } else throw new Error('Unknown action. Use observe, read, build-options, preview, simulate, configure, buy-shop-item, remove-all-equipment, run-auto-equipment, sortie, retry, status, evaluation, report, ledger or release.');
     await this.ensureLease();
     if (action === 'retry') ({ path, body } = this.state.pending);
     else if (body) {

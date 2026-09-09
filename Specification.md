@@ -193,7 +193,8 @@
   - each party's expedition destination mode and selected dungeon, depth limit, and difficulty offset;
   - the global auto-run configuration;
   - character order and builds, computed combat summaries, auto-equipment modes, and equipment locks;
-  - inventory summaries required to understand automatic-equipment decisions;
+  - inventory summaries and owned equipment variants required to understand automatic and exact equipment decisions;
+  - the current visible shop lineup, prices, availability, lineup identity, and refresh time, without revealing mystery enhancement or Super Rare results;
   - the latest expedition result and currently legal strategic commands.
 - Stable IDs and raw numeric values are authoritative. Localized strings may be included only as optional display metadata.
 - The observation must not expose future random rolls, bag contents or order, hidden enemies, undisclosed exploration outcomes, the complete save data, or internal renderer fields.
@@ -207,6 +208,8 @@
   - set each character's automatic-equipment mode;
   - immediately run configured automatic equipment for every member of one party or for one specified character;
   - remove all equipment from one specified character, using the same behavior as the UI's Remove All Equipment control;
+  - atomically replace specified characters' complete equipment using ordered base item IDs, allocating the highest-enhancement available copy first in request order, then run configured automatic equipment for explicitly selected characters after every manual assignment;
+  - purchase one currently visible shop stock entry using an observed lineup identity and the same Gold, bag-randomization, inventory, auto-sell, intimacy, and notification rules as the UI;
   - toggle locks on currently equipped items;
   - select the Jewel Priority Party;
   - set a party's expedition destination mode or dungeon, depth limit, and difficulty offset;
@@ -214,9 +217,9 @@
   - initiate one Gods Battle through a separate single-run command when its normal gate and availability rules are satisfied.
 - The API must not expose:
   - direct combat actions;
-  - direct equipment-slot selection or Jewel attachment;
+  - direct opaque equipment-variant selection or Jewel attachment;
   - repeated Gods Battles;
-  - shop purchases, manual selling, Altar unlocks, or Diary management;
+  - paid shop refreshes, manual selling, Altar unlocks, or Diary management;
   - debug actions, bag inspection or reset, save import/export/reset, direct currency edits, direct healing, or internal state transitions;
   - combat formulas or random-roll functions as separately callable operations.
 - Listing retained Diary entries and reading their already-retained battle logs through the GET endpoints above is read-only access, not Diary management. The API must not mark entries as read, delete them, change Diary settings, or alter retention.

@@ -7,7 +7,7 @@ import { AiPlayClient } from './lib/ai-play-client.mjs';
 const usage = `Usage: node scripts/ai-play-client.mjs --connection=PATH --directory=PATH
 Keep this client running. Use configurationFile for builds or @/path/to/action.json.
 Send only short control actions inline, e.g. {"action":"sortie","partyId":1,"count":1}.
-Actions: observe, preview, simulate, configure, remove-all-equipment,
+Actions: observe, preview, simulate, configure, buy-shop-item, remove-all-equipment,
          run-auto-equipment, sortie, build-options, read,
          status, evaluation, report, ledger, retry, release, quit.
 Configuration objects must be in files, not pasted into terminal lines.

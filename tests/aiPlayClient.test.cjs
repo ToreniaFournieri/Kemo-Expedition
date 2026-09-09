@@ -57,6 +57,17 @@ test('equipment shortcuts issue revision-guarded character commands', async t =>
   await assert.rejects(f.client.run({ action: 'remove-all-equipment', characterId: 0 }), /characterId/);
 });
 
+test('shop purchase shortcut preserves observed lineup identity', async t => {
+  const f = await fixture(t); await f.client.connect();
+  await f.client.run({ action: 'buy-shop-item', partyId: 1, lineupId: 'lineup-1', stockEntryId: '1104-2' });
+  const command = f.calls.find(c => c.route === '/command');
+  assert.deepEqual(command.body, {
+    command: { type: 'purchase_shop_item', partyId: 1, lineupId: 'lineup-1', stockEntryId: '1104-2' },
+    expectedRevision: 7,
+  });
+  await assert.rejects(f.client.run({ action: 'buy-shop-item', partyId: 1, lineupId: '', stockEntryId: '1104-2' }), /lineupId/);
+});
+
 test('lost response blocks new gameplay and explicit retry survives restart with exact request', async t => {
   let lost = true;
   const f = await fixture(t, c => { if (c.route === '/sortie' && lost) { lost = false; throw new Error('connection lost'); } });

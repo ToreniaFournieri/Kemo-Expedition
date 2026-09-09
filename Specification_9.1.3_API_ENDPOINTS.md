@@ -953,6 +953,16 @@ All resource values MUST be raw JSON numbers without `Intl.NumberFormat` separat
 | `bestCandidate.enhancement` | integer | Yes when present | Enhancement-title value; `0` means none. |
 | `bestCandidate.superRare` | integer | Yes when present | Super-Rare-title value; `0` means none. |
 
+`observation.inventory.equipmentVariants` MUST contain every unequipped owned equipment variant whose count is greater than zero. Each entry contains `variantId`, `itemId`, category, count, tier, rarity, enhancement, Super Rare value, and raw item stats. Entries are ordered by base item ID ascending, enhancement descending, then stable `variantId`. The opaque `variantId` remains observational; exact party configuration accepts base item IDs and resolves variants authoritatively.
+
+### Shop observation
+
+`observation.shop` MUST represent the same current five-entry lineup as section 8.4.1 and the UI. It contains `lineupId`, `refreshesAt`, and ordered `items`. Each item contains opaque `stockEntryId`, base `itemId`, category, tier, rarity, price, `soldOut`, and `canPurchase`.
+
+- `lineupId` identifies the wall-clock lineup and paid-refresh generation observed in this snapshot. A purchase MUST provide it because a scheduled refresh may change shop stock without changing the game-state revision.
+- The shop representation MUST NOT include the enhancement or Super Rare result that will be drawn on purchase, bag contents or order, future lineups, or future random outcomes.
+- `canPurchase` is true only when the entry is not sold out and current Gold covers its price. The command still revalidates both conditions.
+
 - The summary MUST use the same eligibility and priority logic as automatic equipment.
 - It MUST NOT expose sold items, shop lineup mystery results, bag contents, or future item rolls.
 
@@ -1100,7 +1110,8 @@ Each entry contains:
 | `constraints` | object | Yes | Command-specific allowed values, ranges, or target IDs. |
 
 - The list MUST include only actions legal at the current revision.
-- At minimum it may contain `update_character_build`, `reorder_character`, `set_deity`, `set_auto_equipment_mode`, `run_auto_equipment`, `remove_all_equipment`, `toggle_equipment_lock`, `set_jewel_priority_party`, `set_expedition_destination`, `set_expedition_depth`, `set_expedition_difficulty`, `set_auto_run`, `god_battle`, and `sortie`.
+- At minimum it may contain `update_character_build`, `reorder_character`, `set_deity`, `set_auto_equipment_mode`, `run_auto_equipment`, `remove_all_equipment`, `purchase_shop_item`, `toggle_equipment_lock`, `set_jewel_priority_party`, `set_expedition_destination`, `set_expedition_depth`, `set_expedition_difficulty`, `set_auto_run`, `god_battle`, and `sortie`.
+- A `purchase_shop_item` action is party-scoped because that party's random bags and Cunning auto-sell multiplier apply. Its constraints contain the current `lineupId` and purchasable `stockEntryIds`.
 - A `sortie` action's constraints MUST include `minimumCount: 1` and `maximumCount: 100`.
 - A command omitted from `legalActions` MUST be rejected as `illegal_action` if submitted against the same revision.
 - `legalActions` is advisory across revisions. Clients MUST still supply `expectedRevision`, and the server MUST revalidate every command.
@@ -1587,6 +1598,7 @@ Content-Type: application/json
 | `set_auto_equipment_mode` | Set one character's automation mode. Does not immediately trigger auto-equipment. | No | No |
 | `run_auto_equipment` | Immediately run configured automatic equipment for one party or character. | No | Yes, for the selected target |
 | `remove_all_equipment` | Remove every equipped item from one character. | No | No |
+| `purchase_shop_item` | Purchase one observed current shop stock entry. | No | No |
 | `toggle_equipment_lock` | Toggle one equipped item's automatic-equipment lock. | No | No |
 | `set_jewel_priority_party` | Select the global Jewel Priority Party or manual mode. | No | No |
 | `set_expedition_destination` | Set one party's automatic or fixed destination. | No | No |
@@ -1826,6 +1838,30 @@ Single-character example:
 - If the run changes no equipment slot, Jewel assignment, inventory ownership, HP value, or other derived state, return `no_change` without saving or incrementing the revision.
 - `effects` contains `partyId`, `characterId` (`null` for a whole-party run), `processedCharacterIds` in processing order, `autoEquipmentTriggered: true`, `unequippedCount`, `equippedCount`, `upgradedCount`, and `jewelAssignmentCount`. Counts summarize committed changes without exposing candidate rankings or hidden comparison data.
 
+### `purchase_shop_item`
+
+```json
+{
+  "type": "purchase_shop_item",
+  "partyId": 1,
+  "lineupId": "2026091010-0",
+  "stockEntryId": "1104-2"
+}
+```
+
+| Field | Type | Required | Constraints | Description |
+|-|-|-|-|-|
+| `partyId` | integer | Yes | Unlocked party ID | Party whose enhancement and Super Rare bags and Cunning auto-sell multiplier apply. |
+| `lineupId` | string | Yes | Current observed lineup ID | Guards the wall-clock lineup independently of game-state revision. |
+| `stockEntryId` | string | Yes | Entry listed for `lineupId` | Exact visible stock entry to purchase. Duplicate base items in different slots remain separate stock. |
+
+- Resolve the stock entry server-side; the client MUST NOT supply or override its base item ID, price, rarity, enhancement, Super Rare value, or random source.
+- Revalidate the current lineup, sold-out state and Gold after revision validation. A changed lineup returns `409 shop_lineup_changed`; missing or sold stock returns `422 shop_item_unavailable`; insufficient Gold returns `422 insufficient_gold` with `requiredGold` and `currentGold`.
+- Execute section 8.4.1 through the same authoritative purchase operation as the UI. Draw a guaranteed enhancement of at least `+1`, then the Super Rare title, from `partyId`'s persisted bags. Apply normal stacking, automatic selling, Gold, intimacy, sold-out accounting and notification behavior.
+- Stage the purchase, random bags, inventory or auto-sale proceeds, evaluation accounting and idempotency receipt atomically. Failure commits none of them and leaves revision unchanged.
+- `effects` contains `partyId`, `lineupId`, `stockEntryId`, base `itemId`, price, Gold before/after, `autoSold`, and the retained public inventory variant or `null`. The complete post-command observation is authoritative.
+- The API does not expose paid shop refresh through this command.
+
 ### `remove_all_equipment`
 
 ```json
@@ -2037,6 +2073,7 @@ Unless a discriminator defines a more specific error, `/command` uses:
 | `404 Not Found` | `character_not_found` | `false` | Target character does not belong to the specified party. |
 | `404 Not Found` | `equipment_slot_not_found` | `false` | Target slot does not exist or is empty. |
 | `409 Conflict` | `stale_revision` | `true` | `expectedRevision` differs from the authoritative revision. `error.details.currentRevision` is required. |
+| `409 Conflict` | `shop_lineup_changed` | `true` | The wall-clock or paid-refresh lineup no longer matches `lineupId`. `error.details.currentLineupId` is required. |
 | `409 Conflict` | `no_change` | `false` | The valid command would produce no effective change. |
 | `409 Conflict` | `no_active_lease` | `false` | No control lease exists. |
 | `409 Conflict` | `control_lease_expired` | `false` | The matching lease expired before command processing began. |
@@ -2044,6 +2081,11 @@ Unless a discriminator defines a more specific error, `/command` uses:
 | `409 Conflict` | `runtime_busy` | `true` | Another command or sortie batch is executing. |
 | `405 Method Not Allowed` | `method_not_allowed` | `false` | The path is requested with a method other than `POST`. The response MUST include `Allow: POST`. |
 | `422 Unprocessable Content` | `illegal_action` | `false` | The structurally valid command is not legal in the current game state. |
+| `422 Unprocessable Content` | `shop_item_unavailable` | `false` | The specified current-lineup stock entry does not exist or is sold out. |
+| `422 Unprocessable Content` | `insufficient_gold` | `false` | Current Gold is below the stock price. |
+| `422 Unprocessable Content` | `equipment_slot_unavailable` | `false` | Exact equipment contains more item IDs than the character's final slot count. |
+| `422 Unprocessable Content` | `equipment_item_unavailable` | `false` | The ordered shared pool does not contain another owned copy of the requested base item ID. |
+| `422 Unprocessable Content` | `equipment_item_incompatible` | `false` | The character's final build cannot equip the requested item category. |
 | `422 Unprocessable Content` | `deity_unavailable` | `false` | The deity is locked or assigned to another party. `error.details.reason` MUST be `locked` or `assigned_to_party`. An assignment conflict MUST also include `deityId`, `assignedPartyId`, and `assignedPartyName`, and its message MUST identify the occupying party and advise choosing another deity. |
 | `422 Unprocessable Content` | `equipment_lock_unavailable` | `false` | The character is not in `FULL` mode or the item cannot be locked. |
 | `422 Unprocessable Content` | `difficulty_unavailable` | `false` | Boss completion has not unlocked difficulty adjustment. |
@@ -2424,16 +2466,23 @@ Comparison does not run equipment selection or combat a second time, consume liv
 
 A `configuration` object accepts only these optional properties:
 
-* `characters`: at most the party size, each `{ characterId, changes?, autoEquipmentMode? }`, without duplicate character IDs. `changes` contains only the existing selectable build fields; mode is 0, 1 or 2. Unique-character restrictions, paired race/gender uniqueness, selectable lineages/predispositions, female-only Mimorian forms, unlocked forms and global form uniqueness apply. Validate final assignments before applying any change.
+* `characters`: at most the party size, each `{ characterId, changes?, autoEquipmentMode?, equipment? }`, without duplicate character IDs. `changes` contains only the existing selectable build fields; mode is 0, 1 or 2. Unique-character restrictions, paired race/gender uniqueness, selectable lineages/predispositions, female-only Mimorian forms, unlocked forms and global form uniqueness apply. Validate final assignments before applying any change.
+  - `equipment`, when present, is exactly `{ "mode": "replace_all", "itemIds": integer[] }`.
+  - `itemIds` is the complete desired equipment list in zero-based slot order. An empty list removes all equipment. Its length MUST NOT exceed the character's final maximum equipment slots.
+  - Each item ID identifies a base item, not a variant. The server selects the available matching copy with the highest enhancement value. Super Rare value does not participate in selection priority in this version; equal-enhancement variants use ascending stable `variantId` only as a deterministic tie-break.
+  - Before selecting any requested item, remove all equipment from every character containing `equipment` and combine the returned items with owned inventory. Return attached Jewels separately through normal removal rules.
+  - Allocate by `characters` request order, then by `itemIds` order. Decrement availability immediately after each assignment. Earlier requests therefore receive higher-enhancement copies while later requests receive the remaining copies.
+  - Every requested category must be legal for the character's final build. Insufficient copies, incompatible categories, invalid IDs or excessive slots reject the complete configuration. No similar-ID substitution is permitted.
 * `order`: every member ID exactly once, in final order.
 * `deityId`: an unlocked deity available to this party.
 * `destination`: `{ mode: "auto" | "fixed", dungeonId? }`; fixed requires an available dungeon.
 * `depthLimit`: an existing legal depth enum.
 * `difficultyOffset`: an even integer within the selected dungeon's normal limit.
 * `locks`: `{ characterId, slotIndex, locked }[]`, bounded to 200 entries, targeting currently equipped items in FULL mode.
-* `autoEquip`: boolean; run configured automatic equipment after builds, order, deity, destination, depth, difficulty and locks have been applied. It never permits direct equipment-slot selection or Jewel attachment.
+* `autoEquip`: boolean; run configured automatic equipment after builds, order, deity, destination, depth, difficulty and locks have been applied. This boolean does not itself permit opaque equipment-variant selection or Jewel attachment.
+* `autoEquipCharacterIds`: unique member IDs, at most the party size. Run configured automatic equipment for these characters in listed order only after every manual equipment assignment and explicit final mode has been applied. It cannot be combined with `autoEquip: true`.
 
-Apply configuration in the order above within one private staged state. Any invalid field rejects the entire configuration. Existing `build-options` and individual build commands use the same validation. Race changes without a supplied name use the normal default-name pool; preview reports a possible name, and the committed name may differ if a different live random draw is used.
+Apply configuration in one private staged state. Apply build changes first; remove and allocate exact equipment second; apply explicit `autoEquipmentMode` values as the final requested modes; then apply order, deity, destination, depth, difficulty and locks; finally execute whole-party or targeted Auto Equipment. Any invalid field rejects the entire configuration. Preview, simulation and `configure_party` MUST resolve the same ordered equipment candidate from the same input state. Existing `build-options` and individual build commands use the same validation. Race changes without a supplied name use the normal default-name pool; preview reports a possible name, and the committed name may differ if a different live random draw is used.
 
 ### `POST /experimental/v1/party-preview`
 
@@ -2445,7 +2494,7 @@ Configuration validation shared by preview, simulation and `configure_party` add
 
 Collect all build violations across submitted members before applying character edits. Structural and non-build validation may stop at the first failing field or record. `details.field` names the first violation. A coupled restriction may name a field that needs to be added to the candidate, such as gender when changing race. Clients must use codes/fields instead of parsing `error.message` and must tolerate additional future codes.
 
-Stable violation codes include existing build reasons (`unavailable_selection`, `unknown_field`, `immutable_character_field`, `mimorian_field_unavailable`, `duplicate_race_gender`), structural reasons (`object_required`, `invalid_character_list`, `character_not_found`, `duplicate_character`, `invalid_equipment_mode`, `invalid_order`, `invalid_destination_mode`, `invalid_depth_limit`, `invalid_lock_list`, `boolean_required`), lock reasons (`occupied_slot_required`, `full_mode_required`), and availability reasons (`deity_unavailable`, `assigned_to_party`, `normal_sortie_unavailable`, `difficulty_unavailable`). A FULL-mode violation targets the lock record because the required mode belongs to its referenced character. Existing deity-assignment details remain available.
+Stable violation codes include existing build reasons (`unavailable_selection`, `unknown_field`, `immutable_character_field`, `mimorian_field_unavailable`, `duplicate_race_gender`), structural reasons (`object_required`, `invalid_character_list`, `character_not_found`, `duplicate_character`, `invalid_equipment_mode`, `invalid_equipment_list`, `invalid_item_id`, `invalid_auto_equip_character_list`, `conflicting_auto_equip_targets`, `invalid_order`, `invalid_destination_mode`, `invalid_depth_limit`, `invalid_lock_list`, `boolean_required`), equipment reasons (`equipment_slot_unavailable`, `equipment_item_unavailable`, `equipment_item_incompatible`), lock reasons (`occupied_slot_required`, `full_mode_required`), and availability reasons (`deity_unavailable`, `assigned_to_party`, `normal_sortie_unavailable`, `difficulty_unavailable`). A FULL-mode violation targets the lock record because the required mode belongs to its referenced character. Existing deity-assignment details remain available.
 
 These diagnostics expose no hidden choices, inventory rankings or partial staged results. Rejected configuration still commits no gameplay changes; normal counted-request accounting is unchanged. Top-level request-envelope errors continue to use their existing contracts. This is an additive schema-version-1 extension.
 

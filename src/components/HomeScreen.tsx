@@ -90,7 +90,7 @@ useAfkRendererPartyStatsMemo,
 } from '../game/afkLiveProfile';
 import { getPeddlerTravelDurationMs } from '../game/expeditionAbilityPolicies';
 import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
-import { buildExperimentalObservation, buildRemoveAllEquipmentEffects } from '../game/experimentalApi';
+import { buildExperimentalObservation, buildPurchaseShopItemEffects, buildRemoveAllEquipmentEffects } from '../game/experimentalApi';
 import { buildExperimentalBattleLog,buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { memoryMonitor } from '../game/memoryMonitoring';
@@ -669,7 +669,7 @@ export function HomeScreen({
           apiKeys(payload, ['expectedRevision', 'command']);
           const command = apiRecord(payload.command);
           const commandType = command.type;
-          const beforeObservation = commandType === 'remove_all_equipment' ? observation(baseline) : null;
+          const beforeObservation = commandType === 'remove_all_equipment' || commandType === 'purchase_shop_item' ? observation(baseline) : null;
           const next = withGameplayRandomSource(random.next, () => applyApiCommand(baseline, payload.command, deps, apiSimulatedAtRef.current, strategyDeps.mode, strategyDeps.offset));
           requireApi(canonicalRequest(next) !== canonicalRequest(baseline), 'no_change', 'The command makes no effective change.', 409);
           next.apiRuntime = { ...next.apiRuntime!, revision: revision + 1, randomState: random.state };
@@ -679,6 +679,8 @@ export function HomeScreen({
             const partyId = Number(command.partyId);
             const characterId = Number(command.characterId);
             effects = buildRemoveAllEquipmentEffects(beforeObservation!, afterObservation, partyId, characterId);
+          } else if (commandType === 'purchase_shop_item') {
+            effects = buildPurchaseShopItemEffects(beforeObservation!, afterObservation, Number(command.partyId), String(command.lineupId), String(command.stockEntryId));
           }
           return { state: next, response: { command: { type: commandType, status: 'applied', previousRevision: revision, revision: revision + 1 }, effects, observation: afterObservation } };
         }
