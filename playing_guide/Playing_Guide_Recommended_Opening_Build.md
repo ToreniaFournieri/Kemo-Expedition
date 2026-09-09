@@ -26,7 +26,7 @@ Save the following **configuration object** as `/tmp/bokemo-opening-build.json`.
     {
       "characterId": 1,
       "changes": {"mainClassId": "guardian", "subClassId": "sword-saint"},
-      "autoEquipmentMode": 1
+      "autoEquipmentMode": 2
     },
     {
       "characterId": 5,
@@ -116,7 +116,7 @@ If validation rejects the candidate, inspect `error.details.violations`, correct
 
 * Remove all equipment from all six characters.
 
-* Make **Kemo (Kemoria)** the primary melee attacker.
+* Make **Kemo (Kemoria, characterId=1)** the primary melee attacker.
 
   * Equip:
 
@@ -132,7 +132,7 @@ If validation rejects the candidate, inspect `error.details.violations`, correct
     * One robe: `1102`
     * One wand: `1110`
 
-* Make **Lop (Leporian, Ninja)** the primary ranged attacker.
+* Make **Lop (Leporian, Ranger)** the primary ranged attacker.
 
   * Equip:
 
@@ -153,7 +153,7 @@ If validation rejects the candidate, inspect `error.details.violations`, correct
     * Two grimorie: `1111` (one grimorie must have +1 or more enhancement)
     * One catalyst: `1112`
 
-* Run Auto Equipment for **Laika** after all manual equipment assignments above are complete.
+* Run Auto Equipment for **Laika (Caninian, characterId = 6)** after all manual equipment assignments above are complete.
 
 
 ### Intention
