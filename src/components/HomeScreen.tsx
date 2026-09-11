@@ -1266,7 +1266,26 @@ export function HomeScreen({
       }
       return inventoryIndex;
     };
-    const slotNotifications = new Map<string, { message: string; partyIndex: number; startedFromEmpty: boolean }>();
+    const slotNotifications = new Map<string, {
+      message: string;
+      partyIndex: number;
+      startedFromEmpty: boolean;
+      partyName: string;
+      characterName: string;
+      previousItem: Item | null;
+    }>();
+    const getAutoEquipmentNotificationMessage = (
+      partyName: string,
+      characterName: string,
+      item: Item,
+      previousItem: Item | null,
+      startedFromEmpty: boolean,
+    ) => {
+      const message = startedFromEmpty
+        ? t('home.notification.equipment.equipped', { item: getItemDisplayName(item) })
+        : t('home.notification.equipment.replaced', { previous: getItemDisplayName(previousItem!), item: getItemDisplayName(item) });
+      return t('home.notification.equipment.characterChanged', { party: partyName, character: characterName, message });
+    };
     const setSlotNotification = (
       partyName: string,
       characterName: string,
@@ -1279,13 +1298,33 @@ export function HomeScreen({
       const notificationKey = `${partyIndex}:${characterId}:${slotIndex}`;
       const existing = slotNotifications.get(notificationKey);
       const startedFromEmpty = existing?.startedFromEmpty ?? previousItem == null;
-      const message = startedFromEmpty
-        ? t('home.notification.equipment.equipped', { item: getItemDisplayName(item) })
-        : t('home.notification.equipment.replaced', { previous: getItemDisplayName(previousItem!), item: getItemDisplayName(item) });
       slotNotifications.set(notificationKey, {
-        message: t('home.notification.equipment.characterChanged', { party: partyName, character: characterName, message }),
+        message: getAutoEquipmentNotificationMessage(partyName, characterName, item, previousItem, startedFromEmpty),
         partyIndex,
         startedFromEmpty,
+        partyName,
+        characterName,
+        previousItem,
+      });
+    };
+    const updateSlotNotificationItem = (
+      characterId: string | number,
+      slotIndex: number,
+      partyIndex: number,
+      item: Item,
+    ) => {
+      const notificationKey = `${partyIndex}:${characterId}:${slotIndex}`;
+      const existing = slotNotifications.get(notificationKey);
+      if (!existing) return;
+      slotNotifications.set(notificationKey, {
+        ...existing,
+        message: getAutoEquipmentNotificationMessage(
+          existing.partyName,
+          existing.characterName,
+          item,
+          existing.previousItem,
+          existing.startedFromEmpty,
+        ),
       });
     };
 
@@ -1866,6 +1905,12 @@ export function HomeScreen({
               ...slotItem,
               jewel: { key: assignment.key, rank: assignment.rank },
             };
+            updateSlotNotificationItem(
+              character.id,
+              assignment.slotIndex,
+              partyIndex,
+              simulatedEquipmentSlots[assignment.slotIndex]!,
+            );
             dispatchAttachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
             summary.jewelAssignmentCount += 1;
           });
