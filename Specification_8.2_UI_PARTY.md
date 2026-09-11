@@ -283,6 +283,19 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
 - **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
 - Status updates in real time
+
+- **Undo and Redo**
+  - **Undo `↩`:**
+    - Restores the equipment state from immediately before the most recent equipment change.
+    - Undo is available only when all items required to restore the previous equipment state are currently available.
+    - Item availability must be validated using the same validation logic as `equipSet`; the validation logic should be shared.
+    - If Undo is unavailable, the button remains visible but is grayed out and disabled.
+  - **Redo `↪`:**
+    - Reapplies the equipment change that was most recently undone.
+    - Redo is available only immediately after an Undo and only when all items required to restore the redone equipment state are currently available.
+    - Item availability must be validated using the same shared validation logic as `equipSet`.
+    - If Redo is unavailable, the button remains visible but is grayed out and disabled.
+
 - **Remove All Equipment button:** (全装備解除)
   - When this button is pressed, all currently equipped items are unequipped.
 - **Save Equipment Set button:** (装備記憶)
@@ -371,7 +384,7 @@ The toggle cycles through the following modes:
 
 ```
 装備  4 / 4 スロット  自動装備 手動?
-全装備解除 装備記憶 装備呼出▲
+↩ ↪ 全装備解除 装備記憶 装備呼出▲
 🔒白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
 🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
 🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
@@ -381,7 +394,7 @@ The toggle cycles through the following modes:
 
 ```
 装備  4 / 4 スロット 自動装備 手動?
-全装備解除 装備記憶 装備呼出▲
+↩ ↪ 全装備解除 装備記憶 装備呼出▲
 🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
  堅牢: 1 2 3 4 **5** 6 7 8
  障壁: 1 2 3 4 5 6 7 8 
@@ -505,7 +518,7 @@ displays [遠距離攻撃:矢,ボ,弓]
 
 ```
 装備  4 / 4 スロット 自動装備 手動?
-全装備解除 装備記憶 装備呼出▲
+↩ ↪ 全装備解除 装備記憶 装備呼出▲
 🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▲
 🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
 🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
@@ -515,7 +528,7 @@ displays [遠距離攻撃:矢,ボ,弓]
 
 ```
 装備  4 / 4 スロット 自動装備 手動?
-全装備解除 装備記憶 装備呼出▼
+↩ ↪ 全装備解除 装備記憶 装備呼出▼
   01 リタ 剣(巡), 砂/好 09/05 ▲
   02 レイ 魔(師), 桃/内 09/05 ▲
   03 (空) ▲
@@ -532,7 +545,7 @@ If all of items are available:
 
 ```
 装備  4 / 4 スロット 自動装備 手動?
-全装備解除 装備記憶 装備呼出▼
+↩ ↪ 全装備解除 装備記憶 装備呼出▼
   01 `リタ 剣(巡), 砂/好 09/05`▼ 
     装備する セットを削除する
     🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧]
@@ -551,7 +564,7 @@ If some of items are not available:
 
 ```
 装備  4 / 4 スロット 自動装備 手動?
-全装備解除 装備記憶 装備呼出▼
+↩ ↪ 全装備解除 装備記憶 装備呼出▼
   01 `リタ 剣(巡), 砂/好 09/05`▼ 
     一部アイテムは装備できません: 類似のものを装備  一致するものだけ装備 セットを削除する
     🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧]
