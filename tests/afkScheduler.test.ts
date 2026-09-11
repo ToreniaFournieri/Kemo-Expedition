@@ -36,26 +36,26 @@ const HOUR_MS = 60 * 60 * 1000;
 test('AFK elapsed time uses the specified progressive efficiency bands', () => {
   const cases = [
     [0, 0],
-    [9, 9],
-    [18, 15],
-    [30, 21],
-    [48, 27],
-    [72, 33],
-    [108, 39],
-    [162, 45],
+    [45, 45],
+    [90, 75],
+    [150, 105],
+    [240, 135],
+    [360, 165],
+    [540, 195],
+    [810, 225],
   ] as const;
 
   cases.forEach(([elapsedHours, effectiveHours]) => {
     assert.equal(getEffectiveAfkElapsedMs(elapsedHours * HOUR_MS), effectiveHours * HOUR_MS);
   });
-  assert.equal(AFK_MAX_REAL_ELAPSED_MS, 162 * HOUR_MS);
-  assert.equal(AFK_MAX_EFFECTIVE_ELAPSED_MS, 45 * HOUR_MS);
+  assert.equal(AFK_MAX_REAL_ELAPSED_MS, 810 * HOUR_MS);
+  assert.equal(AFK_MAX_EFFECTIVE_ELAPSED_MS, 225 * HOUR_MS);
 });
 
-test('AFK efficiency is continuous inside bands and ignores time beyond 162 hours', () => {
-  assert.equal(getEffectiveAfkElapsedMs(12 * HOUR_MS), 11 * HOUR_MS);
-  assert.equal(getEffectiveAfkElapsedMs(24 * HOUR_MS), 18 * HOUR_MS);
-  assert.equal(getEffectiveAfkElapsedMs(200 * HOUR_MS), 45 * HOUR_MS);
+test('AFK efficiency is continuous inside bands and ignores time beyond 810 hours', () => {
+  assert.equal(getEffectiveAfkElapsedMs(60 * HOUR_MS), 55 * HOUR_MS);
+  assert.equal(getEffectiveAfkElapsedMs(120 * HOUR_MS), 90 * HOUR_MS);
+  assert.equal(getEffectiveAfkElapsedMs(1_000 * HOUR_MS), 225 * HOUR_MS);
   assert.equal(getEffectiveAfkElapsedMs(Number.POSITIVE_INFINITY), 0);
 });
 

@@ -3020,7 +3020,7 @@ const zhTW = {
   'data.glossary.99.label': '超稀有的性能提升',
   'data.glossary.99.description': '附加超稀有稱號時，基礎性能再提升2倍。同時賦予各自獨特的加成。',
   'data.glossary.100.label': '放置效率',
-  'data.glossary.100.description': '放置時間越長，隊伍成員就越會開始偷懶。\n| 放置時間 | 效率 |\n|------:|---:|\n| 0–9h | x1 |\n| 9–18h | x2/3 |\n| 18–30h | x1/2 |\n| 30–48h | x1/3 |\n| 48–72h | x1/4 |\n| 72–108h | x1/6 |\n| 108–162h | x1/9 |',
+  'data.glossary.100.description': '放置時間越長，隊伍成員就越會開始偷懶。\n| 放置時間 | 效率 |\n|------:|---:|\n| 0–45h | x1 |\n| 45–90h | x2/3 |\n| 90–150h | x1/2 |\n| 150–240h | x1/3 |\n| 240–360h | x1/4 |\n| 360–540h | x1/6 |\n| 540–810h | x1/9 |',
   'data.glossary.condition.label': '狀態',
   'data.glossary.condition.description': '狀態越好，隊伍成員越會開始嘗試更具挑戰性的事情（前往下一個地下城或挑戰神魔戰），也會享受更長的自由時間。狀態較差時，自由時間會變得非常短。',
   'data.glossary.2_1_7.subtitle': '信. 神明、信仰',

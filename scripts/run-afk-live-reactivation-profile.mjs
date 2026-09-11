@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const RESULT_PREFIX = 'BOKEMO_AFK_LIVE_RESULT ';
-const validHours = new Set([9, 24, 162]);
+const validHours = new Set([45, 120, 810]);
 
 function positive(name, fallback, allowZero = false) {
   const raw = process.argv.find((value) => value.startsWith(`--${name}=`))?.split('=')[1];
@@ -31,9 +31,9 @@ function distribution(values) {
 }
 
 function parseHours() {
-  const raw = process.argv.find((value) => value.startsWith('--hours='))?.slice(8) ?? '9,24,162';
+  const raw = process.argv.find((value) => value.startsWith('--hours='))?.slice(8) ?? '45,120,810';
   const hours = raw.split(',').map(Number);
-  if (hours.length === 0 || hours.some((value) => !validHours.has(value))) throw new Error('hours must use 9, 24, or 162');
+  if (hours.length === 0 || hours.some((value) => !validHours.has(value))) throw new Error('hours must use 45, 120, or 810');
   return hours;
 }
 
@@ -92,7 +92,7 @@ const { pathToFileURL } = require('node:url');
 const { normalizeAppMemoryMetrics } = require(${JSON.stringify(resolve('desktop/memory-metrics.cjs'))});
 const DIST_ROOT = ${JSON.stringify(distPath)};
 const PRELOAD = ${JSON.stringify(preloadPath)};
-const hours = Number(process.argv.find(value => value.startsWith('--profile-hours='))?.slice(16) || 162);
+const hours = Number(process.argv.find(value => value.startsWith('--profile-hours='))?.slice(16) || 810);
 const mode = process.argv.find(value => value.startsWith('--profile-mode='))?.slice(15) || 'timing';
 const variant = process.argv.find(value => value.startsWith('--profile-variant='))?.slice(18) || 'authority-production';
 const workers = Number(process.argv.find(value => value.startsWith('--profile-workers='))?.slice(18) || 0);

@@ -15,7 +15,7 @@ import { decodePersistedState } from './storageCompression.ts';
 import type { GameState } from '../types';
 
 const PROFILE_NOW_MS = Date.UTC(2026, 7, 30, 0, 0, 0);
-const RAW_HOUR_OPTIONS = new Set([9, 24, 162]);
+const RAW_HOUR_OPTIONS = new Set([45, 120, 810]);
 const MEMORY_SAMPLE_INTERVAL_MS = 50;
 const SETTLE_DELAY_MS = 1_000;
 const SAVE_STORAGE_KEY = 'kemo-expedition-save';
@@ -346,8 +346,8 @@ async function sampleMemory(label?: AfkLiveProfileMemoryPoint['label']): Promise
 export function prepareAfkLiveProfile(): void {
   if (!__AFK_LIVE_PROFILE_ENABLED__ || typeof window === 'undefined' || runtime) return;
   const params = new URLSearchParams(window.location.search);
-  const requestedHours = Number(params.get('afkProfileHours') ?? 162);
-  const rawAbsenceHours = RAW_HOUR_OPTIONS.has(requestedHours) ? requestedHours : 162;
+  const requestedHours = Number(params.get('afkProfileHours') ?? 810);
+  const rawAbsenceHours = RAW_HOUR_OPTIONS.has(requestedHours) ? requestedHours : 810;
   const mode: ProfileMode = params.get('afkProfileMode') === 'memory' ? 'memory' : 'timing';
   const requestedVariant = params.get('afkProfileVariant');
   const variant: AfkLiveProfileVariant = requestedVariant === 'baseline'

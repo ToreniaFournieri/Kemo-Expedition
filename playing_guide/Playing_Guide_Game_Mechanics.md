@@ -210,13 +210,13 @@ Party members start slacking off as AFK time grows.
 
 | AFK Time | Efficiency |
 |---|---:|
-| 0–9h | x1 |
-| 9–18h | x2/3 |
-| 18–30h | x1/2 |
-| 30–48h | x1/3 |
-| 48–72h | x1/4 |
-| 72–108h | x1/6 |
-| 108–162h | x1/9 |
+| 0–45h | x1 |
+| 45–90h | x2/3 |
+| 90–150h | x1/2 |
+| 150–240h | x1/3 |
+| 240–360h | x1/4 |
+| 360–540h | x1/6 |
+| 540–810h | x1/9 |
 
 ## Condition
 

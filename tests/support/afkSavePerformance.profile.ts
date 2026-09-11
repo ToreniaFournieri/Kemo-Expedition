@@ -32,13 +32,13 @@ const HOUR_MS = 60 * 60 * 1000;
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
 const AFK_PERIODS = [
-  [9, 9],
-  [18, 15],
-  [30, 21],
-  [48, 27],
-  [72, 33],
-  [108, 39],
-  [162, 45],
+  [45, 45],
+  [90, 75],
+  [150, 105],
+  [240, 135],
+  [360, 165],
+  [540, 195],
+  [810, 225],
 ] as const;
 
 function createSeededRandom(seed: number): () => number {
