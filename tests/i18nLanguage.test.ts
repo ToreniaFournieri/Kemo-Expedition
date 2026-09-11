@@ -100,8 +100,8 @@ test('AFK emulation efficiency is available in the runtime glossary in every lan
   localizedGlossary.forEach(({ dictionary, label }) => {
     assert.equal(dictionary['data.glossary.100.label'], label);
     const description = dictionary['data.glossary.100.description'];
-    assert.match(description, /0–9h \| x1/);
-    assert.match(description, /108–162h \| x1\/9/);
+    assert.match(description, /0–45h \| x1/);
+    assert.match(description, /540–810h \| x1\/9/);
   });
 });
 

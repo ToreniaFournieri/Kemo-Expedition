@@ -1,3 +1,4 @@
+#include "ability_level_scales.h"
 #include "generated/battle_protocol.generated.h"
 
 extern "C" {
@@ -301,9 +302,9 @@ int battle_resolve_normal_action() {
     const int level = static_cast<int>(normal_action_input[43]);
     double multiplier = 0.0;
     int count = 0;
-    if (kind == 1 && level > 0) multiplier = level >= 3 ? 2.0 : level == 2 ? 1.0 : 0.5;
-    else if (kind == 2 && level > 0) multiplier = level >= 2 ? 1.0 : 0.5;
-    else if (kind == 3 && level > 0) { multiplier = level >= 3 ? 1.0 : level == 2 ? 0.7 : 0.5; count = 1; }
+    if (kind == 1 && level > 0) multiplier = ability_scales::value(level, ability_scales::counter);
+    else if (kind == 2 && level > 0) multiplier = ability_scales::value(level, ability_scales::re_counter);
+    else if (kind == 3 && level > 0) { multiplier = ability_scales::value(level, ability_scales::re_attack); count = 1; }
     normal_action_output[3] = count;
     normal_action_output[8] = multiplier;
     return 0;
@@ -317,7 +318,7 @@ int battle_resolve_normal_action() {
     const double max_hp = normal_action_input[20];
     if (resurrect_level > 0 && (flags & 1) == 0) {
       normal_action_output[5] = 1;
-      normal_action_output[1] = resurrect_level >= 2 ? __builtin_ceil(max_hp * 0.01) : 1.0;
+      normal_action_output[1] = resurrect_level >= 2 ? __builtin_ceil(max_hp * ability_scales::value(resurrect_level, ability_scales::resurrect)) : 1.0;
     } else if (reanimate_level > 0 && (flags & 2) == 0) {
       constexpr int percents[5] = {20, 26, 31, 35, 38};
       const int index = reanimate_level > 5 ? 4 : reanimate_level - 1;

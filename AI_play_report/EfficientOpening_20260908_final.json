@@ -1,0 +1,2611 @@
+{
+  "evaluation": {
+    "evaluationId": "ef0acda7-a83e-40b3-9fd9-fe138bebe28f",
+    "concept": "EfficientOpening",
+    "version": "0.9.6",
+    "build": 14,
+    "mode": "orca",
+    "rulesId": "ai-play-v2-calls20000-score10-sortie1-penalty100000-exactbatch",
+    "regulationVersion": 2,
+    "status": "succeeded",
+    "countedApiCalls": 71,
+    "actualSorties": 1338,
+    "goalAchieved": true,
+    "firstWinningSortie": 1338,
+    "startedAt": 1788850173406,
+    "winningOperation": {
+      "call": 71,
+      "firstWinningSortie": 1338,
+      "sortie": {
+        "partyId": 1,
+        "dungeonId": 1,
+        "requestedCount": 1,
+        "completedCount": 1,
+        "previousRevision": 38,
+        "revision": 39,
+        "partyElapsedStartMs": 0,
+        "partyElapsedEndMs": 312000
+      },
+      "outcomes": {
+        "Clear": 1,
+        "Turned_Back": 0,
+        "Draw_Retreat": 0,
+        "Wounded_Retreat": 0,
+        "Defeat": 0
+      }
+    },
+    "remainingApiCalls": 19929,
+    "scoreSoFar": 2048,
+    "finalScore": 2048
+  },
+  "ledger": [
+    {
+      "call": 1,
+      "operation": "observation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 2,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 3,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 4,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 5,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 6,
+      "operation": "sortie",
+      "actualSorties": 20,
+      "error": null
+    },
+    {
+      "call": 7,
+      "operation": "latest-battle-log",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 8,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 9,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 10,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 11,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 12,
+      "operation": "sortie",
+      "actualSorties": 30,
+      "error": null
+    },
+    {
+      "call": 13,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 14,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 15,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 16,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 17,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 18,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 19,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 20,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 21,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 22,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 23,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 24,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 25,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 26,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 27,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 28,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 29,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 30,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 31,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 32,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 33,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 34,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 35,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 36,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 37,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 38,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 39,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 40,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 41,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 42,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 43,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 44,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 45,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 46,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 47,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 48,
+      "operation": "sortie",
+      "actualSorties": 1,
+      "error": null
+    },
+    {
+      "call": 49,
+      "operation": "latest-battle-log",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 50,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 51,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 52,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 53,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 54,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 55,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 56,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 57,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 58,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 59,
+      "operation": "sortie",
+      "actualSorties": 50,
+      "error": null
+    },
+    {
+      "call": 60,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 61,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 62,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 63,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 64,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 65,
+      "operation": "sortie",
+      "actualSorties": 100,
+      "error": null
+    },
+    {
+      "call": 66,
+      "operation": "sortie",
+      "actualSorties": 35,
+      "error": null
+    },
+    {
+      "call": 67,
+      "operation": "simulation",
+      "actualSorties": 0,
+      "error": null
+    },
+    {
+      "call": 68,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 69,
+      "operation": "command",
+      "actualSorties": 0,
+      "error": null,
+      "commandType": "configure_party"
+    },
+    {
+      "call": 70,
+      "operation": "sortie",
+      "actualSorties": 1,
+      "error": null
+    },
+    {
+      "call": 71,
+      "operation": "sortie",
+      "actualSorties": 1,
+      "error": null
+    }
+  ],
+  "observation": {
+    "revision": 39,
+    "observedAt": 1788850173406,
+    "simulatedAt": 1788850173406,
+    "environment": "orca",
+    "language": "ja",
+    "resources": {
+      "gold": 49570,
+      "prana": 0,
+      "jewelsByKeyAndRank": {}
+    },
+    "automation": {
+      "autoRun": false
+    },
+    "progression": {
+      "unlockedPartyIds": [
+        1
+      ],
+      "unlockedDungeonIds": [
+        1,
+        2
+      ],
+      "unlockedDeityIds": [
+        "none",
+        "restoration",
+        "attrition",
+        "cunning",
+        "fortification",
+        "fertility",
+        "resonance",
+        "precision",
+        "fate",
+        "dusk",
+        "mirage",
+        "oblivion",
+        "discord"
+      ]
+    },
+    "catalogs": {
+      "selectableRaceIds": [
+        "caninian",
+        "lupinian",
+        "vulpinian",
+        "ursan",
+        "felidian",
+        "mustelid",
+        "leporian",
+        "cervin",
+        "procyonian",
+        "murid",
+        "mimorian"
+      ],
+      "selectableClassIds": [
+        "guardian",
+        "duelist",
+        "samurai",
+        "sword-saint",
+        "ranger",
+        "striker",
+        "ninja",
+        "wizard",
+        "sage",
+        "alchemist",
+        "pilgrim",
+        "lord"
+      ],
+      "selectablePredispositionIds": [
+        "aggressive",
+        "inquisitive",
+        "amiable",
+        "stubborn",
+        "evasive",
+        "introspective",
+        "devoted",
+        "serene",
+        "nimble",
+        "perceptive",
+        "precise",
+        "resourceful"
+      ],
+      "selectableLineageIds": [
+        "sandstorm",
+        "ashen_capital",
+        "blaze_peak",
+        "abyssal_sea",
+        "firmament",
+        "frozen_forest",
+        "utopia",
+        "machina",
+        "adaptation",
+        "fragment",
+        "windcross",
+        "oath"
+      ],
+      "unlockedMimorianEnemyIds": [],
+      "dungeons": [
+        {
+          "id": 1,
+          "tier": 1,
+          "displayName": "ケイナイアン平原"
+        },
+        {
+          "id": 2,
+          "tier": 2,
+          "displayName": "ルピニアンの亜寒帯"
+        }
+      ],
+      "deities": [
+        {
+          "id": "none",
+          "displayName": "信仰なし",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "restoration",
+          "displayName": "再生の女神",
+          "assignedPartyId": 1,
+          "assignedPartyName": "PT1"
+        },
+        {
+          "id": "attrition",
+          "displayName": "消耗の神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "cunning",
+          "displayName": "狡猾の神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "fortification",
+          "displayName": "防備の神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "fertility",
+          "displayName": "豊穣の女神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "resonance",
+          "displayName": "共鳴の神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "precision",
+          "displayName": "精密の女神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "fate",
+          "displayName": "運命の神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "dusk",
+          "displayName": "黄昏の神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "mirage",
+          "displayName": "幻影の女神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "oblivion",
+          "displayName": "忘却されし神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        },
+        {
+          "id": "discord",
+          "displayName": "不和の神",
+          "assignedPartyId": null,
+          "assignedPartyName": null
+        }
+      ]
+    },
+    "inventory": {
+      "equipmentByCategory": {
+        "armor": {
+          "ownedCount": 430,
+          "autoEquipmentCandidateCount": 10,
+          "bestCandidate": {
+            "itemId": 1101,
+            "variantId": "1101-4-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 4,
+            "superRare": 0
+          }
+        },
+        "robe": {
+          "ownedCount": 433,
+          "autoEquipmentCandidateCount": 11,
+          "bestCandidate": {
+            "itemId": 1102,
+            "variantId": "1102-5-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 5,
+            "superRare": 0
+          }
+        },
+        "shield": {
+          "ownedCount": 456,
+          "autoEquipmentCandidateCount": 16,
+          "bestCandidate": {
+            "itemId": 1103,
+            "variantId": "1103-6-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 6,
+            "superRare": 0
+          }
+        },
+        "sword": {
+          "ownedCount": 429,
+          "autoEquipmentCandidateCount": 13,
+          "bestCandidate": {
+            "itemId": 1104,
+            "variantId": "1104-5-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 5,
+            "superRare": 0
+          }
+        },
+        "katana": {
+          "ownedCount": 478,
+          "autoEquipmentCandidateCount": 13,
+          "bestCandidate": {
+            "itemId": 1105,
+            "variantId": "1105-5-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 5,
+            "superRare": 0
+          }
+        },
+        "gauntlet": {
+          "ownedCount": 438,
+          "autoEquipmentCandidateCount": 10,
+          "bestCandidate": {
+            "itemId": 1106,
+            "variantId": "1106-4-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 4,
+            "superRare": 0
+          }
+        },
+        "arrow": {
+          "ownedCount": 386,
+          "autoEquipmentCandidateCount": 11,
+          "bestCandidate": {
+            "itemId": 1107,
+            "variantId": "1107-6-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 6,
+            "superRare": 0
+          }
+        },
+        "bolt": {
+          "ownedCount": 418,
+          "autoEquipmentCandidateCount": 11,
+          "bestCandidate": {
+            "itemId": 1108,
+            "variantId": "1108-4-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 4,
+            "superRare": 0
+          }
+        },
+        "archery": {
+          "ownedCount": 396,
+          "autoEquipmentCandidateCount": 10,
+          "bestCandidate": {
+            "itemId": 1109,
+            "variantId": "1109-4-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 4,
+            "superRare": 0
+          }
+        },
+        "wand": {
+          "ownedCount": 406,
+          "autoEquipmentCandidateCount": 8,
+          "bestCandidate": {
+            "itemId": 1110,
+            "variantId": "1110-4-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 4,
+            "superRare": 0
+          }
+        },
+        "grimoire": {
+          "ownedCount": 390,
+          "autoEquipmentCandidateCount": 10,
+          "bestCandidate": {
+            "itemId": 1111,
+            "variantId": "1111-4-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 4,
+            "superRare": 0
+          }
+        },
+        "catalyst": {
+          "ownedCount": 422,
+          "autoEquipmentCandidateCount": 10,
+          "bestCandidate": {
+            "itemId": 1112,
+            "variantId": "1112-4-0",
+            "tier": 1,
+            "rarity": "common",
+            "enhancement": 4,
+            "superRare": 0
+          }
+        }
+      }
+    },
+    "parties": [
+      {
+        "id": 1,
+        "name": "PT1",
+        "level": 10,
+        "experience": 200,
+        "experienceToNext": 7830,
+        "hp": {
+          "current": 1468,
+          "maximum": 1468
+        },
+        "condition": {
+          "value": 6,
+          "key": "condition.normal"
+        },
+        "deityId": "restoration",
+        "state": {
+          "id": "state.idle",
+          "progressKind": "none",
+          "completedSteps": null,
+          "totalSteps": null,
+          "startedAt": null,
+          "endsAt": null
+        },
+        "automation": {
+          "jewelPriority": true
+        },
+        "expedition": {
+          "destinationMode": "fixed",
+          "selectedDungeonId": 1,
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "maximumDifficultyOffset": 80,
+          "instantExpeditionStock": 6,
+          "instantExpeditionChargeStartedAt": null,
+          "normalSortieAvailable": false,
+          "godBattleAvailable": false
+        },
+        "defeatedBossDungeonIds": [
+          1
+        ],
+        "clearGates": [
+          {
+            "id": "1014",
+            "kind": "clear",
+            "current": 7,
+            "required": 7,
+            "satisfied": true,
+            "dungeonId": 1,
+            "floor": 1,
+            "room": 4
+          },
+          {
+            "id": "1024",
+            "kind": "clear",
+            "current": 6,
+            "required": 6,
+            "satisfied": true,
+            "dungeonId": 1,
+            "floor": 2,
+            "room": 4
+          },
+          {
+            "id": "1034",
+            "kind": "clear",
+            "current": 5,
+            "required": 5,
+            "satisfied": true,
+            "dungeonId": 1,
+            "floor": 3,
+            "room": 4
+          },
+          {
+            "id": "1044",
+            "kind": "clear",
+            "current": 4,
+            "required": 4,
+            "satisfied": true,
+            "dungeonId": 1,
+            "floor": 4,
+            "room": 4
+          },
+          {
+            "id": "1054",
+            "kind": "clear",
+            "current": 3,
+            "required": 3,
+            "satisfied": true,
+            "dungeonId": 1,
+            "floor": 5,
+            "room": 4
+          },
+          {
+            "id": "1604",
+            "kind": "clear",
+            "current": 2,
+            "required": 2,
+            "satisfied": true,
+            "dungeonId": 1,
+            "floor": 6,
+            "room": 4
+          },
+          {
+            "id": "godBattle:1",
+            "kind": "godBattle",
+            "current": 41,
+            "required": 3,
+            "satisfied": true,
+            "dungeonId": 1,
+            "floor": null,
+            "room": null
+          }
+        ],
+        "sideQuest": null,
+        "characters": [
+          {
+            "id": 6,
+            "row": 1,
+            "isUnique": true,
+            "build": {
+              "name": "ライカ",
+              "gender": "female",
+              "raceId": "caninian",
+              "lineageId": "pioneer",
+              "predispositionId": "none",
+              "mainClassId": "lord",
+              "subClassId": "alchemist",
+              "mimorianEnemyId": null
+            },
+            "autoEquipmentMode": 1,
+            "computed": {
+              "physicalOffenseMultiplier": 1,
+              "magicalOffenseMultiplier": 1,
+              "physicalDefenseAmplifier": 0.76,
+              "magicalDefenseAmplifier": 0.88,
+              "penetrationMultiplier": 0,
+              "elementalOffenseValue": 1,
+              "maximumEquipmentSlots": 7,
+              "baseStats": {
+                "vitality": 10,
+                "strength": 10,
+                "intelligence": 10,
+                "mind": 10
+              },
+              "rangedAttack": 0,
+              "rangedNumberOfAttacks": 0,
+              "magicalAttack": 120,
+              "magicalNumberOfAttacks": 4,
+              "meleeAttack": 0,
+              "meleeNumberOfAttacks": 0,
+              "physicalDefense": 106,
+              "magicalDefense": 57,
+              "accuracy": 0,
+              "evasion": -0.001,
+              "elementalOffense": "none",
+              "elementalResistance": {
+                "fire": 1,
+                "thunder": 1,
+                "ice": 1.5
+              },
+              "abilities": [
+                {
+                  "id": "howl",
+                  "level": 1
+                },
+                {
+                  "id": "command",
+                  "level": 1
+                },
+                {
+                  "id": "squander",
+                  "level": 1
+                },
+                {
+                  "id": "seeker",
+                  "level": 1
+                }
+              ]
+            },
+            "equipment": [
+              {
+                "slotIndex": 0,
+                "locked": true,
+                "item": {
+                  "itemId": 1111,
+                  "variantId": "1111-5-0",
+                  "category": "grimoire",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1111,
+                    "category": "grimoire",
+                    "name": "走り書きの本",
+                    "magicalAttack": 12,
+                    "magicalNoABonus": -1,
+                    "evasionBonus": -0.001,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 1,
+                "locked": true,
+                "item": {
+                  "itemId": 1112,
+                  "variantId": "1112-5-0",
+                  "category": "catalyst",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1112,
+                    "category": "catalyst",
+                    "name": "にごり石",
+                    "magicalNoA": 0.8,
+                    "magicalNoABonus": 1,
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 2,
+                "locked": true,
+                "item": {
+                  "itemId": 1110,
+                  "variantId": "1110-5-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1110,
+                    "category": "wand",
+                    "name": "ひび杖",
+                    "magicalAttack": 9,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.23
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 3,
+                "locked": true,
+                "item": {
+                  "itemId": 1101,
+                  "variantId": "1101-5-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1101,
+                    "category": "armor",
+                    "name": "継ぎ革の服",
+                    "physicalDefense": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 4,
+                "locked": true,
+                "item": {
+                  "itemId": 1203,
+                  "variantId": "1203-4-0",
+                  "category": "robe",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1203,
+                    "category": "robe",
+                    "name": "麻布の法衣",
+                    "magicalDefense": 19,
+                    "bonuses": [
+                      {
+                        "type": "magical_defense",
+                        "value": 0.12
+                      }
+                    ],
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 5,
+                "locked": false,
+                "item": {
+                  "itemId": 1219,
+                  "variantId": "1219-3-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 3,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1219,
+                    "category": "wand",
+                    "name": "灰木の杖",
+                    "magicalAttack": 13,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.22
+                      }
+                    ],
+                    "enhancement": 3,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 6,
+                "locked": false,
+                "item": {
+                  "itemId": 1301,
+                  "variantId": "1301-2-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 2,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1301,
+                    "category": "armor",
+                    "name": "獣革の鎧",
+                    "physicalDefense": 29,
+                    "partyHP": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.11
+                      }
+                    ],
+                    "enhancement": 2,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "row": 2,
+            "isUnique": false,
+            "build": {
+              "name": "セルフィン",
+              "gender": "female",
+              "raceId": "cervin",
+              "lineageId": "adaptation",
+              "predispositionId": "evasive",
+              "mainClassId": "pilgrim",
+              "subClassId": "wizard",
+              "mimorianEnemyId": null
+            },
+            "autoEquipmentMode": 1,
+            "computed": {
+              "physicalOffenseMultiplier": 1,
+              "magicalOffenseMultiplier": 1,
+              "physicalDefenseAmplifier": 0.9119999999999999,
+              "magicalDefenseAmplifier": 0.7917000000000001,
+              "penetrationMultiplier": 0,
+              "elementalOffenseValue": 1,
+              "maximumEquipmentSlots": 6,
+              "baseStats": {
+                "vitality": 8,
+                "strength": 7,
+                "intelligence": 13,
+                "mind": 11
+              },
+              "rangedAttack": 0,
+              "rangedNumberOfAttacks": 0,
+              "magicalAttack": 110,
+              "magicalNumberOfAttacks": 4,
+              "meleeAttack": 0,
+              "meleeNumberOfAttacks": 0,
+              "physicalDefense": 108,
+              "magicalDefense": 108,
+              "accuracy": 0,
+              "evasion": 0.02,
+              "elementalOffense": "none",
+              "elementalResistance": {
+                "fire": 1,
+                "thunder": 0.75,
+                "ice": 1.5
+              },
+              "abilities": [
+                {
+                  "id": "focus",
+                  "level": 1
+                },
+                {
+                  "id": "m_barrier",
+                  "level": 1
+                },
+                {
+                  "id": "tithe",
+                  "level": 1
+                },
+                {
+                  "id": "null_antagonism",
+                  "level": 1
+                }
+              ]
+            },
+            "equipment": [
+              {
+                "slotIndex": 0,
+                "locked": true,
+                "item": {
+                  "itemId": 1219,
+                  "variantId": "1219-4-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1219,
+                    "category": "wand",
+                    "name": "灰木の杖",
+                    "magicalAttack": 13,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.22
+                      }
+                    ],
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 1,
+                "locked": true,
+                "item": {
+                  "itemId": 1112,
+                  "variantId": "1112-4-0",
+                  "category": "catalyst",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1112,
+                    "category": "catalyst",
+                    "name": "にごり石",
+                    "magicalNoA": 0.8,
+                    "magicalNoABonus": 1,
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 2,
+                "locked": true,
+                "item": {
+                  "itemId": 1301,
+                  "variantId": "1301-3-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 3,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1301,
+                    "category": "armor",
+                    "name": "獣革の鎧",
+                    "physicalDefense": 29,
+                    "partyHP": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.11
+                      }
+                    ],
+                    "enhancement": 3,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 3,
+                "locked": true,
+                "item": {
+                  "itemId": 1102,
+                  "variantId": "1102-6-0",
+                  "category": "robe",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 6,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1102,
+                    "category": "robe",
+                    "name": "粗布のローブ",
+                    "magicalDefense": 14,
+                    "bonuses": [
+                      {
+                        "type": "magical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 6,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 4,
+                "locked": true,
+                "item": {
+                  "itemId": 1101,
+                  "variantId": "1101-4-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1101,
+                    "category": "armor",
+                    "name": "継ぎ革の服",
+                    "physicalDefense": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 5,
+                "locked": false,
+                "item": {
+                  "itemId": 1110,
+                  "variantId": "1110-4-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1110,
+                    "category": "wand",
+                    "name": "ひび杖",
+                    "magicalAttack": 9,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.23
+                      }
+                    ],
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              }
+            ]
+          },
+          {
+            "id": 1,
+            "row": 3,
+            "isUnique": true,
+            "build": {
+              "name": "ケモ",
+              "gender": "male",
+              "raceId": "kemoria",
+              "lineageId": "unascertained",
+              "predispositionId": "none",
+              "mainClassId": "guardian",
+              "subClassId": "sword-saint",
+              "mimorianEnemyId": null
+            },
+            "autoEquipmentMode": 1,
+            "computed": {
+              "physicalOffenseMultiplier": 1,
+              "magicalOffenseMultiplier": 1,
+              "physicalDefenseAmplifier": 0.76,
+              "magicalDefenseAmplifier": 0.6825,
+              "penetrationMultiplier": 0.01,
+              "elementalOffenseValue": 1,
+              "maximumEquipmentSlots": 10,
+              "baseStats": {
+                "vitality": 10,
+                "strength": 10,
+                "intelligence": 10,
+                "mind": 11
+              },
+              "rangedAttack": 0,
+              "rangedNumberOfAttacks": 0,
+              "magicalAttack": 0,
+              "magicalNumberOfAttacks": 0,
+              "meleeAttack": 188,
+              "meleeNumberOfAttacks": 9,
+              "physicalDefense": 173,
+              "magicalDefense": 100,
+              "accuracy": 0.001,
+              "evasion": 0.012,
+              "elementalOffense": "none",
+              "elementalResistance": {
+                "fire": 1,
+                "thunder": 1,
+                "ice": 1.5
+              },
+              "abilities": [
+                {
+                  "id": "defender",
+                  "level": 1
+                }
+              ]
+            },
+            "equipment": [
+              {
+                "slotIndex": 0,
+                "locked": true,
+                "item": {
+                  "itemId": 1101,
+                  "variantId": "1101-6-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 6,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1101,
+                    "category": "armor",
+                    "name": "継ぎ革の服",
+                    "physicalDefense": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 6,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 1,
+                "locked": true,
+                "item": {
+                  "itemId": 1103,
+                  "variantId": "1103-6-0",
+                  "category": "shield",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 6,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1103,
+                    "category": "shield",
+                    "name": "木の丸盾",
+                    "partyHP": 20,
+                    "evasionBonus": 0.013,
+                    "enhancement": 6,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 2,
+                "locked": true,
+                "item": {
+                  "itemId": 1203,
+                  "variantId": "1203-2-0",
+                  "category": "robe",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 2,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1203,
+                    "category": "robe",
+                    "name": "麻布の法衣",
+                    "magicalDefense": 19,
+                    "bonuses": [
+                      {
+                        "type": "magical_defense",
+                        "value": 0.12
+                      }
+                    ],
+                    "enhancement": 2,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 3,
+                "locked": true,
+                "item": {
+                  "itemId": 1105,
+                  "variantId": "1105-5-0",
+                  "category": "katana",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1105,
+                    "category": "katana",
+                    "name": "古びた小刀",
+                    "meleeAttack": 18,
+                    "meleeNoABonus": -1,
+                    "evasionBonus": -0.001,
+                    "bonuses": [
+                      {
+                        "type": "melee_attack",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 4,
+                "locked": true,
+                "item": {
+                  "itemId": 1102,
+                  "variantId": "1102-6-0",
+                  "category": "robe",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 6,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1102,
+                    "category": "robe",
+                    "name": "粗布のローブ",
+                    "magicalDefense": 14,
+                    "bonuses": [
+                      {
+                        "type": "magical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 6,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 5,
+                "locked": true,
+                "item": {
+                  "itemId": 1211,
+                  "variantId": "1211-3-0",
+                  "category": "gauntlet",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 3,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1211,
+                    "category": "gauntlet",
+                    "name": "硬革の手甲",
+                    "meleeNoA": 1.08,
+                    "meleeNoABonus": 2,
+                    "enhancement": 3,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 6,
+                "locked": true,
+                "item": {
+                  "itemId": 1106,
+                  "variantId": "1106-5-0",
+                  "category": "gauntlet",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1106,
+                    "category": "gauntlet",
+                    "name": "布巻きの手甲",
+                    "meleeNoA": 0.8,
+                    "meleeNoABonus": 1,
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 7,
+                "locked": true,
+                "item": {
+                  "itemId": 1104,
+                  "variantId": "1104-6-0",
+                  "category": "sword",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 6,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1104,
+                    "category": "sword",
+                    "name": "欠けた短剣",
+                    "meleeAttack": 14,
+                    "bonuses": [
+                      {
+                        "type": "melee_attack",
+                        "value": 0.23
+                      }
+                    ],
+                    "accuracyBonus": 0.001,
+                    "enhancement": 6,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 8,
+                "locked": false,
+                "item": {
+                  "itemId": 1301,
+                  "variantId": "1301-1-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 1,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1301,
+                    "category": "armor",
+                    "name": "獣革の鎧",
+                    "physicalDefense": 29,
+                    "partyHP": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.11
+                      }
+                    ],
+                    "enhancement": 1,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 9,
+                "locked": false,
+                "item": {
+                  "itemId": 1407,
+                  "variantId": "1407-2-0",
+                  "category": "katana",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 2,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1407,
+                    "category": "katana",
+                    "name": "若牙の刀",
+                    "meleeAttack": 35,
+                    "partyHP": 19,
+                    "penetBonus": 0.01,
+                    "mindBonus": 1,
+                    "enhancement": 2,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "row": 4,
+            "isUnique": false,
+            "build": {
+              "name": "ロップ",
+              "gender": "female",
+              "raceId": "leporian",
+              "lineageId": "adaptation",
+              "predispositionId": "evasive",
+              "mainClassId": "ninja",
+              "subClassId": "pilgrim",
+              "mimorianEnemyId": null
+            },
+            "autoEquipmentMode": 1,
+            "computed": {
+              "physicalOffenseMultiplier": 1,
+              "magicalOffenseMultiplier": 1,
+              "physicalDefenseAmplifier": 0.9790000000000001,
+              "magicalDefenseAmplifier": 0.87,
+              "penetrationMultiplier": 0,
+              "elementalOffenseValue": 1,
+              "maximumEquipmentSlots": 7,
+              "baseStats": {
+                "vitality": 9,
+                "strength": 8,
+                "intelligence": 14,
+                "mind": 10
+              },
+              "rangedAttack": 113,
+              "rangedNumberOfAttacks": 13,
+              "magicalAttack": 0,
+              "magicalNumberOfAttacks": 0,
+              "meleeAttack": 0,
+              "meleeNumberOfAttacks": 0,
+              "physicalDefense": 79,
+              "magicalDefense": 75,
+              "accuracy": 0.007,
+              "evasion": 0.019,
+              "elementalOffense": "none",
+              "elementalResistance": {
+                "fire": 1,
+                "thunder": 0.75,
+                "ice": 1.5
+              },
+              "abilities": [
+                {
+                  "id": "composure",
+                  "level": 1
+                },
+                {
+                  "id": "first_strike",
+                  "level": 1
+                },
+                {
+                  "id": "null_antagonism",
+                  "level": 1
+                }
+              ]
+            },
+            "equipment": [
+              {
+                "slotIndex": 0,
+                "locked": true,
+                "item": {
+                  "itemId": 1107,
+                  "variantId": "1107-5-0",
+                  "category": "arrow",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1107,
+                    "category": "arrow",
+                    "name": "欠け矢",
+                    "rangedAttack": 11,
+                    "bonuses": [
+                      {
+                        "type": "ranged_attack",
+                        "value": 0.23
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 1,
+                "locked": true,
+                "item": {
+                  "itemId": 1109,
+                  "variantId": "1109-5-0",
+                  "category": "archery",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1109,
+                    "category": "archery",
+                    "name": "つる弓",
+                    "rangedNoA": 0.8,
+                    "rangedNoABonus": 1,
+                    "accuracyBonus": 0.001,
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 2,
+                "locked": true,
+                "item": {
+                  "itemId": 1213,
+                  "variantId": "1213-1-0",
+                  "category": "arrow",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 1,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1213,
+                    "category": "arrow",
+                    "name": "羽根矢",
+                    "rangedAttack": 14,
+                    "bonuses": [
+                      {
+                        "type": "ranged_attack",
+                        "value": 0.22
+                      }
+                    ],
+                    "enhancement": 1,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 3,
+                "locked": true,
+                "item": {
+                  "itemId": 1108,
+                  "variantId": "1108-4-0",
+                  "category": "bolt",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1108,
+                    "category": "bolt",
+                    "name": "短ボルト",
+                    "rangedAttack": 14,
+                    "rangedNoABonus": -1,
+                    "evasionBonus": -0.001,
+                    "bonuses": [
+                      {
+                        "type": "ranged_attack",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 4,
+                "locked": true,
+                "item": {
+                  "itemId": 1301,
+                  "variantId": "1301-3-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 3,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1301,
+                    "category": "armor",
+                    "name": "獣革の鎧",
+                    "physicalDefense": 29,
+                    "partyHP": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.11
+                      }
+                    ],
+                    "enhancement": 3,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 5,
+                "locked": true,
+                "item": {
+                  "itemId": 1102,
+                  "variantId": "1102-5-0",
+                  "category": "robe",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1102,
+                    "category": "robe",
+                    "name": "粗布のローブ",
+                    "magicalDefense": 14,
+                    "bonuses": [
+                      {
+                        "type": "magical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 6,
+                "locked": false,
+                "item": {
+                  "itemId": 1308,
+                  "variantId": "1308-3-0",
+                  "category": "archery",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 3,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1308,
+                    "category": "archery",
+                    "name": "甲殻弓",
+                    "rangedNoA": 1.34,
+                    "rangedNoABonus": 3,
+                    "accuracyBonus": 0.006,
+                    "enhancement": 3,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "row": 5,
+            "isUnique": false,
+            "build": {
+              "name": "ボルグ",
+              "gender": "female",
+              "raceId": "ursan",
+              "lineageId": "adaptation",
+              "predispositionId": "evasive",
+              "mainClassId": "alchemist",
+              "subClassId": "pilgrim",
+              "mimorianEnemyId": null
+            },
+            "autoEquipmentMode": 1,
+            "computed": {
+              "physicalOffenseMultiplier": 1,
+              "magicalOffenseMultiplier": 1,
+              "physicalDefenseAmplifier": 0.6612,
+              "magicalDefenseAmplifier": 1.1484,
+              "penetrationMultiplier": 0,
+              "elementalOffenseValue": 1,
+              "maximumEquipmentSlots": 7,
+              "baseStats": {
+                "vitality": 13,
+                "strength": 11,
+                "intelligence": 7,
+                "mind": 7
+              },
+              "rangedAttack": 0,
+              "rangedNumberOfAttacks": 0,
+              "magicalAttack": 101,
+              "magicalNumberOfAttacks": 14,
+              "meleeAttack": 0,
+              "meleeNumberOfAttacks": 0,
+              "physicalDefense": 60,
+              "magicalDefense": 75,
+              "accuracy": 0,
+              "evasion": 0.019,
+              "elementalOffense": "none",
+              "elementalResistance": {
+                "fire": 1,
+                "thunder": 0.75,
+                "ice": 1.5
+              },
+              "abilities": [
+                {
+                  "id": "bulwark",
+                  "level": 1
+                },
+                {
+                  "id": "arcane_stability",
+                  "level": 1
+                },
+                {
+                  "id": "null_antagonism",
+                  "level": 1
+                }
+              ]
+            },
+            "equipment": [
+              {
+                "slotIndex": 0,
+                "locked": true,
+                "item": {
+                  "itemId": 1111,
+                  "variantId": "1111-5-0",
+                  "category": "grimoire",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1111,
+                    "category": "grimoire",
+                    "name": "走り書きの本",
+                    "magicalAttack": 12,
+                    "magicalNoABonus": -1,
+                    "evasionBonus": -0.001,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 1,
+                "locked": true,
+                "item": {
+                  "itemId": 1112,
+                  "variantId": "1112-5-0",
+                  "category": "catalyst",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1112,
+                    "category": "catalyst",
+                    "name": "にごり石",
+                    "magicalNoA": 0.8,
+                    "magicalNoABonus": 1,
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 2,
+                "locked": true,
+                "item": {
+                  "itemId": 1110,
+                  "variantId": "1110-5-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1110,
+                    "category": "wand",
+                    "name": "ひび杖",
+                    "magicalAttack": 9,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.23
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 3,
+                "locked": true,
+                "item": {
+                  "itemId": 1101,
+                  "variantId": "1101-5-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1101,
+                    "category": "armor",
+                    "name": "継ぎ革の服",
+                    "physicalDefense": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 4,
+                "locked": true,
+                "item": {
+                  "itemId": 1102,
+                  "variantId": "1102-5-0",
+                  "category": "robe",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1102,
+                    "category": "robe",
+                    "name": "粗布のローブ",
+                    "magicalDefense": 14,
+                    "bonuses": [
+                      {
+                        "type": "magical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 5,
+                "locked": false,
+                "item": {
+                  "itemId": 1219,
+                  "variantId": "1219-3-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 3,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1219,
+                    "category": "wand",
+                    "name": "灰木の杖",
+                    "magicalAttack": 13,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.22
+                      }
+                    ],
+                    "enhancement": 3,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 6,
+                "locked": false,
+                "item": {
+                  "itemId": 1309,
+                  "variantId": "1309-2-0",
+                  "category": "catalyst",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 2,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1309,
+                    "category": "catalyst",
+                    "name": "軽羽石",
+                    "magicalNoA": 1.34,
+                    "magicalNoABonus": 3,
+                    "partyHP": 11,
+                    "enhancement": 2,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "row": 6,
+            "isUnique": false,
+            "build": {
+              "name": "グルン",
+              "gender": "male",
+              "raceId": "ursan",
+              "lineageId": "adaptation",
+              "predispositionId": "evasive",
+              "mainClassId": "wizard",
+              "subClassId": "alchemist",
+              "mimorianEnemyId": null
+            },
+            "autoEquipmentMode": 1,
+            "computed": {
+              "physicalOffenseMultiplier": 1,
+              "magicalOffenseMultiplier": 1,
+              "physicalDefenseAmplifier": 0.6612,
+              "magicalDefenseAmplifier": 1.1484,
+              "penetrationMultiplier": 0,
+              "elementalOffenseValue": 1,
+              "maximumEquipmentSlots": 7,
+              "baseStats": {
+                "vitality": 13,
+                "strength": 11,
+                "intelligence": 7,
+                "mind": 7
+              },
+              "rangedAttack": 0,
+              "rangedNumberOfAttacks": 0,
+              "magicalAttack": 106,
+              "magicalNumberOfAttacks": 12,
+              "meleeAttack": 0,
+              "meleeNumberOfAttacks": 0,
+              "physicalDefense": 47,
+              "magicalDefense": 54,
+              "accuracy": 0,
+              "evasion": 0.019,
+              "elementalOffense": "none",
+              "elementalResistance": {
+                "fire": 1,
+                "thunder": 0.75,
+                "ice": 1.5
+              },
+              "abilities": [
+                {
+                  "id": "bulwark",
+                  "level": 1
+                },
+                {
+                  "id": "resonance",
+                  "level": 1
+                },
+                {
+                  "id": "null_antagonism",
+                  "level": 1
+                }
+              ]
+            },
+            "equipment": [
+              {
+                "slotIndex": 0,
+                "locked": true,
+                "item": {
+                  "itemId": 1110,
+                  "variantId": "1110-4-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1110,
+                    "category": "wand",
+                    "name": "ひび杖",
+                    "magicalAttack": 9,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.23
+                      }
+                    ],
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 1,
+                "locked": true,
+                "item": {
+                  "itemId": 1112,
+                  "variantId": "1112-4-0",
+                  "category": "catalyst",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1112,
+                    "category": "catalyst",
+                    "name": "にごり石",
+                    "magicalNoA": 0.8,
+                    "magicalNoABonus": 1,
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 2,
+                "locked": true,
+                "item": {
+                  "itemId": 1111,
+                  "variantId": "1111-5-0",
+                  "category": "grimoire",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1111,
+                    "category": "grimoire",
+                    "name": "走り書きの本",
+                    "magicalAttack": 12,
+                    "magicalNoABonus": -1,
+                    "evasionBonus": -0.001,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 3,
+                "locked": true,
+                "item": {
+                  "itemId": 1102,
+                  "variantId": "1102-5-0",
+                  "category": "robe",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 5,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1102,
+                    "category": "robe",
+                    "name": "粗布のローブ",
+                    "magicalDefense": 14,
+                    "bonuses": [
+                      {
+                        "type": "magical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 5,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 4,
+                "locked": true,
+                "item": {
+                  "itemId": 1101,
+                  "variantId": "1101-4-0",
+                  "category": "armor",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 4,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1101,
+                    "category": "armor",
+                    "name": "継ぎ革の服",
+                    "physicalDefense": 17,
+                    "bonuses": [
+                      {
+                        "type": "physical_defense",
+                        "value": 0.13
+                      }
+                    ],
+                    "enhancement": 4,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 5,
+                "locked": false,
+                "item": {
+                  "itemId": 1219,
+                  "variantId": "1219-2-0",
+                  "category": "wand",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 2,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1219,
+                    "category": "wand",
+                    "name": "灰木の杖",
+                    "magicalAttack": 13,
+                    "bonuses": [
+                      {
+                        "type": "magical_attack",
+                        "value": 0.22
+                      }
+                    ],
+                    "enhancement": 2,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              },
+              {
+                "slotIndex": 6,
+                "locked": false,
+                "item": {
+                  "itemId": 1309,
+                  "variantId": "1309-1-0",
+                  "category": "catalyst",
+                  "tier": 1,
+                  "rarity": "common",
+                  "enhancement": 1,
+                  "superRare": 0,
+                  "rawStats": {
+                    "id": 1309,
+                    "category": "catalyst",
+                    "name": "軽羽石",
+                    "magicalNoA": 1.34,
+                    "magicalNoABonus": 3,
+                    "partyHP": 11,
+                    "enhancement": 1,
+                    "superRare": 0
+                  },
+                  "jewel": null
+                }
+              }
+            ]
+          }
+        ],
+        "latestExpedition": {
+          "dungeonId": 1,
+          "difficultyOffset": 0,
+          "finalOutcome": "Clear",
+          "returnReason": "clear",
+          "completedRooms": 24,
+          "totalRooms": 24,
+          "totalExperience": 112,
+          "rewardsByRarity": {
+            "common": 3,
+            "uncommon": 1,
+            "eliteRare": 0,
+            "bossRare": 0,
+            "mythicRare": 0
+          },
+          "autoSellCount": 25,
+          "autoSellProfit": 300,
+          "remainingHp": 843,
+          "maximumHp": 1468,
+          "completedAt": 1788862824406
+        }
+      }
+    ],
+    "legalActions": []
+  },
+  "statusTable": {
+    "headers": [
+      "PT-列",
+      "名前, ビルド",
+      "物防",
+      "魔防",
+      "回避,貫通",
+      "攻撃",
+      "属性耐性",
+      "アビリティ"
+    ],
+    "rows": [
+      [
+        "**1-1**",
+        "**ライカ, 🐶女君錬先-**",
+        "106. 76%",
+        "57. 88%",
+        "-1, 0%",
+        "魔120. 100%, 4回",
+        "100%, 100%, 100%",
+        "遠吠え1, 指揮1, 浪費1, 探究者1"
+      ],
+      [
+        "**1-2**",
+        "**セルフィン, 🦌女巡魔適避**",
+        "108. 91%",
+        "108. 79%",
+        "+20, 0%",
+        "魔110. 100%, 4回",
+        "100%, 100%, 75%",
+        "集中1, 魔法障壁1, 十分の一税1, 敵対無効化1"
+      ],
+      [
+        "**1-3**",
+        "**ケモ, 🐾男防聖不-**",
+        "173. 76%",
+        "100. 68%",
+        "+12, 1%",
+        "遠0. 100%, 0回/近188. 100%, 9回",
+        "100%, 100%, 100%",
+        "防人1"
+      ],
+      [
+        "**1-4**",
+        "**ロップ, 🐰女忍巡適避**",
+        "79. 97%",
+        "75. 87%",
+        "+19, 0%",
+        "遠113. 100%, 13回",
+        "100%, 100%, 75%",
+        "平静1, 先制攻撃1, 敵対無効化1"
+      ],
+      [
+        "**1-5**",
+        "**ボルグ, 🐻女錬巡適避**",
+        "60. 66%",
+        "75. 114%",
+        "+19, 0%",
+        "魔101. 100%, 14回",
+        "100%, 100%, 75%",
+        "壁1, 術式安定1, 敵対無効化1"
+      ],
+      [
+        "**1-6**",
+        "**グルン, 🐻男魔錬適避**",
+        "47. 66%",
+        "54. 114%",
+        "+19, 0%",
+        "魔106. 100%, 12回",
+        "100%, 100%, 75%",
+        "壁1, 共鳴1, 敵対無効化1"
+      ]
+    ]
+  }
+}

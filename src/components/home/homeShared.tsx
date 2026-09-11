@@ -1,3 +1,4 @@
+import { abilityLevelValue } from '../../game/abilityLevelScales';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ABILITY_BASE_NAMES } from '../../data/abilityNames';
@@ -38,6 +39,7 @@ import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
 import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
+import type { EquipmentSetLoadMode } from '../../game/equipmentSets';
 import {
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 AFK_MAX_REAL_ELAPSED_MS,
@@ -181,6 +183,8 @@ export interface HomeScreenProps {
   onDismissAllNotifications: () => void;
   bags: GameBags;
   actions: {
+    getApiReadiness: () => 'ready' | 'save_error';
+    commitApiState: (state: GameState) => Promise<void>;
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     autoSelectDungeon: (partyIndex: number, dungeonId: number) => void;
@@ -204,6 +208,11 @@ export interface HomeScreenProps {
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
+    removeAllEquipment: (characterId: number, partyIndex?: number) => void;
+    saveEquipmentSet: (characterId: number, name: string, createdAt: number, partyIndex?: number) => void;
+    renameEquipmentSet: (slot: number, name: string) => void;
+    deleteEquipmentSet: (slot: number) => void;
+    loadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
     toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
@@ -856,7 +865,7 @@ export function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): str
 export function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
   const focusLevel = abilities.find(a => a.id === 'focus')?.level ?? 0;
   if (focusLevel <= 0) return accuracyBonus;
-  const focusMultiplier = focusLevel >= 2 ? 1.3 : 1.2;
+  const focusMultiplier = abilityLevelValue('focus', focusLevel);
   return Math.ceil((accuracyBonus * focusMultiplier + Number.EPSILON) * 1000) / 1000;
 }
 
@@ -2343,10 +2352,7 @@ export function getEnemyArcMagicAbilityLevel(enemy: EnemyDef): number {
 }
 
 export function getArcMagicOffenseAmplifier(level: number): number {
-  if (level >= 3) return 4.2;
-  if (level >= 2) return 3.6;
-  if (level >= 1) return 3.0;
-  return 1.0;
+  return abilityLevelValue('arc_magic', level);
 }
 
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
@@ -3156,7 +3162,7 @@ export type AutoEquipmentRunSummary = {
 export type AutoEquipmentRunner = (
   targetPartyIndexes?: number[],
   targetCharacterIds?: Array<number | string>,
-  options?: { suppressNotifications?: boolean },
+  options?: { suppressNotifications?: boolean; forceFull?: boolean },
 ) => AutoEquipmentRunSummary;
 
 export const getAutoEquipmentModeLabel = (mode: AutoEquipmentMode): string => t(`party.equipment.autoMode.${mode}`);

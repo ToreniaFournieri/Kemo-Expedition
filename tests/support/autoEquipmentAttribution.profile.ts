@@ -1,3 +1,4 @@
+import { hasNewAvailability } from '../../src/game/inventoryAvailability.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -21,13 +22,14 @@ import {
 } from '../../src/game/partyComputation.ts';
 import { JEWELS_BY_ITEM_CATEGORY } from '../../src/game/jewel.ts';
 import {
+  AfkInventoryOverlay,
   applyAfkPartyTransactionForTesting,
   applyPlannedAfkPartyTransactionForTesting,
   applyAutoEquipmentProfileActions,
   applyAutoEquipmentProfileActionsSequentially,
 } from '../../src/hooks/useGameState.ts';
 import { commitAfkPartyChunk, createAfkPartyChunkResult } from '../../src/game/afkChunkCoordinator.ts';
-import type { GameState } from '../../src/types.ts';
+import { getVariantKey, type GameState } from '../../src/types/index.ts';
 
 function loadFixture(): GameState {
   const envelope = JSON.parse(readFileSync(
@@ -368,4 +370,96 @@ test('automatic-equipment attribution records bounded phase and workload counter
   assert.equal(result.characterCategoryMultiplierCacheHits, 1);
   assert.ok(result.phasesMs.inventoryScan >= 0);
   assert.ok(result.unclassifiedMs >= 0 && result.unclassifiedMs <= result.totalMs);
+});
+
+
+test('availability checks retain new item detection across mutable AFK overlay boundaries', () => {
+  const state = loadFixture();
+  const variant = Object.values(state.global.inventory)[0];
+  const base = { existing: { ...variant, count: 1 }, exhausted: { ...variant, count: 0 } };
+  const overlay = new AfkInventoryOverlay(base);
+  assert.equal(hasNewAvailability(base, overlay.record), false);
+  overlay.record.existing = { ...variant, count: 2 };
+  assert.equal(hasNewAvailability(base, overlay.record), false);
+  overlay.record.exhausted = { ...variant, count: 1 };
+  assert.equal(hasNewAvailability(base, overlay.record), true);
+  assert.equal(hasNewAvailability(overlay.record, overlay.record), false);
+  assert.equal(base.exhausted.count, 0);
+  delete overlay.record.exhausted;
+  delete overlay.record.existing;
+  assert.equal(hasNewAvailability(base, overlay.record), false);
+  overlay.record.new = { ...variant, count: 1 };
+  assert.equal(hasNewAvailability(base, overlay.record), true);
+});
+
+test('AFK planner sees newly committed availability and stamps final revisions exactly once', () => {
+  const base = loadFixture();
+  base.global.equipmentInventoryRevision = 10;
+  base.global.jewelInventoryRevision = 20;
+  base.parties[0].lastFullEquipmentRevision = 10;
+  base.parties[0].lastFullJewelRevision = 20;
+  const [key, variant] = Object.entries(base.global.inventory)[0];
+  base.global.inventory[key] = { ...variant, count: 0 };
+  base.global.jewels['might:8'] = 0;
+  const completed = structuredClone(base);
+  completed.global.inventory[key].count = 1;
+  completed.global.jewels['might:8'] = 1;
+  const result = createAfkPartyChunkResult({
+    jobId: 'availability-before-planning', partyIndex: 0, partyId: base.parties[0].id,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1000, cycleDurationMs: 100,
+    operationCount: 10, baseState: base, gameMode: 'm.kemo', cycleDurationScale: 1,
+  }, completed, 5);
+  let calls = 0;
+  const next = applyPlannedAfkPartyTransactionForTesting(base, result, (committed) => {
+    calls += 1;
+    assert.equal(committed.global.equipmentInventoryRevision, 11);
+    assert.equal(committed.global.jewelInventoryRevision, 21);
+    assert.equal(committed.parties[0].lastFullEquipmentRevision, 10);
+    return { actions: [{ type: 'STAMP_FULL_AUTO_EQUIPMENT', partyIndex: 0,
+      equipmentRevision: committed.global.equipmentInventoryRevision!,
+      jewelRevision: committed.global.jewelInventoryRevision! }] };
+  });
+  assert.equal(calls, 1);
+  assert.equal(next.global.equipmentInventoryRevision, 11);
+  assert.equal(next.global.jewelInventoryRevision, 21);
+  assert.equal(next.parties[0].lastFullEquipmentRevision, 11);
+  assert.equal(next.parties[0].lastFullJewelRevision, 21);
+  assert.equal(base.global.inventory[key].count, 0);
+
+  // Another FIFO transaction already made the same items available: quantity
+  // increases from this result must not mark availability dirty a second time.
+  const alreadyAvailable = structuredClone(base);
+  alreadyAvailable.global.inventory[key].count = 1;
+  alreadyAvailable.global.jewels['might:8'] = 1;
+  const duplicate = applyAfkPartyTransactionForTesting(alreadyAvailable, result, []);
+  assert.equal(duplicate.global.equipmentInventoryRevision, 10);
+  assert.equal(duplicate.global.jewelInventoryRevision, 20);
+});
+
+
+test('AFK FULL stamp includes availability created by its equipment commit', () => {
+  const base = loadFixture();
+  const character = base.parties[0].characters.find((member) => member.equipment.some(Boolean))!;
+  const slotIndex = character.equipment.findIndex(Boolean);
+  const item = character.equipment[slotIndex]!;
+  const key = getVariantKey(item);
+  base.global.inventory[key] = { item, count: 0, status: 'owned' };
+  base.global.equipmentInventoryRevision = 40;
+  const result = createAfkPartyChunkResult({
+    jobId: 'availability-after-equipment', partyIndex: 0, partyId: base.parties[0].id,
+    simulatedStartedAt: 0, simulatedCompletedAt: 1000, cycleDurationMs: 100,
+    operationCount: 10, baseState: base, gameMode: 'm.kemo', cycleDurationScale: 1,
+  }, structuredClone(base), 5);
+  const actions: AutoEquipmentProfileAction[] = [
+    { type: 'EQUIP_ITEM', partyIndex: 0, characterId: character.id, slotIndex, itemKey: null },
+    { type: 'STAMP_FULL_AUTO_EQUIPMENT', partyIndex: 0, equipmentRevision: 40, jewelRevision: base.global.jewelInventoryRevision ?? 0 },
+  ];
+  const next = applyAfkPartyTransactionForTesting(base, result, actions);
+  assert.equal(next.global.inventory[key].count, 1);
+  assert.equal(next.global.equipmentInventoryRevision, 41);
+  assert.equal(next.parties[0].lastFullEquipmentRevision, 41);
+  const independent = applyAutoEquipmentProfileActionsSequentially(commitAfkPartyChunk(base, result), actions);
+  assert.equal(JSON.stringify(serializeGameState(next)), JSON.stringify(serializeGameState(independent)));
+  const sequential = applyAutoEquipmentProfileActions(commitAfkPartyChunk(base, result), actions);
+  assert.equal(JSON.stringify(serializeGameState(next)), JSON.stringify(serializeGameState(sequential)));
 });

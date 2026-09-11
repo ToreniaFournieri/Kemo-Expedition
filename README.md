@@ -27,3 +27,25 @@ The built-in mechanic extension boundary is documented in [`docs/mechanic-extens
 
 
 - 記事 [冒ケモ オープンβテスト開始のお知らせ](https://note.com/fournieri/n/n0edb2cf72299?app_launch=false)
+
+### API-only AI Play evaluation
+
+Start with the [AI Play first-launch and connection guide](docs/ai-play-quickstart.md), including prerequisites, readiness checks, authenticated request examples, lease recovery and troubleshooting.
+
+Create a fresh isolated evaluation (use `--mode=normal` for Normal):
+
+```sh
+npm run ai-play -- --mode=orca --concept=MyConcept
+```
+
+The launcher prints a private connection-file path and waits for authenticated readiness. Read the endpoint, token and evaluation UUID from that handoff. Acquire control with `POST /experimental/v1/control/acquire`, then include both `Authorization: Bearer <token>` and `X-BoKemo-Control-Lease: <lease-token>` on gameplay calls. The profile stays paused during connection setup and lease gaps. Resume the same evaluation on the same version/build, mode and rules ID with:
+
+```sh
+npm run ai-play -- --mode=orca --resume=YOUR_EVALUATION_UUID
+```
+
+Read `/observation`, use `/build-options` or `/party-preview` to validate a configuration, apply it with the `configure_party` command, forecast with `/simulation` (1,000 trials), and advance actual play with `/sortie` (1–100 Cycles). Supply `revision` on previews/forecasts and `expectedRevision` on mutations. An optional `Idempotency-Key` header protects mutations against duplicate execution after a lost response. Replays still cost a counted call during an active evaluation. `/control/renew` keeps the lease alive without counting a call.
+
+The objective is the first normal Expedition 1 boss victory within 20,000 counted calls. Score is `10 × calls + actual sorties`, plus `100,000` for failure. An accepted batch always completes its full requested count. No Gods Battles, debug tools, direct save inspection or internal runtime calls are allowed for play. Repository reading is permitted. See [the regulation](Specification_12.1_AI_PLAY_REGURATION.md) and [endpoint contracts](Specification_9.1.3_API_ENDPOINTS.md).
+
+`GET /evaluation` requires bearer authentication but no lease and remains readable after termination. Reports are written to `AI_play_report/` in a source checkout, or `Documents/BoKemo/AI_play_report/` in packaged releases. Retrieve the full accounting ledger with `GET /evaluation/ledger` and the frozen final public snapshot, status table and winning-batch evidence with `GET /evaluation/report`. The latter is available only after termination. Credentials are never included in reports.

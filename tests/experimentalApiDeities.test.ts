@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const apiSource = readFileSync(new URL('../src/game/experimentalApi.ts', import.meta.url), 'utf8');
-const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
+const homeSource = readFileSync(new URL('../src/game/experimentalApiStrategy.ts', import.meta.url), 'utf8');
 
 test('the deity catalog normalizes localized unlock names and exposes assignments', () => {
   assert.match(apiSource, /unlockedDeities\.map\(getDeityKey\)/);

@@ -2173,3 +2173,56 @@ test('base COMBAT resets native state and uses one measured Wasm call', () => {
     'battle_started', 'phase_started', 'phase_ended', 'phase_started', 'phase_ended',
   ]);
 });
+
+test('expanded Resurrect tiers restore the specified HP after lethal damage', () => {
+  for (const [level, expected] of [[1, 1], [2, 11], [3, 21], [4, 51], [5, 101]]) {
+    const output = executeBattleProtocolInput(combatReactiveInput({
+      enemyHp: 5, enemyMaxHp: 1_001,
+      combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1
+        ? { ...combatant, meleeAttack: 20, meleeNoA: 1 }
+        : { ...combatant, maxHp: 1_001, abilities: [{ id: 'resurrect', level }] }),
+      randomValues: [0, 0, 0, 0, 0, 0.75],
+    }));
+    assert.equal(output.protocolError, 0);
+    assert.equal(output.events.find(event => event.opcode === 'resurrected')?.value0, expected);
+  }
+});
+
+test('expanded Iaigiri and Arc Magic tiers affect actual native damage', () => {
+  for (const [ability, multipliers] of [
+    ['iaigiri', [1.6, 1.8, 2, 2.2, 2.4]],
+    ['arc_magic', [3, 3.6, 4.2, 4.7, 5.1]],
+  ] as const) {
+    for (let level = 1; level <= 5; level += 1) {
+      const output = executeBattleProtocolInput(combatReactiveInput({
+        enemyHp: 10_000, enemyMaxHp: 10_000,
+        combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1
+          ? { ...combatant,
+            meleeAttack: ability === 'iaigiri' ? 100 : 0, meleeNoA: ability === 'iaigiri' ? 1 : 0,
+            magicalAttack: ability === 'arc_magic' ? 100 : 0, magicalNoA: ability === 'arc_magic' ? 1 : 0,
+            abilities: [{ id: ability, level }] }
+          : { ...combatant, maxHp: 10_000 }),
+        randomValues: Array(30).fill(0),
+      }));
+      assert.equal(output.protocolError, 0);
+      assert.equal(10_000 - output.enemyHp, Math.floor(100 * multipliers[level - 1]!));
+    }
+  }
+});
+
+test('Frostbite applies every expanded tier and respects Coldproof', () => {
+  for (const level of [1, 2, 3, 4, 5]) {
+    for (const coldproof of [false, true]) {
+      const output = executeBattleProtocolInput(combatReactiveInput({
+        combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1
+          ? { ...combatant, rangedAttack: 1, rangedNoA: 1,
+            abilities: coldproof ? [{ id: 'coldproof', level: 1 }] : [] }
+          : { ...combatant, abilities: [{ id: 'frostbite', level }] }),
+        randomValues: Array(30).fill(0.5),
+      }));
+      assert.equal(output.protocolError, 0);
+      assert.equal(output.events.find(event => event.opcode === 'initiative' && event.actorId === 1)?.timing,
+        coldproof ? 8 : 8 - level);
+    }
+  }
+});

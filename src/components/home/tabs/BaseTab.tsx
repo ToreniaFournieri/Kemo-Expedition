@@ -1,7 +1,4 @@
 import { Fragment,useEffect,useMemo,useState,type MouseEvent,type ReactNode } from 'react';
-import {
-DUNGEONS
-} from '../../../data/dungeons';
 import { ENEMIES,getEnemyIndividualBonuses,getEnemyTypeBonuses,getMimorianEnemyAbilities } from '../../../data/enemies';
 import { ITEMS } from '../../../data/items';
 import { RACES } from '../../../data/races';
@@ -12,9 +9,9 @@ import { getItemDisplayName,getLocalizedItemName } from '../../../game/gameState
 import { getJewelNameByRank,getJewelOwnedCount,JEWEL_DEFS } from '../../../game/jewel';
 import { getAltarLevel,getAltarVictoriesForEnemyType,getEnemyFormPranaCost,getEnemyRequiredAltarLevel,getRequiredAltarVictories,getSuperRareItemPrana,MAX_ALTAR_LEVEL } from '../../../game/prana';
 import { calculateItemSellPrice } from '../../../game/pricing';
-import { countElapsedShopRefreshes,getNextShopRefreshDate,getShopHourKey,getShopItemPrice,getShopLineupSeed,getShopRefreshPrice,getShopStockKey } from '../../../game/shop';
+import { buildShopLineup,countElapsedShopRefreshes,getNextShopRefreshDate,getShopHourKey,getShopRefreshPrice } from '../../../game/shop';
 import { t } from '../../../i18n';
-import { AbilityId,InventoryRecord,Item,ItemCategory,JewelKey,Party } from '../../../types';
+import { AbilityId,InventoryRecord,Item,JewelKey,Party } from '../../../types';
 
 
 import {
@@ -25,10 +22,8 @@ CATEGORY_GROUPS,
 FloatingBubblePortal,
 formatBonuses,
 formatNumber,
-getDisplayTier,
 getInventoryOwnerCharacterImageSrc,
 getItemNameFontWeightClass,
-getItemRarityById,
 getItemStats,
 getJewelInventoryStatusText,
 getJewelSlotStatusText,
@@ -386,14 +381,7 @@ function ShopTab({
   const hourKey = getShopHourKey(now);
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
   const refreshPrice = getShopRefreshPrice(refreshCount);
-  const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
-    const hasBeatenBoss = parties.some((party) => Boolean(party.defeatedBossExpeditions?.[dungeon.id]));
-    return hasBeatenBoss ? Math.max(highestTier, dungeon.tier) : highestTier;
-  }, 1);
-  const lineupSeed = getShopLineupSeed(now, refreshCount);
-  const stockKey = getShopStockKey(now, refreshCount);
-  const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
-  const soldOutItemKeys = shopPurchases[stockKey] ?? [];
+  const shopLineup = buildShopLineup({ parties, gold, shopPurchases, shopRefreshCounts, shopIntimacy, shopIntimacyLastDecayAt }, now);
 
   if (!mustelidRace) {
     return <div className="text-sm text-gray-600">{t('home.shop.preparing')}</div>;
@@ -407,44 +395,13 @@ function ShopTab({
         ? t('home.shop.dialogue.intimacy20')
         : t('home.shop.dialogue.default');
 
-  const rarityPool: number[] = effectiveIntimacy >= 80
-    ? [400, 300, 300, 200, 200]
-    : effectiveIntimacy >= 40
-      ? [300, 200, 200, 100, 100]
-      : effectiveIntimacy >= 20
-        ? [200, 100, 100, 100, 100]
-        : [100, 100, 100, 100, 100];
-
-  const seededTierForIndex = (index: number): number => {
-    const x = Math.sin(lineupSeed + (index + 1) * 97) * 10000;
-    const normalized = x - Math.floor(x);
-    return Math.floor(normalized * highestDefeatedBossTier) + 1;
-  };
-
-  const shopItems = rarityPool.map((rarityBase, index) => {
-    const tier = seededTierForIndex(index);
-    const targetRarity = getItemRarityById(tier * 1000 + rarityBase + 1);
-    const tierRarityItems = ITEMS.filter((item) => (
-      getDisplayTier(item.id, item.name) === tier && getItemRarityById(item.id) === targetRarity
-    ));
-    const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
-    const selectedCategory = rotatedCategories.find((category) => (
-      tierRarityItems.some((item) => item.category === category)
-    ));
-    const categoryItems = selectedCategory
-      ? tierRarityItems.filter((item) => item.category === selectedCategory)
-      : tierRarityItems;
-    const selectionSeed = Math.abs(Math.floor(Math.sin(lineupSeed + (index + 1) * 193) * 10000));
-    const baseItem = categoryItems[selectionSeed % categoryItems.length];
-    if (!baseItem) return null;
-    const baseItemId = baseItem.id;
-
-    const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
-    const price = getShopItemPrice(baseItemId);
-    const stockItemKey = `${baseItemId}-${index}`;
-    const isSoldOut = soldOutItemKeys.includes(stockItemKey);
-    const canBuy = !isSoldOut && gold >= price;
-    const rarity = getItemRarityById(baseItemId);
+  const shopItems = shopLineup.entries.map((entry) => {
+    const item = entry.item;
+    const baseItemId = entry.itemId;
+    const stockItemKey = entry.stockEntryId;
+    const isSoldOut = entry.soldOut;
+    const canBuy = entry.canPurchase;
+    const rarity = entry.rarity;
     const rarityClass = isSoldOut
       ? 'text-gray-400'
       : rarity === 'bossRare'
@@ -460,12 +417,12 @@ function ShopTab({
       stockItemKey,
       itemId: baseItemId,
       item,
-      price,
+      price: entry.price,
       isSoldOut,
       canBuy,
       rarityClass,
     };
-  }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+  });
 
   return (
     <div className="space-y-4">
