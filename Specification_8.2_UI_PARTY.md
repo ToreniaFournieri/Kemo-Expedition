@@ -287,12 +287,14 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 - **Undo and Redo**
   - **Undo `↩`:**
     - Restores the equipment state from immediately before the most recent equipment change.
-    - Undo is available only when all items required to restore the previous equipment state are currently available.
+    - Up to 30 previous equipment states can be restored sequentially.
+    - Undo is available only when all items required to restore the target equipment state are currently available.
     - Item availability must be validated using the same validation logic as `equipSet`; the validation logic should be shared.
     - If Undo is unavailable, the button remains visible but is grayed out and disabled.
   - **Redo `↪`:**
-    - Reapplies the equipment change that was most recently undone.
-    - Redo is available only immediately after an Undo and only when all items required to restore the redone equipment state are currently available.
+    - Reapplies the equipment state most recently reverted by Undo.
+    - Up to 30 undone equipment states can be reapplied sequentially.
+    - Redo is available only when a corresponding undone state exists and all items required to restore that state are currently available.
     - Item availability must be validated using the same shared validation logic as `equipSet`.
     - If Redo is unavailable, the button remains visible but is grayed out and disabled.
 
