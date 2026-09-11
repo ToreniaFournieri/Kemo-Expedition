@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 1 | 2026/09/11 | Update the runtime and package release metadata to v0.9.7 and reset the release build number to 1. |
 | 0.9.6 | 22 | 2026/09/11 | Fix FULL Auto Equipment popup notifications to render the final equipped item after Jewel assignment, including the localized attached-Jewel suffix such as `[堅6]`; retain replacement and party/character notification wording, notification settings, and auto-equipment behavior. |
 | 0.9.6 | 21 | 2026/09/11 | Increase every AFK emulation-efficiency time band and the catch-up cap fivefold: resolve up to 810 elapsed AFK hours into up to 225 effective hours using the specified 45–810h bands; preserve the speed multipliers, persisted-backlog limits, recovery scheduling, and refresh behavior. Update the four localized runtime glossary entries, player mechanics guide, AFK profiling workloads, and regression coverage. |
 | 0.9.6 | 20 | 2026/09/10 | Add current-lineup Experimental API shop observation and revision-safe purchases with authoritative hidden enhancement and Super Rare draws; expose owned equipment variants; extend atomic party configuration with ordered base-item equipment replacement, highest-enhancement-first shared allocation, explicit final modes, and targeted post-assignment Auto Equipment; update the reference client, operator guidance, recommended opening workflow, and regression coverage. |
