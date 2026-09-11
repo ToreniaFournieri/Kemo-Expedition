@@ -43,3 +43,6 @@ export function withBattleSeedSourceForTesting<T>(source: BattleSeedSource, oper
 export function resetBattleSeedSourceForTesting(source: BattleSeedSource | null = null): void {
   injectedSource = source;
 }
+
+// SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+export const withBattleSeedSource = withBattleSeedSourceForTesting;

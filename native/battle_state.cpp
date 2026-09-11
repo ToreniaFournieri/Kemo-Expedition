@@ -1,3 +1,4 @@
+#include "ability_level_scales.h"
 #include "battle_state.h"
 
 namespace bokemo::battle_state {
@@ -140,7 +141,7 @@ bool recover_on_defeat(CombatantState& target, unsigned int resurrect_id, unsign
   if (!is_lethal(target)) return false;
   MutableAbility* resurrect = find_ability(target, resurrect_id);
   if (resurrect && !resurrect->removed && resurrect->level > 0 && consume_one_shot(target, 1)) {
-    const double amount = resurrect->level >= 2 ? __builtin_ceil(target.max_hp * 0.01) : 1.0;
+    const double amount = resurrect->level >= 2 ? __builtin_ceil(target.max_hp * ability_scales::value(resurrect->level, ability_scales::resurrect)) : 1.0;
     target.hp = clamp_hp(amount < 1.0 ? 1.0 : amount, target.max_hp);
     return true;
   }

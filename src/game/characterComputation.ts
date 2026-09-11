@@ -1,3 +1,4 @@
+import { abilityLevelValue } from './abilityLevelScales';
 import {
   Character,
   ComputedCharacterStats,
@@ -632,7 +633,7 @@ export function computeCharacterStats(
   };
 
   const seekerLevel = collection.abilities.get('seeker') ?? 0;
-  const seekerPerLevelBonus = seekerLevel >= 2 ? 0.0075 : seekerLevel >= 1 ? 0.005 : 0;
+  const seekerPerLevelBonus = abilityLevelValue('seeker', seekerLevel);
   const seekerMultiplier = seekerLevel > 0 ? 1 + (partyLevel * seekerPerLevelBonus) : 1;
 
   // Calculate stats from equipment
@@ -851,7 +852,7 @@ export function computeCharacterStats(
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.a.melee-conversion
   const meleeConversionLevel = collection.abilities.get('melee_conversion') ?? 0;
   if (meleeConversionLevel > 0) {
-    const conversionRate = meleeConversionLevel >= 2 ? 0.4 : 0.3;
+    const conversionRate = abilityLevelValue('melee_conversion', meleeConversionLevel);
     meleeAttack += Math.round(rangedAttack * conversionRate);
     meleeAttack += Math.round(magicalAttack * conversionRate);
   }
@@ -958,22 +959,15 @@ export function computeCharacterStats(
   // Hunter2 decay: 7% per step (1.0 * 0.93^(row-1))
   // Hunter3 decay: 5% per step (1.0 * 0.95^(row-1))
   const hunterLevel = collection.abilities.get('hunter');
-  let decayRate = 0.85; // Normal: 15% decay
-  if (hunterLevel === 3) {
-    decayRate = 0.95; // Hunter3: 5% decay
-  } else if (hunterLevel === 2) {
-    decayRate = 0.93; // Hunter2: 7% decay
-  } else if (hunterLevel === 1) {
-    decayRate = 0.90; // Hunter1: 10% decay
-  }
+  const decayRate = abilityLevelValue('hunter', hunterLevel ?? 0);
   const composureLevel = collection.abilities.get('composure') ?? 0;
-  const composureBonus = composureLevel >= 2 ? 0.13 : composureLevel >= 1 ? 0.10 : 0;
+  const composureBonus = abilityLevelValue('composure', composureLevel);
   const accuracyPotency = Math.min(1, Math.pow(decayRate, row - 1) + composureBonus);
 
   const cyborgizationLevel = collection.abilities.get('cyborgization') ?? 0;
   if (cyborgizationLevel >= 1) {
-    accuracyBonus += cyborgizationLevel >= 2 ? 0.04 : 0.03;
-    evasionBonus += cyborgizationLevel >= 2 ? -0.015 : -0.02;
+    accuracyBonus += abilityLevelValue('cyborg_accuracy', cyborgizationLevel);
+    evasionBonus += abilityLevelValue('cyborg_evasion', cyborgizationLevel);
   }
 
   return {

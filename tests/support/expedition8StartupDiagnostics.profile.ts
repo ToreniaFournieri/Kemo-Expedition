@@ -22,7 +22,7 @@ declare const __DIAGNOSTIC_WARMUP_COUNT__: number;
 const SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
 const HEARTBEAT_MS = 10;
-const EXPECTED_SIX_PARTY_SHA256 = 'f6ef7db044508d6e86d359c438c9e6d5f2c3cd318c5c8643da9b0c06242bb795';
+const EXPECTED_SIX_PARTY_SHA256 = 'bbc124165873d61ed01670c556510b89cccae8f03dc808aae54233cb5847b544';
 const EXPECTED_ONE_PARTY_SHA256 = 'b69c4cd44b86e998f684d88f29efa7a7bca22610781a95682e0ab0f5728e339c';
 const epochNow = () => performance.timeOrigin + performance.now();
 

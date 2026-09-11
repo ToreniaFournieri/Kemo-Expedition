@@ -1,7 +1,7 @@
 {
   "name": "kemo-expedition",
   "private": true,
-  "version": "0.9.6",
+  "version": "0.9.7",
   "type": "module",
   "main": "desktop/main.cjs",
   "scripts": {
@@ -31,6 +31,8 @@
     "performance:afk-item-lookup": "node scripts/run-afk-item-lookup-attribution.mjs",
     "performance:afk-chunk-journal": "node scripts/run-afk-chunk-journal-attribution.mjs",
     "performance:auto-equipment": "node scripts/run-auto-equipment-attribution.mjs",
+    "ai-play": "npm run build && node scripts/launch-ai-play.mjs",
+    "ai-play:client": "node scripts/ai-play-client.mjs",
     "desktop:dev": "npm run build && electron . --environment=dev",
     "desktop:beta": "npm run build && electron . --environment=beta",
     "desktop:orca": "npm run build && electron . --environment=orca",
@@ -44,6 +46,7 @@
     "lora:train": "python3 training/lora/run_training.py",
     "lora:train:smoke": "python3 training/lora/run_training.py --smoke",
     "preview": "vite preview",
+    "test:api:desktop": "npm run build && electron scripts/run-api-desktop-smoke.cjs --environment=orca --ai-play=ApiSmoke",
     "test": "node --experimental-strip-types --test --test-concurrency=1 tests/*.test.ts tests/*.test.cjs"
   },
   "dependencies": {

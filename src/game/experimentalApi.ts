@@ -19,12 +19,15 @@ import {
   isDungeonEntryUnlocked,
 } from './clearGate';
 import { getEnvironmentId } from './environment';
+import { evaluationSummary } from './experimentalApiSession';
+import { buildShopLineup } from './shop';
 
 export type ExperimentalPartyCycle = {
   state: string;
   stateStartedAt: number;
   durationMs: number;
   restInitialTotalSteps?: number;
+  isCurrentExpeditionGodsBattle?: boolean;
 };
 
 const itemCategories = ['armor', 'robe', 'shield', 'sword', 'katana', 'gauntlet', 'arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst'] as const;
@@ -52,11 +55,11 @@ export function getDeityAssignmentConflict(parties: Party[], targetPartyId: numb
 }
 
 function rarity(item: Item): ItemRarity {
-  const suffix = item.id % 100;
-  if (suffix >= 81) return 'mythicRare';
-  if (suffix >= 61) return 'bossRare';
-  if (suffix >= 41) return 'eliteRare';
-  return suffix >= 21 ? 'uncommon' : 'common';
+  const suffix = item.id % 1000;
+  if (suffix >= 500) return 'mythicRare';
+  if (suffix >= 400) return 'bossRare';
+  if (suffix >= 300) return 'eliteRare';
+  return suffix >= 200 ? 'uncommon' : 'common';
 }
 
 function conditionKey(value: number): string {
@@ -76,6 +79,7 @@ function latestExpedition(party: Party) {
     dungeonId: log.dungeonId,
     difficultyOffset: log.difficultyOffset,
     finalOutcome: log.finalOutcome,
+    returnReason: returnReasonFromParty(party),
     completedRooms: log.completedRooms,
     totalRooms: log.totalRooms,
     totalExperience: log.totalExperience,
@@ -104,6 +108,7 @@ export function buildExperimentalObservation(
   cycles: Record<number, ExperimentalPartyCycle>,
   simulatedAt: number,
 ) {
+  const observedAt = Date.now();
   const unlockedDungeonIds = DUNGEONS.filter((dungeon) => dungeon.id !== 99 && state.parties.some((party) => isDungeonEntryUnlocked(party, dungeon.id))).map((dungeon) => dungeon.id);
   const unlockedDeityKeys = getUnlockedDeityKeys(state.global.unlockedDeities);
   const inventoryEntries = Object.entries(state.global.inventory).filter(([, variant]) => variant.count > 0 && variant.status === 'owned');
@@ -116,6 +121,35 @@ export function buildExperimentalObservation(
       bestCandidate: best ? { itemId: best[1].item.id, variantId: best[0], tier: Math.max(1, Math.floor(best[1].item.id / 1000)), rarity: rarity(best[1].item), enhancement: best[1].item.enhancement, superRare: best[1].item.superRare } : null,
     }];
   }));
+  const equipmentVariants = inventoryEntries
+    .slice()
+    .sort(([keyA, a], [keyB, b]) => (a.item.id - b.item.id) || (b.item.enhancement - a.item.enhancement) || keyA.localeCompare(keyB))
+    .map(([variantId, variant]) => ({
+      variantId,
+      itemId: variant.item.id,
+      category: variant.item.category,
+      count: variant.count,
+      tier: Math.max(1, Math.floor(variant.item.id / 1000)),
+      rarity: rarity(variant.item),
+      enhancement: variant.item.enhancement,
+      superRare: variant.item.superRare,
+      rawStats: { ...variant.item, jewel: undefined, isLocked: undefined, isNew: undefined },
+    }));
+  const shopLineup = buildShopLineup({ parties: state.parties, gold: state.global.gold, shopPurchases: state.global.shopPurchases, shopRefreshCounts: state.global.shopRefreshCounts, shopIntimacy: state.global.shopIntimacy, shopIntimacyLastDecayAt: state.global.shopIntimacyLastDecayAt }, new Date(observedAt));
+  const shop = {
+    lineupId: shopLineup.lineupId,
+    refreshesAt: shopLineup.refreshesAt,
+    items: shopLineup.entries.map((entry) => ({
+      stockEntryId: entry.stockEntryId,
+      itemId: entry.itemId,
+      category: entry.item.category,
+      tier: Math.max(1, Math.floor(entry.itemId / 1000)),
+      rarity: entry.rarity,
+      price: entry.price,
+      soldOut: entry.soldOut,
+      canPurchase: entry.canPurchase,
+    })),
+  };
 
   const parties = state.parties.slice().sort((a, b) => a.id - b.id).map((party, partyIndex) => {
     const computed = computePartyStats(party);
@@ -184,6 +218,7 @@ export function buildExperimentalObservation(
       { type: 'reorder_character', partyId: party.id, characterId: character.id, constraints: { minimumRow: 1, maximumRow: party.characters.length } },
       { type: 'set_auto_equipment_mode', partyId: party.id, characterId: character.id, constraints: { modes: [0, 1, 2] } },
       { type: 'run_auto_equipment', partyId: party.id, characterId: character.id, constraints: {} },
+      { type: 'remove_all_equipment', partyId: party.id, characterId: character.id, constraints: {} },
     ]);
     return {
       id: party.id,
@@ -204,14 +239,15 @@ export function buildExperimentalObservation(
         maximumDifficultyOffset,
         instantExpeditionStock: party.instantExpeditionStock ?? 0,
         instantExpeditionChargeStartedAt: party.instantExpeditionChargeStartedAt ?? null,
-        normalSortieAvailable: unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0,
+        normalSortieAvailable: !(evaluationSummary(state.apiRuntime?.evaluation)?.finalScore != null) && unlockedDungeonIds.includes(party.selectedDungeonId) && maximumHp > 0,
         godBattleAvailable: Boolean(
-          party.defeatedBossExpeditions[party.selectedDungeonId]
+          !state.apiRuntime?.evaluation && party.defeatedBossExpeditions[party.selectedDungeonId]
           && getGodsBattleProgress(party, party.selectedDungeonId) >= getGodsBattleRequired()
           && (party.instantExpeditionStock ?? 0) > 0
           && !autoRun
         ),
       },
+      defeatedBossDungeonIds: Object.keys(party.defeatedBossExpeditions).map(Number).filter(id => party.defeatedBossExpeditions[id]),
       clearGates,
       sideQuest: party.sideQuest ? { ...party.sideQuest } : null,
       characters: party.characters.map((character, row) => {
@@ -222,16 +258,18 @@ export function buildExperimentalObservation(
           isUnique: Boolean(character.isUnique),
           build: { name: character.name, gender: character.gender, raceId: character.raceId, lineageId: character.raceId === 'mimorian' ? null : character.lineageId, predispositionId: character.raceId === 'mimorian' ? null : character.predispositionId, mainClassId: character.mainClassId, subClassId: character.subClassId, mimorianEnemyId: character.raceId === 'mimorian' ? character.mimorianEnemyId ?? null : null },
           autoEquipmentMode: character.autoEquipmentMode ?? 0,
-          computed: stats ? { maximumEquipmentSlots: stats.maxEquipSlots, baseStats: stats.baseStats, rangedAttack: stats.rangedAttack, rangedNumberOfAttacks: stats.rangedNoA, magicalAttack: stats.magicalAttack, magicalNumberOfAttacks: stats.magicalNoA, meleeAttack: stats.meleeAttack, meleeNumberOfAttacks: stats.meleeNoA, physicalDefense: stats.physicalDefense, magicalDefense: stats.magicalDefense, accuracy: stats.accuracyBonus, evasion: stats.evasionBonus, elementalOffense: stats.elementalOffense, elementalResistance: stats.elementalDefenseMultipliers, abilities: stats.abilities.map((ability) => ({ id: ability.id, level: ability.level })) } : null,
+          computed: stats ? { physicalOffenseMultiplier: stats.physicalOffenseMultiplier, magicalOffenseMultiplier: stats.magicalOffenseMultiplier, physicalDefenseAmplifier: stats.physicalDefenseAmplifier, magicalDefenseAmplifier: stats.magicalDefenseAmplifier, penetrationMultiplier: stats.penetMultiplier, elementalOffenseValue: stats.elementalOffenseValue, maximumEquipmentSlots: stats.maxEquipSlots, baseStats: stats.baseStats, rangedAttack: stats.rangedAttack, rangedNumberOfAttacks: stats.rangedNoA, magicalAttack: stats.magicalAttack, magicalNumberOfAttacks: stats.magicalNoA, meleeAttack: stats.meleeAttack, meleeNumberOfAttacks: stats.meleeNoA, physicalDefense: stats.physicalDefense, magicalDefense: stats.magicalDefense, accuracy: stats.accuracyBonus, evasion: stats.evasionBonus, elementalOffense: stats.elementalOffense, elementalResistance: stats.elementalDefenseMultipliers, abilities: stats.abilities.map((ability) => ({ id: ability.id, level: ability.level })) } : null,
           equipment: character.equipment.slice(0, stats?.maxEquipSlots ?? character.equipment.length).map((item, slotIndex) => ({ slotIndex, locked: Boolean(item?.isLocked), item: item ? { itemId: item.id, variantId: getVariantKey(item), category: item.category, tier: Math.max(1, Math.floor(item.id / 1000)), rarity: rarity(item), enhancement: item.enhancement, superRare: item.superRare, rawStats: { ...item, jewel: undefined, isLocked: undefined, isNew: undefined }, jewel: item.jewel ?? null } : null })),
         };
       }),
-      latestExpedition: latestExpedition(party),
+      latestExpedition: cycles[partyIndex]?.state === 'explore' ? null : latestExpedition(party),
       _legalActions: [
         ...characterActions,
+        { type: 'configure_party', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_deity', partyId: party.id, characterId: null, constraints: { deityIds: assignableDeityIds } },
         { type: 'run_auto_equipment', partyId: party.id, characterId: null, constraints: {} },
         { type: 'set_jewel_priority_party', partyId: party.id, characterId: null, constraints: {} },
+        ...(shopLineup.entries.some(entry => entry.canPurchase) ? [{ type: 'purchase_shop_item', partyId: party.id, characterId: null, constraints: { lineupId: shopLineup.lineupId, stockEntryIds: shopLineup.entries.filter(entry => entry.canPurchase).map(entry => entry.stockEntryId) } }] : []),
         { type: 'set_expedition_destination', partyId: party.id, characterId: null, constraints: { modes: ['auto', 'fixed'], dungeonIds: unlockedDungeonIds } },
         { type: 'set_expedition_depth', partyId: party.id, characterId: null, constraints: { depthLimits: ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'] } },
         { type: 'set_expedition_difficulty', partyId: party.id, characterId: null, constraints: { minimum: 0, maximum: maximumDifficultyOffset, step: 2 } },
@@ -249,12 +287,12 @@ export function buildExperimentalObservation(
     };
   });
   const legalActions: Array<{ type: string; partyId: number | null; characterId: number | null; constraints: Record<string, unknown> }> = [
-    ...parties.flatMap((party) => party._legalActions),
+    ...parties.flatMap((party) => party._legalActions).filter(action => !state.apiRuntime?.evaluation || action.type !== 'god_battle'),
     { type: 'set_auto_run', partyId: null, characterId: null, constraints: { enabled: [true, false] } },
   ];
   return {
     revision,
-    observedAt: Date.now(),
+    observedAt,
     simulatedAt,
     environment: getEnvironmentId(),
     language: state.global.language,
@@ -262,7 +300,7 @@ export function buildExperimentalObservation(
     automation: { autoRun },
     progression: { unlockedPartyIds: parties.map((party) => party.id), unlockedDungeonIds, unlockedDeityIds: unlockedDeityKeys.map(deityId) },
     catalogs: {
-      selectableRaceIds: RACES.map((race) => race.id),
+      selectableRaceIds: RACES.filter(r => r.selectable !== false).map((race) => race.id),
       selectableClassIds: CLASSES.map((entry) => entry.id),
       selectablePredispositionIds: PREDISPOSITIONS.filter((entry) => entry.selectable).map((entry) => entry.id),
       selectableLineageIds: LINEAGES.filter((entry) => entry.selectable).map((entry) => entry.id),
@@ -280,9 +318,61 @@ export function buildExperimentalObservation(
         };
       }),
     },
-    inventory: { equipmentByCategory },
+    inventory: { equipmentByCategory, equipmentVariants },
+    shop,
     parties: parties.map(({ _legalActions: _discard, ...party }) => party),
-    legalActions,
+    legalActions: evaluationSummary(state.apiRuntime?.evaluation)?.finalScore != null ? [] : legalActions,
+  };
+}
+
+export function buildRemoveAllEquipmentEffects(
+  before: ReturnType<typeof buildExperimentalObservation>,
+  after: ReturnType<typeof buildExperimentalObservation>,
+  partyId: number,
+  characterId: number,
+) {
+  const beforeParty = before.parties.find(party => party.id === partyId)!;
+  const afterParty = after.parties.find(party => party.id === partyId)!;
+  const beforeCharacter = beforeParty.characters.find(character => character.id === characterId)!;
+  const afterCharacter = afterParty.characters.find(character => character.id === characterId)!;
+  const removedEquipment = beforeCharacter.equipment.filter(slot => slot.item !== null);
+  return {
+    partyId,
+    characterId,
+    removedItemCount: removedEquipment.length,
+    returnedJewelCount: removedEquipment.filter(slot => slot.item?.jewel != null).length,
+    previousAutoEquipmentMode: beforeCharacter.autoEquipmentMode,
+    autoEquipmentMode: afterCharacter.autoEquipmentMode,
+    hp: {
+      previousCurrent: beforeParty.hp.current,
+      previousMaximum: beforeParty.hp.maximum,
+      current: afterParty.hp.current,
+      maximum: afterParty.hp.maximum,
+    },
+  };
+}
+
+export function buildPurchaseShopItemEffects(
+  before: ReturnType<typeof buildExperimentalObservation>,
+  after: ReturnType<typeof buildExperimentalObservation>,
+  partyId: number,
+  lineupId: string,
+  stockEntryId: string,
+) {
+  const stock = before.shop.items.find(entry => entry.stockEntryId === stockEntryId)!;
+  const beforeCounts = new Map(before.inventory.equipmentVariants.map(variant => [variant.variantId, variant.count]));
+  const retainedItem = after.inventory.equipmentVariants.find(variant => (
+    variant.itemId === stock.itemId && variant.count > (beforeCounts.get(variant.variantId) ?? 0)
+  )) ?? null;
+  return {
+    partyId,
+    lineupId,
+    stockEntryId,
+    itemId: stock.itemId,
+    price: stock.price,
+    retainedItem,
+    autoSold: retainedItem === null,
+    gold: { before: before.resources.gold, after: after.resources.gold },
   };
 }
 
@@ -293,4 +383,15 @@ export function outcomeFromParty(party: Party): 'Clear' | 'Turned_Back' | 'Draw_
   if (log.finalOutcome === 'Defeat') return 'Defeat';
   if (log.entries[log.entries.length - 1]?.outcome === 'draw') return 'Draw_Retreat';
   return log.completedRooms === 0 ? 'Turned_Back' : 'Wounded_Retreat';
+}
+
+// Public completed-log facts only; preserve the legacy outcome counters.
+export function returnReasonFromParty(party: Party): 'clear' | 'defeat' | 'clear_gate' | 'depth_limit' | 'draw' | 'wounded' | 'unknown' {
+  const log = party.lastExpeditionLog;
+  if (!log) return 'unknown';
+  if (log.finalOutcome === 'Clear') return 'clear';
+  if (log.finalOutcome === 'Defeat') return 'defeat';
+  if (log.finalOutcome === 'Escape') return log.entries.at(-1)?.gateInfo ? 'clear_gate' : 'depth_limit';
+  if (log.finalOutcome === 'Retreat') return log.entries.at(-1)?.outcome === 'draw' ? 'draw' : 'wounded';
+  return 'unknown';
 }

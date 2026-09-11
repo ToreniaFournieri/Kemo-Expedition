@@ -282,6 +282,18 @@ export interface Character {
   equipment: (Item | null)[];
 }
 
+export interface SavedEquipmentEntry {
+  item: Item;
+  isLocked: boolean;
+}
+
+export interface SavedEquipmentSet {
+  slot: number;
+  name: string;
+  createdAt: number;
+  equipment: SavedEquipmentEntry[];
+}
+
 // Computed character stats for battle
 export interface ComputedCharacterStats {
   characterId: number;
@@ -376,6 +388,9 @@ export interface Party {
   currentSleepiness: SleepinessState;
   condition: number;
   sideQuest: SideQuestState | null;
+  /** Inventory revisions observed by the most recent scheduled FULL run. */
+  lastFullEquipmentRevision?: number;
+  lastFullJewelRevision?: number;
 }
 
 export type ExpeditionDestinationMode = 'auto' | 'fixed';
@@ -464,7 +479,11 @@ interface GlobalState {
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   jewels: JewelInventory;
+  savedEquipmentSets: SavedEquipmentSet[];
   jewelAutoEquipPriorityPartyId?: number | null;
+  /** Monotonic availability revisions used by automatic equipment dirty checks. */
+  equipmentInventoryRevision?: number;
+  jewelInventoryRevision?: number;
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];
@@ -744,6 +763,7 @@ export interface ExpeditionSimulationResult {
 type GameScene = 'home';
 
 export interface GameState {
+  apiRuntime?: import('../game/experimentalApiSession').ApiRuntime;
   scene: GameScene;
   global: GlobalState;
   parties: Party[];

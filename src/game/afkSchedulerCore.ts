@@ -5,17 +5,17 @@ const MAX_BATCH_BUDGET_MS = 20;
 const MAX_OPERATIONS_PER_BATCH = 64;
 const HOUR_MS = 60 * 60 * 1000;
 
-export const AFK_MAX_REAL_ELAPSED_MS = 162 * HOUR_MS;
-export const AFK_MAX_EFFECTIVE_ELAPSED_MS = 45 * HOUR_MS;
+export const AFK_MAX_REAL_ELAPSED_MS = 810 * HOUR_MS;
+export const AFK_MAX_EFFECTIVE_ELAPSED_MS = 225 * HOUR_MS;
 
 const AFK_EFFICIENCY_BANDS = [
-  { endHour: 9, speed: 1 },
-  { endHour: 18, speed: 2 / 3 },
-  { endHour: 30, speed: 1 / 2 },
-  { endHour: 48, speed: 1 / 3 },
-  { endHour: 72, speed: 1 / 4 },
-  { endHour: 108, speed: 1 / 6 },
-  { endHour: 162, speed: 1 / 9 },
+  { endHour: 45, speed: 1 },
+  { endHour: 90, speed: 2 / 3 },
+  { endHour: 150, speed: 1 / 2 },
+  { endHour: 240, speed: 1 / 3 },
+  { endHour: 360, speed: 1 / 4 },
+  { endHour: 540, speed: 1 / 6 },
+  { endHour: 810, speed: 1 / 9 },
 ] as const;
 
 export function getEffectiveAfkElapsedMs(elapsedMs: number): number {

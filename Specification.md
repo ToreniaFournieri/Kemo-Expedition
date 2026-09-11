@@ -1,4 +1,4 @@
-# BOKEMO v0.9.6 - SPECIFICATION
+# BOKEMO v0.9.7 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
@@ -59,7 +59,8 @@
 ## 7. AUTOMATION
 
 ### 7.1 AUTOMATION
-- @Specification_7.1_AUTOMATION.md
+- @Specification_7.1_AUTOMATION_EQUIPMENT.md
+- @Specification_7.2_AUTOMATION_OTHERS.md
 
 ## 8. UI
 
@@ -147,9 +148,9 @@
 
 **Purpose and availability**
 - The packaged desktop application must provide an experimental localhost HTTP/JSON API for AI-controlled play of the active BoKemo save.
-- The API must be available in the `dev`, `beta`, and production desktop environments, disabled by default, and enabled through an `Experimental AI API` toggle in Settings.
+- The API must be available in the `dev`, `beta`, `orca`, and production desktop environments, disabled by default, and enabled through an `Experimental AI API` toggle in Settings.
 - The API server must bind only to a loopback address, select an available local port, and require a generated bearer token displayed in Settings.
-- API state and access must follow the environment and save-data isolation rules in section 9. An API running in `/dev/`, `/beta/`, or `/` must access only the active save belonging to that environment.
+- API state and access must follow the environment and save-data isolation rules in section 9. An API running in `/dev/`, `/beta/`, `/orca/`, or `/` must access only the active save belonging to that environment.
 - The browser distribution must not expose the localhost API.
 - All endpoints must use JSON and be versioned under `/experimental/v1`.
 
@@ -180,6 +181,10 @@
 - `POST /experimental/v1/sortie`
   - Synchronously resolves 1 to 100 API-only normal expedition Cycles for one specified party.
 
+**AI Play additions**
+- Simulation, party preview, atomic party configuration, catalog, evaluation accounting, lease renewal and idempotent mutations follow the additive contracts in @Specification_9.1.3_API_ENDPOINTS.md and the rules in @Specification_12.1_AI_PLAY_REGURATION.md.
+- An evaluation profile remains frozen outside explicit API operations, including lease gaps and after termination. This overrides ordinary progression restoration on lease release for evaluation profiles only.
+
 **Observation**
 - The observation must include:
   - schema version, revision, simulated timestamp, and active environment;
@@ -188,18 +193,23 @@
   - each party's expedition destination mode and selected dungeon, depth limit, and difficulty offset;
   - the global auto-run configuration;
   - character order and builds, computed combat summaries, auto-equipment modes, and equipment locks;
-  - inventory summaries required to understand automatic-equipment decisions;
+  - inventory summaries and owned equipment variants required to understand automatic and exact equipment decisions;
+  - the current visible shop lineup, prices, availability, lineup identity, and refresh time, without revealing mystery enhancement or Super Rare results;
   - the latest expedition result and currently legal strategic commands.
 - Stable IDs and raw numeric values are authoritative. Localized strings may be included only as optional display metadata.
 - The observation must not expose future random rolls, bag contents or order, hidden enemies, undisclosed exploration outcomes, the complete save data, or internal renderer fields.
 
 **Strategic commands**
 - The API may expose only the following strategic commands, subject to the same availability and validation rules as the UI and the explicit API exceptions in section 9.1.3:
+  - atomically configure one party using the existing legal strategic controls;
   - change a character's selectable race, gender, lineage, predisposition, main class, sub class, Mimorian form, or name; race and gender must satisfy the same paired uniqueness, availability, and Mimorian restrictions as the UI;
   - reorder party members;
   - change a party's deity;
   - set each character's automatic-equipment mode;
   - immediately run configured automatic equipment for every member of one party or for one specified character;
+  - remove all equipment from one specified character, using the same behavior as the UI's Remove All Equipment control;
+  - atomically replace specified characters' complete equipment using ordered base item IDs, allocating the highest-enhancement available copy first in request order, then run configured automatic equipment for explicitly selected characters after every manual assignment;
+  - purchase one currently visible shop stock entry using an observed lineup identity and the same Gold, bag-randomization, inventory, auto-sell, intimacy, and notification rules as the UI;
   - toggle locks on currently equipped items;
   - select the Jewel Priority Party;
   - set a party's expedition destination mode or dungeon, depth limit, and difficulty offset;
@@ -207,9 +217,9 @@
   - initiate one Gods Battle through a separate single-run command when its normal gate and availability rules are satisfied.
 - The API must not expose:
   - direct combat actions;
-  - direct equipment-slot selection or Jewel attachment;
+  - direct opaque equipment-variant selection or Jewel attachment;
   - repeated Gods Battles;
-  - shop purchases, manual selling, Altar unlocks, or Diary management;
+  - paid shop refreshes, manual selling, Altar unlocks, or Diary management;
   - debug actions, bag inspection or reset, save import/export/reset, direct currency edits, direct healing, or internal state transitions;
   - combat formulas or random-roll functions as separately callable operations.
 - Listing retained Diary entries and reading their already-retained battle logs through the GET endpoints above is read-only access, not Diary management. The API must not mark entries as read, delete them, change Diary settings, or alter retention.
@@ -309,5 +319,12 @@
 
 - @Specification_11.1_CHANGELOG.md
 
+
+## 12. AI Play
+
+### 12.1 AI play reguration
+
+- @Specification_12.1_AI_PLAY_REGURATION.md
+- @Specification_12.2_AI_PLAY_OPERATOR_GUIDE.md
 
 **END OF SPECIFICATION**

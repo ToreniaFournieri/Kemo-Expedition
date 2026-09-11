@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('bokemoDesktop', {
+  aiPlay: (() => { const arg = process.argv.find(value => value.startsWith('--bokemo-ai-play=')); return arg ? JSON.parse(arg.slice('--bokemo-ai-play='.length)) : null; })(),
   getStatus: () => ipcRenderer.invoke('desktop:get-status'),
   getWindowVisibility: () => ipcRenderer.invoke('desktop:get-window-visibility'),
   getMemoryMetrics: () => ipcRenderer.invoke('desktop:get-memory-metrics'),
@@ -20,6 +21,7 @@ contextBridge.exposeInMainWorld('bokemoDesktop', {
         }));
     };
     ipcRenderer.on('desktop:experimental-api-request', listener);
+    ipcRenderer.send('desktop:experimental-api-ready');
     return () => ipcRenderer.removeListener('desktop:experimental-api-request', listener);
   },
   onNotificationActivated: (callback) => {

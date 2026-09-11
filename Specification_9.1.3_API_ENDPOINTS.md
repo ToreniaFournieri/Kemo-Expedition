@@ -132,7 +132,7 @@ The public response MUST NOT reveal the environment, game version, build number,
 |-|-|-|-|-|
 | `game.version` | string | Yes | Semantic version string | Running application version from `package.json`. |
 | `game.build` | integer | Yes | `>= 1` | Running build number from `build_number.txt`. |
-| `game.environment` | string | Yes | `dev`, `beta`, or `prod` | Active desktop environment and save namespace defined in section 9. |
+| `game.environment` | string | Yes | `dev`, `beta`, `orca`, or `prod` | Active desktop environment and save namespace defined in section 9. |
 
 #### `runtime` fields
 
@@ -909,7 +909,7 @@ The following non-normative example illustrates the response structure. Empty re
 | `observation.revision` | integer | Yes | `>= 0` | Authoritative game-state revision to supply as `expectedRevision` in the next mutating request. |
 | `observation.observedAt` | integer | Yes | Unix timestamp in milliseconds | Server wall-clock time at which snapshot construction completed. |
 | `observation.simulatedAt` | integer | Yes | Unix timestamp in milliseconds | Current authoritative global in-game timestamp. It remains frozen except for API operations that explicitly advance global time. Party-local simulation performed by `/sortie` does not change it. |
-| `observation.environment` | string | Yes | `dev`, `beta`, or `prod` | Active desktop environment and save namespace. |
+| `observation.environment` | string | Yes | `dev`, `beta`, `orca`, or `prod` | Active desktop environment and save namespace. |
 | `observation.language` | string | Yes | `ja`, `en`, `zh-CN`, or `zh-TW` | Active display language used for optional display metadata. Stable IDs remain authoritative. |
 
 ### Resources and progression
@@ -952,6 +952,16 @@ All resource values MUST be raw JSON numbers without `Intl.NumberFormat` separat
 | `bestCandidate.rarity` | string | Yes when present | `common`, `uncommon`, `eliteRare`, `bossRare`, or `mythicRare`. |
 | `bestCandidate.enhancement` | integer | Yes when present | Enhancement-title value; `0` means none. |
 | `bestCandidate.superRare` | integer | Yes when present | Super-Rare-title value; `0` means none. |
+
+`observation.inventory.equipmentVariants` MUST contain every unequipped owned equipment variant whose count is greater than zero. Each entry contains `variantId`, `itemId`, category, count, tier, rarity, enhancement, Super Rare value, and raw item stats. Entries are ordered by base item ID ascending, enhancement descending, then stable `variantId`. The opaque `variantId` remains observational; exact party configuration accepts base item IDs and resolves variants authoritatively.
+
+### Shop observation
+
+`observation.shop` MUST represent the same current five-entry lineup as section 8.4.1 and the UI. It contains `lineupId`, `refreshesAt`, and ordered `items`. Each item contains opaque `stockEntryId`, base `itemId`, category, tier, rarity, price, `soldOut`, and `canPurchase`.
+
+- `lineupId` identifies the wall-clock lineup and paid-refresh generation observed in this snapshot. A purchase MUST provide it because a scheduled refresh may change shop stock without changing the game-state revision.
+- The shop representation MUST NOT include the enhancement or Super Rare result that will be drawn on purchase, bag contents or order, future lineups, or future random outcomes.
+- `canPurchase` is true only when the entry is not sold out and current Gold covers its price. The command still revalidates both conditions.
 
 - The summary MUST use the same eligibility and priority logic as automatic equipment.
 - It MUST NOT expose sold items, shop lineup mystery results, bag contents, or future item rolls.
@@ -1100,7 +1110,8 @@ Each entry contains:
 | `constraints` | object | Yes | Command-specific allowed values, ranges, or target IDs. |
 
 - The list MUST include only actions legal at the current revision.
-- At minimum it may contain `update_character_build`, `reorder_character`, `set_deity`, `set_auto_equipment_mode`, `toggle_equipment_lock`, `set_jewel_priority_party`, `set_expedition_destination`, `set_expedition_depth`, `set_expedition_difficulty`, `set_auto_run`, `god_battle`, and `sortie`.
+- At minimum it may contain `update_character_build`, `reorder_character`, `set_deity`, `set_auto_equipment_mode`, `run_auto_equipment`, `remove_all_equipment`, `purchase_shop_item`, `toggle_equipment_lock`, `set_jewel_priority_party`, `set_expedition_destination`, `set_expedition_depth`, `set_expedition_difficulty`, `set_auto_run`, `god_battle`, and `sortie`.
+- A `purchase_shop_item` action is party-scoped because that party's random bags and Cunning auto-sell multiplier apply. Its constraints contain the current `lineupId` and purchasable `stockEntryIds`.
 - A `sortie` action's constraints MUST include `minimumCount: 1` and `maximumCount: 100`.
 - A command omitted from `legalActions` MUST be rejected as `illegal_action` if submitted against the same revision.
 - `legalActions` is advisory across revisions. Clients MUST still supply `expectedRevision`, and the server MUST revalidate every command.
@@ -1586,6 +1597,8 @@ Content-Type: application/json
 | `set_deity` | Assign a deity to one party. | No | No |
 | `set_auto_equipment_mode` | Set one character's automation mode. Does not immediately trigger auto-equipment. | No | No |
 | `run_auto_equipment` | Immediately run configured automatic equipment for one party or character. | No | Yes, for the selected target |
+| `remove_all_equipment` | Remove every equipped item from one character. | No | No |
+| `purchase_shop_item` | Purchase one observed current shop stock entry. | No | No |
 | `toggle_equipment_lock` | Toggle one equipped item's automatic-equipment lock. | No | No |
 | `set_jewel_priority_party` | Select the global Jewel Priority Party or manual mode. | No | No |
 | `set_expedition_destination` | Set one party's automatic or fixed destination. | No | No |
@@ -1825,6 +1838,53 @@ Single-character example:
 - If the run changes no equipment slot, Jewel assignment, inventory ownership, HP value, or other derived state, return `no_change` without saving or incrementing the revision.
 - `effects` contains `partyId`, `characterId` (`null` for a whole-party run), `processedCharacterIds` in processing order, `autoEquipmentTriggered: true`, `unequippedCount`, `equippedCount`, `upgradedCount`, and `jewelAssignmentCount`. Counts summarize committed changes without exposing candidate rankings or hidden comparison data.
 
+### `purchase_shop_item`
+
+```json
+{
+  "type": "purchase_shop_item",
+  "partyId": 1,
+  "lineupId": "2026091010-0",
+  "stockEntryId": "1104-2"
+}
+```
+
+| Field | Type | Required | Constraints | Description |
+|-|-|-|-|-|
+| `partyId` | integer | Yes | Unlocked party ID | Party whose enhancement and Super Rare bags and Cunning auto-sell multiplier apply. |
+| `lineupId` | string | Yes | Current observed lineup ID | Guards the wall-clock lineup independently of game-state revision. |
+| `stockEntryId` | string | Yes | Entry listed for `lineupId` | Exact visible stock entry to purchase. Duplicate base items in different slots remain separate stock. |
+
+- Resolve the stock entry server-side; the client MUST NOT supply or override its base item ID, price, rarity, enhancement, Super Rare value, or random source.
+- Revalidate the current lineup, sold-out state and Gold after revision validation. A changed lineup returns `409 shop_lineup_changed`; missing or sold stock returns `422 shop_item_unavailable`; insufficient Gold returns `422 insufficient_gold` with `requiredGold` and `currentGold`.
+- Execute section 8.4.1 through the same authoritative purchase operation as the UI. Draw a guaranteed enhancement of at least `+1`, then the Super Rare title, from `partyId`'s persisted bags. Apply normal stacking, automatic selling, Gold, intimacy, sold-out accounting and notification behavior.
+- Stage the purchase, random bags, inventory or auto-sale proceeds, evaluation accounting and idempotency receipt atomically. Failure commits none of them and leaves revision unchanged.
+- `effects` contains `partyId`, `lineupId`, `stockEntryId`, base `itemId`, price, Gold before/after, `autoSold`, and the retained public inventory variant or `null`. The complete post-command observation is authoritative.
+- The API does not expose paid shop refresh through this command.
+
+### `remove_all_equipment`
+
+```json
+{
+  "type": "remove_all_equipment",
+  "partyId": 1,
+  "characterId": 101
+}
+```
+
+| Field | Type | Required | Constraints | Description |
+|-|-|-|-|-|
+| `partyId` | integer | Yes | Unlocked party ID | Party containing the character. |
+| `characterId` | integer | Yes | Member of `partyId` | Character whose equipment is removed. |
+
+- This command MUST execute the same authoritative operation as the character-level UI `Remove All Equipment` control.
+- Remove every currently equipped item, including locked and Super Rare items. Return each attached Jewel separately to Jewel inventory and return each Jewel-free item through the normal inventory stacking and overflow/auto-sell rules.
+- If the character's automatic-equipment mode is `FULL`, change it to `SEMI`; preserve `OFF` and `SEMI` unchanged. Do not run automatic equipment or automatic Jewel assignment.
+- Recompute derived character and party state and synchronize current HP through the normal maximum-HP-change rule.
+- The command MUST NOT advance simulated time, state-machine progress, side-quest time, or Instant Expedition charge time, and MUST NOT consume randomness.
+- If the character has no equipped items and the operation produces no other effective state change, return `no_change` without saving or incrementing the revision.
+- `effects` contains `partyId`, `characterId`, `removedItemCount`, `returnedJewelCount`, `previousAutoEquipmentMode`, `autoEquipmentMode`, and raw previous/final current and maximum HP under `hp`.
+
 ### `toggle_equipment_lock`
 
 ```json
@@ -2013,6 +2073,7 @@ Unless a discriminator defines a more specific error, `/command` uses:
 | `404 Not Found` | `character_not_found` | `false` | Target character does not belong to the specified party. |
 | `404 Not Found` | `equipment_slot_not_found` | `false` | Target slot does not exist or is empty. |
 | `409 Conflict` | `stale_revision` | `true` | `expectedRevision` differs from the authoritative revision. `error.details.currentRevision` is required. |
+| `409 Conflict` | `shop_lineup_changed` | `true` | The wall-clock or paid-refresh lineup no longer matches `lineupId`. `error.details.currentLineupId` is required. |
 | `409 Conflict` | `no_change` | `false` | The valid command would produce no effective change. |
 | `409 Conflict` | `no_active_lease` | `false` | No control lease exists. |
 | `409 Conflict` | `control_lease_expired` | `false` | The matching lease expired before command processing began. |
@@ -2020,6 +2081,11 @@ Unless a discriminator defines a more specific error, `/command` uses:
 | `409 Conflict` | `runtime_busy` | `true` | Another command or sortie batch is executing. |
 | `405 Method Not Allowed` | `method_not_allowed` | `false` | The path is requested with a method other than `POST`. The response MUST include `Allow: POST`. |
 | `422 Unprocessable Content` | `illegal_action` | `false` | The structurally valid command is not legal in the current game state. |
+| `422 Unprocessable Content` | `shop_item_unavailable` | `false` | The specified current-lineup stock entry does not exist or is sold out. |
+| `422 Unprocessable Content` | `insufficient_gold` | `false` | Current Gold is below the stock price. |
+| `422 Unprocessable Content` | `equipment_slot_unavailable` | `false` | Exact equipment contains more item IDs than the character's final slot count. |
+| `422 Unprocessable Content` | `equipment_item_unavailable` | `false` | The ordered shared pool does not contain another owned copy of the requested base item ID. |
+| `422 Unprocessable Content` | `equipment_item_incompatible` | `false` | The character's final build cannot equip the requested item category. |
 | `422 Unprocessable Content` | `deity_unavailable` | `false` | The deity is locked or assigned to another party. `error.details.reason` MUST be `locked` or `assigned_to_party`. An assignment conflict MUST also include `deityId`, `assignedPartyId`, and `assignedPartyName`, and its message MUST identify the occupying party and advise choosing another deity. |
 | `422 Unprocessable Content` | `equipment_lock_unavailable` | `false` | The character is not in `FULL` mode or the item cannot be locked. |
 | `422 Unprocessable Content` | `difficulty_unavailable` | `false` | Boss completion has not unlocked difficulty adjustment. |
@@ -2351,3 +2417,101 @@ Each `runs` entry contains:
 
 - Revision comparison occurs before party and expedition validation so stale requests cannot probe current state.
 - Errors MUST NOT return partial run results, random state, candidate enemies or items, undisclosed outcomes, or staged resource values.
+
+## AI Play API additions
+
+The following additive contracts implement section 12.1. They extend the existing schema version 1. Orca is a supported desktop environment everywhere `game.environment` is described. Ordinary non-evaluation API play remains available.
+
+### Evaluation transactions
+
+* All gameplay operations stage changes in a private state. Only a successful atomic save installs gameplay state. Persistence failure must not queue the rejected state for later background retry.
+* Each evaluation gameplay request reserves its counted call durably before executing. The final state, evaluation ledger, revision and idempotency receipt commit together. Errors retain the reserved call but do not commit staged gameplay. The reservation's `operation_interrupted` ledger value is replaced with the final result on successful persistence.
+* `Idempotency-Key` is an optional 1–128 character ASCII letters/digits/underscore/hyphen header for `command` and `sortie`. A repeated key with the same canonical operation/body replays the original response with `replayed: true`; a different body returns `409 idempotency_conflict`. Keys are scoped to the active save, persist across restart, and must not contain credentials. Evaluation sessions retain all receipts; ordinary play retains the most recent 32 successful keyed operations. Clients must not reuse evicted keys.
+* Replay occurs before revision validation. A received replay counts as a call in an active evaluation but adds zero sorties. After evaluation termination, retrieve `/evaluation` instead; further gameplay and replays are rejected with `evaluation_finished`.
+* The response-level `evaluation` is `null` outside evaluation, otherwise it contains `evaluationId`, `concept`, `version`, `build`, `regulationVersion`, `status` (`active`, `succeeded`, `failed`), `countedApiCalls`, `remainingApiCalls`, `actualSorties`, `goalAchieved`, `firstWinningSortie`, `startedAt`, `scoreSoFar`, `finalScore`, `mode`, `rulesId`, and optional `winningOperation`. The ordered `ledger` is retrieved separately from `/evaluation/ledger` or the final report. Each ledger entry contains `call`, `operation`, `actualSorties`, nullable error code, and optional successful `commandType`. Final score is null until termination.
+* The evaluation clock is persisted and remains fixed across restarts; selected-party Cycle elapsed time re-anchors its deadlines without advancing any other party.
+* API-owned random draws are transaction-local and persisted only upon commit. Forecast randomness is independent and cannot consume the live stream. Random state remains private.
+* Observation includes each party's `defeatedBossDungeonIds`. Evaluation observations must not advertise `god_battle` as a legal action.
+
+### `POST /experimental/v1/control/renew`
+
+Bearer and owner lease required. Accept an omitted body or `{}`. Renew the lease without advancing gameplay, incrementing revision or counting a call. Return `{ "renewed": true }` with the standard API envelope. Status remains non-renewing.
+
+### `GET /experimental/v1/evaluation`
+
+Bearer authentication required; no lease required. Return the evaluation summary or null without counting a call. This endpoint exposes no strategic observation or credentials, and remains available after completion. No query parameters are accepted.
+
+### `POST /experimental/v1/simulation`
+
+Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional `configuration`. Reject unknown fields, stale revisions and unavailable parties. A configuration uses the Party configuration schema below.
+
+Execute exactly 1,000 independent private forecast trials with the current or hypothetical party, full departure HP, selected normal dungeon/depth/difficulty and effective runtime mode/offset, using the same result-only production kernel as the UI simulator. Forecasts do not advance progression, return rewards, consume live randomness, write Diary entries or alter equipment/charge. No client seed, debug flag, live bag or internal transition may be supplied. Each successful response contains `revision`, `partyId`, evaluated party `configuration`, and `simulation: { total: 1000, outcomes: { Clear, Turned_Back, Draw_Retreat, Wounded_Retreat, Defeat, total } }`. Outcome rates are the counts divided by total.
+
+Execution is asynchronous internally, serialized as one request and pins the lease. Each request costs one counted call and zero actual sorties. No separate total forecast quota applies.
+
+### Candidate comparison
+
+Successful `/simulation` and `/party-preview` responses also include `comparison`, derived only from the live and candidate public party observations at the requested revision. The existing `configuration` (simulation) and `party` (preview) fields retain their meanings and include the complete evaluated combat values and equipment.
+
+* `partyId`: target party ID.
+* `maximumHp`: `{ before, after, delta }` for maximum party HP; this is not a prediction of remaining battle HP.
+* `strategyChanges`: changed deity and expedition fields as `{ field, before, after, delta? }`.
+* `characters`: every member in candidate order, matched to the live member by stable ID. Each entry contains `characterId`, `row: { before, after }`, `autoEquipmentMode: { before, after }`, `buildChanges`, `combatChanges`, and `equipmentChanges`.
+* Build/combat changes use `{ field, before, after, delta? }`. `delta` is included only when both values are numeric and equals `after - before`. Unchanged fields are omitted. An unavailable value is `null`; it is not treated as zero. Array-valued combat fields, such as abilities, are compared as complete values.
+* Equipment changes use `{ slotIndex, before, after }`, with the existing public slot representation on each side. A missing slot is `null`; an existing empty slot retains its representation with `item: null`. Include added, removed, replaced, upgraded and lock-changed slots, ordered by slot index.
+
+Comparison does not run equipment selection or combat a second time, consume live randomness, advance state/revision, or cost an additional call. It compares the same candidate used by the forecast. It does not compare forecast win rates against an additional baseline simulation. A request without configuration returns empty change arrays and zero maximum-HP delta. Default-name differences between hypothetical and committed race changes remain possible under the existing rules.
+
+### Party configuration
+
+A `configuration` object accepts only these optional properties:
+
+* `characters`: at most the party size, each `{ characterId, changes?, autoEquipmentMode?, equipment? }`, without duplicate character IDs. `changes` contains only the existing selectable build fields; mode is 0, 1 or 2. Unique-character restrictions, paired race/gender uniqueness, selectable lineages/predispositions, female-only Mimorian forms, unlocked forms and global form uniqueness apply. Validate final assignments before applying any change.
+  - `equipment`, when present, is exactly `{ "mode": "replace_all", "itemIds": integer[] }`.
+  - `itemIds` is the complete desired equipment list in zero-based slot order. An empty list removes all equipment. Its length MUST NOT exceed the character's final maximum equipment slots.
+  - Each item ID identifies a base item, not a variant. The server selects the available matching copy with the highest enhancement value. Super Rare value does not participate in selection priority in this version; equal-enhancement variants use ascending stable `variantId` only as a deterministic tie-break.
+  - Before selecting any requested item, remove all equipment from every character containing `equipment` and combine the returned items with owned inventory. Return attached Jewels separately through normal removal rules.
+  - Allocate by `characters` request order, then by `itemIds` order. Decrement availability immediately after each assignment. Earlier requests therefore receive higher-enhancement copies while later requests receive the remaining copies.
+  - Every requested category must be legal for the character's final build. Insufficient copies, incompatible categories, invalid IDs or excessive slots reject the complete configuration. No similar-ID substitution is permitted.
+* `order`: every member ID exactly once, in final order.
+* `deityId`: an unlocked deity available to this party.
+* `destination`: `{ mode: "auto" | "fixed", dungeonId? }`; fixed requires an available dungeon.
+* `depthLimit`: an existing legal depth enum.
+* `difficultyOffset`: an even integer within the selected dungeon's normal limit.
+* `locks`: `{ characterId, slotIndex, locked }[]`, bounded to 200 entries, targeting currently equipped items in FULL mode.
+* `autoEquip`: boolean; run configured automatic equipment after builds, order, deity, destination, depth, difficulty and locks have been applied. This boolean does not itself permit opaque equipment-variant selection or Jewel attachment.
+* `autoEquipCharacterIds`: unique member IDs, at most the party size. Run configured automatic equipment for these characters in listed order only after every manual equipment assignment and explicit final mode has been applied. It cannot be combined with `autoEquip: true`.
+
+Apply configuration in one private staged state. Apply build changes first; remove and allocate exact equipment second; apply explicit `autoEquipmentMode` values as the final requested modes; then apply order, deity, destination, depth, difficulty and locks; finally execute whole-party or targeted Auto Equipment. Any invalid field rejects the entire configuration. Preview, simulation and `configure_party` MUST resolve the same ordered equipment candidate from the same input state. Existing `build-options` and individual build commands use the same validation. Race changes without a supplied name use the normal default-name pool; preview reports a possible name, and the committed name may differ if a different live random draw is used.
+
+### `POST /experimental/v1/party-preview`
+
+Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional configuration. Return `{ revision, partyId, party, comparison }` containing the hypothetical party's builds, computed combat values and resulting equipment. Does not change live gameplay or revision. Costs one counted call. Invalid character builds return `invalid_build`; configuration errors include structured diagnostics as defined below. Other existing error codes and HTTP statuses remain unchanged.
+
+### Structured configuration errors
+
+Configuration validation shared by preview, simulation and `configure_party` adds `error.details.field` and `error.details.violations`. Each violation has `{ field, code, characterId? }`. `field` is a canonical configuration path, for example `configuration.characters[0].changes.mainClassId`; indexes are zero-based request-array positions, not formation rows. For `configure_party`, resolve this path beneath `command.configuration`; for individual commands translated into a configuration internally, it names the equivalent configuration field. Character build violations also identify the stable `characterId`.
+
+Collect all build violations across submitted members before applying character edits. Structural and non-build validation may stop at the first failing field or record. `details.field` names the first violation. A coupled restriction may name a field that needs to be added to the candidate, such as gender when changing race. Clients must use codes/fields instead of parsing `error.message` and must tolerate additional future codes.
+
+Stable violation codes include existing build reasons (`unavailable_selection`, `unknown_field`, `immutable_character_field`, `mimorian_field_unavailable`, `duplicate_race_gender`), structural reasons (`object_required`, `invalid_character_list`, `character_not_found`, `duplicate_character`, `invalid_equipment_mode`, `invalid_equipment_list`, `invalid_item_id`, `invalid_auto_equip_character_list`, `conflicting_auto_equip_targets`, `invalid_order`, `invalid_destination_mode`, `invalid_depth_limit`, `invalid_lock_list`, `boolean_required`), equipment reasons (`equipment_slot_unavailable`, `equipment_item_unavailable`, `equipment_item_incompatible`), lock reasons (`occupied_slot_required`, `full_mode_required`), and availability reasons (`deity_unavailable`, `assigned_to_party`, `normal_sortie_unavailable`, `difficulty_unavailable`). A FULL-mode violation targets the lock record because the required mode belongs to its referenced character. Existing deity-assignment details remain available.
+
+These diagnostics expose no hidden choices, inventory rankings or partial staged results. Rejected configuration still commits no gameplay changes; normal counted-request accounting is unchanged. Top-level request-envelope errors continue to use their existing contracts. This is an additive schema-version-1 extension.
+
+### `configure_party` command
+
+`POST /command` accepts `{ "expectedRevision": 123, "command": { "type": "configure_party", "partyId": 1, "configuration": {} } }`. Commit the same validated configuration atomically, increment revision once, and return the normal command response with complete observation. Costs one counted call and zero sorties.
+
+### `GET /experimental/v1/catalog`
+
+Bearer and owner lease required. No query parameters. Return `catalog` containing races, classes, selectable lineages/predispositions and their public bonuses, deity IDs/display names, automatic-equipment modes and depth enums. Costs one counted call. The catalog contains static player-visible information, not live hidden enemies, bags or future outcomes.
+
+### AI Play regulation version 2 convenience contract
+
+Authenticated status includes `capabilities.aiPlay` with mode, regulationVersion, rulesId and countedApiCallLimit (20000). Public status remains minimal. Ordinary evaluation summaries omit the cumulative ledger; `GET /evaluation/ledger` is authenticated, lease-free and uncounted and returns only accounting entries. `GET /evaluation/report` is authenticated, lease-free and uncounted, rejects active evaluations with 409 `evaluation_active`, and returns the frozen final public observation, the 8.1.2.3 status table, full ledger and first winning operation. Both endpoints reject query parameters. Report retrieval cannot advance gameplay. No evaluation returns null.
+
+Session identity includes mode (`normal` on prod `/`, `orca` on `/orca/`), regulation version and rules ID. The terminal operation records the first winning batch summary independently of its final sortie outcome. Character computed data includes physical/magical offense multipliers, defense amplifiers, penetration multiplier and elemental offense value. Terminal observations expose no available gameplay actions; Gods Battles remain unavailable for all evaluations. Selectable races exclude non-selectable definitions; retained unique character races remain legal.
+
+Each actual sortie run and latest-expedition summary adds `returnReason`: `clear`, `defeat`, `clear_gate`, `depth_limit`, `draw`, `wounded`, or `unknown` (no retained log). This is derived from completed public log facts; existing outcome counters remain unchanged for compatibility.
+
+A report-file write failure adds `reportError.code=report_write_failed` to the otherwise committed terminal response; it must not turn committed gameplay into an operation error. Retrieve `/evaluation/report` for the data and retry `/evaluation` to save the file. Final report observations use the frozen evaluation clock and idle completed-Cycle state, without wall-clock progress.

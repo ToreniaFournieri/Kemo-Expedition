@@ -86,7 +86,7 @@ PT1 transaction begins
 - **AFK Emulation Efficiency**
   - AFK emulation efficiency gradually decreases during extended absence, representing reduced party discipline and efficiency without player supervision.
   - Returning to the game resets AFK emulation efficiency to 100%.
-  - Limit: maximum 162 hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
+  - Limit: maximum X hours per catch-up simulation; elapsed time beyond this cap is ignored for that tick.
   - **Auto equipment behavior:** `7.1.1 AUTO equipment logic` in @Specification_7.1_AUTOMATION.md
     - During AFK emulation, auto-equipment logic runs at the end of each complete Chunk (30 Cycles) and at the end of the terminal partial Chunk.
     - Ending Sound Sleep does not trigger auto-equipment logic.
@@ -96,13 +96,13 @@ PT1 transaction begins
 
 | Elapsed AFK Time | Emulation Speed | Effective Time |
 | ---------------: | --------------: | -------------: |
-|             0–9h |              1× |             9h |
-|            9–18h |            2/3× |             6h |
-|           18–30h |            1/2× |             6h |
-|           30–48h |            1/3× |             6h |
-|           48–72h |            1/4× |             6h |
-|          72–108h |            1/6× |             6h |
-|         108–162h |            1/9× |             6h |
+|            0–45h |              1× |            45h |
+|           45–90h |            2/3× |            30h |
+|          90–150h |            1/2× |            30h |
+|         150–240h |            1/3× |            30h |
+|         240–360h |            1/4× |            30h |
+|         360–540h |            1/6× |            30h |
+|         540–810h |            1/9× |            30h |
 
 
 #### 5.1.1 Party State Machine

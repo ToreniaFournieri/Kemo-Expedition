@@ -125,6 +125,19 @@ export class PersistenceCoordinator {
     this.persistedLogKeys = getPersistedDiaryLogKeys(options.storage.getItem(options.storageKey));
   }
 
+  // SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+  // API transactions need immediate failure, not background retry of an uncommitted state.
+  commitAtomic(state: GameState): void {
+    if (this.stopped) throw new PersistenceShutdownError();
+    persistGameState(state, this.options.storageKey, this.options.storage);
+    this.worker?.terminate(); this.worker = null;
+    this.inFlight = null; this.pending = null; this.storageRetry = null;
+    this.durableRevision = ++this.revision;
+    this.lastEnqueuedState = state; this.lastEnqueuedRevision = this.revision;
+    this.persistedLogKeys = new Set();
+    const waiters = this.waiters; this.waiters = [];
+    waiters.forEach(waiter => waiter.resolve());
+  }
   requestOrdinary(state: GameState): number { return this.enqueue(state) }
   requestDurable(state: GameState): Promise<void> { const revision = this.enqueue(state); return this.waitForRevision(revision) }
   replaceDurable(state: GameState): Promise<void> { const revision = this.enqueue(state, true); return this.waitForRevision(revision) }

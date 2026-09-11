@@ -11,6 +11,7 @@ test('Experimental AI API enforces authentication and an exclusive lease', async
     build: 42,
     invokeRenderer: async (operation, payload) => {
       rendererRequests.push({ operation, payload });
+      if (operation === 'invalid-request') return { status: 400, error: { code: 'invalid_request' } };
       if (operation === 'status') return { status: 'ready', revision: 7 };
       if (operation === 'set-control') {
         controlled = true;
@@ -91,10 +92,63 @@ test('Experimental AI API enforces authentication and an exclusive lease', async
   assert.equal(characterResponse.status, 200);
   assert.deepEqual(rendererRequests.at(-1), { operation: 'command', payload: characterAutoEquipment });
 
+  const removeAllEquipment = { expectedRevision: 9, command: { type: 'remove_all_equipment', partyId: 1, characterId: 101 } };
+  const removeAllResponse = await fetch(`${origin}/experimental/v1/command`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(removeAllEquipment) });
+  assert.equal(removeAllResponse.status, 200);
+  assert.deepEqual(rendererRequests.at(-1), { operation: 'command', payload: removeAllEquipment });
+
+  const purchaseShopItem = { expectedRevision: 10, command: { type: 'purchase_shop_item', partyId: 1, lineupId: 'lineup-1', stockEntryId: '1104-2' } };
+  const purchaseResponse = await fetch(`${origin}/experimental/v1/command`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(purchaseShopItem) });
+  assert.equal(purchaseResponse.status, 200);
+  assert.deepEqual(rendererRequests.at(-1), { operation: 'command', payload: purchaseShopItem });
+
   const released = await fetch(`${origin}/experimental/v1/control/release`, { method: 'POST', headers: { ...leaseHeaders, 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(released.status, 200);
   assert.equal(controlled, false);
   assert.equal((await released.json()).runtime.controlStatus, 'available');
 
   await api.disable();
+});
+
+test('evaluation report and ledger routes require authentication but no lease and expose capabilities privately', async () => {
+  let calls = 0;
+  const capabilities = { mode: 'normal', regulationVersion: 2, rulesId: 'test', countedApiCallLimit: 20000 };
+  const api = createExperimentalApi({ environment: 'prod', version: '0.9.6', build: 14, aiPlayCapabilities: capabilities,
+    invokeRenderer: async operation => {
+      calls++;
+      if (operation === 'status') return { status: 'ready', revision: 0 };
+      if (operation === 'evaluation-report') return { status: 409, error: { code: 'evaluation_active' } };
+      if (operation === 'evaluation-ledger') return { ledger: [] };
+      return {};
+    } });
+  try {
+    const settings = await api.enable();
+    const base = `http://${settings.host}:${settings.port}/experimental/v1`;
+    const headers = { Authorization: `Bearer ${settings.token}` };
+    assert.equal((await fetch(`${base}/evaluation/report`)).status, 401);
+    assert.equal(calls, 0);
+    assert.equal((await fetch(`${base}/status`).then(r => r.json())).capabilities, undefined);
+    assert.deepEqual((await fetch(`${base}/status`, { headers }).then(r => r.json())).capabilities.aiPlay, capabilities);
+    assert.equal((await fetch(`${base}/evaluation/report`, { headers })).status, 409);
+    assert.deepEqual(await fetch(`${base}/evaluation/ledger`, { headers }).then(r => r.json()), { apiVersion: 'experimental/v1', schemaVersion: 1, ledger: [] });
+    const before = calls;
+    assert.equal((await fetch(`${base}/evaluation/report?extra=1`, { headers })).status, 400);
+    assert.equal((await fetch(`${base}/evaluation/ledger`, { headers, method: 'POST' })).status, 405);
+    assert.equal(calls, before);
+  } finally { await api.shutdown(); }
+});
+
+test('report storage failure preserves the committed evaluation response', async () => {
+  const api = createExperimentalApi({ environment: 'orca', version: '0.9.6', build: 14,
+    invokeRenderer: async operation => operation === 'evaluation' ? { evaluation: { status: 'succeeded', finalScore: 42 } } : {},
+    onEvaluationFinished: async () => { throw new Error('disk unavailable'); } });
+  try {
+    const settings = await api.enable();
+    const response = await fetch(`http://${settings.host}:${settings.port}/experimental/v1/evaluation`, { headers: { Authorization: `Bearer ${settings.token}` } });
+    const result = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(result.evaluation.finalScore, 42);
+    assert.equal(result.error, undefined);
+    assert.equal(result.reportError.code, 'report_write_failed');
+  } finally { await api.shutdown(); }
 });

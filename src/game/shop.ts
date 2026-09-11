@@ -1,4 +1,7 @@
 import { getShopItemPrice as getTierShopItemPrice } from './pricing';
+import { DUNGEONS } from '../data/dungeons';
+import { ITEMS } from '../data/items';
+import type { Item, ItemCategory, Party } from '../types';
 
 const SHOP_REFRESH_BASE_PRICE = 200;
 const SHOP_REFRESH_HOURS = [2, 10, 18] as const;
@@ -74,4 +77,87 @@ export function getShopRefreshPrice(refreshCount: number): number {
 // SpecRef: 8.4.1 | Shop (お店) | getShopItemPrice
 export function getShopItemPrice(itemId: number): number {
   return getTierShopItemPrice(itemId);
+}
+
+export interface ShopLineupInput {
+  parties: Party[];
+  gold: number;
+  shopPurchases: Record<string, string[]>;
+  shopRefreshCounts: Record<string, number>;
+  shopIntimacy: number;
+  shopIntimacyLastDecayAt: number;
+}
+
+export interface ShopLineupEntry {
+  stockEntryId: string;
+  itemId: number;
+  item: Item;
+  price: number;
+  rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare';
+  soldOut: boolean;
+  canPurchase: boolean;
+}
+
+function getShopItemRarity(itemId: number): ShopLineupEntry['rarity'] {
+  const rarityCode = itemId % 1000;
+  if (rarityCode >= 400) return 'bossRare';
+  if (rarityCode >= 300) return 'eliteRare';
+  if (rarityCode >= 200) return 'uncommon';
+  return 'common';
+}
+
+// SpecRef: 8.4.1 | Shop (お店) | Lineup
+// SpecRef: 9.1.3 | Experimental AI API | Shop observation
+export function buildShopLineup(input: ShopLineupInput, now: Date) {
+  const elapsedRefreshes = countElapsedShopRefreshes(input.shopIntimacyLastDecayAt, now);
+  const effectiveIntimacy = Math.max(0, Math.floor(input.shopIntimacy * (0.9 ** elapsedRefreshes)));
+  const hourKey = getShopHourKey(now);
+  const refreshCount = input.shopRefreshCounts[hourKey] ?? 0;
+  const lineupId = getShopStockKey(now, refreshCount);
+  const soldOutItemKeys = input.shopPurchases[lineupId] ?? [];
+  const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
+    const hasBeatenBoss = input.parties.some((party) => Boolean(party.defeatedBossExpeditions?.[dungeon.id]));
+    return hasBeatenBoss ? Math.max(highestTier, dungeon.tier) : highestTier;
+  }, 1);
+  const lineupSeed = getShopLineupSeed(now, refreshCount);
+  const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
+  const rarityPool: number[] = effectiveIntimacy >= 80
+    ? [400, 300, 300, 200, 200]
+    : effectiveIntimacy >= 40
+      ? [300, 200, 200, 100, 100]
+      : effectiveIntimacy >= 20
+        ? [200, 100, 100, 100, 100]
+        : [100, 100, 100, 100, 100];
+  const entries = rarityPool.flatMap((rarityBase, index): ShopLineupEntry[] => {
+    const x = Math.sin(lineupSeed + (index + 1) * 97) * 10000;
+    const tier = Math.floor((x - Math.floor(x)) * highestDefeatedBossTier) + 1;
+    const targetRarity = getShopItemRarity(tier * 1000 + rarityBase + 1);
+    const tierRarityItems = ITEMS.filter((item) => (
+      Math.floor(item.id / 1000) === tier && getShopItemRarity(item.id) === targetRarity
+    ));
+    const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
+    const selectedCategory = rotatedCategories.find((category) => tierRarityItems.some((item) => item.category === category));
+    const categoryItems = selectedCategory ? tierRarityItems.filter((item) => item.category === selectedCategory) : tierRarityItems;
+    const selectionSeed = Math.abs(Math.floor(Math.sin(lineupSeed + (index + 1) * 193) * 10000));
+    const baseItem = categoryItems[selectionSeed % categoryItems.length];
+    if (!baseItem) return [];
+    const stockEntryId = `${baseItem.id}-${index}`;
+    const price = getShopItemPrice(baseItem.id);
+    const soldOut = soldOutItemKeys.includes(stockEntryId);
+    return [{
+      stockEntryId,
+      itemId: baseItem.id,
+      item: { ...baseItem, enhancement: 0, superRare: 0 },
+      price,
+      rarity: getShopItemRarity(baseItem.id),
+      soldOut,
+      canPurchase: !soldOut && input.gold >= price,
+    }];
+  });
+  return {
+    lineupId,
+    refreshesAt: getNextShopRefreshDate(now).getTime(),
+    effectiveIntimacy,
+    entries,
+  };
 }
