@@ -5,6 +5,8 @@ import { RACES } from '../data/races';
 import { addItemToInventory, removeItemFromInventory } from './inventoryMutation';
 import {
   addJewelToInventory,
+  getJewelOwnedCount,
+  isJewelAllowedForCategory,
   planAutoJewelAssignmentsForCharacter,
   removeJewelFromInventory,
 } from './jewel';
@@ -184,7 +186,36 @@ export function applyEquipmentSet(
     equipment,
     autoEquipmentMode: character.autoEquipmentMode === 2 ? 1 : character.autoEquipmentMode,
   };
-  const assignments = planAutoJewelAssignmentsForCharacter(nextCharacter, nextJewels);
+  const reservedJewelSlots = new Set<number>();
+  // Exact set restores must preserve the stored attachment when its separately
+  // held Jewel is available. Similar loads intentionally continue through the
+  // ordinary auto-equipment assignment path (Specification 8.2.4).
+  if (mode === 'exact') {
+    set.equipment.slice(0, maxSlots).forEach((entry, slotIndex) => {
+      const item = nextCharacter.equipment[slotIndex];
+      const jewel = entry.item.jewel;
+      if (!item || !jewel || !isJewelAllowedForCategory(item.category, jewel.key)
+        || getJewelOwnedCount(nextJewels, jewel.key, jewel.rank) <= 0) return;
+      nextJewels = removeJewelFromInventory(nextJewels, jewel.key, jewel.rank);
+      const nextEquipment = [...nextCharacter.equipment];
+      nextEquipment[slotIndex] = { ...item, jewel: { ...jewel } };
+      nextCharacter = { ...nextCharacter, equipment: nextEquipment };
+      reservedJewelSlots.add(slotIndex);
+    });
+  }
+  // Reserved Jewel slots must not participate in the generic allocator: it
+  // ranks by strength and would otherwise replace a deliberately restored
+  // lower-rank attachment with a higher-rank one.
+  const characterForAutoJewelAssignment = reservedJewelSlots.size === 0
+    ? nextCharacter
+    : {
+      ...nextCharacter,
+      equipment: nextCharacter.equipment.map((item, slotIndex) => reservedJewelSlots.has(slotIndex) && item
+        ? { ...item, jewel: null }
+        : item),
+    };
+  const assignments = planAutoJewelAssignmentsForCharacter(characterForAutoJewelAssignment, nextJewels)
+    .filter((assignment) => !reservedJewelSlots.has(assignment.slotIndex));
   assignments.forEach((assignment) => {
     const item = nextCharacter.equipment[assignment.slotIndex];
     if (!item) return;

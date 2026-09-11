@@ -56,15 +56,32 @@ test('equipment history snapshots use the saved-set availability contract', asyn
   assert.equal(evaluateEquipmentSet(snapshot, character([]), {}, 2).allAvailable, false);
 });
 
-test('exact load restores locks and assigns jewels independently through auto-equipment logic', async () => {
+test('exact load restores locks and the saved Jewel before auto-assigning other slots', async () => {
   const { applyEquipmentSet } = await modulePromise;
-  const sword = item(10, 2);
-  const saved = setOf({ ...sword, jewel: { key: 'ward', rank: 1 } });
-  const result = applyEquipmentSet(saved, character([]), inventoryOf(sword), { 'might:8': 1 }, 0, 2, 'exact');
-  assert.equal(result.character.equipment[0]?.id, sword.id);
+  const armor = item(10, 2, 0, 'armor');
+  const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } });
+  const result = applyEquipmentSet(saved, character([]), inventoryOf(armor), { 'fort:2': 1, 'fort:8': 1 }, 0, 2, 'exact');
+  assert.equal(result.character.equipment[0]?.id, armor.id);
   assert.equal(result.character.equipment[0]?.isLocked, true);
-  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'might', rank: 8 });
-  assert.equal(result.jewels['might:8'] ?? 0, 0);
+  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'fort', rank: 2 });
+  assert.equal(result.jewels['fort:2'] ?? 0, 0);
+  assert.equal(result.jewels['fort:8'], 1);
+});
+
+test('exact loads fall back to auto Jewel assignment only when the saved Jewel is unavailable', async () => {
+  const { applyEquipmentSet } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } });
+  const result = applyEquipmentSet(saved, character([]), inventoryOf(armor), { 'fort:8': 1 }, 0, 2, 'exact');
+  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'fort', rank: 8 });
+});
+
+test('similar loads do not reserve the saved Jewel', async () => {
+  const { applyEquipmentSet } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } });
+  const result = applyEquipmentSet(saved, character([]), inventoryOf(armor), { 'fort:2': 1, 'fort:8': 1 }, 0, 2, 'similar');
+  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'fort', rank: 8 });
 });
 
 test('similar load accepts lower enhancement and excludes Super Rare substitution', async () => {
