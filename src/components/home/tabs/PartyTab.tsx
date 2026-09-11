@@ -14,6 +14,13 @@ import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
+import {
+  EMPTY_EQUIPMENT_STATE_HISTORY,
+  recordEquipmentState,
+  redoEquipmentState,
+  undoEquipmentState,
+  type EquipmentStateHistory,
+} from '../../../game/equipmentHistory';
 import { createEquipmentSetSnapshot,evaluateEquipmentSet,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
@@ -599,28 +606,35 @@ export default function PartyTab({
 
   const char = selectedChar;
   const stats = characterStats[selectedCharacter];
-  const [equipmentHistory, setEquipmentHistory] = useState<Record<string, { undo: SavedEquipmentSet | null; redo: SavedEquipmentSet | null }>>({});
+  const [equipmentHistory, setEquipmentHistory] = useState<Record<string, EquipmentStateHistory>>({});
   const equipmentHistoryKey = `${party.id}:${char.id}`;
   const currentEquipmentState = () => createEquipmentSetSnapshot(char.equipment.slice(0, stats.maxEquipSlots));
-  const history = equipmentHistory[equipmentHistoryKey] ?? { undo: null, redo: null };
-  const undoAvailability = history.undo ? evaluateEquipmentSet(history.undo, char, inventory, stats.maxEquipSlots) : null;
-  const redoAvailability = history.redo ? evaluateEquipmentSet(history.redo, char, inventory, stats.maxEquipSlots) : null;
+  const history = equipmentHistory[equipmentHistoryKey] ?? EMPTY_EQUIPMENT_STATE_HISTORY;
+  const undoTarget = history.undo.at(-1);
+  const redoTarget = history.redo.at(-1);
+  const undoAvailability = undoTarget ? evaluateEquipmentSet(undoTarget, char, inventory, stats.maxEquipSlots) : null;
+  const redoAvailability = redoTarget ? evaluateEquipmentSet(redoTarget, char, inventory, stats.maxEquipSlots) : null;
   const recordEquipmentChange = (change: () => void) => {
-    const undo = currentEquipmentState();
-    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: { undo, redo: null } }));
+    const previousState = currentEquipmentState();
+    setEquipmentHistory((previous) => ({
+      ...previous,
+      [equipmentHistoryKey]: recordEquipmentState(previous[equipmentHistoryKey] ?? EMPTY_EQUIPMENT_STATE_HISTORY, previousState),
+    }));
     change();
   };
   const handleUndoEquipment = () => {
-    if (!history.undo || !undoAvailability?.allAvailable) return;
-    const redo = currentEquipmentState();
-    onRestoreEquipmentState(char.id, history.undo);
-    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: { undo: null, redo } }));
+    if (!undoAvailability?.allAvailable) return;
+    const transition = undoEquipmentState(history, currentEquipmentState());
+    if (!transition) return;
+    onRestoreEquipmentState(char.id, transition.target);
+    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: transition.history }));
   };
   const handleRedoEquipment = () => {
-    if (!history.redo || !redoAvailability?.allAvailable) return;
-    const undo = currentEquipmentState();
-    onRestoreEquipmentState(char.id, history.redo);
-    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: { undo, redo: null } }));
+    if (!redoAvailability?.allAvailable) return;
+    const transition = redoEquipmentState(history, currentEquipmentState());
+    if (!transition) return;
+    onRestoreEquipmentState(char.id, transition.target);
+    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: transition.history }));
   };
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
