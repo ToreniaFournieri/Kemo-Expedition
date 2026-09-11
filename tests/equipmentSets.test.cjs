@@ -47,6 +47,15 @@ test('equipment-set availability includes current equipment and enforces slots a
   assert.equal(evaluateEquipmentSet(setOf(sword), character([], 'guardian'), inventoryOf(sword), 2).allAvailable, false);
 });
 
+test('equipment history snapshots use the saved-set availability contract', async () => {
+  const { createEquipmentSetSnapshot, evaluateEquipmentSet } = await modulePromise;
+  const sword = item(10, 2);
+  const snapshot = createEquipmentSetSnapshot([sword, null]);
+  assert.equal(evaluateEquipmentSet(snapshot, character([]), inventoryOf(sword), 2).allAvailable, true);
+  assert.equal(evaluateEquipmentSet(snapshot, character([], 'guardian'), inventoryOf(sword), 2).allAvailable, false);
+  assert.equal(evaluateEquipmentSet(snapshot, character([]), {}, 2).allAvailable, false);
+});
+
 test('exact load restores locks and assigns jewels independently through auto-equipment logic', async () => {
   const { applyEquipmentSet } = await modulePromise;
   const sword = item(10, 2);

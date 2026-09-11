@@ -32,6 +32,24 @@ export interface EquipmentSetAvailability {
   entries: Array<{ entry: SavedEquipmentEntry; available: boolean }>;
 }
 
+/**
+ * Creates an exact, in-memory equipment state target.  Undo/Redo deliberately
+ * uses the same target shape and availability evaluator as saved equipment
+ * sets, so category aptitude, duplicate variants, and slot limits cannot
+ * drift between the two features.
+ */
+export function createEquipmentSetSnapshot(equipment: readonly (Item | null | undefined)[]): SavedEquipmentSet {
+  return {
+    slot: 0,
+    name: '',
+    createdAt: 0,
+    equipment: equipment.flatMap((item) => item ? [{
+      item: { ...item, jewel: item.jewel ? { ...item.jewel } : null },
+      isLocked: item.isLocked === true,
+    }] : []),
+  };
+}
+
 export function getCharacterEquipmentCapabilities(character: Character): {
   melee: boolean;
   ranged: boolean;

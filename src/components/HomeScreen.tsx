@@ -4980,6 +4980,7 @@ export function HomeScreen({
           onRenameEquipmentSet={actions.renameEquipmentSet}
           onDeleteEquipmentSet={actions.deleteEquipmentSet}
           onLoadEquipmentSet={actions.loadEquipmentSet}
+          onRestoreEquipmentState={actions.restoreEquipmentState}
           savedEquipmentSets={state.global.savedEquipmentSets}
           inventory={state.global.inventory}
           jewels={state.global.jewels}
