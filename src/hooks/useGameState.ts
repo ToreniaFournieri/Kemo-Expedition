@@ -71,6 +71,7 @@ import { gameplayRandom, createApiRandom, withGameplayRandomSource } from '../ga
 import { replaceCharacterEquipment } from '../game/equipment';
 import {
   applyEquipmentSet,
+  evaluateEquipmentSet,
   MAX_SAVED_EQUIPMENT_SETS,
   normalizeSavedEquipmentSets,
   type EquipmentSetLoadMode,
@@ -1912,6 +1913,7 @@ export type GameAction =
   | { type: 'RENAME_EQUIPMENT_SET'; slot: number; name: string }
   | { type: 'DELETE_EQUIPMENT_SET'; slot: number }
   | { type: 'LOAD_EQUIPMENT_SET'; characterId: number; slot: number; mode: EquipmentSetLoadMode; partyIndex?: number }
+  | { type: 'RESTORE_EQUIPMENT_STATE'; characterId: number; set: SavedEquipmentSet; partyIndex?: number }
   | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number; partyIndex?: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'STAMP_FULL_AUTO_EQUIPMENT'; partyIndex: number; equipmentRevision: number; jewelRevision: number }
@@ -3109,7 +3111,8 @@ function reduceGameState(
     }
 
     case 'REMOVE_ALL_EQUIPMENT':
-    case 'LOAD_EQUIPMENT_SET': {
+    case 'LOAD_EQUIPMENT_SET':
+    case 'RESTORE_EQUIPMENT_STATE': {
       const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
       const currentParty = state.parties[targetPartyIndex];
       if (!currentParty) return state;
@@ -3118,9 +3121,15 @@ function reduceGameState(
       const character = currentParty.characters[charIndex];
       const set = action.type === 'LOAD_EQUIPMENT_SET'
         ? state.global.savedEquipmentSets.find((candidate) => candidate.slot === action.slot)
-        : { slot: 0, name: '', createdAt: Date.now(), equipment: [] } satisfies SavedEquipmentSet;
+        : action.type === 'RESTORE_EQUIPMENT_STATE'
+          ? action.set
+          : { slot: 0, name: '', createdAt: Date.now(), equipment: [] } satisfies SavedEquipmentSet;
       if (!set) return state;
       const maxSlots = computeCharacterStats(character, currentParty.level).maxEquipSlots;
+      // Undo/Redo must use precisely the saved-set availability contract. This
+      // check is kept in the reducer as well as the UI to reject stale clicks.
+      if (action.type === 'RESTORE_EQUIPMENT_STATE'
+        && !evaluateEquipmentSet(set, character, state.global.inventory, maxSlots).allAvailable) return state;
       const result = applyEquipmentSet(
         set,
         character,
@@ -5095,6 +5104,10 @@ export function useGameState() {
 
     loadEquipmentSet: useCallback((characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => {
       dispatch({ type: 'LOAD_EQUIPMENT_SET', characterId, slot, mode, partyIndex });
+    }, []),
+
+    restoreEquipmentState: useCallback((characterId: number, set: SavedEquipmentSet, partyIndex?: number) => {
+      dispatch({ type: 'RESTORE_EQUIPMENT_STATE', characterId, set, partyIndex });
     }, []),
 
     applyAutoEquipmentActions: useCallback((actions: AutoEquipmentProfileAction[]) => {

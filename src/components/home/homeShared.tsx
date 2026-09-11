@@ -58,7 +58,7 @@ REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
 import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,SavedEquipmentSet,type Ability,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -213,6 +213,7 @@ export interface HomeScreenProps {
     renameEquipmentSet: (slot: number, name: string) => void;
     deleteEquipmentSet: (slot: number) => void;
     loadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => void;
+    restoreEquipmentState: (characterId: number, set: SavedEquipmentSet, partyIndex?: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
     toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
