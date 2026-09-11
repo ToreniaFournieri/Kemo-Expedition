@@ -10,6 +10,9 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 4 | 2026/09/11 | Fix exact equipment-set and Undo/Redo restoration to reserve and reattach each saved compatible Jewel key and rank before automatic Jewel assignment; retain automatic fallback only when the saved Jewel is unavailable and retain generic Jewel selection for Similar loads. |
+| 0.9.7 | 3 | 2026/09/11 | Extend equipment Undo and Redo to independent per-character 30-state LIFO histories; each new equipment change clears Redo, and every restore remains guarded by the shared exact saved-set availability validation. |
+| 0.9.7 | 2 | 2026/09/11 | Add equipment Undo and Redo controls that restore the immediately preceding or undone exact equipment state only when the shared saved-set availability, aptitude, duplicate-item, and slot validation succeeds; retain disabled visible controls for unavailable restores and protect the reducer against stale restore requests. |
 | 0.9.7 | 1 | 2026/09/11 | Update the runtime and package release metadata to v0.9.7 and reset the release build number to 1. |
 | 0.9.6 | 22 | 2026/09/11 | Fix FULL Auto Equipment popup notifications to render the final equipped item after Jewel assignment, including the localized attached-Jewel suffix such as `[堅6]`; retain replacement and party/character notification wording, notification settings, and auto-equipment behavior. |
 | 0.9.6 | 21 | 2026/09/11 | Increase every AFK emulation-efficiency time band and the catch-up cap fivefold: resolve up to 810 elapsed AFK hours into up to 225 effective hours using the specified 45–810h bands; preserve the speed multipliers, persisted-backlog limits, recovery scheduling, and refresh behavior. Update the four localized runtime glossary entries, player mechanics guide, AFK profiling workloads, and regression coverage. |
