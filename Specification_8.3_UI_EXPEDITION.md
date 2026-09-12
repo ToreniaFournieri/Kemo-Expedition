@@ -50,6 +50,8 @@ and {condition ≥ 230}
     - `floor_name` uses the Japanese name from **Expedition Floor Concepts**.
     - Example: 2F-3 捕食者の縄張りまで, 2F-4 捕食者の縄張りまで, 3F-3 群生の巣盆地まで
 
+
+
 - **Simulation Run (シミュレーション実行)**
   - Pressing the `予測実行` button triggers **1000** simulated expedition runs.
   - Simulation runs have no effect on actual game progress or state:
@@ -66,14 +68,38 @@ and {condition ≥ 230}
   - When all runs are complete, display the aggregated result:
     - If the run reaches the expedition completion condition: `Example: 踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
     - If the run reaches the configured return depth limit: `Example: 帰還45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
-  - UI visual: 100% stacked horizontal bar
-    - 踏破 or 帰還: Sub color, 20% lighter
-    - 引分: Sub color, 50% lighter
-    - 撤退: Accent color, 50% lighter
-    - 敗北: Accent color, 20% lighter
-    - Segment widths correspond to their respective outcome percentages.
-    - Display a floating tooltip/bubble over the bar with the full result, e.g. `踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
 
+  * **Simulation Result Graph**
+    * X-axis: expedition room number, `1–24`.
+    * Y-axis: percentage of all simulation runs, `0–100%`.
+    * Display one 100% stacked bar for each room.
+    * Each bar represents all simulated runs and shows their status at that room.
+    * Stack segments:
+      * `Victory`, `Clear`, or `Return`: Sub color, 20% lighter
+        * `Victory` (勝利): The party wins the battle in that room (`Consequence: Victory`) and neither of the following terminal conditions is met.
+        * `Clear` (踏破): `Victory`, and the party clears all rooms of the expedition.
+        * `Return` (帰還): `Victory`, and the configured return-depth condition terminates the expedition at that room.
+      * `Draw` (引分): Sub color, 50% lighter
+      * `Retreat` (撤退): Accent color, 50% lighter
+      * `Defeat` (敗北): Accent color, 20% lighter
+      * `Not reached` (未到達): Gray color
+        * Represents simulated runs that do not reach that room because the run has already terminated at an earlier room.
+        * This includes earlier `Clear`, `Return`, `Draw`, `Retreat`, or `Defeat` outcomes where applicable.
+    * Each simulated run contributes exactly one segment to each room bar:
+      * If the run reaches and wins that room, count it as `Victory`, `Clear`, or `Return`.
+      * If the run reaches that room and terminates there, count its terminal outcome.
+      * If the run terminates before reaching that room, count it as `Not reached`.
+    * Therefore, each room bar must total `100%` of simulation runs.
+    * Hovering or tapping a room displays a tooltip containing:
+      * Room number
+      * Number and percentage of runs reaching the room
+      * Outcome breakdown for that room
+      * Percentage not reaching the room
+      * Example:
+        * `Room 17 — Reached 63.8%`
+        * `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
+    * Also display the overall aggregated result near the graph:
+      * `踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
 
 ```
 left-aligned                                    right-aligned
