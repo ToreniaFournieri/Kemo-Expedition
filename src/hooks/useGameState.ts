@@ -50,6 +50,7 @@ import {
   createDefaultExpeditionApplicationAdapterFactory,
   DEFAULT_UNLOCKED_DEITIES,
 } from '../game/expeditionApplicationAdapters';
+import { aggregateExpeditionSimulationRooms, createExpeditionSimulationRoomResults, EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { getDiarySettingsWithDefaults } from '../game/diarySettings';
 import { normalizeImportedBags } from '../game/bagMigration';
 import { migrateLegacyInventory } from '../game/inventoryMigration';
@@ -61,7 +62,6 @@ import {
   sellInventoryStack,
   setInventoryVariantStatus,
 } from '../game/inventoryMutation';
-import { EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { recordRunExpeditionStatusAuthority } from '../game/battle';
 import {
   normalizeRevealedGlossaryAbilityIds,
@@ -4714,6 +4714,7 @@ export async function simulateExpeditionRuns(
     Wounded_Retreat: 0,
     Defeat: 0,
     total,
+    rooms: createExpeditionSimulationRoomResults(total),
   };
 
   let sliceStartedAt = performance.now();
@@ -4737,16 +4738,26 @@ export async function simulateExpeditionRuns(
     if (!resolution) throw new Error('simulation_failed');
     memoryMonitor.incrementBattleCount(resolution.completedRooms);
 
+    let terminalStatus: 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
     if (resolution.outcome === 'Clear') {
       result.Clear += 1;
+      terminalStatus = 'Clear';
     } else if (resolution.outcome === 'Escape') {
       result.Turned_Back += 1;
+      terminalStatus = 'Return';
     } else if (resolution.outcome === 'Defeat') {
       result.Defeat += 1;
+      terminalStatus = 'Defeat';
     } else {
-      if (resolution.terminalBattleOutcome === 'draw') result.Draw_Retreat += 1;
-      else result.Wounded_Retreat += 1;
+      if (resolution.terminalBattleOutcome === 'draw') {
+        result.Draw_Retreat += 1;
+        terminalStatus = 'Draw';
+      } else {
+        result.Wounded_Retreat += 1;
+        terminalStatus = 'Retreat';
+      }
     }
+    aggregateExpeditionSimulationRooms(result.rooms, resolution.completedRooms, terminalStatus);
 
     const completed = index + 1;
     const now = performance.now();

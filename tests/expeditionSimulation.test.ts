@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import {
+  aggregateExpeditionSimulationRooms,
+  createExpeditionSimulationRoomResults,
+  EXPEDITION_SIMULATION_ROOM_COUNT,
+} from '../src/game/expeditionSimulation.ts';
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
 const tabSource = readFileSync(new URL('../src/components/home/tabs/ExpeditionTab.tsx', import.meta.url), 'utf8');
@@ -44,4 +49,33 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Draw_Retreat \/ simulation\.result\.total \* 100, 1\)/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Wounded_Retreat \/ simulation\.result\.total \* 100, 1\)/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Defeat \/ simulation\.result\.total \* 100, 1\)/);
+  assert.match(tabSource, /simulation\.result\.rooms\.map/);
+  assert.match(tabSource, /party\.expedition\.simulationRoomReached/);
+  assert.match(tabSource, /party\.expedition\.simulationRoomBreakdown/);
+  assert.match(tabSource, /room\.NotReached/);
+});
+
+test('room aggregation assigns one status per run to every room', () => {
+  const rooms = createExpeditionSimulationRoomResults(5);
+  aggregateExpeditionSimulationRooms(rooms, 24, 'Clear');
+  aggregateExpeditionSimulationRooms(rooms, 8, 'Return');
+  aggregateExpeditionSimulationRooms(rooms, 5, 'Draw');
+  aggregateExpeditionSimulationRooms(rooms, 3, 'Retreat');
+  aggregateExpeditionSimulationRooms(rooms, 1, 'Defeat');
+
+  assert.equal(rooms.length, EXPEDITION_SIMULATION_ROOM_COUNT);
+  assert.deepEqual(rooms[0], {
+    room: 1, Victory: 4, Clear: 0, Return: 0, Draw: 0, Retreat: 0, Defeat: 1,
+    NotReached: 0, reached: 5, total: 5,
+  });
+  assert.equal(rooms[2].Retreat, 1);
+  assert.equal(rooms[4].Draw, 1);
+  assert.equal(rooms[7].Return, 1);
+  assert.equal(rooms[23].Clear, 1);
+  for (const room of rooms) {
+    const statusTotal = room.Victory + room.Clear + room.Return + room.Draw
+      + room.Retreat + room.Defeat + room.NotReached;
+    assert.equal(statusTotal, room.total, `room ${room.room} must be a 100% stack`);
+    assert.equal(room.reached + room.NotReached, room.total, `room ${room.room} reach total`);
+  }
 });

@@ -383,7 +383,7 @@ function ExpeditionTab({
             }}
             role="tooltip"
           >
-            <div className="whitespace-nowrap text-xs leading-snug text-gray-700">
+            <div className="whitespace-pre-line text-xs leading-snug text-gray-700">
               {activeSimulationResultBubble.text}
             </div>
           </div>
@@ -498,6 +498,23 @@ function ExpeditionTab({
             defeat: formatDecimal(simulation.result.Defeat / simulation.result.total * 100, 1),
           })
           : null;
+        const getSimulationRoomTooltip = (room: ExpeditionSimulationResult['rooms'][number]) => {
+          const percent = (value: number) => formatDecimal(value / room.total * 100, 1);
+          return `${t('party.expedition.simulationRoomReached', {
+            room: formatNumber(room.room),
+            reached: formatNumber(room.reached),
+            total: formatNumber(room.total),
+            percent: percent(room.reached),
+          })}\n${t('party.expedition.simulationRoomBreakdown', {
+            victory: percent(room.Victory),
+            clear: percent(room.Clear),
+            returned: percent(room.Return),
+            draw: percent(room.Draw),
+            retreat: percent(room.Retreat),
+            defeat: percent(room.Defeat),
+            notReached: percent(room.NotReached),
+          })}`;
+        };
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
@@ -987,62 +1004,72 @@ function ExpeditionTab({
                   </span>
                 </div>
                 {simulation?.status === 'complete' && simulation.result && simulationResultText ? (
-                  <button
-                    type="button"
-                    className="block h-3 w-full overflow-visible rounded-full bg-gray-200/70 focus:outline-none focus:ring-2 focus:ring-sub/60 focus:ring-offset-1"
-                    aria-label={simulationResultText}
-                    title={simulationResultText}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      const key = `simulation:${partyIndex}`;
-                      if (activeSimulationResultBubble?.key === key) {
-                        setActiveSimulationResultBubble(null);
-                        return;
-                      }
-                      const rect = event.currentTarget.getBoundingClientRect();
-                      const viewportPadding = 12;
-                      const maxWidth = Math.min(420, window.innerWidth - viewportPadding * 2);
-                      setActiveSimulationResultBubble({
-                        key,
-                        text: simulationResultText,
-                        top: rect.top - 8,
-                        left: Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - viewportPadding - maxWidth),
-                        maxWidth,
-                      });
-                    }}
-                  >
-                    <span className="flex h-full w-full overflow-hidden rounded-full" aria-hidden="true">
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${((simulationUsesClearLabel ? simulation.result.Clear : simulation.result.Turned_Back) / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-success)',
-                        }}
-                      />
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${(simulation.result.Draw_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-draw)',
-                        }}
-                      />
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${(simulation.result.Wounded_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-retreat)',
-                        }}
-                      />
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${(simulation.result.Defeat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-defeat)',
-                        }}
-                      />
+                  <div className="relative pl-9 pt-1" aria-label={t('party.expedition.simulationGraph')}>
+                    <span className="absolute -left-5 top-12 -rotate-90 text-[8px] uppercase tracking-wide text-gray-500" aria-hidden="true">
+                      {t('party.expedition.simulationYAxis')}
                     </span>
-                  </button>
+                    <div className="pointer-events-none absolute bottom-5 left-0 top-1 flex w-6 flex-col justify-between text-right text-[9px] tabular-nums text-gray-500" aria-hidden="true">
+                      <span>100%</span><span>50%</span><span>0%</span>
+                    </div>
+                    <div className="relative h-28 border-b border-l border-gray-400/60">
+                      <div className="pointer-events-none absolute inset-x-0 top-0 border-t border-dashed border-gray-300/70" />
+                      <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-gray-300/70" />
+                      <div className="flex h-full items-end gap-px px-0.5">
+                        {simulation.result.rooms.map((room) => {
+                          const tooltip = getSimulationRoomTooltip(room);
+                          const key = `simulation:${partyIndex}:room:${room.room}`;
+                          const showTooltip = (target: HTMLElement) => {
+                            const rect = target.getBoundingClientRect();
+                            const viewportPadding = 12;
+                            const maxWidth = Math.min(520, window.innerWidth - viewportPadding * 2);
+                            setActiveSimulationResultBubble({
+                              key,
+                              text: tooltip,
+                              top: rect.top - 8,
+                              left: Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - viewportPadding - maxWidth),
+                              maxWidth,
+                            });
+                          };
+                          const segments = [
+                            [room.Victory, 'var(--outcome-success)'],
+                            [room.Clear, 'var(--outcome-success)'],
+                            [room.Return, 'var(--outcome-success)'],
+                            [room.Draw, 'var(--outcome-draw)'],
+                            [room.Retreat, 'var(--outcome-retreat)'],
+                            [room.Defeat, 'var(--outcome-defeat)'],
+                            [room.NotReached, 'rgb(156 163 175 / 0.55)'],
+                          ] as const;
+                          return (
+                            <button
+                              key={room.room}
+                              type="button"
+                              className="group relative flex h-full min-w-0 flex-1 flex-col-reverse overflow-hidden rounded-t-sm focus:z-10 focus:outline-none focus:ring-2 focus:ring-sub/70"
+                              aria-label={tooltip.replace('\n', '. ')}
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onMouseEnter={(event) => showTooltip(event.currentTarget)}
+                              onMouseLeave={() => setActiveSimulationResultBubble((current) => current?.key === key ? null : current)}
+                              onFocus={(event) => showTooltip(event.currentTarget)}
+                              onBlur={() => setActiveSimulationResultBubble((current) => current?.key === key ? null : current)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                showTooltip(event.currentTarget);
+                              }}
+                            >
+                              {segments.map(([value, color], segmentIndex) => value > 0 ? (
+                                <span key={segmentIndex} className="w-full" style={{ height: `${value / room.total * 100}%`, backgroundColor: color }} />
+                              ) : null)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex h-5 items-start gap-px px-0.5 text-center text-[8px] leading-4 text-gray-500" aria-hidden="true">
+                      {simulation.result.rooms.map((room) => <span key={room.room} className="min-w-0 flex-1">{room.room % 4 === 0 || room.room === 1 ? room.room : ''}</span>)}
+                    </div>
+                    <div className="-mt-1 text-center text-[8px] uppercase tracking-wide text-gray-500" aria-hidden="true">
+                      {t('party.expedition.simulationXAxis')}
+                    </div>
+                  </div>
                 ) : null}
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">

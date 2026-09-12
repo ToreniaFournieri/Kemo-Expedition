@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 5 | 2026/09/12 | Replace the expedition forecast's single aggregate result bar with an accessible 24-room 100% stacked outcome graph, including reached and not-reached counts, localized room tooltips, and retained overall Clear or Return summaries. |
 | 0.9.7 | 4 | 2026/09/11 | Fix exact equipment-set and Undo/Redo restoration to reserve and reattach each saved compatible Jewel key and rank before automatic Jewel assignment; retain automatic fallback only when the saved Jewel is unavailable and retain generic Jewel selection for Similar loads. |
 | 0.9.7 | 3 | 2026/09/11 | Extend equipment Undo and Redo to independent per-character 30-state LIFO histories; each new equipment change clears Redo, and every restore remains guarded by the shared exact saved-set availability validation. |
 | 0.9.7 | 2 | 2026/09/11 | Add equipment Undo and Redo controls that restore the immediately preceding or undone exact equipment state only when the shared saved-set availability, aptitude, duplicate-item, and slot validation succeeds; retain disabled visible controls for unavailable restores and protect the reducer against stale restore requests. |

@@ -757,6 +757,20 @@ export interface ExpeditionSimulationResult {
   Wounded_Retreat: number;
   Defeat: number;
   total: number;
+  rooms: ExpeditionSimulationRoomResult[];
+}
+
+export interface ExpeditionSimulationRoomResult {
+  room: number;
+  Victory: number;
+  Clear: number;
+  Return: number;
+  Draw: number;
+  Retreat: number;
+  Defeat: number;
+  NotReached: number;
+  reached: number;
+  total: number;
 }
 
 // Game State
