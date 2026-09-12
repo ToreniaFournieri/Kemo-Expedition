@@ -25,6 +25,13 @@ export function getExpeditionSimulationFloorLabel(room: number): string {
   return `${getExpeditionSimulationRoomCoordinate(room).floor}F`;
 }
 
+/** Labels the six floor starts and the final Boss room on the simulation graph. */
+export function getExpeditionSimulationXAxisLabel(room: number): string {
+  const normalizedRoom = Math.min(EXPEDITION_SIMULATION_ROOM_COUNT, Math.max(1, Math.floor(room)));
+  if (normalizedRoom === EXPEDITION_SIMULATION_ROOM_COUNT) return 'B';
+  return normalizedRoom % 4 === 1 ? getExpeditionSimulationFloorLabel(normalizedRoom) : '';
+}
+
 export function getExpeditionSimulationSuccessfulHpBucket(
   remainingHp: number,
   maxHp: number,

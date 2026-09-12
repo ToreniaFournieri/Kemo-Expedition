@@ -8,6 +8,7 @@ import {
   getExpeditionSimulationFloorLabel,
   getExpeditionSimulationRetreatHpBucket,
   getExpeditionSimulationRoomCoordinate,
+  getExpeditionSimulationXAxisLabel,
   getExpeditionSimulationSuccessfulHpBucket,
 } from '../src/game/expeditionSimulation.ts';
 
@@ -75,7 +76,7 @@ test('simulation graph labels floor starts and has only the required percentage 
   assert.match(tabSource, /top-1\/2 border-t border-dashed/);
   assert.match(tabSource, /top-3\/4 border-t border-dashed/);
   assert.doesNotMatch(tabSource, /<span>100%<\/span><span>50%<\/span><span>0%<\/span>/);
-  assert.match(tabSource, /room\.room % 4 === 1 \? getExpeditionSimulationFloorLabel\(room\.room\) : ''/);
+  assert.match(tabSource, /getExpeditionSimulationXAxisLabel\(room\.room\)/);
 
   assert.deepEqual(getExpeditionSimulationRoomCoordinate(1), { floor: 1, roomInFloor: 1 });
   assert.deepEqual(getExpeditionSimulationRoomCoordinate(5), { floor: 2, roomInFloor: 1 });
@@ -87,6 +88,11 @@ test('simulation graph labels floor starts and has only the required percentage 
   assert.equal(getExpeditionSimulationFloorLabel(13), '4F');
   assert.equal(getExpeditionSimulationFloorLabel(17), '5F');
   assert.equal(getExpeditionSimulationFloorLabel(21), '6F');
+  assert.equal(getExpeditionSimulationXAxisLabel(1), '1F');
+  assert.equal(getExpeditionSimulationXAxisLabel(5), '2F');
+  assert.equal(getExpeditionSimulationXAxisLabel(21), '6F');
+  assert.equal(getExpeditionSimulationXAxisLabel(24), 'B');
+  assert.equal(getExpeditionSimulationXAxisLabel(23), '');
 });
 
 test('successful HP ranges use exact half-open boundaries', () => {

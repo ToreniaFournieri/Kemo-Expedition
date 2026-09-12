@@ -10,7 +10,7 @@ hasDefeatedDungeonBoss
 import { DebugSettings,getTimeSpeedScale } from '../../../game/debugSettings';
 import { getDifficultyOffsetItemChanceTickets,getDifficultyOffsetMax,getDifficultyOffsetSuperRareChanceTickets,normalizeDifficultyOffset } from '../../../game/difficultyOffset';
 import { getItemDisplayName } from '../../../game/gameState';
-import { EXPEDITION_SIMULATION_RUN_COUNT,getExpeditionSimulationFloorLabel,getExpeditionSimulationRoomCoordinate } from '../../../game/expeditionSimulation';
+import { EXPEDITION_SIMULATION_RUN_COUNT,getExpeditionSimulationRoomCoordinate,getExpeditionSimulationXAxisLabel } from '../../../game/expeditionSimulation';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
 import { computePartyStats,type ComputedPartyStatus } from '../../../game/partyComputation';
 import { t } from '../../../i18n';
@@ -1077,7 +1077,7 @@ function ExpeditionTab({
                       </div>
                     </div>
                     <div className="flex h-5 items-start gap-px px-0.5 text-center text-[8px] leading-4 text-gray-500" aria-hidden="true">
-                      {simulation.result.rooms.map((room) => <span key={room.room} className="min-w-0 flex-1">{room.room % 4 === 1 ? getExpeditionSimulationFloorLabel(room.room) : ''}</span>)}
+                      {simulation.result.rooms.map((room) => <span key={room.room} className="min-w-0 flex-1">{getExpeditionSimulationXAxisLabel(room.room)}</span>)}
                     </div>
                   </div>
                 ) : null}

@@ -71,7 +71,7 @@ and {condition ≥ 230}
 
   * **Simulation Result Graph**
     * X-axis: expedition room number, `1–24`. 
-      * Display floor labels at the following room positions: `1`-> `1F`, `5`-> `2F`, `9`-> `3F`, `13`-> `4F`, `17`-> `5F`, `21`-> `6F`
+      * Display floor labels at the following room positions: `1`-> `1F`, `5`-> `2F`, `9`-> `3F`, `13`-> `4F`, `17`-> `5F`, `21`-> `6F`, `24` -> `B`
     * Y-axis: Percentage of all simulation runs, ranging from 0% to 100%.
       * Do not display Y-axis percentage labels.
       * Display dashed horizontal guide lines at 25%, 50%, and 75%.
