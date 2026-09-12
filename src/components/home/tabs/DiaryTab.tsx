@@ -769,9 +769,9 @@ export default function DiaryTab({
                               const isTriggeredLog = battleLog.actor === 'triggered';
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
-                              const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
+                              const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.effectKind === 'stealth' || battleLog.action.includes('物陰に隠れて') || battleLog.action.includes('への攻撃はすべて幻だった！'));
                               const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
-                              const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
+                              const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.effectKind === 'stealth' || previousLog.action.includes('物陰に隠れて') || previousLog.action.includes('への攻撃はすべて幻だった！'));
                               const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
                               const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                               const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');

@@ -1860,7 +1860,7 @@ CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& st
         const int stealth = active_ability_level(*result.target, protocol::AbilityId::Stealth);
         const double current_target_hp = result.target->side == Side::Party ? state.party_hp : state.enemy_hp;
         const double target_max = result.target->side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
-        const bool stealth_negated = result.hits > 0 && stealth > 0 &&
+        const bool stealth_negated = action.attack_type == 3 && result.hits > 0 && stealth > 0 &&
             active_ability_level(*actor, protocol::AbilityId::Pursuit) == 0 && target_max > 0.0 &&
             current_target_hp / target_max <= (ability_scales::value(stealth, ability_scales::stealth));
         if (stealth_negated) {
@@ -2560,17 +2560,6 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
             profile_index + 1, timing, 10, action_id);
         if (flavor != CombatResult::Ok) return flavor;
       }
-    }
-    const int stealth = active_ability_level(target, protocol::AbilityId::Stealth);
-    const double stealth_hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
-    const double stealth_max = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
-    if (result.hits > 0 && stealth > 0 && active_ability_level(actor, protocol::AbilityId::Pursuit) == 0 &&
-        stealth_max > 0.0 && stealth_hp / stealth_max <= (ability_scales::value(stealth, ability_scales::stealth))) {
-      result.calculated = 0.0;
-      result.hits = 0;
-      if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target.id, actor.id,
-          static_cast<u32>(protocol::AbilityId::Stealth), profile_index + 1, timing,
-          kPrevented, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
     }
     if (profile_index == 2 && !re_attack &&
         active_ability_level(target, protocol::AbilityId::Shock) > 0 && !target.shock_consumed) {

@@ -618,7 +618,7 @@ export interface BattleLogEntry {
   initiativeRoll?: number;
   actor: 'party' | 'enemy' | 'character' | 'effect' | 'triggered' | 'deity';
   characterId?: number;
-  effectKind?: 'life_drain' | 'terrain';
+  effectKind?: 'life_drain' | 'stealth' | 'terrain';
   effectSourceName?: string;
   effectTargetName?: string;
   effectHealAmount?: number;

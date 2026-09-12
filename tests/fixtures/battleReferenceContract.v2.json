@@ -55,5 +55,5 @@
   "predecessorGoldenFixture": "tests/fixtures/battleGolden.v1.json",
   "predecessorGoldenSha256": "e71f11bf791f52315ea20febabfc31cf881e7a72a4154ee95fa5806aa6df8bf0",
   "goldenFixture": "tests/fixtures/battleGolden.v2.json",
-  "goldenSha256": "a06aa4eef0c53521b1d39a82fba1dc9b0c6aead444d306d4ac44b2a058afbfad"
+  "goldenSha256": "a41b62c443e54947f218e846f165f64b34fad4f16052d27a281282784faf68cb"
 }

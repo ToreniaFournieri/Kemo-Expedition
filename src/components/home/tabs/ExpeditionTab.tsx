@@ -1280,9 +1280,9 @@ function ExpeditionTab({
                                 const isTriggeredLog = log.actor === 'triggered';
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
-                                const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
+                                const isStealthEffectLog = log.actor === 'effect' && (log.effectKind === 'stealth' || log.action.includes('物陰に隠れて') || log.action.includes('への攻撃はすべて幻だった！'));
                                 const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
-                                const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
+                                const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.effectKind === 'stealth' || previousLog.action.includes('物陰に隠れて') || previousLog.action.includes('への攻撃はすべて幻だった！'));
                                 const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
                                 const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                                 const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');

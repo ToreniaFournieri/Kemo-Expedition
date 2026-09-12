@@ -960,6 +960,86 @@ function combatTimedInput(overrides: Partial<BattleProtocolInput> = {}): BattleP
   return { ...combatReactiveInput(), engineFlags: BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, ...overrides };
 }
 
+test('Stealth only nullifies low-HP normal melee attacks unless Pursuit is active', () => {
+  const base = combatNormalInput();
+  const stealthTarget = (pursuit: boolean) => executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
+    engineFlags: pursuit ? BATTLE_ENGINE_FLAG_END_CHECKPOINT : BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+    partyHp: 1_000,
+    partyMaxHp: 1_000,
+    enemyHp: 12,
+    enemyMaxHp: 100,
+    combatants: base.combatants.map((combatant, index) => index === 0
+      ? {
+          ...combatant,
+          hp: 12,
+          maxHp: 100,
+          rangedNoA: 0,
+          magicalNoA: 0,
+          meleeNoA: 0,
+          abilities: [{ id: 'stealth', level: 1 }],
+        }
+      : {
+          ...combatant,
+          rangedAttack: 1,
+          magicalAttack: 1,
+          meleeAttack: 1,
+          rangedNoA: 1,
+          magicalNoA: 1,
+          meleeNoA: 1,
+          abilities: pursuit ? [{ id: 'pursuit', level: 1 }] : [],
+        }),
+    randomValues: Array(32).fill(0),
+  })));
+
+  const avoided = stealthTarget(false);
+  assert.equal(avoided.protocolError, 0);
+  const attacks = avoided.events.filter((event) => event.opcode === 'attack' && event.actorId === 1);
+  assert.deepEqual(attacks.map((event) => [event.attackType, event.value0, event.hits]), [
+    ['ranged', 1, 1],
+    ['magical', 1, 1],
+    ['melee', 0, 0],
+  ]);
+  assert.ok(avoided.events.some((event) => event.opcode === 'nullified'
+    && event.abilityId === 'stealth' && event.attackType === 'melee'));
+
+  const pursued = stealthTarget(true);
+  assert.equal(pursued.protocolError, 0);
+  assert.deepEqual(
+    pursued.events.filter((event) => event.opcode === 'attack' && event.actorId === 1)
+      .map((event) => [event.attackType, event.value0, event.hits]),
+    [['ranged', 1, 1], ['magical', 1, 1], ['melee', 1, 1]],
+  );
+  assert.equal(pursued.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'stealth'), false);
+});
+
+test('Stealth does not nullify reactive attacks', () => {
+  const base = combatReactiveInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    partyHp: 12,
+    partyMaxHp: 100,
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    combatants: base.combatants.map((combatant, index) => index === 0
+      ? {
+          ...combatant,
+          rangedAttack: 1,
+          rangedNoA: 1,
+          abilities: [{ id: 'counter', level: 1 }],
+        }
+      : {
+          ...combatant,
+          rangedAttack: 1,
+          rangedNoA: 1,
+          abilities: [{ id: 'stealth', level: 1 }],
+        }),
+    randomValues: Array(32).fill(0),
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.ok(output.events.some((event) => event.opcode === 'attack'
+    && event.aux0 === BATTLE_ACTION_IDS.counter && event.value0 > 0));
+  assert.equal(output.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'stealth'), false);
+});
+
 function endCheckpointInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
   return { ...combatTimedInput(), engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT, ...overrides };
 }

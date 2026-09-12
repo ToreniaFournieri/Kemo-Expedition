@@ -1361,7 +1361,7 @@ function convertIndexedBattleSemanticEvents(
       const action = combatants.get(event.actorId)?.kind === 'enemy'
         ? t('battle.action.enemyStealthAvoided', { enemy: nameOf(event.actorId) })
         : t('battle.action.stealthAvoided', { actor: nameOf(event.actorId) });
-      pendingAfterAttack.set(key, [...(pendingAfterAttack.get(key) ?? []), { phase: 'combat', actor: 'effect', action, attackType: event.attackType ?? undefined }]);
+      pendingAfterAttack.set(key, [...(pendingAfterAttack.get(key) ?? []), { phase: 'combat', actor: 'effect', effectKind: 'stealth', action, attackType: event.attackType ?? undefined }]);
       continue;
     }
 
