@@ -460,7 +460,7 @@ const zhCN = {
   'party.expedition.simulationGraph': '各房间模拟结果，第1至24房间，0至100%',
   'party.expedition.simulationXAxis': '房间',
   'party.expedition.simulationYAxis': '百分比',
-  'party.expedition.simulationRoomReached': '房间{room} — 到达 {reached}/{total}（{percent}%）',
+  'party.expedition.simulationRoomReached': '{floor}F-{roomInFloor}（房间{room}）— 到达 {reached}/{total}（{percent}%）',
   'party.expedition.simulationRoomBreakdown': '{successfulLabel}{successful}% / 平局{draw}% / 撤退{retreat}% / 败北{defeat}% / 未到达{notReached}%',
   'common.edit': '编辑',
   'common.done': '完成',

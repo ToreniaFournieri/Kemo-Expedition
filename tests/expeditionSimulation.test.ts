@@ -5,7 +5,9 @@ import {
   aggregateExpeditionSimulationRooms,
   createExpeditionSimulationRoomResults,
   EXPEDITION_SIMULATION_ROOM_COUNT,
+  getExpeditionSimulationFloorLabel,
   getExpeditionSimulationRetreatHpBucket,
+  getExpeditionSimulationRoomCoordinate,
   getExpeditionSimulationSuccessfulHpBucket,
 } from '../src/game/expeditionSimulation.ts';
 
@@ -59,10 +61,32 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /simulation\.result\.rooms\.map/);
   assert.match(tabSource, /party\.expedition\.simulationRoomReached/);
   assert.match(tabSource, /party\.expedition\.simulationRoomBreakdown/);
+  assert.match(tabSource, /getExpeditionSimulationRoomCoordinate\(room\.room\)/);
+  assert.match(tabSource, /floor: formatNumber\(coordinate\.floor\)/);
+  assert.match(tabSource, /roomInFloor: formatNumber\(coordinate\.roomInFloor\)/);
   assert.match(tabSource, /room\.Clear > 0[\s\S]*?expedition\.outcome\.clear[\s\S]*?room\.Return > 0[\s\S]*?expedition\.outcome\.return[\s\S]*?expedition\.outcome\.victory/);
   assert.match(tabSource, /successfulLabel: successfulOutcome\.label/);
   assert.match(tabSource, /successful: percent\(successfulOutcome\.value\)/);
   assert.match(tabSource, /room\.NotReached/);
+});
+
+test('simulation graph labels floor starts and has only the required percentage guides', () => {
+  assert.match(tabSource, /top-1\/4 border-t border-dashed/);
+  assert.match(tabSource, /top-1\/2 border-t border-dashed/);
+  assert.match(tabSource, /top-3\/4 border-t border-dashed/);
+  assert.doesNotMatch(tabSource, /<span>100%<\/span><span>50%<\/span><span>0%<\/span>/);
+  assert.match(tabSource, /room\.room % 4 === 1 \? getExpeditionSimulationFloorLabel\(room\.room\) : ''/);
+
+  assert.deepEqual(getExpeditionSimulationRoomCoordinate(1), { floor: 1, roomInFloor: 1 });
+  assert.deepEqual(getExpeditionSimulationRoomCoordinate(5), { floor: 2, roomInFloor: 1 });
+  assert.deepEqual(getExpeditionSimulationRoomCoordinate(17), { floor: 5, roomInFloor: 1 });
+  assert.deepEqual(getExpeditionSimulationRoomCoordinate(24), { floor: 6, roomInFloor: 4 });
+  assert.equal(getExpeditionSimulationFloorLabel(1), '1F');
+  assert.equal(getExpeditionSimulationFloorLabel(5), '2F');
+  assert.equal(getExpeditionSimulationFloorLabel(9), '3F');
+  assert.equal(getExpeditionSimulationFloorLabel(13), '4F');
+  assert.equal(getExpeditionSimulationFloorLabel(17), '5F');
+  assert.equal(getExpeditionSimulationFloorLabel(21), '6F');
 });
 
 test('successful HP ranges use exact half-open boundaries', () => {

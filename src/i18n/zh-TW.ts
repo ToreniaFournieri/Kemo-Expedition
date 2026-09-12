@@ -460,7 +460,7 @@ const zhTW = {
   'party.expedition.simulationGraph': '各房間模擬結果，第1至24房間，0至100%',
   'party.expedition.simulationXAxis': '房間',
   'party.expedition.simulationYAxis': '百分比',
-  'party.expedition.simulationRoomReached': '房間{room} — 到達 {reached}/{total}（{percent}%）',
+  'party.expedition.simulationRoomReached': '{floor}F-{roomInFloor}（房間{room}）— 到達 {reached}/{total}（{percent}%）',
   'party.expedition.simulationRoomBreakdown': '{successfulLabel}{successful}% / 平局{draw}% / 撤退{retreat}% / 敗北{defeat}% / 未到達{notReached}%',
   'common.edit': '編輯',
   'common.done': '完成',

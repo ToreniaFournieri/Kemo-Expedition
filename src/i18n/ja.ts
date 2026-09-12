@@ -460,7 +460,7 @@ const ja = {
   'party.expedition.simulationGraph': '部屋別予測結果、1から24部屋、0から100パーセント',
   'party.expedition.simulationXAxis': '部屋',
   'party.expedition.simulationYAxis': '割合',
-  'party.expedition.simulationRoomReached': '部屋{room} — 到達 {reached}/{total}（{percent}%）',
+  'party.expedition.simulationRoomReached': '{floor}F-{roomInFloor}（部屋{room}）— 到達 {reached}/{total}（{percent}%）',
   'party.expedition.simulationRoomBreakdown': '{successfulLabel}{successful}% / 引分{draw}% / 撤退{retreat}% / 敗北{defeat}% / 未到達{notReached}%',
   'common.edit': '編集',
   'common.done': '完了',

@@ -459,7 +459,7 @@ const en = {
   'party.expedition.simulationGraph': 'Simulation results by room, rooms 1 through 24, 0 to 100 percent',
   'party.expedition.simulationXAxis': 'Room',
   'party.expedition.simulationYAxis': 'Percent',
-  'party.expedition.simulationRoomReached': 'Room {room} — Reached {reached}/{total} ({percent}%)',
+  'party.expedition.simulationRoomReached': '{floor}F-{roomInFloor} (Room {room}) — Reached {reached}/{total} ({percent}%)',
   'party.expedition.simulationRoomBreakdown': '{successfulLabel} {successful}% / Draw {draw}% / Retreat {retreat}% / Defeat {defeat}% / Not reached {notReached}%',
   'common.edit': 'Edit',
   'common.done': 'Done',

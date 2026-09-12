@@ -12,6 +12,19 @@ export type ExpeditionSimulationTerminalStatus = 'Clear' | 'Return' | 'Draw' | '
 export type ExpeditionSimulationSuccessfulHpBucket = keyof ExpeditionSimulationSuccessfulHpBuckets;
 export type ExpeditionSimulationRetreatHpBucket = keyof ExpeditionSimulationRetreatHpBuckets;
 
+/** Convert the one-based graph room number into its expedition floor position. */
+export function getExpeditionSimulationRoomCoordinate(room: number): { floor: number; roomInFloor: number } {
+  const normalizedRoom = Math.min(EXPEDITION_SIMULATION_ROOM_COUNT, Math.max(1, Math.floor(room)));
+  return {
+    floor: Math.floor((normalizedRoom - 1) / 4) + 1,
+    roomInFloor: (normalizedRoom - 1) % 4 + 1,
+  };
+}
+
+export function getExpeditionSimulationFloorLabel(room: number): string {
+  return `${getExpeditionSimulationRoomCoordinate(room).floor}F`;
+}
+
 export function getExpeditionSimulationSuccessfulHpBucket(
   remainingHp: number,
   maxHp: number,
