@@ -71,7 +71,7 @@ and {condition ≥ 230}
 
   * **Simulation Result Graph**
     * X-axis: expedition room number, `1–24`. 
-      * Display floor labels at the following room positions: `1`-> `1F`, `4`-> `2F`, `8`-> `3F`, `12`-> `4F`, `16`-> `5F`, `20`-> `6F`
+      * Display floor labels at the following room positions: `1`-> `1F`, `5`-> `2F`, `9`-> `3F`, `13`-> `4F`, `17`-> `5F`, `21`-> `6F`
     * Y-axis: Percentage of all simulation runs, ranging from 0% to 100%.
       * Do not display Y-axis percentage labels.
       * Display dashed horizontal guide lines at 25%, 50%, and 75%.
@@ -113,7 +113,7 @@ and {condition ≥ 230}
       * Outcome breakdown for that room
       * Percentage not reaching the room
       * Example:
-        * `4F-2 (Room 17) — Reached 63.8%`
+        * `5F-1 (Room 17) — Reached 63.8%`
         * `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
           * `Vicotry` or `Clear` or `Return`, only one is shown.
     * Also display the overall aggregated result near the graph:
