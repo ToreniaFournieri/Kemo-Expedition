@@ -75,7 +75,16 @@ and {condition ≥ 230}
     * Display one 100% stacked bar for each room.
     * Each bar represents all simulated runs and shows their status at that room.
     * Stack segments:
-      * `Victory`, `Clear`, or `Return`: Sub color, 20% lighter
+      * `Victory`, `Clear`, or `Return`:
+        * HP ranges and colors:
+          * `100%`: Sub color, 10% lighter
+          * `90%–<100%`: Sub color, 18% lighter
+          * `80%–<90%`: Sub color, 22% lighter
+          * `70%–<80%`: Sub color, 26% lighter
+          * `60%–<70%`: Sub color, 30% lighter
+          * `50%–<60%`: Sub color, 34% lighter
+          * `40%–<50%`: Sub color, 38% lighter
+          * `0%–<40%`: Sub color, 42% lighter
         * `Victory` (勝利): The party wins the battle in that room (`Consequence: Victory`) and neither of the following terminal conditions is met.
         * `Clear` (踏破): `Victory`, and the party clears all rooms of the expedition.
         * `Return` (帰還): `Victory`, and the configured return-depth condition terminates the expedition at that room.
