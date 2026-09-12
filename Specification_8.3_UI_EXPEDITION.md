@@ -70,8 +70,11 @@ and {condition ≥ 230}
     - If the run reaches the configured return depth limit: `Example: 帰還45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
 
   * **Simulation Result Graph**
-    * X-axis: expedition room number, `1–24`.
-    * Y-axis: percentage of all simulation runs, `0–100%`.
+    * X-axis: expedition room number, `1–24`. 
+      * Display floor labels at the following room positions: `1`-> `1F`, `4`-> `2F`, `8`-> `3F`, `12`-> `4F`, `16`-> `5F`, `20`-> `6F`
+    * Y-axis: Percentage of all simulation runs, ranging from 0% to 100%.
+      * Do not display Y-axis percentage labels.
+      * Display dashed horizontal guide lines at 25%, 50%, and 75%.
     * Display one 100% stacked bar for each room.
     * Each bar represents all simulated runs and shows their status at that room.
     * Stack segments:
