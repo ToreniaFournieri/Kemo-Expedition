@@ -5,6 +5,7 @@ import {
   aggregateExpeditionSimulationRooms,
   createExpeditionSimulationRoomResults,
   EXPEDITION_SIMULATION_ROOM_COUNT,
+  getExpeditionSimulationSuccessfulHpBucket,
 } from '../src/game/expeditionSimulation.ts';
 
 const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.meta.url), 'utf8');
@@ -41,7 +42,9 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /simulation\.result\.Turned_Back === 0/);
   assert.match(tabSource, /activeSimulationResultBubble/);
   assert.match(tabSource, /role="tooltip"/);
-  assert.match(tabSource, /var\(--outcome-success\)/);
+  for (const retainedSubPercent of [90, 82, 78, 74, 70, 66, 62, 58]) {
+    assert.match(tabSource, new RegExp(`color-mix\\(in srgb, rgb\\(var\\(--color-sub\\)\\) ${retainedSubPercent}%, white\\)`));
+  }
   assert.match(tabSource, /var\(--outcome-draw\)/);
   assert.match(tabSource, /var\(--outcome-retreat\)/);
   assert.match(tabSource, /var\(--outcome-defeat\)/);
@@ -55,18 +58,36 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /room\.NotReached/);
 });
 
-test('room aggregation assigns one status per run to every room', () => {
+test('successful HP ranges use exact half-open boundaries', () => {
+  const bucket = (remainingHp: number) => getExpeditionSimulationSuccessfulHpBucket(remainingHp, 100);
+  assert.equal(bucket(101), 'Full');
+  assert.equal(bucket(100), 'Full');
+  assert.equal(bucket(99.999), 'From90');
+  assert.equal(bucket(90), 'From90');
+  assert.equal(bucket(89.999), 'From80');
+  assert.equal(bucket(80), 'From80');
+  assert.equal(bucket(70), 'From70');
+  assert.equal(bucket(60), 'From60');
+  assert.equal(bucket(50), 'From50');
+  assert.equal(bucket(40), 'From40');
+  assert.equal(bucket(39.999), 'Below40');
+  assert.equal(bucket(-1), 'Below40');
+});
+
+test('room aggregation assigns one status per run to every room and buckets successful HP', () => {
   const rooms = createExpeditionSimulationRoomResults(5);
-  aggregateExpeditionSimulationRooms(rooms, 24, 'Clear');
-  aggregateExpeditionSimulationRooms(rooms, 8, 'Return');
-  aggregateExpeditionSimulationRooms(rooms, 5, 'Draw');
-  aggregateExpeditionSimulationRooms(rooms, 3, 'Retreat');
-  aggregateExpeditionSimulationRooms(rooms, 1, 'Defeat');
+  const battles = (remainingHp: number[]) => remainingHp.map((remainingPartyHP) => ({ remainingPartyHP }));
+  aggregateExpeditionSimulationRooms(rooms, 24, 'Clear', battles(Array(24).fill(100)), 100);
+  aggregateExpeditionSimulationRooms(rooms, 8, 'Return', battles(Array(8).fill(95)), 100);
+  aggregateExpeditionSimulationRooms(rooms, 5, 'Draw', battles([85, 75, 65, 55, 35]), 100);
+  aggregateExpeditionSimulationRooms(rooms, 3, 'Retreat', battles([45, 35, 25]), 100);
+  aggregateExpeditionSimulationRooms(rooms, 1, 'Defeat', battles([0]), 100);
 
   assert.equal(rooms.length, EXPEDITION_SIMULATION_ROOM_COUNT);
   assert.deepEqual(rooms[0], {
     room: 1, Victory: 4, Clear: 0, Return: 0, Draw: 0, Retreat: 0, Defeat: 1,
     NotReached: 0, reached: 5, total: 5,
+    successfulHp: { Full: 1, From90: 1, From80: 1, From70: 0, From60: 0, From50: 0, From40: 1, Below40: 0 },
   });
   assert.equal(rooms[2].Retreat, 1);
   assert.equal(rooms[4].Draw, 1);
@@ -77,5 +98,7 @@ test('room aggregation assigns one status per run to every room', () => {
       + room.Retreat + room.Defeat + room.NotReached;
     assert.equal(statusTotal, room.total, `room ${room.room} must be a 100% stack`);
     assert.equal(room.reached + room.NotReached, room.total, `room ${room.room} reach total`);
+    const successfulHpTotal = Object.values(room.successfulHp).reduce((sum, value) => sum + value, 0);
+    assert.equal(successfulHpTotal, room.Victory + room.Clear + room.Return, `room ${room.room} successful HP total`);
   }
 });

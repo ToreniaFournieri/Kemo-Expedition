@@ -771,6 +771,18 @@ export interface ExpeditionSimulationRoomResult {
   NotReached: number;
   reached: number;
   total: number;
+  successfulHp: ExpeditionSimulationSuccessfulHpBuckets;
+}
+
+export interface ExpeditionSimulationSuccessfulHpBuckets {
+  Full: number;
+  From90: number;
+  From80: number;
+  From70: number;
+  From60: number;
+  From50: number;
+  From40: number;
+  Below40: number;
 }
 
 // Game State

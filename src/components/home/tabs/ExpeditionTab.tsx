@@ -1031,9 +1031,14 @@ function ExpeditionTab({
                             });
                           };
                           const segments = [
-                            [room.Victory, 'var(--outcome-success)'],
-                            [room.Clear, 'var(--outcome-success)'],
-                            [room.Return, 'var(--outcome-success)'],
+                            [room.successfulHp.Full, 'color-mix(in srgb, rgb(var(--color-sub)) 90%, white)'],
+                            [room.successfulHp.From90, 'color-mix(in srgb, rgb(var(--color-sub)) 82%, white)'],
+                            [room.successfulHp.From80, 'color-mix(in srgb, rgb(var(--color-sub)) 78%, white)'],
+                            [room.successfulHp.From70, 'color-mix(in srgb, rgb(var(--color-sub)) 74%, white)'],
+                            [room.successfulHp.From60, 'color-mix(in srgb, rgb(var(--color-sub)) 70%, white)'],
+                            [room.successfulHp.From50, 'color-mix(in srgb, rgb(var(--color-sub)) 66%, white)'],
+                            [room.successfulHp.From40, 'color-mix(in srgb, rgb(var(--color-sub)) 62%, white)'],
+                            [room.successfulHp.Below40, 'color-mix(in srgb, rgb(var(--color-sub)) 58%, white)'],
                             [room.Draw, 'var(--outcome-draw)'],
                             [room.Retreat, 'var(--outcome-retreat)'],
                             [room.Defeat, 'var(--outcome-defeat)'],

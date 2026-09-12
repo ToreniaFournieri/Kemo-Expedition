@@ -4757,7 +4757,13 @@ export async function simulateExpeditionRuns(
         terminalStatus = 'Retreat';
       }
     }
-    aggregateExpeditionSimulationRooms(result.rooms, resolution.completedRooms, terminalStatus);
+    aggregateExpeditionSimulationRooms(
+      result.rooms,
+      resolution.completedRooms,
+      terminalStatus,
+      resolution.battleDiagnostics,
+      sandbox.authoritativePartyStatus.partyStats.hp,
+    );
 
     const completed = index + 1;
     const now = performance.now();
