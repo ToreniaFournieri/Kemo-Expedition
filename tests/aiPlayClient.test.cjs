@@ -330,3 +330,13 @@ test('shutdown after a request timeout preserves the exact mutation for recovery
   assert.equal(f.client.state.lastGameplayRequest.stage, 'response_uncertain');
   assert.equal(f.calls.filter(c => c.route === '/sortie').length, 1);
 });
+
+test('simulation defaults to compact rooms and forwards explicit output options', async t => {
+  const f = await fixture(t);
+  await f.client.connect();
+  await f.client.run({ action: 'simulate', configuration: {} });
+  assert.deepEqual(f.calls.find(c => c.route === '/simulation').body.output, { detail: 'rooms', candidate: 'changes' });
+  const output = { detail: 'hp', candidate: 'full' };
+  await f.client.run({ action: 'simulate', configuration: {}, output });
+  assert.deepEqual(f.calls.filter(c => c.route === '/simulation').at(-1).body.output, output);
+});

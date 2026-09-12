@@ -67,21 +67,35 @@ app.on('browser-window-created', (_event, win) => {
       assert.equal(forecast.comparison.maximumHp.delta, 0);
       assert.ok(forecast.comparison.characters.every(c => c.combatChanges.length === 0 && c.equipmentChanges.length === 0));
       assert.deepEqual(forecast.configuration.characters, configured.observation.parties.find(v => v.id === p.id).characters);
+      const compact=await call('/simulation',{revision,partyId:p.id,output:{detail:'hp',candidate:'changes'}});
+      assert.equal(compact.revision, revision);
+      assert.equal(compact.configuration, undefined);
+      assert.deepEqual(compact.comparison, forecast.comparison);
+      assert.equal(compact.evaluation.countedApiCalls, forecast.evaluation.countedApiCalls + 1);
+      assert.equal(compact.evaluation.actualSorties, forecast.evaluation.actualSorties);
+      assert.equal(compact.simulation.rooms.roomCount, 24);
+      assert.equal(Object.values(compact.simulation.outcomes).reduce((a,b)=>a+b,0), 1000);
+      compact.simulation.rooms.rows.forEach((row, index) => {
+        assert.ok(row.slice(1).reduce((a,b)=>a+b,0) <= 1000);
+        assert.equal(compact.simulation.hp.successful.rows[index].slice(1).reduce((a,b)=>a+b,0), row[1]+row[2]+row[3]);
+        assert.equal(compact.simulation.hp.retreat.rows[index].slice(1).reduce((a,b)=>a+b,0), row[5]);
+      });
+      console.log('SIMULATION_RESPONSE_BYTES', JSON.stringify({legacy:Buffer.byteLength(JSON.stringify(forecast)), hpChanges:Buffer.byteLength(JSON.stringify(compact))}));
       const batch=await call('/sortie',{expectedRevision:revision,partyId:p.id,count:2},'batch');
       assert.equal(batch.sortie.completedCount,2);
       const replay=await call('/sortie',{expectedRevision:revision,partyId:p.id,count:2},'batch');
       assert.equal(replay.replayed,true);
       assert.equal(replay.evaluation.actualSorties,2);
-      assert.equal(replay.evaluation.countedApiCalls,7);
+      assert.equal(replay.evaluation.countedApiCalls,8);
       await call('/control/release',{}); lease=null;
       const summary=await call('/evaluation');
-      assert.equal(summary.evaluation.scoreSoFar,72);
+      assert.equal(summary.evaluation.scoreSoFar,82);
       const ledger = await call('/evaluation/ledger');
-      assert.equal(ledger.ledger.length, 7);
+      assert.equal(ledger.ledger.length, 8);
       assert.equal(ledger.ledger[3].commandType, 'configure_party');
       assert.ok(batch.runs.every(r => typeof r.returnReason === 'string'));
 
-      console.log(JSON.stringify({smoke:'passed',calls:7,sorties:2,score:72}));
+      console.log(JSON.stringify({smoke:'passed',calls:8,sorties:2,score:82}));
       clearTimeout(timeout); app.quit();
     } catch(error) { console.error('SMOKE_FAILED',error.message);clearTimeout(timeout);app.exit(1); }
   });

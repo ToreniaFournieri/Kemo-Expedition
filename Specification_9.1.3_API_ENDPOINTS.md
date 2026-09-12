@@ -2443,15 +2443,31 @@ Bearer authentication required; no lease required. Return the evaluation summary
 
 ### `POST /experimental/v1/simulation`
 
-Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional `configuration`. Reject unknown fields, stale revisions and unavailable parties. A configuration uses the Party configuration schema below.
+Bearer and owner lease required. Body: `{ "revision": 123, "partyId": 1, "configuration": {} }`, with optional `configuration` and simulation-only `output` as defined below. Reject unknown fields, stale revisions and unavailable parties. A configuration uses the Party configuration schema below.
 
 Execute exactly 1,000 independent private forecast trials with the current or hypothetical party, full departure HP, selected normal dungeon/depth/difficulty and effective runtime mode/offset, using the same result-only production kernel as the UI simulator. Forecasts do not advance progression, return rewards, consume live randomness, write Diary entries or alter equipment/charge. No client seed, debug flag, live bag or internal transition may be supplied. Each successful response contains `revision`, `partyId`, evaluated party `configuration`, and `simulation: { total: 1000, outcomes: { Clear, Turned_Back, Draw_Retreat, Wounded_Retreat, Defeat, total } }`. Outcome rates are the counts divided by total.
 
 Execution is asynchronous internally, serialized as one request and pins the lease. Each request costs one counted call and zero actual sorties. No separate total forecast quota applies.
 
+#### Simulation output
+
+Optional simulation-only request field `output` selects a response projection: `{ "detail": "rooms", "candidate": "changes" }`. Validate it before candidate computation or trials. Reject null, arrays, unknown properties, and invalid enum values with `400 invalid_request`. When `output` is present, omitted `detail` defaults to `rooms` and omitted `candidate` defaults to `full`.
+
+- `detail`: `summary`, `rooms`, or `hp`.
+- `candidate`: `full` includes the evaluated `configuration` and `comparison`; `changes` omits `configuration` and retains `comparison`. This is only response projection and must not change the evaluated candidate.
+- Omitted `output` preserves the existing runtime response, including the legacy complete aggregate (with `total` and `rooms`) nested inside `simulation.outcomes`, plus `simulation.total`.
+- Explicit output returns `simulation: { total, outcomes }`, where `outcomes` contains only the five overall counts `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, and `Defeat`.
+- `rooms` and `hp` additionally return `simulation.rooms: { roomCount: 24, columns: ["room", "Victory", "Clear", "Return", "Draw", "Retreat", "Defeat"], rows: number[][] }`. Rows are in ascending one-based room order. Only trailing rooms with zero reached trials are omitted; omitted rooms have zero outcomes and all trials Not reached. If no room is reached, rows is empty.
+- Every numeric outcome is a count. Reached is the sum of the six room outcome columns; Not reached is `total - reached`. UI percentages use `count / total * 100`, not reached as the denominator. No rounded percentages, localized labels, colors, or repeated per-room totals are returned.
+- Room statuses follow section 8.3 exactly. Terminal mappings to overall outcomes are `Clear` → `Clear`, `Return` → `Turned_Back`, `Draw` → `Draw_Retreat`, `Retreat` → `Wounded_Retreat`, and `Defeat` → `Defeat`. `Victory` is non-terminal success.
+- `hp` also returns `simulation.hp.successful` and `simulation.hp.retreat`, each `{ columns, rows }`, covering the same rooms. Successful columns are `["room", "Full", "From90", "From80", "From70", "From60", "From50", "From40", "Below40"]`: exact 100%, [90,100), [80,90), [70,80), [60,70), [50,60), [40,50), and [0,40) percent of maximum party HP. Retreat columns are `["room", "From30", "From20", "From10", "Below10"]`: [30,100], [20,30), [10,20), and [0,10), preserving the existing aggregator's upper clamping behavior. Bucket definitions are fixed by this contract and column names are transmitted once per table.
+- Successful bucket counts sum to `Victory + Clear + Return`; retreat buckets sum to `Retreat`. Draw and Defeat have no HP buckets. Do not infer exact mean HP from buckets.
+- Projection uses the same private 1,000-trial aggregate as the UI graph, without another simulation, live random consumption, revision change, or additional counted call. No trial logs, hidden enemies, or random state are exposed.
+- The reference client defaults `simulate` to `{ "detail": "rooms", "candidate": "changes" }` and forwards an explicit `output` unchanged. `party-preview` does not accept `output`.
+
 ### Candidate comparison
 
-Successful `/simulation` and `/party-preview` responses also include `comparison`, derived only from the live and candidate public party observations at the requested revision. The existing `configuration` (simulation) and `party` (preview) fields retain their meanings and include the complete evaluated combat values and equipment.
+Successful `/simulation` and `/party-preview` responses also include `comparison`, derived only from the live and candidate public party observations at the requested revision. The existing `configuration` (simulation, unless explicitly omitted by `output.candidate: "changes"`) and `party` (preview) fields retain their meanings and include the complete evaluated combat values and equipment.
 
 * `partyId`: target party ID.
 * `maximumHp`: `{ before, after, delta }` for maximum party HP; this is not a prediction of remaining battle HP.

@@ -179,6 +179,7 @@ export class AiPlayClient {
       path = { preview: '/party-preview', simulate: '/simulation', configure: '/command' }[action];
       mutation = action === 'configure';
       body = mutation ? { command: { type: 'configure_party', partyId, configuration: input.configuration } } : { partyId, configuration: input.configuration };
+      if (action === 'simulate') body.output = input.output === undefined ? { detail: 'rooms', candidate: 'changes' } : input.output;
     } else if (action === 'build-options') { path = '/build-options'; body = { ...input.body }; }
     else if (action === 'buy-shop-item') {
       if (typeof input.lineupId !== 'string' || !input.lineupId || typeof input.stockEntryId !== 'string' || !input.stockEntryId) throw new Error('lineupId and stockEntryId are required strings.');

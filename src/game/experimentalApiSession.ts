@@ -119,7 +119,11 @@ export async function transactApiRequest(options: {
   return response;
 }
 export class ApiValidationError extends Error {
-  constructor(public response: ApiResponse) { super(String((response.error as { message: string }).message)); }
+  public response: ApiResponse;
+  constructor(response: ApiResponse) {
+    super(String((response.error as { message: string }).message));
+    this.response = response;
+  }
 }
 export function requireApi(condition: unknown, code: string, message: string, status = 422, details?: Record<string, unknown>): asserts condition {
   if (!condition) {

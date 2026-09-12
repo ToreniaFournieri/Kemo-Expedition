@@ -95,3 +95,9 @@ Watch the explicit events: `shutdown_started` → optional `waiting_for_request`
 The client keeps the process alive during planning and may make exempt lease/status requests. Closing it does not shut down the game launcher. Shut down the evaluation application after final reporting to remove its private connection handoff.
 
 Updating client scripts does not require rebuilding or restarting the game. For an active evaluation, preserve its current game version/build and reuse its existing connection handoff after the previous client has stopped. Do not rebuild and resume that checkpoint on a different game build.
+
+### Simulation detail
+
+`simulate` defaults to compact room counts and candidate changes: `output: {"detail":"rooms","candidate":"changes"}`. Use `output: {"detail":"summary"}` for overall counts, or `output: {"detail":"hp","candidate":"full"}` for all room HP buckets and the complete evaluated party. Put output options in the action file alongside `configurationFile` (or `configuration`), not inside the party configuration.
+
+Room tables declare columns once. All entries are counts out of `simulation.total`; sum a room's outcome columns for reached, and subtract from total for Not reached. Trailing unvisited rooms are omitted up to `roomCount`. HP buckets preserve the UI graph ranges; they do not provide exact mean HP. `comparison` remains present in every mode. Direct HTTP requests omitting `output` retain the legacy response.

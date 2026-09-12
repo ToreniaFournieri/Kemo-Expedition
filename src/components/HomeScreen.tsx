@@ -1,3 +1,4 @@
+import { formatApiSimulation, parseSimulationOutput } from '../game/experimentalApiSimulation';
 import { compareApiParties } from '../game/experimentalApiComparison';
 import { ExperimentalApiSettings } from './ExperimentalApiSettings';
 import { withBattleSeedSource } from '../game/battleSeedSource';
@@ -693,14 +694,15 @@ export function HomeScreen({
           return { state: baseline, response: buildOptions(baseline, partyIndex, Number(payload.characterId), payload.proposedChanges === undefined ? {} : apiRecord(payload.proposedChanges)) };
         }
         if (operation === 'party-preview' || operation === 'simulation') {
-          apiKeys(payload, ['revision', 'partyId', 'configuration']);
+          apiKeys(payload, operation === 'simulation' ? ['revision', 'partyId', 'configuration', 'output'] : ['revision', 'partyId', 'configuration']);
+          const output = operation === 'simulation' ? parseSimulationOutput(payload.output) : undefined;
           const candidate = payload.configuration === undefined ? baseline : withGameplayRandomSource(random.next, () => configureParty(structuredClone(baseline), partyIndex, payload.configuration, deps));
           const preview = observation(candidate).parties.find(p => p.id === payload.partyId)!;
           const previous = candidate === baseline ? preview : observation(baseline).parties.find(p => p.id === payload.partyId)!;
           const comparison = compareApiParties(previous, preview);
           if (operation === 'party-preview') return { state: baseline, response: { revision, partyId: payload.partyId, party: preview, comparison } };
           const outcomes = await simulateExpeditionRuns(candidate, partyIndex, gameModeRef.current, 1_000, undefined, effectiveOrcaEnemyLevelOffset);
-          return { state: baseline, response: { revision, partyId: payload.partyId, configuration: preview, comparison, simulation: { outcomes, total: outcomes.total } } };
+          return { state: baseline, response: { revision, partyId: payload.partyId, ...(output?.candidate === 'changes' ? {} : { configuration: preview }), comparison, simulation: formatApiSimulation(outcomes, output) } };
         }
         if (operation === 'sortie') {
           apiKeys(payload, ['expectedRevision', 'partyId', 'count']);

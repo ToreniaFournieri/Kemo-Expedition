@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 13 | 2026/09/12 | Add optional compact simulation summaries, room outcome tables, and exact UI HP buckets to the Experimental AI API; support candidate changes-only projection, preserve legacy responses, and default the reference client to compact room results. |
 | 0.9.7 | 12 | 2026/09/12 | Add the `B` X-axis label at Room 24 of the Simulation Run graph while retaining the floor-start labels at Rooms 1, 5, 9, 13, 17, and 21. |
 | 0.9.7 | 11 | 2026/09/12 | Update the Simulation Run graph to label the six floor starts at Rooms 1, 5, 9, 13, 17, and 21; remove visible Y-axis percentage labels; add 25%, 50%, and 75% dashed guides; and show localized floor-room coordinates with the global room number in each reachable-room tooltip. Preserve 1,000 isolated forecasts, all 24 100% stacked room bars, outcome aggregation, colors, and touch/keyboard interaction. |
 | 0.9.7 | 10 | 2026/09/12 | Update Simulation Run room tooltips to show exactly one successful outcome label: Victory for non-terminal rooms, Clear at expedition completion, or Return at the configured return-depth terminal room. Preserve all outcome counts, stacks, colors, and localized Draw, Retreat, Defeat, and Not reached values. |
