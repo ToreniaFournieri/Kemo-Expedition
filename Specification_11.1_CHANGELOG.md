@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 9 | 2026/09/12 | Correct the Stealth normal-melee check in the production combined COMBAT path; retain the restriction to normal melee attacks, the HP threshold, and Pursuit bypass while allowing all reactive attacks to deal damage. |
 | 0.9.7 | 8 | 2026/09/12 | Restrict Stealth to nullifying only normal melee attacks while the target is at or below its level threshold; retain Pursuit as its bypass, permit ranged, magical, and reactive damage, preserve enemy Stealth behavior, regenerate the native WASM battle runtime, and update localized descriptions and melee-specific battle logs. |
 | 0.9.7 | 7 | 2026/09/12 | Complete the UI_EXPEDITION Simulation Run graph with exact specified successful and retreat HP color ranges, a lightened equal Sub/Accent Draw color, and exact Sub/Accent terminal colors; retain 1,000 isolated asynchronous forecasts and 100% room stacks. Restrict result-only battle output to discarded private forecasts so AFK, online, Gods Battle, API, expedition, and Diary records retain full narration. |
 | 0.9.7 | 6 | 2026/09/12 | Split successful room outcomes in the expedition simulation graph into eight remaining-HP ranges, using the specified progressively lighter Sub colors while preserving semantic outcome totals and 100% room stacks. |

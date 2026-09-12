@@ -2561,6 +2561,21 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
         if (flavor != CombatResult::Ok) return flavor;
       }
     }
+    const int stealth = active_ability_level(target, protocol::AbilityId::Stealth);
+    const double stealth_hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
+    const double stealth_max = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
+    const bool normal_melee = action_id == static_cast<u32>(protocol::ActionId::NormalAttack)
+        && profile_index == 2;
+    if (normal_melee && result.hits > 0 && stealth > 0
+        && active_ability_level(actor, protocol::AbilityId::Pursuit) == 0
+        && stealth_max > 0.0
+        && stealth_hp / stealth_max <= ability_scales::value(stealth, ability_scales::stealth)) {
+      result.calculated = 0.0;
+      result.hits = 0;
+      if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target.id, actor.id,
+          static_cast<u32>(protocol::AbilityId::Stealth), profile_index + 1, timing,
+          kPrevented, 0, 0, 0, action_id)) return CombatResult::EventCapacity;
+    }
     if (profile_index == 2 && !re_attack &&
         active_ability_level(target, protocol::AbilityId::Shock) > 0 && !target.shock_consumed) {
       target.shock_consumed = true;

@@ -963,7 +963,7 @@ function combatTimedInput(overrides: Partial<BattleProtocolInput> = {}): BattleP
 test('Stealth only nullifies low-HP normal melee attacks unless Pursuit is active', () => {
   const base = combatNormalInput();
   const stealthTarget = (pursuit: boolean) => executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
-    engineFlags: pursuit ? BATTLE_ENGINE_FLAG_END_CHECKPOINT : BATTLE_ENGINE_FLAG_COMBAT_NORMAL_CHECKPOINT,
+    engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT,
     partyHp: 1_000,
     partyMaxHp: 1_000,
     enemyHp: 12,
