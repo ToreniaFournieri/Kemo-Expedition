@@ -77,20 +77,25 @@ and {condition ≥ 230}
     * Stack segments:
       * `Victory`, `Clear`, or `Return`:
         * HP ranges and colors:
-          * `100%`: Sub color, 10% lighter
-          * `90%–<100%`: Sub color, 18% lighter
-          * `80%–<90%`: Sub color, 22% lighter
-          * `70%–<80%`: Sub color, 26% lighter
-          * `60%–<70%`: Sub color, 30% lighter
-          * `50%–<60%`: Sub color, 34% lighter
-          * `40%–<50%`: Sub color, 38% lighter
-          * `0%–<40%`: Sub color, 42% lighter
+          * `100%`: Sub color
+          * `90%–<100%`: Sub color, 12% lighter
+          * `80%–<90%`: Sub color, 16% lighter
+          * `70%–<80%`: Sub color, 20% lighter
+          * `60%–<70%`: Sub color, 24% lighter
+          * `50%–<60%`: Sub color, 28% lighter
+          * `40%–<50%`: Sub color, 32% lighter
+          * `0%–<40%`: Sub color, 36% lighter
         * `Victory` (勝利): The party wins the battle in that room (`Consequence: Victory`) and neither of the following terminal conditions is met.
         * `Clear` (踏破): `Victory`, and the party clears all rooms of the expedition.
         * `Return` (帰還): `Victory`, and the configured return-depth condition terminates the expedition at that room.
-      * `Draw` (引分): Sub color, 50% lighter
-      * `Retreat` (撤退): Accent color, 50% lighter
-      * `Defeat` (敗北): Accent color, 20% lighter
+      * `Draw` (引分): 50% Sub color + 50% Accent color, 40% lighter
+      * `Retreat` (撤退):
+        * HP ranges and colors:
+          * `30%–<100%`: Accent color, 35% lighter
+          * `20%–<30%`: Accent color, 30% lighter
+          * `10%–<20%`: Accent color, 25% lighter
+          * `0%–<10%`: Accent color, 20% lighter
+      * `Defeat` (敗北): Accent color
       * `Not reached` (未到達): Gray color
         * Represents simulated runs that do not reach that room because the run has already terminated at an earlier room.
         * This includes earlier `Clear`, `Return`, `Draw`, `Retreat`, or `Defeat` outcomes where applicable.
