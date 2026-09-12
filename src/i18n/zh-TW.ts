@@ -461,7 +461,7 @@ const zhTW = {
   'party.expedition.simulationXAxis': '房間',
   'party.expedition.simulationYAxis': '百分比',
   'party.expedition.simulationRoomReached': '房間{room} — 到達 {reached}/{total}（{percent}%）',
-  'party.expedition.simulationRoomBreakdown': '勝利{victory}% / 通關{clear}% / 歸還{returned}% / 平局{draw}% / 撤退{retreat}% / 敗北{defeat}% / 未到達{notReached}%',
+  'party.expedition.simulationRoomBreakdown': '{successfulLabel}{successful}% / 平局{draw}% / 撤退{retreat}% / 敗北{defeat}% / 未到達{notReached}%',
   'common.edit': '編輯',
   'common.done': '完成',
   'common.save': '儲存',

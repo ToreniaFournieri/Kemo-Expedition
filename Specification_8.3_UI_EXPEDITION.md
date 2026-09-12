@@ -110,8 +110,9 @@ and {condition ≥ 230}
       * Outcome breakdown for that room
       * Percentage not reaching the room
       * Example:
-        * `Room 17 — Reached 63.8%`
+        * `4F-2 (Room 17) — Reached 63.8%`
         * `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
+          * `Vicotry` or `Clear` or `Return`, only one is shown.
     * Also display the overall aggregated result near the graph:
       * `踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
 

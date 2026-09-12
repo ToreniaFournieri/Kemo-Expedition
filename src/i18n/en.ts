@@ -460,7 +460,7 @@ const en = {
   'party.expedition.simulationXAxis': 'Room',
   'party.expedition.simulationYAxis': 'Percent',
   'party.expedition.simulationRoomReached': 'Room {room} — Reached {reached}/{total} ({percent}%)',
-  'party.expedition.simulationRoomBreakdown': 'Victory {victory}% / Clear {clear}% / Return {returned}% / Draw {draw}% / Retreat {retreat}% / Defeat {defeat}% / Not reached {notReached}%',
+  'party.expedition.simulationRoomBreakdown': '{successfulLabel} {successful}% / Draw {draw}% / Retreat {retreat}% / Defeat {defeat}% / Not reached {notReached}%',
   'common.edit': 'Edit',
   'common.done': 'Done',
   'common.save': 'Save',

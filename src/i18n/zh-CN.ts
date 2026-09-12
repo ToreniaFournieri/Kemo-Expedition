@@ -461,7 +461,7 @@ const zhCN = {
   'party.expedition.simulationXAxis': '房间',
   'party.expedition.simulationYAxis': '百分比',
   'party.expedition.simulationRoomReached': '房间{room} — 到达 {reached}/{total}（{percent}%）',
-  'party.expedition.simulationRoomBreakdown': '胜利{victory}% / 通关{clear}% / 归还{returned}% / 平局{draw}% / 撤退{retreat}% / 败北{defeat}% / 未到达{notReached}%',
+  'party.expedition.simulationRoomBreakdown': '{successfulLabel}{successful}% / 平局{draw}% / 撤退{retreat}% / 败北{defeat}% / 未到达{notReached}%',
   'common.edit': '编辑',
   'common.done': '完成',
   'common.save': '保存',

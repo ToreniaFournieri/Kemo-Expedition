@@ -500,15 +500,22 @@ function ExpeditionTab({
           : null;
         const getSimulationRoomTooltip = (room: ExpeditionSimulationResult['rooms'][number]) => {
           const percent = (value: number) => formatDecimal(value / room.total * 100, 1);
+          // A successful room has exactly one semantic outcome. Clear and Return
+          // are terminal forms of Victory, so retain their authoritative label
+          // instead of listing every successful counter in the tooltip.
+          const successfulOutcome = room.Clear > 0
+            ? { label: t('expedition.outcome.clear'), value: room.Clear }
+            : room.Return > 0
+              ? { label: t('expedition.outcome.return'), value: room.Return }
+              : { label: t('expedition.outcome.victory'), value: room.Victory };
           return `${t('party.expedition.simulationRoomReached', {
             room: formatNumber(room.room),
             reached: formatNumber(room.reached),
             total: formatNumber(room.total),
             percent: percent(room.reached),
           })}\n${t('party.expedition.simulationRoomBreakdown', {
-            victory: percent(room.Victory),
-            clear: percent(room.Clear),
-            returned: percent(room.Return),
+            successfulLabel: successfulOutcome.label,
+            successful: percent(successfulOutcome.value),
             draw: percent(room.Draw),
             retreat: percent(room.Retreat),
             defeat: percent(room.Defeat),

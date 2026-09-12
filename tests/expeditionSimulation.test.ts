@@ -59,6 +59,9 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /simulation\.result\.rooms\.map/);
   assert.match(tabSource, /party\.expedition\.simulationRoomReached/);
   assert.match(tabSource, /party\.expedition\.simulationRoomBreakdown/);
+  assert.match(tabSource, /room\.Clear > 0[\s\S]*?expedition\.outcome\.clear[\s\S]*?room\.Return > 0[\s\S]*?expedition\.outcome\.return[\s\S]*?expedition\.outcome\.victory/);
+  assert.match(tabSource, /successfulLabel: successfulOutcome\.label/);
+  assert.match(tabSource, /successful: percent\(successfulOutcome\.value\)/);
   assert.match(tabSource, /room\.NotReached/);
 });
 

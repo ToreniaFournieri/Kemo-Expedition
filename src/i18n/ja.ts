@@ -461,7 +461,7 @@ const ja = {
   'party.expedition.simulationXAxis': '部屋',
   'party.expedition.simulationYAxis': '割合',
   'party.expedition.simulationRoomReached': '部屋{room} — 到達 {reached}/{total}（{percent}%）',
-  'party.expedition.simulationRoomBreakdown': '勝利{victory}% / 踏破{clear}% / 帰還{returned}% / 引分{draw}% / 撤退{retreat}% / 敗北{defeat}% / 未到達{notReached}%',
+  'party.expedition.simulationRoomBreakdown': '{successfulLabel}{successful}% / 引分{draw}% / 撤退{retreat}% / 敗北{defeat}% / 未到達{notReached}%',
   'common.edit': '編集',
   'common.done': '完了',
   'common.save': '保存する',
