@@ -559,8 +559,8 @@ If `a.*` with phase = START:
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-amplify`, return n
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 	
-	- If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= N and (actor doesn't have `a.glamour-breaker`) and (opponent.`attack_type = melee`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！(`masterData.ability.stealth.name`効果)"
-	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！(`masterData.ability.stealth.name`効果)"
+	- If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= N and (actor doesn't have `a.pursuit`) and (opponent.`attack_type = melee` and it is normal attack), damage is set to 0. Log:"name は物陰に隠れて近接攻撃をやり過ごせたのだ！(`masterData.ability.stealth.name`効果)" //隠れ蓑
+	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう近接攻撃はこれ以上あたらない！(`masterData.ability.stealth.name`効果)"
 
 - `f.debuff_magical_defense_amplifier`
   - `f.debuff_magical_defense_amplifier` = 1.0
