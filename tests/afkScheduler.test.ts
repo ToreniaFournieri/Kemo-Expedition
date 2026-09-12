@@ -201,7 +201,7 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(hookSource, /optimizedAbilityLevels \?\? getProfitAbilityLevels\(party\)/);
   assert.match(hookSource, /profitAbilityCache\.get\(postFinalizeParty\.id\)/);
   assert.match(hookSource, /hpBaseCache\.get\(postCycleParty\.id\)/);
-  assert.match(hookSource, /battleOutputMode: action\.workerOptimization === 'optimized'[\s\S]{0,120}\? 'result-only'/);
+  assert.match(hookSource, /AFK expeditions retain Diary and expedition logs, so they must narrate fully\.[\s\S]{0,100}battleOutputMode: 'full'/);
   assert.match(expeditionApplicationSource, /completeExpeditionPresentation\(/);
   assert.doesNotMatch(hookSource, /shouldRetainCompleteNarration[\s\S]{0,500}replayDeferredExpeditionNarrations/);
   assert.match(expeditionNarrationReplaySource, /executeBattleWithSeed\(/);
@@ -217,14 +217,6 @@ test('the canonical renderer profile accepts presentation-only worker progress',
 test('the atomic renderer boundary includes planning without double-counting it', () => {
   assert.match(liveProfileSource, /atomicTransactionReactVisibilityMs > 0[\s\S]{0,300}\? atomicTransactionReactVisibilityMs/);
   assert.doesNotMatch(liveProfileSource, /\? autoEquipmentMs \+ atomicTransactionReactVisibilityMs/);
-});
-
-test('compact battle output is production-default with a live-profile complete-output baseline', () => {
-  assert.match(liveProfileSource, /useAfkWorkerSimulationCandidate\(\): boolean \{\s*return true;/);
-  assert.match(
-    liveProfileSource,
-    /useAfkCompactBattleResultCandidate\(\): boolean \{[\s\S]{0,520}return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,80}runtime\?\.variant === 'authority-production';/,
-  );
 });
 
 test('coordinator authority is production-on with pre-promotion and authority profile controls', () => {

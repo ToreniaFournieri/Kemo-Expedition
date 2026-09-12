@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 7 | 2026/09/12 | Complete the UI_EXPEDITION Simulation Run graph with exact specified successful and retreat HP color ranges, a lightened equal Sub/Accent Draw color, and exact Sub/Accent terminal colors; retain 1,000 isolated asynchronous forecasts and 100% room stacks. Restrict result-only battle output to discarded private forecasts so AFK, online, Gods Battle, API, expedition, and Diary records retain full narration. |
 | 0.9.7 | 6 | 2026/09/12 | Split successful room outcomes in the expedition simulation graph into eight remaining-HP ranges, using the specified progressively lighter Sub colors while preserving semantic outcome totals and 100% room stacks. |
 | 0.9.7 | 5 | 2026/09/12 | Replace the expedition forecast's single aggregate result bar with an accessible 24-room 100% stacked outcome graph, including reached and not-reached counts, localized room tooltips, and retained overall Clear or Return summaries. |
 | 0.9.7 | 4 | 2026/09/11 | Fix exact equipment-set and Undo/Redo restoration to reserve and reattach each saved compatible Jewel key and rank before automatic Jewel assignment; retain automatic fallback only when the saved Jewel is unavailable and retain generic Jewel selection for Similar loads. |

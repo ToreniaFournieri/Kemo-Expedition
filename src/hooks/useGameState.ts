@@ -3793,8 +3793,6 @@ function reduceGameState(
             )
             : false;
 
-          // SpecRef: 5.1 | Chunk deterministic execution and terminal partial Chunk
-          const isTerminalChunkOperation = completedOperationCount + 1 >= operationWindow.length;
           const expeditionStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;
           workingState = reduceGameState(workingState, {
             type: 'RUN_EXPEDITION',
@@ -3805,10 +3803,9 @@ function reduceGameState(
             isAfkSimulation: true,
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
             chunkPartyStatus: chunkPartyStatus[partyIndex],
-            battleOutputMode: action.workerOptimization === 'optimized' && !isTerminalChunkOperation
-              ? 'result-only'
-              : 'full',
-            compactBattleResultOutput: action.compactBattleResultOutput,
+            // SpecRef: 6.1 | Result-only output is exclusive to private, discarded forecasts.
+            // AFK expeditions retain Diary and expedition logs, so they must narrate fully.
+            battleOutputMode: 'full',
           }, undefined, afkChunkContext);
           if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'expeditionMs', expeditionStartedAt);
           const diaryStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && action.workerAttribution ? performance.now() : 0;

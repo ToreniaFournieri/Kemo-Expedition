@@ -5,6 +5,7 @@ import {
   aggregateExpeditionSimulationRooms,
   createExpeditionSimulationRoomResults,
   EXPEDITION_SIMULATION_ROOM_COUNT,
+  getExpeditionSimulationRetreatHpBucket,
   getExpeditionSimulationSuccessfulHpBucket,
 } from '../src/game/expeditionSimulation.ts';
 
@@ -42,12 +43,15 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /simulation\.result\.Turned_Back === 0/);
   assert.match(tabSource, /activeSimulationResultBubble/);
   assert.match(tabSource, /role="tooltip"/);
-  for (const retainedSubPercent of [90, 82, 78, 74, 70, 66, 62, 58]) {
+  assert.match(tabSource, /\[room\.successfulHp\.Full, 'rgb\(var\(--color-sub\)\)'\]/);
+  for (const retainedSubPercent of [88, 84, 80, 76, 72, 68, 64]) {
     assert.match(tabSource, new RegExp(`color-mix\\(in srgb, rgb\\(var\\(--color-sub\\)\\) ${retainedSubPercent}%, white\\)`));
   }
-  assert.match(tabSource, /var\(--outcome-draw\)/);
-  assert.match(tabSource, /var\(--outcome-retreat\)/);
-  assert.match(tabSource, /var\(--outcome-defeat\)/);
+  assert.match(tabSource, /color-mix\(in srgb, color-mix\(in srgb, rgb\(var\(--color-sub\)\) 50%, rgb\(var\(--color-accent\)\)\) 60%, white\)/);
+  for (const retainedAccentPercent of [65, 70, 75, 80]) {
+    assert.match(tabSource, new RegExp(`color-mix\\(in srgb, rgb\\(var\\(--color-accent\\)\\) ${retainedAccentPercent}%, white\\)`));
+  }
+  assert.match(tabSource, /\[room\.Defeat, 'rgb\(var\(--color-accent\)\)'\]/);
   assert.match(tabSource, /simulation\.result\.Draw_Retreat \/ simulation\.result\.total/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Draw_Retreat \/ simulation\.result\.total \* 100, 1\)/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Wounded_Retreat \/ simulation\.result\.total \* 100, 1\)/);
@@ -74,7 +78,19 @@ test('successful HP ranges use exact half-open boundaries', () => {
   assert.equal(bucket(-1), 'Below40');
 });
 
-test('room aggregation assigns one status per run to every room and buckets successful HP', () => {
+test('retreat HP ranges use exact half-open boundaries', () => {
+  const bucket = (remainingHp: number) => getExpeditionSimulationRetreatHpBucket(remainingHp, 100);
+  assert.equal(bucket(100), 'From30');
+  assert.equal(bucket(30), 'From30');
+  assert.equal(bucket(29.999), 'From20');
+  assert.equal(bucket(20), 'From20');
+  assert.equal(bucket(19.999), 'From10');
+  assert.equal(bucket(10), 'From10');
+  assert.equal(bucket(9.999), 'Below10');
+  assert.equal(bucket(-1), 'Below10');
+});
+
+test('room aggregation assigns one status per run to every room and buckets terminal HP', () => {
   const rooms = createExpeditionSimulationRoomResults(5);
   const battles = (remainingHp: number[]) => remainingHp.map((remainingPartyHP) => ({ remainingPartyHP }));
   aggregateExpeditionSimulationRooms(rooms, 24, 'Clear', battles(Array(24).fill(100)), 100);
@@ -88,8 +104,10 @@ test('room aggregation assigns one status per run to every room and buckets succ
     room: 1, Victory: 4, Clear: 0, Return: 0, Draw: 0, Retreat: 0, Defeat: 1,
     NotReached: 0, reached: 5, total: 5,
     successfulHp: { Full: 1, From90: 1, From80: 1, From70: 0, From60: 0, From50: 0, From40: 1, Below40: 0 },
+    retreatHp: { From30: 0, From20: 0, From10: 0, Below10: 0 },
   });
   assert.equal(rooms[2].Retreat, 1);
+  assert.deepEqual(rooms[2].retreatHp, { From30: 0, From20: 1, From10: 0, Below10: 0 });
   assert.equal(rooms[4].Draw, 1);
   assert.equal(rooms[7].Return, 1);
   assert.equal(rooms[23].Clear, 1);
@@ -100,5 +118,7 @@ test('room aggregation assigns one status per run to every room and buckets succ
     assert.equal(room.reached + room.NotReached, room.total, `room ${room.room} reach total`);
     const successfulHpTotal = Object.values(room.successfulHp).reduce((sum, value) => sum + value, 0);
     assert.equal(successfulHpTotal, room.Victory + room.Clear + room.Return, `room ${room.room} successful HP total`);
+    const retreatHpTotal = Object.values(room.retreatHp).reduce((sum, value) => sum + value, 0);
+    assert.equal(retreatHpTotal, room.Retreat, `room ${room.room} retreat HP total`);
   }
 });

@@ -1031,17 +1031,20 @@ function ExpeditionTab({
                             });
                           };
                           const segments = [
-                            [room.successfulHp.Full, 'color-mix(in srgb, rgb(var(--color-sub)) 90%, white)'],
-                            [room.successfulHp.From90, 'color-mix(in srgb, rgb(var(--color-sub)) 82%, white)'],
-                            [room.successfulHp.From80, 'color-mix(in srgb, rgb(var(--color-sub)) 78%, white)'],
-                            [room.successfulHp.From70, 'color-mix(in srgb, rgb(var(--color-sub)) 74%, white)'],
-                            [room.successfulHp.From60, 'color-mix(in srgb, rgb(var(--color-sub)) 70%, white)'],
-                            [room.successfulHp.From50, 'color-mix(in srgb, rgb(var(--color-sub)) 66%, white)'],
-                            [room.successfulHp.From40, 'color-mix(in srgb, rgb(var(--color-sub)) 62%, white)'],
-                            [room.successfulHp.Below40, 'color-mix(in srgb, rgb(var(--color-sub)) 58%, white)'],
-                            [room.Draw, 'var(--outcome-draw)'],
-                            [room.Retreat, 'var(--outcome-retreat)'],
-                            [room.Defeat, 'var(--outcome-defeat)'],
+                            [room.successfulHp.Full, 'rgb(var(--color-sub))'],
+                            [room.successfulHp.From90, 'color-mix(in srgb, rgb(var(--color-sub)) 88%, white)'],
+                            [room.successfulHp.From80, 'color-mix(in srgb, rgb(var(--color-sub)) 84%, white)'],
+                            [room.successfulHp.From70, 'color-mix(in srgb, rgb(var(--color-sub)) 80%, white)'],
+                            [room.successfulHp.From60, 'color-mix(in srgb, rgb(var(--color-sub)) 76%, white)'],
+                            [room.successfulHp.From50, 'color-mix(in srgb, rgb(var(--color-sub)) 72%, white)'],
+                            [room.successfulHp.From40, 'color-mix(in srgb, rgb(var(--color-sub)) 68%, white)'],
+                            [room.successfulHp.Below40, 'color-mix(in srgb, rgb(var(--color-sub)) 64%, white)'],
+                            [room.Draw, 'color-mix(in srgb, color-mix(in srgb, rgb(var(--color-sub)) 50%, rgb(var(--color-accent))) 60%, white)'],
+                            [room.retreatHp.From30, 'color-mix(in srgb, rgb(var(--color-accent)) 65%, white)'],
+                            [room.retreatHp.From20, 'color-mix(in srgb, rgb(var(--color-accent)) 70%, white)'],
+                            [room.retreatHp.From10, 'color-mix(in srgb, rgb(var(--color-accent)) 75%, white)'],
+                            [room.retreatHp.Below10, 'color-mix(in srgb, rgb(var(--color-accent)) 80%, white)'],
+                            [room.Defeat, 'rgb(var(--color-accent))'],
                             [room.NotReached, 'rgb(156 163 175 / 0.55)'],
                           ] as const;
                           return (

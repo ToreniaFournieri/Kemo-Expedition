@@ -1,11 +1,16 @@
 // SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
-import type { ExpeditionSimulationRoomResult, ExpeditionSimulationSuccessfulHpBuckets } from '../types';
+import type {
+  ExpeditionSimulationRetreatHpBuckets,
+  ExpeditionSimulationRoomResult,
+  ExpeditionSimulationSuccessfulHpBuckets,
+} from '../types';
 
 export const EXPEDITION_SIMULATION_RUN_COUNT = 1_000;
 export const EXPEDITION_SIMULATION_ROOM_COUNT = 24;
 
 export type ExpeditionSimulationTerminalStatus = 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
 export type ExpeditionSimulationSuccessfulHpBucket = keyof ExpeditionSimulationSuccessfulHpBuckets;
+export type ExpeditionSimulationRetreatHpBucket = keyof ExpeditionSimulationRetreatHpBuckets;
 
 export function getExpeditionSimulationSuccessfulHpBucket(
   remainingHp: number,
@@ -20,6 +25,17 @@ export function getExpeditionSimulationSuccessfulHpBucket(
   if (percent >= 50) return 'From50';
   if (percent >= 40) return 'From40';
   return 'Below40';
+}
+
+export function getExpeditionSimulationRetreatHpBucket(
+  remainingHp: number,
+  maxHp: number,
+): ExpeditionSimulationRetreatHpBucket {
+  const percent = Math.min(100, Math.max(0, remainingHp / Math.max(1, maxHp) * 100));
+  if (percent >= 30) return 'From30';
+  if (percent >= 20) return 'From20';
+  if (percent >= 10) return 'From10';
+  return 'Below10';
 }
 
 export function createExpeditionSimulationRoomResults(
@@ -46,6 +62,12 @@ export function createExpeditionSimulationRoomResults(
       From40: 0,
       Below40: 0,
     },
+    retreatHp: {
+      From30: 0,
+      From20: 0,
+      From10: 0,
+      Below10: 0,
+    },
   }));
 }
 
@@ -69,6 +91,9 @@ export function aggregateExpeditionSimulationRooms(
     if (status === 'Victory' || status === 'Clear' || status === 'Return') {
       const bucket = getExpeditionSimulationSuccessfulHpBucket(battlesByRoom[index]?.remainingPartyHP ?? 0, maxPartyHp);
       room.successfulHp[bucket] += 1;
+    } else if (status === 'Retreat') {
+      const bucket = getExpeditionSimulationRetreatHpBucket(battlesByRoom[index]?.remainingPartyHP ?? 0, maxPartyHp);
+      room.retreatHp[bucket] += 1;
     }
   });
 }
