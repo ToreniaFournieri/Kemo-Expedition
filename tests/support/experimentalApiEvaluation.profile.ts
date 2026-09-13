@@ -4,7 +4,7 @@ import test from 'node:test';
 import { createInitialStateBase, gameReducer, calculateFreeActionSpend, calculatePrayerProfit, getPartyAbilityLevel, hasActiveNonGodBattleClearGateCondition, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { createApiRuntime, createEvaluation, transactApiRequest, readEvaluation, evaluationSummary } from '../../src/game/experimentalApiSession';
 import { applyApiCommand, configureParty, validateBuild } from '../../src/game/experimentalApiStrategy';
-import { buildExperimentalObservation, buildRemoveAllEquipmentEffects, returnReasonFromParty } from '../../src/game/experimentalApi';
+import { buildExperimentalObservation, buildRemoveAllEquipmentEffects, outcomeFromParty, returnReasonFromParty } from '../../src/game/experimentalApi';
 import { resolveApiCycles } from '../../src/game/experimentalApiCycle';
 import { createApiRandom, withGameplayRandomSource, gameplayRandom } from '../../src/game/gameplayRandom';
 import { withBattleSeedSource } from '../../src/game/battleSeedSource';
@@ -208,6 +208,20 @@ test('actual engine Cycles reconcile XP, outcomes, durations and preserve non-ta
   assert.ok(result.response.sortie.partyElapsedEndMs > 3 * 30 * 15000);
   assert.deepEqual(state, before);
 });
+test('successful shallow engine sorties reconcile Turned_Back totals', () => {
+  const state = fresh();
+  state.parties[0].level = 99;
+  state.parties[0].expeditionDepthLimit = '1f-3';
+  const random = createApiRandom(17);
+  const result = withBattleSeedSource(() => 17n, () => withGameplayRandomSource(random.next, () => resolveApiCycles(state, 0, 3, 1000, 'mode.normal', 0, deps)));
+  assert.ok(result.response.runs.some(run => run.returnReason === 'depth_limit'));
+  const expected = { clear: 'Clear', defeat: 'Defeat', depth_limit: 'Turned_Back', clear_gate: 'Turned_Back', draw: 'Draw_Retreat', wounded: 'Wounded_Retreat' } as const;
+  for (const run of result.response.runs) {
+    assert.notEqual(run.returnReason, 'unknown');
+    assert.equal(run.outcome, expected[run.returnReason as keyof typeof expected]);
+  }
+  assert.equal(result.response.outcomes.Turned_Back, result.response.runs.filter(run => run.returnReason === 'depth_limit' || run.returnReason === 'clear_gate').length);
+});
 test('forecasts preserve all input state and do not consume ambient gameplay randomness', async () => {
   const state = fresh(); const before = structuredClone(state); let draws = 0;
   // A scoped synchronous sentinel verifies the async function restores the source before yielding.
@@ -279,19 +293,37 @@ test('public race choices and validation agree, with evaluation-effective availa
   assert.deepEqual(terminal.legalActions, []);
   assert.ok(terminal.parties.every(p => !p.expedition.normalSortieAvailable && !p.expedition.godBattleAvailable));
 });
-test('completed return reasons distinguish depth limit, gate and draw without changing legacy counts', () => {
+test('completed outcome classification matches reasons without changing retained facts', () => {
   const state = fresh();
   const result = resolveApiCycles(state, 0, 1, state.apiRuntime!.simulatedAt, 'mode.orca', 5, deps);
   const party = result.state.parties[0];
-  assert.ok(party.lastExpeditionLog);
-  party.lastExpeditionLog!.finalOutcome = 'Escape';
-  party.lastExpeditionLog!.entries.at(-1)!.gateInfo = undefined;
-  assert.equal(returnReasonFromParty(party), 'depth_limit');
-  party.lastExpeditionLog!.entries.at(-1)!.gateInfo = 'blocked';
-  assert.equal(returnReasonFromParty(party), 'clear_gate');
-  party.lastExpeditionLog!.finalOutcome = 'Retreat';
-  party.lastExpeditionLog!.entries.at(-1)!.outcome = 'draw';
-  assert.equal(returnReasonFromParty(party), 'draw');
+  const log = party.lastExpeditionLog!;
+  assert.ok(log.entries.length);
+  for (const completedRooms of [0, 3]) {
+    for (const [finalOutcome, battleOutcome, gateInfo, reason, outcome] of [
+      ['Escape', 'victory', undefined, 'depth_limit', 'Turned_Back'],
+      ['Escape', 'draw', 'blocked', 'clear_gate', 'Turned_Back'],
+      ['Retreat', 'draw', undefined, 'draw', 'Draw_Retreat'],
+      ['Retreat', 'victory', undefined, 'wounded', 'Wounded_Retreat'],
+      ['Clear', 'draw', undefined, 'clear', 'Clear'],
+      ['Defeat', 'draw', undefined, 'defeat', 'Defeat'],
+    ] as const) {
+      log.finalOutcome = finalOutcome;
+      log.completedRooms = completedRooms;
+      log.entries.at(-1)!.outcome = battleOutcome;
+      log.entries.at(-1)!.gateInfo = gateInfo;
+      const before = structuredClone(party);
+      assert.equal(returnReasonFromParty(party), reason);
+      assert.equal(outcomeFromParty(party), outcome);
+      const observed = buildExperimentalObservation(result.state, 0, false, {}, 0).parties[0];
+      assert.equal(observed.latestExpedition?.returnReason, reason);
+      assert.equal(observed.latestExpedition?.finalOutcome, finalOutcome);
+      assert.deepEqual(party, before);
+    }
+  }
+  party.lastExpeditionLog = undefined;
+  assert.equal(returnReasonFromParty(party), 'unknown');
+  assert.equal(outcomeFromParty(party), 'Turned_Back');
 });
 
 test('candidate comparison matches stable members across rows and includes removed slots without mutation', async () => {

@@ -2528,6 +2528,14 @@ Authenticated status includes `capabilities.aiPlay` with mode, regulationVersion
 
 Session identity includes mode (`normal` on prod `/`, `orca` on `/orca/`), regulation version and rules ID. The terminal operation records the first winning batch summary independently of its final sortie outcome. Character computed data includes physical/magical offense multipliers, defense amplifiers, penetration multiplier and elemental offense value. Terminal observations expose no available gameplay actions; Gods Battles remain unavailable for all evaluations. Selectable races exclude non-selectable definitions; retained unique character races remain legal.
 
-Each actual sortie run and latest-expedition summary adds `returnReason`: `clear`, `defeat`, `clear_gate`, `depth_limit`, `draw`, `wounded`, or `unknown` (no retained log). This is derived from completed public log facts; existing outcome counters remain unchanged for compatibility.
+Each actual sortie run and latest-expedition summary adds `returnReason`: `clear`, `defeat`, `clear_gate`, `depth_limit`, `draw`, `wounded`, or `unknown` (no retained log). This is derived from completed public log facts.
+
+#### Completed outcome classification
+
+New API per-sortie outcomes and aggregate sortie counts MUST use one shared classification derived from `returnReason`: `clear` → `Clear`; `depth_limit` and `clear_gate` → `Turned_Back`; `draw` → `Draw_Retreat`; `wounded` → `Wounded_Retreat`; `defeat` → `Defeat`. An `Escape` after one or more rooms is a successful return, not a wounded retreat. Classify final Clear, Defeat and Escape before considering a terminal battle draw. Room count MUST NOT override a known return reason.
+
+For `unknown`, preserve the existing fallback: no retained log yields `Turned_Back`; otherwise a terminal draw yields `Draw_Retreat`, zero completed rooms yields `Turned_Back`, and other cases yield `Wounded_Retreat`. Latest-expedition summaries without a retained log retain their existing absent/null representation.
+
+This corrects response classification without changing expedition resolution, rewards, progression, Clear-Gate mechanics, revision increments, or evaluation accounting. Existing persisted expedition statistics, historical reports, evaluation ledgers and stored idempotency responses MUST NOT be rewritten. Latest-expedition summaries retain their engine-level `finalOutcome` (including `Escape`) and the same shared `returnReason`; they do not add a separate outcome field. Existing response fields and enum identifiers remain unchanged; no extra fields or API calls are required.
 
 A report-file write failure adds `reportError.code=report_write_failed` to the otherwise committed terminal response; it must not turn committed gameplay into an operation error. Retrieve `/evaluation/report` for the data and retry `/evaluation` to save the file. Final report observations use the frozen evaluation clock and idle completed-Cycle state, without wall-clock progress.

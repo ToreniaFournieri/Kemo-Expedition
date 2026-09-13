@@ -376,16 +376,25 @@ export function buildPurchaseShopItemEffects(
   };
 }
 
+// SpecRef: 9.1.3 | Experimental AI API | Completed outcome classification
 export function outcomeFromParty(party: Party): 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat' {
-  const log = party.lastExpeditionLog;
-  if (!log) return 'Turned_Back';
-  if (log.finalOutcome === 'Clear') return 'Clear';
-  if (log.finalOutcome === 'Defeat') return 'Defeat';
-  if (log.entries[log.entries.length - 1]?.outcome === 'draw') return 'Draw_Retreat';
-  return log.completedRooms === 0 ? 'Turned_Back' : 'Wounded_Retreat';
+  switch (returnReasonFromParty(party)) {
+    case 'clear': return 'Clear';
+    case 'defeat': return 'Defeat';
+    case 'clear_gate':
+    case 'depth_limit': return 'Turned_Back';
+    case 'draw': return 'Draw_Retreat';
+    case 'wounded': return 'Wounded_Retreat';
+    case 'unknown': {
+      const log = party.lastExpeditionLog;
+      if (!log) return 'Turned_Back';
+      if (log.entries.at(-1)?.outcome === 'draw') return 'Draw_Retreat';
+      return log.completedRooms === 0 ? 'Turned_Back' : 'Wounded_Retreat';
+    }
+  }
 }
 
-// Public completed-log facts only; preserve the legacy outcome counters.
+// SpecRef: 9.1.3 | Experimental AI API | Completed outcome classification
 export function returnReasonFromParty(party: Party): 'clear' | 'defeat' | 'clear_gate' | 'depth_limit' | 'draw' | 'wounded' | 'unknown' {
   const log = party.lastExpeditionLog;
   if (!log) return 'unknown';

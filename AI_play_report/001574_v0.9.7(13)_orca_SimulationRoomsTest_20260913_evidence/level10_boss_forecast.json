@@ -1,0 +1,369 @@
+{
+  "path": "/simulation",
+  "status": 200,
+  "response": {
+    "apiVersion": "experimental/v1",
+    "schemaVersion": 1,
+    "revision": 29,
+    "partyId": 1,
+    "comparison": {
+      "partyId": 1,
+      "maximumHp": {
+        "before": 1627,
+        "after": 1627,
+        "delta": 0
+      },
+      "strategyChanges": [
+        {
+          "field": "depthLimit",
+          "before": "4f-4",
+          "after": "all"
+        }
+      ],
+      "characters": [
+        {
+          "characterId": 1,
+          "row": {
+            "before": 1,
+            "after": 1
+          },
+          "autoEquipmentMode": {
+            "before": 2,
+            "after": 2
+          },
+          "buildChanges": [],
+          "combatChanges": [],
+          "equipmentChanges": []
+        },
+        {
+          "characterId": 5,
+          "row": {
+            "before": 2,
+            "after": 2
+          },
+          "autoEquipmentMode": {
+            "before": 2,
+            "after": 2
+          },
+          "buildChanges": [],
+          "combatChanges": [],
+          "equipmentChanges": []
+        },
+        {
+          "characterId": 6,
+          "row": {
+            "before": 3,
+            "after": 3
+          },
+          "autoEquipmentMode": {
+            "before": 2,
+            "after": 2
+          },
+          "buildChanges": [],
+          "combatChanges": [],
+          "equipmentChanges": []
+        },
+        {
+          "characterId": 3,
+          "row": {
+            "before": 4,
+            "after": 4
+          },
+          "autoEquipmentMode": {
+            "before": 2,
+            "after": 2
+          },
+          "buildChanges": [],
+          "combatChanges": [],
+          "equipmentChanges": []
+        },
+        {
+          "characterId": 2,
+          "row": {
+            "before": 5,
+            "after": 5
+          },
+          "autoEquipmentMode": {
+            "before": 2,
+            "after": 2
+          },
+          "buildChanges": [],
+          "combatChanges": [],
+          "equipmentChanges": []
+        },
+        {
+          "characterId": 4,
+          "row": {
+            "before": 6,
+            "after": 6
+          },
+          "autoEquipmentMode": {
+            "before": 2,
+            "after": 2
+          },
+          "buildChanges": [],
+          "combatChanges": [],
+          "equipmentChanges": []
+        }
+      ]
+    },
+    "simulation": {
+      "total": 1000,
+      "outcomes": {
+        "Clear": 281,
+        "Turned_Back": 0,
+        "Draw_Retreat": 39,
+        "Wounded_Retreat": 458,
+        "Defeat": 222
+      },
+      "rooms": {
+        "roomCount": 24,
+        "columns": [
+          "room",
+          "Victory",
+          "Clear",
+          "Return",
+          "Draw",
+          "Retreat",
+          "Defeat"
+        ],
+        "rows": [
+          [
+            1,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            5,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            6,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            7,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            8,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            9,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            10,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            11,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            12,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            13,
+            999,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            14,
+            999,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            15,
+            999,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            16,
+            977,
+            0,
+            0,
+            0,
+            22,
+            0
+          ],
+          [
+            17,
+            814,
+            0,
+            0,
+            0,
+            153,
+            10
+          ],
+          [
+            18,
+            635,
+            0,
+            0,
+            0,
+            161,
+            18
+          ],
+          [
+            19,
+            600,
+            0,
+            0,
+            0,
+            35,
+            0
+          ],
+          [
+            20,
+            375,
+            0,
+            0,
+            0,
+            31,
+            194
+          ],
+          [
+            21,
+            361,
+            0,
+            0,
+            0,
+            14,
+            0
+          ],
+          [
+            22,
+            348,
+            0,
+            0,
+            0,
+            13,
+            0
+          ],
+          [
+            23,
+            320,
+            0,
+            0,
+            0,
+            28,
+            0
+          ],
+          [
+            24,
+            0,
+            281,
+            0,
+            39,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    "evaluation": {
+      "evaluationId": "3af08323-671e-4ba0-9012-7784e52180c4",
+      "concept": "SimulationRoomsTest",
+      "version": "0.9.7",
+      "build": 13,
+      "mode": "orca",
+      "rulesId": "ai-play-v2-calls20000-score10-sortie1-penalty100000-exactbatch",
+      "regulationVersion": 2,
+      "status": "active",
+      "countedApiCalls": 51,
+      "actualSorties": 1032,
+      "goalAchieved": false,
+      "firstWinningSortie": null,
+      "startedAt": 1789256192950,
+      "remainingApiCalls": 19949,
+      "scoreSoFar": 1542,
+      "finalScore": null
+    }
+  }
+}
