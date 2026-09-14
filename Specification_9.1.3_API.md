@@ -199,7 +199,7 @@ Path Parameters
 * Parameters:
   * `name`
   * `races`
-  * `gender"`
+  * `gender`
   * `mainClassId`
     * Example: `fighter`
   * `subClassId`
@@ -210,9 +210,6 @@ Path Parameters
 * Validation:
   * Same as `2.1 CHARACTER_&_PARTY` 
 * Partial updates are allowed.
-
-
-**3-3-3. `{p}/character/{c}/equipment`**
 
 **3-3-3. `{p}/character/{c}/equipment`**
 
@@ -253,7 +250,7 @@ Path Parameters
     * Each entry:
       * `itemId`
         * Example: 1104
-      * `enhancement"`
+      * `enhancement`
         * Example: 0
       * `superRare`
         * Exmaple: 0
