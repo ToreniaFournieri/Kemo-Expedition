@@ -104,6 +104,44 @@ Path Parameters
 1-3. fundamental/control/release
 
 
+
+2. Read
+
+2-1. read/observation
+
+2-2. read/expedition
+     {p}/latestBattleLog
+     {p}/simulationRun
+
+2-3. read/party
+     {p}/partySummary
+     {p}/character/{c}/status
+     {p}/character/{c}/equipment
+
+2-4. read/base
+     searchItems
+     shopItemsList
+
+2-5. read/diary
+     {p}/diarySetting
+     {p}/diaryEntry/{d}
+
+2-6. read/setting
+     enemyEditPane
+     modeSelect
+     debug
+
+2-7. read/resources
+     developerNewsNotification
+     donationBox
+     clairvoyance/{p}
+     glossary/subcategory
+     itemCompendium/subcategory
+     characterRoster/subcategory
+     bestiary/subcategory
+     superRareList
+
+
 **3. Commit**
 
 **3-1. `commit/progress`**
@@ -540,56 +578,51 @@ On successful reset:
 }
 ```
 
+**3-6-5. `feedback`**
 
-### 3-6-5. `feedback`
-
-The request structure depends on the feedback implementation.
-
-Example:
 
 ```http
-POST /api/v1/commit/setting/feedback
+POST /api/v1/commit/setting/feedback/
 ```
+
+Example request:
 
 ```json
 {
-  "category": "gameplay",
-  "message": "Example feedback message."
+  "name": "Taro",
+  "category": "featureRequest",
+  "text": "Please add a comparison view for simulation results.",
+  "latestBattleLogParty": 1,
+  "includeBackup": true,
+  "attachments": [
+    "image-file-1",
+    "image-file-2"
+  ]
 }
 ```
+
+* `attachments`
+
+  * Optional.
+  * Up to 4 image attachments.
+
+
+Example successful response:
+
+```json
+{
+  "status": "success",
+  "reward": {
+    "eligible": true,
+    "prana": 10
+  },
+  "nextRewardEligibleInSeconds": 604800
+}
+```
+
 
 ## Path parameters
 
 * `{p}`: Party number, `1–6`.
 * `{c}`: Character index within the party, `0–5`.
 * `{d}`: Diary-entry index.
-
-## General request-design rule
-
-The URL identifies the operation, while the JSON request body contains only the parameters required by that operation.
-
-Prefer:
-
-```http
-POST /api/v1/commit/expedition/{p}/changeExpedition
-```
-
-```json
-{
-  "destination": 3,
-  "depthLimit": 20,
-  "difficultyOffset": 8
-}
-```
-
-Instead of:
-
-```json
-{
-  "changeExpedition": {
-    "destination": 3,
-    "depthLimit": 20,
-    "difficultyOffset": 8
-  }
-}
-```
