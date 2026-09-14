@@ -2,9 +2,11 @@
 
 ### 9.1 Desktop distribution
 
-#### 9.1.3 Experimental AI API — Endpoint Contracts
+#### 9.1.3 API Requirements
 
-##### 9.1.3.1 Endpoint
+* Human writes this part.
+
+##### 9.1.3.1 API endpoint list
 
 `/api/v1/`
 
@@ -93,8 +95,7 @@ Path Parameters
 {c}: Character index within the party, 0–5
 {d}: Diary-entry index, 0-23
 
-
-##### 9.1.3.2 Details
+##### 9.1.3.2 API requirement fundamental
 
 1. Fundamental
 
@@ -104,6 +105,7 @@ Path Parameters
 
 1-3. fundamental/control/release
 
+##### 9.1.3.3 API requirement read
 
 
 2. Read
@@ -141,6 +143,9 @@ Path Parameters
      characterRoster/subcategory
      bestiary/subcategory
      superRareList
+
+
+##### 9.1.3.4 API requirement commit
 
 
 **3. Commit**
