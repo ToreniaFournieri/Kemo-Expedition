@@ -65,7 +65,7 @@
      {p}/godBattle
 
 3-3. commit/party
-     {p}/partyUpdate/
+     {p}/partyUpdate
      {p}/character/{c}/changeBuild
      {p}/character/{c}/equipment
 
@@ -146,8 +146,6 @@ Path Parameters
 
 **3-1. `commit/progress`**
 
-**3-1-1. `elapsedSeconds`**
-
 ```http
 POST /api/v1/commit/progress
 ```
@@ -195,12 +193,10 @@ POST /api/v1/commit/expedition/{p}/godBattle
 ```
 
 ```json
-{
-  "targetId": "someGodId"
-}
+{}
 ```
 
-If the target is already selected in the game state, an empty request body may be used instead.
+An empty request body may also be allowed.
 
 **3-3. `commit/party`**
 
@@ -272,6 +268,13 @@ The request may include other character-build fields supported by the runtime.
 POST /api/v1/commit/party/{p}/character/{c}/equipment
 ```
 
+operation:
+- removeAll
+- remove
+- equip
+- setLock
+- autoEquipment
+
 Examples:
 
 Remove all equipment:
@@ -338,7 +341,7 @@ POST /api/v1/commit/base/changeJewelPriorityParty
 
 ```json
 {
-  "party": 2
+  "partyNumber": 2
 }
 ```
 
@@ -346,7 +349,7 @@ If no party is assigned priority:
 
 ```json
 {
-  "party": null
+  "partyNumber": null
 }
 ```
 
@@ -361,10 +364,14 @@ POST /api/v1/commit/base/sellInventoryItems
   "items": [
     {
       "itemId": 1104,
+      "enhancement": 0,
+      "superRare": 0,
       "quantity": 3
     },
     {
       "itemId": 1207,
+      "enhancement": 0,
+      "superRare": 0,
       "quantity": 1
     }
   ]
@@ -402,7 +409,7 @@ POST /api/v1/commit/base/purchaseShopItems
 POST /api/v1/commit/diary/{p}/diarySetting
 ```
 
-* sample need to define the key
+* TBA: Define the supported `diarySetting` keys.
 
 ```json
 {
@@ -430,9 +437,9 @@ POST /api/v1/commit/diary/{p}/diaryEntry/{d}/markAsRead
 ```
 
 
-## 3-6. `commit/setting`
+**3-6. `commit/setting`**
 
-### 3-6-1. `modeSelect`
+**3-6-1. `modeSelect`**
 
 ```http
 POST /api/v1/commit/setting/modeSelect
@@ -444,7 +451,7 @@ POST /api/v1/commit/setting/modeSelect
 }
 ```
 
-### 3-6-2. `enemyEditPane`
+**3-6-2. `enemyEditPane`**
 
 
 ```http
@@ -485,7 +492,7 @@ POST /api/v1/commit/setting/enemyEditPane
 ```
 
 
-### 3-6-3. `debug`
+**3-6-3. `debug`**
 
 ```http
 POST /api/v1/commit/setting/debug
@@ -582,7 +589,7 @@ On successful reset:
 
 
 ```http
-POST /api/v1/commit/setting/feedback/
+POST /api/v1/commit/setting/feedback
 ```
 
 Example request:
