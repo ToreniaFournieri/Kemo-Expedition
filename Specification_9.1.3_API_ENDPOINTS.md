@@ -8,6 +8,7 @@
 
 `/api/v1/`
 
+```
 1. Fundamental
 
 1-1. fundamental/status
@@ -84,13 +85,13 @@
      feedback
      backup
      debug
-
+```
 
 Path Parameters
 
 {p}: Party number, 1–6
 {c}: Character index within the party, 0–5
-{d}: Diary-entry index
+{d}: Diary-entry index, 0-23
 
 
 ##### 9.1.3.2 Details
@@ -626,10 +627,3 @@ Example successful response:
   "nextRewardEligibleInSeconds": 604800
 }
 ```
-
-
-## Path parameters
-
-* `{p}`: Party number, `1–6`.
-* `{c}`: Character index within the party, `0–5`.
-* `{d}`: Diary-entry index.
