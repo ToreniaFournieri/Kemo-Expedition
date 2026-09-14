@@ -79,7 +79,7 @@
 
 3-5. commit/diary
      {p}/diarySetting
-     {p}/diaryEntry/{d}/markAsRead
+     {p}/diaryEntry/markAsRead
 
 3-6. commit/setting
      enemyEditPane
@@ -248,271 +248,222 @@ Path Parameters
 **3-4-2. `sellInventoryItems`**
 
 * Parameters:
+  * `items`
+    * Array of items to sell. One or more entries may be specified in a single request.
+    * Each entry:
+      * `itemId`
+        * Example: 1104
+      * `enhancement"`
+        * Example: 0
+      * `superRare`
+        * Exmaple: 0
+      * `quantity`
+        * Example: 3, `ALL`
 
-```json
-{
-  "items": [
-    {
-      "itemId": 1104,
-      "enhancement": 0,
-      "superRare": 0,
-      "quantity": 3
-    },
-    {
-      "itemId": 1207,
-      "enhancement": 0,
-      "superRare": 0,
-      "quantity": 1
-    }
-  ]
-}
-```
-
-If enhanced or unique items must be distinguished, use item-instance identifiers instead of only `itemId`.
 
 **3-4-3. `purchaseShopItems`**
 
-```http
-POST /api/v1/commit/base/purchaseShopItems
-```
+* Parameters:
+  * `items` 
+    * Array of items to buy. One or more entries may be specified in a single request.
+    * `shopItemId`
+      * Example: 1
 
-```json
-{
-  "items": [
-    {
-      "shopItemId": 201,
-      "quantity": 2
-    },
-    {
-      "shopItemId": 207,
-      "quantity": 1
-    }
-  ]
-}
-```
 
 **3-5. `commit/diary`**
 
-**3-5-1. `{p}/diarySetting`**
+* Parameters:
+  * `superRareThreshold`
+    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+  * `bossThreshold`
+    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+  * `mythicThreshold`
+    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+  * `rareThreshold`
+    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+  * `sideQuestThreshold`
+    * Allowed values: `all`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `none`.
+  * `notifyGodsBattle`
+    * Boolean.
+  * `defeatNotificationMode`
+    * Allowed values:
+      * `defeatOnly`
+      * `defeatAndDraw`
+      * `defeatDrawRetreat`
+      * `all`
+      * `none`
+  * `notifyCyclePopup`
+    * Boolean.
+  * `notifyItemDropPopup`
+    * Boolean.
+    * Default: `true`.
+  * `notifyAutoEquipmentPopup`
+    * Boolean.
+  * `notifySideQuestPopup`
+    * Boolean.
 
-```http
-POST /api/v1/commit/diary/{p}/diarySetting
-```
-
-* TBA: Define the supported `diarySetting` keys.
-
-```json
-{
-  "settingA": true
-}
-```
-
-If multiple diary triggers can be configured:
-
-```json
-{
-  "settingA": true,
-  "settingB": false,
-}
-```
-
-**3-5-2. `{p}/diaryEntry/{d}/markAsRead`**
-
-```http
-POST /api/v1/commit/diary/{p}/diaryEntry/{d}/markAsRead
-```
-
-```json
-{}
-```
+* Partial updates are allowed.
+* Omitted fields retain their current values.
 
 
-**3-6. `commit/setting`**
+**3-5-2. `{p}/diaryEntry/markAsRead`**
+
+* Parameters:
+  * `entryId`
+    * Example: 0, 1, 2
+    * Example: `ALL` 
+
 
 **3-6-1. `modeSelect`**
 
-```http
-POST /api/v1/commit/setting/modeSelect
-```
+* Parameters:
+  * `mode`
+    * Allowed values:
+      * `mode.normal`
+      * `mode.orca`
+  * `enemyLevelOffset`
+    * Enemy level offset used by `mode.orca`.
+    * Integer: `0–20`.
+  * `language`
+    * Allowed values:
+      * `ja`
+      * `en`
+      * `zh-CN`
+      * `zh-TW`
+  * `darkMode`
+    * Allowed values:
+      * `off`
+      * `on`
+      * `system`
+  * `autoRepeat`
+    * Boolean: `true` / `false`.
+  * `theme`
+    * Allowed values:
+      * `m.kemo`
+      * `m.laika`
+      * `m.leonard`
+      * `m.orca`
+      * `m.nox`
+      * `m.luna`
+      * `m.mishka`
+      * `m.puchitsa`
+      * `m.hagakure`
+      * `m.souga-ha`
+      * `m.finn`
+      * `m.merle`
+      * `m.rosaria`
+      * `m.milly`
+      * `m.guabi`
+      * `m.nemea`
+      * `m.bernetta`
+      * `m.yone`
+      * `m.niv`
+      * `m.nave`
 
-```json
-{
-  "mode": "orca"
-}
-```
 
 **3-6-2. `enemyEditPane`**
 
+* Parameters:
+  * `enemyLevel`
+    * Integer: `1–99`.
+    * Example: `10`.
+  * `enemyName`
+    * Example: `ミーティア`.
+  * `terrainEffect`
+    * Terrain-effect ID.
+    * Example: `none`.
+  * `enemyType`
+    * Example: `Jinma`.
+  * `mainClass`
+    * Example: `class.duelist`.
+  * `subClass`
+    * Use `none` when no subclass is assigned.
+    * Example: `none`.
+  * `addedAbilities`
+    * Array of additional abilities.
+    * Up to `5` entries may be specified.
+    * Each entry:
+      * `abilityId`
+        * Use `none` when no ability is assigned.
+        * Example: `a.iaigiri`.
+      * `level`
+        * Integer: `1–5`.
+        * Example: `1`.
 
-```http
-POST /api/v1/commit/setting/enemyEditPane
-```
-
-```json
-{
-  "enemyLevel": 10,
-  "enemyName": "ミーティア",
-  "terrainEffect": "none",
-  "enemyType": "Jinma",
-  "mainClass": "class.duelist",
-  "subClass": "none",
-  "addedAbilities": [
-    {
-      "abilityId": "a.iaigiri",
-      "level": 1
-    },
-    {
-      "abilityId": "none",
-      "level": 1
-    },
-    {
-      "abilityId": "none",
-      "level": 1
-    },
-    {
-      "abilityId": "none",
-      "level": 1
-    },
-    {
-      "abilityId": "none",
-      "level": 1
-    }
-  ]
-}
-```
-
+* Partial updates are allowed.
+* Omitted fields retain their current values.
 
 **3-6-3. `debug`**
 
-```http
-POST /api/v1/commit/setting/debug
-```
+* Parameters:
+  * `runtimeDiagnostics`
+    * Boolean: `true` / `false`.
+  * `clairvoyance`
+    * Boolean: `true` / `false`.
+  * `speedOfTime`
+    * Allowed values:
+      * `real`
+      * `x1.2`
+      * `x5`
+      * `x20`
+      * `x100`
+      * `unlimited`
+  * `godsBattleCondition`
+    * Allowed values:
+      * `normal`
+      * `simple`
+  * `godsStrength`
+    * Allowed values:
+      * `normal`
+      * `veryWeak`
+  * `debugStoreOpen`
+    * Boolean: `true` / `false`.
+  * `displayFlavorCondition`
+    * Boolean: `true` / `false`.
+  * `displayAfkDuration`
+    * Boolean: `true` / `false`.
+  * `displayAllBestiary`
+    * Boolean: `true` / `false`.
+  * `displayAllCompendium`
+    * Boolean: `true` / `false`.
+  * `displayAllGlossary`
+    * Boolean: `true` / `false`.
+  * `colosseumMode`
+    * Boolean: `true` / `false`.
 
-```json
-{
-  "runtimeDiagnostics": true,
-  "clairvoyance": false,
-  "speedOfTime": "x5",
-  "godsBattleCondition": "normal",
-  "godsStrength": "normal",
-  "debugStoreOpen": false,
-  "displayFlavorCondition": false,
-  "displayAfkDuration": false,
-  "displayAllBestiary": false,
-  "displayAllCompendium": false,
-  "displayAllGlossary": false,
-  "colosseumMode": false
-}
-```
-
-Partial updates are allowed.
-
+* Partial updates are allowed.
+* Omitted fields retain their current values.
 
 **3-6-4. `backup`**
 
 **3-6-4-1. `backup/export`**
 
-```http
-POST /api/v1/commit/setting/backup/export
-```
+* Parameters: none.
 
-```json
-{}
-```
-
-* Exports the current save data as a backup file.
 
 **3-6-4-2. `backup/import`**
 
-```http
-POST /api/v1/commit/setting/backup/import
-```
+* Parameters: imported file.
+
 
 **3-6-4-3. `backup/reset`**
 
-```http
-POST /api/v1/commit/setting/backup/reset
-```
+* Initial parameters: none.
 
-A Full Reset deletes all local save data.
+* System reply `confirmationToken` with warning.
 
-Because this operation is destructive, it requires explicit confirmation.
+* Confirmation parameters: `confirmationToken`.
 
-Initial request:
-
-```json
-{}
-```
-
-Example response:
-
-```json
-{
-  "status": "confirmationRequired",
-  "warning": "This operation will permanently delete all local save data.",
-  "confirmationToken": "xyz789"
-}
-```
-
-Confirmation request:
-
-```http
-POST /api/v1/commit/setting/backup/reset
-```
-
-```json
-{
-  "confirmationToken": "xyz789",
-  "confirm": true
-}
-```
-
-On successful reset:
-
-```json
-{
-  "status": "success"
-}
-```
 
 **3-6-5. `feedback`**
 
+* Parameters:
+  * `name`
+  * `category`
+  * `text`
+  * `latestBattleLogParty`
+  * `includeBackup`
+  * `attachments`
+    * Optional.
+    * Up to 4 image attachments.
 
-```http
-POST /api/v1/commit/setting/feedback
-```
-
-Example request:
-
-```json
-{
-  "name": "Taro",
-  "category": "featureRequest",
-  "text": "Please add a comparison view for simulation results.",
-  "latestBattleLogParty": 1,
-  "includeBackup": true,
-  "attachments": [
-    "image-file-1",
-    "image-file-2"
-  ]
-}
-```
-
-* `attachments`
-
-  * Optional.
-  * Up to 4 image attachments.
-
-
-Example successful response:
-
-```json
-{
-  "status": "success",
-  "reward": {
-    "eligible": true,
-    "prana": 10
-  },
-  "nextRewardEligibleInSeconds": 604800
-}
-```
