@@ -60,12 +60,11 @@
 3. Commit
 
 3-1. commit/progress
-     elapsedSeconds
 
 3-2. commit/expedition
      {p}/changeExpedition
      {p}/sortie
-     {p}/godBattle
+     {p}/godsBattle
 
 3-3. commit/party
      {p}/partyUpdate
@@ -190,7 +189,8 @@ Path Parameters
   * `deityId`
     * Example: `restoration`
   * `order`
-    * Example:  101, 102, 103, 104, 105, 106
+    * Array of character IDs in party order.
+    * Example:  `[101, 102, 103, 104, 105, 106]`
 
 * Partial updates are allowed.
 
@@ -263,11 +263,14 @@ Path Parameters
 * Parameters:
   * `items` 
     * Array of items to buy. One or more entries may be specified in a single request.
-    * `shopItemId`
-      * Example: 1
+    * Each Entry:
+      * `shopItemId`
+        * Example: 1
 
 
 **3-5. `commit/diary`**
+
+**3-5-1. `{p}/diarySetting`**
 
 * Parameters:
   * `superRareThreshold`
@@ -310,6 +313,7 @@ Path Parameters
     * Example: 0, 1, 2
     * Example: `ALL` 
 
+**3-6. `commit/setting`**
 
 **3-6-1. `modeSelect`**
 
