@@ -192,6 +192,20 @@ Path Parameters
         * Example: `4`.
       * `lastOutcome`
         * Example: `defeated`.
+* `attention`
+  * `100RunSimulationResult`
+    * Latest 100-run simulation summary for each party.
+    * Format:
+      `<partyIdTag>/<clearPercent>/<returnPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
+    * Example:
+      `["PT1 / Clear 51% / Return 0% / Draw 1% / Retreat 4% / Defeat 44%", "PT2 / Clear 0% / Return 20% / Draw 30% / Retreat 15% / Defeat 35%"]`
+
+  * `emptyEquipmentSlot`
+    * Characters that currently have one or more empty equipment slots.
+    * Format:
+      * `<partyId>/<order>/<numberOfEmptySlots>`
+    * Example:
+      `["1/2/1", "1/3/1"]`
 
   * `notification`
     * Each party:
@@ -257,10 +271,13 @@ Path Parameters
 * Parameters: none.
 
 * Return:
-  * `overview`
-    * Compact summary of the simulation result.
-    * Example:
-      `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
+* `overview`
+  * Compact summary of the simulation result.
+  * Format:
+    `<victoryPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>/<notReachedPercent>`
+    * This API does not distinguish between `clear` and `return` for simplification.
+  * Example:
+    `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
   * `detail`
     * Simulation Result Graph data defined in `8.3 UI_EXPEDITION`.
     * Return the underlying room-by-room simulation data in a concise AI-friendly format.
