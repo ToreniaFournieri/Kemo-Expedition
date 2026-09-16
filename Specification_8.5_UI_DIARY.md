@@ -6,7 +6,7 @@
 - The selected tab is highlighted using the sub-theme color.
 - If only one Party is unlocked, the subcategory tabs are hidden.
 - Diary unread badges:
-  - The main Diary tab displays a red unread badge, showing up to 99 unread entries. (Display `49+` when the count is 49 or greater.)
+  - The main Diary tab displays a red unread badge, showing up to 49 unread entries. (Display `49+` when the count is 49 or greater.)
   - Each Party subcategory tab also displays its own red unread badge, showing up to 12 unread entries for that Party.
   - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
   - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.

@@ -1,4 +1,5 @@
 import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
+import { formatDiaryUnreadBadge } from '../game/diary';
 import { formatApiSimulation, parseSimulationOutput } from '../game/experimentalApiSimulation';
 import { compareApiParties } from '../game/experimentalApiComparison';
 import { ExperimentalApiSettings } from './ExperimentalApiSettings';
@@ -4941,7 +4942,7 @@ export function HomeScreen({
     count + party.diaryLogs.filter((log) => !log.isRead).length
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
-  const unreadDiaryBadgeLabel = unreadDiaryCount >= 99 ? '99+' : `${unreadDiaryCount}`;
+  const unreadDiaryBadgeLabel = formatDiaryUnreadBadge(unreadDiaryCount);
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   const hasUnreadDeveloperNews = DEVELOPER_NEWS_ITEMS.some((item) => !(state.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const envLabel = getEnvLabel();

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 18 | 2026/09/16 | Update UI_DIARY runtime (Spec 8.5): retain a maximum of 12 entries per Party Diary and display `49+` on the main unread badge when 49 or more entries are unread. |
 | 0.9.7 | 17 | 2026/09/16 | Keep inline character chibis visible after language changes by matching the current party name to the retained actor's historical appearance and stable character ID. |
 | 0.9.7 | 16 | 2026/09/16 | Render retained compact battle-log character names from the current party member identified by stable character ID, so localized default names and later name changes match the active language while historical battle appearance data remains intact. |
 | 0.9.7 | 15 | 2026/09/15 | Store new Diary and expedition history as versioned compact semantic events with pooled historical actors and item variants; render full narration and metadata in the selected language on demand, preserve legacy text and save durability, and expose narration-free retained battle facts through Experimental API schema 2. |

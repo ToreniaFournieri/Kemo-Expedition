@@ -1,6 +1,6 @@
 import { mapCompactDiary } from './compactDiaryStorage.ts';
 import type { DiaryLog, ExpeditionLog, GameState, Party } from '../types';
-import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
+import { DIARY_LEGACY_LOG_LOAD_LIMIT } from './diary.ts';
 import { serializeGameState } from './saveCodec.ts';
 import { decodePersistedState } from './storageCompression.ts';
 
@@ -139,7 +139,7 @@ export function createLogSegmentedSaveProjection(
   const partyHistories: PersistedPartyHistory[] = [];
 
   const parties = serialized.parties.map((party): LogStrippedParty => {
-    if (party.diaryLogs.length > DIARY_LOG_RETENTION_LIMIT) {
+    if (party.diaryLogs.length > DIARY_LEGACY_LOG_LOAD_LIMIT) {
       invalidSegmentedSave(`Party ${party.id} exceeds the Diary retention limit`);
     }
     const seenIds = new Set<string>();
@@ -269,7 +269,7 @@ export function hydrateLogSegmentedSave(
 
   const parties = core.state.parties.map((party, partyIndex): Party => {
     const history = core.partyHistories[partyIndex];
-    if (!history || history.partyId !== party.id || history.diaryLogs.length > DIARY_LOG_RETENTION_LIMIT) {
+    if (!history || history.partyId !== party.id || history.diaryLogs.length > DIARY_LEGACY_LOG_LOAD_LIMIT) {
       return invalidSegmentedSave(`Party history mismatch at index ${partyIndex}`);
     }
     const seenIds = new Set<string>();

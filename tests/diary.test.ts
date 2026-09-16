@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { addDiaryLogs, DIARY_LOG_RETENTION_LIMIT, getDiaryOutcomeTrigger } from '../src/game/diary.ts';
+import {
+  addDiaryLogs,
+  DIARY_LEGACY_LOG_LOAD_LIMIT,
+  DIARY_LOG_RETENTION_LIMIT,
+  formatDiaryUnreadBadge,
+  getDiaryOutcomeTrigger,
+} from '../src/game/diary.ts';
 import type { DiaryLog } from '../src/types/index.ts';
 
 function createDiaryLog(createdAt: number): DiaryLog {
@@ -53,11 +59,28 @@ test('Diary retention leaves existing entries untouched until a new entry is cre
   assert.equal(existingLogs.length, DIARY_LOG_RETENTION_LIMIT + 1);
 });
 
+test('Diary retention limit is 12 entries per party', () => {
+  assert.equal(DIARY_LOG_RETENTION_LIMIT, 12);
+});
+
+test('a new Diary entry trims an older 24-entry history to the 12-entry maximum', () => {
+  const legacyLogs = Array.from({ length: DIARY_LEGACY_LOG_LOAD_LIMIT }, (_, index) => createDiaryLog(index + 1));
+  const nextLogs = addDiaryLogs(legacyLogs, [createDiaryLog(100)]);
+
+  assert.deepEqual(nextLogs.map((log) => log.createdAt), [100, ...Array.from({ length: 11 }, (_, index) => 24 - index)]);
+});
+
 test('Diary retention removes only the oldest entries after creating a new entry', () => {
   const existingLogs = Array.from({ length: DIARY_LOG_RETENTION_LIMIT }, (_, index) => createDiaryLog(index + 1));
   const nextLogs = addDiaryLogs(existingLogs, [createDiaryLog(100)]);
 
   assert.equal(nextLogs.length, DIARY_LOG_RETENTION_LIMIT);
-  assert.deepEqual(nextLogs.map((log) => log.createdAt), [100, ...Array.from({ length: 23 }, (_, index) => 24 - index)]);
+  assert.deepEqual(nextLogs.map((log) => log.createdAt), [100, ...Array.from({ length: 11 }, (_, index) => 12 - index)]);
   assert.equal(nextLogs.some((log) => log.createdAt === 1), false);
+});
+
+test('main Diary unread badge changes to 49+ at 49 unread entries', () => {
+  assert.equal(formatDiaryUnreadBadge(48), '48');
+  assert.equal(formatDiaryUnreadBadge(49), '49+');
+  assert.equal(formatDiaryUnreadBadge(72), '49+');
 });

@@ -50,3 +50,7 @@ test('runtime checks every popup category independently', () => {
   assert.match(homeSource, /diarySettings\.notifyAutoEquipmentPopup/);
   assert.match(homeSource, /diarySettings\.notifySideQuestPopup/);
 });
+
+test('Diary UI preserves retained legacy entries until a new entry trims them', () => {
+  assert.doesNotMatch(diaryTabSource, /\.slice\(0, DIARY_LOG_RETENTION_LIMIT\)/);
+});

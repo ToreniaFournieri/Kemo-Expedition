@@ -193,8 +193,7 @@ export default function DiaryTab({
 
   const diaryLogs = (selectedDiaryParty?.diaryLogs ?? [])
     .map((diaryLog) => ({ partyName: selectedDiaryParty.name, ...diaryLog }))
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, DIARY_LOG_RETENTION_LIMIT);
+    .sort((a, b) => b.createdAt - a.createdAt);
 
   const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
     if (triggers.includes('victory') && triggers.length === 1) return t('diary.title.victory');
