@@ -334,6 +334,18 @@ Path Parameters
     * Optional.
     * Filters items that have the specified bonus ID.
     * Example: `c.magical-defense-x2/3`.
+  * `details`
+    * Optional.
+    * Controls additional item details returned.
+    * Allowed values:
+      * `none`
+      * `ability`
+      * `cBonus`
+      * `otherBonus`
+      * `abilityAndCBonus`
+      * `all`
+    * Default: `abilityAndCBonus`.
+
 
 * Return:
   * `items`
@@ -348,6 +360,18 @@ Path Parameters
       * `<partyNumber>/<characterId>/<Item Format>`
     * Example:
       `["1/101/1/1102/1/0"]`
+  * `details`
+    * Additional item information according to the requested `details` value.
+    * Key format:
+      * `<itemId>/<superRare>`
+    * Values may include:
+      * `ability`
+      * `cBonus`
+      * `otherBonus`
+    * `otherBonus` may contain multiple bonus IDs and values.
+    * Example:
+      `1104/12: ability=[a.pursuit], cBonus=[c.magical-defense-x2/3], otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
+
 
 
 **2-4-2. `jewelPriorityParty`**
@@ -383,14 +407,202 @@ Path Parameters
       * Example:
         `[1, 2, 4, 5]`
 
-2-5. read/diary
-     {p}/diarySetting
-     {p}/diaryEntry/{d}
+**2-5. read/diary**
+**2-5-1. `{p}/diarySetting`**
 
-2-6. read/setting
-     enemyEditPane
-     modeSelect
-     debug
+* Parameters:
+  * `current`:
+    * `superRareThreshold`
+    * `bossThreshold`
+    * `mythicThreshold`
+    * `rareThreshold`
+    * `sideQuestThreshold`
+    * `notifyGodsBattle`
+    * `defeatNotificationMode`
+    * `notifyCyclePopup`
+    * `notifyItemDropPopup`
+    * `notifyAutoEquipmentPopup`
+    * `notifySideQuestPopup`
+  * `validOptions`:
+    * `superRareThreshold`
+      * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+    * `bossThreshold`
+      * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+    * `mythicThreshold`
+      * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+    * `rareThreshold`
+      * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
+    * `sideQuestThreshold`
+      * Allowed values: `all`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `none`.
+    * `notifyGodsBattle`
+      * Boolean.
+    * `defeatNotificationMode`
+      * Allowed values:
+        * `defeatOnly`
+        * `defeatAndDraw`
+        * `defeatDrawRetreat`
+        * `all`
+        * `none`
+    * `notifyCyclePopup`
+      * Boolean.
+    * `notifyItemDropPopup`
+      * Boolean.
+      * Default: `true`.
+    * `notifyAutoEquipmentPopup`
+      * Boolean.
+    * `notifySideQuestPopup`
+      * Boolean.
+
+**2-5-2. `{p}/diaryEntry/{d}`**
+
+* Parameters: none.
+
+**2-6. `read/setting`**
+**2-6-1. `enemyEditPane`**
+
+* Parameters:
+  * `current`:
+    * `enemyLevel`
+    * `enemyName`
+    * `terrainEffect`
+    * `enemyType`
+    * `mainClass`
+    * `subClass`
+    * `addedAbilities`
+  * `validOptions`:
+    * `enemyLevel`
+      * Integer: `1–99`.
+      * Example: `10`.
+    * `enemyName`
+      * Example: `ミーティア`.
+    * `terrainEffect`
+      * Terrain-effect ID.
+      * Example: [`none`, `terrain.rejuvenation`, `terrain.abundant`, ...]
+    * `enemyType`
+      * Example: [`Beast`, `Aerial`, ...]
+    * `mainClass`
+      * Example: [`class.duelist`,`class.samurai`, ... ]
+    * `subClass`
+      * Use `none` when no subclass is assigned.
+      * Example: [`none`, `class.duelist`,`class.samurai`, ... ]
+    * `addedAbilities`
+      * Array of additional abilities.
+      * Up to `5` entries may be specified.
+      * Each entry:
+        * `abilityId`
+          * Use `none` when no ability is assigned.
+          * Example: [`a.iaigiri`, `a.hunter` , ...]
+        * `level`
+          * Integer: `1–5`.
+          * Example: `1`.
+
+**2-6-2. `modeSelect`**
+
+* Parameters:
+  * `current`:
+    * `mode`
+    * `enemyLevelOffset`
+    * `language`
+    * `darkMode`
+    * `autoRepeat`
+    * `theme`
+  * `validOptions`:
+    * `mode`
+      * Allowed values:
+        * `mode.normal`
+        * `mode.orca`
+    * `enemyLevelOffset`
+      * Enemy level offset used by `mode.orca`.
+      * Integer: `0–20`.
+    * `language`
+      * Allowed values:
+        * `ja`
+        * `en`
+        * `zh-CN`
+        * `zh-TW`
+    * `darkMode`
+      * Allowed values:
+        * `off`
+        * `on`
+        * `system`
+    * `autoRepeat`
+      * Boolean: `true` / `false`.
+    * `theme`
+      * Allowed values:
+        * `m.kemo`
+        * `m.laika`
+        * `m.leonard`
+        * `m.orca`
+        * `m.nox`
+        * `m.luna`
+        * `m.mishka`
+        * `m.puchitsa`
+        * `m.hagakure`
+        * `m.souga-ha`
+        * `m.finn`
+        * `m.merle`
+        * `m.rosaria`
+        * `m.milly`
+        * `m.guabi`
+        * `m.nemea`
+        * `m.bernetta`
+        * `m.yone`
+        * `m.niv`
+        * `m.nave`
+
+**2-6-3. `debug`**
+
+* Parameters:
+  * `current`:
+    * `runtimeDiagnostics`
+    * `clairvoyance`
+    * `speedOfTime`
+    * `godsBattleCondition`
+    * `godsStrength`
+    * `debugStoreOpen`
+    * `displayFlavorCondition`
+    * `displayAfkDuration`
+    * `displayAllBestiary`
+    * `displayAllCompendium`
+    * `displayAllGlossary`
+    * `colosseumMode`
+  * `validOptions`:
+    * `runtimeDiagnostics`
+      * Boolean: `true` / `false`.
+    * `clairvoyance`
+      * Boolean: `true` / `false`.
+    * `speedOfTime`
+      * Allowed values:
+        * `real`
+        * `x1.2`
+        * `x5`
+        * `x20`
+        * `x100`
+        * `unlimited`
+    * `godsBattleCondition`
+      * Allowed values:
+        * `normal`
+        * `simple`
+    * `godsStrength`
+      * Allowed values:
+        * `normal`
+        * `veryWeak`
+    * `debugStoreOpen`
+      * Boolean: `true` / `false`.
+    * `displayFlavorCondition`
+      * Boolean: `true` / `false`.
+    * `displayAfkDuration`
+      * Boolean: `true` / `false`.
+    * `displayAllBestiary`
+      * Boolean: `true` / `false`.
+    * `displayAllCompendium`
+      * Boolean: `true` / `false`.
+    * `displayAllGlossary`
+      * Boolean: `true` / `false`.
+    * `colosseumMode`
+      * Boolean: `true` / `false`.
+
+* Valid check note: Debug Mode is unavailable in some environments.
 
 2-7. read/resources
      developerNewsNotification
@@ -541,33 +753,16 @@ Path Parameters
 
 * Parameters:
   * `superRareThreshold`
-    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
   * `bossThreshold`
-    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
   * `mythicThreshold`
-    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
   * `rareThreshold`
-    * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
   * `sideQuestThreshold`
-    * Allowed values: `all`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `none`.
   * `notifyGodsBattle`
-    * Boolean.
   * `defeatNotificationMode`
-    * Allowed values:
-      * `defeatOnly`
-      * `defeatAndDraw`
-      * `defeatDrawRetreat`
-      * `all`
-      * `none`
   * `notifyCyclePopup`
-    * Boolean.
   * `notifyItemDropPopup`
-    * Boolean.
-    * Default: `true`.
   * `notifyAutoEquipmentPopup`
-    * Boolean.
   * `notifySideQuestPopup`
-    * Boolean.
 
 * Partial updates are allowed.
 * Omitted fields retain their current values.
@@ -586,77 +781,26 @@ Path Parameters
 
 * Parameters:
   * `mode`
-    * Allowed values:
-      * `mode.normal`
-      * `mode.orca`
   * `enemyLevelOffset`
-    * Enemy level offset used by `mode.orca`.
-    * Integer: `0–20`.
   * `language`
-    * Allowed values:
-      * `ja`
-      * `en`
-      * `zh-CN`
-      * `zh-TW`
   * `darkMode`
-    * Allowed values:
-      * `off`
-      * `on`
-      * `system`
   * `autoRepeat`
-    * Boolean: `true` / `false`.
   * `theme`
-    * Allowed values:
-      * `m.kemo`
-      * `m.laika`
-      * `m.leonard`
-      * `m.orca`
-      * `m.nox`
-      * `m.luna`
-      * `m.mishka`
-      * `m.puchitsa`
-      * `m.hagakure`
-      * `m.souga-ha`
-      * `m.finn`
-      * `m.merle`
-      * `m.rosaria`
-      * `m.milly`
-      * `m.guabi`
-      * `m.nemea`
-      * `m.bernetta`
-      * `m.yone`
-      * `m.niv`
-      * `m.nave`
 
 
 **3-6-2. `enemyEditPane`**
 
 * Parameters:
   * `enemyLevel`
-    * Integer: `1–99`.
-    * Example: `10`.
   * `enemyName`
-    * Example: `ミーティア`.
   * `terrainEffect`
-    * Terrain-effect ID.
-    * Example: `none`.
   * `enemyType`
-    * Example: `Jinma`.
   * `mainClass`
-    * Example: `class.duelist`.
   * `subClass`
-    * Use `none` when no subclass is assigned.
-    * Example: `none`.
   * `addedAbilities`
-    * Array of additional abilities.
-    * Up to `5` entries may be specified.
     * Each entry:
       * `abilityId`
-        * Use `none` when no ability is assigned.
-        * Example: `a.iaigiri`.
       * `level`
-        * Integer: `1–5`.
-        * Example: `1`.
 
 * Partial updates are allowed.
 * Omitted fields retain their current values.
@@ -665,39 +809,17 @@ Path Parameters
 
 * Parameters:
   * `runtimeDiagnostics`
-    * Boolean: `true` / `false`.
   * `clairvoyance`
-    * Boolean: `true` / `false`.
   * `speedOfTime`
-    * Allowed values:
-      * `real`
-      * `x1.2`
-      * `x5`
-      * `x20`
-      * `x100`
-      * `unlimited`
   * `godsBattleCondition`
-    * Allowed values:
-      * `normal`
-      * `simple`
   * `godsStrength`
-    * Allowed values:
-      * `normal`
-      * `veryWeak`
   * `debugStoreOpen`
-    * Boolean: `true` / `false`.
   * `displayFlavorCondition`
-    * Boolean: `true` / `false`.
   * `displayAfkDuration`
-    * Boolean: `true` / `false`.
   * `displayAllBestiary`
-    * Boolean: `true` / `false`.
   * `displayAllCompendium`
-    * Boolean: `true` / `false`.
   * `displayAllGlossary`
-    * Boolean: `true` / `false`.
   * `colosseumMode`
-    * Boolean: `true` / `false`.
 
 * Partial updates are allowed.
 * Omitted fields retain their current values.
