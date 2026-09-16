@@ -1690,10 +1690,25 @@ function retainCompactBattle(output: IndexedBattleProtocolOutput, context: Battl
     name: actor.nameKey ? '' : actor.name, abilities: [...actor.abilities.entries()].filter(([id]) => ['arc_magic', 'ranged_confusion', 'magic_confusion', 'melee_confusion', 'unstable_core', 'soul_reap', 'life_drain', 'death_touch'].includes(id)) }));
   return { ...createBattleCandidateResolution(output), log: [], compactBattle: encodeCompactBattleEvents(events, actors, context.terrainEffect) };
 }
-export function renderCompactBattle(log: CompactBattleLog): BattleLogEntry[] {
+/**
+ * Renders a retained, language-neutral battle.  Character IDs are stable across
+ * a language change, so callers may provide the party's current names instead
+ * of replaying the display names captured when the battle occurred.
+ */
+export function renderCompactBattle(log: CompactBattleLog, currentCharacterNames?: ReadonlyMap<number, string>): BattleLogEntry[] {
   const events = decodeCompactBattleEvents(log);
   const terminal = (opcode: BattleProtocolEvent['opcode']): BattleProtocolEvent => ({ opcode, phase: 0, actorKind: 0, actorId: 0, targetId: 0, abilityId: null, attackType: null, flags: 0, timing: 0, hits: 0, attempts: 0, aux0: 0, value0: 0, value1: 0, value2: 0, aux1: 0, aux2: 0 });
   const output = new OwnedBattleProtocolOutputIndex({ flags: 0, outcome: 'victory', partyHp: 0, enemyHp: 0, randomConsumed: 0, enemyHitsReceived: 0,
     events: [terminal('battle_started'), ...events, terminal('outcome'), terminal('battle_finished')], physicalThreatBag: [], magicalThreatBag: [], byteLength: 0, seed: 0n, rngVersion: 0, diagnosticDrawCount: 0, protocolError: 0 });
-  return convertIndexedBattleSemanticEvents(output, { terrainEffect: log.terrain, combatants: new Map(log.actors.map(actor => [actor.id, { ...actor, name: actor.nameKey ? t(actor.nameKey) : actor.name, magicStyle: actor.magicStyle, abilities: new Map(actor.abilities) }])) }, true).log.map(entry => ({ ...entry, semanticPresentation: true, actorDisplayName: log.actors.find(actor => actor.id === entry.characterId)?.name }));
+  const combatants = new Map(log.actors.map(actor => [actor.id, {
+    ...actor,
+    name: actor.kind === 'character' ? (currentCharacterNames?.get(actor.id) ?? actor.name) : actor.nameKey ? t(actor.nameKey) : actor.name,
+    magicStyle: actor.magicStyle,
+    abilities: new Map(actor.abilities),
+  }]));
+  return convertIndexedBattleSemanticEvents(output, { terrainEffect: log.terrain, combatants }, true).log.map(entry => ({
+    ...entry,
+    semanticPresentation: true,
+    actorDisplayName: entry.characterId === undefined ? undefined : currentCharacterNames?.get(entry.characterId) ?? log.actors.find(actor => actor.id === entry.characterId)?.name,
+  }));
 }

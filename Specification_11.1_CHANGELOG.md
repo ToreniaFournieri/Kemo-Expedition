@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 16 | 2026/09/16 | Render retained compact battle-log character names from the current party member identified by stable character ID, so localized default names and later name changes match the active language while historical battle appearance data remains intact. |
 | 0.9.7 | 15 | 2026/09/15 | Store new Diary and expedition history as versioned compact semantic events with pooled historical actors and item variants; render full narration and metadata in the selected language on demand, preserve legacy text and save durability, and expose narration-free retained battle facts through Experimental API schema 2. |
 | 0.9.7 | 14 | 2026/09/13 | Correct API sortie and latest-expedition outcome classification so successful depth-limit and Clear-Gate returns count as Turned_Back; derive outcomes from the shared return reason while preserving historical statistics, reports, and stored replay responses. |
 | 0.9.7 | 13 | 2026/09/12 | Add optional compact simulation summaries, room outcome tables, and exact UI HP buckets to the Experimental AI API; support candidate changes-only projection, preserve legacy responses, and default the reference client to compact room results. |

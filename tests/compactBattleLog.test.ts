@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { encodeCompactBattleEvents, decodeCompactBattleEvents, validateCompactBattleLog } from '../src/game/compactBattleLog.ts';
 import type { BattleProtocolEvent } from '../src/game/battleProtocol.ts';
@@ -24,4 +25,11 @@ test('unknown compact versions, opcodes, truncated masks, and actor references f
   assert.throws(() => decodeCompactBattleEvents({ ...compact, actors: [] }));
   assert.throws(() => validateCompactBattleLog({ ...compact, events: [[2, 999, 0]] }));
   assert.throws(() => validateCompactBattleLog({ ...compact, events: [[2, 9, 1]] }));
+});
+
+test('retained battle narration uses the party member’s latest name by stable character ID', () => {
+  const renderer = readFileSync('src/game/battleCandidate.ts', 'utf8');
+  const diaryRenderer = readFileSync('src/game/compactDiary.ts', 'utf8');
+  assert.match(renderer, /currentCharacterNames\?\.get\(actor\.id\) \?\? actor\.name/);
+  assert.match(diaryRenderer, /renderCompactBattle\(entry\.compactBattle, currentCharacterNames\)/);
 });

@@ -1,4 +1,4 @@
-import type { BattleLogEntry, DiaryLog, ExpeditionLog, ExpeditionLogEntry, Item, JewelKey } from '../types/index.ts';
+import type { BattleLogEntry, Character, DiaryLog, ExpeditionLog, ExpeditionLogEntry, Item, JewelKey } from '../types/index.ts';
 import { t } from '../i18n/index.ts';
 import { getDungeonById } from '../data/dungeons.ts';
 import { getItemById } from '../data/items.ts';
@@ -56,8 +56,9 @@ export function renderExpeditionMetadata(log: ExpeditionLog): ExpeditionLog {
   };
 }
 // Stateless decoding: only expanded rooms allocate narration; no retained cache or RNG.
-export function renderDiaryBattle(entry: ExpeditionLogEntry): BattleLogEntry[] {
-  const battle = entry.compactBattle ? renderCompactBattle(entry.compactBattle) : entry.details;
+export function renderDiaryBattle(entry: ExpeditionLogEntry, currentCharacters?: readonly Pick<Character, 'id' | 'name'>[]): BattleLogEntry[] {
+  const currentCharacterNames = currentCharacters ? new Map(currentCharacters.map(character => [character.id, character.name])) : undefined;
+  const battle = entry.compactBattle ? renderCompactBattle(entry.compactBattle, currentCharacterNames) : entry.details;
   const end = (entry.endEvents ?? []).flatMap((event): BattleLogEntry[] => {
     switch (event[0]) {
       case 0: return buildPostBattleEffectLogs([event[1]]);

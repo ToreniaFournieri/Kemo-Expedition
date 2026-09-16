@@ -1278,7 +1278,7 @@ function ExpeditionTab({
                               )}
                               <div className="relative z-10">
                               <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
-                              {aggregateBattleLifeDrainLogs(renderDiaryBattle(entry)).map((log, j, battleLogs) => {
+                              {aggregateBattleLifeDrainLogs(renderDiaryBattle(entry, party.characters)).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.semanticPresentation ? log.isResurrection : log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';

@@ -958,7 +958,7 @@ export function HomeScreen({
     const latestLog = party?.lastExpeditionLog ? renderExpeditionMetadata(party.lastExpeditionLog) : null;
     if (!party || !latestLog) return null;
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
-      const detailItems = renderDiaryBattle(entry).map((detail: BattleLogEntry) => {
+      const detailItems = renderDiaryBattle(entry, party.characters).map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';

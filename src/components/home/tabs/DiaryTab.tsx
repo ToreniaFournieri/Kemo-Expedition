@@ -767,7 +767,7 @@ export default function DiaryTab({
                             )}
                             <div className="relative z-10">
                             <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(log.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
-                            {aggregateBattleLifeDrainLogs(renderDiaryBattle(entry)).map((battleLog, j, battleLogs) => {
+                            {aggregateBattleLifeDrainLogs(renderDiaryBattle(entry, selectedDiaryParty.characters)).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.semanticPresentation ? battleLog.isResurrection : battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
