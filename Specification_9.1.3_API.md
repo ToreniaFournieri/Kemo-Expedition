@@ -186,9 +186,6 @@ Path Parameters
           * Example: `10%/649907/6499070`
         * `deity`
         * `deityRank`
-        * `members`
-          * Character IDs in party order.
-          * Example: `[101, 102, 103, 104, 105, 106]`
       * `state`
         * Example: `state.rest`.
       * `lastDestination`
