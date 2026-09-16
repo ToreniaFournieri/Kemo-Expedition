@@ -47,7 +47,7 @@
 * Values returned by `validOptions` may be used directly with the
   corresponding Commit API.
 
-  
+
 ##### 9.1.3.1 API endpoint list
 
 `/api/v1/`
@@ -127,6 +127,8 @@
 4. Help
 
 4-1. help
+     overview
+     endpoints
 
 4-2. resources
      developerNewsNotification
@@ -152,6 +154,11 @@ Path Parameters
 
 1-1. fundamental/status
 
+* Return:
+    * `versionBuild`
+    * `environment`
+
+
 1-2. fundamental/control/acquire
 
 1-3. fundamental/control/release
@@ -162,6 +169,46 @@ Path Parameters
 **2. Read**
 
 **2-1. `read/observation`**
+
+* Parameters: none.
+
+* Return:
+  * `globalInfo`
+    * `inGameTime`
+    * `gold`
+    * `prana`
+  * `partyInfo`
+    * Each party:
+      * `party`
+        * `level`
+        * `experiencePoint`
+          * Format: `<percentage>/<current>/<nextLevel>`
+          * Example: `10%/649907/6499070`
+        * `deity`
+        * `deityRank`
+        * `members`
+          * Character IDs in party order.
+          * Example: `[101, 102, 103, 104, 105, 106]`
+      * `state`
+        * Example: `state.rest`.
+      * `lastDestination`
+        * Example: `4`.
+      * `lastOutcome`
+        * Example: `defeated`.
+
+  * `notification`
+    * Each party:
+      * `unreadDiary`
+        * Number of unread diary entries.
+        * Example: `2`.
+      * `unreadDiaryTitle`
+        * Compact list of unread diary entries.
+        * Example:
+          `["Defeat Record/Leporian Moon Palace/20260916 22:04", "Boss Rare acquired (Moon-Hare Aegis)/Leporian Moon Palace/20260916 21:52"]`
+
+* `read/observation` does not modify game state.
+* Diary entries remain unread until explicitly marked as read through the corresponding Commit API.
+
 
 **2-2. `read/expedition`**
 **2-2-1. `{p}/setting`**
@@ -907,15 +954,28 @@ Path Parameters
 ##### 9.1.3.5 API requirement — Help
 
 
-4. Help
+**4. Help**
 
 **4-1. `help`**
 
-* Parameters: none.
+**4-1-1. `help`**
 
-* Returns the API overview and endpoint reference from:
-  * `Specification_9.1.3_API.md`
-  * `Specification_9.1.4_API_ENDPOINTS(v1).md`
+* Parameters: none.
+* Returns the API list from:
+  * `9.1.3.1 API endpoint list` in `Specification_9.1.3_API.md`.
+
+**4-1-2. `overview`**
+
+* Parameters: none.
+* Returns the API overview from:
+  * `Specification_9.1.3_API.md`.
+
+**4-1-3. `endpoints`**
+
+* Parameters: none.
+* Returns the API endpoint reference from:
+  * `Specification_9.1.4_API_ENDPOINTS(v1).md`.
+
 
 **4-2. `resources`**
 
