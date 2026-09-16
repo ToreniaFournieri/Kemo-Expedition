@@ -1113,7 +1113,7 @@ export function renderBattleLogTextWithInlineChibis(action: string, party: Party
 
   const recordedCharacters = entry.compactBattle?.actors.filter(actor => actor.kind === 'character' && actor.appearance).map(actor => {
     const [raceId, gender, identity] = actor.appearance!;
-    return { name: actor.name, raceId, gender: gender === 1 ? 'female' as const : 'male' as const,
+    return { id: actor.id, name: party.characters.find(character => character.id === actor.id)?.name ?? actor.name, raceId, gender: gender === 1 ? 'female' as const : 'male' as const,
       isUnique: typeof identity === 'string', lineageId: (typeof identity === 'string' ? identity : 'none') as Character['lineageId'],
       mimorianEnemyId: typeof identity === 'number' ? identity : undefined };
   });
