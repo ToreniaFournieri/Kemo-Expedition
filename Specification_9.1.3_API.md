@@ -6,6 +6,21 @@
 
 * Human writes this part.
 
+**Item Format**
+* The following compact item format is used throughout this API.
+* Format:
+  * With item: `<lockStatus>/<itemId>/<enhancement>/<superRare>`
+  * No item: `0`
+  * `lockStatus`: `0` = unlocked, `1` = locked.
+  * `itemId`: See `Specification_3.2_ITEM_MASTER_DATA.md`.
+  * `enhancement`: `0–6`. See `enhancement title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+  * `superRare`: `0` = none; `1–80` represents the corresponding `superRare title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+* Example:
+  * `0/1101/2/0`
+  * `1/1211/0/14`
+  * `0`
+
+
 ##### 9.1.3.1 API endpoint list
 
 `/api/v1/`
@@ -36,6 +51,7 @@
 
 2-4. read/base
      searchItems
+     jewelPriorityParty
      shopItemsList
 
 2-5. read/diary
@@ -189,6 +205,8 @@ Path Parameters
 **2-3-2. `{p}/character/{c}/status`**
 
 * Parameters:
+  * `calculatedStatus`:
+
   * `current`:
     * `unique`
     * `name`
@@ -227,12 +245,143 @@ Path Parameters
 * Validation:
   * Same as `2.1 CHARACTER_&_PARTY` 
 
-
 **2-3-3. `{p}/character/{c}/equipment`**
 
-2-4. read/base
-     searchItems
-     shopItemsList
+* Parameters:
+  * `current`:
+    * `mode`
+      * Current Auto Equipment mode.
+      * Example: `FULL`, `SEMI`, `OFF`.
+    * `equipment`
+      * Array in equipment-slot order.
+      * Uses `Item Format`.
+      * Example:
+        `["0/1101/2/0", "1/1102/1/0", "0"]`
+  * `validOptions`:
+    * `mode`
+      * Example: [`FULL`, `SEMI`, `OFF`].
+    * `equipment`
+      * Currently available items that can be equipped by this character.
+      * Uses the same item format as `current/equipment`.
+      * Example:
+        `["0/1104/0/0", "0/1107/3/0", "0/1211/0/12"]`
+    * `numberOfEmptyEquipmentSlots`
+      * Number of currently empty equipment slots.
+      * Example: `1`.
+
+
+**2-4. `read/base`**
+
+**2-4-1. `searchItems`**
+
+* Searches items currently known to the player.
+
+* Parameters:
+  * `state`
+    * **Choose one.**
+    * Allowed values:
+      * `owned`
+      * `equipped`
+      * `sold`
+      * `all`
+    * Default: `owned`.
+  * `category`
+    * **Choose one.**
+    * Item category filter.
+    * Allowed values:
+      * `sword`
+      * `katana`
+      * `bow`
+      * `armor`
+      * `glove`
+      * `wand`
+      * `robe`
+      * `shield`
+      * `bolt`
+      * `book`
+      * `catalyst`
+      * `arrow`
+      * `jewel`
+    * Display names may use the corresponding `party.categoryShort` i18n labels.
+    * Example: `sword`.
+  * `rarity`
+    * Optional.
+    * Allowed values:
+      * `common`
+      * `uncommon`
+      * `eliteRare`
+      * `bossRare`
+      * `mythicRare`
+      * `all`
+  * `superRare`
+    * Optional.
+    * Filters by whether the item has a Super Rare title.
+    * Boolean: `true` / `false`.
+  * `superRareID`
+    * Optional.
+    * Filters by a specific Super Rare title.
+    * `0`: none.
+    * `1–80`: corresponding `superRare title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+    * Example: `12`.
+  * `itemId`
+    * Optional.
+    * Searches for a specific item ID.
+  * `searchAbility`
+    * Optional.
+    * Filters items that have the specified ability ID.
+    * Example: `a.pursuit`.
+  * `searchBonus`
+    * Optional.
+    * Filters items that have the specified bonus ID.
+    * Example: `c.magical-defense-x2/3`.
+
+* Return:
+  * `items`
+    * Matching items, stacked by item variant.
+    * Format:
+      * `<Item Format>/<quantity>`
+    * Example:
+      `["0/1101/2/0/3", "0/1104/0/12/1"]`
+  * `equippedItems`
+    * Returned when equipped items match the search.
+    * Format:
+      * `<partyNumber>/<characterId>/<Item Format>`
+    * Example:
+      `["1/101/1/1102/1/0"]`
+
+
+**2-4-2. `jewelPriorityParty`**
+
+* Parameters:
+  * `current`:
+    * `partyNumber`
+      * Example: `2` (PT2 → `2`).
+      * If no party is assigned priority: `none`.
+
+  * `validOptions`:
+    * `partyNumber`
+      * Currently selectable party numbers.
+      * Example: [1, 2, 3, `none`].
+
+**2-4-3. `shopItemsList`**
+
+* Parameters:
+  * `current`:
+    * `items`
+      * Current shop item list.
+      * Format:
+        * `<shopItemId>/<itemId>/<price>/<availability>`
+      * `availability`:
+        * `true`: currently purchasable.
+        * `false`: currently unavailable, sold out, or unaffordable.
+      * Example:
+        `["1/1104/60/true", "2/1102/60/true", "3/1110/80/false", "4/1111/100/true", "5/1111/100/true"]`
+  * `validOptions`:
+    * `items`
+      * `shopItemId` values currently available for purchase.
+      * These values can be used directly with `purchaseShopItems`.
+      * Example:
+        `[1, 2, 4, 5]`
 
 2-5. read/diary
      {p}/diarySetting
@@ -322,21 +471,33 @@ Path Parameters
 
 * Operations:
   * `removeAll`
+    * Parameters: none.
   * `remove`
+    * Parameters:
+      * `targetEquipment`
+        * One equipment entry or an array of equipment entries.
+        * Uses `Item Format`.
+        * Example:
+          `0/1101/2/0`
+        * Example:
+          `["0/1101/2/0", "1/1102/1/0"]`
   * `equip`
-  * `setLock`
+    * Parameters:
+      * `targetEquipment`
+        * One equipment entry or an array of equipment entries.
+        * Uses `Item Format`.
+        * Example:
+          `0/1101/2/0`
+        * Example:
+          `["0/1101/2/0", "1/1102/1/0"]`
   * `autoEquipment`
-
-* Parameters:
-  * `targetItemId`
-    * Required for `remove`, `equip`, and `setLock`.
-    * Not used for `removeAll` or `autoEquipment`.
-  * `locked`
-    * Required only for `setLock`.
-    * Boolean: `true` or `false`.
-  * `mode`
-    * Used only for `autoEquipment`.
-    * Example: `FULL`, `SEMI`, `OFF`
+    * Parameters:
+      * `mode`
+        * Auto Equipment mode to apply.
+        * Example: `FULL`, `SEMI`, `OFF`.
+      * `immediateAutoEquipment`
+        * If `true`, immediately runs Auto Equipment using the specified `mode`.
+        * Boolean: `true` / `false`.
 
 
 **3-4. `commit/base`**
@@ -354,15 +515,14 @@ Path Parameters
 * Parameters:
   * `items`
     * Array of items to sell. One or more entries may be specified in a single request.
-    * Each entry:
-      * `itemId`
-        * Example: 1104
-      * `enhancement`
-        * Example: 0
-      * `superRare`
-        * Exmaple: 0
-      * `quantity`
-        * Example: 3, `ALL`
+    * Format: `<Item Format>/<quantity>`
+    * `quantity`:
+      * Integer greater than `0`, or `ALL`.
+    * Example:
+      * `0/1101/2/0/12`
+        * Sell `12` of item `0/1101/2/0`.
+      * `0/1102/1/0/ALL`
+        * Sell all matching items.
 
 
 **3-4-3. `purchaseShopItems`**
@@ -372,7 +532,7 @@ Path Parameters
     * Array of items to buy. One or more entries may be specified in a single request.
     * Each Entry:
       * `shopItemId`
-        * Example: 1
+        * Example: `1`
 
 
 **3-5. `commit/diary`**
