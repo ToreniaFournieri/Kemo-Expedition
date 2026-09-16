@@ -20,6 +20,24 @@
   * `1/1211/0/14`
   * `0`
 
+**Item category**
+* `Item category` filter.
+* Allowed values:
+  * `sword`
+  * `katana`
+  * `bow`
+  * `armor`
+  * `glove`
+  * `wand`
+  * `robe`
+  * `shield`
+  * `bolt`
+  * `book`
+  * `catalyst`
+  * `arrow`
+  * `jewel`
+* Display names may use the corresponding `party.categoryShort` i18n labels.
+* Example: `sword`.
 
 ##### 9.1.3.1 API endpoint list
 
@@ -67,10 +85,10 @@
      developerNewsNotification
      donationBox
      clairvoyance/{p}
-     glossary/subcategory
-     itemCompendium/subcategory
-     characterRoster/subcategory
-     bestiary/subcategory
+     glossary
+     itemCompendium
+     characterRoster
+     bestiary
      superRareList
 
 
@@ -287,23 +305,7 @@ Path Parameters
     * Default: `owned`.
   * `category`
     * **Choose one.**
-    * Item category filter.
-    * Allowed values:
-      * `sword`
-      * `katana`
-      * `bow`
-      * `armor`
-      * `glove`
-      * `wand`
-      * `robe`
-      * `shield`
-      * `bolt`
-      * `book`
-      * `catalyst`
-      * `arrow`
-      * `jewel`
-    * Display names may use the corresponding `party.categoryShort` i18n labels.
-    * Example: `sword`.
+    * `Item category` filter.
   * `rarity`
     * Optional.
     * Allowed values:
@@ -604,15 +606,253 @@ Path Parameters
 
 * Valid check note: Debug Mode is unavailable in some environments.
 
-2-7. read/resources
-     developerNewsNotification
-     donationBox
-     clairvoyance/{p}
-     glossary/subcategory
-     itemCompendium/subcategory
-     characterRoster/subcategory
-     bestiary/subcategory
-     superRareList
+
+**2-7. `read/resources`**
+
+**2-7-1. `developerNewsNotification`**
+
+* Parameters:
+  * Each entry includes:
+    * `version`
+    * `date`
+    * `content`
+
+* `content` is returned in the currently selected language.
+
+**2-7-2. `donationBox`**
+
+* Return:
+  * `gods`
+    * Current donation status of each available god.
+    * Format:
+      * `<deityId>/<rank>/<donatedGold>/<nextRankGold>`
+    * Example:
+      `["restoration/3/1203/2200", "attrition/2/545/1200"]`
+    * If maximum rank is reached, `nextRankGold`: `MAX`.
+
+**2-7-3. `clairvoyance/{p}`**
+
+* Returns current Clairvoyance information for the specified party.
+* Return:
+  * `reward`
+    * Remaining / total counts of reward bags.
+  * `enhancement`
+    * Remaining / total counts by enhancement title.
+  * `superRare`
+    * Remaining / total Super Rare counts.
+  * `sideQuest`
+    * Remaining / total side-quest draws.
+  * `sleepiness`
+    * Remaining counts:
+      * `noSleep`
+      * `nap`
+      * `soundSleep`
+
+* If Clairvoyance is unavailable for the specified party, return `unavailable`.
+
+**2-7-4. `glossary`**
+
+* Parameters:
+  * `category`
+    * **Choose one.**
+* `validOptions`:
+  * `category`
+    * `Ab.` Ability Bonuses
+    * `Base.` Base Stat Bonuses
+    * `Fixed.` Fixed Bonuses
+    * `Inc.` Increase Bonus Descriptions
+    * `Mech.` Game Mechanics
+    * `Faith.` Gods and Faith
+    * `Magic.` Magic Attacks
+    * `Quest.` Side Quests
+    * `Terrain.` Terrain Effects
+
+* Return:
+  * `entries`
+    * Glossary entries of the selected category.
+
+**2-7-5. `itemCompendium`**
+
+* Parameters:
+  * `category`
+  * `rarity`
+  * `tier`
+  * `superRare`
+  * `superRareId`
+  * `itemId`
+  * `searchAbility`
+  * `searchBonus`
+  * `details`
+
+* `validOptions`:
+  * `category`
+    * Choose one.
+    * Uses the `Item category` list.
+  * `rarity`
+    * Optional.
+    * Allowed values:
+      * `common`
+      * `uncommon`
+      * `eliteRare`
+      * `bossRare`
+      * `mythicRare`
+      * `all`
+  * `tier`
+    * Optional.
+    * Allowed values: `1–8`.
+  * `itemId`
+    * Optional.
+    * Filters by a specific item ID.
+  * `searchAbility`
+    * Optional.
+    * Filters items that have the specified ability ID.
+    * Example: `a.pursuit`.
+  * `searchBonus`
+    * Optional.
+    * Filters items that have the specified bonus ID.
+    * Example: `c.magical-defense-x2/3`.
+  * `details`
+    * Optional.
+    * Controls additional item details returned.
+    * Allowed values:
+      * `none`
+      * `ability`
+      * `cBonus`
+      * `otherBonus`
+      * `abilityAndCBonus`
+      * `all`
+    * Default: `abilityAndCBonus`.
+
+* Return:
+  * `items`
+    * Matching item information according to the requested `details` value.
+    * Key format:
+      * `<itemId>`
+    * Values may include:
+      * `name`
+      * `rarity`
+      * `tier`
+      * `ability`
+      * `cBonus`
+      * `otherBonus`
+    * `otherBonus` may contain multiple bonus IDs and values.
+    * Example:
+      `1104/12: "Nicked Dirk", common, 1, ability=[a.pursuit], cBonus=[c.magical-defense-x2/3], otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
+
+
+**2-7-6. `characterRoster`**
+
+* Parameters:
+
+  * `race`
+
+    * Choose one.
+    * Example: `lupinian`.
+  * `partyNumber`
+
+    * Choose one.
+    * Example: `1`.
+  * `gender`
+
+    * Choose one.
+    * Allowed values:
+
+      * `male`
+      * `female`
+      * `unique`
+
+* `validOptions`:
+
+  * `race`
+
+    * Currently available race IDs.
+  * `partyNumber`
+
+    * Currently unlocked party numbers.
+  * `gender`
+
+    * Currently available gender options for the selected race and party.
+
+* Return:
+
+  * `status`
+
+    * Base character status.
+  * `bonus`
+
+    * Race bonuses.
+  * `defaultAbility`
+  * `unlockAbility`
+
+**2-7-7. `bestiary`**
+
+* Parameters:
+
+  * `subcategory`
+
+    * Choose one.
+    * Expedition, Gods, or special category.
+  * `details`
+
+    * Optional.
+    * Boolean: `true` / `false`.
+    * Default: `false`.
+
+* `validOptions`:
+
+  * `subcategory`
+
+    * Currently unlocked Bestiary categories.
+
+* Return:
+
+  * `enemies`
+
+    * Enemy IDs in the selected category.
+    * Ordered using the same order as the Bestiary.
+
+  * If `details: true`:
+
+    * Return status for each enemy, including:
+
+      * class
+      * type
+      * HP
+      * attacks
+      * defenses
+      * resistances
+      * abilities
+      * bonuses
+      * drop items
+      * defeats
+      * encounters
+
+**2-7-8. `superRareList`**
+
+* Return:
+
+  * `superRare`
+
+    * List of all Super Rare titles.
+    * Format:
+
+      * `<superRareId>/<name>`
+    * Example:
+      `["1/...", "2/...", "3/..."]`
+
+  * `details`
+
+    * Bonus information for each Super Rare title.
+    * Key format:
+
+      * `<superRareId>`
+    * Values may include:
+
+      * `ability`
+      * `cBonus`
+      * `otherBonus`
+
+* `name` uses the current language setting.
 
 
 ##### 9.1.3.4 API requirement — Commit
