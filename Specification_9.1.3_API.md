@@ -39,6 +39,15 @@
 * Display names may use the corresponding `party.categoryShort` i18n labels.
 * Example: `sword`.
 
+**Valid Options**
+* `validOptions` contains values currently accepted by the
+  corresponding Commit API.
+* Availability must reflect the current game state, unlock state,
+  environment, and other runtime conditions.
+* Values returned by `validOptions` may be used directly with the
+  corresponding Commit API.
+
+  
 ##### 9.1.3.1 API endpoint list
 
 `/api/v1/`
@@ -81,17 +90,6 @@
      modeSelect
      debug
 
-2-7. read/resources
-     developerNewsNotification
-     donationBox
-     clairvoyance/{p}
-     glossary
-     itemCompendium
-     characterRoster
-     bestiary
-     superRareList
-
-
 3. Commit
 
 3-1. commit/progress
@@ -104,7 +102,10 @@
 3-3. commit/party
      {p}/partyUpdate
      {p}/character/{c}/changeBuild
-     {p}/character/{c}/equipment
+     {p}/character/{c}/removeAllEquipment
+     {p}/character/{c}/removeEquipment
+     {p}/character/{c}/equip
+     {p}/character/{c}/autoEquipment
 
 3-4. commit/base
      changeJewelPriorityParty
@@ -121,6 +122,22 @@
      feedback
      backup
      debug
+
+
+4. Help
+
+4-1. help
+
+4-2. resources
+     developerNewsNotification
+     donationBox
+     clairvoyance/{p}
+     glossary
+     itemCompendium
+     characterRoster
+     bestiary
+     superRareList
+
 ```
 
 Path Parameters
@@ -149,7 +166,9 @@ Path Parameters
 **2-2. `read/expedition`**
 **2-2-1. `{p}/setting`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `destination`
       * Example: `3`.
@@ -175,10 +194,12 @@ Path Parameters
 
 **2-2-2. `{p}/latestBattleLog`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `battleLog`
     * Latest battle log of the specified party.
-  * `bottleneckEnemyStatus`
+  * `bottleneckEnemies`
     * Status of enemies identified as bottlenecks.
     * Bottleneck definition:
       * Draw rate: `>=20%`, or
@@ -189,7 +210,9 @@ Path Parameters
 
 * Runs the current expedition simulation `1,000` times and returns the result.
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `overview`
     * Compact summary of the simulation result.
     * Example:
@@ -204,7 +227,9 @@ Path Parameters
 
 **2-3-1 `{p}/partySummary`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `deityId`
       * Example: `restoration`
@@ -222,7 +247,9 @@ Path Parameters
 
 **2-3-2. `{p}/character/{c}/status`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `calculatedStatus`:
 
   * `current`:
@@ -236,6 +263,7 @@ Path Parameters
 
   * `validOptions`:
     * `unique`
+      * Boolean.
       * Unique character is not permit to change `name`, `race`, `gender`, `lineage`, and `predisposition`
     * `name`
       * Example: `changeable`
@@ -265,7 +293,9 @@ Path Parameters
 
 **2-3-3. `{p}/character/{c}/equipment`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `mode`
       * Current Auto Equipment mode.
@@ -294,6 +324,8 @@ Path Parameters
 
 * Searches items currently known to the player.
 
+* Parameters: none.
+
 * Parameters:
   * `state`
     * **Choose one.**
@@ -319,7 +351,7 @@ Path Parameters
     * Optional.
     * Filters by whether the item has a Super Rare title.
     * Boolean: `true` / `false`.
-  * `superRareID`
+  * `superRareId`
     * Optional.
     * Filters by a specific Super Rare title.
     * `0`: none.
@@ -347,7 +379,6 @@ Path Parameters
       * `abilityAndCBonus`
       * `all`
     * Default: `abilityAndCBonus`.
-
 
 * Return:
   * `items`
@@ -378,7 +409,9 @@ Path Parameters
 
 **2-4-2. `jewelPriorityParty`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `partyNumber`
       * Example: `2` (PT2 → `2`).
@@ -391,7 +424,9 @@ Path Parameters
 
 **2-4-3. `shopItemsList`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `items`
       * Current shop item list.
@@ -410,9 +445,12 @@ Path Parameters
         `[1, 2, 4, 5]`
 
 **2-5. read/diary**
+
 **2-5-1. `{p}/diarySetting`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `superRareThreshold`
     * `bossThreshold`
@@ -460,9 +498,12 @@ Path Parameters
 * Parameters: none.
 
 **2-6. `read/setting`**
+
 **2-6-1. `enemyEditPane`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `enemyLevel`
     * `enemyName`
@@ -500,7 +541,9 @@ Path Parameters
 
 **2-6-2. `modeSelect`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `mode`
     * `enemyLevelOffset`
@@ -554,7 +597,9 @@ Path Parameters
 
 **2-6-3. `debug`**
 
-* Parameters:
+* Parameters: none.
+
+* Return:
   * `current`:
     * `runtimeDiagnostics`
     * `clairvoyance`
@@ -607,207 +652,13 @@ Path Parameters
 * Valid check note: Debug Mode is unavailable in some environments.
 
 
-**2-7. `read/resources`**
-
-**2-7-1. `developerNewsNotification`**
-
-* Parameters:
-  * Each entry includes:
-    * `version`
-    * `date`
-    * `content`
-
-* `content` is returned in the currently selected language.
-
-**2-7-2. `donationBox`**
-
-* Return:
-  * `gods`
-    * Current donation status of each available god.
-    * Format:
-      * `<deityId>/<rank>/<donatedGold>/<nextRankGold>`
-    * Example:
-      `["restoration/3/1203/2200", "attrition/2/545/1200"]`
-    * If maximum rank is reached, `nextRankGold`: `MAX`.
-
-**2-7-3. `clairvoyance/{p}`**
-
-* Returns current Clairvoyance information for the specified party.
-* Return:
-  * `reward`
-    * Remaining / total counts of reward bags.
-  * `enhancement`
-    * Remaining / total counts by enhancement title.
-  * `superRare`
-    * Remaining / total Super Rare counts.
-  * `sideQuest`
-    * Remaining / total side-quest draws.
-  * `sleepiness`
-    * Remaining counts:
-      * `noSleep`
-      * `nap`
-      * `soundSleep`
-
-* If Clairvoyance is unavailable for the specified party, return `unavailable`.
-
-**2-7-4. `glossary`**
-
-* Parameters:
-  * `category`
-    * **Choose one.**
-* `validOptions`:
-  * `category`
-    * `Ab.` Ability Bonuses
-    * `Base.` Base Stat Bonuses
-    * `Fixed.` Fixed Bonuses
-    * `Inc.` Increase Bonus Descriptions
-    * `Mech.` Game Mechanics
-    * `Faith.` Gods and Faith
-    * `Magic.` Magic Attacks
-    * `Quest.` Side Quests
-    * `Terrain.` Terrain Effects
-
-* Return:
-  * `entries`
-    * Glossary entries of the selected category.
-
-**2-7-5. `itemCompendium`**
-
-* Parameters:
-  * `category`
-  * `rarity`
-  * `tier`
-  * `superRare`
-  * `superRareId`
-  * `itemId`
-  * `searchAbility`
-  * `searchBonus`
-  * `details`
-
-* `validOptions`:
-  * `category`
-    * Choose one.
-    * Uses the `Item category` list.
-  * `rarity`
-    * Optional.
-    * Allowed values:
-      * `common`
-      * `uncommon`
-      * `eliteRare`
-      * `bossRare`
-      * `mythicRare`
-      * `all`
-  * `tier`
-    * Optional.
-    * Allowed values: `1–8`.
-  * `itemId`
-    * Optional.
-    * Filters by a specific item ID.
-  * `searchAbility`
-    * Optional.
-    * Filters items that have the specified ability ID.
-    * Example: `a.pursuit`.
-  * `searchBonus`
-    * Optional.
-    * Filters items that have the specified bonus ID.
-    * Example: `c.magical-defense-x2/3`.
-  * `details`
-    * Optional.
-    * Controls additional item details returned.
-    * Allowed values:
-      * `none`
-      * `ability`
-      * `cBonus`
-      * `otherBonus`
-      * `abilityAndCBonus`
-      * `all`
-    * Default: `abilityAndCBonus`.
-
-* Return:
-  * `items`
-    * Matching item information according to the requested `details` value.
-    * Key format:
-      * `<itemId>`
-    * Values may include:
-      * `name`
-      * `rarity`
-      * `tier`
-      * `ability`
-      * `cBonus`
-      * `otherBonus`
-    * `otherBonus` may contain multiple bonus IDs and values.
-    * Example:
-      `1104/12: "Nicked Dirk", common, 1, ability=[a.pursuit], cBonus=[c.magical-defense-x2/3], otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
-
-
-**2-7-6. `characterRoster`**
-
-* Parameters:
-  * `race`
-
-* `validOptions`:
-  * `race`
-    * Choose one.
-    * Options:
-      [`lupinian`, `vulpinian`, `felidian`, `caninian`, `ursan`, `procyonian`, `leporian`, `cervin`, `murid`, `kemoria`, `orcinian`, `avian`, `mimorian`]
-* Return:
-  * `status`
-    * Base race status.
-    * Example:
-      `Vitality:11 Strength:12 Intelligence:8 Mind:7`
-  * `bonus`
-    * Race bonuses.
-  * `defaultAbility`
-    * Default ability of the selected race.
-  * `unlockAbility`
-    * Unlockable abilities of the selected race.
-
-
-**2-7-7. `bestiary`**
-
-* Parameters:
-  * `enemyId`
-  * `enemyType`
-  * `expedition`
-
-* `validOptions`:
-  * `enemyId`
-    * Optional.
-    * Example: `130`.
-  * `enemyType`
-    * Optional.
-    * See `Expedition Enemy Types` in `Specification_4.1_EXPEDITION_&_ENEMY.md`.
-  * `expedition`
-    * Optional.
-    * Current valid expedition IDs.
-    * Example: `1–9`.
-    * The available range may be extended in future versions.
-
-* Return:
-  * `enemies`
-    * Enemies matching the specified parameters.
-    * Ordered using the same order as the Bestiary.
-    * Each enemy includes the status and details defined in `Bestiary (敵キャラクター図鑑)` in `Specification_8.6_UI_SETTING.md`.
-
-
-**2-7-8. `superRareList`**
-
-* Return:
-  * `superRare`
-    * List of all Super Rare titles.
-    * Format:
-      * `<superRareId>/<name>/<bonus>`
-    * Example:
-      `["1/...", "2/...", "3/..."]`
-
-* `name` uses the current language setting.
-
-
 ##### 9.1.3.4 API requirement — Commit
 
 **3. Commit**
 
 **3-1. `commit/progress`**
+
+* Parameters: none.
 
 * Parameters:
   * `elapsedSeconds`
@@ -817,6 +668,8 @@ Path Parameters
 **3-2. `commit/expedition`**
 
 **3-2-1. `{p}/changeExpedition`**
+
+* Parameters: none.
 
 * Parameters:
   * `destination`
@@ -867,37 +720,43 @@ Path Parameters
 
 * Partial updates are allowed.
 
-**3-3-3. `{p}/character/{c}/equipment`**
+**3-3-3. `{p}/character/{c}/removeAllEquipment`**
 
-* Operations:
-  * `removeAll`
-    * Parameters: none.
-  * `remove`
-    * Parameters:
-      * `targetEquipment`
-        * One equipment entry or an array of equipment entries.
-        * Uses `Item Format`.
-        * Example:
-          `0/1101/2/0`
-        * Example:
-          `["0/1101/2/0", "1/1102/1/0"]`
-  * `equip`
-    * Parameters:
-      * `targetEquipment`
-        * One equipment entry or an array of equipment entries.
-        * Uses `Item Format`.
-        * Example:
-          `0/1101/2/0`
-        * Example:
-          `["0/1101/2/0", "1/1102/1/0"]`
-  * `autoEquipment`
-    * Parameters:
-      * `mode`
-        * Auto Equipment mode to apply.
-        * Example: `FULL`, `SEMI`, `OFF`.
-      * `immediateAutoEquipment`
-        * If `true`, immediately runs Auto Equipment using the specified `mode`.
-        * Boolean: `true` / `false`.
+* Parameters: none.
+* Remove all equipment.
+
+**3-3-4. `{p}/character/{c}/removeEquipment`**
+
+* Parameters:
+  * `targetEquipment`
+    * One equipment entry or an array of equipment entries.
+    * Uses `Item Format`.
+    * Example:
+      `0/1101/2/0`
+    * Example:
+      `["0/1101/2/0", "1/1102/1/0"]`
+
+**3-3-5. `{p}/character/{c}/equip`**
+
+* Parameters:
+  * `targetEquipment`
+    * One equipment entry or an array of equipment entries.
+    * Uses `Item Format`.
+    * Example:
+      `0/1101/2/0`
+    * Example:
+      `["0/1101/2/0", "1/1102/1/0"]`
+
+
+**3-3-6. `{p}/character/{c}/autoEquipment`**
+
+* Parameters:
+  * `mode`
+    * Auto Equipment mode to apply.
+    * Example: `FULL`, `SEMI`, `OFF`.
+  * `immediateAutoEquipment`
+    * If `true`, immediately runs Auto Equipment using the specified `mode`.
+    * Boolean: `true` / `false`.
 
 
 **3-4. `commit/base`**
@@ -1045,3 +904,218 @@ Path Parameters
     * Optional.
     * Up to 4 image attachments.
 
+##### 9.1.3.5 API requirement — Help
+
+
+4. Help
+
+**4-1. `help`**
+
+* Parameters: none.
+
+* Returns the API overview and endpoint reference from:
+  * `Specification_9.1.3_API.md`
+  * `Specification_9.1.4_API_ENDPOINTS(v1).md`
+
+**4-2. `resources`**
+
+**4-2-1. `developerNewsNotification`**
+
+* Parameters: none.
+
+* Return:
+  * Each entry includes:
+    * `version`
+    * `date`
+    * `content`
+
+* `content` is returned in the currently selected language.
+
+**4-2-2. `donationBox`**
+
+* Parameters: none.
+
+* Return:
+  * `gods`
+    * Current donation status of each available god.
+    * Format:
+      * `<deityId>/<rank>/<donatedGold>/<nextRankGold>`
+    * Example:
+      `["restoration/3/1203/2200", "attrition/2/545/1200"]`
+    * If maximum rank is reached, `nextRankGold`: `MAX`.
+
+**4-2-3. `clairvoyance/{p}`**
+
+* Returns current Clairvoyance information for the specified party.
+
+* Parameters: none.
+
+* Return:
+  * `reward`
+    * Remaining / total counts of reward bags.
+  * `enhancement`
+    * Remaining / total counts by enhancement title.
+  * `superRare`
+    * Remaining / total Super Rare counts.
+  * `sideQuest`
+    * Remaining / total side-quest draws.
+  * `sleepiness`
+    * Remaining counts:
+      * `noSleep`
+      * `nap`
+      * `soundSleep`
+
+* If Clairvoyance is unavailable for the specified party, return `unavailable`.
+
+**4-2-4. `glossary`**
+
+* Parameters:
+  * `category`
+    * **Choose one.**
+* `validOptions`:
+  * `category`
+    * `Ab.` Ability Bonuses
+    * `Base.` Base Stat Bonuses
+    * `Fixed.` Fixed Bonuses
+    * `Inc.` Increase Bonus Descriptions
+    * `Mech.` Game Mechanics
+    * `Faith.` Gods and Faith
+    * `Magic.` Magic Attacks
+    * `Quest.` Side Quests
+    * `Terrain.` Terrain Effects
+
+* Return:
+  * `entries`
+    * Glossary entries of the selected category.
+
+**4-2-5. `itemCompendium`**
+
+* Parameters:
+  * `category`
+  * `rarity`
+  * `tier`
+  * `itemId`
+  * `searchAbility`
+  * `searchBonus`
+  * `details`
+
+* `validOptions`:
+  * `category`
+    * Choose one.
+    * Uses the `Item category` list.
+  * `rarity`
+    * Optional.
+    * Allowed values:
+      * `common`
+      * `uncommon`
+      * `eliteRare`
+      * `bossRare`
+      * `mythicRare`
+      * `all`
+  * `tier`
+    * Optional.
+    * Allowed values: `1–8`.
+  * `itemId`
+    * Optional.
+    * Filters by a specific item ID.
+  * `searchAbility`
+    * Optional.
+    * Filters items that have the specified ability ID.
+    * Example: `a.pursuit`.
+  * `searchBonus`
+    * Optional.
+    * Filters items that have the specified bonus ID.
+    * Example: `c.magical-defense-x2/3`.
+  * `details`
+    * Optional.
+    * Controls additional item details returned.
+    * Allowed values:
+      * `none`
+      * `ability`
+      * `cBonus`
+      * `otherBonus`
+      * `abilityAndCBonus`
+      * `all`
+    * Default: `abilityAndCBonus`.
+
+* Return:
+  * `items`
+    * Matching item information according to the requested `details` value.
+    * Format:
+      * `itemId`
+      * `name`
+      * `rarity`
+      * `tier`
+      * `ability`
+      * `cBonus`
+      * `otherBonus`
+    * `ability`, `cBonus`, and `otherBonus` may contain multiple bonus IDs and values.
+    * Example:
+      `1104/12, "Nicked Dirk", common, 1, ability=[a.pursuit], cBonus=[c.magical-defense-x2/3], otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
+
+
+**4-2-6. `characterRoster`**
+
+* Parameters:
+  * `race`
+
+* `validOptions`:
+  * `race`
+    * Choose one.
+    * Options:
+      [`lupinian`, `vulpinian`, `felidian`, `caninian`, `ursan`, `procyonian`, `leporian`, `cervin`, `murid`, `kemoria`, `orcinian`, `avian`, `mimorian`]
+* Return:
+  * `status`
+    * Base race status.
+    * Example:
+      `Vitality:11 Strength:12 Intelligence:8 Mind:7`
+  * `bonus`
+    * Race bonuses.
+  * `defaultAbility`
+    * Default ability of the selected race.
+  * `unlockAbility`
+    * Unlockable abilities of the selected race.
+
+
+**4-2-7. `bestiary`**
+
+* Parameters:
+  * `enemyId`
+  * `enemyType`
+  * `expedition`
+
+* `validOptions`:
+  * `enemyId`
+    * Optional.
+    * Example: `130`.
+  * `enemyType`
+    * Optional.
+    * See `Expedition Enemy Types` in `Specification_4.1_EXPEDITION_&_ENEMY.md`.
+  * `expedition`
+    * Optional.
+    * Current valid expedition IDs.
+    * Example: `1–9`.
+    * The available range may be extended in future versions.
+
+* Return:
+  * `enemies`
+    * Enemies matching the specified parameters.
+    * Ordered using the same order as the Bestiary.
+    * Each enemy includes the status and details defined in `Bestiary (敵キャラクター図鑑)` in `Specification_8.6_UI_SETTING.md`.
+
+
+**4-2-8. `superRareList`**
+
+* Parameters: none.
+
+* Return:
+  * `superRare`
+    * List of all Super Rare titles.
+    * Format:
+      * `<superRareId>/<name>/<bonus>`
+    * Example:
+      `["1/...", "2/...", "3/..."]`
+
+* `name` uses the current language setting.
+
+[EOF]
