@@ -743,105 +743,64 @@ Path Parameters
 **2-7-6. `characterRoster`**
 
 * Parameters:
-
   * `race`
-
-    * Choose one.
-    * Example: `lupinian`.
-  * `partyNumber`
-
-    * Choose one.
-    * Example: `1`.
-  * `gender`
-
-    * Choose one.
-    * Allowed values:
-
-      * `male`
-      * `female`
-      * `unique`
 
 * `validOptions`:
-
   * `race`
-
-    * Currently available race IDs.
-  * `partyNumber`
-
-    * Currently unlocked party numbers.
-  * `gender`
-
-    * Currently available gender options for the selected race and party.
-
+    * Choose one.
+    * Options:
+      [`lupinian`, `vulpinian`, `felidian`, `caninian`, `ursan`, `procyonian`, `leporian`, `cervin`, `murid`, `kemoria`, `orcinian`, `avian`, `mimorian`]
 * Return:
-
   * `status`
-
-    * Base character status.
+    * Base race status.
+    * Example:
+      `Vitality:11 Strength:12 Intelligence:8 Mind:7`
   * `bonus`
-
     * Race bonuses.
   * `defaultAbility`
+    * Default ability of the selected race.
   * `unlockAbility`
+    * Unlockable abilities of the selected race.
+
 
 **2-7-7. `bestiary`**
 
 * Parameters:
-
-  * `subcategory`
-
-    * Choose one.
-    * Expedition, Gods, or special category.
-  * `details`
-
-    * Optional.
-    * Boolean: `true` / `false`.
-    * Default: `false`.
+  * `enemyId`
+  * `enemyType`
+  * `expedition`
 
 * `validOptions`:
-
-  * `subcategory`
-
-    * Currently unlocked Bestiary categories.
+  * `enemyId`
+    * Optional.
+    * Example: `130`.
+  * `enemyType`
+    * Optional.
+    * See `Expedition Enemy Types` in `Specification_4.1_EXPEDITION_&_ENEMY.md`.
+  * `expedition`
+    * Optional.
+    * Current valid expedition IDs.
+    * Example: `1–9`.
+    * The available range may be extended in future versions.
 
 * Return:
-
   * `enemies`
-
-    * Enemy IDs in the selected category.
+    * Enemies matching the specified parameters.
     * Ordered using the same order as the Bestiary.
+    * Each enemy includes the status and details defined in `Bestiary (敵キャラクター図鑑)` in `Specification_8.6_UI_SETTING.md`.
 
-  * If `details: true`:
-
-    * Return status for each enemy, including:
-
-      * class
-      * type
-      * HP
-      * attacks
-      * defenses
-      * resistances
-      * abilities
-      * bonuses
-      * drop items
-      * defeats
-      * encounters
 
 **2-7-8. `superRareList`**
 
 * Return:
-
   * `superRare`
-
     * List of all Super Rare titles.
     * Format:
-
       * `<superRareId>/<name>`
     * Example:
       `["1/...", "2/...", "3/..."]`
 
   * `details`
-
     * Bonus information for each Super Rare title.
     * Key format:
 
