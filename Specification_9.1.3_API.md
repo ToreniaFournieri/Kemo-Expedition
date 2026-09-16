@@ -73,8 +73,8 @@
 
 2-3. read/party
      {p}/partySummary
-     {p}/character/{c}/status
-     {p}/character/{c}/equipment
+     character/{c}/status
+     character/{c}/equipment
 
 2-4. read/base
      searchItems
@@ -101,11 +101,11 @@
 
 3-3. commit/party
      {p}/partyUpdate
-     {p}/character/{c}/changeBuild
-     {p}/character/{c}/removeAllEquipment
-     {p}/character/{c}/removeEquipment
-     {p}/character/{c}/equip
-     {p}/character/{c}/autoEquipment
+     character/{c}/changeBuild
+     character/{c}/removeAllEquipment
+     character/{c}/removeEquipment
+     character/{c}/equip
+     character/{c}/autoEquipment
 
 3-4. commit/base
      changeJewelPriorityParty
@@ -145,7 +145,7 @@
 Path Parameters
 
 {p}: Party number, 1–6
-{c}: Character index within the party, 0–5
+{c}: `characterId` Character ID.
 {d}: Diary-entry index, 0-23
 
 ##### 9.1.3.2 API requirement fundamental
@@ -231,7 +231,7 @@ Path Parameters
     * `destination`
       * Example: `3`.
     * `depthLimit`
-      * Example: `17` (`5F-1`).
+      * Example: `5f-3`.
     * `difficultyOffset`
       * Example: `8`.
 
@@ -241,7 +241,7 @@ Path Parameters
       * Example: `[1, 2, 3]`.
     * `depthLimit`
       * Currently valid range.
-      * Example: `[3, 4, 7, 8, 11, 12, 15, 16]`.
+      * Example: `[1f-3, 1f-4, 2f-3, 2f-4, 3f-3, 3f-4, 4f-3, 4f-4, 5f-3, 5f-4, beforeBoss, all]`.
     * `difficultyOffset`
       * Currently valid range.
       * Minimum: `0`.
@@ -295,14 +295,14 @@ Path Parameters
     * `deityId`
       * Example: `restoration`
     * `order`
-      * Array of character IDs in party order.
+      * Array of `characterId` (character IDs) in party order.
       * Example:  `[101, 102, 103, 104, 105, 106]`
 
   * `validOptions`:
     * `deityId`
       * Example: [`restoration`, `attrition`] 
     * `order`
-      * Character IDs currently available for party ordering.
+      * `characterId` (character IDs) currently available for party ordering.
       * Example:  `[101, 102, 103, 104, 105, 106]`
 
 
