@@ -6,13 +6,13 @@
 - The selected tab is highlighted using the sub-theme color.
 - If only one Party is unlocked, the subcategory tabs are hidden.
 - Diary unread badges:
-  - The main Diary tab displays a red unread badge, showing up to 99 unread entries. (Display `99+` when the count is 99 or greater.)
-  - Each Party subcategory tab also displays its own red unread badge, showing up to 24 unread entries for that Party.
+  - The main Diary tab displays a red unread badge, showing up to 99 unread entries. (Display `49+` when the count is 49 or greater.)
+  - Each Party subcategory tab also displays its own red unread badge, showing up to 12 unread entries for that Party.
   - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
   - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
 - Each Party has its own independent Diary.
-- Each Party Diary keeps a maximum of 24 entries.
-- Existing Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 24-entry maximum; opening, loading, or saving the game must not remove entries.
+- Each Party Diary keeps a maximum of 12 entries.
+- Existing Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
 - The diary is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
