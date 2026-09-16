@@ -110,41 +110,125 @@ Path Parameters
 
 **2. Read**
 
-**2-1. read/observation**
+**2-1. `read/observation`**
 
 **2-2. `read/expedition`**
 **2-2-1. `{p}/setting`**
 
-* `current`:
-  * `destination`
-    * Example: `3`.
-  * `depthLimit`
-    * Example: `17` (`5F-1`).
-  * `difficultyOffset`
-    * Example: `8`.
+* Parameters:
+  * `current`:
+    * `destination`
+      * Example: `3`.
+    * `depthLimit`
+      * Example: `17` (`5F-1`).
+    * `difficultyOffset`
+      * Example: `8`.
 
-* `validOptions`:
-  * `destination`
-    * Currently available destination IDs.
-    * Example: `[1, 2, 3]`.
-  * `depthLimit`
-    * Currently valid range.
-    * Example: `[3, 4, 7, 8, 11, 12, 15, 16]`.
-  * `difficultyOffset`
-    * Currently valid range.
-    * Minimum: `0`.
-    * Maximum: `68`.
-    * Step: `2`.
+  * `validOptions`:
+    * `destination`
+      * Currently available destination IDs.
+      * Example: `[1, 2, 3]`.
+    * `depthLimit`
+      * Currently valid range.
+      * Example: `[3, 4, 7, 8, 11, 12, 15, 16]`.
+    * `difficultyOffset`
+      * Currently valid range.
+      * Minimum: `0`.
+      * Maximum: `68`.
+      * Step: `2`.
 
 * Values returned by `validOptions` can be used directly with `{p}/changeExpedition`.
 
-**2-2-2. {p}/latestBattleLog**
-     {p}/simulationRun
+**2-2-2. `{p}/latestBattleLog`**
 
-2-3. read/party
-     {p}/partySummary
-     {p}/character/{c}/status
-     {p}/character/{c}/equipment
+* Parameters:
+  * `battleLog`
+    * Latest battle log of the specified party.
+  * `bottleneckEnemyStatus`
+    * Status of enemies identified as bottlenecks.
+    * Bottleneck definition:
+      * Draw rate: `>=20%`, or
+      * Defeat rate: `>=10%`.
+    * If no enemy meets the condition, return none.
+
+**2-2-3. `{p}/simulationRun`**
+
+* Runs the current expedition simulation `1,000` times and returns the result.
+
+* Parameters:
+  * `overview`
+    * Compact summary of the simulation result.
+    * Example:
+      `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
+  * `detail`
+    * Simulation Result Graph data defined in `8.3 UI_EXPEDITION`.
+    * Return the underlying room-by-room simulation data in a concise AI-friendly format.
+    * Do not return UI rendering information.
+
+
+**2-3. `read/party`**
+
+**2-3-1 `{p}/partySummary`**
+
+* Parameters:
+  * `current`:
+    * `deityId`
+      * Example: `restoration`
+    * `order`
+      * Array of character IDs in party order.
+      * Example:  `[101, 102, 103, 104, 105, 106]`
+
+  * `validOptions`:
+    * `deityId`
+      * Example: [`restoration`, `attrition`] 
+    * `order`
+      * Character IDs currently available for party ordering.
+      * Example:  `[101, 102, 103, 104, 105, 106]`
+
+
+**2-3-2. `{p}/character/{c}/status`**
+
+* Parameters:
+  * `current`:
+    * `unique`
+    * `name`
+    * `racesAndGender`
+    * `mainClassId`
+    * `subClassId`
+    * `lineage`
+    * `predisposition`
+
+  * `validOptions`:
+    * `unique`
+      * Unique character is not permit to change `name`, `race`, `gender`, `lineage`, and `predisposition`
+    * `name`
+      * Example: `changeable`
+      * Example for unique: `none`
+    * `racesAndGender`
+      * Currently valid race and gender combinations.
+      * Format:
+        * Normal: `<race>/<gender>`
+        * Mimorian: `mimorian/<gender>/<targetEnemyId>`
+      * Example:
+        [`lupinian/male`, `lupinian/female`, `vulpinian/male`, `mimorian/female/193`]
+      * For `mimorian`, the third value is the transformed target enemy ID.
+      * If unavailable: `none`.
+    * `mainClassId`
+      * Example: [`class.fighter`, `class.ranger`]
+    * `subClassId`
+      * Example: [`class.fighter`, `class.ranger`]
+    * `lineage`
+      * Example: [`sandstorm`, `ashen_capital`]
+      * Example for unique: `none`
+    * `predisposition`
+      * Example: [`aggressive`, `inquisitive`]
+      * Example for unique: `none`
+
+* Validation:
+  * Same as `2.1 CHARACTER_&_PARTY` 
+
+
+**2-3-3. `{p}/character/{c}/equipment`**
 
 2-4. read/base
      searchItems
@@ -224,17 +308,14 @@ Path Parameters
 
 * Parameters:
   * `name`
-  * `races`
-  * `gender`
+  * `racesAndGender`
   * `mainClassId`
-    * Example: `fighter`
+    * Example: `class.fighter`
   * `subClassId`
-    * Example: `ranger`
+    * Example: `class.ranger`
   * `lineage`
   * `predisposition`
 
-* Validation:
-  * Same as `2.1 CHARACTER_&_PARTY` 
 * Partial updates are allowed.
 
 **3-3-3. `{p}/character/{c}/equipment`**
