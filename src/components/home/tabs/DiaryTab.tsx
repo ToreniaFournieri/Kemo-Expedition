@@ -1,3 +1,4 @@
+import { renderDiaryMetadata, renderExpeditionMetadata, renderDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
 import { Fragment,useEffect,useState,type Dispatch,type SetStateAction } from 'react';
 import { GOD_ENEMY_PROFILES } from '../../../data/dropTables';
 import {
@@ -213,7 +214,7 @@ export default function DiaryTab({
 
 
   const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLog) => {
-    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
+    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => (entry.godsBattle || entry.enemyName.includes('(神魔戦)')));
     if (!hasGodsBattleEntry) return t('diary.outcome.notReached');
     if (expeditionLog.finalOutcome === 'Clear') return t('diary.outcome.victory');
     if (expeditionLog.finalOutcome === 'Defeat') return t('diary.outcome.defeat');
@@ -245,12 +246,13 @@ export default function DiaryTab({
     // SpecRef: 8.5 | UI_DIARY | 神魔戦通知
     if (triggers.includes('godsBattle')) {
       const godsBattleEnemyName = expeditionLog.entries
-        .find((entry) => entry.enemyName.includes('(神魔戦)'))
+        .find((entry) => (entry.godsBattle || entry.enemyName.includes('(神魔戦)')))
         ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
         .trim();
-      const normalizedGodsBattleEnemyName = godsBattleEnemyName
+      const semanticGod = expeditionLog.entries.some(entry => entry.godsBattle) ? GOD_ENEMY_PROFILES.find(profile => profile.expId === expeditionLog.dungeonId) : undefined;
+      const normalizedGodsBattleEnemyName = semanticGod?.displayName ?? (godsBattleEnemyName
         ? getGodsBattleDiaryDisplayName(godsBattleEnemyName)
-        : null;
+        : null);
       const godsBattleOutcome = getGodsBattleOutcomeLabel(expeditionLog);
       if (normalizedGodsBattleEnemyName) {
         return `[${partyName}] ${normalizedGodsBattleEnemyName} ${godsBattleOutcome}`;
@@ -538,10 +540,11 @@ export default function DiaryTab({
       )}
       <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
       {renderDiarySettings()}
-      {diaryLogs.map((diaryLog) => {
+      {diaryLogs.map((storedDiaryLog) => {
+        const diaryLog = renderDiaryMetadata(storedDiaryLog);
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');
         const isExpanded = isSideQuestLog ? false : !!expandedLogs[diaryLog.id];
-        const log = diaryLog.expeditionLog;
+        const log = renderExpeditionMetadata(diaryLog.expeditionLog);
         const diaryParty = parties.find((candidate) => candidate.name === diaryLog.partyName) ?? parties[0];
         const specialRewards = log.rewards.filter((item) => {
           const rarity = getItemRarityById(item.id);
@@ -764,15 +767,15 @@ export default function DiaryTab({
                             )}
                             <div className="relative z-10">
                             <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(log.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
-                            {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
-                              const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
+                            {aggregateBattleLifeDrainLogs(renderDiaryBattle(entry)).map((battleLog, j, battleLogs) => {
+                              const isResurrectLog = battleLog.semanticPresentation ? battleLog.isResurrection : battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
-                              const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.effectKind === 'stealth' || battleLog.action.includes('物陰に隠れて') || battleLog.action.includes('への攻撃はすべて幻だった！'));
-                              const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
-                              const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.effectKind === 'stealth' || previousLog.action.includes('物陰に隠れて') || previousLog.action.includes('への攻撃はすべて幻だった！'));
-                              const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
+                              const isStealthEffectLog = diaryBattleFlags(battleLog).stealth;
+                              const isCounterNegationEffectLog = diaryBattleFlags(battleLog).counterNegated;
+                              const previousWasStealthEffectLog = diaryBattleFlags(previousLog).stealth;
+                              const previousWasCounterNegationEffectLog = diaryBattleFlags(previousLog).counterNegated;
                               const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                               const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                               const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
@@ -822,7 +825,9 @@ export default function DiaryTab({
                                 : '';
 
                               let actionText: string;
-                              if (battleLog.actor === 'effect' || battleLog.actor === 'triggered') {
+                              if (battleLog.semanticPresentation) {
+                                  actionText = semanticBattleAction(battleLog);
+                                } else if (battleLog.actor === 'effect' || battleLog.actor === 'triggered') {
                                 actionText = battleLog.action;
                               } else if (isEnemy) {
                                 if (isResurrectLog) {

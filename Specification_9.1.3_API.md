@@ -25,6 +25,7 @@
 2-1. read/observation
 
 2-2. read/expedition
+     {p}/setting
      {p}/latestBattleLog
      {p}/simulationRun
 
@@ -107,12 +108,37 @@ Path Parameters
 ##### 9.1.3.3 API requirement read
 
 
-2. Read
+**2. Read**
 
-2-1. read/observation
+**2-1. read/observation**
 
-2-2. read/expedition
-     {p}/latestBattleLog
+**2-2. `read/expedition`**
+**2-2-1. `{p}/setting`**
+
+* `current`:
+  * `destination`
+    * Example: `3`.
+  * `depthLimit`
+    * Example: `17` (`5F-1`).
+  * `difficultyOffset`
+    * Example: `8`.
+
+* `validOptions`:
+  * `destination`
+    * Currently available destination IDs.
+    * Example: `[1, 2, 3]`.
+  * `depthLimit`
+    * Currently valid range.
+    * Example: `[3, 4, 7, 8, 11, 12, 15, 16]`.
+  * `difficultyOffset`
+    * Currently valid range.
+    * Minimum: `0`.
+    * Maximum: `68`.
+    * Step: `2`.
+
+* Values returned by `validOptions` can be used directly with `{p}/changeExpedition`.
+
+**2-2-2. {p}/latestBattleLog**
      {p}/simulationRun
 
 2-3. read/party

@@ -7,7 +7,7 @@ import type {
   Item,
 } from '../types/index.ts';
 import { getDiaryOutcomeTrigger } from './diary.ts';
-import { getItemDisplayName } from './gameState.ts';
+import { diaryItem } from './compactDiary.ts';
 import type {
   ExpeditionFinalizationPlan,
   ExpeditionTransactionResult,
@@ -74,8 +74,9 @@ export function planCompletedExpeditionPresentation(
     ? input.entries[input.entries.length - 1].remainingPartyHP
     : input.transaction.currentHp;
   const log: ExpeditionLog = {
+    compactVersion: 1,
     dungeonId: input.dungeon.id,
-    dungeonName: input.dungeon.name,
+    dungeonName: '',
     difficultyOffset: input.difficultyOffset,
     totalExperience: input.transaction.totalExperience,
     totalRooms: input.dungeon.floors.reduce((sum, floor) => sum + floor.rooms.length, 0),
@@ -86,7 +87,8 @@ export function planCompletedExpeditionPresentation(
     autoSellProfit: input.finalization.autoSellProfit,
     autoSellCount: input.finalization.autoSellItemCount,
     autoSellItems: input.finalization.autoSoldItems.map(({ item, profit }) => ({
-      itemName: getItemDisplayName(item),
+      itemName: '',
+      item: diaryItem(item),
       autoSellProfit: profit,
     })),
     autoSellMultiplier: input.autoSellMultiplier > 1 ? input.autoSellMultiplier : undefined,

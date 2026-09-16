@@ -1,3 +1,4 @@
+import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
 import { formatApiSimulation, parseSimulationOutput } from '../game/experimentalApiSimulation';
 import { compareApiParties } from '../game/experimentalApiComparison';
 import { ExperimentalApiSettings } from './ExperimentalApiSettings';
@@ -954,10 +955,10 @@ export function HomeScreen({
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
     const party = state.parties[partyIndex];
-    const latestLog = party?.lastExpeditionLog;
+    const latestLog = party?.lastExpeditionLog ? renderExpeditionMetadata(party.lastExpeditionLog) : null;
     if (!party || !latestLog) return null;
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
-      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+      const detailItems = renderDiaryBattle(entry).map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
@@ -2543,7 +2544,7 @@ export function HomeScreen({
       const headlineFloorName = latestDisclosedEntry?.floor
         ? getLocalizedExpeditionFloorConcept(disclosedLog!.dungeonId, latestDisclosedEntry.floor)
           ?? t('expedition.floor', { floor: formatNumber(latestDisclosedEntry.floor) })
-        : disclosedLog?.dungeonName
+        : (disclosedLog ? renderExpeditionMetadata(disclosedLog).dungeonName : undefined)
           ?? DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId)?.name
           ?? '-';
       const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(
@@ -2650,7 +2651,7 @@ export function HomeScreen({
           title: droppedItemTitle || t(`desktopNotification.trigger.${primaryTrigger}`),
           body: t('desktopNotification.diaryBody', {
             party: `PT${partyIndex + 1}`,
-            dungeon: log.unlockDetail ?? log.sideQuestDetail ?? log.expeditionLog.dungeonName,
+            dungeon: renderDiaryMetadata(log).unlockDetail ?? renderDiaryMetadata(log).sideQuestDetail ?? renderExpeditionMetadata(log.expeditionLog).dungeonName,
           }),
           kind: 'diary',
           partyId: party.id,
@@ -4525,7 +4526,7 @@ export function HomeScreen({
       if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation && party.diarySettings.notifySideQuestPopup) {
         const latestDiary = party.diaryLogs?.[0];
         if (latestDiary?.triggers?.includes('sideQuest')) {
-          const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
+          const successMessage = getSideQuestSuccessMessage(party.name, renderDiaryMetadata(latestDiary).sideQuestDetail);
           if (successMessage) {
             actions.addNotification(successMessage);
           }

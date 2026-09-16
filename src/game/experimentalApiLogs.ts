@@ -1,3 +1,4 @@
+import { decodeCompactBattleEvents, DIARY_EVENT_CODES, getDiaryEventCategory, type CompactBattleLog } from './compactBattleLog.ts';
 import type { DiaryLog, ExpeditionLog, Item, ItemRarity, Party } from '../types/index.ts';
 
 function retainedLogRarity(item: Item): ItemRarity {
@@ -27,14 +28,11 @@ function serializeRetainedBattleEvent(entry: ExpeditionLog['entries'][number]['d
     index: index + 1,
     phase: entry.phase,
     actor: entry.actor,
-    actionText: entry.action,
-    noteText: entry.note ?? null,
+    legacyIncomplete: true,
     ...(entry.attackType !== undefined ? { attackType: entry.attackType } : {}),
     ...(entry.initiativeRoll !== undefined ? { initiative: entry.initiativeRoll } : {}),
     ...(entry.characterId !== undefined ? { characterId: entry.characterId } : {}),
     ...(entry.effectKind !== undefined ? { effectKind: entry.effectKind } : {}),
-    ...(entry.effectSourceName !== undefined ? { effectSourceDisplayName: entry.effectSourceName } : {}),
-    ...(entry.effectTargetName !== undefined ? { effectTargetDisplayName: entry.effectTargetName } : {}),
     ...(entry.effectHealAmount !== undefined ? { effectHealAmount: entry.effectHealAmount } : {}),
     ...(entry.damage !== undefined ? { damage: entry.damage } : {}),
     ...(entry.damageTarget !== undefined ? { damageTarget: entry.damageTarget } : {}),
@@ -48,6 +46,42 @@ function serializeRetainedBattleEvent(entry: ExpeditionLog['entries'][number]['d
     ...(entry.specialAttack !== undefined ? { specialAttack: entry.specialAttack } : {}),
     ...(entry.elementalOffense !== undefined ? { elementalOffense: entry.elementalOffense } : {}),
     ...(Object.keys(modifiers).length > 0 ? { modifiers } : {}),
+  };
+}
+
+function compactApiBattle(log: CompactBattleLog) {
+  const events = decodeCompactBattleEvents(log);
+  const actors = new Map(log.actors.map(actor => [actor.id, actor]));
+  return {
+    eventFormat: 'compact-v1' as const,
+    terrain: log.terrain ?? null,
+    actors: log.actors.map(actor => ({ id: actor.id, kind: actor.kind,
+      ...(actor.kind === 'enemy' ? { enemyId: actor.id - 0x80000000 } : { characterId: actor.id, name: actor.name }),
+    })),
+    modifiers: events.filter(event => event.opcode === 'diagnostic').map(event => [
+      event.actorId, event.targetId, event.timing, event.attackType, event.aux0,
+      event.flags, event.aux1, event.value0, event.value1, event.value2,
+    ]),
+    events: events.filter(event => !['random_flavor', 'initiative', 'diagnostic'].includes(event.opcode)).map(event => {
+      const attack = event.opcode === 'attack';
+      const special = ['gravity_well', 'armor_break', 'mana_break'].includes(event.abilityId ?? '');
+      const element = event.abilityId === 'burn' ? 'fire'
+        : event.opcode === 'terrain_effect' && ['terrain.conduction', 'terrain.sacred-judgement', 'terrain.chain-lightning'].includes(log.terrain ?? '') ? 'thunder'
+        : attack ? actors.get(event.actorId)?.elementalOffense ?? 'none' : 'none';
+      const value = attack && !special ? event.value1 : event.value0;
+      const facts = {
+        ...(event.phase !== 2 ? { phase: event.phase } : {}),
+        ...(event.attackType ? { attackType: event.attackType } : {}),
+        ...(event.abilityId ? { ability: event.abilityId } : {}),
+        ...(event.aux0 ? (attack ? { reaction: event.aux0 } : { subtype: event.aux0 }) : {}),
+        ...(event.flags ? { flags: event.flags } : {}),
+        ...(attack && event.value0 !== value ? { sourceValue: event.value0 } : {}),
+        ...(!attack && event.value1 ? { secondaryValue: event.value1 } : {}),
+        ...(event.value2 ? { tertiaryValue: event.value2 } : {}),
+      };
+      return [getDiaryEventCategory(event), event.timing, event.actorId, DIARY_EVENT_CODES[event.opcode as keyof typeof DIARY_EVENT_CODES],
+        event.targetId, element, event.hits, event.attempts, value, facts];
+    }),
   };
 }
 
@@ -88,7 +122,6 @@ export function buildExperimentalBattleLog(
         roomInFloor: entry.roomInFloor ?? null,
         roomType: entry.roomType ?? null,
         enemyId: entry.enemyId ?? null,
-        enemyDisplayName: entry.enemyName || null,
         enemyMaximumHp: entry.enemyHP,
         outcome: entry.outcome,
         damageDealt: entry.damageDealt,
@@ -99,7 +132,16 @@ export function buildExperimentalBattleLog(
         healAmount: entry.healAmount ?? null,
         attritionAmount: entry.attritionAmount ?? null,
         ...(entry.replayMetadata ? { replayMetadata: { ...entry.replayMetadata } } : {}),
-        events: entry.details.map(serializeRetainedBattleEvent),
+        ...(entry.compactBattle ? compactApiBattle(entry.compactBattle) : {
+          eventFormat: 'legacy-facts' as const,
+          legacyIncomplete: true,
+          events: entry.details.map(serializeRetainedBattleEvent),
+        }),
+        endEvents: (entry.endEvents ?? []).map(event => {
+          if (event[0] === 0) { const { flavorIndex: _flavor, ...facts } = event[1] as typeof event[1] & { flavorIndex?: number }; return [0, facts]; }
+          if (event[0] === 1) { const { flavorIndex: _flavor, ...facts } = event[1]; return [1, facts]; }
+          return event;
+        }),
       })),
     },
   };
@@ -135,7 +177,7 @@ export function buildExperimentalDiaryEntries(
         isRead: diaryLog.isRead,
         triggers: [...diaryLog.triggers],
         titleText: getTitleText(party, diaryLog),
-        detailText: diaryLog.unlockDetail ?? diaryLog.sideQuestDetail ?? diaryLog.expeditionLog.dungeonName ?? null,
+        ...(diaryLog.semantic ? { facts: diaryLog.semantic } : { legacyIncomplete: true }),
         expedition: {
           dungeonId: diaryLog.expeditionLog.dungeonId,
           difficultyOffset: diaryLog.expeditionLog.difficultyOffset,

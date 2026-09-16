@@ -1,3 +1,10 @@
+import { mapCompactExpedition, mapCompactDiary } from '../../src/game/compactDiaryStorage.ts';
+import { renderDiaryMetadata, renderExpeditionMetadata, renderDiaryBattle } from '../../src/game/compactDiary.ts';
+import { buildExperimentalBattleLog } from '../../src/game/experimentalApiLogs.ts';
+import type { ExpeditionLog } from '../../src/types/index.ts';
+import { renderCompactBattle } from '../../src/game/battleCandidate.ts';
+import { encodePersistedState } from '../../src/game/storageCompression.ts';
+import { t } from '../../src/i18n/index.ts';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -372,6 +379,7 @@ test('projection and production entry point use one direct-arena native seeded c
       productionPreparations: 1,
       productionPartyStatusComputations: 1,
       productionNarrations: 1,
+    productionCompactRetentions: 0,
       productionResultOnlyResolutions: 0,
       diagnosticNarrationPreparations: 0,
     });
@@ -409,6 +417,7 @@ test('prepared protocol and narration share one projection without retaining mut
     productionPreparations: 1,
     productionPartyStatusComputations: 0,
     productionNarrations: 0,
+    productionCompactRetentions: 0,
     productionResultOnlyResolutions: 0,
     diagnosticNarrationPreparations: 0,
   });
@@ -461,6 +470,7 @@ test('direct structured and encoded seeded protocol boundaries remain identical'
     productionPreparations: 0,
     productionPartyStatusComputations: 0,
     productionNarrations: 0,
+    productionCompactRetentions: 0,
     productionResultOnlyResolutions: 0,
     diagnosticNarrationPreparations: 1,
   });
@@ -499,6 +509,7 @@ test('result-only production execution preserves authoritative seeded results wi
     productionPreparations: 3,
     productionPartyStatusComputations: 3,
     productionNarrations: 1,
+    productionCompactRetentions: 0,
     productionResultOnlyResolutions: 2,
     diagnosticNarrationPreparations: 0,
   });
@@ -523,4 +534,89 @@ test('prepared compact inputs patch changing HP, seeds, and threat bags without 
     assert.deepEqual(compact, baseline);
     bags = compact.updatedBags;
   }
+});
+
+test('compact retained battles preserve all narration facts across languages and structured cloning', () => {
+  const cases = createGoldenCases();
+  const fullRecords: unknown[] = [];
+  const compactRecords: unknown[] = [];
+  let renderMs = 0;
+  for (const fixture of cases) {
+    const seed = naturalFixtureSeed(fixture);
+    const compact = executeBattleWithSeed(structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags), seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment, { outputMode: 'compact' });
+    assert.ok(compact.compactBattle);
+    assert.deepEqual(compact.log, []);
+    const stored = JSON.stringify(compact.compactBattle);
+    compactRecords.push(compact.compactBattle);
+    for (const language of SUPPORTED_LANGUAGES) {
+      setLanguage(language);
+      const enemy = { ...fixture.enemy, name: fixture.enemy.nameKey ? t(fixture.enemy.nameKey) : fixture.enemy.name };
+      const full = executeBattleWithSeed(structuredClone(fixture.party), enemy, structuredClone(fixture.bags), seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment);
+      const started = performance.now();
+      const rendered = renderCompactBattle(structuredClone(compact.compactBattle)).map(({ semanticPresentation: _s, actorDisplayName: _a, isResurrection: _r, actionIncludesActor: _i, targetDisplayName: _t, ...entry }) => entry);
+      renderMs += performance.now() - started;
+      assert.deepEqual(rendered, full.log, `${fixture.id} in ${language}`);
+      assert.equal(compact.partyHp, full.partyHp);
+      assert.equal(compact.enemyHp, full.enemyHp);
+      assert.deepEqual(compact.updatedBags, full.updatedBags);
+      assert.deepEqual(compact.replayMetadata, full.replayMetadata);
+      assert.equal(JSON.stringify(compact.compactBattle), stored);
+      if (language === 'ja') fullRecords.push(full.log);
+    }
+  }
+  setLanguage('ja');
+  // Compare the persisted envelope, including actor pooling, rather than raw per-room arrays.
+  const metadata: ExpeditionLog = { dungeonId: 8, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: cases.length, completedRooms: cases.length, finalOutcome: 'Clear', rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 0, maxPartyHP: 0, entries: cases.map((fixture, index) => ({ room: index + 1, enemyId: fixture.enemy.id, enemyName: '', enemyHP: fixture.enemy.hp, enemyAttackValues: '', outcome: 'victory', damageDealt: 0, damageTaken: 0, remainingPartyHP: 0, maxPartyHP: 0, details: [] })) };
+  const fullJson = JSON.stringify({ ...metadata, entries: metadata.entries.map((entry, index) => ({ ...entry, details: fullRecords[index] })) });
+  const compactJson = JSON.stringify(mapCompactExpedition({ ...metadata, compactVersion: 1, entries: metadata.entries.map((entry, index) => ({ ...entry, compactBattle: compactRecords[index] as import('../../src/game/compactBattleLog.ts').CompactBattleLog })) }));
+  const measure = (text: string) => ({ jsonBytes: Buffer.byteLength(text), storageBytes: encodePersistedState(text).length * 2 });
+  const full = measure(fullJson), compact = measure(compactJson);
+  console.log('Compact Diary benchmark', JSON.stringify({ full, compact, renderMs, battles: cases.length }));
+  assert.ok(compact.jsonBytes < full.jsonBytes, 'compact raw JSON must be smaller');
+  assert.ok(compact.storageBytes < full.storageBytes, 'compact compressed storage must be smaller');
+});
+
+test('compact Diary metadata, pooled storage, legacy mixing, and AI facts round trip', () => {
+  const fixture = createGoldenCases()[0];
+  const result = executeBattleWithSeed(structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags), naturalFixtureSeed(fixture), getBattleRngVersion(), fixture.initialPartyHp, fixture.environment, { outputMode: 'compact' });
+  const room = { room: 1, enemyId: fixture.enemy.id, enemySnapshot: fixture.enemy, enemyName: '', enemyHP: fixture.enemy.hp, enemyAttackValues: '', outcome: result.outcome, damageDealt: fixture.enemy.hp - result.enemyHp, damageTaken: 0, remainingPartyHP: result.partyHp, maxPartyHP: result.partyHp, details: [], compactBattle: result.compactBattle };
+  const log: ExpeditionLog = { compactVersion: 1, dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 1, totalRooms: 2, completedRooms: 2, finalOutcome: 'Clear', entries: [room, { ...room, room: 2 }], rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: result.partyHp, maxPartyHP: result.partyHp };
+  const before = JSON.stringify(log);
+  const stored = mapCompactExpedition(log);
+  assert.equal(stored.actorTable?.length, result.compactBattle!.actors.length);
+  assert.deepEqual(stored.entries[0].compactBattle?.actors, []);
+  const restored = mapCompactExpedition(JSON.parse(JSON.stringify(stored)), true);
+  assert.deepEqual(restored, JSON.parse(JSON.stringify(log)));
+  assert.deepEqual(mapCompactExpedition(stored), stored);
+  const legacyForSize = { ...log, compactVersion: undefined, entries: log.entries.map(entry => ({ ...entry, compactBattle: undefined, details: renderDiaryBattle(entry).map(({ semanticPresentation: _s, actorDisplayName: _a, ...rest }) => rest) })) };
+  const oldJson = JSON.stringify(legacyForSize), newJson = JSON.stringify(stored);
+  const measureLoad = (json: string, compact: boolean) => {
+    const start = performance.now();
+    for (let i = 0; i < 100; i++) { const parsed = JSON.parse(json); if (compact) mapCompactExpedition(parsed, true); }
+    return (performance.now() - start) / 100;
+  };
+  console.log('Compact Diary envelope benchmark', JSON.stringify({
+    legacy: { jsonBytes: Buffer.byteLength(oldJson), storageBytes: encodePersistedState(oldJson).length * 2, loadMs: measureLoad(oldJson, false), workerTransferBytes: Buffer.byteLength(JSON.stringify(legacyForSize)) },
+    compact: { jsonBytes: Buffer.byteLength(newJson), storageBytes: encodePersistedState(newJson).length * 2, loadMs: measureLoad(newJson, true), workerTransferBytes: Buffer.byteLength(JSON.stringify(log)) },
+  }));
+  const diary = { id: 'compact-test', expeditionLog: restored, triggers: ['sideQuest' as const], semantic: { version: 1 as const, quest: { label: ['sideQuest.reward.jewelObtained'] as [string], jewel: ['might' as const, 2] as ['might', number] } }, createdAt: 0, isRead: false };
+  const localized = [];
+  for (const language of SUPPORTED_LANGUAGES) {
+    setLanguage(language);
+    localized.push(renderDiaryMetadata(diary).sideQuestDetail);
+    assert.ok(renderExpeditionMetadata(restored).dungeonName);
+    assert.ok(renderDiaryBattle(restored.entries[0]).length);
+  }
+  assert.equal(new Set(localized).size, 4);
+  assert.equal(JSON.stringify(log), before);
+  const legacy = { ...diary, semantic: undefined, expeditionLog: { ...log, compactVersion: undefined, entries: [{ ...room, compactBattle: undefined, details: [{ phase: 'combat' as const, actor: 'enemy' as const, action: 'Original language' }] }] } };
+  assert.equal(mapCompactDiary(legacy).expeditionLog, legacy.expeditionLog);
+  const api = buildExperimentalBattleLog(1, 1, restored, { kind: 'latest', diaryEntryId: null });
+  assert.equal(api.battleLog.rooms[0].eventFormat, 'compact-v1');
+  assert.ok(api.battleLog.rooms[0].events.length);
+  assert.equal(JSON.stringify(api).includes('actionText'), false);
+  assert.equal(JSON.stringify(api).includes('random_flavor'), false);
+  assert.throws(() => mapCompactExpedition({ ...stored, actorTable: [] }, true));
+  assert.throws(() => mapCompactExpedition({ ...stored, compactVersion: 9 } as never, true));
+  setLanguage('ja');
 });

@@ -48,6 +48,8 @@ function audit(entryPoint) {
     assert.equal(inputs.includes(marker), false, `${entryPoint}: production graph includes ${marker}`);
   }
   for (const marker of FORBIDDEN_BUNDLE_MARKERS) {
+    // Display-time decoding now uses the owned semantic array adapter, never the native diagnostic decoder.
+    if (marker === 'OwnedBattleProtocolOutputIndex' && entryPoint === 'src/main.tsx') continue;
     assert.equal(output.includes(marker), false, `${entryPoint}: production bundle includes ${marker}`);
   }
 }

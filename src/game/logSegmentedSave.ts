@@ -1,3 +1,4 @@
+import { mapCompactDiary } from './compactDiaryStorage.ts';
 import type { DiaryLog, ExpeditionLog, GameState, Party } from '../types';
 import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
 import { serializeGameState } from './saveCodec.ts';
@@ -88,7 +89,7 @@ export function getDiaryLogStorageKey(storageKey: string, partyId: number, logId
 }
 
 function withoutReadState(log: DiaryLog): PersistedDiaryLogBody {
-  const { isRead: _isRead, ...value } = log;
+  const { isRead: _isRead, ...value } = mapCompactDiary(log);
   return value;
 }
 
@@ -249,7 +250,7 @@ function readDiaryLogRecord(
     || parsed.value.id !== reference.id) {
     invalidSegmentedSave(`Diary record identity mismatch for ${reference.id}`);
   }
-  return { ...parsed.value, isRead: reference.isRead === true } as DiaryLog;
+  return mapCompactDiary({ ...parsed.value, isRead: reference.isRead === true } as DiaryLog, true);
 }
 
 export function hydrateLogSegmentedSave(

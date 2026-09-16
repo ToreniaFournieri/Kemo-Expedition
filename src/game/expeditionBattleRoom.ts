@@ -257,6 +257,7 @@ export function resolveExpeditionBattleRoom(
       input.bags,
       input.currentHp,
       { terrainEffect, partyStatus: input.context.partyStatus },
+      { outputMode: 'compact' },
     );
 
   return {

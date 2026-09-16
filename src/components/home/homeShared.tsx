@@ -1,3 +1,4 @@
+import { renderDiaryMetadata } from '../../game/compactDiary.ts';
 import { abilityLevelValue } from '../../game/abilityLevelScales';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -841,6 +842,7 @@ export function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefin
 }
 
 export function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): string {
+  diaryLog = renderDiaryMetadata(diaryLog);
   const { triggers } = diaryLog;
   if (triggers.includes('unlock')) {
     return diaryLog.unlockHeadline
@@ -1042,7 +1044,7 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
+export function getCharacterBattleLogChibiSrc(party: Party, character: Pick<Character, 'raceId' | 'mimorianEnemyId' | 'isUnique' | 'lineageId' | 'gender'>): string | null {
   if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
     return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
   }
@@ -1109,7 +1111,13 @@ export function renderBattleLogTextWithInlineChibis(action: string, party: Party
     if (new RegExp(`^${escapeRegExp(t('home.battleLog.enemyPrefix'))}`).test(action)) markers.push({ label: t('home.battleLog.enemyPrefix'), src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
   }
 
-  party.characters.forEach((character: Character) => {
+  const recordedCharacters = entry.compactBattle?.actors.filter(actor => actor.kind === 'character' && actor.appearance).map(actor => {
+    const [raceId, gender, identity] = actor.appearance!;
+    return { name: actor.name, raceId, gender: gender === 1 ? 'female' as const : 'male' as const,
+      isUnique: typeof identity === 'string', lineageId: (typeof identity === 'string' ? identity : 'none') as Character['lineageId'],
+      mimorianEnemyId: typeof identity === 'number' ? identity : undefined };
+  });
+  (recordedCharacters ?? party.characters).forEach((character) => {
     const src = getCharacterBattleLogChibiSrc(party, character);
     if (src && character.name.trim()) {
       markers.push({ label: character.name, src, alt: `${character.name} chibi`, priority: 1 });
@@ -1727,7 +1735,7 @@ export function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycle
   const log = party.lastExpeditionLog;
   if (!log || log.finalOutcome !== 'Clear') return false;
   const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes(t('home.godsBattle.parenthetical'));
+  return lastEntry?.roomType === 'battle_Boss' && (lastEntry.godsBattle || lastEntry.enemyName.includes(t('home.godsBattle.parenthetical')));
 }
 
 export function getGodBattleLabel(dungeon: Dungeon): string {

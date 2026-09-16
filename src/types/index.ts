@@ -427,6 +427,7 @@ export type DiaryTrigger = 'victory' | 'return' | 'defeat' | 'draw' | 'retreat' 
 export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'defeatDrawRetreat' | 'all' | 'none';
 
 export interface DiaryLog {
+  semantic?: import('../game/compactDiary.ts').DiaryMetadata;
   id: string;
   expeditionLog: ExpeditionLog;
   triggers: DiaryTrigger[];
@@ -612,6 +613,11 @@ export interface BattleState {
 }
 
 export interface BattleLogEntry {
+  semanticPresentation?: boolean;
+  actorDisplayName?: string;
+  targetDisplayName?: string;
+  isResurrection?: boolean;
+  actionIncludesActor?: boolean;
   phase: BattlePhase;
   /** Attack capability used by a COMBAT action; phase is no longer a distance discriminator. */
   attackType?: AttackType;
@@ -697,6 +703,10 @@ export interface SuperRareTitle {
 
 // Expedition Log Types
 export interface ExpeditionLogEntry {
+  endEvents?: import('../game/compactDiary.ts').DiaryEndEvent[];
+  gateText?: import('../game/compactDiary.ts').DiaryText;
+  godsBattle?: boolean;
+  compactBattle?: import('../game/compactBattleLog.ts').CompactBattleLog;
   room: number;
   floor?: number; // Floor number (1-6)
   roomInFloor?: number; // Room within floor (1-4)
@@ -733,6 +743,9 @@ export interface ExpeditionLogEntry {
 }
 
 export interface ExpeditionLog {
+  compactVersion?: 1;
+  itemTable?: import('../game/compactDiary.ts').DiaryItem[];
+  actorTable?: import('../game/compactBattleLog.ts').CompactBattleActor[];
   dungeonId: number;
   dungeonName: string;
   difficultyOffset: number;
@@ -744,7 +757,7 @@ export interface ExpeditionLog {
   rewards: Item[];
   autoSellProfit: number;
   autoSellCount: number;
-  autoSellItems: { itemName: string; autoSellProfit: number }[];
+  autoSellItems: { itemName: string; autoSellProfit: number; item?: import('../game/compactDiary.ts').DiaryItem }[];
   autoSellMultiplier?: number;
   remainingPartyHP: number;
   maxPartyHP: number;

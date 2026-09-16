@@ -21,7 +21,8 @@ import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
 
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
-const EXPECTED_FINAL_HASH = '94198a385a6eee8b0171312bbfb5bfaeb3b67db82a613e0ccc446c4a249cacab';
+// Compact Diary checkpoint; pre-change/current non-history state hashes were verified equal.
+const EXPECTED_FINAL_HASH = '2036be0f77e34b969ad7b57bb7873513ee6e1ad98b244ee5e8dcdd91fbcbbd79';
 
 function createSeededRandom(seed: number): () => number {
   let value = seed >>> 0 || 0x9e3779b9;

@@ -1,3 +1,4 @@
+import { diaryItem, type DiaryText } from './compactDiary.ts';
 import type {
   BattleLogEntry,
   Dungeon,
@@ -10,18 +11,15 @@ import type {
 } from '../types/index.ts';
 import { t } from '../i18n/index.ts';
 import { getClearGateRequired } from './clearGate.ts';
-import { formatEnemyDefName } from './enemyDisplay.ts';
-import { buildAuriferousLogEntry } from './expeditionEffects/auriferousNarration.ts';
-import { buildPostBattleEffectLogs } from './expeditionEffects/postBattleEffectNarration.ts';
 import type { ExpeditionServiceResult } from './expeditionService.ts';
 
-const GODS_BATTLE_SUFFIX_KEY = 'game.log.godsBattleSuffix';
 
 export interface ExpeditionRewardPresentation {
   readonly rewardNames: readonly string[];
   readonly rewards: readonly Item[];
   readonly rewardLogEntries: readonly {
     readonly itemName: string;
+    readonly item?: Item;
     readonly autoSellProfit?: number;
   }[];
   readonly highestRewardRarity?: ItemRarity;
@@ -38,7 +36,7 @@ export interface DeferredExpeditionBattleNarration {
 
 export interface RenderExpeditionServiceResultInput {
   readonly result: ExpeditionServiceResult<ExpeditionRewardPresentation>;
-  readonly dungeon: Pick<Dungeon, 'name'>;
+  readonly dungeon: Pick<Dungeon, 'name'> & Partial<Pick<Dungeon, 'id'>>;
   readonly maxPartyHp: number;
   readonly isGodsBattle: boolean;
   readonly deferBattleNarration: boolean;
@@ -76,7 +74,7 @@ export function renderExpeditionServiceResult(
 
   for (const serviceRoom of input.result.rooms) {
     if (serviceRoom.kind === 'gate') {
-      const gateLabel = t(serviceRoom.gate.labelKey);
+      const gateLabel: DiaryText = [serviceRoom.gate.labelKey];
       const unlockedGatePosition = input.newlyUnlockedGateKey === null
         || input.newlyUnlockedGateKey === undefined
         ? null
@@ -89,42 +87,42 @@ export function renderExpeditionServiceResult(
           : Math.floor(unlockedGatePosition / 10);
       const gateWasUnlocked = unlockedFloor === serviceRoom.floorNumber
         && serviceRoom.roomInFloor === 4;
-      const gateInfo = gateWasUnlocked && input.newlyUnlockedGateKey !== null
+      const gateText: DiaryText = gateWasUnlocked && input.newlyUnlockedGateKey !== null
         && input.newlyUnlockedGateKey !== undefined
         ? unlockedBossGate
-          ? t('game.log.gateInfo.bossCleared', {
-              label: t('home.gate.consecutiveSuccesses'),
+          ? ['game.log.gateInfo.bossCleared', {
+              label: ['home.gate.consecutiveSuccesses'],
               required: getClearGateRequired(input.newlyUnlockedGateKey),
-            })
-          : t('game.log.gateInfo.floorCleared', {
-              label: t('home.gate.consecutiveSuccesses'),
+            }]
+          : ['game.log.gateInfo.floorCleared', {
+              label: ['home.gate.consecutiveSuccesses'],
               required: getClearGateRequired(input.newlyUnlockedGateKey),
               floor: serviceRoom.floorNumber,
-            })
+            }]
         : serviceRoom.room.type === 'battle_Boss'
-          ? t('game.log.gateInfo.boss', {
+          ? ['game.log.gateInfo.boss', {
               label: gateLabel,
               required: serviceRoom.gate.required,
-            })
+            }]
           : serviceRoom.roomInFloor === 1
-            ? t('game.log.gateInfo.dungeon', {
+            ? ['game.log.gateInfo.dungeon', {
                 label: gateLabel,
                 current: serviceRoom.gate.current,
                 required: serviceRoom.gate.required,
-                dungeon: input.dungeon.name,
-              })
-            : t('game.log.gateInfo.floor', {
+                dungeon: input.dungeon.id ? [`data.dungeons.${input.dungeon.id}.name`] : input.dungeon.name,
+              }]
+            : ['game.log.gateInfo.floor', {
                 label: gateLabel,
                 required: serviceRoom.gate.required,
                 floor: serviceRoom.floorNumber,
-              });
+              }];
       entries.push({
         room: serviceRoom.roomCounter,
         floor: serviceRoom.floorNumber,
         roomInFloor: serviceRoom.roomInFloor,
         roomType: serviceRoom.room.type,
         floorMultiplier: serviceRoom.roomMultiplier,
-        enemyName: t('auto.jp.270d06353e'),
+        enemyName: '',
         enemyHP: 0,
         enemyAttackValues: '',
         outcome: 'draw',
@@ -133,7 +131,8 @@ export function renderExpeditionServiceResult(
         remainingPartyHP: serviceRoom.remainingPartyHp,
         maxPartyHP: input.maxPartyHp,
         details: [],
-        gateInfo,
+        gateInfo: '@compact',
+        gateText,
       });
       continue;
     }
@@ -149,11 +148,6 @@ export function renderExpeditionServiceResult(
       damageTaken,
       enemyAttackValues,
     } = resolution;
-    let roomSuffix = '';
-    if (room.type === 'battle_Elite') roomSuffix = ' (ELITE)';
-    if (room.type === 'battle_Boss') {
-      roomSuffix = input.isGodsBattle ? ` ${t(GODS_BATTLE_SUFFIX_KEY)}` : ' (BOSS)';
-    }
     const entry: ExpeditionLogEntry = {
       room: serviceRoom.roomCounter,
       floor: serviceRoom.floorNumber,
@@ -164,7 +158,10 @@ export function renderExpeditionServiceResult(
       floorMultiplier: roomMultiplier,
       enemyId: enemy.id,
       enemySnapshot: enemy,
-      enemyName: formatEnemyDefName(enemy) + roomSuffix,
+      enemyName: '',
+      godsBattle: input.isGodsBattle && room.type === 'battle_Boss',
+      endEvents: [],
+      ...('log' in battleResult ? { compactBattle: (battleResult as import('./battle.ts').BattleResult).compactBattle } : {}),
       enemyHP: enemy.hp,
       enemyAttackValues,
       outcome: battleResult.outcome!,
@@ -191,13 +188,13 @@ export function renderExpeditionServiceResult(
       const { installation, postReward } = serviceRoom.victory;
       const rewardResult = installation?.presentation;
       if (rewardResult && rewardResult.rewardNames.length > 0) {
-        entry.reward = rewardResult.rewardNames.join(' / ');
+        entry.reward = '@compact';
         entry.rewardItems = [...rewardResult.rewards];
         entry.rewardRarity = rewardResult.highestRewardRarity;
         entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
       }
       if (postReward.auriferousNarrationFact) {
-        entry.details.push(buildAuriferousLogEntry(postReward.auriferousNarrationFact));
+        entry.endEvents!.push([1, postReward.auriferousNarrationFact]);
       }
       const { postBattleEffects } = postReward;
       entry.remainingPartyHP = postBattleEffects.preContinuationHp;
@@ -206,29 +203,23 @@ export function renderExpeditionServiceResult(
         entry.attritionAmount = postBattleEffects.deityAttritionAmount;
       }
       if (postBattleEffects.preContinuationFacts.length > 0) {
-        entry.details.push(...buildPostBattleEffectLogs(postBattleEffects.preContinuationFacts));
+        entry.endEvents!.push(...postBattleEffects.preContinuationFacts.map(fact => [0, fact] as [0, typeof fact]));
       }
       if (rewardResult && rewardResult.rewardLogEntries.length > 0) {
-        entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries));
+        for (const reward of rewardResult.rewardLogEntries) {
+          if (reward.item) entry.endEvents!.push(reward.autoSellProfit === undefined ? [2, diaryItem(reward.item)] : [2, diaryItem(reward.item), reward.autoSellProfit]);
+          else entry.details.push(...buildRewardLogEntries([reward]));
+        }
       }
       if (postBattleEffects.shouldRetreat) {
-        entry.details.push({
-          phase: 'end',
-          actor: 'deity',
-          action: t('auto.jp.2660ad39fa'),
-          note: t('auto.jp.36cbc2e27f'),
-        });
+        entry.endEvents!.push([3]);
       } else {
         entry.remainingPartyHP = postBattleEffects.finalHp;
         if (postBattleEffects.continuationFacts.length > 0) {
-          entry.details.push(...buildPostBattleEffectLogs(postBattleEffects.continuationFacts));
+          entry.endEvents!.push(...postBattleEffects.continuationFacts.map(fact => [0, fact] as [0, typeof fact]));
         }
         if (postReward.reachedDepthLimit) {
-          entry.details.push({
-            phase: 'end',
-            actor: 'deity',
-            action: t('auto.jp.96b6003d0c'),
-          });
+          entry.endEvents!.push([4]);
         }
       }
     }

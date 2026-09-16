@@ -248,8 +248,8 @@ test('presentation adapter owns localized room projection and remains random-fre
   const source = readFileSync(resolve(process.cwd(), 'src/game/expeditionPresentation.ts'), 'utf8');
   assert.match(source, /for \(const serviceRoom of input\.result\.rooms\)/);
   assert.match(source, /const entry: ExpeditionLogEntry/);
-  assert.match(source, /buildAuriferousLogEntry\(/);
-  assert.match(source, /buildPostBattleEffectLogs\(/);
+  assert.match(source, /endEvents!\.push\(\[1,/);
+  assert.match(source, /postBattleEffects\.preContinuationFacts\.map/);
   assert.match(source, /buildRewardLogEntries\(/);
   assert.match(source, /deferredBattleNarrations\.push\(/);
   assert.doesNotMatch(source, /gameplayRandom|Math\.random|resolveExpeditionBattleRoom|installRecoveredEnemyRewards/);
@@ -293,7 +293,7 @@ test('presentation adapter projects a gate unlocked by the current run without m
 
   assert.equal(locked.entries.length, 1);
   assert.equal(unlocked.entries.length, 1);
-  assert.notEqual(locked.entries[0]?.gateInfo, unlocked.entries[0]?.gateInfo);
+  assert.notDeepEqual(locked.entries[0]?.gateText, unlocked.entries[0]?.gateText);
   assert.equal(gateRoom.gate.required, 2);
   assert.deepEqual(unlocked.deferredBattleNarrations, []);
 });

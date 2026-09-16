@@ -165,7 +165,7 @@
 - Mutating API operations must be serialized so that API and UI mutations cannot interleave.
 
 **Endpoints**
-- Detailed endpoint contracts are defined in @Specification_9.1.3_API_ENDPOINTS.md. That document is normative and uses an OpenAPI-compatible operation structure.
+- Detailed endpoint contracts are defined in @Specification_9.1.4_API_ENDPOINTS(experimental).md. That document is normative and uses an OpenAPI-compatible operation structure.
 - `GET /experimental/v1/status`
   - Returns public API availability without authentication, or authenticated compatibility, runtime-readiness, revision, and control-lease status fields.
 - `GET /experimental/v1/observation`
@@ -182,7 +182,7 @@
   - Synchronously resolves 1 to 100 API-only normal expedition Cycles for one specified party.
 
 **AI Play additions**
-- Simulation, party preview, atomic party configuration, catalog, evaluation accounting, lease renewal and idempotent mutations follow the additive contracts in @Specification_9.1.3_API_ENDPOINTS.md and the rules in @Specification_12.1_AI_PLAY_REGURATION.md.
+- Simulation, party preview, atomic party configuration, catalog, evaluation accounting, lease renewal and idempotent mutations follow the additive contracts in @Specification_9.1.4_API_ENDPOINTS(experimental).md and the rules in @Specification_12.1_AI_PLAY_REGURATION.md.
 - An evaluation profile remains frozen outside explicit API operations, including lease gaps and after termination. This overrides ordinary progression restoration on lease release for evaluation profiles only.
 
 **Observation**

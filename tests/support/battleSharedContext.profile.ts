@@ -66,7 +66,7 @@ test('online RUN_EXPEDITION computes one authoritative status and every battle s
   assert.equal(preparation.combatantProjections, telemetry.battles);
   assert.equal(preparation.productionPreparations, telemetry.battles);
   assert.equal(preparation.productionPartyStatusComputations, 0);
-  assert.equal(preparation.productionNarrations, telemetry.battles);
+  assert.equal(preparation.productionCompactRetentions, telemetry.battles);
   assert.equal(preparation.projectionPartyStatusFallbacks, 0);
   assert.equal(preparation.diagnosticNarrationPreparations, 0);
 });

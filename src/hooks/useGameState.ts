@@ -141,7 +141,6 @@ import {
   getJewelOwnedCount,
   isJewelAllowedForCategory,
   removeJewelFromInventory,
-  getJewelNameByRank,
 } from '../game/jewel';
 import { decodePersistedState } from '../game/storageCompression';
 import { hydrateLogSegmentedSave, removeAllDiaryLogRecords } from '../game/logSegmentedSave';
@@ -353,19 +352,11 @@ function getUnlockDiaryLog(
       return !!partyUnlock;
     });
 
-  const unlockHeadline = unlockSourceEntry?.enemyName.includes('(BOSS)')
-    ? t('unlock.condition.dungeonCleared', { dungeon: log.dungeonName })
-    : t('unlock.condition.met');
-
-  const unlockPartyLabel = unlockedPartySlot ? t('unlock.partySlot', { slot: unlockedPartySlot }) : '';
-  const unlockDetail = [unlockPartyLabel].filter(Boolean).join('、');
-
   return {
     id: `${createdAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
     expeditionLog: log,
     triggers: ['unlock'],
-    unlockHeadline,
-    unlockDetail,
+    semantic: { version: 1, unlock: { boss: unlockSourceEntry?.roomType === 'battle_Boss', slot: unlockedPartySlot } },
     createdAt,
     isRead: false,
   };
@@ -614,7 +605,7 @@ function getOutcomeConditionAdjustment(
 
 function isGodsBattleExpedition(log: ExpeditionLog | null): boolean {
   if (!log) return false;
-  return log.entries.some((entry) => hasGodsBattleSuffix(entry.enemyName));
+  return log.entries.some((entry) => entry.godsBattle || hasGodsBattleSuffix(entry.enemyName));
 }
 
 
@@ -1226,8 +1217,8 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           .flatMap((party: Party) => party.diaryLogs ?? [])
           .flatMap((diaryLog: DiaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : [])
           .flatMap((log: ExpeditionLog) => log.entries)
-          .filter((entry: ExpeditionLogEntry) => hasGodsBattleSuffix(entry.enemyName))
-          .map((entry: ExpeditionLogEntry) => normalizeChallengedGodName(entry.enemyName))
+          .filter((entry: ExpeditionLogEntry) => entry.godsBattle || hasGodsBattleSuffix(entry.enemyName))
+          .map((entry: ExpeditionLogEntry) => normalizeChallengedGodName(entry.enemySnapshot?.name ?? entry.enemyName))
           .filter((name: string, index: number, allNames: string[]) => allNames.indexOf(name) === index);
         parsed.global.challengedGodNames = Array.from(new Set([
           ...parsed.global.challengedGodNames,
@@ -2721,8 +2712,8 @@ function reduceGameState(
 
 
       const challengedGodNamesFromNewLog = (pendingDiaryLog?.expeditionLog?.entries ?? [])
-        .filter((entry) => hasGodsBattleSuffix(entry.enemyName))
-        .map((entry) => normalizeChallengedGodName(entry.enemyName));
+        .filter((entry) => entry.godsBattle || hasGodsBattleSuffix(entry.enemyName))
+        .map((entry) => normalizeChallengedGodName(entry.enemySnapshot?.name ?? entry.enemyName));
       if (challengedGodNamesFromNewLog.length > 0) {
         nextGlobal = {
           ...nextGlobal,
@@ -2879,11 +2870,9 @@ function reduceGameState(
       const key = jewelKeys[Math.floor(gameplayRandom() * jewelKeys.length)];
       const rewardRank = Math.floor(gameplayRandom() * currentParty.sideQuest.rolledTier) + 1;
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
-      const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
       const sideQuestLabel = currentParty.sideQuest.shortTextKey
         ? t(currentParty.sideQuest.shortTextKey)
         : currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
-      const sideQuestDetail = t('sideQuest.reward.jewelObtained', { dungeon: dungeonName, jewel: getJewelNameByRank(key, rewardRank) });
       const shouldAddSideQuestDiary = matchesSideQuestDiaryThreshold(
         rewardRank,
         getDiarySettingsWithDefaults(currentParty.diarySettings).sideQuestThreshold,
@@ -2893,7 +2882,8 @@ function reduceGameState(
             id: `${diaryCreatedAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
             expeditionLog: {
               dungeonId: currentParty.selectedDungeonId,
-              dungeonName,
+              compactVersion: 1,
+              dungeonName: '',
               difficultyOffset: 0,
               totalExperience: 0,
               totalRooms: 0,
@@ -2908,8 +2898,10 @@ function reduceGameState(
               maxPartyHP: currentParty.currentHp,
             },
             triggers: ['sideQuest'],
-            sideQuestLabel,
-            sideQuestDetail,
+            semantic: { version: 1, quest: {
+              ...(currentParty.sideQuest.shortTextKey ? { label: [currentParty.sideQuest.shortTextKey] } : { legacyLabel: sideQuestLabel }),
+              jewel: [key, rewardRank],
+            } },
             createdAt: diaryCreatedAt,
             isRead: false,
           }

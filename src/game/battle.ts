@@ -51,7 +51,7 @@ export function executeBattle(
   bags: GameBags,
   initialPartyHp?: number,
   environment?: BattleEnvironment,
-  options?: { outputMode?: 'full' },
+  options?: { outputMode?: 'full' | 'compact' },
 ): BattleResult;
 export function executeBattle(
   party: Party,
@@ -68,7 +68,7 @@ export function executeBattle(
     );
   }
   return executeBattleWithSeed(
-    party, enemy, bags, acquireBattleSeed(), getBattleRngVersion(), initialPartyHp, environment,
+    party, enemy, bags, acquireBattleSeed(), getBattleRngVersion(), initialPartyHp, environment, { outputMode: options.outputMode },
   );
 }
 
@@ -91,7 +91,7 @@ export function executeBattleWithSeed(
   rngVersion?: unknown,
   initialPartyHp?: number,
   environment?: BattleEnvironment,
-  options?: { outputMode?: 'full' },
+  options?: { outputMode?: 'full' | 'compact' },
 ): BattleResult;
 export function executeBattleWithSeed(
   party: Party,
@@ -111,7 +111,7 @@ export function executeBattleWithSeed(
       options.compactResultOutput,
     )
     : executeBattleCandidateFromSeed(
-      party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment,
+      party, enemy, bags, validatedSeed, validatedRngVersion, initialPartyHp, environment, options.outputMode,
     );
   const replayMetadata = createBattleReplayMetadata(
     execution.seed, execution.rngVersion, execution.randomConsumed,

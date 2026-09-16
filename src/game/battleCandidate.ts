@@ -1,3 +1,4 @@
+import { encodeCompactBattleEvents, decodeCompactBattleEvents, type CompactBattleLog, type CompactBattleActor } from './compactBattleLog.ts';
 import type {
   AbilityId,
   AttackType,
@@ -64,9 +65,10 @@ export type BattleCandidateResolution = {
 
 export type BattleCandidateResult = BattleCandidateResolution & {
   log: BattleLogEntry[];
+  compactBattle?: CompactBattleLog;
 };
 
-export type BattleOutputMode = 'full' | 'result-only';
+export type BattleOutputMode = 'full' | 'compact' | 'result-only';
 
 const deityProtocolKey = {
   'Goddess of Restoration': 'goddess_of_restoration',
@@ -322,7 +324,7 @@ export function prepareBattleExecution(
     input: createBattleProtocolInput(
       party, enemy, bags, randomValues, partyHp, preparedEnvironment, engineFlags, projection,
     ),
-    narration: outputMode === 'full'
+    narration: outputMode !== 'result-only'
       ? createBattleNarrationContext(projection, party, enemy, preparedEnvironment.terrainEffect)
       : null,
   };
@@ -339,6 +341,8 @@ type NarrationCombatant = {
   id: number;
   kind: 'character' | 'enemy';
   name: string;
+  nameKey?: string;
+  appearance?: CompactBattleActor['appearance'];
   elementalOffense: ElementalOffense;
   elementalOffenseValue: number;
   magicStyle: EnemyDef['magicStyle'];
@@ -362,6 +366,7 @@ export type BattlePreparationMeasurement = {
   productionPreparations: number;
   productionPartyStatusComputations: number;
   productionNarrations: number;
+  productionCompactRetentions: number;
   productionResultOnlyResolutions: number;
   diagnosticNarrationPreparations: number;
 };
@@ -392,6 +397,7 @@ let preparationMeasurement: BattlePreparationMeasurement = {
   productionPreparations: 0,
   productionPartyStatusComputations: 0,
   productionNarrations: 0,
+  productionCompactRetentions: 0,
   productionResultOnlyResolutions: 0,
   diagnosticNarrationPreparations: 0,
 };
@@ -407,6 +413,7 @@ export function resetBattlePreparationMeasurementForTesting(): void {
     productionPreparations: 0,
     productionPartyStatusComputations: 0,
     productionNarrations: 0,
+    productionCompactRetentions: 0,
     productionResultOnlyResolutions: 0,
     diagnosticNarrationPreparations: 0,
   };
@@ -418,13 +425,16 @@ function createBattleNarrationContext(
   enemy: EnemyDef,
   terrainEffect?: TerrainEffectKey | null,
 ): BattleNarrationContext {
-  const characterNames = new Map(party.characters.map((character) => [character.id, character.name]));
+  const characters = new Map(party.characters.map((character) => [character.id, character]));
   const combatants = new Map<number, NarrationCombatant>();
   for (const projected of projection.combatants) {
+    const character = characters.get(projected.id);
     combatants.set(projected.id, {
       id: projected.id,
       kind: projected.kind,
-      name: projected.kind === 'character' ? (characterNames.get(projected.id) ?? enemy.name) : enemy.name,
+      name: projected.kind === 'character' ? (character?.name ?? enemy.name) : enemy.name,
+      ...(projected.kind === 'enemy' && enemy.nameKey ? { nameKey: enemy.nameKey } : {}),
+      ...(projected.kind === 'character' && character ? { appearance: [character.raceId, character.gender === 'female' ? 1 : 0, ...(character.isUnique ? [character.lineageId] : character.raceId === 'mimorian' && character.mimorianEnemyId !== undefined ? [character.mimorianEnemyId] : [])] as CompactBattleActor['appearance'] } : {}),
       elementalOffense: projected.elementalOffense,
       elementalOffenseValue: projected.elementalOffenseValue,
       magicStyle: projected.kind === 'enemy' ? enemy.magicStyle : undefined,
@@ -795,7 +805,7 @@ export function executeBattleCandidateFromSeed(
   rngVersion: number,
   initialPartyHp?: number,
   environment?: BattleEnvironment,
-  outputMode?: 'full',
+  outputMode?: 'full' | 'compact',
 ): SeededBattleCandidateResult<BattleCandidateResult>;
 export function executeBattleCandidateFromSeed(
   party: Party,
@@ -824,13 +834,15 @@ export function executeBattleCandidateFromSeed(
     }
     if (outputMode === 'result-only') {
       preparationMeasurement.productionResultOnlyResolutions += 1;
+    } else if (outputMode === 'compact') {
+      preparationMeasurement.productionCompactRetentions += 1;
     } else {
       preparationMeasurement.productionNarrations += 1;
     }
     return {
       result: outputMode === 'result-only'
         ? createBattleCandidateResolution(output)
-        : convertIndexedBattleSemanticEvents(output, narration!),
+        : outputMode === 'compact' ? retainCompactBattle(output, narration!) : convertIndexedBattleSemanticEvents(output, narration!),
       randomConsumed: output.randomConsumed,
       diagnosticDrawCount: output.diagnosticDrawCount,
       protocolError: output.protocolError,
@@ -1013,6 +1025,7 @@ export function convertBattleSemanticEvents(
 function convertIndexedBattleSemanticEvents(
   output: IndexedBattleProtocolOutput,
   narration: BattleNarrationContext,
+  semanticPresentation = false,
 ): BattleCandidateResult {
   const event = new BattleProtocolEventCursor(output);
   const flavorEvent = new BattleProtocolEventCursor(output);
@@ -1386,7 +1399,7 @@ function convertIndexedBattleSemanticEvents(
       log.push({
         phase: 'combat', initiativeRoll: initiatives.get(initiativeKey(actor.id, event.attackType)) ?? event.timing,
         actor: actor.kind === 'enemy' ? 'enemy' : 'character', ...(actor.kind === 'character' ? { characterId: actor.id } : {}),
-        action: actor.kind === 'enemy' ? t('battleLog.action.enemySpellNegated', { enemy: actor.name, attack }) : t('battleLog.action.characterSpellNegated', { actor: actor.name, attack }),
+        ...(semanticPresentation ? { actionIncludesActor: true } : {}), action: actor.kind === 'enemy' ? t('battleLog.action.enemySpellNegated', { enemy: actor.name, attack }) : t('battleLog.action.characterSpellNegated', { actor: actor.name, attack }),
         damage: 0, showZeroDamage: true, hits: 0, totalAttempts: event.attempts, wasNegated: true,
         elementalOffense: actor.elementalOffense, attackType: event.attackType,
       });
@@ -1402,7 +1415,7 @@ function convertIndexedBattleSemanticEvents(
         ...(combatants.get(event.actorId)?.kind === 'character' ? { characterId: event.actorId } : {}),
         action: replaceFlavor(getBattleFlavorTemplateAtIndex(family, flavor.aux0), { actor: nameOf(event.actorId) }),
         note: `(${t(`ability.${event.abilityId}.label`)} ✚${noteFormatter.format(event.value0)})`,
-        noteTone: 'muted', hideInitiativeLabel: true, attackType: event.attackType ?? undefined,
+        noteTone: 'muted', ...(semanticPresentation ? { isResurrection: true } : {}), hideInitiativeLabel: true, attackType: event.attackType ?? undefined,
       });
       continue;
     }
@@ -1552,7 +1565,7 @@ function convertIndexedBattleSemanticEvents(
         log.push({
           phase: 'combat', initiativeRoll, actor: actor.kind === 'enemy' ? 'enemy' : 'character',
           ...(actor.kind === 'character' ? { characterId: actor.id } : {}),
-          action: actor.kind === 'enemy' ? t('battleLog.action.enemySpellNegated', { enemy: actor.name, attack }) : t('battleLog.action.characterSpellNegated', { actor: actor.name, attack }),
+          ...(semanticPresentation ? { actionIncludesActor: true } : {}), action: actor.kind === 'enemy' ? t('battleLog.action.enemySpellNegated', { enemy: actor.name, attack }) : t('battleLog.action.characterSpellNegated', { actor: actor.name, attack }),
           damage: 0, showZeroDamage: true, hits: 0, totalAttempts: event.attempts, wasNegated: true,
           elementalOffense: actor.elementalOffense, attackType: event.attackType,
         });
@@ -1606,6 +1619,7 @@ function convertIndexedBattleSemanticEvents(
         ...(presentation.swarmOpponentBonusPercent !== undefined ? { swarmOpponentBonusPercent: presentation.swarmOpponentBonusPercent } : {}),
         ...(isReAttack ? { isReAttack: true } : {}), ...(isCounter ? { isCounter: true } : {}),
         ...(actor.kind === 'enemy' && event.attackType === 'magical' ? { isEnemyTargetHit: true } : {}),
+        ...(semanticPresentation && target ? { targetDisplayName: target.name } : {}),
         elementalOffense: actor.elementalOffense, attackType: event.attackType,
       };
       log.push(entry);
@@ -1657,4 +1671,29 @@ function createBattleCandidateResolution(
     },
     enemyHitsReceived: output.enemyHitsReceived,
   };
+}
+
+// SpecRef: 8.5 | UI_DIARY | Compact language-neutral records
+function retainCompactBattle(output: IndexedBattleProtocolOutput, context: BattleNarrationContext): BattleCandidateResult {
+  const cursor = new BattleProtocolEventCursor(output);
+  const events: BattleProtocolEvent[] = [];
+  for (let i = 0; i < output.eventCount; i++) {
+    cursor.select(i);
+    events.push({ opcode: cursor.opcode, phase: cursor.phase, actorKind: cursor.actorKind,
+      actorId: cursor.actorId, targetId: cursor.targetId, abilityId: cursor.abilityId,
+      attackType: cursor.attackType, flags: cursor.flags, timing: cursor.timing,
+      hits: cursor.hits, attempts: cursor.attempts, aux0: cursor.aux0,
+      value0: cursor.value0, value1: cursor.value1, value2: cursor.value2, aux1: cursor.aux1, aux2: cursor.aux2 });
+  }
+  requireFlavorPairs(output);
+  const actors = [...context.combatants.values()].map(({ magicStyle, ...actor }) => ({ ...actor, ...(magicStyle ? { magicStyle } : {}),
+    name: actor.nameKey ? '' : actor.name, abilities: [...actor.abilities.entries()].filter(([id]) => ['arc_magic', 'ranged_confusion', 'magic_confusion', 'melee_confusion', 'unstable_core', 'soul_reap', 'life_drain', 'death_touch'].includes(id)) }));
+  return { ...createBattleCandidateResolution(output), log: [], compactBattle: encodeCompactBattleEvents(events, actors, context.terrainEffect) };
+}
+export function renderCompactBattle(log: CompactBattleLog): BattleLogEntry[] {
+  const events = decodeCompactBattleEvents(log);
+  const terminal = (opcode: BattleProtocolEvent['opcode']): BattleProtocolEvent => ({ opcode, phase: 0, actorKind: 0, actorId: 0, targetId: 0, abilityId: null, attackType: null, flags: 0, timing: 0, hits: 0, attempts: 0, aux0: 0, value0: 0, value1: 0, value2: 0, aux1: 0, aux2: 0 });
+  const output = new OwnedBattleProtocolOutputIndex({ flags: 0, outcome: 'victory', partyHp: 0, enemyHp: 0, randomConsumed: 0, enemyHitsReceived: 0,
+    events: [terminal('battle_started'), ...events, terminal('outcome'), terminal('battle_finished')], physicalThreatBag: [], magicalThreatBag: [], byteLength: 0, seed: 0n, rngVersion: 0, diagnosticDrawCount: 0, protocolError: 0 });
+  return convertIndexedBattleSemanticEvents(output, { terrainEffect: log.terrain, combatants: new Map(log.actors.map(actor => [actor.id, { ...actor, name: actor.nameKey ? t(actor.nameKey) : actor.name, magicStyle: actor.magicStyle, abilities: new Map(actor.abilities) }])) }, true).log.map(entry => ({ ...entry, semanticPresentation: true, actorDisplayName: log.actors.find(actor => actor.id === entry.characterId)?.name }));
 }

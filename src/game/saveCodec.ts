@@ -1,3 +1,4 @@
+import { mapCompactHistories } from './compactDiaryStorage.ts';
 import { getItemById } from '../data/items';
 import { getInstantExpeditionChargeState } from './instantExpedition';
 import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, Party, RandomBag, WeightedBagEntry } from '../types';
@@ -166,6 +167,7 @@ function normalizePartyClearGates(party: Party): Party {
 
 // SpecRef: 9 | Environment | serializeGameState
 export function serializeGameState(state: GameState): GameState {
+  state = mapCompactHistories(state);
   const compactInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
     acc[key] = {
       ...variant,
@@ -199,6 +201,7 @@ export function serializeGameState(state: GameState): GameState {
 
 // SpecRef: 9 | Environment | hydrateGameState
 export function hydrateGameState(state: GameState): GameState {
+  state = mapCompactHistories(state, true);
   const hydratedInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
     const resolvedVariant: InventoryVariant = {
       ...variant,

@@ -17,6 +17,7 @@ export function sanitize(value, secrets = []) {
 export function compactResponse(data, previous = []) {
   const parties = data.observation?.parties ?? (data.party ? [data.party] : data.configuration?.characters ? [data.configuration] : []);
   return {
+    ...(data.battleLog ? { battleLog: data.battleLog, schemaVersion: data.schemaVersion } : {}),
     evaluation: data.evaluation, revision: data.observation?.revision ?? data.revision ?? data.sortie?.revision,
     error: data.error, reportPath: data.reportPath, reportError: data.reportError,
     runtime: data.runtime, control: data.control, release: data.release,

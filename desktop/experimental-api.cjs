@@ -3,7 +3,7 @@ const http = require('node:http');
 
 const API_PREFIX = '/experimental/v1';
 const API_VERSION = 'experimental/v1';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const LEASE_IDLE_TIMEOUT_MS = 300_000;
 const MAX_BODY_BYTES = 1_000_000;
 

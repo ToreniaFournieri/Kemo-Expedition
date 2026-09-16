@@ -1,3 +1,4 @@
+import { renderDiaryBattle, renderExpeditionMetadata } from '../../../game/compactDiary.ts';
 import { Fragment,useCallback,useEffect,useMemo,useRef,useState,type ChangeEvent,type Dispatch,type MouseEvent,type ReactNode,type SetStateAction } from 'react';
 import {
 BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -323,10 +324,10 @@ export default function SettingTab({
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
     const party = gameState.parties[partyIndex];
-    const latestLog = party?.lastExpeditionLog;
+    const latestLog = party?.lastExpeditionLog ? renderExpeditionMetadata(party.lastExpeditionLog) : null;
     if (!party || !latestLog) return null;
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
-      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+      const detailItems = renderDiaryBattle(entry).map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';

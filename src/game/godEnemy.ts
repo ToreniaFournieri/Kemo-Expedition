@@ -104,7 +104,7 @@ export function buildGodRuntimeEnemy(
   return {
     ...scaledEnemy,
     name: getGodShortName(profile.displayName),
-    nameKey: undefined,
+    nameKey: `masterData.god.${profile.name}.shortName`,
     enemyClass: profile.enemyClass,
     enemyType: 'Jinma',
     abilities: resolvedProfileAbilities,

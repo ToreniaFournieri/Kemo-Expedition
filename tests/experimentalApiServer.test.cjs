@@ -130,7 +130,7 @@ test('evaluation report and ledger routes require authentication but no lease an
     assert.equal((await fetch(`${base}/status`).then(r => r.json())).capabilities, undefined);
     assert.deepEqual((await fetch(`${base}/status`, { headers }).then(r => r.json())).capabilities.aiPlay, capabilities);
     assert.equal((await fetch(`${base}/evaluation/report`, { headers })).status, 409);
-    assert.deepEqual(await fetch(`${base}/evaluation/ledger`, { headers }).then(r => r.json()), { apiVersion: 'experimental/v1', schemaVersion: 1, ledger: [] });
+    assert.deepEqual(await fetch(`${base}/evaluation/ledger`, { headers }).then(r => r.json()), { apiVersion: 'experimental/v1', schemaVersion: 2, ledger: [] });
     const before = calls;
     assert.equal((await fetch(`${base}/evaluation/report?extra=1`, { headers })).status, 400);
     assert.equal((await fetch(`${base}/evaluation/ledger`, { headers, method: 'POST' })).status, 405);

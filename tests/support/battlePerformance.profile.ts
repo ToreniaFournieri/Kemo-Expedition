@@ -321,7 +321,7 @@ test('reports deterministic end-to-end AFK migration metrics', () => {
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
   assert.equal(preparation.combatantProjections, report.battles, 'AFK production must project once per battle');
   assert.equal(preparation.productionResultOnlyResolutions, 0, 'AFK must retain complete narrated battle results');
-  assert.equal(preparation.productionNarrations, report.battles, 'AFK must narrate every retained battle once');
+  assert.equal(preparation.productionCompactRetentions, report.battles, 'AFK must retain complete compact facts for every battle');
   assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'AFK battles must use chunk-start status');
   assert.equal(preparation.productionPartyStatusComputations, 0, 'AFK battles must not compute status locally');
   assert.equal(getProductionBattleTelemetry().runExpeditionStatusComputations, 0, 'AFK Cycles must not recompute RUN_EXPEDITION status');
@@ -359,7 +359,7 @@ test('reports Experimental API sortie counts 1 and 100 through the production ba
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
     const preparation = getBattlePreparationMeasurement();
     assert.equal(preparation.combatantProjections, telemetry.battles, 'API production must project once per battle');
-    assert.equal(preparation.productionNarrations, telemetry.battles, 'API production must narrate each prepared projection once');
+    assert.equal(preparation.productionCompactRetentions, telemetry.battles, 'API production must compact each prepared projection once');
     assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'API battles must use Cycle-start status');
     assert.equal(preparation.productionPartyStatusComputations, 0, 'API battles must not compute status locally');
     assert.equal(telemetry.runExpeditionStatusComputations, 0, 'API RUN_EXPEDITION must not recompute supplied Cycle status');

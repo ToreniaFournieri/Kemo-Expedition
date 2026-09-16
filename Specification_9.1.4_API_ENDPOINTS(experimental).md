@@ -98,7 +98,7 @@ The public response MUST NOT reveal the environment, game version, build number,
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "game": {
     "version": "0.9.1",
     "build": 40,
@@ -121,7 +121,7 @@ The public response MUST NOT reveal the environment, game version, build number,
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | HTTP contract version. It MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | Version of the JSON schemas used by all `/experimental/v1` responses. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | Version of the JSON schemas used by all `/experimental/v1` responses. Current value: `2`. |
 | `game` | object | Yes | Identity of the running BoKemo build. |
 | `runtime` | object | Yes | Readiness of the authoritative renderer and active save. |
 | `control` | object | Yes | Exclusive API-control lease status. |
@@ -164,7 +164,7 @@ When `control.status` is `available`, `ownedByCaller` MUST be `false` and `lease
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "game": {
     "version": "0.9.1",
     "build": 40,
@@ -250,7 +250,7 @@ The request body MAY be omitted. If a body is supplied, it MUST be a JSON object
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "lease": {
     "token": "opaque-base64url-value",
     "acquiredAt": 1786345100000,
@@ -269,7 +269,7 @@ The request body MAY be omitted. If a body is supplied, it MUST be a JSON object
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | HTTP contract version. It MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `lease` | object | Yes | Newly acquired exclusive control lease. |
 | `runtime` | object | Yes | Runtime state at the instant control was acquired. |
 
@@ -405,7 +405,7 @@ Content-Type: application/json
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "release": {
     "releasedAt": 1786345150000,
     "reason": "client_request",
@@ -424,7 +424,7 @@ Content-Type: application/json
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | HTTP contract version. It MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `release` | object | Yes | Completed lease-release result. |
 | `runtime` | object | Yes | Runtime state after ordinary UI control and progression have resumed. |
 
@@ -555,7 +555,7 @@ X-BoKemo-Control-Lease: <lease-token>
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "revision": 123,
   "partyId": 1,
   "characterId": 101,
@@ -629,7 +629,7 @@ X-BoKemo-Control-Lease: <lease-token>
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | HTTP contract version. It MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `revision` | integer | Yes | Revision used for all validation and option generation. |
 | `partyId` | integer | Yes | Evaluated party. |
 | `characterId` | integer | Yes | Evaluated character. |
@@ -776,7 +776,7 @@ The following non-normative example illustrates the response structure. Empty re
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "observation": {
     "revision": 123,
     "observedAt": 1786345160000,
@@ -899,7 +899,7 @@ The following non-normative example illustrates the response structure. Empty re
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | HTTP contract version. It MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `observation` | object | Yes | One internally consistent snapshot taken at `observation.revision`. |
 
 ### Observation identity fields
@@ -1168,7 +1168,7 @@ Both battle-log endpoints use this top-level response shape:
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "revision": 123,
   "source": {
     "kind": "latest",
@@ -1196,7 +1196,6 @@ Both battle-log endpoints use this top-level response shape:
         "roomInFloor": 4,
         "roomType": "battle_Normal",
         "enemyId": 27,
-        "enemyDisplayName": "Example Enemy",
         "enemyMaximumHp": 900,
         "outcome": "defeat",
         "damageDealt": 500,
@@ -1211,22 +1210,12 @@ Both battle-log endpoints use this top-level response shape:
           "seedHex": "0123456789abcdef",
           "randomDrawCount": 127
         },
-        "events": [
-          {
-            "index": 1,
-            "phase": "combat",
-            "actor": "character",
-            "characterId": 11,
-            "attackType": "magical",
-            "initiative": 35,
-            "actionText": "Rin cast Fireball!",
-            "noteText": null,
-            "damage": 500,
-            "damageTarget": "enemy",
-            "hits": 2,
-            "attempts": 3
-          }
-        ]
+        "eventFormat": "compact-v1",
+        "actors": [{ "id": 11, "kind": "character", "characterId": 11, "name": "Rin" }, { "id": 2147483675, "kind": "enemy", "enemyId": 27 }],
+        "terrain": null,
+        "modifiers": [],
+        "events": [[2, 35, 11, 9, 2147483675, "fire", 2, 3, 500, { "attackType": "magical" }]],
+        "endEvents": []
       }
     ]
   }
@@ -1238,7 +1227,7 @@ Both battle-log endpoints use this top-level response shape:
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `revision` | integer | Yes | Authoritative state revision from which the retained log was read. |
 | `source.kind` | string | Yes | `latest` for the latest-party endpoint or `diary` for the Diary-entry endpoint. |
 | `source.diaryEntryId` | string or `null` | Yes | Existing Diary entry ID for `diary`; otherwise `null`. This is not a battle-log ID. |
@@ -1262,7 +1251,7 @@ Both battle-log endpoints use this top-level response shape:
 | `battleLog.autoSell.gold` | integer | Yes | Gold produced by automatic selling. |
 | `battleLog.rooms` | array | Yes | Resolved room entries in ascending room order. |
 
-Numeric fields MUST use raw JSON numbers. Stable IDs and enum values are authoritative; display names and narration are localized metadata using the active language.
+Numeric fields MUST use raw JSON numbers. Stable IDs and enum values are authoritative. Retained battle events contain no narration.
 
 #### Room fields
 
@@ -1275,7 +1264,6 @@ Each `battleLog.rooms` entry contains:
 | `roomInFloor` | integer or `null` | Yes | One-based room within the floor, or `null` when not applicable. |
 | `roomType` | string or `null` | Yes | `battle_Normal`, `battle_Elite`, `battle_Boss`, or `null` for a retained legacy entry. |
 | `enemyId` | integer or `null` | Yes | Stable encountered enemy ID, or `null` for a retained legacy entry without one. |
-| `enemyDisplayName` | string or `null` | Yes | Optional localized encountered-enemy name. |
 | `enemyMaximumHp` | integer | Yes | Encountered enemy's recorded starting HP. |
 | `outcome` | string | Yes | `victory`, `defeat`, or `draw`. |
 | `damageDealt` | integer | Yes | Total damage dealt to the enemy in this room. |
@@ -1288,40 +1276,19 @@ Each `battleLog.rooms` entry contains:
 | `replayMetadata` | object | No | Completed-battle replay metadata containing `protocolVersion`, `abiVersion`, `rngVersion`, 16-character lowercase `seedHex`, and native `randomDrawCount`. Absent for legacy and non-battle entries. It never describes a future or unresolved battle. |
 | `events` | array | Yes | Detailed battle events in original execution order. |
 
-The API MUST NOT expose a retained internal enemy snapshot, reward-roll inputs, or internal renderer references. Room reward items are represented only through the expedition-level `rewards` array.
+The API MUST NOT expose a retained internal enemy snapshot, reward-roll inputs, or internal renderer references. Acquired and auto-sold reward references may also occur in factual `endEvents`; they contain only recorded item variants.
 
 #### Battle-event fields
 
-Each `events` entry MUST contain `index`, `phase`, `actor`, `actionText`, and `noteText`. It MAY contain the other fields below only when that value exists in the retained event.
+New rooms use `eventFormat: compact-v1`, actor identity records and ordered tuples:
+`[category, timing, actor, opcode, target, element, hits, attempts, value, facts]`.
+Category codes are terrain=0, effect=1, action=2, reaction=3, end=4. Actor IDs reference the room actor dictionary; zero means no individual actor/target. The permanent opcodes are documented in `src/game/compactBattleLog.ts`.
 
-| Field | Type | Required | Description |
-|-|-|-|-|
-| `index` | integer | Yes | One-based event position within the room. |
-| `phase` | string | Yes | `start`, `combat`, or `end`. |
-| `actor` | string | Yes | `party`, `enemy`, `character`, `effect`, `triggered`, or `deity`. |
-| `actionText` | string | Yes | Localized retained battle narration. It is display metadata, not a stable control value. |
-| `noteText` | string or `null` | Yes | Localized retained note, or `null`. It is display metadata. |
-| `attackType` | string | No | `ranged`, `magical`, or `melee`. |
-| `initiative` | integer | No | Recorded initiative roll. |
-| `characterId` | integer | No | Stable acting or referenced character ID. |
-| `effectKind` | string | No | `life_drain` or `terrain`. |
-| `effectSourceDisplayName` | string | No | Localized effect-source name. |
-| `effectTargetDisplayName` | string | No | Localized effect-target name. |
-| `effectHealAmount` | integer | No | Healing caused by the effect. |
-| `damage` | integer | No | Direct recorded damage. |
-| `damageTarget` | string | No | `party` or `enemy`. |
-| `reflectedDamage` | integer | No | Recorded reflected damage. |
-| `reflectedSourceDamage` | integer | No | Damage before reflection. |
-| `reflectTarget` | string | No | `party` or `enemy`. |
-| `absorbedDamage` | integer | No | Recorded absorbed damage. |
-| `absorbTarget` | string | No | `party` or `enemy`. |
-| `hits` | integer | No | Successful hits. |
-| `attempts` | integer | No | Total attack attempts. |
-| `specialAttack` | string | No | `gravity_well`, `armor_break`, or `mana_break`. |
-| `elementalOffense` | string | No | Stable recorded elemental-offense value. |
-| `modifiers` | object | No | Present retained combat-display modifiers: rage and momentum percentages; ambush, overwatch, and execution multipliers; swarm actor penalty and opponent bonus percentages; and boolean first-strike, counter, re-attack, negated, and aggregated flags. Absent retained modifiers MUST be omitted. |
+`facts` contains only applicable attackType, ability, reaction (attacks) or subtype (effects), nonzero flags, non-COMBAT phase, and distinct sourceValue/secondaryValue/tertiaryValue facts. Defaults are omitted. `terrain` identifies the room terrain. `modifiers` contains `[actor, target, timing, attackType, reaction, flags, modifierMask, value0, value1, value2]` for recorded presentation modifiers. Flavor-only events are excluded. `endEvents` contains post-battle effects, item variants, retreat and depth-limit facts without narration or flavor indices.
 
-The response MUST represent the retained event data without rerunning combat formulas, reconstructing missing values, consuming randomness, or recalculating the battle under current character or master data.
+Legacy rooms use `eventFormat: legacy-facts` and `legacyIncomplete: true`. Their objects contain index, phase, actor and only the available recorded numeric/enum fields (attack type, initiative, character ID, effect kind/healing, damage and target, reflection/absorption, hits, attempts, special attack, element, and modifiers). They omit actionText, noteText and prose-derived identities.
+
+The response MUST NOT rerun combat, infer missing facts from text, consume randomness, or recalculate history using current builds.
 
 ## `GET /experimental/v1/parties/{partyId}/battle-log/latest`
 
@@ -1394,7 +1361,7 @@ X-BoKemo-Control-Lease: <lease-token>
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "revision": 123,
   "entries": [
     {
@@ -1405,7 +1372,7 @@ X-BoKemo-Control-Lease: <lease-token>
       "isRead": false,
       "triggers": ["defeat"],
       "titleText": "[PT1] Defeat record",
-      "detailText": "Caninian Plains",
+      "legacyIncomplete": true,
       "expedition": {
         "dungeonId": 1,
         "difficultyOffset": 0,
@@ -1421,7 +1388,7 @@ X-BoKemo-Control-Lease: <lease-token>
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `revision` | integer | Yes | Authoritative state revision from which the list was read. |
 | `entries` | array | Yes | All currently retained Diary entries, newest first; empty when none exist and never longer than 24. |
 | `entries[].id` | string | Yes | Existing opaque `DiaryLog.id`. It is valid only while this Diary entry remains retained. |
@@ -1431,7 +1398,7 @@ X-BoKemo-Control-Lease: <lease-token>
 | `entries[].isRead` | boolean | Yes | Existing Diary read state. Reading through the API does not change it. |
 | `entries[].triggers` | string array | Yes | Existing triggers in stored order: `defeat`, `draw`, `eliteRare`, `bossRare`, `mythicRare`, `superRare`, `godsBattle`, `sideQuest`, and/or `unlock`. |
 | `entries[].titleText` | string | Yes | Localized Diary title display metadata. |
-| `entries[].detailText` | string or `null` | Yes | Localized Diary detail display metadata, or `null`. |
+| `entries[].facts` | object | No | Recorded semantic Diary metadata for new entries. Legacy entries instead include `legacyIncomplete: true`. |
 | `entries[].expedition` | object | Yes | Concise retained summary containing `dungeonId`, `difficultyOffset`, `finalOutcome`, `completedRooms`, and `totalRooms`. |
 
 - The list MUST be assembled from the current parties' retained `diaryLogs` and sorted by descending `createdAt`, with deterministic party ID and stored-entry-order tie breakers.
@@ -1565,7 +1532,7 @@ Content-Type: application/json
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "command": {
     "type": "set_deity",
     "status": "applied",
@@ -1580,7 +1547,7 @@ Content-Type: application/json
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | HTTP contract version. It MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `command.type` | string | Yes | Applied command discriminator. |
 | `command.status` | string | Yes | `applied`. |
 | `command.previousRevision` | integer | Yes | Revision supplied by the client. |
@@ -1672,7 +1639,7 @@ After validation, the renderer MUST execute the update atomically in this order:
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "command": {
     "type": "update_character_build",
     "status": "applied",
@@ -2252,7 +2219,7 @@ The following non-normative example abbreviates `runs` for readability. A confor
 ```json
 {
   "apiVersion": "experimental/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "sortie": {
     "partyId": 1,
     "dungeonId": 3,
@@ -2322,7 +2289,7 @@ The following non-normative example abbreviates `runs` for readability. A confor
 | Field | Type | Required | Description |
 |-|-|-|-|
 | `apiVersion` | string | Yes | HTTP contract version. It MUST equal `experimental/v1`. |
-| `schemaVersion` | integer | Yes | JSON schema version. Initial value: `1`. |
+| `schemaVersion` | integer | Yes | JSON schema version. Current value: `2`. |
 | `sortie.partyId` | integer | Yes | Party that performed the batch. |
 | `sortie.dungeonId` | integer | Yes | Normal dungeon fixed for the accepted batch. |
 | `sortie.requestedCount` | integer | Yes | Accepted request count. |
@@ -2539,3 +2506,10 @@ For `unknown`, preserve the existing fallback: no retained log yields `Turned_Ba
 This corrects response classification without changing expedition resolution, rewards, progression, Clear-Gate mechanics, revision increments, or evaluation accounting. Existing persisted expedition statistics, historical reports, evaluation ledgers and stored idempotency responses MUST NOT be rewritten. Latest-expedition summaries retain their engine-level `finalOutcome` (including `Escape`) and the same shared `returnReason`; they do not add a separate outcome field. Existing response fields and enum identifiers remain unchanged; no extra fields or API calls are required.
 
 A report-file write failure adds `reportError.code=report_write_failed` to the otherwise committed terminal response; it must not turn committed gameplay into an operation error. Retrieve `/evaluation/report` for the data and retry `/evaluation` to save the file. Final report observations use the frozen evaluation clock and idle completed-Cycle state, without wall-clock progress.
+
+## Schema version 2: compact retained battle logs
+- Both retained battle-log endpoints default to `eventFormat: compact-v1` for new battles. This replaces narrated `actionText`/`noteText`; clients must check `schemaVersion` before decoding.
+- Each room includes `actors` with stable recorded IDs and character/enemy identity. No-target ID is 0. Events are ordered tuples `[category, timing, actor, opcode, target, element, hits, attempts, value, facts]`. `facts` carries applicable attackType, ability, reaction/subtype, flags, and additional numeric effect values, omitting defaults. The opcode table is the permanent Diary table in `src/game/compactBattleLog.ts`.
+- Flavor-only and initiative bookkeeping events are excluded. End events contain factual post-battle effects and reward references without flavor variants. Raw numbers remain authoritative.
+- Old text-only entries return `eventFormat: legacy-facts` and `legacyIncomplete: true`, with available recorded fields only. Never parse narration to invent targets or effects.
+- Diary listing includes semantic `facts` for new metadata and `legacyIncomplete` for legacy metadata. Existing title callbacks remain optional display metadata. Read operations retain current visibility, lease and retention rules.
