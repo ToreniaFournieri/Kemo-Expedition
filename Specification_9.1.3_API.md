@@ -796,20 +796,9 @@ Path Parameters
   * `superRare`
     * List of all Super Rare titles.
     * Format:
-      * `<superRareId>/<name>`
+      * `<superRareId>/<name>/<bonus>`
     * Example:
       `["1/...", "2/...", "3/..."]`
-
-  * `details`
-    * Bonus information for each Super Rare title.
-    * Key format:
-
-      * `<superRareId>`
-    * Values may include:
-
-      * `ability`
-      * `cBonus`
-      * `otherBonus`
 
 * `name` uses the current language setting.
 
