@@ -242,9 +242,9 @@ Path Parameters
   * `emptyEquipmentSlot`
     * Characters that currently have one or more empty equipment slots.
     * Format:
-      * `<partyId>/<order>/<numberOfEmptySlots>`
+      * `<characterId>/<numberOfEmptySlots>`
     * Example:
-      `["1/2/1", "1/3/1"]`
+      `["102/1", "103/1"]`
 
   * `notification`
     * Each party:
@@ -319,6 +319,7 @@ Path Parameters
   * Format:
     `<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
     * This part does not distinguish between `clear` and `return` for simplification.
+    * `Success` means that the party wins the battle in that room.
   * Example:
     `Success 87.6% / Draw 1.2% / Retreat 3.7% / Defeat 7.5%`
   * `detail`
@@ -432,8 +433,6 @@ Path Parameters
 **2-4-1. `searchItems`**
 
 * Searches items currently known to the player.
-
-* Parameters: none.
 
 * Parameters:
   * `state`
@@ -846,6 +845,7 @@ Path Parameters
 * Parameters:
   * `targetEquipment`
     * One equipment entry or an array of equipment entries.
+    * You cannot specified slotId. it automatically sorts. 
     * Uses `Item Format`.
     * Example:
       `0/1101/2/0`
@@ -924,7 +924,7 @@ Path Parameters
 
 * Parameters:
   * `diaryEntryId`
-    * Example: 0, 1, 2
+    * Example: 120, 121...
     * Example: `ALL` 
 
 **3-6. `commit/setting`**
