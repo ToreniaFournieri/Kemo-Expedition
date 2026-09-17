@@ -367,9 +367,10 @@ Path Parameters
       * Example: `FULL`, `SEMI`, `OFF`.
     * `equipment`
       * Array in equipment-slot order.
-      * Uses `Item Format`.
+      * Uses `<slotIndex>/<Item Format>`.
+        * `slotIndex`: 0,1,2...
       * Example:
-        `["0/1101/2/0", "1/1102/1/0", "0"]`
+        `["0/0/1101/2/0", "1/1/1102/1/0", "0"]`
   * `validOptions`:
     * `mode`
       * Example: [`FULL`, `SEMI`, `OFF`].
@@ -795,11 +796,11 @@ Path Parameters
 * Parameters:
   * `targetEquipment`
     * One equipment entry or an array of equipment entries.
-    * Uses `Item Format`.
+    * Uses `<slotIndex>`.
     * Example:
-      `0/1101/2/0`
+      `0`
     * Example:
-      `["0/1101/2/0", "1/1102/1/0"]`
+      `[0, 1]`
 
 **3-3-5. `character/{characterId}/equip`**
 
