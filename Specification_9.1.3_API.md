@@ -159,7 +159,7 @@ Path Parameters
 
 **1. Fundamental**
 
-**1-1. fundamental/status**
+**1-1. `fundamental/status`**
 
 * Returns the current API and runtime status.
 * Parameters: none.
@@ -168,36 +168,50 @@ Path Parameters
     * `versionBuild`
     * `environment`
 
-**1-2. fundamental/signUp**
+**1-2. `fundamental/signUp`**
 
-* Creates API credentials for the specified user and initializes a new game for the account.
+* Creates a new API user and initializes a new game for that user.
+
 * Parameters:
-    * `userId`
-    * `gameMode`
+  * `userId`
+    * Valid format: `[A-Za-z0-9_-]{1,16}`.
+    * If a user with the same `gameMode`, `levelOffsetForOrca`, and `userId` already exists, `signUp` fails and does not modify the existing save data.
+  * `gameMode`
+    * Allowed values:
+      * `normal` // `mode.normal`
+      * `orca`  // `mode.orca`
+  * `levelOffsetForOrca`
+    * Optional.
+    * Used only when `gameMode` is `orca`.
+    * Default: `5`.
+    * Valid range: `0–20`.
+
 * Return:
-    * `userId`
-    * `password`
-      * If the userId is valid and available, a random password is generated and returned.
-    * `gameMode`
-      * Allowed values: `mode.normal`, `mode.orca`.
-    * levelOffsetForOrca
-      * Optional.
-      * Used only when gameMode is mode.orca.
-      * Default: 5.
-      * Valid range: 0–20.
+  * `userId`
+  * `gameMode`
+  * `levelOffsetForOrca`
 
-**1-3. fundamental/logIn**
+* Save data path:
+  * Normal:
+    * `users/normal/<userId>/`
+    * Example: `users/normal/Taro/`
+  * Orca:
+    * `users/orca<levelOffsetForOrca>/<userId>/`
+    * Example: `users/orca5/Lin/`
+
+**1-3. `fundamental/logIn`**
 
 * Parameters:
-    * `userId`
-    * `password`
-* Authenticates the user and starts a game instance or acquires API control of the current instance.
+  * `userId`
+  * `gameMode`
+  * `levelOffsetForOrca`
+* Starts a game instance or acquires API control of the current instance.
 * While logged in:
-    * Normal real-time progression is paused.
-    * Only API operations from the logged-in user may control or modify the instance.
-    * Other state-mutating controls are restricted.
+  * Normal real-time progression is paused.
+  * Only API operations from the logged-in user may control or modify the instance.
+  * Other state-mutating controls are restricted.
 
-**1-4. fundamental/logOut**
+**1-4. `fundamental/logOut`**
 
 * Parameters: none.
 * Ends the current API session and releases API control of the instance.
