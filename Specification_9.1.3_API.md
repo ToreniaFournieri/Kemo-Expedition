@@ -266,8 +266,8 @@ Path Parameters
   * `bottleneckEnemies`
     * Status of enemies identified as bottlenecks.
     * Bottleneck definition:
-      * Draw rate: `>=20%`, or
-      * Defeat rate: `>=10%`.
+      * Damage taken: `>=35%`, or
+      * `draw` or `defeat` outcome.
     * If no enemy meets the condition, return none.
 
 **2-2-3. `{p}/simulationRun`**
