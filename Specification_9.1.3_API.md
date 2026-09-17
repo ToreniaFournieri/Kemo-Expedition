@@ -71,10 +71,10 @@
      {p}/latestBattleLog
      {p}/simulationRun
 
-2-3. read/party
-     {p}/partySummary
-     character/{c}/status
-     character/{c}/equipment
+2-3. read/build
+     party/{p}
+     character/{characterId}/status
+     character/{characterId}/equipment
 
 2-4. read/base
      searchItems
@@ -99,13 +99,13 @@
      {p}/sortie
      {p}/godsBattle
 
-3-3. commit/party
-     {p}/partyUpdate
-     character/{c}/changeBuild
-     character/{c}/removeAllEquipment
-     character/{c}/removeEquipment
-     character/{c}/equip
-     character/{c}/autoEquipment
+3-3. commit/build
+     party/{p}
+     character/{characterId}/changeBuild
+     character/{characterId}/removeAllEquipment
+     character/{characterId}/removeEquipment
+     character/{characterId}/equip
+     character/{characterId}/autoEquipment
 
 3-4. commit/base
      changeJewelPriorityParty
@@ -145,7 +145,7 @@
 Path Parameters
 
 {p}: Party number, 1–6
-{c}: `characterId` Character ID.
+{characterId}: `characterId` Character ID.
 {diaryEntryId}: Diary-entry index, 0-11
 
 ##### 9.1.3.2 API requirement fundamental
@@ -287,9 +287,9 @@ Path Parameters
     * Do not return UI rendering information.
 
 
-**2-3. `read/party`**
+**2-3. `read/build`**
 
-**2-3-1 `{p}/partySummary`**
+**2-3-1 `party/{p}`**
 
 * Parameters: none.
 
@@ -309,7 +309,7 @@ Path Parameters
       * Example:  `[101, 102, 103, 104, 105, 106]`
 
 
-**2-3-2. `{p}/character/{c}/status`**
+**2-3-2. `character/{characterId}/status`**
 
 * Parameters: none.
 
@@ -355,7 +355,7 @@ Path Parameters
 * Validation:
   * Same as `2.1 CHARACTER_&_PARTY` 
 
-**2-3-3. `{p}/character/{c}/equipment`**
+**2-3-3. `character/{characterId}/equipment`**
 
 * Parameters: none.
 
@@ -757,9 +757,9 @@ Path Parameters
 * Parameters: none.
   * If `Gods battle` is unavailable, return error.
 
-**3-3. `commit/party`**
+**3-3. `commit/build`**
 
-**3-3-1. `{p}/partyUpdate`**
+**3-3-1. `party/{p}`**
 
 * Parameters:
   * `deityId`
@@ -770,7 +770,7 @@ Path Parameters
 
 * Partial updates are allowed.
 
-**3-3-2. `{p}/character/{c}/changeBuild`**
+**3-3-2. `character/{characterId}/changeBuild`**
 
 * Parameters:
   * `name`
@@ -784,12 +784,12 @@ Path Parameters
 
 * Partial updates are allowed.
 
-**3-3-3. `{p}/character/{c}/removeAllEquipment`**
+**3-3-3. `character/{characterId}/removeAllEquipment`**
 
 * Parameters: none.
 * Remove all equipment.
 
-**3-3-4. `{p}/character/{c}/removeEquipment`**
+**3-3-4. `character/{characterId}/removeEquipment`**
 
 * Parameters:
   * `targetEquipment`
@@ -800,7 +800,7 @@ Path Parameters
     * Example:
       `["0/1101/2/0", "1/1102/1/0"]`
 
-**3-3-5. `{p}/character/{c}/equip`**
+**3-3-5. `character/{characterId}/equip`**
 
 * Parameters:
   * `targetEquipment`
@@ -812,7 +812,7 @@ Path Parameters
       `["0/1101/2/0", "1/1102/1/0"]`
 
 
-**3-3-6. `{p}/character/{c}/autoEquipment`**
+**3-3-6. `character/{characterId}/autoEquipment`**
 
 * Parameters:
   * `mode`
