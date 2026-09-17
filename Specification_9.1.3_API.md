@@ -155,39 +155,41 @@ Path Parameters
 
 ##### 9.1.3.2 API requirement fundamental
 
-1. Fundamental
+**1. Fundamental**
 
-1-1. fundamental/status
+**1-1. fundamental/status**
 
 * Returns the current API and runtime status.
 * Parameters: none.
 * Return:
-    * systemStatus
-    * versionBuild
-    * environment
+    * `systemStatus`
+    * `versionBuild`
+    * `environment`
 
-1-2. fundamental/signUp
+**1-2. fundamental/signUp**
 
 * Creates API credentials for the specified user. initialize the game for this newly created account. 
 * Parameters:
-    * userId
+    * `userId`
+    * `gameMode`
 * Return:
-    * userId
-    * password
-        * If the userId is valid and available, a random password is generated and returned.
+    * `userId`
+    * `password`
+      * If the userId is valid and available, a random password is generated and returned.
+    * `gameMode`
 
-1-3. fundamental/logIn
+**1-3. fundamental/logIn**
 
 * Parameters:
-    * userId
-    * password
+    * `userId`
+    * `password`
 * Authenticates the user and starts a game instance or acquires API control of the current instance.
 * While logged in:
     * Normal real-time progression is paused.
     * Only API operations from the logged-in user may control or modify the instance.
     * Other state-mutating controls are restricted.
 
-1-4. fundamental/logOut
+**1-4. fundamental/logOut**
 
 * Parameters: none.
 * Ends the current API session and releases API control of the instance.
@@ -207,6 +209,7 @@ Path Parameters
 
 * Return:
   * `globalInfo`
+    * `gameMode`
     * `inGameTime`
     * `gold`
     * `prana`
