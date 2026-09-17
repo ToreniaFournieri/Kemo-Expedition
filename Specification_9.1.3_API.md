@@ -319,12 +319,12 @@ Path Parameters
   * Format:
     `<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
     * This part does not distinguish between `clear` and `return` for simplification.
-    * `Success` means that the party wins the battle in that room.
   * Example:
     `Success 87.6% / Draw 1.2% / Retreat 3.7% / Defeat 7.5%`
   * `detail`
     * Format:
       `<floorRoom>/<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>/<notReachedPercent>`
+    * Success means that the party wins the battle in that room.
     * Example:
       `["1f-1/Success 90.0% / Draw 4.1% / Retreat 2.0% / Defeat 3.9% / Not reached 0.0%","1f-2/Success 50.0% / Draw 10.0% / Retreat 20.0% / Defeat 14.1% / Not reached 5.9%"]`
 
