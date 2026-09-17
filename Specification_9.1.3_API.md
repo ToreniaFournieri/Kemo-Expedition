@@ -60,9 +60,11 @@
 
 1-1. fundamental/status
 
-1-2. fundamental/control/acquire
+1-2. fundamental/signUp
 
-1-3. fundamental/control/release
+1-3. fundamental/logIn
+
+1-4. fundamental/logOut
 
 
 2. Read
@@ -158,13 +160,33 @@ Path Parameters
 1-1. fundamental/status
 
 * Return:
-    * `versionBuild`
-    * `environment`
+  * `systemStatus`
+  * `versionBuild`
+  * `environment`
 
+1-2. fundamental/signUp
 
-1-2. fundamental/control/acquire
+* Parameters:
+  * `userId`
 
-1-3. fundamental/control/release
+* Return:
+  * `userId`
+  * `password`
+    * If it is valid, randomly genrated password is generated and passed.
+
+1-3. fundamental/logIn
+
+* Parameters:
+  * `userId`
+  * `password`
+
+* Start instance or acquire control of current instance. All progress posed, only this API control is allowed.
+
+1-4. fundamental/logOut
+
+* Parameters: none
+
+* quit instance or release control of this API. All progress may start as usual. other control is no longer restricted. 
 
 ##### 9.1.3.3 API requirement read
 
