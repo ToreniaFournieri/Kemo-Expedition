@@ -6,6 +6,9 @@
 
 * Human writes this part.
 
+* Core concept:
+  * each Commit API request is atomic. If any supplied field or entry is invalid, no game-state change is committed.
+
 **Item Format**
 * The following compact item format is used throughout this API.
 * Format:
