@@ -170,7 +170,7 @@ Path Parameters
 
 **1-2. fundamental/signUp**
 
-* Creates API credentials for the specified user. initialize the game for this newly created account. 
+* Creates API credentials for the specified user and initializes a new game for the account.
 * Parameters:
     * `userId`
     * `gameMode`
@@ -179,6 +179,11 @@ Path Parameters
     * `password`
       * If the userId is valid and available, a random password is generated and returned.
     * `gameMode`
+      * Allowed values: `mode.normal`, `mode.orca`.
+    * levelOffsetForOrca
+      * Optional.
+      * Used only when gameMode is mode.orca.
+      * Default: 5.
 
 **1-3. fundamental/logIn**
 
@@ -419,8 +424,7 @@ Path Parameters
           ["0/0/1101/2/0/might:1", "1/1/1102/1/0", "0"]
   * `validOptions`:
     * `mode`
-      * Example: [`FULL`, `SEMI`, `OFF`].
-    * No valid options for `equipment`
+      * Example: [`FULL`, `SEMI`, `OFF`]. 
     * `numberOfEmptyEquipmentSlots`
       * Number of currently empty equipment slots.
       * Example: `1`.
