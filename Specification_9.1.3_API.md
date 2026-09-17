@@ -278,10 +278,10 @@ Path Parameters
 * `overview`
   * Compact summary of the simulation result.
   * Format:
-    `<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>/<notReachedPercent>`
+    `<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
     * This part does not distinguish between `clear` and `return` for simplification.
   * Example:
-    `Success 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
+    `Success 87.6% / Draw 1.2% / Retreat 3.7% / Defeat 7.5%`
   * `detail`
     * Format:
       `<floorRoom>/<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>/<notReachedPercent>`
