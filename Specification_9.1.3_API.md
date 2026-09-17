@@ -233,7 +233,7 @@ Path Parameters
 * `attention`
   * `latestSimulationResult`
     * Latest 100-run simulation summary for each party.
-    * Note: this is simplified simulation run.(1/10 for UI based simulation run)
+    * This is a simplified simulation using 1/10 of the runs used by the full 1,000-run simulation.
     * Format:
       `<partyIdTag>/<clearPercent>/<returnPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
     * Example:
@@ -845,13 +845,13 @@ Path Parameters
 * Parameters:
   * `targetEquipment`
     * One equipment entry or an array of equipment entries.
-    * You cannot specified slotId. it automatically sorts. 
+    * Equipment slot cannot be specified.
+    * Equipped items are automatically assigned and sorted into valid equipment slots using the same logic as the UI.
     * Uses `Item Format`.
     * Example:
       `0/1101/2/0`
     * Example:
       `["0/1101/2/0", "1/1102/1/0"]`
-
 
 **3-3-6. `character/{characterId}/autoEquipment`**
 
