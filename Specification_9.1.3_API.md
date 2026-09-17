@@ -729,8 +729,6 @@ Path Parameters
 
 **3-1. `commit/progress`**
 
-* Parameters: none.
-
 * Parameters:
   * `elapsedSeconds`
     * Unit: seconds.
@@ -739,8 +737,6 @@ Path Parameters
 **3-2. `commit/expedition`**
 
 **3-2-1. `{p}/changeExpedition`**
-
-* Parameters: none.
 
 * Parameters:
   * `destination`
@@ -948,11 +944,15 @@ Path Parameters
 
 * Parameters: none.
 
+* Return:
+  * a back up file. 
 
 **3-6-4-2. `backup/import`**
 
-* Parameters: imported file.
+* Parameters: an imported file.
 
+* Return:
+  * the result. 
 
 **3-6-4-3. `backup/reset`**
 
@@ -1135,7 +1135,7 @@ Path Parameters
       * `otherBonus`
     * `ability`, `cBonus`, and `otherBonus` may contain multiple bonus IDs and values.
     * Example:
-      `1104/12, "Nicked Dirk", common, 1, ability=[a.pursuit], cBonus=[c.magical-defense-x2/3], otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
+      `1104, "Nicked Dirk", common, 1, ability=[a.pursuit], cBonus=[c.magical-defense-x2/3], otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
 
 
 **4-2-6. `characterRoster`**
