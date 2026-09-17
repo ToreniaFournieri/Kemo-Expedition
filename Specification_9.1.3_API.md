@@ -325,13 +325,14 @@ Path Parameters
     * `lineage`
     * `predisposition`
 
-  * `validOptions`:
+
+  * `editableFields`:
+    * `name`
+      * Boolean. 
     * `unique`
       * Boolean.
       * Unique character is not permit to change `name`, `race`, `gender`, `lineage`, and `predisposition`
-    * `name`
-      * Example: `changeable`
-      * Example for unique: `none`
+  * `validOptions`:
     * `racesAndGender`
       * Currently valid race and gender combinations.
       * Format:
