@@ -4,10 +4,12 @@
 
 #### 9.1.3 API Requirements
 
-* Human writes this part.
-
-* Core concept:
-  * each Commit API request is atomic. If any supplied field or entry is invalid, no game-state change is committed.
+* This section is maintained by humans.
+* Core concepts:
+    * Each Commit API request is atomic. If any supplied field or entry is invalid, no game-state change is committed.
+    * API operations must share the same underlying game logic and validation logic as the UI.
+        * Do not duplicate existing game logic specifically for the API.
+        * Implement only behavior that is specific to the API interface.
 
 **Item Format**
 * The following compact item format is used throughout this API.
