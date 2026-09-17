@@ -193,7 +193,7 @@ Path Parameters
       * `lastOutcome`
         * Example: `defeated`.
 * `attention`
-  * `100RunSimulationResult`
+  * `latestSimulationResult`
     * Latest 100-run simulation summary for each party.
     * Format:
       `<partyIdTag>/<clearPercent>/<returnPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
@@ -270,6 +270,7 @@ Path Parameters
 **2-2-3. `{p}/simulationRun`**
 
 * Runs the current expedition simulation `1,000` times and returns the result.
+* this does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, or consume charge.
 
 * Parameters: none.
 
@@ -277,14 +278,15 @@ Path Parameters
 * `overview`
   * Compact summary of the simulation result.
   * Format:
-    `<victoryPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>/<notReachedPercent>`
-    * This API does not distinguish between `clear` and `return` for simplification.
+    `<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>/<notReachedPercent>`
+    * This part does not distinguish between `clear` and `return` for simplification.
   * Example:
-    `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
+    `Success 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
   * `detail`
-    * Simulation Result Graph data defined in `8.3 UI_EXPEDITION`.
-    * Return the underlying room-by-room simulation data in a concise AI-friendly format.
-    * Do not return UI rendering information.
+    * Format:
+      `<floorRoom>/<successPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>/<notReachedPercent>`
+    * Example:
+      `["1f-1/Success 90.0% / Draw 4.1% / Retreat 2.0% / Defeat 3.9% / Not reached 0.0%","1f-2/Success 50.0% / Draw 10.0% / Retreat 20.0% / Defeat 14.1% / Not reached 5.9%"]`
 
 
 **2-3. `read/build`**
