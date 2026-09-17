@@ -121,7 +121,7 @@
 
 3-5. commit/diary
      {p}/diarySetting
-     {p}/diaryEntry/markAsRead
+     diaryEntry/markAsRead
 
 3-6. commit/setting
      enemyEditPane
@@ -420,9 +420,7 @@ Path Parameters
   * `validOptions`:
     * `mode`
       * Example: [`FULL`, `SEMI`, `OFF`].
-    * `equipment`
-      * Currently available items that can be equipped by this character.
-      * Uses the same item format as `current/equipment`.
+    * No valid options for `equipment`
     * `numberOfEmptyEquipmentSlots`
       * Number of currently empty equipment slots.
       * Example: `1`.
@@ -920,7 +918,7 @@ Path Parameters
 * Omitted fields retain their current values.
 
 
-**3-5-2. `{p}/diaryEntry/markAsRead`**
+**3-5-2. `diaryEntry/markAsRead`**
 
 * Parameters:
   * `diaryEntryId`
