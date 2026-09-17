@@ -184,6 +184,7 @@ Path Parameters
       * Optional.
       * Used only when gameMode is mode.orca.
       * Default: 5.
+      * Valid range: 0–20.
 
 **1-3. fundamental/logIn**
 
