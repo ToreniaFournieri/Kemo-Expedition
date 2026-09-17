@@ -90,7 +90,7 @@
 
 2-5. read/diary
      {p}/diarySetting
-     {p}/diaryEntry/{diaryEntryId}
+     diaryEntry/{diaryEntryId}
 
 2-6. read/setting
      enemyEditPane
@@ -153,7 +153,7 @@ Path Parameters
 
 {p}: Party number, 1–6
 {characterId}: `characterId` Character ID.
-{diaryEntryId}: Diary-entry index, 0-11
+{diaryEntryId}: Stable Diary-entry ID.
 
 ##### 9.1.3.2 API requirement fundamental
 
@@ -233,6 +233,7 @@ Path Parameters
 * `attention`
   * `latestSimulationResult`
     * Latest 100-run simulation summary for each party.
+    * Note: this is simplified simulation run.(1/10 for UI based simulation run)
     * Format:
       `<partyIdTag>/<clearPercent>/<returnPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
     * Example:
@@ -256,7 +257,7 @@ Path Parameters
           * `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
           * timeStamp: YYYYMMDD HH:MM
         * Example:
-          `["0/Defeat Record/Leporian Moon Palace/20260916 22:04", "1/Boss Rare acquired (Moon-Hare Aegis)/Leporian Moon Palace/20260916 21:52"]`
+          `["120/Defeat Record/Leporian Moon Palace/20260916 22:04", "1/Boss Rare acquired (Moon-Hare Aegis)/Leporian Moon Palace/20260916 21:52"]`
 
 * `read/observation` does not modify game state.
 * Diary entries remain unread until explicitly marked as read through the corresponding Commit API.
@@ -601,7 +602,7 @@ Path Parameters
     * `notifySideQuestPopup`
       * Boolean.
 
-**2-5-2. `{p}/diaryEntry/{diaryEntryId}`**
+**2-5-2. `diaryEntry/{diaryEntryId}`**
 
 * Parameters: none.
 
@@ -780,7 +781,7 @@ Path Parameters
     * Example: `3`.
     * Validation: the specified destination must be unlocked.
   * `depthLimit`
-    * Example: `17` (`5F-1`).
+    * Example: `5f-3`
   * `difficultyOffset`
     * Example: `8`.
     * Validation: must be within the currently valid difficulty-offset range.
