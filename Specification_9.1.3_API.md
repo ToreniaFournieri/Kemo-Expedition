@@ -407,18 +407,20 @@ Path Parameters
       * Example: `FULL`, `SEMI`, `OFF`.
     * `equipment`
       * Array in equipment-slot order.
-      * Uses `<slotIndex>/<Item Format>`.
-        * `slotIndex`: 0,1,2...
-      * Example:
-        `["0/0/1101/2/0", "1/1/1102/1/0", "0"]`
+      * Uses <slotIndex>/<Item Format>[/<jewelType>:<jewelRank>].
+        * slotIndex: 0, 1, 2, …
+        * jewelType: might, arcana, fort, ward, shade, or focus.
+        * jewelRank: 1–8.
+        * The Jewel part is omitted if no Jewel is equipped.
+        * An empty slot is represented by 0.
+        * Example:
+          ["0/0/1101/2/0/might:1", "1/1/1102/1/0", "0"]
   * `validOptions`:
     * `mode`
       * Example: [`FULL`, `SEMI`, `OFF`].
     * `equipment`
       * Currently available items that can be equipped by this character.
       * Uses the same item format as `current/equipment`.
-      * Example:
-        `["0/1104/0/0", "0/1107/3/0", "0/1211/0/12"]`
     * `numberOfEmptyEquipmentSlots`
       * Number of currently empty equipment slots.
       * Example: `1`.
