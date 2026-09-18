@@ -3460,7 +3460,7 @@ const ko = {
 'home.equipment.unlockAria': '장비 잠금 해제',
 'home.equipment.lockAria': '장비 잠금',
 'home.bonus.descriptionMissing': '이 보너스의 설명은 설정되어 있지 않습니다.',
-'home.nav.expeditionIcon': '모',
+'home.nav.expeditionIcon': '冒',
 'home.party.reorderDragDropHint': '캐릭터 아이콘을 드래그 앤 드롭하여 대열 변경',
 'common.stat.vitality.short': '체',
 'common.stat.strength.short': '힘',
