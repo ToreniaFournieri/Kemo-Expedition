@@ -294,7 +294,7 @@ HP: 312                 タイプ: 神魔
 **Mode select (モード切替)**
 
 - Language (言語)
-  - Options: 日本語 / English / 简体中文 / 繁體中文
+  - Options: 日本語 / English / 简体中文 / 繁體中文 / 한국어
   - Determine the initial language in this priority order:
     1. A supported `lang` URL parameter.
     2. The player's previously persisted language selection.
@@ -306,11 +306,13 @@ HP: 312                 タイプ: 神魔
     - `zh-CN`, `zh-SG`, `zh-Hans`, and equivalent Simplified Chinese tags → 简体中文
     - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`, and equivalent Traditional Chinese tags → 繁體中文
     - A generic `zh` tag without a script or region → 简体中文
+    - `ko` and `ko-*` → 한국어
   - The `lang` URL parameter accepts:
     - `lang=ja` → 日本語
     - `lang=en` → English
     - `lang=zh-CN` (or `lang=zh`) → 简体中文 
     - `lang=zh-TW` → 繁體中文
+    - `lang=ko` → 한국어
     - Example: `https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja`
   - Persist the selected language in local storage.
   - When the selected language changes, replace the current URL's `lang` parameter with the selected language without reloading the page. Preserve the current path, all other query parameters, and the URL fragment.
