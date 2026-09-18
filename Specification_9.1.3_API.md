@@ -247,8 +247,9 @@ Path Parameters
         * `condition`
           * Format: `<conditionKey>/<conditionValue>`
             * `conditionKey`: `poor`, `low`, `cautious`, `normal`, `steady`, `good`, `great`, and `excellent`
-            * `conditionValue`: -349~400
-            * Details: the section `7.2.2 AUTO progress logic`
+            * `conditionValue`:
+              * Integer range: `-349` to `400`.
+              * For condition thresholds and calculation logic, see section 7.2.2 AUTO progress logic.
           * Example: `steady/55`
           * Example: `low/-188`
       * `state`
