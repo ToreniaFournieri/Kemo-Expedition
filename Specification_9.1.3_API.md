@@ -1037,22 +1037,16 @@ Path Parameters
 
 **4-1. `help`**
 
-**4-1-1. `help`**
+**4-1-1. `overview`**
 
 * Parameters: none.
 * Returns the API list from:
-  * `9.1.3.1 API endpoint list` in `Specification_9.1.3_API.md`.
+  * `9.1.4.2 Endpoint index` in `Specification_9.1.4_API_ENDPOINTS(v1).md`.
 
-**4-1-2. `overview`**
+**4-1-2. `endpoints`**
 
 * Parameters: none.
 * Returns the API overview from:
-  * `Specification_9.1.3_API.md`.
-
-**4-1-3. `endpoints`**
-
-* Parameters: none.
-* Returns the API endpoint reference from:
   * `Specification_9.1.4_API_ENDPOINTS(v1).md`.
 
 

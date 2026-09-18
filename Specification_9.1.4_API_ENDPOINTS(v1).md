@@ -142,7 +142,6 @@ Errors MUST NOT expose partially staged state or undisclosed random results.
 | POST | `/api/v1/commit/setting/backup/import` | Yes | Import backup. |
 | POST | `/api/v1/commit/setting/backup/reset` | Yes | Request/confirm reset. |
 | POST | `/api/v1/commit/setting/feedback` | Yes | Submit feedback. |
-| GET | `/api/v1/help/help` | No | Endpoint list. |
 | GET | `/api/v1/help/overview` | No | API overview. |
 | GET | `/api/v1/help/endpoints` | No | Endpoint reference. |
 | GET | `/api/v1/resources/developerNewsNotification` | Yes | Developer news. |
@@ -446,17 +445,13 @@ not alter gameplay state.
 Help requires no login, uses `text/markdown; charset=utf-8` and
 `Cache-Control: no-store`, and reflects files packaged with the running build.
 
-###### `GET /api/v1/help/help`
-
-Returns the section 9.1.3.1 endpoint list.
-
 ###### `GET /api/v1/help/overview`
 
-Returns `Specification_9.1.3_API.md`.
+Returns the section `9.1.4.2 Endpoint index`.
 
 ###### `GET /api/v1/help/endpoints`
 
-Returns this document.
+Returns `Specification_9.1.4_API_ENDPOINTS(v1).md`.
 
 ##### 9.1.4.7 Resources
 
