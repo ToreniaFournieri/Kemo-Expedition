@@ -28,7 +28,7 @@ import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,no
 import { DebugSettings } from '../../../game/debugSettings';
 import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
 import { addOrcaEnemyAbilities, ORCA_ENEMY_LEVEL_OFFSET_MAX, ORCA_ENEMY_LEVEL_OFFSET_MIN, RUNTIME_GAME_MODES, type RuntimeGameMode } from '../../../game/runtimeGameMode';
-import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
+import { DEITY_OPTIONS,getDeityDisplayName,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
 import { resolveEnemyPassiveAbilities } from '../../../game/enemyPassiveAbilities';
@@ -1599,7 +1599,7 @@ export default function SettingTab({
           {donationRows.length > 0 ? (
             donationRows.map(({ deityName, donationGold, rank, nextRankDonationRequirement }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
-                <span className="text-gray-700">{t('setting.donation.deityRank', { deity: deityName, rank })}</span>
+                <span className="text-gray-700">{t('setting.donation.deityRank', { deity: getDeityDisplayName(deityName), rank })}</span>
                 <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">{t('setting.donation.nextRequirement', { amount: nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : t('setting.donation.maxRank') })}</span></span>
               </div>
             ))

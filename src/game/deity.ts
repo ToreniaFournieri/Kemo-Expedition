@@ -49,10 +49,9 @@ export const DEITY_OPTIONS = [
   createDeityOption('Goddess of Discord', 'deity.name.GoddessOfDiscord'),
 ] as const;
 
-const NO_FAITH_DEITY_NAME_KEY = 'deity.name.None';
 const NO_FAITH_DEITY_ALIASES = new Set(['None', 'none']);
 
-type DeityKey = typeof DEITY_OPTIONS[number]['key'];
+export type DeityKey = typeof DEITY_OPTIONS[number]['key'];
 
 const MIN_DEITY_RANK = 1;
 const MAX_DEITY_RANK = 10;
@@ -86,11 +85,26 @@ const DEITY_NAME_KEY_MAP: Record<DeityKey, string> = DEITY_OPTIONS.reduce((acc, 
   return acc;
 }, {} as Record<DeityKey, string>);
 
-const DEITY_KEY_BY_NAME: Record<string, DeityKey> = DEITY_OPTIONS.reduce((acc, deity) => {
-  acc[deity.key] = deity.key;
-  SUPPORTED_LANGUAGES.forEach((language) => {
-    acc[translate(language, deity.nameKey)] = deity.key;
-  });
+// These aliases are a migration boundary, deliberately independent of lazy locale
+// loading so a Korean/Chinese legacy save can be opened in any language.
+const LEGACY_LOCALIZED_DEITY_NAMES: Record<DeityKey, readonly string[]> = {
+  'None': ['信仰なし', 'No Faith', '无信仰', '無信仰', '신앙 없음'],
+  'Goddess of Restoration': ['再生の女神', 'Goddess of Restoration', '再生女神', '재생의 여신'],
+  'God of Attrition': ['消耗の神', 'God of Attrition', '消耗之神', '소모의 신'],
+  'God of Cunning': ['狡猾の神', 'God of Cunning', '狡猾之神', '교활의 신'],
+  'God of Fortification': ['防備の神', 'God of Fortification', '防备之神', '防備之神', '방비의 신'],
+  'Goddess of Fertility': ['豊穣の女神', 'Goddess of Fertility', '丰饶女神', '豐饒女神', '풍요의 여신'],
+  'God of Resonance': ['共鳴の神', 'God of Resonance', '共鸣之神', '共鳴之神', '공명의 신'],
+  'Goddess of Precision': ['精密の女神', 'Goddess of Precision', '精密女神', '정밀의 여신'],
+  'God of Fate': ['運命の神', 'God of Fate', '命运之神', '命運之神', '운명의 신'],
+  'God of Dusk': ['黄昏の神', 'God of Dusk', '黄昏之神', '黃昏之神', '황혼의 신'],
+  'Goddess of Mirage': ['幻影の女神', 'Goddess of Mirage', '幻影女神', '환영의 여신'],
+  'God of Oblivion': ['忘却されし神', 'Forgotten God', '忘却之神', '忘卻之神', '망각된 신'],
+  'Goddess of Discord': ['不和の神', 'Goddess of Discord', '不和之神', '불화의 신'],
+};
+const DEITY_KEY_BY_NAME: Record<string, DeityKey> = Object.entries(LEGACY_LOCALIZED_DEITY_NAMES).reduce((acc, [key, names]) => {
+  acc[key] = key as DeityKey;
+  names.forEach((name) => { acc[name] = key as DeityKey; });
   return acc;
 }, {} as Record<string, DeityKey>);
 
@@ -164,6 +178,11 @@ export function getDeityResonanceUpgradeTiers(name: string, totalDonatedGold = 0
 // SpecRef: 2.1.3 | Religions lists | normalizeDeityName
 export function normalizeDeityName(name: string): string {
   const deityKey = getDeityKey(name);
+  return deityKey ?? name;
+}
+
+export function getDeityDisplayName(name: string): string {
+  const deityKey = getDeityKey(name);
   return deityKey ? t(DEITY_NAME_KEY_MAP[deityKey]) : name;
 }
 
@@ -173,14 +192,18 @@ export function isNoFaithDeity(name: string): boolean {
 
 // SpecRef: 2.1.3 | Religions lists | getDeityKey
 export function getDeityKey(name: string): DeityKey | null {
-  if (NO_FAITH_DEITY_ALIASES.has(name) || name === t(NO_FAITH_DEITY_NAME_KEY)) {
+  if (NO_FAITH_DEITY_ALIASES.has(name)) {
     return 'None';
   }
 
   const mappedKey = DEITY_KEY_BY_NAME[name];
   if (mappedKey) return mappedKey;
 
-  return DEITY_OPTIONS.find((deity) => deity.name === name)?.key ?? null;
+  for (const language of SUPPORTED_LANGUAGES) {
+    const matched = DEITY_OPTIONS.find((deity) => translate(language, deity.nameKey) === name);
+    if (matched) return matched.key;
+  }
+  return null;
 }
 
 // SpecRef: 8.6 | UI_SETTING | God scaling

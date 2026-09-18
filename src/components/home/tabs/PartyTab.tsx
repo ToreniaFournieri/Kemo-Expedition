@@ -12,7 +12,7 @@ import { RACES } from '../../../data/races';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
-import { DEITY_OPTIONS,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
+import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
 import {
   EMPTY_EQUIPMENT_STATE_HISTORY,
@@ -732,7 +732,7 @@ export default function PartyTab({
     });
   };
 
-  const displayedDeityName = normalizeDeityName(editingDeity ? pendingDeityName : party.deity.name);
+  const displayedDeityName = getDeityDisplayName(editingDeity ? pendingDeityName : party.deity.name);
   const displayedDeityKey = getDeityKey(displayedDeityName);
   const displayedDeityDonation = Object.entries(deityDonations).find(
     ([deityName]) => getDeityKey(deityName) === displayedDeityKey

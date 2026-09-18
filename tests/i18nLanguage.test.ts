@@ -14,6 +14,7 @@ import zhTW from '../src/i18n/zh-TW.ts';
 import ko from '../src/i18n/ko.ts';
 
 const glossarySource = readFileSync(new URL('../src/data/glossary.ts', import.meta.url), 'utf8');
+const deitySource = readFileSync(new URL('../src/game/deity.ts', import.meta.url), 'utf8');
 
 test('Korean dictionary covers every Japanese runtime key with matching placeholders', () => {
   const placeholders = (value: string) => [...new Set(
@@ -25,6 +26,12 @@ test('Korean dictionary covers every Japanese runtime key with matching placehol
     assert.deepEqual(placeholders(ko[key]), placeholders(japanese), `ko placeholder mismatch in ${key}`);
   }
   assert.equal(ko['setting.language.ko'], '한국어');
+});
+
+test('deity identity has a Korean-independent migration path and display-only localization', () => {
+  assert.match(deitySource, /'Goddess of Restoration': \[[^\]]*'재생의 여신'/);
+  assert.match(deitySource, /return deityKey \?\? name;/);
+  assert.match(deitySource, /export function getDeityDisplayName/);
 });
 
 test('all indexed ability and terrain flavor families are complete and use supported placeholders in every language', () => {

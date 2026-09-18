@@ -383,6 +383,7 @@ Party.`d.HP` =
 - Characters do not have individual HP. Each character contributes total HP. 
 
 #### 2.1.3 Religions lists
+- Persist each party's religion and donation ledger using the stable God-column identifier. Localized deity names are display-only; loading legacy localized names must migrate them to that identifier without changing the selected deity or its rank.
 - 信仰なし (None) may be selected by multiple parties.
 - All other religions are unique and can be assigned to only one party at a time.
 

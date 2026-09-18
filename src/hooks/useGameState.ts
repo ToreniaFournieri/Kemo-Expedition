@@ -2446,8 +2446,20 @@ function reduceGameState(
       persistLanguage(language);
       const sourceLanguage = normalizeLanguage(state.global.language);
       setActiveLanguage(language);
-      const parties = translatePartyCharacterNames(state.parties, sourceLanguage, language);
-      return { ...state, parties, global: { ...state.global, language } };
+      const parties = translatePartyCharacterNames(state.parties, sourceLanguage, language).map((party) => ({
+        ...party,
+        deity: { ...party.deity, name: normalizeDeityName(party.deity.name) },
+      }));
+      return {
+        ...state,
+        parties,
+        global: {
+          ...state.global,
+          language,
+          unlockedDeities: normalizeUnlockedDeities(state.global.unlockedDeities),
+          deityDonations: getDeityDonationsWithDefaults(state.global.deityDonations),
+        },
+      };
     }
 
     case 'SELECT_PARTY':

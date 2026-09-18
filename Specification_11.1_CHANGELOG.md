@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 20 | 2026/09/18 | Persist deity identity and donation keys as stable identifiers, migrate every legacy localized deity name including Korean, and localize names only at display time so language changes retain deity selection, effects, and rank. |
 | 0.9.7 | 19 | 2026/09/18 | Add Korean (`ko`) as a runtime language with lazy-loaded localization, Korean browser-language detection, persisted and URL language selection, desktop snapshot support, a separate locale bundle, and full dictionary regression coverage. |
 | 0.9.7 | 18 | 2026/09/16 | Update UI_DIARY runtime (Spec 8.5): retain a maximum of 12 entries per Party Diary and display `49+` on the main unread badge when 49 or more entries are unread. |
 | 0.9.7 | 17 | 2026/09/16 | Keep inline character chibis visible after language changes by matching the current party name to the retained actor's historical appearance and stable character ID. |
