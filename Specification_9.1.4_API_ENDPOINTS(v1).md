@@ -193,7 +193,7 @@ Returns:
 
 * `globalInfo`: `gameMode`, `inGameTime`, `gold`, `prana`.
 * `partyInfo`: per party, `party` (`level`, `experiencePoint`,
-  `deity`, `deityRank`), `state`, `lastDestination`, `lastOutcome`.
+  `deity`, `deityRank`, `condition`), `state`, `lastDestination`, `lastOutcome`.
   Experience uses `<percentage>/<current>/<nextLevel>`.
 * `attention.latestSimulationResult`: latest stored simplified 100-run
   summaries using
