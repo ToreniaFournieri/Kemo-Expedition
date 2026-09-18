@@ -2,7 +2,7 @@
 
 ### 9.1 Desktop distribution
 
-#### 9.1.3 API Requirements
+#### 9.1.3 API
 
 * This section is maintained by humans.
 * Core concepts:
