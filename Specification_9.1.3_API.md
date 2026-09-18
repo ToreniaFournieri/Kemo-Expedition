@@ -82,6 +82,7 @@
      party/{p}
      character/{characterId}/status
      character/{characterId}/equipment
+     character/{characterId}/equipmentSet
 
 2-4. read/base
      searchItems
@@ -113,6 +114,9 @@
      character/{characterId}/removeEquipment
      character/{characterId}/equip
      character/{characterId}/autoEquipment
+     character/{characterId}/saveEquipmentSet`
+     character/{characterId}/loadEquipmentSet`
+     character/{characterId}/deleteEquipmentSet`
 
 3-4. commit/base
      changeJewelPriorityParty
@@ -452,6 +456,24 @@ Path Parameters
       * Number of currently empty equipment slots.
       * Example: `1`.
 
+**2-3-4. `character/{characterId}/equipmentSet`**
+
+* Parameters:
+  * `equipmentSetId`
+    * Optional.
+    * Accepts one or more equipment set IDs.
+    * If omitted, returns all saved equipment sets.
+  * `isEquipmentSetDetail`
+    * Boolean.
+    * If `true`, include the full equipment-set details.
+    * If `false`, return summary information only.
+
+* Return:
+  * `equipmentSets`
+    * Array.
+    * Each entry:
+      * `equipmentSetId`
+      * `equipmentSet`
 
 **2-4. `read/base`**
 
@@ -887,6 +909,43 @@ Path Parameters
   * `immediateAutoEquipment`
     * If `true`, immediately runs Auto Equipment using the specified `mode`.
     * Boolean: `true` / `false`.
+
+**3-3-7. `character/{characterId}/saveEquipmentSet`**
+
+* Parameters:
+  * `equipmentSet`
+
+* Return:
+  * `equipmentSetId`
+
+**3-3-8. `character/{characterId}/loadEquipmentSet`**
+
+* Parameters:
+  * `equipmentSetId`
+
+* Validation:
+  * `partialUnavailable`
+    * Indicates that one or more items in the selected equipment set are unavailable.
+    * `warningMessage`
+    * Requires confirmation before execution.
+
+* Confirmation:
+  * If confirmed, proceed with loading the equipment set.
+  * If declined, dismiss the operation without making any changes.
+
+* Return:
+  * `equipmentSet`
+
+**3-3-9. `character/{characterId}/deleteEquipmentSet`**
+
+* Parameters:
+  * `equipmentSetId`
+
+**3-3-10. `character/{characterId}/undoEquipment`**
+
+
+
+**3-3-11. `character/{characterId}/redoEquipment`**
 
 
 **3-4. `commit/base`**

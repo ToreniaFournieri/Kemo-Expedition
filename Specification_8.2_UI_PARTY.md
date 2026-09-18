@@ -1,6 +1,8 @@
 ## 8. UI
 
 ### 8.2 UI_PARTY
+- **GUI:**
+  - `guiParty`
 - Party tab
 
 - **Party main Pane background image**
@@ -21,6 +23,13 @@
 - The image bottom edge should visually connect to the adjacent Status Pane without vertical gap.
 
 #### 8.2.1 Displays
+- **GUI:**
+  - `guiParty`
+- **API Read:** 
+  - `read/build/party/{p}`
+- **API Read:**
+  - `character/{characterId}/status`
+
 - Up to 6 parties can exist.
 - Locked parties are not displayed.
 - All unlocked parties are displayed normally and can be selected.
@@ -65,6 +74,13 @@ line2: 桃/腕  ← text over background image
 - Current status, abilities, bonuses
 
 #### 8.2.2 Party member details
+- **GUI:**
+  - `guiPartyCharacter`
+- **API Read:**
+  - `read/build/character/{characterId}/status`
+- **API Commit:**
+  - `commit/build/party/{p}.order`
+
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
 - When the player attempts to swap the order of party members, display the following confirmation dialog:
   - `選択したパーティメンバーの順番を入れ替えますか？`
@@ -174,6 +190,11 @@ Left-aligned
 ```
 
 #### 8.2.3 Character Edit Mode (selected member):
+- **GUI:**
+  - `guiCharacterEdit`
+- **API Commit:**
+  - `commit/build/character/{characterId}/changeBuild`
+
 **1. Contents**
 
 - `Unique`: Unique Character Flag. 
@@ -277,6 +298,22 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 
 
 #### 8.2.4 Equipment management
+- **GUI:**
+  - `guiCharacterEdit`
+- **API Read:**
+  - `read/build/character/{characterId}/equipmentSet`
+  - `read/base/searchItems`
+- **API Commit:**
+  - `commit/build/character/{characterId}/removeAllEquipment`
+  - `commit/build/character/{characterId}/removeEquipment`
+  - `commit/build/character/{characterId}/equip`
+  - `commit/build/character/{characterId}/autoEquipment`
+  - `commit/build/character/{characterId}/saveEquipmentSet`
+  - `commit/build/character/{characterId}/loadEquipmentSet`
+  - `commit/build/character/{characterId}/deleteEquipmentSet`
+  - `commit/build/character/{characterId}/undoEquipment`
+  - `commit/build/character/{characterId}/redoEquipment`
+
 **1. Interaction Rules:**
 - **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
 - **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
@@ -332,18 +369,18 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - Each slot can be expanded to display its equipment details.
     - Available items are displayed in black.
     - Unavailable items are displayed in gray.
-- **Auto equipment button(自動装備):** When the player presses the “自動装備” button, the auto-equipment logic is triggered immediately. This button is visible only when `m.auto_equipment` = 2 (FULL mode).
-- **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `2` FULL
-  - If the player performs any manual equipment change while `m.auto_equipment = 2` (FULL), then automatically set `m.auto_equipment = 1` (SEMI).
-  - The toggle cycles in the following order: `OFF (0)` → `SEMI (1)` → `FULL (2)` → `OFF (0)` ...
+- **Auto equipment button(自動装備):** When the player presses the “自動装備” button, the auto-equipment logic is triggered immediately. This button is visible only when `m.auto_equipment` = `FULL`.
+- **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `FULL`
+  - If the player performs any manual equipment change while `m.auto_equipment = FULL`, then automatically set `m.auto_equipment = SEMI`.
+  - The toggle cycles in the following order: `OFF` → `SEMI` → `FULL` → `OFF` ...
   
 The toggle cycles through the following modes:
 
-| Value | Mode     | label |
-| ----- | -------- | ----- | 
-| `0`   | `OFF`  | 手動 |
-| `1`   | `SEMI` | 補助 | 
-| `2`   | `FULL` | 一任 |
+| Mode     | label |
+| -------- | ----- | 
+| `OFF`  | 手動 |
+| `SEMI` | 補助 | 
+| `FULL` | 一任 |
 
 - **?:** floating bubble for help:
 
