@@ -56,7 +56,7 @@ interface DesktopPartyProgressPartySnapshot {
 interface DesktopPartyProgressSnapshot {
   schemaVersion: 1;
   environment: 'dev' | 'beta' | 'orca' | 'prod';
-  language: 'ja' | 'en' | 'zh-CN' | 'zh-TW';
+  language: 'ja' | 'en' | 'zh-CN' | 'zh-TW' | 'ko';
   updatedAt: number;
   unreadDiaryCount: number;
   theme: import('./theme/theme').DesktopTheme;

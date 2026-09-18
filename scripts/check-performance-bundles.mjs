@@ -24,8 +24,8 @@ const javascriptAssets = assetFileNames.filter((name) => name.endsWith('.js')).m
 });
 const largestJavascriptAsset = javascriptAssets.reduce((largest, asset) => asset.bytes > largest.bytes ? asset : largest);
 const javascriptAssetByteLimit = 500_000;
-const localeAssets = javascriptAssets.filter(({ fileName }) => /^(?:locale-)?(?:ja|en|zh-CN|zh-TW)-.*\.js$/.test(fileName));
-const expectedLocaleAssetNames = ['locale-ja', 'locale-en', 'locale-zh-CN', 'locale-zh-TW'];
+const localeAssets = javascriptAssets.filter(({ fileName }) => /^(?:locale-)?(?:ja|en|zh-CN|zh-TW|ko)-.*\.js$/.test(fileName));
+const expectedLocaleAssetNames = ['locale-ja', 'locale-en', 'locale-zh-CN', 'locale-zh-TW', 'locale-ko'];
 const localesAreShared = localeAssets.length === expectedLocaleAssetNames.length
   && expectedLocaleAssetNames.every((prefix) => localeAssets.some(({ fileName }) => fileName.startsWith(`${prefix}-`)))
   && new Set(localeAssets.map(({ sha256 }) => sha256).values()).size === localeAssets.length;

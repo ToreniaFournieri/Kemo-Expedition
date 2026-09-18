@@ -3,11 +3,11 @@ import { createEnvironmentStorageKey } from '../game/environment';
 import { resolveSystemLanguage, selectInitialLanguage } from './languageDetection';
 import { gameplayRandom } from '../game/gameplayRandom';
 
-export type Language = 'ja' | 'en' | 'zh-CN' | 'zh-TW';
+export type Language = 'ja' | 'en' | 'zh-CN' | 'zh-TW' | 'ko';
 export type TranslationParams = Record<string, string | number>;
 type TranslationDictionary = Record<string, string>;
 
-export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en', 'zh-CN', 'zh-TW'];
+export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'];
 export const DEFAULT_LANGUAGE: Language = 'ja';
 // SpecRef: 9 | Environment | Save Data Isolation
 export const LANGUAGE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-language');
@@ -29,7 +29,9 @@ export function ensureLanguageLoaded(language: Language): Promise<void> {
         ? (await import('./zh-CN')).default
         : normalizedLanguage === 'zh-TW'
           ? (await import('./zh-TW')).default
-          : ja;
+          : normalizedLanguage === 'ko'
+            ? (await import('./ko')).default
+            : ja;
     dictionaries[normalizedLanguage] = dictionary;
   })();
   dictionaryLoads.set(normalizedLanguage, load);
@@ -38,7 +40,7 @@ export function ensureLanguageLoaded(language: Language): Promise<void> {
 
 export function normalizeLanguage(value: unknown): Language {
   if (value === 'zh') return 'zh-CN';
-  return value === 'en' || value === 'ja' || value === 'zh-CN' || value === 'zh-TW' ? value : DEFAULT_LANGUAGE;
+  return value === 'en' || value === 'ja' || value === 'zh-CN' || value === 'zh-TW' || value === 'ko' ? value : DEFAULT_LANGUAGE;
 }
 
 function getBrowserLanguageSources(): { urlLanguage: Language | null; savedLanguage: Language | null } {
@@ -63,7 +65,7 @@ function getSystemLanguage(): Language | null {
 export { normalizeSystemLanguage, resolveSystemLanguage } from './languageDetection';
 
 function normalizeOptionalLanguage(value: unknown): Language | null {
-  return value === 'en' || value === 'ja' || value === 'zh-CN' || value === 'zh-TW' ? value : null;
+  return value === 'en' || value === 'ja' || value === 'zh-CN' || value === 'zh-TW' || value === 'ko' ? value : null;
 }
 
 export function resolveInitialLanguage(): Language {

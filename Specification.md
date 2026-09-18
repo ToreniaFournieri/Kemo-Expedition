@@ -3,7 +3,7 @@
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
       - Identical battle and individual simulation inputs remain deterministic. Parallel AFK recovery may produce a different valid FIFO worker-arrival order and final state as explicitly defined in section 5.1.
-    - Support Japanese, English and Chinese (zh-CN, zh-TW) language. 
+    - Support Japanese, English, Chinese (zh-CN, zh-TW), and Korean language.
     - Tetris like randomness. (Bag Randomization)
     - Data persistence 
 

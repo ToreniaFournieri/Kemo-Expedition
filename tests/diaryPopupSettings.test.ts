@@ -7,7 +7,7 @@ const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.m
 const diarySettingsSource = readFileSync(new URL('../src/game/diarySettings.ts', import.meta.url), 'utf8');
 const homeSource = readFileSync(new URL('../src/components/HomeScreen.tsx', import.meta.url), 'utf8');
 const diaryTabSource = readFileSync(new URL('../src/components/home/tabs/DiaryTab.tsx', import.meta.url), 'utf8');
-const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW'].map((locale) =>
+const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'].map((locale) =>
   readFileSync(new URL(`../src/i18n/${locale}.ts`, import.meta.url), 'utf8')
 );
 

@@ -6,7 +6,7 @@ const enemySource = readFileSync(new URL('../src/data/enemies.ts', import.meta.u
 const battleSource = readFileSync(new URL('../native/battle_protocol.cpp', import.meta.url), 'utf8');
 const candidateSource = readFileSync(new URL('../src/game/battleCandidate.ts', import.meta.url), 'utf8');
 const homeSharedSource = readFileSync(new URL('../src/components/home/homeShared.tsx', import.meta.url), 'utf8');
-const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW'].map(locale => (
+const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'].map(locale => (
   readFileSync(new URL(`../src/i18n/${locale}.ts`, import.meta.url), 'utf8')
 ));
 

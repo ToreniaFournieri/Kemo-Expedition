@@ -5,6 +5,7 @@ import en from '../src/i18n/en.ts';
 import ja from '../src/i18n/ja.ts';
 import zhCN from '../src/i18n/zh-CN.ts';
 import zhTW from '../src/i18n/zh-TW.ts';
+import ko from '../src/i18n/ko.ts';
 import {
   BOSS_GATE_REQUIRED,
   ELITE_GATE_REQUIREMENTS,
@@ -41,7 +42,7 @@ test('each Clear-Gate uses its floor-specific consecutive-success requirement', 
 });
 
 test('gated-room text shows only the required streak while floating bubbles retain progress', () => {
-  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW };
+  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW, ko };
   const render = (template: string, params: Record<string, string | number>) =>
     template.replace(/\{(\w+)\}/g, (match, key: string) => String(params[key] ?? match));
 
@@ -57,7 +58,7 @@ test('gated-room text shows only the required streak while floating bubbles reta
 });
 
 test('a newly cleared gated room discloses that progression starts on the next run', () => {
-  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW };
+  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW, ko };
   const render = (template: string, params: Record<string, string | number>) =>
     template.replace(/\{(\w+)\}/g, (match, key: string) => String(params[key] ?? match));
 

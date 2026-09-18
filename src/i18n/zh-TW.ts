@@ -295,6 +295,7 @@ const zhTW = {
   'setting.language.en': 'English',
   'setting.language.zh-CN': '简体中文',
   'setting.language.zh-TW': '繁體中文',
+  'setting.language.ko': '한국어',
   'setting.backup.title': '備份（Export）',
   'setting.backup.download': '下載備份',
   'setting.import.title': '匯入（Import）',

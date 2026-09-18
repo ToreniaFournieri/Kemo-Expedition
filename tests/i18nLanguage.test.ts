@@ -11,12 +11,25 @@ import ja from '../src/i18n/ja.ts';
 import en from '../src/i18n/en.ts';
 import zhCN from '../src/i18n/zh-CN.ts';
 import zhTW from '../src/i18n/zh-TW.ts';
+import ko from '../src/i18n/ko.ts';
 
 const glossarySource = readFileSync(new URL('../src/data/glossary.ts', import.meta.url), 'utf8');
 
+test('Korean dictionary covers every Japanese runtime key with matching placeholders', () => {
+  const placeholders = (value: string) => [...new Set(
+    [...value.matchAll(/\{(\w+)\}/g)].map((match) => match[1]),
+  )].sort();
+
+  for (const [key, japanese] of Object.entries(ja)) {
+    assert.ok(key in ko, `ko is missing ${key}`);
+    assert.deepEqual(placeholders(ko[key]), placeholders(japanese), `ko placeholder mismatch in ${key}`);
+  }
+  assert.equal(ko['setting.language.ko'], '한국어');
+});
+
 test('all indexed ability and terrain flavor families are complete and use supported placeholders in every language', () => {
   const languages = [
-    ['ja', ja], ['en', en], ['zh-CN', zhCN], ['zh-TW', zhTW],
+    ['ja', ja], ['en', en], ['zh-CN', zhCN], ['zh-TW', zhTW], ['ko', ko],
   ] as const;
   const placeholders = (value: string) => [...new Set(
     [...value.replace(/(?<!\{)\btarget\b(?!\})/g, '{target}').matchAll(/\{([^}]+)\}/g)].map((match) => match[1]),
@@ -68,11 +81,13 @@ test('normalizes supported system language tags case-insensitively', () => {
   assert.equal(normalizeSystemLanguage('zh-Hans-SG'), 'zh-CN');
   assert.equal(normalizeSystemLanguage('zh_Hant_HK'), 'zh-TW');
   assert.equal(normalizeSystemLanguage('zh'), 'zh-CN');
+  assert.equal(normalizeSystemLanguage('ko-KR'), 'ko');
 });
 
 test('uses the first supported system language preference', () => {
   assert.equal(resolveSystemLanguage(['fr-FR', 'zh-TW', 'en-US']), 'zh-TW');
   assert.equal(resolveSystemLanguage(['de-DE', 'en-GB']), 'en');
+  assert.equal(resolveSystemLanguage(['fr-FR', 'ko-KR', 'en-US']), 'ko');
 });
 
 test('returns null when system language information is missing or unsupported', () => {
@@ -85,6 +100,7 @@ test('selects URL, saved, system, then Japanese in priority order', () => {
   assert.equal(selectInitialLanguage('en', 'zh-CN', 'zh-TW'), 'en');
   assert.equal(selectInitialLanguage(null, 'zh-CN', 'zh-TW'), 'zh-CN');
   assert.equal(selectInitialLanguage(null, null, 'zh-TW'), 'zh-TW');
+  assert.equal(selectInitialLanguage(null, null, 'ko'), 'ko');
   assert.equal(selectInitialLanguage(null, null, null), 'ja');
 });
 
@@ -96,6 +112,7 @@ test('AFK emulation efficiency is available in the runtime glossary in every lan
     { dictionary: en, label: 'AFK Efficiency' },
     { dictionary: zhCN, label: '挂机效率' },
     { dictionary: zhTW, label: '放置效率' },
+    { dictionary: ko, label: '방치 효율' },
   ] as const;
   localizedGlossary.forEach(({ dictionary, label }) => {
     assert.equal(dictionary['data.glossary.100.label'], label);
@@ -113,6 +130,7 @@ test('condition is available in the runtime glossary in every language', () => {
     { dictionary: en, label: 'Condition' },
     { dictionary: zhCN, label: '状态' },
     { dictionary: zhTW, label: '狀態' },
+    { dictionary: ko, label: '컨디션' },
   ] as const;
   localizedGlossary.forEach(({ dictionary, label }) => {
     assert.equal(dictionary['data.glossary.condition.label'], label);

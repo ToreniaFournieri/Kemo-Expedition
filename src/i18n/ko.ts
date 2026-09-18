@@ -294,6 +294,7 @@ const ko = {
 'setting.language.en': 'English',
 'setting.language.zh-CN': '简体中文',
 'setting.language.zh-TW': '繁體中文',
+'setting.language.ko': '한국어',
 'setting.backup.title': '백업 (Export)',
 'setting.backup.download': '백업 다운로드',
 'setting.import.title': '가져오기 (Import)',

@@ -5,7 +5,7 @@ const battleSource = readFileSync(new URL('../native/battle_protocol.cpp', impor
 const magicSource = readFileSync(new URL('../src/game/magic.ts', import.meta.url), 'utf8');
 const homeSharedSource = readFileSync(new URL('../src/components/home/homeShared.tsx', import.meta.url), 'utf8');
 const partyTabSource = readFileSync(new URL('../src/components/home/tabs/PartyTab.tsx', import.meta.url), 'utf8');
-const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW'].map(locale => (
+const localeSources = ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'].map(locale => (
   readFileSync(new URL(`../src/i18n/${locale}.ts`, import.meta.url), 'utf8')
 ));
 

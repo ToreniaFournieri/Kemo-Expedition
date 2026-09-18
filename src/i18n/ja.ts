@@ -295,6 +295,7 @@ const ja = {
   'setting.language.en': 'English',
   'setting.language.zh-CN': '简体中文',
   'setting.language.zh-TW': '繁體中文',
+  'setting.language.ko': '한국어',
   'setting.backup.title': 'バックアップ（Export）',
   'setting.backup.download': 'バックアップをダウンロード',
   'setting.import.title': 'インポート（Import）',

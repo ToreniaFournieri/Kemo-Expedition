@@ -294,6 +294,7 @@ const en = {
   'setting.language.en': 'English',
   'setting.language.zh-CN': '简体中文',
   'setting.language.zh-TW': '繁體中文',
+  'setting.language.ko': '한국어',
   'setting.backup.title': 'Backup (Export)',
   'setting.backup.download': 'Download backup',
   'setting.import.title': 'Import',

@@ -607,7 +607,7 @@ test('compact Diary metadata, pooled storage, legacy mixing, and AI facts round 
     assert.ok(renderExpeditionMetadata(restored).dungeonName);
     assert.ok(renderDiaryBattle(restored.entries[0]).length);
   }
-  assert.equal(new Set(localized).size, 4);
+  assert.equal(new Set(localized).size, SUPPORTED_LANGUAGES.length);
   assert.equal(JSON.stringify(log), before);
   const legacy = { ...diary, semantic: undefined, expeditionLog: { ...log, compactVersion: undefined, entries: [{ ...room, compactBattle: undefined, details: [{ phase: 'combat' as const, actor: 'enemy' as const, action: 'Original language' }] }] } };
   assert.equal(mapCompactDiary(legacy).expeditionLog, legacy.expeditionLog);
