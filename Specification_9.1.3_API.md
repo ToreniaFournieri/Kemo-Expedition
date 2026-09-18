@@ -244,6 +244,13 @@ Path Parameters
           * Example: `10%/649907/6499070`
         * `deity`
         * `deityRank`
+        * `condition`
+          * Format: `<conditionKey>/<conditionValue>`
+            * `conditionKey`: `poor`, `low`, `cautious`, `normal`, `steady`, `good`, `great`, and `excellent`
+            * `conditionValue`: -349~400
+            * Details: the section `7.2.2 AUTO progress logic`
+          * Example: `steady/55`
+          * Example: `low/-188`
       * `state`
         * Example: `state.rest`.
       * `lastDestination`
