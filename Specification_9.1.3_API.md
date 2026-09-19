@@ -142,15 +142,23 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      character/{characterId}/removeAllEquipment
      character/{characterId}/removeEquipment
      character/{characterId}/equip
+     character/{characterId}/lockEquipment
+     character/{characterId}/unlockEquipment
      character/{characterId}/autoEquipment
+     character/{characterId}/jewelAttach
+     character/{characterId}/jewelRemove
      character/{characterId}/saveEquipmentSet
      character/{characterId}/loadEquipmentSet
      character/{characterId}/deleteEquipmentSet
+     character/{characterId}/renameEquipmentSet
+     character/{characterId}/undoEquipment
+     character/{characterId}/redoEquipment
 
 3-4. commit/base
      changeJewelPriorityParty
      sellInventoryItems
      purchaseShopItems
+     paidShopRefresh
      restoreSoldItems
      unlockForm
 
@@ -159,8 +167,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      diaryEntry/markAsRead
 
 3-6. commit/setting
-     enemyEditPane
+     clairvoyanceReset
      modeSelect
+     enemyEditPane
      feedback
      backup/export
      backup/import
@@ -996,6 +1005,8 @@ Path Parameters
   * `destination`
     * Example: `3`.
     * Validation: the specified destination must be unlocked.
+  * `fixDestination`
+    * Boolean. `true`: `Fixed`, `false`: `Auto`
   * `depthLimit`
     * Example: `5f-3`
   * `difficultyOffset`
@@ -1070,7 +1081,18 @@ Path Parameters
     * Example:
       `["0/1101/2/0", "1/1102/1/0"]`
 
-**3-3-6. `character/{characterId}/autoEquipment`**
+**3-3-6. `character/{characterId}/lockEquipment`**
+
+* Parameters:
+  * `targetEquipment`
+
+**3-3-7. `character/{characterId}/unlockEquipment`**
+
+* Parameters:
+  * `targetEquipment`
+
+
+**3-3-8. `character/{characterId}/autoEquipment`**
 
 * Parameters:
   * `mode`
@@ -1080,7 +1102,18 @@ Path Parameters
     * If `true`, immediately runs Auto Equipment using the specified `mode`.
     * Boolean: `true` / `false`.
 
-**3-3-7. `character/{characterId}/saveEquipmentSet`**
+**3-3-9. `character/{characterId}/jewelAttach`**
+
+* Parameters:
+  * `targetEquipment`
+  * `jewelToSet`
+
+**3-3-10. `character/{characterId}/jewelRemove`**
+
+* Parameters:
+  * `targetEquipment`
+
+**3-3-11. `character/{characterId}/saveEquipmentSet`**
 
 * Parameters:
   * `equipmentSet`
@@ -1088,7 +1121,7 @@ Path Parameters
 * Return:
   * `equipmentSetId`
 
-**3-3-8. `character/{characterId}/loadEquipmentSet`**
+**3-3-12. `character/{characterId}/loadEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
@@ -1106,16 +1139,25 @@ Path Parameters
 * Return:
   * `equipmentSet`
 
-**3-3-9. `character/{characterId}/deleteEquipmentSet`**
+**3-3-13. `character/{characterId}/deleteEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
 
-**3-3-10. `character/{characterId}/undoEquipment`**
+**3-3-14. `character/{characterId}/renameEquipmentSet`**
+
+* Parameters:
+  * `equipmentSetId`
+  * `name`
+
+**3-3-15. `character/{characterId}/undoEquipment`**
+
+* Parameters: none.
 
 
+**3-3-16. `character/{characterId}/redoEquipment`**
 
-**3-3-11. `character/{characterId}/redoEquipment`**
+* Parameters: none.
 
 
 **3-4. `commit/base`**
@@ -1145,7 +1187,6 @@ Path Parameters
         * Sell all matching items.
         * Automatically change the item state from `s.owned` to `s.sold`.
 
-
 **3-4-3. `purchaseShopItems`**
 
 * Parameters:
@@ -1155,15 +1196,21 @@ Path Parameters
       * `shopItemId`
         * Example: `1`
 
-**3-4-4. `restoreSoldItems`**
+**3-4-4. `paidShopRefresh`**
+
+* Parameters: none.
+
+
+**3-4-5. `restoreSoldItems`**
 
 * Parameters:
   * `items`
 
-**3-4-5. `unlockForm`**
+**3-4-6. `unlockForm`**
 
 * Parameters:
   * `enemyId`  
+
 
 
 **3-5. `commit/diary`**
@@ -1206,6 +1253,20 @@ Path Parameters
 
 
 **3-6. `commit/setting`**
+
+**3-6-1. `clairvoyanceReset`**
+
+* Parameters:
+  * `partyNumber`
+  * `resetCommonRewards`
+    * Boolean.
+    * If `true`, resets the common rewards.
+  * `resetRewards`
+    * Boolean.
+    * If `true`, resets the party-specific rewards.
+  * `resetSideQuest`
+    * Boolean.
+    * If `true`, resets the side quest progress.
 
 **3-6-1. `modeSelect`**
 
@@ -1296,9 +1357,9 @@ Path Parameters
 * News: `DeveloperNewsNotification`
 
 * Parameters:
-  * `newsId`
+  * `version`
     * Optional.
-    * Accepts one or more news IDs.
+    * Accepts one or more news `version`.
     * If omitted, marks all news articles as read.
 
 
@@ -1331,6 +1392,8 @@ Path Parameters
 * Return:
   * Each entry includes:
     * `version`
+      * Unique identifier for the entry.
+      * Treat this value as the entry ID.
     * `date`
     * `content`
 

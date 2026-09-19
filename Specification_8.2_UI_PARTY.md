@@ -310,10 +310,15 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - `commit/build/character/{characterId}/removeAllEquipment`
   - `commit/build/character/{characterId}/removeEquipment`
   - `commit/build/character/{characterId}/equip`
+  - `commit/build/character/{characterId}/lockEquipment`
+  - `commit/build/character/{characterId}/unlockEquipment`
   - `commit/build/character/{characterId}/autoEquipment`
+  - `commit/build/character/{characterId}/jewelAttach`
+  - `commit/build/character/{characterId}/jewelRemove`
   - `commit/build/character/{characterId}/saveEquipmentSet`
   - `commit/build/character/{characterId}/loadEquipmentSet`
   - `commit/build/character/{characterId}/deleteEquipmentSet`
+  - `commit/build/character/{characterId}/renameEquipmentSet`
   - `commit/build/character/{characterId}/undoEquipment`
   - `commit/build/character/{characterId}/redoEquipment`
 
