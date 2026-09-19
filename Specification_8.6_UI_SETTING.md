@@ -4,6 +4,7 @@
 - **GUI:**
   - `guiSetting`
 - **API Read:**
+  - `read/observation/setting`
   - `read/setting/enemyEditPane`
   - `read/setting/modeSelect`
   - `read/setting/debug`

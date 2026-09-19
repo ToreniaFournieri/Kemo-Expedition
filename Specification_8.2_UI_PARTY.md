@@ -3,6 +3,9 @@
 ### 8.2 UI_PARTY
 - **GUI:**
   - `guiParty`
+- **API Read:**
+  - `read/observation/party`
+
 - Party tab
 
 - **Party main Pane background image**

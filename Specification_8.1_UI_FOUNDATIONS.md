@@ -1,6 +1,19 @@
 ## 8. UI
 
 ### 8.1 UI_FOUNDATIONS
+- **GUI:**
+  - `guiHeader`
+- **API Read:**
+  - `read/observation/expedition`
+  - `read/observation/party`
+  - `read/observation/base`
+  - `read/observation/diary`
+  - `read/observation/setting`
+  - `read/observation/popupEventStream`
+
+- **API Commit:**
+  - `commit/progress/progressReport`
+
 
 - Platform: Web-based (React + TypeScript + Tailwind)
   - Style: Compact, simple, iOS-like, Liquid Glass style.

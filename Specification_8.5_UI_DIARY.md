@@ -4,6 +4,7 @@
 - **GUI:**
   - `guiDiary`
 - **API Read:**
+  - `read/observation/diary`
   - `read/diary/{p}/diarySetting`
   - `read/diary/diaryEntry/{diaryEntryId}`
 - **API Commit:**
