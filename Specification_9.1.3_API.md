@@ -158,7 +158,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      sellInventoryItems
      purchaseShopItems
      paidShopRefresh
-     restoreSoldItems
+     unlockSoldItems
      unlockForm
 
 3-5. commit/diary
@@ -237,19 +237,23 @@ Path Parameters
     * Used only when `gameMode` is `orca`.
     * Default: `5`.
     * Valid range: `0–20`.
+  * `environment`
+    * Required.
+    * Must satisfy the restrictions defined for the specified environment.
 
 * Return:
   * `userId`
   * `gameMode`
   * `levelOffsetForOrca`
+  * `environment`
 
 * Save data path:
   * Normal:
-    * `users/normal/<userId>/`
-    * Example: `users/normal/Taro/`
+    * `users/<environment>/normal/<userId>/`
+    * Example: `users/desktop/normal/Taro/`
   * Orca:
-    * `users/orca<levelOffsetForOrca>/<userId>/`
-    * Example: `users/orca5/Lin/`
+    * `users/<environment>/orca<levelOffsetForOrca>/<userId>/`
+    * Example: `users/orca/orca5/Lin/`
 
 **1-3. `fundamental/logIn`**
 
@@ -257,12 +261,18 @@ Path Parameters
   * `userId`
   * `gameMode`
   * `levelOffsetForOrca`
-* Starts a game instance or acquires API control of the current instance.
+
+* Behavior:
+  * Starts a game instance or acquires API control of the existing instance.
+  * On successful login, advances the in-game time up to the current real-world time.
+    * If the in-game time is already later than the current real-world time, no time advancement is performed.
+
 * While logged in:
   * Normal real-time progression is paused.
   * Only API operations from the logged-in user may control or modify the instance.
   * Other state-mutating controls are restricted.
-* Note: This feature is only for API control in this version.
+* Note: This feature is available only for API control in this version.
+
 
 **1-4. `fundamental/logOut`**
 
@@ -291,6 +301,8 @@ Path Parameters
   * `globalInfo`
     * `gameMode`
     * `inGameTime`
+      * Format: ISO 8601 datetime string.
+      * Example: `2026-09-20T07:42:15+09:00`.
     * `gold`
     * `prana`
   * `partyInfo`
@@ -358,6 +370,8 @@ Path Parameters
     * Currently displayed in the header pane in the UI.
     * `gameMode`
     * `inGameTime`
+      * Format: ISO 8601 datetime string.
+      * Example: `2026-09-20T07:42:15+09:00`.
     * `gold`
     * `prana`
     * `progressReportInfo`
@@ -992,9 +1006,23 @@ Path Parameters
 **3-1-1. `elapsed`**
 
 * Parameters:
+  * `calculateToRealTime`
+    * Boolean.
+    * If `true`, advances the in-game time up to the current real-world time. 
+    * If the in-game time is already later than the current real-world time, no action is performed.
   * `elapsedSeconds`
     * Unit: seconds.
+    * Minimum: `60` seconds.
     * Maximum: `43200` seconds (12 hours).
+
+* Behavior:
+  * Processes the specified elapsed time using the same logic as AFK reactivation.
+
+* Return:
+  * `elapsedSeconds`
+    * Unit: seconds.
+  * `inGameTime`
+
 
 **3-1-2. `progressReport`**
 
@@ -1114,7 +1142,12 @@ Path Parameters
 
 * Parameters:
   * `targetEquipment`
+    * Target equipment to which the jewel will be attached.
+
   * `jewelToSet`
+    * Jewel to attach.
+    * Only one jewel may be attached to each target equipment.
+    * Must satisfy the compatibility rules defined in `3.1.7 Jewel (結晶)`, under `Item Type → Available Jewel`.
 
 **3-3-10. `character/{characterId}/jewelRemove`**
 
@@ -1187,18 +1220,13 @@ Path Parameters
 
 * Parameters:
   * `items`
-    * Array of items to sell.
+    * Array of target items to sell.
     * One or more entries may be specified in a single request.
-    * Format: `<Item Format>/<quantity>`
-      * `quantity`
-        * Integer greater than `0`, or `ALL`.
+    * Format: `<Item Format>`
     * Examples:
-      * `0/1101/2/0/12`
-        * Sell `12` of item `0/1101/2/0`.
-        * Reduce the owned quantity by `12`.
-      * `0/1102/1/0/ALL`
-        * Sell all matching items.
-        * Automatically change the item state from `s.owned` to `s.sold`.
+      * `0/1102/1/0`
+    * Behavior:
+      * For each successfully sold item, changes the item state from s.owned to s.sold.
 
 **3-4-3. `purchaseShopItems`**
 
@@ -1214,10 +1242,18 @@ Path Parameters
 * Parameters: none.
 
 
-**3-4-5. `restoreSoldItems`**
+**3-4-5. `unlockSoldItems`**
 
 * Parameters:
   * `items`
+    * Array of sold items to unlock.
+    * One or more items may be specified in a single request.
+    * Format: `<Item Format>`
+
+* Behavior:
+  * Changes the item state from `s.sold` to `s.notown`.
+  * Does not restore the item quantity.
+
 
 **3-4-6. `unlockForm`**
 
