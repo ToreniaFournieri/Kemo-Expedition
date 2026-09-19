@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 22 | 2026/09/19 | Document canonical Korean terminology for exploration, exploration locations, expeditions, and sorties so their distinct UI meanings remain preserved. |
+| 0.9.7 | 21 | 2026/09/19 | Correct Korean desktop Draw notifications to use the distinct `파티 무승부` label, normalize the named Gods Battle compound to `신마{god}전`, and re-indent the Korean dictionary for maintenance. |
 | 0.9.7 | 20 | 2026/09/18 | Persist deity identity and donation keys as stable identifiers, migrate every legacy localized deity name including Korean, and localize names only at display time so language changes retain deity selection, effects, and rank. |
 | 0.9.7 | 19 | 2026/09/18 | Add Korean (`ko`) as a runtime language with lazy-loaded localization, Korean browser-language detection, persisted and URL language selection, desktop snapshot support, a separate locale bundle, and full dictionary regression coverage. |
 | 0.9.7 | 18 | 2026/09/16 | Update UI_DIARY runtime (Spec 8.5): retain a maximum of 12 entries per Party Diary and display `49+` on the main unread badge when 49 or more entries are unread. |

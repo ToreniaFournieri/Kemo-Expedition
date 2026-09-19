@@ -28,6 +28,12 @@ test('Korean dictionary covers every Japanese runtime key with matching placehol
   assert.equal(ko['setting.language.ko'], '한국어');
 });
 
+test('Korean notification and Gods Battle labels retain their distinct game meanings', () => {
+  assert.equal(ko['desktopNotification.trigger.draw'], '파티 무승부');
+  assert.equal(ko['desktopNotification.trigger.retreat'], '파티 후퇴');
+  assert.equal(ko['home.godsBattle.named'], '신마{god}전');
+});
+
 test('deity identity has a Korean-independent migration path and display-only localization', () => {
   assert.match(deitySource, /'Goddess of Restoration': \[[^\]]*'재생의 여신'/);
   assert.match(deitySource, /return deityKey \?\? name;/);
