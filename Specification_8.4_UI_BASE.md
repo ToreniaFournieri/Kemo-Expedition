@@ -1,6 +1,10 @@
 ## 8. UI
 
 ### 8.4 UI_BASE
+
+- **GUI:**
+  - `guiBase`
+
 - Base(拠点)
 - It has tabs inside Base tab. Shop(お店), Inventory(所持品),Ashen Route Vault(灰路の蔵) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - Default: Shop

@@ -2,6 +2,18 @@
 
 ### 8.3 UI_EXPEDITION
 
+- **GUI:**
+  - `guiExpedition`
+- **API Read:**
+  - `read/expedition/{p}/setting`
+  - `read/expedition/{p}/latestBattleLog`
+  - `read/expedition/{p}/simulationRun`
+  - `read/expedition/{p}/chargeStock`
+- **API Commit:**
+  - `commit/expedition/{p}/changeExpedition`
+  - `commit/expedition/{p}/sortie`
+  - `commit/expedition/{p}/godsBattle`
+
 - **Auto Destination Change Logic**
 
 **Controls:**  
@@ -247,7 +259,7 @@ HP 2350 / 4680
       - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
       - The process ends after the final `state.return` is completed.
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
-  - **Special boost:** 
+  - **Charge Stock:** 
     - Each cleared expedition tier increases the maximum charge time that can be accumulated for each stock slot.
     - Charge duration is affected by Speed of Time.
       - Example: If `Speed of Time` is `x5`, the 6th stock charge time is 38.4 min instead of 192 min.

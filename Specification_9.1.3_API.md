@@ -77,6 +77,7 @@
      {p}/setting
      {p}/latestBattleLog
      {p}/simulationRun
+     {p}/chargeStock
 
 2-3. read/build
      party/{p}
@@ -359,6 +360,18 @@ Path Parameters
     * Success means that the party wins the battle in that room.
     * Example:
       `["1f-1/Success 90.0% / Draw 4.1% / Retreat 2.0% / Defeat 3.9% / Not reached 0.0%","1f-2/Success 50.0% / Draw 10.0% / Retreat 20.0% / Defeat 14.1% / Not reached 5.9%"]`
+
+**2-2-4. `{p}/chargeStock`**
+
+* Parameters: none
+
+* Return:
+  * `chargeStock`
+    * Current number of available charge stocks.
+    * Example: `4`
+  * `chargeDuration`
+    * If `chargeStock` is at the maximum stock level, return `0`.
+    * Example: `12`
 
 
 **2-3. `read/build`**
