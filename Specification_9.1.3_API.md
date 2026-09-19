@@ -10,6 +10,9 @@
     * API operations must share the same underlying game logic and validation logic as the UI.
         * Do not duplicate existing game logic specifically for the API.
         * Implement only behavior that is specific to the API interface.
+* Request/response types, defaults, query encoding, and examples are completed
+  by 9.1.4.14. UI preference ownership is defined in 9.1.4.17; external delivery
+  uses 9.1.4.15. These contracts do not change the referenced gameplay rules.
 
 ```
 React UI ── typed in-process adapter ─┐
@@ -122,6 +125,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      enemyEditPane
      modeSelect
      debug
+     delivery/{deliveryId}
 
 3. Commit
 
@@ -160,6 +164,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      paidShopRefresh
      unlockSoldItems
      unlockForm
+     markItemsAsSeen
 
 3-5. commit/diary
      {p}/diarySetting
@@ -175,6 +180,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      backup/reset
      debug
      markNewsAsRead
+     uiPreferences
 
 
 4. Help
@@ -294,6 +300,11 @@ Path Parameters
 **2-1-1. `compact`**
 
 * An API for AI.
+* Every request intentionally performs a fresh private 100-run simulation for
+  each unlocked party, using the same snapshot as the returned current facts.
+  This is an on-demand decision aid, not a real-time monitoring projection.
+  The result is not cached between requests and is not saved. Other observation
+  projections do not trigger these simulations.
 
 * Parameters: none.
 
@@ -330,7 +341,7 @@ Path Parameters
         * Example: `defeated`.
 * `attention`
   * `latestSimulationResult`
-    * Latest 100-run simulation summary for each party.
+    * Fresh 100-run simulation summary for each unlocked party for this request.
     * This is a simplified simulation using 1/10 of the runs used by the full 1,000-run simulation.
     * Format:
       `<partyIdTag>/<clearPercent>/<returnPercent>/<drawPercent>/<retreatPercent>/<defeatPercent>`
@@ -387,7 +398,7 @@ Path Parameters
 
 **2-1-4. `party`**
 
-* Parameters: none.
+* Parameters: optional `partyNumber` and `characterId`; see 9.1.4.17.
 
 * Return:
   * `partyInfo`
@@ -396,7 +407,7 @@ Path Parameters
 
 **2-1-5. `base`**
 
-* Parameters: none.
+* Parameters: optional `pane`; see 9.1.4.17.
 
 * Return:
   * `baseInfo`
@@ -405,7 +416,7 @@ Path Parameters
 
 **2-1-6. `diary`**
 
-* Parameters: none.
+* Parameters: optional `partyNumber` and `diaryEntryId`; see 9.1.4.17.
 
 * Return:
   * `diaryInfo`
@@ -463,7 +474,8 @@ Path Parameters
 
 **2-2-2. `{p}/latestBattleLog`**
 
-* Parameters: none.
+* Parameters: optional `logId` for a retained log referenced by a Diary entry.
+  Omission selects the latest retained log of this party. See 9.1.4.14.
 
 * Return:
   * `battleLog`
@@ -506,6 +518,7 @@ Path Parameters
     * Current number of available charge stocks.
     * Example: `4`
   * `chargeDuration`
+    * Remaining real-time seconds until the next stock under current speed settings.
     * If `chargeStock` is at the maximum stock level, return `0`.
     * Example: `12`
 
@@ -538,6 +551,8 @@ Path Parameters
 
 * Return:
   * `calculatedStatus`:
+    * `CalculatedStatus` as defined in 9.1.4.14, with shared UI-calculated
+      numeric stats, abilities, bonuses, and attack profiles.
 
   * `current`:
     * `unique`
@@ -614,6 +629,7 @@ Path Parameters
     * If omitted, returns all saved equipment sets.
   * `isEquipmentSetDetail`
     * Boolean.
+    * Optional; default: `false`.
     * If `true`, include the full equipment-set details.
     * If `false`, return summary information only.
 
@@ -837,6 +853,8 @@ Path Parameters
 **2-5-2. `diaryEntry/{diaryEntryId}`**
 
 * Parameters: none.
+* Return: `{entry: DiaryEntry}` as defined in 9.1.4.14. Reading does not mark it
+  as read. Missing or no-longer-retained entries return `not_found`.
 
 **2-6. `read/setting`**
 
@@ -1027,6 +1045,9 @@ Path Parameters
 **3-1-2. `progressReport`**
 
 * Parameters: none.
+* Return: `{deliveryId, status: "queued"}` after durable acceptance of the
+  existing external progress-report action. Delivery and any success benefit
+  follow 9.1.4.15. Queued acceptance is not a success notification.
 
 
 **3-2. `commit/expedition`**
@@ -1158,6 +1179,9 @@ Path Parameters
 
 * Parameters:
   * `equipmentSet`
+    * Object: `{name?: string}`. Omitted name uses the UI default name.
+    * Captures the character's current equipment into a new empty saved slot;
+      callers cannot supply arbitrary equipment contents. See 9.1.4.14.
 
 * Return:
   * `equipmentSetId`
@@ -1166,6 +1190,10 @@ Path Parameters
 
 * Parameters:
   * `equipmentSetId`
+  * `loadMode`
+    * Optional for an initially unconfirmed request. Defaults to `equipSet`
+      only when all exact requirements are available; partial loads require
+      a choice through the confirmation protocol in 9.1.4.5.
 
 * Validation:
   * `partialUnavailable`
@@ -1328,6 +1356,7 @@ Path Parameters
   * `showExpeditionStats`
   * `theme`
 
+* Partial updates are allowed; omitted fields retain their current values.
 
 **3-6-3. `enemyEditPane`**
 
@@ -1401,6 +1430,9 @@ Path Parameters
   * `attachments`
     * Optional.
     * Up to 4 image attachments.
+* Multipart field names, defaults, and scalar types are defined in 9.1.4.10
+  and 9.1.4.14. Return `{deliveryId, status: "queued"}` after durable acceptance.
+  Delivery confirmation and the existing reward/cooldown follow 9.1.4.15.
 
 **3-6-7. `markNewsAsRead`**
 
@@ -1412,6 +1444,18 @@ Path Parameters
     * Accepts one or more news `version`.
     * If omitted, marks all news articles as read.
 
+
+**Additional UI and delivery operations**
+
+* `read/setting/delivery/{deliveryId}`: read the originating save's external
+  delivery status; full result shape and state transitions are in 9.1.4.15.
+  `deliveryId` is an opaque server-generated string, not a user or filename.
+* `commit/setting/uiPreferences`: partial update of explicitly persisted UI
+  preferences through `{changes: [{key, value}]}`. Types, validation, and
+  ownership are in 9.1.4.17. Return the complete public preference list.
+* `commit/base/markItemsAsSeen`: acknowledge displayed newly acquired variants
+  using `{items: [variantKey]}` from the inventory projection. Return changed
+  keys in `{items: [...]}`; never change quantities or currencies. See 9.1.4.17.
 
 ##### 9.1.3.5 API requirement — Help
 

@@ -8,6 +8,7 @@
   - `read/setting/enemyEditPane`
   - `read/setting/modeSelect`
   - `read/setting/debug`
+  - `read/setting/delivery/{deliveryId}`
   - `resources/developerNewsNotification`
   - `resources/donationBox`
   - `resources/clairvoyance/{p}`
@@ -26,6 +27,7 @@
   - `commit/setting/backup/reset`
   - `commit/setting/debug`
   - `commit/setting/markNewsAsRead`
+  - `commit/setting/uiPreferences`
 
 - Setting (設定)
   - All panes are collapsed by default and expandable.

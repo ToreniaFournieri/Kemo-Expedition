@@ -101,7 +101,8 @@
 - **API Commit:**
   - `commit/base/changeJewelPriorityParty`
   - `commit/base/sellInventoryItems`
-  - `commit/base/restoreSoldItems`
+  - `commit/base/unlockSoldItems`
+  - `commit/base/markItemsAsSeen`
 
 - Behavior:
   - Notification pops up when acquiring a new item
