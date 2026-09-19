@@ -31,7 +31,7 @@
 - **API Read:** 
   - `read/build/party/{p}`
 - **API Read:**
-  - `character/{characterId}/status`
+  - `read/build/character/{characterId}/status`
 
 - Up to 6 parties can exist.
 - Locked parties are not displayed.
@@ -82,7 +82,7 @@ line2: 桃/腕  ← text over background image
 - **API Read:**
   - `read/build/character/{characterId}/status`
 - **API Commit:**
-  - `commit/build/party/{p}.order`
+  - `commit/build/party/{p}`
 
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
 - When the player attempts to swap the order of party members, display the following confirmation dialog:

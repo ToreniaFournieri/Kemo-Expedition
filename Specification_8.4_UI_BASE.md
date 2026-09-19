@@ -21,6 +21,7 @@
   - `read/base/shopItemsList`
 - **API Commit:**
   - `commit/base/purchaseShopItems`
+  - `commit/base/paidShopRefresh`
 
 - **Function:** Sells items.
 - **Shop name:** フェリスのガラクタ屋 (Felis’s Junk Shop)

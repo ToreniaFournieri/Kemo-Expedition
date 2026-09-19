@@ -4,11 +4,7 @@
 - **GUI:**
   - `guiHeader`
 - **API Read:**
-  - `read/observation/expedition`
-  - `read/observation/party`
-  - `read/observation/base`
-  - `read/observation/diary`
-  - `read/observation/setting`
+  - `read/observation/overview`
   - `read/observation/popupEventStream`
 
 - **API Commit:**

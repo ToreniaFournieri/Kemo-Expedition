@@ -5,7 +5,6 @@
 - **GUI:**
   - `guiExpedition`
 - **API Read:**
-- **API Read:**
   - `read/observation/expedition`
   - `read/expedition/{p}/setting`
   - `read/expedition/{p}/latestBattleLog`

@@ -129,7 +129,6 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      elapsed
      progressReport
 
-* Parameters: none.
 
 3-2. commit/expedition
      {p}/changeExpedition
@@ -381,7 +380,7 @@ Path Parameters
     * Party-related information.
     * Currently displayed in the party tab in the UI.
 
-**2-4-5. `base`**
+**2-1-5. `base`**
 
 * Parameters: none.
 
@@ -390,16 +389,17 @@ Path Parameters
     * Base-related information.
     * Currently displayed in the base tab in the UI.
 
-**2-4-6. `diary`**
+**2-1-6. `diary`**
 
 * Parameters: none.
 
 * Return:
-  * `baseInfo`
+  * `diaryInfo`
     * Diary-related information.
+    * Including `diaryEntryId` list with `partyNumber`
     * Currently displayed in the diary tab in the UI.
 
-**2-4-7. `setting`**
+**2-1-7. `setting`**
 
 * Parameters: none.
 
@@ -409,7 +409,7 @@ Path Parameters
     * Currently displayed in the setting tab in the UI.
 
 
-**2-4-8. `popupEventStream`**
+**2-1-8. `popupEventStream`**
 
 * Parameters: none.
 
@@ -901,26 +901,26 @@ Path Parameters
       * Boolean: `true` / `false`.
     * `theme`
       * Allowed values:
-        * `m.kemo`
-        * `m.laika`
-        * `m.leonard`
-        * `m.orca`
-        * `m.nox`
-        * `m.luna`
-        * `m.mishka`
-        * `m.puchitsa`
-        * `m.hagakure`
-        * `m.souga-ha`
-        * `m.finn`
-        * `m.merle`
-        * `m.rosaria`
-        * `m.milly`
-        * `m.guabi`
-        * `m.nemea`
-        * `m.bernetta`
-        * `m.yone`
-        * `m.niv`
-        * `m.nave`
+        * `theme.kemo`
+        * `theme.laika`
+        * `theme.leonard`
+        * `theme.orca`
+        * `theme.nox`
+        * `theme.luna`
+        * `theme.mishka`
+        * `theme.puchitsa`
+        * `theme.hagakure`
+        * `theme.souga-ha`
+        * `theme.finn`
+        * `theme.merle`
+        * `theme.rosaria`
+        * `theme.milly`
+        * `theme.guabi`
+        * `theme.nemea`
+        * `theme.bernetta`
+        * `theme.yone`
+        * `theme.niv`
+        * `theme.nave`
 
 **2-6-3. `debug`**
 
@@ -1003,13 +1003,17 @@ Path Parameters
 
 * Parameters:
   * `destination`
+    * Optional.
     * Example: `3`.
     * Validation: the specified destination must be unlocked.
-  * `fixDestination`
-    * Boolean. `true`: `Fixed`, `false`: `Auto`
+  * `destinationMode`
+    * Optional.
+    * Option: `auto` or `fixed`
   * `depthLimit`
+    * Optional.
     * Example: `5f-3`
   * `difficultyOffset`
+    * Optional.
     * Example: `8`.
     * Validation: must be within the currently valid difficulty-offset range.
       * Example: `0–68`.
@@ -1128,16 +1132,21 @@ Path Parameters
 
 * Validation:
   * `partialUnavailable`
-    * Indicates that one or more items in the selected equipment set are unavailable.
-    * `warningMessage`
-    * Requires confirmation before execution.
+    * Boolean.
+    * `true` if one or more items in the selected equipment set are unavailable.
+  * `warningMessage`
+    * Warning message shown when `partialUnavailable` is `true`.
+  * If `partialUnavailable` is `true`, confirmation is required before execution.
 
 * Confirmation:
-  * If confirmed, proceed with loading the equipment set.
-  * If declined, dismiss the operation without making any changes.
-
+  * `loadMode`
+    * Options:
+      * `equipSet`: Equip items, this option is visible only when all of items are available.
+      * `equipSimilar`: Equip matching items where available, and substitute unavailable items with similar items.
+      * `equipExactMatchesOnly`: Equip only items that exactly match the saved equipment set.
 * Return:
   * `equipmentSet`
+
 
 **3-3-13. `character/{characterId}/deleteEquipmentSet`**
 
@@ -1268,7 +1277,7 @@ Path Parameters
     * Boolean.
     * If `true`, resets the side quest progress.
 
-**3-6-1. `modeSelect`**
+**3-6-2. `modeSelect`**
 
 * Parameters:
   * `mode`
@@ -1279,7 +1288,7 @@ Path Parameters
   * `theme`
 
 
-**3-6-2. `enemyEditPane`**
+**3-6-3. `enemyEditPane`**
 
 * Parameters:
   * `enemyLevel`
@@ -1296,7 +1305,7 @@ Path Parameters
 * Partial updates are allowed.
 * Omitted fields retain their current values.
 
-**3-6-3. `debug`**
+**3-6-4. `debug`**
 
 * Parameters:
   * `runtimeDiagnostics`
@@ -1315,23 +1324,23 @@ Path Parameters
 * Partial updates are allowed.
 * Omitted fields retain their current values.
 
-**3-6-4. `backup`**
+**3-6-5. `backup`**
 
-**3-6-4-1. `backup/export`**
+**3-6-5-1. `backup/export`**
 
 * Parameters: none.
 
 * Return:
   * a back up file. 
 
-**3-6-4-2. `backup/import`**
+**3-6-5-2. `backup/import`**
 
 * Parameters: an imported file.
 
 * Return:
   * the result. 
 
-**3-6-4-3. `backup/reset`**
+**3-6-5-3. `backup/reset`**
 
 * Initial parameters: none.
 
@@ -1340,7 +1349,7 @@ Path Parameters
 * Confirmation parameters: `confirmationToken`.
 
 
-**3-6-5. `feedback`**
+**3-6-6. `feedback`**
 
 * Parameters:
   * `name`
@@ -1352,7 +1361,7 @@ Path Parameters
     * Optional.
     * Up to 4 image attachments.
 
-**3-6-6. `markNewsAsRead`**
+**3-6-7. `markNewsAsRead`**
 
 * News: `DeveloperNewsNotification`
 
