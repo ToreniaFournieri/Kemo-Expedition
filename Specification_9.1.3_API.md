@@ -139,6 +139,7 @@
      feedback
      backup
      debug
+     markNewsAsRead
 
 
 4. Help
@@ -1076,8 +1077,19 @@ Path Parameters
 
 * Parameters:
   * `diaryEntryId`
-    * Example: 120, 121...
-    * Example: `ALL` 
+    * Diary entry ID to mark as read.
+    * Accepts one or more diary entry IDs.
+    * Example: `120`, `121`
+    * If `ALL`, mark all applicable diary entries as read.
+  * `partyNumber`
+    * Optional party filter.
+    * Example: `1`
+    * If specified, the operation applies only to diary entries related to that party.
+    * Example:
+      * `diaryEntryId = ALL`
+      * `partyNumber = 1`
+      * Marks all PT1-related diary entries as read.
+
 
 **3-6. `commit/setting`**
 
@@ -1164,6 +1176,17 @@ Path Parameters
   * `attachments`
     * Optional.
     * Up to 4 image attachments.
+
+**3-6-6. `markNewsAsRead`**
+
+* News: `DeveloperNewsNotification`
+
+* Parameters:
+  * `newsId`
+    * Optional.
+    * Accepts one or more news IDs.
+    * If omitted, marks all news articles as read.
+
 
 ##### 9.1.3.5 API requirement — Help
 

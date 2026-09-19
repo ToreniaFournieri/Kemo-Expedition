@@ -1,6 +1,28 @@
 ## 8. UI
 
 ### 8.6 UI_SETTING
+- **GUI:**
+  - `guiSetting`
+- **API Read:**
+  - `read/setting/enemyEditPane`
+  - `read/setting/modeSelect`
+  - `read/setting/debug`
+  - `resources/developerNewsNotification`
+  - `resources/donationBox`
+  - `resources/clairvoyance/{p}`
+  - `resources/glossary`
+  - `resources/itemCompendium`
+  - `resources/characterRoster`
+  - `resources/bestiary`
+  - `resources/superRareList`
+- **API Commit:**
+  - `commit/setting/enemyEditPane`
+  - `commit/setting/modeSelect`
+  - `commit/setting/feedback`
+  - `commit/setting/backup`
+  - `commit/setting/debug`
+  - `commit/markNewsAsRead`
+
 - Setting (設定)
   - All panes are collapsed by default and expandable.
   - The expanded/collapsed state is persisted and saved.

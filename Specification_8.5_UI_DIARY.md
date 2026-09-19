@@ -1,6 +1,15 @@
 ## 8. UI
 
 ### 8.5 UI_DIARY
+- **GUI:**
+  - `guiDiary`
+- **API Read:**
+  - `read/diary/{p}/diarySetting`
+  - `read/diary/diaryEntry/{diaryEntryId}`
+- **API Commit:**
+  - `commit/diary/{p}/diarySetting`
+  - `commit/diary/diaryEntry/markAsRead`
+
 - The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. (Default selected tab: `PT1`, or the last selected tab if previously selected.)
 - A Party tab becomes visible only when the corresponding Party is unlocked.
 - The selected tab is highlighted using the sub-theme color.
