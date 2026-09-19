@@ -11,6 +11,13 @@
   - not available for Workshop(工房), in this version. (Gray out)
 	
 #### 8.4.1 Shop (お店)
+- **GUI:**
+  - `guiShop`
+- **API Read:**
+  - `read/base/shopInfo`
+  - `read/base/shopItemsList`
+- **API Commit:**
+  - `commit/base/purchaseShopItems`
 
 - **Function:** Sells items.
 - **Shop name:** フェリスのガラクタ屋 (Felis’s Junk Shop)
@@ -82,6 +89,16 @@
 
 
 #### 8.4.2 Inventory(所持品)
+- **GUI:**
+  - `guiInventory`
+- **API Read:**
+  - `read/base/searchItems`
+  - `read/base/jewelPriorityParty`
+- **API Commit:**
+  - `commit/base/changeJewelPriorityParty`
+  - `commit/base/sellInventoryItems`
+  - `commit/base/restoreSoldItems`
+
 - Behavior:
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
@@ -133,6 +150,12 @@
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
 #### 8.4.3 Ashen Route Vault(灰路の蔵)
+- **GUI:**
+  - `guiAshenRouteVault`
+- **API Read:**
+  - no api
+- **API Commit:**
+  - no api
 
 - **Function:** Item purchase (debug purpose only)
 - **Shop name:** カリエスの灰路の蔵 (Caelis' Ashen Route Vault)
@@ -156,6 +179,15 @@
           - "買う": Purchases 1 unit of the selected item.
 
 #### 8.4.5 Altar (祭壇)
+- **GUI:**
+  - `guiAltar`
+- **API Read:**
+  - `read/base/alterInfo`
+  - `read/base/enemyFormList`
+- **API Commit:**
+  - `commit/base/unlockForm`
+
+
 - The Altar allows players to spend **Prana** (プラーナ) to unlock individual enemy forms for Mimorian characters.
 - Display the player’s current Prana balance.
 

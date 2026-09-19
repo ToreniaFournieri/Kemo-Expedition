@@ -88,7 +88,10 @@
 2-4. read/base
      searchItems
      jewelPriorityParty
+     shopInfo
      shopItemsList
+     alterInfo
+     enemyFormList
 
 2-5. read/diary
      {p}/diarySetting
@@ -123,6 +126,8 @@
      changeJewelPriorityParty
      sellInventoryItems
      purchaseShopItems
+     restoreSoldItems
+     unlockForm
 
 3-5. commit/diary
      {p}/diarySetting
@@ -590,7 +595,17 @@ Path Parameters
       * Currently selectable party numbers.
       * Example: [1, 2, 3, `none`].
 
-**2-4-3. `shopItemsList`**
+**2-4-3. `shopInfo`**
+
+* Parameters: none.
+
+* Return:
+  * `intimacy`
+  * `dialogue`
+  * `paidRefreshCountdown`
+  * `paidRefreshPrice`
+
+**2-4-4. `shopItemsList`**
 
 * Parameters: none.
 
@@ -611,6 +626,33 @@ Path Parameters
       * These values can be used directly with `purchaseShopItems`.
       * Example:
         `[1, 2, 4, 5]`
+
+**2-4-5. `alterInfo`**
+
+* Parameters: none.
+
+* Return:
+  * `alterOverview`
+
+**2-4-5. `enemyFormList`**
+
+* Parameters:
+  *  `enemyType`
+  *  `enemyId`
+
+* Return:
+  * `current`:
+    * `enemyFormList`
+      * `enemyId`  
+      * `enemyName`
+      * `enemyType`
+      * `enemyAbility`
+      * `enemyBonus`
+      * `unlockCost`
+      * `unlockCondition`
+  * `validOptions`:
+    * `enemyId`  
+
 
 **2-5. read/diary**
 
@@ -975,15 +1017,18 @@ Path Parameters
 
 * Parameters:
   * `items`
-    * Array of items to sell. One or more entries may be specified in a single request.
+    * Array of items to sell.
+    * One or more entries may be specified in a single request.
     * Format: `<Item Format>/<quantity>`
-    * `quantity`:
-      * Integer greater than `0`, or `ALL`.
-    * Example:
+      * `quantity`
+        * Integer greater than `0`, or `ALL`.
+    * Examples:
       * `0/1101/2/0/12`
         * Sell `12` of item `0/1101/2/0`.
+        * Reduce the owned quantity by `12`.
       * `0/1102/1/0/ALL`
         * Sell all matching items.
+        * Automatically change the item state from `s.owned` to `s.sold`.
 
 
 **3-4-3. `purchaseShopItems`**
@@ -994,6 +1039,16 @@ Path Parameters
     * Each Entry:
       * `shopItemId`
         * Example: `1`
+
+**3-4-4. `restoreSoldItems`**
+
+* Parameters:
+  * `items`
+
+**3-4-5. `unlockForm`**
+
+* Parameters:
+  * `enemyId`  
 
 
 **3-5. `commit/diary`**
@@ -1121,13 +1176,13 @@ Path Parameters
 
 * Parameters: none.
 * Returns the API list from:
-  * `9.1.4.2 Endpoint index` in `Specification_9.1.4_API_ENDPOINTS(v1).md`.
+  * `9.1.3.7 Endpoint index`
 
 **4-1-2. `endpoints`**
 
 * Parameters: none.
-* Returns the API overview from:
-  * `Specification_9.1.4_API_ENDPOINTS(v1).md`.
+* Returns the API document:
+  * `Specification_9.1.3_API.md`.
 
 
 **4-2. `resources`**
