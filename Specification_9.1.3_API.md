@@ -189,6 +189,11 @@ Path Parameters
   * `userId`
     * Valid format: `[A-Za-z0-9_-]{1,16}`.
     * If a user with the same `gameMode`, `levelOffsetForOrca`, and `userId` already exists, `signUp` fails and does not modify the existing save data.
+  * `language`
+    * Optional.
+    * Default: `ja`.
+    * If a supported `lang` URL parameter is present, use its value instead.
+      * Example: `lang=ja`.
   * `gameMode`
     * Allowed values:
       * `normal` // `mode.normal`
