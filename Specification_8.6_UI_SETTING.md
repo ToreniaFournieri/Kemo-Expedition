@@ -19,9 +19,11 @@
   - `commit/setting/enemyEditPane`
   - `commit/setting/modeSelect`
   - `commit/setting/feedback`
-  - `commit/setting/backup`
+  - `commit/setting/backup/export`
+  - `commit/setting/backup/import`
+  - `commit/setting/backup/reset`
   - `commit/setting/debug`
-  - `commit/markNewsAsRead`
+  - `commit/setting/markNewsAsRead`
 
 - Setting (設定)
   - All panes are collapsed by default and expandable.

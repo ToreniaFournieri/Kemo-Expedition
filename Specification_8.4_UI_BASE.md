@@ -182,7 +182,7 @@
 - **GUI:**
   - `guiAltar`
 - **API Read:**
-  - `read/base/alterInfo`
+  - `read/base/altarInfo`
   - `read/base/enemyFormList`
 - **API Commit:**
   - `commit/base/unlockForm`

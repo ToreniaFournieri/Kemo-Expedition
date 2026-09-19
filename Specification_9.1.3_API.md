@@ -90,7 +90,7 @@
      jewelPriorityParty
      shopInfo
      shopItemsList
-     alterInfo
+     altarInfo
      enemyFormList
 
 2-5. read/diary
@@ -118,9 +118,9 @@
      character/{characterId}/removeEquipment
      character/{characterId}/equip
      character/{characterId}/autoEquipment
-     character/{characterId}/saveEquipmentSet`
-     character/{characterId}/loadEquipmentSet`
-     character/{characterId}/deleteEquipmentSet`
+     character/{characterId}/saveEquipmentSet
+     character/{characterId}/loadEquipmentSet
+     character/{characterId}/deleteEquipmentSet
 
 3-4. commit/base
      changeJewelPriorityParty
@@ -137,7 +137,9 @@
      enemyEditPane
      modeSelect
      feedback
-     backup
+     backup/export
+     backup/import
+     backup/reset
      debug
      markNewsAsRead
 
@@ -628,14 +630,14 @@ Path Parameters
       * Example:
         `[1, 2, 4, 5]`
 
-**2-4-5. `alterInfo`**
+**2-4-5. `altarInfo`**
 
 * Parameters: none.
 
 * Return:
-  * `alterOverview`
+  * `altarOverview`
 
-**2-4-5. `enemyFormList`**
+**2-4-6. `enemyFormList`**
 
 * Parameters:
   *  `enemyType`
@@ -776,6 +778,7 @@ Path Parameters
         * `en`
         * `zh-CN`
         * `zh-TW`
+        * `ko`
     * `darkMode`
       * Allowed values:
         * `off`
@@ -1463,7 +1466,7 @@ Errors MUST NOT expose partially staged state or undisclosed random results.
 | GET    | `/api/v1/read/base/jewelPriorityParty`      | Yes   | Jewel priority.    |
 | GET    | `/api/v1/read/base/shopInfo`    | Yes   | Shop status/information. |
 | GET    | `/api/v1/read/base/shopItemsList`     | Yes   | Shop lineup.       |
-| GET    | `/api/v1/read/base/alterInfo`         | Yes   | Altar status/information.    |
+| GET    | `/api/v1/read/base/altarInfo`         | Yes   | Altar status/information.    |
 | GET    | `/api/v1/read/base/enemyFormList`     | Yes   | Enemy-form list/options. |
 | GET    | `/api/v1/read/diary/{p}/diarySetting`       | Yes   | Diary settings/options.  |
 | GET    | `/api/v1/read/diary/diaryEntry/{diaryEntryId}`  | Yes   | Retained Diary entry.  |
