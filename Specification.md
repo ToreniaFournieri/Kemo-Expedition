@@ -148,10 +148,6 @@
 
 * @Specification_9.1.3_API.md
 
-#### 9.1.4 API Endpoints v1
-
-* @Specification_9.1.4_API_ENDPOINTS(v1).md
-
 * Note: `Specification_9.1.4_API_ENDPOINTS(experimental).md` is obsolete.
   * Do not rely on `/experimental/v1` anymore.
   * Use `/api/v1` for all API operations.

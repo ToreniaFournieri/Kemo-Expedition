@@ -11,6 +11,12 @@
         * Do not duplicate existing game logic specifically for the API.
         * Implement only behavior that is specific to the API interface.
 
+```
+React UI ── in-process typed adapter ─┐
+Desktop pane ─ desktop bridge ────────┼─ Application API ─ Game authority/reducer ─ Persistence
+AI/CUI ── loopback HTTP/JSON ─────────┘
+```
+
 **Item Format**
 * The following compact item format is used throughout this API.
 * Format:
@@ -184,6 +190,7 @@ Path Parameters
 **1-2. `fundamental/signUp`**
 
 * Creates a new API user and initializes a new game for that user.
+* Note: This feature is only for API control in this version.
 
 * Parameters:
   * `userId`
@@ -228,6 +235,7 @@ Path Parameters
   * Normal real-time progression is paused.
   * Only API operations from the logged-in user may control or modify the instance.
   * Other state-mutating controls are restricted.
+* Note: This feature is only for API control in this version.
 
 **1-4. `fundamental/logOut`**
 
@@ -237,6 +245,7 @@ Path Parameters
     * Normal real-time progression may resume.
     * API-exclusive control ends.
     * Other controls are no longer restricted.
+* Note: This feature is only for API control in this version.
 
 ##### 9.1.3.3 API requirement read
 
