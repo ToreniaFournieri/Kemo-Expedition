@@ -430,6 +430,7 @@ Path Parameters
       * Example: `5f-3`.
     * `difficultyOffset`
       * Example: `8`.
+    * `destinationMode`
 
   * `validOptions`:
     * `destination`
@@ -876,6 +877,7 @@ Path Parameters
     * `language`
     * `darkMode`
     * `autoRepeat`
+    * `showExpeditionStats`
     * `theme`
   * `validOptions`:
     * `mode`
@@ -898,6 +900,8 @@ Path Parameters
         * `on`
         * `system`
     * `autoRepeat`
+      * Boolean: `true` / `false`.
+    * `showExpeditionStats`
       * Boolean: `true` / `false`.
     * `theme`
       * Allowed values:
@@ -1285,6 +1289,7 @@ Path Parameters
   * `language`
   * `darkMode`
   * `autoRepeat`
+  * `showExpeditionStats`
   * `theme`
 
 

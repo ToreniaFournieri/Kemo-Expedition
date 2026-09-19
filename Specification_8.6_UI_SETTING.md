@@ -17,7 +17,7 @@
   - `resources/bestiary`
   - `resources/superRareList`
 - **API Commit:**
-  - `commit/clairvoyanceReset`
+  - `commit/setting/clairvoyanceReset`
   - `commit/setting/enemyEditPane`
   - `commit/setting/modeSelect`
   - `commit/setting/feedback`
