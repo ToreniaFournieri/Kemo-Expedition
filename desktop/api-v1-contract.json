@@ -16231,7 +16231,8 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "current"
+            "current",
+            "loadReport"
           ],
           "properties": {
             "current": {
@@ -16246,6 +16247,93 @@
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
+                  }
+                }
+              }
+            },
+            "loadReport": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "loadMode",
+                "entries"
+              ],
+              "properties": {
+                "loadMode": {
+                  "anyOf": [
+                    {
+                      "const": "equipSet",
+                      "type": "string"
+                    },
+                    {
+                      "const": "equipSimilar",
+                      "type": "string"
+                    },
+                    {
+                      "const": "equipExactMatchesOnly",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "entries": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "slotIndex",
+                      "saved",
+                      "result",
+                      "reason"
+                    ],
+                    "properties": {
+                      "slotIndex": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "saved": {
+                        "type": "string"
+                      },
+                      "result": {
+                        "anyOf": [
+                          {
+                            "const": "equipped",
+                            "type": "string"
+                          },
+                          {
+                            "const": "substituted",
+                            "type": "string"
+                          },
+                          {
+                            "const": "skipped",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "reason": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "const": "slot_unavailable",
+                                "type": "string"
+                              },
+                              {
+                                "const": "not_equippable",
+                                "type": "string"
+                              },
+                              {
+                                "const": "unavailable",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
                   }
                 }
               }
@@ -16296,7 +16384,8 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "current"
+                "current",
+                "loadReport"
               ],
               "properties": {
                 "current": {
@@ -16311,6 +16400,93 @@
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
+                      }
+                    }
+                  }
+                },
+                "loadReport": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "loadMode",
+                    "entries"
+                  ],
+                  "properties": {
+                    "loadMode": {
+                      "anyOf": [
+                        {
+                          "const": "equipSet",
+                          "type": "string"
+                        },
+                        {
+                          "const": "equipSimilar",
+                          "type": "string"
+                        },
+                        {
+                          "const": "equipExactMatchesOnly",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "slotIndex",
+                          "saved",
+                          "result",
+                          "reason"
+                        ],
+                        "properties": {
+                          "slotIndex": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "saved": {
+                            "type": "string"
+                          },
+                          "result": {
+                            "anyOf": [
+                              {
+                                "const": "equipped",
+                                "type": "string"
+                              },
+                              {
+                                "const": "substituted",
+                                "type": "string"
+                              },
+                              {
+                                "const": "skipped",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "reason": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "const": "slot_unavailable",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "not_equippable",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "unavailable",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
                       }
                     }
                   }
@@ -16412,6 +16588,17 @@
             "current": {
               "equipment": [
                 "0"
+              ]
+            },
+            "loadReport": {
+              "loadMode": "equipSet",
+              "entries": [
+                {
+                  "slotIndex": 0,
+                  "saved": "xxxxxxx",
+                  "result": "equipped",
+                  "reason": "slot_unavailable"
+                }
               ]
             }
           }
