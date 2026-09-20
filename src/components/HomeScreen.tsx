@@ -1,6 +1,6 @@
 import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
 import { formatDiaryUnreadBadge } from '../game/diary';
-import { gameReducer, simulateExpeditionRuns, createFreshGameState } from '../hooks/useGameState';
+import { gameReducer, simulateExpeditionRuns } from '../hooks/useGameState';
 import { lazy,Profiler,Suspense,useCallback,useEffect,useMemo,useRef,useState } from 'react';
 import { CLASSES } from '../data/classes';
 import { DEVELOPER_NEWS_ITEMS } from '../data/developerNews';
@@ -19,7 +19,7 @@ selectBestAutoEquipmentFillCandidate,
 selectBestAutoEquipmentUpgradeCandidate,
 type EquipmentRankingCandidate,
 } from '../game/battleKernel';
-import { createApiRandom, gameplayRandom, withGameplayRandomSource } from '../game/gameplayRandom';
+import { gameplayRandom } from '../game/gameplayRandom';
 import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
@@ -97,10 +97,9 @@ import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyL
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import { encodePersistedState } from '../game/storageCompression';
-import { decodeApiSavePayload } from '../api/v1/commitOperations';
+import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1ActiveSession, type ApiV1SessionPorts } from '../api/v1/sessionLifecycle';
 import { SerializedApplicationApiAuthority } from '../api/v1/authority';
 import { buildApiV1ReadData } from '../api/v1/readModels';
-import { stageApiV1ElapsedProgression } from '../api/v1/elapsedProgression';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
 import {
@@ -564,116 +563,70 @@ export function HomeScreen({
     }
     if (!desktop) return failure(503, 'runtime_unavailable', 'Desktop API services are unavailable.');
 
+    const sessionPorts: ApiV1SessionPorts = {
+      accounts: { create: desktop.createApiAccount, load: desktop.loadApiAccount, commit: desktop.commitApiAccount },
+      player: {
+        flushSave: () => apiActionsRef.current.flushSave(),
+        exportPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+        returnPayload: {
+          get: () => localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY),
+          set: (payload) => localStorage.setItem(API_PLAYER_RETURN_STORAGE_KEY, payload),
+          clear: () => localStorage.removeItem(API_PLAYER_RETURN_STORAGE_KEY),
+        },
+      },
+      importGameState: (imported) => apiActionsRef.current.importGameState(imported),
+      exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+      now: () => Date.now(),
+      catchUp: {
+        maximumElapsedMs: AFK_MAX_ELAPSED_MS,
+        cycleDurationScale: () => apiCycleDurationScaleRef.current,
+        applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
+        yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
+        randomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
+      },
+    };
+    const emptyControl = (): DesktopApiControlMetadata => ({ revisionHighWater: 0, receipts: [], tombstones: [], popupEvents: [], deliveries: [] });
+    const activeSession = (): ApiV1ActiveSession | null => apiV1IdentityRef.current
+      ? { identity: apiV1IdentityRef.current, control: apiV1ControlRef.current, state: apiStateRef.current, simulatedAt: apiSimulatedAtRef.current }
+      : null;
+
     if (operation === 'fundamental/signUp') {
-      const identity: DesktopApiAccountIdentity = {
-        userId: String(request.userId ?? ''),
-        environment: String(request.environment ?? '') as DesktopApiAccountIdentity['environment'],
-        gameMode: String(request.gameMode ?? '') as DesktopApiAccountIdentity['gameMode'],
-        levelOffsetForOrca: request.levelOffsetForOrca === undefined ? 5 : Number(request.levelOffsetForOrca),
-      };
-      if (!/^[A-Za-z0-9_-]{1,16}$/.test(identity.userId)) return failure(400, 'invalid_request', 'userId is invalid.', { field: 'userId' });
-      try {
-        const language = ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'].includes(String(request.language))
-          ? String(request.language) as GameState['global']['language']
-          : 'ja';
-        const fresh = createFreshGameState(language);
-        const savePayload = encodePersistedState(JSON.stringify(serializeGameState(fresh)));
-        await desktop.createApiAccount(identity, savePayload);
-        return { revision: 0, data: { ...identity, revision: 0 } };
-      } catch (error) {
-        return failure(String(error).includes('already_exists') ? 409 : 400, String(error).includes('already_exists') ? 'already_exists' : 'invalid_request', 'The API user could not be created.');
-      }
+      const created = await signUpApiAccount(request, sessionPorts);
+      if (!created.ok) return failure(created.status, created.code, created.message, created.details);
+      return { revision: 0, data: { ...created.identity, revision: 0 } };
     }
 
     if (operation === 'fundamental/logIn') {
-      if (apiV1IdentityRef.current) return failure(409, 'control_unavailable', 'Another API account is active.');
-      const identity: DesktopApiAccountIdentity = {
-        userId: String(request.userId ?? ''),
-        environment: String(request.environment ?? '') as DesktopApiAccountIdentity['environment'],
-        gameMode: String(request.gameMode ?? '') as DesktopApiAccountIdentity['gameMode'],
-        ...(request.levelOffsetForOrca === undefined ? {} : { levelOffsetForOrca: Number(request.levelOffsetForOrca) }),
-      };
-      try {
-        const account = await desktop.loadApiAccount(identity);
-        if (!account) return failure(404, 'not_found', 'The API user was not found.');
-        await apiActionsRef.current.flushSave();
-        const playerPayload = await apiActionsRef.current.getCompressedSavePayload();
-        localStorage.setItem(API_PLAYER_RETURN_STORAGE_KEY, playerPayload);
-        let accountState = decodeApiSavePayload(account.savePayload);
-        const loginControl = structuredClone(account.control);
-        const realNow = Date.now();
-        const previousInGameTime = Number.isFinite(loginControl.inGameTime) ? Number(loginControl.inGameTime) : realNow;
-        const catchUpMs = Math.min(AFK_MAX_ELAPSED_MS, Math.max(0, realNow - previousInGameTime));
-        if (catchUpMs >= 60_000) {
-          const apiRandom = createApiRandom(loginControl.rngState ?? crypto.getRandomValues(new Uint32Array(1))[0]);
-          let randomDrawCount = 0;
-          const catchUp = await stageApiV1ElapsedProgression(accountState, { calculateToRealTime: true }, {
-            simulatedAt: previousInGameTime,
-            realNow,
-            gameMode: identity.gameMode === 'orca' ? 'mode.orca' : 'mode.normal',
-            enemyLevelOffset: identity.levelOffsetForOrca ?? 5,
-            cycleDurationScale: apiCycleDurationScaleRef.current,
-            applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
-            runWithRandom: operation => withGameplayRandomSource(() => { randomDrawCount += 1; return apiRandom.next(); }, operation),
-            yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
-            maximumElapsedSeconds: Math.floor(AFK_MAX_ELAPSED_MS / 1_000),
-            allowExtendedElapsedSeconds: true,
-          });
-          accountState = catchUp.state;
-          if (randomDrawCount > 0) loginControl.rngState = apiRandom.state;
-          loginControl.revisionHighWater += 1;
-        }
-        loginControl.inGameTime = Math.max(previousInGameTime, realNow);
-        await desktop.commitApiAccount(account.identity, encodePersistedState(JSON.stringify(serializeGameState(accountState))), loginControl);
-        const imported = await apiActionsRef.current.importGameState(accountState);
-        if (!imported.state) throw new Error(imported.errorLog ?? 'account_load_failed');
-        apiStateRef.current = imported.state;
-        apiV1IdentityRef.current = account.identity;
-        apiV1ControlRef.current = loginControl;
-        apiRevisionRef.current = loginControl.revisionHighWater;
-        apiSimulatedAtRef.current = loginControl.inGameTime;
-        applicationApiAuthorityRef.current!.replaceSnapshot({ state: imported.state, control: loginControl, simulatedAt: loginControl.inGameTime });
-        apiLeaseActiveRef.current = true;
-        apiControlActiveRef.current = true;
-        setApiLeaseActive(true);
-        setApiControlActive(true);
-        return { revision: loginControl.revisionHighWater, identity: account.identity, data: { ...account.identity } };
-      } catch (error) {
-        return failure(500, 'save_failed', 'The API account could not be loaded.', { reason: String(error) });
-      }
+      const login = await logInApiAccount(request, activeSession(), sessionPorts);
+      if (!login.ok) return failure(login.status, login.code, login.message, login.details);
+      const { session } = login;
+      apiStateRef.current = session.state;
+      apiV1IdentityRef.current = session.identity;
+      apiV1ControlRef.current = session.control;
+      apiRevisionRef.current = session.control.revisionHighWater;
+      apiSimulatedAtRef.current = session.simulatedAt;
+      applicationApiAuthorityRef.current!.replaceSnapshot({ state: session.state, control: session.control, simulatedAt: session.simulatedAt });
+      apiLeaseActiveRef.current = true;
+      apiControlActiveRef.current = true;
+      setApiLeaseActive(true);
+      setApiControlActive(true);
+      return { revision: session.control.revisionHighWater, identity: session.identity, data: { ...session.identity } };
     }
 
-    const persistActiveAccount = async () => {
-      const identity = apiV1IdentityRef.current;
-      if (!identity) throw new Error('login_required');
-      const savePayload = await apiActionsRef.current.getCompressedSavePayload();
-      await desktop.commitApiAccount(identity, savePayload, apiV1ControlRef.current);
-    };
-
     if (operation === 'fundamental/logOut') {
-      if (!apiV1IdentityRef.current) return failure(401, 'login_required', 'No API account is active.');
-      try {
-        await persistActiveAccount();
-        const finalRevision = apiV1ControlRef.current.revisionHighWater;
-        const playerPayload = localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY);
-        if (!playerPayload) throw new Error('player_return_save_missing');
-        const restored = await apiActionsRef.current.importGameState(decodeApiSavePayload(playerPayload));
-        if (!restored.state) throw new Error(restored.errorLog ?? 'player_restore_failed');
-        localStorage.removeItem(API_PLAYER_RETURN_STORAGE_KEY);
-        apiStateRef.current = restored.state;
-        apiV1IdentityRef.current = null;
-        apiV1ControlRef.current = { revisionHighWater: 0, receipts: [], tombstones: [], popupEvents: [], deliveries: [] };
-        apiRevisionRef.current = 0;
-        apiSimulatedAtRef.current = Date.now();
-        applicationApiAuthorityRef.current!.replaceSnapshot({ state: restored.state, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
-        apiLeaseActiveRef.current = false;
-        apiControlActiveRef.current = false;
-        setApiLeaseActive(false);
-        setApiControlActive(false);
-        return { revision: finalRevision, data: { finalPersistedRevision: finalRevision } };
-      } catch (error) {
-        return failure(500, 'save_failed', 'Logout could not durably restore the player save.', { reason: String(error) });
-      }
+      const logout = await logOutApiAccount(activeSession(), sessionPorts);
+      if (!logout.ok) return failure(logout.status, logout.code, logout.message, logout.details);
+      apiStateRef.current = logout.restoredState;
+      apiV1IdentityRef.current = null;
+      apiV1ControlRef.current = emptyControl();
+      apiRevisionRef.current = 0;
+      apiSimulatedAtRef.current = Date.now();
+      applicationApiAuthorityRef.current!.replaceSnapshot({ state: logout.restoredState, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
+      apiLeaseActiveRef.current = false;
+      apiControlActiveRef.current = false;
+      setApiLeaseActive(false);
+      setApiControlActive(false);
+      return { revision: logout.finalRevision, data: { finalPersistedRevision: logout.finalRevision } };
     }
 
     if (!apiV1IdentityRef.current) return failure(401, 'login_required', 'A logged-in API account is required.');
