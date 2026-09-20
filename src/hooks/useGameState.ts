@@ -3127,7 +3127,7 @@ function reduceGameState(
       // Undo/Redo must use precisely the saved-set availability contract. This
       // check is kept in the reducer as well as the UI to reject stale clicks.
       if (action.type === 'RESTORE_EQUIPMENT_STATE'
-        && !evaluateEquipmentSet(set, character, state.global.inventory, maxSlots).allAvailable) return state;
+        && !evaluateEquipmentSet(set, character, state.global.inventory, maxSlots, state.global.jewels).allAvailable) return state;
       const result = applyEquipmentSet(
         set,
         character,
@@ -3169,9 +3169,11 @@ function reduceGameState(
         slot,
         name: action.name.slice(0, 80),
         createdAt: action.createdAt,
-        equipment: character.equipment
-          .filter((item): item is Item => item != null)
-          .map((item) => ({ item: structuredClone(item), isLocked: item.isLocked === true })),
+        equipment: character.equipment.flatMap((item, slotIndex) => item == null ? [] : [{
+          slotIndex,
+          item: structuredClone(item),
+          isLocked: item.isLocked === true,
+        }]),
       };
       return {
         ...state,

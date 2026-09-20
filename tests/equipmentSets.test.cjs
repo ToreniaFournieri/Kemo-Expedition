@@ -68,12 +68,39 @@ test('exact load restores locks and the saved Jewel before auto-assigning other 
   assert.equal(result.jewels['fort:8'], 1);
 });
 
-test('exact loads fall back to auto Jewel assignment only when the saved Jewel is unavailable', async () => {
+test('exact loads skip an entry when its saved Jewel is unavailable', async () => {
   const { applyEquipmentSet } = await modulePromise;
   const armor = item(10, 2, 0, 'armor');
   const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } });
   const result = applyEquipmentSet(saved, character([]), inventoryOf(armor), { 'fort:8': 1 }, 0, 2, 'exact');
-  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'fort', rank: 8 });
+  assert.equal(result.character.equipment[0], null);
+  assert.equal(result.jewels['fort:8'], 1);
+});
+
+test('exact availability reserves repeated saved Jewels and includes currently attached copies', async () => {
+  const { evaluateEquipmentSet } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const saved = setOf(
+    { ...armor, jewel: { key: 'fort', rank: 2 } },
+    { ...armor, jewel: { key: 'fort', rank: 2 } },
+  );
+  const twoArmors = inventoryOf(armor, armor);
+  assert.deepEqual(
+    evaluateEquipmentSet(saved, character([]), twoArmors, 2, { 'fort:2': 1 }).entries.map((entry) => entry.available),
+    [true, false],
+  );
+  const equipped = { ...armor, jewel: { key: 'fort', rank: 2 } };
+  assert.equal(evaluateEquipmentSet(setOf(equipped), character([equipped]), {}, 2, {}).allAvailable, true);
+});
+
+test('saved snapshots and exact loads preserve sparse equipment slots', async () => {
+  const { applyEquipmentSet, createEquipmentSetSnapshot } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const snapshot = createEquipmentSetSnapshot([null, armor]);
+  assert.equal(snapshot.equipment[0].slotIndex, 1);
+  const result = applyEquipmentSet(snapshot, character([]), inventoryOf(armor), {}, 0, 2, 'exact');
+  assert.equal(result.character.equipment[0], null);
+  assert.equal(result.character.equipment[1]?.id, armor.id);
 });
 
 test('similar loads do not reserve the saved Jewel', async () => {

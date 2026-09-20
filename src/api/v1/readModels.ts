@@ -10,6 +10,7 @@ import { RACES } from '../../data/races.ts';
 import { renderDiaryMetadata } from '../../game/compactDiary.ts';
 import { getDeityId, getDeityRank, normalizeDeityName } from '../../game/deity.ts';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
+import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
@@ -197,10 +198,36 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const found = findCharacter(state, characterRead[1]);
     if (!found) throw new Error('not_found');
     const { party, character, characterIndex } = found;
-    if (characterRead[2] === 'status') return { calculatedStatus: computePartyStats(party).characterStats[characterIndex], current: { unique: character.isUnique, name: character.name, racesAndGender: `${character.raceId}/${character.gender}`, mainClassId: character.mainClassId, subClassId: character.subClassId, lineage: character.lineageId, predisposition: character.predispositionId }, editableFields: { name: !character.isUnique, unique: character.isUnique }, validOptions: { racesAndGender: RACES.flatMap((race) => ['male', 'female'].map((gender) => `${race.id}/${gender}`)), mainClassId: CLASSES.map((entry) => entry.id), subClassId: CLASSES.map((entry) => entry.id), lineage: character.isUnique ? [] : LINEAGES.map((entry) => entry.id), predisposition: character.isUnique ? [] : PREDISPOSITIONS.map((entry) => entry.id) } };
+    if (characterRead[2] === 'status') {
+      const racesAndGender = character.raceId === 'mimorian' && character.mimorianEnemyId != null
+        ? `${character.raceId}/${character.gender}/${character.mimorianEnemyId}`
+        : `${character.raceId}/${character.gender}`;
+      const editableRaceIds = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
+      const normalRaceOptions = RACES.filter((race) => editableRaceIds.has(race.id)).flatMap((race) => (['male', 'female'] as const)
+        .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
+        .map((gender) => `${race.id}/${gender}`));
+      const assignedMimorianForms = new Set(state.parties.flatMap((entry) => entry.characters)
+        .filter((candidate) => candidate.id !== character.id && candidate.raceId === 'mimorian')
+        .map((candidate) => candidate.mimorianEnemyId));
+      const mimorianOptions = state.global.unlockedMimorianEnemyIds
+        .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
+        .map((enemyId) => `mimorian/female/${enemyId}`);
+      return {
+        calculatedStatus: computePartyStats(party).characterStats[characterIndex],
+        current: { unique: character.isUnique === true, name: character.name, racesAndGender, mainClassId: character.mainClassId, subClassId: character.subClassId, lineage: character.lineageId, predisposition: character.predispositionId },
+        editableFields: { name: character.isUnique !== true, unique: character.isUnique === true },
+        validOptions: {
+          racesAndGender: character.isUnique ? ['none'] : [...normalRaceOptions, ...mimorianOptions],
+          mainClassId: CLASSES.map((entry) => entry.id),
+          subClassId: CLASSES.map((entry) => entry.id),
+          lineage: character.isUnique ? ['none'] : LINEAGES.filter((entry) => entry.selectable === true).map((entry) => entry.id),
+          predisposition: character.isUnique ? ['none'] : PREDISPOSITIONS.filter((entry) => entry.selectable === true).map((entry) => entry.id),
+        },
+      };
+    }
     if (characterRead[2] === 'equipment') return { current: { mode: character.autoEquipmentMode === 2 ? 'FULL' : character.autoEquipmentMode === 1 ? 'SEMI' : 'OFF', equipment: character.equipment.map(equipmentEntry) }, validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: character.equipment.filter((entry) => !entry).length } };
     const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
-    return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, slot) => equipmentEntry(entry.item, slot)) } : {}) } })) };
+    return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => equipmentEntry(entry.item, getSavedEquipmentSlot(entry, index))) } : {}) } })) };
   }
 
   if (operationId === 'read/base/searchItems') return { items: Object.values(state.global.inventory).filter((variant) => variant.status === (parameters.state ?? 'owned') || parameters.state === 'all').map((variant) => `${itemFormat(variant.item)}/${variant.count}`), equippedItems: state.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment.filter(Boolean).map((item) => `${party.id}/${character.id}/${itemFormat(item!)}`))), details: {} };

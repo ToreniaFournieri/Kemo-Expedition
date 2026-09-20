@@ -133,6 +133,12 @@ const availability = strict({ available: Type.Boolean(), unavailableReason: Type
 const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
 sampleOverrides.set(equipmentEntryFormat, '0');
 const equipmentEntryList = Type.Array(equipmentEntryFormat);
+const equipmentCommitCurrent = strict({
+  mode: literals('FULL', 'SEMI', 'OFF'),
+  equipment: equipmentEntryList,
+  undoAvailable: Type.Boolean(),
+  redoAvailable: Type.Boolean(),
+});
 const itemStackFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+$' });
 sampleOverrides.set(itemStackFormat, '0/1');
 const equippedItemFormat = Type.String({ pattern: '^[1-6]/[0-9]+/(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$' });
@@ -210,18 +216,28 @@ const responseDataSchemas = {
   'commit/expedition/{p}/sortie': strict({ outcome: Type.Union([Type.String(), Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
   'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([Type.String(), Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
   'commit/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }) }),
-  'commit/build/character/{characterId}/changeBuild': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/removeAllEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/removeEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/equip': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/lockEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/unlockEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/autoEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/jewelAttach': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/jewelRemove': strict({ current: strict({ equipment: equipmentEntryList }) }),
+  'commit/build/character/{characterId}/changeBuild': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/removeEquipment': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/equip': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/lockEquipment': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/unlockEquipment': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/autoEquipment': strict({
+    current: equipmentCommitCurrent,
+    autoEquipmentReport: strict({
+      ran: Type.Boolean(),
+      changes: Type.Array(strict({
+        slotIndex: Type.Integer({ minimum: 0 }),
+        before: Type.Union([Type.String(), Type.Null()]),
+        after: Type.Union([Type.String(), Type.Null()]),
+      })),
+    }),
+  }),
+  'commit/build/character/{characterId}/jewelAttach': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/jewelRemove': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/saveEquipmentSet': strict({ equipmentSetId: integerId }),
   'commit/build/character/{characterId}/loadEquipmentSet': strict({
-    current: strict({ equipment: equipmentEntryList }),
+    current: equipmentCommitCurrent,
     loadReport: strict({
       loadMode: literals('equipSet', 'equipSimilar', 'equipExactMatchesOnly'),
       entries: Type.Array(strict({
@@ -232,10 +248,10 @@ const responseDataSchemas = {
       })),
     }),
   }),
-  'commit/build/character/{characterId}/deleteEquipmentSet': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/renameEquipmentSet': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/undoEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),
-  'commit/build/character/{characterId}/redoEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),
+  'commit/build/character/{characterId}/deleteEquipmentSet': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/renameEquipmentSet': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/undoEquipment': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/redoEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/base/changeJewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }) }),
   // Follow-up: spec 9.1.4.9 requires {items, goldDelta, pranaDelta}; the current handler leaves `data` empty.
   'commit/base/sellInventoryItems': empty,

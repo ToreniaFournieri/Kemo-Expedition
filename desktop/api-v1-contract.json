@@ -13616,15 +13616,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -13681,15 +13706,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -13784,9 +13834,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -13860,15 +13913,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -13925,15 +14003,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -14028,9 +14131,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -14125,15 +14231,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -14190,15 +14321,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -14295,9 +14451,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -14391,15 +14550,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -14456,15 +14640,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -14561,9 +14770,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -14658,15 +14870,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -14723,15 +14960,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -14828,9 +15090,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -14925,15 +15190,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -14990,15 +15280,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -15095,9 +15410,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -15188,21 +15506,98 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "current"
+            "current",
+            "autoEquipmentReport"
           ],
           "properties": {
             "current": {
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
+                  }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "autoEquipmentReport": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "ran",
+                "changes"
+              ],
+              "properties": {
+                "ran": {
+                  "type": "boolean"
+                },
+                "changes": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "slotIndex",
+                      "before",
+                      "after"
+                    ],
+                    "properties": {
+                      "slotIndex": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "before": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "after": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
                   }
                 }
               }
@@ -15253,21 +15648,98 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "current"
+                "current",
+                "autoEquipmentReport"
               ],
               "properties": {
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
+                      }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "autoEquipmentReport": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "ran",
+                    "changes"
+                  ],
+                  "properties": {
+                    "ran": {
+                      "type": "boolean"
+                    },
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "slotIndex",
+                          "before",
+                          "after"
+                        ],
+                        "properties": {
+                          "slotIndex": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "before": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "after": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
                       }
                     }
                   }
@@ -15365,8 +15837,21 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
+            },
+            "autoEquipmentReport": {
+              "ran": true,
+              "changes": [
+                {
+                  "slotIndex": 0,
+                  "before": "xxxxxxx",
+                  "after": "xxxxxxx"
+                }
               ]
             }
           }
@@ -15467,15 +15952,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -15532,15 +16042,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -15638,9 +16173,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -15735,15 +16273,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -15800,15 +16363,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -15905,9 +16493,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -16239,15 +16830,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             },
@@ -16392,15 +17008,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 },
@@ -16586,9 +17227,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             },
             "loadReport": {
               "loadMode": "equipSet",
@@ -16681,15 +17325,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -16746,15 +17415,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -16851,9 +17545,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -16941,15 +17638,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -17006,15 +17728,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -17112,9 +17859,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -17188,15 +17938,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -17253,15 +18028,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -17356,9 +18156,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }
@@ -17432,15 +18235,40 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipment"
+                "mode",
+                "equipment",
+                "undoAvailable",
+                "redoAvailable"
               ],
               "properties": {
+                "mode": {
+                  "anyOf": [
+                    {
+                      "const": "FULL",
+                      "type": "string"
+                    },
+                    {
+                      "const": "SEMI",
+                      "type": "string"
+                    },
+                    {
+                      "const": "OFF",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "equipment": {
                   "type": "array",
                   "items": {
                     "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                     "type": "string"
                   }
+                },
+                "undoAvailable": {
+                  "type": "boolean"
+                },
+                "redoAvailable": {
+                  "type": "boolean"
                 }
               }
             }
@@ -17497,15 +18325,40 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "equipment"
+                    "mode",
+                    "equipment",
+                    "undoAvailable",
+                    "redoAvailable"
                   ],
                   "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "equipment": {
                       "type": "array",
                       "items": {
                         "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                         "type": "string"
                       }
+                    },
+                    "undoAvailable": {
+                      "type": "boolean"
+                    },
+                    "redoAvailable": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -17600,9 +18453,12 @@
         "response": {
           "data": {
             "current": {
+              "mode": "FULL",
               "equipment": [
                 "0"
-              ]
+              ],
+              "undoAvailable": true,
+              "redoAvailable": true
             }
           }
         }

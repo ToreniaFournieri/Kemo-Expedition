@@ -283,6 +283,8 @@ export interface Character {
 }
 
 export interface SavedEquipmentEntry {
+  /** Exact character equipment slot. Omitted only by legacy dense saved sets. */
+  slotIndex?: number;
   item: Item;
   isLocked: boolean;
 }

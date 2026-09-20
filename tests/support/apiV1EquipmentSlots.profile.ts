@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { executeApiV1CommitTransaction, type ApiV1ControlMetadata } from '../../src/api/v1/authority';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
 import { canCharacterEquipCategory } from '../../src/game/equipmentSets';
@@ -7,9 +8,9 @@ import { getVariantKey, type GameState } from '../../src/types';
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | Party build and equipment
 // Slot-addressed equipment commands must validate the whole request against one snapshot and report real effects.
 
-function context(): ApiV1CommitContext {
+function context(equipmentHistory: ApiV1CommitContext['equipmentHistory'] = {}): ApiV1CommitContext {
   return {
-    simulatedAt: 0, gameMode: 'mode.normal', enemyLevelOffset: 0, settings: {}, equipmentHistory: {},
+    simulatedAt: 0, gameMode: 'mode.normal', enemyLevelOffset: 0, settings: {}, equipmentHistory,
     uploadedFiles: {}, canonicalFiles: {}, applyAutoEquipment: (state) => state, createDeliveryId: () => 'd', now: () => 0,
   };
 }
@@ -91,6 +92,13 @@ const full = gameReducer(semi, { type: 'UPDATE_CHARACTER', partyIndex: 0, charac
 assert.equal(character(full).autoEquipmentMode, 2);
 const locked = applyApiV1Commit(path('lockEquipment'), full, { targetEquipment: armor }, context());
 assert.equal(character(locked.state).equipment[armor]!.isLocked, true);
+assert.deepEqual(
+  Object.keys((locked.data as { current: Record<string, unknown> }).current).sort(),
+  ['equipment', 'mode', 'redoAvailable', 'undoAvailable'],
+  'equipment commands return the complete current response contract',
+);
+assert.equal((locked.data as { current: { mode: string; undoAvailable: boolean } }).current.mode, 'FULL');
+assert.equal((locked.data as { current: { mode: string; undoAvailable: boolean } }).current.undoAvailable, true);
 const lockedAgain = applyApiV1Commit(path('lockEquipment'), locked.state, { targetEquipment: armor }, context());
 assert.equal(character(lockedAgain.state).equipment[armor]!.isLocked, true);
 const unlocked = applyApiV1Commit(path('unlockEquipment'), locked.state, { targetEquipment: armor }, context());
@@ -145,5 +153,40 @@ if (emptyCount > 0) {
   const filledExactly = applyApiV1Commit(path('equip'), plenty, { targetEquipment: Array(emptyCount).fill(formatOf(first)) }, context());
   assert.equal(character(filledExactly.state).equipment.every((item) => item !== null), true);
 }
+
+// A valid no-op neither creates history nor clears an existing redo branch.
+const noOpHistory: ApiV1CommitContext['equipmentHistory'] = {
+  [String(characterId)]: { undo: [], redo: [{ slot: 0, name: 'redo', createdAt: 0, equipment: [] }] },
+};
+applyApiV1Commit(path('lockEquipment'), locked.state, { targetEquipment: armor }, context(noOpHistory));
+assert.equal(noOpHistory[String(characterId)].undo.length, 0);
+assert.equal(noOpHistory[String(characterId)].redo.length, 1);
+const noOpControl: ApiV1ControlMetadata = {
+  revisionHighWater: 7, receipts: [], tombstones: [], equipmentHistory: structuredClone(noOpHistory),
+};
+const noOpCommit = await executeApiV1CommitTransaction({
+  operation: path('lockEquipment'), expectedRevision: 7, idempotencyKey: 'equipment-noop-0001', requestId: 'noop',
+  parameters: { targetEquipment: armor }, uploadedFiles: {}, state: locked.state, simulatedAt: 0, control: noOpControl,
+}, {
+  gameMode: 'mode.normal', enemyLevelOffset: 0, cycleDurationScale: 1, applyAutoEquipment: (state) => state,
+  persist: async () => undefined, publish: async () => undefined, createOpaqueId: () => 'opaque', createRandomSeed: () => 1, now: () => 0,
+});
+assert.equal(noOpCommit.ok, true);
+if (!noOpCommit.ok) throw new Error(noOpCommit.error.code);
+assert.equal(noOpCommit.response.revision, 7, 'a valid equipment no-op does not advance revision');
+assert.equal(noOpCommit.stateChanged, false);
+
+// Undo validates the target before changing either history stack.
+const missingItem = { ...first, id: 999998, jewel: null };
+const unavailableTarget = { slot: 0, name: 'unavailable', createdAt: 0, equipment: [{ slotIndex: 0, item: missingItem, isLocked: false }] };
+const undoHistory: ApiV1CommitContext['equipmentHistory'] = {
+  [String(characterId)]: { undo: [unavailableTarget], redo: [] },
+};
+fails(base, 'undoEquipment', {}, 'illegal_action');
+let undoError = '';
+try { applyApiV1Commit(path('undoEquipment'), base, {}, context(undoHistory)); } catch (error) { undoError = String(error); }
+assert.ok(undoError.includes('illegal_action'));
+assert.equal(undoHistory[String(characterId)].undo.length, 1);
+assert.equal(undoHistory[String(characterId)].redo.length, 0);
 
 console.log('apiV1EquipmentSlots profile ok');

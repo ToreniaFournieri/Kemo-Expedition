@@ -27,6 +27,18 @@ delete inventory[lostKey];
 const partial: GameState = { ...bare, global: { ...bare.global, inventory } };
 const full: GameState = bare;
 
+// Exact availability includes the stored Jewel, not only the item variant.
+const jeweledEntryIndex = saved.state.global.savedEquipmentSets[0].equipment.findIndex((entry) => entry.item.category === 'armor');
+assert.ok(jeweledEntryIndex >= 0, 'fixture set has an armor entry');
+const jeweledSet = structuredClone(saved.state.global.savedEquipmentSets[0]);
+jeweledSet.equipment[jeweledEntryIndex].item.jewel = { key: 'fort', rank: 2 };
+const jewelsWithoutExact = { ...full.global.jewels };
+delete jewelsWithoutExact['fort:2'];
+const missingExactJewel: GameState = {
+  ...full,
+  global: { ...full.global, jewels: jewelsWithoutExact, savedEquipmentSets: [jeweledSet] },
+};
+
 function control(): ApiV1ControlMetadata { return { revisionHighWater: 0, inGameTime: now, receipts: [], tombstones: [], confirmations: [], popupEvents: [], deliveries: [] }; }
 function deps(): ApiV1CommitAuthorityDependencies {
   let counter = 0;
@@ -104,6 +116,28 @@ let durable: ApiV1ControlMetadata;
   let missing = '';
   try { applyApiV1Commit(path('loadEquipmentSet'), full, { equipmentSetId: 99 }, context()); } catch (error) { missing = String(error); }
   assert.ok(missing.includes('not_found'), missing);
+}
+
+// 7. A missing exact saved Jewel is partial: it requires confirmation, and exact-only skips the whole entry.
+{
+  const challenged = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId }, { idempotencyKey: 'load-set-jewel-001' }), deps());
+  assert.equal(challenged.ok, false);
+  if (challenged.ok) throw new Error('expected a Jewel availability challenge');
+  assert.equal(challenged.error.code, 'confirmation_required');
+  const jewelToken = String(challenged.error.details?.confirmationToken);
+  const confirmed = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId, loadMode: 'equipExactMatchesOnly' }, {
+    idempotencyKey: 'load-set-jewel-001', control: challenged.durableControl!, confirmationToken: jewelToken,
+  }), deps());
+  assert.equal(confirmed.ok, true);
+  if (!confirmed.ok) throw new Error(confirmed.error.code);
+  const report = (confirmed.response.data as { loadReport: { entries: Array<{ slotIndex: number; result: string; reason: string | null }> } }).loadReport;
+  const jeweledSlot = jeweledSet.equipment[jeweledEntryIndex].slotIndex ?? jeweledEntryIndex;
+  assert.deepEqual(report.entries.find((entry) => entry.slotIndex === jeweledSlot), {
+    slotIndex: jeweledSlot,
+    saved: report.entries.find((entry) => entry.slotIndex === jeweledSlot)!.saved,
+    result: 'skipped',
+    reason: 'unavailable',
+  });
 }
 
 console.log('apiV1EquipmentSetLoad profile ok');

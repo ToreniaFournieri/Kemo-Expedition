@@ -612,8 +612,8 @@ export default function PartyTab({
   const history = equipmentHistory[equipmentHistoryKey] ?? EMPTY_EQUIPMENT_STATE_HISTORY;
   const undoTarget = history.undo.at(-1);
   const redoTarget = history.redo.at(-1);
-  const undoAvailability = undoTarget ? evaluateEquipmentSet(undoTarget, char, inventory, stats.maxEquipSlots) : null;
-  const redoAvailability = redoTarget ? evaluateEquipmentSet(redoTarget, char, inventory, stats.maxEquipSlots) : null;
+  const undoAvailability = undoTarget ? evaluateEquipmentSet(undoTarget, char, inventory, stats.maxEquipSlots, jewels) : null;
+  const redoAvailability = redoTarget ? evaluateEquipmentSet(redoTarget, char, inventory, stats.maxEquipSlots, jewels) : null;
   const recordEquipmentChange = (change: () => void) => {
     const previousState = currentEquipmentState();
     setEquipmentHistory((previous) => ({
@@ -2692,7 +2692,7 @@ export default function PartyTab({
             {Array.from({ length: MAX_SAVED_EQUIPMENT_SETS }, (_, index) => index + 1).map((slot) => {
               const set = savedEquipmentSets.find((candidate) => candidate.slot === slot);
               const isExpanded = expandedSavedEquipmentSlot === slot;
-              const availability = set ? evaluateEquipmentSet(set, char, inventory, stats.maxEquipSlots) : null;
+              const availability = set ? evaluateEquipmentSet(set, char, inventory, stats.maxEquipSlots, jewels) : null;
               return (
                 <div key={slot} className="text-xs">
                   <button
