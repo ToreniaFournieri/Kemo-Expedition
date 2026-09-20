@@ -96,10 +96,7 @@ import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
-import { encodePersistedState } from '../game/storageCompression';
-import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1ActiveSession, type ApiV1SessionPorts } from '../api/v1/sessionLifecycle';
-import { SerializedApplicationApiAuthority } from '../api/v1/authority';
-import { buildApiV1ReadData } from '../api/v1/readModels';
+import { createApplicationApi, type ApplicationApi } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
 import {
@@ -474,24 +471,10 @@ export function HomeScreen({
 
   useEffect(() => () => memoryMonitor.stop(), []);
   const apiControlActiveRef = useRef(false);
-  const apiLeaseActiveRef = useRef(false);
-  const [, setApiLeaseActive] = useState(false);
   const apiStrategyEquipRef = useRef<(s: GameState, p: number, c?: number, forceFull?: boolean) => GameState>(() => { throw new Error('equipment_not_ready'); });
-  const apiRevisionRef = useRef(0);
-  const apiSimulatedAtRef = useRef(Date.now());
-  const apiStateRef = useRef(state);
   const apiActionsRef = useRef(actions);
   const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
-  const apiV1IdentityRef = useRef<DesktopApiAccountIdentity | null>(null);
-  const apiV1ControlRef = useRef<DesktopApiControlMetadata>({ revisionHighWater: 0, receipts: [], tombstones: [], popupEvents: [], deliveries: [] });
   const apiCycleDurationScaleRef = useRef(1);
-  const applicationApiAuthorityRef = useRef<SerializedApplicationApiAuthority | null>(null);
-  if (applicationApiAuthorityRef.current === null) {
-    applicationApiAuthorityRef.current = new SerializedApplicationApiAuthority({ state, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
-  } else if (!apiV1IdentityRef.current) {
-    applicationApiAuthorityRef.current.replaceSnapshot({ state, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
-  }
-  apiStateRef.current = state;
   apiActionsRef.current = actions;
   debugSettingsRef.current = debugSettings;
   const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca' && !hasOrcaTimeSpeedOverride
@@ -534,190 +517,68 @@ export function HomeScreen({
     memoryPreviousAfkActiveRef.current = afkActive;
   }, [effectiveDebugSettings.timeSpeed, isAutoRepeatEnabled, pendingAfkMs]);
 
-  // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Application API dispatcher
-  const processApiV1Request = useCallback(async (templateOperation: string, raw: unknown) => {
-    const request = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
-    const pathParameters = request.pathParameters && typeof request.pathParameters === 'object'
-      ? request.pathParameters as Record<string, unknown>
-      : {};
-    const operation = templateOperation
-      .replace('{p}', String(pathParameters.p ?? ''))
-      .replace('{characterId}', String(pathParameters.characterId ?? ''))
-      .replace('{diaryEntryId}', String(pathParameters.diaryEntryId ?? ''))
-      .replace('{deliveryId}', String(pathParameters.deliveryId ?? ''));
-    const failure = (status: number, code: string, message: string, details?: Record<string, unknown>) => ({
-      status,
-      revision: applicationApiAuthorityRef.current!.getSnapshot().control.revisionHighWater,
-      error: { code, message, ...(details ? { details } : {}) },
-    });
-    const desktop = window.bokemoDesktop;
-
-    if (operation === 'fundamental/status') {
-      return { data: { systemStatus: apiActionsRef.current.getApiReadiness(), versionBuild: `${APP_VERSION} (${state.buildNumber})`, environment: getEnvironmentId() } };
-    }
-    if (operation === 'help/overview') {
-      return { data: { endpoints: (await import('../api/v1/generatedOperationCatalog')).API_V1_OPERATIONS.map((entry) => ({ method: entry.method, path: entry.path, access: entry.access, purpose: entry.purpose })) } };
-    }
-    if (operation === 'help/endpoints') {
-      return { data: { requirements: apiRequirementsDocument, detail: apiDetailDocument, schemaVersion: 1 } };
-    }
-    if (!desktop) return failure(503, 'runtime_unavailable', 'Desktop API services are unavailable.');
-
-    const sessionPorts: ApiV1SessionPorts = {
-      accounts: { create: desktop.createApiAccount, load: desktop.loadApiAccount, commit: desktop.commitApiAccount },
-      player: {
-        flushSave: () => apiActionsRef.current.flushSave(),
-        exportPayload: () => apiActionsRef.current.getCompressedSavePayload(),
-        returnPayload: {
-          get: () => localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY),
-          set: (payload) => localStorage.setItem(API_PLAYER_RETURN_STORAGE_KEY, payload),
-          clear: () => localStorage.removeItem(API_PLAYER_RETURN_STORAGE_KEY),
+  // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Application API
+  // The dispatcher lives in src/api/v1/applicationApi.ts; this component only supplies trusted runtime ports.
+  const apiRuntimeRef = useRef({ enemyLevelOffset: effectiveOrcaEnemyLevelOffset, buildNumber: state.buildNumber });
+  apiRuntimeRef.current = { enemyLevelOffset: effectiveOrcaEnemyLevelOffset, buildNumber: state.buildNumber };
+  const applicationApiRef = useRef<ApplicationApi | null>(null);
+  if (applicationApiRef.current === null) {
+    const desktop = () => window.bokemoDesktop!;
+    applicationApiRef.current = createApplicationApi({
+      session: {
+        accounts: {
+          create: (identity, savePayload) => desktop().createApiAccount(identity, savePayload),
+          load: (identity) => desktop().loadApiAccount(identity),
+          commit: (identity, savePayload, control) => desktop().commitApiAccount(identity, savePayload, control),
+        },
+        player: {
+          flushSave: () => apiActionsRef.current.flushSave(),
+          exportPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+          returnPayload: {
+            get: () => localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY),
+            set: (payload) => localStorage.setItem(API_PLAYER_RETURN_STORAGE_KEY, payload),
+            clear: () => localStorage.removeItem(API_PLAYER_RETURN_STORAGE_KEY),
+          },
+        },
+        importGameState: (imported) => apiActionsRef.current.importGameState(imported),
+        exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+        now: () => Date.now(),
+        catchUp: {
+          maximumElapsedMs: AFK_MAX_ELAPSED_MS,
+          cycleDurationScale: () => apiCycleDurationScaleRef.current,
+          applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
+          yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
+          randomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
         },
       },
-      importGameState: (imported) => apiActionsRef.current.importGameState(imported),
-      exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload(),
-      now: () => Date.now(),
-      catchUp: {
-        maximumElapsedMs: AFK_MAX_ELAPSED_MS,
+      desktopAvailable: () => Boolean(window.bokemoDesktop),
+      runtime: {
+        readiness: () => apiActionsRef.current.getApiReadiness(),
+        versionBuild: () => `${APP_VERSION} (${apiRuntimeRef.current.buildNumber})`,
+        environment: () => getEnvironmentId(),
+        gameMode: () => gameModeRef.current,
+        enemyLevelOffset: () => apiRuntimeRef.current.enemyLevelOffset,
         cycleDurationScale: () => apiCycleDurationScaleRef.current,
         applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
+        simulate: async (snapshot, partyIndex, count) => simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, undefined, apiRuntimeRef.current.enemyLevelOffset),
+        publish: async (snapshot) => { await apiActionsRef.current.commitApiState(snapshot); },
         yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
-        randomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
+        createOpaqueId: () => crypto.randomUUID(),
+        createRandomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
+        now: () => Date.now(),
+        onPublicationFailure: (error) => console.error('[api-v1] durable commit could not be published to the renderer', error),
       },
-    };
-    const emptyControl = (): DesktopApiControlMetadata => ({ revisionHighWater: 0, receipts: [], tombstones: [], popupEvents: [], deliveries: [] });
-    const activeSession = (): ApiV1ActiveSession | null => apiV1IdentityRef.current
-      ? { identity: apiV1IdentityRef.current, control: apiV1ControlRef.current, state: apiStateRef.current, simulatedAt: apiSimulatedAtRef.current }
-      : null;
-
-    if (operation === 'fundamental/signUp') {
-      const created = await signUpApiAccount(request, sessionPorts);
-      if (!created.ok) return failure(created.status, created.code, created.message, created.details);
-      return { revision: 0, data: { ...created.identity, revision: 0 } };
-    }
-
-    if (operation === 'fundamental/logIn') {
-      const login = await logInApiAccount(request, activeSession(), sessionPorts);
-      if (!login.ok) return failure(login.status, login.code, login.message, login.details);
-      const { session } = login;
-      apiStateRef.current = session.state;
-      apiV1IdentityRef.current = session.identity;
-      apiV1ControlRef.current = session.control;
-      apiRevisionRef.current = session.control.revisionHighWater;
-      apiSimulatedAtRef.current = session.simulatedAt;
-      applicationApiAuthorityRef.current!.replaceSnapshot({ state: session.state, control: session.control, simulatedAt: session.simulatedAt });
-      apiLeaseActiveRef.current = true;
-      apiControlActiveRef.current = true;
-      setApiLeaseActive(true);
-      setApiControlActive(true);
-      return { revision: session.control.revisionHighWater, identity: session.identity, data: { ...session.identity } };
-    }
-
-    if (operation === 'fundamental/logOut') {
-      const logout = await logOutApiAccount(activeSession(), sessionPorts);
-      if (!logout.ok) return failure(logout.status, logout.code, logout.message, logout.details);
-      apiStateRef.current = logout.restoredState;
-      apiV1IdentityRef.current = null;
-      apiV1ControlRef.current = emptyControl();
-      apiRevisionRef.current = 0;
-      apiSimulatedAtRef.current = Date.now();
-      applicationApiAuthorityRef.current!.replaceSnapshot({ state: logout.restoredState, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
-      apiLeaseActiveRef.current = false;
-      apiControlActiveRef.current = false;
-      setApiLeaseActive(false);
-      setApiControlActive(false);
-      return { revision: logout.finalRevision, data: { finalPersistedRevision: logout.finalRevision } };
-    }
-
-    if (!apiV1IdentityRef.current) return failure(401, 'login_required', 'A logged-in API account is required.');
-    const queryParameters = request.parameters && typeof request.parameters === 'object' && !Array.isArray(request.parameters)
-      ? request.parameters as Record<string, unknown>
-      : {};
-
-    if (operation === 'read/observation/popupEventStream') {
-      const transport = request.transport && typeof request.transport === 'object' ? request.transport as Record<string, unknown> : {};
-      const lastEventId = typeof transport.lastEventId === 'string' ? transport.lastEventId : null;
-      const snapshot = applicationApiAuthorityRef.current!.getSnapshot();
-      const events = snapshot.control.popupEvents ?? [];
-      const start = lastEventId ? events.findIndex((event) => event.eventId === lastEventId) : events.length - 1;
-      if (lastEventId && start < 0) return failure(409, 'resync_required', 'The popup replay cursor is unavailable.');
-      return { revision: snapshot.control.revisionHighWater, data: { events: events.slice(start + 1) } };
-    }
-
-    if (operation.startsWith('read/') || operation.startsWith('resources/')) {
-      const snapshot = applicationApiAuthorityRef.current!.getSnapshot();
-      if (operation.endsWith('/simulationRun') && request.expectedRevision !== undefined && Number(request.expectedRevision) !== snapshot.control.revisionHighWater) return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: snapshot.control.revisionHighWater });
-      try {
-        const data = await buildApiV1ReadData(operation, snapshot.state, queryParameters, {
-          revision: snapshot.control.revisionHighWater,
-          environment: getEnvironmentId(),
-          gameMode: gameModeRef.current,
-          enemyLevelOffset: effectiveOrcaEnemyLevelOffset,
-          inGameTime: snapshot.simulatedAt,
-          simulation: (partyIndex, count) => simulateExpeditionRuns(snapshot.state, partyIndex, gameModeRef.current, count, undefined, effectiveOrcaEnemyLevelOffset),
-          control: snapshot.control,
-        });
-        return { revision: snapshot.control.revisionHighWater, data };
-      } catch (error) {
-        return failure(String(error).includes('not_found') ? 404 : 400, String(error).includes('not_found') ? 'not_found' : 'invalid_request', 'The requested projection is unavailable.');
-      }
-    }
-
-    if (!operation.startsWith('commit/')) return failure(404, 'not_found', 'The operation does not exist.');
-    const parameters = queryParameters;
-    const uploadedFiles = request.uploadedFiles && typeof request.uploadedFiles === 'object' ? request.uploadedFiles as Record<string, Record<string, unknown>> : {};
-    const transport = request.transport && typeof request.transport === 'object' ? request.transport as Record<string, unknown> : {};
-    const result = await applicationApiAuthorityRef.current!.executeCommit({
-      operation,
-      expectedRevision: Number(request.expectedRevision),
-      idempotencyKey: String(request.idempotencyKey ?? ''),
-      confirmationToken: typeof request.confirmationToken === 'string' ? request.confirmationToken : null,
-      requestId: String(transport.requestId ?? crypto.randomUUID()),
-      parameters,
-      uploadedFiles,
-    }, {
-      gameMode: gameModeRef.current,
-      enemyLevelOffset: effectiveOrcaEnemyLevelOffset,
-      cycleDurationScale: apiCycleDurationScaleRef.current,
-      applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
-      createOpaqueId: () => crypto.randomUUID(),
-      createRandomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
-      now: () => Date.now(),
-      persist: async (snapshot, control) => {
-        const identity = apiV1IdentityRef.current;
-        if (!identity) throw new Error('login_required');
-        const savePayload = encodePersistedState(JSON.stringify(serializeGameState(snapshot)));
-        await desktop.commitApiAccount(identity, savePayload, control);
-      },
-      publish: async (snapshot) => { await apiActionsRef.current.commitApiState(snapshot); },
-      onPublicationFailure: (error) => console.error('[api-v1] durable commit could not be published to the renderer', error),
-      yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
-    });
-    if (!result.ok) {
-      if (result.durableControl) apiV1ControlRef.current = result.durableControl;
-      const status = result.error.code === 'not_found' ? 404
-        : result.error.code === 'save_failed' ? 500
-          : ['stale_revision', 'idempotency_conflict', 'idempotency_expired', 'operation_in_progress', 'confirmation_required', 'confirmation_invalid', 'illegal_action'].includes(result.error.code) ? 409
-            : 400;
-      return failure(status, result.error.code, result.error.message, result.error.details);
-    }
-    apiStateRef.current = result.state;
-    apiV1ControlRef.current = result.control;
-    apiRevisionRef.current = result.response.revision;
-    apiSimulatedAtRef.current = result.simulatedAt;
-    return result.response;
-  }, [effectiveOrcaEnemyLevelOffset, state.buildNumber]);
+      help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
+      onSessionActive: (active) => { apiControlActiveRef.current = active; setApiControlActive(active); },
+    }, state);
+  }
+  applicationApiRef.current.syncIdleState(state);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
     if (!desktop?.onApiV1Request) return;
-    return desktop.onApiV1Request((operation, payload) => {
-      const invoke = () => processApiV1Request(operation, payload);
-      return ['fundamental/signUp', 'fundamental/logIn', 'fundamental/logOut'].includes(operation)
-        ? applicationApiAuthorityRef.current!.runExclusive(invoke)
-        : invoke();
-    });
-  }, [processApiV1Request]);
+    return desktop.onApiV1Request((operation, payload) => applicationApiRef.current!.handle(operation, payload));
+  }, []);
 
   if (processedNativeDiaryIdsRef.current === null) {
     const storedIds = getProcessedDiaryIds();
