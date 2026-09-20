@@ -16,11 +16,11 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
     allowedOrigin: 'app://bokemo',
     invokeApplication: async (operationId, payload) => {
       calls.push({ operationId, payload });
-      if (operationId === 'fundamental/status') return { data: { systemStatus: 'ready' } };
-      if (operationId === 'fundamental/logIn') return { revision, data: { userId: 'Taro' }, identity: { userId: 'Taro' } };
-      if (operationId === 'fundamental/logOut') return { revision, data: { revision } };
-      if (operationId === 'read/observation/overview') return { revision, data: { headerInfo: { gold: 200 } } };
-      if (operationId === 'commit/base/changeJewelPriorityParty') return { previousRevision: revision, revision: ++revision, data: {} };
+      if (operationId === 'fundamental/status') return { data: { systemStatus: 'ready', versionBuild: '0.0.0 (0)', environment: 'desktop' } };
+      if (operationId === 'fundamental/logIn') return { revision, data: { userId: 'Taro', environment: 'desktop', gameMode: 'normal', levelOffsetForOrca: null }, identity: { userId: 'Taro' } };
+      if (operationId === 'fundamental/logOut') return { revision, data: { finalPersistedRevision: revision } };
+      if (operationId === 'read/observation/overview') return { revision, data: { headerInfo: { gameMode: 'mode.normal', inGameTime: new Date(0).toISOString(), gold: 200 } } };
+      if (operationId === 'commit/base/changeJewelPriorityParty') return { previousRevision: revision, revision: ++revision, data: { current: { partyNumber: 1 } } };
       throw new Error(`unexpected ${operationId}`);
     },
   });

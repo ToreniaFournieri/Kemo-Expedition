@@ -22,6 +22,14 @@ test('checked-in API v1 catalog matches the normative endpoint index', () => {
     pageLimitMaximum: 200,
   });
 
+  assert.ok(Array.isArray(catalog.errors) && catalog.errors.length > 0);
+  assert.equal(new Set(catalog.errors.map(entry => entry.code)).size, catalog.errors.length, 'error codes must be unique');
+  for (const entry of catalog.errors) {
+    assert.ok(Number.isInteger(entry.status) && entry.status >= 400 && entry.status < 600, `error ${entry.code} status`);
+    assert.ok(typeof entry.code === 'string' && entry.code.length > 0, 'error code');
+    assert.ok(typeof entry.meaning === 'string' && entry.meaning.length > 0, `error ${entry.code} meaning`);
+  }
+
   const ajv = new Ajv({ strict: true });
   for (const operation of catalog.operations) {
     assert.ok(['query', 'json', 'multipart', 'binary', 'sse'].includes(operation.transport), operation.operationId);
@@ -35,5 +43,12 @@ test('checked-in API v1 catalog matches the normative endpoint index', () => {
     const invalidMember = operation.method === 'GET' ? 'query' : 'body';
     const validateInvalid = ajv.compile(operation[invalidMember]);
     assert.equal(validateInvalid(structuredClone(operation.examples.invalidRequest[invalidMember])), false, `${operation.operationId} invalid example`);
+
+    assert.ok(operation.response && operation.response.data, `${operation.operationId} is missing a response schema`);
+    assert.equal(operation.response.data.type, 'object', `${operation.operationId} response.data`);
+    assert.equal(operation.response.data.additionalProperties, false, `${operation.operationId} response.data`);
+    const validateResponse = ajv.compile(operation.response.data);
+    const responseExample = operation.examples.response.data;
+    assert.equal(validateResponse(structuredClone(responseExample)), true, `${operation.operationId} response example: ${JSON.stringify(validateResponse.errors)}`);
   }
 });

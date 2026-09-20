@@ -17,6 +17,8 @@ const MAX_MULTIPART_BODY_BYTES = 32 * 1024 * 1024;
 const PUBLIC_OPERATIONS = new Set(['fundamental/status', 'help/overview', 'help/endpoints']);
 const parameterAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: true, useDefaults: true });
 const bodyAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: false, useDefaults: true });
+// SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Concrete response catalog
+const responseAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: false, useDefaults: false });
 
 function timingSafeEqualString(actual, expected) {
   if (typeof actual !== 'string' || typeof expected !== 'string') return false;
@@ -39,6 +41,7 @@ function compileRoute(operation) {
       pathParameters: parameterAjv.compile(operation.pathParameters),
       query: parameterAjv.compile(operation.query),
       body: bodyAjv.compile(operation.body),
+      response: responseAjv.compile(operation.response.data),
     },
   };
 }
@@ -87,6 +90,15 @@ function createApiV1(options) {
     const validationError = Object.assign(new Error('schema_validation_failed'), { status: 400, code: 'invalid_request' });
     validationError.details = { issues: validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [] };
     throw validationError;
+  }
+
+  // A response mismatch is an implementation drift against the operation's own catalog contract, not caller error,
+  // so it fails closed as `internal_error` before anything is written rather than leaking a malformed payload.
+  function assertResponseData(route, data) {
+    if (route.validators.response(data)) return;
+    const issues = route.validators.response.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [];
+    console.error(`api-v1: ${route.operationId} produced a response that does not match its catalog schema`, issues);
+    throw Object.assign(new Error('response_schema_mismatch'), { status: 500, code: 'internal_error' });
   }
 
   function authenticateBootstrap(request, id) {
@@ -283,6 +295,7 @@ function createApiV1(options) {
     const result = invoked.result ?? {};
 
     if (route.operationId === 'read/observation/popupEventStream') {
+      assertResponseData(route, result.data ?? {});
       renewLease();
       response.writeHead(200, {
         'Content-Type': 'text/event-stream; charset=utf-8',
@@ -333,6 +346,8 @@ function createApiV1(options) {
       lease = null;
       if (expiryTimer) clearTimeout(expiryTimer);
     } else if (route.access === 'session') renewLease();
+
+    assertResponseData(route, result.data ?? {});
 
     if (route.operationId.startsWith('commit/')) {
       if (route.operationId === 'commit/setting/backup/export' && typeof result.data?.savePayload === 'string') {
