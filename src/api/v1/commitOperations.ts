@@ -1,3 +1,4 @@
+import type { ApiV1DeliveryRecord } from './deliveries';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityNameFromId, normalizeDeityName } from '../../game/deity';
 import { isDebugModeEnabled } from '../../game/environment';
@@ -37,18 +38,6 @@ export interface ApiV1CommitContext {
   readonly createDeliveryId: () => string;
   /** Real wall-clock epoch ms, used only for delivery record timestamps (distinct from the in-game `simulatedAt`). */
   readonly now: () => number;
-}
-
-export interface ApiV1DeliveryRecord {
-  deliveryId: string;
-  status: 'queued';
-  createdAt: string;
-  updatedAt: string;
-  failureReason: null;
-  rewardApplied: false;
-  operation: string;
-  parameters: unknown;
-  files: unknown;
 }
 
 export interface ApiV1CommitOutcome {

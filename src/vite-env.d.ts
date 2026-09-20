@@ -161,7 +161,8 @@ interface DesktopApiControlMetadata {
   receipts: import('./api/v1/authority').ApiV1Receipt[];
   tombstones: string[];
   popupEvents?: Array<Record<string, unknown>>;
-  deliveries?: unknown[];
+  deliveries?: import('./api/v1/deliveries').ApiV1DeliveryRecord[];
+  feedbackReward?: import('./game/feedbackRewards').FeedbackRewardState;
   equipmentHistory?: Record<string, { undo: import('./types').SavedEquipmentSet[]; redo: import('./types').SavedEquipmentSet[] }>;
   confirmations?: import('./api/v1/authority').ApiV1Confirmation[];
   settings?: Record<string, unknown>;

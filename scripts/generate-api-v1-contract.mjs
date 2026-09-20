@@ -151,7 +151,8 @@ const range = strict({ min: Type.Number(), max: Type.Number(), step: optional(Ty
 const nextCursor = { nextCursor: optional(Type.Union([stableKey, Type.Null()])) };
 const popupEvent = strict({ revision: Type.Integer({ minimum: 0 }), sequence: Type.Integer({ minimum: 1 }), eventId: stableKey, eventKey: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])), partyNumber: Type.Union([partyNumber, Type.Null()]), diaryEntryId: Type.Union([stableKey, Type.Null()]), groupKey: Type.Union([stableKey, Type.Null()]), createdAt: isoTimestamp });
 const deliveryStatus = literals('queued', 'sending', 'delivered', 'failed', 'unknown', 'cancelled');
-const deliveryRecord = strict({ deliveryId: stableKey, status: deliveryStatus, createdAt: optional(isoTimestamp), updatedAt: optional(isoTimestamp), failureReason: optional(Type.Union([Type.String(), Type.Null()])), rewardApplied: optional(Type.Boolean()), operation: optional(Type.String()), parameters: optional(Type.Unknown()), files: optional(Type.Unknown()) });
+// Spec 9.1.4.15: the public delivery projection; payload parameters/files are never returned.
+const deliveryRecord = strict({ deliveryId: stableKey, status: deliveryStatus, createdAt: isoTimestamp, updatedAt: isoTimestamp, failureReason: Type.Union([Type.String(), Type.Null()]), rewardApplied: Type.Boolean() });
 
 const compactObservationSchema = strict({
   globalInfo: strict({ gameMode: modeKey, inGameTime: isoTimestamp, gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }),

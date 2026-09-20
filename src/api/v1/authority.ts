@@ -3,6 +3,8 @@ import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { applyApiV1Commit, type ApiV1CommitContext } from './commitOperations';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
+import { prepareSaveReplacement, type ApiV1DeliveryRecord } from './deliveries';
+import type { FeedbackRewardState } from '../../game/feedbackRewards';
 
 // SpecRef: 9.1.4.4 | Commit, revision, and idempotency contract | Serialized transaction authority
 
@@ -29,7 +31,9 @@ export interface ApiV1ControlMetadata {
   tombstones: string[];
   confirmations?: ApiV1Confirmation[];
   popupEvents?: Array<Record<string, unknown>>;
-  deliveries?: unknown[];
+  deliveries?: ApiV1DeliveryRecord[];
+  /** Server-owned feedback cooldown for this API account; excluded from backups like every other control member. */
+  feedbackReward?: FeedbackRewardState;
   equipmentHistory?: Record<string, { undo: SavedEquipmentSet[]; redo: SavedEquipmentSet[] }>;
   settings?: Record<string, unknown>;
   rngState?: number;
@@ -233,7 +237,14 @@ export async function executeApiV1CommitTransaction(
 
   if (stagedControl.settings !== undefined || canonicalizeApiValue(outcome.settings) !== canonicalizeApiValue(settingsBefore)) stagedControl.settings = outcome.settings;
   if (stagedControl.equipmentHistory !== undefined || canonicalizeApiValue(outcome.equipmentHistory) !== canonicalizeApiValue(equipmentHistoryBefore)) stagedControl.equipmentHistory = outcome.equipmentHistory;
-  if (outcome.resetControlEvents) { stagedControl.popupEvents = []; stagedControl.confirmations = []; }
+  if (outcome.resetControlEvents) {
+    // SpecRef: 9.1.4.15 | Import/reset cancels queued delivery jobs and is refused while a send is in flight.
+    const replacement = prepareSaveReplacement(stagedControl.deliveries ?? [], dependencies.now());
+    if (!replacement.ok) return failure('illegal_action', 'A delivery is being sent; the save cannot be replaced yet.', { reason: 'delivery_in_flight' });
+    stagedControl.deliveries = replacement.deliveries;
+    stagedControl.popupEvents = [];
+    stagedControl.confirmations = [];
+  }
   if (outcome.delivery) stagedControl.deliveries = [...(stagedControl.deliveries ?? []), outcome.delivery];
   if (randomDrawCount > 0) stagedControl.rngState = apiRandom.state;
 
