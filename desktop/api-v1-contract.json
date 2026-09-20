@@ -1,771 +1,6188 @@
 {
   "apiVersion": "v1",
   "schemaVersion": 1,
+  "limits": {
+    "jsonBodyBytes": 1048576,
+    "backupImportBytes": 33554432,
+    "feedbackAttachmentCount": 4,
+    "feedbackAttachmentBytes": 8388608,
+    "feedbackTotalBytes": 20971520,
+    "pageLimitDefault": 100,
+    "pageLimitMaximum": 200
+  },
   "operations": [
     {
       "method": "GET",
       "path": "/api/v1/fundamental/status",
       "access": "public",
       "purpose": "API/runtime status.",
-      "operationId": "fundamental/status"
+      "operationId": "fundamental/status",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/fundamental/signUp",
       "access": "bootstrap",
       "purpose": "Create API user and save.",
-      "operationId": "fundamental/signUp"
+      "operationId": "fundamental/signUp",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "userId",
+          "environment",
+          "gameMode"
+        ],
+        "properties": {
+          "userId": {
+            "pattern": "^[A-Za-z0-9_-]{1,16}$",
+            "type": "string"
+          },
+          "environment": {
+            "anyOf": [
+              {
+                "const": "dev",
+                "type": "string"
+              },
+              {
+                "const": "beta",
+                "type": "string"
+              },
+              {
+                "const": "orca",
+                "type": "string"
+              },
+              {
+                "const": "prod",
+                "type": "string"
+              },
+              {
+                "const": "desktop",
+                "type": "string"
+              }
+            ]
+          },
+          "gameMode": {
+            "anyOf": [
+              {
+                "const": "normal",
+                "type": "string"
+              },
+              {
+                "const": "orca",
+                "type": "string"
+              }
+            ]
+          },
+          "levelOffsetForOrca": {
+            "minimum": 0,
+            "maximum": 20,
+            "type": "integer",
+            "default": 5
+          },
+          "language": {
+            "anyOf": [
+              {
+                "const": "ja",
+                "type": "string"
+              },
+              {
+                "const": "en",
+                "type": "string"
+              },
+              {
+                "const": "zh-CN",
+                "type": "string"
+              },
+              {
+                "const": "zh-TW",
+                "type": "string"
+              },
+              {
+                "const": "ko",
+                "type": "string"
+              }
+            ],
+            "default": "ja"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "userId": "ApiUser",
+            "environment": "dev",
+            "gameMode": "normal"
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/fundamental/logIn",
       "access": "bootstrap",
       "purpose": "Log in and acquire control.",
-      "operationId": "fundamental/logIn"
+      "operationId": "fundamental/logIn",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "userId",
+          "environment",
+          "gameMode"
+        ],
+        "properties": {
+          "userId": {
+            "pattern": "^[A-Za-z0-9_-]{1,16}$",
+            "type": "string"
+          },
+          "environment": {
+            "anyOf": [
+              {
+                "const": "dev",
+                "type": "string"
+              },
+              {
+                "const": "beta",
+                "type": "string"
+              },
+              {
+                "const": "orca",
+                "type": "string"
+              },
+              {
+                "const": "prod",
+                "type": "string"
+              },
+              {
+                "const": "desktop",
+                "type": "string"
+              }
+            ]
+          },
+          "gameMode": {
+            "anyOf": [
+              {
+                "const": "normal",
+                "type": "string"
+              },
+              {
+                "const": "orca",
+                "type": "string"
+              }
+            ]
+          },
+          "levelOffsetForOrca": {
+            "minimum": 0,
+            "maximum": 20,
+            "type": "integer",
+            "default": 5
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "userId": "ApiUser",
+            "environment": "dev",
+            "gameMode": "normal"
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/fundamental/logOut",
       "access": "session",
       "purpose": "Persist and release control.",
-      "operationId": "fundamental/logOut"
+      "operationId": "fundamental/logOut",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {}
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation",
       "access": "session",
       "purpose": "Alias of the compact observation.",
-      "operationId": "read/observation"
+      "operationId": "read/observation",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/compact",
       "access": "session",
       "purpose": "Compact AI observation.",
-      "operationId": "read/observation/compact"
+      "operationId": "read/observation/compact",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/overview",
       "access": "session",
       "purpose": "Header/global projection.",
-      "operationId": "read/observation/overview"
+      "operationId": "read/observation/overview",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/expedition",
       "access": "session",
       "purpose": "Expedition UI projection.",
-      "operationId": "read/observation/expedition"
+      "operationId": "read/observation/expedition",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/party",
       "access": "session",
       "purpose": "Party UI projection.",
-      "operationId": "read/observation/party"
+      "operationId": "read/observation/party",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "partyNumber": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          },
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/base",
       "access": "session",
       "purpose": "Base UI projection.",
-      "operationId": "read/observation/base"
+      "operationId": "read/observation/base",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "pane": {
+            "anyOf": [
+              {
+                "const": "shop",
+                "type": "string"
+              },
+              {
+                "const": "inventory",
+                "type": "string"
+              },
+              {
+                "const": "vault",
+                "type": "string"
+              },
+              {
+                "const": "workshop",
+                "type": "string"
+              },
+              {
+                "const": "altar",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/diary",
       "access": "session",
       "purpose": "Diary UI projection.",
-      "operationId": "read/observation/diary"
+      "operationId": "read/observation/diary",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "partyNumber": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          },
+          "diaryEntryId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/setting",
       "access": "session",
       "purpose": "Setting UI projection.",
-      "operationId": "read/observation/setting"
+      "operationId": "read/observation/setting",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/observation/popupEventStream",
       "access": "session",
       "purpose": "Popup SSE stream.",
-      "operationId": "read/observation/popupEventStream"
+      "operationId": "read/observation/popupEventStream",
+      "transport": "sse",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/expedition/{p}/setting",
       "access": "session",
       "purpose": "Expedition settings/options.",
-      "operationId": "read/expedition/{p}/setting"
+      "operationId": "read/expedition/{p}/setting",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/expedition/{p}/latestBattleLog",
       "access": "session",
       "purpose": "Latest retained battle log.",
-      "operationId": "read/expedition/{p}/latestBattleLog"
+      "operationId": "read/expedition/{p}/latestBattleLog",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "logId": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/read/expedition/{p}/simulationRun",
       "access": "session",
       "purpose": "Private 1,000-run forecast.",
-      "operationId": "read/expedition/{p}/simulationRun"
+      "operationId": "read/expedition/{p}/simulationRun",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {}
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/expedition/{p}/chargeStock",
       "access": "session",
       "purpose": "Charge stock/status.",
-      "operationId": "read/expedition/{p}/chargeStock"
+      "operationId": "read/expedition/{p}/chargeStock",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/build/party/{p}",
       "access": "session",
       "purpose": "Party build/options.",
-      "operationId": "read/build/party/{p}"
+      "operationId": "read/build/party/{p}",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/build/character/{characterId}/status",
       "access": "session",
       "purpose": "Character build/options.",
-      "operationId": "read/build/character/{characterId}/status"
+      "operationId": "read/build/character/{characterId}/status",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/build/character/{characterId}/equipment",
       "access": "session",
       "purpose": "Equipment/mode.",
-      "operationId": "read/build/character/{characterId}/equipment"
+      "operationId": "read/build/character/{characterId}/equipment",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/build/character/{characterId}/equipmentSet",
       "access": "session",
       "purpose": "Saved equipment sets.",
-      "operationId": "read/build/character/{characterId}/equipmentSet"
+      "operationId": "read/build/character/{characterId}/equipmentSet",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "equipmentSetId": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            ]
+          },
+          "isEquipmentSetDetail": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/base/searchItems",
       "access": "session",
       "purpose": "Search known items.",
-      "operationId": "read/base/searchItems"
+      "operationId": "read/base/searchItems",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category"
+        ],
+        "properties": {
+          "state": {
+            "anyOf": [
+              {
+                "const": "owned",
+                "type": "string"
+              },
+              {
+                "const": "equipped",
+                "type": "string"
+              },
+              {
+                "const": "sold",
+                "type": "string"
+              },
+              {
+                "const": "all",
+                "type": "string"
+              }
+            ],
+            "default": "owned"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "const": "sword",
+                "type": "string"
+              },
+              {
+                "const": "katana",
+                "type": "string"
+              },
+              {
+                "const": "bow",
+                "type": "string"
+              },
+              {
+                "const": "armor",
+                "type": "string"
+              },
+              {
+                "const": "glove",
+                "type": "string"
+              },
+              {
+                "const": "wand",
+                "type": "string"
+              },
+              {
+                "const": "robe",
+                "type": "string"
+              },
+              {
+                "const": "shield",
+                "type": "string"
+              },
+              {
+                "const": "bolt",
+                "type": "string"
+              },
+              {
+                "const": "book",
+                "type": "string"
+              },
+              {
+                "const": "catalyst",
+                "type": "string"
+              },
+              {
+                "const": "arrow",
+                "type": "string"
+              },
+              {
+                "const": "jewel",
+                "type": "string"
+              }
+            ]
+          },
+          "rarity": {
+            "anyOf": [
+              {
+                "const": "common",
+                "type": "string"
+              },
+              {
+                "const": "uncommon",
+                "type": "string"
+              },
+              {
+                "const": "eliteRare",
+                "type": "string"
+              },
+              {
+                "const": "bossRare",
+                "type": "string"
+              },
+              {
+                "const": "mythicRare",
+                "type": "string"
+              },
+              {
+                "const": "all",
+                "type": "string"
+              }
+            ],
+            "default": "all"
+          },
+          "superRare": {
+            "type": "boolean"
+          },
+          "superRareId": {
+            "minimum": 0,
+            "maximum": 80,
+            "type": "integer"
+          },
+          "itemId": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "searchAbility": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          },
+          "searchBonus": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "const": "none",
+                "type": "string"
+              },
+              {
+                "const": "ability",
+                "type": "string"
+              },
+              {
+                "const": "cBonus",
+                "type": "string"
+              },
+              {
+                "const": "otherBonus",
+                "type": "string"
+              },
+              {
+                "const": "abilityAndCBonus",
+                "type": "string"
+              },
+              {
+                "const": "all",
+                "type": "string"
+              }
+            ],
+            "default": "abilityAndCBonus"
+          },
+          "limit": {
+            "minimum": 1,
+            "maximum": 200,
+            "type": "integer",
+            "default": 100
+          },
+          "cursor": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {
+            "category": "sword"
+          }
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/base/jewelPriorityParty",
       "access": "session",
       "purpose": "Jewel priority.",
-      "operationId": "read/base/jewelPriorityParty"
+      "operationId": "read/base/jewelPriorityParty",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/base/shopInfo",
       "access": "session",
       "purpose": "Shop status/information.",
-      "operationId": "read/base/shopInfo"
+      "operationId": "read/base/shopInfo",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/base/shopItemsList",
       "access": "session",
       "purpose": "Shop lineup.",
-      "operationId": "read/base/shopItemsList"
+      "operationId": "read/base/shopItemsList",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/base/altarInfo",
       "access": "session",
       "purpose": "Altar information.",
-      "operationId": "read/base/altarInfo"
+      "operationId": "read/base/altarInfo",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/base/enemyFormList",
       "access": "session",
       "purpose": "Enemy-form list/options.",
-      "operationId": "read/base/enemyFormList"
+      "operationId": "read/base/enemyFormList",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "enemyType": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          },
+          "enemyId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/diary/{p}/diarySetting",
       "access": "session",
       "purpose": "Diary settings/options.",
-      "operationId": "read/diary/{p}/diarySetting"
+      "operationId": "read/diary/{p}/diarySetting",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/diary/diaryEntry/{diaryEntryId}",
       "access": "session",
       "purpose": "Retained Diary entry.",
-      "operationId": "read/diary/diaryEntry/{diaryEntryId}"
+      "operationId": "read/diary/diaryEntry/{diaryEntryId}",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "diaryEntryId"
+        ],
+        "properties": {
+          "diaryEntryId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "diaryEntryId": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/setting/enemyEditPane",
       "access": "session",
       "purpose": "Enemy editor/options.",
-      "operationId": "read/setting/enemyEditPane"
+      "operationId": "read/setting/enemyEditPane",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/setting/modeSelect",
       "access": "session",
       "purpose": "Mode/settings options.",
-      "operationId": "read/setting/modeSelect"
+      "operationId": "read/setting/modeSelect",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/setting/debug",
       "access": "session",
       "purpose": "Debug settings/options.",
-      "operationId": "read/setting/debug"
+      "operationId": "read/setting/debug",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/progress/elapsed",
       "access": "session",
       "purpose": "Advance controlled progression.",
-      "operationId": "commit/progress/elapsed"
+      "operationId": "commit/progress/elapsed",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "calculateToRealTime": {
+                "type": "boolean"
+              },
+              "elapsedSeconds": {
+                "minimum": 60,
+                "maximum": 43200,
+                "type": "integer"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/progress/progressReport",
       "access": "session",
       "purpose": "Perform progress-report action.",
-      "operationId": "commit/progress/progressReport"
+      "operationId": "commit/progress/progressReport",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/expedition/{p}/changeExpedition",
       "access": "session",
       "purpose": "Change expedition.",
-      "operationId": "commit/expedition/{p}/changeExpedition"
+      "operationId": "commit/expedition/{p}/changeExpedition",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "destination": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "destinationMode": {
+                "anyOf": [
+                  {
+                    "const": "auto",
+                    "type": "string"
+                  },
+                  {
+                    "const": "fixed",
+                    "type": "string"
+                  }
+                ]
+              },
+              "depthLimit": {
+                "pattern": "^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$",
+                "type": "string"
+              },
+              "difficultyOffset": {
+                "minimum": 0,
+                "maximum": 68,
+                "multipleOf": 2,
+                "type": "integer"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/expedition/{p}/sortie",
       "access": "session",
       "purpose": "Resolve one sortie.",
-      "operationId": "commit/expedition/{p}/sortie"
+      "operationId": "commit/expedition/{p}/sortie",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/expedition/{p}/godsBattle",
       "access": "session",
       "purpose": "Resolve one Gods Battle.",
-      "operationId": "commit/expedition/{p}/godsBattle"
+      "operationId": "commit/expedition/{p}/godsBattle",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/party/{p}",
       "access": "session",
       "purpose": "Change party build.",
-      "operationId": "commit/build/party/{p}"
+      "operationId": "commit/build/party/{p}",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "deityId": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "order": {
+                "minItems": 1,
+                "uniqueItems": true,
+                "maxItems": 6,
+                "type": "array",
+                "items": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/changeBuild",
       "access": "session",
       "purpose": "Change character build.",
-      "operationId": "commit/build/character/{characterId}/changeBuild"
+      "operationId": "commit/build/character/{characterId}/changeBuild",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "name": {
+                "minLength": 1,
+                "maxLength": 100,
+                "type": "string"
+              },
+              "racesAndGender": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "mainClassId": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "subClassId": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "lineage": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "predisposition": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/removeAllEquipment",
       "access": "session",
       "purpose": "Remove all equipment.",
-      "operationId": "commit/build/character/{characterId}/removeAllEquipment"
+      "operationId": "commit/build/character/{characterId}/removeAllEquipment",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/removeEquipment",
       "access": "session",
       "purpose": "Remove selected slots.",
-      "operationId": "commit/build/character/{characterId}/removeEquipment"
+      "operationId": "commit/build/character/{characterId}/removeEquipment",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "targetEquipment"
+            ],
+            "properties": {
+              "targetEquipment": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "targetEquipment": 0
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/equip",
       "access": "session",
       "purpose": "Equip owned items.",
-      "operationId": "commit/build/character/{characterId}/equip"
+      "operationId": "commit/build/character/{characterId}/equip",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "targetEquipment"
+            ],
+            "properties": {
+              "targetEquipment": {
+                "anyOf": [
+                  {
+                    "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                    "type": "string"
+                  },
+                  {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                      "type": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "targetEquipment": "0"
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/lockEquipment",
       "access": "session",
       "purpose": "Lock selected slots.",
-      "operationId": "commit/build/character/{characterId}/lockEquipment"
+      "operationId": "commit/build/character/{characterId}/lockEquipment",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "targetEquipment"
+            ],
+            "properties": {
+              "targetEquipment": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "targetEquipment": 0
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/unlockEquipment",
       "access": "session",
       "purpose": "Unlock selected slots.",
-      "operationId": "commit/build/character/{characterId}/unlockEquipment"
+      "operationId": "commit/build/character/{characterId}/unlockEquipment",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "targetEquipment"
+            ],
+            "properties": {
+              "targetEquipment": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "targetEquipment": 0
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/autoEquipment",
       "access": "session",
       "purpose": "Set/run Auto Equipment.",
-      "operationId": "commit/build/character/{characterId}/autoEquipment"
+      "operationId": "commit/build/character/{characterId}/autoEquipment",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "mode"
+            ],
+            "properties": {
+              "mode": {
+                "anyOf": [
+                  {
+                    "const": "FULL",
+                    "type": "string"
+                  },
+                  {
+                    "const": "SEMI",
+                    "type": "string"
+                  },
+                  {
+                    "const": "OFF",
+                    "type": "string"
+                  }
+                ]
+              },
+              "immediateAutoEquipment": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "mode": "FULL"
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/jewelAttach",
       "access": "session",
       "purpose": "Attach an owned Jewel.",
-      "operationId": "commit/build/character/{characterId}/jewelAttach"
+      "operationId": "commit/build/character/{characterId}/jewelAttach",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "targetEquipment",
+              "jewelToSet"
+            ],
+            "properties": {
+              "targetEquipment": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                ]
+              },
+              "jewelToSet": {
+                "pattern": "^(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                "type": "string"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "targetEquipment": 0,
+              "jewelToSet": "might:1"
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/jewelRemove",
       "access": "session",
       "purpose": "Remove an attached Jewel.",
-      "operationId": "commit/build/character/{characterId}/jewelRemove"
+      "operationId": "commit/build/character/{characterId}/jewelRemove",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "targetEquipment"
+            ],
+            "properties": {
+              "targetEquipment": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "targetEquipment": 0
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/saveEquipmentSet",
       "access": "session",
       "purpose": "Save current equipment set.",
-      "operationId": "commit/build/character/{characterId}/saveEquipmentSet"
+      "operationId": "commit/build/character/{characterId}/saveEquipmentSet",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "equipmentSet"
+            ],
+            "properties": {
+              "equipmentSet": {
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "equipmentSet": {}
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/loadEquipmentSet",
       "access": "session",
       "purpose": "Load a saved equipment set.",
-      "operationId": "commit/build/character/{characterId}/loadEquipmentSet"
+      "operationId": "commit/build/character/{characterId}/loadEquipmentSet",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "equipmentSetId"
+            ],
+            "properties": {
+              "equipmentSetId": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "loadMode": {
+                "anyOf": [
+                  {
+                    "const": "equipSet",
+                    "type": "string"
+                  },
+                  {
+                    "const": "equipSimilar",
+                    "type": "string"
+                  },
+                  {
+                    "const": "equipExactMatchesOnly",
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "equipmentSetId": 1
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/deleteEquipmentSet",
       "access": "session",
       "purpose": "Delete a saved equipment set.",
-      "operationId": "commit/build/character/{characterId}/deleteEquipmentSet"
+      "operationId": "commit/build/character/{characterId}/deleteEquipmentSet",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "equipmentSetId"
+            ],
+            "properties": {
+              "equipmentSetId": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "equipmentSetId": 1
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/renameEquipmentSet",
       "access": "session",
       "purpose": "Rename a saved equipment set.",
-      "operationId": "commit/build/character/{characterId}/renameEquipmentSet"
+      "operationId": "commit/build/character/{characterId}/renameEquipmentSet",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "equipmentSetId",
+              "name"
+            ],
+            "properties": {
+              "equipmentSetId": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "name": {
+                "minLength": 1,
+                "maxLength": 100,
+                "type": "string"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "equipmentSetId": 1,
+              "name": "xxxxxxx"
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/undoEquipment",
       "access": "session",
       "purpose": "Undo equipment change.",
-      "operationId": "commit/build/character/{characterId}/undoEquipment"
+      "operationId": "commit/build/character/{characterId}/undoEquipment",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/build/character/{characterId}/redoEquipment",
       "access": "session",
       "purpose": "Redo equipment change.",
-      "operationId": "commit/build/character/{characterId}/redoEquipment"
+      "operationId": "commit/build/character/{characterId}/redoEquipment",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/base/changeJewelPriorityParty",
       "access": "session",
       "purpose": "Change Jewel priority.",
-      "operationId": "commit/base/changeJewelPriorityParty"
+      "operationId": "commit/base/changeJewelPriorityParty",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "partyNumber"
+            ],
+            "properties": {
+              "partyNumber": {
+                "anyOf": [
+                  {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  },
+                  {
+                    "const": "none",
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "partyNumber": 1
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/base/sellInventoryItems",
       "access": "session",
       "purpose": "Sell inventory items.",
-      "operationId": "commit/base/sellInventoryItems"
+      "operationId": "commit/base/sellInventoryItems",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "items": [
+                "0"
+              ]
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/base/purchaseShopItems",
       "access": "session",
       "purpose": "Purchase shop entries.",
-      "operationId": "commit/base/purchaseShopItems"
+      "operationId": "commit/base/purchaseShopItems",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "shopItemId"
+                  ],
+                  "properties": {
+                    "shopItemId": {
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "items": [
+                {
+                  "shopItemId": 1
+                }
+              ]
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/base/paidShopRefresh",
       "access": "session",
       "purpose": "Perform paid shop refresh.",
-      "operationId": "commit/base/paidShopRefresh"
+      "operationId": "commit/base/paidShopRefresh",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/base/unlockSoldItems",
       "access": "session",
       "purpose": "Clear auto-sell status without restoring items.",
-      "operationId": "commit/base/unlockSoldItems"
+      "operationId": "commit/base/unlockSoldItems",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "items": [
+                "0"
+              ]
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/base/unlockForm",
       "access": "session",
       "purpose": "Unlock an enemy form.",
-      "operationId": "commit/base/unlockForm"
+      "operationId": "commit/base/unlockForm",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "enemyId"
+            ],
+            "properties": {
+              "enemyId": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "enemyId": 1
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/diary/{p}/diarySetting",
       "access": "session",
       "purpose": "Change Diary settings.",
-      "operationId": "commit/diary/{p}/diarySetting"
+      "operationId": "commit/diary/{p}/diarySetting",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "superRareThreshold": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "const": "all",
+                        "type": "string"
+                      },
+                      {
+                        "const": "none",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "bossThreshold": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "const": "all",
+                        "type": "string"
+                      },
+                      {
+                        "const": "none",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "mythicThreshold": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "const": "all",
+                        "type": "string"
+                      },
+                      {
+                        "const": "none",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "rareThreshold": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "const": "all",
+                        "type": "string"
+                      },
+                      {
+                        "const": "none",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "sideQuestThreshold": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "const": "all",
+                        "type": "string"
+                      },
+                      {
+                        "const": "none",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "minimum": 2,
+                    "maximum": 8,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "notifyGodsBattle": {
+                "type": "boolean"
+              },
+              "defeatNotificationMode": {
+                "anyOf": [
+                  {
+                    "const": "defeatOnly",
+                    "type": "string"
+                  },
+                  {
+                    "const": "defeatAndDraw",
+                    "type": "string"
+                  },
+                  {
+                    "const": "defeatDrawRetreat",
+                    "type": "string"
+                  },
+                  {
+                    "const": "all",
+                    "type": "string"
+                  },
+                  {
+                    "const": "none",
+                    "type": "string"
+                  }
+                ]
+              },
+              "notifyCyclePopup": {
+                "type": "boolean"
+              },
+              "notifyItemDropPopup": {
+                "type": "boolean"
+              },
+              "notifyAutoEquipmentPopup": {
+                "type": "boolean"
+              },
+              "notifySideQuestPopup": {
+                "type": "boolean"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/diary/diaryEntry/markAsRead",
       "access": "session",
       "purpose": "Mark Diary entries read.",
-      "operationId": "commit/diary/diaryEntry/markAsRead"
+      "operationId": "commit/diary/diaryEntry/markAsRead",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "diaryEntryId"
+            ],
+            "properties": {
+              "diaryEntryId": {
+                "anyOf": [
+                  {
+                    "const": "ALL",
+                    "type": "string"
+                  },
+                  {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  {
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  }
+                ]
+              },
+              "partyNumber": {
+                "minimum": 1,
+                "maximum": 6,
+                "type": "integer"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "diaryEntryId": "ALL"
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/clairvoyanceReset",
       "access": "session",
       "purpose": "Reset selected Clairvoyance state.",
-      "operationId": "commit/setting/clairvoyanceReset"
+      "operationId": "commit/setting/clairvoyanceReset",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "partyNumber",
+              "resetCommonRewards",
+              "resetRewards",
+              "resetSideQuest"
+            ],
+            "properties": {
+              "partyNumber": {
+                "minimum": 1,
+                "maximum": 6,
+                "type": "integer"
+              },
+              "resetCommonRewards": {
+                "type": "boolean"
+              },
+              "resetRewards": {
+                "type": "boolean"
+              },
+              "resetSideQuest": {
+                "type": "boolean"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "partyNumber": 1,
+              "resetCommonRewards": true,
+              "resetRewards": true,
+              "resetSideQuest": true
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/modeSelect",
       "access": "session",
       "purpose": "Change mode/settings.",
-      "operationId": "commit/setting/modeSelect"
+      "operationId": "commit/setting/modeSelect",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "mode": {
+                "anyOf": [
+                  {
+                    "const": "mode.normal",
+                    "type": "string"
+                  },
+                  {
+                    "const": "mode.orca",
+                    "type": "string"
+                  }
+                ]
+              },
+              "enemyLevelOffset": {
+                "minimum": 0,
+                "maximum": 20,
+                "type": "integer"
+              },
+              "language": {
+                "anyOf": [
+                  {
+                    "const": "ja",
+                    "type": "string"
+                  },
+                  {
+                    "const": "en",
+                    "type": "string"
+                  },
+                  {
+                    "const": "zh-CN",
+                    "type": "string"
+                  },
+                  {
+                    "const": "zh-TW",
+                    "type": "string"
+                  },
+                  {
+                    "const": "ko",
+                    "type": "string"
+                  }
+                ]
+              },
+              "darkMode": {
+                "anyOf": [
+                  {
+                    "const": "off",
+                    "type": "string"
+                  },
+                  {
+                    "const": "on",
+                    "type": "string"
+                  },
+                  {
+                    "const": "system",
+                    "type": "string"
+                  }
+                ]
+              },
+              "autoRepeat": {
+                "type": "boolean"
+              },
+              "showExpeditionStats": {
+                "type": "boolean"
+              },
+              "theme": {
+                "anyOf": [
+                  {
+                    "const": "theme.kemo",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.laika",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.leonard",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.orca",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.nox",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.luna",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.mishka",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.puchitsa",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.hagakure",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.souga-ha",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.finn",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.merle",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.rosaria",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.milly",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.guabi",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.nemea",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.bernetta",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.yone",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.niv",
+                    "type": "string"
+                  },
+                  {
+                    "const": "theme.nave",
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/enemyEditPane",
       "access": "session",
       "purpose": "Change enemy editor.",
-      "operationId": "commit/setting/enemyEditPane"
+      "operationId": "commit/setting/enemyEditPane",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "enemyLevel": {
+                "minimum": 1,
+                "maximum": 99,
+                "type": "integer"
+              },
+              "enemyName": {
+                "minLength": 1,
+                "maxLength": 100,
+                "type": "string"
+              },
+              "terrainEffect": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "enemyType": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "mainClass": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "subClass": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
+              "addedAbilities": {
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "abilityId",
+                    "level"
+                  ],
+                  "properties": {
+                    "abilityId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "level": {
+                      "minimum": 1,
+                      "maximum": 5,
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/feedback",
       "access": "session",
       "purpose": "Submit feedback.",
-      "operationId": "commit/setting/feedback"
+      "operationId": "commit/setting/feedback",
+      "transport": "multipart",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "name",
+              "category",
+              "text"
+            ],
+            "properties": {
+              "name": {
+                "minLength": 1,
+                "maxLength": 100,
+                "type": "string"
+              },
+              "category": {
+                "anyOf": [
+                  {
+                    "const": "feedback",
+                    "type": "string"
+                  },
+                  {
+                    "const": "question",
+                    "type": "string"
+                  },
+                  {
+                    "const": "featureRequest",
+                    "type": "string"
+                  },
+                  {
+                    "const": "bugReport",
+                    "type": "string"
+                  }
+                ]
+              },
+              "text": {
+                "minLength": 1,
+                "maxLength": 20000,
+                "type": "string"
+              },
+              "latestBattleLogParty": {
+                "anyOf": [
+                  {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  },
+                  {
+                    "const": "none",
+                    "type": "string"
+                  }
+                ],
+                "default": 1
+              },
+              "includeBackup": {
+                "type": "boolean",
+                "default": false
+              },
+              "attachments": {
+                "maxItems": 4,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "pattern": "^attachment[0-3]$",
+                  "type": "string"
+                },
+                "default": []
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "name": "xxxxxxx",
+              "category": "feedback",
+              "text": "xxxxxxx"
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/backup/export",
       "access": "session",
       "purpose": "Export active save.",
-      "operationId": "commit/setting/backup/export"
+      "operationId": "commit/setting/backup/export",
+      "transport": "binary",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/backup/import",
       "access": "session",
       "purpose": "Import backup.",
-      "operationId": "commit/setting/backup/import"
+      "operationId": "commit/setting/backup/import",
+      "transport": "multipart",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/backup/reset",
       "access": "session",
       "purpose": "Request/confirm reset.",
-      "operationId": "commit/setting/backup/reset"
+      "operationId": "commit/setting/backup/reset",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/debug",
       "access": "session",
       "purpose": "Change debug settings.",
-      "operationId": "commit/setting/debug"
+      "operationId": "commit/setting/debug",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "runtimeDiagnostics": {
+                "type": "boolean"
+              },
+              "clairvoyance": {
+                "type": "boolean"
+              },
+              "speedOfTime": {
+                "anyOf": [
+                  {
+                    "const": "real",
+                    "type": "string"
+                  },
+                  {
+                    "const": "x1.2",
+                    "type": "string"
+                  },
+                  {
+                    "const": "x5",
+                    "type": "string"
+                  },
+                  {
+                    "const": "x20",
+                    "type": "string"
+                  },
+                  {
+                    "const": "x100",
+                    "type": "string"
+                  },
+                  {
+                    "const": "unlimited",
+                    "type": "string"
+                  }
+                ]
+              },
+              "godsBattleCondition": {
+                "anyOf": [
+                  {
+                    "const": "normal",
+                    "type": "string"
+                  },
+                  {
+                    "const": "simple",
+                    "type": "string"
+                  }
+                ]
+              },
+              "godsStrength": {
+                "anyOf": [
+                  {
+                    "const": "normal",
+                    "type": "string"
+                  },
+                  {
+                    "const": "veryWeak",
+                    "type": "string"
+                  }
+                ]
+              },
+              "debugStoreOpen": {
+                "type": "boolean"
+              },
+              "displayFlavorCondition": {
+                "type": "boolean"
+              },
+              "displayAfkDuration": {
+                "type": "boolean"
+              },
+              "displayAllBestiary": {
+                "type": "boolean"
+              },
+              "displayAllCompendium": {
+                "type": "boolean"
+              },
+              "displayAllGlossary": {
+                "type": "boolean"
+              },
+              "colosseumMode": {
+                "type": "boolean"
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/markNewsAsRead",
       "access": "session",
       "purpose": "Mark developer news read.",
-      "operationId": "commit/setting/markNewsAsRead"
+      "operationId": "commit/setting/markNewsAsRead",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "version": {
+                "anyOf": [
+                  {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  {
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/setting/uiPreferences",
       "access": "session",
       "purpose": "Update explicitly persisted UI preferences.",
-      "operationId": "commit/setting/uiPreferences"
+      "operationId": "commit/setting/uiPreferences",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "changes"
+            ],
+            "properties": {
+              "changes": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "key",
+                    "value"
+                  ],
+                  "properties": {
+                    "key": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "changes": [
+                {
+                  "key": "xxxxxxx",
+                  "value": "xxxxxxx"
+                }
+              ]
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "POST",
       "path": "/api/v1/commit/base/markItemsAsSeen",
       "access": "session",
       "purpose": "Acknowledge displayed newly acquired item variants.",
-      "operationId": "commit/base/markItemsAsSeen"
+      "operationId": "commit/base/markItemsAsSeen",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {
+              "items": [
+                "xxxxxxx"
+              ]
+            }
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/read/setting/delivery/{deliveryId}",
       "access": "session",
       "purpose": "Read external delivery status.",
-      "operationId": "read/setting/delivery/{deliveryId}"
+      "operationId": "read/setting/delivery/{deliveryId}",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "deliveryId"
+        ],
+        "properties": {
+          "deliveryId": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "deliveryId": "xxxxxxx"
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/help/overview",
       "access": "public",
       "purpose": "API overview and index.",
-      "operationId": "help/overview"
+      "operationId": "help/overview",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/help/endpoints",
       "access": "public",
       "purpose": "Versioned API contract.",
-      "operationId": "help/endpoints"
+      "operationId": "help/endpoints",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/developerNewsNotification",
       "access": "session",
       "purpose": "Developer news.",
-      "operationId": "resources/developerNewsNotification"
+      "operationId": "resources/developerNewsNotification",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/donationBox",
       "access": "session",
       "purpose": "Donation status.",
-      "operationId": "resources/donationBox"
+      "operationId": "resources/donationBox",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/clairvoyance/{p}",
       "access": "session",
       "purpose": "Clairvoyance data.",
-      "operationId": "resources/clairvoyance/{p}"
+      "operationId": "resources/clairvoyance/{p}",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/glossary",
       "access": "session",
       "purpose": "Glossary query.",
-      "operationId": "resources/glossary"
+      "operationId": "resources/glossary",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category"
+        ],
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "const": "Ab.",
+                "type": "string"
+              },
+              {
+                "const": "Base.",
+                "type": "string"
+              },
+              {
+                "const": "Fixed.",
+                "type": "string"
+              },
+              {
+                "const": "Inc.",
+                "type": "string"
+              },
+              {
+                "const": "Mech.",
+                "type": "string"
+              },
+              {
+                "const": "Faith.",
+                "type": "string"
+              },
+              {
+                "const": "Magic.",
+                "type": "string"
+              },
+              {
+                "const": "Quest.",
+                "type": "string"
+              },
+              {
+                "const": "Terrain.",
+                "type": "string"
+              }
+            ]
+          },
+          "glossaryId": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          },
+          "limit": {
+            "minimum": 1,
+            "maximum": 200,
+            "type": "integer",
+            "default": 100
+          },
+          "cursor": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {
+            "category": "Ab."
+          }
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/itemCompendium",
       "access": "session",
       "purpose": "Compendium query.",
-      "operationId": "resources/itemCompendium"
+      "operationId": "resources/itemCompendium",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category"
+        ],
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "const": "sword",
+                "type": "string"
+              },
+              {
+                "const": "katana",
+                "type": "string"
+              },
+              {
+                "const": "bow",
+                "type": "string"
+              },
+              {
+                "const": "armor",
+                "type": "string"
+              },
+              {
+                "const": "glove",
+                "type": "string"
+              },
+              {
+                "const": "wand",
+                "type": "string"
+              },
+              {
+                "const": "robe",
+                "type": "string"
+              },
+              {
+                "const": "shield",
+                "type": "string"
+              },
+              {
+                "const": "bolt",
+                "type": "string"
+              },
+              {
+                "const": "book",
+                "type": "string"
+              },
+              {
+                "const": "catalyst",
+                "type": "string"
+              },
+              {
+                "const": "arrow",
+                "type": "string"
+              },
+              {
+                "const": "jewel",
+                "type": "string"
+              }
+            ]
+          },
+          "rarity": {
+            "anyOf": [
+              {
+                "const": "common",
+                "type": "string"
+              },
+              {
+                "const": "uncommon",
+                "type": "string"
+              },
+              {
+                "const": "eliteRare",
+                "type": "string"
+              },
+              {
+                "const": "bossRare",
+                "type": "string"
+              },
+              {
+                "const": "mythicRare",
+                "type": "string"
+              },
+              {
+                "const": "all",
+                "type": "string"
+              }
+            ],
+            "default": "all"
+          },
+          "tier": {
+            "minimum": 1,
+            "maximum": 8,
+            "type": "integer"
+          },
+          "itemId": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "searchAbility": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          },
+          "searchBonus": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "const": "none",
+                "type": "string"
+              },
+              {
+                "const": "ability",
+                "type": "string"
+              },
+              {
+                "const": "cBonus",
+                "type": "string"
+              },
+              {
+                "const": "otherBonus",
+                "type": "string"
+              },
+              {
+                "const": "abilityAndCBonus",
+                "type": "string"
+              },
+              {
+                "const": "all",
+                "type": "string"
+              }
+            ],
+            "default": "abilityAndCBonus"
+          },
+          "limit": {
+            "minimum": 1,
+            "maximum": 200,
+            "type": "integer",
+            "default": 100
+          },
+          "cursor": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {
+            "category": "sword"
+          }
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/characterRoster",
       "access": "session",
       "purpose": "Race roster query.",
-      "operationId": "resources/characterRoster"
+      "operationId": "resources/characterRoster",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "race"
+        ],
+        "properties": {
+          "race": {
+            "anyOf": [
+              {
+                "const": "lupinian",
+                "type": "string"
+              },
+              {
+                "const": "vulpinian",
+                "type": "string"
+              },
+              {
+                "const": "felidian",
+                "type": "string"
+              },
+              {
+                "const": "caninian",
+                "type": "string"
+              },
+              {
+                "const": "ursan",
+                "type": "string"
+              },
+              {
+                "const": "procyonian",
+                "type": "string"
+              },
+              {
+                "const": "leporian",
+                "type": "string"
+              },
+              {
+                "const": "cervin",
+                "type": "string"
+              },
+              {
+                "const": "murid",
+                "type": "string"
+              },
+              {
+                "const": "kemoria",
+                "type": "string"
+              },
+              {
+                "const": "orcinian",
+                "type": "string"
+              },
+              {
+                "const": "avian",
+                "type": "string"
+              },
+              {
+                "const": "mimorian",
+                "type": "string"
+              }
+            ]
+          },
+          "limit": {
+            "minimum": 1,
+            "maximum": 200,
+            "type": "integer",
+            "default": 100
+          },
+          "cursor": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {
+            "race": "lupinian"
+          }
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/bestiary",
       "access": "session",
       "purpose": "Bestiary query.",
-      "operationId": "resources/bestiary"
+      "operationId": "resources/bestiary",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "enemyId": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "enemyType": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          },
+          "expedition": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "limit": {
+            "minimum": 1,
+            "maximum": 200,
+            "type": "integer",
+            "default": 100
+          },
+          "cursor": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        }
+      }
     },
     {
       "method": "GET",
       "path": "/api/v1/resources/superRareList",
       "access": "session",
       "purpose": "Super Rare list.",
-      "operationId": "resources/superRareList"
-    }
-  ],
-  "requestSchemas": {
-    "signUp": {
-      "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "userId",
-        "environment",
-        "gameMode"
-      ],
-      "properties": {
-        "userId": {
-          "pattern": "^[A-Za-z0-9_-]{1,16}$",
-          "type": "string"
-        },
-        "environment": {
-          "anyOf": [
-            {
-              "const": "dev",
-              "type": "string"
-            },
-            {
-              "const": "beta",
-              "type": "string"
-            },
-            {
-              "const": "orca",
-              "type": "string"
-            },
-            {
-              "const": "prod",
-              "type": "string"
-            },
-            {
-              "const": "desktop",
-              "type": "string"
-            }
-          ]
-        },
-        "gameMode": {
-          "anyOf": [
-            {
-              "const": "normal",
-              "type": "string"
-            },
-            {
-              "const": "orca",
-              "type": "string"
-            }
-          ]
-        },
-        "levelOffsetForOrca": {
-          "minimum": 0,
-          "maximum": 20,
-          "type": "integer"
-        },
-        "language": {
-          "anyOf": [
-            {
-              "const": "ja",
-              "type": "string"
-            },
-            {
-              "const": "en",
-              "type": "string"
-            },
-            {
-              "const": "zh-CN",
-              "type": "string"
-            },
-            {
-              "const": "zh-TW",
-              "type": "string"
-            },
-            {
-              "const": "ko",
-              "type": "string"
-            }
-          ]
+      "operationId": "resources/superRareList",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "superRareId": {
+            "minimum": 1,
+            "maximum": 80,
+            "type": "integer"
+          },
+          "limit": {
+            "minimum": 1,
+            "maximum": 200,
+            "type": "integer",
+            "default": 100
+          },
+          "cursor": {
+            "minLength": 1,
+            "maxLength": 200,
+            "type": "string"
+          }
         }
-      }
-    },
-    "logIn": {
-      "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "userId",
-        "environment",
-        "gameMode"
-      ],
-      "properties": {
-        "userId": {
-          "pattern": "^[A-Za-z0-9_-]{1,16}$",
-          "type": "string"
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {}
         },
-        "environment": {
-          "anyOf": [
-            {
-              "const": "dev",
-              "type": "string"
-            },
-            {
-              "const": "beta",
-              "type": "string"
-            },
-            {
-              "const": "orca",
-              "type": "string"
-            },
-            {
-              "const": "prod",
-              "type": "string"
-            },
-            {
-              "const": "desktop",
-              "type": "string"
-            }
-          ]
-        },
-        "gameMode": {
-          "anyOf": [
-            {
-              "const": "normal",
-              "type": "string"
-            },
-            {
-              "const": "orca",
-              "type": "string"
-            }
-          ]
-        },
-        "levelOffsetForOrca": {
-          "minimum": 0,
-          "maximum": 20,
-          "type": "integer"
-        }
-      }
-    },
-    "logOut": {
-      "additionalProperties": false,
-      "type": "object",
-      "properties": {}
-    },
-    "commit": {
-      "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "expectedRevision",
-        "idempotencyKey",
-        "parameters"
-      ],
-      "properties": {
-        "expectedRevision": {
-          "minimum": 0,
-          "type": "integer"
-        },
-        "idempotencyKey": {
-          "minLength": 16,
-          "maxLength": 128,
-          "pattern": "^[\\x20-\\x7e]+$",
-          "type": "string"
-        },
-        "parameters": {
-          "additionalProperties": true,
-          "type": "object",
-          "properties": {}
-        },
-        "confirmationToken": {
-          "minLength": 1,
-          "maxLength": 512,
-          "type": "string"
-        }
-      }
-    },
-    "simulationRun": {
-      "additionalProperties": false,
-      "type": "object",
-      "properties": {
-        "expectedRevision": {
-          "minimum": 0,
-          "type": "integer"
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
         }
       }
     }
-  }
+  ]
 }

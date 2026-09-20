@@ -47,8 +47,14 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   assert.ok(overview.headers.get('etag'));
   assert.equal((await fetch(`${descriptor.endpoint}/read/observation/overview`, { headers: { ...session, 'If-None-Match': overview.headers.get('etag') } })).status, 304);
   assert.equal((await fetch(`${descriptor.endpoint}/read/observation/overview?typo=1`, { headers: session })).status, 400);
+  assert.equal((await fetch(`${descriptor.endpoint}/read/expedition/7/chargeStock`, { headers: session })).status, 400);
+  assert.equal((await fetch(`${descriptor.endpoint}/read/base/searchItems`, { headers: session })).status, 400);
   const invalidCommit = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: {}, typo: true }) });
   assert.equal(invalidCommit.status, 400);
+  const invalidCommitParameter = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: { partyNumber: '1' } }) });
+  assert.equal(invalidCommitParameter.status, 400);
+  const invalidCommitRange = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: { partyNumber: 7 } }) });
+  assert.equal(invalidCommitRange.status, 400);
   const commit = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: { partyNumber: 1 } }) });
   assert.equal(commit.status, 200);
   assert.equal((await commit.json()).revision, 1);

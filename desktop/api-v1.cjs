@@ -15,63 +15,8 @@ const LEASE_IDLE_TIMEOUT_MS = 300_000;
 const MAX_JSON_BODY_BYTES = 1024 * 1024;
 const MAX_MULTIPART_BODY_BYTES = 32 * 1024 * 1024;
 const PUBLIC_OPERATIONS = new Set(['fundamental/status', 'help/overview', 'help/endpoints']);
-const QUERY_KEYS = {
-  'read/observation/party': new Set(['partyNumber', 'characterId']),
-  'read/observation/base': new Set(['pane']),
-  'read/observation/diary': new Set(['partyNumber', 'diaryEntryId']),
-  'read/build/character/{characterId}/equipmentSet': new Set(['equipmentSetId', 'isEquipmentSetDetail']),
-  'read/base/searchItems': new Set(['state', 'itemId', 'itemName', 'itemType', 'itemRarity', 'ability', 'cBonus', 'otherBonus', 'sort', 'limit', 'cursor']),
-  'read/base/enemyFormList': new Set(['enemyId']),
-  'resources/glossary': new Set(['category', 'glossaryId', 'limit', 'cursor']),
-  'resources/itemCompendium': new Set(['itemId', 'itemType', 'itemRarity', 'limit', 'cursor']),
-  'resources/characterRoster': new Set(['raceId', 'classId', 'lineageId', 'predispositionId', 'abilityId', 'limit', 'cursor']),
-  'resources/bestiary': new Set(['enemyId', 'enemyType', 'limit', 'cursor']),
-  'resources/superRareList': new Set(['superRareId', 'limit', 'cursor']),
-};
-const COMMIT_PARAMETER_KEYS = {
-  'commit/progress/elapsed': ['calculateToRealTime', 'elapsedSeconds'],
-  'commit/progress/progressReport': [],
-  'commit/expedition/{p}/changeExpedition': ['destination', 'destinationMode', 'depthLimit', 'difficultyOffset'],
-  'commit/expedition/{p}/sortie': [],
-  'commit/expedition/{p}/godsBattle': [],
-  'commit/build/party/{p}': ['deityId', 'order'],
-  'commit/build/character/{characterId}/changeBuild': ['name', 'racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition'],
-  'commit/build/character/{characterId}/removeAllEquipment': [],
-  'commit/build/character/{characterId}/removeEquipment': ['targetEquipment'],
-  'commit/build/character/{characterId}/equip': ['targetEquipment'],
-  'commit/build/character/{characterId}/lockEquipment': ['targetEquipment'],
-  'commit/build/character/{characterId}/unlockEquipment': ['targetEquipment'],
-  'commit/build/character/{characterId}/autoEquipment': ['mode', 'immediateAutoEquipment'],
-  'commit/build/character/{characterId}/jewelAttach': ['targetEquipment', 'jewelToSet'],
-  'commit/build/character/{characterId}/jewelRemove': ['targetEquipment'],
-  'commit/build/character/{characterId}/saveEquipmentSet': ['equipmentSet'],
-  'commit/build/character/{characterId}/loadEquipmentSet': ['equipmentSetId', 'loadMode'],
-  'commit/build/character/{characterId}/deleteEquipmentSet': ['equipmentSetId'],
-  'commit/build/character/{characterId}/renameEquipmentSet': ['equipmentSetId', 'name'],
-  'commit/build/character/{characterId}/undoEquipment': [],
-  'commit/build/character/{characterId}/redoEquipment': [],
-  'commit/base/changeJewelPriorityParty': ['partyNumber'],
-  'commit/base/sellInventoryItems': ['items'],
-  'commit/base/purchaseShopItems': ['items'],
-  'commit/base/paidShopRefresh': [],
-  'commit/base/unlockSoldItems': ['items'],
-  'commit/base/unlockForm': ['enemyId'],
-  'commit/base/markItemsAsSeen': ['items'],
-  'commit/diary/{p}/diarySetting': ['superRareThreshold', 'bossThreshold', 'mythicThreshold', 'rareThreshold', 'sideQuestThreshold', 'notifyGodsBattle', 'defeatNotificationMode', 'notifyCyclePopup', 'notifyItemDropPopup', 'notifyAutoEquipmentPopup', 'notifySideQuestPopup'],
-  'commit/diary/diaryEntry/markAsRead': ['diaryEntryId', 'partyNumber'],
-  'commit/setting/clairvoyanceReset': ['partyNumber', 'resetCommonRewards', 'resetRewards', 'resetSideQuest'],
-  'commit/setting/modeSelect': ['mode', 'enemyLevelOffset', 'language', 'darkMode', 'autoRepeat', 'showExpeditionStats', 'theme'],
-  'commit/setting/enemyEditPane': ['enemyLevel', 'enemyName', 'terrainEffect', 'enemyType', 'mainClass', 'subClass', 'addedAbilities'],
-  'commit/setting/feedback': ['name', 'category', 'text', 'latestBattleLogParty', 'includeBackup', 'attachments'],
-  'commit/setting/backup/export': [],
-  'commit/setting/backup/import': [],
-  'commit/setting/backup/reset': [],
-  'commit/setting/debug': ['runtimeDiagnostics', 'clairvoyance', 'speedOfTime', 'godsBattleCondition', 'godsStrength', 'debugStoreOpen', 'displayFlavorCondition', 'displayAfkDuration', 'displayAllBestiary', 'displayAllCompendium', 'displayAllGlossary', 'colosseumMode'],
-  'commit/setting/markNewsAsRead': ['version'],
-  'commit/setting/uiPreferences': ['changes'],
-};
-const ajv = new Ajv({ allErrors: true, strict: true });
-const validators = Object.fromEntries(Object.entries(catalog.requestSchemas).map(([key, schema]) => [key, ajv.compile(schema)]));
+const parameterAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: true, useDefaults: true });
+const bodyAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: false, useDefaults: true });
 
 function timingSafeEqualString(actual, expected) {
   if (typeof actual !== 'string' || typeof expected !== 'string') return false;
@@ -86,7 +31,16 @@ function compileRoute(operation) {
     names.push(name);
     return '([^/]+)';
   });
-  return { ...operation, names, pattern: new RegExp(`^${pattern}$`) };
+  return {
+    ...operation,
+    names,
+    pattern: new RegExp(`^${pattern}$`),
+    validators: {
+      pathParameters: parameterAjv.compile(operation.pathParameters),
+      query: parameterAjv.compile(operation.query),
+      body: bodyAjv.compile(operation.body),
+    },
+  };
 }
 
 const ROUTES = catalog.operations.map(compileRoute);
@@ -128,18 +82,11 @@ function createApiV1(options) {
     streams.clear();
   }
 
-  function validateBody(kind, value) {
-    if (validators[kind](value)) return;
+  function validateSchema(validator, value) {
+    if (validator(value)) return;
     const validationError = Object.assign(new Error('schema_validation_failed'), { status: 400, code: 'invalid_request' });
-    validationError.details = { issues: validators[kind].errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [] };
+    validationError.details = { issues: validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [] };
     throw validationError;
-  }
-
-  function validateCommitParameters(operationId, parameters) {
-    if (!parameters || typeof parameters !== 'object' || Array.isArray(parameters)) throw Object.assign(new Error('parameters_object_required'), { status: 400, code: 'invalid_request' });
-    const allowed = new Set(COMMIT_PARAMETER_KEYS[operationId] ?? []);
-    const unknown = Object.keys(parameters).find(key => !allowed.has(key));
-    if (unknown) throw Object.assign(new Error(`unknown_parameter:${unknown}`), { status: 400, code: 'invalid_request' });
   }
 
   function authenticateBootstrap(request, id) {
@@ -205,7 +152,7 @@ function createApiV1(options) {
     catch { throw Object.assign(new Error('invalid_json'), { status: 400, code: 'invalid_request' }); }
   }
 
-  async function readMultipart(request, operationId) {
+  async function readMultipart(request, route) {
     const contentType = String(request.headers['content-type'] ?? '');
     if (!contentType.toLowerCase().startsWith('multipart/form-data;')) throw Object.assign(new Error('unsupported_media_type'), { status: 415, code: 'unsupported_media_type' });
     const declared = Number(request.headers['content-length'] ?? 0);
@@ -219,7 +166,7 @@ function createApiV1(options) {
     if (Buffer.byteLength(metadataText) > MAX_JSON_BODY_BYTES) throw Object.assign(new Error('metadata_too_large'), { status: 413, code: 'payload_too_large' });
     let metadata;
     try { metadata = JSON.parse(metadataText); } catch { throw Object.assign(new Error('invalid_metadata'), { status: 400, code: 'invalid_request' }); }
-    validateBody('commit', metadata);
+    validateSchema(route.validators.body, metadata);
     const files = {};
     for (const [name, value] of form.entries()) {
       if (name === 'metadata') continue;
@@ -235,7 +182,7 @@ function createApiV1(options) {
             : true;
       files[name] = { mediaType, byteLength: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex'), contentBase64: bytes.toString('base64'), validImageSignature };
     }
-    if (operationId === 'commit/setting/backup/import') {
+    if (route.operationId === 'commit/setting/backup/import') {
       if (Object.keys(files).length !== 1 || !files.backup || files.backup.byteLength > MAX_MULTIPART_BODY_BYTES) throw Object.assign(new Error('invalid_backup'), { status: 400, code: 'invalid_request' });
     } else {
       const requested = metadata.parameters?.attachments ?? [];
@@ -312,18 +259,15 @@ function createApiV1(options) {
     try {
       if (route.method === 'GET') {
         if (request.headers['content-length'] && request.headers['content-length'] !== '0') throw Object.assign(new Error('get_body'), { status: 400, code: 'invalid_request' });
-        const allowedQuery = QUERY_KEYS[route.operationId] ?? new Set();
-        const unknownQuery = [...url.searchParams.keys()].find(key => !allowedQuery.has(key));
-        if (unknownQuery) throw Object.assign(new Error(`unknown_query:${unknownQuery}`), { status: 400, code: 'invalid_request' });
-        payload = { parameters: decodeQuery(url, pathParameters), pathParameters, transport: { requestId: id, lastEventId: request.headers['last-event-id'] ?? null } };
+        const query = decodeQuery(url, {});
+        validateSchema(route.validators.pathParameters, pathParameters);
+        validateSchema(route.validators.query, query);
+        payload = { parameters: { ...pathParameters, ...query }, pathParameters, transport: { requestId: id, lastEventId: request.headers['last-event-id'] ?? null } };
       } else {
         const multipart = route.operationId === 'commit/setting/backup/import' || route.operationId === 'commit/setting/feedback';
-        const body = multipart ? await readMultipart(request, route.operationId) : await readJson(request, route.operationId === 'fundamental/logOut');
-        if (route.operationId === 'fundamental/signUp') validateBody('signUp', body);
-        else if (route.operationId === 'fundamental/logIn') validateBody('logIn', body);
-        else if (route.operationId === 'fundamental/logOut') validateBody('logOut', body);
-        else if (route.operationId.startsWith('commit/')) { validateBody('commit', body); validateCommitParameters(route.operationId, body.parameters); }
-        else if (route.operationId.endsWith('/simulationRun')) validateBody('simulationRun', body);
+        const body = multipart ? await readMultipart(request, route) : await readJson(request, route.operationId === 'fundamental/logOut');
+        validateSchema(route.validators.pathParameters, pathParameters);
+        if (!multipart) validateSchema(route.validators.body, body);
         payload = { ...body, pathParameters, transport: { requestId: id } };
       }
     } catch (error) {
