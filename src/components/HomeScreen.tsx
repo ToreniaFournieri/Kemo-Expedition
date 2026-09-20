@@ -19,7 +19,7 @@ selectBestAutoEquipmentFillCandidate,
 selectBestAutoEquipmentUpgradeCandidate,
 type EquipmentRankingCandidate,
 } from '../game/battleKernel';
-import { gameplayRandom } from '../game/gameplayRandom';
+import { createApiRandom, gameplayRandom, withGameplayRandomSource } from '../game/gameplayRandom';
 import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
@@ -97,8 +97,10 @@ import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyL
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import { encodePersistedState } from '../game/storageCompression';
-import { applyApiV1Commit, decodeApiSavePayload } from '../api/v1/commitOperations';
+import { decodeApiSavePayload } from '../api/v1/commitOperations';
+import { SerializedApplicationApiAuthority } from '../api/v1/authority';
 import { buildApiV1ReadData } from '../api/v1/readModels';
+import { stageApiV1ElapsedProgression } from '../api/v1/elapsedProgression';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
 import {
@@ -213,14 +215,6 @@ async function sha256ProfileValue(value: unknown): Promise<string> {
   const bytes = new TextEncoder().encode(JSON.stringify(value));
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
-function canonicalApiValue(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonicalApiValue).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.entries(value as Record<string, unknown>).sort(([left], [right]) => left.localeCompare(right)).map(([key, entry]) => `${JSON.stringify(key)}:${canonicalApiValue(entry)}`).join(',')}}`;
-  }
-  return JSON.stringify(value);
 }
 
 /** Load the initial tab behind the startup screen. */
@@ -491,7 +485,13 @@ export function HomeScreen({
   const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
   const apiV1IdentityRef = useRef<DesktopApiAccountIdentity | null>(null);
   const apiV1ControlRef = useRef<DesktopApiControlMetadata>({ revisionHighWater: 0, receipts: [], tombstones: [], popupEvents: [], deliveries: [] });
-  const apiV1QueueRef = useRef<Promise<void>>(Promise.resolve());
+  const apiCycleDurationScaleRef = useRef(1);
+  const applicationApiAuthorityRef = useRef<SerializedApplicationApiAuthority | null>(null);
+  if (applicationApiAuthorityRef.current === null) {
+    applicationApiAuthorityRef.current = new SerializedApplicationApiAuthority({ state, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
+  } else if (!apiV1IdentityRef.current) {
+    applicationApiAuthorityRef.current.replaceSnapshot({ state, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
+  }
   apiStateRef.current = state;
   apiActionsRef.current = actions;
   debugSettingsRef.current = debugSettings;
@@ -548,7 +548,7 @@ export function HomeScreen({
       .replace('{deliveryId}', String(pathParameters.deliveryId ?? ''));
     const failure = (status: number, code: string, message: string, details?: Record<string, unknown>) => ({
       status,
-      revision: apiV1ControlRef.current.revisionHighWater,
+      revision: applicationApiAuthorityRef.current!.getSnapshot().control.revisionHighWater,
       error: { code, message, ...(details ? { details } : {}) },
     });
     const desktop = window.bokemoDesktop;
@@ -605,7 +605,22 @@ export function HomeScreen({
         const previousInGameTime = Number.isFinite(loginControl.inGameTime) ? Number(loginControl.inGameTime) : realNow;
         const catchUpMs = Math.min(AFK_MAX_ELAPSED_MS, Math.max(0, realNow - previousInGameTime));
         if (catchUpMs >= 60_000) {
-          accountState = gameReducer(accountState, { type: 'SIMULATE_AFK', elapsedMs: catchUpMs, isAutoRepeatEnabled: true, gameMode: identity.gameMode === 'orca' ? 'mode.orca' : 'mode.normal', enemyLevelOffset: identity.levelOffsetForOrca ?? 5, simulatedEndAt: previousInGameTime + catchUpMs });
+          const apiRandom = createApiRandom(loginControl.rngState ?? crypto.getRandomValues(new Uint32Array(1))[0]);
+          let randomDrawCount = 0;
+          const catchUp = await stageApiV1ElapsedProgression(accountState, { calculateToRealTime: true }, {
+            simulatedAt: previousInGameTime,
+            realNow,
+            gameMode: identity.gameMode === 'orca' ? 'mode.orca' : 'mode.normal',
+            enemyLevelOffset: identity.levelOffsetForOrca ?? 5,
+            cycleDurationScale: apiCycleDurationScaleRef.current,
+            applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
+            runWithRandom: operation => withGameplayRandomSource(() => { randomDrawCount += 1; return apiRandom.next(); }, operation),
+            yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
+            maximumElapsedSeconds: Math.floor(AFK_MAX_ELAPSED_MS / 1_000),
+            allowExtendedElapsedSeconds: true,
+          });
+          accountState = catchUp.state;
+          if (randomDrawCount > 0) loginControl.rngState = apiRandom.state;
           loginControl.revisionHighWater += 1;
         }
         loginControl.inGameTime = Math.max(previousInGameTime, realNow);
@@ -617,6 +632,7 @@ export function HomeScreen({
         apiV1ControlRef.current = loginControl;
         apiRevisionRef.current = loginControl.revisionHighWater;
         apiSimulatedAtRef.current = loginControl.inGameTime;
+        applicationApiAuthorityRef.current!.replaceSnapshot({ state: imported.state, control: loginControl, simulatedAt: loginControl.inGameTime });
         apiLeaseActiveRef.current = true;
         apiControlActiveRef.current = true;
         setApiLeaseActive(true);
@@ -648,6 +664,8 @@ export function HomeScreen({
         apiV1IdentityRef.current = null;
         apiV1ControlRef.current = { revisionHighWater: 0, receipts: [], tombstones: [], popupEvents: [], deliveries: [] };
         apiRevisionRef.current = 0;
+        apiSimulatedAtRef.current = Date.now();
+        applicationApiAuthorityRef.current!.replaceSnapshot({ state: restored.state, control: apiV1ControlRef.current, simulatedAt: apiSimulatedAtRef.current });
         apiLeaseActiveRef.current = false;
         apiControlActiveRef.current = false;
         setApiLeaseActive(false);
@@ -666,140 +684,85 @@ export function HomeScreen({
     if (operation === 'read/observation/popupEventStream') {
       const transport = request.transport && typeof request.transport === 'object' ? request.transport as Record<string, unknown> : {};
       const lastEventId = typeof transport.lastEventId === 'string' ? transport.lastEventId : null;
-      const events = (apiV1ControlRef.current.popupEvents ?? []) as Array<Record<string, unknown>>;
+      const snapshot = applicationApiAuthorityRef.current!.getSnapshot();
+      const events = snapshot.control.popupEvents ?? [];
       const start = lastEventId ? events.findIndex((event) => event.eventId === lastEventId) : events.length - 1;
       if (lastEventId && start < 0) return failure(409, 'resync_required', 'The popup replay cursor is unavailable.');
-      return { revision: apiV1ControlRef.current.revisionHighWater, data: { events: events.slice(start + 1) } };
+      return { revision: snapshot.control.revisionHighWater, data: { events: events.slice(start + 1) } };
     }
 
     if (operation.startsWith('read/') || operation.startsWith('resources/')) {
-      if (operation.endsWith('/simulationRun') && request.expectedRevision !== undefined && Number(request.expectedRevision) !== apiV1ControlRef.current.revisionHighWater) return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: apiV1ControlRef.current.revisionHighWater });
+      const snapshot = applicationApiAuthorityRef.current!.getSnapshot();
+      if (operation.endsWith('/simulationRun') && request.expectedRevision !== undefined && Number(request.expectedRevision) !== snapshot.control.revisionHighWater) return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: snapshot.control.revisionHighWater });
       try {
-        const data = await buildApiV1ReadData(operation, apiStateRef.current, queryParameters, {
-          revision: apiV1ControlRef.current.revisionHighWater,
+        const data = await buildApiV1ReadData(operation, snapshot.state, queryParameters, {
+          revision: snapshot.control.revisionHighWater,
           environment: getEnvironmentId(),
           gameMode: gameModeRef.current,
           enemyLevelOffset: effectiveOrcaEnemyLevelOffset,
-          inGameTime: apiSimulatedAtRef.current,
-          simulation: (partyIndex, count) => simulateExpeditionRuns(apiStateRef.current, partyIndex, gameModeRef.current, count, undefined, effectiveOrcaEnemyLevelOffset),
-          control: apiV1ControlRef.current,
+          inGameTime: snapshot.simulatedAt,
+          simulation: (partyIndex, count) => simulateExpeditionRuns(snapshot.state, partyIndex, gameModeRef.current, count, undefined, effectiveOrcaEnemyLevelOffset),
+          control: snapshot.control,
         });
-        return { revision: apiV1ControlRef.current.revisionHighWater, data };
+        return { revision: snapshot.control.revisionHighWater, data };
       } catch (error) {
         return failure(String(error).includes('not_found') ? 404 : 400, String(error).includes('not_found') ? 'not_found' : 'invalid_request', 'The requested projection is unavailable.');
       }
     }
 
     if (!operation.startsWith('commit/')) return failure(404, 'not_found', 'The operation does not exist.');
-    const expectedRevision = Number(request.expectedRevision);
-    const idempotencyKey = String(request.idempotencyKey ?? '');
     const parameters = queryParameters;
-    if (!Number.isSafeInteger(expectedRevision) || idempotencyKey.length < 16 || idempotencyKey.length > 128) return failure(400, 'invalid_request', 'A valid expectedRevision and idempotencyKey are required.');
-    type Receipt = { key: string; operation: string; canonical: string; response: Record<string, unknown> };
-    const stagedControl = structuredClone(apiV1ControlRef.current);
-    const receipts = stagedControl.receipts as Receipt[];
     const uploadedFiles = request.uploadedFiles && typeof request.uploadedFiles === 'object' ? request.uploadedFiles as Record<string, Record<string, unknown>> : {};
-    const canonicalFiles = Object.fromEntries(Object.entries(uploadedFiles).map(([name, file]) => [name, { mediaType: file.mediaType, byteLength: file.byteLength, sha256: file.sha256 }]));
-    const canonical = canonicalApiValue({ operation, parameters, files: canonicalFiles });
-    const receipt = receipts.find((entry) => entry.key === idempotencyKey);
-    if (receipt) return receipt.canonical === canonical ? receipt.response : failure(409, 'idempotency_conflict', 'The idempotency key belongs to a different request.');
-    if (apiV1ControlRef.current.tombstones.includes(idempotencyKey)) return failure(409, 'idempotency_expired', 'The successful receipt has expired.');
-    if (expectedRevision !== apiV1ControlRef.current.revisionHighWater) return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: apiV1ControlRef.current.revisionHighWater });
-
-    const confirmationRequired = operation === 'commit/setting/backup/reset' || operation === 'commit/setting/backup/import';
-    if (confirmationRequired) {
-      const confirmations = stagedControl.confirmations ??= [];
-      const now = Date.now();
-      stagedControl.confirmations = confirmations.filter((entry) => entry.expiresAt > now);
-      const reserved = stagedControl.confirmations.find((entry) => entry.key === idempotencyKey);
-      const supplied = typeof request.confirmationToken === 'string' ? request.confirmationToken : null;
-      if (!supplied) {
-        if (reserved && (reserved.operation !== operation || reserved.canonical !== canonical)) return failure(409, 'idempotency_conflict', 'The idempotency key is reserved for different parameters.');
-        const challenge = reserved ?? { token: crypto.randomUUID(), key: idempotencyKey, operation, canonical, revision: expectedRevision, expiresAt: now + 300_000 };
-        if (!reserved) stagedControl.confirmations.push(challenge);
-        try {
-          const identity = apiV1IdentityRef.current;
-          if (!identity) throw new Error('login_required');
-          const savePayload = encodePersistedState(JSON.stringify(serializeGameState(apiStateRef.current)));
-          await desktop.commitApiAccount(identity, savePayload, stagedControl);
-          apiV1ControlRef.current = stagedControl;
-        } catch { return failure(500, 'save_failed', 'The confirmation reservation could not be persisted.'); }
-        return failure(409, 'confirmation_required', 'Confirmation is required.', { confirmationToken: challenge.token, warningKey: operation.endsWith('/reset') ? 'api.warning.backupReset' : 'api.warning.backupImport', warningArgs: {}, expiresAt: new Date(challenge.expiresAt).toISOString(), allowedChoices: [] });
-      }
-      if (!reserved || reserved.token !== supplied || reserved.operation !== operation || reserved.canonical !== canonical || reserved.revision !== expectedRevision || reserved.expiresAt <= now) return failure(409, 'confirmation_invalid', 'The confirmation token is invalid.');
-    }
-
-    let next = apiStateRef.current;
-    let stagedSimulatedAt = apiSimulatedAtRef.current;
-    let data: Record<string, unknown> = {};
-    try {
-      const outcome = applyApiV1Commit(operation, next, parameters, {
-        simulatedAt: apiSimulatedAtRef.current,
-        gameMode: gameModeRef.current,
-        enemyLevelOffset: effectiveOrcaEnemyLevelOffset,
-        settings: stagedControl.settings ?? {},
-        equipmentHistory: stagedControl.equipmentHistory ?? {},
-        uploadedFiles,
-        canonicalFiles,
-        applyAutoEquipment: (s, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(s, partyIndex, characterId, forceFull),
-        createDeliveryId: () => crypto.randomUUID(),
-        now: () => Date.now(),
-      });
-      next = outcome.state;
-      stagedSimulatedAt = outcome.simulatedAt;
-      data = outcome.data;
-      stagedControl.settings = outcome.settings;
-      stagedControl.equipmentHistory = outcome.equipmentHistory;
-      if (outcome.resetControlEvents) { stagedControl.popupEvents = []; stagedControl.confirmations = []; }
-      if (outcome.delivery) stagedControl.deliveries = [...(stagedControl.deliveries ?? []), outcome.delivery];
-    } catch (error) {
-      const code = String(error).includes('not_found') ? 'not_found' : String(error).includes('illegal_action') ? 'illegal_action' : 'invalid_request';
-      return failure(code === 'not_found' ? 404 : code === 'illegal_action' ? 409 : 400, code, 'The commit could not be applied.', { reason: String(error) });
-    }
-
-    const previousRevision = stagedControl.revisionHighWater;
-    const stateChanged = canonicalApiValue(serializeGameState(next)) !== canonicalApiValue(serializeGameState(apiStateRef.current));
-    const metadataChanged = canonicalApiValue({ deliveries: stagedControl.deliveries, equipmentHistory: stagedControl.equipmentHistory, popupEvents: stagedControl.popupEvents, settings: stagedControl.settings }) !== canonicalApiValue({ deliveries: apiV1ControlRef.current.deliveries, equipmentHistory: apiV1ControlRef.current.equipmentHistory, popupEvents: apiV1ControlRef.current.popupEvents, settings: apiV1ControlRef.current.settings });
-    const changed = stateChanged || metadataChanged;
-    const revision = changed ? previousRevision + 1 : previousRevision;
-    if (changed && operation.match(/^commit\/expedition\/\d+\/(sortie|godsBattle)$/)) {
-      const popupEvents = (stagedControl.popupEvents ?? []) as Array<Record<string, unknown>>;
-      popupEvents.push({ revision, sequence: 1, eventId: `${revision}:1`, eventKey: 'popup.expeditionComplete', args: { outcome: String(data.outcome ?? '') }, partyNumber: Number(operation.split('/')[2]), diaryEntryId: data.diaryEntryId ?? null, groupKey: null, createdAt: new Date().toISOString() });
-      const cutoff = Date.now() - 300_000;
-      const firstRecent = popupEvents.findIndex((event) => Date.parse(String(event.createdAt)) >= cutoff);
-      const retainFrom = Math.min(firstRecent < 0 ? popupEvents.length : firstRecent, Math.max(0, popupEvents.length - 256));
-      stagedControl.popupEvents = popupEvents.slice(retainFrom);
-    }
     const transport = request.transport && typeof request.transport === 'object' ? request.transport as Record<string, unknown> : {};
-    const response = { requestId: String(transport.requestId ?? crypto.randomUUID()), previousRevision, revision, data, effects: [], changedResources: changed ? ['read/observation/overview'] : [], committedAt: new Date().toISOString() };
-    receipts.push({ key: idempotencyKey, operation, canonical, response });
-    stagedControl.revisionHighWater = revision;
-    stagedControl.inGameTime = stagedSimulatedAt;
-    if (confirmationRequired) stagedControl.confirmations = (stagedControl.confirmations ?? []).filter((entry) => entry.key !== idempotencyKey);
-    if (receipts.length > 4096) { const evicted = receipts.splice(0, receipts.length - 4096); stagedControl.tombstones.push(...evicted.map((entry) => entry.key)); }
-    try {
-      const identity = apiV1IdentityRef.current;
-      if (!identity) throw new Error('login_required');
-      const savePayload = encodePersistedState(JSON.stringify(serializeGameState(next)));
-      await desktop.commitApiAccount(identity, savePayload, stagedControl);
-      if (stateChanged) await apiActionsRef.current.commitApiState(next);
-      apiStateRef.current = next;
-      apiV1ControlRef.current = stagedControl;
-      apiRevisionRef.current = revision;
-      apiSimulatedAtRef.current = stagedSimulatedAt;
-    } catch {
-      return failure(500, 'save_failed', 'The previous account manifest remains authoritative.');
+    const result = await applicationApiAuthorityRef.current!.executeCommit({
+      operation,
+      expectedRevision: Number(request.expectedRevision),
+      idempotencyKey: String(request.idempotencyKey ?? ''),
+      confirmationToken: typeof request.confirmationToken === 'string' ? request.confirmationToken : null,
+      requestId: String(transport.requestId ?? crypto.randomUUID()),
+      parameters,
+      uploadedFiles,
+    }, {
+      gameMode: gameModeRef.current,
+      enemyLevelOffset: effectiveOrcaEnemyLevelOffset,
+      cycleDurationScale: apiCycleDurationScaleRef.current,
+      applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
+      createOpaqueId: () => crypto.randomUUID(),
+      createRandomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
+      now: () => Date.now(),
+      persist: async (snapshot, control) => {
+        const identity = apiV1IdentityRef.current;
+        if (!identity) throw new Error('login_required');
+        const savePayload = encodePersistedState(JSON.stringify(serializeGameState(snapshot)));
+        await desktop.commitApiAccount(identity, savePayload, control);
+      },
+      publish: async (snapshot) => { await apiActionsRef.current.commitApiState(snapshot); },
+      onPublicationFailure: (error) => console.error('[api-v1] durable commit could not be published to the renderer', error),
+      yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
+    });
+    if (!result.ok) {
+      if (result.durableControl) apiV1ControlRef.current = result.durableControl;
+      const status = result.error.code === 'not_found' ? 404
+        : result.error.code === 'save_failed' ? 500
+          : ['stale_revision', 'idempotency_conflict', 'idempotency_expired', 'operation_in_progress', 'confirmation_required', 'confirmation_invalid', 'illegal_action'].includes(result.error.code) ? 409
+            : 400;
+      return failure(status, result.error.code, result.error.message, result.error.details);
     }
-    return response;
+    apiStateRef.current = result.state;
+    apiV1ControlRef.current = result.control;
+    apiRevisionRef.current = result.response.revision;
+    apiSimulatedAtRef.current = result.simulatedAt;
+    return result.response;
   }, [effectiveOrcaEnemyLevelOffset, state.buildNumber]);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
     if (!desktop?.onApiV1Request) return;
     return desktop.onApiV1Request((operation, payload) => {
-      const result = apiV1QueueRef.current.then(() => processApiV1Request(operation, payload));
-      apiV1QueueRef.current = result.then(() => undefined, () => undefined);
-      return result;
+      const invoke = () => processApiV1Request(operation, payload);
+      return ['fundamental/signUp', 'fundamental/logIn', 'fundamental/logOut'].includes(operation)
+        ? applicationApiAuthorityRef.current!.runExclusive(invoke)
+        : invoke();
     });
   }, [processApiV1Request]);
 
@@ -972,6 +935,7 @@ export function HomeScreen({
   });
   const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
   const hasActiveTimeSpeedBonus = timeSpeedBonusUntilMs !== null && timeSpeedNowMs < timeSpeedBonusUntilMs;
+  apiCycleDurationScaleRef.current = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
 
   useEffect(() => {
     try {

@@ -295,7 +295,10 @@ function createApiV1(options) {
     }
 
     const invoked = await invoke(route, payload, id);
-    if (invoked.body) return sendJson(response, invoked.status, invoked.body, invoked.status === 429 ? { 'Retry-After': '1' } : {});
+    if (invoked.body) {
+      const shouldRetry = invoked.status === 429 || invoked.body.error?.code === 'operation_in_progress';
+      return sendJson(response, invoked.status, invoked.body, shouldRetry ? { 'Retry-After': '1' } : {});
+    }
     const result = invoked.result ?? {};
 
     if (route.operationId === 'read/observation/popupEventStream') {

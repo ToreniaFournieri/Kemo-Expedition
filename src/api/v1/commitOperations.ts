@@ -15,10 +15,7 @@ import { getVariantKey } from '../../types';
 // idempotency/revision/confirmation transaction and building the final envelope). It receives an explicit
 // authoritative snapshot plus injected dependencies for the few pieces that are not pure functions of
 // (operation, state, parameters) alone, and returns the next state and any control-plane side effects the caller
-// (still responsible for revision, idempotency, receipts, and persistence) must apply.
-//
-// Not yet extracted: the idempotency/receipt/confirmation/revision bookkeeping and the sortie/godsBattle popup
-// event emission, which remain in HomeScreen.tsx pending a later `src/api/v1/authority.ts` extraction.
+// (`src/api/v1/authority.ts`, responsible for revision, idempotency, receipts, and persistence) must apply.
 
 export function decodeApiSavePayload(payload: string): GameState {
   return hydrateGameState(JSON.parse(decodePersistedState(payload)) as GameState);
@@ -36,7 +33,7 @@ export interface ApiV1CommitContext {
   readonly uploadedFiles: Record<string, Record<string, unknown>>;
   /** Canonicalized upload metadata, precomputed by the caller (also used for idempotency canonicalization). */
   readonly canonicalFiles: Record<string, unknown>;
-  readonly applyAutoEquipment: (state: GameState, partyIndex: number, characterId: number, forceFull: boolean) => GameState;
+  readonly applyAutoEquipment: (state: GameState, partyIndex: number, characterId: number | undefined, forceFull: boolean) => GameState;
   readonly createDeliveryId: () => string;
   /** Real wall-clock epoch ms, used only for delivery record timestamps (distinct from the in-game `simulatedAt`). */
   readonly now: () => number;

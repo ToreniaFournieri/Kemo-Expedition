@@ -158,13 +158,14 @@ interface DesktopApiAccountIdentity {
 interface DesktopApiControlMetadata {
   revisionHighWater: number;
   inGameTime?: number;
-  receipts: unknown[];
+  receipts: import('./api/v1/authority').ApiV1Receipt[];
   tombstones: string[];
-  popupEvents?: unknown[];
+  popupEvents?: Array<Record<string, unknown>>;
   deliveries?: unknown[];
   equipmentHistory?: Record<string, { undo: import('./types').SavedEquipmentSet[]; redo: import('./types').SavedEquipmentSet[] }>;
-  confirmations?: Array<{ token: string; key: string; operation: string; canonical: string; revision: number; expiresAt: number }>;
+  confirmations?: import('./api/v1/authority').ApiV1Confirmation[];
   settings?: Record<string, unknown>;
+  rngState?: number;
 }
 
 interface DesktopApiAccountRecord {

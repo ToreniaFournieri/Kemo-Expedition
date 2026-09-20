@@ -50,6 +50,9 @@ app.on('browser-window-created', (_event, window) => {
       const overview = await call('/read/observation/overview', { headers: session });
       const committed = await call('/commit/base/changeJewelPriorityParty', { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: overview.revision, idempotencyKey: crypto.randomUUID(), parameters: { partyNumber: 'none' } }) });
       assert.ok(committed.revision >= overview.revision);
+      const elapsed = await call('/commit/progress/elapsed', { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: committed.revision, idempotencyKey: crypto.randomUUID(), parameters: { elapsedSeconds: 60 } }) });
+      assert.equal(elapsed.data.elapsedSeconds, 60);
+      assert.ok(elapsed.revision > committed.revision);
       await call('/fundamental/logOut', { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: '{}' });
       await window.webContents.executeJavaScript('window.bokemoDesktop.setApiV1Enabled(false)');
       assert.equal(fs.existsSync(settings.connectionFile), false);

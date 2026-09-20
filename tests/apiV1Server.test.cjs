@@ -20,7 +20,10 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
       if (operationId === 'fundamental/logIn') return { revision, data: { userId: 'Taro', environment: 'desktop', gameMode: 'normal', levelOffsetForOrca: null }, identity: { userId: 'Taro' } };
       if (operationId === 'fundamental/logOut') return { revision, data: { finalPersistedRevision: revision } };
       if (operationId === 'read/observation/overview') return { revision, data: { headerInfo: { gameMode: 'mode.normal', inGameTime: new Date(0).toISOString(), gold: 200 } } };
-      if (operationId === 'commit/base/changeJewelPriorityParty') return { previousRevision: revision, revision: ++revision, data: { current: { partyNumber: 1 } } };
+      if (operationId === 'commit/base/changeJewelPriorityParty') {
+        if (payload.idempotencyKey === 'operation-in-progress-key') return { status: 409, revision, error: { code: 'operation_in_progress', message: 'The operation is already in progress.' } };
+        return { previousRevision: revision, revision: ++revision, data: { current: { partyNumber: 1 } } };
+      }
       throw new Error(`unexpected ${operationId}`);
     },
   });
@@ -55,6 +58,10 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   assert.equal(invalidCommitParameter.status, 400);
   const invalidCommitRange = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: { partyNumber: 7 } }) });
   assert.equal(invalidCommitRange.status, 400);
+  const inProgress = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: 'operation-in-progress-key', parameters: { partyNumber: 1 } }) });
+  assert.equal(inProgress.status, 409);
+  assert.equal(inProgress.headers.get('retry-after'), '1');
+  assert.equal((await inProgress.json()).error.code, 'operation_in_progress');
   const commit = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: { partyNumber: 1 } }) });
   assert.equal(commit.status, 200);
   assert.equal((await commit.json()).revision, 1);
