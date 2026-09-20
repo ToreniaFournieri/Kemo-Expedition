@@ -42,6 +42,8 @@ function compileRoute(operation) {
       query: parameterAjv.compile(operation.query),
       body: bodyAjv.compile(operation.body),
       response: responseAjv.compile(operation.response.data),
+      // SSE and the raw-binary backup export never go through the JSON read/commit envelope construction below.
+      envelope: operation.response.envelope ? responseAjv.compile(operation.response.envelope) : null,
     },
   };
 }
@@ -94,12 +96,14 @@ function createApiV1(options) {
 
   // A response mismatch is an implementation drift against the operation's own catalog contract, not caller error,
   // so it fails closed as `internal_error` before anything is written rather than leaking a malformed payload.
-  function assertResponseData(route, data) {
-    if (route.validators.response(data)) return;
-    const issues = route.validators.response.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [];
-    console.error(`api-v1: ${route.operationId} produced a response that does not match its catalog schema`, issues);
-    throw Object.assign(new Error('response_schema_mismatch'), { status: 500, code: 'internal_error' });
+  function assertAgainstCatalog(route, validator, label, value) {
+    if (validator(value)) return;
+    const issues = validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [];
+    console.error(`api-v1: ${route.operationId} produced a ${label} that does not match its catalog schema`, issues);
+    throw Object.assign(new Error(`${label}_schema_mismatch`), { status: 500, code: 'internal_error' });
   }
+  function assertResponseData(route, data) { assertAgainstCatalog(route, route.validators.response, 'response', data); }
+  function assertEnvelope(route, envelope) { if (route.validators.envelope) assertAgainstCatalog(route, route.validators.envelope, 'envelope', envelope); }
 
   function authenticateBootstrap(request, id) {
     const authorization = request.headers.authorization;
@@ -362,11 +366,13 @@ function createApiV1(options) {
         response.end(bytes);
         return;
       }
-      return sendJson(response, 200, {
+      const commitBody = {
         ...baseEnvelope(result.requestId ?? id), previousRevision: result.previousRevision, revision: result.revision,
         committedAt: result.committedAt ?? new Date().toISOString(), data: result.data ?? {},
         effects: result.effects ?? [], changedResources: result.changedResources ?? [],
-      });
+      };
+      assertEnvelope(route, commitBody);
+      return sendJson(response, 200, commitBody);
     }
     const cacheable = route.method === 'GET'
       && !['fundamental/status', 'read/observation', 'read/observation/compact', 'read/observation/popupEventStream'].includes(route.operationId);
@@ -376,10 +382,12 @@ function createApiV1(options) {
       response.end();
       return;
     }
-    return sendJson(response, 200, {
+    const readBody = {
       ...baseEnvelope(id), ...(Number.isInteger(result.revision) ? { revision: result.revision } : {}),
       observedAt: result.observedAt ?? new Date().toISOString(), data: result.data ?? {},
-    }, etag ? { ETag: etag, 'Cache-Control': 'private, no-cache' } : {});
+    };
+    assertEnvelope(route, readBody);
+    return sendJson(response, 200, readBody, etag ? { ETag: etag, 'Cache-Control': 'private, no-cache' } : {});
   }
 
   function writeDescriptor() {

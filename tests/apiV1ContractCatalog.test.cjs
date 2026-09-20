@@ -30,9 +30,24 @@ test('checked-in API v1 catalog matches the normative endpoint index', () => {
     assert.ok(typeof entry.meaning === 'string' && entry.meaning.length > 0, `error ${entry.code} meaning`);
   }
 
+  const knownErrorCodes = new Set(catalog.errors.map(entry => entry.code));
   const ajv = new Ajv({ strict: true });
   for (const operation of catalog.operations) {
     assert.ok(['query', 'json', 'multipart', 'binary', 'sse'].includes(operation.transport), operation.operationId);
+
+    assert.ok(Array.isArray(operation.errors) && operation.errors.length > 0, `${operation.operationId} is missing applicable errors`);
+    assert.equal(new Set(operation.errors).size, operation.errors.length, `${operation.operationId} lists a duplicate error code`);
+    assert.deepEqual(operation.errors, [...operation.errors].sort(), `${operation.operationId} errors must be sorted`);
+    for (const code of operation.errors) assert.ok(knownErrorCodes.has(code), `${operation.operationId} references unknown error code ${code}`);
+    assert.ok(['invalid_request', 'runtime_unavailable', 'internal_error'].every(code => operation.errors.includes(code)), `${operation.operationId} is missing a baseline error code`);
+    if (operation.access !== 'public') assert.ok(operation.errors.includes('authentication_required') && operation.errors.includes('authentication_failed'), `${operation.operationId} must document bootstrap auth failures`);
+    if (operation.access === 'session') assert.ok(['login_required', 'control_lease_invalid', 'control_lease_expired'].every(code => operation.errors.includes(code)), `${operation.operationId} must document session lease failures`);
+
+    assert.ok(operation.restrictions && typeof operation.restrictions === 'object', `${operation.operationId} is missing restrictions`);
+    assert.ok(operation.restrictions.environments === 'all' || Array.isArray(operation.restrictions.environments), `${operation.operationId} restrictions.environments`);
+    assert.equal(typeof operation.restrictions.requiresDebugMode, 'boolean', `${operation.operationId} restrictions.requiresDebugMode`);
+    assert.equal(operation.restrictions.requiresLogin, operation.access === 'session', `${operation.operationId} restrictions.requiresLogin must mirror session access`);
+    if (operation.restrictions.requiresDebugMode) assert.deepEqual(operation.restrictions.environments, ['dev', 'beta'], `${operation.operationId} debug-gated environments`);
     for (const member of ['pathParameters', 'query', 'body']) {
       assert.equal(operation[member].type, 'object', `${operation.operationId} ${member}`);
       assert.equal(operation[member].additionalProperties, false, `${operation.operationId} ${member}`);
@@ -50,5 +65,19 @@ test('checked-in API v1 catalog matches the normative endpoint index', () => {
     const validateResponse = ajv.compile(operation.response.data);
     const responseExample = operation.examples.response.data;
     assert.equal(validateResponse(structuredClone(responseExample)), true, `${operation.operationId} response example: ${JSON.stringify(validateResponse.errors)}`);
+
+    if (operation.transport === 'sse' || operation.operationId === 'commit/setting/backup/export') {
+      assert.equal(operation.response.envelope, null, `${operation.operationId} should not have a JSON envelope (${operation.transport} transport)`);
+      continue;
+    }
+    assert.ok(operation.response.envelope, `${operation.operationId} is missing a response envelope schema`);
+    assert.equal(operation.response.envelope.type, 'object', `${operation.operationId} response.envelope`);
+    assert.equal(operation.response.envelope.additionalProperties, false, `${operation.operationId} response.envelope`);
+    const validateEnvelope = ajv.compile(operation.response.envelope);
+    const isCommit = operation.operationId.startsWith('commit/');
+    const envelopeExample = isCommit
+      ? { apiVersion: 'v1', schemaVersion: 1, requestId: 'x'.repeat(8), previousRevision: 0, revision: 1, committedAt: new Date(0).toISOString(), data: responseExample, effects: [], changedResources: [] }
+      : { apiVersion: 'v1', schemaVersion: 1, requestId: 'x'.repeat(8), observedAt: new Date(0).toISOString(), data: responseExample };
+    assert.equal(validateEnvelope(structuredClone(envelopeExample)), true, `${operation.operationId} envelope example: ${JSON.stringify(validateEnvelope.errors)}`);
   }
 });

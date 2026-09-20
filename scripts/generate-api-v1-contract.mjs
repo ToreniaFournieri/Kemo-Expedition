@@ -147,6 +147,8 @@ const diaryEntry = strict({ diaryEntryId: integerId, partyNumber, occurredAt: is
 // `metadata` mirrors renderDiaryMetadata()'s existing narration output; tracked for a concrete shape once Diary compaction (Milestone 5) is finished.
 const diaryEntrySummary = strict({ diaryEntryId: integerId, partyNumber, occurredAt: isoTimestamp, unread: Type.Boolean(), metadata: Type.Unknown(), battleLog: battleLogReference });
 const range = strict({ min: Type.Number(), max: Type.Number(), step: optional(Type.Number()) });
+// Spec 9.1.4.3: paginated lists include `nextCursor`, or null when complete; optional here since readModels.ts does not yet paginate (Milestone 4).
+const nextCursor = { nextCursor: optional(Type.Union([stableKey, Type.Null()])) };
 const popupEvent = strict({ revision: Type.Integer({ minimum: 0 }), sequence: Type.Integer({ minimum: 1 }), eventId: stableKey, eventKey: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])), partyNumber: Type.Union([partyNumber, Type.Null()]), diaryEntryId: Type.Union([stableKey, Type.Null()]), groupKey: Type.Union([stableKey, Type.Null()]), createdAt: isoTimestamp });
 const deliveryStatus = literals('queued', 'sending', 'delivered', 'failed', 'unknown', 'cancelled');
 const deliveryRecord = strict({ deliveryId: stableKey, status: deliveryStatus, createdAt: optional(isoTimestamp), updatedAt: optional(isoTimestamp), failureReason: optional(Type.Union([Type.String(), Type.Null()])), rewardApplied: optional(Type.Boolean()), operation: optional(Type.String()), parameters: optional(Type.Unknown()), files: optional(Type.Unknown()) });
@@ -190,7 +192,7 @@ const responseDataSchemas = {
   'read/build/character/{characterId}/status': strict({ calculatedStatus, current: strict({ unique: Type.Boolean(), name: Type.String({ minLength: 1 }), racesAndGender: stableKey, mainClassId: stableKey, subClassId: stableKey, lineage: Type.Union([stableKey, Type.Null()]), predisposition: Type.Union([stableKey, Type.Null()]) }), editableFields: strict({ name: Type.Boolean(), unique: Type.Boolean() }), validOptions: strict({ racesAndGender: Type.Array(stableKey), mainClassId: Type.Array(stableKey), subClassId: Type.Array(stableKey), lineage: Type.Array(stableKey), predisposition: Type.Array(stableKey) }) }),
   'read/build/character/{characterId}/equipment': strict({ current: strict({ mode: literals('FULL', 'SEMI', 'OFF'), equipment: equipmentEntryList }), validOptions: strict({ mode: Type.Array(literals('FULL', 'SEMI', 'OFF')), numberOfEmptyEquipmentSlots: Type.Integer({ minimum: 0 }) }) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSets: Type.Array(strict({ equipmentSetId: integerId, equipmentSet })) }),
-  'read/base/searchItems': strict({ items: Type.Array(itemStackFormat), equippedItems: Type.Array(equippedItemFormat), details: Type.Unknown() }),
+  'read/base/searchItems': strict({ items: Type.Array(itemStackFormat), equippedItems: Type.Array(equippedItemFormat), details: Type.Unknown(), ...nextCursor }),
   'read/base/jewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }), validOptions: strict({ partyNumber: Type.Array(Type.Union([partyNumber, Type.Literal('none')])) }) }),
   'read/base/shopInfo': strict({ intimacy: Type.Integer({ minimum: 0, maximum: 99 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 0 }), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
   'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(strict({ shopItemId: stableKey, itemId: integerId, item: itemFormat, price: Type.Integer({ minimum: 0 }), soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) })) }), validOptions: strict({ shopItemId: Type.Array(stableKey) }) }),
@@ -248,12 +250,23 @@ const responseDataSchemas = {
   'resources/developerNewsNotification': strict({ entries: Type.Array(strict({ version: stableKey, date: Type.String(), content: Type.String() })) }),
   'resources/donationBox': strict({ gods: Type.Array(Type.String()) }),
   'resources/clairvoyance/{p}': strict({ reward: Type.Unknown(), enhancement: Type.Unknown(), superRare: Type.Unknown(), sideQuest: Type.Unknown(), sleepiness: Type.Unknown() }),
-  'resources/glossary': strict({ entries: Type.Array(Type.Unknown()), validOptions: strict({ category: Type.Array(Type.String()) }) }),
-  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: Type.String(), category: stableKey, ability: Type.Array(Type.Unknown()), cBonus: Type.Array(Type.Unknown()), otherBonus: Type.Array(Type.Unknown()) })) }),
-  'resources/characterRoster': strict({ races: Type.Array(strict({ raceId: stableKey, status: Type.Unknown(), bonus: Type.Unknown(), defaultAbility: Type.Unknown(), unlockAbility: Type.Unknown() })) }),
-  'resources/bestiary': strict({ enemies: Type.Array(Type.Unknown()) }),
-  'resources/superRareList': strict({ superRare: Type.Array(Type.String()) }),
+  'resources/glossary': strict({ entries: Type.Array(Type.Unknown()), validOptions: strict({ category: Type.Array(Type.String()) }), ...nextCursor }),
+  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: Type.String(), category: stableKey, ability: Type.Array(Type.Unknown()), cBonus: Type.Array(Type.Unknown()), otherBonus: Type.Array(Type.Unknown()) })), ...nextCursor }),
+  'resources/characterRoster': strict({ races: Type.Array(strict({ raceId: stableKey, status: Type.Unknown(), bonus: Type.Unknown(), defaultAbility: Type.Unknown(), unlockAbility: Type.Unknown() })), ...nextCursor }),
+  'resources/bestiary': strict({ enemies: Type.Array(Type.Unknown()), ...nextCursor }),
+  'resources/superRareList': strict({ superRare: Type.Array(Type.String()), ...nextCursor }),
 };
+
+// SpecRef: 9.1.4.2 | Response envelopes | Concrete envelope schemas
+// Mirrors createReadEnvelopeSchema/createCommitEnvelopeSchema in src/api/v1/contracts.ts; kept in sync by hand
+// for the same reason as the response-data schemas above (that module cannot be imported by this plain-JS script).
+const readResponseEnvelopeFor = (data) => strict({ apiVersion: Type.Literal('v1'), schemaVersion: Type.Literal(1), requestId: stableKey, revision: optional(Type.Integer({ minimum: 0 })), observedAt: isoTimestamp, data });
+const commitResponseEnvelopeFor = (data) => strict({ apiVersion: Type.Literal('v1'), schemaVersion: Type.Literal(1), requestId: stableKey, previousRevision: Type.Integer({ minimum: 0 }), revision: Type.Integer({ minimum: 0 }), committedAt: isoTimestamp, data, effects: Type.Array(semanticText), changedResources: Type.Array(Type.String({ minLength: 1 })) });
+// SSE streams and the raw-binary backup export never go through the JSON read/commit envelope construction in api-v1.cjs.
+function envelopeSchemaFor(operation, data) {
+  if (operation.transport === 'sse' || operation.operationId === 'commit/setting/backup/export') return null;
+  return operation.operationId.startsWith('commit/') ? commitResponseEnvelopeFor(data) : readResponseEnvelopeFor(data);
+}
 
 // SpecRef: 9.1.4.11 | Errors | Stable error catalog
 const ERROR_CATALOG = [
@@ -283,6 +296,41 @@ const ERROR_CATALOG = [
   { status: 503, code: 'runtime_unavailable', meaning: 'Game authority is starting, stopping, or unavailable.' },
   { status: 503, code: 'operation_cancelled', meaning: 'Admitted work was cancelled before commit; no mutation was published.' },
 ];
+const KNOWN_ERROR_CODES = new Set(ERROR_CATALOG.map((entry) => entry.code));
+
+// SpecRef: 9.1.4.9 | Operation-specific completion rules | Applicable errors and restrictions metadata
+// `commit/setting/enemyEditPane` and `commit/setting/debug` are the only handlers that check `isDebugModeEnabled()`
+// (HomeScreen.tsx `processApiV1Request`), and that helper is true only in the `dev`/`beta` environments (environment.ts).
+const DEBUG_GATED_OPERATIONS = new Set(['commit/setting/enemyEditPane', 'commit/setting/debug']);
+// Confirmation-gated per 9.1.4.5: destructive/partial-load operations that may return `confirmation_required`.
+const CONFIRMATION_GATED_OPERATIONS = new Set(['commit/setting/backup/import', 'commit/setting/backup/reset', 'commit/build/character/{characterId}/loadEquipmentSet']);
+// Handlers observed to throw `not_found` for an unresolved item/variant lookup that isn't already covered by a `{...}` path template.
+const ADDITIONAL_NOT_FOUND_OPERATIONS = new Set(['commit/base/sellInventoryItems', 'commit/base/unlockSoldItems', 'commit/base/unlockForm']);
+
+function errorsFor(operation, query) {
+  const codes = new Set(['invalid_request', 'runtime_unavailable', 'internal_error']);
+  if (operation.access !== 'public') { codes.add('authentication_required'); codes.add('authentication_failed'); }
+  if (operation.access === 'session') { codes.add('login_required'); codes.add('control_lease_invalid'); codes.add('control_lease_expired'); }
+  if (operation.operationId.includes('{') || ADDITIONAL_NOT_FOUND_OPERATIONS.has(operation.operationId)) codes.add('not_found');
+  if (operation.transport === 'multipart' || operation.transport === 'binary') { codes.add('payload_too_large'); codes.add('unsupported_media_type'); }
+  if (operation.operationId.startsWith('commit/')) { codes.add('stale_revision'); codes.add('idempotency_conflict'); codes.add('idempotency_expired'); codes.add('operation_in_progress'); codes.add('illegal_action'); codes.add('save_failed'); codes.add('busy'); }
+  if (CONFIRMATION_GATED_OPERATIONS.has(operation.operationId)) { codes.add('confirmation_required'); codes.add('confirmation_invalid'); }
+  if (operation.operationId === 'commit/setting/backup/import') codes.add('incompatible_backup');
+  if (query.properties?.cursor) codes.add('invalid_cursor');
+  if (operation.operationId === 'fundamental/signUp') codes.add('already_exists');
+  if (operation.operationId === 'fundamental/logIn') { codes.add('control_unavailable'); codes.add('not_found'); }
+  if (operation.operationId === 'fundamental/logOut') codes.add('save_failed');
+  if (operation.operationId.endsWith('/simulationRun')) codes.add('stale_revision');
+  const list = [...codes].sort();
+  for (const code of list) if (!KNOWN_ERROR_CODES.has(code)) throw new Error(`Unknown error code referenced by ${operation.operationId}: ${code}`);
+  return list;
+}
+
+function restrictionsFor(operation) {
+  const debugGated = DEBUG_GATED_OPERATIONS.has(operation.operationId);
+  return { environments: debugGated ? ['dev', 'beta'] : 'all', requiresDebugMode: debugGated, requiresLogin: operation.access === 'session' };
+}
+
 const commitEnvelope = (parameters) => strict({ expectedRevision: Type.Integer({ minimum: 0 }), idempotencyKey: Type.String({ minLength: 16, maxLength: 128, pattern: '^[\\x20-\\x7e]+$' }), parameters, confirmationToken: optional(Type.String({ minLength: 1, maxLength: 512 })) });
 function pathSchemaFor(operation) { const name = operation.path.match(/\{([^}]+)\}/)?.[1]; return name ? pathSchemas[name] : empty; }
 function bodySchemaFor(operation) {
@@ -325,7 +373,10 @@ const operationContracts = operations.map((operation) => {
   if (operation.operationId.startsWith('commit/') && !commitParameters[operation.operationId]) throw new Error(`Missing Commit parameter schema: ${operation.operationId}`);
   const responseData = responseDataSchemas[operation.operationId];
   if (!responseData) throw new Error(`Missing response schema: ${operation.operationId}`);
-  return { ...operation, transport: transportFor(operation), pathParameters, query, body, response: { data: responseData }, examples: { request: { pathParameters: sample(pathParameters), query: sample(query), ...(operation.method === 'POST' ? { body: sample(body) } : {}) }, invalidRequest: operation.method === 'GET' ? { query: sample(query, true) } : { body: sample(body, true) }, response: { data: sample(responseData) } } };
+  const transport = transportFor(operation);
+  const withTransport = { ...operation, transport };
+  const envelope = envelopeSchemaFor(withTransport, responseData);
+  return { ...withTransport, pathParameters, query, body, response: { data: responseData, envelope }, errors: errorsFor(withTransport, query), restrictions: restrictionsFor(withTransport), examples: { request: { pathParameters: sample(pathParameters), query: sample(query), ...(operation.method === 'POST' ? { body: sample(body) } : {}) }, invalidRequest: operation.method === 'GET' ? { query: sample(query, true) } : { body: sample(body, true) }, response: { data: sample(responseData) } } };
 });
 const desktopOutput = `${JSON.stringify({ apiVersion: 'v1', schemaVersion: 1, limits: { jsonBodyBytes: 1_048_576, backupImportBytes: 33_554_432, feedbackAttachmentCount: 4, feedbackAttachmentBytes: 8_388_608, feedbackTotalBytes: 20_971_520, pageLimitDefault: 100, pageLimitMaximum: 200 }, errors: ERROR_CATALOG, operations: operationContracts }, null, 2)}\n`;
 const typeRows = operations.map((operation) => `  ${JSON.stringify(operation)},`).join('\n');
